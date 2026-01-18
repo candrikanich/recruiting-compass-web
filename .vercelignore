@@ -1,0 +1,9 @@
+.git
+.gitlab-ci.yml
+node_modules
+.nuxt
+.output/server
+.output/prerender-manifest.json
+coverage
+.DS_Store
+*.log
