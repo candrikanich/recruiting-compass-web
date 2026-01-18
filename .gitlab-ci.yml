@@ -18,6 +18,7 @@ build:
   script:
     - npm ci
     - npm run build
+    - apk add --no-cache git
     - git config --global user.email "ci@recruiting-compass.com"
     - git config --global user.name "GitLab CI"
     - git add .output/
