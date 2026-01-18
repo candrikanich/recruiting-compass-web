@@ -1,0 +1,265 @@
+:root {
+  --font-size: 16px;
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #030213;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Brand Colors - Vibrant Design System */
+  --brand-blue-500: #3b82f6;
+  --brand-blue-600: #2563eb;
+  --brand-blue-100: #dbeafe;
+  --brand-blue-700: #1d4ed8;
+
+  --brand-purple-500: #a855f7;
+  --brand-purple-600: #9333ea;
+  --brand-purple-100: #f3e8ff;
+  --brand-purple-700: #7e22ce;
+
+  --brand-emerald-500: #10b981;
+  --brand-emerald-600: #059669;
+  --brand-emerald-100: #d1fae5;
+  --brand-emerald-700: #047857;
+
+  --brand-orange-500: #f97316;
+  --brand-orange-600: #ea580c;
+  --brand-orange-100: #ffedd5;
+  --brand-orange-700: #c2410c;
+
+  --brand-indigo-500: #6366f1;
+  --brand-indigo-600: #4f46e5;
+
+  /* Background Gradients */
+  --gradient-page: linear-gradient(135deg, #f8fafc 0%, #dbeafe 50%, #f1f5f9 100%);
+  --gradient-blue: linear-gradient(135deg, var(--brand-blue-500), var(--brand-blue-600));
+  --gradient-purple: linear-gradient(135deg, var(--brand-purple-500), var(--brand-purple-600));
+  --gradient-emerald: linear-gradient(135deg, var(--brand-emerald-500), var(--brand-emerald-600));
+  --gradient-orange: linear-gradient(135deg, var(--brand-orange-500), var(--brand-orange-600));
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-card-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+
+@layer base {
+  * {
+    border-color: var(--border);
+    outline-color: var(--ring);
+    outline-width: 2px;
+    outline-offset: 2px;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}
+
+@layer components {
+  /* Card Components */
+  .card {
+    @apply rounded-lg p-4;
+    background-color: var(--card);
+    color: var(--card-foreground);
+    box-shadow: var(--shadow-card);
+    transition: all 0.2s ease;
+  }
+
+  .card:hover {
+    @apply -translate-y-0.5;
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  /* Form Inputs */
+  .input-field {
+    @apply w-full px-3 py-2 rounded-lg;
+    border: 1px solid var(--border);
+    background-color: var(--input-background);
+    color: var(--foreground);
+    transition: border-color 0.2s ease;
+  }
+
+  .input-field:focus {
+    @apply outline-none;
+    border-color: var(--brand-blue-500);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  /* Buttons */
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    @apply btn text-white;
+    background-color: var(--brand-blue-600);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--brand-blue-700);
+  }
+
+  .btn-primary:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply btn;
+    border: 1px solid var(--border);
+    color: var(--foreground);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background-color: var(--muted);
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-block px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply badge;
+    background-color: var(--brand-blue-100);
+    color: var(--brand-blue-700);
+  }
+
+  .badge-success {
+    @apply badge;
+    background-color: var(--brand-emerald-100);
+    color: var(--brand-emerald-700);
+  }
+
+  .badge-warning {
+    @apply badge;
+    background-color: var(--brand-orange-100);
+    color: var(--brand-orange-700);
+  }
+
+  .badge-danger {
+    @apply badge;
+    background-color: rgba(212, 24, 61, 0.1);
+    color: var(--destructive);
+  }
+
+  /* Search/Filter Buttons */
+  .search-btn {
+    @apply px-6 py-3 font-semibold rounded-lg transition;
+    background-color: var(--brand-blue-600);
+    color: white;
+  }
+
+  .search-btn:hover:not(:disabled) {
+    background-color: var(--brand-blue-700);
+  }
+
+  .search-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .filter-type-btn {
+    @apply px-3 py-1 rounded text-xs font-medium transition;
+  }
+
+  .filter-type-btn-active {
+    @apply filter-type-btn text-white;
+    background-color: var(--brand-blue-600);
+  }
+
+  .filter-type-btn-inactive {
+    @apply filter-type-btn;
+    background-color: var(--muted);
+    color: var(--foreground);
+  }
+
+  .filter-type-btn-inactive:hover {
+    background-color: var(--accent);
+  }
+}

@@ -1,0 +1,17 @@
+# POST https://example.com/comments HTTP/1.1
+# content-type: application/json
+
+# {
+#     "name": "sample",
+#     "time": "Wed, 21 Oct 2015 18:27:50 GMT"
+# }
+
+
+
+GET https://api.data.gov/ed/collegescorecard/v1/schools?api_key=foAWuv61Me44aq03lw5TNmGxpVeFdxChbQeHaEWi HTTP/1.1
+content-type: application/json
+
+{
+    "school.name": "Baldwin Wallace",
+    "api_key": "foAWuv61Me44aq03lw5TNmGxpVeFdxChbQeHaEWi"
+}

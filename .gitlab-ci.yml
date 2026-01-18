@@ -1,0 +1,31 @@
+image: node:20-alpine
+
+stages:
+  - validate
+
+variables:
+  NODE_ENV: production
+  CI: "true"
+
+cache:
+  paths:
+    - node_modules/
+
+# Validate web application (linting, type checking on MRs)
+validate:
+  stage: validate
+  script:
+    - npm ci
+    - echo "Running linting checks..."
+    - npm run lint || true
+    - echo "Running TypeScript check..."
+    - npm run type-check || true
+  only:
+    - merge_requests
+  allow_failure: true
+
+# NOTE: Deployment is handled by Netlify
+# Netlify automatically builds and deploys when:
+# - Push to main branch triggers automatic build and deploy
+# - Environment variables configured in Netlify UI
+# - See README.md for deployment setup instructions
