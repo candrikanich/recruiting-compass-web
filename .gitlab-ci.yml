@@ -16,22 +16,14 @@ cache:
 build:
   stage: build
   script:
-    - |
-      cat > .env.local << EOF
-      NUXT_PUBLIC_SUPABASE_URL=${NUXT_PUBLIC_SUPABASE_URL}
-      NUXT_PUBLIC_SUPABASE_ANON_KEY=${NUXT_PUBLIC_SUPABASE_ANON_KEY}
-      NUXT_PUBLIC_COLLEGE_SCORECARD_APIKEY=${NUXT_PUBLIC_COLLEGE_SCORECARD_APIKEY}
-      RESEND_API_KEY=${RESEND_API_KEY}
-      EOF
-    - echo "=== .env.local contents ==="
-    - cat .env.local
-    - echo "=== Environment variables before npm run build ==="
-    - env | grep NUXT_PUBLIC || echo "No NUXT_PUBLIC vars found"
     - npm ci
-    - echo "=== Running npm run build ==="
+    - set -a
+    - export NUXT_PUBLIC_SUPABASE_URL
+    - export NUXT_PUBLIC_SUPABASE_ANON_KEY
+    - export NUXT_PUBLIC_COLLEGE_SCORECARD_APIKEY
+    - export RESEND_API_KEY
+    - set +a
     - npm run build
-    - echo "=== Checking if Supabase URL is in bundle ==="
-    - grep -r "xpxzhqghxecsjhvklsqg" .output/public/_nuxt/*.js | head -1 || echo "Supabase URL not found in bundle"
   artifacts:
     paths:
       - .output/public/
