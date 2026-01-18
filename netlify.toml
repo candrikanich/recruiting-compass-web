@@ -1,12 +1,10 @@
-# Netlify configuration for recruiting-compass web application
-# Built and deployed automatically on push to main branch
+# Configuration for web application deployment
+# Netlify: Static preview deployments
+# Vercel: SSR production deployment
 
 [build]
   command = "npm ci && npm run build"
   publish = ".output/public"
-
-[functions]
-  directory = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
