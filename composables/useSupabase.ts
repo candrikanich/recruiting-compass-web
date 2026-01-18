@@ -7,11 +7,6 @@ import { useRuntimeConfig } from '#app'
 let supabaseClient: SupabaseClient<any> | null = null
 
 export const useSupabase = (): SupabaseClient<any> => {
-  // Skip initialization during SSR/prerender
-  if (process.server) {
-    return {} as SupabaseClient<any>
-  }
-
   const config = useRuntimeConfig()
 
   if (!supabaseClient) {
@@ -19,6 +14,7 @@ export const useSupabase = (): SupabaseClient<any> => {
     const supabaseAnonKey = config.public.supabaseAnonKey
 
     if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('Supabase configuration is missing. Check NUXT_PUBLIC_SUPABASE_URL and NUXT_PUBLIC_SUPABASE_ANON_KEY')
       throw new Error('Supabase configuration is missing')
     }
 
