@@ -27,10 +27,16 @@ build:
 
 deploy:qa:
   stage: deploy-qa
-  image: node:20-alpine
+  image: curlimages/curl:latest
   script:
-    - npm install -g netlify-cli
-    - netlify deploy --site qa-myrecruitingcompass --auth $NETLIFY_AUTH_TOKEN --dir .output/public --prod
+    - apk add --no-cache zip
+    - cd .output/public && zip -r ../site.zip . && cd ../..
+    - |
+      curl -X POST \
+        -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+        -H "Content-Type: application/zip" \
+        --data-binary "@.output/site.zip" \
+        "https://api.netlify.com/api/v1/sites/00adee3f-5529-4d9c-9dca-40899a823867/deploys"
   dependencies:
     - build
   only:
@@ -38,10 +44,16 @@ deploy:qa:
 
 deploy:prod:
   stage: deploy-prod
-  image: node:20-alpine
+  image: curlimages/curl:latest
   script:
-    - npm install -g netlify-cli
-    - netlify deploy --site myrecruitingcompass --auth $NETLIFY_AUTH_TOKEN --dir .output/public --prod
+    - apk add --no-cache zip
+    - cd .output/public && zip -r ../site.zip . && cd ../..
+    - |
+      curl -X POST \
+        -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+        -H "Content-Type: application/zip" \
+        --data-binary "@.output/site.zip" \
+        "https://api.netlify.com/api/v1/sites/9d06ede7-91fc-4c5d-9d78-356aa538461d/deploys"
   dependencies:
     - build
   when: manual
