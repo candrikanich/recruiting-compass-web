@@ -23,7 +23,10 @@ build:
       NUXT_PUBLIC_COLLEGE_SCORECARD_APIKEY=${NUXT_PUBLIC_COLLEGE_SCORECARD_APIKEY}
       RESEND_API_KEY=${RESEND_API_KEY}
       EOF
-    - echo "Environment configured"
+    - echo "=== .env.local contents ==="
+    - cat .env.local
+    - echo "=== Environment variables ==="
+    - env | grep NUXT_PUBLIC || echo "No NUXT_PUBLIC vars found"
     - npm ci
     - npm run build
   artifacts:
