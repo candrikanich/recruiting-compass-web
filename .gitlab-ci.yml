@@ -25,10 +25,13 @@ build:
       EOF
     - echo "=== .env.local contents ==="
     - cat .env.local
-    - echo "=== Environment variables ==="
+    - echo "=== Environment variables before npm run build ==="
     - env | grep NUXT_PUBLIC || echo "No NUXT_PUBLIC vars found"
     - npm ci
+    - echo "=== Running npm run build ==="
     - npm run build
+    - echo "=== Checking if Supabase URL is in bundle ==="
+    - grep -r "xpxzhqghxecsjhvklsqg" .output/public/_nuxt/*.js | head -1 || echo "Supabase URL not found in bundle"
   artifacts:
     paths:
       - .output/public/
