@@ -2,7 +2,7 @@
 # Built and deployed automatically on push to main branch
 
 [build]
-  command = "npm run build"
+  command = "npm ci && npm run build"
   publish = ".output/public"
 
 [functions]
