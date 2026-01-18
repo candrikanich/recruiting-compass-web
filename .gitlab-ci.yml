@@ -30,11 +30,11 @@ build:web:
 deploy:qa:
   stage: deploy
   image: node:20-alpine
+  needs:
+    - build:web
   script:
     - npm install -g netlify-cli
     - netlify deploy --prod --dir=.output/public --site=$NETLIFY_SITE_ID_QA --auth=$NETLIFY_AUTH_TOKEN
-  dependencies:
-    - build:web
   environment:
     name: qa
     url: https://qa-web.therecruitingcompass.com
@@ -45,11 +45,11 @@ deploy:qa:
 deploy:prod:
   stage: deploy
   image: node:20-alpine
+  needs:
+    - build:web
   script:
     - npm install -g netlify-cli
     - netlify deploy --prod --dir=.output/public --site=$NETLIFY_SITE_ID_PROD --auth=$NETLIFY_AUTH_TOKEN
-  dependencies:
-    - build:web
   environment:
     name: production
     url: https://web.therecruitingcompass.com
