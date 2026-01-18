@@ -1,13 +1,12 @@
 # Configuration for web application deployment
-# Netlify: Static preview deployments
-# Vercel: SSR production deployment
+# Build: GitLab CI (creates .output)
+# Serve: Netlify (serves pre-built .output/public)
 
 [build]
-  command = "npm ci && npm run build"
+  command = ""
   publish = ".output/public"
 
 [build.environment]
-  NODE_VERSION = "20"
   NODE_ENV = "production"
 
 [[redirects]]

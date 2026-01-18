@@ -1,7 +1,8 @@
 image: node:20-alpine
 
 stages:
-  - validate
+  - build
+  - deploy
 
 variables:
   NODE_ENV: production
@@ -10,22 +11,48 @@ variables:
 cache:
   paths:
     - node_modules/
+    - .nuxt/
 
-# Validate web application (linting, type checking on MRs)
-validate:
-  stage: validate
+# Build stage - creates .output directory
+build:web:
+  stage: build
   script:
     - npm ci
-    - echo "Running linting checks..."
-    - npm run lint || true
-    - echo "Running TypeScript check..."
-    - npm run type-check || true
+    - npm run build
+  artifacts:
+    paths:
+      - .output/
+    expire_in: 1 hour
   only:
-    - merge_requests
-  allow_failure: true
+    - main
 
-# NOTE: Deployment is handled by Netlify
-# Netlify automatically builds and deploys when:
-# - Push to main branch triggers automatic build and deploy
-# - Environment variables configured in Netlify UI
-# - See README.md for deployment setup instructions
+# Deploy to Netlify (QA - auto deploy on main)
+deploy:qa:
+  stage: deploy
+  image: node:20-alpine
+  script:
+    - npm install -g netlify-cli
+    - netlify deploy --prod --dir=.output/public --site=$NETLIFY_SITE_ID_QA --auth=$NETLIFY_AUTH_TOKEN
+  dependencies:
+    - build:web
+  environment:
+    name: qa
+    url: https://qa-web.therecruitingcompass.com
+  only:
+    - main
+
+# Deploy to Netlify (PROD - manual deploy)
+deploy:prod:
+  stage: deploy
+  image: node:20-alpine
+  script:
+    - npm install -g netlify-cli
+    - netlify deploy --prod --dir=.output/public --site=$NETLIFY_SITE_ID_PROD --auth=$NETLIFY_AUTH_TOKEN
+  dependencies:
+    - build:web
+  environment:
+    name: production
+    url: https://web.therecruitingcompass.com
+  when: manual
+  only:
+    - main
