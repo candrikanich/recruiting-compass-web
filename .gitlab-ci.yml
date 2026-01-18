@@ -18,6 +18,8 @@ build:
   script:
     - echo "Building with Supabase URL=$NUXT_PUBLIC_SUPABASE_URL"
     - npm ci
+    - export NUXT_PUBLIC_SUPABASE_URL=$NUXT_PUBLIC_SUPABASE_URL
+    - export NUXT_PUBLIC_SUPABASE_ANON_KEY=$NUXT_PUBLIC_SUPABASE_ANON_KEY
     - npm run build
   artifacts:
     paths:
