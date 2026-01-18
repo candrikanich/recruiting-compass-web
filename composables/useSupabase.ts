@@ -7,6 +7,11 @@ import { useRuntimeConfig } from '#app'
 let supabaseClient: SupabaseClient<any> | null = null
 
 export const useSupabase = (): SupabaseClient<any> => {
+  // Skip initialization during SSR/prerender
+  if (process.server) {
+    return {} as SupabaseClient<any>
+  }
+
   const config = useRuntimeConfig()
 
   if (!supabaseClient) {

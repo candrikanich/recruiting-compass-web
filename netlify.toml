@@ -1,14 +1,18 @@
-# Configuration for Nuxt 3 SPA on Netlify Functions
-# Build: GitLab CI (creates .output with Netlify function)
-# Serve: Netlify Functions + static assets
+# Nuxt 3 SPA on Netlify
+# Build: GitLab CI → GitLab builds, pushes to Netlify
+# Serve: Static assets from .output/public
 
 [build]
   command = ""
   publish = ".output/public"
-  functions = ".output/functions"
 
 [build.environment]
   NODE_ENV = "production"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 [[headers]]
   for = "/*"

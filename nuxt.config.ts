@@ -18,8 +18,9 @@ export default defineNuxtConfig({
     builder: 'shared' as const,
   },
   nitro: {
-    prerender: false,
-    preset: 'netlify',
+    prerender: {
+      routes: ['/'],
+    },
     output: {
       publicDir: '.output/public',
     },

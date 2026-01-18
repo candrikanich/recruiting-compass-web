@@ -20,7 +20,7 @@ build:
     - npm run build
   artifacts:
     paths:
-      - .output/
+      - .output/public/
     expire_in: 1 day
   only:
     - main
@@ -30,7 +30,7 @@ deploy:qa:
   image: alpine:latest
   script:
     - apk add --no-cache zip curl
-    - cd .output && zip -r ../site.zip . && cd ..
+    - cd .output/public && zip -r ../../site.zip . && cd ../..
     - |
       curl -X POST \
         -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
@@ -47,7 +47,7 @@ deploy:prod:
   image: alpine:latest
   script:
     - apk add --no-cache zip curl
-    - cd .output && zip -r ../site.zip . && cd ..
+    - cd .output/public && zip -r ../../site.zip . && cd ../..
     - |
       curl -X POST \
         -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
