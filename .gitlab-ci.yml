@@ -27,9 +27,9 @@ build:
 
 deploy:qa:
   stage: deploy-qa
-  image: curlimages/curl:latest
+  image: alpine:latest
   script:
-    - apk add --no-cache zip
+    - apk add --no-cache zip curl
     - cd .output/public && zip -r ../site.zip . && cd ../..
     - |
       curl -X POST \
@@ -44,9 +44,9 @@ deploy:qa:
 
 deploy:prod:
   stage: deploy-prod
-  image: curlimages/curl:latest
+  image: alpine:latest
   script:
-    - apk add --no-cache zip
+    - apk add --no-cache zip curl
     - cd .output/public && zip -r ../site.zip . && cd ../..
     - |
       curl -X POST \
