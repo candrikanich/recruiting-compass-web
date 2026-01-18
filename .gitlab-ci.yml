@@ -30,7 +30,7 @@ deploy:qa:
   image: node:20-alpine
   script:
     - npm install -g netlify-cli
-    - netlify deploy --site $NETLIFY_QA_SITE_ID --auth $NETLIFY_AUTH_TOKEN --dir .output/public --prod
+    - netlify deploy --site qa-myrecruitingcompass --auth $NETLIFY_AUTH_TOKEN --dir .output/public --prod
   dependencies:
     - build
   only:
@@ -41,7 +41,7 @@ deploy:prod:
   image: node:20-alpine
   script:
     - npm install -g netlify-cli
-    - netlify deploy --site $NETLIFY_PROD_SITE_ID --auth $NETLIFY_AUTH_TOKEN --dir .output/public --prod
+    - netlify deploy --site myrecruitingcompass --auth $NETLIFY_AUTH_TOKEN --dir .output/public --prod
   dependencies:
     - build
   when: manual
