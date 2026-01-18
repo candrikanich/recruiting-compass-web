@@ -21,7 +21,7 @@ build:
     - apk add --no-cache git
     - git config --global user.email "ci@recruiting-compass.com"
     - git config --global user.name "GitLab CI"
-    - git add .output/
+    - git add -f .output/
     - "git commit -m 'build: generate output [skip ci]' || true"
     - git push https://oauth2:$CI_JOB_TOKEN@gitlab.com/the-recruiting-compass/recruiting-compass-web.git HEAD:main
   only:
