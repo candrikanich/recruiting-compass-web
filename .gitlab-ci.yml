@@ -20,7 +20,7 @@ build:
     - npm run build
   artifacts:
     paths:
-      - .output/public/
+      - .output/
     expire_in: 1 day
   only:
     - main
@@ -30,12 +30,12 @@ deploy:qa:
   image: alpine:latest
   script:
     - apk add --no-cache zip curl
-    - cd .output/public && zip -r ../site.zip . && cd ../..
+    - cd .output && zip -r ../site.zip . && cd ..
     - |
       curl -X POST \
         -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
         -H "Content-Type: application/zip" \
-        --data-binary "@.output/site.zip" \
+        --data-binary "@site.zip" \
         "https://api.netlify.com/api/v1/sites/00adee3f-5529-4d9c-9dca-40899a823867/deploys"
   dependencies:
     - build
@@ -47,12 +47,12 @@ deploy:prod:
   image: alpine:latest
   script:
     - apk add --no-cache zip curl
-    - cd .output/public && zip -r ../site.zip . && cd ../..
+    - cd .output && zip -r ../site.zip . && cd ..
     - |
       curl -X POST \
         -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
         -H "Content-Type: application/zip" \
-        --data-binary "@.output/site.zip" \
+        --data-binary "@site.zip" \
         "https://api.netlify.com/api/v1/sites/9d06ede7-91fc-4c5d-9d78-356aa538461d/deploys"
   dependencies:
     - build
