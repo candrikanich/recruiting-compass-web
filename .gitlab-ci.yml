@@ -2,7 +2,7 @@ image: node:20-alpine
 
 stages:
   - build
-  - deploy
+  - commit
 
 variables:
   NODE_ENV: production
@@ -11,7 +11,6 @@ variables:
 cache:
   paths:
     - node_modules/
-    - .nuxt/
 
 # Build stage - creates .output directory
 build:web:
@@ -22,37 +21,29 @@ build:web:
   artifacts:
     paths:
       - .output/
-    expire_in: 1 hour
+    expire_in: 30 minutes
   only:
     - main
 
-# Deploy to Netlify (QA - auto deploy on main)
-deploy:qa:
-  stage: deploy
-  image: node:20-alpine
+# Commit build output back to git
+commit:output:
+  stage: commit
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git
+    - git config --global user.email "ci@recruting-compass.com"
+    - git config --global user.name "GitLab CI"
+  script:
+    - git clone --depth 1 https://oauth2:$CI_JOB_TOKEN@gitlab.com/the-recruiting-compass/recruiting-compass-web.git repo
+    - cd repo
+    - rm -rf .output
+    - cp -r ../.output .
+    - git add .output/
+    - git commit -m "build: rebuild output for Netlify deployment [skip ci]" || true
+    - git push https://oauth2:$CI_JOB_TOKEN@gitlab.com/the-recruiting-compass/recruiting-compass-web.git HEAD:main
   needs:
     - build:web
-  script:
-    - npm install -g netlify-cli
-    - netlify deploy --prod --dir=.output/public --site=$NETLIFY_SITE_ID_QA --auth=$NETLIFY_AUTH_TOKEN
-  environment:
-    name: qa
-    url: https://qa-web.therecruitingcompass.com
   only:
     - main
-
-# Deploy to Netlify (PROD - manual deploy)
-deploy:prod:
-  stage: deploy
-  image: node:20-alpine
-  needs:
+  dependencies:
     - build:web
-  script:
-    - npm install -g netlify-cli
-    - netlify deploy --prod --dir=.output/public --site=$NETLIFY_SITE_ID_PROD --auth=$NETLIFY_AUTH_TOKEN
-  environment:
-    name: production
-    url: https://web.therecruitingcompass.com
-  when: manual
-  only:
-    - main
