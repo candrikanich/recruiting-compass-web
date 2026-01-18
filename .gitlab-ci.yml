@@ -11,7 +11,6 @@ cache:
   paths:
     - node_modules/
 
-# Build stage - creates .output directory
 build:web:
   stage: build
   script:
@@ -26,7 +25,7 @@ build:web:
     - rm -rf .output
     - cp -r ../.output .
     - git add .output/
-    - git commit -m "build: rebuild output for Netlify deployment [skip ci]" || true
+    - "git commit -m 'build: rebuild output for Netlify deployment [skip ci]' || true"
     - git push https://oauth2:$CI_JOB_TOKEN@gitlab.com/the-recruiting-compass/recruiting-compass-web.git HEAD:main
   only:
     - main
