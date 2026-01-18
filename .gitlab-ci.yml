@@ -15,8 +15,11 @@ cache:
 
 build:
   stage: build
+  variables:
+    NUXT_PUBLIC_SUPABASE_URL: $NUXT_PUBLIC_SUPABASE_URL
+    NUXT_PUBLIC_SUPABASE_ANON_KEY: $NUXT_PUBLIC_SUPABASE_ANON_KEY
   script:
-    - echo "Building with Supabase URL=$NUXT_PUBLIC_SUPABASE_URL"
+    - echo "Building with Supabase URL=${NUXT_PUBLIC_SUPABASE_URL}"
     - npm ci
     - npm run build
   artifacts:
