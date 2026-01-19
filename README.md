@@ -5,10 +5,11 @@ The web application for managing college baseball recruiting interactions, built
 ## Quick Start
 
 ### Prerequisites
+
 - **Node.js 18+** (check with `node --version`)
 - **npm** (bundled with Node.js)
 - **Supabase account** (free tier available at supabase.com)
-- **College Scorecard API key** (free from https://api.data.gov/signup/)
+- **College Scorecard API key** (free from <https://api.data.gov/signup/>)
 
 ### Installation
 
@@ -142,7 +143,7 @@ web/
 
 | Script | Purpose |
 |--------|---------|
-| `npm run dev` | Start development server (http://localhost:3000) |
+| `npm run dev` | Start development server (<http://localhost:3000>) |
 | `npm run build` | Build for production |
 | `npm run preview` | Preview production build locally |
 | `npm run type-check` | Check TypeScript types |
@@ -152,6 +153,7 @@ web/
 ## Technology Stack
 
 ### Frontend
+
 - **Nuxt 3** - Vue 3 framework with file-based routing
 - **Vue 3** - Progressive UI framework
 - **TypeScript** - Type-safe JavaScript
@@ -159,28 +161,34 @@ web/
 - **TailwindCSS** - Utility-first CSS framework
 
 ### State Management
+
 - **Pinia** - Lightweight Vue state management
 
 ### Backend / API
+
 - **Nitro** - Server engine (auto-API routes in `/server/api`)
 - **Supabase** - PostgreSQL backend + Auth + Storage
 
 ### Authentication
+
 - **Supabase Auth** - JWT-based authentication
 - Middleware: `web/middleware/auth.ts`
 
 ### Database
+
 - **PostgreSQL** (via Supabase)
 - Migrations in `/database/migrations/`
 - Schema: See `/documentation/reference/database-schema.md`
 
 ### Data Validation
+
 - **Server-side:** Validators in `server/utils/validation.ts`
 - **Client-side:** Composables and utility functions
 
 ## Development Workflow
 
 ### 1. Adding a New Page
+
 ```bash
 # Create new page file in /pages
 # File structure automatically becomes a route
@@ -191,6 +199,7 @@ touch pages/my-feature/index.vue
 ```
 
 ### 2. Creating a Reusable Component
+
 ```bash
 # Add to /components
 touch components/MyFeature/MyComponent.vue
@@ -200,6 +209,7 @@ touch components/MyFeature/MyComponent.vue
 ```
 
 ### 3. Adding a Composable (Reusable Logic)
+
 ```bash
 # Add to /composables
 touch composables/useMyFeature.ts
@@ -209,6 +219,7 @@ touch composables/useMyFeature.ts
 ```
 
 ### 4. Adding a Server API Route
+
 ```bash
 # Create in /server/api
 touch server/api/my-feature.post.ts
@@ -221,22 +232,26 @@ touch server/api/my-feature.post.ts
 ## Code Quality Standards
 
 ### TypeScript
+
 - Use strict mode
 - Define types for all function parameters and returns
 - Use interfaces for data models
 
 ### Vue Components
+
 - Use `<script setup>` syntax
 - Reactive state with `ref()` and `reactive()`
 - Computed properties for derived state
 - Lifecycle hooks for side effects
 
 ### Styling
+
 - Use TailwindCSS utility classes
 - Define custom styles in `assets/styles/`
 - Component-scoped styles with `<style scoped>`
 
 ### API Calls
+
 - Use `$fetch()` for client-to-server
 - Composables for data management
 - Error handling with try/catch
@@ -246,6 +261,7 @@ See `CLAUDE.md` for full development standards.
 ## Deployment
 
 ### Netlify (Production)
+
 ```bash
 # Build is automatic on push to main branch
 # Built from: /web directory
@@ -275,12 +291,14 @@ For full test strategy, see `/documentation/testing/`.
 ## Troubleshooting
 
 ### Port 3000 Already in Use
+
 ```bash
 # Use a different port
 npm run dev -- --port 3001
 ```
 
 ### Node Modules Issues
+
 ```bash
 # Clean install
 rm -rf node_modules package-lock.json
@@ -288,6 +306,7 @@ npm install
 ```
 
 ### TypeScript Errors
+
 ```bash
 # Check types
 npm run type-check
@@ -297,6 +316,7 @@ npm run lint:fix
 ```
 
 ### Supabase Connection Failed
+
 - Verify `.env.local` has correct `NUXT_PUBLIC_SUPABASE_URL` and `NUXT_PUBLIC_SUPABASE_ANON_KEY`
 - Check Supabase project is active (not paused)
 - Ensure RLS policies allow public access (if not authenticated)
