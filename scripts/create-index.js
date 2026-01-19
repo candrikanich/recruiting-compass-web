@@ -1,21 +1,6 @@
 import { writeFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs'
 import { resolve } from 'path'
 
-// Load .env.local if it exists
-if (existsSync('.env.local')) {
-  const envContent = readFileSync('.env.local', 'utf-8')
-  envContent.split('\n').forEach(line => {
-    const trimmed = line.trim()
-    if (trimmed && !trimmed.startsWith('#')) {
-      const [key, ...valueParts] = trimmed.split('=')
-      const value = valueParts.join('=')
-      if (key && !process.env[key]) {
-        process.env[key] = value
-      }
-    }
-  })
-}
-
 const publicDir = resolve('.output/public')
 const nuxtDir = resolve(publicDir, '_nuxt')
 const indexPath = resolve(publicDir, 'index.html')
@@ -67,23 +52,12 @@ if (!entryFile) {
   entryFile = '/_nuxt/entry.js'
 }
 
-const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || ''
-
 const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>The Recruiting Compass</title>
-  <script>
-    window.__NUXT_CONFIG__ = {
-      supabase: {
-        url: "${supabaseUrl}",
-        anonKey: "${supabaseAnonKey}"
-      }
-    }
-  <\/script>
 </head>
 <body>
   <div id="__nuxt"></div>
