@@ -1,6 +1,6 @@
 export default defineAppConfig({
   supabase: {
-    url: process.env.NUXT_PUBLIC_SUPABASE_URL || '',
-    anonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || '',
+    url: import.meta.env.NUXT_PUBLIC_SUPABASE_URL || '',
+    anonKey: import.meta.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || '',
   },
 })
