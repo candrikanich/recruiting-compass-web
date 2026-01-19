@@ -1,6 +1,6 @@
-import { ref, readonly, type Ref } from 'vue'
+import { ref, readonly, onBeforeUnmount, getCurrentInstance } from 'vue'
+import type { User, Session } from '@supabase/supabase-js'
 import { useSupabase } from '~/composables/useSupabase'
-import { useUserStore } from '~/stores/user'
 
 /**
  * Composable for authentication operations
@@ -9,9 +9,6 @@ import { useUserStore } from '~/stores/user'
  * Does NOT auto-initialize—caller must invoke restoreSession() explicitly.
  * Use isInitialized guard to prevent redundant initialization.
  *
- * Supports both new API (login/logout/signup) and legacy API (signIn/signOut/signUp)
- * for backwards compatibility during refactoring.
- *
  * @example
  * const { restoreSession, login } = useAuth()
  * await restoreSession()  // Restore existing session
@@ -19,35 +16,23 @@ import { useUserStore } from '~/stores/user'
  *
  * @returns Object with auth actions and readonly state
  */
-interface AuthState {
-  loading: Readonly<Ref<boolean>>
-  error: Readonly<Ref<Error | null>>
-  isInitialized: Readonly<Ref<boolean>>
-  user: Readonly<Ref<any>>
-  session: Readonly<Ref<any>>
-}
-
 interface AuthActions {
-  restoreSession: () => Promise<any>
-  login: (email: string, password: string) => Promise<{ data: any; error: any }>
+  restoreSession: () => Promise<Session | null>
+  login: (email: string, password: string) => Promise<{ data: any; error: null }>
   logout: () => Promise<void>
   signup: (email: string, password: string, fullName?: string, role?: string) => Promise<any>
-  setupAuthListener: (callback: (user: any) => void) => () => void
-  signIn: (email: string, password: string) => Promise<{ data: any; error: any }>
-  signOut: () => Promise<void>
-  signUp: (email: string, password: string, fullName?: string, role?: string) => Promise<any>
+  setupAuthListener: (callback: (user: User | null) => void) => () => void
 }
 
-export const useAuth = (): AuthState & AuthActions => {
+export const useAuth = () => {
   const supabase = useSupabase()
-  const userStore = useUserStore()
 
   // State
   const loading = ref(false)
   const error = ref<Error | null>(null)
   const isInitialized = ref(false) // Guard to prevent redundant initialization
-  const user = ref<any>(null) // Legacy API support
-  const session = ref<any>(null) // Legacy API support
+  const session = ref<Session | null>(null)
+  const subscriptions: (() => void)[] = []
 
   /**
    * Restores session from Supabase
@@ -70,16 +55,12 @@ export const useAuth = (): AuthState & AuthActions => {
       }
 
       if (sessionData?.user) {
-        await userStore.initializeUser()
-        // Legacy API support
-        user.value = sessionData.user
         session.value = sessionData
         isInitialized.value = true
+        // Store initialization is handled by caller
         return sessionData
       }
 
-      // Legacy API support
-      user.value = null
       session.value = null
       isInitialized.value = true
       return null
@@ -110,14 +91,11 @@ export const useAuth = (): AuthState & AuthActions => {
 
       if (signInError) {
         error.value = signInError
-        return { data: null, error: signInError }
+        throw signInError
       }
 
-      // Initialize user store after successful login
+      // Store initialization is handled by caller
       if (data.session?.user) {
-        await userStore.initializeUser()
-        // Legacy API support
-        user.value = data.session.user
         session.value = data.session
       }
 
@@ -130,9 +108,6 @@ export const useAuth = (): AuthState & AuthActions => {
       loading.value = false
     }
   }
-
-  // Legacy API alias
-  const signIn = login
 
   /**
    * Logout current user
@@ -148,9 +123,7 @@ export const useAuth = (): AuthState & AuthActions => {
         throw signOutError
       }
 
-      // Clear user store and legacy API support
-      userStore.logout()
-      user.value = null
+      // Clear session (store logout is handled by caller)
       session.value = null
       isInitialized.value = false
     } catch (err: unknown) {
@@ -162,13 +135,8 @@ export const useAuth = (): AuthState & AuthActions => {
     }
   }
 
-  // Legacy API alias
-  const signOut = logout
-
   /**
-   * Sign up new user
-   * Supports both new API (email, password) and legacy API (email, password, fullName, role)
-   * Returns Supabase auth response for backwards compatibility
+   * Sign up new user with optional full name and role
    */
   const signup = async (email: string, password: string, fullName?: string, role?: string) => {
     loading.value = true
@@ -182,7 +150,7 @@ export const useAuth = (): AuthState & AuthActions => {
         password,
       }
 
-      // Only add options if legacy params are provided
+      // Add full name and role to user metadata
       if (fullName || role) {
         signUpParams.options = {
           data: {
@@ -196,18 +164,11 @@ export const useAuth = (): AuthState & AuthActions => {
 
       if (signUpError) {
         error.value = signUpError
-        // Return error response for backwards compatibility
-        return { data: null, error: signUpError }
+        throw signUpError
       }
 
-      // Initialize user store after successful signup
-      if (data.user) {
-        await userStore.initializeUser()
-        // Legacy API support
-        user.value = data.user
-      }
+      // Store initialization is handled by caller
 
-      // Return auth response (contains user, session, etc.)
       return data
     } catch (err: unknown) {
       const authError = err instanceof Error ? err : new Error('Signup failed')
@@ -218,24 +179,34 @@ export const useAuth = (): AuthState & AuthActions => {
     }
   }
 
-  // Legacy API alias
-  const signUp = signup
-
   /**
    * Set up auth state change listener
-   * Returns unsubscribe function
+   * Returns unsubscribe function and tracks subscription for cleanup
    */
-  const setupAuthListener = (callback: (user: any) => void) => {
+  const setupAuthListener = (callback: (user: User | null) => void) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event: string, session: any) => {
-        callback(session?.user || null)
+      (event: string, authSession: Session | null) => {
+        callback(authSession?.user || null)
       }
     )
 
-    // Return unsubscribe function
-    return () => {
+    const unsubscribe = () => {
       subscription?.unsubscribe()
     }
+
+    // Track for automatic cleanup
+    subscriptions.push(unsubscribe)
+
+    // Return unsubscribe function
+    return unsubscribe
+  }
+
+  // Cleanup all subscriptions on component unmount
+  // Only register lifecycle hook if in component context
+  if (typeof getCurrentInstance === 'function' && getCurrentInstance()) {
+    onBeforeUnmount(() => {
+      subscriptions.forEach(unsub => unsub())
+    })
   }
 
   return {
@@ -243,21 +214,13 @@ export const useAuth = (): AuthState & AuthActions => {
     loading: readonly(loading),
     error: readonly(error),
     isInitialized: readonly(isInitialized),
-
-    // Legacy API refs
-    user: readonly(user),
     session: readonly(session),
 
-    // New API actions
+    // Auth actions
     restoreSession,
     login,
     logout,
     signup,
     setupAuthListener,
-
-    // Legacy API aliases
-    signIn,
-    signOut,
-    signUp,
   }
 }

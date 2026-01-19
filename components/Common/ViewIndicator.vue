@@ -13,12 +13,13 @@ import { computed, ref, onMounted } from 'vue'
 import { useUserStore } from '~/stores/user'
 import { useViewLogging } from '~/composables/useViewLogging'
 
-const userStore = useUserStore()
+// Defer store initialization to onMounted
+let userStore: ReturnType<typeof useUserStore> | undefined
 const viewLogging = useViewLogging()
 
 const hasParentViewed = ref(false)
 const lastViewTime = ref<string | null>(null)
-const isAthlete = computed(() => userStore.user?.role === 'student')
+const isAthlete = computed(() => userStore?.user?.role === 'student')
 
 /**
  * Format time difference for display
@@ -60,6 +61,7 @@ const loadViewStatus = async () => {
 }
 
 onMounted(() => {
+  userStore = useUserStore()
   loadViewStatus()
 })
 </script>

@@ -9,9 +9,30 @@ import type { Coach, School } from '~/types/models'
  * Provides a centralized, reusable pattern for email/text/twitter communication
  */
 export const useCommunication = () => {
-  const { createInteraction } = useInteractions()
-  const { updateCoach } = useCoaches()
-  const userStore = useUserStore()
+  let interactionsComposable: ReturnType<typeof useInteractions> | undefined
+  let coachesComposable: ReturnType<typeof useCoaches> | undefined
+  let userStore: ReturnType<typeof useUserStore> | undefined
+
+  const getInteractions = () => {
+    if (!interactionsComposable) {
+      interactionsComposable = useInteractions()
+    }
+    return interactionsComposable
+  }
+
+  const getCoaches = () => {
+    if (!coachesComposable) {
+      coachesComposable = useCoaches()
+    }
+    return coachesComposable
+  }
+
+  const getUserStore = () => {
+    if (!userStore) {
+      userStore = useUserStore()
+    }
+    return userStore
+  }
 
   // State
   const showPanel = ref(false)
@@ -44,6 +65,10 @@ export const useCommunication = () => {
     if (!selectedCoach.value) return
 
     try {
+      const { createInteraction } = getInteractions()
+      const { updateCoach } = getCoaches()
+      const store = getUserStore()
+
       // Create interaction record
       await createInteraction({
         coach_id: selectedCoach.value.id,
@@ -52,7 +77,7 @@ export const useCommunication = () => {
         direction: 'outbound',
         subject: interactionData.subject || '',
         content: interactionData.content || interactionData.body || '',
-        logged_by: userStore.user?.id,
+        logged_by: store.user?.id,
         occurred_at: new Date().toISOString(),
       })
 

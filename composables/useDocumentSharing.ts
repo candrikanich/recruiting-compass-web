@@ -17,7 +17,13 @@ import type { Document } from '~/types/models'
  */
 export const useDocumentSharing = () => {
   const supabase = useSupabase()
-  const userStore = useUserStore()
+  let userStore: ReturnType<typeof useUserStore> | undefined
+  const getUserStore = () => {
+    if (!userStore) {
+      userStore = useUserStore()
+    }
+    return userStore
+  }
 
   // State
   const isSharing = ref(false)
@@ -27,7 +33,8 @@ export const useDocumentSharing = () => {
    * Share a document with specific schools
    */
   const shareDocument = async (documentId: string, schoolIds: string[]): Promise<Document | null> => {
-    if (!userStore.user) throw new Error('User not authenticated')
+    const store = getUserStore()
+    if (!store.user) throw new Error('User not authenticated')
 
     isSharing.value = true
     error.value = null
@@ -56,7 +63,8 @@ export const useDocumentSharing = () => {
    * Revoke school access to a document
    */
   const revokeSharing = async (documentId: string, schoolIdToRemove: string): Promise<Document | null> => {
-    if (!userStore.user) throw new Error('User not authenticated')
+    const store = getUserStore()
+    if (!store.user) throw new Error('User not authenticated')
 
     isSharing.value = true
     error.value = null

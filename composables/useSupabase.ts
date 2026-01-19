@@ -1,21 +1,24 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 
-let supabaseClient: ReturnType<typeof createClient> | null = null
+let supabaseClient: ReturnType<typeof createClient> | null = null;
 
 export const useSupabase = () => {
   if (!supabaseClient) {
-    // Read config from window.__NUXT_CONFIG__ injected by create-index.js
-    const config = (typeof window !== 'undefined' && (window as any).__NUXT_CONFIG__) || {}
-    const supabaseUrl = config.supabase?.url || ''
-    const supabaseAnonKey = config.supabase?.anonKey || ''
+    // Use Nuxt runtime config
+    const config = useRuntimeConfig();
+    const supabaseUrl = config.public.supabaseUrl || "";
+    const supabaseAnonKey = config.public.supabaseAnonKey || "";
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Supabase config:', config)
-      throw new Error('Supabase configuration is missing')
+      console.error("Supabase config missing:", {
+        supabaseUrl: supabaseUrl ? "SET" : "MISSING",
+        supabaseAnonKey: supabaseAnonKey ? "SET" : "MISSING",
+      });
+      throw new Error("Supabase configuration is missing");
     }
 
-    supabaseClient = createClient(supabaseUrl, supabaseAnonKey)
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
   }
 
-  return supabaseClient as any
-}
+  return supabaseClient as any;
+};

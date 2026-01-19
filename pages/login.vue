@@ -1,65 +1,5 @@
 <template>
-  <div class="min-h-screen relative overflow-hidden bg-emerald-600">
-    <!-- Multi-Sport Field Background -->
-    <div class="absolute inset-0">
-      <!-- Grass texture with gradient -->
-      <div class="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700"></div>
-
-      <!-- Multi-Sport Field markings -->
-      <svg
-        class="absolute inset-0 w-full h-full opacity-20"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 1200 800"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <!-- Baseball: Infield dirt circle -->
-        <circle cx="600" cy="800" r="350" fill="none" stroke="white" stroke-width="3" opacity="0.4" />
-
-        <!-- Baseball: Foul lines -->
-        <line x1="600" y1="800" x2="100" y2="100" stroke="white" stroke-width="2" opacity="0.5" />
-        <line x1="600" y1="800" x2="1100" y2="100" stroke="white" stroke-width="2" opacity="0.5" />
-
-        <!-- Baseball: Basepaths -->
-        <line x1="600" y1="800" x2="750" y2="650" stroke="white" stroke-width="2" opacity="0.3" />
-        <line x1="750" y1="650" x2="600" y2="500" stroke="white" stroke-width="2" opacity="0.3" />
-        <line x1="600" y1="500" x2="450" y2="650" stroke="white" stroke-width="2" opacity="0.3" />
-        <line x1="450" y1="650" x2="600" y2="800" stroke="white" stroke-width="2" opacity="0.3" />
-
-        <!-- Baseball: Bases -->
-        <rect x="595" y="795" width="10" height="10" fill="white" opacity="0.6" />
-        <rect x="745" y="645" width="10" height="10" fill="white" opacity="0.6" />
-        <rect x="595" y="495" width="10" height="10" fill="white" opacity="0.6" />
-        <rect x="445" y="645" width="10" height="10" fill="white" opacity="0.6" />
-
-        <!-- Football: Hash marks and yard lines -->
-        <line x1="50" y1="150" x2="50" y2="650" stroke="white" stroke-width="2" opacity="0.3" />
-        <line x1="50" y1="200" x2="100" y2="200" stroke="white" stroke-width="1" opacity="0.3" />
-        <line x1="50" y1="300" x2="100" y2="300" stroke="white" stroke-width="1" opacity="0.3" />
-        <line x1="50" y1="400" x2="120" y2="400" stroke="white" stroke-width="2" opacity="0.4" />
-
-        <!-- Basketball: Court outline -->
-        <rect x="100" y="50" width="300" height="200" fill="none" stroke="white" stroke-width="2" opacity="0.3" />
-        <path d="M 120 70 Q 180 100 120 180" fill="none" stroke="white" stroke-width="1" opacity="0.3" />
-
-        <!-- Soccer: Center circle -->
-        <circle cx="600" cy="200" r="60" fill="none" stroke="white" stroke-width="2" opacity="0.3" />
-        <line x1="300" y1="200" x2="900" y2="200" stroke="white" stroke-width="2" opacity="0.3" />
-      </svg>
-
-      <!-- Subtle pattern overlay -->
-      <div
-        class="absolute inset-0 opacity-5"
-        :style="{
-          backgroundImage: `repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 20px,
-            rgba(255, 255, 255, 0.3) 20px,
-            rgba(255, 255, 255, 0.3) 22px
-          )`
-        }"
-      ></div>
-    </div>
+  <div class="min-h-screen bg-emerald-600">
 
     <!-- Content -->
     <div class="relative z-10 min-h-screen flex items-center justify-center px-6 py-12">
@@ -109,9 +49,10 @@
                   v-model="email"
                   type="email"
                   required
+                  autocomplete="email"
                   class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="your.email@example.com"
-                  :disabled="loading"
+                  :disabled="loading || validating"
                   @blur="validateEmail"
                 />
               </div>
@@ -130,36 +71,24 @@
                   v-model="password"
                   type="password"
                   required
+                  autocomplete="current-password"
                   class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter your password"
-                  :disabled="loading"
+                  :disabled="loading || validating"
                   @blur="validatePassword"
                 />
               </div>
               <FieldError :error="fieldErrors.password" />
             </div>
 
-            <!-- Remember me / Forgot password -->
-            <div class="flex items-center justify-between text-sm">
-              <label class="flex items-center gap-2 text-slate-600 cursor-pointer">
-                <input
-                  type="checkbox"
-                  class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-                Remember me
-              </label>
-              <a href="#" class="text-blue-600 hover:text-blue-700">
-                Forgot password?
-              </a>
-            </div>
 
             <!-- Submit -->
             <button
               type="submit"
-              :disabled="loading || hasErrors"
+              :disabled="!isFormValid || loading || validating"
               class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg"
             >
-              {{ loading ? 'Signing in...' : 'Sign In' }}
+              {{ loading ? 'Signing in...' : validating ? 'Validating...' : 'Sign In' }}
             </button>
           </form>
 
@@ -189,9 +118,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuth } from '~/composables/useAuth'
-import { useUserStore } from '~/stores/user'
 import { useValidation } from '~/composables/useValidation'
 import { loginSchema } from '~/utils/validation/schemas'
 import { z } from 'zod'
@@ -199,25 +127,37 @@ import { ArrowLeftIcon, EnvelopeIcon, LockClosedIcon } from '@heroicons/vue/24/o
 import FormErrorSummary from '~/components/Validation/FormErrorSummary.vue'
 import FieldError from '~/components/Validation/FieldError.vue'
 
+// Static schemas - defined once outside component scope
+const EMAIL_SCHEMA = z.object({ email: loginSchema.shape.email })
+const PASSWORD_SCHEMA = z.object({ password: loginSchema.shape.password })
+
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
+const validating = ref(false)
 
-const { signIn } = useAuth()
+const { login } = useAuth()
 const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors, setErrors } = useValidation(loginSchema)
 
-// Field-level validators
-const emailSchema = z.object({ email: loginSchema.shape.email })
-const passwordSchema = z.object({ password: loginSchema.shape.password })
+// Computed property for form validity
+const isFormValid = computed(() => !hasErrors.value && email.value.trim() && password.value.trim())
 
 const validateEmail = async () => {
-  const emailValidator = validateField('email', emailSchema.shape.email)
-  await emailValidator(email.value)
+  validating.value = true
+  try {
+    await validateField('email', EMAIL_SCHEMA.shape.email)(email.value)
+  } finally {
+    validating.value = false
+  }
 }
 
 const validatePassword = async () => {
-  const passwordValidator = validateField('password', passwordSchema.shape.password)
-  await passwordValidator(password.value)
+  validating.value = true
+  try {
+    await validateField('password', PASSWORD_SCHEMA.shape.password)(password.value)
+  } finally {
+    validating.value = false
+  }
 }
 
 const handleLogin = async () => {
@@ -231,14 +171,13 @@ const handleLogin = async () => {
   loading.value = true
 
   try {
-    await signIn(validated.email, validated.password)
-    const userStore = useUserStore()
-    await userStore.initializeUser()
+    await login(validated.email, validated.password)
     await navigateTo('/dashboard')
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Login failed'
     // Set auth error at form level
     setErrors([{ field: 'form', message }])
+  } finally {
     loading.value = false
   }
 }

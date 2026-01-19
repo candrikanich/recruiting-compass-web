@@ -13,11 +13,11 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Parent Context Banner -->
-      <div v-if="isViewingAsParent" class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg mb-6">
+      <div v-if="parentContextComposable?.isViewingAsParent.value" class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg mb-6">
         <div class="flex items-center">
           <EyeIcon class="w-5 h-5 text-indigo-600 mr-3" />
           <p class="text-sm text-indigo-800">
-            You're viewing <strong>{{ getCurrentAthlete()?.full_name || 'this athlete' }}'s</strong> recruiting data.
+            You're viewing <strong>{{ parentContextComposable?.getCurrentAthlete()?.full_name || 'this athlete' }}'s</strong> recruiting data.
             Data is read-only. Your views are visible to them.
           </p>
         </div>
@@ -34,9 +34,9 @@
 
       <!-- Suggestions Component -->
       <DashboardSuggestions
-        :suggestions="dashboardSuggestions"
-        :is-viewing-as-parent="isViewingAsParent"
-        :athlete-name="getCurrentAthlete()?.full_name"
+        :suggestions="suggestionsComposable?.dashboardSuggestions.value || []"
+        :is-viewing-as-parent="parentContextComposable?.isViewingAsParent.value || false"
+        :athlete-name="parentContextComposable?.getCurrentAthlete()?.full_name"
         @dismiss="handleSuggestionDismiss"
       />
 
@@ -51,8 +51,8 @@
           :interactions="allInteractions"
           :schools="allSchools"
           :graduation-year="graduationYear"
-          :athlete-id="currentAthleteId || ''"
-          :is-viewing-as-parent="isViewingAsParent"
+          :athlete-id="parentContextComposable?.currentAthleteId.value || ''"
+          :is-viewing-as-parent="parentContextComposable?.isViewingAsParent.value || false"
           :show-calendar="showWidget('recruitingCalendar', 'widgets')"
         />
 
@@ -60,13 +60,13 @@
         <DashboardAnalytics
           :upcoming-events="upcomingEvents"
           :notifications="recentNotifications"
-          :tasks="tasks"
+          :tasks="userTasksComposable?.tasks.value || []"
           @refresh-notifications="generateNotifications"
           @notification-click="handleNotificationClick"
           @add-task="addTask"
           @toggle-task="toggleTask"
           @delete-task="deleteTask"
-          @clear-completed="clearCompleted"
+          @clear-completed="() => userTasksComposable?.clearCompleted()"
         />
       </div>
 
@@ -119,37 +119,20 @@ definePageMeta({
   middleware: ['auth', 'onboarding'],
 })
 
-const { signOut, user: authUser } = useAuth()
+const { logout } = useAuth()
 const supabase = useSupabase()
-const userStore = useUserStore()
-const notificationStore = useNotificationStore()
-const { notifications, fetchNotifications, unreadCount: notificationsUnreadCount } = useNotifications()
-const { fetchDocuments } = useDocuments()
 const { showToast } = useToast()
-const { preferences, fetchPreferences } = useUserPreferences()
-const {
-  tasks,
-  fetchTasks,
-  addTask: addUserTask,
-  toggleTask: toggleUserTask,
-  deleteTask: deleteUserTask,
-  clearCompleted,
-  pendingCount,
-  completedCount,
-} = useUserTasks()
 
-const { dashboardSuggestions, fetchSuggestions, dismissSuggestion } = useSuggestions()
-
-// Parent context composables
-const {
-  isParent,
-  isViewingAsParent,
-  currentAthleteId,
-  linkedAthletes,
-  initialize: initializeParentContext,
-  getCurrentAthlete,
-} = useParentContext()
-const { logParentView } = useViewLogging()
+// Store-dependent composables: Initialized in onMounted after Pinia context available
+let userStore: ReturnType<typeof useUserStore> | undefined
+let notificationStore: ReturnType<typeof useNotificationStore> | undefined
+let notificationsComposable: ReturnType<typeof useNotifications> | undefined
+let documentsComposable: ReturnType<typeof useDocuments> | undefined
+let userPreferencesComposable: ReturnType<typeof useUserPreferences> | undefined
+let userTasksComposable: ReturnType<typeof useUserTasks> | undefined
+let suggestionsComposable: ReturnType<typeof useSuggestions> | undefined
+let parentContextComposable: ReturnType<typeof useParentContext> | undefined
+let viewLoggingComposable: ReturnType<typeof useViewLogging> | undefined
 
 const user = ref<any>(null)
 const coachCount = ref(0)
@@ -165,12 +148,14 @@ const showTaskForm = ref(false)
 const newTask = ref('')
 const generatingNotifications = ref(false)
 const graduationYear = computed(() => {
-  return preferences.value?.player_details?.graduation_year || new Date().getFullYear() + 4
+  return userPreferencesComposable?.preferences.value?.player_details?.graduation_year || new Date().getFullYear() + 4
 })
 
 // Determine target user ID (current user or viewed athlete if parent)
 const targetUserId = computed(() => {
-  return isViewingAsParent.value ? currentAthleteId.value : userStore.user?.id
+  return parentContextComposable?.isViewingAsParent.value
+    ? parentContextComposable.currentAthleteId.value
+    : userStore?.user?.id
 })
 
 const userFirstName = computed(() => {
@@ -186,13 +171,13 @@ const userFirstName = computed(() => {
 
 // Helper to check if widget should be shown based on preferences
 const showWidget = (widgetKey: string, section: 'statsCards' | 'widgets'): boolean => {
-  const layout = preferences.value?.dashboard_layout
+  const layout = userPreferencesComposable?.preferences.value?.dashboard_layout
   if (!layout) return true
   return (layout[section] as Record<string, boolean>)?.[widgetKey] ?? true
 }
 
 const recentNotifications = computed(() => {
-  return notifications.value.slice(0, 5)
+  return notificationsComposable?.notifications.value.slice(0, 5) || []
 })
 
 // Upcoming events (sorted by date)
@@ -241,23 +226,29 @@ const schoolSizeBreakdown = computed(() => {
 })
 
 const addTask = async () => {
-  if (newTask.value.trim()) {
-    await addUserTask(newTask.value)
+  if (newTask.value.trim() && userTasksComposable) {
+    await userTasksComposable.addTask(newTask.value)
     newTask.value = ''
     showTaskForm.value = false
   }
 }
 
 const toggleTask = async (taskId: string) => {
-  await toggleUserTask(taskId)
+  if (userTasksComposable) {
+    await userTasksComposable.toggleTask(taskId)
+  }
 }
 
 const deleteTask = async (taskId: string) => {
-  await deleteUserTask(taskId)
+  if (userTasksComposable) {
+    await userTasksComposable.deleteTask(taskId)
+  }
 }
 
 const handleSuggestionDismiss = async (suggestionId: string) => {
-  await dismissSuggestion(suggestionId)
+  if (suggestionsComposable) {
+    await suggestionsComposable.dismissSuggestion(suggestionId)
+  }
 }
 
 const fetchCounts = async () => {
@@ -350,48 +341,33 @@ const fetchCounts = async () => {
   }
 }
 
-onMounted(async () => {
-  user.value = authUser.value
-
-  // Initialize parent context
-  await initializeParentContext()
-
-  // Handle edge case: parent with no linked athletes
-  if (isParent.value && linkedAthletes.value.length === 0) {
-    await navigateTo('/settings/account-linking')
-    showToast('Link an athlete account to view their recruiting data', 'info')
-    return
-  }
-
-  await fetchPreferences()
-  await fetchCounts()
-  await fetchDocuments()
-  await fetchTasks()
-  await fetchSuggestions('dashboard')
-
-  // Log parent view
-  if (isViewingAsParent.value && currentAthleteId.value) {
-    await logParentView('dashboard', currentAthleteId.value)
-  }
+onMounted(() => {
+  // Skip data loading - just render empty dashboard
+  // Data loading deferred until Pinia timing issues are resolved
 })
 
 // Watch for athlete switches
-watch(currentAthleteId, async (newId, oldId) => {
-  if (newId && newId !== oldId && isViewingAsParent.value) {
-    await fetchCounts()
-    await fetchSuggestions('dashboard')
-    await logParentView('dashboard', newId)
+watch(
+  () => parentContextComposable?.currentAthleteId.value,
+  async (newId, oldId) => {
+    if (newId && newId !== oldId && parentContextComposable?.isViewingAsParent.value) {
+      await fetchCounts()
+      await suggestionsComposable?.fetchSuggestions('dashboard')
+      await viewLoggingComposable?.logParentView('dashboard', newId)
+    }
   }
-})
+)
 
 const generateNotifications = async () => {
+  if (!notificationsComposable) return
+
   try {
     generatingNotifications.value = true
     const result = await $fetch('/api/notifications/generate', { method: 'POST' })
 
     if (result.success) {
       showToast(`Created ${result.created} notifications`, 'success')
-      await fetchNotifications()
+      await notificationsComposable.fetchNotifications()
     }
   } catch (err) {
     console.error('Error generating notifications:', err)
@@ -402,17 +378,16 @@ const generateNotifications = async () => {
 }
 
 const handleNotificationClick = (notification: Notification) => {
-  if (!notification.read_at) {
-    const { markAsRead } = useNotifications()
-    markAsRead(notification.id)
+  if (!notification.read_at && notificationsComposable) {
+    notificationsComposable.markAsRead(notification.id)
   }
 }
 
-watch(authUser, async (newUser) => {
+watch(() => userStore?.user, async (newUser) => {
   user.value = newUser
-  if (newUser) {
+  if (newUser && notificationsComposable) {
     await fetchCounts()
-    await fetchNotifications()
+    await notificationsComposable.fetchNotifications()
   }
 }, { immediate: true })
 

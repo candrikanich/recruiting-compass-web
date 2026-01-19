@@ -19,27 +19,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { UserCircleIcon } from '@heroicons/vue/24/outline'
 import { useParentContext } from '~/composables/useParentContext'
 
-const { isParent, linkedAthletes, currentAthleteId, switchAthlete } = useParentContext()
-
-// Only show switcher if parent with multiple athletes
-const showSwitcher = computed(() => isParent.value && linkedAthletes.value.length > 1)
-
-const selectedId = ref(currentAthleteId.value || '')
+// Defer composable initialization to onMounted (safe Pinia access)
+let parentContext: ReturnType<typeof useParentContext> | undefined
+const showSwitcher = computed(() => parentContext?.isParent.value && parentContext?.linkedAthletes.value.length > 1)
+const selectedId = ref('')
 
 // Update selectedId when currentAthleteId changes (from initialization or route param)
-watch(currentAthleteId, (newId) => {
+watch(() => parentContext?.currentAthleteId.value, (newId) => {
   if (newId) {
     selectedId.value = newId
   }
 })
 
 const handleSwitch = async () => {
-  if (selectedId.value && selectedId.value !== currentAthleteId.value) {
-    await switchAthlete(selectedId.value)
+  if (!parentContext) return
+  if (selectedId.value && selectedId.value !== parentContext.currentAthleteId.value) {
+    await parentContext.switchAthlete(selectedId.value)
   }
 }
+
+onMounted(() => {
+  parentContext = useParentContext()
+})
 </script>

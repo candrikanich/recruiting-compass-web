@@ -81,26 +81,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '~/stores/user'
 import { useAuth } from '~/composables/useAuth'
 
-const userStore = useUserStore()
+// Defer store initialization to onMounted
+let userStore: ReturnType<typeof useUserStore> | undefined
 const { logout } = useAuth()
 const isOpen = ref(false)
 
 const userName = computed(() => {
-  const user = userStore.user
+  const user = userStore?.user
   if (!user) return 'User'
   return user.full_name || user.email || 'User'
 })
 
 const userEmail = computed(() => {
-  return userStore.user?.email || ''
+  return userStore?.user?.email || ''
 })
 
 const userInitials = computed(() => {
-  const user = userStore.user
+  const user = userStore?.user
   if (!user) return 'U'
   const name = user.full_name || user.email || 'U'
   const parts = name.split(' ')
@@ -115,4 +116,14 @@ const handleLogout = async () => {
   await logout()
   await navigateTo('/login')
 }
+
+onMounted(() => {
+  try {
+    userStore = useUserStore()
+  } catch (err) {
+    // Pinia may not be ready during certain navigation phases
+    // Store will be initialized on next user interaction
+    console.debug('HeaderProfile: Pinia not ready on mount', err)
+  }
+})
 </script>

@@ -13,7 +13,13 @@ import { useUserStore } from '~/stores/user'
  */
 export const useViewLogging = () => {
   const supabase = useSupabase()
-  const userStore = useUserStore()
+  let userStore: ReturnType<typeof useUserStore> | undefined
+  const getUserStore = () => {
+    if (!userStore) {
+      userStore = useUserStore()
+    }
+    return userStore
+  }
 
   /**
    * Log parent view of athlete data

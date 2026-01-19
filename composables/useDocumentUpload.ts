@@ -62,7 +62,13 @@ const validateFile = (file: File, documentType: string): { valid: boolean; error
 
 export const useDocumentUpload = () => {
   const supabase = useSupabase()
-  const userStore = useUserStore()
+  let userStore: ReturnType<typeof useUserStore> | undefined
+  const getUserStore = () => {
+    if (!userStore) {
+      userStore = useUserStore()
+    }
+    return userStore
+  }
 
   const isUploading = ref(false)
   const uploadProgress = ref(0)
@@ -72,7 +78,8 @@ export const useDocumentUpload = () => {
     documentData: Omit<Document, 'id' | 'created_at' | 'updated_at'>,
     file?: File,
   ) => {
-    if (!userStore.user) throw new Error('User not authenticated')
+    const store = getUserStore()
+    if (!store.user) throw new Error('User not authenticated')
     isUploading.value = true
     uploadProgress.value = 0
     error.value = null
@@ -88,7 +95,7 @@ export const useDocumentUpload = () => {
 
         uploadProgress.value = 10
 
-        const fileName = `${userStore.user.id}/${Date.now()}-${file.name}`
+        const fileName = `${store.user.id}/${Date.now()}-${file.name}`
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('documents')
           .upload(fileName, file)
@@ -110,8 +117,8 @@ export const useDocumentUpload = () => {
         .insert([{
           ...documentData,
           file_url: fileUrl,
-          user_id: userStore.user.id,
-          uploaded_by: userStore.user.id,
+          user_id: store.user.id,
+          uploaded_by: store.user.id,
           file_type: file?.type,
         }] as DocumentInsert[])
         .select()
@@ -137,7 +144,8 @@ export const useDocumentUpload = () => {
     currentDoc: Document,
     metadata?: Partial<Document>,
   ) => {
-    if (!userStore.user) throw new Error('User not authenticated')
+    const store = getUserStore()
+    if (!store.user) throw new Error('User not authenticated')
 
     isUploading.value = true
     error.value = null

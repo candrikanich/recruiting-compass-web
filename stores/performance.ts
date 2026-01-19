@@ -1,20 +1,19 @@
-import { defineStore } from 'pinia'
-import type { PerformanceMetric } from '~/types/models'
-import { useUserStore } from './user'
+import { defineStore } from "pinia";
+import type { PerformanceMetric } from "~/types/models";
 
 export interface PerformanceFilters {
-  metricType?: string
-  eventId?: string
-  startDate?: string
-  endDate?: string
+  metricType?: string;
+  eventId?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface PerformanceState {
-  metrics: PerformanceMetric[]
-  loading: boolean
-  error: string | null
-  isFetched: boolean
-  filters: PerformanceFilters
+  metrics: PerformanceMetric[];
+  loading: boolean;
+  error: string | null;
+  isFetched: boolean;
+  filters: PerformanceFilters;
 }
 
 /**
@@ -31,7 +30,7 @@ export interface PerformanceState {
  * await perfStore.fetchMetrics()
  * const latest = perfStore.latestMetrics
  */
-export const usePerformanceStore = defineStore('performance', {
+export const usePerformanceStore = defineStore("performance", {
   state: (): PerformanceState => ({
     metrics: [],
     loading: false,
@@ -50,62 +49,69 @@ export const usePerformanceStore = defineStore('performance', {
      * Get metrics by type (grouped)
      */
     metricsByType: (state) => {
-      const grouped: Record<string, PerformanceMetric[]> = {}
+      const grouped: Record<string, PerformanceMetric[]> = {};
       state.metrics.forEach((m) => {
         if (!grouped[m.metric_type]) {
-          grouped[m.metric_type] = []
+          grouped[m.metric_type] = [];
         }
-        grouped[m.metric_type].push(m)
-      })
-      return grouped
+        grouped[m.metric_type].push(m);
+      });
+      return grouped;
     },
 
     /**
      * Get latest value for each metric type
      */
     latestMetrics: (state) => {
-      const latest: Record<string, PerformanceMetric> = {}
+      const latest: Record<string, PerformanceMetric> = {};
       const sorted = [...state.metrics].sort(
-        (a, b) => new Date(b.recorded_date).getTime() - new Date(a.recorded_date).getTime(),
-      )
+        (a, b) =>
+          new Date(b.recorded_date).getTime() -
+          new Date(a.recorded_date).getTime(),
+      );
       sorted.forEach((m) => {
         if (!latest[m.metric_type]) {
-          latest[m.metric_type] = m
+          latest[m.metric_type] = m;
         }
-      })
-      return latest
+      });
+      return latest;
     },
 
     /**
      * Get metrics for a specific event
      */
     metricsByEvent: (state) => (eventId: string) =>
-      state.metrics.filter(m => m.event_id === eventId),
+      state.metrics.filter((m) => m.event_id === eventId),
 
     /**
      * Get metrics of a specific type
      */
-    metricsByTypeFilter: (state) => (type: PerformanceMetric['metric_type']) =>
-      state.metrics.filter(m => m.metric_type === type),
+    metricsByTypeFilter: (state) => (type: PerformanceMetric["metric_type"]) =>
+      state.metrics.filter((m) => m.metric_type === type),
 
     /**
      * Get filtered metrics based on current filter state
      */
     filteredMetrics: (state) =>
-      state.metrics.filter(m => {
-        if (state.filters.metricType && m.metric_type !== state.filters.metricType) return false
-        if (state.filters.eventId && m.event_id !== state.filters.eventId) return false
+      state.metrics.filter((m) => {
+        if (
+          state.filters.metricType &&
+          m.metric_type !== state.filters.metricType
+        )
+          return false;
+        if (state.filters.eventId && m.event_id !== state.filters.eventId)
+          return false;
         if (state.filters.startDate) {
-          const filterDate = new Date(state.filters.startDate)
-          const metricDate = new Date(m.recorded_date)
-          if (metricDate < filterDate) return false
+          const filterDate = new Date(state.filters.startDate);
+          const metricDate = new Date(m.recorded_date);
+          if (metricDate < filterDate) return false;
         }
         if (state.filters.endDate) {
-          const filterDate = new Date(state.filters.endDate)
-          const metricDate = new Date(m.recorded_date)
-          if (metricDate > filterDate) return false
+          const filterDate = new Date(state.filters.endDate);
+          const metricDate = new Date(m.recorded_date);
+          if (metricDate > filterDate) return false;
         }
-        return true
+        return true;
       }),
   },
 
@@ -115,75 +121,88 @@ export const usePerformanceStore = defineStore('performance', {
      */
     async fetchMetrics(filters?: PerformanceFilters) {
       // Guard: don't refetch if already loaded
-      if (this.isFetched && this.metrics.length > 0 && !filters) return
+      if (this.isFetched && this.metrics.length > 0 && !filters) return;
 
-      const { useSupabase } = await import('~/composables/useSupabase')
-      const userStore = useUserStore()
-      const supabase = useSupabase()
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const { useUserStore } = await import("./user");
+      const userStore = useUserStore();
+      const supabase = useSupabase();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
         if (!userStore.user) {
-          throw new Error('User not authenticated')
+          throw new Error("User not authenticated");
         }
 
         let query = supabase
-          .from('performance_metrics')
-          .select('*')
-          .eq('user_id', userStore.user.id)
+          .from("performance_metrics")
+          .select("*")
+          .eq("user_id", userStore.user.id);
 
         if (filters?.metricType) {
-          query = query.eq('metric_type', filters.metricType)
+          query = query.eq("metric_type", filters.metricType);
         }
 
         if (filters?.eventId) {
-          query = query.eq('event_id', filters.eventId)
+          query = query.eq("event_id", filters.eventId);
         }
 
         // Move date filtering to SQL
         if (filters?.startDate) {
-          query = query.gte('recorded_date', new Date(filters.startDate).toISOString())
+          query = query.gte(
+            "recorded_date",
+            new Date(filters.startDate).toISOString(),
+          );
         }
 
         if (filters?.endDate) {
-          query = query.lte('recorded_date', new Date(filters.endDate).toISOString())
+          query = query.lte(
+            "recorded_date",
+            new Date(filters.endDate).toISOString(),
+          );
         }
 
-        const { data, error: fetchError } = await query.order('recorded_date', { ascending: false })
+        const { data, error: fetchError } = await query.order("recorded_date", {
+          ascending: false,
+        });
 
-        if (fetchError) throw fetchError
+        if (fetchError) throw fetchError;
 
-        this.metrics = data || []
-        this.isFetched = true
+        this.metrics = data || [];
+        this.isFetched = true;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to fetch metrics'
-        this.error = message
-        console.error(message)
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch metrics";
+        this.error = message;
+        console.error(message);
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     /**
      * Create a new performance metric
      */
-    async createMetric(metricData: Omit<PerformanceMetric, 'id' | 'created_at' | 'updated_at'>) {
-      const { useSupabase } = await import('~/composables/useSupabase')
-      const userStore = useUserStore()
-      const supabase = useSupabase()
+    async createMetric(
+      metricData: Omit<PerformanceMetric, "id" | "created_at" | "updated_at">,
+    ) {
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const { useUserStore } = await import("./user");
+      const userStore = useUserStore();
+      const supabase = useSupabase();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
         if (!userStore.user) {
-          throw new Error('User not authenticated')
+          throw new Error("User not authenticated");
         }
 
         const { data, error: insertError } = await supabase
-          .from('performance_metrics')
+          .from("performance_metrics")
           .insert([
             {
               ...metricData,
@@ -191,18 +210,19 @@ export const usePerformanceStore = defineStore('performance', {
             },
           ])
           .select()
-          .single()
+          .single();
 
-        if (insertError) throw insertError
+        if (insertError) throw insertError;
 
-        this.metrics.unshift(data)
-        return data
+        this.metrics.unshift(data);
+        return data;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to create metric'
-        this.error = message
-        throw err
+        const message =
+          err instanceof Error ? err.message : "Failed to create metric";
+        this.error = message;
+        throw err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -210,35 +230,36 @@ export const usePerformanceStore = defineStore('performance', {
      * Update an existing performance metric
      */
     async updateMetric(id: string, updates: Partial<PerformanceMetric>) {
-      const { useSupabase } = await import('~/composables/useSupabase')
-      const supabase = useSupabase()
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const supabase = useSupabase();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
         const { data, error: updateError } = await supabase
-          .from('performance_metrics')
+          .from("performance_metrics")
           .update(updates)
-          .eq('id', id)
+          .eq("id", id)
           .select()
-          .single()
+          .single();
 
-        if (updateError) throw updateError
+        if (updateError) throw updateError;
 
         // Update local state
-        const index = this.metrics.findIndex(m => m.id === id)
+        const index = this.metrics.findIndex((m) => m.id === id);
         if (index !== -1) {
-          this.metrics[index] = data
+          this.metrics[index] = data;
         }
 
-        return data
+        return data;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to update metric'
-        this.error = message
-        throw err
+        const message =
+          err instanceof Error ? err.message : "Failed to update metric";
+        this.error = message;
+        throw err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -246,28 +267,29 @@ export const usePerformanceStore = defineStore('performance', {
      * Delete a performance metric
      */
     async deleteMetric(id: string) {
-      const { useSupabase } = await import('~/composables/useSupabase')
-      const supabase = useSupabase()
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const supabase = useSupabase();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
         const { error: deleteError } = await supabase
-          .from('performance_metrics')
+          .from("performance_metrics")
           .delete()
-          .eq('id', id)
+          .eq("id", id);
 
-        if (deleteError) throw deleteError
+        if (deleteError) throw deleteError;
 
         // Update local state
-        this.metrics = this.metrics.filter(m => m.id !== id)
+        this.metrics = this.metrics.filter((m) => m.id !== id);
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to delete metric'
-        this.error = message
-        throw err
+        const message =
+          err instanceof Error ? err.message : "Failed to delete metric";
+        this.error = message;
+        throw err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -275,7 +297,7 @@ export const usePerformanceStore = defineStore('performance', {
      * Set filter state
      */
     setFilters(newFilters: Partial<PerformanceFilters>) {
-      this.filters = { ...this.filters, ...newFilters }
+      this.filters = { ...this.filters, ...newFilters };
     },
 
     /**
@@ -287,14 +309,14 @@ export const usePerformanceStore = defineStore('performance', {
         eventId: undefined,
         startDate: undefined,
         endDate: undefined,
-      }
+      };
     },
 
     /**
      * Clear error state
      */
     clearError() {
-      this.error = null
+      this.error = null;
     },
   },
-})
+});

@@ -118,7 +118,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useNotificationStore } from '~/stores/notifications'
 
 interface Notification {
   id: string
@@ -141,7 +140,6 @@ const emit = defineEmits<{
   'mark-as-read': [id: string]
 }>()
 
-const notificationStore = useNotificationStore()
 const isOpen = ref(false)
 
 const unreadCount = computed(() => {

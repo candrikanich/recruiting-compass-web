@@ -12,21 +12,30 @@ export interface UserTask {
 
 export const useUserTasks = () => {
   const supabase = useSupabase()
-  const userStore = useUserStore()
+  // Lazy-load store to avoid Pinia timing issues
+  let userStore: ReturnType<typeof useUserStore> | undefined
+
+  const getUserStore = () => {
+    if (!userStore) {
+      userStore = useUserStore()
+    }
+    return userStore
+  }
 
   const tasks = ref<UserTask[]>([])
   const loading = ref(false)
 
   // Fetch tasks from Supabase user_preferences
   const fetchTasks = async () => {
-    if (!userStore.user) return
+    const store = getUserStore()
+    if (!store.user) return
 
     loading.value = true
     try {
       const { data, error } = await supabase
         .from('user_preferences')
         .select('user_tasks')
-        .eq('user_id', userStore.user.id)
+        .eq('user_id', store.user.id)
         .single()
 
       if (error && error.code !== 'PGRST116') {
@@ -65,7 +74,8 @@ export const useUserTasks = () => {
 
   // Save tasks to Supabase
   const saveTasks = async () => {
-    if (!userStore.user) return
+    const store = getUserStore()
+    if (!store.user) return
 
     try {
       const { error } = await supabase
@@ -73,7 +83,7 @@ export const useUserTasks = () => {
         .update({
           user_tasks: { tasks: tasks.value }
         })
-        .eq('user_id', userStore.user.id)
+        .eq('user_id', store.user.id)
 
       if (error) {
         console.error('Failed to save tasks:', error)

@@ -21,7 +21,13 @@ interface AccountLinksUpdate {
 
 export const useAccountLinks = () => {
   const supabase = useSupabase()
-  const userStore = useUserStore()
+  let userStore: ReturnType<typeof useUserStore> | undefined
+  const getUserStore = () => {
+    if (!userStore) {
+      userStore = useUserStore()
+    }
+    return userStore
+  }
   const { showToast } = useToast()
 
   const links = ref<AccountLink[]>([])
@@ -32,7 +38,7 @@ export const useAccountLinks = () => {
 
   // Fetch all account links for current user
   const fetchAccountLinks = async () => {
-    if (!userStore.user) return
+    if (!getUserStore().user) return
 
     loading.value = true
     error.value = null
@@ -42,7 +48,7 @@ export const useAccountLinks = () => {
         .from('account_links')
         .select('*')
         .or(
-          `parent_user_id.eq.${userStore.user.id},player_user_id.eq.${userStore.user.id}`
+          `parent_user_id.eq.${getUserStore().user.id},player_user_id.eq.${getUserStore().user.id}`
         )
 
       if (fetchError) {
@@ -76,7 +82,7 @@ export const useAccountLinks = () => {
     }
 
     const linkedUserIds = acceptedLinks.map((link) => {
-      return link.parent_user_id === userStore.user?.id
+      return link.parent_user_id === getUserStore().user?.id
         ? link.player_user_id
         : link.parent_user_id
     })
@@ -107,7 +113,7 @@ export const useAccountLinks = () => {
 
   // Send invitation
   const sendInvitation = async (inviteeEmail: string): Promise<boolean> => {
-    if (!userStore.user) return false
+    if (!getUserStore().user) return false
 
     loading.value = true
     error.value = null
@@ -120,7 +126,7 @@ export const useAccountLinks = () => {
       }
 
       // Check if invitee email is same as current user
-      if (inviteeEmail.toLowerCase() === userStore.user.email.toLowerCase()) {
+      if (inviteeEmail.toLowerCase() === getUserStore().user.email.toLowerCase()) {
         error.value = 'You cannot invite yourself'
         return false
       }
@@ -140,7 +146,7 @@ export const useAccountLinks = () => {
           return false
         }
 
-        const currentUserRole = userStore.user?.role || 'parent'
+        const currentUserRole = getUserStore().user?.role || 'parent'
         const expectedInviteeRole = currentUserRole === 'parent' ? 'student' : 'parent'
 
         if (user.role !== expectedInviteeRole) {
@@ -153,7 +159,7 @@ export const useAccountLinks = () => {
           .from('account_links')
           .select('id')
           .or(
-            `and(parent_user_id.eq.${userStore.user?.id},player_user_id.eq.${user.id}),and(parent_user_id.eq.${user.id},player_user_id.eq.${userStore.user?.id})`
+            `and(parent_user_id.eq.${getUserStore().user?.id},player_user_id.eq.${user.id}),and(parent_user_id.eq.${user.id},player_user_id.eq.${getUserStore().user?.id})`
           )
           .single()
 
@@ -168,12 +174,12 @@ export const useAccountLinks = () => {
         .from('account_links')
         .insert([{
           parent_user_id:
-            userStore.user?.role === 'parent' ? userStore.user?.id : (existingUser as any)?.id || null,
+            getUserStore().user?.role === 'parent' ? getUserStore().user?.id : (existingUser as any)?.id || null,
           player_user_id:
-            userStore.user?.role === 'student' ? userStore.user?.id : (existingUser as any)?.id || null,
+            getUserStore().user?.role === 'student' ? getUserStore().user?.id : (existingUser as any)?.id || null,
           invited_email: inviteeEmail,
-          initiator_user_id: userStore.user?.id || '',
-          initiator_role: userStore.user?.role || 'parent',
+          initiator_user_id: getUserStore().user?.id || '',
+          initiator_role: getUserStore().user?.role || 'parent',
           status: 'pending',
         }])
         .select()
@@ -201,7 +207,7 @@ export const useAccountLinks = () => {
 
   // Accept invitation
   const acceptInvitation = async (linkId: string): Promise<boolean> => {
-    if (!userStore.user) return false
+    if (!getUserStore().user) return false
 
     loading.value = true
     error.value = null
@@ -243,9 +249,9 @@ export const useAccountLinks = () => {
       // Call snapshot function to record data ownership
       try {
         const parentId =
-          linkData.parent_user_id || (userStore.user?.role === 'parent' ? userStore.user?.id : null)
+          linkData.parent_user_id || (getUserStore().user?.role === 'parent' ? getUserStore().user?.id : null)
         const playerId =
-          linkData.player_user_id || (userStore.user?.role === 'student' ? userStore.user?.id : null)
+          linkData.player_user_id || (getUserStore().user?.role === 'student' ? getUserStore().user?.id : null)
 
         if (parentId && playerId) {
           await supabase.rpc('snapshot_data_ownership', {
@@ -301,7 +307,7 @@ export const useAccountLinks = () => {
 
   // Unlink account
   const unlinkAccount = async (linkId: string): Promise<boolean> => {
-    if (!userStore.user) return false
+    if (!getUserStore().user) return false
 
     loading.value = true
     error.value = null

@@ -108,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '~/stores/user'
 import { useSupabase } from '~/composables/useSupabase'
@@ -134,10 +134,12 @@ import {
 } from '@heroicons/vue/24/outline'
 
 const route = useRoute()
-const userStore = useUserStore()
 const supabase = useSupabase()
 
-const user = computed(() => userStore.user)
+// Defer Pinia store initialization to onMounted
+let userStore: ReturnType<typeof useUserStore> | undefined
+
+const user = computed(() => userStore?.user || null)
 const isMobileMenuOpen = ref(false)
 
 const navItems = [
@@ -184,9 +186,19 @@ const closeMobileMenu = () => {
 }
 
 const handleLogout = async () => {
+  if (!userStore) return
   closeMobileMenu()
   await supabase.auth.signOut()
   userStore.logout()
   await navigateTo('/login')
 }
+
+onMounted(() => {
+  try {
+    userStore = useUserStore()
+  } catch (err) {
+    // Pinia may not be ready during certain navigation phases
+    console.debug('Header: Pinia not ready on mount', err)
+  }
+})
 </script>

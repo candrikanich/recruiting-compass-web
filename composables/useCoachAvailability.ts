@@ -137,7 +137,7 @@ export const useCoachAvailability = () => {
    */
   const getNextAvailableSlot = (coachId: string, startDate: Date = new Date()): Date | null => {
     const availability = getCoachAvailability(coachId)
-    let currentDate = new Date(startDate)
+    const currentDate = new Date(startDate)
 
     // Check up to 60 days ahead
     for (let i = 0; i < 60; i++) {

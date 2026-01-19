@@ -15,14 +15,23 @@ import type { LinkedAccount } from '~/types/models'
 export const useParentContext = () => {
   const route = useRoute()
   const router = useRouter()
-  const userStore = useUserStore()
+  // Lazily initialize store on first access
+  let userStore: ReturnType<typeof useUserStore> | undefined
 
-  const isParent = computed(() => userStore.user?.role === 'parent')
+  const getUserStore = () => {
+    if (!userStore) {
+      userStore = useUserStore()
+    }
+    return userStore
+  }
+
+  const isParent = computed(() => getUserStore().user?.role === 'parent')
   const linkedAthletes = ref<LinkedAccount[]>([])
   const currentAthleteId = ref<string | null>(null)
   const isViewingAsParent = computed(() => {
     // True if user is a parent AND viewing a different athlete's data
-    return isParent.value && currentAthleteId.value !== null && currentAthleteId.value !== userStore.user?.id
+    const store = getUserStore()
+    return isParent.value && currentAthleteId.value !== null && currentAthleteId.value !== store.user?.id
   })
 
   /**
@@ -31,6 +40,7 @@ export const useParentContext = () => {
    * Priority: query param > localStorage > first athlete
    */
   const initialize = async () => {
+    const store = getUserStore()
     if (!isParent.value) {
       currentAthleteId.value = null
       linkedAthletes.value = []
@@ -38,7 +48,7 @@ export const useParentContext = () => {
     }
 
     // Get linked athletes for this parent
-    const linkedAccounts = userStore.user?.linked_accounts || []
+    const linkedAccounts = store.user?.linked_accounts || []
     linkedAthletes.value = linkedAccounts.filter(
       (account) => account.relationship === 'student'
     )

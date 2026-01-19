@@ -17,7 +17,13 @@ import type { Document } from '~/types/models'
  */
 export const useDocumentFetch = () => {
   const supabase = useSupabase()
-  const userStore = useUserStore()
+  let userStore: ReturnType<typeof useUserStore> | undefined
+  const getUserStore = () => {
+    if (!userStore) {
+      userStore = useUserStore()
+    }
+    return userStore
+  }
 
   // State
   const documents = ref<Document[]>([])
@@ -28,13 +34,14 @@ export const useDocumentFetch = () => {
    * Fetch documents with optional filters
    */
   const fetchDocuments = async (filters?: { type?: string; schoolId?: string }) => {
-    if (!userStore.user) return
+    const store = getUserStore()
+    if (!store.user) return
 
     loading.value = true
     error.value = null
 
     try {
-      let query = supabase.from('documents').select('*').eq('user_id', userStore.user.id).eq('is_current', true)
+      let query = supabase.from('documents').select('*').eq('user_id', store.user.id).eq('is_current', true)
 
       if (filters?.type) {
         query = query.eq('type', filters.type)
@@ -62,7 +69,8 @@ export const useDocumentFetch = () => {
    * Fetch all versions of a document by title
    */
   const fetchDocumentVersions = async (documentTitle: string) => {
-    if (!userStore.user) return []
+    const store = getUserStore()
+    if (!store.user) return []
 
     try {
       // Find all documents with same title and user (naive grouping)

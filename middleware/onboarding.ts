@@ -13,10 +13,10 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   }
 
   try {
-    const { user, session } = useAuth()
+    const { session } = useAuth()
 
     // If not authenticated, skip (auth middleware will handle redirect)
-    if (!session?.value || !user?.value) {
+    if (!session?.value?.user) {
       return
     }
 
@@ -26,7 +26,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     const { data, error } = await supabase
       .from('users')
       .select('phase_milestone_data')
-      .eq('id', user.value.id)
+      .eq('id', session.value.user.id)
       .single()
 
     if (error) {

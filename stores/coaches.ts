@@ -1,20 +1,19 @@
-import { defineStore } from 'pinia'
-import type { Coach } from '~/types/models'
-import { useUserStore } from './user'
+import { defineStore } from "pinia";
+import type { Coach } from "~/types/models";
 
 export interface CoachFilters {
-  schoolId?: string
-  role?: string
-  search?: string
+  schoolId?: string;
+  role?: string;
+  search?: string;
 }
 
 export interface CoachState {
-  coaches: Coach[]
-  loading: boolean
-  error: string | null
-  isFetched: boolean
-  isFetchedBySchools: Record<string, boolean> // Track which schools' coaches have been fetched
-  filters: CoachFilters
+  coaches: Coach[];
+  loading: boolean;
+  error: string | null;
+  isFetched: boolean;
+  isFetchedBySchools: Record<string, boolean>; // Track which schools' coaches have been fetched
+  filters: CoachFilters;
 }
 
 /**
@@ -28,11 +27,11 @@ export interface CoachState {
  *
  * @example
  * const coachStore = useCoachStore()
-  * await coachStore.fetchCoaches(schoolId)
-  * const responsive = coachStore.coachesByResponsiveness
-  * const coaches = responsive.map((c: any) => ({ id: c.id, school_id: c.school_id, first_name: c.first_name, last_name: c.last_name, email: c.email, responsiveness_score: c.responsiveness_score, last_contact_date: c.last_contact_date, role: c.role }))
+ * await coachStore.fetchCoaches(schoolId)
+ * const responsive = coachStore.coachesByResponsiveness
+ * const coaches = responsive.map((c: any) => ({ id: c.id, school_id: c.school_id, first_name: c.first_name, last_name: c.last_name, email: c.email, responsiveness_score: c.responsiveness_score, last_contact_date: c.last_contact_date, role: c.role }))
  */
-export const useCoachStore = defineStore('coaches', {
+export const useCoachStore = defineStore("coaches", {
   state: (): CoachState => ({
     coaches: [],
     loading: false,
@@ -51,24 +50,25 @@ export const useCoachStore = defineStore('coaches', {
      * Get coaches for a specific school
      */
     coachesBySchool: (state) => (schoolId: string) =>
-      state.coaches.filter(c => c.school_id === schoolId),
+      state.coaches.filter((c) => c.school_id === schoolId),
 
     /**
      * Get coaches filtered by current filter state
      */
     filteredCoaches: (state) =>
-      state.coaches.filter(c => {
-        if (state.filters.schoolId && c.school_id !== state.filters.schoolId) return false
-        if (state.filters.role && c.role !== state.filters.role) return false
+      state.coaches.filter((c) => {
+        if (state.filters.schoolId && c.school_id !== state.filters.schoolId)
+          return false;
+        if (state.filters.role && c.role !== state.filters.role) return false;
         if (state.filters.search) {
-          const searchLower = state.filters.search.toLowerCase()
+          const searchLower = state.filters.search.toLowerCase();
           return (
             c.first_name.toLowerCase().includes(searchLower) ||
             c.last_name.toLowerCase().includes(searchLower) ||
             c.email?.toLowerCase().includes(searchLower)
-          )
+          );
         }
-        return true
+        return true;
       }),
 
     /**
@@ -76,9 +76,9 @@ export const useCoachStore = defineStore('coaches', {
      */
     coachesByResponsiveness: (state) =>
       [...state.coaches].sort((a, b) => {
-        const scoreA = a.responsiveness_score || 0
-        const scoreB = b.responsiveness_score || 0
-        return scoreB - scoreA
+        const scoreA = a.responsiveness_score || 0;
+        const scoreB = b.responsiveness_score || 0;
+        return scoreB - scoreA;
       }),
 
     /**
@@ -86,17 +86,20 @@ export const useCoachStore = defineStore('coaches', {
      */
     coachesByLastContact: (state) =>
       [...state.coaches].sort((a, b) => {
-        if (!a.last_contact_date && !b.last_contact_date) return 0
-        if (!a.last_contact_date) return 1
-        if (!b.last_contact_date) return -1
-        return new Date(b.last_contact_date).getTime() - new Date(a.last_contact_date).getTime()
+        if (!a.last_contact_date && !b.last_contact_date) return 0;
+        if (!a.last_contact_date) return 1;
+        if (!b.last_contact_date) return -1;
+        return (
+          new Date(b.last_contact_date).getTime() -
+          new Date(a.last_contact_date).getTime()
+        );
       }),
 
     /**
      * Get coaches by role
      */
-    coachesByRole: (state) => (role: Coach['role']) =>
-      state.coaches.filter(c => c.role === role),
+    coachesByRole: (state) => (role: Coach["role"]) =>
+      state.coaches.filter((c) => c.role === role),
 
     /**
      * Check if coaches for a school have been fetched
@@ -111,37 +114,45 @@ export const useCoachStore = defineStore('coaches', {
      */
     async fetchCoaches(schoolId: string) {
       // Guard: don't refetch if already loaded for this school
-      if (this.isFetchedBySchools[schoolId] && this.coachesBySchool(schoolId).length > 0) {
-        return
+      if (
+        this.isFetchedBySchools[schoolId] &&
+        this.coachesBySchool(schoolId).length > 0
+      ) {
+        return;
       }
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
-        const { useSupabase } = await import('~/composables/useSupabase')
-        const supabase = useSupabase()
+        const { useSupabase } = await import("~/composables/useSupabase");
+        const supabase = useSupabase();
 
         const { data, error: fetchError } = await supabase
-          .from('coaches')
-          .select('*')
-          .eq('school_id', schoolId)
-          .order('created_at', { ascending: false })
+          .from("coaches")
+          .select("*")
+          .eq("school_id", schoolId)
+          .order("created_at", { ascending: false });
 
-        if (fetchError) throw fetchError
+        if (fetchError) throw fetchError;
 
         // Add new coaches or update existing ones
-        const existingIds = new Set(this.coaches.filter(c => c.school_id === schoolId).map(c => c.id))
-        const newCoaches = (data || []).filter((c: Coach) => !existingIds.has(c.id))
+        const existingIds = new Set(
+          this.coaches.filter((c) => c.school_id === schoolId).map((c) => c.id),
+        );
+        const newCoaches = (data || []).filter(
+          (c: Coach) => !existingIds.has(c.id),
+        );
 
-        this.coaches.push(...newCoaches)
-        this.isFetchedBySchools[schoolId] = true
+        this.coaches.push(...newCoaches);
+        this.isFetchedBySchools[schoolId] = true;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to fetch coaches'
-        this.error = message
-        console.error(message)
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch coaches";
+        this.error = message;
+        console.error(message);
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -150,50 +161,53 @@ export const useCoachStore = defineStore('coaches', {
      */
     async fetchAllCoaches(filters?: CoachFilters) {
       // Guard: don't refetch if already loaded
-      if (this.isFetched && this.coaches.length > 0 && !filters) return
+      if (this.isFetched && this.coaches.length > 0 && !filters) return;
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
-        const { useSupabase } = await import('~/composables/useSupabase')
-        const supabase = useSupabase()
+        const { useSupabase } = await import("~/composables/useSupabase");
+        const supabase = useSupabase();
 
-        let query = supabase.from('coaches').select('*')
+        let query = supabase.from("coaches").select("*");
 
         if (filters?.schoolId) {
-          query = query.eq('school_id', filters.schoolId)
+          query = query.eq("school_id", filters.schoolId);
         }
 
         if (filters?.role) {
-          query = query.eq('role', filters.role)
+          query = query.eq("role", filters.role);
         }
 
-        const { data, error: fetchError } = await query.order('last_name', { ascending: true })
+        const { data, error: fetchError } = await query.order("last_name", {
+          ascending: true,
+        });
 
-        if (fetchError) throw fetchError
+        if (fetchError) throw fetchError;
 
-        let result = data || []
+        let result = data || [];
 
         // Client-side filtering for search
         if (filters?.search) {
-          const searchLower = filters.search.toLowerCase()
+          const searchLower = filters.search.toLowerCase();
           result = result.filter(
             (coach: Coach) =>
               coach.first_name.toLowerCase().includes(searchLower) ||
               coach.last_name.toLowerCase().includes(searchLower) ||
               coach.email?.toLowerCase().includes(searchLower),
-          )
+          );
         }
 
-        this.coaches = result
-        this.isFetched = true
+        this.coaches = result;
+        this.isFetched = true;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to fetch coaches'
-        this.error = message
-        console.error(message)
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch coaches";
+        this.error = message;
+        console.error(message);
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -202,36 +216,39 @@ export const useCoachStore = defineStore('coaches', {
      */
     async fetchCoachesBySchools(schoolIds: string[]) {
       if (schoolIds.length === 0) {
-        this.coaches = []
-        return
+        this.coaches = [];
+        return;
       }
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
-        const { useSupabase } = await import('~/composables/useSupabase')
-        const supabase = useSupabase()
+        const { useSupabase } = await import("~/composables/useSupabase");
+        const supabase = useSupabase();
 
         const { data, error: fetchError } = await supabase
-          .from('coaches')
-          .select('id, school_id, first_name, last_name, email, responsiveness_score, last_contact_date, role')
-          .in('school_id', schoolIds)
-          .order('school_id', { ascending: true })
-          .order('last_name', { ascending: true })
+          .from("coaches")
+          .select(
+            "id, school_id, first_name, last_name, email, responsiveness_score, last_contact_date, role",
+          )
+          .in("school_id", schoolIds)
+          .order("school_id", { ascending: true })
+          .order("last_name", { ascending: true });
 
-        if (fetchError) throw fetchError
+        if (fetchError) throw fetchError;
 
-        this.coaches = (data || []) as Coach[]
-        schoolIds.forEach(id => {
-          this.isFetchedBySchools[id] = true
-        })
+        this.coaches = (data || []) as Coach[];
+        schoolIds.forEach((id) => {
+          this.isFetchedBySchools[id] = true;
+        });
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to fetch coaches'
-        this.error = message
-        console.error(message)
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch coaches";
+        this.error = message;
+        console.error(message);
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -239,55 +256,60 @@ export const useCoachStore = defineStore('coaches', {
      * Get a single coach by ID
      */
     async getCoach(id: string): Promise<Coach | null> {
-      const { useSupabase } = await import('~/composables/useSupabase')
-      const supabase = useSupabase()
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const supabase = useSupabase();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
         const { data, error: fetchError } = await supabase
-          .from('coaches')
-          .select('*')
-          .eq('id', id)
-          .single()
+          .from("coaches")
+          .select("*")
+          .eq("id", id)
+          .single();
 
-        if (fetchError) throw fetchError
-        return data
+        if (fetchError) throw fetchError;
+        return data;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to fetch coach'
-        this.error = message
-        return null
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch coach";
+        this.error = message;
+        return null;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     /**
      * Create a new coach
      */
-    async createCoach(schoolId: string, coachData: Omit<Coach, 'id' | 'created_at' | 'updated_at'>) {
-      const { useSupabase } = await import('~/composables/useSupabase')
-      const { sanitizeHtml } = await import('~/utils/validation/sanitize')
-      const userStore = useUserStore()
-      const supabase = useSupabase()
+    async createCoach(
+      schoolId: string,
+      coachData: Omit<Coach, "id" | "created_at" | "updated_at">,
+    ) {
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const { sanitizeHtml } = await import("~/utils/validation/sanitize");
+      const { useUserStore } = await import("./user");
+      const userStore = useUserStore();
+      const supabase = useSupabase();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
         if (!userStore.user) {
-          throw new Error('User not authenticated')
+          throw new Error("User not authenticated");
         }
 
         // Sanitize notes field
-        const sanitized = { ...coachData }
+        const sanitized = { ...coachData };
         if (sanitized.notes) {
-          sanitized.notes = sanitizeHtml(sanitized.notes)
+          sanitized.notes = sanitizeHtml(sanitized.notes);
         }
 
         const { data, error: insertError } = await supabase
-          .from('coaches')
+          .from("coaches")
           .insert([
             {
               ...sanitized,
@@ -298,18 +320,19 @@ export const useCoachStore = defineStore('coaches', {
             },
           ])
           .select()
-          .single()
+          .single();
 
-        if (insertError) throw insertError
+        if (insertError) throw insertError;
 
-        this.coaches.push(data)
-        return data
+        this.coaches.push(data);
+        return data;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to create coach'
-        this.error = message
-        throw err
+        const message =
+          err instanceof Error ? err.message : "Failed to create coach";
+        this.error = message;
+        throw err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -317,51 +340,53 @@ export const useCoachStore = defineStore('coaches', {
      * Update an existing coach
      */
     async updateCoach(id: string, updates: Partial<Coach>) {
-      const { useSupabase } = await import('~/composables/useSupabase')
-      const { sanitizeHtml } = await import('~/utils/validation/sanitize')
-      const userStore = useUserStore()
-      const supabase = useSupabase()
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const { sanitizeHtml } = await import("~/utils/validation/sanitize");
+      const { useUserStore } = await import("./user");
+      const userStore = useUserStore();
+      const supabase = useSupabase();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
         if (!userStore.user) {
-          throw new Error('User not authenticated')
+          throw new Error("User not authenticated");
         }
 
         // Sanitize notes field
-        const sanitized = { ...updates }
+        const sanitized = { ...updates };
         if (sanitized.notes) {
-          sanitized.notes = sanitizeHtml(sanitized.notes)
+          sanitized.notes = sanitizeHtml(sanitized.notes);
         }
 
         const { data, error: updateError } = await supabase
-          .from('coaches')
+          .from("coaches")
           .update({
             ...sanitized,
             updated_by: userStore.user.id,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', id)
+          .eq("id", id)
           .select()
-          .single()
+          .single();
 
-        if (updateError) throw updateError
+        if (updateError) throw updateError;
 
         // Update local state
-        const index = this.coaches.findIndex(c => c.id === id)
+        const index = this.coaches.findIndex((c) => c.id === id);
         if (index !== -1) {
-          this.coaches[index] = data
+          this.coaches[index] = data;
         }
 
-        return data
+        return data;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to update coach'
-        this.error = message
-        throw err
+        const message =
+          err instanceof Error ? err.message : "Failed to update coach";
+        this.error = message;
+        throw err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -369,28 +394,29 @@ export const useCoachStore = defineStore('coaches', {
      * Delete a coach
      */
     async deleteCoach(id: string) {
-      const { useSupabase } = await import('~/composables/useSupabase')
-      const supabase = useSupabase()
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const supabase = useSupabase();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
         const { error: deleteError } = await supabase
-          .from('coaches')
+          .from("coaches")
           .delete()
-          .eq('id', id)
+          .eq("id", id);
 
-        if (deleteError) throw deleteError
+        if (deleteError) throw deleteError;
 
         // Update local state
-        this.coaches = this.coaches.filter(c => c.id !== id)
+        this.coaches = this.coaches.filter((c) => c.id !== id);
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to delete coach'
-        this.error = message
-        throw err
+        const message =
+          err instanceof Error ? err.message : "Failed to delete coach";
+        this.error = message;
+        throw err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -398,7 +424,7 @@ export const useCoachStore = defineStore('coaches', {
      * Set filter state
      */
     setFilters(newFilters: Partial<CoachFilters>) {
-      this.filters = { ...this.filters, ...newFilters }
+      this.filters = { ...this.filters, ...newFilters };
     },
 
     /**
@@ -409,14 +435,14 @@ export const useCoachStore = defineStore('coaches', {
         schoolId: undefined,
         role: undefined,
         search: undefined,
-      }
+      };
     },
 
     /**
      * Clear error state
      */
     clearError() {
-      this.error = null
+      this.error = null;
     },
   },
-})
+});

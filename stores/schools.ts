@@ -1,20 +1,19 @@
-import { defineStore } from 'pinia'
-import type { School } from '~/types/models'
-import { useUserStore } from './user'
+import { defineStore } from "pinia";
+import type { School } from "~/types/models";
 
 export interface SchoolFilters {
-  division: string
-  state: string
-  verified: boolean | null
+  division: string;
+  state: string;
+  verified: boolean | null;
 }
 
 export interface SchoolState {
-  schools: School[]
-  selectedSchoolId: string | null
-  loading: boolean
-  error: string | null
-  isFetched: boolean
-  filters: SchoolFilters
+  schools: School[];
+  selectedSchoolId: string | null;
+  loading: boolean;
+  error: string | null;
+  isFetched: boolean;
+  filters: SchoolFilters;
 }
 
 /**
@@ -31,7 +30,7 @@ export interface SchoolState {
  * await schoolStore.fetchSchools()
  * schoolStore.setSelectedSchool(schoolId)
  */
-export const useSchoolStore = defineStore('schools', {
+export const useSchoolStore = defineStore("schools", {
   state: (): SchoolState => ({
     schools: [],
     selectedSchoolId: null,
@@ -39,8 +38,8 @@ export const useSchoolStore = defineStore('schools', {
     error: null,
     isFetched: false,
     filters: {
-      division: '',
-      state: '',
+      division: "",
+      state: "",
       verified: null,
     },
   }),
@@ -50,38 +49,39 @@ export const useSchoolStore = defineStore('schools', {
      * Get the currently selected school
      */
     selectedSchool: (state) =>
-      state.schools.find(s => s.id === state.selectedSchoolId) || null,
+      state.schools.find((s) => s.id === state.selectedSchoolId) || null,
 
     /**
      * Get schools filtered by current filter state
      */
     filteredSchools: (state) =>
-      state.schools.filter(s => {
-        if (state.filters.division && s.division !== state.filters.division) return false
-        if (state.filters.state && s.state !== state.filters.state) return false
+      state.schools.filter((s) => {
+        if (state.filters.division && s.division !== state.filters.division)
+          return false;
+        if (state.filters.state && s.state !== state.filters.state)
+          return false;
         if (state.filters.verified !== null) {
           // TODO: Add verified field to School type if needed
         }
-        return true
+        return true;
       }),
 
     /**
      * Get favorite schools only
      */
-    favoriteSchools: (state) =>
-      state.schools.filter(s => s.is_favorite),
+    favoriteSchools: (state) => state.schools.filter((s) => s.is_favorite),
 
     /**
      * Get schools by status
      */
-    schoolsByStatus: (state) => (status: School['status']) =>
-      state.schools.filter(s => s.status === status),
+    schoolsByStatus: (state) => (status: School["status"]) =>
+      state.schools.filter((s) => s.status === status),
 
     /**
      * Get schools by division
      */
-    schoolsByDivision: (state) => (division: School['division']) =>
-      state.schools.filter(s => s.division === division),
+    schoolsByDivision: (state) => (division: School["division"]) =>
+      state.schools.filter((s) => s.division === division),
 
     /**
      * Check if schools have been fetched
@@ -96,36 +96,38 @@ export const useSchoolStore = defineStore('schools', {
      */
     async fetchSchools() {
       // Guard: don't refetch if already loaded
-      if (this.isFetched && this.schools.length > 0) return
+      if (this.isFetched && this.schools.length > 0) return;
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
-        const { useSupabase } = await import('~/composables/useSupabase')
-        const userStore = useUserStore()
-        const supabase = useSupabase()
+        const { useSupabase } = await import("~/composables/useSupabase");
+        const { useUserStore } = await import("./user");
+        const userStore = useUserStore();
+        const supabase = useSupabase();
 
         if (!userStore.user) {
-          throw new Error('User not authenticated')
+          throw new Error("User not authenticated");
         }
 
         const { data, error: fetchError } = await supabase
-          .from('schools')
-          .select('*')
-          .eq('user_id', userStore.user.id)
-          .order('ranking', { ascending: true, nullsFirst: false })
+          .from("schools")
+          .select("*")
+          .eq("user_id", userStore.user.id)
+          .order("ranking", { ascending: true, nullsFirst: false });
 
-        if (fetchError) throw fetchError
+        if (fetchError) throw fetchError;
 
-        this.schools = data || []
-        this.isFetched = true
+        this.schools = data || [];
+        this.isFetched = true;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to fetch schools'
-        this.error = message
-        console.error(message)
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch schools";
+        this.error = message;
+        console.error(message);
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -133,67 +135,76 @@ export const useSchoolStore = defineStore('schools', {
      * Get a single school by ID
      */
     async getSchool(id: string): Promise<School | null> {
-      const { useSupabase } = await import('~/composables/useSupabase')
-      const userStore = useUserStore()
-      const supabase = useSupabase()
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const { useUserStore } = await import("./user");
+      const userStore = useUserStore();
+      const supabase = useSupabase();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
         if (!userStore.user) {
-          throw new Error('User not authenticated')
+          throw new Error("User not authenticated");
         }
 
         const { data, error: fetchError } = await supabase
-          .from('schools')
-          .select('*')
-          .eq('id', id)
-          .eq('user_id', userStore.user.id)
-          .single()
+          .from("schools")
+          .select("*")
+          .eq("id", id)
+          .eq("user_id", userStore.user.id)
+          .single();
 
-        if (fetchError) throw fetchError
-        return data
+        if (fetchError) throw fetchError;
+        return data;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to fetch school'
-        this.error = message
-        return null
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch school";
+        this.error = message;
+        return null;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     /**
      * Create a new school
      */
-    async createSchool(schoolData: Omit<School, 'id' | 'created_at' | 'updated_at'>) {
-      const { useSupabase } = await import('~/composables/useSupabase')
-      const { sanitizeHtml } = await import('~/utils/validation/sanitize')
-      const userStore = useUserStore()
-      const supabase = useSupabase()
+    async createSchool(
+      schoolData: Omit<School, "id" | "created_at" | "updated_at">,
+    ) {
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const { sanitizeHtml } = await import("~/utils/validation/sanitize");
+      const { useUserStore } = await import("./user");
+      const userStore = useUserStore();
+      const supabase = useSupabase();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
         if (!userStore.user) {
-          throw new Error('User not authenticated')
+          throw new Error("User not authenticated");
         }
 
         // Sanitize text fields to prevent XSS
-        const sanitized = { ...schoolData }
+        const sanitized = { ...schoolData };
         if (sanitized.notes) {
-          sanitized.notes = sanitizeHtml(sanitized.notes)
+          sanitized.notes = sanitizeHtml(sanitized.notes);
         }
         if (sanitized.pros && Array.isArray(sanitized.pros)) {
-          sanitized.pros = sanitized.pros.filter((p: string | undefined): p is string => !!p).map((p) => sanitizeHtml(p))
+          sanitized.pros = sanitized.pros
+            .filter((p: string | undefined): p is string => !!p)
+            .map((p) => sanitizeHtml(p));
         }
         if (sanitized.cons && Array.isArray(sanitized.cons)) {
-          sanitized.cons = sanitized.cons.filter((c: string | undefined): c is string => !!c).map((c) => sanitizeHtml(c))
+          sanitized.cons = sanitized.cons
+            .filter((c: string | undefined): c is string => !!c)
+            .map((c) => sanitizeHtml(c));
         }
 
         const { data, error: insertError } = await supabase
-          .from('schools')
+          .from("schools")
           .insert([
             {
               ...sanitized,
@@ -203,18 +214,19 @@ export const useSchoolStore = defineStore('schools', {
             },
           ])
           .select()
-          .single()
+          .single();
 
-        if (insertError) throw insertError
+        if (insertError) throw insertError;
 
-        this.schools.unshift(data)
-        return data
+        this.schools.unshift(data);
+        return data;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to create school'
-        this.error = message
-        throw err
+        const message =
+          err instanceof Error ? err.message : "Failed to create school";
+        this.error = message;
+        throw err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -222,58 +234,64 @@ export const useSchoolStore = defineStore('schools', {
      * Update an existing school
      */
     async updateSchool(id: string, updates: Partial<School>) {
-      const { useSupabase } = await import('~/composables/useSupabase')
-      const { sanitizeHtml } = await import('~/utils/validation/sanitize')
-      const userStore = useUserStore()
-      const supabase = useSupabase()
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const { sanitizeHtml } = await import("~/utils/validation/sanitize");
+      const { useUserStore } = await import("./user");
+      const userStore = useUserStore();
+      const supabase = useSupabase();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
         if (!userStore.user) {
-          throw new Error('User not authenticated')
+          throw new Error("User not authenticated");
         }
 
         // Sanitize text fields
-        const sanitized = { ...updates }
+        const sanitized = { ...updates };
         if (sanitized.notes) {
-          sanitized.notes = sanitizeHtml(sanitized.notes)
+          sanitized.notes = sanitizeHtml(sanitized.notes);
         }
         if (sanitized.pros && Array.isArray(sanitized.pros)) {
-          sanitized.pros = sanitized.pros.filter((p): p is string => !!p).map((p) => sanitizeHtml(p))
+          sanitized.pros = sanitized.pros
+            .filter((p): p is string => !!p)
+            .map((p) => sanitizeHtml(p));
         }
         if (sanitized.cons && Array.isArray(sanitized.cons)) {
-          sanitized.cons = sanitized.cons.filter((c): c is string => !!c).map((c) => sanitizeHtml(c))
+          sanitized.cons = sanitized.cons
+            .filter((c): c is string => !!c)
+            .map((c) => sanitizeHtml(c));
         }
 
         const { data, error: updateError } = await supabase
-          .from('schools')
+          .from("schools")
           .update({
             ...sanitized,
             updated_by: userStore.user.id,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', id)
-          .eq('user_id', userStore.user.id)
+          .eq("id", id)
+          .eq("user_id", userStore.user.id)
           .select()
-          .single()
+          .single();
 
-        if (updateError) throw updateError
+        if (updateError) throw updateError;
 
         // Update local state
-        const index = this.schools.findIndex(s => s.id === id)
+        const index = this.schools.findIndex((s) => s.id === id);
         if (index !== -1) {
-          this.schools[index] = data
+          this.schools[index] = data;
         }
 
-        return data
+        return data;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to update school'
-        this.error = message
-        throw err
+        const message =
+          err instanceof Error ? err.message : "Failed to update school";
+        this.error = message;
+        throw err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -281,37 +299,39 @@ export const useSchoolStore = defineStore('schools', {
      * Delete a school
      */
     async deleteSchool(id: string) {
-      const { useSupabase } = await import('~/composables/useSupabase')
-      const userStore = useUserStore()
-      const supabase = useSupabase()
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const { useUserStore } = await import("./user");
+      const userStore = useUserStore();
+      const supabase = useSupabase();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
         if (!userStore.user) {
-          throw new Error('User not authenticated')
+          throw new Error("User not authenticated");
         }
 
         const { error: deleteError } = await supabase
-          .from('schools')
+          .from("schools")
           .delete()
-          .eq('id', id)
-          .eq('user_id', userStore.user.id)
+          .eq("id", id)
+          .eq("user_id", userStore.user.id);
 
-        if (deleteError) throw deleteError
+        if (deleteError) throw deleteError;
 
         // Update local state
-        this.schools = this.schools.filter(s => s.id !== id)
+        this.schools = this.schools.filter((s) => s.id !== id);
         if (this.selectedSchoolId === id) {
-          this.selectedSchoolId = null
+          this.selectedSchoolId = null;
         }
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to delete school'
-        this.error = message
-        throw err
+        const message =
+          err instanceof Error ? err.message : "Failed to delete school";
+        this.error = message;
+        throw err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -319,7 +339,7 @@ export const useSchoolStore = defineStore('schools', {
      * Toggle favorite status of a school
      */
     async toggleFavorite(id: string, isFavorite: boolean) {
-      return this.updateSchool(id, { is_favorite: !isFavorite })
+      return this.updateSchool(id, { is_favorite: !isFavorite });
     },
 
     /**
@@ -327,16 +347,17 @@ export const useSchoolStore = defineStore('schools', {
      * Much faster than updating individually
      */
     async updateRanking(schools_: School[]) {
-      const { useSupabase } = await import('~/composables/useSupabase')
-      const userStore = useUserStore()
-      const supabase = useSupabase()
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const { useUserStore } = await import("./user");
+      const userStore = useUserStore();
+      const supabase = useSupabase();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
 
       try {
         if (!userStore.user) {
-          throw new Error('User not authenticated')
+          throw new Error("User not authenticated");
         }
 
         // Batch update all rankings in a single operation
@@ -345,20 +366,21 @@ export const useSchoolStore = defineStore('schools', {
           ranking: index + 1,
           updated_by: userStore.user!.id,
           updated_at: new Date().toISOString(),
-        }))
+        }));
 
         const { error: batchError } = await supabase
-          .from('schools')
-          .upsert(updates, { onConflict: 'id' })
+          .from("schools")
+          .upsert(updates, { onConflict: "id" });
 
-        if (batchError) throw batchError
+        if (batchError) throw batchError;
 
-        this.schools = schools_
+        this.schools = schools_;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to update ranking'
-        this.error = message
+        const message =
+          err instanceof Error ? err.message : "Failed to update ranking";
+        this.error = message;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -366,14 +388,14 @@ export const useSchoolStore = defineStore('schools', {
      * Set the currently selected school
      */
     setSelectedSchool(id: string | null) {
-      this.selectedSchoolId = id
+      this.selectedSchoolId = id;
     },
 
     /**
      * Update filter state
      */
     setFilters(newFilters: Partial<SchoolFilters>) {
-      this.filters = { ...this.filters, ...newFilters }
+      this.filters = { ...this.filters, ...newFilters };
     },
 
     /**
@@ -381,17 +403,17 @@ export const useSchoolStore = defineStore('schools', {
      */
     resetFilters() {
       this.filters = {
-        division: '',
-        state: '',
+        division: "",
+        state: "",
         verified: null,
-      }
+      };
     },
 
     /**
      * Clear error state
      */
     clearError() {
-      this.error = null
+      this.error = null;
     },
   },
-})
+});

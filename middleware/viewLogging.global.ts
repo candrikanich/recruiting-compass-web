@@ -1,7 +1,3 @@
-import { useViewLogging } from '~/composables/useViewLogging'
-import { useUserStore } from '~/stores/user'
-import { useAccountLinks } from '~/composables/useAccountLinks'
-
 /**
  * Global middleware for automatic parent view logging
  *
@@ -18,36 +14,52 @@ import { useAccountLinks } from '~/composables/useAccountLinks'
  */
 export default defineNuxtRouteMiddleware(async (to, from) => {
   // Only run on client
-  if (process.server) return
+  if (process.server) return;
 
   try {
-    const { logParentView } = useViewLogging()
-    const userStore = useUserStore()
-    const { linkedAccounts } = useAccountLinks()
+    // Try to get the stores safely
+    let userStore, linkedAccounts;
+    try {
+      const { useUserStore } = await import("~/stores/user");
+      userStore = useUserStore();
+      const { linkedAccounts: la } = useAccountLinks();
+      linkedAccounts = la;
+    } catch (storeError) {
+      // Store not ready yet, skip logging
+      return;
+    }
 
     // Only log for parents
-    if (userStore.user?.role !== 'parent') return
+    if (userStore.user?.role !== "parent") return;
+
+    const { logParentView } = useViewLogging();
+
+    // Only log for parents
+    if (userStore.user?.role !== "parent") return;
 
     // Get linked athlete
     const linkedAthlete = linkedAccounts.value.find(
-      (acc) => acc.relationship === 'student'
-    )
-    if (!linkedAthlete) return
+      (acc) => acc.relationship === "student",
+    );
+    if (!linkedAthlete) return;
 
     // Determine item type from route
-    const itemType = determineItemType(to.path)
-    if (!itemType) return
+    const itemType = determineItemType(to.path);
+    if (!itemType) return;
 
     // Extract item ID from route params
-    const itemId = to.params.id as string | undefined
+    const itemId = to.params.id as string | undefined;
 
     // Log the view (errors handled silently)
-    await logParentView(itemType, linkedAthlete.user_id, itemId)
+    await logParentView(itemType, linkedAthlete.user_id, itemId);
   } catch (error) {
     // Silently fail - don't break navigation if view logging fails
-    console.debug('[viewLogging middleware]', error instanceof Error ? error.message : 'Unknown error')
+    console.debug(
+      "[viewLogging middleware]",
+      error instanceof Error ? error.message : "Unknown error",
+    );
   }
-})
+});
 
 /**
  * Determine the type of item being viewed from the route path
@@ -55,12 +67,12 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
  * Maps routes to item types that are logged
  */
 function determineItemType(path: string): string | null {
-  if (path.startsWith('/schools')) return 'school'
-  if (path.startsWith('/coaches')) return 'coach'
-  if (path.startsWith('/interactions')) return 'interaction'
-  if (path.startsWith('/events')) return 'event'
-  if (path.startsWith('/timeline')) return 'timeline'
-  if (path.startsWith('/performance')) return 'performance'
-  if (path === '/dashboard') return 'dashboard'
-  return null
+  if (path.startsWith("/schools")) return "school";
+  if (path.startsWith("/coaches")) return "coach";
+  if (path.startsWith("/interactions")) return "interaction";
+  if (path.startsWith("/events")) return "event";
+  if (path.startsWith("/timeline")) return "timeline";
+  if (path.startsWith("/performance")) return "performance";
+  if (path === "/dashboard") return "dashboard";
+  return null;
 }

@@ -291,7 +291,7 @@ const role = ref('')
 const agreeToTerms = ref(false)
 const loading = ref(false)
 
-const { signUp } = useAuth()
+const { signup } = useAuth()
 const supabase = useSupabase()
 const userStore = useUserStore()
 const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors, setErrors } = useValidation(signupSchema)
@@ -347,7 +347,7 @@ const handleSignup = async () => {
 
   try {
     // Sign up with Supabase Auth (including role in metadata)
-    const authData = await signUp(validated.email, validated.password, validated.fullName as string, validated.role)
+    const authData = await signup(validated.email, validated.password, validated.fullName as string, validated.role)
     console.log('Auth signup returned:', authData)
 
     if (!authData?.user?.id) {

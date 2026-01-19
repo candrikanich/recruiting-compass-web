@@ -23,14 +23,22 @@ export const useNotifications = (): {
   deleteAllRead: () => Promise<void>
 } => {
   const supabase = useSupabase()
-  const userStore = useUserStore()
+  let userStore: ReturnType<typeof useUserStore> | undefined
+
+  const getUserStore = () => {
+    if (!userStore) {
+      userStore = useUserStore()
+    }
+    return userStore
+  }
 
   const notifications = ref<Notification[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
   const fetchNotifications = async (filters?: { isRead?: boolean; type?: string; limit?: number }) => {
-    if (!userStore.user) return
+    const store = getUserStore()
+    if (!store.user) return
 
     loading.value = true
     error.value = null
@@ -39,7 +47,7 @@ export const useNotifications = (): {
       let query = supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', userStore.user.id)
+        .eq('user_id', getUserStore().user!.id)
         .order('scheduled_for', { ascending: false })
 
       if (filters?.isRead !== undefined) {
@@ -73,7 +81,8 @@ export const useNotifications = (): {
   }
 
   const createNotification = async (notificationData: Omit<Notification, 'id' | 'created_at' | 'updated_at'>) => {
-    if (!userStore.user) throw new Error('User not authenticated')
+    const store = getUserStore()
+    if (!store.user) throw new Error('User not authenticated')
 
     loading.value = true
     error.value = null
@@ -84,7 +93,7 @@ export const useNotifications = (): {
         .insert([
           {
             ...notificationData,
-            user_id: userStore.user.id,
+            user_id: store.user.id,
           },
         ] as NotificationInsert[])
         .select()
@@ -104,7 +113,8 @@ export const useNotifications = (): {
   }
 
   const markAsRead = async (id: string) => {
-    if (!userStore.user) throw new Error('User not authenticated')
+    const store = getUserStore()
+    if (!store.user) throw new Error('User not authenticated')
 
     loading.value = true
     error.value = null
@@ -135,7 +145,8 @@ export const useNotifications = (): {
   }
 
   const markAllAsRead = async () => {
-    if (!userStore.user) throw new Error('User not authenticated')
+    const store = getUserStore()
+    if (!store.user) throw new Error('User not authenticated')
 
     loading.value = true
     error.value = null
@@ -167,7 +178,8 @@ export const useNotifications = (): {
   }
 
   const deleteNotification = async (id: string) => {
-    if (!userStore.user) throw new Error('User not authenticated')
+    const store = getUserStore()
+    if (!store.user) throw new Error('User not authenticated')
 
     loading.value = true
     error.value = null
@@ -188,7 +200,8 @@ export const useNotifications = (): {
   }
 
   const deleteAllRead = async () => {
-    if (!userStore.user) throw new Error('User not authenticated')
+    const store = getUserStore()
+    if (!store.user) throw new Error('User not authenticated')
 
     loading.value = true
     error.value = null

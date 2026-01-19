@@ -9,13 +9,5 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useUserStore } from '~/stores/user'
-
-const userStore = useUserStore()
-
-onMounted(async () => {
-  // Initialize user on app mount
-  await userStore.initializeUser()
-})
+// User initialization is now handled in auth.client.ts plugin
 </script>

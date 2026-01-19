@@ -44,14 +44,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useDocuments } from '~/composables/useDocuments'
 import type { Document } from '~/types/models'
 
-const { documents } = useDocuments()
+// Defer composable initialization to onMounted
+let documentsComposable: ReturnType<typeof useDocuments> | undefined
 
 const recentDocuments = computed(() => {
-  return documents.value
+  return (documentsComposable?.documents.value || [])
     .filter((doc: Document) => doc.is_current)
     .sort((a: Document, b: Document) => {
       const dateA = new Date(a.created_at || 0).getTime()
@@ -59,6 +60,10 @@ const recentDocuments = computed(() => {
       return dateB - dateA
     })
     .slice(0, 5)
+})
+
+onMounted(() => {
+  documentsComposable = useDocuments()
 })
 
 const formatDate = (dateString: string): string => {

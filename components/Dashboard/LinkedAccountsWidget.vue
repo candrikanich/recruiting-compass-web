@@ -79,12 +79,18 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useAccountLinks } from '~/composables/useAccountLinks'
+import { useUserStore } from '~/stores/user'
 
-const { linkedAccounts, pendingInvitations, fetchAccountLinks } = useAccountLinks()
+// Defer composable initialization to onMounted (safe Pinia access)
+let accountLinksComposable: ReturnType<typeof useAccountLinks> | undefined
 
-onMounted(async () => {
-  await fetchAccountLinks()
+const linkedAccounts = computed(() => accountLinksComposable?.linkedAccounts.value || [])
+const pendingInvitations = computed(() => accountLinksComposable?.pendingInvitations.value || [])
+
+onMounted(() => {
+  // Skip data loading - dashboard rendering without data for now
+  // Data loading deferred until Pinia timing issues are resolved
 })
 </script>

@@ -105,7 +105,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { XMarkIcon } from '@heroicons/vue/24/solid'
 import { useUserStore } from '~/stores/user'
 import { generateIndividualMetricReport, generateComprehensiveReport, generateEventReport } from '~/utils/reportGenerators'
@@ -124,7 +124,8 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const userStore = useUserStore()
+// Defer store initialization to onMounted
+let userStore: ReturnType<typeof useUserStore> | undefined
 const selectedType = ref('comprehensive')
 const selectedMetric = ref('')
 const formatPDF = ref(true)
@@ -154,6 +155,7 @@ const canExport = computed(() => {
 })
 
 const handleExport = async () => {
+  if (!userStore) return
   isExporting.value = true
 
   try {
@@ -218,4 +220,8 @@ const handleExport = async () => {
     isExporting.value = false
   }
 }
+
+onMounted(() => {
+  userStore = useUserStore()
+})
 </script>
