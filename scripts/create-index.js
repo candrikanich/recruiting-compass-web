@@ -51,7 +51,7 @@ if (existsSync(nuxtDir)) {
 }
 
 // Fallback: just find the biggest JS file that looks like an entry point
-if (!entryFile) {
+if (!entryFile && existsSync(nuxtDir)) {
   const jsFiles = readdirSync(nuxtDir)
     .filter(f => f.endsWith('.js'))
     .map(f => ({ name: f, size: statSync(resolve(nuxtDir, f)).size }))
