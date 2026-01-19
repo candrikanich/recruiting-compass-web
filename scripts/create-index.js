@@ -1,28 +1,45 @@
 /* eslint-disable no-undef */
-import { readFileSync, existsSync } from 'fs'
+import { writeFileSync, existsSync, mkdirSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 
-// For SPA mode, Nuxt 3 should automatically create index.html
-// This script is only needed if the file doesn't exist (e.g., in certain build environments)
-
-const indexPath = resolve('.output/public/index.html')
 const publicDir = resolve('.output/public')
+const indexPath = resolve(publicDir, 'index.html')
+const distClientPath = resolve('.nuxt/dist/client')
 
-if (!existsSync(indexPath)) {
-  console.warn('⚠ index.html not found in .output/public, checking Nuxt build output...')
+// Ensure public directory exists
+if (!existsSync(publicDir)) {
+  mkdirSync(publicDir, { recursive: true })
+}
 
-  // Check if dist exists
-  const distPath = resolve('.nuxt/dist/client')
-  if (!existsSync(distPath)) {
-    console.error('✗ Could not find Nuxt build output at .nuxt/dist/client')
-    process.exit(1)
-  }
+// If index.html already exists, we're done
+if (existsSync(indexPath)) {
+  console.log('✓ index.html already exists in .output/public')
+  process.exit(0)
+}
 
-  // For SPA, Nuxt should create index.html automatically
-  // If it's missing, the build output structure may be incorrect
-  console.error('✗ Build output structure is incorrect - index.html should be in .output/public')
+// For SPA with Netlify, generate index.html if it's missing
+// This happens when Nitro builds but doesn't copy the SPA template correctly
+if (!existsSync(distClientPath)) {
+  console.error('✗ Could not find Nuxt client build at .nuxt/dist/client')
   process.exit(1)
 }
 
-console.log('✓ index.html found in .output/public')
+// Generate a basic index.html that will boot the Nuxt app
+// The app bundle will be loaded from /_nuxt/entry.js
+const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="The Recruiting Compass">
+  <title>The Recruiting Compass</title>
+</head>
+<body>
+  <div id="__nuxt"></div>
+  <script type="module" src="/_nuxt/entry.js"></script>
+</body>
+</html>`
+
+writeFileSync(indexPath, html)
+console.log('✓ Created index.html in .output/public')
 process.exit(0)
