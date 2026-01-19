@@ -3,7 +3,7 @@
 # Serve: Static assets from .output/public
 
 [build]
-  command = "mkdir -p .output/public && echo 'Built by GitLab CI'"
+  command = "npm run build"
   publish = ".output/public"
 
 [build.environment]

@@ -2,8 +2,6 @@ image: node:20-alpine
 
 stages:
   - build
-  - deploy-qa
-  - deploy-prod
 
 variables:
   NODE_ENV: production
@@ -17,49 +15,6 @@ build:
   stage: build
   script:
     - npm ci
-    - rm -rf .output .nuxt
-    - echo "NUXT_PUBLIC_SUPABASE_URL=$NUXT_PUBLIC_SUPABASE_URL" > .env.local
-    - echo "NUXT_PUBLIC_SUPABASE_ANON_KEY=$NUXT_PUBLIC_SUPABASE_ANON_KEY" >> .env.local
-    - echo "NUXT_PUBLIC_COLLEGE_SCORECARD_APIKEY=$NUXT_PUBLIC_COLLEGE_SCORECARD_APIKEY" >> .env.local
     - npm run build
-  artifacts:
-    paths:
-      - .output/public/
-    expire_in: 1 day
-  only:
-    - main
-
-deploy:qa:
-  stage: deploy-qa
-  image: alpine:latest
-  script:
-    - apk add --no-cache zip curl
-    - cd .output/public && zip -r ../../site.zip . && cd ../..
-    - |
-      curl -X POST \
-        -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
-        -H "Content-Type: application/zip" \
-        --data-binary "@site.zip" \
-        "https://api.netlify.com/api/v1/sites/00adee3f-5529-4d9c-9dca-40899a823867/deploys"
-  dependencies:
-    - build
-  only:
-    - main
-
-deploy:prod:
-  stage: deploy-prod
-  image: alpine:latest
-  script:
-    - apk add --no-cache zip curl
-    - cd .output/public && zip -r ../../site.zip . && cd ../..
-    - |
-      curl -X POST \
-        -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
-        -H "Content-Type: application/zip" \
-        --data-binary "@site.zip" \
-        "https://api.netlify.com/api/v1/sites/9d06ede7-91fc-4c5d-9d78-356aa538461d/deploys"
-  dependencies:
-    - build
-  when: manual
   only:
     - main
