@@ -1,11 +1,14 @@
-import { defineNuxtConfig } from 'nuxt/config'
-import { execSync } from 'child_process'
-import { existsSync, writeFileSync } from 'fs'
-import { resolve } from 'path'
+import { defineNuxtConfig } from "nuxt/config";
+import { execSync } from "child_process";
+import { existsSync, writeFileSync } from "fs";
+import { resolve } from "path";
 
 export default defineNuxtConfig({
-  compatibilityDate: '2025-12-05',
+  compatibilityDate: "2025-12-05",
   ssr: false,
+  app: {
+    baseURL: "/",
+  },
   devtools: { enabled: false },
   telemetry: {
     enabled: false,
@@ -15,16 +18,16 @@ export default defineNuxtConfig({
   },
   typescript: {
     includeWorkspace: true,
-    builder: 'shared' as const,
+    builder: "shared" as const,
   },
   nitro: {
     prerender: false,
     output: {
-      publicDir: '.output/public',
+      publicDir: ".output/public",
     },
     hooks: {
-      'build:done': () => {
-        const indexPath = resolve('.output/public/index.html')
+      "build:done": () => {
+        const indexPath = resolve(".output/public/index.html");
         // If index.html wasn't created, create a minimal SPA shell
         if (!existsSync(indexPath)) {
           const html = `<!DOCTYPE html>
@@ -38,11 +41,11 @@ export default defineNuxtConfig({
   <div id="__nuxt"></div>
   <script type="module" src="/_nuxt/entry.mjs"></script>
 </body>
-</html>`
-          writeFileSync(indexPath, html)
+</html>`;
+          writeFileSync(indexPath, html);
         }
-      }
-    }
+      },
+    },
   },
   postcss: {
     plugins: {
@@ -52,14 +55,14 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     // Server-only (secure)
-    twitterBearerToken: '',
-    twitterApiSecret: '',
-    twitterApiKey: '',
-    instagramAccessToken: '',
-    instagramAppSecret: '',
+    twitterBearerToken: "",
+    twitterApiSecret: "",
+    twitterApiKey: "",
+    instagramAccessToken: "",
+    instagramAppSecret: "",
     public: {
-      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || '',
-      supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || "",
+      supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || "",
     },
   },
-})
+});
