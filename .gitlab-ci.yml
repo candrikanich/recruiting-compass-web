@@ -23,7 +23,9 @@ build:
     - echo "NUXT_PUBLIC_COLLEGE_SCORECARD_APIKEY=$NUXT_PUBLIC_COLLEGE_SCORECARD_APIKEY" >> .env.production
     - echo "RESEND_API_KEY=$RESEND_API_KEY" >> .env.production
     - set -a; source .env.production; set +a
+    - echo "=== Env vars in process ===" && env | grep NUXT_PUBLIC
     - npm run build
+    - echo "=== Checking if URL is in bundle ===" && grep -r "xpxzhqghxecsjhvklsqg" .output/public/_nuxt/*.js || echo "URL NOT FOUND in bundle"
   artifacts:
     paths:
       - .output/public/
