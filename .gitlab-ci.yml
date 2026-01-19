@@ -22,7 +22,7 @@ build:
     - echo "NUXT_PUBLIC_SUPABASE_ANON_KEY=$NUXT_PUBLIC_SUPABASE_ANON_KEY" >> .env.production
     - echo "NUXT_PUBLIC_COLLEGE_SCORECARD_APIKEY=$NUXT_PUBLIC_COLLEGE_SCORECARD_APIKEY" >> .env.production
     - echo "RESEND_API_KEY=$RESEND_API_KEY" >> .env.production
-    - echo "=== Verifying .env.production ===" && cat .env.production
+    - set -a; source .env.production; set +a
     - npm run build
   artifacts:
     paths:
