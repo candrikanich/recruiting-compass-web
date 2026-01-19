@@ -24,6 +24,7 @@ build:
     - echo "RESEND_API_KEY=$RESEND_API_KEY" >> .env.production
     - set -a; source .env.production; set +a
     - echo "=== Env vars in process ===" && env | grep NUXT_PUBLIC
+    - echo "=== Contents of .env.production ===" && cat .env.production
     - npm run build
     - echo "=== Checking if URL is in bundle ===" && grep -r "xpxzhqghxecsjhvklsqg" .output/public/_nuxt/*.js || echo "URL NOT FOUND in bundle"
   artifacts:
