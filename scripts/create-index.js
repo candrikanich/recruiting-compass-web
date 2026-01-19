@@ -76,13 +76,6 @@ const html = `<!DOCTYPE html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>The Recruiting Compass</title>
-  <script type="importmap">
-  {
-    "imports": {
-      "vue": "/_nuxt/deps/vue.mjs"
-    }
-  }
-  <\/script>
   <script>
     window.__NUXT_CONFIG__ = {
       supabase: {
