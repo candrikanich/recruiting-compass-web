@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "nuxi dev",
-    "build": "nuxi build && node scripts/create-index.js",
+    "build": "nuxi generate",
     "preview": "nuxi preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

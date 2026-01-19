@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { writeFileSync, existsSync, mkdirSync, readFileSync } from 'fs'
+import { writeFileSync, existsSync, mkdirSync } from 'fs'
 import { resolve } from 'path'
 
 const publicDir = resolve('.output/public')
