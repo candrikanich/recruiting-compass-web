@@ -1,96 +1,28 @@
-import { writeFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs'
+/* eslint-disable no-undef */
+import { readFileSync, existsSync } from 'fs'
 import { resolve } from 'path'
 
-// Load .env.local if it exists
-if (existsSync('.env.local')) {
-  const envContent = readFileSync('.env.local', 'utf-8')
-  envContent.split('\n').forEach(line => {
-    const trimmed = line.trim()
-    if (trimmed && !trimmed.startsWith('#')) {
-      const [key, ...valueParts] = trimmed.split('=')
-      const value = valueParts.join('=')
-      if (key && !process.env[key]) {
-        process.env[key] = value
-      }
-    }
-  })
-}
+// For SPA mode, Nuxt 3 should automatically create index.html
+// This script is only needed if the file doesn't exist (e.g., in certain build environments)
 
+const indexPath = resolve('.output/public/index.html')
 const publicDir = resolve('.output/public')
-const nuxtDir = resolve(publicDir, '_nuxt')
-const indexPath = resolve(publicDir, 'index.html')
 
-// Create public dir if it doesn't exist
-if (!existsSync(publicDir)) {
-  mkdirSync(publicDir, { recursive: true })
-}
+if (!existsSync(indexPath)) {
+  console.warn('⚠ index.html not found in .output/public, checking Nuxt build output...')
 
-// Find the actual entry file (ends with .js and is in _nuxt)
-let entryFile = null
-if (existsSync(nuxtDir)) {
-  const files = readdirSync(nuxtDir)
-  // Look for the actual entry point - it's usually one of the larger JS files
-  // For Nuxt 3, we need to find the manifest or look at the structure
-  // The safest approach: use the build's manifest.json if it exists in .nuxt/dist/client
-  try {
-    const manifestPath = resolve('.nuxt/dist/client/manifest.json')
-    if (existsSync(manifestPath)) {
-      const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
-      if (manifest && manifest['app.vue']) {
-        const entry = manifest['app.vue']
-        if (entry && entry.file) {
-          entryFile = `/_nuxt/${entry.file}`
-        } else if (entry && entry[0] && entry[0].file) {
-          entryFile = `/_nuxt/${entry[0].file}`
-        }
-      }
-    }
-  } catch (e) {
-    // Manifest not found or parse error
+  // Check if dist exists
+  const distPath = resolve('.nuxt/dist/client')
+  if (!existsSync(distPath)) {
+    console.error('✗ Could not find Nuxt build output at .nuxt/dist/client')
+    process.exit(1)
   }
+
+  // For SPA, Nuxt should create index.html automatically
+  // If it's missing, the build output structure may be incorrect
+  console.error('✗ Build output structure is incorrect - index.html should be in .output/public')
+  process.exit(1)
 }
 
-// Fallback: just find the biggest JS file that looks like an entry point
-if (!entryFile && existsSync(nuxtDir)) {
-  const jsFiles = readdirSync(nuxtDir)
-    .filter(f => f.endsWith('.js'))
-    .map(f => ({ name: f, size: statSync(resolve(nuxtDir, f)).size }))
-    .sort((a, b) => b.size - a.size)
-
-  if (jsFiles.length > 0) {
-    entryFile = `/_nuxt/${jsFiles[0].name}`
-  }
-}
-
-// Default fallback
-if (!entryFile) {
-  entryFile = '/_nuxt/entry.js'
-}
-
-const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || ''
-
-const html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>The Recruiting Compass</title>
-  <script>
-    window.__NUXT_CONFIG__ = {
-      supabase: {
-        url: "${supabaseUrl}",
-        anonKey: "${supabaseAnonKey}"
-      }
-    }
-  <\/script>
-</head>
-<body>
-  <div id="__nuxt"></div>
-  <script type="module" src="${entryFile}"><\/script>
-</body>
-</html>`
-
-writeFileSync(indexPath, html)
-console.log(`✓ Created index.html with entry: ${entryFile}`)
+console.log('✓ index.html found in .output/public')
 process.exit(0)

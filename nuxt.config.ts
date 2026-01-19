@@ -7,6 +7,10 @@ export default defineNuxtConfig({
 
   modules: ["@pinia/nuxt"],
 
+  nitro: {
+    presets: undefined,
+  },
+
   postcss: {
     plugins: {
       tailwindcss: {},
