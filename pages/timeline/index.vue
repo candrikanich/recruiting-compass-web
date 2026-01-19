@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
     <!-- Header -->
-    <Header />
 
     <!-- Page Header Section -->
     <div class="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200">

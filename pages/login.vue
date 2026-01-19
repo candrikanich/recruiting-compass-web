@@ -1,8 +1,9 @@
 <template>
   <div class="min-h-screen bg-emerald-600">
-
     <!-- Content -->
-    <div class="relative z-10 min-h-screen flex items-center justify-center px-6 py-12">
+    <div
+      class="relative z-10 min-h-screen flex items-center justify-center px-6 py-12"
+    >
       <div class="w-full max-w-md">
         <!-- Back Link -->
         <div class="mb-6">
@@ -16,34 +17,62 @@
         </div>
 
         <!-- Login Card -->
-        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20">
+        <div
+          class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20"
+        >
           <!-- Header -->
           <div class="text-center mb-8">
-            <div class="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg">
-              <svg class="w-11 h-11 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+            <div
+              class="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg"
+            >
+              <svg
+                class="w-11 h-11 text-emerald-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
+                />
                 <polygon fill="currentColor" points="12,5 13,9 12,8 11,9" />
                 <polygon fill="currentColor" points="12,19 11,15 12,16 13,15" />
                 <polygon fill="currentColor" points="5,12 9,11 8,12 9,13" />
                 <polygon fill="currentColor" points="19,12 15,13 16,12 15,11" />
               </svg>
             </div>
-            <h1 class="text-slate-900 text-3xl font-bold mb-2">Recruiting Compass</h1>
-            <p class="text-slate-600">Navigate your college recruiting journey</p>
+            <h1 class="text-slate-900 text-3xl font-bold mb-2">
+              Recruiting Compass
+            </h1>
+            <p class="text-slate-600">
+              Navigate your college recruiting journey
+            </p>
           </div>
 
           <!-- Form error summary -->
-          <FormErrorSummary v-if="hasErrors" :errors="errors" @dismiss="clearErrors" class="mb-6" />
+          <FormErrorSummary
+            v-if="hasErrors"
+            :errors="errors"
+            @dismiss="clearErrors"
+            class="mb-6"
+          />
 
           <!-- Form -->
           <form @submit.prevent="handleLogin" class="space-y-6">
             <!-- Email -->
             <div>
-              <label for="email" class="block text-sm font-medium text-slate-700 mb-2">
+              <label
+                for="email"
+                class="block text-sm font-medium text-slate-700 mb-2"
+              >
                 Email
               </label>
               <div class="relative">
-                <EnvelopeIcon class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <EnvelopeIcon
+                  class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                />
                 <input
                   id="email"
                   v-model="email"
@@ -61,11 +90,16 @@
 
             <!-- Password -->
             <div>
-              <label for="password" class="block text-sm font-medium text-slate-700 mb-2">
+              <label
+                for="password"
+                class="block text-sm font-medium text-slate-700 mb-2"
+              >
                 Password
               </label>
               <div class="relative">
-                <LockClosedIcon class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <LockClosedIcon
+                  class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                />
                 <input
                   id="password"
                   v-model="password"
@@ -81,14 +115,19 @@
               <FieldError :error="fieldErrors.password" />
             </div>
 
-
             <!-- Submit -->
             <button
               type="submit"
               :disabled="!isFormValid || loading || validating"
               class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg"
             >
-              {{ loading ? 'Signing in...' : validating ? 'Validating...' : 'Sign In' }}
+              {{
+                loading
+                  ? "Signing in..."
+                  : validating
+                    ? "Validating..."
+                    : "Sign In"
+              }}
             </button>
           </form>
 
@@ -98,7 +137,9 @@
               <div class="w-full border-t border-slate-200"></div>
             </div>
             <div class="relative flex justify-center text-sm">
-              <span class="bg-white px-4 text-slate-500">New to Recruiting Compass?</span>
+              <span class="bg-white px-4 text-slate-500"
+                >New to Recruiting Compass?</span
+              >
             </div>
           </div>
 
@@ -106,7 +147,10 @@
           <div class="text-center">
             <p class="text-slate-600 text-sm">
               Don't have an account?
-              <NuxtLink to="/signup" class="text-blue-600 hover:text-blue-700 font-medium">
+              <NuxtLink
+                to="/signup"
+                class="text-blue-600 hover:text-blue-700 font-medium"
+              >
                 Create one now
               </NuxtLink>
             </p>
@@ -118,67 +162,92 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useAuth } from '~/composables/useAuth'
-import { useValidation } from '~/composables/useValidation'
-import { loginSchema } from '~/utils/validation/schemas'
-import { z } from 'zod'
-import { ArrowLeftIcon, EnvelopeIcon, LockClosedIcon } from '@heroicons/vue/24/outline'
-import FormErrorSummary from '~/components/Validation/FormErrorSummary.vue'
-import FieldError from '~/components/Validation/FieldError.vue'
+import { ref, computed } from "vue";
+import { useAuth } from "~/composables/useAuth";
+import { useValidation } from "~/composables/useValidation";
+import { loginSchema } from "~/utils/validation/schemas";
+import { z } from "zod";
+import {
+  ArrowLeftIcon,
+  EnvelopeIcon,
+  LockClosedIcon,
+} from "@heroicons/vue/24/outline";
+import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
+import FieldError from "~/components/Validation/FieldError.vue";
 
 // Static schemas - defined once outside component scope
-const EMAIL_SCHEMA = z.object({ email: loginSchema.shape.email })
-const PASSWORD_SCHEMA = z.object({ password: loginSchema.shape.password })
+const EMAIL_SCHEMA = z.object({ email: loginSchema.shape.email });
+const PASSWORD_SCHEMA = z.object({ password: loginSchema.shape.password });
 
-const email = ref('')
-const password = ref('')
-const loading = ref(false)
-const validating = ref(false)
+const email = ref("");
+const password = ref("");
+const loading = ref(false);
+const validating = ref(false);
 
-const { login } = useAuth()
-const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors, setErrors } = useValidation(loginSchema)
+const { login } = useAuth();
+const {
+  errors,
+  fieldErrors,
+  validate,
+  validateField,
+  clearErrors,
+  hasErrors,
+  setErrors,
+} = useValidation(loginSchema);
 
 // Computed property for form validity
-const isFormValid = computed(() => !hasErrors.value && email.value.trim() && password.value.trim())
+const isFormValid = computed(
+  () => !hasErrors.value && email.value.trim() && password.value.trim(),
+);
 
 const validateEmail = async () => {
-  validating.value = true
+  validating.value = true;
   try {
-    await validateField('email', EMAIL_SCHEMA.shape.email)(email.value)
+    await validateField("email", EMAIL_SCHEMA.shape.email)(email.value);
   } finally {
-    validating.value = false
+    validating.value = false;
   }
-}
+};
 
 const validatePassword = async () => {
-  validating.value = true
+  validating.value = true;
   try {
-    await validateField('password', PASSWORD_SCHEMA.shape.password)(password.value)
+    await validateField(
+      "password",
+      PASSWORD_SCHEMA.shape.password,
+    )(password.value);
   } finally {
-    validating.value = false
+    validating.value = false;
   }
-}
+};
 
 const handleLogin = async () => {
   // Validate entire form before submission
-  const validated = await validate({ email: email.value, password: password.value })
+  const validated = await validate({
+    email: email.value,
+    password: password.value,
+  });
 
   if (!validated) {
-    return
+    return;
   }
 
-  loading.value = true
+  loading.value = true;
 
   try {
-    await login(validated.email, validated.password)
-    await navigateTo('/dashboard')
+    const userStore = useUserStore();
+    await login(validated.email, validated.password);
+
+    // Manually trigger user store initialization after successful login
+    await userStore.initializeUser();
+
+    await navigateTo("/dashboard");
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Login failed'
+    const message = err instanceof Error ? err.message : "Login failed";
     // Set auth error at form level
-    setErrors([{ field: 'form', message }])
+    setErrors([{ field: "form", message }]);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 </script>

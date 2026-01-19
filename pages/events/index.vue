@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
-    <Header />
 
     <!-- Timeline Status Snippet -->
     <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-6">

@@ -6,7 +6,9 @@
       class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
     >
       <!-- Avatar -->
-      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center text-white text-sm font-semibold">
+      <div
+        class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center text-white text-sm font-semibold"
+      >
         {{ userInitials }}
       </div>
       <!-- Chevron -->
@@ -18,7 +20,12 @@
         viewBox="0 0 24 24"
         stroke="currentColor"
       >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M19 14l-7 7m0 0l-7-7m7 7V3"
+        />
       </svg>
     </button>
 
@@ -70,60 +77,49 @@
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <div
-          v-if="isOpen"
-          class="fixed inset-0 z-40"
-          @click="isOpen = false"
-        />
+        <div v-if="isOpen" class="fixed inset-0 z-40" @click="isOpen = false" />
       </Transition>
     </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useUserStore } from '~/stores/user'
-import { useAuth } from '~/composables/useAuth'
+import { ref, computed, onMounted } from "vue";
+import { useUserStore } from "~/stores/user";
+import { useAuth } from "~/composables/useAuth";
 
-// Defer store initialization to onMounted
-let userStore: ReturnType<typeof useUserStore> | undefined
-const { logout } = useAuth()
-const isOpen = ref(false)
+const userStore = useUserStore();
+const { logout } = useAuth();
+const isOpen = ref(false);
 
 const userName = computed(() => {
-  const user = userStore?.user
-  if (!user) return 'User'
-  return user.full_name || user.email || 'User'
-})
+  const user = userStore?.user;
+  if (!user) return "User";
+  return user.full_name || user.email || "User";
+});
 
 const userEmail = computed(() => {
-  return userStore?.user?.email || ''
-})
+  return userStore?.user?.email || "";
+});
 
 const userInitials = computed(() => {
-  const user = userStore?.user
-  if (!user) return 'U'
-  const name = user.full_name || user.email || 'U'
-  const parts = name.split(' ')
+  const user = userStore?.user;
+  if (!user) return "U";
+  const name = user.full_name || user.email || "U";
+  const parts = name.split(" ");
   if (parts.length >= 2) {
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+    return (
+      parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
+    ).toUpperCase();
   }
-  return name.charAt(0).toUpperCase()
-})
+  return name.charAt(0).toUpperCase();
+});
 
 const handleLogout = async () => {
-  isOpen.value = false
-  await logout()
-  await navigateTo('/login')
-}
+  isOpen.value = false;
+  await logout();
+  await navigateTo("/login");
+};
 
-onMounted(() => {
-  try {
-    userStore = useUserStore()
-  } catch (err) {
-    // Pinia may not be ready during certain navigation phases
-    // Store will be initialized on next user interaction
-    console.debug('HeaderProfile: Pinia not ready on mount', err)
-  }
-})
+// Store initialization now handled immediately since Pinia is working;
 </script>
