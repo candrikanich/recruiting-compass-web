@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   modules: ["@pinia/nuxt"],
 
   nitro: {
-    presets: ["static"],
+    preset: "static",
   },
 
   postcss: {
