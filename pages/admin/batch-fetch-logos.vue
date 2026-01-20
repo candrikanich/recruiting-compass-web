@@ -109,6 +109,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { CheckIcon, XMarkIcon } from '@heroicons/vue/24/solid'
+import { useUserStore } from '~/stores/user'
+import { useSupabase } from '~/composables/useSupabase'
 
 const status = ref<'idle' | 'loading' | 'success' | 'error'>('idle')
 const statusMessage = ref('')
@@ -124,8 +126,6 @@ const startBatchFetch = async () => {
 
   try {
     // Get authenticated user from store and get their session token
-    const { useUserStore } = await import('~/stores/user')
-    const { useSupabase } = await import('~/composables/useSupabase')
     const userStore = useUserStore()
     const supabase = useSupabase()
 

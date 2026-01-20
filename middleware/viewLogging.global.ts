@@ -20,7 +20,6 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     // Try to get the stores safely
     let userStore, linkedAccounts;
     try {
-      const { useUserStore } = await import("~/stores/user");
       userStore = useUserStore();
       const { linkedAccounts: la } = useAccountLinks();
       linkedAccounts = la;

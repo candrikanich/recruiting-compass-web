@@ -9,6 +9,12 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: "static",
+    hooks: {
+      close: async () => {
+        // Force process exit after prerender completes
+        process.exit(0);
+      },
+    },
   },
 
   postcss: {

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { User } from '~/types/models'
+import { useSupabase } from '~/composables/useSupabase'
 
 export interface UserState {
   user: User | null
@@ -22,7 +23,6 @@ export const useUserStore = defineStore('user', {
 
   actions: {
     async initializeUser() {
-      const { useSupabase } = await import('~/composables/useSupabase')
       const supabase = useSupabase()
 
       this.loading = true
@@ -75,7 +75,6 @@ export const useUserStore = defineStore('user', {
     },
 
     async createUserProfile(userId: string, email: string, fullName: string) {
-      const { useSupabase } = await import('~/composables/useSupabase')
       const supabase = useSupabase()
 
       try {

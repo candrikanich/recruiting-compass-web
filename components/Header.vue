@@ -162,7 +162,7 @@ import {
 const route = useRoute();
 const supabase = useSupabase();
 
-const userStore = useUserStore();
+let userStore = useUserStore();
 const user = computed(() => userStore.user || null);
 const isMobileMenuOpen = ref(false);
 
