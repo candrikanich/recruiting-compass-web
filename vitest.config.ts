@@ -20,6 +20,8 @@ export default defineConfig({
       'tests/unit/composables/useCoachAnalytics.critical.spec.ts',
       'tests/unit/composables/useRecovery.spec.ts',
       'tests/unit/composables/errorScenarios.spec.ts',
+      'tests/unit/composables/useSchoolMatching.spec.ts',
+      'tests/unit/composables/useSchoolLogos.spec.ts',
       'tests/unit/components/Analytics/PieChart.spec.ts',
       'tests/unit/components/Analytics/ScatterChart.spec.ts',
       'tests/unit/components/Analytics/FunnelChart.spec.ts',
@@ -29,6 +31,8 @@ export default defineConfig({
       'tests/unit/pages/schools-id-detail-notes.spec.ts',
       'tests/unit/pages/schools-id-detail-pros-cons.spec.ts',
       'tests/unit/pages/schools-id-interactions.spec.ts',
+      'tests/unit/utils/schoolSize.spec.ts',
+      'tests/unit/utils/sanitize.spec.ts',
       'tests/integration/phase4.integration.spec.ts',
     ],
     exclude: [
