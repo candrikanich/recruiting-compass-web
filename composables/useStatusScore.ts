@@ -17,6 +17,7 @@ import {
   getStatusAdvice,
   getNextActionsForStatus,
 } from '~/utils/statusScoreCalculation'
+import { useAuthFetch } from '~/composables/useAuthFetch'
 
 export const useStatusScore = (): {
   statusScore: Ref<number>
@@ -55,21 +56,27 @@ export const useStatusScore = (): {
     error.value = null
 
     try {
-      const response = await $fetch('/api/athlete/status')
+      const { $fetchAuth } = useAuthFetch()
+      const response = await $fetchAuth('/api/athlete/status')
 
-      statusScore.value = response.score
-      statusLabel.value = response.label
-      scoreBreakdown.value = response.breakdown
+      statusScore.value = response?.score ?? 0
+      statusLabel.value = response?.label ?? 'on_track'
+      scoreBreakdown.value = response?.breakdown ?? {
+        taskCompletionRate: 0,
+        interactionFrequencyScore: 0,
+        coachInterestScore: 0,
+        academicStandingScore: 0,
+      }
       lastCalculated.value = new Date().toISOString()
 
       // Convert StatusScoreResult to AthleteAPI.GetStatusResponse format
       return {
-        status_score: response.score,
-        status_label: response.label,
-        taskCompletionRate: response.breakdown.taskCompletionRate,
-        interactionFrequencyScore: response.breakdown.interactionFrequencyScore,
-        coachInterestScore: response.breakdown.coachInterestScore,
-        academicStandingScore: response.breakdown.academicStandingScore,
+        status_score: response?.score ?? 0,
+        status_label: response?.label ?? 'on_track',
+        taskCompletionRate: response?.breakdown?.taskCompletionRate ?? 0,
+        interactionFrequencyScore: response?.breakdown?.interactionFrequencyScore ?? 0,
+        coachInterestScore: response?.breakdown?.coachInterestScore ?? 0,
+        academicStandingScore: response?.breakdown?.academicStandingScore ?? 0,
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch status score'
@@ -88,23 +95,29 @@ export const useStatusScore = (): {
     error.value = null
 
     try {
-      const response = await $fetch('/api/athlete/status/recalculate', {
+      const { $fetchAuth } = useAuthFetch()
+      const response = await $fetchAuth('/api/athlete/status/recalculate', {
         method: 'POST',
-      }) as { score: number; label: StatusLabel; breakdown: StatusScoreInputs }
+      }) as { score?: number; label?: StatusLabel; breakdown?: StatusScoreInputs }
 
-      statusScore.value = response.score
-      statusLabel.value = response.label
-      scoreBreakdown.value = response.breakdown
+      statusScore.value = response?.score ?? 0
+      statusLabel.value = response?.label ?? 'on_track'
+      scoreBreakdown.value = response?.breakdown ?? {
+        taskCompletionRate: 0,
+        interactionFrequencyScore: 0,
+        coachInterestScore: 0,
+        academicStandingScore: 0,
+      }
       lastCalculated.value = new Date().toISOString()
 
       // Convert to AthleteAPI.RecalculateStatusResponse format
       return {
-        status_score: response.score,
-        status_label: response.label,
-        taskCompletionRate: response.breakdown.taskCompletionRate,
-        interactionFrequencyScore: response.breakdown.interactionFrequencyScore,
-        coachInterestScore: response.breakdown.coachInterestScore,
-        academicStandingScore: response.breakdown.academicStandingScore,
+        status_score: response?.score ?? 0,
+        status_label: response?.label ?? 'on_track',
+        taskCompletionRate: response?.breakdown?.taskCompletionRate ?? 0,
+        interactionFrequencyScore: response?.breakdown?.interactionFrequencyScore ?? 0,
+        coachInterestScore: response?.breakdown?.coachInterestScore ?? 0,
+        academicStandingScore: response?.breakdown?.academicStandingScore ?? 0,
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to recalculate status'

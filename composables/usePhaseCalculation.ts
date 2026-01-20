@@ -14,6 +14,7 @@ import {
   buildPhaseMilestoneData,
   PHASE_INFO,
 } from '~/utils/phaseCalculation'
+import { useAuthFetch } from '~/composables/useAuthFetch'
 
 export const usePhaseCalculation = (): {
   currentPhase: Ref<Phase>
@@ -43,7 +44,8 @@ export const usePhaseCalculation = (): {
     error.value = null
 
     try {
-      const response = await $fetch('/api/athlete/phase')
+      const { $fetchAuth } = useAuthFetch()
+      const response = await $fetchAuth<AthleteAPI.GetPhaseResponse>('/api/athlete/phase')
 
       currentPhase.value = response.phase
       milestoneProgress.value = response.milestoneProgress
@@ -66,7 +68,8 @@ export const usePhaseCalculation = (): {
     error.value = null
 
     try {
-      const response = await $fetch('/api/athlete/phase/advance', {
+      const { $fetchAuth } = useAuthFetch()
+      const response = await $fetchAuth<AthleteAPI.AdvancePhaseResponse>('/api/athlete/phase/advance', {
         method: 'POST',
       })
 

@@ -15,6 +15,7 @@ import type {
   Phase,
 } from '~/types/timeline'
 import type { TasksAPI } from '~/types/api/tasks'
+import { useAuthFetch } from '~/composables/useAuthFetch'
 
 // Type for fetched data to handle undefined on missing status
 interface AthleteTaskWithOptionalStatus extends Omit<AthleteTask, 'status'> {
@@ -56,12 +57,13 @@ export const useTasks = (): {
     error.value = null
 
     try {
+      const { $fetchAuth } = useAuthFetch()
       const queryParams = new URLSearchParams()
       if (params?.gradeLevel) queryParams.append('gradeLevel', params.gradeLevel.toString())
       if (params?.category) queryParams.append('category', params.category)
       if (params?.division) queryParams.append('division', params.division)
 
-      const response = await $fetch('/api/tasks', {
+      const response = await $fetchAuth<Task[]>('/api/tasks', {
         query: Object.fromEntries(queryParams),
       })
 
@@ -84,7 +86,8 @@ export const useTasks = (): {
     error.value = null
 
     try {
-      const response = await $fetch('/api/athlete-tasks')
+      const { $fetchAuth } = useAuthFetch()
+      const response = await $fetchAuth<AthleteTask[]>('/api/athlete-tasks')
       athleteTasks.value = response
       return response
     } catch (err) {
@@ -111,7 +114,9 @@ export const useTasks = (): {
       ])
 
       // Create map for quick athlete task lookup
-      const athleteTaskMap = new Map(athleteTaskData.map((at: AthleteTask) => [at.task_id, at]))
+      const athleteTaskMap = new Map(
+        (Array.isArray(athleteTaskData) ? athleteTaskData : []).map((at: AthleteTask) => [at.task_id, at])
+      )
 
       // Merge with dependency analysis
       const merged = await Promise.all(
@@ -152,7 +157,8 @@ export const useTasks = (): {
     error.value = null
 
     try {
-      const response = await $fetch(`/api/athlete-tasks/${taskId}`, {
+      const { $fetchAuth } = useAuthFetch()
+      const response = await $fetchAuth<AthleteTask>(`/api/athlete-tasks/${taskId}`, {
         method: 'PATCH',
         body: { status },
       })

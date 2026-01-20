@@ -71,19 +71,6 @@
       <div v-if="expanded" class="border-t border-slate-200">
         <div class="p-6">
           <TaskList :tasks="tasks" @task-toggle="$emit('task-toggle', $event)" />
-
-          <!-- View All Tasks link -->
-          <div class="mt-4 text-center pt-4 border-t border-slate-200">
-            <NuxtLink
-              :to="`/timeline/${phase}`"
-              class="text-blue-600 hover:text-blue-700 text-sm font-medium inline-flex items-center gap-1 transition"
-            >
-              View all {{ totalCount }} {{ title.toLowerCase() }} tasks
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </NuxtLink>
-          </div>
         </div>
       </div>
     </Transition>

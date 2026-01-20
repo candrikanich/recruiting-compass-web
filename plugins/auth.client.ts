@@ -1,4 +1,4 @@
 export default defineNuxtPlugin(() => {
-  console.log("Auth plugin loaded");
-  // Pinia and auth state initialization is handled in components/composables
+  // Auth plugin - provides auth context initialization
+  // Actual auth header injection happens in the useAuthFetch composable
 });

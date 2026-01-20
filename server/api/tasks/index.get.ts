@@ -11,9 +11,9 @@ import { getCached } from '~/server/utils/cache'
 import type { Task } from '~/types/timeline'
 
 export default defineEventHandler(async (event) => {
-  const supabase = createServerSupabaseClient()
-
   try {
+    const supabase = createServerSupabaseClient()
+
     const query = getQuery(event)
     const gradeLevel = query.gradeLevel ? parseInt(query.gradeLevel as string) : undefined
     const category = query.category as string | undefined
@@ -47,10 +47,10 @@ export default defineEventHandler(async (event) => {
     const { data, error } = await request
 
     if (error) {
-      console.error('Supabase error fetching tasks:', error)
+      console.error('Supabase error fetching tasks:', JSON.stringify(error))
       throw createError({
         statusCode: 500,
-        statusMessage: 'Failed to fetch tasks',
+        statusMessage: `Failed to fetch tasks: ${error.message}`,
       })
     }
 
@@ -64,10 +64,11 @@ export default defineEventHandler(async (event) => {
 
     return tasks
   } catch (err) {
-    console.error('Error in GET /api/tasks:', err)
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    console.error('Error in GET /api/tasks:', message)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Failed to fetch tasks',
+      statusMessage: message,
     })
   }
 })
