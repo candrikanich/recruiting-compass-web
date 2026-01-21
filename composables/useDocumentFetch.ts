@@ -6,16 +6,35 @@ import type { Document } from "~/types/models";
 /**
  * Composable for document fetching operations
  *
+ * ⚠️ DEPRECATED: This composable is deprecated as of Phase 4
+ * Use useDocumentsConsolidated() instead for new code
+ *
+ * Migration guide: See docs/phase-4/DEPRECATION_AUDIT.md
+ * Timeline: Will be removed in Phase 5
+ *
  * Handles retrieving documents and version history.
- * Part of split from useDocuments for focused responsibility.
+ * For new code, use useDocumentsConsolidated instead.
+ *
+ * @deprecated Use useDocumentsConsolidated() instead
  *
  * @example
+ * // OLD (deprecated)
  * const { documents, loading, error, fetchDocuments, fetchDocumentVersions } = useDocumentFetch()
- * await fetchDocuments({ type: 'resume' })
+ *
+ * // NEW (preferred)
+ * const { documents, loading, error, fetchDocuments, fetchDocumentVersions } = useDocumentsConsolidated()
  *
  * @returns Object with fetching methods and state
  */
 export const useDocumentFetch = () => {
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(
+      '[DEPRECATED] useDocumentFetch is deprecated as of Phase 4. ' +
+      'Use useDocumentsConsolidated() instead.\n' +
+      'Migration guide: See DEPRECATION_AUDIT.md'
+    )
+  }
+
   const supabase = useSupabase();
   let userStore: ReturnType<typeof useUserStore> | undefined;
   const getUserStore = () => {

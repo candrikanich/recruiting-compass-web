@@ -439,7 +439,7 @@ import { reactive, ref, onMounted, watch } from 'vue'
 import { useEvents } from '~/composables/useEvents'
 import { useSchools } from '~/composables/useSchools'
 import { useRouter } from 'vue-router'
-import { useValidation } from '~/composables/useValidation'
+import { useFormValidation } from '~/composables/useFormValidation'
 import { eventSchema } from '~/utils/validation/schemas'
 import FormErrorSummary from '~/components/Validation/FormErrorSummary.vue'
 
@@ -450,7 +450,7 @@ definePageMeta({
 const { createEvent, loading } = useEvents()
 const { schools, fetchSchools, createSchool } = useSchools()
 const router = useRouter()
-const { errors, fieldErrors, clearErrors, hasErrors } = useValidation(eventSchema)
+const { errors, fieldErrors, clearErrors, hasErrors } = useFormValidation()
 
 const form = reactive({
   type: '',

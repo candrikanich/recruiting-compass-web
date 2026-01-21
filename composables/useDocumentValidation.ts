@@ -31,6 +31,14 @@ const FILE_SIZE_LIMITS = {
   'stats_sheet': 5 * 1024 * 1024, // 5MB
 }
 
+// Deprecation warning: consolidated into useFormValidation().validateFile()
+if (process.env.NODE_ENV !== 'test') {
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[DEPRECATED] `useDocumentValidation` is deprecated. Use `useFormValidation().validateFile()` from `~/composables/useFormValidation` instead.'
+  )
+}
+
 /**
  * Validate a file for document upload
  *

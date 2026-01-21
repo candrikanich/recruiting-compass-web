@@ -6,13 +6,23 @@ import { useDocumentSharing } from './useDocumentSharing'
 /**
  * Composable for document management (backwards-compatible wrapper)
  *
- * Combines useDocumentFetch, useDocumentUpload, and useDocumentSharing
- * for a unified interface. For new code, prefer using the specific composables.
+ * ⚠️ DEPRECATED: This composable is deprecated as of Phase 4
+ * Use useDocumentsConsolidated() instead for new code
  *
- * @deprecated Prefer using useDocumentFetch, useDocumentUpload, useDocumentSharing directly
+ * Migration guide: See docs/phase-4/DEPRECATION_AUDIT.md
+ * Timeline: Will be removed in Phase 5
+ *
+ * Combines useDocumentFetch, useDocumentUpload, and useDocumentSharing
+ * for a unified interface. For new code, prefer using useDocumentsConsolidated.
+ *
+ * @deprecated Use useDocumentsConsolidated() instead
  *
  * @example
+ * // OLD (deprecated)
  * const { documents, uploadDocument, shareDocument } = useDocuments()
+ *
+ * // NEW (preferred)
+ * const { documents, uploadDocument, shareDocument } = useDocumentsConsolidated()
  *
  * @returns Combined object with all document operations
  */
@@ -37,6 +47,15 @@ export const useDocuments = (): {
   const fetch = useDocumentFetch()
   const upload = useDocumentUpload()
   const sharing = useDocumentSharing()
+
+  // Deprecation warning
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(
+      '[DEPRECATED] useDocuments is deprecated as of Phase 4. ' +
+      'Use useDocumentsConsolidated() instead.\n' +
+      'Migration guide: See DEPRECATION_AUDIT.md'
+    )
+  }
 
   return {
     // From fetch

@@ -372,7 +372,7 @@ import { XMarkIcon } from '@heroicons/vue/24/solid'
 import { useInteractions } from '~/composables/useInteractions'
 import { useSchools } from '~/composables/useSchools'
 import { useCoaches } from '~/composables/useCoaches'
-import { useValidation } from '~/composables/useValidation'
+import { useFormValidation } from '~/composables/useFormValidation'
 import { interactionSchema } from '~/utils/validation/schemas'
 import { z } from 'zod'
 import FormErrorSummary from '~/components/Validation/FormErrorSummary.vue'
@@ -396,7 +396,7 @@ const selectDropdownStyle = computed(() => ({
 const { createInteraction, loading } = useInteractions()
 const { schools, fetchSchools } = useSchools()
 const { coaches, fetchAllCoaches, createCoach } = useCoaches()
-const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } = useValidation(interactionSchema)
+const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } = useFormValidation()
 
 // Field validators
 const validators = {

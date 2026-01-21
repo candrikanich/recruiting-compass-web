@@ -170,7 +170,7 @@
 
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
-import { useValidation } from '~/composables/useValidation'
+import { useFormValidation } from '~/composables/useFormValidation'
 import { coachSchema } from '~/utils/validation/schemas'
 import { z } from 'zod'
 
@@ -193,7 +193,7 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
-const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } = useValidation(coachSchema)
+const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } = useFormValidation()
 
 // Form data - initialize with parent data or defaults
 const formData = reactive({
@@ -234,47 +234,39 @@ const validators = {
 }
 
 const validateRole = async () => {
-  const validator = validateField('role', validators.role.shape.role)
-  await validator(formData.role)
+  await validateField('role', formData.role, validators.role.shape.role)
 }
 
 const validateFirstName = async () => {
-  const validator = validateField('first_name', validators.first_name.shape.first_name)
-  await validator(formData.first_name)
+  await validateField('first_name', formData.first_name, validators.first_name.shape.first_name)
 }
 
 const validateLastName = async () => {
-  const validator = validateField('last_name', validators.last_name.shape.last_name)
-  await validator(formData.last_name)
+  await validateField('last_name', formData.last_name, validators.last_name.shape.last_name)
 }
 
 const validateEmail = async () => {
-  const validator = validateField('email', validators.email.shape.email)
-  await validator(formData.email)
+  await validateField('email', formData.email, validators.email.shape.email)
 }
 
 const validatePhone = async () => {
-  const validator = validateField('phone', validators.phone.shape.phone)
-  await validator(formData.phone)
+  await validateField('phone', formData.phone, validators.phone.shape.phone)
 }
 
 const validateTwitter = async () => {
-  const validator = validateField('twitter_handle', validators.twitter_handle.shape.twitter_handle)
-  await validator(formData.twitter_handle)
+  await validateField('twitter_handle', formData.twitter_handle, validators.twitter_handle.shape.twitter_handle)
 }
 
 const validateInstagram = async () => {
-  const validator = validateField('instagram_handle', validators.instagram_handle.shape.instagram_handle)
-  await validator(formData.instagram_handle)
+  await validateField('instagram_handle', formData.instagram_handle, validators.instagram_handle.shape.instagram_handle)
 }
 
 const validateNotes = async () => {
-  const validator = validateField('notes', validators.notes.shape.notes)
-  await validator(formData.notes)
+  await validateField('notes', formData.notes, validators.notes.shape.notes)
 }
 
 const handleSubmit = async () => {
-  const validated = await validate(formData)
+  const validated = await validate(formData, coachSchema)
 
   if (!validated) {
     return

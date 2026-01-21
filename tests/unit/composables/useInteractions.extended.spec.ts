@@ -48,6 +48,7 @@ describe("useInteractions - Extended", () => {
       single: vi.fn().mockReturnThis(),
       gte: vi.fn().mockReturnThis(),
       lte: vi.fn().mockReturnThis(),
+      then: vi.fn((resolve) => resolve({ data: [], error: null })),
     };
 
     mockSupabase.from.mockReturnValue(mockQuery);
@@ -83,12 +84,10 @@ describe("useInteractions - Extended", () => {
           type: "phone_call",
         }),
       ];
-      // Mock the query itself to resolve after all the chained calls
-      Object.defineProperty(mockQuery, "then", {
-        value: (resolve: any) =>
-          resolve({ data: mockInteractions, error: null }),
-        writable: true,
-      });
+      // Set up the mock to resolve with interactions data
+      mockQuery.then = vi.fn((resolve) =>
+        resolve({ data: mockInteractions, error: null }),
+      );
 
       const { fetchInteractions, interactions } = useInteractions();
       await fetchInteractions({ type: "email", direction: "outbound" });
@@ -108,22 +107,15 @@ describe("useInteractions - Extended", () => {
       const startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-      const oldInteraction = createMockInteraction({
-        occurred_at: new Date(
-          now.getTime() - 30 * 24 * 60 * 60 * 1000,
-        ).toISOString(),
-      });
       const validInteraction = createMockInteraction({
         occurred_at: now.toISOString(),
       });
       const mockInteractions = [validInteraction];
 
-      // Mock the query itself to resolve after all the chained calls
-      Object.defineProperty(mockQuery, "then", {
-        value: (resolve: any) =>
-          resolve({ data: mockInteractions, error: null }),
-        writable: true,
-      });
+      // Set up the mock to resolve with interactions data
+      mockQuery.then = vi.fn((resolve) =>
+        resolve({ data: mockInteractions, error: null }),
+      );
 
       const { fetchInteractions, interactions } = useInteractions();
       await fetchInteractions({
@@ -145,7 +137,9 @@ describe("useInteractions - Extended", () => {
 
     it("should handle fetch errors gracefully", async () => {
       const mockError = new Error("Fetch failed");
-      mockQuery.order.mockResolvedValue({ data: null, error: mockError });
+      mockQuery.then = vi.fn((resolve) =>
+        resolve({ data: null, error: mockError }),
+      );
 
       const { fetchInteractions, error } = useInteractions();
       await fetchInteractions();
@@ -156,9 +150,6 @@ describe("useInteractions - Extended", () => {
 
   describe("exportToCSV", () => {
     it("should generate valid CSV from interactions", async () => {
-      const { exportToCSV, interactions, fetchInteractions } =
-        useInteractions();
-
       const mockInteractions = [
         createMockInteraction(),
         createMockInteraction({
@@ -167,11 +158,11 @@ describe("useInteractions - Extended", () => {
         }),
       ];
 
-      mockQuery.order.mockResolvedValue({
-        data: mockInteractions,
-        error: null,
-      });
+      mockQuery.then = vi.fn((resolve) =>
+        resolve({ data: mockInteractions, error: null }),
+      );
 
+      const { exportToCSV, fetchInteractions } = useInteractions();
       await fetchInteractions();
 
       const csv = exportToCSV();
@@ -184,20 +175,17 @@ describe("useInteractions - Extended", () => {
     });
 
     it("should escape quotes in CSV content", async () => {
-      const { exportToCSV, interactions, fetchInteractions } =
-        useInteractions();
-
       const mockInteractions = [
         createMockInteraction({
           content: 'He said "hello"',
         }),
       ];
 
-      mockQuery.order.mockResolvedValue({
-        data: mockInteractions,
-        error: null,
-      });
+      mockQuery.then = vi.fn((resolve) =>
+        resolve({ data: mockInteractions, error: null }),
+      );
 
+      const { exportToCSV, fetchInteractions } = useInteractions();
       await fetchInteractions();
 
       const csv = exportToCSV();
@@ -218,6 +206,7 @@ describe("useInteractions - Extended", () => {
       const newInteraction = createMockInteraction();
       const insertMock = vi.fn().mockReturnValue(mockQuery);
       mockQuery.insert = insertMock;
+      mockQuery.select = vi.fn().mockReturnValue(mockQuery);
       mockQuery.single.mockResolvedValue({ data: newInteraction, error: null });
 
       const { createInteraction } = useInteractions();
@@ -241,7 +230,8 @@ describe("useInteractions - Extended", () => {
 
     it("should handle add errors", async () => {
       const mockError = new Error("Insert failed");
-      mockQuery.insert.mockReturnValue(mockQuery);
+      mockQuery.insert = vi.fn().mockReturnValue(mockQuery);
+      mockQuery.select = vi.fn().mockReturnValue(mockQuery);
       mockQuery.single.mockResolvedValue({ data: null, error: mockError });
 
       const { createInteraction, error } = useInteractions();
@@ -254,12 +244,18 @@ describe("useInteractions - Extended", () => {
         // Expected error
       }
 
-      expect(error.value).toContain("Insert failed");
+      expect(error.value).toBe("Insert failed");
     });
   });
 
   describe("deleteInteraction", () => {
     it("should delete interaction by id", async () => {
+      mockQuery.delete = vi.fn().mockReturnValue(mockQuery);
+      mockQuery.eq = vi.fn().mockReturnValue(mockQuery);
+      mockQuery.then = vi.fn((resolve) =>
+        resolve({ data: null, error: null }),
+      );
+
       const { deleteInteraction } = useInteractions();
       await deleteInteraction("550e8400-e29b-41d4-a716-446655440000");
 

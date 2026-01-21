@@ -4,19 +4,38 @@ import { useSearchFilters } from './useSearchFilters'
 /**
  * Composable for search (backwards-compatible wrapper)
  *
- * Combines useEntitySearch and useSearchFilters for unified search interface.
- * For new code, prefer using useEntitySearch and useSearchFilters directly.
+ * ⚠️ DEPRECATED: This composable is deprecated as of Phase 4
+ * Use useSearchConsolidated() instead for new code
  *
- * @deprecated Prefer using useEntitySearch and useSearchFilters directly
+ * Migration guide: See docs/phase-4/DEPRECATION_AUDIT.md
+ * Timeline: Will be removed in Phase 5
+ *
+ * Combines useEntitySearch and useSearchFilters for unified search interface.
+ * For new code, prefer using useSearchConsolidated.
+ *
+ * @deprecated Use useSearchConsolidated() instead
  *
  * @example
+ * // OLD (deprecated)
  * const { performSearch, filters, clearFilters } = useSearch()
+ *
+ * // NEW (preferred)
+ * const { performSearch, filters, clearFilters } = useSearchConsolidated()
  *
  * @returns Combined object with all search operations
  */
 export const useSearch = () => {
   const entitySearch = useEntitySearch()
   const filterMgmt = useSearchFilters()
+
+  // Deprecation warning
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(
+      '[DEPRECATED] useSearch is deprecated as of Phase 4. ' +
+      'Use useSearchConsolidated() instead.\n' +
+      'Migration guide: See DEPRECATION_AUDIT.md'
+    )
+  }
 
   /**
    * Override performSearch to integrate filters

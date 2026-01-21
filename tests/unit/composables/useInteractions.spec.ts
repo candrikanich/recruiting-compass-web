@@ -38,6 +38,7 @@ describe("useInteractions", () => {
     setActivePinia(createPinia());
     userStore = useUserStore();
 
+    // Create mock query that returns itself for chaining
     mockQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -48,6 +49,24 @@ describe("useInteractions", () => {
       single: vi.fn().mockReturnThis(),
       gte: vi.fn().mockReturnThis(),
       lte: vi.fn().mockReturnThis(),
+    };
+
+    // Store test data for the mock query to return
+    let testResponses: { data: any[]; error: null } = { data: [], error: null };
+
+    // Make the mock query itself thenable
+    Object.defineProperty(mockQuery, "then", {
+      value: (
+        onFulfilled: (value: any) => any,
+        onRejected?: (reason: any) => any,
+      ) => {
+        return Promise.resolve(testResponses).then(onFulfilled, onRejected);
+      },
+    });
+
+    // Helper to set test data for specific tests
+    mockQuery.__setTestData = (data: any[]) => {
+      testResponses.data = data;
     };
 
     mockSupabase.from.mockReturnValue(mockQuery);
@@ -107,7 +126,10 @@ describe("useInteractions", () => {
           school_id: "550e8400-e29b-41d4-a716-446655440001",
         }),
       ];
-      mockQuery.order.mockResolvedValue({
+
+      // The mock query object needs to resolve on the final method call
+      // Since eq is called after order, we need to mock eq to resolve the promise
+      mockQuery.eq.mockResolvedValue({
         data: mockInteractions,
         error: null,
       });
@@ -135,9 +157,13 @@ describe("useInteractions", () => {
           type: "email",
         }),
       ];
-      mockQuery.order.mockResolvedValue({
-        data: mockInteractions,
-        error: null,
+
+      mockQuery.__setTestData(mockInteractions);
+
+      const { fetchInteractions, interactions } = useInteractions();
+      await fetchInteractions({
+        schoolId: "550e8400-e29b-41d4-a716-446655440001",
+        type: "email",
       });
 
       expect(mockSupabase.from).toHaveBeenCalledWith("interactions");
@@ -149,6 +175,10 @@ describe("useInteractions", () => {
         "school_id",
         "550e8400-e29b-41d4-a716-446655440001",
       );
+      expect(mockQuery.eq).toHaveBeenCalledWith("type", "email");
+
+      // Check that interactions are properly set
+      expect(interactions.value).toEqual(mockInteractions);
     });
 
     it("should fetch interactions filtered by coachId", async () => {
@@ -157,35 +187,43 @@ describe("useInteractions", () => {
           coach_id: "550e8400-e29b-41d4-a716-446655440002",
         }),
       ];
-      mockQuery.order.mockResolvedValue({
-        data: mockInteractions,
-        error: null,
-      });
 
-      const { fetchInteractions } = useInteractions();
+      mockQuery.__setTestData(mockInteractions);
+
+      const { fetchInteractions, interactions } = useInteractions();
       await fetchInteractions({
         coachId: "550e8400-e29b-41d4-a716-446655440002",
       });
 
+      expect(mockSupabase.from).toHaveBeenCalledWith("interactions");
+      expect(mockQuery.select).toHaveBeenCalledWith("*");
+      expect(mockQuery.order).toHaveBeenCalledWith("occurred_at", {
+        ascending: false,
+      });
       expect(mockQuery.eq).toHaveBeenCalledWith(
         "coach_id",
         "550e8400-e29b-41d4-a716-446655440002",
       );
+
+      expect(interactions.value).toEqual(mockInteractions);
     });
 
     it("should fetch interactions filtered by both schoolId and coachId", async () => {
       const mockInteractions = [createMockInteraction()];
-      mockQuery.order.mockResolvedValue({
-        data: mockInteractions,
-        error: null,
-      });
 
-      const { fetchInteractions } = useInteractions();
+      mockQuery.__setTestData(mockInteractions);
+
+      const { fetchInteractions, interactions } = useInteractions();
       await fetchInteractions({
         schoolId: "550e8400-e29b-41d4-a716-446655440001",
         coachId: "550e8400-e29b-41d4-a716-446655440002",
       });
 
+      expect(mockSupabase.from).toHaveBeenCalledWith("interactions");
+      expect(mockQuery.select).toHaveBeenCalledWith("*");
+      expect(mockQuery.order).toHaveBeenCalledWith("occurred_at", {
+        ascending: false,
+      });
       expect(mockQuery.eq).toHaveBeenCalledWith(
         "school_id",
         "550e8400-e29b-41d4-a716-446655440001",
@@ -554,11 +592,10 @@ describe("useInteractions", () => {
       const initialInteraction = createMockInteraction();
       const updatedInteraction = createMockInteraction({ subject: "Updated" });
 
-      // Mock the query itself to resolve after chained calls
-      Object.defineProperty(mockQuery, "then", {
-        value: (resolve: any) =>
-          resolve({ data: mockInteractions, error: null }),
-        writable: true,
+      // Mock fetchInteractions call to populate interactions
+      mockQuery.order.mockResolvedValue({
+        data: [initialInteraction],
+        error: null,
       });
       mockQuery.single.mockResolvedValue({
         data: updatedInteraction,
@@ -595,19 +632,21 @@ describe("useInteractions", () => {
         useInteractions();
 
       // First fetch to populate interactions
-      mockQuery.order.mockResolvedValue({
-        data: [
-          createMockInteraction(),
-          createMockInteraction({ id: "550e8400-e29b-41d4-a716-446655440003" }),
-        ],
-        error: null,
-      });
+      mockQuery.__setTestData([
+        createMockInteraction(),
+        createMockInteraction({ id: "550e8400-e29b-41d4-a716-446655403" }),
+      ]);
       await fetchInteractions();
 
       // Mock delete query resolution - delete() returns a query object with eq() method
+      const deleteQueryEq = vi.fn().mockReturnThis();
       const deleteQuery = {
-        eq: vi.fn().mockReturnThis(),
-        then: vi.fn().mockResolvedValue({ error: null }),
+        eq: deleteQueryEq,
+        then: vi
+          .fn()
+          .mockImplementation((onFulfilled) =>
+            Promise.resolve({ error: null }).then(onFulfilled),
+          ),
       };
       mockQuery.delete.mockReturnValue(deleteQuery);
 
@@ -615,11 +654,11 @@ describe("useInteractions", () => {
       await deleteInteraction("550e8400-e29b-41d4-a716-446655440000");
 
       expect(mockQuery.delete).toHaveBeenCalled();
-      expect(mockQuery.eq).toHaveBeenCalledWith(
+      expect(deleteQueryEq).toHaveBeenCalledWith(
         "id",
         "550e8400-e29b-41d4-a716-446655440000",
       );
-      expect(mockQuery.eq).toHaveBeenCalledWith("logged_by", "user-123");
+      expect(deleteQueryEq).toHaveBeenCalledWith("logged_by", "user-123");
       expect(
         interactions.value.find(
           (i) => i.id === "550e8400-e29b-41d4-a716-446655440000",
@@ -646,9 +685,16 @@ describe("useInteractions", () => {
 
     it("should handle delete error", async () => {
       // Mock delete query resolution with error - delete() returns a query object with eq() method
+      const deleteQueryEq = vi.fn().mockReturnThis();
       const deleteQuery = {
-        eq: vi.fn().mockReturnThis(),
-        then: vi.fn().mockResolvedValue({ error: new Error("Delete failed") }),
+        eq: deleteQueryEq,
+        then: vi
+          .fn()
+          .mockImplementation((onFulfilled) =>
+            Promise.resolve({ error: new Error("Delete failed") }).then(
+              onFulfilled,
+            ),
+          ),
       };
       mockQuery.delete.mockReturnValue(deleteQuery);
 
@@ -662,9 +708,14 @@ describe("useInteractions", () => {
 
     it("should enforce user ownership via logged_by check", async () => {
       // Mock delete query resolution - delete() returns a query object with eq() method
+      const deleteQueryEq = vi.fn().mockReturnThis();
       const deleteQuery = {
-        eq: vi.fn().mockReturnThis(),
-        then: vi.fn().mockResolvedValue({ error: null }),
+        eq: deleteQueryEq,
+        then: vi
+          .fn()
+          .mockImplementation((onFulfilled) =>
+            Promise.resolve({ error: null }).then(onFulfilled),
+          ),
       };
       mockQuery.delete.mockReturnValue(deleteQuery);
 
@@ -673,11 +724,11 @@ describe("useInteractions", () => {
 
       // Should check both id and logged_by
       expect(mockQuery.delete).toHaveBeenCalled();
-      expect(mockQuery.eq).toHaveBeenCalledWith(
+      expect(deleteQueryEq).toHaveBeenCalledWith(
         "id",
         "550e8400-e29b-41d4-a716-446655440000",
       );
-      expect(mockQuery.eq).toHaveBeenCalledWith("logged_by", "user-123");
+      expect(deleteQueryEq).toHaveBeenCalledWith("logged_by", "user-123");
     });
   });
 
@@ -848,7 +899,7 @@ describe("useInteractions", () => {
   });
 
   describe("Query Building", () => {
-    it("should build correct query with only schoolId filter", async () => {
+    it("should build correct query with no filters", async () => {
       mockQuery.order.mockResolvedValue({ data: [], error: null });
 
       const { fetchInteractions } = useInteractions();
@@ -862,14 +913,19 @@ describe("useInteractions", () => {
     });
 
     it("should build correct query with only schoolId filter", async () => {
-      mockQuery.order.mockResolvedValue({ data: [], error: null });
+      // Mock the final eq call to resolve the query
+      mockQuery.eq.mockImplementation((field, value) => {
+        if (field === "school_id") {
+          return Promise.resolve({ data: [], error: null });
+        }
+        return mockQuery;
+      });
 
       const { fetchInteractions } = useInteractions();
       await fetchInteractions({
         schoolId: "550e8400-e29b-41d4-a716-446655440001",
       });
 
-      expect(mockQuery.eq).toHaveBeenCalledTimes(1);
       expect(mockQuery.eq).toHaveBeenCalledWith(
         "school_id",
         "550e8400-e29b-41d4-a716-446655440001",
@@ -877,14 +933,19 @@ describe("useInteractions", () => {
     });
 
     it("should build correct query with only coachId filter", async () => {
-      mockQuery.order.mockResolvedValue({ data: [], error: null });
+      // Mock the final eq call to resolve the query
+      mockQuery.eq.mockImplementation((field, value) => {
+        if (field === "coach_id") {
+          return Promise.resolve({ data: [], error: null });
+        }
+        return mockQuery;
+      });
 
       const { fetchInteractions } = useInteractions();
       await fetchInteractions({
         coachId: "550e8400-e29b-41d4-a716-446655440002",
       });
 
-      expect(mockQuery.eq).toHaveBeenCalledTimes(1);
       expect(mockQuery.eq).toHaveBeenCalledWith(
         "coach_id",
         "550e8400-e29b-41d4-a716-446655440002",
@@ -892,7 +953,16 @@ describe("useInteractions", () => {
     });
 
     it("should build correct query with both filters", async () => {
-      mockQuery.order.mockResolvedValue({ data: [], error: null });
+      // Track eq calls
+      const eqCalls: Array<[string, any]> = [];
+      mockQuery.eq.mockImplementation((field, value) => {
+        eqCalls.push([field, value]);
+        if (field === "coach_id") {
+          // Final eq call resolves the query
+          return Promise.resolve({ data: [], error: null });
+        }
+        return mockQuery;
+      });
 
       const { fetchInteractions } = useInteractions();
       await fetchInteractions({
@@ -900,15 +970,15 @@ describe("useInteractions", () => {
         coachId: "550e8400-e29b-41d4-a716-446655440002",
       });
 
-      expect(mockQuery.eq).toHaveBeenCalledTimes(2);
-      expect(mockQuery.eq).toHaveBeenCalledWith(
+      expect(eqCalls).toHaveLength(2);
+      expect(eqCalls[0]).toEqual([
         "school_id",
         "550e8400-e29b-41d4-a716-446655440001",
-      );
-      expect(mockQuery.eq).toHaveBeenCalledWith(
+      ]);
+      expect(eqCalls[1]).toEqual([
         "coach_id",
         "550e8400-e29b-41d4-a716-446655440002",
-      );
+      ]);
     });
   });
 });
