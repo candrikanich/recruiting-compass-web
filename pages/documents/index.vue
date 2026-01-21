@@ -34,7 +34,7 @@
       <!-- Filter Panel with Chips -->
       <FilterPanel>
         <template #chips>
-          <FilterChips
+          <DesignSystemFilterChips
             :configs="filterConfigs"
             :filter-values="Object.fromEntries(Object.entries(filterValues.value || {}))"
             :has-active-filters="hasActiveFilters"
@@ -318,7 +318,6 @@ import { useDocuments } from '~/composables/useDocuments'
 import { useSchools } from '~/composables/useSchools'
 import { useUniversalFilter } from '~/composables/useUniversalFilter'
 import FilterPanel from '~/components/Common/FilterPanel.vue'
-import FilterChips from '~/components/Common/FilterChips.vue'
 import UniversalFilter from '~/components/Common/UniversalFilter.vue'
 import { useUserStore } from '~/stores/user'
 import type { Document } from '~/types/models'
