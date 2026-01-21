@@ -12,9 +12,6 @@ module.exports = {
     },
   },
 
-  alias: {
-    '~': '/',
-  },
 
   runtimeConfig: {
     public: {
