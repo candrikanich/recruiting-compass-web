@@ -726,9 +726,62 @@ NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY=your_key
 - **Domain organization**: Components grouped by domain (`/Coach`, `/School`, `/Interaction`) to avoid naming collisions
 - **Complex calculations**: `useSchoolMatching`, `useFitScore`, `usePhaseCalculation` contain business logic - read before refactoring
 
-## Phase 1 Refactoring: Migration Guide
+## Phase 1 & Phase 2 Refactoring: Migration Guide
 
-**Status**: In Progress | **Branch**: `refactor/phase-1-query-validation-layer`
+**Status**: Phase 1 Complete | Phase 2 In Progress | **Branch**: `refactor/phase-1-query-validation-layer`
+
+### Phase 2: Composable Consolidation (NEW)
+
+**Completed:**
+- ✅ Query service layer (`utils/supabaseQuery.ts`)
+- ✅ Unified validation (`composables/useFormValidation.ts`)
+- ✅ Consolidated documents (`composables/useDocumentsConsolidated.ts`)
+- ✅ Consolidated search (`composables/useSearchConsolidated.ts`)
+- ✅ API documentation guide (`API_ENDPOINT_DOCUMENTATION.md`)
+
+**New Consolidated Composables:**
+
+1. **useDocumentsConsolidated()** - Unified document management
+   - Replaces: `useDocumentFetch`, `useDocumentUpload`, `useDocumentSharing` (gradual migration)
+   - Provides: CRUD operations, file uploads, version management, sharing/permissions
+   - Features: Integrated with `useFormValidation` for file validation, query service layer
+   - Migration: Old composables still available; new code uses consolidated version
+   
+   ```typescript
+   // Before (split across 3 composables)
+   const { documents, fetchDocuments } = useDocumentFetch()
+   const { uploadDocument } = useDocumentUpload()
+   const { shareDocument } = useDocumentSharing()
+   
+   // After (consolidated)
+   const { documents, fetchDocuments, uploadDocument, shareDocument } = useDocumentsConsolidated()
+   ```
+
+2. **useSearchConsolidated()** - Unified search with filtering & caching
+   - Replaces: `useEntitySearch`, `useSearchFilters`, `useCachedSearch` (gradual migration)
+   - Provides: Multi-entity search (schools, coaches, interactions, metrics), filtering, debouncing, result caching
+   - Features: Fuzzy search via Fuse.js, integrated filters, cache TTL (5min), auto re-search on filter change
+   - Migration: Old composables still available; new code uses consolidated version
+   
+   ```typescript
+   // Before (split across 3 composables)
+   const { performSearch, schoolResults } = useEntitySearch()
+   const { filters, applyFilter } = useSearchFilters()
+   const { getSchoolSuggestions } = useCachedSearch()
+   
+   // After (consolidated)
+   const { 
+     performSearch, 
+     schoolResults, 
+     filters, 
+     applyFilter, 
+     getSchoolSuggestions 
+   } = useSearchConsolidated()
+   ```
+
+### Phase 1 Refactoring: Migration Guide
+
+**Status**: Complete | **Branch**: `refactor/phase-1-query-validation-layer`
 
 ### New Files (Use These)
 
