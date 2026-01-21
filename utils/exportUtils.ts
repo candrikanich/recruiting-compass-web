@@ -2,9 +2,6 @@
  * Export utilities for generating CSV and PDF reports
  */
 
-import html2canvas from 'html2canvas'
-import { jsPDF } from 'jspdf'
-import 'jspdf-autotable'
 import type { Interaction, School, Offer } from '~/types/models'
 import { downloadFile } from './exportHelpers'
 
@@ -403,6 +400,7 @@ export const chartToImage = async (chartElement: HTMLCanvasElement): Promise<str
  * Convert a DOM element containing a chart to image data URL
  */
 export const elementToImage = async (element: HTMLElement): Promise<string> => {
+  const { default: html2canvas } = await import('html2canvas')
   const canvas = await html2canvas(element, {
     useCORS: true,
     allowTaint: true,
@@ -421,6 +419,9 @@ export const exportAnalyticsPDF = async (
   filename?: string
 ): Promise<void> => {
   try {
+    const { jsPDF } = await import('jspdf')
+    await import('jspdf-autotable')
+
     const doc = new jsPDF()
     const pageWidth = doc.internal.pageSize.getWidth()
     const pageHeight = doc.internal.pageSize.getHeight()

@@ -15,18 +15,23 @@ export default defineConfig({
   },
 
   projects: [
+    // Always run Chromium
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+
+    // Only run Firefox/WebKit in CI (or with FULL_TESTS=1)
+    ...(process.env.CI || process.env.FULL_TESTS ? [
+      {
+        name: 'firefox',
+        use: { ...devices['Desktop Firefox'] }
+      },
+      {
+        name: 'webkit',
+        use: { ...devices['Desktop Safari'] }
+      }
+    ] : [])
   ],
 
   webServer: {

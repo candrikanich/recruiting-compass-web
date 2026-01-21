@@ -179,14 +179,14 @@ const handleExport = async () => {
       let report
 
       if (selectedType.value === 'individual') {
-        report = generateIndividualMetricReport(selectedMetric.value, {
+        report = await generateIndividualMetricReport(selectedMetric.value, {
           metrics: filteredMetrics,
           format: format as 'pdf' | 'text',
           athleteName,
           coachName: coachName.value
         })
       } else if (selectedType.value === 'comprehensive') {
-        report = generateComprehensiveReport({
+        report = await generateComprehensiveReport({
           metrics: filteredMetrics,
           format: format as 'pdf' | 'text',
           athleteName,
@@ -197,7 +197,7 @@ const handleExport = async () => {
         if (!event) continue
 
         const eventMetrics = filteredMetrics.filter(m => m.event_id === props.eventId)
-        report = generateEventReport({
+        report = await generateEventReport({
           metrics: eventMetrics,
           format: format as 'pdf' | 'text',
           athleteName,
