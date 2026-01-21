@@ -153,7 +153,7 @@
               class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none placeholder:text-slate-400"
               @blur="validateContent"
             />
-            <FieldError :error="fieldErrors.content" />
+            <DesignSystemFieldError :error="fieldErrors.content" />
           </div>
 
           <!-- Sentiment -->
@@ -376,7 +376,6 @@ import { useFormValidation } from '~/composables/useFormValidation'
 import { interactionSchema } from '~/utils/validation/schemas'
 import { z } from 'zod'
 import FormErrorSummary from '~/components/Validation/FormErrorSummary.vue'
-import FieldError from '~/components/Validation/FieldError.vue'
 import InterestCalibration from '~/components/Interaction/InterestCalibration.vue'
 import type { Interaction } from '~/types/models'
 

@@ -28,13 +28,12 @@
       ]"
     />
 
-    <FieldError :error="error" />
+    <DesignSystemFieldError :error="error" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import FieldError from './FieldError.vue'
 
 const props = withDefaults(
   defineProps<{

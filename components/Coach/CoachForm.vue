@@ -21,7 +21,7 @@
         <option value="assistant">Assistant Coach</option>
         <option value="recruiting">Recruiting Coordinator</option>
       </select>
-      <FieldError :error="fieldErrors.role" />
+      <DesignSystemFieldError :error="fieldErrors.role" />
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -40,7 +40,7 @@
           :disabled="loading"
           @blur="validateFirstName"
         />
-        <FieldError :error="fieldErrors.first_name" />
+        <DesignSystemFieldError :error="fieldErrors.first_name" />
       </div>
 
       <!-- Last Name -->
@@ -58,7 +58,7 @@
           :disabled="loading"
           @blur="validateLastName"
         />
-        <FieldError :error="fieldErrors.last_name" />
+        <DesignSystemFieldError :error="fieldErrors.last_name" />
       </div>
     </div>
 
@@ -76,7 +76,7 @@
         :disabled="loading"
         @blur="validateEmail"
       />
-      <FieldError :error="fieldErrors.email" />
+      <DesignSystemFieldError :error="fieldErrors.email" />
     </div>
 
     <!-- Phone -->
@@ -93,7 +93,7 @@
         :disabled="loading"
         @blur="validatePhone"
       />
-      <FieldError :error="fieldErrors.phone" />
+      <DesignSystemFieldError :error="fieldErrors.phone" />
     </div>
 
     <!-- Social Media -->
@@ -111,7 +111,7 @@
           :disabled="loading"
           @blur="validateTwitter"
         />
-        <FieldError :error="fieldErrors.twitter_handle" />
+        <DesignSystemFieldError :error="fieldErrors.twitter_handle" />
       </div>
 
       <div>
@@ -127,7 +127,7 @@
           :disabled="loading"
           @blur="validateInstagram"
         />
-        <FieldError :error="fieldErrors.instagram_handle" />
+        <DesignSystemFieldError :error="fieldErrors.instagram_handle" />
       </div>
     </div>
 
@@ -145,7 +145,7 @@
         :disabled="loading"
         @blur="validateNotes"
       />
-      <FieldError :error="fieldErrors.notes" />
+      <DesignSystemFieldError :error="fieldErrors.notes" />
     </div>
 
     <!-- Submit and Cancel buttons -->

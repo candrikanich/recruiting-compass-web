@@ -41,9 +41,11 @@
 </template>
 
 <script setup lang="ts">
+export type LoadingStateVariant = 'spinner' | 'skeleton' | 'shimmer'
+
 interface Props {
   message?: string
-  variant?: 'spinner' | 'skeleton' | 'shimmer'
+  variant?: LoadingStateVariant
 }
 
 withDefaults(defineProps<Props>(), {

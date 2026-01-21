@@ -153,7 +153,7 @@
                   @blur="validateEmail"
                 />
               </div>
-              <FieldError :error="fieldErrors.email" />
+              <DesignSystemFieldError :error="fieldErrors.email" />
             </div>
 
             <!-- Role -->
