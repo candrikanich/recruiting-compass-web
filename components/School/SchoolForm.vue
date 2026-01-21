@@ -26,7 +26,7 @@
         :disabled="loading"
         @blur="validateName"
       />
-      <FieldError :error="fieldErrors.name" />
+      <DesignSystemFieldError :error="fieldErrors.name" />
     </div>
 
     <!-- Location -->
@@ -44,7 +44,7 @@
         :disabled="loading"
         @blur="validateLocation"
       />
-      <FieldError :error="fieldErrors.location" />
+      <DesignSystemFieldError :error="fieldErrors.location" />
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -67,7 +67,7 @@
           <option value="D2">Division 2 (D2)</option>
           <option value="D3">Division 3 (D3)</option>
         </select>
-        <FieldError :error="fieldErrors.division" />
+        <DesignSystemFieldError :error="fieldErrors.division" />
       </div>
 
       <!-- Conference -->
@@ -85,7 +85,7 @@
           :disabled="loading"
           @blur="validateConference"
         />
-        <FieldError :error="fieldErrors.conference" />
+        <DesignSystemFieldError :error="fieldErrors.conference" />
       </div>
     </div>
 
@@ -104,7 +104,7 @@
         :disabled="loading"
         @blur="validateWebsite"
       />
-      <FieldError :error="fieldErrors.website" />
+      <DesignSystemFieldError :error="fieldErrors.website" />
     </div>
 
     <!-- Social Media -->
@@ -122,7 +122,7 @@
           :disabled="loading"
           @blur="validateTwitter"
         />
-        <FieldError :error="fieldErrors.twitter_handle" />
+        <DesignSystemFieldError :error="fieldErrors.twitter_handle" />
       </div>
 
       <div>
@@ -138,7 +138,7 @@
           :disabled="loading"
           @blur="validateInstagram"
         />
-        <FieldError :error="fieldErrors.instagram_handle" />
+        <DesignSystemFieldError :error="fieldErrors.instagram_handle" />
       </div>
     </div>
 
@@ -156,7 +156,7 @@
         :disabled="loading"
         @blur="validateNotes"
       />
-      <FieldError :error="fieldErrors.notes" />
+      <DesignSystemFieldError :error="fieldErrors.notes" />
     </div>
 
     <!-- Status -->
@@ -179,7 +179,7 @@
         <option value="declined">Declined</option>
         <option value="committed">Committed</option>
       </select>
-      <FieldError :error="fieldErrors.status" />
+      <DesignSystemFieldError :error="fieldErrors.status" />
     </div>
 
     <!-- College Scorecard Data (Display Only) -->

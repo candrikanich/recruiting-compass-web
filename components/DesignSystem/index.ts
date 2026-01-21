@@ -13,6 +13,9 @@ export { default as DSErrorState } from './ErrorState.vue'
 export { default as DSLoadingState } from './LoadingState.vue'
 export { default as DSFilterChips } from './FilterChips.vue'
 export { default as DSFieldError } from './FieldError.vue'
+export { default as DSCardSkeleton } from './CardSkeleton.vue'
+export { default as DSChartSkeleton } from './ChartSkeleton.vue'
+export { default as DSListSkeleton } from './ListSkeleton.vue'
 
 // Re-export types for external use
 export type { ButtonVariant, ButtonColor, ButtonSize } from './Button.vue'
