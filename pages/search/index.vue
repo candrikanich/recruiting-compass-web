@@ -198,7 +198,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useSearch } from '~/composables/useSearch'
+import { useSearchConsolidated } from '~/composables/useSearchConsolidated'
 import { useSavedSearches } from '~/composables/useSavedSearches'
 import type { SavedSearch, SearchHistory } from '~/types/models'
 
@@ -217,11 +217,12 @@ const {
   metricsResults,
   totalResults,
   hasResults,
-  isFiltering,
   performSearch,
   clearFilters: clearSearchFilters,
-  applyFilter,
-} = useSearch()
+  applyFilters,
+  getSchoolSuggestions,
+  getCoachSuggestions,
+} = useSearchConsolidated()
 
 const { recordSearch, incrementUseCount } = useSavedSearches()
 
@@ -239,9 +240,11 @@ const handleSuggestions = () => {
   // Could implement suggestion selection here
 }
 
-const applyFilters = async (updatedFilters: any) => {
+const handleFilterChange = async (updatedFilters: any) => {
+  // Apply new filters and re-search
   if (searchQuery.value) {
-    await performSearch(searchQuery.value)
+    applyFilters(updatedFilters)
+    await performSearch()
   }
 }
 

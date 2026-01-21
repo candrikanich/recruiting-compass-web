@@ -243,7 +243,7 @@
 
 <script setup lang="ts">
 import { reactive, watch, computed } from 'vue'
-import { useValidation } from '~/composables/useValidation'
+import { useFormValidation } from '~/composables/useFormValidation'
 import { schoolSchema } from '~/utils/validation/schemas'
 import { z } from 'zod'
 import type { CollegeDataResult } from '~/composables/useCollegeData'
@@ -287,7 +287,7 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
-const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } = useValidation(schoolSchema)
+const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } = useFormValidation()
 
 // Form data - initialize with parent data or defaults
 const formData = reactive({
@@ -346,18 +346,15 @@ const validators = {
 }
 
 const validateName = async () => {
-  const validator = validateField('name', validators.name.shape.name)
-  await validator(formData.name)
+  await validateField('name', formData.name, validators.name.shape.name)
 }
 
 const validateLocation = async () => {
-  const validator = validateField('location', validators.location.shape.location)
-  await validator(formData.location)
+  await validateField('location', formData.location, validators.location.shape.location)
 }
 
 const validateDivision = async () => {
-  const validator = validateField('division', validators.division.shape.division)
-  await validator(formData.division)
+  await validateField('division', formData.division, validators.division.shape.division)
 }
 
 const validateConference = async () => {

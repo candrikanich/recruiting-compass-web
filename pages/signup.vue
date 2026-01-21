@@ -274,7 +274,7 @@ import { ref } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useSupabase } from '~/composables/useSupabase'
 import { useUserStore } from '~/stores/user'
-import { useValidation } from '~/composables/useValidation'
+import { useFormValidation } from '~/composables/useFormValidation'
 import { signupSchema } from '~/utils/validation/schemas'
 import { z } from 'zod'
 import { ArrowLeftIcon, UserIcon, EnvelopeIcon, LockClosedIcon } from '@heroicons/vue/24/outline'
@@ -294,7 +294,7 @@ const loading = ref(false)
 const { signup } = useAuth()
 const supabase = useSupabase()
 const userStore = useUserStore()
-const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors, setErrors } = useValidation(signupSchema)
+const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors, setErrors } = useFormValidation()
 
 // Field-level validators
 const emailSchema = z.object({ email: signupSchema.shape.email })
@@ -302,18 +302,15 @@ const passwordSchema = z.object({ password: signupSchema.shape.password })
 const roleSchema = z.object({ role: signupSchema.shape.role })
 
 const validateEmail = async () => {
-  const validator = validateField('email', emailSchema.shape.email)
-  await validator(email.value)
+  await validateField('email', email.value, emailSchema.shape.email)
 }
 
 const validatePassword = async () => {
-  const validator = validateField('password', passwordSchema.shape.password)
-  await validator(password.value)
+  await validateField('password', password.value, passwordSchema.shape.password)
 }
 
 const validateRole = async () => {
-  const validator = validateField('role', roleSchema.shape.role)
-  await validator(role.value)
+  await validateField('role', role.value, roleSchema.shape.role)
 }
 
 const handleSignup = async () => {
@@ -332,12 +329,15 @@ const handleSignup = async () => {
   const fullName = `${firstName.value} ${lastName.value}`.trim()
 
   // Validate entire form before submission
-  const validated = await validate({
-    fullName,
-    email: email.value,
-    password: password.value,
-    role: role.value,
-  })
+  const validated = await validate(
+    {
+      fullName,
+      email: email.value,
+      password: password.value,
+      role: role.value,
+    },
+    signupSchema
+  )
 
   if (!validated) {
     return

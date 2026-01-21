@@ -164,7 +164,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useAuth } from "~/composables/useAuth";
-import { useValidation } from "~/composables/useValidation";
+import { useFormValidation } from "~/composables/useFormValidation";
 import { loginSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
 import {
@@ -193,7 +193,7 @@ const {
   clearErrors,
   hasErrors,
   setErrors,
-} = useValidation(loginSchema);
+} = useFormValidation();
 
 // Computed property for form validity
 const isFormValid = computed(
@@ -203,7 +203,7 @@ const isFormValid = computed(
 const validateEmail = async () => {
   validating.value = true;
   try {
-    await validateField("email", EMAIL_SCHEMA.shape.email)(email.value);
+    await validateField("email", email.value, EMAIL_SCHEMA.shape.email);
   } finally {
     validating.value = false;
   }
@@ -212,10 +212,7 @@ const validateEmail = async () => {
 const validatePassword = async () => {
   validating.value = true;
   try {
-    await validateField(
-      "password",
-      PASSWORD_SCHEMA.shape.password,
-    )(password.value);
+    await validateField("password", password.value, PASSWORD_SCHEMA.shape.password);
   } finally {
     validating.value = false;
   }
@@ -223,10 +220,13 @@ const validatePassword = async () => {
 
 const handleLogin = async () => {
   // Validate entire form before submission
-  const validated = await validate({
-    email: email.value,
-    password: password.value,
-  });
+  const validated = await validate(
+    {
+      email: email.value,
+      password: password.value,
+    },
+    loginSchema
+  );
 
   if (!validated) {
     return;

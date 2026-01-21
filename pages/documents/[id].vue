@@ -63,7 +63,7 @@
                 Share
               </button>
               <button
-                @click="deleteDocument"
+                @click="handleDeleteDocument"
                 class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition"
               >
                 Delete
@@ -308,8 +308,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useDocuments } from '~/composables/useDocuments'
+import { useDocumentsConsolidated } from '~/composables/useDocumentsConsolidated'
 import { useSchools } from '~/composables/useSchools'
+import { useErrorHandler } from '~/composables/useErrorHandler'
 import VideoPlayer from '~/components/VideoPlayer.vue'
 import type { Document } from '~/types/models'
 import type { School } from '~/types'
@@ -320,11 +321,21 @@ definePageMeta({
 
 const route = useRoute()
 const router = useRouter()
-const { documents, loading, fetchDocuments, updateDocument, deleteDocument: deleteDocumentAPI, fetchDocumentVersions: fetchVersions, shareDocumentWithSchools, removeSchoolAccess } = useDocuments()
+const { 
+  documents, 
+  loading, 
+  error,
+  fetchDocuments, 
+  updateDocument, 
+  deleteDocument: deleteDocumentAPI, 
+  fetchVersions, 
+  shareDocument, 
+  revokeAccess: removeSchoolAccess 
+} = useDocumentsConsolidated()
 const { schools, fetchSchools } = useSchools()
+const { getErrorMessage, logError } = useErrorHandler()
 
 const isEditing = ref(false)
-const error = ref('')
 const showUploadNewVersion = ref(false)
 const showShareModal = ref(false)
 const documentVersions = ref<Document[]>([])
@@ -398,14 +409,17 @@ const saveDocument = async () => {
   }
 }
 
-const deleteDocument = async () => {
+const handleDeleteDocument = async () => {
   if (confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
     try {
-      await deleteDocumentAPI(documentId.value)
-      await router.push('/documents')
+      const { success, error: deleteError } = await deleteDocumentAPI(documentId.value)
+      if (success) {
+        await router.push('/documents')
+      } else {
+        logError(new Error(deleteError || 'Failed to delete document'))
+      }
     } catch (err) {
-      error.value = 'Failed to delete document'
-      console.error('Error deleting document:', err)
+      logError(err)
     }
   }
 }
@@ -422,10 +436,10 @@ const fetchDocumentVersions = async () => {
   if (!document.value) return
 
   try {
-    const versions = await fetchVersions(document.value.title)
-    documentVersions.value = versions
+    const versions = await fetchVersions(document.value.id)
+    documentVersions.value = versions || []
   } catch (err) {
-    console.error('Failed to fetch document versions:', err)
+    logError(err)
   }
 }
 
@@ -443,8 +457,7 @@ const restoreVersion = async (versionId: string) => {
       await fetchDocuments()
       await fetchDocumentVersions()
     } catch (err) {
-      error.value = 'Failed to restore version'
-      console.error('Error restoring version:', err)
+      logError(err)
     }
   }
 }
@@ -465,11 +478,14 @@ const toggleSchoolSelection = (schoolId: string) => {
 const removeShare = async (schoolId: string) => {
   if (!document.value) return
   try {
-    await removeSchoolAccess(document.value.id, schoolId)
-    await fetchDocuments()
+    const { success, error: revokeError } = await removeSchoolAccess(document.value.id, schoolId)
+    if (success) {
+      await fetchDocuments()
+    } else {
+      logError(new Error(revokeError || 'Failed to remove school access'))
+    }
   } catch (err) {
-    error.value = 'Failed to remove school access'
-    console.error('Error removing school access:', err)
+    logError(err)
   }
 }
 
@@ -477,13 +493,14 @@ const saveSharing = async () => {
   if (!document.value) return
   try {
     const allSharedSchools = [...(document.value.shared_with_schools || []), ...selectedSchools.value]
-    await shareDocumentWithSchools(document.value.id, allSharedSchools)
+    for (const schoolId of selectedSchools.value) {
+      await shareDocument(document.value.id, schoolId, 'view')
+    }
     selectedSchools.value = []
     showShareModal.value = false
     await fetchDocuments()
   } catch (err) {
-    error.value = 'Failed to share document'
-    console.error('Error sharing document:', err)
+    logError(err)
   }
 }
 

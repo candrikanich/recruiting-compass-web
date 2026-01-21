@@ -36,7 +36,7 @@ import type { Document } from '~/types/models'
 export const useDocumentsConsolidated = () => {
   const supabase = useSupabase()
   const userStore = useUserStore()
-  const { handleError } = useErrorHandler()
+  const { getErrorMessage, logError } = useErrorHandler()
   const { validateFile, fileErrors } = useFormValidation()
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -102,11 +102,12 @@ export const useDocumentsConsolidated = () => {
         throw queryError
       }
 
-      documents.value = data
-      return data
+      documents.value = data || []
+      return data || []
     } catch (err) {
-      const message = handleError(err, 'Failed to fetch documents')
+      const message = getErrorMessage(err, { context: 'fetchDocuments' })
       error.value = message
+      logError(err, { context: 'fetchDocuments' })
       return []
     } finally {
       loading.value = false
@@ -140,9 +141,9 @@ export const useDocumentsConsolidated = () => {
         throw queryError
       }
 
-      return data
+      return data || []
     } catch (err) {
-      handleError(err, `Failed to fetch versions for ${documentTitle}`)
+      logError(err, { context: 'fetchDocumentVersions', details: { documentTitle } })
       return []
     }
   }
@@ -167,7 +168,7 @@ export const useDocumentsConsolidated = () => {
 
       return data
     } catch (err) {
-      handleError(err, `Failed to fetch document ${id}`)
+      logError(err, { context: 'getDocument', details: { id } })
       return null
     }
   }
@@ -213,8 +214,9 @@ export const useDocumentsConsolidated = () => {
 
       return data?.[0] || null
     } catch (err) {
-      const message = handleError(err, 'Failed to update document')
+      const message = getErrorMessage(err, { context: 'updateDocument' })
       error.value = message
+      logError(err, { context: 'updateDocument' })
       return null
     } finally {
       loading.value = false
@@ -271,8 +273,9 @@ export const useDocumentsConsolidated = () => {
       documents.value = documents.value.filter(d => d.id !== id)
       return true
     } catch (err) {
-      const message = handleError(err, 'Failed to delete document')
+      const message = getErrorMessage(err, { context: 'deleteDocument' })
       error.value = message
+      logError(err, { context: 'deleteDocument' })
       return false
     } finally {
       loading.value = false
@@ -304,7 +307,7 @@ export const useDocumentsConsolidated = () => {
 
     // Validate file
     try {
-      validateFile(file, type)
+      validateFile(file, type as any)
     } catch (err) {
       const fileError = err instanceof Error ? err.message : 'Invalid file'
       uploadError.value = fileError
@@ -360,17 +363,19 @@ export const useDocumentsConsolidated = () => {
         { context: 'uploadDocument' }
       )
 
-      if (insertErr || !docData || docData.length === 0) {
+      if (insertErr || !docData) {
         throw insertErr || new Error('Failed to create document record')
       }
 
       uploadProgress.value = 100
-      documents.value.unshift(docData[0])
+      const doc = Array.isArray(docData) ? docData[0] : docData
+      documents.value.unshift(doc)
 
-      return { success: true, data: docData[0] }
+      return { success: true, data: doc }
     } catch (err) {
-      const message = handleError(err, 'Failed to upload document')
+      const message = getErrorMessage(err, { context: 'uploadDocument' })
       uploadError.value = message
+      logError(err, { context: 'uploadDocument' })
       return { success: false, error: message }
     } finally {
       isUploading.value = false
@@ -444,16 +449,18 @@ export const useDocumentsConsolidated = () => {
         { context: 'uploadNewVersion' }
       )
 
-      if (insertErr || !docData || docData.length === 0) {
+      if (insertErr || !docData) {
         throw insertErr || new Error('Failed to create new version')
       }
 
-      documents.value.unshift(docData[0])
+      const doc = Array.isArray(docData) ? docData[0] : docData
+      documents.value.unshift(doc)
 
-      return { success: true, data: docData[0] }
+      return { success: true, data: doc }
     } catch (err) {
-      const message = handleError(err, 'Failed to upload document version')
+      const message = getErrorMessage(err, { context: 'uploadNewVersion' })
       uploadError.value = message
+      logError(err, { context: 'uploadNewVersion' })
       return { success: false, error: message }
     } finally {
       isUploading.value = false
@@ -506,8 +513,9 @@ export const useDocumentsConsolidated = () => {
 
       return true
     } catch (err) {
-      const message = handleError(err, 'Failed to share document')
+      const message = getErrorMessage(err, { context: 'shareDocument' })
       sharingError.value = message
+      logError(err, { context: 'shareDocument' })
       return false
     } finally {
       isSharing.value = false
@@ -547,8 +555,9 @@ export const useDocumentsConsolidated = () => {
 
       return true
     } catch (err) {
-      const message = handleError(err, 'Failed to revoke access')
+      const message = getErrorMessage(err, { context: 'revokeAccess' })
       sharingError.value = message
+      logError(err, { context: 'revokeAccess' })
       return false
     } finally {
       isSharing.value = false

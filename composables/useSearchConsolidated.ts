@@ -41,7 +41,7 @@ import type { School, Coach, Interaction, PerformanceMetric } from '~/types/mode
 export const useSearchConsolidated = () => {
   const supabase = useSupabase()
   const userStore = useUserStore()
-  const { handleError } = useErrorHandler()
+  const { getErrorMessage, logError } = useErrorHandler()
 
   // ═══════════════════════════════════════════════════════════════════════════
   // SEARCH STATE
@@ -191,14 +191,14 @@ export const useSearchConsolidated = () => {
       if (error) throw error
 
       // Apply fuzzy search to results
-      schoolResults.value = applyFuzzySearch(data, searchQuery, [
+      schoolResults.value = applyFuzzySearch(data || [], searchQuery, [
         'name',
         'address',
         'city',
         'state',
       ])
     } catch (err) {
-      handleError(err, 'Failed to search schools')
+      logError(err, { context: 'searchSchools' })
       schoolResults.value = []
     }
   }
@@ -235,24 +235,24 @@ export const useSearchConsolidated = () => {
       if (error) throw error
 
       // Filter by response rate if specified
-      let results = data
-      if (filters.value.coaches.responseRate > 0) {
+      let results: Coach[] | null = data
+      if (results && filters.value.coaches.responseRate > 0) {
         results = results.filter(
           c =>
-            (c.response_rate || 0) >=
+            ((c as any).response_rate || 0) >=
             filters.value.coaches.responseRate / 100
         )
       }
 
       // Apply fuzzy search
-      coachResults.value = applyFuzzySearch(results, searchQuery, [
+      coachResults.value = applyFuzzySearch(results || [], searchQuery, [
         'name',
         'school',
         'email',
         'phone',
       ])
     } catch (err) {
-      handleError(err, 'Failed to search coaches')
+      logError(err, { context: 'searchCoaches' })
       coachResults.value = []
     }
   }
@@ -290,29 +290,29 @@ export const useSearchConsolidated = () => {
       if (error) throw error
 
       // Apply date range filters
-      let results = data
-      if (filters.value.interactions.dateFrom) {
+      let results: Interaction[] | null = data
+      if (results && filters.value.interactions.dateFrom) {
         results = results.filter(
           i =>
-            new Date(i.recorded_date).getTime() >=
+            new Date(i.recorded_date || Date.now()).getTime() >=
             new Date(filters.value.interactions.dateFrom).getTime()
         )
       }
-      if (filters.value.interactions.dateTo) {
+      if (results && filters.value.interactions.dateTo) {
         results = results.filter(
           i =>
-            new Date(i.recorded_date).getTime() <=
+            new Date(i.recorded_date || Date.now()).getTime() <=
             new Date(filters.value.interactions.dateTo).getTime()
         )
       }
 
       // Apply fuzzy search (on subject and notes)
-      interactionResults.value = applyFuzzySearch(results, searchQuery, [
+      interactionResults.value = applyFuzzySearch(results || [], searchQuery, [
         'subject',
         'notes',
       ])
     } catch (err) {
-      handleError(err, 'Failed to search interactions')
+      logError(err, { context: 'searchInteractions' })
       interactionResults.value = []
     }
   }
@@ -347,16 +347,16 @@ export const useSearchConsolidated = () => {
       if (error) throw error
 
       // Apply value range filters
-      let results = data
-      if (filters.value.metrics.minValue > 0) {
+      let results: PerformanceMetric[] | null = data
+      if (results && filters.value.metrics.minValue > 0) {
         results = results.filter(m => (m.value || 0) >= filters.value.metrics.minValue)
       }
-      if (filters.value.metrics.maxValue < 100) {
+      if (results && filters.value.metrics.maxValue < 100) {
         results = results.filter(m => (m.value || 0) <= filters.value.metrics.maxValue)
       }
 
       // Filter by search query in notes
-      if (searchQuery.trim()) {
+      if (results && searchQuery.trim()) {
         results = results.filter(
           m =>
             !m.notes ||
@@ -364,9 +364,9 @@ export const useSearchConsolidated = () => {
         )
       }
 
-      metricsResults.value = results
+      metricsResults.value = results || []
     } catch (err) {
-      handleError(err, 'Failed to search metrics')
+      logError(err, { context: 'searchMetrics' })
       metricsResults.value = []
     }
   }
@@ -424,10 +424,10 @@ export const useSearchConsolidated = () => {
     const cacheKey = getCacheKey()
     const cachedResult = searchCache.get(cacheKey)
     if (isCacheValid(cachedResult)) {
-      schoolResults.value = cachedResult.results.schools
-      coachResults.value = cachedResult.results.coaches
-      interactionResults.value = cachedResult.results.interactions
-      metricsResults.value = cachedResult.results.metrics
+      schoolResults.value = cachedResult?.results.schools || []
+      coachResults.value = cachedResult?.results.coaches || []
+      interactionResults.value = cachedResult?.results.interactions || []
+      metricsResults.value = cachedResult?.results.metrics || []
       return
     }
 
@@ -466,7 +466,8 @@ export const useSearchConsolidated = () => {
           timestamp: Date.now(),
         })
       } catch (err) {
-        searchError.value = handleError(err, 'Search failed')
+        searchError.value = getErrorMessage(err, { context: 'performSearch' })
+        logError(err, { context: 'performSearch' })
       } finally {
         isSearching.value = false
       }
@@ -561,7 +562,7 @@ export const useSearchConsolidated = () => {
 
       if (error) return []
 
-      return data
+      return (data || [])
         .filter(s => s.name.toLowerCase().startsWith(prefix.toLowerCase()))
         .map(s => s.name)
     } catch {
@@ -588,7 +589,7 @@ export const useSearchConsolidated = () => {
 
       if (error) return []
 
-      return data
+      return (data || [])
         .filter(c => c.name.toLowerCase().startsWith(prefix.toLowerCase()))
         .map(c => c.name)
     } catch {
