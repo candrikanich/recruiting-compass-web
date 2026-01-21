@@ -185,10 +185,11 @@ describe("useUserStore", () => {
 
       await store.initializeUser();
 
-      // Should log error and then create a profile
+      // Should handle null data as "not found" and create a profile
       expect(console.log).toHaveBeenCalledWith(
-        "Profile not found, creating one:",
-        mockError,
+        "Creating user profile for:",
+        "user-123",
+        "test@example.com",
       );
       expect(console.log).toHaveBeenCalledWith(
         "User profile created successfully:",
@@ -471,7 +472,13 @@ describe("useUserStore", () => {
       expect(store.userRole).toBe("parent");
 
       // Page refresh - initializeUser is called
-      const mockSession = { user: { id: "user-123" } };
+      const mockSession = {
+        user: {
+          id: "user-123",
+          email: "test@example.com",
+          user_metadata: { full_name: "Test User" },
+        },
+      };
       const mockQuery = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
