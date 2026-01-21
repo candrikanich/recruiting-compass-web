@@ -29,7 +29,10 @@
 import { ref, computed, type Ref, type ComputedRef } from 'vue'
 import { z } from 'zod'
 
-export interface ValidationError {
+/**
+ * Form field error type (renamed from ValidationError to avoid conflicts with useValidation composable)
+ */
+export interface FormFieldError {
   field: string
   message: string
 }
@@ -127,14 +130,14 @@ export type SupportedFileType = keyof typeof FILE_VALIDATION_RULES
  */
 export interface UseFormValidationReturn {
   // Form validation
-  errors: Ref<ValidationError[]>
+  errors: Ref<FormFieldError[]>
   fieldErrors: ComputedRef<Record<string, string>>
   hasErrors: ComputedRef<boolean>
   validate: <T>(data: unknown, schema?: z.ZodSchema<T>) => Promise<T | null>
   validateField: (field: string, value: unknown, schema: z.ZodSchema) => Promise<boolean>
   clearErrors: () => void
   clearFieldError: (field: string) => void
-  setErrors: (errors: ValidationError[]) => void
+  setErrors: (errors: FormFieldError[]) => void
 
   // File validation
   fileErrors: Ref<FileValidationError[]>
@@ -150,7 +153,7 @@ export interface UseFormValidationReturn {
 }
 
 export function useFormValidation(): UseFormValidationReturn {
-  const errors = ref<ValidationError[]>([])
+  const errors = ref<FormFieldError[]>([])
   const fileErrors = ref<FileValidationError[]>([])
 
   // --- FORM VALIDATION COMPUTED ---
@@ -243,7 +246,7 @@ export function useFormValidation(): UseFormValidationReturn {
   /**
    * Manually set validation errors
    */
-  const setErrors = (newErrors: ValidationError[]) => {
+  const setErrors = (newErrors: FormFieldError[]) => {
     errors.value = newErrors
   }
 
@@ -257,7 +260,7 @@ export function useFormValidation(): UseFormValidationReturn {
     const rules = FILE_VALIDATION_RULES[type]
 
     // Check MIME type
-    if (!rules.mimeTypes.includes(file.type)) {
+    if (!(rules.mimeTypes as unknown as string[]).includes(file.type)) {
       const error = new Error(
         `Invalid file type. Expected ${rules.description}`
       ) as FileValidationError
@@ -267,7 +270,7 @@ export function useFormValidation(): UseFormValidationReturn {
 
     // Check file extension
     const ext = `.${file.name.split('.').pop()?.toLowerCase()}`
-    if (!rules.extensions.includes(ext)) {
+    if (!(rules.extensions as unknown as string[]).includes(ext)) {
       const error = new Error(
         `Invalid file extension. Expected ${rules.extensions.join(', ')}`
       ) as FileValidationError
@@ -322,7 +325,7 @@ export function useFormValidation(): UseFormValidationReturn {
   // --- UTILITY METHODS ---
 
   const getSupportedExtensions = (type: SupportedFileType): string[] => {
-    return FILE_VALIDATION_RULES[type].extensions
+    return FILE_VALIDATION_RULES[type].extensions as unknown as string[]
   }
 
   const getFileSizeLimit = (type: SupportedFileType): number => {
