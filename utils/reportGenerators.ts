@@ -14,16 +14,16 @@ export interface ReportOptions {
 /**
  * Generate individual metric report (PDF or text)
  */
-export const generateIndividualMetricReport = (
+export const generateIndividualMetricReport = async (
   metricType: string,
   options: ReportOptions
-): string | Blob => {
+): Promise<string | Blob> => {
   const { metrics, format, athleteName, chartImage } = options
 
   const filteredMetrics = metrics.filter(m => m.metric_type === metricType)
 
   if (format === 'pdf') {
-    const doc = initializePDF('portrait')
+    const doc = await initializePDF('portrait')
     addHeader(doc, `${athleteName} - ${getMetricLabel(metricType)} Report`)
 
     let yPos = 40
@@ -50,11 +50,11 @@ export const generateIndividualMetricReport = (
 /**
  * Generate comprehensive athlete performance report (PDF or text)
  */
-export const generateComprehensiveReport = (options: ReportOptions): string | Blob => {
+export const generateComprehensiveReport = async (options: ReportOptions): Promise<string | Blob> => {
   const { metrics, format, athleteName } = options
 
   if (format === 'pdf') {
-    const doc = initializePDF('portrait')
+    const doc = await initializePDF('portrait')
     addHeader(doc, `${athleteName} - Comprehensive Performance Report`, 'All Metrics Summary')
 
     let yPos = 40
@@ -103,13 +103,13 @@ export const generateComprehensiveReport = (options: ReportOptions): string | Bl
 /**
  * Generate event-specific performance report (PDF or text)
  */
-export const generateEventReport = (options: ReportOptions): string | Blob => {
+export const generateEventReport = async (options: ReportOptions): Promise<string | Blob> => {
   const { metrics, format, athleteName, event } = options
 
   if (!event) throw new Error('Event required for event report')
 
   if (format === 'pdf') {
-    const doc = initializePDF('portrait')
+    const doc = await initializePDF('portrait')
     addHeader(doc, `${event.name} - Performance Report`, athleteName)
 
     // Event details

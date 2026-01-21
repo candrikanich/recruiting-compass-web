@@ -7,6 +7,32 @@ export default defineNuxtConfig({
 
   modules: ["@pinia/nuxt"],
 
+  // Vite caching configuration
+  vite: {
+    // Cache directory for faster builds
+    cacheDir: '.vite',
+
+    // Pre-bundle frequently used dependencies
+    optimizeDeps: {
+      include: [
+        'vue',
+        '@pinia/nuxt',
+        '@supabase/supabase-js',
+        'chart.js',
+        'fuse.js',
+        'leaflet',
+        '@vueuse/core',
+        'date-fns',
+      ],
+      exclude: [
+        // These are heavy or change often; exclude for rebunding on change
+        'html2canvas',
+        'jspdf',
+        'jspdf-autotable',
+      ]
+    }
+  },
+
   nitro: {
     preset: "static",
     hooks: {

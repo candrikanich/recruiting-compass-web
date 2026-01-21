@@ -1,5 +1,5 @@
-import { useSupabase } from './useSupabase'
-import { useUserStore } from '~/stores/user'
+import { useSupabase } from "./useSupabase";
+import { useUserStore } from "~/stores/user";
 
 /**
  * Composable for logging parent views of athlete data
@@ -12,14 +12,14 @@ import { useUserStore } from '~/stores/user'
  * Only logs when user is a parent viewing a linked athlete's data
  */
 export const useViewLogging = () => {
-  const supabase = useSupabase()
-  let userStore: ReturnType<typeof useUserStore> | undefined
+  const supabase = useSupabase();
+  let userStore: ReturnType<typeof useUserStore> | undefined;
   const getUserStore = () => {
     if (!userStore) {
-      userStore = useUserStore()
+      userStore = useUserStore();
     }
-    return userStore
-  }
+    return userStore;
+  };
 
   /**
    * Log parent view of athlete data
@@ -34,31 +34,35 @@ export const useViewLogging = () => {
   const logParentView = async (
     itemType: string,
     athleteId: string,
-    itemId?: string
+    itemId?: string,
   ): Promise<void> => {
+    const store = getUserStore();
     // Only log if user is a parent
-    if (userStore.user?.role !== 'parent') return
+    if (store.user?.role !== "parent") return;
 
     // Only log if viewing different user's data
-    if (userStore.user.id === athleteId) return
+    if (store.user.id === athleteId) return;
 
     try {
-      const { error } = await supabase.from('parent_view_log').insert({
-        parent_user_id: userStore.user.id,
+      const { error } = await supabase.from("parent_view_log").insert({
+        parent_user_id: store.user.id,
         athlete_id: athleteId,
         viewed_item_type: itemType,
         viewed_item_id: itemId || null,
         viewed_at: new Date().toISOString(),
-      })
+      });
 
       if (error) {
-        console.debug('View logging error:', error.message)
+        console.debug("View logging error:", error.message);
       }
     } catch (err) {
       // Silent fail - logging is non-critical and shouldn't break navigation
-      console.debug('View logging failed:', err instanceof Error ? err.message : 'Unknown error')
+      console.debug(
+        "View logging failed:",
+        err instanceof Error ? err.message : "Unknown error",
+      );
     }
-  }
+  };
 
   /**
    * Get view logs for current user (when viewed as athlete)
@@ -66,116 +70,132 @@ export const useViewLogging = () => {
    * Returns logs of when parents have viewed the athlete's data
    */
   const getViewLogs = async (limit = 50) => {
-    if (!userStore.user) return []
+    const store = getUserStore();
+    if (!store.user) return [];
 
     try {
       const { data, error } = await supabase
-        .from('parent_view_log')
-        .select('*, parent:users!parent_user_id(id, full_name, email)')
-        .eq('athlete_id', userStore.user.id)
-        .order('viewed_at', { ascending: false })
-        .limit(limit)
+        .from("parent_view_log")
+        .select("*, parent:users!parent_user_id(id, full_name, email)")
+        .eq("athlete_id", store.user.id)
+        .order("viewed_at", { ascending: false })
+        .limit(limit);
 
       if (error) {
-        console.debug('Failed to fetch view logs:', error.message)
-        return []
+        console.debug("Failed to fetch view logs:", error.message);
+        return [];
       }
 
-      return data || []
+      return data || [];
     } catch (err) {
-      console.debug('Error fetching view logs:', err instanceof Error ? err.message : 'Unknown error')
-      return []
+      console.debug(
+        "Error fetching view logs:",
+        err instanceof Error ? err.message : "Unknown error",
+      );
+      return [];
     }
-  }
+  };
 
   /**
    * Check if parent has viewed specific item
    */
   const hasParentViewed = async (
     itemType: string,
-    itemId?: string
+    itemId?: string,
   ): Promise<boolean> => {
-    if (!userStore.user) return false
+    const store = getUserStore();
+    if (!store.user) return false;
 
     try {
       let query = supabase
-        .from('parent_view_log')
-        .select('id', { count: 'exact', head: true })
-        .eq('athlete_id', userStore.user.id)
-        .eq('viewed_item_type', itemType)
+        .from("parent_view_log")
+        .select("id", { count: "exact", head: true })
+        .eq("athlete_id", store.user.id)
+        .eq("viewed_item_type", itemType);
 
       if (itemId) {
-        query = query.eq('viewed_item_id', itemId)
+        query = query.eq("viewed_item_id", itemId);
       }
 
-      const { count, error } = await query
+      const { count, error } = await query;
 
       if (error) {
-        console.debug('Failed to check view status:', error.message)
-        return false
+        console.debug("Failed to check view status:", error.message);
+        return false;
       }
 
-      return count ? count > 0 : false
+      return count ? count > 0 : false;
     } catch (err) {
-      console.debug('Error checking view status:', err instanceof Error ? err.message : 'Unknown error')
-      return false
+      console.debug(
+        "Error checking view status:",
+        err instanceof Error ? err.message : "Unknown error",
+      );
+      return false;
     }
-  }
+  };
 
   /**
    * Get count of total views by parents for the current athlete
    */
   const getViewCount = async (): Promise<number> => {
-    if (!userStore.user) return 0
+    const store = getUserStore();
+    if (!store.user) return 0;
 
     try {
       const { count, error } = await supabase
-        .from('parent_view_log')
-        .select('id', { count: 'exact', head: true })
-        .eq('athlete_id', userStore.user.id)
+        .from("parent_view_log")
+        .select("id", { count: "exact", head: true })
+        .eq("athlete_id", store.user.id);
 
       if (error) {
-        console.debug('Failed to get view count:', error.message)
-        return 0
+        console.debug("Failed to get view count:", error.message);
+        return 0;
       }
 
-      return count || 0
+      return count || 0;
     } catch (err) {
-      console.debug('Error getting view count:', err instanceof Error ? err.message : 'Unknown error')
-      return 0
+      console.debug(
+        "Error getting view count:",
+        err instanceof Error ? err.message : "Unknown error",
+      );
+      return 0;
     }
-  }
+  };
 
   /**
    * Get most recent parent view for current athlete
    */
   const getLastParentView = async () => {
-    if (!userStore.user) return null
+    const store = getUserStore();
+    if (!store.user) return null;
 
     try {
       const { data, error } = await supabase
-        .from('parent_view_log')
-        .select('*, parent:users!parent_user_id(id, full_name, email)')
-        .eq('athlete_id', userStore.user.id)
-        .order('viewed_at', { ascending: false })
+        .from("parent_view_log")
+        .select("*, parent:users!parent_user_id(id, full_name, email)")
+        .eq("athlete_id", store.user.id)
+        .order("viewed_at", { ascending: false })
         .limit(1)
-        .single()
+        .single();
 
       if (error) {
-        if (error.code === 'PGRST116') {
+        if (error.code === "PGRST116") {
           // No rows returned - normal case
-          return null
+          return null;
         }
-        console.debug('Failed to get last view:', error.message)
-        return null
+        console.debug("Failed to get last view:", error.message);
+        return null;
       }
 
-      return data
+      return data;
     } catch (err) {
-      console.debug('Error getting last view:', err instanceof Error ? err.message : 'Unknown error')
-      return null
+      console.debug(
+        "Error getting last view:",
+        err instanceof Error ? err.message : "Unknown error",
+      );
+      return null;
     }
-  }
+  };
 
   return {
     logParentView,
@@ -183,5 +203,5 @@ export const useViewLogging = () => {
     hasParentViewed,
     getViewCount,
     getLastParentView,
-  }
-}
+  };
+};

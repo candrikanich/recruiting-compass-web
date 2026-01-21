@@ -33,7 +33,7 @@ describe('CoachCard.vue', () => {
     instagram_handle: 'coachsmith',
     notes: 'Great head coach',
     responsiveness_score: 85,
-    last_contact_date: '2024-01-15',
+    last_contact_date: '2024-01-15T12:00:00Z',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',
     ...overrides,
@@ -110,15 +110,15 @@ describe('CoachCard.vue', () => {
       expect(wrapper.text()).toContain('Highly Responsive')
     })
 
-    it('should apply green color class for highly responsive coach (75+)', () => {
+    it('should apply emerald color class for highly responsive coach (75+)', () => {
       const coach = createMockCoach({ responsiveness_score: 90 })
       const wrapper = mount(CoachCard, {
         props: { coach },
       })
 
-      const badge = wrapper.find('.bg-green-100')
+      const badge = wrapper.find('.bg-emerald-100')
       expect(badge.exists()).toBe(true)
-      expect(badge.classes()).toContain('text-green-700')
+      expect(badge.classes()).toContain('text-emerald-800')
     })
 
     it('should apply blue color class for responsive coach (50-74)', () => {
@@ -132,26 +132,26 @@ describe('CoachCard.vue', () => {
       expect(badge.classes()).toContain('text-blue-700')
     })
 
-    it('should apply yellow color class for moderately responsive coach (25-49)', () => {
+    it('should apply orange color class for moderately responsive coach (25-49)', () => {
       const coach = createMockCoach({ responsiveness_score: 35 })
       const wrapper = mount(CoachCard, {
         props: { coach },
       })
 
-      const badge = wrapper.find('.bg-yellow-100')
+      const badge = wrapper.find('.bg-orange-100')
       expect(badge.exists()).toBe(true)
-      expect(badge.classes()).toContain('text-yellow-700')
+      expect(badge.classes()).toContain('text-orange-800')
     })
 
-    it('should apply red color class for low responsiveness coach (0-24)', () => {
+    it('should apply purple color class for low responsiveness coach (0-24)', () => {
       const coach = createMockCoach({ responsiveness_score: 10 })
       const wrapper = mount(CoachCard, {
         props: { coach },
       })
 
-      const badge = wrapper.find('.bg-red-100')
+      const badge = wrapper.find('.bg-purple-100')
       expect(badge.exists()).toBe(true)
-      expect(badge.classes()).toContain('text-red-700')
+      expect(badge.classes()).toContain('text-purple-800')
     })
 
     it('should not display responsiveness when score is undefined', () => {
@@ -231,7 +231,7 @@ describe('CoachCard.vue', () => {
     })
 
     it('should display last contact date', () => {
-      const coach = createMockCoach({ last_contact_date: '2024-01-15' })
+      const coach = createMockCoach({ last_contact_date: '2024-01-15T12:00:00Z' })
       const wrapper = mount(CoachCard, {
         props: { coach },
       })

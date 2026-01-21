@@ -1,18 +1,33 @@
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
 import type { PerformanceMetric } from '~/types/models'
 
 // Type for jsPDF with autotable support
-interface JsPDFWithAutoTable extends jsPDF {
+declare class JsPDF {
+  lastAutoTable: {
+    finalY: number
+  }
+  setFontSize(size: number): void
+  setFont(name: string, weight: string): void
+  text(text: string, x: number, y: number, options?: any): void
+  setDrawColor(r: number, g: number, b: number): void
+  rect(x: number, y: number, w: number, h: number, style?: string): void
+  internal: {
+    pageSize: {
+      height: number
+    }
+  }
+}
+
+interface JsPDFWithAutoTable extends JsPDF {
   lastAutoTable: {
     finalY: number
   }
 }
 
 /**
- * Initialize a new PDF document
+ * Initialize a new PDF document (lazy-loads jsPDF)
  */
-export const initializePDF = (orientation: 'portrait' | 'landscape' = 'portrait'): JsPDFWithAutoTable => {
+export const initializePDF = async (orientation: 'portrait' | 'landscape' = 'portrait'): Promise<JsPDFWithAutoTable> => {
+  const { default: jsPDF } = await import('jspdf')
   return new jsPDF({ orientation, unit: 'mm', format: 'a4' }) as JsPDFWithAutoTable
 }
 
