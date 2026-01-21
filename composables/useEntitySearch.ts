@@ -7,17 +7,36 @@ import type { School, Coach, Interaction, PerformanceMetric } from '~/types/mode
 /**
  * Composable for entity search operations
  *
+ * ⚠️ DEPRECATED: This composable is deprecated as of Phase 4
+ * Use useSearchConsolidated() instead for new code
+ *
+ * Migration guide: See docs/phase-4/DEPRECATION_AUDIT.md
+ * Timeline: Will be removed in Phase 5
+ *
  * Handles searching schools, coaches, interactions, and metrics.
  * Supports fuzzy search with Fuse.js and database filtering.
- * Part of split from useSearch for focused responsibility.
+ * For new code, use useSearchConsolidated instead.
+ *
+ * @deprecated Use useSearchConsolidated() instead
  *
  * @example
+ * // OLD (deprecated)
  * const { performSearch, schoolResults, isSearching } = useEntitySearch()
- * await performSearch('john', 'schools')
+ *
+ * // NEW (preferred)
+ * const { performSearch, schoolResults, isSearching } = useSearchConsolidated()
  *
  * @returns Object with search methods and results
  */
 export const useEntitySearch = () => {
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(
+      '[DEPRECATED] useEntitySearch is deprecated as of Phase 4. ' +
+      'Use useSearchConsolidated() instead.\n' +
+      'Migration guide: See DEPRECATION_AUDIT.md'
+    )
+  }
+
   const supabase = useSupabase()
   const userStore = useUserStore()
 

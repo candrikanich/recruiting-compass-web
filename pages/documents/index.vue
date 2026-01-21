@@ -267,7 +267,7 @@
             :key="doc.id"
             :document="doc"
             :school-name="getSchoolName(doc.school_id)"
-            @delete="deleteDocument"
+            @delete="handleDeleteDocument"
           />
         </div>
 
@@ -314,9 +314,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed } from 'vue'
-import { useDocuments } from '~/composables/useDocuments'
+import { useDocumentsConsolidated } from '~/composables/useDocumentsConsolidated'
 import { useSchools } from '~/composables/useSchools'
 import { useUniversalFilter } from '~/composables/useUniversalFilter'
+import { useFormValidation } from '~/composables/useFormValidation'
+import { useErrorHandler } from '~/composables/useErrorHandler'
 import FilterPanel from '~/components/Common/FilterPanel.vue'
 import FilterChips from '~/components/Common/FilterChips.vue'
 import UniversalFilter from '~/components/Common/UniversalFilter.vue'
@@ -329,8 +331,19 @@ definePageMeta({
 })
 
 const userStore = useUserStore()
-const { documents, loading, fetchDocuments, uploadDocument, deleteDocument: deleteDocumentAPI } = useDocuments()
+const { 
+  documents, 
+  loading, 
+  isUploading,
+  error,
+  uploadError,
+  fetchDocuments, 
+  uploadDocument, 
+  deleteDocument: deleteDocumentAPI 
+} = useDocumentsConsolidated()
 const { schools: allSchools, fetchSchools } = useSchools()
+const { validateFile, fileErrors } = useFormValidation()
+const { getErrorMessage, logError } = useErrorHandler()
 
 const showUploadForm = ref(false)
 const selectedFile = ref<File | null>(null)
@@ -566,49 +579,66 @@ const getSchoolName = (schoolId: string | null | undefined): string => {
 const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
-    selectedFile.value = target.files[0]
-    selectedFileName.value = target.files[0].name
+    const file = target.files[0]
+    
+    // Validate file
+    try {
+      validateFile(file, newDoc.type as any)
+      selectedFile.value = file
+      selectedFileName.value = file.name
+    } catch (err) {
+      console.error('File validation failed:', err instanceof Error ? err.message : 'Unknown error')
+      selectedFile.value = null
+      selectedFileName.value = ''
+    }
   }
 }
 
 const handleUpload = async () => {
+  if (!selectedFile.value) return
+  
   try {
-    await uploadDocument(
+    const result = await uploadDocument(
+      selectedFile.value,
+      newDoc.type as any,
+      newDoc.title,
       {
-        type: newDoc.type as 'highlight_video' | 'transcript' | 'resume' | 'rec_letter' | 'questionnaire' | 'stats_sheet',
-        title: newDoc.title,
-        description: newDoc.description || null,
-        file_url: selectedFileName.value,
-        file_type: selectedFile.value?.type || null,
-        is_current: true,
+        description: newDoc.description || undefined,
+        school_id: newDoc.schoolId || undefined,
         version: newDoc.version || 1,
-        school_id: newDoc.schoolId || null,
-      },
-      selectedFile.value || undefined,
+      }
     )
 
-    // Reset form
-    newDoc.type = ''
-    newDoc.title = ''
-    newDoc.description = ''
-    newDoc.schoolId = ''
-    newDoc.version = 1
-    selectedFile.value = null
-    selectedFileName.value = ''
-    showUploadForm.value = false
-
-    await fetchDocuments()
+    if (result.success) {
+      // Reset form
+      newDoc.type = ''
+      newDoc.title = ''
+      newDoc.description = ''
+      newDoc.schoolId = ''
+      newDoc.version = 1
+      selectedFile.value = null
+      selectedFileName.value = ''
+      showUploadForm.value = false
+    } else {
+      console.error('Upload failed:', uploadError.value)
+    }
   } catch (err) {
     console.error('Failed to upload document:', err)
   }
 }
 
-const deleteDocument = async (docId: string) => {
+const handleDeleteDocument = async (docId: string) => {
   if (confirm('Delete this document?')) {
     try {
-      await deleteDocumentAPI(docId)
+      const { success, error: deleteError } = await deleteDocumentAPI(docId)
+      if (!success) {
+        const message = getErrorMessage(new Error(deleteError || 'Failed to delete document'))
+        error.value = message
+      }
     } catch (err) {
-      console.error('Failed to delete document:', err)
+      const message = getErrorMessage(err)
+      error.value = message
+      logError(err)
     }
   }
 }

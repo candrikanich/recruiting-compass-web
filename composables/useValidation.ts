@@ -32,6 +32,13 @@ export interface UseValidationReturn<T> {
  * }
  */
 export function useValidation<T>(schema: z.ZodSchema<T>): UseValidationReturn<T> {
+  // Deprecation warning: prefer useFormValidation()
+  if (process.env.NODE_ENV !== 'test') {
+    // eslint-disable-next-line no-console
+    console.warn(
+      '[DEPRECATED] `useValidation()` is deprecated. Please migrate to `useFormValidation()` from `~/composables/useFormValidation`.'
+    )
+  }
   const errors = ref<ValidationError[]>([])
 
   const fieldErrors = computed(() => {

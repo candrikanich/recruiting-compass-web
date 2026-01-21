@@ -3,17 +3,36 @@ import { ref, computed } from 'vue'
 /**
  * Composable for search filter management
  *
+ * ⚠️ DEPRECATED: This composable is deprecated as of Phase 4
+ * Use useSearchConsolidated() instead for new code
+ *
+ * Migration guide: See docs/phase-4/DEPRECATION_AUDIT.md
+ * Timeline: Will be removed in Phase 5
+ *
  * Manages filter state across schools, coaches, interactions, and metrics.
  * Provides methods to apply, reset, and query filter status.
- * Part of split from useSearch for focused responsibility.
+ * For new code, use useSearchConsolidated instead.
+ *
+ * @deprecated Use useSearchConsolidated() instead
  *
  * @example
+ * // OLD (deprecated)
  * const { filters, applyFilter, clearFilters, isFiltering } = useSearchFilters()
- * applyFilter('schools', 'division', 'D1')
+ *
+ * // NEW (preferred)
+ * const { filters, applyFilter, clearFilters, isFiltering } = useSearchConsolidated()
  *
  * @returns Object with filter state and management methods
  */
 export const useSearchFilters = () => {
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(
+      '[DEPRECATED] useSearchFilters is deprecated as of Phase 4. ' +
+      'Use useSearchConsolidated() instead.\n' +
+      'Migration guide: See DEPRECATION_AUDIT.md'
+    )
+  }
+
   // Filter state
   const filters = ref({
     schools: {

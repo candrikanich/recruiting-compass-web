@@ -6,16 +6,35 @@ import type { Document } from '~/types/models'
 /**
  * Composable for document sharing operations
  *
+ * ⚠️ DEPRECATED: This composable is deprecated as of Phase 4
+ * Use useDocumentsConsolidated() instead for new code
+ *
+ * Migration guide: See docs/phase-4/DEPRECATION_AUDIT.md
+ * Timeline: Will be removed in Phase 5
+ *
  * Handles sharing documents with schools and managing access.
- * Part of split from useDocuments for focused responsibility.
+ * For new code, use useDocumentsConsolidated instead.
+ *
+ * @deprecated Use useDocumentsConsolidated() instead
  *
  * @example
+ * // OLD (deprecated)
  * const { shareDocument, revokeSharing } = useDocumentSharing()
- * await shareDocument(docId, ['school-1', 'school-2'])
+ *
+ * // NEW (preferred)
+ * const { shareDocument, revokeSharing } = useDocumentsConsolidated()
  *
  * @returns Object with sharing methods and state
  */
 export const useDocumentSharing = () => {
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(
+      '[DEPRECATED] useDocumentSharing is deprecated as of Phase 4. ' +
+      'Use useDocumentsConsolidated() instead.\n' +
+      'Migration guide: See DEPRECATION_AUDIT.md'
+    )
+  }
+
   const supabase = useSupabase()
   let userStore: ReturnType<typeof useUserStore> | undefined
   const getUserStore = () => {

@@ -60,7 +60,38 @@ const validateFile = (file: File, documentType: string): { valid: boolean; error
   return { valid: true }
 }
 
+/**
+ * Composable for document upload operations
+ *
+ * ⚠️ DEPRECATED: This composable is deprecated as of Phase 4
+ * Use useDocumentsConsolidated() instead for new code
+ *
+ * Migration guide: See docs/phase-4/DEPRECATION_AUDIT.md
+ * Timeline: Will be removed in Phase 5
+ *
+ * Handles file uploads with progress tracking.
+ * For new code, use useDocumentsConsolidated instead.
+ *
+ * @deprecated Use useDocumentsConsolidated() instead
+ *
+ * @example
+ * // OLD (deprecated)
+ * const { uploadDocument, isUploading, uploadProgress } = useDocumentUpload()
+ *
+ * // NEW (preferred)
+ * const { uploadDocument, isUploading, uploadProgress } = useDocumentsConsolidated()
+ *
+ * @returns Object with upload methods and state
+ */
 export const useDocumentUpload = () => {
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(
+      '[DEPRECATED] useDocumentUpload is deprecated as of Phase 4. ' +
+      'Use useDocumentsConsolidated() instead.\n' +
+      'Migration guide: See DEPRECATION_AUDIT.md'
+    )
+  }
+
   const supabase = useSupabase()
   let userStore: ReturnType<typeof useUserStore> | undefined
   const getUserStore = () => {
