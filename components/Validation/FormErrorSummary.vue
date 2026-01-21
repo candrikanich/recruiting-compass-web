@@ -22,9 +22,9 @@
         </div>
         <button
           type="button"
-          @click="$emit('close')"
+          @click="$emit('dismiss')"
           class="text-red-600 hover:text-red-800 transition flex-shrink-0 mt-0.5"
-          aria-label="Close error summary"
+          aria-label="Dismiss error summary"
         >
           <XMarkIcon class="w-5 h-5" />
         </button>
@@ -35,14 +35,14 @@
 
 <script setup lang="ts">
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/vue/24/solid'
-import type { ValidationError } from '~/composables/useValidation'
+import type { FormFieldError } from '~/composables/useFormValidation'
 
 defineProps<{
-  errors: ValidationError[]
+  errors: FormFieldError[]
 }>()
 
 defineEmits<{
-  close: []
+  dismiss: []
 }>()
 
 /**
