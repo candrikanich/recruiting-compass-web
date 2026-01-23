@@ -54,6 +54,7 @@ export default defineNuxtConfig({
     public: {
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || "",
       supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || "",
+      collegeScorecardApiKey: process.env.NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY || "",
     },
   },
 });
