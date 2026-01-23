@@ -410,17 +410,11 @@ const handleSubmit = async () => {
     instagram_handle: formData.instagram_handle || undefined,
   }
 
-  console.log('[DEBUG-FORM] Validating form data:', normalizedData)
   const validated = await validate(normalizedData, schoolSchema)
-  console.log('[DEBUG-FORM] Validation result:', validated)
-  console.log('[DEBUG-FORM] Errors:', errors.value)
 
   if (!validated) {
-    console.warn('[DEBUG-FORM] Validation failed, errors:', errors.value)
     return
   }
-
-  console.log('[DEBUG-FORM] Validation passed, emitting submit event')
   emit('submit', {
     ...validated,
     favicon_url: null,
