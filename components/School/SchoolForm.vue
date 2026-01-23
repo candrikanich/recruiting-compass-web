@@ -423,10 +423,6 @@ const handleSubmit = async () => {
   console.log('[DEBUG-FORM] Validation passed, emitting submit event')
   emit('submit', {
     ...validated,
-    location: validated.location || null,
-    website: validated.website || null,
-    twitter_handle: validated.twitter_handle || null,
-    instagram_handle: validated.instagram_handle || null,
     favicon_url: null,
     pros: [],
     cons: [],
