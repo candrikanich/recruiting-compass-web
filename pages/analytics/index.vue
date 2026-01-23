@@ -4,7 +4,9 @@
     <div class="bg-white border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <h1 class="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-        <p class="text-gray-600 mt-1">Comprehensive recruiting metrics and performance insights</p>
+        <p class="text-gray-600 mt-1">
+          Comprehensive recruiting metrics and performance insights
+        </p>
       </div>
     </div>
 
@@ -113,22 +115,27 @@
 
       <!-- Export Actions -->
       <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div
+          class="flex flex-col md:flex-row items-center justify-between gap-4"
+        >
           <h3 class="text-lg font-semibold text-gray-900">Export Analytics</h3>
           <div class="flex gap-3">
             <button
+              data-testid="export-csv-button"
               @click="handleExport('csv')"
               class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition"
             >
               Export as CSV
             </button>
             <button
+              data-testid="export-excel-button"
               @click="handleExport('excel')"
               class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition"
             >
               Export as Excel
             </button>
             <button
+              data-testid="export-pdf-button"
               @click="handleExport('pdf')"
               class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition"
             >
@@ -142,99 +149,109 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import DateRangeToolbar from '~/components/Analytics/DateRangeToolbar.vue'
-import StatCard from '~/components/Analytics/StatCard.vue'
-import PieChart from '~/components/Analytics/PieChart.vue'
-import FunnelChart from '~/components/Analytics/FunnelChart.vue'
-import ScatterChart from '~/components/Analytics/ScatterChart.vue'
-import { usePerformanceAnalytics } from '~/composables/usePerformanceAnalytics'
+import { ref, onMounted } from "vue";
+import DateRangeToolbar from "~/components/Analytics/DateRangeToolbar.vue";
+import StatCard from "~/components/Analytics/StatCard.vue";
+import PieChart from "~/components/Analytics/PieChart.vue";
+import FunnelChart from "~/components/Analytics/FunnelChart.vue";
+import ScatterChart from "~/components/Analytics/ScatterChart.vue";
+import { usePerformanceAnalytics } from "~/composables/usePerformanceAnalytics";
 
 interface DateRange {
-  preset: string
-  startDate: string
-  endDate: string
+  preset: string;
+  startDate: string;
+  endDate: string;
 }
 
-const analytics = usePerformanceAnalytics()
+const analytics = usePerformanceAnalytics();
 
 const dateRange = ref<DateRange>({
-  preset: 'last_30_days',
-  startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-  endDate: new Date().toISOString().split('T')[0]
-})
+  preset: "last_30_days",
+  startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0],
+  endDate: new Date().toISOString().split("T")[0],
+});
 
 // Summary Statistics
 const stats = ref({
   totalSchools: 24,
   totalInteractions: 87,
   totalOffers: 15,
-  commitments: 3
-})
+  commitments: 3,
+});
 
 // Chart Data
 const chartData = ref({
   interactionTypes: [
-    { label: 'Email', value: 34 },
-    { label: 'Phone Call', value: 28 },
-    { label: 'In-Person Visit', value: 15 },
-    { label: 'Text', value: 10 }
+    { label: "Email", value: 34 },
+    { label: "Phone Call", value: 28 },
+    { label: "In-Person Visit", value: 15 },
+    { label: "Text", value: 10 },
   ],
   sentiments: [
-    { label: 'Positive', value: 52 },
-    { label: 'Neutral', value: 28 },
-    { label: 'Needs Follow-up', value: 7 }
+    { label: "Positive", value: 52 },
+    { label: "Neutral", value: 28 },
+    { label: "Needs Follow-up", value: 7 },
   ],
   schoolStatus: [
-    { label: 'Active Recruiting', value: 18 },
-    { label: 'On Wait List', value: 4 },
-    { label: 'Passed', value: 2 }
+    { label: "Active Recruiting", value: 18 },
+    { label: "On Wait List", value: 4 },
+    { label: "Passed", value: 2 },
   ],
   pipeline: [
-    { label: 'Initial Contact', value: 250, color: '#3b82f6' },
-    { label: 'Active Discussions', value: 85, color: '#10b981' },
-    { label: 'Offers Extended', value: 15, color: '#f59e0b' },
-    { label: 'Committed', value: 3, color: '#ef4444' }
+    { label: "Initial Contact", value: 250, color: "#3b82f6" },
+    { label: "Active Discussions", value: 85, color: "#10b981" },
+    { label: "Offers Extended", value: 15, color: "#f59e0b" },
+    { label: "Committed", value: 3, color: "#ef4444" },
   ],
   performanceData: [
     {
-      label: 'Performance Metrics',
+      label: "Performance Metrics",
       data: [
-        { x: 85, y: 340, label: 'Player A' },
-        { x: 88, y: 355, label: 'Player B' },
-        { x: 82, y: 325, label: 'Player C' },
-        { x: 90, y: 365, label: 'Player D' },
-        { x: 87, y: 350, label: 'Player E' },
-        { x: 84, y: 335, label: 'Player F' },
-        { x: 86, y: 345, label: 'Player G' },
-        { x: 89, y: 360, label: 'Player H' }
+        { x: 85, y: 340, label: "Player A" },
+        { x: 88, y: 355, label: "Player B" },
+        { x: 82, y: 325, label: "Player C" },
+        { x: 90, y: 365, label: "Player D" },
+        { x: 87, y: 350, label: "Player E" },
+        { x: 84, y: 335, label: "Player F" },
+        { x: 86, y: 345, label: "Player G" },
+        { x: 89, y: 360, label: "Player H" },
       ],
-      color: '#3b82f6'
-    }
-  ]
-})
+      color: "#3b82f6",
+    },
+  ],
+});
 
 const handleDateRangeChange = (newRange: DateRange) => {
-  dateRange.value = newRange
+  dateRange.value = newRange;
   // TODO: Fetch analytics data for new date range
-}
+};
 
-const handleInteractionTypeClick = (label: string, value: number, index: number) => {
-  console.log(`Clicked interaction type: ${label} (${value})`)
+const handleInteractionTypeClick = (
+  label: string,
+  value: number,
+  index: number,
+) => {
+  console.log(`Clicked interaction type: ${label} (${value})`);
   // TODO: Navigate to detailed view or filter interactions
-}
+};
 
-const handlePipelineStageClick = (label: string, value: number, index: number) => {
-  console.log(`Clicked pipeline stage: ${label} (${value})`)
+const handlePipelineStageClick = (
+  label: string,
+  value: number,
+  index: number,
+) => {
+  console.log(`Clicked pipeline stage: ${label} (${value})`);
   // TODO: Show details or drill down into stage
-}
+};
 
-const handleExport = (format: 'csv' | 'excel' | 'pdf') => {
-  console.log(`Exporting analytics as ${format}`)
+const handleExport = (format: "csv" | "excel" | "pdf") => {
+  console.log(`Exporting analytics as ${format}`);
   // TODO: Implement export functionality
-}
+};
 
 onMounted(() => {
   // TODO: Fetch analytics data from API
-})
+});
 </script>

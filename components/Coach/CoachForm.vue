@@ -1,7 +1,11 @@
 <template>
   <form @submit.prevent="handleSubmit" class="space-y-6">
     <!-- Error summary -->
-    <FormErrorSummary v-if="hasErrors" :errors="errors" @dismiss="clearErrors" />
+    <FormErrorSummary
+      v-if="hasErrors"
+      :errors="errors"
+      @dismiss="clearErrors"
+    />
 
     <!-- Role -->
     <div>
@@ -27,7 +31,10 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- First Name -->
       <div>
-        <label for="firstName" class="block text-sm font-medium mb-1 text-slate-600">
+        <label
+          for="firstName"
+          class="block text-sm font-medium mb-1 text-slate-600"
+        >
           First Name <span class="text-red-600">*</span>
         </label>
         <input
@@ -45,7 +52,10 @@
 
       <!-- Last Name -->
       <div>
-        <label for="lastName" class="block text-sm font-medium mb-1 text-slate-600">
+        <label
+          for="lastName"
+          class="block text-sm font-medium mb-1 text-slate-600"
+        >
           Last Name <span class="text-red-600">*</span>
         </label>
         <input
@@ -99,7 +109,10 @@
     <!-- Social Media -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <label for="twitter" class="block text-sm font-medium mb-1 text-slate-600">
+        <label
+          for="twitter"
+          class="block text-sm font-medium mb-1 text-slate-600"
+        >
           Twitter Handle
         </label>
         <input
@@ -115,7 +128,10 @@
       </div>
 
       <div>
-        <label for="instagram" class="block text-sm font-medium mb-1 text-slate-600">
+        <label
+          for="instagram"
+          class="block text-sm font-medium mb-1 text-slate-600"
+        >
           Instagram Handle
         </label>
         <input
@@ -151,11 +167,18 @@
     <!-- Submit and Cancel buttons -->
     <div class="flex gap-4">
       <button
+        data-testid="add-coach-button"
         type="submit"
-        :disabled="loading || hasErrors || !formData.role || !formData.first_name || !formData.last_name"
+        :disabled="
+          loading ||
+          hasErrors ||
+          !formData.role ||
+          !formData.first_name ||
+          !formData.last_name
+        "
         class="flex-1 px-4 py-2 text-white font-semibold rounded-lg transition bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
       >
-        {{ loading ? 'Adding...' : 'Add Coach' }}
+        {{ loading ? "Adding..." : "Add Coach" }}
       </button>
       <button
         type="button"
@@ -169,57 +192,66 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
-import { useFormValidation } from '~/composables/useFormValidation'
-import { coachSchema } from '~/utils/validation/schemas'
-import { z } from 'zod'
+import { reactive, watch } from "vue";
+import { useFormValidation } from "~/composables/useFormValidation";
+import { coachSchema } from "~/utils/validation/schemas";
+import { z } from "zod";
 
 const props = defineProps<{
-  loading: boolean
+  loading: boolean;
   initialData?: {
-    role?: string
-    first_name?: string
-    last_name?: string
-    email?: string
-    phone?: string
-    twitter_handle?: string
-    instagram_handle?: string
-    notes?: string
-  }
-}>()
+    role?: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    phone?: string;
+    twitter_handle?: string;
+    instagram_handle?: string;
+    notes?: string;
+  };
+}>();
 
 const emit = defineEmits<{
-  submit: [data: any]
-  cancel: []
-}>()
+  submit: [data: any];
+  cancel: [];
+}>();
 
-const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } = useFormValidation()
+const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } =
+  useFormValidation();
 
 // Form data - initialize with parent data or defaults
 const formData = reactive({
-  role: props.initialData?.role || '',
-  first_name: props.initialData?.first_name || '',
-  last_name: props.initialData?.last_name || '',
-  email: props.initialData?.email || '',
-  phone: props.initialData?.phone || '',
-  twitter_handle: props.initialData?.twitter_handle || '',
-  instagram_handle: props.initialData?.instagram_handle || '',
-  notes: props.initialData?.notes || '',
-})
+  role: props.initialData?.role || "",
+  first_name: props.initialData?.first_name || "",
+  last_name: props.initialData?.last_name || "",
+  email: props.initialData?.email || "",
+  phone: props.initialData?.phone || "",
+  twitter_handle: props.initialData?.twitter_handle || "",
+  instagram_handle: props.initialData?.instagram_handle || "",
+  notes: props.initialData?.notes || "",
+});
 
 // Watch for changes to initialData from parent
-watch(() => props.initialData, (newData) => {
-  if (newData) {
-    if (newData.role !== undefined) formData.role = newData.role
-    if (newData.first_name !== undefined) formData.first_name = newData.first_name
-    if (newData.last_name !== undefined) formData.last_name = newData.last_name
-    if (newData.email !== undefined) formData.email = newData.email
-    if (newData.phone !== undefined) formData.phone = newData.phone
-    if (newData.twitter_handle !== undefined) formData.twitter_handle = newData.twitter_handle
-    if (newData.instagram_handle !== undefined) formData.instagram_handle = newData.instagram_handle
-    if (newData.notes !== undefined) formData.notes = newData.notes
-  }
-}, { deep: true })
+watch(
+  () => props.initialData,
+  (newData) => {
+    if (newData) {
+      if (newData.role !== undefined) formData.role = newData.role;
+      if (newData.first_name !== undefined)
+        formData.first_name = newData.first_name;
+      if (newData.last_name !== undefined)
+        formData.last_name = newData.last_name;
+      if (newData.email !== undefined) formData.email = newData.email;
+      if (newData.phone !== undefined) formData.phone = newData.phone;
+      if (newData.twitter_handle !== undefined)
+        formData.twitter_handle = newData.twitter_handle;
+      if (newData.instagram_handle !== undefined)
+        formData.instagram_handle = newData.instagram_handle;
+      if (newData.notes !== undefined) formData.notes = newData.notes;
+    }
+  },
+  { deep: true },
+);
 
 // Field validators
 const validators = {
@@ -228,53 +260,73 @@ const validators = {
   last_name: z.object({ last_name: coachSchema.shape.last_name }),
   email: z.object({ email: coachSchema.shape.email }),
   phone: z.object({ phone: coachSchema.shape.phone }),
-  twitter_handle: z.object({ twitter_handle: coachSchema.shape.twitter_handle }),
-  instagram_handle: z.object({ instagram_handle: coachSchema.shape.instagram_handle }),
+  twitter_handle: z.object({
+    twitter_handle: coachSchema.shape.twitter_handle,
+  }),
+  instagram_handle: z.object({
+    instagram_handle: coachSchema.shape.instagram_handle,
+  }),
   notes: z.object({ notes: coachSchema.shape.notes }),
-}
+};
 
 const validateRole = async () => {
-  await validateField('role', formData.role, validators.role.shape.role)
-}
+  await validateField("role", formData.role, validators.role.shape.role);
+};
 
 const validateFirstName = async () => {
-  await validateField('first_name', formData.first_name, validators.first_name.shape.first_name)
-}
+  await validateField(
+    "first_name",
+    formData.first_name,
+    validators.first_name.shape.first_name,
+  );
+};
 
 const validateLastName = async () => {
-  await validateField('last_name', formData.last_name, validators.last_name.shape.last_name)
-}
+  await validateField(
+    "last_name",
+    formData.last_name,
+    validators.last_name.shape.last_name,
+  );
+};
 
 const validateEmail = async () => {
-  await validateField('email', formData.email, validators.email.shape.email)
-}
+  await validateField("email", formData.email, validators.email.shape.email);
+};
 
 const validatePhone = async () => {
-  await validateField('phone', formData.phone, validators.phone.shape.phone)
-}
+  await validateField("phone", formData.phone, validators.phone.shape.phone);
+};
 
 const validateTwitter = async () => {
-  await validateField('twitter_handle', formData.twitter_handle, validators.twitter_handle.shape.twitter_handle)
-}
+  await validateField(
+    "twitter_handle",
+    formData.twitter_handle,
+    validators.twitter_handle.shape.twitter_handle,
+  );
+};
 
 const validateInstagram = async () => {
-  await validateField('instagram_handle', formData.instagram_handle, validators.instagram_handle.shape.instagram_handle)
-}
+  await validateField(
+    "instagram_handle",
+    formData.instagram_handle,
+    validators.instagram_handle.shape.instagram_handle,
+  );
+};
 
 const validateNotes = async () => {
-  await validateField('notes', formData.notes, validators.notes.shape.notes)
-}
+  await validateField("notes", formData.notes, validators.notes.shape.notes);
+};
 
 const handleSubmit = async () => {
-  const validated = await validate(formData, coachSchema)
+  const validated = await validate(formData, coachSchema);
 
   if (!validated) {
-    return
+    return;
   }
 
-  emit('submit', {
+  emit("submit", {
     ...validated,
-    school_id: '',
-  })
-}
+    school_id: "",
+  });
+};
 </script>

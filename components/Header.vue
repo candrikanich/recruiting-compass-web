@@ -65,6 +65,7 @@
               v-for="item in navItems"
               :key="item.to"
               :to="item.to"
+              :data-testid="`mobile-nav-${item.to.replace('/', '')}`"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition"
               :class="
                 isActive(item.to)
@@ -117,6 +118,7 @@
           <!-- Logout -->
           <div class="mt-3 pt-3 border-t border-slate-200">
             <button
+              data-testid="mobile-logout-button"
               @click="handleLogout"
               class="flex items-center gap-3 w-full px-3 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition"
             >
