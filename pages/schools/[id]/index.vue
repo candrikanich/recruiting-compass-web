@@ -143,16 +143,56 @@
             </div>
 
             <!-- Display Info -->
-            <div v-else class="space-y-3">
-              <div v-if="school.website" class="flex items-start gap-2">
-                <span class="text-slate-500 text-sm w-24">Website:</span>
-                <a :href="school.website" target="_blank" class="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1">
-                  {{ school.website }}
-                  <ArrowTopRightOnSquareIcon class="w-3 h-3" />
-                </a>
+            <div v-else class="space-y-4">
+              <!-- School Information -->
+              <div v-if="school.academic_info?.address || school.academic_info?.baseball_facility_address || school.academic_info?.mascot || school.academic_info?.undergrad_size" class="space-y-3">
+                <h4 class="font-medium text-slate-900">School Information</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div v-if="school.academic_info?.address" class="p-3 bg-slate-50 rounded-lg">
+                    <p class="text-xs text-slate-600 mb-1 flex items-center gap-1">
+                      <MapPinIcon class="w-3.5 h-3.5" />
+                      Campus Address
+                    </p>
+                    <p class="text-sm font-medium text-slate-900">{{ school.academic_info.address }}</p>
+                  </div>
+                  <div v-if="school.academic_info?.baseball_facility_address" class="p-3 bg-slate-50 rounded-lg">
+                    <p class="text-xs text-slate-600 mb-1">Baseball Facility</p>
+                    <p class="text-sm font-medium text-slate-900">{{ school.academic_info.baseball_facility_address }}</p>
+                  </div>
+                  <div v-if="school.academic_info?.mascot" class="p-3 bg-slate-50 rounded-lg">
+                    <p class="text-xs text-slate-600 mb-1">Mascot</p>
+                    <p class="text-sm font-medium text-slate-900">{{ school.academic_info.mascot }}</p>
+                  </div>
+                  <div v-if="school.academic_info?.undergrad_size" class="p-3 bg-slate-50 rounded-lg">
+                    <p class="text-xs text-slate-600 mb-1">Undergraduate Size</p>
+                    <p class="text-sm font-medium text-slate-900">{{ school.academic_info.undergrad_size }}</p>
+                  </div>
+                </div>
               </div>
 
-              <div class="pt-4 border-t border-slate-200">
+              <!-- Contact & Social -->
+              <div v-if="school.website || school.twitter_handle" class="space-y-3 pt-2 border-t border-slate-200">
+                <h4 class="font-medium text-slate-900">Contact & Social</h4>
+                <div class="space-y-2">
+                  <div v-if="school.website" class="flex items-start gap-2">
+                    <span class="text-slate-500 text-sm w-24">Website:</span>
+                    <a :href="school.website" target="_blank" class="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1">
+                      {{ school.website }}
+                      <ArrowTopRightOnSquareIcon class="w-3 h-3" />
+                    </a>
+                  </div>
+                  <div v-if="school.twitter_handle" class="flex items-start gap-2">
+                    <span class="text-slate-500 text-sm w-24">Twitter:</span>
+                    <a :href="`https://twitter.com/${school.twitter_handle.replace('@', '')}`" target="_blank" class="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1">
+                      {{ school.twitter_handle }}
+                      <ArrowTopRightOnSquareIcon class="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- College Scorecard Data -->
+              <div v-if="getAcademicInfo('student_size') || getAcademicInfo('tuition_in_state') || getAcademicInfo('tuition_out_of_state') || getAcademicInfo('admission_rate')" class="pt-2 border-t border-slate-200">
                 <h4 class="font-medium text-slate-900 mb-3">College Scorecard Data</h4>
                 <div class="grid grid-cols-2 gap-2 text-sm">
                   <div v-if="getAcademicInfo('student_size')" class="flex justify-between p-2 bg-slate-50 rounded">
