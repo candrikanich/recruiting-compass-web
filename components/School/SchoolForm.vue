@@ -398,12 +398,17 @@ const handleCollegeSelect = (college: any) => {
 }
 
 const handleSubmit = async () => {
+  console.log('[DEBUG-FORM] Validating form data:', formData)
   const validated = await validate(formData, schoolSchema)
+  console.log('[DEBUG-FORM] Validation result:', validated)
+  console.log('[DEBUG-FORM] Errors:', errors.value)
 
   if (!validated) {
+    console.warn('[DEBUG-FORM] Validation failed, errors:', errors.value)
     return
   }
 
+  console.log('[DEBUG-FORM] Validation passed, emitting submit event')
   emit('submit', {
     ...validated,
     location: validated.location || null,
