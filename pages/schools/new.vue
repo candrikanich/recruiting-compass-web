@@ -216,6 +216,7 @@ const clearSelection = () => {
 }
 
 const handleSchoolFormSubmit = async (formData: any) => {
+  console.log('[DEBUG] Form submitted with data:', formData)
   try {
     const academic_info = collegeScorecardData.value ? {
       student_size: collegeScorecardData.value.studentSize,
@@ -228,16 +229,24 @@ const handleSchoolFormSubmit = async (formData: any) => {
       longitude: collegeScorecardData.value.longitude,
     } : {}
 
-    await createSchool({
+    console.log('[DEBUG] Creating school with:', { ...formData, academic_info })
+    const school = await createSchool({
       ...formData,
       academic_info,
       favicon_url: null,
       is_favorite: false,
       user_id: '',
     })
-    await navigateTo('/schools')
+
+    console.log('[DEBUG] School created:', school)
+    if (school) {
+      console.log('[DEBUG] Navigating to school detail page')
+      await navigateTo(`/schools/${school.id}`)
+    }
   } catch (err) {
-    console.error('Failed to create school:', err)
+    const message = err instanceof Error ? err.message : 'Failed to create school'
+    console.error('[ERROR] Failed to create school:', message)
+    console.error('[ERROR] Full error:', err)
   }
 }
 </script>
