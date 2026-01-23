@@ -400,14 +400,14 @@ const handleCollegeSelect = (college: any) => {
 }
 
 const handleSubmit = async () => {
-  // Convert empty strings to null for optional/nullable fields
+  // Convert empty strings to undefined for optional fields (Zod's .optional() expects undefined, not null)
   const normalizedData = {
     ...formData,
-    division: formData.division || null,
-    conference: formData.conference || null,
-    website: formData.website || null,
-    twitter_handle: formData.twitter_handle || null,
-    instagram_handle: formData.instagram_handle || null,
+    division: formData.division || undefined,
+    conference: formData.conference || undefined,
+    website: formData.website || undefined,
+    twitter_handle: formData.twitter_handle || undefined,
+    instagram_handle: formData.instagram_handle || undefined,
   }
 
   console.log('[DEBUG-FORM] Validating form data:', normalizedData)
