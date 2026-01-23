@@ -2,6 +2,7 @@
   <Transition name="slide-down">
     <div
       v-if="errors.length > 0"
+      data-testid="error-message"
       class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg"
     >
       <div class="flex items-start gap-3">

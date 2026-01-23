@@ -19,12 +19,12 @@ export class BasePage {
     await this.page.fill(selector, value)
   }
 
-  async click(selector: string) {
-    await this.page.locator(selector).click({ timeout: 10000 })
+  async click(selector: string, timeout = 10000) {
+    await this.page.locator(selector).click({ timeout })
   }
 
-  async clickByText(text: string) {
-    await this.page.locator(`text=${text}`).click({ timeout: 10000 })
+  async clickByText(text: string, timeout = 10000) {
+    await this.page.locator(`text=${text}`).click({ timeout })
   }
 
   async selectOption(selector: string, value: string) {

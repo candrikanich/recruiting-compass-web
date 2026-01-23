@@ -237,6 +237,7 @@
 
             <!-- Submit -->
             <button
+              data-testid="signup-button"
               type="submit"
               :disabled="loading || hasErrors"
               class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg"
@@ -334,6 +335,7 @@ const handleSignup = async () => {
       fullName,
       email: email.value,
       password: password.value,
+      confirmPassword: confirmPassword.value,
       role: role.value,
     },
     signupSchema

@@ -117,6 +117,7 @@
 
             <!-- Submit -->
             <button
+              data-testid="login-button"
               type="submit"
               :disabled="!isFormValid || loading || validating"
               class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg"

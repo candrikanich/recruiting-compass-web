@@ -18,10 +18,22 @@ export const authFixture = {
       // Clear all storage
       localStorage.clear()
       sessionStorage.clear()
+      
+      // Also clear any Supabase auth data if available
+      if (window.localStorage.getItem('supabase.auth.token')) {
+        window.localStorage.removeItem('supabase.auth.token')
+      }
+      if (window.localStorage.getItem('supabase.auth.refreshToken')) {
+        window.localStorage.removeItem('supabase.auth.refreshToken')
+      }
     })
 
-    // Clear cookies
+    // Clear all cookies including httpOnly
     await page.context().clearCookies()
+    
+    // Navigate to login to ensure fresh state
+    await page.goto('/login')
+    await page.waitForTimeout(1000) // Wait for any redirects
   },
 
   /**
@@ -77,8 +89,9 @@ export const authFixture = {
    */
   async isLoggedIn(page: Page): Promise<boolean> {
     try {
-      await page.goto('/dashboard', { waitUntil: 'networkidle' })
-      return page.url().includes('/dashboard')
+      const response = await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
+      // If redirected to login, not logged in
+      return !page.url().includes('/login') && response?.status() !== 401
     } catch {
       return false
     }

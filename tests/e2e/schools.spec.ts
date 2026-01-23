@@ -19,9 +19,9 @@ test.describe('Schools Management', () => {
   test('should be on dashboard when authenticated', async ({ page }) => {
     await expect(page).toHaveURL('/dashboard')
 
-    // Check dashboard is loaded
-    const dashboard = page.locator('text=Dashboard')
-    await expect(dashboard).toBeVisible()
+    // Check dashboard is loaded - use more specific selector for h1
+    const dashboardHeader = page.locator('h1:has-text("Dashboard")')
+    await expect(dashboardHeader).toBeVisible()
   })
 
   test('should logout and redirect to login', async ({ page }) => {

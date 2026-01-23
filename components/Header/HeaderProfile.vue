@@ -2,6 +2,7 @@
   <div class="relative">
     <!-- Profile Button -->
     <button
+      data-testid="profile-menu"
       @click="isOpen = !isOpen"
       class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
     >
@@ -58,6 +59,7 @@
             Settings
           </NuxtLink>
           <button
+            data-testid="logout-button"
             @click="handleLogout"
             class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
           >
