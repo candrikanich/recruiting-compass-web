@@ -358,33 +358,27 @@ const validateDivision = async () => {
 }
 
 const validateConference = async () => {
-  const validator = validateField('conference', validators.conference.shape.conference)
-  await validator(formData.conference)
+  await validateField('conference', formData.conference, validators.conference.shape.conference)
 }
 
 const validateWebsite = async () => {
-  const validator = validateField('website', validators.website.shape.website)
-  await validator(formData.website)
+  await validateField('website', formData.website, validators.website.shape.website)
 }
 
 const validateTwitter = async () => {
-  const validator = validateField('twitter_handle', validators.twitter_handle.shape.twitter_handle)
-  await validator(formData.twitter_handle)
+  await validateField('twitter_handle', formData.twitter_handle, validators.twitter_handle.shape.twitter_handle)
 }
 
 const validateInstagram = async () => {
-  const validator = validateField('instagram_handle', validators.instagram_handle.shape.instagram_handle)
-  await validator(formData.instagram_handle)
+  await validateField('instagram_handle', formData.instagram_handle, validators.instagram_handle.shape.instagram_handle)
 }
 
 const validateNotes = async () => {
-  const validator = validateField('notes', validators.notes.shape.notes)
-  await validator(formData.notes)
+  await validateField('notes', formData.notes, validators.notes.shape.notes)
 }
 
 const validateStatus = async () => {
-  const validator = validateField('status', validators.status.shape.status)
-  await validator(formData.status)
+  await validateField('status', formData.status, validators.status.shape.status)
 }
 
 const isAutoFilled = (field: string) => {
@@ -404,7 +398,7 @@ const handleCollegeSelect = (college: any) => {
 }
 
 const handleSubmit = async () => {
-  const validated = await validate(formData)
+  const validated = await validate(formData, schoolSchema)
 
   if (!validated) {
     return
