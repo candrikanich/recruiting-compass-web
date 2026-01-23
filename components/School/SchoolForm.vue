@@ -400,8 +400,18 @@ const handleCollegeSelect = (college: any) => {
 }
 
 const handleSubmit = async () => {
-  console.log('[DEBUG-FORM] Validating form data:', formData)
-  const validated = await validate(formData, schoolSchema)
+  // Convert empty strings to null for optional/nullable fields
+  const normalizedData = {
+    ...formData,
+    division: formData.division || null,
+    conference: formData.conference || null,
+    website: formData.website || null,
+    twitter_handle: formData.twitter_handle || null,
+    instagram_handle: formData.instagram_handle || null,
+  }
+
+  console.log('[DEBUG-FORM] Validating form data:', normalizedData)
+  const validated = await validate(normalizedData, schoolSchema)
   console.log('[DEBUG-FORM] Validation result:', validated)
   console.log('[DEBUG-FORM] Errors:', errors.value)
 
