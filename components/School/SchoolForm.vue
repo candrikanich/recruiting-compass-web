@@ -248,7 +248,7 @@ import { schoolSchema } from '~/utils/validation/schemas'
 import { z } from 'zod'
 import type { CollegeDataResult } from '~/composables/useCollegeData'
 import FormErrorSummary from '~/components/Validation/FormErrorSummary.vue'
-import FieldError from '~/components/Validation/FieldError.vue'
+import FieldError from '~/components/DesignSystem/FieldError.vue'
 
 // Dropdown style for selects
 const selectDropdownStyle = computed(() => ({

@@ -7,22 +7,30 @@ export class AuthPage extends BasePage {
   }
 
   async login(email: string, password: string) {
-    await this.fillInput('input[type="email"]', email)
-    await this.fillInput('input[type="password"]', password)
-    await this.clickByText('Login')
+    await this.fillAndValidate('input[type="email"]', email)
+    await this.fillAndValidate('input[type="password"]', password)
+    await this.clickWhenEnabled('button:has-text("Sign In")')
     await this.waitForURL('/dashboard')
   }
 
   async signup(email: string, password: string, displayName: string) {
-    await this.clickByText('Sign up')
+    await this.clickByText('Create one now')
     await this.waitForURL('/signup')
 
-    await this.fillInput('input[placeholder*="email"]', email)
-    await this.fillInput('input[placeholder*="name"]', displayName)
-    await this.fillInput('input[type="password"]', password)
-    await this.fillInput('input[placeholder*="confirm"]', password)
+    const [firstName, lastName] = displayName.split(' ')
+    await this.fillAndValidate('#firstName', firstName || displayName)
+    if (lastName) await this.fillAndValidate('#lastName', lastName)
+    await this.fillAndValidate('#email', email)
+    await this.selectOption('#role', 'parent')  // Default role
+    await this.fillAndValidate('#password', password)
+    await this.fillAndValidate('#confirmPassword', password)
 
-    await this.clickByText('Create Account')
+    // Check terms checkbox
+    const checkbox = this.page.locator('input[type="checkbox"]')
+    await checkbox.waitFor({ state: 'visible' })
+    await checkbox.check()
+
+    await this.clickWhenEnabled('button:has-text("Create Account")')
     await this.waitForURL('/dashboard')
   }
 
@@ -49,7 +57,7 @@ export class AuthPage extends BasePage {
 
   async fillInvalidEmail(email: string) {
     await this.fillInput('input[type="email"]', email)
-    await this.clickByText('Login')
+    await this.clickByText('Sign In')
   }
 
   async fillWeakPassword(password: string) {

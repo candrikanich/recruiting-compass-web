@@ -20,11 +20,11 @@ export class BasePage {
   }
 
   async click(selector: string) {
-    await this.page.click(selector)
+    await this.page.locator(selector).click({ timeout: 10000 })
   }
 
   async clickByText(text: string) {
-    await this.page.click(`text=${text}`)
+    await this.page.locator(`text=${text}`).click({ timeout: 10000 })
   }
 
   async selectOption(selector: string, value: string) {
@@ -81,5 +81,36 @@ export class BasePage {
 
   async pause() {
     await this.page.pause()
+  }
+
+  async waitForElementEnabled(selector: string, timeout = 10000) {
+    await this.page.locator(selector).waitFor({ state: 'visible', timeout })
+    const element = this.page.locator(selector)
+    await element.evaluate((el: HTMLElement) => {
+      return new Promise<void>((resolve) => {
+        const checkEnabled = () => {
+          const isDisabled = (el as any).disabled || el.getAttribute('disabled') !== null
+          if (!isDisabled) {
+            resolve()
+          } else {
+            setTimeout(checkEnabled, 100)
+          }
+        }
+        checkEnabled()
+      })
+    })
+  }
+
+  async clickWhenEnabled(selector: string) {
+    await this.waitForElementEnabled(selector)
+    await this.click(selector)
+  }
+
+  async fillAndValidate(selector: string, value: string) {
+    const locator = this.page.locator(selector)
+    await locator.waitFor({ state: 'visible' })
+    await locator.fill(value)
+    await locator.blur()  // Trigger validation
+    await this.page.waitForTimeout(100)  // Brief wait for validation feedback
   }
 }

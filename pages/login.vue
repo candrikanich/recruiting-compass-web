@@ -173,7 +173,7 @@ import {
   LockClosedIcon,
 } from "@heroicons/vue/24/outline";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
-import FieldError from "~/components/Validation/FieldError.vue";
+import FieldError from "~/components/DesignSystem/FieldError.vue";
 
 // Static schemas - defined once outside component scope
 const EMAIL_SCHEMA = z.object({ email: loginSchema.shape.email });

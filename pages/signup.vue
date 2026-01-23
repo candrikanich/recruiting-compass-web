@@ -153,7 +153,7 @@
                   @blur="validateEmail"
                 />
               </div>
-              <DesignSystemFieldError :error="fieldErrors.email" />
+              <FieldError :error="fieldErrors.email" />
             </div>
 
             <!-- Role -->
@@ -279,7 +279,7 @@ import { signupSchema } from '~/utils/validation/schemas'
 import { z } from 'zod'
 import { ArrowLeftIcon, UserIcon, EnvelopeIcon, LockClosedIcon } from '@heroicons/vue/24/outline'
 import FormErrorSummary from '~/components/Validation/FormErrorSummary.vue'
-import FieldError from '~/components/Validation/FieldError.vue'
+import FieldError from '~/components/DesignSystem/FieldError.vue'
 import type { UserPreferences } from '~/types/models'
 
 const firstName = ref('')

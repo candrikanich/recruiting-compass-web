@@ -3,6 +3,10 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   ssr: false,
 
+  devServer: {
+    port: 3003,
+  },
+
   css: ["~/assets/css/main.css"],
 
   modules: ["@pinia/nuxt"],

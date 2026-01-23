@@ -35,6 +35,8 @@ Thumbs.db
 # Testing
 .coverage/
 coverage/
+playwright-report/
+test-results/
 
 # Temp files
 *.tmp
