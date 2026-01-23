@@ -32,17 +32,18 @@ describe('useUniversalFilter - Text Search', () => {
 
   it('should filter schools by full word in name', () => {
     const schoolsRef = ref(schools)
-    const { filteredItems, setFilterValue } = useUniversalFilter(schoolsRef, filterConfigs)
+    const { filteredItems, setFilterValue } = useUniversalFilter(schoolsRef, filterConfigs, { persistState: false })
 
     setFilterValue('name', 'Ohio')
 
-    expect(filteredItems.value).toHaveLength(2)
-    expect(filteredItems.value.map(s => s.id)).toEqual(['1', '3'])
+    // Only "Ohio State University" contains "Ohio" in the name
+    expect(filteredItems.value).toHaveLength(1)
+    expect(filteredItems.value.map(s => s.id)).toEqual(['1'])
   })
 
   it('should filter schools by single character in name', () => {
     const schoolsRef = ref(schools)
-    const { filteredItems, setFilterValue } = useUniversalFilter(schoolsRef, filterConfigs)
+    const { filteredItems, setFilterValue } = useUniversalFilter(schoolsRef, filterConfigs, { persistState: false })
 
     setFilterValue('name', 'O')
 
@@ -54,28 +55,33 @@ describe('useUniversalFilter - Text Search', () => {
 
   it('should filter schools by location with full word', () => {
     const schoolsRef = ref(schools)
-    const { filteredItems, setFilterValue } = useUniversalFilter(schoolsRef, filterConfigs)
+    const { filteredItems, setFilterValue, clearFilters } = useUniversalFilter(schoolsRef, filterConfigs, { persistState: false })
 
+    clearFilters()
     setFilterValue('location', 'Ohio')
 
+    // Both "Columbus, Ohio" and "Kent, Ohio" contain "Ohio" in location
     expect(filteredItems.value).toHaveLength(2)
-    expect(filteredItems.value.map(s => s.id)).toEqual(['1', '3'])
+    expect(filteredItems.value.map(s => s.id)).toEqual(expect.arrayContaining(['1', '3']))
   })
 
   it('should be case insensitive', () => {
     const schoolsRef = ref(schools)
-    const { filteredItems, setFilterValue } = useUniversalFilter(schoolsRef, filterConfigs)
+    const { filteredItems, setFilterValue, clearFilters } = useUniversalFilter(schoolsRef, filterConfigs, { persistState: false })
 
+    clearFilters()
     setFilterValue('name', 'ohio')
 
-    expect(filteredItems.value).toHaveLength(2)
-    expect(filteredItems.value.map(s => s.id)).toEqual(['1', '3'])
+    // Only "Ohio State University" contains "ohio" in the name (case-insensitive)
+    expect(filteredItems.value).toHaveLength(1)
+    expect(filteredItems.value.map(s => s.id)).toEqual(['1'])
   })
 
   it('should find partial matches', () => {
     const schoolsRef = ref(schools)
-    const { filteredItems, setFilterValue } = useUniversalFilter(schoolsRef, filterConfigs)
+    const { filteredItems, setFilterValue, clearFilters } = useUniversalFilter(schoolsRef, filterConfigs, { persistState: false })
 
+    clearFilters()
     setFilterValue('name', 'State')
 
     expect(filteredItems.value).toHaveLength(2) // Ohio State and Kent State
@@ -84,17 +90,23 @@ describe('useUniversalFilter - Text Search', () => {
 
   it('should handle empty search', () => {
     const schoolsRef = ref(schools)
-    const { filteredItems, setFilterValue } = useUniversalFilter(schoolsRef, filterConfigs)
+    const { filteredItems, setFilterValue, clearFilters } = useUniversalFilter(schoolsRef, filterConfigs, { persistState: false })
 
+    clearFilters()
+    // First filter by something
+    setFilterValue('name', 'State')
+    // Then clear the filter
     setFilterValue('name', '')
 
-    expect(filteredItems.value).toHaveLength(5) // All schools
+    // Should return all schools when filter is empty
+    expect(filteredItems.value).toHaveLength(5)
   })
 
   it('should return no results for non-matching search', () => {
     const schoolsRef = ref(schools)
-    const { filteredItems, setFilterValue } = useUniversalFilter(schoolsRef, filterConfigs)
+    const { filteredItems, setFilterValue, clearFilters } = useUniversalFilter(schoolsRef, filterConfigs, { persistState: false })
 
+    clearFilters()
     setFilterValue('name', 'Nonexistent')
 
     expect(filteredItems.value).toHaveLength(0)
@@ -102,13 +114,15 @@ describe('useUniversalFilter - Text Search', () => {
 
   it('should apply multiple filters together', () => {
     const schoolsRef = ref(schools)
-    const { filteredItems, setFilterValue } = useUniversalFilter(schoolsRef, filterConfigs)
+    const { filteredItems, setFilterValue, clearFilters } = useUniversalFilter(schoolsRef, filterConfigs, { persistState: false })
 
+    clearFilters()
     setFilterValue('name', 'University')
     setFilterValue('division', 'D1')
 
+    // Schools with "University" in name AND division D1: Ohio State (1) and University of Michigan (2)
     expect(filteredItems.value).toHaveLength(2)
-    expect(filteredItems.value.map(s => s.id)).toEqual(['1', '2'])
+    expect(filteredItems.value.map(s => s.id)).toEqual(expect.arrayContaining(['1', '2']))
   })
 
   it('should support custom filter function', () => {
@@ -126,8 +140,9 @@ describe('useUniversalFilter - Text Search', () => {
     ]
 
     const schoolsRef = ref(schools)
-    const { filteredItems, setFilterValue } = useUniversalFilter(schoolsRef, customConfigs)
+    const { filteredItems, setFilterValue, clearFilters } = useUniversalFilter(schoolsRef, customConfigs, { persistState: false })
 
+    clearFilters()
     setFilterValue('name', 'Ohio')
 
     // Should only find "Ohio State" (starts with Ohio), not "Kent State"
