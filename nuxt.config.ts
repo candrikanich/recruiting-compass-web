@@ -38,16 +38,7 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    preset: process.env.NODE_ENV === "production" ? "static" : "node",
-    hooks:
-      process.env.NODE_ENV === "production"
-        ? {
-            close: async () => {
-              // Force process exit after prerender completes
-              process.exit(0);
-            },
-          }
-        : undefined,
+    preset: "node",
   },
 
   postcss: {
