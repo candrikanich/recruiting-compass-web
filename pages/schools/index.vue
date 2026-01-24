@@ -58,7 +58,7 @@
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"
       >
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
           <!-- Search -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1"
@@ -156,6 +156,14 @@
             :model-value="priorityTierFilter"
             @update:model-value="updatePriorityTierFilter"
           />
+
+          <!-- Sort Selector -->
+          <SortSelector
+            :model-value="sortBy"
+            :sort-order="sortOrder"
+            @update:model-value="sortBy = $event"
+            @update:sort-order="sortOrder = $event"
+          />
         </div>
 
         <!-- Active Filters -->
@@ -209,6 +217,37 @@
         class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-red-700"
       >
         {{ error }}
+      </div>
+
+      <!-- 30+ Schools Warning -->
+      <div
+        v-if="shouldShowSchoolWarning"
+        class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6"
+      >
+        <div class="flex items-start gap-3">
+          <div class="flex-shrink-0 mt-0.5">
+            <svg
+              class="h-5 w-5 text-amber-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-amber-900">
+              You have {{ schools.length }} schools on your list
+            </h3>
+            <p class="text-sm text-amber-800 mt-1">
+              Consider organizing your schools with priority tiers (A, B, C) to
+              better manage your recruiting strategy.
+            </p>
+          </div>
+        </div>
       </div>
 
       <!-- Empty State -->
@@ -389,6 +428,7 @@ import {
 } from "@heroicons/vue/24/outline";
 import SchoolLogo from "~/components/School/SchoolLogo.vue";
 import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
+import SortSelector from "~/components/Schools/SortSelector.vue";
 import {
   exportSchoolComparisonToCSV,
   generateSchoolComparisonPDF,
@@ -413,9 +453,15 @@ const { coaches: coachesData, fetchAllCoaches } = useCoaches();
 const allInteractions = ref<any[]>([]);
 const allCoaches = ref<any[]>([]);
 const priorityTierFilter = ref<("A" | "B" | "C")[] | null>(null);
+const sortBy = ref<string>("a-z");
+const sortOrder = ref<"asc" | "desc">("asc");
 
 const hasPreferences = computed(() => {
   return (schoolPreferences.value?.preferences?.length || 0) > 0;
+});
+
+const shouldShowSchoolWarning = computed(() => {
+  return schools.value.length >= 30;
 });
 
 // Filter configurations
@@ -510,8 +556,59 @@ const filteredSchools = computed(() => {
     });
   }
 
-  // Apply sorting (default: name A-Z)
-  return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+  // Apply sorting
+  const sorted = [...filtered].sort((a, b) => {
+    let comparison = 0;
+
+    switch (sortBy.value) {
+      case "fit-score": {
+        const scoreA = a.fit_score ?? -1;
+        const scoreB = b.fit_score ?? -1;
+        comparison = scoreA - scoreB;
+        break;
+      }
+      case "distance": {
+        if (!homeLocation.value?.latitude || !homeLocation.value?.longitude) {
+          // Fall back to A-Z if home location not set
+          comparison = a.name.localeCompare(b.name);
+          break;
+        }
+
+        const getDistance = (school: School): number => {
+          if (!school.academic_info) return Infinity;
+          const lat = school.academic_info["latitude"] as number | undefined;
+          const lng = school.academic_info["longitude"] as number | undefined;
+
+          if (!lat || !lng) return Infinity;
+
+          return calculateDistance(
+            { latitude: homeLocation.value!.latitude, longitude: homeLocation.value!.longitude },
+            { latitude: lat, longitude: lng },
+          );
+        };
+
+        const distA = getDistance(a);
+        const distB = getDistance(b);
+        comparison = distA - distB;
+        break;
+      }
+      case "last-contact": {
+        const dateA = new Date(a.updated_at || 0).getTime();
+        const dateB = new Date(b.updated_at || 0).getTime();
+        comparison = dateB - dateA; // Reverse for most recent first
+        break;
+      }
+      case "a-z":
+      default:
+        comparison = a.name.localeCompare(b.name);
+        break;
+    }
+
+    // Apply sort order (desc reverses the comparison)
+    return sortOrder.value === "asc" ? comparison : -comparison;
+  });
+
+  return sorted;
 });
 
 // Filter event handlers

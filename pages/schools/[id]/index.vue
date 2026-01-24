@@ -108,6 +108,17 @@
             </div>
           </div>
 
+          <!-- Fit Score Card -->
+          <div
+            v-if="fitScore"
+            class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
+          >
+            <h2 class="text-lg font-semibold text-slate-900 mb-4">
+              School Fit Analysis
+            </h2>
+            <FitScoreDisplay :fit-score="fitScore" :show-breakdown="true" />
+          </div>
+
           <!-- Information Card -->
           <div
             class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
@@ -405,13 +416,16 @@
           >
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-semibold text-slate-900">Notes</h2>
-              <button
-                @click="editingNotes = !editingNotes"
-                class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition flex items-center gap-1"
-              >
-                <PencilIcon class="w-4 h-4" />
-                {{ editingNotes ? "Cancel" : "Edit" }}
-              </button>
+              <div class="flex items-center gap-2">
+                <NotesHistory :school-id="id" />
+                <button
+                  @click="editingNotes = !editingNotes"
+                  class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition flex items-center gap-1"
+                >
+                  <PencilIcon class="w-4 h-4" />
+                  {{ editingNotes ? "Cancel" : "Edit" }}
+                </button>
+              </div>
             </div>
             <div v-if="editingNotes" class="space-y-3">
               <textarea
@@ -791,7 +805,9 @@ import { useSchools } from "~/composables/useSchools";
 import { useSchoolLogos } from "~/composables/useSchoolLogos";
 import { useCoaches } from "~/composables/useCoaches";
 import { useDocuments } from "~/composables/useDocuments";
+import { useFitScore } from "~/composables/useFitScore";
 import type { Document, AcademicInfo } from "~/types/models";
+import type { FitScoreResult } from "~/types/timeline";
 import { useCollegeData } from "~/composables/useCollegeData";
 import { useUserPreferences } from "~/composables/useUserPreferences";
 import { useUserStore } from "~/stores/user";
@@ -800,6 +816,7 @@ import { calculateDistance, formatDistance } from "~/utils/distance";
 import Header from "~/components/Header.vue";
 import SchoolLogo from "~/components/School/SchoolLogo.vue";
 import SchoolMap from "~/components/School/SchoolMap.vue";
+import NotesHistory from "~/components/School/NotesHistory.vue";
 import {
   ArrowLeftIcon,
   MapPinIcon,
@@ -831,6 +848,7 @@ const {
 const { fetchSchoolLogo } = useSchoolLogos();
 const { coaches: allCoaches, fetchCoaches } = useCoaches();
 const { documents, fetchDocuments } = useDocuments();
+const { calculateSchoolFitScore, getFitScore } = useFitScore();
 const {
   fetchByName,
   loading: collegeDataLoading,
@@ -841,6 +859,7 @@ const { homeLocation, fetchPreferences } = useUserPreferences();
 const id = route.params.id as string;
 const userStore = useUserStore();
 const school = ref<School | null>(null);
+const fitScore = ref<FitScoreResult | null>(null);
 const statusUpdating = ref(false);
 const priorityTierUpdating = ref(false);
 const schoolCoaches = computed(() => allCoaches.value);
@@ -1061,6 +1080,26 @@ const handleDocumentUploadSuccess = async () => {
   await fetchDocuments();
 };
 
+const loadFitScore = async () => {
+  if (!school.value) return;
+  try {
+    const cachedScore = getFitScore(id);
+    if (cachedScore) {
+      fitScore.value = cachedScore;
+    } else {
+      // Calculate fit score with minimal data (school only)
+      // Full fit score calculation requires athlete data
+      fitScore.value = await calculateSchoolFitScore(id, undefined, {
+        campusSize: school.value.academic_info?.student_size,
+        avgGpa: school.value.academic_info?.gpa_requirement,
+        offeredMajors: [],
+      });
+    }
+  } catch (err) {
+    console.error("Failed to load fit score:", err);
+  }
+};
+
 const lookupCollegeData = async () => {
   if (!school.value) return;
   const result = await fetchByName(school.value.name);
@@ -1114,6 +1153,7 @@ onMounted(async () => {
     };
     await fetchCoaches(id);
     await fetchDocuments();
+    await loadFitScore();
   }
 });
 </script>
