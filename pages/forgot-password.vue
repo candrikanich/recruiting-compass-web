@@ -273,6 +273,14 @@ const handleSubmit = async () => {
       submittedEmail.value = validated.email;
       // Clear error state after successful submission
       passwordReset.clearError();
+      // Start cooldown so resend button doesn't show "Sending..."
+      resendCooldown.value = 60;
+      const interval = setInterval(() => {
+        resendCooldown.value--;
+        if (resendCooldown.value <= 0) {
+          clearInterval(interval);
+        }
+      }, 1000);
     }
   } finally {
     loading.value = false;
