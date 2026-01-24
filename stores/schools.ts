@@ -5,6 +5,7 @@ export interface SchoolFilters {
   division: string;
   state: string;
   verified: boolean | null;
+  priorityTiers?: ("A" | "B" | "C")[];
 }
 
 export interface SchoolState {
@@ -63,6 +64,13 @@ export const useSchoolStore = defineStore("schools", {
         if (state.filters.verified !== null) {
           // TODO: Add verified field to School type if needed
         }
+        if (
+          state.filters.priorityTiers &&
+          state.filters.priorityTiers.length > 0 &&
+          !state.filters.priorityTiers.includes(s.priority_tier as any)
+        ) {
+          return false;
+        }
         return true;
       }),
 
@@ -82,6 +90,13 @@ export const useSchoolStore = defineStore("schools", {
      */
     schoolsByDivision: (state) => (division: School["division"]) =>
       state.schools.filter((s) => s.division === division),
+
+    /**
+     * Get schools by priority tier
+     */
+    schoolsByPriorityTier:
+      (state) => (tier: "A" | "B" | "C") =>
+        state.schools.filter((s) => s.priority_tier === tier),
 
     /**
      * Check if schools have been fetched
