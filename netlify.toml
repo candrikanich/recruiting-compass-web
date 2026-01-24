@@ -1,14 +1,22 @@
-# Nuxt 3 SPA on Netlify
-# Build: GitLab CI → GitLab builds, pushes to Netlify
-# Serve: Static assets from .output/public
+# Nuxt 3 SPA with Node server on Netlify
+# Build: npm run build
+# Serve: Node server for API endpoints + static assets
 
 [build]
   command = "npm run build"
   publish = ".output/public"
+  functions = ".output/server"
 
 [build.environment]
   NODE_ENV = "production"
 
+# Route all API requests to the Node server
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/server:path"
+  status = 200
+
+# SPA fallback for all other routes
 [[redirects]]
   from = "/*"
   to = "/index.html"

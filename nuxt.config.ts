@@ -42,7 +42,6 @@ export default defineNuxtConfig({
     hooks: {
       close: async () => {
         // Force process exit after build completes
-        // Prevents build from hanging in CI/CD environments
         process.exit(0);
       },
     },
