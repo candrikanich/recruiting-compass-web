@@ -71,11 +71,17 @@ export const useUserExport = () => {
       } else {
         state.value.error = "Failed to generate export";
       }
-    } catch (err: any) {
-      const errorMessage = err.data?.message || err.message || "Unknown error";
+    } catch (err: unknown) {
+      const error = err as {
+        data?: { message?: string };
+        message?: string;
+        status?: number;
+      };
+      const errorMessage =
+        error.data?.message || error.message || "Unknown error";
 
       // Handle rate limiting specifically
-      if (err.status === 429) {
+      if (error.status === 429) {
         state.value.error =
           "You can only export your data once per day. Please try again tomorrow.";
       } else {
@@ -109,7 +115,7 @@ export const useUserExport = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (err: any) {
+    } catch (err: unknown) {
       state.value.error = "Failed to download file";
       console.error("Download failed", { error: err });
     }

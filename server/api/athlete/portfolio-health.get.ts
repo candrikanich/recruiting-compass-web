@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
 
     // Calculate portfolio health
     const portfolioHealth = calculatePortfolioHealth(
-      (schools || []).map((school: any) => ({
+      (schools || []).map((school: { fit_score?: number | null }) => ({
         fit_score: school.fit_score || 0,
         fit_tier: undefined,
       })),
@@ -37,12 +37,19 @@ export default defineEventHandler(async (event) => {
       data: {
         portfolio: portfolioHealth,
         schoolCount: schools?.length || 0,
-        schools: (schools || []).map((school: any) => ({
-          id: school.id,
-          name: school.name,
-          fitScore: school.fit_score,
-          fitScoreData: school.fit_score_data,
-        })),
+        schools: (schools || []).map(
+          (school: {
+            id: string;
+            name: string;
+            fit_score?: number | null;
+            fit_score_data?: unknown;
+          }) => ({
+            id: school.id,
+            name: school.name,
+            fitScore: school.fit_score,
+            fitScoreData: school.fit_score_data,
+          }),
+        ),
       },
     };
   } catch (err: unknown) {

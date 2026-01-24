@@ -28,7 +28,10 @@ export function sanitizeError(error: unknown, defaultCode = 500): SafeError {
 
   // Handle H3 errors (already have statusCode)
   if (error instanceof Error && "statusCode" in error) {
-    const h3Error = error as any;
+    const h3Error = error as Error & {
+      statusCode?: number;
+      statusMessage?: string;
+    };
     return {
       statusCode: h3Error.statusCode || defaultCode,
       statusMessage: h3Error.statusMessage || "An error occurred",

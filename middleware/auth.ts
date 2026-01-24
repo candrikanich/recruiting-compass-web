@@ -1,6 +1,6 @@
 import type { SessionPreferences } from "~/types/session";
 
-export default defineNuxtRouteMiddleware(async (to, from) => {
+export default defineNuxtRouteMiddleware(async (to, _from) => {
   const userStore = useUserStore();
 
   // Initialize user store if not already done

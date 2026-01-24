@@ -93,18 +93,26 @@ export const useAccountLinks = () => {
         .select("id, email, full_name, role")
         .in("id", linkedUserIds);
 
-      linkedAccounts.value = (data || []).map((user: any) => {
-        const link = acceptedLinks.find(
-          (l) => l.parent_user_id === user.id || l.player_user_id === user.id,
-        );
-        return {
-          user_id: user.id,
-          email: user.email,
-          full_name: user.full_name,
-          role: user.role,
-          relationship: link?.parent_user_id === user.id ? "parent" : "student",
-        };
-      });
+      linkedAccounts.value = (data || []).map(
+        (user: {
+          id: string;
+          email: string;
+          full_name: string | null;
+          role: string;
+        }) => {
+          const link = acceptedLinks.find(
+            (l) => l.parent_user_id === user.id || l.player_user_id === user.id,
+          );
+          return {
+            user_id: user.id,
+            email: user.email,
+            full_name: user.full_name,
+            role: user.role,
+            relationship:
+              link?.parent_user_id === user.id ? "parent" : "student",
+          };
+        },
+      );
     } catch (err) {
       console.error("Failed to fetch linked account details:", err);
     }
@@ -161,7 +169,11 @@ export const useAccountLinks = () => {
 
       // If user exists, verify they have correct role and email verified
       if (existingUser) {
-        const user = existingUser as any; // Type assertion to access database fields
+        const user = existingUser as {
+          id: string;
+          role: string;
+          email_confirmed_at: string | null;
+        }; // Type assertion to access database fields
         if (!user.email_confirmed_at) {
           error.value = "That user has not verified their email yet";
           return false;

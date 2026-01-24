@@ -9,9 +9,7 @@ import type { Phase, MilestoneProgress, StatusLabel } from "~/types/timeline";
 export namespace AthleteAPI {
   // Phase endpoints
 
-  export interface GetPhaseRequest {
-    // Empty interface - no properties needed
-  }
+  export interface GetPhaseRequest extends Record<string, never> {}
 
   export interface GetPhaseResponse {
     phase: Phase;
@@ -19,9 +17,7 @@ export namespace AthleteAPI {
     canAdvance: boolean;
   }
 
-  export interface AdvancePhaseRequest {
-    // Empty interface - trigger-based advancement
-  }
+  export interface AdvancePhaseRequest extends Record<string, never> {}
 
   export interface AdvancePhaseResponse {
     success: boolean;
@@ -30,9 +26,7 @@ export namespace AthleteAPI {
   }
 
   // Status endpoints
-  export interface GetStatusRequest {
-    // Empty interface - status retrieved from session
-  }
+  export interface GetStatusRequest extends Record<string, never> {}
 
   export interface StatusScoreResult {
     status_label: StatusLabel;
@@ -45,18 +39,14 @@ export namespace AthleteAPI {
     trendPercentage?: number;
   }
 
-  export interface GetStatusResponse extends StatusScoreResult {}
+  export type GetStatusResponse = StatusScoreResult;
 
-  export interface RecalculateStatusRequest {
-    // Empty interface - trigger-based recalculation
-  }
+  export interface RecalculateStatusRequest extends Record<string, never> {}
 
-  export interface RecalculateStatusResponse extends StatusScoreResult {}
+  export type RecalculateStatusResponse = StatusScoreResult;
 
   // Portfolio health endpoint
-  export interface GetPortfolioHealthRequest {
-    // Empty interface - health calculated from athlete data
-  }
+  export interface GetPortfolioHealthRequest extends Record<string, never> {}
 
   export interface PortfolioHealthScore {
     overall_health_score: number;
@@ -68,5 +58,5 @@ export namespace AthleteAPI {
     offer_negotiation_score: number;
   }
 
-  export interface GetPortfolioHealthResponse extends PortfolioHealthScore {}
+  export type GetPortfolioHealthResponse = PortfolioHealthScore;
 }

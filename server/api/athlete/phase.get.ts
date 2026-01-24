@@ -50,11 +50,12 @@ export default defineEventHandler(async (event) => {
     }
 
     const completedTaskIds = athleteTasksData
-      ?.map((at: any) => at.task_id)
+      ?.map((at: { task_id: string }) => at.task_id)
       .filter(Boolean) as string[];
 
     // Calculate current phase if not already set
-    const currentPhaseValue = (userData as any)?.current_phase;
+    const currentPhaseValue = (userData as { current_phase?: string })
+      ?.current_phase;
     let currentPhase: Phase = (
       typeof currentPhaseValue === "string" ? currentPhaseValue : "freshman"
     ) as Phase;

@@ -31,12 +31,12 @@ export const useUserPreferences = (): {
   updateDashboardLayout: (layout: DashboardWidgetVisibility) => Promise<void>;
 } => {
   const supabase = useSupabase();
-  let userStore: ReturnType<typeof useUserStore> | undefined;
+  let _userStore: ReturnType<typeof useUserStore> | undefined;
   const getUserStore = () => {
-    if (!userStore) {
-      userStore = useUserStore();
+    if (!_userStore) {
+      _userStore = useUserStore();
     }
-    return userStore;
+    return _userStore;
   };
 
   const preferences = ref<UserPreferences | null>(null);

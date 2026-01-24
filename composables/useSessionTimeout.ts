@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import type { SessionPreferences } from "~/types/session";
 import { DEFAULT_TIMEOUT_CONFIG } from "~/types/session";
 
@@ -8,7 +8,7 @@ export const useSessionTimeout = () => {
 
   let checkInterval: ReturnType<typeof setInterval> | null = null;
   let warningInterval: ReturnType<typeof setInterval> | null = null;
-  let lastActivityTime = Date.now();
+  let _lastActivityTime = Date.now();
   let activityThrottleTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const getSessionPreferences = (): SessionPreferences | null => {
@@ -42,7 +42,7 @@ export const useSessionTimeout = () => {
 
       prefs.lastActivity = Date.now();
       localStorage.setItem("session_preferences", JSON.stringify(prefs));
-      lastActivityTime = Date.now();
+      _lastActivityTime = Date.now();
     } catch {
       // Silently fail if localStorage is unavailable
     }
@@ -120,7 +120,8 @@ export const useSessionTimeout = () => {
 
     const now = Date.now();
     const timeSinceActivity = now - prefs.lastActivity;
-    const timeUntilTimeout = DEFAULT_TIMEOUT_CONFIG.inactivityThresholdMs - timeSinceActivity;
+    const timeUntilTimeout =
+      DEFAULT_TIMEOUT_CONFIG.inactivityThresholdMs - timeSinceActivity;
     const warningWindow = DEFAULT_TIMEOUT_CONFIG.warningBeforeLogoutMs;
 
     // Session expired

@@ -6,7 +6,7 @@ export interface NotificationGenerationResult {
 }
 
 // Helper function to check if email should be sent based on user preferences
-async function shouldSendEmail(
+async function _shouldSendEmail(
   supabase: SupabaseClient,
   userId: string,
   priority: string,

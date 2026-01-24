@@ -55,7 +55,8 @@ export async function auditLog(
     const userAgent = getHeader(event, "user-agent") || "Unknown";
 
     // Create audit log entry
-    const { error } = await supabase.from("audit_logs").insert({
+    // Create audit log entry
+    const auditEntry: AuditLogInsert = {
       user_id: params.userId,
       action: params.action,
       resource_type: params.resourceType,
@@ -68,8 +69,12 @@ export async function auditLog(
       user_agent: userAgent,
       status: params.status || "success",
       error_message: params.errorMessage || null,
-      metadata: params.metadata || {},
-    });
+      metadata: params.metadata || undefined,
+    };
+
+    const { error } = await supabase
+      .from("audit_logs")
+      .insert(auditEntry as any);
 
     if (error) {
       logger.error("Failed to create audit log", {
@@ -152,7 +157,7 @@ function getClientIP(event: H3Event): string {
  * Removes passwords, tokens, and other sensitive fields
  */
 export function sanitizeForAuditLog(
-  data: Record<string, any>,
+  data: Record<string, unknown>,
 ): Record<string, any> {
   const sensitiveFields = [
     "password",
@@ -192,8 +197,8 @@ export async function logCRUD(
     action: "CREATE" | "READ" | "UPDATE" | "DELETE";
     resourceType: string;
     resourceId?: string;
-    oldValues?: Record<string, any>;
-    newValues?: Record<string, any>;
+    oldValues?: Record<string, unknown>;
+    newValues?: Record<string, unknown>;
     description?: string;
   },
 ): Promise<void> {
@@ -232,7 +237,7 @@ export async function logError(
     resourceId?: string;
     errorMessage: string;
     description?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   },
 ): Promise<void> {
   return auditLog(event, {
@@ -260,7 +265,7 @@ export async function getUserAuditLogs(
     startDate?: Date;
     endDate?: Date;
   } = {},
-): Promise<any[]> {
+): Promise<unknown[]> {
   try {
     const supabase = createServerSupabaseClient();
 
@@ -317,8 +322,6 @@ export async function getUserAuditLogs(
  */
 export async function scheduleAuditLogCleanup(): Promise<void> {
   try {
-    const supabase = createServerSupabaseClient();
-
     // Schedule cleanup to run daily at 2 AM
     // This is just logging the instruction - actual scheduling happens in deployment config
     logger.info("Audit log cleanup scheduled for daily execution at 2 AM");

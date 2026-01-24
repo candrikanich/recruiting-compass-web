@@ -1,5 +1,4 @@
 import { requireCsrfToken } from "../utils/csrf";
-import type { H3Event } from "h3";
 
 /**
  * CSRF protection middleware

@@ -2,8 +2,9 @@
  * Authentication and authorization utilities for server routes
  */
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { H3Event } from "h3";
+import type { Database } from "~/types/database";
 import { createLogger } from "./logger";
 
 const logger = createLogger("auth");
@@ -11,7 +12,7 @@ const logger = createLogger("auth");
 export interface AuthUser {
   id: string;
   email?: string;
-  user_metadata?: Record<string, any>;
+  user_metadata?: Record<string, unknown>;
 }
 
 /**
@@ -93,7 +94,7 @@ export async function requireAuth(event: H3Event): Promise<AuthUser> {
  */
 export async function getUserRole(
   userId: string,
-  supabase: any,
+  supabase: SupabaseClient<Database>,
 ): Promise<UserRole | null> {
   // Check cache first
   const cached = roleCache.get(userId);
@@ -117,7 +118,7 @@ export async function getUserRole(
     // Type guard to safely access role property
     const role =
       typeof data === "object" && data !== null && "role" in data
-        ? ((data as any).role as UserRole | null)
+        ? (data as { role: UserRole | null }).role
         : null;
 
     // Cache for 5 minutes
@@ -141,7 +142,7 @@ export async function getUserRole(
 export async function isParentViewingLinkedAthlete(
   parentUserId: string,
   athleteUserId: string,
-  supabase: any,
+  supabase: SupabaseClient<Database>,
 ): Promise<boolean> {
   try {
     // Check if there's a verified account link
@@ -173,7 +174,7 @@ export async function isParentViewingLinkedAthlete(
 export async function canMutateAthleteData(
   requestingUserId: string,
   targetAthleteUserId: string,
-  supabase: any,
+  supabase: SupabaseClient<Database>,
 ): Promise<boolean> {
   // Athletes can always mutate their own data
   if (requestingUserId === targetAthleteUserId) {
@@ -196,7 +197,7 @@ export async function canMutateAthleteData(
  */
 export async function assertNotParent(
   userId: string,
-  supabase: any,
+  supabase: SupabaseClient<Database>,
 ): Promise<void> {
   const role = await getUserRole(userId, supabase);
 

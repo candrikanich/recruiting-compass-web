@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
   let body: Partial<FitScoreInputs> = {};
   try {
     body = await readBody(event);
-  } catch (err) {
+  } catch {
     throw createError({
       statusCode: 400,
       statusMessage: "Invalid request body - must be valid JSON",

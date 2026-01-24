@@ -21,5 +21,5 @@ export const useSupabase = () => {
     supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
   }
 
-  return supabaseClient as any;
+  return supabaseClient as ReturnType<typeof createClient>;
 };

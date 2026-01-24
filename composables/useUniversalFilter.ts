@@ -4,22 +4,12 @@
  * Supports: text, select, multiselect, daterange, boolean, range filters
  */
 
-import {
-  ref,
-  computed,
-  watch,
-  isRef,
-  readonly,
-  type Ref,
-  type ComputedRef,
-} from "vue";
+import { ref, computed, watch, isRef, type Ref, type ComputedRef } from "vue";
 import type {
   FilterConfig,
-  FilterType,
   FilterValue,
   FilterValues,
   FilterPreset,
-  FilterState,
   UseUniversalFilterOptions,
 } from "~/types/filters";
 
@@ -325,16 +315,6 @@ export const useUniversalFilter = <T extends Record<string, unknown>>(
   // Auto-save to storage when filters change
   watch(filterValues, saveToStorage, { deep: true });
   watch(presets, saveToStorage, { deep: true });
-
-  // Helper to access filterValues like a Map
-  interface FilterValueProxy {
-    get: (key: string) => unknown;
-    set: (key: string, value: unknown) => void;
-    entries: () => Array<[string, unknown]>;
-    keys: () => string[];
-    values: () => unknown[];
-    [Symbol.iterator]: () => Iterator<[string, unknown]>;
-  }
 
   return {
     // State

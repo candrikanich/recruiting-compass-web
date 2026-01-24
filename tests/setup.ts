@@ -166,6 +166,10 @@ config.global.stubs = {
     name: "Pagination",
     template: "<div><slot /></div>",
   },
+  Badge: {
+    name: "Badge",
+    template: '<span><slot /></span>',
+  },
 };
 
 // Initialize Pinia for tests

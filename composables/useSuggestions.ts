@@ -19,8 +19,9 @@ export function useSuggestions() {
 
       const response = await $fetch(`/api/suggestions?${params}`);
       suggestions.value = response.suggestions;
-    } catch (e: any) {
-      error.value = e.message || "Failed to fetch suggestions";
+    } catch (e: unknown) {
+      error.value =
+        e instanceof Error ? e.message : "Failed to fetch suggestions";
     } finally {
       loading.value = false;
     }
@@ -34,8 +35,9 @@ export function useSuggestions() {
       suggestions.value = suggestions.value.filter(
         (s) => s.id !== suggestionId,
       );
-    } catch (e: any) {
-      error.value = e.message || "Failed to dismiss suggestion";
+    } catch (e: unknown) {
+      error.value =
+        e instanceof Error ? e.message : "Failed to dismiss suggestion";
     }
   }
 
@@ -47,8 +49,9 @@ export function useSuggestions() {
       suggestions.value = suggestions.value.filter(
         (s) => s.id !== suggestionId,
       );
-    } catch (e: any) {
-      error.value = e.message || "Failed to complete suggestion";
+    } catch (e: unknown) {
+      error.value =
+        e instanceof Error ? e.message : "Failed to complete suggestion";
     }
   }
 

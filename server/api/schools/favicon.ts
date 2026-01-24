@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
           clearTimeout(timeoutId);
           throw error;
         }
-      } catch (error) {
+      } catch {
         // Continue to next source on error
         continue;
       }
@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
     // If favicon found and schoolId provided, store in cache
     if (faviconUrl && schoolId) {
       try {
-        const cacheKey = `favicon-${schoolId}`;
+        const _cacheKey = `favicon-${schoolId}`;
         // Store in memory cache or Redis (basic implementation)
         // In production, could use Supabase Cache or Redis
       } catch (cacheError) {

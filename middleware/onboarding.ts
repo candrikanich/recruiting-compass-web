@@ -6,7 +6,7 @@
 import { useSupabase } from "~/composables/useSupabase";
 import { useAuth } from "~/composables/useAuth";
 
-export default defineNuxtRouteMiddleware(async (to, from) => {
+export default defineNuxtRouteMiddleware(async (to, _from) => {
   // Skip onboarding check for onboarding page itself
   if (to.path === "/onboarding" || to.path === "/login") {
     return;

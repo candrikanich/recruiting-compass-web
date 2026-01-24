@@ -73,11 +73,17 @@ export const useSearchFilters = () => {
   /**
    * Apply a single filter
    */
-  const applyFilter = (category: string, filterName: string, value: any) => {
+  const applyFilter = (
+    category: string,
+    filterName: string,
+    value: string | number | boolean | null,
+  ) => {
     const categoryKey = category as keyof typeof filters.value;
     const filterGroup = filters.value[categoryKey];
     if (filterGroup) {
-      (filterGroup as Record<string, any>)[filterName] = value;
+      (filterGroup as Record<string, string | number | boolean | null>)[
+        filterName
+      ] = value;
     }
   };
 
@@ -99,11 +105,16 @@ export const useSearchFilters = () => {
   /**
    * Get filter value for a specific category and name
    */
-  const getFilterValue = (category: string, filterName: string): any => {
+  const getFilterValue = (
+    category: string,
+    filterName: string,
+  ): string | number | boolean | null => {
     const categoryKey = category as keyof typeof filters.value;
     const filterGroup = filters.value[categoryKey];
     if (filterGroup) {
-      return (filterGroup as Record<string, any>)[filterName];
+      return (filterGroup as Record<string, string | number | boolean | null>)[
+        filterName
+      ];
     }
     return null;
   };

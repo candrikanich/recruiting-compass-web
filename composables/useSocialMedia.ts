@@ -1,7 +1,7 @@
 import { ref, computed } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
-import type { Interaction } from "~/types/models";
+
 import { socialMediaPostSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml, sanitizeUrl } from "~/utils/validation/sanitize";
 
@@ -25,7 +25,7 @@ export interface SocialPost {
 
 export const useSocialMedia = () => {
   const supabase = useSupabase();
-  const userStore = useUserStore();
+  const _userStore = useUserStore();
 
   const posts = ref<SocialPost[]>([]);
   const loading = ref(false);

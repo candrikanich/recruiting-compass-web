@@ -12,7 +12,7 @@
  *
  * Failures are silent to avoid breaking navigation
  */
-export default defineNuxtRouteMiddleware(async (to, from) => {
+export default defineNuxtRouteMiddleware(async (to, _from) => {
   // Only run on client
   if (process.server) return;
 
@@ -23,7 +23,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
       userStore = useUserStore();
       const { linkedAccounts: la } = useAccountLinks();
       linkedAccounts = la;
-    } catch (storeError) {
+    } catch (_storeError) {
       // Store not ready yet, skip logging
       return;
     }

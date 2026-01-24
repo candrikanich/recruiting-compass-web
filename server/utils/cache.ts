@@ -9,7 +9,7 @@ interface CacheEntry<T> {
   expiresAt: number;
 }
 
-const cache = new Map<string, CacheEntry<any>>();
+const cache = new Map<string, CacheEntry<unknown>>();
 
 /**
  * Get cached data or return null if expired/missing

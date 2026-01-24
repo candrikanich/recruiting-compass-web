@@ -32,9 +32,38 @@
       </p>
     </div>
 
+    <!-- Breakdown Toggle Button -->
+    <button
+      v-if="showBreakdown && Object.keys(fitScore.breakdown).length > 0"
+      @click="isExpanded = !isExpanded"
+      class="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 mb-3"
+    >
+      {{ isExpanded ? "Hide" : "View" }} Fit Score Breakdown
+      <svg
+        v-if="!isExpanded"
+        class="w-4 h-4"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+      </svg>
+      <svg
+        v-else
+        class="w-4 h-4"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+      </svg>
+    </button>
+
     <!-- Breakdown (Optional) -->
     <div
-      v-if="showBreakdown && Object.keys(fitScore.breakdown).length > 0"
+      v-if="showBreakdown && Object.keys(fitScore.breakdown).length > 0 && isExpanded"
       class="bg-slate-50 rounded-lg p-4"
     >
       <h4 class="font-semibold text-sm text-slate-900 mb-3">Score Breakdown</h4>
@@ -125,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import Badge from "~/components/DesignSystem/Badge.vue";
 import type { FitScoreResult, FitTier } from "~/types/timeline";
 import type { BadgeColor } from "~/components/DesignSystem/Badge.vue";
@@ -140,6 +169,8 @@ const props = withDefaults(defineProps<Props>(), {
   showBreakdown: false,
   showRecommendation: true,
 });
+
+const isExpanded = ref(false);
 
 // Format tier name
 function formatTier(tier: FitTier): string {

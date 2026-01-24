@@ -212,6 +212,13 @@ export interface PortfolioHealth {
   status: "healthy" | "needs_attention" | "at_risk" | "not_started";
 }
 
+// Division Recommendation Types
+export interface DivisionRecommendation {
+  shouldConsiderOtherDivisions: boolean;
+  recommendedDivisions: string[];
+  message: string;
+}
+
 // API Response Types
 export interface ApiResponse<T> {
   success: boolean;

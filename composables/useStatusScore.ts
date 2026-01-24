@@ -4,7 +4,7 @@
  */
 
 import { ref, computed, type ComputedRef, type Ref } from "vue";
-import type { StatusLabel, StatusScoreInputs } from "~/types/timeline";
+import type { StatusLabel, StatusScoreInputs, Phase } from "~/types/timeline";
 
 // import type { GetStatusResponse } from '~/types/api/athlete'
 // @ts-nocheck - Module resolution issue in CI
@@ -25,7 +25,7 @@ export const useStatusScore = (): {
   lastCalculated: Ref<string | null>;
   fetchStatusScore: () => Promise<AthleteAPI.GetStatusResponse>;
   recalculateStatus: () => Promise<AthleteAPI.RecalculateStatusResponse>;
-  getNextActions: (phase: any) => string[];
+  getNextActions: (phase: Phase) => string[];
   statusColor: ComputedRef<string>;
   advice: ComputedRef<string>;
   scoreDescription: ComputedRef<string>;
@@ -156,7 +156,7 @@ export const useStatusScore = (): {
    * Get next actions based on current phase
    * Requires usePhaseCalculation to provide phase
    */
-  const getNextActions = (phase: any) => {
+  const getNextActions = (phase: Phase) => {
     return getNextActionsForStatus(statusLabel.value, phase);
   };
 

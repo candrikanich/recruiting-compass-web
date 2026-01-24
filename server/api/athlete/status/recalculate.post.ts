@@ -40,8 +40,8 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const userRecord = userData as Record<string, any>;
-    const phase = (userRecord?.current_phase as Phase) || "freshman";
+    const userRecord = userData as { current_phase?: Phase };
+    const phase = userRecord?.current_phase || "freshman";
     const gradeMap: Record<Phase, number> = {
       freshman: 9,
       sophomore: 10,
@@ -66,9 +66,9 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const requiredTaskIds = (
-      (requiredTasksData as unknown as Array<Record<string, any>>) || []
-    ).map((t) => t.id);
+    const requiredTaskIds = (requiredTasksData || []).map(
+      (t: { id: string }) => t.id,
+    );
 
     // Get completed tasks
     const { data: completedTasksData, error: completedError } = await supabase
@@ -85,9 +85,9 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const completedTaskIds = (
-      (completedTasksData as unknown as Array<Record<string, any>>) || []
-    ).map((at) => at.task_id);
+    const completedTaskIds = (completedTasksData || []).map(
+      (at: { task_id: string }) => at.task_id,
+    );
 
     // Calculate task completion rate
     const taskCompletionRate = calculateTaskCompletionRate(
@@ -101,9 +101,7 @@ export default defineEventHandler(async (event) => {
       .select("id")
       .eq("user_id", user.id);
 
-    const targetSchools = (
-      (schoolsData as unknown as Array<Record<string, any>>) || []
-    ).length;
+    const targetSchools = (schoolsData || []).length;
 
     // Calculate interaction frequency score
     const { data: interactionsData, error: interactionsError } = await supabase
@@ -116,9 +114,10 @@ export default defineEventHandler(async (event) => {
     let coachInterestScore = 0;
 
     if (!interactionsError && interactionsData && interactionsData.length > 0) {
-      const interactionsRecords = interactionsData as unknown as Array<
-        Record<string, any>
-      >;
+      const interactionsRecords = interactionsData as Array<{
+        created_at: string;
+        sentiment?: string;
+      }>;
 
       // Use most recent interaction for frequency scoring
       const lastInteractionDate = interactionsRecords[0].created_at;
@@ -159,7 +158,19 @@ export default defineEventHandler(async (event) => {
       .eq("id", user.id)
       .single();
 
-    const academicRecord = academicData as unknown as Record<string, any>;
+    const academicRecord = academicData
+      ? (academicData as unknown as {
+          gpa?: number | null;
+          sat_score?: number | null;
+          act_score?: number | null;
+          ncaa_eligibility_status?: string | null;
+        })
+      : {
+          gpa: null,
+          sat_score: null,
+          act_score: null,
+          ncaa_eligibility_status: null,
+        };
 
     const academicStandingScore = calculateAcademicStandingScore(
       academicRecord?.gpa ?? null,

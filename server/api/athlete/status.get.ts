@@ -10,7 +10,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import type { Database } from "~/types/database";
-import type { StatusScoreResult } from "~/types/timeline";
+
 import { calculateStatusScoreResult } from "~/utils/statusScoreCalculation";
 
 interface AthleteStatusData {
@@ -46,8 +46,15 @@ async function callGetAthleteStatusRpc(
   userId: string,
 ): Promise<RpcResponse<AthleteStatusData | AthleteStatusData[]>> {
   // Supabase's TypeScript types don't properly support generic RPC methods
-  // This wrapper encapsulates the unsafe cast internally
-  return (supabase as any).rpc("get_athlete_status", {
+  // This wrapper encapsulates unsafe cast internally
+  return (
+    supabase as SupabaseClient<Database> & {
+      rpc: (
+        name: string,
+        params: { p_user_id: string },
+      ) => Promise<RpcResponse<AthleteStatusData | AthleteStatusData[]>>;
+    }
+  ).rpc("get_athlete_status", {
     p_user_id: userId,
   });
 }

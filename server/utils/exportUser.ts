@@ -330,14 +330,14 @@ and CCPA rights to data access.
  */
 export async function sendExportViaEmail(
   userId: string,
-  userEmail: string,
+  _userEmail: string,
 ): Promise<void> {
   try {
     const zipBuffer = await generateUserExportZip(userId);
     const fileName = `baseball-recruiting-tracker-export-${new Date().toISOString().split("T")[0]}.zip`;
 
     // Convert buffer to base64 for email
-    const base64Content = zipBuffer.toString("base64");
+    const _base64Content = zipBuffer.toString("base64");
 
     // Send email with attachment via Resend or email service
     // This is a placeholder - actual implementation depends on email service

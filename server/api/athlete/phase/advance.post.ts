@@ -44,9 +44,8 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const userRecord = userData as Record<string, any>;
-    const currentPhase: Phase =
-      (userRecord?.current_phase as Phase) || "freshman";
+    const userRecord = userData as { current_phase?: Phase };
+    const currentPhase: Phase = userRecord?.current_phase || "freshman";
 
     // Fetch completed tasks
     const { data: athleteTasksData, error: tasksError } = await supabase
@@ -63,9 +62,9 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const completedTaskIds = (
-      (athleteTasksData as unknown as Array<Record<string, any>>) || []
-    ).map((at) => at.task_id);
+    const completedTaskIds = (athleteTasksData || []).map(
+      (at: { task_id: string }) => at.task_id,
+    );
 
     // Check if can advance
     if (!canAdvancePhase(currentPhase, completedTaskIds)) {

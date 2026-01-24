@@ -5,9 +5,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 
-export async function batchFetchLogos(
-  userId?: string,
-): Promise<{
+export async function batchFetchLogos(userId?: string): Promise<{
   success: boolean;
   processed?: number;
   fetched?: number;
@@ -116,7 +114,16 @@ export async function batchFetchLogos(
 /**
  * Fetch favicon for a single school
  */
-async function fetchFaviconForSchool(school: any): Promise<string | null> {
+interface SchoolLogoInfo {
+  id: string;
+  name: string;
+  website?: string | null;
+  favicon_url?: string | null;
+}
+
+async function fetchFaviconForSchool(
+  school: SchoolLogoInfo,
+): Promise<string | null> {
   try {
     // Extract domain from website
     let domain: string;
@@ -165,7 +172,7 @@ async function fetchFaviconForSchool(school: any): Promise<string | null> {
           clearTimeout(timeoutId);
           throw error;
         }
-      } catch (error) {
+      } catch (_error) {
         // Continue to next source on error
         continue;
       }

@@ -341,6 +341,13 @@
                 {{ formatStatus(school.status) }}
               </span>
               <span
+                v-if="school.fit_score !== null && school.fit_score !== undefined"
+                :class="getFitScoreBadgeClass(school.fit_score)"
+                class="px-2 py-0.5 text-xs font-medium rounded-full"
+              >
+                Fit: {{ school.fit_score }}
+              </span>
+              <span
                 v-if="
                   getCarnegieSize(
                     typeof school.academic_info?.student_size === 'string'
@@ -647,6 +654,12 @@ const getSizeBadgeClass = (size: string | null | undefined): string => {
     "Very Large": "bg-purple-100 text-purple-700",
   };
   return classes[size] || "bg-slate-100 text-slate-700";
+};
+
+const getFitScoreBadgeClass = (score: number): string => {
+  if (score >= 70) return "bg-emerald-100 text-emerald-700";
+  if (score >= 50) return "bg-orange-100 text-orange-700";
+  return "bg-red-100 text-red-700";
 };
 
 const formatStatus = (status: string): string => {

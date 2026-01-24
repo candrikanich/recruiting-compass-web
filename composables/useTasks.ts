@@ -14,13 +14,8 @@ import type {
   TaskStatus,
   Phase,
 } from "~/types/timeline";
-import type { TasksAPI } from "~/types/api/tasks";
-import { useAuthFetch } from "~/composables/useAuthFetch";
 
-// Type for fetched data to handle undefined on missing status
-interface AthleteTaskWithOptionalStatus extends Omit<AthleteTask, "status"> {
-  status?: TaskStatus;
-}
+import { useAuthFetch } from "~/composables/useAuthFetch";
 
 export const useTasks = (): {
   tasks: Ref<Task[]>;
