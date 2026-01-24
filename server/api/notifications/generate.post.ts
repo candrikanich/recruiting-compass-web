@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
       },
       timestamp: new Date().toISOString(),
     };
-  } catch (err: any) {
+  } catch (err: { statusCode?: number; statusMessage?: string }) {
     console.error("Error generating notifications:", err);
     throw createError({
       statusCode: err.statusCode || 500,
