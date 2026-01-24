@@ -41,14 +41,11 @@ export const usePasswordReset = () => {
       }
 
       const supabase = useSupabase();
-      const appUrl = useRuntimeConfig().public.supabaseUrl
-        ? location.origin
-        : "http://localhost:3000";
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
         email.trim(),
         {
-          redirectTo: `${appUrl}/reset-password`,
+          redirectTo: `${typeof window !== "undefined" ? window.location.origin : "http://localhost:3000"}/reset-password`,
         },
       );
 
