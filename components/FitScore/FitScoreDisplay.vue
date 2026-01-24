@@ -48,7 +48,7 @@
               <div
                 class="h-full bg-blue-500"
                 :style="{
-                  width: `${(fitScore.breakdown.athleticFit || 0) / 0.4}%`,
+                  width: `${((fitScore.breakdown.athleticFit || 0) / 40) * 100}%`,
                 }"
               />
             </div>
@@ -66,7 +66,7 @@
               <div
                 class="h-full bg-purple-500"
                 :style="{
-                  width: `${(fitScore.breakdown.academicFit || 0) / 0.25}%`,
+                  width: `${((fitScore.breakdown.academicFit || 0) / 25) * 100}%`,
                 }"
               />
             </div>
@@ -84,7 +84,7 @@
               <div
                 class="h-full bg-emerald-500"
                 :style="{
-                  width: `${(fitScore.breakdown.opportunityFit || 0) / 0.2}%`,
+                  width: `${((fitScore.breakdown.opportunityFit || 0) / 20) * 100}%`,
                 }"
               />
             </div>
@@ -102,7 +102,7 @@
               <div
                 class="h-full bg-orange-500"
                 :style="{
-                  width: `${(fitScore.breakdown.personalFit || 0) / 0.15}%`,
+                  width: `${((fitScore.breakdown.personalFit || 0) / 15) * 100}%`,
                 }"
               />
             </div>
@@ -176,7 +176,7 @@ const tierColor = computed((): BadgeColor => {
 
 // Generate recommendation
 const recommendation = computed(() => {
-  const { score, tier } = props.fitScore;
+  const { tier } = props.fitScore;
 
   if (!props.showRecommendation) return null;
 

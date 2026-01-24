@@ -719,7 +719,13 @@
             :disabled="saving"
             class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            {{ saving ? "Saving..." : "Save Player Details" }}
+            {{
+              saving
+                ? recalculating
+                  ? "Recalculating fit scores..."
+                  : "Saving..."
+                : "Save Player Details"
+            }}
           </button>
         </div>
       </form>
@@ -733,6 +739,7 @@ import { ShareIcon, PhotoIcon, ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useUserPreferences } from "~/composables/useUserPreferences";
 import { useToast } from "~/composables/useToast";
 import { useFormValidation } from "~/composables/useFormValidation";
+import { useFitScoreRecalculation } from "~/composables/useFitScoreRecalculation";
 import { playerDetailsSchema } from "~/utils/validation/schemas";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import type { PlayerDetails } from "~/types/models";
@@ -744,6 +751,8 @@ definePageMeta({
 const { playerDetails, loading, error, fetchPreferences, updatePlayerDetails } =
   useUserPreferences();
 const { showToast } = useToast();
+const { recalculateAllFitScores, loading: recalculating } =
+  useFitScoreRecalculation();
 const { errors, fieldErrors, clearErrors, hasErrors } =
   useValidation(playerDetailsSchema);
 
@@ -868,8 +877,23 @@ const togglePosition = (pos: string) => {
 const handleSave = async () => {
   saving.value = true;
   try {
+    // Save player details
     await updatePlayerDetails(form.value);
-    showToast("Player details saved successfully", "success");
+
+    // Trigger fit score recalculation (blocking)
+    try {
+      await recalculateAllFitScores();
+      showToast(
+        "Player details saved and fit scores updated successfully",
+        "success"
+      );
+    } catch (recalcError) {
+      console.error("Fit score recalculation failed:", recalcError);
+      showToast(
+        "Player details saved, but fit score update failed. Try refreshing.",
+        "warning"
+      );
+    }
   } catch (err) {
     console.error("Failed to save player details:", err);
     showToast("Failed to save player details", "error");
