@@ -23,7 +23,6 @@
             </NuxtLink>
         </div>
       </div>
-    </div>
 
     <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
       <!-- Filters Card -->
@@ -121,7 +120,7 @@
         <p class="text-sm text-slate-500">Create your first event to start tracking camps and showcases</p>
       </div>
 
-      <template v-else>
+      <div v-else>
         <!-- Calendar View -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
           <div class="flex items-center justify-between mb-6">
@@ -260,7 +259,7 @@
             Clear filters
           </button>
         </div>
-      </template>
+      </div>
     </main>
   </div>
 </template>
