@@ -27,12 +27,12 @@ import type { Document } from "~/types/models";
  * @returns Object with fetching methods and state
  */
 export const useDocumentFetch = () => {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     console.warn(
-      '[DEPRECATED] useDocumentFetch is deprecated as of Phase 4. ' +
-      'Use useDocumentsConsolidated() instead.\n' +
-      'Migration guide: See DEPRECATION_AUDIT.md'
-    )
+      "[DEPRECATED] useDocumentFetch is deprecated as of Phase 4. " +
+        "Use useDocumentsConsolidated() instead.\n" +
+        "Migration guide: See DEPRECATION_AUDIT.md",
+    );
   }
 
   const supabase = useSupabase();

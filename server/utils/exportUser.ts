@@ -1,21 +1,21 @@
-import JSZip from 'jszip'
+import JSZip from "jszip";
 
-import { logger } from './logger'
-import { createServerSupabaseClient } from './supabase'
+import { logger } from "./logger";
+import { createServerSupabaseClient } from "./supabase";
 
 interface ExportData {
-  profile: Record<string, any>
-  schools: Record<string, any>[]
-  coaches: Record<string, any>[]
-  interactions: Record<string, any>[]
-  events: Record<string, any>[]
+  profile: Record<string, any>;
+  schools: Record<string, any>[];
+  coaches: Record<string, any>[];
+  interactions: Record<string, any>[];
+  events: Record<string, any>[];
   documents: Array<{
-    metadata: Record<string, any>
-    content?: Buffer
-  }>
-  performanceMetrics: Record<string, any>[]
-  offers: Record<string, any>[]
-  auditLogs: Record<string, any>[]
+    metadata: Record<string, any>;
+    content?: Buffer;
+  }>;
+  performanceMetrics: Record<string, any>[];
+  offers: Record<string, any>[];
+  auditLogs: Record<string, any>[];
 }
 
 /**
@@ -23,7 +23,7 @@ interface ExportData {
  * Includes all user-generated content and associated metadata
  */
 export async function gatherUserData(userId: string): Promise<ExportData> {
-  const supabase = createServerSupabaseClient()
+  const supabase = createServerSupabaseClient();
 
   try {
     // Fetch all user data in parallel
@@ -38,21 +38,21 @@ export async function gatherUserData(userId: string): Promise<ExportData> {
       offersRes,
       auditRes,
     ] = await Promise.all([
-      supabase.from('profiles').select('*').eq('user_id', userId).single(),
-      supabase.from('schools').select('*').eq('user_id', userId),
-      supabase.from('coaches').select('*').eq('user_id', userId),
-      supabase.from('interactions').select('*').eq('user_id', userId),
-      supabase.from('events').select('*').eq('user_id', userId),
-      supabase.from('documents').select('*').eq('user_id', userId),
-      supabase.from('performance_metrics').select('*').eq('user_id', userId),
-      supabase.from('offers').select('*').eq('user_id', userId),
+      supabase.from("profiles").select("*").eq("user_id", userId).single(),
+      supabase.from("schools").select("*").eq("user_id", userId),
+      supabase.from("coaches").select("*").eq("user_id", userId),
+      supabase.from("interactions").select("*").eq("user_id", userId),
+      supabase.from("events").select("*").eq("user_id", userId),
+      supabase.from("documents").select("*").eq("user_id", userId),
+      supabase.from("performance_metrics").select("*").eq("user_id", userId),
+      supabase.from("offers").select("*").eq("user_id", userId),
       supabase
-        .from('audit_logs')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
+        .from("audit_logs")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
         .limit(1000), // Limit audit logs to 1000 recent entries
-    ])
+    ]);
 
     return {
       profile: profileRes.data || {},
@@ -60,17 +60,21 @@ export async function gatherUserData(userId: string): Promise<ExportData> {
       coaches: coachesRes.data || [],
       interactions: interactionsRes.data || [],
       events: eventsRes.data || [],
-      documents: await fetchDocumentContent(supabase, documentsRes.data || [], userId),
+      documents: await fetchDocumentContent(
+        supabase,
+        documentsRes.data || [],
+        userId,
+      ),
       performanceMetrics: metricsRes.data || [],
       offers: offersRes.data || [],
       auditLogs: auditRes.data || [],
-    }
+    };
   } catch (error) {
-    logger.error('Error gathering user data for export', {
+    logger.error("Error gathering user data for export", {
       userId,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    })
-    throw error
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+    throw error;
   }
 }
 
@@ -80,9 +84,9 @@ export async function gatherUserData(userId: string): Promise<ExportData> {
 async function fetchDocumentContent(
   supabase: ReturnType<typeof createServerSupabaseClient>,
   documents: any[],
-  userId: string
+  userId: string,
 ): Promise<Array<{ metadata: Record<string, any>; content?: Buffer }>> {
-  const result: Array<{ metadata: Record<string, any>; content?: Buffer }> = []
+  const result: Array<{ metadata: Record<string, any>; content?: Buffer }> = [];
 
   for (const doc of documents) {
     try {
@@ -94,41 +98,41 @@ async function fetchDocumentContent(
         created_at: doc.created_at,
         updated_at: doc.updated_at,
         school_id: doc.school_id,
-      }
+      };
 
       // Try to fetch file content from storage
       if (doc.storage_path) {
         try {
           const { data, error } = await supabase.storage
-            .from('documents')
-            .download(`${userId}/${doc.storage_path}`)
+            .from("documents")
+            .download(`${userId}/${doc.storage_path}`);
 
           if (!error && data) {
             result.push({
               metadata: docMetadata,
               content: Buffer.from(await data.arrayBuffer()),
-            })
+            });
           } else {
             // File not found, just save metadata
-            result.push({ metadata: docMetadata })
+            result.push({ metadata: docMetadata });
           }
         } catch (_err) {
           // Fallback if download fails
-          result.push({ metadata: docMetadata })
+          result.push({ metadata: docMetadata });
         }
       } else {
-        result.push({ metadata: docMetadata })
+        result.push({ metadata: docMetadata });
       }
     } catch (error) {
-      logger.warn('Failed to fetch document content', {
+      logger.warn("Failed to fetch document content", {
         documentId: doc.id,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      })
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
       // Continue with next document
     }
   }
 
-  return result
+  return result;
 }
 
 /**
@@ -136,74 +140,74 @@ async function fetchDocumentContent(
  */
 export async function generateUserExportZip(userId: string): Promise<Buffer> {
   try {
-    const data = await gatherUserData(userId)
-    const zip = new JSZip()
+    const data = await gatherUserData(userId);
+    const zip = new JSZip();
 
     // Add README with data dictionary
-    zip.file(
-      'README.txt',
-      generateReadme(userId)
-    )
+    zip.file("README.txt", generateReadme(userId));
 
     // Add profile as JSON
     if (Object.keys(data.profile).length > 0) {
-      zip.file('profile.json', JSON.stringify(data.profile, null, 2))
+      zip.file("profile.json", JSON.stringify(data.profile, null, 2));
     }
 
     // Add each data type as CSV for easy import
     if (data.schools.length > 0) {
-      zip.file('schools.csv', jsonToCSV(data.schools))
+      zip.file("schools.csv", jsonToCSV(data.schools));
     }
 
     if (data.coaches.length > 0) {
-      zip.file('coaches.csv', jsonToCSV(data.coaches))
+      zip.file("coaches.csv", jsonToCSV(data.coaches));
     }
 
     if (data.interactions.length > 0) {
-      zip.file('interactions.csv', jsonToCSV(data.interactions))
+      zip.file("interactions.csv", jsonToCSV(data.interactions));
     }
 
     if (data.events.length > 0) {
-      zip.file('events.csv', jsonToCSV(data.events))
+      zip.file("events.csv", jsonToCSV(data.events));
     }
 
     if (data.performanceMetrics.length > 0) {
-      zip.file('performance_metrics.csv', jsonToCSV(data.performanceMetrics))
+      zip.file("performance_metrics.csv", jsonToCSV(data.performanceMetrics));
     }
 
     if (data.offers.length > 0) {
-      zip.file('offers.csv', jsonToCSV(data.offers))
+      zip.file("offers.csv", jsonToCSV(data.offers));
     }
 
     // Add audit logs
     if (data.auditLogs.length > 0) {
-      zip.file('audit_logs.json', JSON.stringify(data.auditLogs, null, 2))
+      zip.file("audit_logs.json", JSON.stringify(data.auditLogs, null, 2));
     }
 
     // Add documents folder
     if (data.documents.length > 0) {
-      const docsFolder = zip.folder('documents')
+      const docsFolder = zip.folder("documents");
       if (docsFolder) {
         data.documents.forEach((doc, index) => {
-          const fileName = `${doc.metadata.name || `document_${index}`}`
-          docsFolder.file(`${fileName}.json`, JSON.stringify(doc.metadata, null, 2))
+          const fileName = `${doc.metadata.name || `document_${index}`}`;
+          docsFolder.file(
+            `${fileName}.json`,
+            JSON.stringify(doc.metadata, null, 2),
+          );
 
           if (doc.content) {
-            docsFolder.file(`${fileName}.bin`, doc.content)
+            docsFolder.file(`${fileName}.bin`, doc.content);
           }
-        })
+        });
       }
     }
 
     // Generate ZIP buffer
-    const zipBuffer = await zip.generateAsync({ type: 'arraybuffer' })
-    return Buffer.from(zipBuffer)
+    const zipBuffer = await zip.generateAsync({ type: "arraybuffer" });
+    return Buffer.from(zipBuffer);
   } catch (error) {
-    logger.error('Error generating user export ZIP', {
+    logger.error("Error generating user export ZIP", {
       userId,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    })
-    throw error
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+    throw error;
   }
 }
 
@@ -211,32 +215,30 @@ export async function generateUserExportZip(userId: string): Promise<Buffer> {
  * Convert JSON array to CSV format
  */
 function jsonToCSV(data: Record<string, any>[]): string {
-  if (data.length === 0) return ''
+  if (data.length === 0) return "";
 
   // Get all unique keys from all objects
-  const keys = Array.from(
-    new Set(data.flatMap((obj) => Object.keys(obj)))
-  )
+  const keys = Array.from(new Set(data.flatMap((obj) => Object.keys(obj))));
 
   // Create header row
-  const header = keys.map((k) => `"${k}"`).join(',')
+  const header = keys.map((k) => `"${k}"`).join(",");
 
   // Create data rows
   const rows = data.map((obj) =>
     keys
       .map((key) => {
-        const value = obj[key]
+        const value = obj[key];
         if (value === null || value === undefined) {
-          return ''
+          return "";
         }
         // Escape quotes and wrap in quotes
-        const stringValue = String(value).replace(/"/g, '""')
-        return `"${stringValue}"`
+        const stringValue = String(value).replace(/"/g, '""');
+        return `"${stringValue}"`;
       })
-      .join(',')
-  )
+      .join(","),
+  );
 
-  return [header, ...rows].join('\n')
+  return [header, ...rows].join("\n");
 }
 
 /**
@@ -320,7 +322,7 @@ For questions about this export, contact: privacy@baseballrecruitingtracker.loca
 
 This export was generated in compliance with GDPR Article 20 (Right to Data Portability)
 and CCPA rights to data access.
-`
+`;
 }
 
 /**
@@ -328,22 +330,22 @@ and CCPA rights to data access.
  */
 export async function sendExportViaEmail(
   userId: string,
-  userEmail: string
+  userEmail: string,
 ): Promise<void> {
   try {
-    const zipBuffer = await generateUserExportZip(userId)
-    const fileName = `baseball-recruiting-tracker-export-${new Date().toISOString().split('T')[0]}.zip`
+    const zipBuffer = await generateUserExportZip(userId);
+    const fileName = `baseball-recruiting-tracker-export-${new Date().toISOString().split("T")[0]}.zip`;
 
     // Convert buffer to base64 for email
-    const base64Content = zipBuffer.toString('base64')
+    const base64Content = zipBuffer.toString("base64");
 
     // Send email with attachment via Resend or email service
     // This is a placeholder - actual implementation depends on email service
-    logger.info('User export ready for download', {
+    logger.info("User export ready for download", {
       userId,
       fileName,
       size: zipBuffer.length,
-    })
+    });
 
     // Actual implementation would call email service:
     // await sendEmailWithAttachment({
@@ -356,11 +358,11 @@ export async function sendExportViaEmail(
     //   }]
     // })
   } catch (error) {
-    logger.error('Error sending export via email', {
+    logger.error("Error sending export via email", {
       userId,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    })
-    throw error
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+    throw error;
   }
 }
 
@@ -369,41 +371,41 @@ export async function sendExportViaEmail(
  */
 export async function createExportDownloadUrl(
   userId: string,
-  expiresIn: number = 7 * 24 * 60 * 60 // 7 days
+  expiresIn: number = 7 * 24 * 60 * 60, // 7 days
 ): Promise<string> {
   try {
     // Generate ZIP and upload to temporary storage
-    const zipBuffer = await generateUserExportZip(userId)
-    const fileName = `export_${userId}_${Date.now()}.zip`
+    const zipBuffer = await generateUserExportZip(userId);
+    const fileName = `export_${userId}_${Date.now()}.zip`;
 
-    const supabase = createServerSupabaseClient()
+    const supabase = createServerSupabaseClient();
 
     // Upload to exports bucket
     const { error: uploadError } = await supabase.storage
-      .from('exports')
+      .from("exports")
       .upload(fileName, zipBuffer, {
-        contentType: 'application/zip',
-      })
+        contentType: "application/zip",
+      });
 
     if (uploadError) {
-      throw uploadError
+      throw uploadError;
     }
 
     // Create signed URL
     const { data: signedUrl } = await supabase.storage
-      .from('exports')
-      .createSignedUrl(fileName, expiresIn)
+      .from("exports")
+      .createSignedUrl(fileName, expiresIn);
 
     if (!signedUrl?.signedUrl) {
-      throw new Error('Failed to create signed URL')
+      throw new Error("Failed to create signed URL");
     }
 
-    return signedUrl.signedUrl
+    return signedUrl.signedUrl;
   } catch (error) {
-    logger.error('Error creating export download URL', {
+    logger.error("Error creating export download URL", {
       userId,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    })
-    throw error
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+    throw error;
   }
 }

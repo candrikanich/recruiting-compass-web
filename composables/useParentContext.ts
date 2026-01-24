@@ -1,7 +1,7 @@
-import { computed, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useUserStore } from '~/stores/user'
-import type { LinkedAccount } from '~/types/models'
+import { computed, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useUserStore } from "~/stores/user";
+import type { LinkedAccount } from "~/types/models";
 
 /**
  * Composable to determine if current user is a parent viewing athlete data
@@ -13,26 +13,30 @@ import type { LinkedAccount } from '~/types/models'
  * - Ability to switch between linked athletes
  */
 export const useParentContext = () => {
-  const route = useRoute()
-  const router = useRouter()
+  const route = useRoute();
+  const router = useRouter();
   // Lazily initialize store on first access
-  let userStore: ReturnType<typeof useUserStore> | undefined
+  let userStore: ReturnType<typeof useUserStore> | undefined;
 
   const getUserStore = () => {
     if (!userStore) {
-      userStore = useUserStore()
+      userStore = useUserStore();
     }
-    return userStore
-  }
+    return userStore;
+  };
 
-  const isParent = computed(() => getUserStore().user?.role === 'parent')
-  const linkedAthletes = ref<LinkedAccount[]>([])
-  const currentAthleteId = ref<string | null>(null)
+  const isParent = computed(() => getUserStore().user?.role === "parent");
+  const linkedAthletes = ref<LinkedAccount[]>([]);
+  const currentAthleteId = ref<string | null>(null);
   const isViewingAsParent = computed(() => {
     // True if user is a parent AND viewing a different athlete's data
-    const store = getUserStore()
-    return isParent.value && currentAthleteId.value !== null && currentAthleteId.value !== store.user?.id
-  })
+    const store = getUserStore();
+    return (
+      isParent.value &&
+      currentAthleteId.value !== null &&
+      currentAthleteId.value !== store.user?.id
+    );
+  });
 
   /**
    * Initialize parent context
@@ -40,48 +44,54 @@ export const useParentContext = () => {
    * Priority: query param > localStorage > first athlete
    */
   const initialize = async () => {
-    const store = getUserStore()
+    const store = getUserStore();
     if (!isParent.value) {
-      currentAthleteId.value = null
-      linkedAthletes.value = []
-      return
+      currentAthleteId.value = null;
+      linkedAthletes.value = [];
+      return;
     }
 
     // Get linked athletes for this parent
-    const linkedAccounts = store.user?.linked_accounts || []
+    const linkedAccounts = store.user?.linked_accounts || [];
     linkedAthletes.value = linkedAccounts.filter(
-      (account) => account.relationship === 'student'
-    )
+      (account) => account.relationship === "student",
+    );
 
     // Determine which athlete is being viewed
     // Priority: 1) query param, 2) localStorage, 3) first athlete
-    const athleteIdFromRoute = route.query.athlete_id as string | undefined
+    const athleteIdFromRoute = route.query.athlete_id as string | undefined;
 
-    if (athleteIdFromRoute && linkedAthletes.value.some((a) => a.user_id === athleteIdFromRoute)) {
+    if (
+      athleteIdFromRoute &&
+      linkedAthletes.value.some((a) => a.user_id === athleteIdFromRoute)
+    ) {
       // Query param takes precedence
-      currentAthleteId.value = athleteIdFromRoute
-    } else if (typeof window !== 'undefined') {
+      currentAthleteId.value = athleteIdFromRoute;
+    } else if (typeof window !== "undefined") {
       // Try localStorage (only on client side)
-      const lastViewed = localStorage.getItem('parent_last_viewed_athlete')
-      if (lastViewed && linkedAthletes.value.some((a) => a.user_id === lastViewed)) {
-        currentAthleteId.value = lastViewed
+      const lastViewed = localStorage.getItem("parent_last_viewed_athlete");
+      if (
+        lastViewed &&
+        linkedAthletes.value.some((a) => a.user_id === lastViewed)
+      ) {
+        currentAthleteId.value = lastViewed;
       } else if (linkedAthletes.value.length > 0) {
         // Fallback to first athlete
-        currentAthleteId.value = linkedAthletes.value[0].user_id
+        currentAthleteId.value = linkedAthletes.value[0].user_id;
       }
     } else if (linkedAthletes.value.length > 0) {
       // Server-side fallback (shouldn't normally happen)
-      currentAthleteId.value = linkedAthletes.value[0].user_id
+      currentAthleteId.value = linkedAthletes.value[0].user_id;
     }
-  }
+  };
 
   /**
    * Check if parent can view a specific athlete's data
    */
   const canViewAthlete = (athleteId: string): boolean => {
-    if (!isParent.value) return false
-    return linkedAthletes.value.some((a) => a.user_id === athleteId)
-  }
+    if (!isParent.value) return false;
+    return linkedAthletes.value.some((a) => a.user_id === athleteId);
+  };
 
   /**
    * Switch to viewing different athlete
@@ -89,36 +99,40 @@ export const useParentContext = () => {
    */
   const switchAthlete = async (athleteId: string) => {
     if (!canViewAthlete(athleteId)) {
-      console.error('Parent does not have access to this athlete')
-      return
+      console.error("Parent does not have access to this athlete");
+      return;
     }
-    currentAthleteId.value = athleteId
+    currentAthleteId.value = athleteId;
 
     // Save to localStorage for persistence
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('parent_last_viewed_athlete', athleteId)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("parent_last_viewed_athlete", athleteId);
     }
 
     // Update URL with athlete ID
-    await router.push({ query: { athlete_id: athleteId } })
-  }
+    await router.push({ query: { athlete_id: athleteId } });
+  };
 
   /**
    * Get current athlete being viewed (if parent)
    */
   const getCurrentAthlete = () => {
-    if (!isViewingAsParent.value) return null
-    return linkedAthletes.value.find((a) => a.user_id === currentAthleteId.value)
-  }
+    if (!isViewingAsParent.value) return null;
+    return linkedAthletes.value.find(
+      (a) => a.user_id === currentAthleteId.value,
+    );
+  };
 
   /**
    * Get display name for context (for UI)
    */
   const getContextDisplay = (): string => {
-    if (!isViewingAsParent.value) return ''
-    const athlete = getCurrentAthlete()
-    return athlete ? `Viewing ${athlete.full_name || athlete.email}'s profile` : ''
-  }
+    if (!isViewingAsParent.value) return "";
+    const athlete = getCurrentAthlete();
+    return athlete
+      ? `Viewing ${athlete.full_name || athlete.email}'s profile`
+      : "";
+  };
 
   return {
     isParent,
@@ -130,5 +144,5 @@ export const useParentContext = () => {
     switchAthlete,
     getCurrentAthlete,
     getContextDisplay,
-  }
-}
+  };
+};

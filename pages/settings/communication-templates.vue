@@ -1,20 +1,27 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
-
+  <div
+    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+  >
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-        <NuxtLink to="/settings" class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 mb-2">
+        <NuxtLink
+          to="/settings"
+          class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 mb-2"
+        >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
         </NuxtLink>
-        <h1 class="text-2xl font-semibold text-slate-900">Communication Templates</h1>
-        <p class="text-slate-600">Create and manage email, text, and social media templates</p>
+        <h1 class="text-2xl font-semibold text-slate-900">
+          Communication Templates
+        </h1>
+        <p class="text-slate-600">
+          Create and manage email, text, and social media templates
+        </p>
       </div>
     </div>
 
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-
       <!-- Tabs -->
       <div class="flex gap-4 mb-8">
         <button
@@ -68,12 +75,18 @@
             ]"
           >
             {{ type.charAt(0).toUpperCase() + type.slice(1) }}
-            ({{ templates.filter((t: CommunicationTemplate) => t.type === type).length }})
+            ({{
+              templates.filter((t: CommunicationTemplate) => t.type === type)
+                .length
+            }})
           </button>
         </div>
 
         <!-- Empty State -->
-        <div v-if="filteredTemplates.length === 0" class="bg-white rounded-lg shadow p-8 text-center">
+        <div
+          v-if="filteredTemplates.length === 0"
+          class="bg-white rounded-lg shadow p-8 text-center"
+        >
           <p class="text-gray-600">No templates found</p>
         </div>
 
@@ -88,8 +101,15 @@
               <div class="flex-1">
                 <h3 class="font-bold text-gray-900">{{ template.name }}</h3>
                 <p class="text-xs text-gray-500 mt-1">
-                  {{ template.type.charAt(0).toUpperCase() + template.type.slice(1) }}
-                  {{ template.created_at ? ` • ${formatDate(template.created_at)}` : '' }}
+                  {{
+                    template.type.charAt(0).toUpperCase() +
+                    template.type.slice(1)
+                  }}
+                  {{
+                    template.created_at
+                      ? ` • ${formatDate(template.created_at)}`
+                      : ""
+                  }}
                 </p>
               </div>
               <button
@@ -99,7 +119,9 @@
                 Edit
               </button>
             </div>
-            <p class="text-sm text-gray-700 line-clamp-3">{{ template.body }}</p>
+            <p class="text-sm text-gray-700 line-clamp-3">
+              {{ template.body }}
+            </p>
           </div>
         </div>
       </div>
@@ -118,59 +140,65 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { ArrowLeftIcon } from '@heroicons/vue/24/outline'
-import { useCommunicationTemplates } from '~/composables/useCommunicationTemplates'
-import type { CommunicationTemplate } from '~/composables/useCommunicationTemplates'
+import { ref, computed, onMounted } from "vue";
+import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
+import { useCommunicationTemplates } from "~/composables/useCommunicationTemplates";
+import type { CommunicationTemplate } from "~/composables/useCommunicationTemplates";
 
 definePageMeta({
-  middleware: 'auth',
-})
+  middleware: "auth",
+});
 
-const { templates, loadUserTemplates } = useCommunicationTemplates()
+const { templates, loadUserTemplates } = useCommunicationTemplates();
 
-const templateTypes = ['email', 'text', 'twitter'] as const
-type TemplateType = typeof templateTypes[number]
+const templateTypes = ["email", "text", "twitter"] as const;
+type TemplateType = (typeof templateTypes)[number];
 
-const activeTab = ref<'list' | 'create'>('list')
-const filterType = ref<TemplateType | null>(null)
-const editingTemplate = ref<CommunicationTemplate | null>(null)
+const activeTab = ref<"list" | "create">("list");
+const filterType = ref<TemplateType | null>(null);
+const editingTemplate = ref<CommunicationTemplate | null>(null);
 
 const filteredTemplates = computed(() => {
   if (filterType.value === null) {
-    return templates.value
+    return templates.value;
   }
-  return templates.value.filter((t: CommunicationTemplate) => t.type === filterType.value)
-})
+  return templates.value.filter(
+    (t: CommunicationTemplate) => t.type === filterType.value,
+  );
+});
 
 const formatDate = (dateString: string): string => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
 const editTemplate = (template: CommunicationTemplate) => {
-  editingTemplate.value = template
-  activeTab.value = 'create'
-}
+  editingTemplate.value = template;
+  activeTab.value = "create";
+};
 
 const onTemplateSaved = () => {
-  editingTemplate.value = null
-  activeTab.value = 'list'
-}
+  editingTemplate.value = null;
+  activeTab.value = "list";
+};
 
 const onEditCancel = () => {
-  editingTemplate.value = null
+  editingTemplate.value = null;
   if (templates.value.length > 0) {
-    activeTab.value = 'list'
+    activeTab.value = "list";
   }
-}
+};
 
 const onTemplateDeleted = () => {
-  editingTemplate.value = null
-  activeTab.value = 'list'
-}
+  editingTemplate.value = null;
+  activeTab.value = "list";
+};
 
 onMounted(() => {
-  loadUserTemplates()
-})
+  loadUserTemplates();
+});
 </script>

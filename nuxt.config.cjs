@@ -1,9 +1,9 @@
 module.exports = {
   ssr: true,
   devtools: { enabled: false },
-  modules: ['@pinia/nuxt'],
+  modules: ["@pinia/nuxt"],
 
-  css: ['~/app.css'],
+  css: ["~/app.css"],
 
   postcss: {
     plugins: {
@@ -12,11 +12,10 @@ module.exports = {
     },
   },
 
-
   runtimeConfig: {
     public: {
-      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || '',
-      supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || "",
+      supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || "",
     },
   },
 
@@ -37,4 +36,4 @@ module.exports = {
   experimental: {
     shallowRef: false,
   },
-}
+};

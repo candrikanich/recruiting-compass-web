@@ -1,13 +1,13 @@
-import { ref, computed, type ComputedRef } from 'vue'
-import { useSupabase } from './useSupabase'
-import { useUserStore } from '~/stores/user'
-import type { Coach } from '~/types/models'
-import type { Database } from '~/types/database'
-import { coachSchema } from '~/utils/validation/schemas'
-import { sanitizeHtml } from '~/utils/validation/sanitize'
+import { ref, computed, type ComputedRef } from "vue";
+import { useSupabase } from "./useSupabase";
+import { useUserStore } from "~/stores/user";
+import type { Coach } from "~/types/models";
+import type { Database } from "~/types/database";
+import { coachSchema } from "~/utils/validation/schemas";
+import { sanitizeHtml } from "~/utils/validation/sanitize";
 
-type CoachesInsert = Database['public']['Tables']['coaches']['Insert']
-type CoachesUpdate = Database['public']['Tables']['coaches']['Update']
+type CoachesInsert = Database["public"]["Tables"]["coaches"]["Insert"];
+type CoachesUpdate = Database["public"]["Tables"]["coaches"]["Update"];
 
 /**
  * useCoaches composable
@@ -30,161 +30,179 @@ type CoachesUpdate = Database['public']['Tables']['coaches']['Update']
  * Responsiveness tracking helps identify which coaches are most engaged
  */
 export const useCoaches = (): {
-  coaches: ComputedRef<Coach[]>
-  loading: ComputedRef<boolean>
-  error: ComputedRef<string | null>
-  fetchCoaches: (schoolId: string) => Promise<void>
-  fetchAllCoaches: (filters?: { search?: string; role?: string; schoolId?: string }) => Promise<void>
-  fetchCoachesBySchools: (schoolIds: string[]) => Promise<void>
-  getCoach: (id: string) => Promise<Coach | null>
-  createCoach: (schoolId: string, coachData: Omit<Coach, 'id' | 'created_at' | 'updated_at'>) => Promise<Coach>
-  updateCoach: (id: string, updates: Partial<Coach>) => Promise<Coach>
-  deleteCoach: (id: string) => Promise<void>
+  coaches: ComputedRef<Coach[]>;
+  loading: ComputedRef<boolean>;
+  error: ComputedRef<string | null>;
+  fetchCoaches: (schoolId: string) => Promise<void>;
+  fetchAllCoaches: (filters?: {
+    search?: string;
+    role?: string;
+    schoolId?: string;
+  }) => Promise<void>;
+  fetchCoachesBySchools: (schoolIds: string[]) => Promise<void>;
+  getCoach: (id: string) => Promise<Coach | null>;
+  createCoach: (
+    schoolId: string,
+    coachData: Omit<Coach, "id" | "created_at" | "updated_at">,
+  ) => Promise<Coach>;
+  updateCoach: (id: string, updates: Partial<Coach>) => Promise<Coach>;
+  deleteCoach: (id: string) => Promise<void>;
 } => {
-  const supabase = useSupabase()
-  const userStore = useUserStore()
+  const supabase = useSupabase();
+  const userStore = useUserStore();
 
-  const coaches = ref<Coach[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const coaches = ref<Coach[]>([]);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
   const fetchCoaches = async (schoolId: string) => {
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('coaches')
-        .select('*')
-        .eq('school_id', schoolId)
-        .order('created_at', { ascending: false })
+        .from("coaches")
+        .select("*")
+        .eq("school_id", schoolId)
+        .order("created_at", { ascending: false });
 
       if (fetchError) {
-        console.error('Fetch error:', fetchError)
-        throw fetchError
+        console.error("Fetch error:", fetchError);
+        throw fetchError;
       }
 
-      coaches.value = data || []
+      coaches.value = data || [];
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch coaches'
-      error.value = message
-      console.error('Coach fetch error:', message)
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch coaches";
+      error.value = message;
+      console.error("Coach fetch error:", message);
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
-  const fetchAllCoaches = async (filters?: { search?: string; role?: string; schoolId?: string }) => {
-    loading.value = true
-    error.value = null
+  const fetchAllCoaches = async (filters?: {
+    search?: string;
+    role?: string;
+    schoolId?: string;
+  }) => {
+    loading.value = true;
+    error.value = null;
 
     try {
-      let query = supabase.from('coaches').select('*')
+      let query = supabase.from("coaches").select("*");
 
       if (filters?.schoolId) {
-        query = query.eq('school_id', filters.schoolId)
+        query = query.eq("school_id", filters.schoolId);
       }
 
       if (filters?.role) {
-        query = query.eq('role', filters.role)
+        query = query.eq("role", filters.role);
       }
 
       // Use server-side full-text search via textSearch (utilizes GIN index from migration 017)
       if (filters?.search) {
-        query = query.textSearch('search_vec', filters.search, {
-          type: 'websearch',
-          config: 'english'
-        })
+        query = query.textSearch("search_vec", filters.search, {
+          type: "websearch",
+          config: "english",
+        });
       } else {
-        query = query.order('last_name', { ascending: true })
+        query = query.order("last_name", { ascending: true });
       }
 
-      const { data, error: fetchError } = await query
+      const { data, error: fetchError } = await query;
 
       if (fetchError) {
-        console.error('Fetch error:', fetchError)
-        throw fetchError
+        console.error("Fetch error:", fetchError);
+        throw fetchError;
       }
 
-      coaches.value = data || []
+      coaches.value = data || [];
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch coaches'
-      error.value = message
-      console.error('Coach fetch error:', message)
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch coaches";
+      error.value = message;
+      console.error("Coach fetch error:", message);
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   const fetchCoachesBySchools = async (schoolIds: string[]) => {
     if (schoolIds.length === 0) {
-      coaches.value = []
-      return
+      coaches.value = [];
+      return;
     }
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('coaches')
-        .select('*')
-        .in('school_id', schoolIds)
-        .order('school_id', { ascending: true })
-        .order('last_name', { ascending: true })
+        .from("coaches")
+        .select("*")
+        .in("school_id", schoolIds)
+        .order("school_id", { ascending: true })
+        .order("last_name", { ascending: true });
 
-      if (fetchError) throw fetchError
+      if (fetchError) throw fetchError;
 
-      coaches.value = (data || []) as Coach[]
+      coaches.value = (data || []) as Coach[];
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch coaches'
-      error.value = message
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch coaches";
+      error.value = message;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   const getCoach = async (id: string): Promise<Coach | null> => {
-    if (!userStore.user) return null
+    if (!userStore.user) return null;
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('coaches')
-        .select('*')
-        .eq('id', id)
-        .single()
+        .from("coaches")
+        .select("*")
+        .eq("id", id)
+        .single();
 
-      if (fetchError) throw fetchError
-      return data
+      if (fetchError) throw fetchError;
+      return data;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch coach'
-      error.value = message
-      return null
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch coach";
+      error.value = message;
+      return null;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
-  const createCoach = async (schoolId: string, coachData: Omit<Coach, 'id' | 'created_at' | 'updated_at'>) => {
-    if (!userStore.user) throw new Error('User not authenticated')
+  const createCoach = async (
+    schoolId: string,
+    coachData: Omit<Coach, "id" | "created_at" | "updated_at">,
+  ) => {
+    if (!userStore.user) throw new Error("User not authenticated");
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
       // Validate coach data with Zod schema
-      const validated = await coachSchema.parseAsync(coachData)
+      const validated = await coachSchema.parseAsync(coachData);
 
       // Sanitize notes field to prevent XSS
       if (validated.notes) {
-        validated.notes = sanitizeHtml(validated.notes)
+        validated.notes = sanitizeHtml(validated.notes);
       }
 
       const { data, error: insertError } = await supabase
-        .from('coaches')
+        .from("coaches")
         .insert([
           {
             ...validated,
@@ -192,88 +210,91 @@ export const useCoaches = (): {
           },
         ])
         .select()
-        .single()
+        .single();
 
-      if (insertError) throw insertError
+      if (insertError) throw insertError;
 
-      coaches.value.push(data)
-      return data
+      coaches.value.push(data);
+      return data;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to create coach'
-      error.value = message
-      throw err
+      const message =
+        err instanceof Error ? err.message : "Failed to create coach";
+      error.value = message;
+      throw err;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   const updateCoach = async (id: string, updates: Partial<Coach>) => {
-    if (!userStore.user) throw new Error('User not authenticated')
+    if (!userStore.user) throw new Error("User not authenticated");
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
       // Sanitize notes field to prevent XSS
-      const sanitizedUpdates = { ...updates }
+      const sanitizedUpdates = { ...updates };
 
       if (sanitizedUpdates.notes) {
-        sanitizedUpdates.notes = sanitizeHtml(sanitizedUpdates.notes)
+        sanitizedUpdates.notes = sanitizeHtml(sanitizedUpdates.notes);
       }
 
       const { data, error: updateError } = await supabase
-        .from('coaches')
+        .from("coaches")
         .update({
           ...sanitizedUpdates,
           updated_by: userStore.user.id,
           updated_at: new Date().toISOString(),
         } as CoachesUpdate)
-        .eq('id', id)
+        .eq("id", id)
         .select()
-        .single()
+        .single();
 
-      if (updateError) throw updateError
+      if (updateError) throw updateError;
 
       // Update local state
-      const index = coaches.value.findIndex((c) => c.id === id)
+      const index = coaches.value.findIndex((c) => c.id === id);
       if (index !== -1) {
-        coaches.value[index] = data
+        coaches.value[index] = data;
       }
 
-      return data
+      return data;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to update coach'
-      error.value = message
-      throw err
+      const message =
+        err instanceof Error ? err.message : "Failed to update coach";
+      error.value = message;
+      throw err;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   const deleteCoach = async (id: string) => {
-    if (!userStore.user) throw new Error('User not authenticated')
+    if (!userStore.user) throw new Error("User not authenticated");
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
       const { error: deleteError } = await supabase
-        .from('coaches')
+        .from("coaches")
         .delete()
-        .eq('id', id)
+        .eq("id", id);
 
-      if (deleteError) throw deleteError
+      if (deleteError) throw deleteError;
 
       // Update local state
-      coaches.value = coaches.value.filter((c) => c.id !== id)
+      coaches.value = coaches.value.filter((c) => c.id !== id);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to delete coach'
-      error.value = message
-      throw err
+      const message =
+        err instanceof Error ? err.message : "Failed to delete coach";
+      error.value = message;
+      throw err;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   return {
     coaches: computed(() => coaches.value),
@@ -286,5 +307,5 @@ export const useCoaches = (): {
     createCoach,
     updateCoach,
     deleteCoach,
-  }
-}
+  };
+};

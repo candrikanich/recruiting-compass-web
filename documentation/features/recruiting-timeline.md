@@ -18,12 +18,14 @@ Each phase contains **task milestones**, **status scoring**, and **personalized 
 ### 1. Task Management
 
 **What it does:**
+
 - Provides structured checklists for each year
 - Tracks completion status of recruiting milestones
 - Identifies prerequisite dependencies (e.g., "build video before outreach")
 - Auto-completes tasks when related actions occur
 
 **Example tasks:**
+
 - "Create athlete profile with stats"
 - "Upload highlight video"
 - "Build initial college list"
@@ -34,6 +36,7 @@ Each phase contains **task milestones**, **status scoring**, and **personalized 
 ### 2. Phase Progression
 
 **How it works:**
+
 - Athletes automatically advance through phases as milestones are completed
 - Current phase determines available tasks and expected recruiting stage
 - Phase information informs personalized guidance and suggestions
@@ -46,12 +49,14 @@ Completing "create highlight video," "build college list," and "start outreach" 
 The system calculates a **composite status score** (0-100) that indicates how an athlete is tracking compared to recruiting benchmarks.
 
 **Score breakdown:**
+
 - Task completion: 35%
 - Interaction frequency: 25%
 - Coach interest indicators: 25%
 - Academic standing: 15%
 
 **Status labels:**
+
 - **On Track** (75-100): Ahead of typical recruiting timeline
 - **Slightly Behind** (50-74): Keeping pace with expectations
 - **At Risk** (0-49): May need to accelerate efforts
@@ -60,14 +65,15 @@ The system calculates a **composite status score** (0-100) that indicates how an
 
 Evaluates how well each school matches the athlete's profile across four dimensions:
 
-| Dimension | Weight | Evaluates |
-|-----------|--------|-----------|
-| **Athletic** | 40% | Position fit, performance tier, coach interest |
-| **Academic** | 25% | GPA/test score alignment with school standards |
-| **Opportunity** | 20% | Roster depth, playing time likelihood |
-| **Personal** | 15% | Location, campus size, program culture |
+| Dimension       | Weight | Evaluates                                      |
+| --------------- | ------ | ---------------------------------------------- |
+| **Athletic**    | 40%    | Position fit, performance tier, coach interest |
+| **Academic**    | 25%    | GPA/test score alignment with school standards |
+| **Opportunity** | 20%    | Roster depth, playing time likelihood          |
+| **Personal**    | 15%    | Location, campus size, program culture         |
 
 **Fit Tiers:**
+
 - **Match/Safety** (70-100): Good academic/athletic fit
 - **Reach** (50-69): Challenging but achievable targets
 - **Unlikely** (0-49): Limited fit on key dimensions
@@ -79,16 +85,17 @@ The system alerts athletes if their school list is unbalanced (e.g., all reach s
 
 An intelligent rule engine generates personalized recommendations:
 
-| Rule | Trigger | Suggestion |
-|------|---------|-----------|
-| Interaction Gap | 21+ days without contact at A/B priority school | "Reach out to [Coach]" |
-| Missing Video | Sophomore+ with no highlight video | "Create and upload highlight video" |
-| Event Follow-up | Event attended, no follow-up in 7 days | "Send thank you to [Coach]" |
-| Video Health | Video URL returns error | "Update broken video link" |
-| Portfolio Gap | All schools in same fit tier | "Add reach/match/safety schools" |
-| Priority Reminder | 14+ days without priority school contact | "Contact [Coach] at [School]" |
+| Rule              | Trigger                                         | Suggestion                          |
+| ----------------- | ----------------------------------------------- | ----------------------------------- |
+| Interaction Gap   | 21+ days without contact at A/B priority school | "Reach out to [Coach]"              |
+| Missing Video     | Sophomore+ with no highlight video              | "Create and upload highlight video" |
+| Event Follow-up   | Event attended, no follow-up in 7 days          | "Send thank you to [Coach]"         |
+| Video Health      | Video URL returns error                         | "Update broken video link"          |
+| Portfolio Gap     | All schools in same fit tier                    | "Add reach/match/safety schools"    |
+| Priority Reminder | 14+ days without priority school contact        | "Contact [Coach] at [School]"       |
 
 **Suggestion delivery:**
+
 - Max 2-3 suggestions surfaced daily
 - High urgency items shown first
 - Athletes can dismiss or mark suggestions complete
@@ -96,11 +103,13 @@ An intelligent rule engine generates personalized recommendations:
 ### 6. Parent & Athlete Views
 
 **For Athletes:**
+
 - Full read/write access to recruiting data
 - Can complete tasks, log interactions, update progress
 - See their own timeline and status
 
 **For Parents:**
+
 - Read-only access to athlete's recruiting data
 - Can view tasks, status, suggestions, and school list
 - Receive contextual guidance about recruiting stage
@@ -129,6 +138,7 @@ Pre-built templates for common recruiting communication:
    - Unlock: Campus visit logged
 
 **How to use:**
+
 1. Click "Use Template" on Timeline or School page
 2. Template auto-populates with athlete and school details
 3. System opens email client with pre-filled content
@@ -138,6 +148,7 @@ Pre-built templates for common recruiting communication:
 #### Interest Calibration Rubric
 
 When logging an inbound message from a coach, the system asks 6 yes/no questions:
+
 - Did they ask about your schedule?
 - Did they mention a visit?
 - Did they ask about academics?
@@ -146,6 +157,7 @@ When logging an inbound message from a coach, the system asks 6 yes/no questions
 - Was it personalized (not form letter)?
 
 **Scoring:**
+
 - 4-6 yes = High interest
 - 2-3 yes = Medium interest
 - 0-1 yes = Low interest
@@ -156,14 +168,15 @@ This standardizes interest assessment across schools and coaches.
 
 If an athlete falls behind on recruiting milestones, the system detects four recovery triggers:
 
-| Trigger | Detected When | Recovery Plan |
-|---------|-----------------|---|
-| **Critical Task Missed** | Phase 1-2 critical tasks incomplete | 21-day catch-up plan |
-| **No Coach Interest** | No positive interactions in 30+ days | 45-day outreach refresh |
-| **Eligibility Incomplete** | NCAA registration not started | 30-day registration guide |
-| **Fit Gap** | Unbalanced school list | 14-day diversification plan |
+| Trigger                    | Detected When                        | Recovery Plan               |
+| -------------------------- | ------------------------------------ | --------------------------- |
+| **Critical Task Missed**   | Phase 1-2 critical tasks incomplete  | 21-day catch-up plan        |
+| **No Coach Interest**      | No positive interactions in 30+ days | 45-day outreach refresh     |
+| **Eligibility Incomplete** | NCAA registration not started        | 30-day registration guide   |
+| **Fit Gap**                | Unbalanced school list               | 14-day diversification plan |
 
 **Recovery flow:**
+
 1. System detects trigger on Dashboard or Timeline
 2. Recovery modal displays with plan details
 3. Athlete reviews and acknowledges plan
@@ -175,6 +188,7 @@ If an athlete falls behind on recruiting milestones, the system detects four rec
 For athletes joining mid-recruiting cycle (late sophomore/junior):
 
 **5-question assessment:**
+
 1. Have you created a highlight video?
 2. Have you contacted any coaches?
 3. Do you have a target school list?
@@ -182,6 +196,7 @@ For athletes joining mid-recruiting cycle (late sophomore/junior):
 5. Have you taken SAT/ACT?
 
 **Automatic actions:**
+
 - Marks "yes" responses as task-complete
 - Skips completed work from task list
 - Generates catch-up plan for gaps
@@ -192,6 +207,7 @@ For athletes joining mid-recruiting cycle (late sophomore/junior):
 ### Dashboard View
 
 The main dashboard shows:
+
 - **Current phase** at top with progress indicator
 - **4 phase cards** (one per year) showing task progress
 - Current phase expanded, others collapsible
@@ -201,6 +217,7 @@ The main dashboard shows:
 ### Timeline Page
 
 Dedicated page at `/timeline` with:
+
 - Phase navigation (click phase to expand/collapse)
 - Task list with filters (by category, status)
 - Task details including why it matters & failure risk
@@ -210,6 +227,7 @@ Dedicated page at `/timeline` with:
 ### School Detail Integration
 
 On each school page:
+
 - **Fit Score** section showing overall match score
 - **Fit Breakdown** by dimension (Athletic/Academic/Opportunity/Personal)
 - **Missing Data** indicators (e.g., "Add academic profile for better fit score")
@@ -218,6 +236,7 @@ On each school page:
 ### Interaction Logging
 
 When logging an interaction:
+
 1. Basic details (date, coach, type)
 2. Sentiment selection (positive/neutral/negative)
 3. **Interest Calibration** shows for inbound + positive (6 questions)
@@ -282,6 +301,7 @@ See [timeline-architecture.md](../technical/timeline-architecture.md) for implem
 **Questions?** Check the FAQ above or review the context-specific guidance that appears on each page of the timeline.
 
 **Found a bug?** Report it with:
+
 - What you were doing
 - What you expected to happen
 - What actually happened

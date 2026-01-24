@@ -252,9 +252,7 @@ describe("useInteractions - Extended", () => {
     it("should delete interaction by id", async () => {
       mockQuery.delete = vi.fn().mockReturnValue(mockQuery);
       mockQuery.eq = vi.fn().mockReturnValue(mockQuery);
-      mockQuery.then = vi.fn((resolve) =>
-        resolve({ data: null, error: null }),
-      );
+      mockQuery.then = vi.fn((resolve) => resolve({ data: null, error: null }));
 
       const { deleteInteraction } = useInteractions();
       await deleteInteraction("550e8400-e29b-41d4-a716-446655440000");

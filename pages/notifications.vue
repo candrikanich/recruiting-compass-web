@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Header -->
       <div class="flex items-center justify-between mb-8">
@@ -39,7 +38,16 @@
       <!-- Type Filter -->
       <div class="mb-6 flex gap-2 flex-wrap">
         <button
-          v-for="type in ['all', 'follow_up_reminder', 'deadline_alert', 'inbound_interaction', 'daily_digest', 'offer', 'event', 'general']"
+          v-for="type in [
+            'all',
+            'follow_up_reminder',
+            'deadline_alert',
+            'inbound_interaction',
+            'daily_digest',
+            'offer',
+            'event',
+            'general',
+          ]"
           :key="type"
           @click="activeFilter = type"
           :class="[
@@ -59,7 +67,10 @@
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="filteredNotifications.length === 0" class="bg-white rounded-lg shadow p-12 text-center">
+      <div
+        v-else-if="filteredNotifications.length === 0"
+        class="bg-white rounded-lg shadow p-12 text-center"
+      >
         <p class="text-gray-600 mb-2">No notifications</p>
         <p class="text-sm text-gray-500">You're all caught up!</p>
       </div>
@@ -71,17 +82,29 @@
           :key="notification.id"
           :class="[
             'bg-white rounded-lg shadow p-4 hover:shadow-lg transition cursor-pointer border-l-4 flex items-start justify-between',
-            notification.read_at ? 'border-gray-300' : 'border-blue-500 bg-blue-50',
+            notification.read_at
+              ? 'border-gray-300'
+              : 'border-blue-500 bg-blue-50',
           ]"
           @click="handleNotificationClick(notification)"
         >
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
-              <BellIcon v-if="notification.type === 'follow_up_reminder'" class="w-5 h-5 text-blue-600" />
-              <span v-else :class="['text-lg', getTypeIcon(notification.type)]">{{
-                getTypeEmoji(notification.type)
-              }}</span>
-              <h3 :class="['font-semibold', notification.read_at ? 'text-gray-900' : 'text-blue-900']">
+              <BellIcon
+                v-if="notification.type === 'follow_up_reminder'"
+                class="w-5 h-5 text-blue-600"
+              />
+              <span
+                v-else
+                :class="['text-lg', getTypeIcon(notification.type)]"
+                >{{ getTypeEmoji(notification.type) }}</span
+              >
+              <h3
+                :class="[
+                  'font-semibold',
+                  notification.read_at ? 'text-gray-900' : 'text-blue-900',
+                ]"
+              >
                 {{ notification.title }}
               </h3>
               <span
@@ -103,10 +126,17 @@
                 LOW
               </span>
             </div>
-            <p :class="['text-sm', notification.read_at ? 'text-gray-600' : 'text-gray-700']">
+            <p
+              :class="[
+                'text-sm',
+                notification.read_at ? 'text-gray-600' : 'text-gray-700',
+              ]"
+            >
               {{ notification.message }}
             </p>
-            <p class="text-xs text-gray-500 mt-2">{{ formatDate(notification.scheduled_for) }}</p>
+            <p class="text-xs text-gray-500 mt-2">
+              {{ formatDate(notification.scheduled_for) }}
+            </p>
           </div>
           <button
             @click.stop="deleteNotification(notification.id)"
@@ -121,103 +151,115 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useNotifications } from '~/composables/useNotifications'
-import { BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
-import type { Notification } from '~/types/models'
+import { ref, onMounted, computed } from "vue";
+import { useNotifications } from "~/composables/useNotifications";
+import { BellIcon, XMarkIcon } from "@heroicons/vue/24/outline";
+import type { Notification } from "~/types/models";
 
 definePageMeta({
-  middleware: 'auth',
-})
+  middleware: "auth",
+});
 
-const { notifications, loading, fetchNotifications, markAsRead, markAllAsRead, deleteNotification, deleteAllRead } =
-  useNotifications()
+const {
+  notifications,
+  loading,
+  fetchNotifications,
+  markAsRead,
+  markAllAsRead,
+  deleteNotification,
+  deleteAllRead,
+} = useNotifications();
 
-const activeFilter = ref('all')
-const searchQuery = ref('')
+const activeFilter = ref("all");
+const searchQuery = ref("");
 
 const filteredNotifications = computed(() => {
-  let filtered = notifications.value
+  let filtered = notifications.value;
 
-  if (activeFilter.value !== 'all') {
-    filtered = filtered.filter((n) => n.type === activeFilter.value)
+  if (activeFilter.value !== "all") {
+    filtered = filtered.filter((n) => n.type === activeFilter.value);
   }
 
   if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter((n) =>
-      n.title.toLowerCase().includes(query) ||
-      n.message.toLowerCase().includes(query)
-    )
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(
+      (n) =>
+        n.title.toLowerCase().includes(query) ||
+        n.message.toLowerCase().includes(query),
+    );
   }
 
-  return filtered
-})
+  return filtered;
+});
 
-const unreadCount = computed(() => notifications.value.filter((n) => !n.read_at).length)
-const hasReadNotifications = computed(() => notifications.value.some((n) => n.read_at))
+const unreadCount = computed(
+  () => notifications.value.filter((n) => !n.read_at).length,
+);
+const hasReadNotifications = computed(() =>
+  notifications.value.some((n) => n.read_at),
+);
 
 const getTypeLabel = (type: string): string => {
   const labels: Record<string, string> = {
-    all: 'All',
-    follow_up_reminder: 'Follow-ups',
-    follow_up: 'Follow-ups',
-    deadline_alert: 'Deadlines',
-    deadline: 'Deadlines',
-    offer: 'Offers',
-    event: 'Events',
-    daily_digest: 'Digest',
-    inbound_interaction: 'Inbound',
-    general: 'General',
-  }
-  return labels[type] || type
-}
+    all: "All",
+    follow_up_reminder: "Follow-ups",
+    follow_up: "Follow-ups",
+    deadline_alert: "Deadlines",
+    deadline: "Deadlines",
+    offer: "Offers",
+    event: "Events",
+    daily_digest: "Digest",
+    inbound_interaction: "Inbound",
+    general: "General",
+  };
+  return labels[type] || type;
+};
 
 const getTypeEmoji = (type: string): string => {
   const emojis: Record<string, string> = {
-    follow_up_reminder: '🔔',
-    follow_up: '🔔',
-    deadline_alert: '⏰',
-    deadline: '⏰',
-    offer: '🎉',
-    event: '📅',
-    daily_digest: '📊',
-    inbound_interaction: '📧',
-    general: '📬',
-  }
+    follow_up_reminder: "🔔",
+    follow_up: "🔔",
+    deadline_alert: "⏰",
+    deadline: "⏰",
+    offer: "🎉",
+    event: "📅",
+    daily_digest: "📊",
+    inbound_interaction: "📧",
+    general: "📬",
+  };
   // Return empty string for follow_up types since they now use BellIcon
-  if (type === 'follow_up_reminder' || type === 'follow_up') return ''
-  return emojis[type] || '📬'
-}
+  if (type === "follow_up_reminder" || type === "follow_up") return "";
+  return emojis[type] || "📬";
+};
 
 const getTypeIcon = (type: string): string => {
-  return 'inline-block'
-}
+  return "inline-block";
+};
 
 const formatDate = (dateStr: string): string => {
-  const date = new Date(dateStr)
-  const now = new Date()
-  const secondsAgo = Math.floor((now.getTime() - date.getTime()) / 1000)
+  const date = new Date(dateStr);
+  const now = new Date();
+  const secondsAgo = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (secondsAgo < 60) return 'just now'
-  if (secondsAgo < 3600) return `${Math.floor(secondsAgo / 60)}m ago`
-  if (secondsAgo < 86400) return `${Math.floor(secondsAgo / 3600)}h ago`
-  if (secondsAgo < 604800) return `${Math.floor(secondsAgo / 86400)}d ago`
+  if (secondsAgo < 60) return "just now";
+  if (secondsAgo < 3600) return `${Math.floor(secondsAgo / 60)}m ago`;
+  if (secondsAgo < 86400) return `${Math.floor(secondsAgo / 3600)}h ago`;
+  if (secondsAgo < 604800) return `${Math.floor(secondsAgo / 86400)}d ago`;
 
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
 
 const handleNotificationClick = async (notification: Notification) => {
   if (!notification.read_at) {
-    await markAsRead(notification.id)
+    await markAsRead(notification.id);
   }
 
   if (notification.action_url) {
-    await navigateTo(notification.action_url)
+    await navigateTo(notification.action_url);
   }
-}
+};
 
 onMounted(async () => {
-  await fetchNotifications()
-})
+  await fetchNotifications();
+});
 </script>

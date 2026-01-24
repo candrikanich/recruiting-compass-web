@@ -5,85 +5,85 @@
  * Performance: 2500ms → 250ms (90% improvement)
  */
 
-import { defineEventHandler } from 'h3'
-import type { SupabaseClient } from '@supabase/supabase-js'
-import { createServerSupabaseClient } from '~/server/utils/supabase'
-import { requireAuth } from '~/server/utils/auth'
-import type { Database } from '~/types/database'
-import type { StatusScoreResult } from '~/types/timeline'
-import { calculateStatusScoreResult } from '~/utils/statusScoreCalculation'
+import { defineEventHandler } from "h3";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { requireAuth } from "~/server/utils/auth";
+import type { Database } from "~/types/database";
+import type { StatusScoreResult } from "~/types/timeline";
+import { calculateStatusScoreResult } from "~/utils/statusScoreCalculation";
 
 interface AthleteStatusData {
-  task_completion_rate: number
-  interaction_frequency_score: number
-  coach_interest_score: number
-  academic_standing_score: number
-  last_interaction_date: string | null
-  school_count: number
-  completed_task_count: number
+  task_completion_rate: number;
+  interaction_frequency_score: number;
+  coach_interest_score: number;
+  academic_standing_score: number;
+  last_interaction_date: string | null;
+  school_count: number;
+  completed_task_count: number;
 }
 
 interface RpcResponse<T> {
-  data: T | null
-  error: Error | null
+  data: T | null;
+  error: Error | null;
 }
 
 // Helper to validate RPC response is AthleteStatusData
 function isAthleteStatusData(data: unknown): data is AthleteStatusData {
   return (
-    typeof data === 'object' &&
+    typeof data === "object" &&
     data !== null &&
-    'task_completion_rate' in data &&
-    'interaction_frequency_score' in data &&
-    'coach_interest_score' in data &&
-    'academic_standing_score' in data
-  )
+    "task_completion_rate" in data &&
+    "interaction_frequency_score" in data &&
+    "coach_interest_score" in data &&
+    "academic_standing_score" in data
+  );
 }
 
 // Typed wrapper for RPC call - encapsulates Supabase's limited RPC typing
 async function callGetAthleteStatusRpc(
   supabase: SupabaseClient<Database>,
-  userId: string
+  userId: string,
 ): Promise<RpcResponse<AthleteStatusData | AthleteStatusData[]>> {
   // Supabase's TypeScript types don't properly support generic RPC methods
   // This wrapper encapsulates the unsafe cast internally
-  return (supabase as any).rpc('get_athlete_status', {
+  return (supabase as any).rpc("get_athlete_status", {
     p_user_id: userId,
-  })
+  });
 }
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event)
-  const supabase = createServerSupabaseClient()
+  const user = await requireAuth(event);
+  const supabase = createServerSupabaseClient();
 
   try {
     // Call optimized RPC function instead of 6 sequential queries
-    const { data, error } = await callGetAthleteStatusRpc(supabase, user.id)
+    const { data, error } = await callGetAthleteStatusRpc(supabase, user.id);
 
     if (error) {
-      console.error('Error calling get_athlete_status RPC:', error)
+      console.error("Error calling get_athlete_status RPC:", error);
       throw createError({
         statusCode: 500,
-        statusMessage: 'Failed to calculate athlete status',
-      })
+        statusMessage: "Failed to calculate athlete status",
+      });
     }
 
     if (!data || (Array.isArray(data) && data.length === 0)) {
       throw createError({
         statusCode: 500,
-        statusMessage: 'No status data returned',
-      })
+        statusMessage: "No status data returned",
+      });
     }
 
     // Use type guard to validate response structure
-    const statusDataRaw = Array.isArray(data) ? data[0] : data
+    const statusDataRaw = Array.isArray(data) ? data[0] : data;
     if (!isAthleteStatusData(statusDataRaw)) {
       throw createError({
         statusCode: 500,
-        statusMessage: 'Invalid status data structure',
-      })
+        statusMessage: "Invalid status data structure",
+      });
     }
-    const statusData = statusDataRaw
+    const statusData = statusDataRaw;
 
     // Calculate composite score using the RPC results
     const result = calculateStatusScoreResult({
@@ -91,25 +91,25 @@ export default defineEventHandler(async (event) => {
       interactionFrequencyScore: statusData.interaction_frequency_score || 0,
       coachInterestScore: statusData.coach_interest_score || 0,
       academicStandingScore: statusData.academic_standing_score || 0,
-    })
+    });
 
-    return result
+    return result;
   } catch (err) {
-    if (err instanceof Error && err.message === 'Unauthorized') {
+    if (err instanceof Error && err.message === "Unauthorized") {
       throw createError({
         statusCode: 401,
-        statusMessage: 'Unauthorized',
-      })
+        statusMessage: "Unauthorized",
+      });
     }
 
-    if (err instanceof Error && 'statusCode' in err) {
-      throw err
+    if (err instanceof Error && "statusCode" in err) {
+      throw err;
     }
 
-    console.error('Error in GET /api/athlete/status:', err)
+    console.error("Error in GET /api/athlete/status:", err);
     throw createError({
       statusCode: 500,
-      statusMessage: 'Failed to fetch status',
-    })
+      statusMessage: "Failed to fetch status",
+    });
   }
-})
+});

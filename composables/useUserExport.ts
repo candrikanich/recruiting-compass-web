@@ -1,12 +1,12 @@
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
 interface ExportState {
-  isLoading: boolean
-  error: string | null
-  success: boolean
-  downloadUrl: string | null
-  expiresAt: string | null
-  message: string | null
+  isLoading: boolean;
+  error: string | null;
+  success: boolean;
+  downloadUrl: string | null;
+  expiresAt: string | null;
+  message: string | null;
 }
 
 /**
@@ -37,56 +37,56 @@ export const useUserExport = () => {
     downloadUrl: null,
     expiresAt: null,
     message: null,
-  })
+  });
 
-  const isLoading = computed(() => state.value.isLoading)
-  const error = computed(() => state.value.error)
-  const success = computed(() => state.value.success)
-  const downloadUrl = computed(() => state.value.downloadUrl)
-  const expiresAt = computed(() => state.value.expiresAt)
-  const message = computed(() => state.value.message)
+  const isLoading = computed(() => state.value.isLoading);
+  const error = computed(() => state.value.error);
+  const success = computed(() => state.value.success);
+  const downloadUrl = computed(() => state.value.downloadUrl);
+  const expiresAt = computed(() => state.value.expiresAt);
+  const message = computed(() => state.value.message);
 
   /**
    * Initiate data export
    * Generates ZIP file and returns download URL
    */
   const initiateExport = async (): Promise<void> => {
-    state.value.isLoading = true
-    state.value.error = null
-    state.value.success = false
+    state.value.isLoading = true;
+    state.value.error = null;
+    state.value.success = false;
 
     try {
-      const response = await $fetch('/api/user/export', {
-        method: 'POST',
+      const response = await $fetch("/api/user/export", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-      })
+      });
 
       if (response.success) {
-        state.value.downloadUrl = response.downloadUrl
-        state.value.expiresAt = response.expiresAt
-        state.value.message = response.message
-        state.value.success = true
+        state.value.downloadUrl = response.downloadUrl;
+        state.value.expiresAt = response.expiresAt;
+        state.value.message = response.message;
+        state.value.success = true;
       } else {
-        state.value.error = 'Failed to generate export'
+        state.value.error = "Failed to generate export";
       }
     } catch (err: any) {
-      const errorMessage = err.data?.message || err.message || 'Unknown error'
+      const errorMessage = err.data?.message || err.message || "Unknown error";
 
       // Handle rate limiting specifically
       if (err.status === 429) {
         state.value.error =
-          'You can only export your data once per day. Please try again tomorrow.'
+          "You can only export your data once per day. Please try again tomorrow.";
       } else {
-        state.value.error = errorMessage
+        state.value.error = errorMessage;
       }
 
-      console.error('Export failed', { error: errorMessage })
+      console.error("Export failed", { error: errorMessage });
     } finally {
-      state.value.isLoading = false
+      state.value.isLoading = false;
     }
-  }
+  };
 
   /**
    * Download the export file
@@ -94,26 +94,26 @@ export const useUserExport = () => {
    */
   const downloadExport = (): void => {
     if (!downloadUrl.value) {
-      state.value.error = 'No download URL available'
-      return
+      state.value.error = "No download URL available";
+      return;
     }
 
     try {
       // Create temporary link to trigger download
-      const link = document.createElement('a')
-      link.href = downloadUrl.value
+      const link = document.createElement("a");
+      link.href = downloadUrl.value;
       link.setAttribute(
-        'download',
-        `baseball-recruiting-tracker-export-${new Date().toISOString().split('T')[0]}.zip`
-      )
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+        "download",
+        `baseball-recruiting-tracker-export-${new Date().toISOString().split("T")[0]}.zip`,
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (err: any) {
-      state.value.error = 'Failed to download file'
-      console.error('Download failed', { error: err })
+      state.value.error = "Failed to download file";
+      console.error("Download failed", { error: err });
     }
-  }
+  };
 
   /**
    * Reset export state (e.g., for new export attempt)
@@ -126,15 +126,15 @@ export const useUserExport = () => {
       downloadUrl: null,
       expiresAt: null,
       message: null,
-    }
-  }
+    };
+  };
 
   /**
    * Clear error message
    */
   const clearError = (): void => {
-    state.value.error = null
-  }
+    state.value.error = null;
+  };
 
   return {
     // State
@@ -150,5 +150,5 @@ export const useUserExport = () => {
     downloadExport,
     reset,
     clearError,
-  }
-}
+  };
+};

@@ -35,6 +35,7 @@ This codebase strictly follows a composable-store-component separation:
 ## Composable Organization & Patterns
 
 **Core Infrastructure** (singleton/setup composables):
+
 - `useSupabase()` - Singleton Supabase client (ALWAYS use for DB queries, never import directly)
 - `useAuth()` - Authentication state & flows
 - `useAuthFetch()` - Authenticated HTTP requests with token refresh (use for external APIs)
@@ -42,50 +43,59 @@ This codebase strictly follows a composable-store-component separation:
 
 **Domain-Specific Data Composables** (organized by entity):
 
-*Schools (recruiting targets)*:
+_Schools (recruiting targets)_:
+
 - `useSchools()` - School CRUD, filtering, ranking, matching
 - `useSchoolMatching()` - Fit score calculation (90+ lines business logic)
 - `useSchoolLogos()` - Logo fetching with caching (TTL: 7 days)
 
-*Coaches (recruiting contacts)*:
+_Coaches (recruiting contacts)_:
+
 - `useCoaches()` - Coach CRUD, availability, responsiveness tracking
 - `useCoachAnalytics()` - Metrics by coach (response time, engagement)
 - `useCoachAvailability()` - Seasonal availability windows
 
-*Interactions (communication logging)*:
+_Interactions (communication logging)_:
+
 - `useInteractions()` - CRUD, filtering by type/direction/date
 - `useInteractionAttachments()` - File uploads with Supabase Storage
 - `useCommunication()` - SMS/Email templates & sending
 - `useCommunicationTemplates()` - Template management & variables
 
-*Offers & Opportunities*:
+_Offers & Opportunities_:
+
 - `useOffers()` - Offer tracking, scholarship comparisons
 - `useScholarshipCalculator()` - ROI calculations
 
-*Performance Tracking*:
+_Performance Tracking_:
+
 - `usePerformance()` - Metric logging (stats, tournaments, games)
 - `usePerformanceAnalytics()` - Aggregation & trend analysis
 - `usePhaseCalculation()` - Recruiting phase progression (showcase → recruit → committed)
 
-*Documents & Reports*:
+_Documents & Reports_:
+
 - `useDocuments()` - Highlight film, recruiting materials
 - `useDocumentSharing()` - Collaboration & permissions
 - `useReports()` - CSV/PDF export of recruiting data
 
-*Search & Filtering*:
+_Search & Filtering_:
+
 - `useSearch()` - Global search across coaches/schools
 - `useEntitySearch()` - Specialized entity lookups
 - `useCachedSearch()` - Search results caching
 - `useSearchFilters()` - Persistent filter state
 
-*External Data & Caching*:
+_External Data & Caching_:
+
 - `useCollegeData()` - College Scorecard API integration
 - `useCollegeScorecardCache()` - Cache scores by college (24hr TTL)
 - `useNcaaLookup()` - NCAA database lookups
 - `useNcaaCache()` - Cache NCAA results (persistent)
 - `useCollegeAutocomplete()` - Real-time college suggestions
 
-*Advanced Features*:
+_Advanced Features_:
+
 - `useEvents()` - Tournament/showcase tracking
 - `useFitScore()` - Multi-factor fit scoring
 - `useStatusScore()` - Athlete recruiting status
@@ -96,6 +106,7 @@ This codebase strictly follows a composable-store-component separation:
 - `useUserPreferences()` - User settings persistence
 
 **When adding new features**:
+
 1. Group related composables (don't create one per API endpoint)
 2. Extract shared logic (e.g., caching, error handling) into utilities
 3. Keep composables focused: data fetching, state management, or calculation—not all three
@@ -108,32 +119,38 @@ This codebase strictly follows a composable-store-component separation:
 
 ```typescript
 // ✅ PREFERRED: Use query service layer (Phase 1 refactor)
-import { querySelect, queryInsert, querySingle, isQuerySuccess } from '~/utils/supabaseQuery'
+import {
+  querySelect,
+  queryInsert,
+  querySingle,
+  isQuerySuccess,
+} from "~/utils/supabaseQuery";
 
 const { data: coaches, error } = await querySelect<Coach>(
-  'coaches',
+  "coaches",
   {
-    select: 'id, first_name, last_name, email',
+    select: "id, first_name, last_name, email",
     filters: { school_id: schoolId },
-    order: { column: 'last_name', ascending: true }
+    order: { column: "last_name", ascending: true },
   },
-  { context: 'fetchCoaches' }
-)
+  { context: "fetchCoaches" },
+);
 
 if (error) {
-  console.error(error.message)
-  return
+  console.error(error.message);
+  return;
 }
 
 // ❌ OLD: Direct Supabase queries (being deprecated)
 const { data, error } = await supabase
-  .from('coaches')
-  .select('id, first_name, last_name, email')
-  .eq('school_id', schoolId)
-  .order('last_name', { ascending: true })
+  .from("coaches")
+  .select("id, first_name, last_name, email")
+  .eq("school_id", schoolId)
+  .order("last_name", { ascending: true });
 ```
 
 **Query Service Layer Functions**:
+
 - `querySelect<T>()` - Fetch multiple records with filtering, ordering, limits
 - `querySingle<T>()` - Fetch single record; throws if not found
 - `queryInsert<T>()` - Insert one or more records; returns created data
@@ -143,6 +160,7 @@ const { data, error } = await supabase
 - `isQueryError()` - Type guard to check if query failed
 
 **Benefits**:
+
 - ✅ Centralized error logging (console + context)
 - ✅ Type-safe responses
 - ✅ Consistent error messages
@@ -154,6 +172,7 @@ const { data, error } = await supabase
 **Key stores**: `useUserStore`, `useCoachStore`, `useSchoolStore`, `useInteractionStore`, `usePerformanceStore`
 
 **Pattern** (from [stores/coaches.ts](stores/coaches.ts)):
+
 ```typescript
 export const useCoachStore = defineStore('coaches', {
   state: () => ({ coaches: [], filters: { schoolId: undefined }, isFetched: false }),
@@ -178,6 +197,7 @@ export const useCoachStore = defineStore('coaches', {
 ```
 
 **Rules**:
+
 - Never mutate state outside actions
 - Use getters for derived/filtered data
 - Add `isFetched` flags to prevent N+1 queries
@@ -188,14 +208,15 @@ export const useCoachStore = defineStore('coaches', {
 **File location**: `/components/[Domain]/ComponentName.vue`
 
 **Structure** (from composables/stores):
+
 ```vue
 <script setup lang="ts">
-const schoolStore = useSchoolStore()
-const { fetchSchools } = useSchools()
+const schoolStore = useSchoolStore();
+const { fetchSchools } = useSchools();
 
 onMounted(async () => {
-  await fetchSchools()
-})
+  await fetchSchools();
+});
 </script>
 
 <template>
@@ -208,6 +229,7 @@ onMounted(async () => {
 ```
 
 **Rules**:
+
 - Use `<script setup>` + Composition API only
 - Avoid direct state mutations; call store actions
 - Prop types: `withDefaults(defineProps<{ schoolId: string }>(), {})`
@@ -226,110 +248,126 @@ onMounted(async () => {
 ### Nitro API Endpoints
 
 **File-based routing**: Path maps directly to URL
+
 - `server/api/schools.get.ts` → `GET /api/schools`
 - `server/api/schools/[id].get.ts` → `GET /api/schools/:id`
 - `server/api/schools/[id]/fit-score.post.ts` → `POST /api/schools/:id/fit-score`
 - `server/api/coaches/search.get.ts` → `GET /api/coaches/search`
 
 **Endpoint pattern** (from existing code):
+
 ```typescript
 // server/api/schools/[id]/fit-score.post.ts
 export default defineEventHandler(async (event) => {
   // 1. Auth guard - verify user owns resource
-  const user = await requireAuth(event)
+  const user = await requireAuth(event);
   if (!user) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
+    throw createError({ statusCode: 401, message: "Unauthorized" });
   }
 
   // 2. Parse & validate request body
-  const body = await readBody(event)
-  const { athleticFit, academicFit, opportunityFit, personalFit } = body
-  
+  const body = await readBody(event);
+  const { athleticFit, academicFit, opportunityFit, personalFit } = body;
+
   // 3. Query database via Supabase
-  const supabase = useSupabase()
+  const supabase = useSupabase();
   const { data: school, error: schoolError } = await supabase
-    .from('schools')
-    .select('id, user_id')
-    .eq('id', event.context.params.id)
-    .eq('user_id', user.id)  // Ownership check
-    .single()
+    .from("schools")
+    .select("id, user_id")
+    .eq("id", event.context.params.id)
+    .eq("user_id", user.id) // Ownership check
+    .single();
 
   if (schoolError || !school) {
-    throw createError({ statusCode: 404, message: 'School not found' })
+    throw createError({ statusCode: 404, message: "School not found" });
   }
 
   // 4. Execute business logic
-  const fitScore = calculateFitScore({ athleticFit, academicFit, opportunityFit, personalFit })
+  const fitScore = calculateFitScore({
+    athleticFit,
+    academicFit,
+    opportunityFit,
+    personalFit,
+  });
 
   // 5. Update & return
   const { data, error: updateError } = await supabase
-    .from('schools')
+    .from("schools")
     .update({ fit_score: fitScore.score, fit_score_data: fitScore.breakdown })
-    .eq('id', school.id)
+    .eq("id", school.id)
     .select()
-    .single()
+    .single();
 
   if (updateError) {
-    throw createError({ statusCode: 500, message: 'Failed to save fit score' })
+    throw createError({ statusCode: 500, message: "Failed to save fit score" });
   }
 
-  return { success: true, data }
-})
+  return { success: true, data };
+});
 ```
 
 **HTTP Methods**:
+
 - `.get.ts`, `.post.ts`, `.put.ts`, `.delete.ts`, `.patch.ts`
 - Access via `$fetch('/api/endpoint', { method: 'POST', body: {...} })`
 
 **Request handling**:
+
 ```typescript
-const query = getQuery(event)           // ?foo=bar
-const body = await readBody(event)      // POST body (JSON)
-const headers = getHeader(event, 'auth') // Specific header
+const query = getQuery(event); // ?foo=bar
+const body = await readBody(event); // POST body (JSON)
+const headers = getHeader(event, "auth"); // Specific header
 ```
 
 **Response handling**:
+
 ```typescript
 // Success: return object (auto-serialized to JSON)
-return { data: result, success: true }
+return { data: result, success: true };
 
 // Error: throw createError
-throw createError({ 
-  statusCode: 400, 
-  statusMessage: 'Bad Request',
-  data: { field: 'email', message: 'Invalid format' }
-})
+throw createError({
+  statusCode: 400,
+  statusMessage: "Bad Request",
+  data: { field: "email", message: "Invalid format" },
+});
 
 // Redirect
-await sendRedirect(event, '/new-url', 301)
+await sendRedirect(event, "/new-url", 301);
 
 // Stream binary (for exports)
-setHeader(event, 'Content-Type', 'application/pdf')
-send(event, pdfBuffer)
+setHeader(event, "Content-Type", "application/pdf");
+send(event, pdfBuffer);
 ```
 
 ### Client Consumption of API Routes
 
 From components or composables:
+
 ```typescript
 // GET request
-const { data, pending, error } = await $fetch('/api/coaches', {
-  method: 'GET',
-  query: { schoolId: 'school-123' }
-})
+const { data, pending, error } = await $fetch("/api/coaches", {
+  method: "GET",
+  query: { schoolId: "school-123" },
+});
 
 // POST request
-const result = await $fetch('/api/schools/[id]/fit-score', {
-  method: 'POST',
-  body: { athleticFit: 30, academicFit: 20, opportunityFit: 15, personalFit: 10 }
-})
+const result = await $fetch("/api/schools/[id]/fit-score", {
+  method: "POST",
+  body: {
+    athleticFit: 30,
+    academicFit: 20,
+    opportunityFit: 15,
+    personalFit: 10,
+  },
+});
 
 // Error handling
 try {
-  await $fetch('/api/data')
+  await $fetch("/api/data");
 } catch (error) {
-  if (error.data?.statusCode === 401) console.log('Unauthorized')
-  if (error.data?.statusCode === 404) console.log('Not found')
+  if (error.data?.statusCode === 401) console.log("Unauthorized");
+  if (error.data?.statusCode === 404) console.log("Not found");
 }
 ```
 
@@ -338,29 +376,31 @@ try {
 ### Unit Tests (Vitest)
 
 **Test setup** (from [tests/unit/composables/useCoaches.spec.ts](tests/unit/composables/useCoaches.spec.ts)):
-```typescript
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
-import { useCoachStore } from '~/stores/coaches'
 
-describe('useCoachStore', () => {
-  let coachStore: ReturnType<typeof useCoachStore>
+```typescript
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { setActivePinia, createPinia } from "pinia";
+import { useCoachStore } from "~/stores/coaches";
+
+describe("useCoachStore", () => {
+  let coachStore: ReturnType<typeof useCoachStore>;
   beforeEach(() => {
-    setActivePinia(createPinia())
-    coachStore = useCoachStore()
-  })
-  it('should fetch coaches', async () => {
+    setActivePinia(createPinia());
+    coachStore = useCoachStore();
+  });
+  it("should fetch coaches", async () => {
     // Mock supabase
-    mockSupabase.from.mockReturnValue(mockQuery)
-    await coachStore.fetchCoaches('school-1')
-    expect(coachStore.coaches).toHaveLength(1)
-  })
-})
+    mockSupabase.from.mockReturnValue(mockQuery);
+    await coachStore.fetchCoaches("school-1");
+    expect(coachStore.coaches).toHaveLength(1);
+  });
+});
 ```
 
 **Mock pattern**: Mock `useSupabase()` with chained query methods (`select().eq().order()`)
 
 **Mocking Supabase queries**:
+
 ```typescript
 const mockQuery = {
   select: vi.fn().mockReturnThis(),
@@ -389,17 +429,18 @@ vi.mock('~/composables/useSupabase', () => ({
 **File location**: `/tests/e2e/`
 
 ```typescript
-import { test, expect } from '@playwright/test'
+import { test, expect } from "@playwright/test";
 
-test('should create a coach', async ({ page }) => {
-  await page.goto('/coaches')
-  await page.fill('[data-testid="coach-name"]', 'John Smith')
-  await page.click('[data-testid="create-btn"]')
-  await expect(page.locator('text=John Smith')).toBeVisible()
-})
+test("should create a coach", async ({ page }) => {
+  await page.goto("/coaches");
+  await page.fill('[data-testid="coach-name"]', "John Smith");
+  await page.click('[data-testid="create-btn"]');
+  await expect(page.locator("text=John Smith")).toBeVisible();
+});
 ```
 
 **Debugging E2E tests**:
+
 ```bash
 npm run dev                    # Start app on http://localhost:3003
 npm run test:e2e:ui           # Run Playwright in UI mode
@@ -407,6 +448,7 @@ npm run test:e2e:ui           # Run Playwright in UI mode
 ```
 
 **Local vs. CI**:
+
 - Local: Chromium only, no retries (fast feedback)
 - CI: All 3 browsers (Chromium, Firefox, WebKit), 2 retries (stability)
 
@@ -427,29 +469,30 @@ Use `useAuthFetch()` for external APIs that require JWT token + refresh flow:
 
 ```typescript
 const useMyExternalAPI = () => {
-  const { $fetch: authFetch } = useAuthFetch()
-  
+  const { $fetch: authFetch } = useAuthFetch();
+
   const fetchData = async () => {
     try {
       // Token is automatically injected; refreshed if expired
-      const data = await authFetch('/external-api/data', {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
-      })
-      return data
+      const data = await authFetch("/external-api/data", {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      return data;
     } catch (error) {
       // 401 triggers automatic refresh, then retries
       if (error.response?.status === 403) {
-        console.error('Forbidden - insufficient permissions')
+        console.error("Forbidden - insufficient permissions");
       }
     }
-  }
-  
-  return { fetchData }
-}
+  };
+
+  return { fetchData };
+};
 ```
 
 **When to use**:
+
 - NCAA database API lookups
 - College Scorecard API (requires API key in header)
 - Any external service requiring authentication
@@ -464,13 +507,13 @@ Nitro provides CSRF protection automatically for state-changing endpoints:
 
 // In composables that call state-changing endpoints:
 const createCoach = async (data: CoachData) => {
-  const result = await $fetch('/api/coaches', {
-    method: 'POST',
-    body: data
+  const result = await $fetch("/api/coaches", {
+    method: "POST",
+    body: data,
     // CSRF token injected automatically by Nitro
-  })
-  return result
-}
+  });
+  return result;
+};
 ```
 
 **No manual CSRF handling needed** - Nitro handles it transparently.
@@ -480,16 +523,17 @@ const createCoach = async (data: CoachData) => {
 Use `useDocumentSharing()` for managing who can view/edit documents:
 
 ```typescript
-const { documents, shareDocument, revokeAccess } = useDocumentSharing()
+const { documents, shareDocument, revokeAccess } = useDocumentSharing();
 
 // Share document with another user
-await shareDocument('doc-123', 'user-456', 'view')  // 'view' or 'edit'
+await shareDocument("doc-123", "user-456", "view"); // 'view' or 'edit'
 
 // Revoke access
-await revokeAccess('doc-123', 'user-456')
+await revokeAccess("doc-123", "user-456");
 
 // Check if user can edit
-const canEdit = (doc) => doc.shared_by?.includes(currentUser.id) || doc.owner_id === currentUser.id
+const canEdit = (doc) =>
+  doc.shared_by?.includes(currentUser.id) || doc.owner_id === currentUser.id;
 ```
 
 **Storage**: Documents stored in Supabase Storage (filesystem-like) + permissions table
@@ -500,34 +544,35 @@ Use `useFormValidation()` for all file and form validation (Phase 1 refactor):
 
 ```typescript
 // ✅ UNIFIED VALIDATION: Form + Files
-const { validate, validateFile, errors, fileErrors } = useFormValidation()
+const { validate, validateFile, errors, fileErrors } = useFormValidation();
 
 // Form validation
 const formSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
-})
+});
 
-const validated = await validate(formData, formSchema)
+const validated = await validate(formData, formSchema);
 if (!validated) {
-  console.log(errors.value) // Show to user
-  return
+  console.log(errors.value); // Show to user
+  return;
 }
 
 // File validation
 try {
-  const file = input.files?.[0]
-  validateFile(file, 'transcript') // Validates MIME type, extension, size
+  const file = input.files?.[0];
+  validateFile(file, "transcript"); // Validates MIME type, extension, size
 } catch (err) {
-  console.log(err.message) // Show to user
+  console.log(err.message); // Show to user
 }
 
 // ❌ OLD: Separate validation composables (being consolidated)
-const formValidation = useValidation(schema)
-const fileValidation = useDocumentValidation() // Deprecated
+const formValidation = useValidation(schema);
+const fileValidation = useDocumentValidation(); // Deprecated
 ```
 
 **Validation Features**:
+
 - Form validation via Zod schemas
 - File type validation (MIME types + extensions)
 - File size limits per document type
@@ -536,6 +581,7 @@ const fileValidation = useDocumentValidation() // Deprecated
 - Type-safe error handling
 
 **Supported Document Types**:
+
 - `highlight_video` - MP4, MOV, AVI (up to 500MB)
 - `transcript` - PDF, TXT (up to 10MB)
 - `resume` - PDF, DOC, DOCX (up to 5MB)
@@ -552,24 +598,24 @@ Cache NCAA lookups locally; never expires (NCAA data is static):
 ```typescript
 // composables/useNcaaCache.ts
 const useNcaaCache = () => {
-  const cached = ref<Record<string, NcaaTeam>>({})
-  
+  const cached = ref<Record<string, NcaaTeam>>({});
+
   const lookup = async (teamId: string) => {
     // Check cache first
-    if (cached.value[teamId]) return cached.value[teamId]
-    
+    if (cached.value[teamId]) return cached.value[teamId];
+
     // Fetch from API
-    const team = await useNcaaLookup().fetch(teamId)
-    
+    const team = await useNcaaLookup().fetch(teamId);
+
     // Store in cache + localStorage
-    cached.value[teamId] = team
-    localStorage.setItem(`ncaa-${teamId}`, JSON.stringify(team))
-    
-    return team
-  }
-  
-  return { lookup, cached }
-}
+    cached.value[teamId] = team;
+    localStorage.setItem(`ncaa-${teamId}`, JSON.stringify(team));
+
+    return team;
+  };
+
+  return { lookup, cached };
+};
 ```
 
 **Use when**: Looking up college names, NCAA divisions, conference memberships
@@ -581,29 +627,29 @@ College data changes periodically; cache with 24-hour expiration:
 ```typescript
 // composables/useCollegeScorecardCache.ts
 const useCollegeScorecardCache = () => {
-  const cache = new Map<string, { data: any; expires: number }>()
-  
+  const cache = new Map<string, { data: any; expires: number }>();
+
   const fetch = async (collegeId: string) => {
-    const cached = cache.get(collegeId)
-    
+    const cached = cache.get(collegeId);
+
     if (cached && Date.now() < cached.expires) {
-      return cached.data
+      return cached.data;
     }
-    
+
     // Fetch fresh data
-    const data = await $fetch(`/api/colleges/${collegeId}`)
-    
+    const data = await $fetch(`/api/colleges/${collegeId}`);
+
     // Cache for 24 hours
     cache.set(collegeId, {
       data,
-      expires: Date.now() + 24 * 60 * 60 * 1000
-    })
-    
-    return data
-  }
-  
-  return { fetch }
-}
+      expires: Date.now() + 24 * 60 * 60 * 1000,
+    });
+
+    return data;
+  };
+
+  return { fetch };
+};
 ```
 
 **Use when**: Fetching admission rates, enrollment, academic stats, location
@@ -615,32 +661,32 @@ Global search uses debouncing + result caching to avoid redundant queries:
 ```typescript
 // composables/useCachedSearch.ts
 const useCachedSearch = () => {
-  const query = ref('')
-  const results = ref<SearchResult[]>([])
-  const cache = new Map<string, SearchResult[]>()
-  let timeoutId: ReturnType<typeof setTimeout>
-  
+  const query = ref("");
+  const results = ref<SearchResult[]>([]);
+  const cache = new Map<string, SearchResult[]>();
+  let timeoutId: ReturnType<typeof setTimeout>;
+
   const search = (q: string) => {
     // Check cache first
     if (cache.has(q)) {
-      results.value = cache.get(q)!
-      return
+      results.value = cache.get(q)!;
+      return;
     }
-    
+
     // Debounce: cancel previous request
-    clearTimeout(timeoutId)
-    query.value = q
-    
+    clearTimeout(timeoutId);
+    query.value = q;
+
     // Wait 300ms for user to stop typing
     timeoutId = setTimeout(async () => {
-      const res = await $fetch('/api/search', { query: { q } })
-      cache.set(q, res)
-      results.value = res
-    }, 300)
-  }
-  
-  return { query, results, search }
-}
+      const res = await $fetch("/api/search", { query: { q } });
+      cache.set(q, res);
+      results.value = res;
+    }, 300);
+  };
+
+  return { query, results, search };
+};
 ```
 
 **Use when**: Auto-complete, global search across coaches/schools
@@ -656,7 +702,7 @@ async fetchCoaches(schoolId: string) {
   if (this.isFetchedBySchools[schoolId]) {
     return this.coachesBySchool(schoolId)
   }
-  
+
   this.loading = true
   try {
     const coaches = await $fetch(`/api/schools/${schoolId}/coaches`)
@@ -669,6 +715,7 @@ async fetchCoaches(schoolId: string) {
 ```
 
 **Pattern**:
+
 - Track `isFetched` (boolean) or `isFetchedBySchools` (map)
 - Check guard before each fetch
 - Set flag after successful fetch
@@ -677,14 +724,17 @@ async fetchCoaches(schoolId: string) {
 ## Code Quality Standards
 
 **TypeScript**: Strict mode enforced, no `any` except in tests
+
 - Interfaces for data models: `interface Coach { id: string; name: string }`
 - Use `as const` for enum-like values
 
 **Styling**: TailwindCSS utilities only, no arbitrary CSS
+
 - Global styles in `assets/css/main.css`
 - Component-scoped `<style scoped>` when necessary
 
 **Naming**:
+
 - Composables: `useXxxName` (e.g., `useSchools`, `useCoachAnalytics`)
 - Stores: `useXxxStore` (e.g., `useSchoolStore`)
 - Components: PascalCase domain prefix (e.g., `CoachCard`, `SchoolSearch`)
@@ -693,6 +743,7 @@ async fetchCoaches(schoolId: string) {
 ## Environment & Config
 
 **Required env vars** (`.env.local`):
+
 ```env
 NUXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NUXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
@@ -703,14 +754,14 @@ NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY=your_key
 
 ## Common Pitfalls & Solutions
 
-| Issue | Solution |
-|-------|----------|
-| "Supabase not defined" error | Always use `useSupabase()` composable, never import client directly |
-| Store state not updating | Never mutate state outside actions; call actions from components |
-| N+1 query problem | Check `isFetched` / `isFetchedBySchools` guard before fetching |
-| Component re-rendering too much | Use `storeToRefs()` to destructure store getters (maintains reactivity) |
-| Type errors in Supabase queries | Import types from `~/types/models`; use `.select()` with explicit columns |
-| Tests failing with "module not found" | Mock composables in test setup; use `vi.mock()` at top of test file |
+| Issue                                 | Solution                                                                  |
+| ------------------------------------- | ------------------------------------------------------------------------- |
+| "Supabase not defined" error          | Always use `useSupabase()` composable, never import client directly       |
+| Store state not updating              | Never mutate state outside actions; call actions from components          |
+| N+1 query problem                     | Check `isFetched` / `isFetchedBySchools` guard before fetching            |
+| Component re-rendering too much       | Use `storeToRefs()` to destructure store getters (maintains reactivity)   |
+| Type errors in Supabase queries       | Import types from `~/types/models`; use `.select()` with explicit columns |
+| Tests failing with "module not found" | Mock composables in test setup; use `vi.mock()` at top of test file       |
 
 ## Deployment
 
@@ -733,6 +784,7 @@ NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY=your_key
 ### Phase 2: Composable Consolidation (NEW)
 
 **Completed:**
+
 - ✅ Query service layer (`utils/supabaseQuery.ts`)
 - ✅ Unified validation (`composables/useFormValidation.ts`)
 - ✅ Consolidated documents (`composables/useDocumentsConsolidated.ts`)
@@ -746,15 +798,16 @@ NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY=your_key
    - Provides: CRUD operations, file uploads, version management, sharing/permissions
    - Features: Integrated with `useFormValidation` for file validation, query service layer
    - Migration: Old composables still available; new code uses consolidated version
-   
+
    ```typescript
    // Before (split across 3 composables)
-   const { documents, fetchDocuments } = useDocumentFetch()
-   const { uploadDocument } = useDocumentUpload()
-   const { shareDocument } = useDocumentSharing()
-   
+   const { documents, fetchDocuments } = useDocumentFetch();
+   const { uploadDocument } = useDocumentUpload();
+   const { shareDocument } = useDocumentSharing();
+
    // After (consolidated)
-   const { documents, fetchDocuments, uploadDocument, shareDocument } = useDocumentsConsolidated()
+   const { documents, fetchDocuments, uploadDocument, shareDocument } =
+     useDocumentsConsolidated();
    ```
 
 2. **useSearchConsolidated()** - Unified search with filtering & caching
@@ -762,21 +815,21 @@ NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY=your_key
    - Provides: Multi-entity search (schools, coaches, interactions, metrics), filtering, debouncing, result caching
    - Features: Fuzzy search via Fuse.js, integrated filters, cache TTL (5min), auto re-search on filter change
    - Migration: Old composables still available; new code uses consolidated version
-   
+
    ```typescript
    // Before (split across 3 composables)
-   const { performSearch, schoolResults } = useEntitySearch()
-   const { filters, applyFilter } = useSearchFilters()
-   const { getSchoolSuggestions } = useCachedSearch()
-   
+   const { performSearch, schoolResults } = useEntitySearch();
+   const { filters, applyFilter } = useSearchFilters();
+   const { getSchoolSuggestions } = useCachedSearch();
+
    // After (consolidated)
-   const { 
-     performSearch, 
-     schoolResults, 
-     filters, 
-     applyFilter, 
-     getSchoolSuggestions 
-   } = useSearchConsolidated()
+   const {
+     performSearch,
+     schoolResults,
+     filters,
+     applyFilter,
+     getSchoolSuggestions,
+   } = useSearchConsolidated();
    ```
 
 ### Phase 1 Refactoring: Migration Guide
@@ -804,51 +857,54 @@ NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY=your_key
 ### Migration Examples
 
 **Before (Direct Supabase)**:
+
 ```typescript
 // composables/useCoaches.ts
-const coaches = ref([])
-const error = ref(null)
+const coaches = ref([]);
+const error = ref(null);
 
 const fetchCoaches = async (schoolId: string) => {
   try {
     const { data, err } = await supabase
-      .from('coaches')
-      .select('*')
-      .eq('school_id', schoolId)
-    
-    if (err) throw err
-    coaches.value = data
+      .from("coaches")
+      .select("*")
+      .eq("school_id", schoolId);
+
+    if (err) throw err;
+    coaches.value = data;
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Error'
+    error.value = err instanceof Error ? err.message : "Error";
   }
-}
+};
 ```
 
 **After (Query Service)**:
+
 ```typescript
 // composables/useCoaches.ts
-import { querySelect } from '~/utils/supabaseQuery'
+import { querySelect } from "~/utils/supabaseQuery";
 
-const coaches = ref([])
-const error = ref(null)
+const coaches = ref([]);
+const error = ref(null);
 
 const fetchCoaches = async (schoolId: string) => {
   const { data, error: err } = await querySelect<Coach>(
-    'coaches',
+    "coaches",
     { filters: { school_id: schoolId } },
-    { context: 'fetchCoaches' }
-  )
-  
+    { context: "fetchCoaches" },
+  );
+
   if (err) {
-    error.value = err.message
-    return
+    error.value = err.message;
+    return;
   }
-  
-  coaches.value = data
-}
+
+  coaches.value = data;
+};
 ```
 
 **Benefits**:
+
 - ✅ 30% less boilerplate per composable
 - ✅ Consistent error handling
 - ✅ Automatic console logging

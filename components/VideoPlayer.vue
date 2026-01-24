@@ -14,20 +14,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from "vue";
 
 interface Props {
-  src: string
+  src: string;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
-const error = ref('')
-const videoRef = ref<HTMLVideoElement | null>(null)
+const error = ref("");
+const videoRef = ref<HTMLVideoElement | null>(null);
 
 const handleError = () => {
-  error.value = 'Error loading video. Please check the file format or try a different video.'
-}
+  error.value =
+    "Error loading video. Please check the file format or try a different video.";
+};
 </script>
 
 <style scoped>

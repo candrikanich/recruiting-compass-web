@@ -2,8 +2,18 @@
   <div class="bg-white rounded-lg shadow p-6">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        <svg
+          class="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+          />
         </svg>
         Filters
       </h3>
@@ -18,12 +28,17 @@
     </div>
 
     <!-- Schools Filters -->
-    <div v-if="searchType === 'all' || searchType === 'schools'" class="space-y-4">
+    <div
+      v-if="searchType === 'all' || searchType === 'schools'"
+      class="space-y-4"
+    >
       <h4 class="font-semibold text-gray-900 text-sm">School Filters</h4>
 
       <!-- Division -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Division</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Division</label
+        >
         <select
           :value="filters.schools.division"
           @change="updateFilter('schools', 'division', getSelectValue($event))"
@@ -40,7 +55,9 @@
 
       <!-- State -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >State</label
+        >
         <input
           :value="filters.schools.state"
           @input="updateFilter('schools', 'state', getInputValue($event))"
@@ -59,7 +76,10 @@
           id="schools-verified"
           class="h-4 w-4 text-blue-600 rounded"
         />
-        <label for="schools-verified" class="ml-2 text-sm font-medium text-gray-700">
+        <label
+          for="schools-verified"
+          class="ml-2 text-sm font-medium text-gray-700"
+        >
           Verified Schools Only
         </label>
       </div>
@@ -68,12 +88,17 @@
     </div>
 
     <!-- Coaches Filters -->
-    <div v-if="searchType === 'all' || searchType === 'coaches'" class="space-y-4">
+    <div
+      v-if="searchType === 'all' || searchType === 'coaches'"
+      class="space-y-4"
+    >
       <h4 class="font-semibold text-gray-900 text-sm">Coach Filters</h4>
 
       <!-- Sport -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Sport</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Sport</label
+        >
         <select
           :value="filters.coaches.sport"
           @change="updateFilter('coaches', 'sport', getSelectValue($event))"
@@ -93,7 +118,9 @@
         </label>
         <input
           :value="filters.coaches.responseRate"
-          @input="updateFilter('coaches', 'responseRate', getInputNumber($event))"
+          @input="
+            updateFilter('coaches', 'responseRate', getInputNumber($event))
+          "
           type="range"
           min="0"
           max="100"
@@ -111,7 +138,10 @@
           id="coaches-verified"
           class="h-4 w-4 text-blue-600 rounded"
         />
-        <label for="coaches-verified" class="ml-2 text-sm font-medium text-gray-700">
+        <label
+          for="coaches-verified"
+          class="ml-2 text-sm font-medium text-gray-700"
+        >
           Verified Coaches Only
         </label>
       </div>
@@ -120,15 +150,22 @@
     </div>
 
     <!-- Interaction Filters -->
-    <div v-if="searchType === 'all' || searchType === 'interactions'" class="space-y-4">
+    <div
+      v-if="searchType === 'all' || searchType === 'interactions'"
+      class="space-y-4"
+    >
       <h4 class="font-semibold text-gray-900 text-sm">Interaction Filters</h4>
 
       <!-- Sentiment -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Sentiment</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Sentiment</label
+        >
         <select
           :value="filters.interactions.sentiment"
-          @change="updateFilter('interactions', 'sentiment', getSelectValue($event))"
+          @change="
+            updateFilter('interactions', 'sentiment', getSelectValue($event))
+          "
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Sentiments</option>
@@ -140,10 +177,14 @@
 
       <!-- Direction -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Direction</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Direction</label
+        >
         <select
           :value="filters.interactions.direction"
-          @change="updateFilter('interactions', 'direction', getSelectValue($event))"
+          @change="
+            updateFilter('interactions', 'direction', getSelectValue($event))
+          "
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Directions</option>
@@ -155,10 +196,14 @@
       <!-- Date Range -->
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">From</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >From</label
+          >
           <input
             :value="filters.interactions.dateFrom"
-            @input="updateFilter('interactions', 'dateFrom', getInputValue($event))"
+            @input="
+              updateFilter('interactions', 'dateFrom', getInputValue($event))
+            "
             type="date"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
@@ -167,7 +212,9 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">To</label>
           <input
             :value="filters.interactions.dateTo"
-            @input="updateFilter('interactions', 'dateTo', getInputValue($event))"
+            @input="
+              updateFilter('interactions', 'dateTo', getInputValue($event))
+            "
             type="date"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
@@ -178,15 +225,22 @@
     </div>
 
     <!-- Metrics Filters -->
-    <div v-if="searchType === 'all' || searchType === 'metrics'" class="space-y-4">
+    <div
+      v-if="searchType === 'all' || searchType === 'metrics'"
+      class="space-y-4"
+    >
       <h4 class="font-semibold text-gray-900 text-sm">Metric Filters</h4>
 
       <!-- Metric Type -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Metric Type</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Metric Type</label
+        >
         <select
           :value="filters.metrics.metricType"
-          @change="updateFilter('metrics', 'metricType', getSelectValue($event))"
+          @change="
+            updateFilter('metrics', 'metricType', getSelectValue($event))
+          "
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Metrics</option>
@@ -203,7 +257,9 @@
       <!-- Value Range -->
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Min Value</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Min Value</label
+          >
           <input
             :value="filters.metrics.minValue"
             @input="updateFilter('metrics', 'minValue', getInputNumber($event))"
@@ -213,7 +269,9 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Max Value</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Max Value</label
+          >
           <input
             :value="filters.metrics.maxValue"
             @input="updateFilter('metrics', 'maxValue', getInputNumber($event))"
@@ -229,40 +287,40 @@
 
 <script setup lang="ts">
 interface Props {
-  filters: any
-  searchType: string
-  isFiltering: boolean
+  filters: any;
+  searchType: string;
+  isFiltering: boolean;
 }
 
 const emit = defineEmits<{
-  'update:filters': [filters: any]
-  'clear-filters': []
-}>()
+  "update:filters": [filters: any];
+  "clear-filters": [];
+}>();
 
-defineProps<Props>()
+defineProps<Props>();
 
 const updateFilter = (category: string, filterName: string, value: any) => {
-  emit('update:filters', { category, filterName, value })
-}
+  emit("update:filters", { category, filterName, value });
+};
 
 const clearAllFilters = () => {
-  emit('clear-filters')
-}
+  emit("clear-filters");
+};
 
 // Helper methods for type-safe event handling
 const getSelectValue = (event: Event): string => {
-  return (event.target as HTMLSelectElement).value
-}
+  return (event.target as HTMLSelectElement).value;
+};
 
 const getInputValue = (event: Event): string => {
-  return (event.target as HTMLInputElement).value
-}
+  return (event.target as HTMLInputElement).value;
+};
 
 const getInputChecked = (event: Event): boolean => {
-  return (event.target as HTMLInputElement).checked
-}
+  return (event.target as HTMLInputElement).checked;
+};
 
 const getInputNumber = (event: Event): number => {
-  return parseFloat((event.target as HTMLInputElement).value)
-}
+  return parseFloat((event.target as HTMLInputElement).value);
+};
 </script>

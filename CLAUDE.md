@@ -82,6 +82,7 @@ Supabase Client / API Endpoint ← External data source
 ```
 
 **Three-layer principle:**
+
 1. **Composables** (useXxx) - Fetch data, orchestrate logic, return refs/computed
 2. **Stores** (Pinia) - Centralized state, getters, actions for mutations
 3. **Components** - Consume composables and stores, handle UI/events only
@@ -101,6 +102,7 @@ Actions handle all mutations; components read from getters. Avoid direct state m
 ### API Structure
 
 Nitro API endpoints at `/server/api/**` follow file-based routing:
+
 - `server/api/schools/[id]/fit-score.get.ts` → `GET /api/schools/:id/fit-score`
 - `server/api/suggestions/index.get.ts` → `GET /api/suggestions`
 - `server/api/athlete/phase/advance.post.ts` → `POST /api/athlete/phase/advance`
@@ -113,30 +115,31 @@ Composables return refs, computed properties, and async functions. Example:
 
 ```typescript
 export const useMyFeature = () => {
-  const data = ref<MyType[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const data = ref<MyType[]>([]);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
   const fetchData = async () => {
-    loading.value = true
+    loading.value = true;
     try {
-      data.value = await $fetch('/api/my-data')
+      data.value = await $fetch("/api/my-data");
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Error'
+      error.value = e instanceof Error ? e.message : "Error";
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
-  onMounted(fetchData)
+  onMounted(fetchData);
 
-  return { data, loading, error, fetchData }
-}
+  return { data, loading, error, fetchData };
+};
 ```
 
 Used in components:
+
 ```typescript
-const { data, loading, fetchData } = useMyFeature()
+const { data, loading, fetchData } = useMyFeature();
 ```
 
 ## Configuration & Environment
@@ -208,8 +211,8 @@ E2E baseURL: `http://localhost:3003`
 Always use `useSupabase()` composable - ensures singleton client:
 
 ```typescript
-const supabase = useSupabase()
-const { data, error } = await supabase.from('coaches').select('*')
+const supabase = useSupabase();
+const { data, error } = await supabase.from("coaches").select("*");
 ```
 
 ### Error Handling
@@ -218,10 +221,10 @@ Always wrap async operations in try/catch; set error state:
 
 ```typescript
 try {
-  data.value = await fetchData()
+  data.value = await fetchData();
 } catch (e) {
-  error.value = e instanceof Error ? e.message : 'Unknown error'
-  console.error(error.value)
+  error.value = e instanceof Error ? e.message : "Unknown error";
+  console.error(error.value);
 }
 ```
 
@@ -237,7 +240,8 @@ Components under `/components` are auto-imported by Nuxt; no explicit import nee
 
 ```vue
 <template>
-  <CoachCard :coach="coach" />  <!-- auto-imported -->
+  <CoachCard :coach="coach" />
+  <!-- auto-imported -->
 </template>
 ```
 
@@ -247,10 +251,10 @@ Mutate state only in store actions. Never modify state directly in components:
 
 ```typescript
 // ❌ Wrong - direct mutation
-coachStore.coaches.push(newCoach)
+coachStore.coaches.push(newCoach);
 
 // ✅ Right - use action
-await coachStore.createCoach(schoolId, coachData)
+await coachStore.createCoach(schoolId, coachData);
 ```
 
 ## Testing Guidelines
@@ -263,15 +267,15 @@ await coachStore.createCoach(schoolId, coachData)
 - Memory optimizations for CI (2 max workers, isolated tests)
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest'
-import { useMyComposable } from '~/composables/useMyComposable'
+import { describe, it, expect, beforeEach } from "vitest";
+import { useMyComposable } from "~/composables/useMyComposable";
 
-describe('useMyComposable', () => {
-  it('should return expected value', () => {
-    const { data } = useMyComposable()
-    expect(data.value).toBe('expected')
-  })
-})
+describe("useMyComposable", () => {
+  it("should return expected value", () => {
+    const { data } = useMyComposable();
+    expect(data.value).toBe("expected");
+  });
+});
 ```
 
 ### Playwright E2E Tests
@@ -282,14 +286,14 @@ describe('useMyComposable', () => {
 - Retries 2x in CI, no retry locally
 
 ```typescript
-import { test, expect } from '@playwright/test'
+import { test, expect } from "@playwright/test";
 
-test('should create a coach', async ({ page }) => {
-  await page.goto('/coaches')
-  await page.fill('[data-testid="coach-name"]', 'John Smith')
-  await page.click('[data-testid="create-btn"]')
-  await expect(page.locator('text=John Smith')).toBeVisible()
-})
+test("should create a coach", async ({ page }) => {
+  await page.goto("/coaches");
+  await page.fill('[data-testid="coach-name"]', "John Smith");
+  await page.click('[data-testid="create-btn"]');
+  await expect(page.locator("text=John Smith")).toBeVisible();
+});
 ```
 
 ### Running Tests Before Committing
@@ -306,6 +310,7 @@ npm run test:e2e      # E2E tests should pass
 ## Deployment
 
 Deployed to **Netlify** from `main` branch:
+
 - Build command: `npm run build`
 - Publish directory: `.nuxt/dist`
 - Environment variables: Set in Netlify UI
@@ -323,23 +328,23 @@ Client initialized once in `useSupabase()` composable; reused across app via sin
 ```typescript
 // Select with filters
 const { data } = await supabase
-  .from('coaches')
-  .select('id, first_name, last_name, email')
-  .eq('school_id', schoolId)
-  .order('last_name', { ascending: true })
+  .from("coaches")
+  .select("id, first_name, last_name, email")
+  .eq("school_id", schoolId)
+  .order("last_name", { ascending: true });
 
 // Insert with return
 const { data: newCoach, error } = await supabase
-  .from('coaches')
+  .from("coaches")
   .insert([{ ...coachData }])
   .select()
-  .single()
+  .single();
 
 // Update specific fields
 await supabase
-  .from('coaches')
+  .from("coaches")
   .update({ responsiveness_score: 8.5 })
-  .eq('id', coachId)
+  .eq("id", coachId);
 ```
 
 ### Type Definitions

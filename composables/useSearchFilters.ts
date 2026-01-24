@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
 /**
  * Composable for search filter management
@@ -25,88 +25,96 @@ import { ref, computed } from 'vue'
  * @returns Object with filter state and management methods
  */
 export const useSearchFilters = () => {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     console.warn(
-      '[DEPRECATED] useSearchFilters is deprecated as of Phase 4. ' +
-      'Use useSearchConsolidated() instead.\n' +
-      'Migration guide: See DEPRECATION_AUDIT.md'
-    )
+      "[DEPRECATED] useSearchFilters is deprecated as of Phase 4. " +
+        "Use useSearchConsolidated() instead.\n" +
+        "Migration guide: See DEPRECATION_AUDIT.md",
+    );
   }
 
   // Filter state
   const filters = ref({
     schools: {
-      division: '' as string,
-      state: '' as string,
+      division: "" as string,
+      state: "" as string,
       verified: false as boolean | null,
     },
     coaches: {
-      sport: '' as string,
+      sport: "" as string,
       responseRate: 0 as number,
       verified: false as boolean | null,
     },
     interactions: {
-      sentiment: '' as string,
-      direction: '' as string,
-      dateFrom: '' as string,
-      dateTo: '' as string,
+      sentiment: "" as string,
+      direction: "" as string,
+      dateFrom: "" as string,
+      dateTo: "" as string,
     },
     metrics: {
-      metricType: '' as string,
+      metricType: "" as string,
       minValue: 0 as number,
       maxValue: 100 as number,
     },
-  })
+  });
 
   /**
    * Computed: whether any filters are active
    */
   const isFiltering = computed(() => {
-    return Object.values(filters.value).some(filterGroup =>
-      Object.values(filterGroup).some(value => value !== '' && value !== 0 && value !== false && value !== null)
-    )
-  })
+    return Object.values(filters.value).some((filterGroup) =>
+      Object.values(filterGroup).some(
+        (value) =>
+          value !== "" && value !== 0 && value !== false && value !== null,
+      ),
+    );
+  });
 
   /**
    * Apply a single filter
    */
   const applyFilter = (category: string, filterName: string, value: any) => {
-    const categoryKey = category as keyof typeof filters.value
-    const filterGroup = filters.value[categoryKey]
+    const categoryKey = category as keyof typeof filters.value;
+    const filterGroup = filters.value[categoryKey];
     if (filterGroup) {
-      (filterGroup as Record<string, any>)[filterName] = value
+      (filterGroup as Record<string, any>)[filterName] = value;
     }
-  }
+  };
 
   /**
    * Clear all filters
    */
   const clearFilters = () => {
-    filters.value.schools = { division: '', state: '', verified: null }
-    filters.value.coaches = { sport: '', responseRate: 0, verified: null }
-    filters.value.interactions = { sentiment: '', direction: '', dateFrom: '', dateTo: '' }
-    filters.value.metrics = { metricType: '', minValue: 0, maxValue: 100 }
-  }
+    filters.value.schools = { division: "", state: "", verified: null };
+    filters.value.coaches = { sport: "", responseRate: 0, verified: null };
+    filters.value.interactions = {
+      sentiment: "",
+      direction: "",
+      dateFrom: "",
+      dateTo: "",
+    };
+    filters.value.metrics = { metricType: "", minValue: 0, maxValue: 100 };
+  };
 
   /**
    * Get filter value for a specific category and name
    */
   const getFilterValue = (category: string, filterName: string): any => {
-    const categoryKey = category as keyof typeof filters.value
-    const filterGroup = filters.value[categoryKey]
+    const categoryKey = category as keyof typeof filters.value;
+    const filterGroup = filters.value[categoryKey];
     if (filterGroup) {
-      return (filterGroup as Record<string, any>)[filterName]
+      return (filterGroup as Record<string, any>)[filterName];
     }
-    return null
-  }
+    return null;
+  };
 
   /**
    * Check if a specific filter is active
    */
   const isFilterActive = (category: string, filterName: string): boolean => {
-    const value = getFilterValue(category, filterName)
-    return value !== '' && value !== 0 && value !== false && value !== null
-  }
+    const value = getFilterValue(category, filterName);
+    return value !== "" && value !== 0 && value !== false && value !== null;
+  };
 
   return {
     filters,
@@ -115,5 +123,5 @@ export const useSearchFilters = () => {
     clearFilters,
     getFilterValue,
     isFilterActive,
-  }
-}
+  };
+};

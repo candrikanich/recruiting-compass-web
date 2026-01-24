@@ -3,8 +3,15 @@
     <!-- Filter controls -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <!-- Dynamic filter inputs -->
-      <div v-for="config in visibleConfigs" :key="config.field" class="flex flex-col">
-        <label :for="`filter-${config.field}`" class="text-sm font-medium text-gray-700 mb-2">
+      <div
+        v-for="config in visibleConfigs"
+        :key="config.field"
+        class="flex flex-col"
+      >
+        <label
+          :for="`filter-${config.field}`"
+          class="text-sm font-medium text-gray-700 mb-2"
+        >
           {{ config.label }}
         </label>
 
@@ -15,7 +22,12 @@
           type="text"
           :placeholder="config.placeholder || 'Search...'"
           :value="filterValues[config.field] || ''"
-          @input="setFilterValue(config.field, ($event.target as HTMLInputElement).value)"
+          @input="
+            setFilterValue(
+              config.field,
+              ($event.target as HTMLInputElement).value,
+            )
+          "
           class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
         />
 
@@ -24,11 +36,20 @@
           v-else-if="config.type === 'select'"
           :id="`filter-${config.field}`"
           :value="filterValues[config.field] ?? ''"
-          @change="setFilterValue(config.field, ($event.target as HTMLSelectElement).value || null)"
+          @change="
+            setFilterValue(
+              config.field,
+              ($event.target as HTMLSelectElement).value || null,
+            )
+          "
           class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
         >
           <option value="">-- All --</option>
-          <option v-for="option in config.options" :key="String(option.value)" :value="String(option.value)">
+          <option
+            v-for="option in config.options"
+            :key="String(option.value)"
+            :value="String(option.value)"
+          >
             {{ option.label }}
           </option>
         </select>
@@ -38,7 +59,11 @@
           v-else-if="config.type === 'multiselect'"
           class="space-y-2 p-3 border border-gray-300 rounded-lg bg-white max-h-32 overflow-y-auto"
         >
-          <label v-for="option in config.options" :key="String(option.value)" class="flex items-center">
+          <label
+            v-for="option in config.options"
+            :key="String(option.value)"
+            class="flex items-center"
+          >
             <input
               type="checkbox"
               :checked="isMultiSelectChecked(config.field, option.value)"
@@ -54,7 +79,16 @@
           v-else-if="config.type === 'boolean'"
           :id="`filter-${config.field}`"
           :value="filterValues[config.field] ?? ''"
-          @change="setFilterValue(config.field, ($event.target as HTMLSelectElement).value === 'true' ? true : ($event.target as HTMLSelectElement).value === 'false' ? false : null)"
+          @change="
+            setFilterValue(
+              config.field,
+              ($event.target as HTMLSelectElement).value === 'true'
+                ? true
+                : ($event.target as HTMLSelectElement).value === 'false'
+                  ? false
+                  : null,
+            )
+          "
           class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
         >
           <option value="">-- All --</option>
@@ -71,7 +105,13 @@
             :step="config.step"
             :placeholder="`Min (${config.min})`"
             :value="getRangeValue(config.field)?.[0] ?? config.min ?? ''"
-            @input="setRangeValue(config.field, 0, ($event.target as HTMLInputElement).value)"
+            @input="
+              setRangeValue(
+                config.field,
+                0,
+                ($event.target as HTMLInputElement).value,
+              )
+            "
             class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
@@ -81,7 +121,13 @@
             :step="config.step"
             :placeholder="`Max (${config.max})`"
             :value="getRangeValue(config.field)?.[1] ?? config.max ?? ''"
-            @input="setRangeValue(config.field, 1, ($event.target as HTMLInputElement).value)"
+            @input="
+              setRangeValue(
+                config.field,
+                1,
+                ($event.target as HTMLInputElement).value,
+              )
+            "
             class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -92,13 +138,25 @@
             <input
               type="date"
               :value="getDateRangeValue(config.field)?.[0] ?? ''"
-              @change="setDateRangeValue(config.field, 0, ($event.target as HTMLInputElement).value)"
+              @change="
+                setDateRangeValue(
+                  config.field,
+                  0,
+                  ($event.target as HTMLInputElement).value,
+                )
+              "
               class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="date"
               :value="getDateRangeValue(config.field)?.[1] ?? ''"
-              @change="setDateRangeValue(config.field, 1, ($event.target as HTMLInputElement).value)"
+              @change="
+                setDateRangeValue(
+                  config.field,
+                  1,
+                  ($event.target as HTMLInputElement).value,
+                )
+              "
               class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -124,7 +182,9 @@
     </div>
 
     <!-- Filter actions -->
-    <div class="flex flex-col sm:flex-row gap-2 mt-6 pt-4 border-t border-gray-200">
+    <div
+      class="flex flex-col sm:flex-row gap-2 mt-6 pt-4 border-t border-gray-200"
+    >
       <button
         v-if="hasActiveFilters"
         @click="clearFilters"
@@ -140,8 +200,18 @@
           class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
         >
           <span>Load Preset</span>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 14l-7 7m0 0l-7-7m7 7V3"
+            />
           </svg>
         </button>
 
@@ -158,7 +228,9 @@
             class="w-full text-left px-4 py-2 text-sm hover:bg-blue-50 transition-colors first:rounded-t-lg last:rounded-b-lg border-b last:border-b-0"
           >
             <div class="font-medium">{{ preset.name }}</div>
-            <div v-if="preset.description" class="text-xs text-gray-500">{{ preset.description }}</div>
+            <div v-if="preset.description" class="text-xs text-gray-500">
+              {{ preset.description }}
+            </div>
           </button>
         </div>
       </div>
@@ -169,8 +241,18 @@
         @click="showSavePresetDialog = true"
         class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
       >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          />
         </svg>
         Save as Preset
       </button>
@@ -230,145 +312,152 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { FilterConfig, FilterPreset, DateRangePreset } from '~/types/filters'
+import { ref, computed } from "vue";
+import type {
+  FilterConfig,
+  FilterPreset,
+  DateRangePreset,
+} from "~/types/filters";
 
 interface Props {
-  configs: FilterConfig[]
-  filterValues: Record<string, any>
-  presets: FilterPreset[]
-  filteredCount: number
-  hasActiveFilters: boolean
+  configs: FilterConfig[];
+  filterValues: Record<string, any>;
+  presets: FilterPreset[];
+  filteredCount: number;
+  hasActiveFilters: boolean;
 }
 
 interface Emits {
-  (e: 'update:filter', field: string, value: any): void
-  (e: 'clear-filters'): void
-  (e: 'save-preset', name: string, description?: string): void
-  (e: 'load-preset', presetId: string): void
+  (e: "update:filter", field: string, value: any): void;
+  (e: "clear-filters"): void;
+  (e: "save-preset", name: string, description?: string): void;
+  (e: "load-preset", presetId: string): void;
 }
 
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
 
 // UI state
-const showPresetMenu = ref(false)
-const showSavePresetDialog = ref(false)
-const newPresetName = ref('')
-const newPresetDescription = ref('')
+const showPresetMenu = ref(false);
+const showSavePresetDialog = ref(false);
+const newPresetName = ref("");
+const newPresetDescription = ref("");
 
 // Visible configs (filter by visible: true, default is true)
 const visibleConfigs = computed(() => {
-  return props.configs.filter(c => c.visible !== false)
-})
+  return props.configs.filter((c) => c.visible !== false);
+});
 
 // Handle single value changes
 const setFilterValue = (field: string, value: any) => {
-  emit('update:filter', field, value === '' ? null : value)
-}
+  emit("update:filter", field, value === "" ? null : value);
+};
 
 // Handle multiselect checkbox toggle
 const toggleMultiSelectValue = (field: string, optionValue: any) => {
-  const current = props.filterValues[field] || []
-  const updated = Array.isArray(current) ? [...current] : []
+  const current = props.filterValues[field] || [];
+  const updated = Array.isArray(current) ? [...current] : [];
 
-  const index = updated.findIndex(v => v === optionValue)
+  const index = updated.findIndex((v) => v === optionValue);
   if (index >= 0) {
-    updated.splice(index, 1)
+    updated.splice(index, 1);
   } else {
-    updated.push(optionValue)
+    updated.push(optionValue);
   }
 
-  emit('update:filter', field, updated.length > 0 ? updated : null)
-}
+  emit("update:filter", field, updated.length > 0 ? updated : null);
+};
 
 const isMultiSelectChecked = (field: string, optionValue: any): boolean => {
-  const current = props.filterValues[field]
-  return Array.isArray(current) && current.includes(optionValue)
-}
+  const current = props.filterValues[field];
+  return Array.isArray(current) && current.includes(optionValue);
+};
 
 // Handle range value changes
 const getRangeValue = (field: string): [number, number] | null => {
-  const value = props.filterValues[field]
-  return Array.isArray(value) && value.length === 2 ? (value as [number, number]) : null
-}
+  const value = props.filterValues[field];
+  return Array.isArray(value) && value.length === 2
+    ? (value as [number, number])
+    : null;
+};
 
 const setRangeValue = (field: string, index: 0 | 1, value: string) => {
-  const config = props.configs.find(c => c.field === field)
-  const min = config?.min ?? 0
-  const max = config?.max ?? 100
-  const current = getRangeValue(field) || [min, max]
-  const numValue = parseFloat(value) || (index === 0 ? min : max)
+  const config = props.configs.find((c) => c.field === field);
+  const min = config?.min ?? 0;
+  const max = config?.max ?? 100;
+  const current = getRangeValue(field) || [min, max];
+  const numValue = parseFloat(value) || (index === 0 ? min : max);
 
-  const updated: [number, number] = [...current] as [number, number]
-  updated[index] = numValue
+  const updated: [number, number] = [...current] as [number, number];
+  updated[index] = numValue;
 
-  emit('update:filter', field, updated)
-}
+  emit("update:filter", field, updated);
+};
 
 // Handle date range changes
 const getDateRangeValue = (field: string): [string, string] | null => {
-  const value = props.filterValues[field]
+  const value = props.filterValues[field];
   if (Array.isArray(value) && value.length === 2) {
-    return [
-      formatDateToInput(value[0]),
-      formatDateToInput(value[1])
-    ]
+    return [formatDateToInput(value[0]), formatDateToInput(value[1])];
   }
-  return null
-}
+  return null;
+};
 
 const setDateRangeValue = (field: string, index: 0 | 1, value: string) => {
-  if (!value) return
+  if (!value) return;
 
-  const current = props.filterValues[field]
+  const current = props.filterValues[field];
   const [start, end] = Array.isArray(current)
     ? [new Date(current[0]), new Date(current[1])]
-    : [new Date(), new Date()]
+    : [new Date(), new Date()];
 
   if (index === 0) {
-    start.setTime(new Date(value).getTime())
+    start.setTime(new Date(value).getTime());
   } else {
-    end.setTime(new Date(value).getTime())
+    end.setTime(new Date(value).getTime());
   }
 
-  emit('update:filter', field, [start, end])
-}
+  emit("update:filter", field, [start, end]);
+};
 
 const applyDatePreset = (field: string, preset: DateRangePreset) => {
-  const [start, end] = preset.getValue()
-  emit('update:filter', field, [start, end])
-}
+  const [start, end] = preset.getValue();
+  emit("update:filter", field, [start, end]);
+};
 
 // Clear all filters
 const clearFilters = () => {
-  emit('clear-filters')
-  showPresetMenu.value = false
-}
+  emit("clear-filters");
+  showPresetMenu.value = false;
+};
 
 // Load preset
 const loadPreset = (presetId: string) => {
-  emit('load-preset', presetId)
-  showPresetMenu.value = false
-}
+  emit("load-preset", presetId);
+  showPresetMenu.value = false;
+};
 
 // Save preset
 const doSavePreset = () => {
-  if (!newPresetName.value.trim()) return
+  if (!newPresetName.value.trim()) return;
 
-  emit('save-preset', newPresetName.value, newPresetDescription.value || undefined)
+  emit(
+    "save-preset",
+    newPresetName.value,
+    newPresetDescription.value || undefined,
+  );
 
-  newPresetName.value = ''
-  newPresetDescription.value = ''
-  showSavePresetDialog.value = false
-}
+  newPresetName.value = "";
+  newPresetDescription.value = "";
+  showSavePresetDialog.value = false;
+};
 
 // Helper: Format Date to input[type=date] format (YYYY-MM-DD)
 function formatDateToInput(date: Date | string): string {
-  const d = new Date(date)
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 </script>

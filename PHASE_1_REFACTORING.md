@@ -20,6 +20,7 @@
 **Purpose**: Centralized, type-safe Supabase query abstraction
 
 **Functions**:
+
 - `querySelect<T>()` - SELECT with filters, ordering, limits
 - `querySingle<T>()` - Single record fetch
 - `queryInsert<T>()` - INSERT with return
@@ -29,27 +30,29 @@
 - `isQueryError()` - Type guard
 
 **Benefits**:
+
 - ✅ Eliminates 50+ duplicate try/catch blocks
 - ✅ Centralized error logging
 - ✅ Type-safe responses: `{ data: T | null, error: Error | null }`
 - ✅ Consistent debug context
 
 **Example**:
+
 ```typescript
 // Before: 10+ lines per query
 const { data, error } = await supabase
-  .from('coaches')
-  .select('*')
-  .eq('school_id', schoolId)
-  .order('last_name')
-if (error) throw error
+  .from("coaches")
+  .select("*")
+  .eq("school_id", schoolId)
+  .order("last_name");
+if (error) throw error;
 
 // After: 3 lines
 const { data, error } = await querySelect<Coach>(
-  'coaches',
-  { filters: { school_id: schoolId }, order: { column: 'last_name' } },
-  { context: 'fetchCoaches' }
-)
+  "coaches",
+  { filters: { school_id: schoolId }, order: { column: "last_name" } },
+  { context: "fetchCoaches" },
+);
 ```
 
 ### 2. Unified Validation: `composables/useFormValidation.ts`
@@ -57,10 +60,12 @@ const { data, error } = await querySelect<Coach>(
 **Purpose**: Single composable for form (Zod) + file validation
 
 **Replaces**:
+
 - `useValidation()` - Form validation only
 - `useDocumentValidation()` - File validation only
 
 **Features**:
+
 - Form validation via Zod schemas
 - File type validation (MIME types + extensions)
 - File size limits (configurable per document type)
@@ -68,19 +73,20 @@ const { data, error } = await querySelect<Coach>(
 - Type-safe errors
 
 **Example**:
+
 ```typescript
-const { validate, validateFile, errors } = useFormValidation()
+const { validate, validateFile, errors } = useFormValidation();
 
 // Form validation
-const schema = z.object({ name: z.string() })
-const result = await validate(data, schema)
-if (!result) console.log(errors.value)
+const schema = z.object({ name: z.string() });
+const result = await validate(data, schema);
+if (!result) console.log(errors.value);
 
 // File validation
 try {
-  validateFile(file, 'transcript')
+  validateFile(file, "transcript");
 } catch (err) {
-  console.log(err.message)
+  console.log(err.message);
 }
 ```
 
@@ -97,42 +103,40 @@ try {
 
 ```typescript
 // composables/useCoaches.ts
-import { querySelect, queryInsert } from '~/utils/supabaseQuery'
-import { useFormValidation } from '~/composables/useFormValidation'
+import { querySelect, queryInsert } from "~/utils/supabaseQuery";
+import { useFormValidation } from "~/composables/useFormValidation";
 
 export const useCoaches = () => {
-  const coaches = ref([])
-  const { validate, errors } = useFormValidation()
+  const coaches = ref([]);
+  const { validate, errors } = useFormValidation();
 
   const fetchCoaches = async (schoolId: string) => {
     const { data, error } = await querySelect<Coach>(
-      'coaches',
+      "coaches",
       { filters: { school_id: schoolId } },
-      { context: 'fetchCoaches' }
-    )
-    if (error) return
-    coaches.value = data
-  }
+      { context: "fetchCoaches" },
+    );
+    if (error) return;
+    coaches.value = data;
+  };
 
   const createCoach = async (input: CoachInput) => {
     // Validate input
-    const validated = await validate(input, coachSchema)
-    if (!validated) return null
+    const validated = await validate(input, coachSchema);
+    if (!validated) return null;
 
     // Create coach
-    const { data, error } = await queryInsert<Coach>(
-      'coaches',
-      validated,
-      { context: 'createCoach' }
-    )
-    if (error) return null
+    const { data, error } = await queryInsert<Coach>("coaches", validated, {
+      context: "createCoach",
+    });
+    if (error) return null;
 
-    coaches.value.push(data)
-    return data
-  }
+    coaches.value.push(data);
+    return data;
+  };
 
-  return { coaches, fetchCoaches, createCoach }
-}
+  return { coaches, fetchCoaches, createCoach };
+};
 ```
 
 ### For Migrating Existing Composables

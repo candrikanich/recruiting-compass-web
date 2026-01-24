@@ -1,10 +1,15 @@
-import { ref, computed } from 'vue'
-import Fuse from 'fuse.js'
-import { querySelect } from '~/utils/supabaseQuery'
-import { useSupabase } from './useSupabase'
-import { useUserStore } from '~/stores/user'
-import { useErrorHandler } from './useErrorHandler'
-import type { School, Coach, Interaction, PerformanceMetric } from '~/types/models'
+import { ref, computed } from "vue";
+import Fuse from "fuse.js";
+import { querySelect } from "~/utils/supabaseQuery";
+import { useSupabase } from "./useSupabase";
+import { useUserStore } from "~/stores/user";
+import { useErrorHandler } from "./useErrorHandler";
+import type {
+  School,
+  Coach,
+  Interaction,
+  PerformanceMetric,
+} from "~/types/models";
 
 /**
  * Consolidated composable for comprehensive search functionality
@@ -39,25 +44,27 @@ import type { School, Coach, Interaction, PerformanceMetric } from '~/types/mode
  * @returns Object with search methods, results, and filter management
  */
 export const useSearchConsolidated = () => {
-  const supabase = useSupabase()
-  const userStore = useUserStore()
-  const { getErrorMessage, logError } = useErrorHandler()
+  const supabase = useSupabase();
+  const userStore = useUserStore();
+  const { getErrorMessage, logError } = useErrorHandler();
 
   // ═══════════════════════════════════════════════════════════════════════════
   // SEARCH STATE
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const query = ref('')
-  const searchType = ref<'all' | 'schools' | 'coaches' | 'interactions' | 'metrics'>('all')
-  const isSearching = ref(false)
-  const searchError = ref<string | null>(null)
-  const useFuzzySearch = ref(true)
+  const query = ref("");
+  const searchType = ref<
+    "all" | "schools" | "coaches" | "interactions" | "metrics"
+  >("all");
+  const isSearching = ref(false);
+  const searchError = ref<string | null>(null);
+  const useFuzzySearch = ref(true);
 
   // Results
-  const schoolResults = ref<School[]>([])
-  const coachResults = ref<Coach[]>([])
-  const interactionResults = ref<Interaction[]>([])
-  const metricsResults = ref<PerformanceMetric[]>([])
+  const schoolResults = ref<School[]>([]);
+  const coachResults = ref<Coach[]>([]);
+  const interactionResults = ref<Interaction[]>([]);
+  const metricsResults = ref<PerformanceMetric[]>([]);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // FILTER STATE
@@ -65,27 +72,27 @@ export const useSearchConsolidated = () => {
 
   const filters = ref({
     schools: {
-      division: '' as string,
-      state: '' as string,
+      division: "" as string,
+      state: "" as string,
       verified: null as boolean | null,
     },
     coaches: {
-      sport: '' as string,
+      sport: "" as string,
       responseRate: 0 as number,
       verified: null as boolean | null,
     },
     interactions: {
-      sentiment: '' as string,
-      direction: '' as string,
-      dateFrom: '' as string,
-      dateTo: '' as string,
+      sentiment: "" as string,
+      direction: "" as string,
+      dateFrom: "" as string,
+      dateTo: "" as string,
     },
     metrics: {
-      metricType: '' as string,
+      metricType: "" as string,
       minValue: 0 as number,
       maxValue: 100 as number,
     },
-  })
+  });
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CACHING STATE
@@ -94,12 +101,17 @@ export const useSearchConsolidated = () => {
   const searchCache = new Map<
     string,
     {
-      results: { schools: School[]; coaches: Coach[]; interactions: Interaction[]; metrics: PerformanceMetric[] }
-      timestamp: number
+      results: {
+        schools: School[];
+        coaches: Coach[];
+        interactions: Interaction[];
+        metrics: PerformanceMetric[];
+      };
+      timestamp: number;
     }
-  >()
-  const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
-  let searchTimeoutId: ReturnType<typeof setTimeout>
+  >();
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  let searchTimeoutId: ReturnType<typeof setTimeout>;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // COMPUTED PROPERTIES
@@ -114,24 +126,25 @@ export const useSearchConsolidated = () => {
       coachResults.value.length +
       interactionResults.value.length +
       metricsResults.value.length
-    )
-  })
+    );
+  });
 
   /**
    * Whether any results exist
    */
-  const hasResults = computed(() => totalResults.value > 0)
+  const hasResults = computed(() => totalResults.value > 0);
 
   /**
    * Whether any filters are active
    */
   const isFiltering = computed(() => {
-    return Object.values(filters.value).some(filterGroup =>
+    return Object.values(filters.value).some((filterGroup) =>
       Object.values(filterGroup).some(
-        value => value !== '' && value !== 0 && value !== false && value !== null
-      )
-    )
-  })
+        (value) =>
+          value !== "" && value !== 0 && value !== false && value !== null,
+      ),
+    );
+  });
 
   // ═══════════════════════════════════════════════════════════════════════════
   // FUZZY SEARCH UTILITIES
@@ -140,17 +153,21 @@ export const useSearchConsolidated = () => {
   /**
    * Apply fuzzy search to result set using Fuse.js
    */
-  const applyFuzzySearch = <T>(items: T[], searchQuery: string, keys: string[]): T[] => {
-    if (!useFuzzySearch.value || !searchQuery.trim()) return items
+  const applyFuzzySearch = <T>(
+    items: T[],
+    searchQuery: string,
+    keys: string[],
+  ): T[] => {
+    if (!useFuzzySearch.value || !searchQuery.trim()) return items;
 
     const fuse = new Fuse(items, {
       keys,
       threshold: 0.4,
       minMatchCharLength: 2,
-    })
+    });
 
-    return fuse.search(searchQuery).map(result => result.item)
-  }
+    return fuse.search(searchQuery).map((result) => result.item);
+  };
 
   // ═══════════════════════════════════════════════════════════════════════════
   // ENTITY SEARCH FUNCTIONS
@@ -160,216 +177,220 @@ export const useSearchConsolidated = () => {
    * Search schools
    */
   const searchSchools = async (searchQuery: string) => {
-    if (!userStore.user) return
+    if (!userStore.user) return;
 
     try {
       const filterObj: Record<string, any> = {
         user_id: userStore.user.id,
-      }
+      };
 
       // Apply active filters
       if (filters.value.schools.division) {
-        filterObj.division = filters.value.schools.division
+        filterObj.division = filters.value.schools.division;
       }
       if (filters.value.schools.state) {
-        filterObj.state = filters.value.schools.state
+        filterObj.state = filters.value.schools.state;
       }
       if (filters.value.schools.verified !== null) {
-        filterObj.verified = filters.value.schools.verified
+        filterObj.verified = filters.value.schools.verified;
       }
 
       const { data, error } = await querySelect<School>(
-        'schools',
+        "schools",
         {
-          select: '*',
+          select: "*",
           filters: filterObj,
           limit: 20,
         },
-        { context: 'searchSchools' }
-      )
+        { context: "searchSchools" },
+      );
 
-      if (error) throw error
+      if (error) throw error;
 
       // Apply fuzzy search to results
       schoolResults.value = applyFuzzySearch(data || [], searchQuery, [
-        'name',
-        'address',
-        'city',
-        'state',
-      ])
+        "name",
+        "address",
+        "city",
+        "state",
+      ]);
     } catch (err) {
-      logError(err, { context: 'searchSchools' })
-      schoolResults.value = []
+      logError(err, { context: "searchSchools" });
+      schoolResults.value = [];
     }
-  }
+  };
 
   /**
    * Search coaches
    */
   const searchCoaches = async (searchQuery: string) => {
-    if (!userStore.user) return
+    if (!userStore.user) return;
 
     try {
       const filterObj: Record<string, any> = {
         user_id: userStore.user.id,
-      }
+      };
 
       // Apply active filters
       if (filters.value.coaches.sport) {
-        filterObj.sport = filters.value.coaches.sport
+        filterObj.sport = filters.value.coaches.sport;
       }
       if (filters.value.coaches.verified !== null) {
-        filterObj.verified = filters.value.coaches.verified
+        filterObj.verified = filters.value.coaches.verified;
       }
 
       const { data, error } = await querySelect<Coach>(
-        'coaches',
+        "coaches",
         {
-          select: '*',
+          select: "*",
           filters: filterObj,
           limit: 20,
         },
-        { context: 'searchCoaches' }
-      )
+        { context: "searchCoaches" },
+      );
 
-      if (error) throw error
+      if (error) throw error;
 
       // Filter by response rate if specified
-      let results: Coach[] | null = data
+      let results: Coach[] | null = data;
       if (results && filters.value.coaches.responseRate > 0) {
         results = results.filter(
-          c =>
+          (c) =>
             ((c as any).response_rate || 0) >=
-            filters.value.coaches.responseRate / 100
-        )
+            filters.value.coaches.responseRate / 100,
+        );
       }
 
       // Apply fuzzy search
       coachResults.value = applyFuzzySearch(results || [], searchQuery, [
-        'name',
-        'school',
-        'email',
-        'phone',
-      ])
+        "name",
+        "school",
+        "email",
+        "phone",
+      ]);
     } catch (err) {
-      logError(err, { context: 'searchCoaches' })
-      coachResults.value = []
+      logError(err, { context: "searchCoaches" });
+      coachResults.value = [];
     }
-  }
+  };
 
   /**
    * Search interactions
    */
   const searchInteractions = async (searchQuery: string) => {
-    if (!userStore.user) return
+    if (!userStore.user) return;
 
     try {
       const filterObj: Record<string, any> = {
         user_id: userStore.user.id,
-      }
+      };
 
       // Apply active filters
       if (filters.value.interactions.sentiment) {
-        filterObj.sentiment_label = filters.value.interactions.sentiment
+        filterObj.sentiment_label = filters.value.interactions.sentiment;
       }
       if (filters.value.interactions.direction) {
-        filterObj.direction = filters.value.interactions.direction
+        filterObj.direction = filters.value.interactions.direction;
       }
 
       const { data, error } = await querySelect<Interaction>(
-        'interactions',
+        "interactions",
         {
-          select: '*',
+          select: "*",
           filters: filterObj,
-          order: { column: 'recorded_date', ascending: false },
+          order: { column: "recorded_date", ascending: false },
           limit: 20,
         },
-        { context: 'searchInteractions' }
-      )
+        { context: "searchInteractions" },
+      );
 
-      if (error) throw error
+      if (error) throw error;
 
       // Apply date range filters
-      let results: Interaction[] | null = data
+      let results: Interaction[] | null = data;
       if (results && filters.value.interactions.dateFrom) {
         results = results.filter(
-          i =>
+          (i) =>
             new Date(i.recorded_date || Date.now()).getTime() >=
-            new Date(filters.value.interactions.dateFrom).getTime()
-        )
+            new Date(filters.value.interactions.dateFrom).getTime(),
+        );
       }
       if (results && filters.value.interactions.dateTo) {
         results = results.filter(
-          i =>
+          (i) =>
             new Date(i.recorded_date || Date.now()).getTime() <=
-            new Date(filters.value.interactions.dateTo).getTime()
-        )
+            new Date(filters.value.interactions.dateTo).getTime(),
+        );
       }
 
       // Apply fuzzy search (on subject and notes)
       interactionResults.value = applyFuzzySearch(results || [], searchQuery, [
-        'subject',
-        'notes',
-      ])
+        "subject",
+        "notes",
+      ]);
     } catch (err) {
-      logError(err, { context: 'searchInteractions' })
-      interactionResults.value = []
+      logError(err, { context: "searchInteractions" });
+      interactionResults.value = [];
     }
-  }
+  };
 
   /**
    * Search metrics
    */
   const searchMetrics = async (searchQuery: string) => {
-    if (!userStore.user) return
+    if (!userStore.user) return;
 
     try {
       const filterObj: Record<string, any> = {
         user_id: userStore.user.id,
-      }
+      };
 
       // Apply active filters
       if (filters.value.metrics.metricType) {
-        filterObj.metric_type = filters.value.metrics.metricType
+        filterObj.metric_type = filters.value.metrics.metricType;
       }
 
       const { data, error } = await querySelect<PerformanceMetric>(
-        'performance_metrics',
+        "performance_metrics",
         {
-          select: '*',
+          select: "*",
           filters: filterObj,
-          order: { column: 'recorded_date', ascending: false },
+          order: { column: "recorded_date", ascending: false },
           limit: 20,
         },
-        { context: 'searchMetrics' }
-      )
+        { context: "searchMetrics" },
+      );
 
-      if (error) throw error
+      if (error) throw error;
 
       // Apply value range filters
-      let results: PerformanceMetric[] | null = data
+      let results: PerformanceMetric[] | null = data;
       if (results && filters.value.metrics.minValue > 0) {
-        results = results.filter(m => (m.value || 0) >= filters.value.metrics.minValue)
+        results = results.filter(
+          (m) => (m.value || 0) >= filters.value.metrics.minValue,
+        );
       }
       if (results && filters.value.metrics.maxValue < 100) {
-        results = results.filter(m => (m.value || 0) <= filters.value.metrics.maxValue)
+        results = results.filter(
+          (m) => (m.value || 0) <= filters.value.metrics.maxValue,
+        );
       }
 
       // Filter by search query in notes
       if (results && searchQuery.trim()) {
         results = results.filter(
-          m =>
+          (m) =>
             !m.notes ||
-            m.notes.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+            m.notes.toLowerCase().includes(searchQuery.toLowerCase()),
+        );
       }
 
-      metricsResults.value = results || []
+      metricsResults.value = results || [];
     } catch (err) {
-      logError(err, { context: 'searchMetrics' })
-      metricsResults.value = []
+      logError(err, { context: "searchMetrics" });
+      metricsResults.value = [];
     }
-  }
+  };
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CACHE UTILITIES
@@ -379,24 +400,24 @@ export const useSearchConsolidated = () => {
    * Generate cache key from query and filters
    */
   const getCacheKey = (): string => {
-    const filterStr = JSON.stringify(filters.value)
-    return `${query.value}|${searchType.value}|${filterStr}`
-  }
+    const filterStr = JSON.stringify(filters.value);
+    return `${query.value}|${searchType.value}|${filterStr}`;
+  };
 
   /**
    * Check if cached results are valid (within TTL)
    */
   const isCacheValid = (cacheEntry: any): boolean => {
-    if (!cacheEntry) return false
-    return Date.now() - cacheEntry.timestamp < CACHE_TTL
-  }
+    if (!cacheEntry) return false;
+    return Date.now() - cacheEntry.timestamp < CACHE_TTL;
+  };
 
   /**
    * Clear cache
    */
   const clearCache = () => {
-    searchCache.clear()
-  }
+    searchCache.clear();
+  };
 
   // ═══════════════════════════════════════════════════════════════════════════
   // MAIN SEARCH FUNCTION (DEBOUNCED)
@@ -411,49 +432,49 @@ export const useSearchConsolidated = () => {
    */
   const performSearch = async (searchQuery: string) => {
     // Clear any pending searches
-    clearTimeout(searchTimeoutId)
+    clearTimeout(searchTimeoutId);
 
     if (!searchQuery.trim()) {
-      clearResults()
-      return
+      clearResults();
+      return;
     }
 
-    query.value = searchQuery
+    query.value = searchQuery;
 
     // Check cache first
-    const cacheKey = getCacheKey()
-    const cachedResult = searchCache.get(cacheKey)
+    const cacheKey = getCacheKey();
+    const cachedResult = searchCache.get(cacheKey);
     if (isCacheValid(cachedResult)) {
-      schoolResults.value = cachedResult?.results.schools || []
-      coachResults.value = cachedResult?.results.coaches || []
-      interactionResults.value = cachedResult?.results.interactions || []
-      metricsResults.value = cachedResult?.results.metrics || []
-      return
+      schoolResults.value = cachedResult?.results.schools || [];
+      coachResults.value = cachedResult?.results.coaches || [];
+      interactionResults.value = cachedResult?.results.interactions || [];
+      metricsResults.value = cachedResult?.results.metrics || [];
+      return;
     }
 
     // Debounce actual search execution
     searchTimeoutId = setTimeout(async () => {
-      isSearching.value = true
-      searchError.value = null
+      isSearching.value = true;
+      searchError.value = null;
 
       try {
         // Execute searches in parallel based on search type
-        const searches = []
+        const searches = [];
 
-        if (searchType.value === 'all' || searchType.value === 'schools') {
-          searches.push(searchSchools(searchQuery))
+        if (searchType.value === "all" || searchType.value === "schools") {
+          searches.push(searchSchools(searchQuery));
         }
-        if (searchType.value === 'all' || searchType.value === 'coaches') {
-          searches.push(searchCoaches(searchQuery))
+        if (searchType.value === "all" || searchType.value === "coaches") {
+          searches.push(searchCoaches(searchQuery));
         }
-        if (searchType.value === 'all' || searchType.value === 'interactions') {
-          searches.push(searchInteractions(searchQuery))
+        if (searchType.value === "all" || searchType.value === "interactions") {
+          searches.push(searchInteractions(searchQuery));
         }
-        if (searchType.value === 'all' || searchType.value === 'metrics') {
-          searches.push(searchMetrics(searchQuery))
+        if (searchType.value === "all" || searchType.value === "metrics") {
+          searches.push(searchMetrics(searchQuery));
         }
 
-        await Promise.all(searches)
+        await Promise.all(searches);
 
         // Cache results
         searchCache.set(cacheKey, {
@@ -464,15 +485,15 @@ export const useSearchConsolidated = () => {
             metrics: metricsResults.value,
           },
           timestamp: Date.now(),
-        })
+        });
       } catch (err) {
-        searchError.value = getErrorMessage(err, { context: 'performSearch' })
-        logError(err, { context: 'performSearch' })
+        searchError.value = getErrorMessage(err, { context: "performSearch" });
+        logError(err, { context: "performSearch" });
       } finally {
-        isSearching.value = false
+        isSearching.value = false;
       }
-    }, 300)
-  }
+    }, 300);
+  };
 
   // ═══════════════════════════════════════════════════════════════════════════
   // RESULT MANAGEMENT
@@ -482,12 +503,12 @@ export const useSearchConsolidated = () => {
    * Clear all search results
    */
   const clearResults = () => {
-    schoolResults.value = []
-    coachResults.value = []
-    interactionResults.value = []
-    metricsResults.value = []
-    query.value = ''
-  }
+    schoolResults.value = [];
+    coachResults.value = [];
+    interactionResults.value = [];
+    metricsResults.value = [];
+    query.value = "";
+  };
 
   // ═══════════════════════════════════════════════════════════════════════════
   // FILTER MANAGEMENT
@@ -497,47 +518,54 @@ export const useSearchConsolidated = () => {
    * Apply a single filter and re-run search if active
    */
   const applyFilter = async (
-    category: 'schools' | 'coaches' | 'interactions' | 'metrics',
+    category: "schools" | "coaches" | "interactions" | "metrics",
     filterName: string,
-    value: any
+    value: any,
   ) => {
-    const categoryFilter = filters.value[category]
+    const categoryFilter = filters.value[category];
     if (categoryFilter) {
-      ;(categoryFilter as Record<string, any>)[filterName] = value
+      (categoryFilter as Record<string, any>)[filterName] = value;
     }
 
     // Re-run search if query is active
     if (query.value.trim()) {
-      clearCache() // Invalidate cache when filters change
-      await performSearch(query.value)
+      clearCache(); // Invalidate cache when filters change
+      await performSearch(query.value);
     }
-  }
+  };
 
   /**
    * Clear all filters and optionally re-run search
    */
   const clearFilters = async () => {
-    filters.value.schools = { division: '', state: '', verified: null }
-    filters.value.coaches = { sport: '', responseRate: 0, verified: null }
-    filters.value.interactions = { sentiment: '', direction: '', dateFrom: '', dateTo: '' }
-    filters.value.metrics = { metricType: '', minValue: 0, maxValue: 100 }
+    filters.value.schools = { division: "", state: "", verified: null };
+    filters.value.coaches = { sport: "", responseRate: 0, verified: null };
+    filters.value.interactions = {
+      sentiment: "",
+      direction: "",
+      dateFrom: "",
+      dateTo: "",
+    };
+    filters.value.metrics = { metricType: "", minValue: 0, maxValue: 100 };
 
-    clearCache()
+    clearCache();
 
     if (query.value.trim()) {
-      await performSearch(query.value)
+      await performSearch(query.value);
     }
-  }
+  };
 
   /**
    * Get specific filter value
    */
   const getFilterValue = (
-    category: 'schools' | 'coaches' | 'interactions' | 'metrics',
-    filterName: string
+    category: "schools" | "coaches" | "interactions" | "metrics",
+    filterName: string,
   ): any => {
-    return (filters.value[category] as Record<string, any>)?.[filterName] || null
-  }
+    return (
+      (filters.value[category] as Record<string, any>)?.[filterName] || null
+    );
+  };
 
   // ═══════════════════════════════════════════════════════════════════════════
   // SUGGESTIONS (AUTOCOMPLETE)
@@ -547,55 +575,55 @@ export const useSearchConsolidated = () => {
    * Get school name suggestions for autocomplete
    */
   const getSchoolSuggestions = async (prefix: string): Promise<string[]> => {
-    if (!userStore.user || prefix.length < 2) return []
+    if (!userStore.user || prefix.length < 2) return [];
 
     try {
       const { data, error } = await querySelect<{ name: string }>(
-        'schools',
+        "schools",
         {
-          select: 'name',
+          select: "name",
           filters: { user_id: userStore.user.id },
           limit: 10,
         },
-        { context: 'getSchoolSuggestions', silent: true }
-      )
+        { context: "getSchoolSuggestions", silent: true },
+      );
 
-      if (error) return []
+      if (error) return [];
 
       return (data || [])
-        .filter(s => s.name.toLowerCase().startsWith(prefix.toLowerCase()))
-        .map(s => s.name)
+        .filter((s) => s.name.toLowerCase().startsWith(prefix.toLowerCase()))
+        .map((s) => s.name);
     } catch {
-      return []
+      return [];
     }
-  }
+  };
 
   /**
    * Get coach name suggestions for autocomplete
    */
   const getCoachSuggestions = async (prefix: string): Promise<string[]> => {
-    if (!userStore.user || prefix.length < 2) return []
+    if (!userStore.user || prefix.length < 2) return [];
 
     try {
       const { data, error } = await querySelect<{ name: string }>(
-        'coaches',
+        "coaches",
         {
-          select: 'name',
+          select: "name",
           filters: { user_id: userStore.user.id },
           limit: 10,
         },
-        { context: 'getCoachSuggestions', silent: true }
-      )
+        { context: "getCoachSuggestions", silent: true },
+      );
 
-      if (error) return []
+      if (error) return [];
 
       return (data || [])
-        .filter(c => c.name.toLowerCase().startsWith(prefix.toLowerCase()))
-        .map(c => c.name)
+        .filter((c) => c.name.toLowerCase().startsWith(prefix.toLowerCase()))
+        .map((c) => c.name);
     } catch {
-      return []
+      return [];
     }
-  }
+  };
 
   return {
     // Search state
@@ -632,5 +660,5 @@ export const useSearchConsolidated = () => {
     // Suggestions
     getSchoolSuggestions,
     getCoachSuggestions,
-  }
-}
+  };
+};

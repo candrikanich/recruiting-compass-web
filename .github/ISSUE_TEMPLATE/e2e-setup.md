@@ -64,4 +64,3 @@ npx playwright test --config=playwright.local.config.ts --project=chromium --rep
 - Local helper config: `playwright.local.config.ts` (committed)
 - Existing CI: review `.github/workflows/` for where to add job
 - Dev server logs: check terminal where `npm run dev` runs for readiness
-

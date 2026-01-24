@@ -15,11 +15,13 @@
 **Purpose**: Unify document operations (fetch, upload, share) into single composable
 
 **Consolidates**:
+
 - `useDocumentFetch()` - CRUD operations, version history (215 lines)
 - `useDocumentUpload()` - File uploads, versioning (280+ lines)
 - `useDocumentSharing()` - Access control, permissions (200+ lines)
 
 **New Features**:
+
 - ✅ Integrated with `useFormValidation()` for file type/size validation
 - ✅ Uses query service layer for all DB operations
 - ✅ Unified error state across all operations
@@ -28,34 +30,36 @@
 - ✅ Computed properties for filtering (currentDocuments, archivedDocuments)
 
 **API**:
+
 ```typescript
 const {
   // State
-  documents,        // All documents
-  loading,          // Fetch/update state
-  isUploading,      // Upload state
-  isSharing,        // Sharing state
-  error,            // Combined errors
-  fileErrors,       // File validation errors
+  documents, // All documents
+  loading, // Fetch/update state
+  isUploading, // Upload state
+  isSharing, // Sharing state
+  error, // Combined errors
+  fileErrors, // File validation errors
 
   // Computed
-  documentsByType,  // Grouped by type
+  documentsByType, // Grouped by type
   currentDocuments, // Non-archived only
   archivedDocuments,
 
   // Methods
-  fetchDocuments,        // Fetch with filters
+  fetchDocuments, // Fetch with filters
   fetchDocumentVersions, // Get version history
-  updateDocument,        // Update metadata
-  deleteDocument,        // Delete + cleanup storage
-  uploadDocument,        // New file upload
-  uploadNewVersion,      // Version existing doc
-  shareDocument,         // Grant access
-  revokeAccess,          // Revoke access
-} = useDocumentsConsolidated()
+  updateDocument, // Update metadata
+  deleteDocument, // Delete + cleanup storage
+  uploadDocument, // New file upload
+  uploadNewVersion, // Version existing doc
+  shareDocument, // Grant access
+  revokeAccess, // Revoke access
+} = useDocumentsConsolidated();
 ```
 
 **Benefits**:
+
 - Single composable replaces 3 separate ones
 - Reduced imports in components (1 instead of 3)
 - Centralized error handling
@@ -72,11 +76,13 @@ const {
 **Purpose**: Unify search functionality (entity search, filtering, caching) into single composable
 
 **Consolidates**:
+
 - `useEntitySearch()` - Search schools, coaches, interactions, metrics (312 lines)
 - `useSearchFilters()` - Filter state management (120+ lines)
 - `useCachedSearch()` - Result caching with debouncing (80+ lines)
 
 **New Features**:
+
 - ✅ Multi-entity search (schools, coaches, interactions, metrics)
 - ✅ Advanced filtering by entity type (division, state, sport, date range, etc.)
 - ✅ Debounced searching (300ms) to prevent excessive queries
@@ -87,39 +93,41 @@ const {
 - ✅ Parallel search execution (all entity types searched simultaneously)
 
 **API**:
+
 ```typescript
 const {
   // State
-  query,              // Search query
-  searchType,         // 'all' | 'schools' | 'coaches' | 'interactions' | 'metrics'
-  isSearching,        // Loading state
-  useFuzzySearch,     // Enable/disable fuzzy matching
+  query, // Search query
+  searchType, // 'all' | 'schools' | 'coaches' | 'interactions' | 'metrics'
+  isSearching, // Loading state
+  useFuzzySearch, // Enable/disable fuzzy matching
 
   // Results
-  schoolResults,      // School search results
-  coachResults,       // Coach search results
+  schoolResults, // School search results
+  coachResults, // Coach search results
   interactionResults, // Interaction search results
-  metricsResults,     // Metrics search results
-  totalResults,       // Count across all types
-  hasResults,         // Boolean
+  metricsResults, // Metrics search results
+  totalResults, // Count across all types
+  hasResults, // Boolean
 
   // Filters
-  filters,            // Active filter state
-  isFiltering,        // Whether any filters applied
+  filters, // Active filter state
+  isFiltering, // Whether any filters applied
 
   // Methods
-  performSearch,      // Search with debouncing & caching
-  clearResults,       // Clear all results
-  applyFilter,        // Apply filter & re-search
-  clearFilters,       // Reset all filters & re-search
-  getFilterValue,     // Get specific filter value
-  clearCache,         // Invalidate cache
-  getSchoolSuggestions,  // Autocomplete suggestions
+  performSearch, // Search with debouncing & caching
+  clearResults, // Clear all results
+  applyFilter, // Apply filter & re-search
+  clearFilters, // Reset all filters & re-search
+  getFilterValue, // Get specific filter value
+  clearCache, // Invalidate cache
+  getSchoolSuggestions, // Autocomplete suggestions
   getCoachSuggestions,
-} = useSearchConsolidated()
+} = useSearchConsolidated();
 ```
 
 **Benefits**:
+
 - Single composable replaces 3 separate ones
 - Debouncing reduces API calls (300ms wait)
 - Caching reduces redundant queries (5min TTL)
@@ -128,17 +136,18 @@ const {
 - ~45% code reduction vs separate composables
 
 **Usage Example**:
+
 ```typescript
-const search = useSearchConsolidated()
+const search = useSearchConsolidated();
 
 // Initial search
-await search.performSearch('stanford') // Debounced
+await search.performSearch("stanford"); // Debounced
 
 // Apply filter - automatically re-searches
-await search.applyFilter('schools', 'division', 'D1')
+await search.applyFilter("schools", "division", "D1");
 
 // Results updated automatically with filter applied
-console.log(search.schoolResults.value) // Only D1 schools
+console.log(search.schoolResults.value); // Only D1 schools
 ```
 
 ---
@@ -202,6 +211,7 @@ console.log(search.schoolResults.value) // Only D1 schools
     - Implement rate limiting
 
 **Benefits**:
+
 - Consistent API patterns across all endpoints
 - Clear examples for new endpoint development
 - Security checklist (auth, ownership, data validation)
@@ -215,6 +225,7 @@ console.log(search.schoolResults.value) // Only D1 schools
 **File**: `.github/copilot-instructions.md` (Updated)
 
 **Changes**:
+
 - Added Phase 2 section with new consolidated composables
 - Before/after migration examples for both consolidations
 - Links to new documentation files
@@ -224,16 +235,16 @@ console.log(search.schoolResults.value) // Only D1 schools
 
 ## 📊 Consolidation Summary
 
-| Aspect | Before | After | Reduction |
-|--------|--------|-------|-----------|
-| Document composables | 3 files (695 lines) | 1 file (632 lines) | 9% |
-| Search composables | 3 files (512 lines) | 1 file (588 lines)* | -15% (added features) |
-| Configuration files | Scattered | Centralized | 50%+ consolidation |
-| Error handling | Duplicated 50+ times | Single query layer | 100% centralized |
-| Validation logic | 2 locations | 1 location | 100% unified |
-| Documentation | Fragmented | Comprehensive guide | Single reference |
+| Aspect               | Before               | After                | Reduction             |
+| -------------------- | -------------------- | -------------------- | --------------------- |
+| Document composables | 3 files (695 lines)  | 1 file (632 lines)   | 9%                    |
+| Search composables   | 3 files (512 lines)  | 1 file (588 lines)\* | -15% (added features) |
+| Configuration files  | Scattered            | Centralized          | 50%+ consolidation    |
+| Error handling       | Duplicated 50+ times | Single query layer   | 100% centralized      |
+| Validation logic     | 2 locations          | 1 location           | 100% unified          |
+| Documentation        | Fragmented           | Comprehensive guide  | Single reference      |
 
-*Search consolidation includes added features (debouncing, caching, parallel execution) - no net size increase
+\*Search consolidation includes added features (debouncing, caching, parallel execution) - no net size increase
 
 ---
 
@@ -245,8 +256,8 @@ console.log(search.schoolResults.value) // Only D1 schools
 
 ```typescript
 // New components should use:
-import { useDocumentsConsolidated } from '~/composables/useDocumentsConsolidated'
-import { useSearchConsolidated } from '~/composables/useSearchConsolidated'
+import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
+import { useSearchConsolidated } from "~/composables/useSearchConsolidated";
 ```
 
 ### Gradual (Non-breaking)
@@ -255,8 +266,8 @@ Old composables remain available for existing code:
 
 ```typescript
 // Old code continues to work (no forced migration)
-import { useDocumentFetch } from '~/composables/useDocumentFetch'
-import { useEntitySearch } from '~/composables/useEntitySearch'
+import { useDocumentFetch } from "~/composables/useDocumentFetch";
+import { useEntitySearch } from "~/composables/useEntitySearch";
 ```
 
 ### Deprecation Timeline
@@ -298,6 +309,7 @@ import { useEntitySearch } from '~/composables/useEntitySearch'
 ## ✅ Validation & Testing
 
 ### TypeScript Validation
+
 ```bash
 npm run type-check
 # Expected: Pass (0 errors)
@@ -305,12 +317,14 @@ npm run type-check
 ```
 
 ### Build Validation
+
 ```bash
 npm run build
 # Expected: Pass (build succeeds)
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint
 # Expected: Pass (no lint errors)
@@ -402,7 +416,8 @@ A: See `.github/copilot-instructions.md` → "Phase 2: Composable Consolidation"
 
 ## 🎉 Phase 2 Complete!
 
-**Summary**: 
+**Summary**:
+
 - ✅ 2 major composable consolidations (documents, search)
 - ✅ Comprehensive API documentation guide
 - ✅ Updated copilot instructions with Phase 2 info

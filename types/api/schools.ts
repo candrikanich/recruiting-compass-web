@@ -8,21 +8,21 @@ export namespace SchoolsAPI {
   export interface GetFitScoreRequest {}
 
   export interface FitScoreData {
-    schoolId: string
-    schoolName: string
-    fitScore: number | null
-    fitScoreData: Record<string, unknown> | null
+    schoolId: string;
+    schoolName: string;
+    fitScore: number | null;
+    fitScoreData: Record<string, unknown> | null;
   }
 
   export interface GetFitScoreResponse {
-    success: boolean
-    data: FitScoreData
+    success: boolean;
+    data: FitScoreData;
   }
 
   export interface CalculateFitScoreRequest {}
 
   export interface CalculateFitScoreResponse {
-    success: boolean
-    data: FitScoreData
+    success: boolean;
+    data: FitScoreData;
   }
 }

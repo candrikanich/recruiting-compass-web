@@ -1,21 +1,29 @@
-import type { H3Event } from 'h3'
+import type { H3Event } from "h3";
 
-import { logger } from './logger'
-import { createServerSupabaseClient } from './supabase'
-import type { AuditLogInsert } from '~/types/database-helpers'
+import { logger } from "./logger";
+import { createServerSupabaseClient } from "./supabase";
+import type { AuditLogInsert } from "~/types/database-helpers";
 
 interface AuditLogParams {
-  userId: string
-  action: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'EXPORT' | 'IMPORT'
-  resourceType: string
-  resourceId?: string
-  tableName?: string
-  description?: string
-  oldValues?: Record<string, any>
-  newValues?: Record<string, any>
-  status?: 'success' | 'failure'
-  errorMessage?: string
-  metadata?: Record<string, any>
+  userId: string;
+  action:
+    | "CREATE"
+    | "READ"
+    | "UPDATE"
+    | "DELETE"
+    | "LOGIN"
+    | "LOGOUT"
+    | "EXPORT"
+    | "IMPORT";
+  resourceType: string;
+  resourceId?: string;
+  tableName?: string;
+  description?: string;
+  oldValues?: Record<string, any>;
+  newValues?: Record<string, any>;
+  status?: "success" | "failure";
+  errorMessage?: string;
+  metadata?: Record<string, any>;
 }
 
 /**
@@ -37,44 +45,42 @@ interface AuditLogParams {
  */
 export async function auditLog(
   event: H3Event,
-  params: AuditLogParams
+  params: AuditLogParams,
 ): Promise<void> {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createServerSupabaseClient();
 
     // Extract client info from request
-    const ipAddress = getClientIP(event)
-    const userAgent = getHeader(event, 'user-agent') || 'Unknown'
+    const ipAddress = getClientIP(event);
+    const userAgent = getHeader(event, "user-agent") || "Unknown";
 
     // Create audit log entry
-    const { error } = await supabase
-      .from('audit_logs')
-      .insert({
-        user_id: params.userId,
-        action: params.action,
-        resource_type: params.resourceType,
-        resource_id: params.resourceId || null,
-        table_name: params.tableName || null,
-        description: params.description || null,
-        old_values: params.oldValues || null,
-        new_values: params.newValues || null,
-        ip_address: ipAddress,
-        user_agent: userAgent,
-        status: params.status || 'success',
-        error_message: params.errorMessage || null,
-        metadata: params.metadata || {},
-      } as any)
+    const { error } = await supabase.from("audit_logs").insert({
+      user_id: params.userId,
+      action: params.action,
+      resource_type: params.resourceType,
+      resource_id: params.resourceId || null,
+      table_name: params.tableName || null,
+      description: params.description || null,
+      old_values: params.oldValues || null,
+      new_values: params.newValues || null,
+      ip_address: ipAddress,
+      user_agent: userAgent,
+      status: params.status || "success",
+      error_message: params.errorMessage || null,
+      metadata: params.metadata || {},
+    } as any);
 
     if (error) {
-      logger.error('Failed to create audit log', {
+      logger.error("Failed to create audit log", {
         error: error.message,
         params,
-      })
+      });
     }
   } catch (err) {
-    logger.error('Error writing audit log', {
-      error: err instanceof Error ? err.message : 'Unknown error',
-    })
+    logger.error("Error writing audit log", {
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
     // Don't throw - audit log failures shouldn't break main functionality
   }
 }
@@ -84,14 +90,14 @@ export async function auditLog(
  */
 export async function auditLogBatch(
   event: H3Event,
-  params: AuditLogParams[]
+  params: AuditLogParams[],
 ): Promise<void> {
   try {
-    if (params.length === 0) return
+    if (params.length === 0) return;
 
-    const supabase = createServerSupabaseClient()
-    const ipAddress = getClientIP(event)
-    const userAgent = getHeader(event, 'user-agent') || 'Unknown'
+    const supabase = createServerSupabaseClient();
+    const ipAddress = getClientIP(event);
+    const userAgent = getHeader(event, "user-agent") || "Unknown";
 
     const entries = params.map((p) => ({
       user_id: p.userId,
@@ -104,25 +110,23 @@ export async function auditLogBatch(
       new_values: p.newValues || null,
       ip_address: ipAddress,
       user_agent: userAgent,
-      status: p.status || 'success',
+      status: p.status || "success",
       error_message: p.errorMessage || null,
       metadata: p.metadata || {},
-    })) as AuditLogInsert[]
+    })) as AuditLogInsert[];
 
-    const { error } = await supabase
-      .from('audit_logs')
-      .insert(entries as any)
+    const { error } = await supabase.from("audit_logs").insert(entries as any);
 
     if (error) {
-      logger.error('Failed to batch create audit logs', {
+      logger.error("Failed to batch create audit logs", {
         error: error.message,
         count: params.length,
-      })
+      });
     }
   } catch (err) {
-    logger.error('Error writing batch audit logs', {
-      error: err instanceof Error ? err.message : 'Unknown error',
-    })
+    logger.error("Error writing batch audit logs", {
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
   }
 }
 
@@ -132,15 +136,15 @@ export async function auditLogBatch(
  */
 function getClientIP(event: H3Event): string {
   // Check X-Forwarded-For header (for proxied requests)
-  const forwarded = getHeader(event, 'x-forwarded-for')
+  const forwarded = getHeader(event, "x-forwarded-for");
   if (forwarded) {
     // X-Forwarded-For can contain multiple IPs, take the first
-    return (forwarded as string).split(',')[0].trim()
+    return (forwarded as string).split(",")[0].trim();
   }
 
   // Fallback to remote address
-  const remoteAddress = event.node.req.socket.remoteAddress
-  return remoteAddress || 'Unknown'
+  const remoteAddress = event.node.req.socket.remoteAddress;
+  return remoteAddress || "Unknown";
 }
 
 /**
@@ -148,33 +152,33 @@ function getClientIP(event: H3Event): string {
  * Removes passwords, tokens, and other sensitive fields
  */
 export function sanitizeForAuditLog(
-  data: Record<string, any>
+  data: Record<string, any>,
 ): Record<string, any> {
   const sensitiveFields = [
-    'password',
-    'password_hash',
-    'token',
-    'access_token',
-    'refresh_token',
-    'api_key',
-    'secret',
-    'credit_card',
-    'ssn',
-    'social_security_number',
-  ]
+    "password",
+    "password_hash",
+    "token",
+    "access_token",
+    "refresh_token",
+    "api_key",
+    "secret",
+    "credit_card",
+    "ssn",
+    "social_security_number",
+  ];
 
-  const sanitized = { ...data }
+  const sanitized = { ...data };
 
   sensitiveFields.forEach((field) => {
-    const regex = new RegExp(`^${field}$`, 'i')
+    const regex = new RegExp(`^${field}$`, "i");
     Object.keys(sanitized).forEach((key) => {
       if (regex.test(key)) {
-        sanitized[key] = '[REDACTED]'
+        sanitized[key] = "[REDACTED]";
       }
-    })
-  })
+    });
+  });
 
-  return sanitized
+  return sanitized;
 }
 
 /**
@@ -184,19 +188,23 @@ export function sanitizeForAuditLog(
 export async function logCRUD(
   event: H3Event,
   params: {
-    userId: string
-    action: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE'
-    resourceType: string
-    resourceId?: string
-    oldValues?: Record<string, any>
-    newValues?: Record<string, any>
-    description?: string
-  }
+    userId: string;
+    action: "CREATE" | "READ" | "UPDATE" | "DELETE";
+    resourceType: string;
+    resourceId?: string;
+    oldValues?: Record<string, any>;
+    newValues?: Record<string, any>;
+    description?: string;
+  },
 ): Promise<void> {
   const sanitized = {
-    oldValues: params.oldValues ? sanitizeForAuditLog(params.oldValues) : undefined,
-    newValues: params.newValues ? sanitizeForAuditLog(params.newValues) : undefined,
-  }
+    oldValues: params.oldValues
+      ? sanitizeForAuditLog(params.oldValues)
+      : undefined,
+    newValues: params.newValues
+      ? sanitizeForAuditLog(params.newValues)
+      : undefined,
+  };
 
   return auditLog(event, {
     userId: params.userId,
@@ -207,8 +215,8 @@ export async function logCRUD(
     description: params.description,
     oldValues: sanitized.oldValues,
     newValues: sanitized.newValues,
-    status: 'success',
-  })
+    status: "success",
+  });
 }
 
 /**
@@ -218,14 +226,14 @@ export async function logCRUD(
 export async function logError(
   event: H3Event,
   params: {
-    userId: string
-    action: string
-    resourceType: string
-    resourceId?: string
-    errorMessage: string
-    description?: string
-    metadata?: Record<string, any>
-  }
+    userId: string;
+    action: string;
+    resourceType: string;
+    resourceId?: string;
+    errorMessage: string;
+    description?: string;
+    metadata?: Record<string, any>;
+  },
 ): Promise<void> {
   return auditLog(event, {
     userId: params.userId,
@@ -234,9 +242,9 @@ export async function logError(
     resourceId: params.resourceId,
     description: params.description,
     errorMessage: params.errorMessage,
-    status: 'failure',
+    status: "failure",
     metadata: params.metadata,
-  })
+  });
 }
 
 /**
@@ -246,57 +254,60 @@ export async function logError(
 export async function getUserAuditLogs(
   userId: string,
   options: {
-    limit?: number
-    offset?: number
-    action?: string
-    startDate?: Date
-    endDate?: Date
-  } = {}
+    limit?: number;
+    offset?: number;
+    action?: string;
+    startDate?: Date;
+    endDate?: Date;
+  } = {},
 ): Promise<any[]> {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createServerSupabaseClient();
 
     let query = supabase
-      .from('audit_logs')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
+      .from("audit_logs")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
 
     if (options.limit) {
-      query = query.limit(options.limit)
+      query = query.limit(options.limit);
     }
 
     if (options.offset) {
-      query = query.range(options.offset, (options.offset + (options.limit || 50)) - 1)
+      query = query.range(
+        options.offset,
+        options.offset + (options.limit || 50) - 1,
+      );
     }
 
     if (options.action) {
-      query = query.eq('action', options.action)
+      query = query.eq("action", options.action);
     }
 
     if (options.startDate) {
-      query = query.gte('created_at', options.startDate.toISOString())
+      query = query.gte("created_at", options.startDate.toISOString());
     }
 
     if (options.endDate) {
-      query = query.lte('created_at', options.endDate.toISOString())
+      query = query.lte("created_at", options.endDate.toISOString());
     }
 
-    const { data, error } = await query
+    const { data, error } = await query;
 
     if (error) {
-      logger.error('Failed to retrieve audit logs', {
+      logger.error("Failed to retrieve audit logs", {
         error: error.message,
-      })
-      return []
+      });
+      return [];
     }
 
-    return data || []
+    return data || [];
   } catch (err) {
-    logger.error('Error retrieving audit logs', {
-      error: err instanceof Error ? err.message : 'Unknown error',
-    })
-    return []
+    logger.error("Error retrieving audit logs", {
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
+    return [];
   }
 }
 
@@ -306,18 +317,18 @@ export async function getUserAuditLogs(
  */
 export async function scheduleAuditLogCleanup(): Promise<void> {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createServerSupabaseClient();
 
     // Schedule cleanup to run daily at 2 AM
     // This is just logging the instruction - actual scheduling happens in deployment config
-    logger.info('Audit log cleanup scheduled for daily execution at 2 AM')
+    logger.info("Audit log cleanup scheduled for daily execution at 2 AM");
 
     // For testing/immediate cleanup:
     // const { data, error } = await supabase.rpc('delete_expired_audit_logs')
     // if (error) logger.error('Cleanup failed', { error: error.message })
   } catch (err) {
-    logger.error('Failed to schedule audit log cleanup', {
-      error: err instanceof Error ? err.message : 'Unknown error',
-    })
+    logger.error("Failed to schedule audit log cleanup", {
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
   }
 }

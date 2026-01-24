@@ -5,19 +5,23 @@
         <p class="font-semibold text-gray-900">
           {{
             invitation.parent_user_id
-              ? 'Parent wants to link accounts'
-              : 'Player wants to link accounts'
+              ? "Parent wants to link accounts"
+              : "Player wants to link accounts"
           }}
         </p>
         <p class="text-sm text-gray-600 mt-1">{{ invitation.invited_email }}</p>
 
         <!-- Expiry warning -->
         <div v-if="isExpiringSoon" class="mt-2 flex items-center gap-2">
-          <span class="text-xs text-yellow-700 font-medium">⚠️ Expires {{ expiresIn }}</span>
+          <span class="text-xs text-yellow-700 font-medium"
+            >⚠️ Expires {{ expiresIn }}</span
+          >
         </div>
 
         <div v-if="isExpired" class="mt-2">
-          <span class="text-xs text-red-600 font-medium">❌ Invitation expired</span>
+          <span class="text-xs text-red-600 font-medium"
+            >❌ Invitation expired</span
+          >
         </div>
       </div>
 
@@ -29,7 +33,7 @@
           :disabled="loading"
           class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium transition"
         >
-          {{ loading ? 'Accepting...' : 'Accept' }}
+          {{ loading ? "Accepting..." : "Accept" }}
         </button>
 
         <button
@@ -39,7 +43,7 @@
           :disabled="loading"
           class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 text-sm font-medium transition"
         >
-          {{ loading ? 'Rejecting...' : 'Decline' }}
+          {{ loading ? "Rejecting..." : "Decline" }}
         </button>
 
         <button
@@ -56,43 +60,43 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { AccountLink } from '~/types/models'
+import { computed } from "vue";
+import type { AccountLink } from "~/types/models";
 
 const props = withDefaults(
   defineProps<{
-    invitation: AccountLink
-    loading?: boolean
+    invitation: AccountLink;
+    loading?: boolean;
   }>(),
   {
     loading: false,
-  }
-)
+  },
+);
 
 defineEmits<{
-  accept: [linkId: string]
-  reject: [linkId: string]
-}>()
+  accept: [linkId: string];
+  reject: [linkId: string];
+}>();
 
-const expiresAt = computed(() => new Date(props.invitation.expires_at))
-const now = computed(() => new Date())
-const isExpired = computed(() => expiresAt.value < now.value)
+const expiresAt = computed(() => new Date(props.invitation.expires_at));
+const now = computed(() => new Date());
+const isExpired = computed(() => expiresAt.value < now.value);
 
 const timeUntilExpiry = computed(() => {
-  const diff = expiresAt.value.getTime() - now.value.getTime()
-  const hours = Math.floor(diff / (1000 * 60 * 60))
-  const days = Math.floor(hours / 24)
+  const diff = expiresAt.value.getTime() - now.value.getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
 
-  if (days > 0) return `in ${days} day${days > 1 ? 's' : ''}`
-  if (hours > 0) return `in ${hours} hour${hours > 1 ? 's' : ''}`
-  return 'very soon'
-})
+  if (days > 0) return `in ${days} day${days > 1 ? "s" : ""}`;
+  if (hours > 0) return `in ${hours} hour${hours > 1 ? "s" : ""}`;
+  return "very soon";
+});
 
 const isExpiringSoon = computed(() => {
-  const diff = expiresAt.value.getTime() - now.value.getTime()
-  const hoursLeft = diff / (1000 * 60 * 60)
-  return hoursLeft < 48 && hoursLeft > 0
-})
+  const diff = expiresAt.value.getTime() - now.value.getTime();
+  const hoursLeft = diff / (1000 * 60 * 60);
+  return hoursLeft < 48 && hoursLeft > 0;
+});
 
-const expiresIn = computed(() => timeUntilExpiry.value)
+const expiresIn = computed(() => timeUntilExpiry.value);
 </script>

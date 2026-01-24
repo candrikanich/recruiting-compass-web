@@ -1,10 +1,19 @@
 <template>
-  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div class="rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto bg-white border border-slate-200">
+  <div
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+  >
+    <div
+      class="rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto bg-white border border-slate-200"
+    >
       <!-- Header -->
-      <div class="flex items-center justify-between p-6 border-b border-slate-200">
+      <div
+        class="flex items-center justify-between p-6 border-b border-slate-200"
+      >
         <h2 class="text-2xl font-bold text-slate-900">Edit Coach</h2>
-        <button @click="$emit('close')" class="text-2xl text-slate-500 transition hover:text-slate-900">
+        <button
+          @click="$emit('close')"
+          class="text-2xl text-slate-500 transition hover:text-slate-900"
+        >
           ×
         </button>
       </div>
@@ -14,7 +23,10 @@
         <!-- Name Fields -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="firstName" class="block text-sm font-medium mb-1 text-slate-500">
+            <label
+              for="firstName"
+              class="block text-sm font-medium mb-1 text-slate-500"
+            >
               First Name <span class="text-red-600">*</span>
             </label>
             <input
@@ -26,7 +38,10 @@
             />
           </div>
           <div>
-            <label for="lastName" class="block text-sm font-medium mb-1 text-slate-500">
+            <label
+              for="lastName"
+              class="block text-sm font-medium mb-1 text-slate-500"
+            >
               Last Name <span class="text-red-600">*</span>
             </label>
             <input
@@ -42,7 +57,10 @@
         <!-- Contact Info -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="email" class="block text-sm font-medium mb-1 text-slate-500">
+            <label
+              for="email"
+              class="block text-sm font-medium mb-1 text-slate-500"
+            >
               Email
             </label>
             <input
@@ -53,7 +71,10 @@
             />
           </div>
           <div>
-            <label for="phone" class="block text-sm font-medium mb-1 text-slate-500">
+            <label
+              for="phone"
+              class="block text-sm font-medium mb-1 text-slate-500"
+            >
               Phone
             </label>
             <input
@@ -68,7 +89,10 @@
         <!-- Social Media -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="twitter" class="block text-sm font-medium mb-1 text-slate-500">
+            <label
+              for="twitter"
+              class="block text-sm font-medium mb-1 text-slate-500"
+            >
               Twitter Handle
             </label>
             <input
@@ -80,7 +104,10 @@
             />
           </div>
           <div>
-            <label for="instagram" class="block text-sm font-medium mb-1 text-slate-500">
+            <label
+              for="instagram"
+              class="block text-sm font-medium mb-1 text-slate-500"
+            >
               Instagram Handle
             </label>
             <input
@@ -95,7 +122,10 @@
 
         <!-- Role -->
         <div>
-          <label for="role" class="block text-sm font-medium mb-1 text-slate-500">
+          <label
+            for="role"
+            class="block text-sm font-medium mb-1 text-slate-500"
+          >
             Role <span class="text-red-600">*</span>
           </label>
           <select
@@ -113,7 +143,10 @@
 
         <!-- Notes -->
         <div>
-          <label for="notes" class="block text-sm font-medium mb-1 text-slate-500">
+          <label
+            for="notes"
+            class="block text-sm font-medium mb-1 text-slate-500"
+          >
             Notes
           </label>
           <textarea
@@ -132,7 +165,7 @@
             :disabled="loading"
             class="flex-1 px-4 py-2 text-white font-semibold rounded-lg transition bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
           >
-            {{ loading ? 'Saving...' : 'Save Changes' }}
+            {{ loading ? "Saving..." : "Save Changes" }}
           </button>
           <button
             type="button"
@@ -148,45 +181,45 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { useCoaches } from '~/composables/useCoaches'
-import type { Coach } from '~/types/models'
+import { reactive, ref } from "vue";
+import { useCoaches } from "~/composables/useCoaches";
+import type { Coach } from "~/types/models";
 
 interface Props {
-  coach: Coach
+  coach: Coach;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  close: []
-  updated: [coach: Coach]
-}>()
+  close: [];
+  updated: [coach: Coach];
+}>();
 
-const { updateCoach } = useCoaches()
-const loading = ref(false)
+const { updateCoach } = useCoaches();
+const loading = ref(false);
 
 const form = reactive({
   first_name: props.coach.first_name,
   last_name: props.coach.last_name,
-  email: props.coach.email || '',
-  phone: props.coach.phone || '',
-  twitter_handle: props.coach.twitter_handle || '',
-  instagram_handle: props.coach.instagram_handle || '',
+  email: props.coach.email || "",
+  phone: props.coach.phone || "",
+  twitter_handle: props.coach.twitter_handle || "",
+  instagram_handle: props.coach.instagram_handle || "",
   role: props.coach.role,
-  notes: props.coach.notes || '',
-})
+  notes: props.coach.notes || "",
+});
 
 const handleSubmit = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    const updated = await updateCoach(props.coach.id, form)
-    emit('updated', updated)
-    emit('close')
+    const updated = await updateCoach(props.coach.id, form);
+    emit("updated", updated);
+    emit("close");
   } catch (err) {
-    console.error('Failed to update coach:', err)
+    console.error("Failed to update coach:", err);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 </script>

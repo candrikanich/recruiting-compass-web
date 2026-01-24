@@ -11,10 +11,10 @@
 
 <script setup lang="ts">
 defineProps<{
-  variant?: 'icon' | 'full'
-}>()
+  variant?: "icon" | "full";
+}>();
 
 defineEmits<{
-  click: []
-}>()
+  click: [];
+}>();
 </script>

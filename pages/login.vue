@@ -166,6 +166,7 @@
 import { ref, computed } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useFormValidation } from "~/composables/useFormValidation";
+import { useUserStore } from "~/stores/user";
 import { loginSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
 import {
@@ -213,7 +214,11 @@ const validateEmail = async () => {
 const validatePassword = async () => {
   validating.value = true;
   try {
-    await validateField("password", password.value, PASSWORD_SCHEMA.shape.password);
+    await validateField(
+      "password",
+      password.value,
+      PASSWORD_SCHEMA.shape.password,
+    );
   } finally {
     validating.value = false;
   }
@@ -226,7 +231,7 @@ const handleLogin = async () => {
       email: email.value,
       password: password.value,
     },
-    loginSchema
+    loginSchema,
   );
 
   if (!validated) {

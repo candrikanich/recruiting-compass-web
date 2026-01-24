@@ -68,6 +68,7 @@ ORDER BY policyname;
 ```
 
 Expected: Should return 4 policies:
+
 - Athletes can create own task records
 - Athletes can delete own task records
 - Athletes can update own task status
@@ -96,6 +97,7 @@ ORDER BY policyname;
 ```
 
 Expected: Should return 3 policies:
+
 - Athletes can view logs about themselves
 - Parents can log views of linked athletes
 - Parents can view their own logs
@@ -154,6 +156,7 @@ After SQL verification, test the actual behavior:
 
 **Cause**: Policies were already created
 **Fix**: Drop existing policies first:
+
 ```sql
 DROP POLICY IF EXISTS "policy_name" ON table_name;
 ```
@@ -167,7 +170,7 @@ DROP POLICY IF EXISTS "policy_name" ON table_name;
 
 **Cause**: API route isn't using RLS (allowing direct mutation)
 **Fix**: Ensure you're using Supabase client on client-side (which enforces RLS)
-    Or add API-level guards in Phase 7.5
+Or add API-level guards in Phase 7.5
 
 ## Next Steps
 

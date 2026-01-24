@@ -20,6 +20,7 @@ du -h .nuxt/dist/client/_nuxt/entry.*.css
 ### Step 2: Verify Tailwind Configuration
 
 **Current state** (`tailwind.config.js`):
+
 ```javascript
 export default {
   content: [
@@ -31,13 +32,14 @@ export default {
     "./nuxt.config.{js,ts}",
   ],
   theme: {
-    extend: {},  // No extensions = all default utilities
+    extend: {}, // No extensions = all default utilities
   },
   plugins: [],
 };
 ```
 
 **Verification checklist:**
+
 - ✓ Content paths are correct (covers all component/page files)
 - ✓ No plugins loaded
 - ✓ Theme is minimal (good)
@@ -99,12 +101,14 @@ grep -r "@import\|import.*\.css" src/ components/ pages/ 2>/dev/null
 ```
 
 **Verify assets/css structure:**
+
 ```bash
 ls -lh assets/css/
 ls -lh assets/styles/
 ```
 
 Output expected:
+
 ```
 assets/css/main.css          # Primary CSS (should import others)
 assets/styles/theme.css      # Semantic colors (merge into main.css)
@@ -120,10 +124,10 @@ assets/styles/transitions.css # Animations (merge into main.css)
 /* assets/css/main.css */
 
 /* Theme tokens - colors, spacing, typography */
-@import './theme.css';
+@import "./theme.css";
 
 /* Transitions and animations */
-@import './transitions.css';
+@import "./transitions.css";
 
 /* Tailwind directives */
 @tailwind base;
@@ -135,16 +139,18 @@ assets/styles/transitions.css # Animations (merge into main.css)
 ```
 
 **Remove duplicate main.css if exists:**
+
 ```bash
 rm assets/styles/main.css  # If duplicate of assets/css/main.css
 ```
 
 **Update nuxt.config.ts** (verify import):
+
 ```typescript
 export default defineNuxtConfig({
-  css: ["~/assets/css/main.css"],  // Single entry point
+  css: ["~/assets/css/main.css"], // Single entry point
   // ... rest of config
-})
+});
 ```
 
 ### Step 6: Verify Component-Scoped Styles
@@ -159,7 +165,7 @@ All component-specific styles should use `<style scoped>`:
 
 <style scoped>
 .card {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 </style>
 
@@ -172,6 +178,7 @@ All component-specific styles should use `<style scoped>`:
 ```
 
 **Audit existing components** (optional but thorough):
+
 ```bash
 # Find all <style> blocks without scoped attribute
 grep -r "<style>" components/ pages/ --include="*.vue" | grep -v "scoped"
@@ -219,26 +226,26 @@ export default defineNuxtConfig({
   // NEW: Vite caching configuration
   vite: {
     // Cache directory (add to .gitignore; already done via .nuxt entry)
-    cacheDir: '.vite',
+    cacheDir: ".vite",
 
     // Pre-bundle frequently used dependencies
     optimizeDeps: {
       include: [
-        'vue',
-        '@pinia/nuxt',
-        '@supabase/supabase-js',
-        'chart.js',
-        'fuse.js',
-        'leaflet',
-        '@vueuse/core'
+        "vue",
+        "@pinia/nuxt",
+        "@supabase/supabase-js",
+        "chart.js",
+        "fuse.js",
+        "leaflet",
+        "@vueuse/core",
       ],
       exclude: [
         // Exclude large libs that change often
-        'html2canvas',
-        'jspdf',
-        'jspdf-autotable'
-      ]
-    }
+        "html2canvas",
+        "jspdf",
+        "jspdf-autotable",
+      ],
+    },
   },
 
   nitro: {
@@ -316,6 +323,7 @@ npm run build 2>&1 | tail -5
 ```
 
 **Expected Impact:**
+
 - Cold build: 45-50 sec (unchanged)
 - Warm build: 30-35 sec (25-35% improvement)
 
@@ -330,74 +338,63 @@ Analyze which pages/features use heavy libraries:
 ```typescript
 // Dependency mapping
 const dependencies = {
-  'Chart.js ecosystem': [
-    'chart.js',
-    'chartjs-adapter-date-fns',
-    'chartjs-plugin-annotation',
-    'vue-chartjs'
+  "Chart.js ecosystem": [
+    "chart.js",
+    "chartjs-adapter-date-fns",
+    "chartjs-plugin-annotation",
+    "vue-chartjs",
   ],
-  'PDF/Excel generation': [
-    'jspdf',
-    'jspdf-autotable',
-    'html2canvas',
-    'xlsx'
-  ],
-  'Mapping': [
-    'leaflet',
-    'vue-leaflet',
-    '@types/leaflet'
-  ],
-  'Core': [
-    'vue',
-    'nuxt',
-    '@supabase/supabase-js',
-    'pinia'
-  ]
-}
+  "PDF/Excel generation": ["jspdf", "jspdf-autotable", "html2canvas", "xlsx"],
+  Mapping: ["leaflet", "vue-leaflet", "@types/leaflet"],
+  Core: ["vue", "nuxt", "@supabase/supabase-js", "pinia"],
+};
 
 // Usage pages:
 const pages = {
-  '/analytics': ['Chart.js ecosystem'],
-  '/documents': ['PDF/Excel generation'],
-  '/schools/[id]': ['Mapping'],
-  'all': ['Core']
-}
+  "/analytics": ["Chart.js ecosystem"],
+  "/documents": ["PDF/Excel generation"],
+  "/schools/[id]": ["Mapping"],
+  all: ["Core"],
+};
 ```
 
 ### Step 2: Lazy-Load Chart.js in Composables
 
 **Before (eager import):**
+
 ```typescript
 // composables/useCoachAnalytics.ts
-import Chart from 'chart.js/auto'
-import ChartjsPluginAnnotation from 'chartjs-plugin-annotation'
+import Chart from "chart.js/auto";
+import ChartjsPluginAnnotation from "chartjs-plugin-annotation";
 
 export const useCoachAnalytics = () => {
   const createChart = () => {
-    Chart.register(ChartjsPluginAnnotation)
+    Chart.register(ChartjsPluginAnnotation);
     // ... use Chart
-  }
-  return { createChart }
-}
+  };
+  return { createChart };
+};
 ```
 
 **After (lazy import):**
+
 ```typescript
 // composables/useCoachAnalytics.ts
 export const useCoachAnalytics = () => {
   const createChart = async () => {
-    const { default: Chart } = await import('chart.js/auto')
-    const { default: Annotation } = await import('chartjs-plugin-annotation')
+    const { default: Chart } = await import("chart.js/auto");
+    const { default: Annotation } = await import("chartjs-plugin-annotation");
 
-    Chart.register(Annotation)
+    Chart.register(Annotation);
     // ... use Chart
-  }
+  };
 
-  return { createChart }
-}
+  return { createChart };
+};
 ```
 
 **Component usage:**
+
 ```vue
 <template>
   <div>
@@ -407,19 +404,20 @@ export const useCoachAnalytics = () => {
 </template>
 
 <script setup>
-const { createChart } = useCoachAnalytics()
-const chartContainer = ref(null)
+const { createChart } = useCoachAnalytics();
+const chartContainer = ref(null);
 
 const loadAndRender = async () => {
-  const chart = await createChart()
-  chart.render(chartContainer.value)
-}
+  const chart = await createChart();
+  chart.render(chartContainer.value);
+};
 </script>
 ```
 
 ### Step 3: Lazy-Load PDF Generation Components
 
 **Create wrapper component:**
+
 ```vue
 <!-- components/Reports/GenerateReportModal.vue -->
 <template>
@@ -430,15 +428,16 @@ const loadAndRender = async () => {
 </template>
 
 <script setup>
-const showReport = ref(false)
+const showReport = ref(false);
 
-const GenerateReportDynamic = defineAsyncComponent(() =>
-  import('./GenerateReportContent.vue')
-)
+const GenerateReportDynamic = defineAsyncComponent(
+  () => import("./GenerateReportContent.vue"),
+);
 </script>
 ```
 
 **Actual generation component (only loaded when needed):**
+
 ```vue
 <!-- components/Reports/GenerateReportContent.vue -->
 <template>
@@ -470,17 +469,19 @@ const generateExcel = async () => {
 ### Step 4: Lazy-Load Map Features (Optional)
 
 **Before (map always included):**
+
 ```vue
 <template>
   <LMap></LMap>
 </template>
 
 <script setup>
-import LMap from 'vue-leaflet'
+import LMap from "vue-leaflet";
 </script>
 ```
 
 **After (map loads on demand):**
+
 ```vue
 <template>
   <div>
@@ -490,11 +491,9 @@ import LMap from 'vue-leaflet'
 </template>
 
 <script setup>
-const showMap = ref(false)
+const showMap = ref(false);
 
-const MapComponent = defineAsyncComponent(() =>
-  import('./SchoolMap.vue')
-)
+const MapComponent = defineAsyncComponent(() => import("./SchoolMap.vue"));
 </script>
 ```
 
@@ -514,6 +513,7 @@ ls -lhS .nuxt/dist/client/_nuxt/*.js | head -10
 ```
 
 **Expected Impact:**
+
 - Top bundle size reduced by 20-30 KB (chart.js moved to separate chunk)
 - Better caching (initial load doesn't download charts chunk if not needed)
 
@@ -591,11 +591,13 @@ npx depcheck
 ### Remove Unused or Replace
 
 **Example: If @sindresorhus/is is not used:**
+
 ```bash
 npm uninstall @sindresorhus/is
 ```
 
 **Example: If type checking is minimal, use native checks:**
+
 ```typescript
 // Before (requires @sindresorhus/is)
 import is from '@sindresorhus/is'
@@ -613,6 +615,7 @@ Add to project docs:
 ## Dependency Justification
 
 **Heavy dependencies (careful additions):**
+
 - `chart.js` (50 KB) - Used for analytics dashboards
 - `jspdf` (30 KB) - Used for PDF report generation
 - `html2canvas` (50 KB) - Used for screenshot-based PDF reports
@@ -655,6 +658,7 @@ grep -h "^[^/]" assets/css/*.css assets/styles/*.css | sort | uniq -d
 ### Consolidate Files
 
 **Step 1: Inspect imports in assets/css/main.css**
+
 ```bash
 head -20 assets/css/main.css
 ```
@@ -662,6 +666,7 @@ head -20 assets/css/main.css
 Expected: Should have @tailwind directives or @import statements
 
 **Step 2: Merge theme.css content into main.css**
+
 ```bash
 # View theme.css
 cat assets/styles/theme.css
@@ -675,6 +680,7 @@ cat assets/styles/theme.css >> assets/css/main.css
 ```
 
 **Step 3: Merge transitions.css**
+
 ```bash
 echo "
 
@@ -684,6 +690,7 @@ cat assets/styles/transitions.css >> assets/css/main.css
 ```
 
 **Step 4: Remove now-unused files (after verifying nuxt.config only imports assets/css/main.css)**
+
 ```bash
 rm assets/styles/theme.css
 rm assets/styles/transitions.css
@@ -691,10 +698,11 @@ rm assets/styles/main.css  # If duplicate
 ```
 
 **Step 5: Verify nuxt.config.ts**
+
 ```typescript
 export default defineNuxtConfig({
-  css: ["~/assets/css/main.css"],  // Single entry point
-})
+  css: ["~/assets/css/main.css"], // Single entry point
+});
 ```
 
 ### Measure Impact
@@ -750,29 +758,32 @@ npx svgo public/logo.svg
 ### Configure Image Loading
 
 **If using @nuxt/image:**
+
 ```bash
 npm install @nuxt/image
 ```
 
 **Update nuxt.config.ts:**
+
 ```typescript
 export default defineNuxtConfig({
-  modules: ['@nuxt/image', '@pinia/nuxt'],
+  modules: ["@nuxt/image", "@pinia/nuxt"],
 
   image: {
-    format: ['webp', 'jpeg'],
+    format: ["webp", "jpeg"],
     quality: 80,
     screens: {
       xs: 320,
       sm: 640,
       md: 1024,
       lg: 1280,
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 **Use in components:**
+
 ```vue
 <template>
   <NuxtImg src="/school-logo.png" width="200" height="200" />
@@ -786,6 +797,7 @@ export default defineNuxtConfig({
 ### Update vitest.config.ts
 
 **Before (restricted to CI):**
+
 ```typescript
 test: {
   maxWorkers: 2,
@@ -799,29 +811,22 @@ test: {
 ```
 
 **After (glob-based, flexible):**
+
 ```typescript
-import { defineConfig } from 'vitest/config'
-import vue from '@vitejs/plugin-vue'
-import { fileURLToPath } from 'node:url'
+import { defineConfig } from "vitest/config";
+import vue from "@vitejs/plugin-vue";
+import { fileURLToPath } from "node:url";
 
 export default defineConfig({
   plugins: [vue()],
   test: {
     globals: true,
-    environment: 'happy-dom',
-    setupFiles: ['./tests/setup.ts'],
+    environment: "happy-dom",
+    setupFiles: ["./tests/setup.ts"],
 
     // Use glob patterns instead of explicit list
-    include: [
-      'tests/unit/**/*.spec.ts',
-      'tests/integration/**/*.spec.ts'
-    ],
-    exclude: [
-      'node_modules/',
-      'dist/',
-      '.nuxt/',
-      'tests/e2e/**',
-    ],
+    include: ["tests/unit/**/*.spec.ts", "tests/integration/**/*.spec.ts"],
+    exclude: ["node_modules/", "dist/", ".nuxt/", "tests/e2e/**"],
 
     // Optimize based on environment
     maxWorkers: process.env.CI ? 2 : 8,
@@ -835,12 +840,14 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      '~': fileURLToPath(new URL('./', import.meta.url)),
-      '#app': fileURLToPath(new URL('./node_modules/nuxt/dist/app', import.meta.url)),
-      '#': fileURLToPath(new URL('./', import.meta.url)),
+      "~": fileURLToPath(new URL("./", import.meta.url)),
+      "#app": fileURLToPath(
+        new URL("./node_modules/nuxt/dist/app", import.meta.url),
+      ),
+      "#": fileURLToPath(new URL("./", import.meta.url)),
     },
   },
-})
+});
 ```
 
 ### Update package.json Scripts
@@ -880,63 +887,67 @@ CI=true npm run test:ci
 ### Update playwright.config.ts
 
 **Before (always 3 browsers):**
+
 ```typescript
 projects: [
   {
-    name: 'chromium',
-    use: { ...devices['Desktop Chrome'] },
+    name: "chromium",
+    use: { ...devices["Desktop Chrome"] },
   },
   {
-    name: 'firefox',
-    use: { ...devices['Desktop Firefox'] },
+    name: "firefox",
+    use: { ...devices["Desktop Firefox"] },
   },
   {
-    name: 'webkit',
-    use: { ...devices['Desktop Safari'] },
+    name: "webkit",
+    use: { ...devices["Desktop Safari"] },
   },
-]
+];
 ```
 
 **After (conditional based on environment):**
+
 ```typescript
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: "./tests/e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: "html",
 
   use: {
-    baseURL: 'http://localhost:3003',
-    trace: 'on-first-retry',
+    baseURL: "http://localhost:3003",
+    trace: "on-first-retry",
   },
 
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
     // Only run Firefox/WebKit in CI
-    ...(process.env.CI ? [
-      {
-        name: 'firefox',
-        use: { ...devices['Desktop Firefox'] }
-      },
-      {
-        name: 'webkit',
-        use: { ...devices['Desktop Safari'] }
-      }
-    ] : [])
+    ...(process.env.CI
+      ? [
+          {
+            name: "firefox",
+            use: { ...devices["Desktop Firefox"] },
+          },
+          {
+            name: "webkit",
+            use: { ...devices["Desktop Safari"] },
+          },
+        ]
+      : []),
   ],
 
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3003',
+    command: "npm run dev",
+    url: "http://localhost:3003",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
-})
+});
 ```
 
 ### Update package.json
@@ -945,7 +956,7 @@ export default defineConfig({
 {
   "scripts": {
     "test:e2e": "playwright test",
-    "test:e2e:all": "playwright test",  // When you want all 3 browsers
+    "test:e2e:all": "playwright test", // When you want all 3 browsers
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:chromium": "playwright test --project=chromium"
   }
@@ -966,6 +977,7 @@ npm run test:e2e:ui
 ```
 
 **Expected Impact:**
+
 - Local E2E runs: 66% faster (1 browser instead of 3)
 - CI runs: Unchanged (still all 3 browsers)
 
@@ -976,6 +988,7 @@ npm run test:e2e:ui
 ### Create measurement script
 
 **Create scripts/measure-build.sh:**
+
 ```bash
 #!/bin/bash
 # Build performance measurement script
@@ -1030,6 +1043,7 @@ echo "════════════════════════�
 ```
 
 **Make executable:**
+
 ```bash
 chmod +x scripts/measure-build.sh
 ```
@@ -1135,36 +1149,48 @@ Track completion as you implement:
 ### Common Issues
 
 **Issue: Build fails after CSS consolidation**
+
 ```
 Error: Cannot find module './theme.css'
 ```
+
 **Solution:**
+
 - Check that @import paths in assets/css/main.css are correct
 - Use relative paths: `@import './theme.css'` not `@import 'theme.css'`
 
 **Issue: Styles disappear after TailwindCSS optimization**
+
 ```
 Components styled with Tailwind classes show no styling
 ```
+
 **Solution:**
+
 - Verify content paths in tailwind.config.js match all component/page files
 - Clear cache: `rm -rf .nuxt .vite`
 - Rebuild: `npm run build`
 
 **Issue: Lazy-loaded components show blank**
+
 ```
 defineAsyncComponent(() => import('./Component.vue')) shows loading but never loads
 ```
+
 **Solution:**
+
 - Check browser console for module loading errors
 - Verify component path is correct and exists
 - Add suspense boundary: `<Suspense><template #fallback>Loading...</template>`
 
 **Issue: Cache not improving build time**
+
 ```
 Second build still takes 45 seconds
 ```
+
 **Solution:**
+
 - Verify .vite directory exists and has content: `ls -la .vite/`
 - Check if changing a large file (like package.json) invalidates cache
 - Try clearing cache and rebuilding: `npm run build:clean`

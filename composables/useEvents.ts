@@ -1,12 +1,12 @@
-import { ref, computed, type ComputedRef } from 'vue'
-import { useSupabase } from './useSupabase'
-import { useUserStore } from '~/stores/user'
-import type { Event } from '~/types/models'
-import type { Database } from '~/types/database'
+import { ref, computed, type ComputedRef } from "vue";
+import { useSupabase } from "./useSupabase";
+import { useUserStore } from "~/stores/user";
+import type { Event } from "~/types/models";
+import type { Database } from "~/types/database";
 
 // Type aliases for Supabase casting
-type EventInsert = Database['public']['Tables']['events']['Insert']
-type EventUpdate = Database['public']['Tables']['events']['Update']
+type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
+type EventUpdate = Database["public"]["Tables"]["events"]["Update"];
 
 /**
  * useEvents composable
@@ -30,174 +30,207 @@ type EventUpdate = Database['public']['Tables']['events']['Update']
  * Events serve as touchpoints for interaction tracking and performance metrics
  */
 export const useEvents = (): {
-  events: ComputedRef<Event[]>
-  loading: ComputedRef<boolean>
-  error: ComputedRef<string | null>
-  fetchEvents: (filters?: { schoolId?: string; type?: string; startDate?: string; endDate?: string }) => Promise<void>
-  fetchEvent: (id: string) => Promise<Event | null>
-  createEvent: (eventData: Omit<Event, 'id' | 'created_at' | 'updated_at'>) => Promise<Event>
-  updateEvent: (id: string, updates: Partial<Event>) => Promise<Event>
-  deleteEvent: (id: string) => Promise<void>
+  events: ComputedRef<Event[]>;
+  loading: ComputedRef<boolean>;
+  error: ComputedRef<string | null>;
+  fetchEvents: (filters?: {
+    schoolId?: string;
+    type?: string;
+    startDate?: string;
+    endDate?: string;
+  }) => Promise<void>;
+  fetchEvent: (id: string) => Promise<Event | null>;
+  createEvent: (
+    eventData: Omit<Event, "id" | "created_at" | "updated_at">,
+  ) => Promise<Event>;
+  updateEvent: (id: string, updates: Partial<Event>) => Promise<Event>;
+  deleteEvent: (id: string) => Promise<void>;
 } => {
-  const supabase = useSupabase()
-  const userStore = useUserStore()
+  const supabase = useSupabase();
+  const userStore = useUserStore();
 
-  const events = ref<Event[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const events = ref<Event[]>([]);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
-  const fetchEvents = async (filters?: { schoolId?: string; type?: string; startDate?: string; endDate?: string }) => {
-    if (!userStore.user) return
+  const fetchEvents = async (filters?: {
+    schoolId?: string;
+    type?: string;
+    startDate?: string;
+    endDate?: string;
+  }) => {
+    if (!userStore.user) return;
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
-      let query = supabase.from('events').select('*').eq('user_id', userStore.user.id)
+      let query = supabase
+        .from("events")
+        .select("*")
+        .eq("user_id", userStore.user.id);
 
       if (filters?.schoolId) {
-        query = query.eq('school_id', filters.schoolId)
+        query = query.eq("school_id", filters.schoolId);
       }
 
       if (filters?.type) {
-        query = query.eq('type', filters.type)
+        query = query.eq("type", filters.type);
       }
 
       // Move date filtering to SQL (10x less data transferred, faster)
       if (filters?.startDate) {
-        query = query.gte('start_date', new Date(filters.startDate).toISOString())
+        query = query.gte(
+          "start_date",
+          new Date(filters.startDate).toISOString(),
+        );
       }
 
       if (filters?.endDate) {
-        query = query.lte('start_date', new Date(filters.endDate).toISOString())
+        query = query.lte(
+          "start_date",
+          new Date(filters.endDate).toISOString(),
+        );
       }
 
-      const { data, error: fetchError } = await query.order('start_date', { ascending: true })
+      const { data, error: fetchError } = await query.order("start_date", {
+        ascending: true,
+      });
 
-      if (fetchError) throw fetchError
+      if (fetchError) throw fetchError;
 
-      events.value = data || []
+      events.value = data || [];
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch events'
-      error.value = message
-      console.error('Event fetch error:', message)
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch events";
+      error.value = message;
+      console.error("Event fetch error:", message);
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   const fetchEvent = async (id: string): Promise<Event | null> => {
-    if (!userStore.user) return null
+    if (!userStore.user) return null;
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('events')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', userStore.user.id)
-        .single()
+        .from("events")
+        .select("*")
+        .eq("id", id)
+        .eq("user_id", userStore.user.id)
+        .single();
 
-      if (fetchError) throw fetchError
+      if (fetchError) throw fetchError;
 
-      return data as Event
+      return data as Event;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch event'
-      error.value = message
-      console.error('Event fetch error:', message)
-      return null
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch event";
+      error.value = message;
+      console.error("Event fetch error:", message);
+      return null;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
-  const createEvent = async (eventData: Omit<Event, 'id' | 'created_at' | 'updated_at'>) => {
-    if (!userStore.user) throw new Error('User not authenticated')
+  const createEvent = async (
+    eventData: Omit<Event, "id" | "created_at" | "updated_at">,
+  ) => {
+    if (!userStore.user) throw new Error("User not authenticated");
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
       const { data, error: insertError } = await supabase
-        .from('events')
+        .from("events")
         .insert([
           {
             ...eventData,
           },
         ] as EventInsert[])
         .select()
-        .single()
+        .single();
 
-      if (insertError) throw insertError
+      if (insertError) throw insertError;
 
-      events.value.push(data)
-      return data
+      events.value.push(data);
+      return data;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to create event'
-      error.value = message
-      throw err
+      const message =
+        err instanceof Error ? err.message : "Failed to create event";
+      error.value = message;
+      throw err;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   const updateEvent = async (id: string, updates: Partial<Event>) => {
-    if (!userStore.user) throw new Error('User not authenticated')
+    if (!userStore.user) throw new Error("User not authenticated");
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
       const { data, error: updateError } = await supabase
-        .from('events')
+        .from("events")
         .update({
           ...updates,
           updated_by: userStore.user.id,
           updated_at: new Date().toISOString(),
         } as EventUpdate)
-        .eq('id', id)
+        .eq("id", id)
         .select()
-        .single()
+        .single();
 
-      if (updateError) throw updateError
+      if (updateError) throw updateError;
 
-      const index = events.value.findIndex((e) => e.id === id)
+      const index = events.value.findIndex((e) => e.id === id);
       if (index !== -1) {
-        events.value[index] = data
+        events.value[index] = data;
       }
 
-      return data
+      return data;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to update event'
-      error.value = message
-      throw err
+      const message =
+        err instanceof Error ? err.message : "Failed to update event";
+      error.value = message;
+      throw err;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   const deleteEvent = async (id: string) => {
-    if (!userStore.user) throw new Error('User not authenticated')
+    if (!userStore.user) throw new Error("User not authenticated");
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
-      const { error: deleteError } = await supabase.from('events').delete().eq('id', id)
+      const { error: deleteError } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", id);
 
-      if (deleteError) throw deleteError
+      if (deleteError) throw deleteError;
 
-      events.value = events.value.filter((e) => e.id !== id)
+      events.value = events.value.filter((e) => e.id !== id);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to delete event'
-      error.value = message
-      throw err
+      const message =
+        err instanceof Error ? err.message : "Failed to delete event";
+      error.value = message;
+      throw err;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   return {
     events: computed(() => events.value),
@@ -208,5 +241,5 @@ export const useEvents = (): {
     createEvent,
     updateEvent,
     deleteEvent,
-  }
-}
+  };
+};

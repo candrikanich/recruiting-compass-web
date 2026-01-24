@@ -2,16 +2,16 @@
  * Authentication and authorization utilities for server routes
  */
 
-import { createClient } from '@supabase/supabase-js'
-import type { H3Event } from 'h3'
-import { createLogger } from './logger'
+import { createClient } from "@supabase/supabase-js";
+import type { H3Event } from "h3";
+import { createLogger } from "./logger";
 
-const logger = createLogger('auth')
+const logger = createLogger("auth");
 
 export interface AuthUser {
-  id: string
-  email?: string
-  user_metadata?: Record<string, any>
+  id: string;
+  email?: string;
+  user_metadata?: Record<string, any>;
 }
 
 /**
@@ -19,70 +19,72 @@ export interface AuthUser {
  * Reduces database queries for repeated role checks
  */
 interface CachedRole {
-  role: UserRole | null
-  expiresAt: number
+  role: UserRole | null;
+  expiresAt: number;
 }
 
-const roleCache = new Map<string, CachedRole>()
+const roleCache = new Map<string, CachedRole>();
 
 /**
  * User role type
  */
-export type UserRole = 'parent' | 'student'
+export type UserRole = "parent" | "student";
 
 /**
  * Extracts and verifies user from request
  * Supports both Authorization header (Bearer token) and cookies
  */
 export async function requireAuth(event: H3Event): Promise<AuthUser> {
-  const authHeader = getHeader(event, 'authorization')
-  let token: string | null = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+  const authHeader = getHeader(event, "authorization");
+  let token: string | null = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : null;
 
   if (!token) {
-    token = getCookie(event, 'sb-access-token') || null
+    token = getCookie(event, "sb-access-token") || null;
   }
 
   if (!token) {
     throw createError({
       statusCode: 401,
-      statusMessage: 'Unauthorized - no token found',
-    })
+      statusMessage: "Unauthorized - no token found",
+    });
   }
 
   try {
-    const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY
+    const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY;
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing Supabase credentials')
+      throw new Error("Missing Supabase credentials");
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = createClient(supabaseUrl, supabaseKey);
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser(token)
+    } = await supabase.auth.getUser(token);
 
     if (error || !user) {
       throw createError({
         statusCode: 401,
-        statusMessage: 'Invalid token',
-      })
+        statusMessage: "Invalid token",
+      });
     }
 
     return {
       id: user.id,
       email: user.email,
       user_metadata: user.user_metadata,
-    }
+    };
   } catch (err) {
-    if (err instanceof Error && 'statusCode' in err) {
-      throw err
+    if (err instanceof Error && "statusCode" in err) {
+      throw err;
     }
-    logger.error('Authentication failed', err)
+    logger.error("Authentication failed", err);
     throw createError({
       statusCode: 401,
-      statusMessage: 'Authentication failed',
-    })
+      statusMessage: "Authentication failed",
+    });
   }
 }
 
@@ -91,43 +93,44 @@ export async function requireAuth(event: H3Event): Promise<AuthUser> {
  */
 export async function getUserRole(
   userId: string,
-  supabase: any
+  supabase: any,
 ): Promise<UserRole | null> {
   // Check cache first
-  const cached = roleCache.get(userId)
+  const cached = roleCache.get(userId);
   if (cached && Date.now() < cached.expiresAt) {
-    logger.info(`Role cache hit for user ${userId}`)
-    return cached.role
+    logger.info(`Role cache hit for user ${userId}`);
+    return cached.role;
   }
 
   try {
     const { data, error } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', userId)
-      .single()
+      .from("users")
+      .select("role")
+      .eq("id", userId)
+      .single();
 
     if (error || !data) {
-      logger.error('Failed to fetch user role', error)
-      return null
+      logger.error("Failed to fetch user role", error);
+      return null;
     }
 
     // Type guard to safely access role property
-    const role = (typeof data === 'object' && data !== null && 'role' in data)
-      ? ((data as any).role as UserRole | null)
-      : null
+    const role =
+      typeof data === "object" && data !== null && "role" in data
+        ? ((data as any).role as UserRole | null)
+        : null;
 
     // Cache for 5 minutes
     const cacheEntry: CachedRole = {
       role,
       expiresAt: Date.now() + 5 * 60 * 1000,
-    }
-    roleCache.set(userId, cacheEntry)
+    };
+    roleCache.set(userId, cacheEntry);
 
-    return role || null
+    return role || null;
   } catch (err) {
-    logger.error('Error fetching user role', err)
-    return null
+    logger.error("Error fetching user role", err);
+    return null;
   }
 }
 
@@ -138,26 +141,26 @@ export async function getUserRole(
 export async function isParentViewingLinkedAthlete(
   parentUserId: string,
   athleteUserId: string,
-  supabase: any
+  supabase: any,
 ): Promise<boolean> {
   try {
     // Check if there's a verified account link
     const { data, error } = await supabase
-      .from('account_links')
-      .select('id')
-      .eq('parent_user_id', parentUserId)
-      .eq('athlete_id', athleteUserId)
-      .eq('status', 'verified')
-      .single()
+      .from("account_links")
+      .select("id")
+      .eq("parent_user_id", parentUserId)
+      .eq("athlete_id", athleteUserId)
+      .eq("status", "verified")
+      .single();
 
     if (error) {
-      return false
+      return false;
     }
 
-    return !!data
+    return !!data;
   } catch (err) {
-    logger.error('Error checking parent-athlete link', err)
-    return false
+    logger.error("Error checking parent-athlete link", err);
+    return false;
   }
 }
 
@@ -170,21 +173,21 @@ export async function isParentViewingLinkedAthlete(
 export async function canMutateAthleteData(
   requestingUserId: string,
   targetAthleteUserId: string,
-  supabase: any
+  supabase: any,
 ): Promise<boolean> {
   // Athletes can always mutate their own data
   if (requestingUserId === targetAthleteUserId) {
-    return true
+    return true;
   }
 
   // Parents cannot mutate any athlete data, only view
-  const role = await getUserRole(requestingUserId, supabase)
-  if (role === 'parent') {
-    return false
+  const role = await getUserRole(requestingUserId, supabase);
+  if (role === "parent") {
+    return false;
   }
 
   // Other cases (cross-user mutations) are not allowed
-  return false
+  return false;
 }
 
 /**
@@ -193,14 +196,15 @@ export async function canMutateAthleteData(
  */
 export async function assertNotParent(
   userId: string,
-  supabase: any
+  supabase: any,
 ): Promise<void> {
-  const role = await getUserRole(userId, supabase)
+  const role = await getUserRole(userId, supabase);
 
-  if (role === 'parent') {
+  if (role === "parent") {
     throw createError({
       statusCode: 403,
-      statusMessage: 'Parents cannot perform this action. This is a read-only view.',
-    })
+      statusMessage:
+        "Parents cannot perform this action. This is a read-only view.",
+    });
   }
 }

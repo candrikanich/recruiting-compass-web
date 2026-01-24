@@ -14,37 +14,40 @@ export default defineNuxtConfig({
   // Vite caching configuration
   vite: {
     // Cache directory for faster builds
-    cacheDir: '.vite',
+    cacheDir: ".vite",
 
     // Pre-bundle frequently used dependencies
     optimizeDeps: {
       include: [
-        'vue',
-        '@pinia/nuxt',
-        '@supabase/supabase-js',
-        'chart.js',
-        'fuse.js',
-        'leaflet',
-        '@vueuse/core',
-        'date-fns',
+        "vue",
+        "@pinia/nuxt",
+        "@supabase/supabase-js",
+        "chart.js",
+        "fuse.js",
+        "leaflet",
+        "@vueuse/core",
+        "date-fns",
       ],
       exclude: [
         // These are heavy or change often; exclude for rebunding on change
-        'html2canvas',
-        'jspdf',
-        'jspdf-autotable',
-      ]
-    }
+        "html2canvas",
+        "jspdf",
+        "jspdf-autotable",
+      ],
+    },
   },
 
   nitro: {
     preset: process.env.NODE_ENV === "production" ? "static" : "node",
-    hooks: process.env.NODE_ENV === "production" ? {
-      close: async () => {
-        // Force process exit after prerender completes
-        process.exit(0);
-      },
-    } : undefined,
+    hooks:
+      process.env.NODE_ENV === "production"
+        ? {
+            close: async () => {
+              // Force process exit after prerender completes
+              process.exit(0);
+            },
+          }
+        : undefined,
   },
 
   postcss: {
@@ -58,7 +61,8 @@ export default defineNuxtConfig({
     public: {
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || "",
       supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || "",
-      collegeScorecardApiKey: process.env.NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY || "",
+      collegeScorecardApiKey:
+        process.env.NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY || "",
     },
   },
 });

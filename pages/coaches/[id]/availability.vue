@@ -1,10 +1,12 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Back Link -->
       <div class="mb-6">
-        <NuxtLink :to="`/coaches/${coachId}`" class="text-blue-600 hover:text-blue-700 font-semibold">
+        <NuxtLink
+          :to="`/coaches/${coachId}`"
+          class="text-blue-600 hover:text-blue-700 font-semibold"
+        >
           ← Back to Coach
         </NuxtLink>
       </div>
@@ -26,17 +28,23 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="bg-white rounded-lg shadow p-6">
             <p class="text-gray-600 text-sm mb-2">Availability Status</p>
-            <p class="text-2xl font-bold text-gray-900">{{ availabilitySummary }}</p>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ availabilitySummary }}
+            </p>
           </div>
 
           <div class="bg-white rounded-lg shadow p-6">
             <p class="text-gray-600 text-sm mb-2">Timezone</p>
-            <p class="text-2xl font-bold text-gray-900">{{ availability?.timezone }}</p>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ availability?.timezone }}
+            </p>
           </div>
 
           <div class="bg-white rounded-lg shadow p-6">
             <p class="text-gray-600 text-sm mb-2">Next Available</p>
-            <p class="text-2xl font-bold text-gray-900">{{ nextAvailableText }}</p>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ nextAvailableText }}
+            </p>
           </div>
         </div>
 
@@ -48,25 +56,37 @@
               @click="isEditingSchedule = !isEditingSchedule"
               class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
             >
-              {{ isEditingSchedule ? 'Done' : 'Edit Schedule' }}
+              {{ isEditingSchedule ? "Done" : "Edit Schedule" }}
             </button>
           </div>
 
           <!-- View Mode -->
           <div v-if="!isEditingSchedule" class="space-y-3">
-            <div v-for="day in DAYS" :key="day" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div
+              v-for="day in DAYS"
+              :key="day"
+              class="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+            >
               <div class="flex-1">
                 <p class="font-semibold text-gray-900 capitalize">{{ day }}</p>
               </div>
 
-              <div v-if="getDayAvailability(day)?.available" class="text-center flex-1">
-                <span class="inline-block px-3 py-1 rounded text-sm font-medium bg-green-100 text-green-800">
-                  {{ getDayAvailability(day)?.start_time }} - {{ getDayAvailability(day)?.end_time }}
+              <div
+                v-if="getDayAvailability(day)?.available"
+                class="text-center flex-1"
+              >
+                <span
+                  class="inline-block px-3 py-1 rounded text-sm font-medium bg-green-100 text-green-800"
+                >
+                  {{ getDayAvailability(day)?.start_time }} -
+                  {{ getDayAvailability(day)?.end_time }}
                 </span>
               </div>
 
               <div v-else class="text-center flex-1">
-                <span class="inline-block px-3 py-1 rounded text-sm font-medium bg-gray-200 text-gray-600">
+                <span
+                  class="inline-block px-3 py-1 rounded text-sm font-medium bg-gray-200 text-gray-600"
+                >
                   Not Available
                 </span>
               </div>
@@ -75,7 +95,11 @@
 
           <!-- Edit Mode -->
           <div v-else class="space-y-4">
-            <div v-for="day in DAYS" :key="day" class="p-4 border border-gray-200 rounded-lg">
+            <div
+              v-for="day in DAYS"
+              :key="day"
+              class="p-4 border border-gray-200 rounded-lg"
+            >
               <div class="flex items-center gap-4 mb-3">
                 <label class="flex items-center gap-2 flex-1">
                   <input
@@ -84,11 +108,16 @@
                     @change="toggleDayEdit(day)"
                     class="w-4 h-4 rounded border-gray-300"
                   />
-                  <span class="font-semibold text-gray-900 capitalize">{{ day }}</span>
+                  <span class="font-semibold text-gray-900 capitalize">{{
+                    day
+                  }}</span>
                 </label>
               </div>
 
-              <div v-if="getDayAvailability(day)?.available" class="flex items-center gap-4 ml-6">
+              <div
+                v-if="getDayAvailability(day)?.available"
+                class="flex items-center gap-4 ml-6"
+              >
                 <div>
                   <label class="block text-sm text-gray-600 mb-1">Start</label>
                   <input
@@ -134,10 +163,15 @@
           </div>
 
           <!-- Add Blackout Date Form -->
-          <div v-if="showAddBlackoutDate" class="mb-6 p-4 bg-gray-50 rounded-lg">
+          <div
+            v-if="showAddBlackoutDate"
+            class="mb-6 p-4 bg-gray-50 rounded-lg"
+          >
             <div class="flex items-end gap-4">
               <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Date</label
+                >
                 <input
                   v-model="newBlackoutDate"
                   type="date"
@@ -146,7 +180,9 @@
               </div>
 
               <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Reason (optional)</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Reason (optional)</label
+                >
                 <input
                   v-model="blackoutReason"
                   type="text"
@@ -179,7 +215,9 @@
               class="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-lg"
             >
               <div>
-                <p class="font-medium text-red-900">{{ formatBlackoutDate(date) }}</p>
+                <p class="font-medium text-red-900">
+                  {{ formatBlackoutDate(date) }}
+                </p>
               </div>
 
               <button
@@ -202,13 +240,27 @@
 
           <div class="grid grid-cols-7 gap-2">
             <!-- Day Headers -->
-            <div class="text-center font-semibold text-gray-600 text-sm mb-2">Sun</div>
-            <div class="text-center font-semibold text-gray-600 text-sm mb-2">Mon</div>
-            <div class="text-center font-semibold text-gray-600 text-sm mb-2">Tue</div>
-            <div class="text-center font-semibold text-gray-600 text-sm mb-2">Wed</div>
-            <div class="text-center font-semibold text-gray-600 text-sm mb-2">Thu</div>
-            <div class="text-center font-semibold text-gray-600 text-sm mb-2">Fri</div>
-            <div class="text-center font-semibold text-gray-600 text-sm mb-2">Sat</div>
+            <div class="text-center font-semibold text-gray-600 text-sm mb-2">
+              Sun
+            </div>
+            <div class="text-center font-semibold text-gray-600 text-sm mb-2">
+              Mon
+            </div>
+            <div class="text-center font-semibold text-gray-600 text-sm mb-2">
+              Tue
+            </div>
+            <div class="text-center font-semibold text-gray-600 text-sm mb-2">
+              Wed
+            </div>
+            <div class="text-center font-semibold text-gray-600 text-sm mb-2">
+              Thu
+            </div>
+            <div class="text-center font-semibold text-gray-600 text-sm mb-2">
+              Fri
+            </div>
+            <div class="text-center font-semibold text-gray-600 text-sm mb-2">
+              Sat
+            </div>
 
             <!-- Calendar Days -->
             <div
@@ -216,7 +268,11 @@
               :key="idx"
               :class="[
                 'p-2 text-center rounded-lg text-sm font-medium transition',
-                isBlackoutDate(date) ? 'bg-red-100 text-red-800 line-through' : isDayAvailable(date) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600',
+                isBlackoutDate(date)
+                  ? 'bg-red-100 text-red-800 line-through'
+                  : isDayAvailable(date)
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-600',
               ]"
             >
               {{ date.getDate() }}
@@ -226,17 +282,23 @@
           <!-- Legend -->
           <div class="mt-6 flex items-center gap-6">
             <div class="flex items-center gap-2">
-              <div class="w-4 h-4 rounded bg-green-100 border border-green-300"></div>
+              <div
+                class="w-4 h-4 rounded bg-green-100 border border-green-300"
+              ></div>
               <p class="text-sm text-gray-600">Available</p>
             </div>
 
             <div class="flex items-center gap-2">
-              <div class="w-4 h-4 rounded bg-gray-100 border border-gray-300"></div>
+              <div
+                class="w-4 h-4 rounded bg-gray-100 border border-gray-300"
+              ></div>
               <p class="text-sm text-gray-600">Not Available</p>
             </div>
 
             <div class="flex items-center gap-2">
-              <div class="w-4 h-4 rounded bg-red-100 border border-red-300"></div>
+              <div
+                class="w-4 h-4 rounded bg-red-100 border border-red-300"
+              ></div>
               <p class="text-sm text-gray-600">Blackout Date</p>
             </div>
           </div>
@@ -247,148 +309,169 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { useCoaches } from '~/composables/useCoaches'
-import { useSchools } from '~/composables/useSchools'
-import { useCoachAvailability } from '~/composables/useCoachAvailability'
-import type { CoachAvailability, DayAvailability } from '~/types/models'
+import { ref, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
+import { useCoaches } from "~/composables/useCoaches";
+import { useSchools } from "~/composables/useSchools";
+import { useCoachAvailability } from "~/composables/useCoachAvailability";
+import type { CoachAvailability, DayAvailability } from "~/types/models";
 
 definePageMeta({
-  middleware: 'auth',
-})
+  middleware: "auth",
+});
 
-const route = useRoute()
-const coachId = route.params.id as string
+const route = useRoute();
+const coachId = route.params.id as string;
 
-const { getCoach } = useCoaches()
-const { getSchool } = useSchools()
-const { getCoachAvailability, updateCoachAvailability, addBlackoutDate, removeBlackoutDate, getAvailabilitySummary, getNextAvailableSlot, DAYS } = useCoachAvailability()
+const { getCoach } = useCoaches();
+const { getSchool } = useSchools();
+const {
+  getCoachAvailability,
+  updateCoachAvailability,
+  addBlackoutDate,
+  removeBlackoutDate,
+  getAvailabilitySummary,
+  getNextAvailableSlot,
+  DAYS,
+} = useCoachAvailability();
 
-const coachName = ref('')
-const schoolName = ref('')
-const loading = ref(false)
-const isEditingSchedule = ref(false)
-const showAddBlackoutDate = ref(false)
-const newBlackoutDate = ref('')
-const blackoutReason = ref('')
+const coachName = ref("");
+const schoolName = ref("");
+const loading = ref(false);
+const isEditingSchedule = ref(false);
+const showAddBlackoutDate = ref(false);
+const newBlackoutDate = ref("");
+const blackoutReason = ref("");
 
-const availability = ref<CoachAvailability | null>(null)
+const availability = ref<CoachAvailability | null>(null);
 
 const availabilitySummary = computed(() => {
-  if (!availability.value) return ''
-  return getAvailabilitySummary(coachId)
-})
+  if (!availability.value) return "";
+  return getAvailabilitySummary(coachId);
+});
 
 const nextAvailableText = computed(() => {
-  const next = getNextAvailableSlot(coachId)
-  if (!next) return 'None'
-  return next.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-})
+  const next = getNextAvailableSlot(coachId);
+  if (!next) return "None";
+  return next.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+});
 
 const upcomingDays = computed(() => {
-  const days = []
-  const today = new Date()
+  const days = [];
+  const today = new Date();
 
   for (let i = 0; i < 35; i++) {
-    const date = new Date(today)
-    date.setDate(date.getDate() + i)
-    days.push(date)
+    const date = new Date(today);
+    date.setDate(date.getDate() + i);
+    days.push(date);
   }
 
-  return days
-})
+  return days;
+});
 
 const getDayAvailability = (day: string): DayAvailability | null => {
-  if (!availability.value) return null
-  const val = availability.value[day]
-  if (typeof val === 'object' && val !== null && 'available' in val) {
-    return val as DayAvailability
+  if (!availability.value) return null;
+  const val = availability.value[day];
+  if (typeof val === "object" && val !== null && "available" in val) {
+    return val as DayAvailability;
   }
-  return null
-}
+  return null;
+};
 
 const toggleDayEdit = (day: string) => {
-  const dayData = getDayAvailability(day)
+  const dayData = getDayAvailability(day);
   if (dayData) {
-    dayData.available = !dayData.available
+    dayData.available = !dayData.available;
   }
-}
+};
 
-const updateDayTime = (day: string, timeField: 'start_time' | 'end_time', event: Event) => {
-  if (!availability.value) return
-  const input = event.target as HTMLInputElement
-  const key = day as keyof CoachAvailability
-  if (key in availability.value && typeof availability.value[key] === 'object') {
-    const dayData = availability.value[key] as DayAvailability
-    dayData[timeField] = input.value
+const updateDayTime = (
+  day: string,
+  timeField: "start_time" | "end_time",
+  event: Event,
+) => {
+  if (!availability.value) return;
+  const input = event.target as HTMLInputElement;
+  const key = day as keyof CoachAvailability;
+  if (
+    key in availability.value &&
+    typeof availability.value[key] === "object"
+  ) {
+    const dayData = availability.value[key] as DayAvailability;
+    dayData[timeField] = input.value;
   }
-}
+};
 
 const saveSchedule = async () => {
-  if (!availability.value) return
-  const success = await updateCoachAvailability(coachId, availability.value)
+  if (!availability.value) return;
+  const success = await updateCoachAvailability(coachId, availability.value);
   if (success) {
-    isEditingSchedule.value = false
+    isEditingSchedule.value = false;
   }
-}
+};
 
 const handleAddBlackoutDate = async () => {
-  if (!newBlackoutDate.value) return
-  const success = await addBlackoutDate(coachId, newBlackoutDate.value)
+  if (!newBlackoutDate.value) return;
+  const success = await addBlackoutDate(coachId, newBlackoutDate.value);
   if (success) {
-    availability.value = getCoachAvailability(coachId)
-    newBlackoutDate.value = ''
-    blackoutReason.value = ''
-    showAddBlackoutDate.value = false
+    availability.value = getCoachAvailability(coachId);
+    newBlackoutDate.value = "";
+    blackoutReason.value = "";
+    showAddBlackoutDate.value = false;
   }
-}
+};
 
 const handleRemoveBlackoutDate = async (date: string) => {
-  const success = await removeBlackoutDate(coachId, date)
+  const success = await removeBlackoutDate(coachId, date);
   if (success) {
-    availability.value = getCoachAvailability(coachId)
+    availability.value = getCoachAvailability(coachId);
   }
-}
+};
 
 const isBlackoutDate = (date: Date): boolean => {
-  if (!availability.value) return false
-  const dateStr = date.toISOString().split('T')[0]
-  return availability.value.blackout_dates.includes(dateStr)
-}
+  if (!availability.value) return false;
+  const dateStr = date.toISOString().split("T")[0];
+  return availability.value.blackout_dates.includes(dateStr);
+};
 
 const isDayAvailable = (date: Date): boolean => {
-  if (!availability.value || isBlackoutDate(date)) return false
-  const dayIndex = date.getDay()
-  const dayName = DAYS[dayIndex === 0 ? 6 : dayIndex - 1]
-  const dayData = availability.value[dayName as keyof CoachAvailability] as DayAvailability | undefined
-  return dayData?.available || false
-}
+  if (!availability.value || isBlackoutDate(date)) return false;
+  const dayIndex = date.getDay();
+  const dayName = DAYS[dayIndex === 0 ? 6 : dayIndex - 1];
+  const dayData = availability.value[dayName as keyof CoachAvailability] as
+    | DayAvailability
+    | undefined;
+  return dayData?.available || false;
+};
 
 const formatBlackoutDate = (dateStr: string): string => {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
-}
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+};
 
 onMounted(async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    const coach = await getCoach(coachId)
+    const coach = await getCoach(coachId);
     if (coach) {
-      coachName.value = `${coach.first_name} ${coach.last_name}`
-      availability.value = getCoachAvailability(coachId)
+      coachName.value = `${coach.first_name} ${coach.last_name}`;
+      availability.value = getCoachAvailability(coachId);
 
       if (coach.school_id) {
-        const school = await getSchool(coach.school_id)
+        const school = await getSchool(coach.school_id);
         if (school) {
-          schoolName.value = school.name
+          schoolName.value = school.name;
         }
       }
     }
   } catch (err) {
-    console.error('Failed to load availability:', err)
+    console.error("Failed to load availability:", err);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-})
+});
 </script>

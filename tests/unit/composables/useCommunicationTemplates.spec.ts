@@ -1,18 +1,18 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { useCommunicationTemplates } from '~/composables/useCommunicationTemplates'
+import { describe, it, expect, beforeEach } from "vitest";
+import { useCommunicationTemplates } from "~/composables/useCommunicationTemplates";
 
-describe('useCommunicationTemplates', () => {
-  let composable: ReturnType<typeof useCommunicationTemplates>
+describe("useCommunicationTemplates", () => {
+  let composable: ReturnType<typeof useCommunicationTemplates>;
 
   beforeEach(() => {
-    composable = useCommunicationTemplates()
-  })
+    composable = useCommunicationTemplates();
+  });
 
-  it('should initialize', () => {
-    expect(composable).toBeDefined()
-  })
+  it("should initialize", () => {
+    expect(composable).toBeDefined();
+  });
 
-  it('should have required state', () => {
-    expect(composable.templates).toBeDefined()
-  })
-})
+  it("should have required state", () => {
+    expect(composable.templates).toBeDefined();
+  });
+});

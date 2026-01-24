@@ -1,10 +1,17 @@
-import { ref, computed, type ComputedRef } from 'vue'
-import { querySelect, querySingle, queryInsert, queryUpdate, queryDelete, isQuerySuccess } from '~/utils/supabaseQuery'
-import { useFormValidation } from '~/composables/useFormValidation'
-import { useSupabase } from './useSupabase'
-import { useUserStore } from '~/stores/user'
-import { useErrorHandler } from './useErrorHandler'
-import type { Document } from '~/types/models'
+import { ref, computed, type ComputedRef } from "vue";
+import {
+  querySelect,
+  querySingle,
+  queryInsert,
+  queryUpdate,
+  queryDelete,
+  isQuerySuccess,
+} from "~/utils/supabaseQuery";
+import { useFormValidation } from "~/composables/useFormValidation";
+import { useSupabase } from "./useSupabase";
+import { useUserStore } from "~/stores/user";
+import { useErrorHandler } from "./useErrorHandler";
+import type { Document } from "~/types/models";
 
 /**
  * Consolidated composable for all document management operations
@@ -34,28 +41,28 @@ import type { Document } from '~/types/models'
  * @returns Combined object with all document operations
  */
 export const useDocumentsConsolidated = () => {
-  const supabase = useSupabase()
-  const userStore = useUserStore()
-  const { getErrorMessage, logError } = useErrorHandler()
-  const { validateFile, fileErrors } = useFormValidation()
+  const supabase = useSupabase();
+  const userStore = useUserStore();
+  const { getErrorMessage, logError } = useErrorHandler();
+  const { validateFile, fileErrors } = useFormValidation();
 
   // ═══════════════════════════════════════════════════════════════════════════
   // STATE MANAGEMENT
   // ═══════════════════════════════════════════════════════════════════════════
 
   // Fetch state
-  const documents = ref<Document[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const documents = ref<Document[]>([]);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
   // Upload state
-  const isUploading = ref(false)
-  const uploadProgress = ref(0)
-  const uploadError = ref<string | null>(null)
+  const isUploading = ref(false);
+  const uploadProgress = ref(0);
+  const uploadError = ref<string | null>(null);
 
   // Sharing state
-  const isSharing = ref(false)
-  const sharingError = ref<string | null>(null)
+  const isSharing = ref(false);
+  const sharingError = ref<string | null>(null);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // FETCH OPERATIONS
@@ -68,51 +75,51 @@ export const useDocumentsConsolidated = () => {
    * @returns Promise resolving to documents array
    */
   const fetchDocuments = async (filters?: {
-    type?: string
-    schoolId?: string
-    status?: 'current' | 'archived' | 'all'
+    type?: string;
+    schoolId?: string;
+    status?: "current" | "archived" | "all";
   }) => {
     if (!userStore.user) {
-      error.value = 'User not authenticated'
-      return []
+      error.value = "User not authenticated";
+      return [];
     }
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
       const { data, error: queryError } = await querySelect<Document>(
-        'documents',
+        "documents",
         {
-          select: '*',
+          select: "*",
           filters: {
             user_id: userStore.user.id,
-            ...(filters?.status === 'archived' && { is_current: false }),
-            ...(filters?.status === 'current' && { is_current: true }),
+            ...(filters?.status === "archived" && { is_current: false }),
+            ...(filters?.status === "current" && { is_current: true }),
             ...(filters?.type && { type: filters.type }),
             ...(filters?.schoolId && { school_id: filters.schoolId }),
           },
-          order: { column: 'created_at', ascending: false },
+          order: { column: "created_at", ascending: false },
           limit: 1000,
         },
-        { context: 'fetchDocuments' }
-      )
+        { context: "fetchDocuments" },
+      );
 
       if (queryError) {
-        throw queryError
+        throw queryError;
       }
 
-      documents.value = data || []
-      return data || []
+      documents.value = data || [];
+      return data || [];
     } catch (err) {
-      const message = getErrorMessage(err, { context: 'fetchDocuments' })
-      error.value = message
-      logError(err, { context: 'fetchDocuments' })
-      return []
+      const message = getErrorMessage(err, { context: "fetchDocuments" });
+      error.value = message;
+      logError(err, { context: "fetchDocuments" });
+      return [];
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Fetch all versions of a document by title
@@ -120,33 +127,38 @@ export const useDocumentsConsolidated = () => {
    * @param documentTitle - Title to search for
    * @returns Promise resolving to document versions array
    */
-  const fetchDocumentVersions = async (documentTitle: string): Promise<Document[]> => {
-    if (!userStore.user) return []
+  const fetchDocumentVersions = async (
+    documentTitle: string,
+  ): Promise<Document[]> => {
+    if (!userStore.user) return [];
 
     try {
       const { data, error: queryError } = await querySelect<Document>(
-        'documents',
+        "documents",
         {
-          select: '*',
+          select: "*",
           filters: {
             user_id: userStore.user.id,
             title: documentTitle,
           },
-          order: { column: 'version', ascending: false },
+          order: { column: "version", ascending: false },
         },
-        { context: 'fetchDocumentVersions' }
-      )
+        { context: "fetchDocumentVersions" },
+      );
 
       if (queryError) {
-        throw queryError
+        throw queryError;
       }
 
-      return data || []
+      return data || [];
     } catch (err) {
-      logError(err, { context: 'fetchDocumentVersions', details: { documentTitle } })
-      return []
+      logError(err, {
+        context: "fetchDocumentVersions",
+        details: { documentTitle },
+      });
+      return [];
     }
-  }
+  };
 
   /**
    * Fetch single document by ID
@@ -157,21 +169,21 @@ export const useDocumentsConsolidated = () => {
   const getDocument = async (id: string): Promise<Document | null> => {
     try {
       const { data, error: queryError } = await querySingle<Document>(
-        'documents',
+        "documents",
         { filters: { id, user_id: userStore.user?.id } },
-        { context: 'getDocument' }
-      )
+        { context: "getDocument" },
+      );
 
       if (queryError) {
-        throw queryError
+        throw queryError;
       }
 
-      return data
+      return data;
     } catch (err) {
-      logError(err, { context: 'getDocument', details: { id } })
-      return null
+      logError(err, { context: "getDocument", details: { id } });
+      return null;
     }
-  }
+  };
 
   // ═══════════════════════════════════════════════════════════════════════════
   // UPDATE OPERATIONS
@@ -184,44 +196,47 @@ export const useDocumentsConsolidated = () => {
    * @param updates - Partial document updates
    * @returns Promise resolving to updated document or null
    */
-  const updateDocument = async (id: string, updates: Partial<Document>): Promise<Document | null> => {
+  const updateDocument = async (
+    id: string,
+    updates: Partial<Document>,
+  ): Promise<Document | null> => {
     if (!userStore.user) {
-      error.value = 'User not authenticated'
-      return null
+      error.value = "User not authenticated";
+      return null;
     }
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
       const { data, error: queryError } = await queryUpdate<Document>(
-        'documents',
+        "documents",
         updates,
         { id, user_id: userStore.user.id },
-        { context: 'updateDocument' }
-      )
+        { context: "updateDocument" },
+      );
 
       if (queryError) {
-        throw queryError
+        throw queryError;
       }
 
       if (data && data.length > 0) {
-        const index = documents.value.findIndex(d => d.id === id)
+        const index = documents.value.findIndex((d) => d.id === id);
         if (index !== -1) {
-          documents.value[index] = data[0]
+          documents.value[index] = data[0];
         }
       }
 
-      return data?.[0] || null
+      return data?.[0] || null;
     } catch (err) {
-      const message = getErrorMessage(err, { context: 'updateDocument' })
-      error.value = message
-      logError(err, { context: 'updateDocument' })
-      return null
+      const message = getErrorMessage(err, { context: "updateDocument" });
+      error.value = message;
+      logError(err, { context: "updateDocument" });
+      return null;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   // ═══════════════════════════════════════════════════════════════════════════
   // DELETE OPERATIONS
@@ -235,52 +250,52 @@ export const useDocumentsConsolidated = () => {
    */
   const deleteDocument = async (id: string): Promise<boolean> => {
     if (!userStore.user) {
-      error.value = 'User not authenticated'
-      return false
+      error.value = "User not authenticated";
+      return false;
     }
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
       // 1. Get document to retrieve file_url
-      const doc = await getDocument(id)
+      const doc = await getDocument(id);
       if (!doc) {
-        throw new Error('Document not found')
+        throw new Error("Document not found");
       }
 
       // 2. Delete file from storage if it exists
       if (doc.file_url) {
         try {
-          await supabase.storage.from('documents').remove([doc.file_url])
+          await supabase.storage.from("documents").remove([doc.file_url]);
         } catch (storageErr) {
-          console.warn('Storage deletion failed:', storageErr)
+          console.warn("Storage deletion failed:", storageErr);
           // Continue - don't want orphaned DB records
         }
       }
 
       // 3. Delete DB record
       const { error: deleteError } = await queryDelete(
-        'documents',
+        "documents",
         { id, user_id: userStore.user.id },
-        { context: 'deleteDocument' }
-      )
+        { context: "deleteDocument" },
+      );
 
       if (deleteError) {
-        throw deleteError
+        throw deleteError;
       }
 
-      documents.value = documents.value.filter(d => d.id !== id)
-      return true
+      documents.value = documents.value.filter((d) => d.id !== id);
+      return true;
     } catch (err) {
-      const message = getErrorMessage(err, { context: 'deleteDocument' })
-      error.value = message
-      logError(err, { context: 'deleteDocument' })
-      return false
+      const message = getErrorMessage(err, { context: "deleteDocument" });
+      error.value = message;
+      logError(err, { context: "deleteDocument" });
+      return false;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   // ═══════════════════════════════════════════════════════════════════════════
   // UPLOAD OPERATIONS
@@ -299,52 +314,52 @@ export const useDocumentsConsolidated = () => {
     file: File,
     type: string,
     title: string,
-    description?: string
+    description?: string,
   ): Promise<{ success: boolean; data?: Document; error?: string }> => {
     if (!userStore.user) {
-      return { success: false, error: 'User not authenticated' }
+      return { success: false, error: "User not authenticated" };
     }
 
     // Validate file
     try {
-      validateFile(file, type as any)
+      validateFile(file, type as any);
     } catch (err) {
-      const fileError = err instanceof Error ? err.message : 'Invalid file'
-      uploadError.value = fileError
-      return { success: false, error: fileError }
+      const fileError = err instanceof Error ? err.message : "Invalid file";
+      uploadError.value = fileError;
+      return { success: false, error: fileError };
     }
 
-    isUploading.value = true
-    uploadProgress.value = 0
-    uploadError.value = null
+    isUploading.value = true;
+    uploadProgress.value = 0;
+    uploadError.value = null;
 
     try {
       // Generate file path
-      const timestamp = Date.now()
-      const fileName = `${userStore.user.id}/${timestamp}-${file.name}`
+      const timestamp = Date.now();
+      const fileName = `${userStore.user.id}/${timestamp}-${file.name}`;
 
       // 1. Upload file to storage
       const { data: uploadData, error: uploadErr } = await supabase.storage
-        .from('documents')
+        .from("documents")
         .upload(fileName, file, {
-          cacheControl: '3600',
+          cacheControl: "3600",
           upsert: false,
-        })
+        });
 
       if (uploadErr || !uploadData) {
-        throw uploadErr || new Error('Upload failed')
+        throw uploadErr || new Error("Upload failed");
       }
 
-      uploadProgress.value = 50
+      uploadProgress.value = 50;
 
       // 2. Get public URL
       const { data: urlData } = supabase.storage
-        .from('documents')
-        .getPublicUrl(fileName)
+        .from("documents")
+        .getPublicUrl(fileName);
 
       // 3. Create DB record
       const { data: docData, error: insertErr } = await queryInsert<Document>(
-        'documents',
+        "documents",
         [
           {
             user_id: userStore.user.id,
@@ -360,28 +375,28 @@ export const useDocumentsConsolidated = () => {
             updated_at: new Date().toISOString(),
           },
         ],
-        { context: 'uploadDocument' }
-      )
+        { context: "uploadDocument" },
+      );
 
       if (insertErr || !docData) {
-        throw insertErr || new Error('Failed to create document record')
+        throw insertErr || new Error("Failed to create document record");
       }
 
-      uploadProgress.value = 100
-      const doc = Array.isArray(docData) ? docData[0] : docData
-      documents.value.unshift(doc)
+      uploadProgress.value = 100;
+      const doc = Array.isArray(docData) ? docData[0] : docData;
+      documents.value.unshift(doc);
 
-      return { success: true, data: doc }
+      return { success: true, data: doc };
     } catch (err) {
-      const message = getErrorMessage(err, { context: 'uploadDocument' })
-      uploadError.value = message
-      logError(err, { context: 'uploadDocument' })
-      return { success: false, error: message }
+      const message = getErrorMessage(err, { context: "uploadDocument" });
+      uploadError.value = message;
+      logError(err, { context: "uploadDocument" });
+      return { success: false, error: message };
     } finally {
-      isUploading.value = false
-      uploadProgress.value = 0
+      isUploading.value = false;
+      uploadProgress.value = 0;
     }
-  }
+  };
 
   /**
    * Upload a new version of an existing document
@@ -392,47 +407,47 @@ export const useDocumentsConsolidated = () => {
    */
   const uploadNewVersion = async (
     documentId: string,
-    file: File
+    file: File,
   ): Promise<{ success: boolean; data?: Document; error?: string }> => {
     if (!userStore.user) {
-      return { success: false, error: 'User not authenticated' }
+      return { success: false, error: "User not authenticated" };
     }
 
     try {
       // Get original document
-      const originalDoc = await getDocument(documentId)
+      const originalDoc = await getDocument(documentId);
       if (!originalDoc) {
-        return { success: false, error: 'Document not found' }
+        return { success: false, error: "Document not found" };
       }
 
       // Validate new file
-      validateFile(file, originalDoc.type)
+      validateFile(file, originalDoc.type);
 
-      isUploading.value = true
+      isUploading.value = true;
 
       // 1. Mark old version as archived
-      await updateDocument(documentId, { is_current: false })
+      await updateDocument(documentId, { is_current: false });
 
       // 2. Upload new file
-      const timestamp = Date.now()
-      const fileName = `${userStore.user.id}/${timestamp}-${file.name}`
+      const timestamp = Date.now();
+      const fileName = `${userStore.user.id}/${timestamp}-${file.name}`;
 
       const { data: uploadData, error: uploadErr } = await supabase.storage
-        .from('documents')
-        .upload(fileName, file)
+        .from("documents")
+        .upload(fileName, file);
 
       if (uploadErr || !uploadData) {
-        throw uploadErr || new Error('Upload failed')
+        throw uploadErr || new Error("Upload failed");
       }
 
       const { data: urlData } = supabase.storage
-        .from('documents')
-        .getPublicUrl(fileName)
+        .from("documents")
+        .getPublicUrl(fileName);
 
       // 3. Create new document record as current version
-      const newVersion = (originalDoc.version || 1) + 1
+      const newVersion = (originalDoc.version || 1) + 1;
       const { data: docData, error: insertErr } = await queryInsert<Document>(
-        'documents',
+        "documents",
         [
           {
             ...originalDoc,
@@ -446,26 +461,26 @@ export const useDocumentsConsolidated = () => {
             updated_at: new Date().toISOString(),
           },
         ],
-        { context: 'uploadNewVersion' }
-      )
+        { context: "uploadNewVersion" },
+      );
 
       if (insertErr || !docData) {
-        throw insertErr || new Error('Failed to create new version')
+        throw insertErr || new Error("Failed to create new version");
       }
 
-      const doc = Array.isArray(docData) ? docData[0] : docData
-      documents.value.unshift(doc)
+      const doc = Array.isArray(docData) ? docData[0] : docData;
+      documents.value.unshift(doc);
 
-      return { success: true, data: doc }
+      return { success: true, data: doc };
     } catch (err) {
-      const message = getErrorMessage(err, { context: 'uploadNewVersion' })
-      uploadError.value = message
-      logError(err, { context: 'uploadNewVersion' })
-      return { success: false, error: message }
+      const message = getErrorMessage(err, { context: "uploadNewVersion" });
+      uploadError.value = message;
+      logError(err, { context: "uploadNewVersion" });
+      return { success: false, error: message };
     } finally {
-      isUploading.value = false
+      isUploading.value = false;
     }
-  }
+  };
 
   // ═══════════════════════════════════════════════════════════════════════════
   // SHARING OPERATIONS
@@ -482,19 +497,19 @@ export const useDocumentsConsolidated = () => {
   const shareDocument = async (
     documentId: string,
     recipientId: string,
-    permission: 'view' | 'edit' | 'admin' = 'view'
+    permission: "view" | "edit" | "admin" = "view",
   ): Promise<boolean> => {
     if (!userStore.user) {
-      sharingError.value = 'User not authenticated'
-      return false
+      sharingError.value = "User not authenticated";
+      return false;
     }
 
-    isSharing.value = true
-    sharingError.value = null
+    isSharing.value = true;
+    sharingError.value = null;
 
     try {
       const { data, error: insertErr } = await queryInsert(
-        'document_shares',
+        "document_shares",
         [
           {
             document_id: documentId,
@@ -504,23 +519,23 @@ export const useDocumentsConsolidated = () => {
             created_at: new Date().toISOString(),
           },
         ],
-        { context: 'shareDocument' }
-      )
+        { context: "shareDocument" },
+      );
 
       if (insertErr || !data) {
-        throw insertErr || new Error('Share failed')
+        throw insertErr || new Error("Share failed");
       }
 
-      return true
+      return true;
     } catch (err) {
-      const message = getErrorMessage(err, { context: 'shareDocument' })
-      sharingError.value = message
-      logError(err, { context: 'shareDocument' })
-      return false
+      const message = getErrorMessage(err, { context: "shareDocument" });
+      sharingError.value = message;
+      logError(err, { context: "shareDocument" });
+      return false;
     } finally {
-      isSharing.value = false
+      isSharing.value = false;
     }
-  }
+  };
 
   /**
    * Revoke document access
@@ -529,40 +544,43 @@ export const useDocumentsConsolidated = () => {
    * @param recipientId - Recipient ID to revoke
    * @returns Promise<boolean> - Success status
    */
-  const revokeAccess = async (documentId: string, recipientId: string): Promise<boolean> => {
+  const revokeAccess = async (
+    documentId: string,
+    recipientId: string,
+  ): Promise<boolean> => {
     if (!userStore.user) {
-      sharingError.value = 'User not authenticated'
-      return false
+      sharingError.value = "User not authenticated";
+      return false;
     }
 
-    isSharing.value = true
-    sharingError.value = null
+    isSharing.value = true;
+    sharingError.value = null;
 
     try {
       const { error: deleteErr } = await queryDelete(
-        'document_shares',
+        "document_shares",
         {
           document_id: documentId,
           recipient_id: recipientId,
           shared_by_id: userStore.user.id,
         },
-        { context: 'revokeAccess' }
-      )
+        { context: "revokeAccess" },
+      );
 
       if (deleteErr) {
-        throw deleteErr
+        throw deleteErr;
       }
 
-      return true
+      return true;
     } catch (err) {
-      const message = getErrorMessage(err, { context: 'revokeAccess' })
-      sharingError.value = message
-      logError(err, { context: 'revokeAccess' })
-      return false
+      const message = getErrorMessage(err, { context: "revokeAccess" });
+      sharingError.value = message;
+      logError(err, { context: "revokeAccess" });
+      return false;
     } finally {
-      isSharing.value = false
+      isSharing.value = false;
     }
-  }
+  };
 
   // ═══════════════════════════════════════════════════════════════════════════
   // COMPUTED PROPERTIES
@@ -572,43 +590,43 @@ export const useDocumentsConsolidated = () => {
    * Documents grouped by type
    */
   const documentsByType = computed(() => {
-    const grouped: Record<string, Document[]> = {}
-    documents.value.forEach(doc => {
+    const grouped: Record<string, Document[]> = {};
+    documents.value.forEach((doc) => {
       if (!grouped[doc.type]) {
-        grouped[doc.type] = []
+        grouped[doc.type] = [];
       }
-      grouped[doc.type].push(doc)
-    })
-    return grouped
-  })
+      grouped[doc.type].push(doc);
+    });
+    return grouped;
+  });
 
   /**
    * Current (non-archived) documents
    */
   const currentDocuments = computed(() =>
-    documents.value.filter(d => d.is_current)
-  )
+    documents.value.filter((d) => d.is_current),
+  );
 
   /**
    * Archived documents
    */
   const archivedDocuments = computed(() =>
-    documents.value.filter(d => !d.is_current)
-  )
+    documents.value.filter((d) => !d.is_current),
+  );
 
   /**
    * Combined error state
    */
   const allErrors = computed(
-    () => error.value || uploadError.value || sharingError.value
-  )
+    () => error.value || uploadError.value || sharingError.value,
+  );
 
   /**
    * Combined loading state
    */
   const isLoading = computed(
-    () => loading.value || isUploading.value || isSharing.value
-  )
+    () => loading.value || isUploading.value || isSharing.value,
+  );
 
   return {
     // State
@@ -647,5 +665,5 @@ export const useDocumentsConsolidated = () => {
     // Sharing methods
     shareDocument,
     revokeAccess,
-  }
-}
+  };
+};

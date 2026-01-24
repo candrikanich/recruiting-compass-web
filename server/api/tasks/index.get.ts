@@ -5,70 +5,74 @@
  * Cache hit: Saves ~200-300ms database round trip
  */
 
-import { defineEventHandler, getQuery } from 'h3'
-import { createServerSupabaseClient } from '~/server/utils/supabase'
-import { getCached } from '~/server/utils/cache'
-import type { Task } from '~/types/timeline'
+import { defineEventHandler, getQuery } from "h3";
+import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { getCached } from "~/server/utils/cache";
+import type { Task } from "~/types/timeline";
 
 export default defineEventHandler(async (event) => {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createServerSupabaseClient();
 
-    const query = getQuery(event)
-    const gradeLevel = query.gradeLevel ? parseInt(query.gradeLevel as string) : undefined
-    const category = query.category as string | undefined
-    const division = query.division as string | undefined
+    const query = getQuery(event);
+    const gradeLevel = query.gradeLevel
+      ? parseInt(query.gradeLevel as string)
+      : undefined;
+    const category = query.category as string | undefined;
+    const division = query.division as string | undefined;
 
     // Generate cache key based on filters
-    const cacheKey = `tasks:${gradeLevel || 'all'}:${category || 'all'}:${division || 'all'}`
+    const cacheKey = `tasks:${gradeLevel || "all"}:${category || "all"}:${division || "all"}`;
 
     // Try to get from cache first
-    const cached = getCached<Task[]>(cacheKey)
+    const cached = getCached<Task[]>(cacheKey);
     if (cached) {
-      return cached
+      return cached;
     }
 
-    let request = supabase.from('task').select('*')
+    let request = supabase.from("task").select("*");
 
     // Apply filters
     if (gradeLevel) {
-      request = request.eq('grade_level', gradeLevel)
+      request = request.eq("grade_level", gradeLevel);
     }
     if (category) {
-      request = request.eq('category', category)
+      request = request.eq("category", category);
     }
     if (division) {
-      request = request.contains('division_applicability', [division])
+      request = request.contains("division_applicability", [division]);
     }
 
     // Order by grade level and category
-    request = request.order('grade_level', { ascending: true }).order('category', { ascending: true })
+    request = request
+      .order("grade_level", { ascending: true })
+      .order("category", { ascending: true });
 
-    const { data, error } = await request
+    const { data, error } = await request;
 
     if (error) {
-      console.error('Supabase error fetching tasks:', JSON.stringify(error))
+      console.error("Supabase error fetching tasks:", JSON.stringify(error));
       throw createError({
         statusCode: 500,
         statusMessage: `Failed to fetch tasks: ${error.message}`,
-      })
+      });
     }
 
-    const tasks = data as Task[]
+    const tasks = data as Task[];
 
     // Cache for 1 hour (3600 seconds) - tasks rarely change
     if (tasks) {
-      const { setCached } = await import('~/server/utils/cache')
-      setCached(cacheKey, tasks, 3600)
+      const { setCached } = await import("~/server/utils/cache");
+      setCached(cacheKey, tasks, 3600);
     }
 
-    return tasks
+    return tasks;
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error'
-    console.error('Error in GET /api/tasks:', message)
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("Error in GET /api/tasks:", message);
     throw createError({
       statusCode: 500,
       statusMessage: message,
-    })
+    });
   }
-})
+});

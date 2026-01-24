@@ -1,12 +1,21 @@
 <template>
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6">
+  <div
+    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+  >
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-bold text-slate-900">🎯 Coaches Needing Follow-up</h3>
-      <span class="text-sm text-slate-600">{{ needsFollowup.length }} coaches</span>
+      <h3 class="text-lg font-bold text-slate-900">
+        🎯 Coaches Needing Follow-up
+      </h3>
+      <span class="text-sm text-slate-600"
+        >{{ needsFollowup.length }} coaches</span
+      >
     </div>
 
     <!-- Empty State -->
-    <div v-if="needsFollowup.length === 0" class="text-center py-8 text-slate-600">
+    <div
+      v-if="needsFollowup.length === 0"
+      class="text-center py-8 text-slate-600"
+    >
       <p class="text-lg">🎉 All caught up!</p>
       <p class="text-sm">No coaches need immediate follow-up</p>
     </div>
@@ -19,8 +28,12 @@
         class="flex items-center justify-between p-3 rounded-lg transition bg-slate-50 border border-orange-200 hover:bg-slate-100"
       >
         <div class="flex-1">
-          <p class="font-semibold text-slate-900">{{ coach.first_name }} {{ coach.last_name }}</p>
-          <p class="text-sm text-slate-600">{{ getSchoolName(coach.school_id) }}</p>
+          <p class="font-semibold text-slate-900">
+            {{ coach.first_name }} {{ coach.last_name }}
+          </p>
+          <p class="text-sm text-slate-600">
+            {{ getSchoolName(coach.school_id) }}
+          </p>
           <p class="text-xs font-medium text-orange-600">
             {{ getDaysSinceContact(coach.last_contact_date) }}
           </p>
@@ -80,133 +93,149 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useSupabase } from '~/composables/useSupabase'
-import { useUserStore } from '~/stores/user'
-import { useCommunication } from '~/composables/useCommunication'
-import type { Coach, School } from '~/types/models'
+import { ref, computed, onMounted } from "vue";
+import { useSupabase } from "~/composables/useSupabase";
+import { useUserStore } from "~/stores/user";
+import { useCommunication } from "~/composables/useCommunication";
+import type { Coach, School } from "~/types/models";
 
-const supabase = useSupabase()
+const supabase = useSupabase();
 // Defer store initialization to onMounted
-let userStore: ReturnType<typeof useUserStore> | undefined
-let communicationComposable: ReturnType<typeof useCommunication> | undefined
+let userStore: ReturnType<typeof useUserStore> | undefined;
+let communicationComposable: ReturnType<typeof useCommunication> | undefined;
 
-const showPanel = computed(() => communicationComposable?.showPanel.value || false)
-const selectedCoach = computed(() => communicationComposable?.selectedCoach.value || null)
-const communicationType = computed(() => communicationComposable?.communicationType.value || null)
+const showPanel = computed(
+  () => communicationComposable?.showPanel.value || false,
+);
+const selectedCoach = computed(
+  () => communicationComposable?.selectedCoach.value || null,
+);
+const communicationType = computed(
+  () => communicationComposable?.communicationType.value || null,
+);
 
 const openCommunication = (coach: Coach, type: string) => {
   if (communicationComposable) {
-    communicationComposable.openCommunication(coach, type)
+    communicationComposable.openCommunication(coach, type);
   }
-}
+};
 
-const allCoaches = ref<Coach[]>([])
-const allSchools = ref<School[]>([])
+const allCoaches = ref<Coach[]>([]);
+const allSchools = ref<School[]>([]);
 
 // Threshold for follow-up: 14 days
-const FOLLOW_UP_THRESHOLD_DAYS = 14
+const FOLLOW_UP_THRESHOLD_DAYS = 14;
 
 // Calculate coaches needing follow-up
 const needsFollowup = computed(() => {
-  const cutoffDate = new Date()
-  cutoffDate.setDate(cutoffDate.getDate() - FOLLOW_UP_THRESHOLD_DAYS)
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - FOLLOW_UP_THRESHOLD_DAYS);
 
   return allCoaches.value
     .filter((coach) => {
       // Include coaches with no last contact, or those contacted before threshold
-      if (!coach.last_contact_date) return true
-      return new Date(coach.last_contact_date) < cutoffDate
+      if (!coach.last_contact_date) return true;
+      return new Date(coach.last_contact_date) < cutoffDate;
     })
     .sort((a, b) => {
       // Sort by oldest contact first
-      if (!a.last_contact_date) return -1
-      if (!b.last_contact_date) return 1
-      return new Date(a.last_contact_date).getTime() - new Date(b.last_contact_date).getTime()
-    })
-})
+      if (!a.last_contact_date) return -1;
+      if (!b.last_contact_date) return 1;
+      return (
+        new Date(a.last_contact_date).getTime() -
+        new Date(b.last_contact_date).getTime()
+      );
+    });
+});
 
 // Get school by ID
 const getSchool = (schoolId?: string): School | undefined => {
-  if (!schoolId) return undefined
-  return allSchools.value.find((s) => s.id === schoolId)
-}
+  if (!schoolId) return undefined;
+  return allSchools.value.find((s) => s.id === schoolId);
+};
 
 // Get school name by ID
 const getSchoolName = (schoolId?: string): string => {
-  const school = getSchool(schoolId)
-  return school?.name || 'Unknown'
-}
+  const school = getSchool(schoolId);
+  return school?.name || "Unknown";
+};
 
 // Get selected coach's school
 const selectedCoachSchool = computed(() => {
-  return selectedCoach.value ? getSchool(selectedCoach.value.school_id) : undefined
-})
+  return selectedCoach.value
+    ? getSchool(selectedCoach.value.school_id)
+    : undefined;
+});
 
 // Format days since contact
 const getDaysSinceContact = (date: string | null): string => {
-  if (!date) return 'Never contacted'
-  const days = Math.floor((Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24))
-  if (days === 0) return 'Today'
-  if (days === 1) return '1 day ago'
-  return `${days} days ago`
-}
+  if (!date) return "Never contacted";
+  const days = Math.floor(
+    (Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24),
+  );
+  if (days === 0) return "Today";
+  if (days === 1) return "1 day ago";
+  return `${days} days ago`;
+};
 
 // Email handler - opens communication panel with template
 const handleEmail = (coach: Coach) => {
-  openCommunication(coach, 'email')
-}
+  openCommunication(coach, "email");
+};
 
 // Text handler - opens communication panel with template
 const handleText = (coach: Coach) => {
-  openCommunication(coach, 'text')
-}
+  openCommunication(coach, "text");
+};
 
 // Fetch data
 const fetchData = async () => {
-  if (!userStore.user) return
+  if (!userStore.user) return;
 
   try {
     // Fetch schools
     const { data: schoolsData, error: schoolsError } = await supabase
-      .from('schools')
-      .select('*')
-      .eq('user_id', userStore.user.id)
+      .from("schools")
+      .select("*")
+      .eq("user_id", userStore.user.id);
 
     if (!schoolsError && schoolsData) {
-      allSchools.value = schoolsData
+      allSchools.value = schoolsData;
     }
 
     // Fetch coaches
     if (allSchools.value.length > 0) {
-      const schoolIds = allSchools.value.map((s) => s.id)
+      const schoolIds = allSchools.value.map((s) => s.id);
       const { data: coachesData, error: coachesError } = await supabase
-        .from('coaches')
-        .select('*')
-        .in('school_id', schoolIds)
-        .order('last_contact_date', { ascending: true, nullsFirst: true })
+        .from("coaches")
+        .select("*")
+        .in("school_id", schoolIds)
+        .order("last_contact_date", { ascending: true, nullsFirst: true });
 
       if (!coachesError && coachesData) {
-        allCoaches.value = coachesData
+        allCoaches.value = coachesData;
       }
     }
   } catch (err) {
-    console.error('Error fetching follow-up data:', err)
+    console.error("Error fetching follow-up data:", err);
   }
-}
+};
 
 // Handle interaction logging - refresh data after successful log
 const onInteractionLogged = async (interactionData: any) => {
-  if (!communicationComposable) return
+  if (!communicationComposable) return;
   try {
-    await communicationComposable.handleInteractionLogged(interactionData, fetchData)
+    await communicationComposable.handleInteractionLogged(
+      interactionData,
+      fetchData,
+    );
   } catch (err) {
-    console.error('Error logging interaction:', err)
+    console.error("Error logging interaction:", err);
   }
-}
+};
 
 onMounted(() => {
   // Skip data loading - dashboard rendering without data for now
   // Data loading deferred until Pinia timing issues are resolved
-})
+});
 </script>

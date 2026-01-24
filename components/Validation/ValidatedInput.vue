@@ -33,47 +33,50 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 
 const props = withDefaults(
   defineProps<{
-    modelValue: string | number
-    label?: string
-    type?: string
-    placeholder?: string
-    disabled?: boolean
-    required?: boolean
-    error?: string
-    validateOnBlur?: boolean
+    modelValue: string | number;
+    label?: string;
+    type?: string;
+    placeholder?: string;
+    disabled?: boolean;
+    required?: boolean;
+    error?: string;
+    validateOnBlur?: boolean;
   }>(),
   {
-    type: 'text',
+    type: "text",
     disabled: false,
     required: false,
     validateOnBlur: false,
-  }
-)
+  },
+);
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string | number]
-  validate: [value: string | number]
-}>()
+  "update:modelValue": [value: string | number];
+  validate: [value: string | number];
+}>();
 
 const inputId = computed(() =>
   props.label
-    ? props.label.toLowerCase().replace(/\s+/g, '-')
-    : `input-${Math.random().toString(36).slice(2, 9)}`
-)
+    ? props.label.toLowerCase().replace(/\s+/g, "-")
+    : `input-${Math.random().toString(36).slice(2, 9)}`,
+);
 
 const handleInput = (e: Event) => {
-  const value = (e.target as HTMLInputElement).value
-  emit('update:modelValue', props.type === 'number' ? parseFloat(value) || '' : value)
-}
+  const value = (e.target as HTMLInputElement).value;
+  emit(
+    "update:modelValue",
+    props.type === "number" ? parseFloat(value) || "" : value,
+  );
+};
 
 const handleBlur = (e: Event) => {
   if (props.validateOnBlur) {
-    const value = (e.target as HTMLInputElement).value
-    emit('validate', props.type === 'number' ? parseFloat(value) || '' : value)
+    const value = (e.target as HTMLInputElement).value;
+    emit("validate", props.type === "number" ? parseFloat(value) || "" : value);
   }
-}
+};
 </script>

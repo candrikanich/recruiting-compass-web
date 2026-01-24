@@ -6,13 +6,19 @@
       class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg"
     >
       <div class="flex items-start gap-3">
-        <ExclamationTriangleIcon class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+        <ExclamationTriangleIcon
+          class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
+        />
         <div class="flex-1">
           <h3 class="text-sm font-semibold text-red-800 mb-2">
             Please correct the following errors:
           </h3>
           <ul class="text-sm text-red-700 space-y-1">
-            <li v-for="error in errors" :key="error.field" class="flex items-start gap-2">
+            <li
+              v-for="error in errors"
+              :key="error.field"
+              class="flex items-start gap-2"
+            >
               <span class="text-red-700 mt-1">•</span>
               <div>
                 <strong>{{ formatFieldName(error.field) }}:</strong>
@@ -35,16 +41,16 @@
 </template>
 
 <script setup lang="ts">
-import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/vue/24/solid'
-import type { FormFieldError } from '~/composables/useFormValidation'
+import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/vue/24/solid";
+import type { FormFieldError } from "~/composables/useFormValidation";
 
 defineProps<{
-  errors: FormFieldError[]
-}>()
+  errors: FormFieldError[];
+}>();
 
 defineEmits<{
-  dismiss: []
-}>()
+  dismiss: [];
+}>();
 
 /**
  * Formats field name for display
@@ -53,16 +59,16 @@ defineEmits<{
  */
 const formatFieldName = (field: string): string => {
   return field
-    .split('.')
-    .map(part =>
+    .split(".")
+    .map((part) =>
       part
-        .replace(/_/g, ' ')
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
+        .replace(/_/g, " ")
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" "),
     )
-    .join(' → ')
-}
+    .join(" → ");
+};
 </script>
 
 <style scoped>

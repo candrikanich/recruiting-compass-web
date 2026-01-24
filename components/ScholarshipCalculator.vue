@@ -23,7 +23,10 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Total Annual Cost -->
         <div>
-          <label for="annualCost" class="block text-sm font-medium mb-1 text-slate-600">
+          <label
+            for="annualCost"
+            class="block text-sm font-medium mb-1 text-slate-600"
+          >
             Total Annual Cost ($)
           </label>
           <input
@@ -40,7 +43,10 @@
 
         <!-- Scholarship Amount (Alternative to Percentage) -->
         <div>
-          <label for="scholarshipAmount" class="block text-sm font-medium mb-1 text-slate-600">
+          <label
+            for="scholarshipAmount"
+            class="block text-sm font-medium mb-1 text-slate-600"
+          >
             Scholarship Amount ($) OR
           </label>
           <input
@@ -52,12 +58,17 @@
             placeholder="Enter scholarship amount"
             class="w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-900 bg-white"
           />
-          <p class="text-xs mt-1 text-slate-600">Leave blank to use percentage</p>
+          <p class="text-xs mt-1 text-slate-600">
+            Leave blank to use percentage
+          </p>
         </div>
 
         <!-- Scholarship Percentage (Alternative to Amount) -->
         <div>
-          <label for="scholarshipPercentage" class="block text-sm font-medium mb-1 text-slate-600">
+          <label
+            for="scholarshipPercentage"
+            class="block text-sm font-medium mb-1 text-slate-600"
+          >
             Scholarship Percentage (%)
           </label>
           <input
@@ -70,12 +81,17 @@
             placeholder="e.g., 50"
             class="w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-900 bg-white"
           />
-          <p class="text-xs mt-1 text-slate-600">Leave blank if using amount above</p>
+          <p class="text-xs mt-1 text-slate-600">
+            Leave blank if using amount above
+          </p>
         </div>
 
         <!-- Additional Aid/Grants -->
         <div>
-          <label for="additionalAid" class="block text-sm font-medium mb-1 text-slate-600">
+          <label
+            for="additionalAid"
+            class="block text-sm font-medium mb-1 text-slate-600"
+          >
             Additional Aid/Grants ($)
           </label>
           <input
@@ -92,7 +108,10 @@
 
         <!-- Years to Calculate -->
         <div>
-          <label for="years" class="block text-sm font-medium mb-1 text-slate-600">
+          <label
+            for="years"
+            class="block text-sm font-medium mb-1 text-slate-600"
+          >
             Years to Calculate
           </label>
           <select
@@ -110,50 +129,88 @@
       </div>
 
       <!-- Calculations Display -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-slate-300">
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-slate-300"
+      >
         <!-- Annual Scholarship -->
         <div class="rounded-lg p-4 bg-blue-50 border border-blue-200">
-          <p class="text-sm font-medium mb-1 text-blue-600">Annual Scholarship</p>
-          <p class="text-2xl font-bold text-blue-900">{{ formatCurrency(annualScholarship) }}</p>
+          <p class="text-sm font-medium mb-1 text-blue-600">
+            Annual Scholarship
+          </p>
+          <p class="text-2xl font-bold text-blue-900">
+            {{ formatCurrency(annualScholarship) }}
+          </p>
         </div>
 
         <!-- Annual Net Cost -->
         <div class="rounded-lg p-4 bg-orange-50 border border-orange-200">
-          <p class="text-sm font-medium mb-1 text-orange-600">Annual Net Cost</p>
-          <p class="text-2xl font-bold text-orange-900">{{ formatCurrency(annualNetCost) }}</p>
+          <p class="text-sm font-medium mb-1 text-orange-600">
+            Annual Net Cost
+          </p>
+          <p class="text-2xl font-bold text-orange-900">
+            {{ formatCurrency(annualNetCost) }}
+          </p>
         </div>
 
         <!-- Total Scholarship -->
         <div class="rounded-lg p-4 bg-emerald-50 border border-emerald-200">
-          <p class="text-sm font-medium mb-1 text-emerald-600">Total Scholarship ({{ inputs.years }}yr)</p>
-          <p class="text-2xl font-bold text-emerald-900">{{ formatCurrency(totalScholarship) }}</p>
+          <p class="text-sm font-medium mb-1 text-emerald-600">
+            Total Scholarship ({{ inputs.years }}yr)
+          </p>
+          <p class="text-2xl font-bold text-emerald-900">
+            {{ formatCurrency(totalScholarship) }}
+          </p>
         </div>
 
         <!-- Total Net Cost -->
         <div class="rounded-lg p-4 bg-red-50 border border-red-200">
-          <p class="text-sm font-medium mb-1 text-red-600">Total Net Cost ({{ inputs.years }}yr)</p>
-          <p class="text-2xl font-bold text-red-600">{{ formatCurrency(totalNetCost) }}</p>
+          <p class="text-sm font-medium mb-1 text-red-600">
+            Total Net Cost ({{ inputs.years }}yr)
+          </p>
+          <p class="text-2xl font-bold text-red-600">
+            {{ formatCurrency(totalNetCost) }}
+          </p>
         </div>
       </div>
 
       <!-- Annual Breakdown Table -->
       <div class="mt-6">
-        <h3 class="font-semibold mb-3 text-slate-900">Year-by-Year Breakdown</h3>
+        <h3 class="font-semibold mb-3 text-slate-900">
+          Year-by-Year Breakdown
+        </h3>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b-2 border-slate-300">
-                <th class="text-left px-4 py-2 font-semibold text-slate-900">Year</th>
-                <th class="text-right px-4 py-2 font-semibold text-slate-900">Cost</th>
-                <th class="text-right px-4 py-2 font-semibold text-slate-900">Scholarship</th>
-                <th class="text-right px-4 py-2 font-semibold text-slate-900">Aid/Grants</th>
-                <th class="text-right px-4 py-2 font-semibold text-slate-900">Your Cost</th>
+                <th class="text-left px-4 py-2 font-semibold text-slate-900">
+                  Year
+                </th>
+                <th class="text-right px-4 py-2 font-semibold text-slate-900">
+                  Cost
+                </th>
+                <th class="text-right px-4 py-2 font-semibold text-slate-900">
+                  Scholarship
+                </th>
+                <th class="text-right px-4 py-2 font-semibold text-slate-900">
+                  Aid/Grants
+                </th>
+                <th class="text-right px-4 py-2 font-semibold text-slate-900">
+                  Your Cost
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="year in inputs.years" :key="year" class="border-b border-slate-300">
-                <td class="px-4 py-2 font-medium text-slate-900">Year {{ year }}</td>
-                <td class="text-right px-4 py-2 text-slate-900">{{ formatCurrency(inputs.annualCost) }}</td>
+              <tr
+                v-for="year in inputs.years"
+                :key="year"
+                class="border-b border-slate-300"
+              >
+                <td class="px-4 py-2 font-medium text-slate-900">
+                  Year {{ year }}
+                </td>
+                <td class="text-right px-4 py-2 text-slate-900">
+                  {{ formatCurrency(inputs.annualCost) }}
+                </td>
                 <td class="text-right px-4 py-2 font-semibold text-emerald-600">
                   -{{ formatCurrency(annualScholarship) }}
                 </td>
@@ -189,13 +246,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
 interface Props {
-  schoolName?: string
-  initialAmount?: number
-  initialPercentage?: number
-  onSaveValue?: (amount: number, percentage: number) => void
+  schoolName?: string;
+  initialAmount?: number;
+  initialPercentage?: number;
+  onSaveValue?: (amount: number, percentage: number) => void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -203,61 +260,67 @@ const props = withDefaults(defineProps<Props>(), {
   initialAmount: undefined,
   initialPercentage: undefined,
   onSaveValue: undefined,
-})
+});
 
-const showCalculator = ref(false)
+const showCalculator = ref(false);
 const inputs = ref({
   annualCost: 60000,
   scholarshipAmount: props.initialAmount || 0,
   scholarshipPercentage: props.initialPercentage || 0,
   additionalAid: 0,
   years: 4,
-})
+});
 
 const annualScholarship = computed(() => {
   if (inputs.value.scholarshipAmount > 0) {
-    return inputs.value.scholarshipAmount
+    return inputs.value.scholarshipAmount;
   } else if (inputs.value.scholarshipPercentage > 0) {
-    return (inputs.value.annualCost * inputs.value.scholarshipPercentage) / 100
+    return (inputs.value.annualCost * inputs.value.scholarshipPercentage) / 100;
   }
-  return 0
-})
+  return 0;
+});
 
 const annualNetCost = computed(() => {
-  return inputs.value.annualCost - annualScholarship.value - inputs.value.additionalAid
-})
+  return (
+    inputs.value.annualCost -
+    annualScholarship.value -
+    inputs.value.additionalAid
+  );
+});
 
 const totalScholarship = computed(() => {
-  return annualScholarship.value * inputs.value.years
-})
+  return annualScholarship.value * inputs.value.years;
+});
 
 const totalNetCost = computed(() => {
-  return annualNetCost.value * inputs.value.years
-})
+  return annualNetCost.value * inputs.value.years;
+});
 
 const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value)
-}
+  }).format(value);
+};
 
 const saveToOffer = () => {
   if (props.onSaveValue) {
     const percentage =
       inputs.value.scholarshipPercentage > 0
         ? inputs.value.scholarshipPercentage
-        : Math.round((annualScholarship.value / inputs.value.annualCost) * 100 * 100) / 100
+        : Math.round(
+            (annualScholarship.value / inputs.value.annualCost) * 100 * 100,
+          ) / 100;
 
-    props.onSaveValue(annualScholarship.value, percentage)
-    showCalculator.value = false
+    props.onSaveValue(annualScholarship.value, percentage);
+    showCalculator.value = false;
   }
-}
+};
 
 const reset = () => {
-  inputs.value.scholarshipAmount = props.initialAmount || 0
-  inputs.value.scholarshipPercentage = props.initialPercentage || 0
-}
+  inputs.value.scholarshipAmount = props.initialAmount || 0;
+  inputs.value.scholarshipPercentage = props.initialPercentage || 0;
+};
 </script>

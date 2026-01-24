@@ -9,7 +9,11 @@
           class="px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
           @change="handleSwitch"
         >
-          <option v-for="athlete in linkedAthletes" :key="athlete.user_id" :value="athlete.user_id">
+          <option
+            v-for="athlete in linkedAthletes"
+            :key="athlete.user_id"
+            :value="athlete.user_id"
+          >
             {{ athlete.full_name || athlete.email }}
           </option>
         </select>
@@ -19,30 +23,40 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
-import { UserCircleIcon } from '@heroicons/vue/24/outline'
-import { useParentContext } from '~/composables/useParentContext'
+import { computed, ref, watch, onMounted } from "vue";
+import { UserCircleIcon } from "@heroicons/vue/24/outline";
+import { useParentContext } from "~/composables/useParentContext";
 
 // Defer composable initialization to onMounted (safe Pinia access)
-let parentContext: ReturnType<typeof useParentContext> | undefined
-const showSwitcher = computed(() => parentContext?.isParent.value && parentContext?.linkedAthletes.value.length > 1)
-const selectedId = ref('')
+let parentContext: ReturnType<typeof useParentContext> | undefined;
+const showSwitcher = computed(
+  () =>
+    parentContext?.isParent.value &&
+    parentContext?.linkedAthletes.value.length > 1,
+);
+const selectedId = ref("");
 
 // Update selectedId when currentAthleteId changes (from initialization or route param)
-watch(() => parentContext?.currentAthleteId.value, (newId) => {
-  if (newId) {
-    selectedId.value = newId
-  }
-})
+watch(
+  () => parentContext?.currentAthleteId.value,
+  (newId) => {
+    if (newId) {
+      selectedId.value = newId;
+    }
+  },
+);
 
 const handleSwitch = async () => {
-  if (!parentContext) return
-  if (selectedId.value && selectedId.value !== parentContext.currentAthleteId.value) {
-    await parentContext.switchAthlete(selectedId.value)
+  if (!parentContext) return;
+  if (
+    selectedId.value &&
+    selectedId.value !== parentContext.currentAthleteId.value
+  ) {
+    await parentContext.switchAthlete(selectedId.value);
   }
-}
+};
 
 onMounted(() => {
-  parentContext = useParentContext()
-})
+  parentContext = useParentContext();
+});
 </script>

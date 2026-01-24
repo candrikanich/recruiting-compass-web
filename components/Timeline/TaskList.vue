@@ -1,6 +1,9 @@
 <template>
   <!-- Empty state -->
-  <div v-if="tasks.length === 0 && showEmpty" class="text-center py-8 text-slate-500">
+  <div
+    v-if="tasks.length === 0 && showEmpty"
+    class="text-center py-8 text-slate-500"
+  >
     <p class="text-sm">No tasks available for this phase</p>
   </div>
 
@@ -19,17 +22,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { TaskWithStatus, TaskCategory, TaskStatus } from '~/types/timeline'
-import TaskItem from '~/components/Timeline/TaskItem.vue'
+import { computed } from "vue";
+import type {
+  TaskWithStatus,
+  TaskCategory,
+  TaskStatus,
+} from "~/types/timeline";
+import TaskItem from "~/components/Timeline/TaskItem.vue";
 
 interface Props {
-  tasks: TaskWithStatus[]
-  showEmpty?: boolean
-  showCategory?: boolean
-  showStatus?: boolean
-  filterCategory?: TaskCategory | null
-  filterStatus?: TaskStatus | null
+  tasks: TaskWithStatus[];
+  showEmpty?: boolean;
+  showCategory?: boolean;
+  showStatus?: boolean;
+  filterCategory?: TaskCategory | null;
+  filterStatus?: TaskStatus | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -37,36 +44,38 @@ const props = withDefaults(defineProps<Props>(), {
   showCategory: true,
   showStatus: true,
   filterCategory: null,
-  filterStatus: null
-})
+  filterStatus: null,
+});
 
 defineEmits<{
-  'task-toggle': [taskId: string]
-}>()
+  "task-toggle": [taskId: string];
+}>();
 
 const filteredAndSortedTasks = computed(() => {
-  let result = props.tasks
+  let result = props.tasks;
 
   // Filter by category if provided
   if (props.filterCategory) {
-    result = result.filter(t => t.category === props.filterCategory)
+    result = result.filter((t) => t.category === props.filterCategory);
   }
 
   // Filter by status if provided
   if (props.filterStatus) {
-    result = result.filter(t => t.athlete_task?.status === props.filterStatus)
+    result = result.filter(
+      (t) => t.athlete_task?.status === props.filterStatus,
+    );
   }
 
   // Sort by priority: required tasks first, then alphabetically
   result = [...result].sort((a, b) => {
     // Required tasks first
-    if (a.required && !b.required) return -1
-    if (!a.required && b.required) return 1
+    if (a.required && !b.required) return -1;
+    if (!a.required && b.required) return 1;
 
     // Then alphabetically by title
-    return a.title.localeCompare(b.title)
-  })
+    return a.title.localeCompare(b.title);
+  });
 
-  return result
-})
+  return result;
+});
 </script>

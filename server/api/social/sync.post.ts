@@ -4,132 +4,156 @@
  * RESTRICTED: Athletes only (parents have read-only access)
  */
 
-import { defineEventHandler } from 'h3'
-import { createServerSupabaseClient } from '~/server/utils/supabase'
-import { TwitterService } from '~/server/utils/twitterService'
-import { InstagramService } from '~/server/utils/instagramService'
-import { analyzeSentiment } from '~/utils/sentimentAnalysis'
-import { requireAuth, assertNotParent } from '~/server/utils/auth'
-import { filterValidHandles } from '~/server/utils/socialMediaValidator'
-import { createLogger } from '~/server/utils/logger'
-import { auditLog } from '~/server/utils/auditLog'
+import { defineEventHandler } from "h3";
+import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { TwitterService } from "~/server/utils/twitterService";
+import { InstagramService } from "~/server/utils/instagramService";
+import { analyzeSentiment } from "~/utils/sentimentAnalysis";
+import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { filterValidHandles } from "~/server/utils/socialMediaValidator";
+import { createLogger } from "~/server/utils/logger";
+import { auditLog } from "~/server/utils/auditLog";
 
-const logger = createLogger('social/sync')
+const logger = createLogger("social/sync");
 
 interface SyncSummary {
-  success: boolean
-  message: string
+  success: boolean;
+  message: string;
   twitter: {
-    fetched: number
-    new: number
-  }
+    fetched: number;
+    new: number;
+  };
   instagram: {
-    fetched: number
-    new: number
-  }
+    fetched: number;
+    new: number;
+  };
 }
 
 // Helper to safely extract handles from entities
 const getHandles = (entities: any[], handleKey: string): string[] => {
-  if (!Array.isArray(entities)) return []
+  if (!Array.isArray(entities)) return [];
   return entities
-    .filter(e => (typeof e === 'object' && e !== null && handleKey in e && typeof e[handleKey] === 'string'))
-    .map(e => e[handleKey])
-}
+    .filter(
+      (e) =>
+        typeof e === "object" &&
+        e !== null &&
+        handleKey in e &&
+        typeof e[handleKey] === "string",
+    )
+    .map((e) => e[handleKey]);
+};
 
 // Helper to safely find entity by handle
-const findEntityByHandle = (entities: any[], handleKey: string, targetHandle: string) => {
-  if (!Array.isArray(entities)) return undefined
-  return entities.find(e => (typeof e === 'object' && e !== null && e[handleKey] === targetHandle))
-}
+const findEntityByHandle = (
+  entities: any[],
+  handleKey: string,
+  targetHandle: string,
+) => {
+  if (!Array.isArray(entities)) return undefined;
+  return entities.find(
+    (e) => typeof e === "object" && e !== null && e[handleKey] === targetHandle,
+  );
+};
 
 export default defineEventHandler(async (event): Promise<SyncSummary> => {
   try {
     // Check authentication
-    const user = await requireAuth(event)
-    const supabase = createServerSupabaseClient()
+    const user = await requireAuth(event);
+    const supabase = createServerSupabaseClient();
 
     // Ensure requesting user is not a parent (mutation restricted)
-    await assertNotParent(user.id, supabase)
+    await assertNotParent(user.id, supabase);
 
-    const config = useRuntimeConfig()
+    const config = useRuntimeConfig();
 
     // Initialize services
-    const twitterService = new TwitterService(config.twitterBearerToken)
-    const instagramService = new InstagramService(config.instagramAccessToken)
+    const twitterService = new TwitterService(config.twitterBearerToken);
+    const instagramService = new InstagramService(config.instagramAccessToken);
 
     // Get user's schools and coaches with social media handles
     const { data: schools, error: schoolsError } = await supabase
-      .from('schools')
-      .select('id, name, twitter_handle, instagram_handle')
-      .eq('user_id', user.id)
+      .from("schools")
+      .select("id, name, twitter_handle, instagram_handle")
+      .eq("user_id", user.id);
 
     const { data: coaches, error: coachesError } = await supabase
-      .from('coaches')
-      .select('id, name, twitter_handle, instagram_handle')
+      .from("coaches")
+      .select("id, name, twitter_handle, instagram_handle");
 
     if (schoolsError) {
-      logger.error('Failed to fetch schools', schoolsError)
+      logger.error("Failed to fetch schools", schoolsError);
       throw createError({
         statusCode: 500,
-        statusMessage: 'Failed to fetch schools',
-      })
+        statusMessage: "Failed to fetch schools",
+      });
     }
 
     // Collect all Twitter and Instagram handles using helper functions
     const rawTwitterHandles = [
-      ...getHandles(schools as any[], 'twitter_handle'),
-      ...getHandles(coaches as any[], 'twitter_handle'),
-    ]
+      ...getHandles(schools as any[], "twitter_handle"),
+      ...getHandles(coaches as any[], "twitter_handle"),
+    ];
 
     const rawInstagramHandles = [
-      ...getHandles(schools as any[], 'instagram_handle'),
-      ...getHandles(coaches as any[], 'instagram_handle'),
-    ]
+      ...getHandles(schools as any[], "instagram_handle"),
+      ...getHandles(coaches as any[], "instagram_handle"),
+    ];
 
     // Filter to only valid handles (prevents injection and API errors)
-    const twitterHandles = filterValidHandles(rawTwitterHandles, 'twitter')
-    const instagramHandles = filterValidHandles(rawInstagramHandles, 'instagram')
+    const twitterHandles = filterValidHandles(rawTwitterHandles, "twitter");
+    const instagramHandles = filterValidHandles(
+      rawInstagramHandles,
+      "instagram",
+    );
 
     // Log if any handles were filtered out
     if (rawTwitterHandles.length > twitterHandles.length) {
       logger.warn(
-        `Filtered out ${rawTwitterHandles.length - twitterHandles.length} invalid Twitter handles`
-      )
+        `Filtered out ${rawTwitterHandles.length - twitterHandles.length} invalid Twitter handles`,
+      );
     }
     if (rawInstagramHandles.length > instagramHandles.length) {
       logger.warn(
-        `Filtered out ${rawInstagramHandles.length - instagramHandles.length} invalid Instagram handles`
-      )
+        `Filtered out ${rawInstagramHandles.length - instagramHandles.length} invalid Instagram handles`,
+      );
     }
 
-    let twitterFetched = 0
-    let twitterNew = 0
-    let instagramFetched = 0
-    let instagramNew = 0
+    let twitterFetched = 0;
+    let twitterNew = 0;
+    let instagramFetched = 0;
+    let instagramNew = 0;
 
     // Fetch Twitter posts
     if (twitterHandles.length > 0) {
-      const twitterPosts = await twitterService.fetchTweetsForHandles(twitterHandles)
-      twitterFetched = twitterPosts.length
+      const twitterPosts =
+        await twitterService.fetchTweetsForHandles(twitterHandles);
+      twitterFetched = twitterPosts.length;
 
       if (twitterPosts.length > 0) {
         // Check for existing posts and insert new ones
-        const newPosts = []
+        const newPosts = [];
         for (const post of twitterPosts) {
           const { data: existing } = await supabase
-            .from('social_media_posts')
-            .select('id')
-            .eq('post_url', post.post_url)
-            .single()
+            .from("social_media_posts")
+            .select("id")
+            .eq("post_url", post.post_url)
+            .single();
 
           if (!existing) {
             // Find associated school or coach
-            const school = findEntityByHandle(schools as any[], 'twitter_handle', post.author_handle)
-            const coach = findEntityByHandle(coaches as any[], 'twitter_handle', post.author_handle)
+            const school = findEntityByHandle(
+              schools as any[],
+              "twitter_handle",
+              post.author_handle,
+            );
+            const coach = findEntityByHandle(
+              coaches as any[],
+              "twitter_handle",
+              post.author_handle,
+            );
 
             // Analyze sentiment
-            const sentimentResult = analyzeSentiment(post.post_content)
+            const sentimentResult = analyzeSentiment(post.post_content);
 
             newPosts.push({
               school_id: school?.id || null,
@@ -143,19 +167,19 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
               engagement_count: post.engagement_count,
               is_recruiting_related: post.is_recruiting_related,
               sentiment: sentimentResult.sentiment,
-            })
+            });
           }
         }
 
         if (newPosts.length > 0) {
           const { error: insertError } = await supabase
-            .from('social_media_posts')
-            .insert(newPosts as any[])
+            .from("social_media_posts")
+            .insert(newPosts as any[]);
 
           if (insertError) {
-            logger.error('Failed to insert Twitter posts', insertError)
+            logger.error("Failed to insert Twitter posts", insertError);
           } else {
-            twitterNew = newPosts.length
+            twitterNew = newPosts.length;
           }
         }
       }
@@ -163,26 +187,35 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
 
     // Fetch Instagram posts
     if (instagramHandles.length > 0) {
-      const instagramPosts = await instagramService.fetchMediaForHandles(instagramHandles)
-      instagramFetched = instagramPosts.length
+      const instagramPosts =
+        await instagramService.fetchMediaForHandles(instagramHandles);
+      instagramFetched = instagramPosts.length;
 
       if (instagramPosts.length > 0) {
         // Check for existing posts and insert new ones
-        const newPosts = []
+        const newPosts = [];
         for (const post of instagramPosts) {
           const { data: existing } = await supabase
-            .from('social_media_posts')
-            .select('id')
-            .eq('post_url', post.post_url)
-            .single()
+            .from("social_media_posts")
+            .select("id")
+            .eq("post_url", post.post_url)
+            .single();
 
           if (!existing) {
             // Find associated school or coach
-            const school = findEntityByHandle(schools as any[], 'instagram_handle', post.author_handle)
-            const coach = findEntityByHandle(coaches as any[], 'instagram_handle', post.author_handle)
+            const school = findEntityByHandle(
+              schools as any[],
+              "instagram_handle",
+              post.author_handle,
+            );
+            const coach = findEntityByHandle(
+              coaches as any[],
+              "instagram_handle",
+              post.author_handle,
+            );
 
             // Analyze sentiment
-            const sentimentResult = analyzeSentiment(post.post_content)
+            const sentimentResult = analyzeSentiment(post.post_content);
 
             newPosts.push({
               school_id: school?.id || null,
@@ -196,19 +229,19 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
               engagement_count: post.engagement_count,
               is_recruiting_related: post.is_recruiting_related,
               sentiment: sentimentResult.sentiment,
-            })
+            });
           }
         }
 
         if (newPosts.length > 0) {
           const { error: insertError } = await supabase
-            .from('social_media_posts')
-            .insert(newPosts as any[])
+            .from("social_media_posts")
+            .insert(newPosts as any[]);
 
           if (insertError) {
-            logger.error('Failed to insert Instagram posts', insertError)
+            logger.error("Failed to insert Instagram posts", insertError);
           } else {
-            instagramNew = newPosts.length
+            instagramNew = newPosts.length;
           }
         }
       }
@@ -217,17 +250,17 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
     // Log successful sync
     await auditLog(event, {
       userId: user.id,
-      action: 'CREATE',
-      resourceType: 'social_media_posts',
+      action: "CREATE",
+      resourceType: "social_media_posts",
       description: `Synced social media (Twitter: ${twitterNew} new, Instagram: ${instagramNew} new)`,
-      status: 'success',
+      status: "success",
       metadata: {
         twitter_fetched: twitterFetched,
         twitter_new: twitterNew,
         instagram_fetched: instagramFetched,
         instagram_new: instagramNew,
       },
-    })
+    });
 
     return {
       success: true,
@@ -240,24 +273,26 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
         fetched: instagramFetched,
         new: instagramNew,
       },
-    }
+    };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Social media sync failed'
+    const errorMessage =
+      error instanceof Error ? error.message : "Social media sync failed";
 
     // Log failed sync
     await auditLog(event, {
-      userId: (await requireAuth(event).catch(() => ({ id: 'unknown' } as any))).id,
-      action: 'CREATE',
-      resourceType: 'social_media_posts',
+      userId: (await requireAuth(event).catch(() => ({ id: "unknown" }) as any))
+        .id,
+      action: "CREATE",
+      resourceType: "social_media_posts",
       errorMessage,
-      status: 'failure',
-      description: 'Social media sync failed',
-    })
+      status: "failure",
+      description: "Social media sync failed",
+    });
 
-    logger.error('Social media sync failed', error)
+    logger.error("Social media sync failed", error);
     throw createError({
       statusCode: 500,
-      statusMessage: 'Social media sync failed',
-    })
+      statusMessage: "Social media sync failed",
+    });
   }
-})
+});

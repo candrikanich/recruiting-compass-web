@@ -3,6 +3,7 @@
 ## Current State
 
 ### ✅ What's Working
+
 - **Playwright Installation**: v1.57.0 installed and configured
 - **Playwright Config**: Well-configured (`playwright.config.ts`)
   - Chromium as primary browser
@@ -23,7 +24,9 @@
 ### ❌ Blocking Issues
 
 #### Issue 1: Build Failure - Broken Imports
+
 **Root Cause**: Three files import `FieldError` from wrong path
+
 - **Files affected**:
   - `pages/login.vue`
   - `pages/signup.vue`
@@ -33,17 +36,22 @@
 - **Impact**: Build fails → dev server can't start → E2E tests can't run
 
 #### Issue 2: Dev Server Startup Timeout
+
 **Root Cause**: Build failure prevents dev server from starting
+
 - **Config**: 120s timeout in `playwright.config.ts`
 - **Current behavior**: Timeout occurs before server starts
 - **Impact**: Playwright can't access app → all E2E tests fail
 
 #### Issue 3: Port Configuration
+
 **Note**: Playwright expects dev server on `http://localhost:3003`
+
 - **Current**: `npm run dev` likely uses different port (probably 3000)
 - **Solution**: Needs verification/configuration
 
 ### 📋 Test Readiness Issues
+
 1. **Supabase Connection**: Tests may need authenticated test user setup
 2. **Page Objects**: Some may reference selectors that don't exist in current UI
 3. **Test Data**: May need adjustment based on actual database schema
@@ -52,6 +60,7 @@
 ## Implementation Plan
 
 ### Phase 1: Fix Build (Priority: Critical)
+
 **Goal**: Get `npm run build` to succeed
 
 1. **Fix FieldError imports** (3 files)
@@ -67,6 +76,7 @@
    ```
 
 ### Phase 2: Configure Dev Server Port (Priority: High)
+
 **Goal**: Ensure dev server runs on port 3003
 
 1. **Verify current dev port**
@@ -80,9 +90,11 @@
    ```
 
 ### Phase 3: Run E2E Tests (Priority: High)
+
 **Goal**: Get E2E tests running and identify remaining issues
 
 1. **Run single test** to identify page object issues
+
    ```bash
    npm run test:e2e -- tests/e2e/schools.spec.ts --workers=1
    ```
@@ -96,6 +108,7 @@
    - Add missing methods if needed
 
 ### Phase 4: Setup Test Authentication (Priority: High)
+
 **Goal**: Tests can authenticate with real Supabase instance
 
 1. **Check Supabase test user setup**
@@ -111,9 +124,11 @@
    - Create fresh test users if needed
 
 ### Phase 5: Get Tests Passing (Priority: Medium)
+
 **Goal**: All E2E tests pass consistently
 
 1. **Run full test suite**
+
    ```bash
    npm run test:e2e
    ```
@@ -151,6 +166,7 @@
 ## Estimated Scope
 
 This plan should resolve the blocking issues and get E2E tests running. The main work is:
+
 1. Fix 3 import paths (~5 min)
 2. Verify/configure dev server (~10 min)
 3. Debug page objects (~30-60 min depending on selector mismatches)

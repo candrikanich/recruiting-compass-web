@@ -5,27 +5,27 @@
  */
 
 interface CacheEntry<T> {
-  data: T
-  expiresAt: number
+  data: T;
+  expiresAt: number;
 }
 
-const cache = new Map<string, CacheEntry<any>>()
+const cache = new Map<string, CacheEntry<any>>();
 
 /**
  * Get cached data or return null if expired/missing
  */
 export function getCached<T>(key: string): T | null {
-  const entry = cache.get(key)
+  const entry = cache.get(key);
 
-  if (!entry) return null
+  if (!entry) return null;
 
   // Check if expired
   if (Date.now() > entry.expiresAt) {
-    cache.delete(key)
-    return null
+    cache.delete(key);
+    return null;
   }
 
-  return entry.data as T
+  return entry.data as T;
 }
 
 /**
@@ -34,25 +34,29 @@ export function getCached<T>(key: string): T | null {
  * @param data Data to cache
  * @param ttlSeconds Time to live in seconds (default: 1 hour)
  */
-export function setCached<T>(key: string, data: T, ttlSeconds: number = 3600): void {
+export function setCached<T>(
+  key: string,
+  data: T,
+  ttlSeconds: number = 3600,
+): void {
   cache.set(key, {
     data,
     expiresAt: Date.now() + ttlSeconds * 1000,
-  })
+  });
 }
 
 /**
  * Clear specific cache entry
  */
 export function clearCache(key: string): void {
-  cache.delete(key)
+  cache.delete(key);
 }
 
 /**
  * Clear all cache entries
  */
 export function clearAllCache(): void {
-  cache.clear()
+  cache.clear();
 }
 
 /**
@@ -62,7 +66,7 @@ export function clearAllCache(): void {
 export function clearCachePattern(pattern: RegExp): void {
   for (const key of cache.keys()) {
     if (pattern.test(key)) {
-      cache.delete(key)
+      cache.delete(key);
     }
   }
 }
@@ -80,13 +84,13 @@ export async function getOrFetch<T>(
   ttlSeconds: number = 3600,
 ): Promise<T> {
   // Check cache first
-  const cached = getCached<T>(key)
+  const cached = getCached<T>(key);
   if (cached !== null) {
-    return cached
+    return cached;
   }
 
   // Fetch and cache
-  const data = await fetchFn()
-  setCached(key, data, ttlSeconds)
-  return data
+  const data = await fetchFn();
+  setCached(key, data, ttlSeconds);
+  return data;
 }

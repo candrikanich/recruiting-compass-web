@@ -1,130 +1,131 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { useRecovery } from '~/composables/useRecovery'
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { useRecovery } from "~/composables/useRecovery";
 
 // Mock composables
-vi.mock('~/composables/useAuth', () => ({
+vi.mock("~/composables/useAuth", () => ({
   useAuth: () => ({
-    user: { id: 'test-user' },
+    user: { id: "test-user" },
   }),
-}))
+}));
 
-vi.mock('~/composables/useSchools', () => ({
+vi.mock("~/composables/useSchools", () => ({
   useSchools: () => ({
     schools: {
       value: [
-        { id: '1', name: 'School A', status: 'interested' },
-        { id: '2', name: 'School B', status: 'interested' },
+        { id: "1", name: "School A", status: "interested" },
+        { id: "2", name: "School B", status: "interested" },
       ],
     },
   }),
-}))
+}));
 
-vi.mock('~/composables/useInteractions', () => ({
+vi.mock("~/composables/useInteractions", () => ({
   useInteractions: () => ({
     interactions: {
       value: [
         {
-          id: '1',
-          school_id: '1',
-          type: 'email',
-          date: '2024-01-01',
-          notes: 'Initial contact'
-        }
-      ]
-    }
+          id: "1",
+          school_id: "1",
+          type: "email",
+          date: "2024-01-01",
+          notes: "Initial contact",
+        },
+      ],
+    },
   }),
-}))
+}));
 
-vi.mock('~/composables/useOffers', () => ({
+vi.mock("~/composables/useOffers", () => ({
   useOffers: () => ({
     offers: {
       value: [
         {
-          id: '1',
-          school_id: '1',
+          id: "1",
+          school_id: "1",
           amount: 50000,
-          type: 'athletic'
-        }
-      ]
-    }
+          type: "athletic",
+        },
+      ],
+    },
   }),
-}))
+}));
 
-vi.mock('~/composables/useTasks', () => ({
+vi.mock("~/composables/useTasks", () => ({
   useTasks: () => ({
     athleteTasks: {
-      value: []
-    }
+      value: [],
+    },
   }),
-}))
+}));
 
-vi.mock('~/composables/usePerformanceAnalytics', () => ({
+vi.mock("~/composables/usePerformanceAnalytics", () => ({
   usePerformanceAnalytics: () => ({
     generatePerformanceReport: () => ({
-      summary: 'Mock report',
+      summary: "Mock report",
       metrics: {},
-      recommendations: []
-    })
+      recommendations: [],
+    }),
   }),
-}))
+}));
 
-vi.mock('~/stores/user', () => ({
+vi.mock("~/stores/user", () => ({
   useUserStore: () => ({
-    user: { id: 'test-user' }
-  })
-}))
+    user: { id: "test-user" },
+  }),
+}));
 
-describe('useRecovery', () => {
+describe("useRecovery", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
-  it('initializes correctly', () => {
-    const { 
-      isInRecoveryMode, 
-      activeRecoveryPlan, 
+  it("initializes correctly", () => {
+    const {
+      isInRecoveryMode,
+      activeRecoveryPlan,
       activeTrigger,
-      triggerHistory
-    } = useRecovery()
+      triggerHistory,
+    } = useRecovery();
 
-    expect(isInRecoveryMode.value).toBe(false)
-    expect(activeRecoveryPlan.value).toBe(null)
-    expect(activeTrigger.value).toBe(null)
-    expect(triggerHistory.value).toEqual([])
-  })
+    expect(isInRecoveryMode.value).toBe(false);
+    expect(activeRecoveryPlan.value).toBe(null);
+    expect(activeTrigger.value).toBe(null);
+    expect(triggerHistory.value).toEqual([]);
+  });
 
-  it('activates recovery mode when trigger is detected', async () => {
-    const { 
-      activateRecoveryMode, 
-      isInRecoveryMode, 
-      activeRecoveryPlan, 
-      activeTrigger 
-    } = useRecovery()
+  it("activates recovery mode when trigger is detected", async () => {
+    const {
+      activateRecoveryMode,
+      isInRecoveryMode,
+      activeRecoveryPlan,
+      activeTrigger,
+    } = useRecovery();
 
-    await activateRecoveryMode()
+    await activateRecoveryMode();
 
-    expect(isInRecoveryMode.value).toBe(true)
-    expect(activeRecoveryPlan.value).not.toBeNull()
-    expect(activeTrigger.value).not.toBeNull()
-  })
+    expect(isInRecoveryMode.value).toBe(true);
+    expect(activeRecoveryPlan.value).not.toBeNull();
+    expect(activeTrigger.value).not.toBeNull();
+  });
 
-  it('acknowledges recovery plan', async () => {
-    const { activateRecoveryMode, acknowledgeRecoveryPlan, isInRecoveryMode } = useRecovery()
+  it("acknowledges recovery plan", async () => {
+    const { activateRecoveryMode, acknowledgeRecoveryPlan, isInRecoveryMode } =
+      useRecovery();
 
-    await activateRecoveryMode()
-    expect(isInRecoveryMode.value).toBe(true)
+    await activateRecoveryMode();
+    expect(isInRecoveryMode.value).toBe(true);
 
-    await acknowledgeRecoveryPlan()
-    expect(isInRecoveryMode.value).toBe(false)
-  })
+    await acknowledgeRecoveryPlan();
+    expect(isInRecoveryMode.value).toBe(false);
+  });
 
-  it('checks recovery triggers in priority order', async () => {
-    const { checkRecoveryTriggers } = useRecovery()
+  it("checks recovery triggers in priority order", async () => {
+    const { checkRecoveryTriggers } = useRecovery();
 
-    const result = await checkRecoveryTriggers()
+    const result = await checkRecoveryTriggers();
 
     // Should detect first high-severity trigger
-    expect(result.triggered).toBe(true)
-    expect(result.trigger?.severity).toBe('high')
-  })
-})
+    expect(result.triggered).toBe(true);
+    expect(result.trigger?.severity).toBe("high");
+  });
+});

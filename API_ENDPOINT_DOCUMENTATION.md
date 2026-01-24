@@ -64,34 +64,35 @@ server/api/
 // server/api/schools/[id].get.ts
 export default defineEventHandler(async (event) => {
   // 1. Extract and validate parameters
-  const schoolId = getRouterParam(event, 'id')
+  const schoolId = getRouterParam(event, "id");
   if (!schoolId) {
-    throw createError({ statusCode: 400, message: 'School ID required' })
+    throw createError({ statusCode: 400, message: "School ID required" });
   }
 
   // 2. Authenticate user
-  const user = await requireAuth(event)
+  const user = await requireAuth(event);
 
   // 3. Fetch resource
   const { data: school, error } = await querySingle<School>(
-    'schools',
+    "schools",
     { filters: { id: schoolId, user_id: user.id } },
-    { context: 'getSchool' }
-  )
+    { context: "getSchool" },
+  );
 
   if (error || !school) {
-    throw createError({ statusCode: 404, message: 'School not found' })
+    throw createError({ statusCode: 404, message: "School not found" });
   }
 
   // 4. Return response
   return {
     success: true,
     data: school,
-  }
-})
+  };
+});
 ```
 
 **Response Codes:**
+
 - `200 OK` - Resource retrieved successfully
 - `400 Bad Request` - Invalid parameters
 - `401 Unauthorized` - Not authenticated
@@ -106,37 +107,37 @@ export default defineEventHandler(async (event) => {
 // server/api/schools.post.ts
 export default defineEventHandler(async (event) => {
   // 1. Authenticate
-  const user = await requireAuth(event)
+  const user = await requireAuth(event);
 
   // 2. Parse and validate body
-  const body = await readBody(event)
+  const body = await readBody(event);
 
   // Validate required fields
   if (!body.name || !body.location) {
     throw createError({
       statusCode: 400,
-      message: 'Name and location required',
-    })
+      message: "Name and location required",
+    });
   }
 
   // Validate field types/formats
-  if (typeof body.name !== 'string' || body.name.length < 2) {
+  if (typeof body.name !== "string" || body.name.length < 2) {
     throw createError({
       statusCode: 400,
-      message: 'School name must be at least 2 characters',
-    })
+      message: "School name must be at least 2 characters",
+    });
   }
 
   // 3. Sanitize input (if contains HTML/XSS risk)
   const sanitized = {
     name: body.name.trim(),
     location: body.location.trim(),
-    notes: sanitizeHtml(body.notes || ''),
-  }
+    notes: sanitizeHtml(body.notes || ""),
+  };
 
   // 4. Insert record
   const { data: schools, error } = await queryInsert<School>(
-    'schools',
+    "schools",
     [
       {
         ...sanitized,
@@ -145,23 +146,24 @@ export default defineEventHandler(async (event) => {
         updated_at: new Date().toISOString(),
       },
     ],
-    { context: 'createSchool' }
-  )
+    { context: "createSchool" },
+  );
 
   if (error || !schools || schools.length === 0) {
-    throw createError({ statusCode: 500, message: 'Failed to create school' })
+    throw createError({ statusCode: 500, message: "Failed to create school" });
   }
 
   // 5. Return created resource with 201 status
-  setResponseStatus(event, 201)
+  setResponseStatus(event, 201);
   return {
     success: true,
     data: schools[0],
-  }
-})
+  };
+});
 ```
 
 **Response Codes:**
+
 - `201 Created` - Resource created successfully (use `setResponseStatus(event, 201)`)
 - `400 Bad Request` - Invalid input
 - `401 Unauthorized` - Not authenticated
@@ -175,51 +177,52 @@ export default defineEventHandler(async (event) => {
 // server/api/schools/[id].put.ts
 export default defineEventHandler(async (event) => {
   // 1. Extract ID and authenticate
-  const schoolId = getRouterParam(event, 'id')
-  const user = await requireAuth(event)
+  const schoolId = getRouterParam(event, "id");
+  const user = await requireAuth(event);
 
   if (!schoolId) {
-    throw createError({ statusCode: 400, message: 'School ID required' })
+    throw createError({ statusCode: 400, message: "School ID required" });
   }
 
   // 2. Parse body
-  const body = await readBody(event)
+  const body = await readBody(event);
 
   // 3. Validate ownership (critical for security)
   const { data: existingSchool, error: fetchError } = await querySingle<School>(
-    'schools',
+    "schools",
     { filters: { id: schoolId, user_id: user.id } },
-    { context: 'verifyOwnership' }
-  )
+    { context: "verifyOwnership" },
+  );
 
   if (fetchError || !existingSchool) {
-    throw createError({ statusCode: 404, message: 'School not found' })
+    throw createError({ statusCode: 404, message: "School not found" });
   }
 
   // 4. Update with partial data
   const { data: updated, error: updateError } = await queryUpdate<School>(
-    'schools',
+    "schools",
     {
       ...body,
       updated_at: new Date().toISOString(),
     },
     { id: schoolId, user_id: user.id },
-    { context: 'updateSchool' }
-  )
+    { context: "updateSchool" },
+  );
 
   if (updateError || !updated || updated.length === 0) {
-    throw createError({ statusCode: 500, message: 'Failed to update school' })
+    throw createError({ statusCode: 500, message: "Failed to update school" });
   }
 
   // 5. Return updated resource
   return {
     success: true,
     data: updated[0],
-  }
-})
+  };
+});
 ```
 
 **Response Codes:**
+
 - `200 OK` - Updated successfully
 - `400 Bad Request` - Invalid data
 - `401 Unauthorized` - Not authenticated
@@ -234,52 +237,53 @@ export default defineEventHandler(async (event) => {
 // server/api/schools/[id].delete.ts
 export default defineEventHandler(async (event) => {
   // 1. Extract ID and authenticate
-  const schoolId = getRouterParam(event, 'id')
-  const user = await requireAuth(event)
+  const schoolId = getRouterParam(event, "id");
+  const user = await requireAuth(event);
 
   if (!schoolId) {
-    throw createError({ statusCode: 400, message: 'School ID required' })
+    throw createError({ statusCode: 400, message: "School ID required" });
   }
 
   // 2. Verify ownership
   const { data: school, error: fetchError } = await querySingle<School>(
-    'schools',
+    "schools",
     { filters: { id: schoolId, user_id: user.id } },
-    { context: 'verifyDeletePermission' }
-  )
+    { context: "verifyDeletePermission" },
+  );
 
   if (fetchError || !school) {
-    throw createError({ statusCode: 404, message: 'School not found' })
+    throw createError({ statusCode: 404, message: "School not found" });
   }
 
   // 3. Clean up related resources (if needed)
   // Example: Delete associated documents
   await queryDelete(
-    'documents',
+    "documents",
     { school_id: schoolId },
-    { context: 'deleteSchoolDocuments', silent: true }
-  )
+    { context: "deleteSchoolDocuments", silent: true },
+  );
 
   // 4. Delete resource
   const { error: deleteError } = await queryDelete(
-    'schools',
+    "schools",
     { id: schoolId, user_id: user.id },
-    { context: 'deleteSchool' }
-  )
+    { context: "deleteSchool" },
+  );
 
   if (deleteError) {
-    throw createError({ statusCode: 500, message: 'Failed to delete school' })
+    throw createError({ statusCode: 500, message: "Failed to delete school" });
   }
 
   // 5. Return success (204 or 200 with empty body acceptable)
   return {
     success: true,
-    message: 'School deleted',
-  }
-})
+    message: "School deleted",
+  };
+});
 ```
 
 **Response Codes:**
+
 - `200 OK` or `204 No Content` - Deleted successfully
 - `400 Bad Request` - Invalid ID
 - `401 Unauthorized` - Not authenticated
@@ -294,27 +298,27 @@ export default defineEventHandler(async (event) => {
 
 ```typescript
 // GET /api/schools?page=1&limit=20
-const query = getQuery(event)
-const page = parseInt(query.page as string) || 1
-const limit = parseInt(query.limit as string) || 20
+const query = getQuery(event);
+const page = parseInt(query.page as string) || 1;
+const limit = parseInt(query.limit as string) || 20;
 
 if (limit > 100) {
-  throw createError({ statusCode: 400, message: 'Limit cannot exceed 100' })
+  throw createError({ statusCode: 400, message: "Limit cannot exceed 100" });
 }
 
-const offset = (page - 1) * limit
+const offset = (page - 1) * limit;
 
 const { data, error, count } = await querySelect<School>(
-  'schools',
+  "schools",
   {
-    select: '*',
+    select: "*",
     filters: { user_id: user.id },
-    order: { column: 'created_at', ascending: false },
+    order: { column: "created_at", ascending: false },
     offset,
     limit,
   },
-  { context: 'listSchools' }
-)
+  { context: "listSchools" },
+);
 
 return {
   success: true,
@@ -325,66 +329,66 @@ return {
     total: count,
     pages: Math.ceil((count || 0) / limit),
   },
-}
+};
 ```
 
 ### Filtering Pattern
 
 ```typescript
 // GET /api/coaches?schoolId=school-123&sport=baseball
-const query = getQuery(event)
+const query = getQuery(event);
 
-const filters: Record<string, any> = { user_id: user.id }
+const filters: Record<string, any> = { user_id: user.id };
 
 if (query.schoolId) {
-  filters.school_id = query.schoolId
+  filters.school_id = query.schoolId;
 }
 
 if (query.sport) {
-  filters.sport = query.sport
+  filters.sport = query.sport;
 }
 
 const { data, error } = await querySelect<Coach>(
-  'coaches',
+  "coaches",
   {
-    select: '*',
+    select: "*",
     filters,
-    order: { column: 'last_name' },
+    order: { column: "last_name" },
   },
-  { context: 'filterCoaches' }
-)
+  { context: "filterCoaches" },
+);
 ```
 
 ### Search Pattern
 
 ```typescript
 // GET /api/schools/search?q=stanford
-const query = getQuery(event)
-const searchTerm = query.q as string
+const query = getQuery(event);
+const searchTerm = query.q as string;
 
 if (!searchTerm || searchTerm.length < 2) {
   throw createError({
     statusCode: 400,
-    message: 'Search term must be at least 2 characters',
-  })
+    message: "Search term must be at least 2 characters",
+  });
 }
 
 // Use ilike for case-insensitive LIKE
 const { data, error } = await querySelect<School>(
-  'schools',
+  "schools",
   {
-    select: '*',
+    select: "*",
     filters: { user_id: user.id },
-    order: { column: 'name' },
+    order: { column: "name" },
     limit: 20,
   },
-  { context: 'searchSchools' }
-)
+  { context: "searchSchools" },
+);
 
 // Filter in-memory (or use Supabase full-text search for better performance)
-const results = data.filter(s =>
-  s.name.toLowerCase().includes(searchTerm.toLowerCase())
-)
+const results = data.filter((s) =>
+  s.name.toLowerCase().includes(searchTerm.toLowerCase()),
+);
 ```
 
 ---
@@ -399,44 +403,44 @@ All errors should follow consistent format:
 // ✅ Good: Descriptive error with context
 throw createError({
   statusCode: 400,
-  statusMessage: 'Bad Request',
+  statusMessage: "Bad Request",
   data: {
-    field: 'email',
-    message: 'Invalid email format',
-    hint: 'Must be a valid email address (e.g., name@example.com)',
+    field: "email",
+    message: "Invalid email format",
+    hint: "Must be a valid email address (e.g., name@example.com)",
   },
-})
+});
 
 // ✅ Good: Simple error message
 throw createError({
   statusCode: 404,
-  message: 'School not found',
-})
+  message: "School not found",
+});
 
 // ❌ Bad: Generic error
-throw new Error('Error')
+throw new Error("Error");
 
 // ❌ Bad: Leaking sensitive info
 throw createError({
   statusCode: 500,
   message: `Database query failed: ${dbError.details}`,
-})
+});
 ```
 
 ### Common HTTP Status Codes
 
-| Code | Meaning | When to Use |
-|------|---------|-----------|
-| 200 | OK | Request succeeded (default for GET, PUT, PATCH) |
-| 201 | Created | Resource created (use for POST) |
-| 204 | No Content | Success but no content (optional for DELETE) |
-| 400 | Bad Request | Invalid input, missing required fields |
-| 401 | Unauthorized | Not authenticated, missing/invalid token |
-| 403 | Forbidden | Authenticated but no permission |
-| 404 | Not Found | Resource doesn't exist |
-| 409 | Conflict | Resource already exists (duplicate key) |
-| 422 | Unprocessable Entity | Validation failed (alternative to 400) |
-| 500 | Internal Server Error | Unexpected server error (log it!) |
+| Code | Meaning               | When to Use                                     |
+| ---- | --------------------- | ----------------------------------------------- |
+| 200  | OK                    | Request succeeded (default for GET, PUT, PATCH) |
+| 201  | Created               | Resource created (use for POST)                 |
+| 204  | No Content            | Success but no content (optional for DELETE)    |
+| 400  | Bad Request           | Invalid input, missing required fields          |
+| 401  | Unauthorized          | Not authenticated, missing/invalid token        |
+| 403  | Forbidden             | Authenticated but no permission                 |
+| 404  | Not Found             | Resource doesn't exist                          |
+| 409  | Conflict              | Resource already exists (duplicate key)         |
+| 422  | Unprocessable Entity  | Validation failed (alternative to 400)          |
+| 500  | Internal Server Error | Unexpected server error (log it!)               |
 
 ---
 
@@ -447,15 +451,15 @@ throw createError({
 ```typescript
 // Enforce user authentication (throws 401 if not logged in)
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event)
+  const user = await requireAuth(event);
   // User is authenticated; proceed
 
   // Alternative: optional auth
-  const userOptional = await getSession(event)
+  const userOptional = await getSession(event);
   if (!userOptional) {
     // Guest access allowed
   }
-})
+});
 ```
 
 ### Ownership Check Pattern
@@ -464,46 +468,46 @@ export default defineEventHandler(async (event) => {
 
 ```typescript
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event)
-  const schoolId = getRouterParam(event, 'id')
+  const user = await requireAuth(event);
+  const schoolId = getRouterParam(event, "id");
 
   // Verify ownership in query filter
   const { data: school, error } = await querySingle<School>(
-    'schools',
+    "schools",
     {
       filters: {
         id: schoolId,
         user_id: user.id, // ← Ensures user owns this school
       },
     },
-    { context: 'getSchool' }
-  )
+    { context: "getSchool" },
+  );
 
   if (error || !school) {
     // Return 404 to prevent user from knowing resource exists
-    throw createError({ statusCode: 404, message: 'School not found' })
+    throw createError({ statusCode: 404, message: "School not found" });
   }
 
-  return { success: true, data: school }
-})
+  return { success: true, data: school };
+});
 ```
 
 ### Role-Based Authorization (Optional)
 
 ```typescript
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event)
+  const user = await requireAuth(event);
 
   // Example: Only admins can delete schools
-  if (user.role !== 'admin') {
+  if (user.role !== "admin") {
     throw createError({
       statusCode: 403,
-      message: 'Only administrators can delete schools',
-    })
+      message: "Only administrators can delete schools",
+    });
   }
 
   // Proceed with deletion
-})
+});
 ```
 
 ---
@@ -513,6 +517,7 @@ export default defineEventHandler(async (event) => {
 ### Example: Create School
 
 **Request:**
+
 ```
 POST /api/schools
 Content-Type: application/json
@@ -527,6 +532,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -544,6 +550,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Error Response (400):**
+
 ```json
 {
   "statusCode": 400,
@@ -555,6 +562,7 @@ Authorization: Bearer <jwt_token>
 ### Example: Fit Score Calculation
 
 **Request:**
+
 ```
 POST /api/schools/school-123/fit-score
 Content-Type: application/json
@@ -569,6 +577,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -650,7 +659,7 @@ For each new endpoint, document in this format:
  * @route GET /api/schools/:id
  * @auth Required (JWT token)
  * @param id (path) - School ID (uuid)
- * 
+ *
  * @description
  * Retrieve a single school by ID. Returns 404 if school not owned by user.
  *
@@ -672,7 +681,7 @@ For each new endpoint, document in this format:
  */
 export default defineEventHandler(async (event) => {
   // Implementation
-})
+});
 ```
 
 ---
@@ -684,22 +693,22 @@ export default defineEventHandler(async (event) => {
 ```typescript
 // ❌ OLD: Duplicated error handling, no logging
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event)
-  
+  const user = await requireAuth(event);
+
   try {
     const { data, error } = await supabase
-      .from('schools')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .single()
-    
-    if (error) throw error
-    return data
+      .from("schools")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (error) throw error;
+    return data;
   } catch (err) {
-    throw createError({ statusCode: 500, message: 'Error' })
+    throw createError({ statusCode: 500, message: "Error" });
   }
-})
+});
 ```
 
 ### After (Query Service Layer)
@@ -707,23 +716,24 @@ export default defineEventHandler(async (event) => {
 ```typescript
 // ✅ NEW: Centralized query layer, consistent error handling
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event)
-  
+  const user = await requireAuth(event);
+
   const { data, error } = await querySingle<School>(
-    'schools',
+    "schools",
     { filters: { id, user_id: user.id } },
-    { context: 'getSchool' }
-  )
-  
+    { context: "getSchool" },
+  );
+
   if (error || !data) {
-    throw createError({ statusCode: 404, message: 'School not found' })
+    throw createError({ statusCode: 404, message: "School not found" });
   }
-  
-  return { success: true, data }
-})
+
+  return { success: true, data };
+});
 ```
 
 **Benefits:**
+
 - Single error handling location (queryService)
 - Automatic console logging with context
 - Type-safe results
@@ -749,10 +759,14 @@ All endpoints should log important actions:
 
 ```typescript
 // Log successful operations
-console.log(`[${new Date().toISOString()}] Created school ${schoolId} for user ${user.id}`)
+console.log(
+  `[${new Date().toISOString()}] Created school ${schoolId} for user ${user.id}`,
+);
 
 // Log errors with context
-console.error(`[${new Date().toISOString()}] Failed to create school: ${error.message}`)
+console.error(
+  `[${new Date().toISOString()}] Failed to create school: ${error.message}`,
+);
 
 // Note: Use queryService logger which already includes context
 // No need to duplicate logging if using queryService layer
@@ -768,42 +782,39 @@ All list endpoints **must** include pagination:
 
 ```typescript
 // GET /api/coaches?page=1&limit=20
-const { page = 1, limit = 20 } = getQuery(event)
+const { page = 1, limit = 20 } = getQuery(event);
 
 if (limit > 100) {
-  throw createError({ statusCode: 400, message: 'Limit max 100' })
+  throw createError({ statusCode: 400, message: "Limit max 100" });
 }
 
-const offset = (page - 1) * limit
+const offset = (page - 1) * limit;
 ```
 
 ### Caching for List Endpoints (Optional)
 
 ```typescript
 // Cache GET /api/schools for 5 minutes
-setResponseHeader(event, 'Cache-Control', 'public, max-age=300')
+setResponseHeader(event, "Cache-Control", "public, max-age=300");
 ```
 
 ### Eager Loading (Prevent N+1)
 
 ```typescript
 // ✅ Good: Join related data in single query
-const { data } = await querySelect<SchoolWithCoaches>(
-  'schools',
-  {
-    select: `
+const { data } = await querySelect<SchoolWithCoaches>("schools", {
+  select: `
       *,
       coaches (
         id, name, email, responsiveness_score
       )
     `,
-    filters: { user_id: user.id },
-  }
-)
+  filters: { user_id: user.id },
+});
 
 // ❌ Bad: Query coaches separately for each school (N+1)
 for (const school of schools) {
-  const coaches = await querySelect('coaches', { school_id: school.id })
+  const coaches = await querySelect("coaches", { school_id: school.id });
 }
 ```
 

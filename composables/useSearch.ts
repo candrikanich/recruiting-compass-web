@@ -1,5 +1,5 @@
-import { useEntitySearch } from './useEntitySearch'
-import { useSearchFilters } from './useSearchFilters'
+import { useEntitySearch } from "./useEntitySearch";
+import { useSearchFilters } from "./useSearchFilters";
 
 /**
  * Composable for search (backwards-compatible wrapper)
@@ -25,44 +25,48 @@ import { useSearchFilters } from './useSearchFilters'
  * @returns Combined object with all search operations
  */
 export const useSearch = () => {
-  const entitySearch = useEntitySearch()
-  const filterMgmt = useSearchFilters()
+  const entitySearch = useEntitySearch();
+  const filterMgmt = useSearchFilters();
 
   // Deprecation warning
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     console.warn(
-      '[DEPRECATED] useSearch is deprecated as of Phase 4. ' +
-      'Use useSearchConsolidated() instead.\n' +
-      'Migration guide: See DEPRECATION_AUDIT.md'
-    )
+      "[DEPRECATED] useSearch is deprecated as of Phase 4. " +
+        "Use useSearchConsolidated() instead.\n" +
+        "Migration guide: See DEPRECATION_AUDIT.md",
+    );
   }
 
   /**
    * Override performSearch to integrate filters
    */
   const performSearch = async (searchQuery: string) => {
-    await entitySearch.performSearch(searchQuery, filterMgmt.filters)
-  }
+    await entitySearch.performSearch(searchQuery, filterMgmt.filters);
+  };
 
   /**
    * Override clearFilters to also re-run search if needed
    */
   const clearFilters = async () => {
-    filterMgmt.clearFilters()
+    filterMgmt.clearFilters();
     if (entitySearch.query.value) {
-      await performSearch(entitySearch.query.value)
+      await performSearch(entitySearch.query.value);
     }
-  }
+  };
 
   /**
    * Override applyFilter to re-run search if needed
    */
-  const applyFilter = async (category: string, filterName: string, value: any) => {
-    filterMgmt.applyFilter(category, filterName, value)
+  const applyFilter = async (
+    category: string,
+    filterName: string,
+    value: any,
+  ) => {
+    filterMgmt.applyFilter(category, filterName, value);
     if (entitySearch.query.value) {
-      await performSearch(entitySearch.query.value)
+      await performSearch(entitySearch.query.value);
     }
-  }
+  };
 
   return {
     // From entitySearch
@@ -91,5 +95,5 @@ export const useSearch = () => {
     applyFilter,
     getSchoolSuggestions: entitySearch.getSchoolSuggestions,
     getCoachSuggestions: entitySearch.getCoachSuggestions,
-  }
-}
+  };
+};

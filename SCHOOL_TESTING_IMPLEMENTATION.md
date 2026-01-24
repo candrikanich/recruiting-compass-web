@@ -9,6 +9,7 @@
 ## What Has Been Delivered
 
 ### 1. Comprehensive Test Plan Document
+
 **File:** `/SCHOOL_TESTING_PLAN.md`
 
 - Complete specification for all test areas (unit, integration, E2E)
@@ -19,49 +20,58 @@
 - Troubleshooting guide for common issues
 
 ### 2. Test Fixtures & Mock Data Factories
+
 **File:** `/tests/fixtures/schools.fixture.ts`
 
 Provides reusable school mock data with 20+ factory functions:
 
 **Core Factories:**
+
 - `createMockSchool()` - Basic school with sensible defaults
 - `createMockSchools(count)` - Batch creation for bulk testing
 - `createMockSchoolPreference()` - Preference creation for matching tests
 
 **Academic Profile Factories:**
+
 - `createEliteSchool()` - Elite admission (4% rate, Ivy League)
 - `createMidTierSchool()` - Mid-range admission (40% rate, large state school)
 - `createAccessibleSchool()` - Accessible admission (75% rate, open enrollment)
 
 **Division/Conference Factories:**
+
 - `createD3School()`, `createJucoSchool()` - Different divisions
 - `createSECSchool()`, `createBigTenSchool()`, `createACCSchool()` - Power 4
 - `createAACSchool()`, `createSunBeltSchool()` - Group of 5
 
 **Status/Relationship Factories:**
+
 - `createContactedSchool()` - With interaction history
 - `createOfferSchool()` - With scholarship offer details
 - `createCommittedSchool()` - Top choice, confirmed
 - `createDetailedSchool()` - Extensive pros/cons/notes
 
 **Size Category Factories:**
+
 - `createSmallSchool()` - <5000 students
 - `createMediumSchool()` - 5000-10000 students
 - `createLargeSchool()` - 10000-30000 students
 - `createVeryLargeSchool()` - 30000+ students
 
 **Regional Factories:**
+
 - `createNortheastSchools()` - Array of NE schools (MA, PA, NY)
 - `createSoutheastSchools()` - Array of SE schools (FL, GA, NC)
 - `createWestSchools()` - Array of West schools (CA, AZ, WA)
 
 **Benefits:**
+
 - Reduces test boilerplate by 50%
 - Consistent data structure across all tests
 - Easy to create test scenarios (elite + northeast + dealbreaker)
 - Isolated changes don't break multiple tests
 
 ### 3. High-Priority Test Suite: useSchoolMatching
+
 **File:** `/tests/unit/composables/useSchoolMatching.spec.ts`
 
 **85 test cases** covering all matching logic with 90%+ critical path coverage:
@@ -69,6 +79,7 @@ Provides reusable school mock data with 20+ factory functions:
 #### Test Coverage Breakdown
 
 **calculateMatchScore (12 tests)**
+
 - No preferences → 0 score
 - All matching → 100 score
 - Weighted priority calculation (higher priority = higher weight)
@@ -76,6 +87,7 @@ Provides reusable school mock data with 20+ factory functions:
 - Score range validation (0-100)
 
 **evaluatePreference (40 tests)**
+
 - Division matching (D1/D2/D3/NAIA/JUCO, single & multiple)
 - Conference Type (Power 4/Group of 5/Mid-Major classification)
 - Academic Rating (admission rates map to 1-5 scale)
@@ -85,6 +97,7 @@ Provides reusable school mock data with 20+ factory functions:
 - Fallback behavior when data missing
 
 **getAcademicRating (9 tests)**
+
 - Elite schools (< 15%): Rating 5
 - Excellent (15-30%): Rating 4
 - Very Good (30-50%): Rating 3
@@ -94,6 +107,7 @@ Provides reusable school mock data with 20+ factory functions:
 - Boundary cases (exact thresholds)
 
 **getMatchBadge (8 tests)**
+
 - Dealbreaker badge when flag set
 - Great Match (80+): Green with checkmark
 - Good Match (60-79): Orange with circle
@@ -101,6 +115,7 @@ Provides reusable school mock data with 20+ factory functions:
 - Correct icons and classes
 
 **Edge Cases (16 tests)**
+
 - Null/undefined academic_info
 - Missing home location
 - High priority arrays (20+ preferences)
@@ -111,21 +126,21 @@ Provides reusable school mock data with 20+ factory functions:
 #### Example Test (Match Score with Weights)
 
 ```typescript
-it('should calculate weighted score based on priority', () => {
+it("should calculate weighted score based on priority", () => {
   // Priority 1 → weight 10, Priority 2 → weight 9, Priority 3 → weight 8
   mockSchoolPreferences.preferences = [
-    { type: 'division', value: ['D1'], priority: 1 }, // weight=10, MATCH
-    { type: 'division', value: ['D2'], priority: 2 }, // weight=9, MISS
-    { type: 'conference_type', value: ['Power 4'], priority: 3 }, // weight=8, MATCH
-  ]
+    { type: "division", value: ["D1"], priority: 1 }, // weight=10, MATCH
+    { type: "division", value: ["D2"], priority: 2 }, // weight=9, MISS
+    { type: "conference_type", value: ["Power 4"], priority: 3 }, // weight=8, MATCH
+  ];
 
-  const school = createMockSchool({ division: 'D1', conference: 'SEC' })
-  const { calculateMatchScore } = useSchoolMatching()
-  const result = calculateMatchScore(school)
+  const school = createMockSchool({ division: "D1", conference: "SEC" });
+  const { calculateMatchScore } = useSchoolMatching();
+  const result = calculateMatchScore(school);
 
   // Expected: (10 + 8) / (10 + 9 + 8) = 18/27 = 67%
-  expect(result.score).toBe(67)
-})
+  expect(result.score).toBe(67);
+});
 ```
 
 ---
@@ -150,6 +165,7 @@ recruiting-compass-web/
 ## Quick Start for Chris
 
 ### 1. Run Existing Tests
+
 ```bash
 # Run all unit tests
 npm run test
@@ -162,20 +178,25 @@ npm run test:ui
 ```
 
 ### 2. Use Test Fixtures in New Tests
+
 ```typescript
-import { createMockSchool, createEliteSchool, createSmallSchool } from '~/tests/fixtures/schools.fixture'
+import {
+  createMockSchool,
+  createEliteSchool,
+  createSmallSchool,
+} from "~/tests/fixtures/schools.fixture";
 
 // Create a basic school
-const school = createMockSchool()
+const school = createMockSchool();
 
 // Create specific school profiles
-const elite = createEliteSchool()
-const small = createSmallSchool()
+const elite = createEliteSchool();
+const small = createSmallSchool();
 
 // Create multiple schools
 const schools = Array.from({ length: 5 }, (_, i) =>
-  createMockSchool({ id: `school-${i}`, name: `University ${i}` })
-)
+  createMockSchool({ id: `school-${i}`, name: `University ${i}` }),
+);
 ```
 
 ### 3. Follow the Plan for Next Test Files
@@ -210,6 +231,7 @@ const schools = Array.from({ length: 5 }, (_, i) =>
 ## Critical Paths Tested (90%+ Coverage)
 
 ### Fit Scoring (useSchoolMatching)
+
 - ✅ Weight calculation by priority
 - ✅ Dealbreaker detection and flagging
 - ✅ Academic rating determination from admission rates
@@ -218,6 +240,7 @@ const schools = Array.from({ length: 5 }, (_, i) =>
 - ✅ Fallback behavior for missing data
 
 ### School CRUD (useSchools + useSchoolStore)
+
 - ✅ Sanitization of notes/pros/cons (XSS prevention)
 - ✅ Batch ranking updates (28x performance improvement)
 - ✅ User ownership verification
@@ -225,6 +248,7 @@ const schools = Array.from({ length: 5 }, (_, i) =>
 - ✅ Error handling and state recovery
 
 ### Logo Fetching (useSchoolLogos)
+
 - ✅ Cache management with 7-day TTL
 - ✅ Database-first, API-fallback pattern
 - ✅ Concurrent fetch prevention
@@ -235,48 +259,54 @@ const schools = Array.from({ length: 5 }, (_, i) =>
 ## Coverage Metrics
 
 ### By Test Layer
-| Layer | Target | Status |
-|-------|--------|--------|
-| Unit (Composables) | 85% | 90% (useSchoolMatching complete) |
-| Unit (Stores) | 85% | Plan ready |
-| Unit (Components) | 75% | Plan ready |
-| Unit (Utilities) | 90% | Plan ready |
-| Integration | 80% | Plan ready |
-| E2E | 70% | Plan ready |
+
+| Layer              | Target | Status                           |
+| ------------------ | ------ | -------------------------------- |
+| Unit (Composables) | 85%    | 90% (useSchoolMatching complete) |
+| Unit (Stores)      | 85%    | Plan ready                       |
+| Unit (Components)  | 75%    | Plan ready                       |
+| Unit (Utilities)   | 90%    | Plan ready                       |
+| Integration        | 80%    | Plan ready                       |
+| E2E                | 70%    | Plan ready                       |
 
 ### By Component
-| Component | Tests | Priority | Status |
-|-----------|-------|----------|--------|
-| useSchools | 30+ | HIGH | Existing, expand |
-| useSchoolMatching | 85 | HIGH | **COMPLETE** |
-| useSchoolLogos | 15+ | HIGH | Plan ready |
-| useSchoolStore | 20+ | HIGH | Plan ready |
-| SchoolCard | 15+ | MEDIUM | Plan ready |
-| SchoolLogo | 15+ | MEDIUM | Plan ready |
-| SchoolForm | 15+ | MEDIUM | Plan ready |
-| API endpoints | 20+ | HIGH | Plan ready |
+
+| Component         | Tests | Priority | Status           |
+| ----------------- | ----- | -------- | ---------------- |
+| useSchools        | 30+   | HIGH     | Existing, expand |
+| useSchoolMatching | 85    | HIGH     | **COMPLETE**     |
+| useSchoolLogos    | 15+   | HIGH     | Plan ready       |
+| useSchoolStore    | 20+   | HIGH     | Plan ready       |
+| SchoolCard        | 15+   | MEDIUM   | Plan ready       |
+| SchoolLogo        | 15+   | MEDIUM   | Plan ready       |
+| SchoolForm        | 15+   | MEDIUM   | Plan ready       |
+| API endpoints     | 20+   | HIGH     | Plan ready       |
 
 ---
 
 ## Key Design Decisions
 
 ### 1. Fixture Organization
+
 - **Why:** Centralized mock factories reduce duplication and test noise
 - **Benefit:** 50% less boilerplate in test files
 - **Trade-off:** Requires fixture file maintenance
 
 ### 2. High Priority for useSchoolMatching
+
 - **Why:** Core matching logic directly affects user experience; complex weighted algorithm
 - **Benefit:** Comprehensive coverage of edge cases early; validates weighting formula
 - **Trade-off:** 630 lines for single composable test suite (appropriate for complexity)
 
 ### 3. Separation of Concerns
+
 - Fixtures separate from tests
 - Store tests separate from composable tests
 - Component tests isolated from business logic tests
 - **Benefit:** Easy to locate and modify tests; changes don't cascade
 
 ### 4. Mocking Strategy
+
 - Mock external dependencies (Supabase, useUserPreferences)
 - Real implementations for utilities (distance calculation, sanitization)
 - Composable stack tests to verify integration
@@ -287,12 +317,14 @@ const schools = Array.from({ length: 5 }, (_, i) =>
 ## Dependencies & Setup
 
 ### What's Already Set Up
+
 - Vitest configuration with happy-dom environment
 - Pinia store setup with active instance
 - Global Supabase mock (tests/setup.ts)
 - Test utility mocks (user store, runtime config)
 
 ### What You Need
+
 - Keep test files DRY using fixtures
 - Import from fixture file, not creating factories inline
 - Use beforeEach() for test isolation
@@ -308,6 +340,7 @@ const schools = Array.from({ length: 5 }, (_, i) =>
    - Understand fixture factory patterns (5 min)
 
 2. **Run Current Tests:**
+
    ```bash
    npm run test:ui
    # Navigate to useSchoolMatching.spec.ts
@@ -329,18 +362,21 @@ const schools = Array.from({ length: 5 }, (_, i) =>
 ## Test Maintenance Guidelines
 
 ### When Adding New School Features
+
 1. Add test case to SCHOOL_TESTING_PLAN.md (specific scenario)
 2. Implement test using fixtures (if possible)
 3. Verify coverage on new logic ≥85%
 4. Update fixture factories if new school types created
 
 ### When Modifying Existing Tests
+
 1. Don't modify fixtures without updating docs
 2. Keep test descriptions precise and actionable
 3. Document any non-obvious test setup in comments
 4. Run full suite: `npm run test -- schools`
 
 ### Code Review Checklist for Tests
+
 - [ ] Tests use fixture factories, not inline mock data
 - [ ] Test names follow "should [expected behavior]" pattern
 - [ ] No test interdependencies; can run in any order
@@ -354,23 +390,27 @@ const schools = Array.from({ length: 5 }, (_, i) =>
 ## Success Criteria
 
 **Phase 1 (Now) - COMPLETE:**
+
 - ✅ Comprehensive test plan documented
 - ✅ Test fixtures and factories ready
 - ✅ useSchoolMatching tests complete (85 tests, 630 lines)
 - ✅ Setup guide provided
 
 **Phase 2 (Week 1):**
+
 - Implementation of remaining composable tests (useSchoolLogos)
 - Component tests (SchoolCard, SchoolLogo, SchoolForm)
 - Target: 400+ lines of tests
 
 **Phase 3 (Week 2-3):**
+
 - Store tests
 - API endpoint tests
 - Integration tests
 - Target: 600+ lines of tests
 
 **Phase 4 (Week 3):**
+
 - E2E tests
 - Coverage verification (80%+)
 - Final refinement and documentation

@@ -11,6 +11,7 @@
 The Recruiting Compass web application has a **reasonably well-optimized Nuxt 3 build system** with good fundamentals in place. Production builds complete quickly (~45-50 seconds including prerendering 40 routes), and the bundle is modestly sized at ~3.0 MB uncompressed with 1,936 modules.
 
 However, there are **significant optimization opportunities** that can improve:
+
 - **Development server rebuild speed** (currently unquantified)
 - **CSS payload** (66 KB entry CSS is large; opportunity for PurgeCSS improvements)
 - **Bundle code splitting** (large chunks suggest monolithic page components)
@@ -25,20 +26,21 @@ This analysis provides 12 prioritized recommendations across 5 categories, with 
 
 ### Build Output Metrics
 
-| Metric | Value | Assessment |
-|--------|-------|-----------|
-| **Production Build Time** | ~45-50 sec | Good (1936 modules) |
-| **Client Bundle Size** | 3.0 MB | Reasonable for feature set |
-| **Entry CSS** | 66 KB (10.73 KB gzipped) | High; opportunity for optimization |
-| **Largest JS Bundle** | 406 KB | Likely page with heavy deps |
-| **Total Routes Prerendered** | 40 | Good static generation strategy |
-| **Components Count** | 107 | Well-organized |
-| **Composables Count** | 59 | Good separation of concerns |
-| **Node Modules Size** | 461 MB | Large but expected for Vue ecosystem |
+| Metric                       | Value                    | Assessment                           |
+| ---------------------------- | ------------------------ | ------------------------------------ |
+| **Production Build Time**    | ~45-50 sec               | Good (1936 modules)                  |
+| **Client Bundle Size**       | 3.0 MB                   | Reasonable for feature set           |
+| **Entry CSS**                | 66 KB (10.73 KB gzipped) | High; opportunity for optimization   |
+| **Largest JS Bundle**        | 406 KB                   | Likely page with heavy deps          |
+| **Total Routes Prerendered** | 40                       | Good static generation strategy      |
+| **Components Count**         | 107                      | Well-organized                       |
+| **Composables Count**        | 59                       | Good separation of concerns          |
+| **Node Modules Size**        | 461 MB                   | Large but expected for Vue ecosystem |
 
 ### Identified Bottlenecks
 
 #### 1. **CSS Payload (HIGH IMPACT)**
+
 - **Entry CSS:** 66 KB (10.73 KB gzipped) is unexpectedly large for TailwindCSS
 - **Root Cause:** Likely unused Tailwind utilities included in final CSS or heavy component-scoped styles
 - **Evidence:**
@@ -47,12 +49,15 @@ This analysis provides 12 prioritized recommendations across 5 categories, with 
   - Multiple CSS files (main.css, theme.css, transitions.css) in assets
 
 #### 2. **Large JavaScript Chunks (MEDIUM-HIGH IMPACT)**
+
 - **Top 5 Bundles:** 406 KB, 377 KB, 196 KB, 183 KB, 155 KB
 - **Root Cause:** Likely large page components with dependencies bundled together (Chart.js, jspdf, html2canvas are library heavy)
 - **Symptom:** Heavy dependencies (chart.js, html2canvas, jspdf, leaflet) bundled in single chunks
 
 #### 3. **Dependency Weight (MEDIUM IMPACT)**
+
 Heavy libraries in production bundle:
+
 - `chart.js` + `chartjs-adapter-date-fns` + `chartjs-plugin-annotation` (~100+ KB)
 - `html2canvas` (~50+ KB)
 - `jspdf` + `jspdf-autotable` (~80+ KB)
@@ -60,11 +65,13 @@ Heavy libraries in production bundle:
 - `xlsx` (~80+ KB)
 
 #### 4. **No Build Caching Strategy (MEDIUM IMPACT)**
+
 - No `.vite` or persistent cache configuration visible
 - No build cache in CI/CD
 - Each build recompiles all modules from scratch
 
 #### 5. **Test Isolation Overhead (LOW-MEDIUM IMPACT)**
+
 - Vitest configured with `isolate: true` and `maxWorkers: 2` (for CI safety)
 - Unit test setup includes full Vue test environment on every run
 - 37 explicit test files included in vitest.config.ts (fragile, prone to brittleness)
@@ -80,6 +87,7 @@ Heavy libraries in production bundle:
 **Problem:** Entry CSS of 66 KB is 3-4x larger than typical Tailwind installations.
 
 **Root Cause Analysis:**
+
 ```
 - TailwindCSS default mode includes all utilities
 - Component-scoped styles not minified
@@ -87,7 +95,8 @@ Heavy libraries in production bundle:
 ```
 
 **Solution:**
-```
+
+````
 1. Enable Tailwind PurgeCSS in production:
    a. Verify content paths in tailwind.config.js match all component/page files
    b. Add explicit purge whitelist for dynamic class names (if any)
@@ -122,14 +131,16 @@ Heavy libraries in production bundle:
        }
      }
    })
-   ```
+````
 
 **Expected Impact:**
+
 - **CSS payload:** 66 KB → ~20-25 KB (60-65% reduction)
 - **Gzipped:** 10.73 KB → ~5-7 KB
 - **User Impact:** ~100 ms faster initial load
 
 **Measurement:**
+
 ```bash
 # Before optimization
 npm run build 2>&1 | grep "entry.*css"
@@ -147,6 +158,7 @@ ls -lh .nuxt/dist/client/_nuxt/entry.*.css
 **Solution Stack:**
 
 **A. Enable Vite Module Cache (Local Development)**
+
 ```javascript
 // nuxt.config.ts
 export default defineNuxtConfig({
@@ -159,22 +171,23 @@ export default defineNuxtConfig({
     // Use filesystem cache for dependencies
     optimizeDeps: {
       include: [
-        'vue',
-        '@pinia/nuxt',
-        '@supabase/supabase-js',
-        'chart.js',
-        'fuse.js'
+        "vue",
+        "@pinia/nuxt",
+        "@supabase/supabase-js",
+        "chart.js",
+        "fuse.js",
       ],
-      exclude: ['@vueuse/core'] // Heavy but quick to rebuild
+      exclude: ["@vueuse/core"], // Heavy but quick to rebuild
     },
 
     // Enable Vite caching
-    cacheDir: '.vite'
-  }
-})
+    cacheDir: ".vite",
+  },
+});
 ```
 
 **B. Configure Build Cache in package.json**
+
 ```json
 {
   "scripts": {
@@ -187,6 +200,7 @@ export default defineNuxtConfig({
 
 **C. Netlify Build Cache (CI/CD)**
 Create `netlify.toml`:
+
 ```toml
 [build]
   command = "npm run build"
@@ -200,15 +214,18 @@ Create `netlify.toml`:
 ```
 
 **D. Local Development Cache Strategy**
+
 - Add `.vite/` to .gitignore (already excluded via .nuxt)
 - Document cache invalidation: "Delete `.vite/` if experiencing stale artifacts"
 
 **Expected Impact:**
+
 - **Cold build:** ~45-50 sec (unchanged)
 - **Subsequent builds:** 45 sec → 30-35 sec (25-35% improvement)
 - **CI builds:** First run ~50 sec, subsequent cached runs ~35 sec
 
 **Measurement:**
+
 ```bash
 # Profile build with cache
 time npm run build
@@ -228,24 +245,26 @@ time npm run build
 **Solution:**
 
 **A. Lazy-Load Analytics Charts**
+
 ```typescript
 // composables/useChartAnalytics.ts (BEFORE - imports at top)
-import Chart from 'chart.js/auto'
-import ChartjsPluginAnnotation from 'chartjs-plugin-annotation'
+import Chart from "chart.js/auto";
+import ChartjsPluginAnnotation from "chartjs-plugin-annotation";
 
 // AFTER - lazy import in composable
 export const useChartAnalytics = () => {
   const loadChart = async () => {
-    const { default: Chart } = await import('chart.js/auto')
-    const { default: Annotation } = await import('chartjs-plugin-annotation')
+    const { default: Chart } = await import("chart.js/auto");
+    const { default: Annotation } = await import("chartjs-plugin-annotation");
     // ... use Chart with lazy-loaded plugin
-  }
+  };
 
-  return { loadChart }
-}
+  return { loadChart };
+};
 ```
 
 **B. Dynamic Route-Level Splits for Reports**
+
 ```vue
 <!-- pages/documents/index.vue -->
 <template>
@@ -257,28 +276,30 @@ export const useChartAnalytics = () => {
 </template>
 
 <script setup>
-const GenerateReport = defineAsyncComponent(() =>
-  import('~/components/Reports/GenerateReport.vue')
-)
+const GenerateReport = defineAsyncComponent(
+  () => import("~/components/Reports/GenerateReport.vue"),
+);
 </script>
 ```
 
 **C. Defer Map Initialization**
+
 ```typescript
 // composables/useSchoolMap.ts
 export const useSchoolMap = () => {
-  const leaflet = ref(null)
+  const leaflet = ref(null);
 
   const initMap = async () => {
-    const { L } = await import('leaflet')
-    leaflet.value = L
-  }
+    const { L } = await import("leaflet");
+    leaflet.value = L;
+  };
 
-  return { initMap, leaflet }
-}
+  return { initMap, leaflet };
+};
 ```
 
 **D. Update vite.config for better chunking**
+
 ```typescript
 // vite.config.ts (if created separately)
 export default defineConfig({
@@ -287,23 +308,29 @@ export default defineConfig({
       output: {
         manualChunks: {
           // Chunk heavy dependencies separately for better caching
-          'vendor-chart': ['chart.js', 'chartjs-adapter-date-fns', 'chartjs-plugin-annotation'],
-          'vendor-pdf': ['jspdf', 'jspdf-autotable', 'html2canvas'],
-          'vendor-excel': ['xlsx'],
-          'vendor-map': ['leaflet', 'vue-leaflet']
-        }
-      }
-    }
-  }
-})
+          "vendor-chart": [
+            "chart.js",
+            "chartjs-adapter-date-fns",
+            "chartjs-plugin-annotation",
+          ],
+          "vendor-pdf": ["jspdf", "jspdf-autotable", "html2canvas"],
+          "vendor-excel": ["xlsx"],
+          "vendor-map": ["leaflet", "vue-leaflet"],
+        },
+      },
+    },
+  },
+});
 ```
 
 **Expected Impact:**
+
 - **Reduce initial JS payload** by 15-20% (defer non-critical deps)
 - **Improve route-level caching** (analytics/reports pages cached separately)
 - **Faster initial page load** if user doesn't access reports/maps on first visit
 
 **Measurement:**
+
 ```bash
 npm run build
 # Compare bundle sizes before/after
@@ -319,6 +346,7 @@ ls -lhS .nuxt/dist/client/_nuxt/*.js | head -10
 **Problem:** Multiple CSS files (main.css, theme.css, transitions.css) may contain overlaps.
 
 **Solution:**
+
 ```
 1. Audit CSS file imports:
    a. assets/css/main.css (currently imported in nuxt.config)
@@ -338,6 +366,7 @@ ls -lhS .nuxt/dist/client/_nuxt/*.js | head -10
 ```
 
 **Implementation:**
+
 - Merge theme.css and transitions.css into assets/css/main.css
 - Remove duplicate declarations
 - Verify TailwindCSS @apply directives are optimized
@@ -351,6 +380,7 @@ ls -lhS .nuxt/dist/client/_nuxt/*.js | head -10
 **Problem:** Redundant/unused dependencies and heavy sub-dependencies.
 
 **Analysis of Key Dependencies:**
+
 ```
 Questionable/Heavy Deps:
 - isomorphic-dompurify (sanitization) - 2 KB but unused if no user-generated HTML
@@ -365,6 +395,7 @@ Consider:
 **Solution:**
 
 A. **Audit each major dependency:**
+
 ```bash
 npm why chart.js        # Check if really needed
 npm why html2canvas     # Check if really needed
@@ -374,12 +405,14 @@ npm why xlsx            # Check if really needed
 ```
 
 B. **If found to be unused:**
+
 ```bash
 npm uninstall isomorphic-dompurify  # If not sanitizing user HTML
 npm uninstall chartjs-plugin-annotation  # If not using annotations
 ```
 
 C. **If found to be marginal value:**
+
 ```bash
 # Replace @sindresorhus/is with native checks:
 // Before
@@ -399,30 +432,32 @@ if (typeof value === 'string') { ... }
 **Problem:** No image optimization configured; public assets may be uncompressed.
 
 **Solution:**
+
 ```javascript
 // Add to nuxt.config.ts
 export default defineNuxtConfig({
   image: {
     // If using @nuxt/image
-    format: ['webp', 'jpeg'],
+    format: ["webp", "jpeg"],
     quality: 80,
     screens: {
       xs: 320,
       sm: 640,
       md: 1024,
       lg: 1280,
-    }
+    },
   },
 
   // OR configure Vite for asset handling
   vite: {
-    assetsInclude: ['**/*.svg', '**/*.webp'],
-    ssr: false
-  }
-})
+    assetsInclude: ["**/*.svg", "**/*.webp"],
+    ssr: false,
+  },
+});
 ```
 
 **Specific Actions:**
+
 1. Convert PNG logos to WebP if used
 2. Compress SVG school logos (if stored in public/)
 3. Use responsive image loading for avatars/photos
@@ -438,6 +473,7 @@ export default defineNuxtConfig({
 **Problem:** 107 components with 59 composables suggests some monolithic page/components that could be split.
 
 **Solution:**
+
 ```
 1. Audit largest components (>300 lines):
    - Split heavy pages into smaller, lazy-loadable sub-components
@@ -460,6 +496,7 @@ export default defineNuxtConfig({
 ```
 
 **Expected Impact:**
+
 - Better tree-shaking of unused dependencies per route
 - Improved perceived load time (critical path prioritized)
 - 5-10 sec faster time-to-interactive for non-analytics pages
@@ -473,30 +510,33 @@ export default defineNuxtConfig({
 **Solution:**
 
 **A. Switch to glob-based test discovery** (vitest.config.ts):
+
 ```typescript
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'happy-dom',
-    setupFiles: ['./tests/setup.ts'],
+    environment: "happy-dom",
+    setupFiles: ["./tests/setup.ts"],
 
     // Replace explicit include list with glob pattern
-    include: ['tests/unit/**/*.spec.ts', 'tests/integration/**/*.spec.ts'],
-    exclude: ['node_modules/', 'dist/', '.nuxt/', 'tests/e2e/**'],
+    include: ["tests/unit/**/*.spec.ts", "tests/integration/**/*.spec.ts"],
+    exclude: ["node_modules/", "dist/", ".nuxt/", "tests/e2e/**"],
 
     // Optimize for local dev (more workers) while keeping CI safe
     maxWorkers: process.env.CI ? 2 : 8,
     minWorkers: 1,
-    isolate: process.env.CI ? true : false,  // Disable isolation locally
-  }
-})
+    isolate: process.env.CI ? true : false, // Disable isolation locally
+  },
+});
 ```
 
 **B. Reduce isolation overhead:**
+
 - Local dev: Run tests with parallelization, no isolation
 - CI: Use isolation + 2 workers for memory safety
 
 **Expected Impact:**
+
 - **Local test runs:** 30-40% faster (8 workers vs 2, no isolation)
 - **CI runs:** Unchanged (stays conservative)
 
@@ -507,44 +547,49 @@ export default defineConfig({
 **Problem:** Playwright runs 3 browser engines (Chromium, Firefox, WebKit) on every run.
 
 **Solution:**
+
 ```typescript
 // playwright.config.ts
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: "./tests/e2e",
   fullyParallel: true,
 
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
     // Only run Firefox/WebKit in CI or on-demand
-    ...(process.env.CI ? [
-      {
-        name: 'firefox',
-        use: { ...devices['Desktop Firefox'] }
-      },
-      {
-        name: 'webkit',
-        use: { ...devices['Desktop Safari'] }
-      }
-    ] : [])
-  ]
-})
+    ...(process.env.CI
+      ? [
+          {
+            name: "firefox",
+            use: { ...devices["Desktop Firefox"] },
+          },
+          {
+            name: "webkit",
+            use: { ...devices["Desktop Safari"] },
+          },
+        ]
+      : []),
+  ],
+});
 ```
 
 **Local Development Workflow:**
+
 ```json
 {
   "scripts": {
-    "test:e2e": "playwright test",  // Chromium only
-    "test:e2e:all": "BROWSERS=all playwright test",  // All 3
-    "test:e2e:ui": "playwright test --ui"  // Interactive
+    "test:e2e": "playwright test", // Chromium only
+    "test:e2e:all": "BROWSERS=all playwright test", // All 3
+    "test:e2e:ui": "playwright test --ui" // Interactive
   }
 }
 ```
 
 **Expected Impact:**
+
 - **Local test speed:** 66% faster (run 1 browser instead of 3)
 - **CI integrity:** Unchanged (still runs all 3)
 
@@ -559,6 +604,7 @@ export default defineConfig({
 **Solution:**
 
 **A. Create build timing script:**
+
 ```bash
 #!/bin/bash
 # scripts/measure-build.sh
@@ -581,6 +627,7 @@ du -sh .output/public
 ```
 
 **B. Track in CI/CD:**
+
 ```yaml
 # .github/workflows/build-metrics.yml (if using GitHub)
 name: Build Metrics
@@ -597,6 +644,7 @@ jobs:
 ```
 
 **Expected Value:**
+
 - Early detection of performance regressions
 - Accountability for optimization efforts
 - Historical trend data
@@ -609,24 +657,29 @@ jobs:
 
 **Solution:**
 Add to CLAUDE.md:
+
 ```markdown
 ## Build Performance Standards
 
 **Maximum bundle sizes (gzipped):**
+
 - Entry CSS: 8 KB (currently 10.73 KB)
 - Entry JS: 150 KB (vary by route)
 - Total client: 500 KB gzipped
 
 **Build time targets:**
+
 - Cold build: <60 seconds
 - Incremental with cache: <40 seconds
 
 **Dependency guidelines:**
+
 - Only add heavy libs (>50 KB) if used by >2 features
 - Lazy-load analytics/reporting/mapping libs
 - Prefer native APIs over utility libraries when viable
 
 **Recommended review process:**
+
 1. Check bundle size before committing large dependencies
 2. Consider code splitting for page-specific features
 3. Profile changes with: npm run build
@@ -639,6 +692,7 @@ Add to CLAUDE.md:
 **Problem:** Multiple CSS files (main.css, theme.css, transitions.css) create confusion.
 
 **Solution:**
+
 ```markdown
 # CSS Architecture
 
@@ -666,6 +720,7 @@ AVOID: `<style> .custom { color: #xyz; } </style>`
 ## Implementation Roadmap
 
 ### **Week 1: Quick Wins (Tier 1)**
+
 - [ ] Optimize TailwindCSS output (measure 60% CSS reduction)
 - [ ] Implement Vite caching locally
 - [ ] Set up Netlify build cache
@@ -674,6 +729,7 @@ AVOID: `<style> .custom { color: #xyz; } </style>`
 **Expected Result:** ~20-30% reduction in CSS payload, 25-35% faster subsequent builds
 
 ### **Week 2-3: Consolidation (Tier 2)**
+
 - [ ] Consolidate CSS files
 - [ ] Audit/optimize dependencies
 - [ ] Implement image optimization
@@ -682,6 +738,7 @@ AVOID: `<style> .custom { color: #xyz; } </style>`
 **Expected Result:** Additional 15-20% CSS reduction, clearer dependency tree
 
 ### **Week 4+: Architecture (Tier 3)**
+
 - [ ] Refactor component splitting for heavy features
 - [ ] Optimize test infrastructure
 - [ ] Implement E2E browser selection
@@ -694,6 +751,7 @@ AVOID: `<style> .custom { color: #xyz; } </style>`
 ## Measurement & Validation Plan
 
 ### Baseline Metrics (Current State)
+
 ```
 Production Build: ~45-50 seconds
 Client Bundle: 3.0 MB
@@ -703,6 +761,7 @@ Total routes: 40 (prerendered)
 ```
 
 ### Success Criteria (Post-Optimization)
+
 ```
 Production Build: 35-40 seconds (20% improvement)
 Client Bundle: 2.4-2.6 MB (15-20% reduction)
@@ -711,6 +770,7 @@ Largest JS chunk: 280-320 KB (20-25% reduction)
 ```
 
 ### Testing Protocol
+
 ```bash
 # 1. Clean slate measurement
 rm -rf .nuxt .output .vite
@@ -729,25 +789,27 @@ npm run build 2>&1 | grep -E "\.js|\.css" | sort -k4 -h | tail -20
 
 ## Risk Assessment & Mitigation
 
-| Risk | Mitigation |
-|------|-----------|
-| **Breaking CSS changes** | Test all pages after Tailwind optimization; use git diff on CSS |
-| **Dependencies used elsewhere** | Audit with `npm why` before removing; check git history for usage |
-| **Lazy-loading overhead** | Measure actual impact; some deps may not be worth deferring |
-| **Cache invalidation bugs** | Clear `.vite/` if encountering stale build artifacts |
-| **Test flakiness from reduced isolation** | Keep CI conservative; only optimize local dev isolation |
+| Risk                                      | Mitigation                                                        |
+| ----------------------------------------- | ----------------------------------------------------------------- |
+| **Breaking CSS changes**                  | Test all pages after Tailwind optimization; use git diff on CSS   |
+| **Dependencies used elsewhere**           | Audit with `npm why` before removing; check git history for usage |
+| **Lazy-loading overhead**                 | Measure actual impact; some deps may not be worth deferring       |
+| **Cache invalidation bugs**               | Clear `.vite/` if encountering stale build artifacts              |
+| **Test flakiness from reduced isolation** | Keep CI conservative; only optimize local dev isolation           |
 
 ---
 
 ## Summary & Next Steps
 
 **Key Findings:**
+
 1. **CSS is the biggest quick win** (66 KB → 20-25 KB possible)
 2. **Caching not implemented** (25-35% build time reduction opportunity)
 3. **Large chunks suggest opportunity for better code-splitting**
 4. **Heavy dependencies (jspdf, html2canvas, leaflet) should be lazy-loaded**
 
 **Immediate Actions (This Week):**
+
 1. Run TailwindCSS optimization; measure CSS reduction
 2. Configure Vite cache in nuxt.config
 3. Set up Netlify build cache with netlify.toml
@@ -755,6 +817,7 @@ npm run build 2>&1 | grep -E "\.js|\.css" | sort -k4 -h | tail -20
 
 **Success Metric:**
 After all Tier 1 & 2 recommendations, target:
+
 - **CSS:** 10.73 KB → 5-7 KB gzipped (50% reduction)
 - **Build:** 45 sec → 30-35 sec cached (30% improvement)
 - **DX:** Clearer dependency strategy, documented guidelines

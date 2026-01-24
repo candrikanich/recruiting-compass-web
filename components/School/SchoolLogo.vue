@@ -14,7 +14,11 @@
     <div
       v-else
       class="logo-fallback"
-      :style="{ fontSize: fallbackFontSize, width: sizePixels, height: sizePixels }"
+      :style="{
+        fontSize: fallbackFontSize,
+        width: sizePixels,
+        height: sizePixels,
+      }"
     >
       {{ icon }}
     </div>
@@ -27,94 +31,105 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
-import { useSchoolLogos } from '~/composables/useSchoolLogos'
-import type { School } from '~/types/models'
+import { ref, onMounted, computed, watch } from "vue";
+import { useSchoolLogos } from "~/composables/useSchoolLogos";
+import type { School } from "~/types/models";
 
 interface Props {
-  school: School
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-  showLabel?: boolean
-  fetchOnMount?: boolean
+  school: School;
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
+  showLabel?: boolean;
+  fetchOnMount?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  size: 'md',
+  size: "md",
   showLabel: false,
   fetchOnMount: true,
-})
+});
 
-const { fetchSchoolLogo, getSchoolLogoCached, isLoading: composableLoading } = useSchoolLogos()
+const {
+  fetchSchoolLogo,
+  getSchoolLogoCached,
+  isLoading: composableLoading,
+} = useSchoolLogos();
 
-const logoUrl = ref<string | null>(null)
-const imageError = ref(false)
-const isFetching = ref(false)
+const logoUrl = ref<string | null>(null);
+const imageError = ref(false);
+const isFetching = ref(false);
 
 // Size configurations
 const sizeConfig = {
-  xs: { pixels: '24px', font: '12px' },
-  sm: { pixels: '32px', font: '16px' },
-  md: { pixels: '48px', font: '24px' },
-  lg: { pixels: '64px', font: '32px' },
-  xl: { pixels: '96px', font: '48px' },
-}
+  xs: { pixels: "24px", font: "12px" },
+  sm: { pixels: "32px", font: "16px" },
+  md: { pixels: "48px", font: "24px" },
+  lg: { pixels: "64px", font: "32px" },
+  xl: { pixels: "96px", font: "48px" },
+};
 
-const sizePixels = computed(() => sizeConfig[props.size].pixels)
-const fallbackFontSize = computed(() => sizeConfig[props.size].font)
-const sizeClass = computed(() => `logo-${props.size}`)
+const sizePixels = computed(() => sizeConfig[props.size].pixels);
+const fallbackFontSize = computed(() => sizeConfig[props.size].font);
+const sizeClass = computed(() => `logo-${props.size}`);
 
 // Determine icon to show
 const icon = computed(() => {
   // Try to extract first letter of school name
   if (props.school.name) {
-    return props.school.name.charAt(0).toUpperCase()
+    return props.school.name.charAt(0).toUpperCase();
   }
-  return '🏫'
-})
+  return "🏫";
+});
 
-const isLoading = computed(() => isFetching.value || composableLoading.value)
+const isLoading = computed(() => isFetching.value || composableLoading.value);
 
 const handleImageError = () => {
-  imageError.value = true
-  console.warn(`Image failed to load for ${props.school.name}: ${logoUrl.value}`)
-}
+  imageError.value = true;
+  console.warn(
+    `Image failed to load for ${props.school.name}: ${logoUrl.value}`,
+  );
+};
 
 const fetchLogo = async () => {
   // Check if already cached
-  const cached = getSchoolLogoCached(props.school.id)
+  const cached = getSchoolLogoCached(props.school.id);
   if (cached !== undefined) {
-    logoUrl.value = cached
-    console.log(`[SchoolLogo] Using cached logo for ${props.school.name}: ${cached}`)
-    return
+    logoUrl.value = cached;
+    console.log(
+      `[SchoolLogo] Using cached logo for ${props.school.name}: ${cached}`,
+    );
+    return;
   }
 
-  isFetching.value = true
+  isFetching.value = true;
   try {
-    const url = await fetchSchoolLogo(props.school)
-    logoUrl.value = url
-    imageError.value = false
-    console.log(`[SchoolLogo] Fetched logo for ${props.school.name}: ${url}`)
+    const url = await fetchSchoolLogo(props.school);
+    logoUrl.value = url;
+    imageError.value = false;
+    console.log(`[SchoolLogo] Fetched logo for ${props.school.name}: ${url}`);
   } catch (error) {
-    console.warn(`[SchoolLogo] Failed to fetch logo for ${props.school.name}:`, error)
-    logoUrl.value = null
+    console.warn(
+      `[SchoolLogo] Failed to fetch logo for ${props.school.name}:`,
+      error,
+    );
+    logoUrl.value = null;
   } finally {
-    isFetching.value = false
+    isFetching.value = false;
   }
-}
+};
 
 onMounted(() => {
   if (props.fetchOnMount) {
-    fetchLogo()
+    fetchLogo();
   }
-})
+});
 
 watch(
   () => props.school.id,
   () => {
-    imageError.value = false
-    fetchLogo()
-  }
-)
+    imageError.value = false;
+    fetchLogo();
+  },
+);
 </script>
 
 <style scoped>
@@ -123,7 +138,11 @@ watch(
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgb(168, 85, 247) 0%, rgb(147, 51, 234) 100%);
+  background: linear-gradient(
+    135deg,
+    rgb(168, 85, 247) 0%,
+    rgb(147, 51, 234) 100%
+  );
   border-radius: 0.25rem;
   overflow: hidden;
   flex-shrink: 0;

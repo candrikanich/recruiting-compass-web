@@ -8,7 +8,14 @@
         fill="none"
         viewBox="0 0 24 24"
       >
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        />
         <path
           class="opacity-75"
           fill="currentColor"
@@ -28,10 +35,7 @@
     <div v-else-if="variant === 'shimmer'" class="w-full max-w-md">
       <div
         class="h-20 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 rounded"
-        style="
-          background-size: 200% 100%;
-          animation: shimmer 2s infinite;
-        "
+        style="background-size: 200% 100%; animation: shimmer 2s infinite"
       />
     </div>
 
@@ -41,17 +45,17 @@
 </template>
 
 <script setup lang="ts">
-export type LoadingStateVariant = 'spinner' | 'skeleton' | 'shimmer'
+export type LoadingStateVariant = "spinner" | "skeleton" | "shimmer";
 
 interface Props {
-  message?: string
-  variant?: LoadingStateVariant
+  message?: string;
+  variant?: LoadingStateVariant;
 }
 
 withDefaults(defineProps<Props>(), {
-  message: 'Loading...',
-  variant: 'spinner',
-})
+  message: "Loading...",
+  variant: "spinner",
+});
 </script>
 
 <style scoped>

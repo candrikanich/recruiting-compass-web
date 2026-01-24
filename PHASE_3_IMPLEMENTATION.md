@@ -37,6 +37,7 @@ Phase 3 focuses on **migrating high-traffic components** from Phase 1/2 legacy c
 **Target**: Replace with `useDocumentsConsolidated()`
 
 **Changes**:
+
 - Import `useDocumentsConsolidated` instead of `useDocuments`
 - Update composable destructuring
 - Adjust method/state names to match new API
@@ -53,6 +54,7 @@ Phase 3 focuses on **migrating high-traffic components** from Phase 1/2 legacy c
 **Target**: Use `useDocumentsConsolidated`
 
 **Changes**:
+
 - Import consolidated composable
 - Fetch document by ID
 - Handle versioning
@@ -69,6 +71,7 @@ Phase 3 focuses on **migrating high-traffic components** from Phase 1/2 legacy c
 **Target**: Use `useDocumentsConsolidated` sharing methods
 
 **Changes**:
+
 - Use `shareDocument` and `revokeAccess` from consolidated composable
 - Update permission UI bindings
 - Simplify sharing logic
@@ -84,6 +87,7 @@ Phase 3 focuses on **migrating high-traffic components** from Phase 1/2 legacy c
 **Target**: Replace with `useSearchConsolidated`
 
 **Changes**:
+
 - Import `useSearchConsolidated` (replaces 3 old ones)
 - Update search/filter bindings
 - Simplify result handling
@@ -99,6 +103,7 @@ Phase 3 focuses on **migrating high-traffic components** from Phase 1/2 legacy c
 **File**: `tests/unit/composables/useDocumentsConsolidated.spec.ts`
 
 **Test Coverage**:
+
 - [ ] Fetch documents (with filters, ordering)
 - [ ] Create document (with file upload)
 - [ ] Update document (metadata, versioning)
@@ -118,6 +123,7 @@ Phase 3 focuses on **migrating high-traffic components** from Phase 1/2 legacy c
 **File**: `tests/unit/composables/useSearchConsolidated.spec.ts`
 
 **Test Coverage**:
+
 - [ ] Search all entity types
 - [ ] Apply filters (by division, date range, etc.)
 - [ ] Fuzzy search functionality
@@ -135,6 +141,7 @@ Phase 3 focuses on **migrating high-traffic components** from Phase 1/2 legacy c
 ### Task 7: Audit Old Composables
 
 **Composables to Review**:
+
 - `useDocumentFetch.ts` → Replaced by `useDocumentsConsolidated`
 - `useDocumentUpload.ts` → Replaced by `useDocumentsConsolidated`
 - `useDocumentSharing.ts` → Replaced by `useDocumentsConsolidated`
@@ -253,34 +260,38 @@ useSearchConsolidated.spec.ts:
 ### Before (Documents Page - using old composables)
 
 ```typescript
-const { documents, loading, fetchDocuments, uploadDocument } = useDocuments()
-const { uploadDocument: uploadFile } = useDocumentUpload()
-const { shareDocument } = useDocumentSharing()
+const { documents, loading, fetchDocuments, uploadDocument } = useDocuments();
+const { uploadDocument: uploadFile } = useDocumentUpload();
+const { shareDocument } = useDocumentSharing();
 
 const handleUpload = async () => {
-  await uploadFile(selectedFile.value, newDoc.type)
-  await fetchDocuments()
-}
+  await uploadFile(selectedFile.value, newDoc.type);
+  await fetchDocuments();
+};
 ```
 
 ### After (Documents Page - using consolidated composable)
 
 ```typescript
-const { 
-  documents, 
-  loading, 
+const {
+  documents,
+  loading,
   isUploading,
-  fetchDocuments, 
+  fetchDocuments,
   uploadDocument,
-  shareDocument 
-} = useDocumentsConsolidated()
+  shareDocument,
+} = useDocumentsConsolidated();
 
 const handleUpload = async () => {
-  const result = await uploadDocument(selectedFile.value, newDoc.type, newDoc.title)
+  const result = await uploadDocument(
+    selectedFile.value,
+    newDoc.type,
+    newDoc.title,
+  );
   if (result.success) {
     // Document added to list automatically
   }
-}
+};
 ```
 
 ---
@@ -343,7 +354,7 @@ const handleUpload = async () => {
 ## 📚 Reference Documentation
 
 - [Phase 1 Refactoring](./PHASE_1_REFACTORING.md) - Query service layer
-- [Phase 2 Refactoring](./PHASE_2_REFACTORING.md) - Composable consolidation  
+- [Phase 2 Refactoring](./PHASE_2_REFACTORING.md) - Composable consolidation
 - [API Documentation](./API_ENDPOINT_DOCUMENTATION.md) - Endpoint patterns
 - [Copilot Instructions](/.github/copilot-instructions.md) - Architecture & patterns
 - [School Testing Plan](./SCHOOL_TESTING_PLAN.md) - Test patterns reference
@@ -387,5 +398,4 @@ A: No. Remove them after confirming all components migrated and tests pass (end 
 
 **Created**: January 21, 2026  
 **Status**: Starting Implementation  
-**Next Review**: Daily progress check  
-
+**Next Review**: Daily progress check

@@ -62,11 +62,11 @@ describe("Schools Page Search", () => {
     ];
   });
 
-  it('should filter schools by partial name "Ohio"', () => {
-    const { filterValues, filteredItems, setFilterValue } = useUniversalFilter(
+  it('should filter schools by partial name "Ohio"', async () => {
+    const { filteredItems, setFilterValue } = useUniversalFilter(
       ref(mockSchools),
       filterConfigs,
-      { persistState: false },
+      { persistState: false, debounceMs: 0 },
     );
 
     setFilterValue("name", "Ohio");
@@ -77,10 +77,10 @@ describe("Schools Page Search", () => {
   });
 
   it('should filter schools by location "Columbus"', () => {
-    const { filterValues, filteredItems, setFilterValue } = useUniversalFilter(
+    const { filteredItems, setFilterValue } = useUniversalFilter(
       ref(mockSchools),
       filterConfigs,
-      { persistState: false },
+      { persistState: false, debounceMs: 0 },
     );
 
     setFilterValue("name", "Columbus");
@@ -94,7 +94,7 @@ describe("Schools Page Search", () => {
     const { filterValues, filteredItems, setFilterValue } = useUniversalFilter(
       ref(mockSchools),
       filterConfigs,
-      { persistState: false },
+      { persistState: false, debounceMs: 0 },
     );
 
     setFilterValue("name", "Michigan");
@@ -108,7 +108,7 @@ describe("Schools Page Search", () => {
     const { filterValues, filteredItems, setFilterValue } = useUniversalFilter(
       ref(mockSchools),
       filterConfigs,
-      { persistState: false },
+      { persistState: false, debounceMs: 0 },
     );
 
     setFilterValue("name", "");
@@ -121,7 +121,7 @@ describe("Schools Page Search", () => {
     const { filterValues, filteredItems, setFilterValue } = useUniversalFilter(
       ref(mockSchools),
       filterConfigs,
-      { persistState: false },
+      { persistState: false, debounceMs: 0 },
     );
 
     // Test lowercase
@@ -144,7 +144,7 @@ describe("Schools Page Search", () => {
     const { filterValues, filteredItems, setFilterValue } = useUniversalFilter(
       ref(mockSchools),
       filterConfigs,
-      { persistState: false },
+      { persistState: false, debounceMs: 0 },
     );
 
     setFilterValue("name", "OH");
@@ -159,7 +159,7 @@ describe("Schools Page Search", () => {
     const { filterValues, filteredItems, setFilterValue } = useUniversalFilter(
       ref(mockSchools),
       filterConfigs,
-      { persistState: false },
+      { persistState: false, debounceMs: 0 },
     );
 
     setFilterValue("name", ", OH");

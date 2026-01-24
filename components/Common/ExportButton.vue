@@ -4,8 +4,18 @@
       class="flex items-center gap-2 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm font-medium"
       @click="showMenu = !showMenu"
     >
-      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      <svg
+        class="w-4 h-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+        />
       </svg>
       Export
     </button>
@@ -49,13 +59,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from "vue";
 
 interface Props {
-  showCSV?: boolean
-  showExcel?: boolean
-  showPDF?: boolean
-  showPrint?: boolean
+  showCSV?: boolean;
+  showExcel?: boolean;
+  showPDF?: boolean;
+  showPrint?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -63,14 +73,14 @@ withDefaults(defineProps<Props>(), {
   showExcel: true,
   showPDF: false,
   showPrint: false,
-})
+});
 
-const showMenu = ref(false)
+const showMenu = ref(false);
 
 defineEmits<{
-  'export:csv': []
-  'export:excel': []
-  'export:pdf': []
-  'export:print': []
-}>()
+  "export:csv": [];
+  "export:excel": [];
+  "export:pdf": [];
+  "export:print": [];
+}>();
 </script>

@@ -1,7 +1,9 @@
 <template>
   <div class="flex flex-col items-center justify-center py-12">
     <!-- Icon -->
-    <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+    <div
+      class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4"
+    >
       <svg
         v-if="!hasCustomIcon"
         class="w-8 h-8 text-slate-400"
@@ -21,7 +23,9 @@
     </div>
 
     <!-- Title -->
-    <h3 class="text-lg font-semibold text-slate-900 mb-2 text-center">{{ title }}</h3>
+    <h3 class="text-lg font-semibold text-slate-900 mb-2 text-center">
+      {{ title }}
+    </h3>
 
     <!-- Description -->
     <p v-if="description" class="text-slate-600 text-center max-w-md mb-6">
@@ -40,17 +44,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 
 interface Props {
-  title: string
-  description?: string
-  icon?: any
-  actionText?: string
-  actionHref?: string
+  title: string;
+  description?: string;
+  icon?: any;
+  actionText?: string;
+  actionHref?: string;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const hasCustomIcon = computed(() => !!props.icon)
+const hasCustomIcon = computed(() => !!props.icon);
 </script>

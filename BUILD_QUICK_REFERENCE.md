@@ -7,19 +7,20 @@
 
 ## Problem Summary
 
-| Metric | Current | Target | Gain |
-|--------|---------|--------|------|
-| **Entry CSS** | 66 KB (10.73 KB gzip) | 20-25 KB (5-7 KB gzip) | 50-60% ↓ |
-| **Cold Build** | 45-50 sec | 45-50 sec | 0% (expected) |
-| **Warm Build** | 45-50 sec | 30-35 sec | 25-35% ↓ |
-| **Client Bundle** | 3.0 MB | 2.4-2.6 MB | 15-20% ↓ |
-| **Largest JS Chunk** | 406 KB | 280-320 KB | 20-25% ↓ |
+| Metric               | Current               | Target                 | Gain          |
+| -------------------- | --------------------- | ---------------------- | ------------- |
+| **Entry CSS**        | 66 KB (10.73 KB gzip) | 20-25 KB (5-7 KB gzip) | 50-60% ↓      |
+| **Cold Build**       | 45-50 sec             | 45-50 sec              | 0% (expected) |
+| **Warm Build**       | 45-50 sec             | 30-35 sec              | 25-35% ↓      |
+| **Client Bundle**    | 3.0 MB                | 2.4-2.6 MB             | 15-20% ↓      |
+| **Largest JS Chunk** | 406 KB                | 280-320 KB             | 20-25% ↓      |
 
 ---
 
 ## Top 5 Optimizations (Prioritized by ROI)
 
 ### 1. **Optimize TailwindCSS** (QUICK WIN)
+
 - **Effort:** 1-2 hours
 - **Impact:** 50-60% CSS reduction (biggest quick win)
 - **Steps:**
@@ -34,6 +35,7 @@
 ---
 
 ### 2. **Enable Vite Caching** (MEDIUM EFFORT)
+
 - **Effort:** 2-3 hours (config + test)
 - **Impact:** 25-35% build time reduction (subsequent builds)
 - **Steps:**
@@ -55,6 +57,7 @@
 ---
 
 ### 3. **Code-Split Heavy Dependencies** (MEDIUM EFFORT)
+
 - **Effort:** 3-4 hours
 - **Impact:** 15-20% bundle reduction + better caching
 - **Steps:**
@@ -68,6 +71,7 @@
 ---
 
 ### 4. **Consolidate CSS Files** (QUICK)
+
 - **Effort:** 1 hour
 - **Impact:** 5-10% CSS deduplication
 - **Steps:**
@@ -82,6 +86,7 @@
 ---
 
 ### 5. **Optimize Test Infrastructure** (QUICK)
+
 - **Effort:** 1-2 hours
 - **Impact:** 30-40% local test speedup
 - **Steps:**
@@ -97,18 +102,21 @@
 ## Implementation Order
 
 ### Week 1: Quick Wins (Tier 1)
+
 1. **Monday-Tuesday:** Optimize TailwindCSS (66 KB → 25 KB gzipped)
 2. **Tuesday-Wednesday:** Implement Vite caching (local + Netlify)
 3. **Wednesday-Thursday:** Code-split Chart.js and PDF libs
 4. **Friday:** Measure, document, commit
 
 ### Week 2: Consolidation (Tier 2)
+
 1. **Monday:** Consolidate CSS files
 2. **Tuesday:** Audit and optimize dependencies
 3. **Wednesday:** Image optimization setup
 4. **Thursday-Friday:** Measure all improvements, document
 
 ### Week 3+: Architecture (Tier 3)
+
 1. Refactor components for better splitting
 2. Optimize E2E browser selection
 3. Implement build monitoring
@@ -118,6 +126,7 @@
 ## Measurement Commands
 
 ### Baseline (Do This First)
+
 ```bash
 npm run build:clean  # Clean slate
 npm run perf:measure # or: bash scripts/measure-build.sh
@@ -129,6 +138,7 @@ npm run perf:measure # or: bash scripts/measure-build.sh
 ```
 
 ### After Each Optimization
+
 ```bash
 npm run perf:measure
 
@@ -156,15 +166,15 @@ Before committing each optimization:
 
 ## Key Files to Modify
 
-| File | Change | Purpose |
-|------|--------|---------|
-| `nuxt.config.ts` | Add vite.cacheDir, optimizeDeps | Enable Vite caching |
-| `tailwind.config.js` | Verify content paths, add safelist | Optimize CSS output |
-| `vitest.config.ts` | Glob patterns, conditional workers | Speed up tests |
-| `netlify.toml` | Add build cache config | Cache in CI/CD |
-| `assets/css/main.css` | Consolidate theme.css, transitions.css | Single CSS entry |
-| Composables | Add lazy imports for chart.js | Reduce bundle |
-| Components | Add defineAsyncComponent for reports | Lazy-load heavy features |
+| File                  | Change                                 | Purpose                  |
+| --------------------- | -------------------------------------- | ------------------------ |
+| `nuxt.config.ts`      | Add vite.cacheDir, optimizeDeps        | Enable Vite caching      |
+| `tailwind.config.js`  | Verify content paths, add safelist     | Optimize CSS output      |
+| `vitest.config.ts`    | Glob patterns, conditional workers     | Speed up tests           |
+| `netlify.toml`        | Add build cache config                 | Cache in CI/CD           |
+| `assets/css/main.css` | Consolidate theme.css, transitions.css | Single CSS entry         |
+| Composables           | Add lazy imports for chart.js          | Reduce bundle            |
+| Components            | Add defineAsyncComponent for reports   | Lazy-load heavy features |
 
 ---
 
@@ -215,16 +225,16 @@ npm run test                # Verify tests pass
 
 ## Estimated Timeline
 
-| Phase | Effort | Expected Result |
-|-------|--------|-----------------|
-| **TailwindCSS Optimization** | 1-2 hours | CSS 50-60% ↓ |
-| **Vite Caching** | 2-3 hours | Build 25-35% ↓ |
-| **Code Splitting** | 3-4 hours | Bundle 15-20% ↓ |
-| **CSS Consolidation** | 1 hour | CSS 5-10% ↓ |
-| **Dependency Audit** | 1-2 hours | Tree clarity |
-| **Test Optimization** | 1-2 hours | Tests 30-40% ↓ |
-| **Monitoring & Docs** | 1-2 hours | Maintainability ↑ |
-| **TOTAL** | 10-16 hours | 60-65% CSS, 25-35% builds, 15-20% bundles |
+| Phase                        | Effort      | Expected Result                           |
+| ---------------------------- | ----------- | ----------------------------------------- |
+| **TailwindCSS Optimization** | 1-2 hours   | CSS 50-60% ↓                              |
+| **Vite Caching**             | 2-3 hours   | Build 25-35% ↓                            |
+| **Code Splitting**           | 3-4 hours   | Bundle 15-20% ↓                           |
+| **CSS Consolidation**        | 1 hour      | CSS 5-10% ↓                               |
+| **Dependency Audit**         | 1-2 hours   | Tree clarity                              |
+| **Test Optimization**        | 1-2 hours   | Tests 30-40% ↓                            |
+| **Monitoring & Docs**        | 1-2 hours   | Maintainability ↑                         |
+| **TOTAL**                    | 10-16 hours | 60-65% CSS, 25-35% builds, 15-20% bundles |
 
 ---
 
@@ -246,12 +256,14 @@ Add to project docs:
 ## Build Performance (Optimized)
 
 **Current Metrics (as of [date]):**
+
 - Entry CSS: X KB gzipped
 - Production build: X sec
 - Client bundle: X MB
 - Largest chunk: X KB
 
 **Key Optimizations:**
+
 1. TailwindCSS purged for unused utilities
 2. Vite cache enabled for faster rebuilds
 3. Heavy dependencies (charts, PDF, maps) lazy-loaded
@@ -259,6 +271,7 @@ Add to project docs:
 5. Test infrastructure optimized (8 workers local, 2 in CI)
 
 **Monitoring:**
+
 - Run `npm run perf:measure` to check build performance
 - Compare against baseline stored in `.perf-baseline.txt`
 - Alert if build time exceeds 60 seconds (cold) or 45 seconds (warm)

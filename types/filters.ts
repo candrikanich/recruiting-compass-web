@@ -3,120 +3,135 @@
  * Provides reusable filter configuration and state types
  */
 
-export type FilterType = 'text' | 'select' | 'multiselect' | 'daterange' | 'boolean' | 'range'
+export type FilterType =
+  | "text"
+  | "select"
+  | "multiselect"
+  | "daterange"
+  | "boolean"
+  | "range";
 
-export type FilterValue = string | number | boolean | Date | [number, number] | [Date, Date] | (string | number | boolean)[] | null | undefined
+export type FilterValue =
+  | string
+  | number
+  | boolean
+  | Date
+  | [number, number]
+  | [Date, Date]
+  | (string | number | boolean)[]
+  | null
+  | undefined;
 
 export interface FilterOption {
-  value: string | number | boolean
-  label: string
-  icon?: string
-  color?: string
+  value: string | number | boolean;
+  label: string;
+  icon?: string;
+  color?: string;
 }
 
 export interface FilterConfig<T extends FilterValue = FilterValue> {
   /** Unique identifier for this filter */
-  id?: string
+  id?: string;
 
   /** Filter type (text, select, multiselect, daterange, boolean, range) */
-  type: FilterType
+  type: FilterType;
 
   /** Object field to filter on */
-  field: string
+  field: string;
 
   /** Display label for UI */
-  label: string
+  label: string;
 
   /** Options for select/multiselect filters */
-  options?: FilterOption[]
+  options?: FilterOption[];
 
   /** Default value when filter is reset */
-  defaultValue?: T
+  defaultValue?: T;
 
   /** Custom filter function (overrides field-based filtering) */
-  filterFn?: (item: Record<string, unknown>, value: T) => boolean
+  filterFn?: (item: Record<string, unknown>, value: T) => boolean;
 
   /** Show in filter UI (default: true) */
-  visible?: boolean
+  visible?: boolean;
 
   /** Filter is required (cannot be cleared) */
-  required?: boolean
+  required?: boolean;
 
   /** Placeholder text for text inputs */
-  placeholder?: string
+  placeholder?: string;
 
   /** Help text or description */
-  helpText?: string
+  helpText?: string;
 
   /** For range filters: minimum value */
-  min?: number
+  min?: number;
 
   /** For range filters: maximum value */
-  max?: number
+  max?: number;
 
   /** For range filters: step/increment */
-  step?: number
+  step?: number;
 
   /** For daterange filters: preset options */
-  presets?: DateRangePreset[]
+  presets?: DateRangePreset[];
 }
 
 export interface DateRangePreset {
-  label: string
-  getValue: () => [Date, Date]
+  label: string;
+  getValue: () => [Date, Date];
 }
 
 export interface FilterValues {
-  [key: string]: FilterValue
+  [key: string]: FilterValue;
 }
 
 export interface FilterPreset {
   /** Unique preset identifier */
-  id: string
+  id: string;
 
   /** User-friendly preset name */
-  name: string
+  name: string;
 
   /** Filters applied in this preset */
-  filters: FilterValues
+  filters: FilterValues;
 
   /** Description of what this preset shows */
-  description?: string
+  description?: string;
 
   /** When this preset was created */
-  createdAt?: Date
+  createdAt?: Date;
 
   /** Mark as default preset */
-  isDefault?: boolean
+  isDefault?: boolean;
 }
 
 export interface FilterState {
   /** Current filter values */
-  values: FilterValues
+  values: FilterValues;
 
   /** Active filter count */
-  activeCount: number
+  activeCount: number;
 
   /** Applied filter presets */
-  presets: FilterPreset[]
+  presets: FilterPreset[];
 
   /** Currently selected preset ID */
-  activePresetId?: string
+  activePresetId?: string;
 
   /** Whether filters are dirty (changed since last save) */
-  isDirty: boolean
+  isDirty: boolean;
 }
 
 export interface UseUniversalFilterOptions {
   /** Storage key for localStorage persistence */
-  storageKey?: string
+  storageKey?: string;
 
   /** Enable localStorage persistence (default: true) */
-  persistState?: boolean
+  persistState?: boolean;
 
   /** Debounce filter changes in milliseconds (default: 300) */
-  debounceMs?: number
+  debounceMs?: number;
 
   /** Custom comparison function for filter values */
-  compareValues?: (a: FilterValue, b: FilterValue) => boolean
+  compareValues?: (a: FilterValue, b: FilterValue) => boolean;
 }

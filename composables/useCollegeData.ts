@@ -1,208 +1,233 @@
-import { ref } from 'vue'
-import type { CollegeScorecardResponse, CollegeScorecardSchool } from '~/types/api'
-import { collegeScorecardResponseSchema } from '~/utils/validation/schemas'
-import { sanitizeUrl } from '~/utils/validation/sanitize'
+import { ref } from "vue";
+import type {
+  CollegeScorecardResponse,
+  CollegeScorecardSchool,
+} from "~/types/api";
+import { collegeScorecardResponseSchema } from "~/utils/validation/schemas";
+import { sanitizeUrl } from "~/utils/validation/sanitize";
 
 export interface CollegeDataResult {
-  id: string
-  name: string
-  website: string | null
-  address: string | null // City, State
-  studentSize: number | null
-  carnegieSize: string | null // Size category (e.g., "Small", "Medium", "Large")
-  enrollmentAll: number | null // Alternative enrollment field
-  admissionRate: number | null
-  studentFacultyRatio: number | null
-  tuitionInState: number | null
-  tuitionOutOfState: number | null
-  latitude: number | null
-  longitude: number | null
+  id: string;
+  name: string;
+  website: string | null;
+  address: string | null; // City, State
+  studentSize: number | null;
+  carnegieSize: string | null; // Size category (e.g., "Small", "Medium", "Large")
+  enrollmentAll: number | null; // Alternative enrollment field
+  admissionRate: number | null;
+  studentFacultyRatio: number | null;
+  tuitionInState: number | null;
+  tuitionOutOfState: number | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export const useCollegeData = () => {
-  const data = ref<CollegeDataResult | null>(null)
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const data = ref<CollegeDataResult | null>(null);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
-  const config = useRuntimeConfig()
-  const apiKey = config.public.collegeScorecardApiKey as string
+  const config = useRuntimeConfig();
+  const apiKey = config.public.collegeScorecardApiKey as string;
 
   /**
    * Format website URL to include protocol and sanitize
    */
   const formatWebsite = (url: string | null | undefined): string | null => {
-    if (!url) return null
-    let formatted = url
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      formatted = `http://${url}`
+    if (!url) return null;
+    let formatted = url;
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      formatted = `http://${url}`;
     }
     // Sanitize URL to prevent javascript: and other dangerous protocols
-    const sanitized = sanitizeUrl(formatted)
-    return sanitized || null
-  }
+    const sanitized = sanitizeUrl(formatted);
+    return sanitized || null;
+  };
 
   /**
    * Validate numeric field is a valid number (not NaN or Infinity)
    */
   const isValidNumber = (value: any): boolean => {
-    if (value === null || value === undefined) return false
-    const num = Number(value)
-    return !isNaN(num) && isFinite(num)
-  }
+    if (value === null || value === undefined) return false;
+    const num = Number(value);
+    return !isNaN(num) && isFinite(num);
+  };
 
   /**
    * Transform College Scorecard API response to our format with validation
    */
   const transformData = (school: any): CollegeDataResult => {
-    const city = school['school.city'] || ''
-    const state = school['school.state'] || ''
-    const address = [city, state].filter(Boolean).join(', ') || null
+    const city = school["school.city"] || "";
+    const state = school["school.state"] || "";
+    const address = [city, state].filter(Boolean).join(", ") || null;
 
     return {
       id: String(school.id),
-      name: school['school.name'],
-      website: formatWebsite(school['school.school_url']),
+      name: school["school.name"],
+      website: formatWebsite(school["school.school_url"]),
       address,
-      studentSize: isValidNumber(school['latest.student.size']) ? school['latest.student.size'] : null,
+      studentSize: isValidNumber(school["latest.student.size"])
+        ? school["latest.student.size"]
+        : null,
       carnegieSize: null, // Not available in standard API
       enrollmentAll: null, // Not available in standard API
-      admissionRate: isValidNumber(school['latest.admissions.admission_rate.overall']) ? school['latest.admissions.admission_rate.overall'] : null,
+      admissionRate: isValidNumber(
+        school["latest.admissions.admission_rate.overall"],
+      )
+        ? school["latest.admissions.admission_rate.overall"]
+        : null,
       studentFacultyRatio: null, // Not available in standard API
-      tuitionInState: isValidNumber(school['latest.cost.tuition.in_state']) ? school['latest.cost.tuition.in_state'] : null,
-      tuitionOutOfState: isValidNumber(school['latest.cost.tuition.out_of_state']) ? school['latest.cost.tuition.out_of_state'] : null,
-      latitude: isValidNumber(school['location.lat']) ? school['location.lat'] : null,
-      longitude: isValidNumber(school['location.lon']) ? school['location.lon'] : null,
-    }
-  }
+      tuitionInState: isValidNumber(school["latest.cost.tuition.in_state"])
+        ? school["latest.cost.tuition.in_state"]
+        : null,
+      tuitionOutOfState: isValidNumber(
+        school["latest.cost.tuition.out_of_state"],
+      )
+        ? school["latest.cost.tuition.out_of_state"]
+        : null,
+      latitude: isValidNumber(school["location.lat"])
+        ? school["location.lat"]
+        : null,
+      longitude: isValidNumber(school["location.lon"])
+        ? school["location.lon"]
+        : null,
+    };
+  };
 
   /**
    * Fetch school data by name from College Scorecard API
    */
-  const fetchByName = async (schoolName: string): Promise<CollegeDataResult | null> => {
+  const fetchByName = async (
+    schoolName: string,
+  ): Promise<CollegeDataResult | null> => {
     if (!schoolName || schoolName.length < 3) {
-      error.value = 'School name must be at least 3 characters'
-      return null
+      error.value = "School name must be at least 3 characters";
+      return null;
     }
 
     if (!apiKey) {
-      error.value = 'College Scorecard API not configured'
-      return null
+      error.value = "College Scorecard API not configured";
+      return null;
     }
 
-    loading.value = true
-    error.value = null
-    data.value = null
+    loading.value = true;
+    error.value = null;
+    data.value = null;
 
     try {
       const params = new URLSearchParams({
         api_key: apiKey,
-        'school.name': schoolName,
-        fields: 'id,school.name,school.city,school.state,school.school_url,location.lat,location.lon,latest.admissions.admission_rate.overall,latest.student.size,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state',
-        per_page: '1',
-      })
+        "school.name": schoolName,
+        fields:
+          "id,school.name,school.city,school.state,school.school_url,location.lat,location.lon,latest.admissions.admission_rate.overall,latest.student.size,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state",
+        per_page: "1",
+      });
 
-      const url = `https://api.data.gov/ed/collegescorecard/v1/schools?${params.toString()}`
-      const response = await fetch(url)
+      const url = `https://api.data.gov/ed/collegescorecard/v1/schools?${params.toString()}`;
+      const response = await fetch(url);
 
       if (!response.ok) {
         if (response.status === 401) {
-          error.value = 'College Scorecard API key is invalid'
+          error.value = "College Scorecard API key is invalid";
         } else if (response.status === 429) {
-          error.value = 'Too many requests to College Scorecard API'
+          error.value = "Too many requests to College Scorecard API";
         } else {
-          error.value = 'Unable to fetch college data'
+          error.value = "Unable to fetch college data";
         }
-        return null
+        return null;
       }
 
-      const apiData = (await response.json()) as CollegeScorecardResponse
+      const apiData = (await response.json()) as CollegeScorecardResponse;
 
       // Validate API response structure
       try {
-        await collegeScorecardResponseSchema.parseAsync(apiData)
+        await collegeScorecardResponseSchema.parseAsync(apiData);
       } catch (validationError) {
-        error.value = 'Invalid response from College Scorecard API'
-        console.error('API response validation failed:', validationError)
-        return null
+        error.value = "Invalid response from College Scorecard API";
+        console.error("API response validation failed:", validationError);
+        return null;
       }
 
       if (!apiData.results || apiData.results.length === 0) {
-        error.value = 'School not found in College Scorecard database'
-        return null
+        error.value = "School not found in College Scorecard database";
+        return null;
       }
 
-      const result = transformData(apiData.results[0])
-      data.value = result
-      return result
+      const result = transformData(apiData.results[0]);
+      data.value = result;
+      return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
-      error.value = `Failed to fetch college data: ${errorMessage}`
-      return null
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      error.value = `Failed to fetch college data: ${errorMessage}`;
+      return null;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Fetch school data by College Scorecard ID
    */
-  const fetchById = async (scoreId: string): Promise<CollegeDataResult | null> => {
+  const fetchById = async (
+    scoreId: string,
+  ): Promise<CollegeDataResult | null> => {
     if (!scoreId) {
-      error.value = 'School ID is required'
-      return null
+      error.value = "School ID is required";
+      return null;
     }
 
     if (!apiKey) {
-      error.value = 'College Scorecard API not configured'
-      return null
+      error.value = "College Scorecard API not configured";
+      return null;
     }
 
-    loading.value = true
-    error.value = null
-    data.value = null
+    loading.value = true;
+    error.value = null;
+    data.value = null;
 
     try {
       const params = new URLSearchParams({
         api_key: apiKey,
         id: scoreId,
-        fields: 'id,school.name,school.city,school.state,school.school_url,location.lat,location.lon,latest.admissions.admission_rate.overall,latest.student.size,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state',
-      })
+        fields:
+          "id,school.name,school.city,school.state,school.school_url,location.lat,location.lon,latest.admissions.admission_rate.overall,latest.student.size,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state",
+      });
 
-      const url = `https://api.data.gov/ed/collegescorecard/v1/schools?${params.toString()}`
-      const response = await fetch(url)
+      const url = `https://api.data.gov/ed/collegescorecard/v1/schools?${params.toString()}`;
+      const response = await fetch(url);
 
       if (!response.ok) {
-        error.value = 'Unable to fetch college data'
-        return null
+        error.value = "Unable to fetch college data";
+        return null;
       }
 
-      const apiData = (await response.json()) as CollegeScorecardResponse
+      const apiData = (await response.json()) as CollegeScorecardResponse;
 
       // Validate API response structure
       try {
-        await collegeScorecardResponseSchema.parseAsync(apiData)
+        await collegeScorecardResponseSchema.parseAsync(apiData);
       } catch (validationError) {
-        error.value = 'Invalid response from College Scorecard API'
-        console.error('API response validation failed:', validationError)
-        return null
+        error.value = "Invalid response from College Scorecard API";
+        console.error("API response validation failed:", validationError);
+        return null;
       }
 
       if (!apiData.results || apiData.results.length === 0) {
-        error.value = 'School not found'
-        return null
+        error.value = "School not found";
+        return null;
       }
 
-      const result = transformData(apiData.results[0])
-      data.value = result
-      return result
+      const result = transformData(apiData.results[0]);
+      data.value = result;
+      return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
-      error.value = `Failed to fetch college data: ${errorMessage}`
-      return null
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      error.value = `Failed to fetch college data: ${errorMessage}`;
+      return null;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   return {
     data,
@@ -210,5 +235,5 @@ export const useCollegeData = () => {
     error,
     fetchByName,
     fetchById,
-  }
-}
+  };
+};

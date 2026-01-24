@@ -1,5 +1,5 @@
-import { z, ZodError } from 'zod'
-import type { H3Event } from 'h3'
+import { z, ZodError } from "zod";
+import type { H3Event } from "h3";
 
 /**
  * Validates request body against a Zod schema.
@@ -18,29 +18,29 @@ import type { H3Event } from 'h3'
  */
 export async function validateBody<T>(
   event: H3Event,
-  schema: z.ZodSchema<T>
+  schema: z.ZodSchema<T>,
 ): Promise<T> {
   try {
-    const body = await readBody(event)
-    return await schema.parseAsync(body)
+    const body = await readBody(event);
+    return await schema.parseAsync(body);
   } catch (err: unknown) {
     if (err instanceof ZodError) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Validation failed',
+        statusMessage: "Validation failed",
         data: {
-          errors: err.issues.map(issue => ({
-            field: issue.path.join('.'),
+          errors: err.issues.map((issue) => ({
+            field: issue.path.join("."),
             message: issue.message,
           })),
         },
-      })
+      });
     }
 
     throw createError({
       statusCode: 400,
-      statusMessage: 'Invalid request body',
-    })
+      statusMessage: "Invalid request body",
+    });
   }
 }
 
@@ -59,31 +59,28 @@ export async function validateBody<T>(
  *   // Use query safely with full type safety
  * })
  */
-export function validateQuery<T>(
-  event: H3Event,
-  schema: z.ZodSchema<T>
-): T {
+export function validateQuery<T>(event: H3Event, schema: z.ZodSchema<T>): T {
   try {
-    const query = getQuery(event)
-    return schema.parse(query)
+    const query = getQuery(event);
+    return schema.parse(query);
   } catch (err: unknown) {
     if (err instanceof ZodError) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Invalid query parameters',
+        statusMessage: "Invalid query parameters",
         data: {
-          errors: err.issues.map(issue => ({
-            field: issue.path.join('.'),
+          errors: err.issues.map((issue) => ({
+            field: issue.path.join("."),
             message: issue.message,
           })),
         },
-      })
+      });
     }
 
     throw createError({
       statusCode: 400,
-      statusMessage: 'Invalid query parameters',
-    })
+      statusMessage: "Invalid query parameters",
+    });
   }
 }
 
@@ -96,30 +93,27 @@ export function validateQuery<T>(
  * @returns Validated and parsed parameters
  * @throws 400 Bad Request with validation errors
  */
-export function validateParams<T>(
-  event: H3Event,
-  schema: z.ZodSchema<T>
-): T {
+export function validateParams<T>(event: H3Event, schema: z.ZodSchema<T>): T {
   try {
-    const params = event.context.params || {}
-    return schema.parse(params)
+    const params = event.context.params || {};
+    return schema.parse(params);
   } catch (err: unknown) {
     if (err instanceof ZodError) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Invalid URL parameters',
+        statusMessage: "Invalid URL parameters",
         data: {
-          errors: err.issues.map(issue => ({
-            field: issue.path.join('.'),
+          errors: err.issues.map((issue) => ({
+            field: issue.path.join("."),
             message: issue.message,
           })),
         },
-      })
+      });
     }
 
     throw createError({
       statusCode: 400,
-      statusMessage: 'Invalid URL parameters',
-    })
+      statusMessage: "Invalid URL parameters",
+    });
   }
 }

@@ -1,7 +1,7 @@
-import { computed, type ComputedRef } from 'vue'
-import { useDocumentFetch } from './useDocumentFetch'
-import { useDocumentUpload } from './useDocumentUpload'
-import { useDocumentSharing } from './useDocumentSharing'
+import { computed, type ComputedRef } from "vue";
+import { useDocumentFetch } from "./useDocumentFetch";
+import { useDocumentUpload } from "./useDocumentUpload";
+import { useDocumentSharing } from "./useDocumentSharing";
 
 /**
  * Composable for document management (backwards-compatible wrapper)
@@ -27,34 +27,34 @@ import { useDocumentSharing } from './useDocumentSharing'
  * @returns Combined object with all document operations
  */
 export const useDocuments = (): {
-  documents: any
-  documentsByType: any
-  fetchDocuments: any
-  fetchDocumentVersions: any
-  updateDocument: any
-  deleteDocument: any
-  isUploading: any
-  uploadProgress: any
-  uploadDocument: any
-  uploadNewVersion: any
-  validateFile: any
-  isSharing: any
-  shareDocumentWithSchools: any
-  removeSchoolAccess: any
-  error: ComputedRef<any>
-  loading: ComputedRef<any>
+  documents: any;
+  documentsByType: any;
+  fetchDocuments: any;
+  fetchDocumentVersions: any;
+  updateDocument: any;
+  deleteDocument: any;
+  isUploading: any;
+  uploadProgress: any;
+  uploadDocument: any;
+  uploadNewVersion: any;
+  validateFile: any;
+  isSharing: any;
+  shareDocumentWithSchools: any;
+  removeSchoolAccess: any;
+  error: ComputedRef<any>;
+  loading: ComputedRef<any>;
 } => {
-  const fetch = useDocumentFetch()
-  const upload = useDocumentUpload()
-  const sharing = useDocumentSharing()
+  const fetch = useDocumentFetch();
+  const upload = useDocumentUpload();
+  const sharing = useDocumentSharing();
 
   // Deprecation warning
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     console.warn(
-      '[DEPRECATED] useDocuments is deprecated as of Phase 4. ' +
-      'Use useDocumentsConsolidated() instead.\n' +
-      'Migration guide: See DEPRECATION_AUDIT.md'
-    )
+      "[DEPRECATED] useDocuments is deprecated as of Phase 4. " +
+        "Use useDocumentsConsolidated() instead.\n" +
+        "Migration guide: See DEPRECATION_AUDIT.md",
+    );
   }
 
   return {
@@ -80,12 +80,16 @@ export const useDocuments = (): {
 
     // Combined error state
     error: computed(() => {
-      return fetch.error.value || upload.error.value || sharing.error.value
+      return fetch.error.value || upload.error.value || sharing.error.value;
     }),
 
     // Combined loading state
     loading: computed(() => {
-      return fetch.loading.value || upload.isUploading.value || sharing.isSharing.value
+      return (
+        fetch.loading.value ||
+        upload.isUploading.value ||
+        sharing.isSharing.value
+      );
     }),
-  }
-}
+  };
+};

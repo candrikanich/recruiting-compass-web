@@ -1,6 +1,6 @@
-import { ref, readonly, onBeforeUnmount, getCurrentInstance } from 'vue'
-import type { User, Session } from '@supabase/supabase-js'
-import { useSupabase } from '~/composables/useSupabase'
+import { ref, readonly, onBeforeUnmount, getCurrentInstance } from "vue";
+import type { User, Session } from "@supabase/supabase-js";
+import { useSupabase } from "~/composables/useSupabase";
 
 /**
  * Composable for authentication operations
@@ -17,22 +17,30 @@ import { useSupabase } from '~/composables/useSupabase'
  * @returns Object with auth actions and readonly state
  */
 interface AuthActions {
-  restoreSession: () => Promise<Session | null>
-  login: (email: string, password: string) => Promise<{ data: any; error: null }>
-  logout: () => Promise<void>
-  signup: (email: string, password: string, fullName?: string, role?: string) => Promise<any>
-  setupAuthListener: (callback: (user: User | null) => void) => () => void
+  restoreSession: () => Promise<Session | null>;
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ data: any; error: null }>;
+  logout: () => Promise<void>;
+  signup: (
+    email: string,
+    password: string,
+    fullName?: string,
+    role?: string,
+  ) => Promise<any>;
+  setupAuthListener: (callback: (user: User | null) => void) => () => void;
 }
 
 export const useAuth = () => {
-  const supabase = useSupabase()
+  const supabase = useSupabase();
 
   // State
-  const loading = ref(false)
-  const error = ref<Error | null>(null)
-  const isInitialized = ref(false) // Guard to prevent redundant initialization
-  const session = ref<Session | null>(null)
-  const subscriptions: (() => void)[] = []
+  const loading = ref(false);
+  const error = ref<Error | null>(null);
+  const isInitialized = ref(false); // Guard to prevent redundant initialization
+  const session = ref<Session | null>(null);
+  const subscriptions: (() => void)[] = [];
 
   /**
    * Restores session from Supabase
@@ -41,114 +49,124 @@ export const useAuth = () => {
   const restoreSession = async () => {
     // Guard: prevent redundant calls
     if (isInitialized.value) {
-      return null
+      return null;
     }
 
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
-      const { data: { session: sessionData }, error: sessionError } = await supabase.auth.getSession()
+      const {
+        data: { session: sessionData },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
       if (sessionError) {
-        throw sessionError
+        throw sessionError;
       }
 
       if (sessionData?.user) {
-        session.value = sessionData
-        isInitialized.value = true
+        session.value = sessionData;
+        isInitialized.value = true;
         // Store initialization is handled by caller
-        return sessionData
+        return sessionData;
       }
 
-      session.value = null
-      isInitialized.value = true
-      return null
+      session.value = null;
+      isInitialized.value = true;
+      return null;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to restore session'
-      error.value = err instanceof Error ? err : new Error(message)
-      console.error(message)
-      return null
+      const message =
+        err instanceof Error ? err.message : "Failed to restore session";
+      error.value = err instanceof Error ? err : new Error(message);
+      console.error(message);
+      return null;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Login with email and password
    */
   const login = async (email: string, password: string) => {
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
-      const trimmedEmail = email.trim()
+      const trimmedEmail = email.trim();
 
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
-        password,
-      })
+      const { data, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: trimmedEmail,
+          password,
+        });
 
       if (signInError) {
-        error.value = signInError
-        throw signInError
+        error.value = signInError;
+        throw signInError;
       }
 
       // Store initialization is handled by caller
       if (data.session?.user) {
-        session.value = data.session
+        session.value = data.session;
       }
 
-      return { data, error: null }
+      return { data, error: null };
     } catch (err: unknown) {
-      const authError = err instanceof Error ? err : new Error('Login failed')
-      error.value = authError
-      throw authError
+      const authError = err instanceof Error ? err : new Error("Login failed");
+      error.value = authError;
+      throw authError;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Logout current user
    */
   const logout = async () => {
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
-      const { error: signOutError } = await supabase.auth.signOut()
+      const { error: signOutError } = await supabase.auth.signOut();
 
       if (signOutError) {
-        throw signOutError
+        throw signOutError;
       }
 
       // Clear session (store logout is handled by caller)
-      session.value = null
-      isInitialized.value = false
+      session.value = null;
+      isInitialized.value = false;
     } catch (err: unknown) {
-      const authError = err instanceof Error ? err : new Error('Logout failed')
-      error.value = authError
-      throw authError
+      const authError = err instanceof Error ? err : new Error("Logout failed");
+      error.value = authError;
+      throw authError;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Sign up new user with optional full name and role
    */
-  const signup = async (email: string, password: string, fullName?: string, role?: string) => {
-    loading.value = true
-    error.value = null
+  const signup = async (
+    email: string,
+    password: string,
+    fullName?: string,
+    role?: string,
+  ) => {
+    loading.value = true;
+    error.value = null;
 
     try {
-      const trimmedEmail = email.trim()
+      const trimmedEmail = email.trim();
 
       const signUpParams: any = {
         email: trimmedEmail,
         password,
-      }
+      };
 
       // Add full name and role to user metadata
       if (fullName || role) {
@@ -157,56 +175,59 @@ export const useAuth = () => {
             ...(fullName && { full_name: fullName }),
             ...(role && { role }),
           },
-        }
+        };
       }
 
-      const { data, error: signUpError } = await supabase.auth.signUp(signUpParams)
+      const { data, error: signUpError } =
+        await supabase.auth.signUp(signUpParams);
 
       if (signUpError) {
-        error.value = signUpError
-        throw signUpError
+        error.value = signUpError;
+        throw signUpError;
       }
 
       // Store initialization is handled by caller
 
-      return data
+      return data;
     } catch (err: unknown) {
-      const authError = err instanceof Error ? err : new Error('Signup failed')
-      error.value = authError
-      throw authError
+      const authError = err instanceof Error ? err : new Error("Signup failed");
+      error.value = authError;
+      throw authError;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Set up auth state change listener
    * Returns unsubscribe function and tracks subscription for cleanup
    */
   const setupAuthListener = (callback: (user: User | null) => void) => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
       (event: string, authSession: Session | null) => {
-        callback(authSession?.user || null)
-      }
-    )
+        callback(authSession?.user || null);
+      },
+    );
 
     const unsubscribe = () => {
-      subscription?.unsubscribe()
-    }
+      subscription?.unsubscribe();
+    };
 
     // Track for automatic cleanup
-    subscriptions.push(unsubscribe)
+    subscriptions.push(unsubscribe);
 
     // Return unsubscribe function
-    return unsubscribe
-  }
+    return unsubscribe;
+  };
 
   // Cleanup all subscriptions on component unmount
   // Only register lifecycle hook if in component context
-  if (typeof getCurrentInstance === 'function' && getCurrentInstance()) {
+  if (typeof getCurrentInstance === "function" && getCurrentInstance()) {
     onBeforeUnmount(() => {
-      subscriptions.forEach(unsub => unsub())
-    })
+      subscriptions.forEach((unsub) => unsub());
+    });
   }
 
   return {
@@ -222,5 +243,5 @@ export const useAuth = () => {
     logout,
     signup,
     setupAuthListener,
-  }
-}
+  };
+};

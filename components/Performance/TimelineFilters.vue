@@ -3,7 +3,9 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <!-- Date Range Preset -->
       <div>
-        <label class="block text-sm font-medium mb-2 text-slate-900">Date Range</label>
+        <label class="block text-sm font-medium mb-2 text-slate-900"
+          >Date Range</label
+        >
         <select
           :value="dateRange.preset"
           @change="handlePresetChange"
@@ -20,7 +22,9 @@
 
       <!-- Custom Start Date (show if preset=custom) -->
       <div v-if="dateRange.preset === 'custom'">
-        <label class="block text-sm font-medium mb-2 text-slate-900">Start Date</label>
+        <label class="block text-sm font-medium mb-2 text-slate-900"
+          >Start Date</label
+        >
         <input
           type="date"
           :value="dateRange.startDate"
@@ -31,7 +35,9 @@
 
       <!-- Custom End Date (show if preset=custom) -->
       <div v-if="dateRange.preset === 'custom'">
-        <label class="block text-sm font-medium mb-2 text-slate-900">End Date</label>
+        <label class="block text-sm font-medium mb-2 text-slate-900"
+          >End Date</label
+        >
         <input
           type="date"
           :value="dateRange.endDate"
@@ -49,7 +55,9 @@
             @change="handleVerifiedChange"
             class="w-4 h-4 rounded accent-blue-600"
           />
-          <span class="ml-2 text-sm font-medium text-slate-900">Verified Only</span>
+          <span class="ml-2 text-sm font-medium text-slate-900"
+            >Verified Only</span
+          >
         </label>
       </div>
 
@@ -94,55 +102,55 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from "vue";
 
 interface DateRange {
-  preset: string
-  startDate: string
-  endDate: string
+  preset: string;
+  startDate: string;
+  endDate: string;
 }
 
 const props = defineProps<{
-  dateRange: DateRange
-  verifiedOnly: boolean
-}>()
+  dateRange: DateRange;
+  verifiedOnly: boolean;
+}>();
 
 const emit = defineEmits<{
-  'update:dateRange': [value: DateRange]
-  'update:verifiedOnly': [value: boolean]
-  'export': [format: 'csv' | 'json']
-  'advanced-export': []
-}>()
+  "update:dateRange": [value: DateRange];
+  "update:verifiedOnly": [value: boolean];
+  export: [format: "csv" | "json"];
+  "advanced-export": [];
+}>();
 
-const showExportMenu = ref(false)
+const showExportMenu = ref(false);
 
 const handlePresetChange = (e: Event) => {
-  const target = e.target as HTMLSelectElement
-  emit('update:dateRange', { ...props.dateRange, preset: target.value })
-}
+  const target = e.target as HTMLSelectElement;
+  emit("update:dateRange", { ...props.dateRange, preset: target.value });
+};
 
 const handleStartDateChange = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  emit('update:dateRange', { ...props.dateRange, startDate: target.value })
-}
+  const target = e.target as HTMLInputElement;
+  emit("update:dateRange", { ...props.dateRange, startDate: target.value });
+};
 
 const handleEndDateChange = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  emit('update:dateRange', { ...props.dateRange, endDate: target.value })
-}
+  const target = e.target as HTMLInputElement;
+  emit("update:dateRange", { ...props.dateRange, endDate: target.value });
+};
 
 const handleVerifiedChange = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  emit('update:verifiedOnly', target.checked)
-}
+  const target = e.target as HTMLInputElement;
+  emit("update:verifiedOnly", target.checked);
+};
 
-const handleExport = (format: 'csv' | 'json') => {
-  emit('export', format)
-  showExportMenu.value = false
-}
+const handleExport = (format: "csv" | "json") => {
+  emit("export", format);
+  showExportMenu.value = false;
+};
 
 const handleAdvancedExport = () => {
-  emit('advanced-export')
-  showExportMenu.value = false
-}
+  emit("advanced-export");
+  showExportMenu.value = false;
+};
 </script>

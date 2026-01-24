@@ -1,4 +1,4 @@
-import { setCsrfToken } from '../utils/csrf'
+import { setCsrfToken } from "../utils/csrf";
 
 /**
  * GET /api/csrf-token
@@ -10,9 +10,9 @@ import { setCsrfToken } from '../utils/csrf'
  * @returns { token: string } CSRF token for client use
  */
 export default defineEventHandler((event) => {
-  const token = setCsrfToken(event)
+  const token = setCsrfToken(event);
 
   return {
     token,
-  }
-})
+  };
+});

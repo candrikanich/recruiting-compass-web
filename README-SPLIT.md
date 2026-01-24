@@ -30,12 +30,14 @@ Set these in Netlify UI (Settings → Build & Deploy → Environment):
 ### Manual Deployment
 
 To trigger a rebuild in Netlify UI:
+
 1. Go to Netlify → Site Settings → Build & Deploy
 2. Click "Trigger Deploy" → "Deploy Site"
 
 ## Documentation
 
 See the [documentation](../documentation/) directory in the main repository for:
+
 - Architecture and design patterns
 - API endpoints
 - Database schema

@@ -12,5 +12,5 @@
 </template>
 
 <script setup lang="ts">
-import LoadingSkeleton from './LoadingSkeleton.vue'
+import LoadingSkeleton from "./LoadingSkeleton.vue";
 </script>

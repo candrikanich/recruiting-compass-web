@@ -1,7 +1,7 @@
-import { ref } from 'vue'
-import { useSupabase } from './useSupabase'
-import { useUserStore } from '~/stores/user'
-import type { Document } from '~/types/models'
+import { ref } from "vue";
+import { useSupabase } from "./useSupabase";
+import { useUserStore } from "~/stores/user";
+import type { Document } from "~/types/models";
 
 /**
  * Composable for document sharing operations
@@ -27,102 +27,112 @@ import type { Document } from '~/types/models'
  * @returns Object with sharing methods and state
  */
 export const useDocumentSharing = () => {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     console.warn(
-      '[DEPRECATED] useDocumentSharing is deprecated as of Phase 4. ' +
-      'Use useDocumentsConsolidated() instead.\n' +
-      'Migration guide: See DEPRECATION_AUDIT.md'
-    )
+      "[DEPRECATED] useDocumentSharing is deprecated as of Phase 4. " +
+        "Use useDocumentsConsolidated() instead.\n" +
+        "Migration guide: See DEPRECATION_AUDIT.md",
+    );
   }
 
-  const supabase = useSupabase()
-  let userStore: ReturnType<typeof useUserStore> | undefined
+  const supabase = useSupabase();
+  let userStore: ReturnType<typeof useUserStore> | undefined;
   const getUserStore = () => {
     if (!userStore) {
-      userStore = useUserStore()
+      userStore = useUserStore();
     }
-    return userStore
-  }
+    return userStore;
+  };
 
   // State
-  const isSharing = ref(false)
-  const error = ref<string | null>(null)
+  const isSharing = ref(false);
+  const error = ref<string | null>(null);
 
   /**
    * Share a document with specific schools
    */
-  const shareDocument = async (documentId: string, schoolIds: string[]): Promise<Document | null> => {
-    const store = getUserStore()
-    if (!store.user) throw new Error('User not authenticated')
+  const shareDocument = async (
+    documentId: string,
+    schoolIds: string[],
+  ): Promise<Document | null> => {
+    const store = getUserStore();
+    if (!store.user) throw new Error("User not authenticated");
 
-    isSharing.value = true
-    error.value = null
+    isSharing.value = true;
+    error.value = null;
 
     try {
       const { data, error: updateError } = await supabase
-        .from('documents')
+        .from("documents")
         .update({ shared_with_schools: schoolIds })
-        .eq('id', documentId)
+        .eq("id", documentId)
         .select()
-        .single()
+        .single();
 
-      if (updateError) throw updateError
+      if (updateError) throw updateError;
 
-      return data
+      return data;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to share document'
-      error.value = message
-      throw err
+      const message =
+        err instanceof Error ? err.message : "Failed to share document";
+      error.value = message;
+      throw err;
     } finally {
-      isSharing.value = false
+      isSharing.value = false;
     }
-  }
+  };
 
   /**
    * Revoke school access to a document
    */
-  const revokeSharing = async (documentId: string, schoolIdToRemove: string): Promise<Document | null> => {
-    const store = getUserStore()
-    if (!store.user) throw new Error('User not authenticated')
+  const revokeSharing = async (
+    documentId: string,
+    schoolIdToRemove: string,
+  ): Promise<Document | null> => {
+    const store = getUserStore();
+    if (!store.user) throw new Error("User not authenticated");
 
-    isSharing.value = true
-    error.value = null
+    isSharing.value = true;
+    error.value = null;
 
     try {
       const { data: doc, error: fetchError } = await supabase
-        .from('documents')
-        .select('shared_with_schools')
-        .eq('id', documentId)
-        .single()
+        .from("documents")
+        .select("shared_with_schools")
+        .eq("id", documentId)
+        .single();
 
-      if (fetchError) throw fetchError
-      if (!doc) throw new Error('Document not found')
+      if (fetchError) throw fetchError;
+      if (!doc) throw new Error("Document not found");
 
-      const updatedSchools = (doc.shared_with_schools || []).filter((id: string) => id !== schoolIdToRemove)
+      const updatedSchools = (doc.shared_with_schools || []).filter(
+        (id: string) => id !== schoolIdToRemove,
+      );
 
       const { data, error: updateError } = await supabase
-        .from('documents')
+        .from("documents")
         .update({ shared_with_schools: updatedSchools })
-        .eq('id', documentId)
+        .eq("id", documentId)
         .select()
-        .single()
+        .single();
 
-      if (updateError) throw updateError
+      if (updateError) throw updateError;
 
-      return data
+      return data;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to remove school access'
-      error.value = message
-      throw err
+      const message =
+        err instanceof Error ? err.message : "Failed to remove school access";
+      error.value = message;
+      throw err;
     } finally {
-      isSharing.value = false
+      isSharing.value = false;
     }
-  }
+  };
 
   return {
     isSharing,
     error,
     shareDocument,
     revokeSharing,
-  }
-}
+  };
+};

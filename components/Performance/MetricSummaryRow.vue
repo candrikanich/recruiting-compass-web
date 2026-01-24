@@ -12,10 +12,10 @@
 
 <script setup lang="ts">
 interface Props {
-  label: string
-  value: string | number
-  unit: string
+  label: string;
+  value: string | number;
+  unit: string;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 </script>

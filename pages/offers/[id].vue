@@ -1,10 +1,12 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Back Button -->
       <div class="mb-6">
-        <NuxtLink to="/offers" class="text-blue-600 hover:text-blue-700 font-semibold">
+        <NuxtLink
+          to="/offers"
+          class="text-blue-600 hover:text-blue-700 font-semibold"
+        >
           ← Back to Offers
         </NuxtLink>
       </div>
@@ -15,14 +17,23 @@
       </div>
 
       <!-- Error State -->
-      <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+      <div
+        v-else-if="error"
+        class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+      >
         <p class="text-red-700">{{ error }}</p>
       </div>
 
       <!-- Offer Not Found -->
-      <div v-else-if="!offer" class="bg-white rounded-lg shadow p-12 text-center">
+      <div
+        v-else-if="!offer"
+        class="bg-white rounded-lg shadow p-12 text-center"
+      >
         <p class="text-gray-600 mb-2">Offer not found</p>
-        <NuxtLink to="/offers" class="text-blue-600 hover:text-blue-700 font-semibold">
+        <NuxtLink
+          to="/offers"
+          class="text-blue-600 hover:text-blue-700 font-semibold"
+        >
           Return to Offers →
         </NuxtLink>
       </div>
@@ -42,9 +53,13 @@
                 >
                   {{ getStatusLabel(offer.status) }}
                 </span>
-                <h1 class="text-3xl font-bold text-gray-900">{{ schoolName }}</h1>
+                <h1 class="text-3xl font-bold text-gray-900">
+                  {{ schoolName }}
+                </h1>
               </div>
-              <p class="text-gray-600">{{ getOfferTypeLabel(offer.offer_type) }}</p>
+              <p class="text-gray-600">
+                {{ getOfferTypeLabel(offer.offer_type) }}
+              </p>
             </div>
             <div class="flex gap-2">
               <button
@@ -71,17 +86,27 @@
           </div>
 
           <!-- Financial Summary -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 pb-6 border-b border-gray-200">
+          <div
+            class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 pb-6 border-b border-gray-200"
+          >
             <div>
               <p class="text-gray-600 text-sm mb-1">Scholarship Amount</p>
               <p class="text-2xl font-bold text-gray-900">
-                {{ offer.scholarship_amount ? `$${offer.scholarship_amount.toLocaleString()}` : '—' }}
+                {{
+                  offer.scholarship_amount
+                    ? `$${offer.scholarship_amount.toLocaleString()}`
+                    : "—"
+                }}
               </p>
             </div>
             <div>
               <p class="text-gray-600 text-sm mb-1">Scholarship %</p>
               <p class="text-2xl font-bold text-gray-900">
-                {{ offer.scholarship_percentage ? `${offer.scholarship_percentage}%` : '—' }}
+                {{
+                  offer.scholarship_percentage
+                    ? `${offer.scholarship_percentage}%`
+                    : "—"
+                }}
               </p>
             </div>
             <div>
@@ -98,7 +123,7 @@
                         : 'text-gray-900',
                 ]"
               >
-                {{ offer.deadline_date ? `${daysUntilDeadline}d` : '—' }}
+                {{ offer.deadline_date ? `${daysUntilDeadline}d` : "—" }}
               </p>
               <p class="text-xs text-gray-600 mt-1">{{ formatDeadline }}</p>
             </div>
@@ -108,12 +133,18 @@
           <div v-if="!isEditing" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="text-sm">
               <p class="text-gray-600 mb-1">Offer Date</p>
-              <p class="font-semibold text-gray-900">{{ formatDate(offer.offer_date) }}</p>
+              <p class="font-semibold text-gray-900">
+                {{ formatDate(offer.offer_date) }}
+              </p>
             </div>
             <div class="text-sm">
               <p class="text-gray-600 mb-1">Deadline Date</p>
               <p class="font-semibold text-gray-900">
-                {{ offer.deadline_date ? formatDate(offer.deadline_date) : 'No deadline set' }}
+                {{
+                  offer.deadline_date
+                    ? formatDate(offer.deadline_date)
+                    : "No deadline set"
+                }}
               </p>
             </div>
 
@@ -136,8 +167,8 @@
             :initial-percentage="offer.scholarship_percentage || undefined"
             :on-save-value="
               (amount, percentage) => {
-                editForm.scholarship_amount = amount
-                editForm.scholarship_percentage = percentage
+                editForm.scholarship_amount = amount;
+                editForm.scholarship_percentage = percentage;
               }
             "
           />
@@ -150,7 +181,10 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <!-- Offer Type -->
               <div>
-                <label for="offerType" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="offerType"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Offer Type
                 </label>
                 <select
@@ -168,7 +202,10 @@
 
               <!-- Status -->
               <div>
-                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="status"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Status
                 </label>
                 <select
@@ -185,7 +222,10 @@
 
               <!-- Scholarship Amount -->
               <div>
-                <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="amount"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Scholarship Amount ($)
                 </label>
                 <input
@@ -201,7 +241,10 @@
 
               <!-- Scholarship Percentage -->
               <div>
-                <label for="percentage" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="percentage"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Scholarship Percentage (%)
                 </label>
                 <input
@@ -218,7 +261,10 @@
 
               <!-- Offer Date -->
               <div>
-                <label for="offerDate" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="offerDate"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Offer Date
                 </label>
                 <input
@@ -231,7 +277,10 @@
 
               <!-- Deadline Date -->
               <div>
-                <label for="deadline" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="deadline"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Deadline Date
                 </label>
                 <input
@@ -244,7 +293,10 @@
 
               <!-- Conditions -->
               <div class="md:col-span-2">
-                <label for="conditions" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="conditions"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Conditions or Requirements
                 </label>
                 <textarea
@@ -258,7 +310,10 @@
 
               <!-- Notes -->
               <div class="md:col-span-2">
-                <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="notes"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Notes
                 </label>
                 <textarea
@@ -278,7 +333,7 @@
                 :disabled="loading"
                 class="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
               >
-                {{ loading ? 'Saving...' : 'Save Changes' }}
+                {{ loading ? "Saving..." : "Save Changes" }}
               </button>
               <button
                 type="button"
@@ -296,99 +351,117 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useOffers } from '~/composables/useOffers'
-import { useSchools } from '~/composables/useSchools'
-import ScholarshipCalculator from '~/components/ScholarshipCalculator.vue'
-import type { Offer } from '~/types/models'
+import { ref, computed, onMounted, reactive } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useOffers } from "~/composables/useOffers";
+import { useSchools } from "~/composables/useSchools";
+import ScholarshipCalculator from "~/components/ScholarshipCalculator.vue";
+import type { Offer } from "~/types/models";
 
 definePageMeta({
-  middleware: 'auth',
-})
+  middleware: "auth",
+});
 
-const route = useRoute()
-const router = useRouter()
-const { offers, loading, fetchOffers, updateOffer, deleteOffer: deleteOfferAPI, daysUntilDeadline: calculateDaysUntil } = useOffers()
-const { schools, fetchSchools } = useSchools()
+const route = useRoute();
+const router = useRouter();
+const {
+  offers,
+  loading,
+  fetchOffers,
+  updateOffer,
+  deleteOffer: deleteOfferAPI,
+  daysUntilDeadline: calculateDaysUntil,
+} = useOffers();
+const { schools, fetchSchools } = useSchools();
 
-const isEditing = ref(false)
-const error = ref('')
+const isEditing = ref(false);
+const error = ref("");
 
-const offerId = computed(() => route.params.id as string)
+const offerId = computed(() => route.params.id as string);
 
-const offer = computed(() => offers.value.find((o) => o.id === offerId.value))
+const offer = computed(() => offers.value.find((o) => o.id === offerId.value));
 
 const schoolName = computed(() => {
-  if (!offer.value) return ''
-  return schools.value.find((s) => s.id === offer.value!.school_id)?.name || 'Unknown School'
-})
+  if (!offer.value) return "";
+  return (
+    schools.value.find((s) => s.id === offer.value!.school_id)?.name ||
+    "Unknown School"
+  );
+});
 
 const daysUntilDeadline = computed(() => {
-  if (!offer.value) return null
-  return calculateDaysUntil(offer.value)
-})
+  if (!offer.value) return null;
+  return calculateDaysUntil(offer.value);
+});
 
 const formatDeadline = computed(() => {
-  if (!offer.value?.deadline_date) return 'No deadline set'
-  const date = new Date(offer.value.deadline_date)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-})
+  if (!offer.value?.deadline_date) return "No deadline set";
+  const date = new Date(offer.value.deadline_date);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+});
 
 interface EditFormData {
-  offer_type: Offer['offer_type']
-  status: Offer['status']
-  scholarship_amount: number | null
-  scholarship_percentage: number | null
-  offer_date: string
-  deadline_date: string
-  conditions: string
-  notes: string
+  offer_type: Offer["offer_type"];
+  status: Offer["status"];
+  scholarship_amount: number | null;
+  scholarship_percentage: number | null;
+  offer_date: string;
+  deadline_date: string;
+  conditions: string;
+  notes: string;
 }
 
 const editForm = reactive<EditFormData>({
-  offer_type: 'full_ride',
-  status: 'pending',
+  offer_type: "full_ride",
+  status: "pending",
   scholarship_amount: null,
   scholarship_percentage: null,
-  offer_date: '',
-  deadline_date: '',
-  conditions: '',
-  notes: '',
-})
+  offer_date: "",
+  deadline_date: "",
+  conditions: "",
+  notes: "",
+});
 
 const getStatusBadgeClasses = (status: string): string => {
   const classes: Record<string, string> = {
-    pending: 'bg-blue-100 text-blue-800',
-    accepted: 'bg-green-100 text-green-800',
-    declined: 'bg-red-100 text-red-800',
-    expired: 'bg-gray-100 text-gray-800',
-  }
-  return classes[status] || 'bg-gray-100 text-gray-800'
-}
+    pending: "bg-blue-100 text-blue-800",
+    accepted: "bg-green-100 text-green-800",
+    declined: "bg-red-100 text-red-800",
+    expired: "bg-gray-100 text-gray-800",
+  };
+  return classes[status] || "bg-gray-100 text-gray-800";
+};
 
 const getStatusLabel = (status: string): string => {
-  return status.charAt(0).toUpperCase() + status.slice(1)
-}
+  return status.charAt(0).toUpperCase() + status.slice(1);
+};
 
 const getOfferTypeLabel = (type: string): string => {
   const labels: Record<string, string> = {
-    full_ride: 'Full Ride Scholarship',
-    partial: 'Partial Scholarship',
-    scholarship: 'Scholarship',
-    recruited_walk_on: 'Recruited Walk-On',
-    preferred_walk_on: 'Preferred Walk-On',
-  }
-  return labels[type] || type
-}
+    full_ride: "Full Ride Scholarship",
+    partial: "Partial Scholarship",
+    scholarship: "Scholarship",
+    recruited_walk_on: "Recruited Walk-On",
+    preferred_walk_on: "Preferred Walk-On",
+  };
+  return labels[type] || type;
+};
 
 const formatDate = (dateStr: string): string => {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
 const saveOffer = async () => {
-  if (!offer.value) return
+  if (!offer.value) return;
   try {
     await updateOffer(offerId.value, {
       offer_type: editForm.offer_type,
@@ -399,42 +472,43 @@ const saveOffer = async () => {
       deadline_date: editForm.deadline_date || null,
       conditions: editForm.conditions || null,
       notes: editForm.notes || null,
-    })
-    isEditing.value = false
-    await fetchOffers()
+    });
+    isEditing.value = false;
+    await fetchOffers();
   } catch (err) {
-    error.value = 'Failed to save offer'
-    console.error('Error saving offer:', err)
+    error.value = "Failed to save offer";
+    console.error("Error saving offer:", err);
   }
-}
+};
 
 const deleteOffer = async () => {
-  if (confirm('Are you sure you want to delete this offer?')) {
+  if (confirm("Are you sure you want to delete this offer?")) {
     try {
-      await deleteOfferAPI(offerId.value)
-      await router.push('/offers')
+      await deleteOfferAPI(offerId.value);
+      await router.push("/offers");
     } catch (err) {
-      error.value = 'Failed to delete offer'
-      console.error('Error deleting offer:', err)
+      error.value = "Failed to delete offer";
+      console.error("Error deleting offer:", err);
     }
   }
-}
+};
 
 const loadOfferData = () => {
   if (offer.value) {
-    editForm.offer_type = offer.value.offer_type
-    editForm.status = offer.value.status
-    editForm.scholarship_amount = offer.value.scholarship_amount || null
-    editForm.scholarship_percentage = offer.value.scholarship_percentage || null
-    editForm.offer_date = offer.value.offer_date
-    editForm.deadline_date = offer.value.deadline_date || ''
-    editForm.conditions = offer.value.conditions || ''
-    editForm.notes = offer.value.notes || ''
+    editForm.offer_type = offer.value.offer_type;
+    editForm.status = offer.value.status;
+    editForm.scholarship_amount = offer.value.scholarship_amount || null;
+    editForm.scholarship_percentage =
+      offer.value.scholarship_percentage || null;
+    editForm.offer_date = offer.value.offer_date;
+    editForm.deadline_date = offer.value.deadline_date || "";
+    editForm.conditions = offer.value.conditions || "";
+    editForm.notes = offer.value.notes || "";
   }
-}
+};
 
 onMounted(async () => {
-  await Promise.all([fetchSchools(), fetchOffers()])
-  loadOfferData()
-})
+  await Promise.all([fetchSchools(), fetchOffers()]);
+  loadOfferData();
+});
 </script>

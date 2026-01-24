@@ -1,5 +1,7 @@
 <template>
-  <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition">
+  <div
+    class="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition"
+  >
     <!-- Checkbox -->
     <input
       type="checkbox"
@@ -8,9 +10,15 @@
       @change="$emit('toggle-complete', task.id)"
       :class="[
         'mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 flex-shrink-0 transition',
-        isViewingAsParent.value ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+        isViewingAsParent.value
+          ? 'opacity-50 cursor-not-allowed'
+          : 'cursor-pointer',
       ]"
-      :title="isViewingAsParent.value ? 'Parents can view tasks but cannot mark them complete' : 'Mark task complete'"
+      :title="
+        isViewingAsParent.value
+          ? 'Parents can view tasks but cannot mark them complete'
+          : 'Mark task complete'
+      "
     />
 
     <!-- Task content -->
@@ -19,13 +27,18 @@
       <div class="flex items-start gap-2">
         <div
           class="text-sm font-medium transition-colors flex-1"
-          :class="isCompleted ? 'text-slate-500 line-through' : 'text-slate-900'"
+          :class="
+            isCompleted ? 'text-slate-500 line-through' : 'text-slate-900'
+          "
         >
           {{ task.title }}
         </div>
 
         <!-- Recovery task indicator -->
-        <span v-if="task.athlete_task?.is_recovery_task" class="inline-block px-2 py-0.5 text-xs rounded-full bg-orange-100 text-orange-700 flex-shrink-0">
+        <span
+          v-if="task.athlete_task?.is_recovery_task"
+          class="inline-block px-2 py-0.5 text-xs rounded-full bg-orange-100 text-orange-700 flex-shrink-0"
+        >
           Recovery
         </span>
 
@@ -43,7 +56,12 @@
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 14l-7 7m0 0l-7-7m7 7V3"
+            />
           </svg>
         </button>
       </div>
@@ -56,17 +74,29 @@
       <!-- Badges row -->
       <div class="mt-2 flex flex-wrap items-center gap-2">
         <!-- Category badge -->
-        <span v-if="showCategory" class="inline-block px-2 py-1 text-xs rounded-full" :class="getCategoryColor(task.category)">
+        <span
+          v-if="showCategory"
+          class="inline-block px-2 py-1 text-xs rounded-full"
+          :class="getCategoryColor(task.category)"
+        >
           {{ formatCategory(task.category) }}
         </span>
 
         <!-- Required indicator -->
-        <span v-if="task.required" class="inline-block px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">
+        <span
+          v-if="task.required"
+          class="inline-block px-2 py-1 text-xs rounded-full bg-red-100 text-red-700"
+        >
           Required
         </span>
 
         <!-- Status badge -->
-        <StatusIndicator v-if="showStatus && task.athlete_task" :status="task.athlete_task.status" size="sm" :show-label="true" />
+        <StatusIndicator
+          v-if="showStatus && task.athlete_task"
+          :status="task.athlete_task.status"
+          size="sm"
+          :show-label="true"
+        />
 
         <!-- Incomplete dependencies indicator -->
         <span
@@ -79,21 +109,39 @@
 
       <!-- Expandable details section -->
       <Transition name="slide-fade">
-        <div v-if="expanded" class="mt-3 pt-3 border-t border-slate-100 space-y-3">
+        <div
+          v-if="expanded"
+          class="mt-3 pt-3 border-t border-slate-100 space-y-3"
+        >
           <!-- Why it matters -->
-          <div v-if="task.why_it_matters" class="bg-blue-50 border-l-2 border-blue-200 pl-3 py-2">
-            <div class="text-xs font-semibold text-blue-900 mb-1">Why It Matters</div>
+          <div
+            v-if="task.why_it_matters"
+            class="bg-blue-50 border-l-2 border-blue-200 pl-3 py-2"
+          >
+            <div class="text-xs font-semibold text-blue-900 mb-1">
+              Why It Matters
+            </div>
             <div class="text-xs text-blue-800">{{ task.why_it_matters }}</div>
           </div>
 
           <!-- Failure risk -->
-          <div v-if="task.failure_risk" class="bg-red-50 border-l-2 border-red-200 pl-3 py-2">
-            <div class="text-xs font-semibold text-red-900 mb-1">What Can Go Wrong</div>
+          <div
+            v-if="task.failure_risk"
+            class="bg-red-50 border-l-2 border-red-200 pl-3 py-2"
+          >
+            <div class="text-xs font-semibold text-red-900 mb-1">
+              What Can Go Wrong
+            </div>
             <div class="text-xs text-red-800">{{ task.failure_risk }}</div>
           </div>
 
           <!-- Dependency warning -->
-          <DependencyWarning v-if="task.has_incomplete_prerequisites" :task="task" @complete-prerequisite="$emit('complete-prerequisite', $event)" @continue-anyway="$emit('continue-anyway')" />
+          <DependencyWarning
+            v-if="task.has_incomplete_prerequisites"
+            :task="task"
+            @complete-prerequisite="$emit('complete-prerequisite', $event)"
+            @continue-anyway="$emit('continue-anyway')"
+          />
         </div>
       </Transition>
     </div>
@@ -101,37 +149,39 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { getCategoryColor, formatCategory } from '~/utils/taskHelpers'
-import type { TaskWithStatus } from '~/types/timeline'
-import StatusIndicator from '~/components/Timeline/StatusIndicator.vue'
-import DependencyWarning from '~/components/Timeline/DependencyWarning.vue'
-import { useParentContext } from '~/composables/useParentContext'
+import { ref, computed } from "vue";
+import { getCategoryColor, formatCategory } from "~/utils/taskHelpers";
+import type { TaskWithStatus } from "~/types/timeline";
+import StatusIndicator from "~/components/Timeline/StatusIndicator.vue";
+import DependencyWarning from "~/components/Timeline/DependencyWarning.vue";
+import { useParentContext } from "~/composables/useParentContext";
 
 interface Props {
-  task: TaskWithStatus
-  expandable?: boolean
-  showCategory?: boolean
-  showStatus?: boolean
+  task: TaskWithStatus;
+  expandable?: boolean;
+  showCategory?: boolean;
+  showStatus?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   expandable: true,
   showCategory: true,
-  showStatus: true
-})
+  showStatus: true,
+});
 
 defineEmits<{
-  'toggle-complete': [taskId: string]
-  'complete-prerequisite': [taskId: string]
-  'continue-anyway': []
-}>()
+  "toggle-complete": [taskId: string];
+  "complete-prerequisite": [taskId: string];
+  "continue-anyway": [];
+}>();
 
-const expanded = ref(false)
-const parentContext = useParentContext()
+const expanded = ref(false);
+const parentContext = useParentContext();
 
-const isCompleted = computed(() => props.task.athlete_task?.status === 'completed')
-const isViewingAsParent = computed(() => parentContext.isViewingAsParent)
+const isCompleted = computed(
+  () => props.task.athlete_task?.status === "completed",
+);
+const isViewingAsParent = computed(() => parentContext.isViewingAsParent);
 </script>
 
 <style scoped>

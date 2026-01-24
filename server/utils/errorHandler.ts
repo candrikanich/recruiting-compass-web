@@ -3,17 +3,17 @@
  * Prevents information disclosure while maintaining debugging capability
  */
 
-import { createLogger } from './logger'
+import { createLogger } from "./logger";
 
-const logger = createLogger('error-handler')
+const logger = createLogger("error-handler");
 
 export interface SafeError {
-  statusCode: number
-  statusMessage: string
+  statusCode: number;
+  statusMessage: string;
   data?: {
-    message: string
-    details?: string
-  }
+    message: string;
+    details?: string;
+  };
 }
 
 /**
@@ -22,69 +22,70 @@ export interface SafeError {
  * In development: Returns detailed error information for debugging
  */
 export function sanitizeError(error: unknown, defaultCode = 500): SafeError {
-  const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
-  const isProduction = process.env.NODE_ENV === 'production'
+  const isDevelopment =
+    !process.env.NODE_ENV || process.env.NODE_ENV === "development";
+  const isProduction = process.env.NODE_ENV === "production";
 
   // Handle H3 errors (already have statusCode)
-  if (error instanceof Error && 'statusCode' in error) {
-    const h3Error = error as any
+  if (error instanceof Error && "statusCode" in error) {
+    const h3Error = error as any;
     return {
       statusCode: h3Error.statusCode || defaultCode,
-      statusMessage: h3Error.statusMessage || 'An error occurred',
+      statusMessage: h3Error.statusMessage || "An error occurred",
       data: {
-        message: isDevelopment ? h3Error.message : 'An error occurred',
+        message: isDevelopment ? h3Error.message : "An error occurred",
         details: isDevelopment ? h3Error.statusMessage : undefined,
       },
-    }
+    };
   }
 
   // Handle standard errors
   if (error instanceof SyntaxError) {
-    logger.error('Syntax error', error)
+    logger.error("Syntax error", error);
     return {
       statusCode: 400,
-      statusMessage: 'Bad Request',
+      statusMessage: "Bad Request",
       data: {
-        message: isDevelopment ? error.message : 'Invalid request format',
+        message: isDevelopment ? error.message : "Invalid request format",
       },
-    }
+    };
   }
 
   if (error instanceof TypeError) {
-    logger.error('Type error', error)
+    logger.error("Type error", error);
     return {
       statusCode: 400,
-      statusMessage: 'Bad Request',
+      statusMessage: "Bad Request",
       data: {
-        message: isDevelopment ? error.message : 'Invalid request data',
+        message: isDevelopment ? error.message : "Invalid request data",
       },
-    }
+    };
   }
 
   if (error instanceof Error) {
     // Log full error for debugging
-    logger.error('Unhandled error', error)
+    logger.error("Unhandled error", error);
 
     // Return sanitized response
     return {
       statusCode: defaultCode,
-      statusMessage: isProduction ? 'Internal Server Error' : error.message,
+      statusMessage: isProduction ? "Internal Server Error" : error.message,
       data: {
-        message: isProduction ? 'An error occurred' : error.message,
+        message: isProduction ? "An error occurred" : error.message,
         details: isDevelopment ? error.stack : undefined,
       },
-    }
+    };
   }
 
   // Unknown error type
-  logger.error('Unknown error type', error)
+  logger.error("Unknown error type", error);
   return {
     statusCode: defaultCode,
-    statusMessage: 'Internal Server Error',
+    statusMessage: "Internal Server Error",
     data: {
-      message: isProduction ? 'An error occurred' : String(error),
+      message: isProduction ? "An error occurred" : String(error),
     },
-  }
+  };
 }
 
 /**
@@ -94,10 +95,10 @@ export function sanitizeError(error: unknown, defaultCode = 500): SafeError {
 export function createSafeErrorResponse(
   error: unknown,
   context: string,
-  defaultCode = 500
+  defaultCode = 500,
 ): SafeError {
-  logger.error(`Error in ${context}`, error)
-  return sanitizeError(error, defaultCode)
+  logger.error(`Error in ${context}`, error);
+  return sanitizeError(error, defaultCode);
 }
 
 /**
@@ -106,49 +107,52 @@ export function createSafeErrorResponse(
  */
 export function sanitizeDatabaseError(error: unknown): SafeError {
   if (error instanceof Error) {
-    const message = error.message.toLowerCase()
+    const message = error.message.toLowerCase();
 
     // Recognize common database errors and provide generic response
-    if (message.includes('unique constraint') || message.includes('unique violation')) {
+    if (
+      message.includes("unique constraint") ||
+      message.includes("unique violation")
+    ) {
       return {
         statusCode: 409,
-        statusMessage: 'Conflict',
+        statusMessage: "Conflict",
         data: {
-          message: 'This record already exists',
+          message: "This record already exists",
         },
-      }
+      };
     }
 
-    if (message.includes('foreign key') || message.includes('no rows')) {
+    if (message.includes("foreign key") || message.includes("no rows")) {
       return {
         statusCode: 404,
-        statusMessage: 'Not Found',
+        statusMessage: "Not Found",
         data: {
-          message: 'Resource not found',
+          message: "Resource not found",
         },
-      }
+      };
     }
 
-    if (message.includes('permission denied') || message.includes('rls')) {
+    if (message.includes("permission denied") || message.includes("rls")) {
       return {
         statusCode: 403,
-        statusMessage: 'Forbidden',
+        statusMessage: "Forbidden",
         data: {
-          message: 'You do not have permission to access this resource',
+          message: "You do not have permission to access this resource",
         },
-      }
+      };
     }
   }
 
   // Generic database error
-  logger.error('Database error', error)
+  logger.error("Database error", error);
   return {
     statusCode: 500,
-    statusMessage: 'Internal Server Error',
+    statusMessage: "Internal Server Error",
     data: {
-      message: 'A database error occurred',
+      message: "A database error occurred",
     },
-  }
+  };
 }
 
 /**
@@ -157,42 +161,46 @@ export function sanitizeDatabaseError(error: unknown): SafeError {
  */
 export function sanitizeExternalApiError(
   error: unknown,
-  serviceName: string
+  serviceName: string,
 ): SafeError {
   if (error instanceof Error) {
-    const message = error.message.toLowerCase()
+    const message = error.message.toLowerCase();
 
     // Don't expose API keys or credentials
-    if (message.includes('api') || message.includes('key') || message.includes('credential')) {
-      logger.error(`${serviceName} authentication error`, error)
+    if (
+      message.includes("api") ||
+      message.includes("key") ||
+      message.includes("credential")
+    ) {
+      logger.error(`${serviceName} authentication error`, error);
       return {
         statusCode: 503,
-        statusMessage: 'Service Unavailable',
+        statusMessage: "Service Unavailable",
         data: {
           message: `${serviceName} is currently unavailable`,
         },
-      }
+      };
     }
 
     // Timeout errors
-    if (message.includes('timeout') || message.includes('econnrefused')) {
-      logger.error(`${serviceName} connection timeout`, error)
+    if (message.includes("timeout") || message.includes("econnrefused")) {
+      logger.error(`${serviceName} connection timeout`, error);
       return {
         statusCode: 504,
-        statusMessage: 'Gateway Timeout',
+        statusMessage: "Gateway Timeout",
         data: {
           message: `${serviceName} is not responding`,
         },
-      }
+      };
     }
   }
 
-  logger.error(`${serviceName} error`, error)
+  logger.error(`${serviceName} error`, error);
   return {
     statusCode: 502,
-    statusMessage: 'Bad Gateway',
+    statusMessage: "Bad Gateway",
     data: {
       message: `Error communicating with ${serviceName}`,
     },
-  }
+  };
 }

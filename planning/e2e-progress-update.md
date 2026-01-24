@@ -3,6 +3,7 @@
 ## ✅ Completed Tasks
 
 ### Phase 1: Build Fixes
+
 - [x] Fixed 3 broken FieldError imports in:
   - `pages/login.vue`
   - `pages/signup.vue`
@@ -10,10 +11,12 @@
 - [x] Build now succeeds: `npm run build` ✅
 
 ### Phase 2: Dev Server Configuration
+
 - [x] Added `devServer: { port: 3003 }` to `nuxt.config.ts`
 - [x] Dev server accessible at `http://localhost:3003` ✅
 
 ### Phase 3: Page Object Updates (In Progress)
+
 - [x] Updated AuthPage.ts selectors:
   - Fixed login button text from "Login" → "Sign In"
   - Fixed signup link text from "Sign up" → "Create one now"
@@ -26,19 +29,23 @@
 ## ❌ Issues Discovered
 
 ### UI Text Mismatch
+
 - Login button: Expected "Login", actual "Sign In" ✅ FIXED
 - Signup link: Expected "Sign up", actual "Create one now" ✅ FIXED
 - Form structure: Sign up has separate firstName/lastName fields (not combined)
 
 ### Form Validation Issues
+
 - Sign In button disabled until form is valid
 - Tests trying to click disabled button → timeout
 
 ### Auth State Issues
+
 - User staying logged in between tests
 - Test that expects logout to redirect to /login still sees /dashboard
 
 ### Missing Test Setup
+
 - Tests need valid test users in Supabase
 - Current test credentials (test@example.com / password123) may not exist
 - No test data cleanup/setup between tests
@@ -46,6 +53,7 @@
 ## 🚧 Next Steps
 
 ### Immediate (To Get Tests Running)
+
 1. **Create test users in Supabase**
    - Create test user: test@example.com with strong password
    - Or use Supabase test mode if available
@@ -59,12 +67,14 @@
    - Verify selectors are working
 
 ### Then (To Get All Tests Passing)
+
 1. Update all remaining test files with correct UI selectors
 2. Add proper test data setup/cleanup fixtures
 3. Handle async operations and waits properly
 4. Debug flaky tests with video recordings
 
 ### Finally (Polish)
+
 1. Verify tests pass consistently
 2. Add CI/CD integration
 3. Document test user credentials and setup

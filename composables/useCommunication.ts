@@ -1,52 +1,55 @@
-import { ref } from 'vue'
-import { useInteractions } from '~/composables/useInteractions'
-import { useCoaches } from '~/composables/useCoaches'
-import { useUserStore } from '~/stores/user'
-import type { Coach, School } from '~/types/models'
+import { ref } from "vue";
+import { useInteractions } from "~/composables/useInteractions";
+import { useCoaches } from "~/composables/useCoaches";
+import { useUserStore } from "~/stores/user";
+import type { Coach, School } from "~/types/models";
 
 /**
  * Composable for managing communication panel state and interaction logging
  * Provides a centralized, reusable pattern for email/text/twitter communication
  */
 export const useCommunication = () => {
-  let interactionsComposable: ReturnType<typeof useInteractions> | undefined
-  let coachesComposable: ReturnType<typeof useCoaches> | undefined
-  let userStore: ReturnType<typeof useUserStore> | undefined
+  let interactionsComposable: ReturnType<typeof useInteractions> | undefined;
+  let coachesComposable: ReturnType<typeof useCoaches> | undefined;
+  let userStore: ReturnType<typeof useUserStore> | undefined;
 
   const getInteractions = () => {
     if (!interactionsComposable) {
-      interactionsComposable = useInteractions()
+      interactionsComposable = useInteractions();
     }
-    return interactionsComposable
-  }
+    return interactionsComposable;
+  };
 
   const getCoaches = () => {
     if (!coachesComposable) {
-      coachesComposable = useCoaches()
+      coachesComposable = useCoaches();
     }
-    return coachesComposable
-  }
+    return coachesComposable;
+  };
 
   const getUserStore = () => {
     if (!userStore) {
-      userStore = useUserStore()
+      userStore = useUserStore();
     }
-    return userStore
-  }
+    return userStore;
+  };
 
   // State
-  const showPanel = ref(false)
-  const selectedCoach = ref<Coach | null>(null)
-  const communicationType = ref<'email' | 'text' | 'twitter'>('email')
+  const showPanel = ref(false);
+  const selectedCoach = ref<Coach | null>(null);
+  const communicationType = ref<"email" | "text" | "twitter">("email");
 
   /**
    * Open communication panel for a specific coach and communication type
    */
-  const openCommunication = (coach: Coach, type: 'email' | 'text' | 'twitter') => {
-    selectedCoach.value = coach
-    communicationType.value = type
-    showPanel.value = true
-  }
+  const openCommunication = (
+    coach: Coach,
+    type: "email" | "text" | "twitter",
+  ) => {
+    selectedCoach.value = coach;
+    communicationType.value = type;
+    showPanel.value = true;
+  };
 
   /**
    * Handle successful interaction logging
@@ -55,49 +58,58 @@ export const useCommunication = () => {
    */
   const handleInteractionLogged = async (
     interactionData: {
-      type: 'email' | 'phone_call' | 'text' | 'in_person_visit' | 'virtual_meeting' | 'camp' | 'showcase' | 'tweet' | 'dm'
-      subject?: string
-      content?: string
-      body?: string
+      type:
+        | "email"
+        | "phone_call"
+        | "text"
+        | "in_person_visit"
+        | "virtual_meeting"
+        | "camp"
+        | "showcase"
+        | "tweet"
+        | "dm";
+      subject?: string;
+      content?: string;
+      body?: string;
     },
-    onSuccess?: () => Promise<void>
+    onSuccess?: () => Promise<void>,
   ) => {
-    if (!selectedCoach.value) return
+    if (!selectedCoach.value) return;
 
     try {
-      const { createInteraction } = getInteractions()
-      const { updateCoach } = getCoaches()
-      const store = getUserStore()
+      const { createInteraction } = getInteractions();
+      const { updateCoach } = getCoaches();
+      const store = getUserStore();
 
       // Create interaction record
       await createInteraction({
         coach_id: selectedCoach.value.id,
         school_id: selectedCoach.value.school_id,
         type: interactionData.type,
-        direction: 'outbound',
-        subject: interactionData.subject || '',
-        content: interactionData.content || interactionData.body || '',
+        direction: "outbound",
+        subject: interactionData.subject || "",
+        content: interactionData.content || interactionData.body || "",
         logged_by: store.user?.id,
         occurred_at: new Date().toISOString(),
-      })
+      });
 
       // Update last_contact_date on coach
       await updateCoach(selectedCoach.value.id, {
         last_contact_date: new Date().toISOString(),
-      })
+      });
 
       // Call optional success callback for page-specific refresh logic
       if (onSuccess) {
-        await onSuccess()
+        await onSuccess();
       }
 
       // Close panel and reset state
-      showPanel.value = false
-      selectedCoach.value = null
+      showPanel.value = false;
+      selectedCoach.value = null;
     } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to log interaction')
+      throw err instanceof Error ? err : new Error("Failed to log interaction");
     }
-  }
+  };
 
   return {
     // State
@@ -108,5 +120,5 @@ export const useCommunication = () => {
     // Methods
     openCommunication,
     handleInteractionLogged,
-  }
-}
+  };
+};

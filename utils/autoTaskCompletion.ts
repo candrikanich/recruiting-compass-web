@@ -3,7 +3,7 @@
  * Maps user actions to tasks that should be automatically marked complete
  */
 
-import type { TaskTriggerMapping } from '~/types/timeline'
+import type { TaskTriggerMapping } from "~/types/timeline";
 
 /**
  * Mapping of trigger actions to task IDs that should be auto-completed
@@ -88,7 +88,7 @@ export const taskTriggers: TaskTriggerMapping = {
   nli_signed: [
     // 'Sign NLI' (senior)
   ],
-}
+};
 
 /**
  * Check and auto-complete tasks based on a trigger action
@@ -98,12 +98,12 @@ export const taskTriggers: TaskTriggerMapping = {
  */
 export async function checkAndCompleteTask(
   triggerAction: string,
-  athleteId: string
+  athleteId: string,
 ): Promise<string[]> {
-  const taskIds = taskTriggers[triggerAction] || []
+  const taskIds = taskTriggers[triggerAction] || [];
 
   if (taskIds.length === 0) {
-    return []
+    return [];
   }
 
   try {
@@ -111,31 +111,31 @@ export async function checkAndCompleteTask(
       taskIds.map(async (taskId) => {
         try {
           // Check if task already completed
-          const existingResponse = await $fetch('/api/athlete-tasks', {
-            method: 'GET',
-          })
+          const existingResponse = await $fetch("/api/athlete-tasks", {
+            method: "GET",
+          });
 
           // This would need actual implementation checking existing task status
           // For now, we'll attempt to mark it complete
 
           // Mark task as completed
           await $fetch(`/api/athlete-tasks/${taskId}`, {
-            method: 'PATCH',
-            body: { status: 'completed' },
-          })
+            method: "PATCH",
+            body: { status: "completed" },
+          });
 
-          return taskId
+          return taskId;
         } catch (err) {
-          console.error(`Failed to auto-complete task ${taskId}:`, err)
-          return null
+          console.error(`Failed to auto-complete task ${taskId}:`, err);
+          return null;
         }
-      })
-    )
+      }),
+    );
 
-    return completedIds.filter((id): id is string => id !== null)
+    return completedIds.filter((id): id is string => id !== null);
   } catch (err) {
-    console.error('Error in checkAndCompleteTask:', err)
-    return []
+    console.error("Error in checkAndCompleteTask:", err);
+    return [];
   }
 }
 
@@ -145,24 +145,24 @@ export async function checkAndCompleteTask(
  */
 export function getTriggerAction(eventType: string): string | null {
   const eventTriggerMap: Record<string, string> = {
-    'school.added': 'school_added',
-    'video.uploaded': 'video_uploaded',
-    'interaction.logged': 'interaction_logged',
-    'visit.scheduled': 'visit_scheduled',
-    'eligibility.registered_ncaa': 'eligibility_registered',
-    'eligibility.registered_naia': 'eligibility_naia_registered',
-    'test.score_recorded': 'test_score_recorded',
-    'event.attended': 'event_attended',
-    'camp.attended': 'camp_attended',
-    'coach.contacted': 'coach_contact_made',
-    'profile.completed': 'profile_completed',
-    'metrics.recorded': 'athletic_metrics_recorded',
-    'gpa.recorded': 'gpa_recorded',
-    'offer.received': 'offer_received',
-    'nli.signed': 'nli_signed',
-  }
+    "school.added": "school_added",
+    "video.uploaded": "video_uploaded",
+    "interaction.logged": "interaction_logged",
+    "visit.scheduled": "visit_scheduled",
+    "eligibility.registered_ncaa": "eligibility_registered",
+    "eligibility.registered_naia": "eligibility_naia_registered",
+    "test.score_recorded": "test_score_recorded",
+    "event.attended": "event_attended",
+    "camp.attended": "camp_attended",
+    "coach.contacted": "coach_contact_made",
+    "profile.completed": "profile_completed",
+    "metrics.recorded": "athletic_metrics_recorded",
+    "gpa.recorded": "gpa_recorded",
+    "offer.received": "offer_received",
+    "nli.signed": "nli_signed",
+  };
 
-  return eventTriggerMap[eventType] || null
+  return eventTriggerMap[eventType] || null;
 }
 
 /**
@@ -170,11 +170,11 @@ export function getTriggerAction(eventType: string): string | null {
  * Call this from anywhere in the app when an action occurs
  */
 export function emitAutoCompletion(eventType: string, athleteId?: string) {
-  const trigger = getTriggerAction(eventType)
+  const trigger = getTriggerAction(eventType);
   if (trigger && athleteId) {
     // Trigger auto-completion asynchronously without blocking
-    checkAndCompleteTask(trigger, athleteId).catch(err =>
-      console.error('Auto-completion check failed:', err)
-    )
+    checkAndCompleteTask(trigger, athleteId).catch((err) =>
+      console.error("Auto-completion check failed:", err),
+    );
   }
 }

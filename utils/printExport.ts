@@ -2,16 +2,16 @@
  * Generate print-friendly HTML content and trigger print
  */
 export const printContent = (title: string, htmlContent: string) => {
-  const printWindow = window.open('', '', 'width=900,height=600')
-  if (!printWindow) return
+  const printWindow = window.open("", "", "width=900,height=600");
+  if (!printWindow) return;
 
-  const timestamp = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const timestamp = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   const html = `
     <!DOCTYPE html>
@@ -121,29 +121,34 @@ export const printContent = (title: string, htmlContent: string) => {
       </footer>
     </body>
     </html>
-  `
+  `;
 
-  printWindow.document.write(html)
-  printWindow.document.close()
+  printWindow.document.write(html);
+  printWindow.document.close();
 
   // Trigger print after content loads
   setTimeout(() => {
-    printWindow.print()
-  }, 250)
-}
+    printWindow.print();
+  }, 250);
+};
 
 /**
  * Generate HTML table from array of objects
  */
-export const generateHtmlTable = (data: any[], columns: Array<{ key: string; label: string }>) => {
-  const headerHtml = columns.map((col) => `<th>${col.label}</th>`).join('')
+export const generateHtmlTable = (
+  data: any[],
+  columns: Array<{ key: string; label: string }>,
+) => {
+  const headerHtml = columns.map((col) => `<th>${col.label}</th>`).join("");
 
   const rowsHtml = data
     .map((row) => {
-      const cells = columns.map((col) => `<td>${row[col.key] || ''}</td>`).join('')
-      return `<tr>${cells}</tr>`
+      const cells = columns
+        .map((col) => `<td>${row[col.key] || ""}</td>`)
+        .join("");
+      return `<tr>${cells}</tr>`;
     })
-    .join('')
+    .join("");
 
   return `
     <table>
@@ -154,14 +159,18 @@ export const generateHtmlTable = (data: any[], columns: Array<{ key: string; lab
         ${rowsHtml}
       </tbody>
     </table>
-  `
-}
+  `;
+};
 
 /**
  * Generate summary statistics HTML
  */
-export const generateSummary = (stats: Array<{ label: string; value: string | number }>) => {
-  const statsHtml = stats.map((stat) => `<p><strong>${stat.label}:</strong> ${stat.value}</p>`).join('')
+export const generateSummary = (
+  stats: Array<{ label: string; value: string | number }>,
+) => {
+  const statsHtml = stats
+    .map((stat) => `<p><strong>${stat.label}:</strong> ${stat.value}</p>`)
+    .join("");
 
-  return `<div class="summary">${statsHtml}</div>`
-}
+  return `<div class="summary">${statsHtml}</div>`;
+};

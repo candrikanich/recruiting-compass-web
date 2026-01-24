@@ -20,8 +20,20 @@
       <!-- Loading State -->
       <div v-if="loading" class="px-4 py-3 text-center text-slate-600">
         <div class="inline-block animate-spin">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            />
             <path
               class="opacity-75"
               fill="currentColor"
@@ -38,7 +50,10 @@
       </div>
 
       <!-- No Results -->
-      <div v-else-if="results.length === 0 && searchQuery.length >= 3" class="px-4 py-3 text-sm text-slate-600">
+      <div
+        v-else-if="results.length === 0 && searchQuery.length >= 3"
+        class="px-4 py-3 text-sm text-slate-600"
+      >
         No colleges found. Try a different search or switch to manual entry.
       </div>
 
@@ -50,7 +65,7 @@
           type="button"
           :class="[
             'w-full text-left px-4 py-3 transition cursor-pointer last:border-b-0 border-b border-slate-300',
-            index === selectedIndex ? 'bg-blue-100' : 'hover:bg-blue-50'
+            index === selectedIndex ? 'bg-blue-100' : 'hover:bg-blue-50',
           ]"
           @click="selectCollege(college)"
         >
@@ -63,93 +78,96 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useCollegeAutocomplete } from '~/composables/useCollegeAutocomplete'
-import type { CollegeSearchResult } from '~/types/api'
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useCollegeAutocomplete } from "~/composables/useCollegeAutocomplete";
+import type { CollegeSearchResult } from "~/types/api";
 
 defineProps<{
-  disabled?: boolean
-}>()
+  disabled?: boolean;
+}>();
 
 const emit = defineEmits<{
-  select: [college: CollegeSearchResult]
-}>()
+  select: [college: CollegeSearchResult];
+}>();
 
-const { results, loading, error, searchColleges } = useCollegeAutocomplete()
+const { results, loading, error, searchColleges } = useCollegeAutocomplete();
 
-const searchQuery = ref('')
-const showDropdown = ref(false)
-const selectedIndex = ref(-1)
+const searchQuery = ref("");
+const showDropdown = ref(false);
+const selectedIndex = ref(-1);
 
-const hasResults = computed(() => results.value.length > 0)
+const hasResults = computed(() => results.value.length > 0);
 
 const handleInput = async () => {
-  selectedIndex.value = -1
-  showDropdown.value = true
+  selectedIndex.value = -1;
+  showDropdown.value = true;
 
   if (searchQuery.value.length >= 3) {
-    await searchColleges(searchQuery.value)
+    await searchColleges(searchQuery.value);
   } else if (searchQuery.value.length === 0) {
-    results.value = []
-    error.value = null
+    results.value = [];
+    error.value = null;
   }
-}
+};
 
 const handleKeydown = (event: KeyboardEvent) => {
-  if (!showDropdown.value) return
+  if (!showDropdown.value) return;
 
   switch (event.key) {
-    case 'ArrowDown':
-      event.preventDefault()
+    case "ArrowDown":
+      event.preventDefault();
       if (selectedIndex.value < results.value.length - 1) {
-        selectedIndex.value++
+        selectedIndex.value++;
       }
-      break
-    case 'ArrowUp':
-      event.preventDefault()
+      break;
+    case "ArrowUp":
+      event.preventDefault();
       if (selectedIndex.value > -1) {
-        selectedIndex.value--
+        selectedIndex.value--;
       }
-      break
-    case 'Enter':
-      event.preventDefault()
-      if (selectedIndex.value >= 0 && selectedIndex.value < results.value.length) {
-        selectCollege(results.value[selectedIndex.value])
+      break;
+    case "Enter":
+      event.preventDefault();
+      if (
+        selectedIndex.value >= 0 &&
+        selectedIndex.value < results.value.length
+      ) {
+        selectCollege(results.value[selectedIndex.value]);
       }
-      break
-    case 'Escape':
-      event.preventDefault()
-      showDropdown.value = false
-      break
+      break;
+    case "Escape":
+      event.preventDefault();
+      showDropdown.value = false;
+      break;
   }
-}
+};
 
 const handleBlur = () => {
   // Delay closing dropdown to allow click on items
   setTimeout(() => {
-    showDropdown.value = false
-  }, 200)
-}
+    showDropdown.value = false;
+  }, 200);
+};
 
 const selectCollege = (college: CollegeSearchResult) => {
-  searchQuery.value = college.name
-  showDropdown.value = false
-  emit('select', college)
-}
+  searchQuery.value = college.name;
+  showDropdown.value = false;
+  emit("select", college);
+};
 
 // Close dropdown when clicking outside
 const handleClickOutside = (event: MouseEvent) => {
-  const target = event.target as HTMLElement
+  const target = event.target as HTMLElement;
   if (!target.closest('[class*="SchoolAutocomplete"]')) {
-    showDropdown.value = false
+    showDropdown.value = false;
   }
-}
+};
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
+  document.addEventListener("click", handleClickOutside);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
+  document.removeEventListener("click", handleClickOutside);
+});
 </script>

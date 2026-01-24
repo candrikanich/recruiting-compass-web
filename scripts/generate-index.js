@@ -1,11 +1,11 @@
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const publicDir = path.join(__dirname, '..', 'dist', 'public')
-const indexPath = path.join(publicDir, 'index.html')
-const redirectsPath = path.join(publicDir, '_redirects')
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const publicDir = path.join(__dirname, "..", "dist", "public");
+const indexPath = path.join(publicDir, "index.html");
+const redirectsPath = path.join(publicDir, "_redirects");
 
 // Create minimal index.html for SPA fallback
 const html = `<!DOCTYPE html>
@@ -19,18 +19,18 @@ const html = `<!DOCTYPE html>
   <div id="__nuxt"></div>
   <script type="module" src="/_nuxt/entry.js"></script>
 </body>
-</html>`
+</html>`;
 
 // Create _redirects for Netlify SPA fallback
-const redirects = `/* /index.html 200`
+const redirects = `/* /index.html 200`;
 
 try {
-  fs.writeFileSync(indexPath, html)
-  console.log(`✓ Generated index.html at ${indexPath}`)
+  fs.writeFileSync(indexPath, html);
+  console.log(`✓ Generated index.html at ${indexPath}`);
 
-  fs.writeFileSync(redirectsPath, redirects)
-  console.log(`✓ Generated _redirects at ${redirectsPath}`)
+  fs.writeFileSync(redirectsPath, redirects);
+  console.log(`✓ Generated _redirects at ${redirectsPath}`);
 } catch (err) {
-  console.error('Error generating files:', err)
-  process.exit(1)
+  console.error("Error generating files:", err);
+  process.exit(1);
 }

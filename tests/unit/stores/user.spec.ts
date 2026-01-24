@@ -2,37 +2,54 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useUserStore } from "~/stores/user";
 import type { User } from "~/types/models";
+import { useSupabase } from "~/composables/useSupabase";
 
-// Mock useSupabase
-const mockSupabase = {
-  auth: {
-    getSession: vi.fn(),
-  },
-  from: vi.fn(),
-};
+// Mock useSupabase at module level
+vi.mock("~/composables/useSupabase");
 
-vi.mock("~/composables/useSupabase", () => ({
-  useSupabase: () => mockSupabase,
-}));
+// Get the mocked useSupabase function
+const mockUseSupabase = vi.mocked(useSupabase);
 
 describe("useUserStore", () => {
   let store: ReturnType<typeof useUserStore>;
 
   beforeEach(() => {
+    // Reset mocks before each test
+    vi.clearAllMocks();
+
     // Create a fresh pinia for each test
     const pinia = createPinia();
     setActivePinia(pinia);
     store = useUserStore();
-    vi.clearAllMocks();
 
     // Reset store state manually
     store.user = null;
     store.loading = false;
     store.isAuthenticated = false;
 
-    // Mock console.error
+    // Mock console.error and console.log
     vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "log").mockImplementation(() => {});
   });
+
+  const getMockSupabase = () => {
+    const mockQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn(),
+      insert: vi.fn().mockReturnThis(),
+    };
+
+    const mockSupabase = {
+      auth: {
+        getSession: vi.fn(),
+      },
+      from: vi.fn().mockReturnValue(mockQuery),
+    };
+
+    mockUseSupabase.mockReturnValue(mockSupabase);
+    return { mockSupabase, mockQuery };
+  };
 
   afterEach(() => {
     vi.clearAllMocks();
@@ -94,16 +111,12 @@ describe("useUserStore", () => {
         user: { id: "user-123" },
       };
 
-      const mockQuery = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: mockUser, error: null }),
-      };
+      const { mockSupabase, mockQuery } = getMockSupabase();
 
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: mockSession },
       });
-      mockSupabase.from.mockReturnValue(mockQuery);
+      mockQuery.single.mockResolvedValue({ data: mockUser, error: null });
 
       await store.initializeUser();
 
@@ -120,23 +133,17 @@ describe("useUserStore", () => {
       const mockSession = { user: { id: "user-123" } };
       const mockUser = createMockUser();
 
-      const mockQuery = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi
-          .fn()
-          .mockImplementation(
-            () =>
-              new Promise((resolve) =>
-                setTimeout(() => resolve({ data: mockUser, error: null }), 100),
-              ),
-          ),
-      };
+      const { mockSupabase, mockQuery } = getMockSupabase();
 
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: mockSession },
       });
-      mockSupabase.from.mockReturnValue(mockQuery);
+      mockQuery.single.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ data: mockUser, error: null }), 100),
+          ),
+      );
 
       const initPromise = store.initializeUser();
       expect(store.loading).toBe(true);
@@ -146,6 +153,8 @@ describe("useUserStore", () => {
     });
 
     it("should handle no active session", async () => {
+      const { mockSupabase } = getMockSupabase();
+
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
       });
@@ -161,25 +170,16 @@ describe("useUserStore", () => {
       const mockSession = {
         user: { id: "user-123", email: "test@example.com" },
       };
-      const mockError = new Error("Database error");
 
-      const mockInsertQuery = {
-        select: vi.fn().mockReturnThis(),
-      };
-
-      const mockQuery = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: null, error: mockError }),
-        insert: vi.fn().mockReturnValue(mockInsertQuery),
-      };
+      const { mockSupabase, mockQuery } = getMockSupabase();
 
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: mockSession },
       });
-      mockSupabase.from.mockReturnValue(mockQuery);
-      mockInsertQuery.select.mockResolvedValue({
-        data: { id: "user-123" },
+      mockQuery.single.mockResolvedValue({ data: null, error: null });
+      mockQuery.insert.mockReturnValue(mockQuery);
+      mockQuery.select.mockResolvedValue({
+        data: [{ id: "user-123" }],
         error: null,
       });
 
@@ -193,7 +193,7 @@ describe("useUserStore", () => {
       );
       expect(console.log).toHaveBeenCalledWith(
         "User profile created successfully:",
-        { id: "user-123" },
+        expect.any(Array),
       );
       expect(store.user).not.toBeNull();
       expect(store.user?.id).toBe("user-123");
@@ -202,6 +202,8 @@ describe("useUserStore", () => {
     });
 
     it("should handle session fetch error", async () => {
+      const { mockSupabase } = getMockSupabase();
+
       mockSupabase.auth.getSession.mockRejectedValue(
         new Error("Session error"),
       );
@@ -217,6 +219,8 @@ describe("useUserStore", () => {
     });
 
     it("should handle session with missing user", async () => {
+      const { mockSupabase } = getMockSupabase();
+
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: { user: null } },
       });
@@ -231,16 +235,12 @@ describe("useUserStore", () => {
       const parentUser = createMockUser({ role: "parent" });
       const mockSession = { user: { id: "user-123" } };
 
-      const mockQuery = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: parentUser, error: null }),
-      };
+      const { mockSupabase, mockQuery } = getMockSupabase();
 
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: mockSession },
       });
-      mockSupabase.from.mockReturnValue(mockQuery);
+      mockQuery.single.mockResolvedValue({ data: parentUser, error: null });
 
       await store.initializeUser();
 
@@ -251,16 +251,12 @@ describe("useUserStore", () => {
       const studentUser = createMockUser({ role: "student" });
       const mockSession = { user: { id: "user-123" } };
 
-      const mockQuery = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: studentUser, error: null }),
-      };
+      const { mockSupabase, mockQuery } = getMockSupabase();
 
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: mockSession },
       });
-      mockSupabase.from.mockReturnValue(mockQuery);
+      mockQuery.single.mockResolvedValue({ data: studentUser, error: null });
 
       await store.initializeUser();
 
@@ -365,16 +361,12 @@ describe("useUserStore", () => {
       const userNoRole = createMockUser({ role: undefined });
       const mockSession = { user: { id: "user-123" } };
 
-      const mockQuery = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: userNoRole, error: null }),
-      };
+      const { mockSupabase, mockQuery } = getMockSupabase();
 
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: mockSession },
       });
-      mockSupabase.from.mockReturnValue(mockQuery);
+      mockQuery.single.mockResolvedValue({ data: userNoRole, error: null });
 
       await store.initializeUser();
 
@@ -399,16 +391,12 @@ describe("useUserStore", () => {
       const mockSession = { user: { id: "user-123" } };
       const mockUser = createMockUser();
 
-      const mockQuery = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: mockUser, error: null }),
-      };
+      const { mockSupabase, mockQuery } = getMockSupabase();
 
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: mockSession },
       });
-      mockSupabase.from.mockReturnValue(mockQuery);
+      mockQuery.single.mockResolvedValue({ data: mockUser, error: null });
 
       // Call initializeUser multiple times concurrently
       await Promise.all([
@@ -422,6 +410,8 @@ describe("useUserStore", () => {
     });
 
     it("should handle malformed session data", async () => {
+      const { mockSupabase } = getMockSupabase();
+
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: { user: undefined } },
       });
@@ -437,17 +427,17 @@ describe("useUserStore", () => {
         user: { id: "user-123", email: "test@example.com" },
       };
 
-      const mockQuery = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: null, error: null }),
-        insert: vi.fn().mockReturnThis(),
-      };
+      const { mockSupabase, mockQuery } = getMockSupabase();
 
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: mockSession },
       });
-      mockSupabase.from.mockReturnValue(mockQuery);
+      mockQuery.single.mockResolvedValue({ data: null, error: null });
+      mockQuery.insert.mockReturnValue(mockQuery);
+      mockQuery.select.mockResolvedValue({
+        data: [{ id: "user-123" }],
+        error: null,
+      });
 
       await store.initializeUser();
 
@@ -479,16 +469,13 @@ describe("useUserStore", () => {
           user_metadata: { full_name: "Test User" },
         },
       };
-      const mockQuery = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: mockUser, error: null }),
-      };
+
+      const { mockSupabase, mockQuery } = getMockSupabase();
 
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: mockSession },
       });
-      mockSupabase.from.mockReturnValue(mockQuery);
+      mockQuery.single.mockResolvedValue({ data: mockUser, error: null });
 
       await store.initializeUser();
 
@@ -517,6 +504,8 @@ describe("useUserStore", () => {
       store.setUser(mockUser);
 
       // Page refresh but session expired
+      const { mockSupabase } = getMockSupabase();
+
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
       });

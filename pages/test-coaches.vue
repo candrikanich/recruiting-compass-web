@@ -54,7 +54,11 @@
 
       <div v-if="coaches.length > 0" class="space-y-4">
         <h2 class="text-xl font-bold">Coaches ({{ coaches.length }})</h2>
-        <div v-for="coach in coaches" :key="coach.id" class="bg-white p-4 rounded shadow">
+        <div
+          v-for="coach in coaches"
+          :key="coach.id"
+          class="bg-white p-4 rounded shadow"
+        >
           <h3 class="font-bold">{{ coach.firstName }} {{ coach.lastName }}</h3>
           <p class="text-sm text-gray-600">{{ coach.role }}</p>
           <button
@@ -71,28 +75,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from "vue";
 
-const showForm = ref(false)
-const coaches = ref<any[]>([])
+const showForm = ref(false);
+const coaches = ref<any[]>([]);
 const form = ref({
-  role: '',
-  firstName: '',
-  lastName: '',
-})
+  role: "",
+  firstName: "",
+  lastName: "",
+});
 
 const toggleForm = () => {
-  showForm.value = !showForm.value
-}
+  showForm.value = !showForm.value;
+};
 
 const onFormChange = () => {
   // Form changed
-}
+};
 
 const addCoach = () => {
   if (!form.value.role || !form.value.firstName || !form.value.lastName) {
-    alert('Fill all fields')
-    return
+    alert("Fill all fields");
+    return;
   }
 
   coaches.value.push({
@@ -100,13 +104,13 @@ const addCoach = () => {
     role: form.value.role,
     firstName: form.value.firstName,
     lastName: form.value.lastName,
-  })
+  });
 
-  form.value = { role: '', firstName: '', lastName: '' }
-  showForm.value = false
-}
+  form.value = { role: "", firstName: "", lastName: "" };
+  showForm.value = false;
+};
 
 const deleteCoach = (id: number) => {
-  coaches.value = coaches.value.filter(c => c.id !== id)
-}
+  coaches.value = coaches.value.filter((c) => c.id !== id);
+};
 </script>

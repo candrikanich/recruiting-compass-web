@@ -5,14 +5,17 @@ This directory contains a comprehensive build performance analysis and optimizat
 ## Documents Provided
 
 ### 1. **BUILD_ANALYSIS.md** (Start here)
+
 **Duration:** 5-10 minutes to read
-**Content:** 
+**Content:**
+
 - Executive summary of build performance issues
 - Current state metrics and bottlenecks
 - 12 prioritized recommendations organized by impact tier
 - Risk assessment and success criteria
 
-**Key Finding:** 
+**Key Finding:**
+
 - CSS payload can be reduced 50-60% (~66 KB → 20-25 KB gzipped)
 - Build time can be reduced 25-35% with caching (~45 sec → 30-35 sec warm)
 - Bundle size can be reduced 15-20% with code splitting
@@ -20,14 +23,17 @@ This directory contains a comprehensive build performance analysis and optimizat
 ---
 
 ### 2. **BUILD_IMPLEMENTATION_GUIDE.md** (Step-by-step)
+
 **Duration:** 10-15 minutes to skim; 1-2 hours to implement
 **Content:**
+
 - Detailed step-by-step implementation for each optimization
 - Copy-paste ready configurations
 - Measurement protocols for each change
 - Troubleshooting and rollback strategies
 
 **Structure:**
+
 1. TailwindCSS Optimization (biggest quick win)
 2. Vite Caching Implementation
 3. Code Splitting for Heavy Dependencies
@@ -42,8 +48,10 @@ This directory contains a comprehensive build performance analysis and optimizat
 ---
 
 ### 3. **BUILD_QUICK_REFERENCE.md** (Cheat sheet)
+
 **Duration:** 2-3 minutes to reference
 **Content:**
+
 - Problem summary in table format
 - Top 5 optimizations with effort estimates
 - Implementation order by week
@@ -54,8 +62,10 @@ This directory contains a comprehensive build performance analysis and optimizat
 ---
 
 ### 4. **BUILD_CODE_SNIPPETS.md** (Copy-paste ready)
+
 **Duration:** Use as reference during implementation
 **Content:**
+
 - 12 complete, ready-to-use code examples
 - Updated configuration files
 - Component examples for lazy loading
@@ -77,12 +87,14 @@ If you only have 15 minutes:
 ## Recommended Reading Order
 
 For Implementation Team:
+
 1. BUILD_QUICK_REFERENCE.md (overview)
 2. BUILD_ANALYSIS.md (understand problems)
 3. BUILD_IMPLEMENTATION_GUIDE.md (detailed steps)
 4. BUILD_CODE_SNIPPETS.md (during implementation)
 
 For Code Review:
+
 1. BUILD_ANALYSIS.md (understand rationale)
 2. BUILD_CODE_SNIPPETS.md (verify changes)
 3. BUILD_QUICK_REFERENCE.md (success criteria)
@@ -108,30 +120,35 @@ Before implementation, clarify:
 ## Expected Outcomes (Post-Optimization)
 
 ### CSS Optimization
+
 - **Before:** 66 KB entry CSS (10.73 KB gzipped)
 - **After:** 20-25 KB entry CSS (5-7 KB gzipped)
 - **Improvement:** 50-60% reduction
 - **Effort:** 1-2 hours
 
 ### Build Caching
+
 - **Before:** 45-50 sec (every build)
 - **After:** 30-35 sec (warm cache)
 - **Improvement:** 25-35% reduction on subsequent builds
 - **Effort:** 2-3 hours
 
 ### Code Splitting
+
 - **Before:** 406 KB largest chunk (includes Chart.js + jspdf)
 - **After:** 280-320 KB (chart.js deferred to separate chunk)
 - **Improvement:** 15-20% bundle reduction
 - **Effort:** 3-4 hours
 
 ### Test Optimization
+
 - **Before:** Tests run with 2 workers locally
 - **After:** Tests run with 8 workers locally
 - **Improvement:** 30-40% faster local test runs
 - **Effort:** 1-2 hours
 
 ### Total Time Investment
+
 - **Quick Wins (Week 1):** 6-8 hours → 50-60% CSS, 25-35% builds
 - **Consolidation (Week 2):** 3-4 hours → additional 5-10% gains
 - **Architecture (Week 3+):** 2-3 hours → monitoring & sustainability
@@ -141,6 +158,7 @@ Before implementation, clarify:
 ## Implementation Timeline
 
 ### **Week 1: Quick Wins (6-8 hours)**
+
 - Monday-Tuesday: Optimize TailwindCSS (1-2 hours)
 - Tuesday-Wednesday: Implement Vite caching (2-3 hours)
 - Wednesday-Thursday: Code-split Chart.js, PDF libs (3-4 hours)
@@ -149,6 +167,7 @@ Before implementation, clarify:
 **Expected Result:** 50-60% CSS reduction, 25-35% build speedup
 
 ### **Week 2: Consolidation (3-4 hours)**
+
 - Monday: Consolidate CSS files (1 hour)
 - Tuesday: Audit dependencies (1-2 hours)
 - Wednesday: Setup image optimization (1 hour)
@@ -157,6 +176,7 @@ Before implementation, clarify:
 **Expected Result:** Additional 5-10% savings, clearer dependency tree
 
 ### **Week 3+: Long-term Architecture (2-3 hours)**
+
 - Component refactoring for better splitting
 - E2E browser selection optimization
 - Build performance monitoring & documentation
@@ -167,21 +187,22 @@ Before implementation, clarify:
 
 After completing all recommendations, you should achieve:
 
-| Metric | Target | Success |
-|--------|--------|---------|
-| Entry CSS (gzipped) | 5-7 KB | ✓ 50-60% improvement |
-| Cold Build Time | 45-50 sec | ✓ Acceptable |
-| Warm Build Time | 30-35 sec | ✓ 25-35% improvement |
-| Client Bundle | 2.4-2.6 MB | ✓ 15-20% improvement |
-| Largest JS Chunk | 280-320 KB | ✓ 20-25% improvement |
-| Test Run Speed | 30-40% faster | ✓ Local 8 workers |
-| E2E Test Speed | 66% faster | ✓ Chromium only locally |
+| Metric              | Target        | Success                 |
+| ------------------- | ------------- | ----------------------- |
+| Entry CSS (gzipped) | 5-7 KB        | ✓ 50-60% improvement    |
+| Cold Build Time     | 45-50 sec     | ✓ Acceptable            |
+| Warm Build Time     | 30-35 sec     | ✓ 25-35% improvement    |
+| Client Bundle       | 2.4-2.6 MB    | ✓ 15-20% improvement    |
+| Largest JS Chunk    | 280-320 KB    | ✓ 20-25% improvement    |
+| Test Run Speed      | 30-40% faster | ✓ Local 8 workers       |
+| E2E Test Speed      | 66% faster    | ✓ Chromium only locally |
 
 ---
 
 ## Risk Mitigation
 
 ### Testing Strategy
+
 - All optimizations tested locally before committing
 - Full test suite (unit + E2E) passes before merging
 - Browser console checked for errors
@@ -189,6 +210,7 @@ After completing all recommendations, you should achieve:
 - ESLint linting passes
 
 ### Rollback Plan
+
 ```bash
 git checkout -- .        # Revert changes
 rm -rf .nuxt .output .vite
@@ -197,6 +219,7 @@ npm run test            # Verify tests pass
 ```
 
 ### Validation Protocol
+
 1. Clean build: `npm run build:clean`
 2. Measure baseline: `npm run perf:measure`
 3. Implement one optimization
@@ -226,17 +249,17 @@ npm run perf:compare
 
 ## Key Files Modified During Implementation
 
-| File | Change | Purpose |
-|------|--------|---------|
-| `nuxt.config.ts` | Add vite.cacheDir, optimizeDeps | Enable Vite caching |
-| `tailwind.config.js` | Verify content paths, add safelist | Optimize CSS output |
-| `netlify.toml` | Create with build cache config | Cache in CI/CD |
-| `vitest.config.ts` | Glob patterns, conditional workers | Speed up tests |
-| `playwright.config.ts` | Conditional browser selection | Skip Firefox/WebKit locally |
-| `package.json` | Add perf scripts | Measurement commands |
-| `assets/css/main.css` | Consolidate theme.css, transitions.css | Single CSS entry |
-| Composables | Add lazy imports for chart.js | Reduce bundle |
-| Components | Add defineAsyncComponent for heavy features | Lazy-load on demand |
+| File                   | Change                                      | Purpose                     |
+| ---------------------- | ------------------------------------------- | --------------------------- |
+| `nuxt.config.ts`       | Add vite.cacheDir, optimizeDeps             | Enable Vite caching         |
+| `tailwind.config.js`   | Verify content paths, add safelist          | Optimize CSS output         |
+| `netlify.toml`         | Create with build cache config              | Cache in CI/CD              |
+| `vitest.config.ts`     | Glob patterns, conditional workers          | Speed up tests              |
+| `playwright.config.ts` | Conditional browser selection               | Skip Firefox/WebKit locally |
+| `package.json`         | Add perf scripts                            | Measurement commands        |
+| `assets/css/main.css`  | Consolidate theme.css, transitions.css      | Single CSS entry            |
+| Composables            | Add lazy imports for chart.js               | Reduce bundle               |
+| Components             | Add defineAsyncComponent for heavy features | Lazy-load on demand         |
 
 ---
 
@@ -270,13 +293,13 @@ A: Tier 1 & 2 are strongly recommended. Tier 3 is optional long-term improvement
 
 ## Document Summary
 
-| Document | Purpose | Audience | Read Time |
-|----------|---------|----------|-----------|
-| BUILD_ANALYSIS.md | Problem analysis & recommendations | Stakeholders, Tech Leads | 10-15 min |
-| BUILD_IMPLEMENTATION_GUIDE.md | Step-by-step implementation | Developers | 1-2 hours |
-| BUILD_QUICK_REFERENCE.md | Quick lookup & checklists | All | 3-5 min |
-| BUILD_CODE_SNIPPETS.md | Copy-paste code examples | Developers | Reference only |
-| BUILD_OPTIMIZATION_README.md | This file (overview) | All | 5 min |
+| Document                      | Purpose                            | Audience                 | Read Time      |
+| ----------------------------- | ---------------------------------- | ------------------------ | -------------- |
+| BUILD_ANALYSIS.md             | Problem analysis & recommendations | Stakeholders, Tech Leads | 10-15 min      |
+| BUILD_IMPLEMENTATION_GUIDE.md | Step-by-step implementation        | Developers               | 1-2 hours      |
+| BUILD_QUICK_REFERENCE.md      | Quick lookup & checklists          | All                      | 3-5 min        |
+| BUILD_CODE_SNIPPETS.md        | Copy-paste code examples           | Developers               | Reference only |
+| BUILD_OPTIMIZATION_README.md  | This file (overview)               | All                      | 5 min          |
 
 ---
 
@@ -320,6 +343,7 @@ This optimization effort is successful when:
 **Author's Notes:**
 
 This analysis was performed on January 20, 2026 using:
+
 - Nuxt 3.20.2 with Vite 7.3.1
 - 1,936 modules analyzed
 - 107 components, 59 composables

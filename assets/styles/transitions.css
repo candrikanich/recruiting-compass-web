@@ -40,7 +40,9 @@
 /* Slide down transitions (modals, dropdowns) */
 .slide-down-enter-active,
 .slide-down-leave-active {
-  transition: transform 300ms ease-out, opacity 300ms ease-out;
+  transition:
+    transform 300ms ease-out,
+    opacity 300ms ease-out;
 }
 
 .slide-down-enter-from {
@@ -56,7 +58,9 @@
 /* Slide up transitions (modals closing) */
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: transform 300ms ease-out, opacity 300ms ease-out;
+  transition:
+    transform 300ms ease-out,
+    opacity 300ms ease-out;
 }
 
 .slide-up-enter-from {
@@ -72,7 +76,9 @@
 /* Scale transitions (cards, buttons) */
 .scale-enter-active,
 .scale-leave-active {
-  transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
+  transition:
+    transform 300ms ease-in-out,
+    opacity 300ms ease-in-out;
 }
 
 .scale-enter-from,
@@ -98,7 +104,8 @@
 
 /* Bounce animation */
 @keyframes bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -112,7 +119,8 @@
 
 /* Pulse animation (for loading states) */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -142,7 +150,10 @@
 
 /* Smooth color transitions */
 .color-transition {
-  transition: color 300ms ease-in-out, background-color 300ms ease-in-out, border-color 300ms ease-in-out;
+  transition:
+    color 300ms ease-in-out,
+    background-color 300ms ease-in-out,
+    border-color 300ms ease-in-out;
 }
 
 /* Shadow transitions */
@@ -168,7 +179,9 @@
 
 .modal-content-enter-active,
 .modal-content-leave-active {
-  transition: transform 300ms ease-out, opacity 300ms ease-out;
+  transition:
+    transform 300ms ease-out,
+    opacity 300ms ease-out;
 }
 
 .modal-content-enter-from {
@@ -199,7 +212,10 @@ a {
 input,
 textarea,
 select {
-  transition: border-color 200ms ease-in-out, box-shadow 200ms ease-in-out, background-color 200ms ease-in-out;
+  transition:
+    border-color 200ms ease-in-out,
+    box-shadow 200ms ease-in-out,
+    background-color 200ms ease-in-out;
 }
 
 /* Smooth tooltip transitions */
@@ -216,7 +232,9 @@ select {
 /* Drawer/sidebar transitions */
 .drawer-enter-active,
 .drawer-leave-active {
-  transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
+  transition:
+    transform 300ms ease-in-out,
+    opacity 300ms ease-in-out;
 }
 
 .drawer-enter-from {

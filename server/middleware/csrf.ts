@@ -1,5 +1,5 @@
-import { requireCsrfToken } from '../utils/csrf'
-import type { H3Event } from 'h3'
+import { requireCsrfToken } from "../utils/csrf";
+import type { H3Event } from "h3";
 
 /**
  * CSRF protection middleware
@@ -17,31 +17,31 @@ import type { H3Event } from 'h3'
  * })
  */
 export default defineEventHandler((event) => {
-  const method = event.node.req.method
-  const path = event.path
+  const method = event.node.req.method;
+  const path = event.path;
 
   // Only validate CSRF for state-changing methods
-  const stateChangingMethods = ['POST', 'PUT', 'PATCH', 'DELETE']
-  if (!stateChangingMethods.includes(method || '')) {
-    return // GET, HEAD, OPTIONS, etc. don't need CSRF protection
+  const stateChangingMethods = ["POST", "PUT", "PATCH", "DELETE"];
+  if (!stateChangingMethods.includes(method || "")) {
+    return; // GET, HEAD, OPTIONS, etc. don't need CSRF protection
   }
 
   // Skip CSRF for auth endpoints (they use other protections)
   // and for endpoints that don't require authentication
-  if (path?.startsWith('/api/auth')) {
-    return
+  if (path?.startsWith("/api/auth")) {
+    return;
   }
 
   // Skip CSRF for public endpoints
   const publicEndpoints = [
-    '/api/csrf-token', // Token generation endpoint
-    '/api/health', // Health check
-  ]
+    "/api/csrf-token", // Token generation endpoint
+    "/api/health", // Health check
+  ];
 
-  if (publicEndpoints.some(endpoint => path?.startsWith(endpoint))) {
-    return
+  if (publicEndpoints.some((endpoint) => path?.startsWith(endpoint))) {
+    return;
   }
 
   // Validate CSRF token for protected endpoints
-  requireCsrfToken(event)
-})
+  requireCsrfToken(event);
+});

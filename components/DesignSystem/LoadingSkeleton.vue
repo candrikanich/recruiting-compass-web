@@ -4,10 +4,10 @@
 
 <script setup lang="ts">
 interface Props {
-  className?: string
+  className?: string;
 }
 
 withDefaults(defineProps<Props>(), {
-  className: 'h-4 w-full',
-})
+  className: "h-4 w-full",
+});
 </script>

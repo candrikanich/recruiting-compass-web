@@ -1,9 +1,9 @@
 /**
  * Supabase Query Service Layer
- * 
+ *
  * Provides a unified, type-safe abstraction for Supabase queries across composables.
  * Eliminates duplicate error handling, logging, and query patterns.
- * 
+ *
  * Goals:
  * - DRY: Single source of truth for Supabase error handling
  * - Type-safe: Full TypeScript support for queries and results
@@ -11,16 +11,16 @@
  * - Testable: Easy to mock for unit tests
  */
 
-import { getErrorMessage } from './errorHandling'
-import { useSupabase } from '~/composables/useSupabase'
+import { getErrorMessage } from "./errorHandling";
+import { useSupabase } from "~/composables/useSupabase";
 
 /**
  * Standard response type for all queries
  * Follows Go-style error handling pattern
  */
 export interface QueryResult<T> {
-  data: T | null
-  error: Error | null
+  data: T | null;
+  error: Error | null;
 }
 
 /**
@@ -28,23 +28,23 @@ export interface QueryResult<T> {
  */
 export interface QueryContext {
   /** Name of the composable or context making the query */
-  context?: string
+  context?: string;
   /** Additional metadata for debugging */
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>;
   /** Whether to log the query */
-  silent?: boolean
+  silent?: boolean;
 }
 
 /**
  * Supabase query builder type (for type inference)
  */
 export type SupabaseQueryBuilder = ReturnType<
-  ReturnType<typeof useSupabase>['from']
->
+  ReturnType<typeof useSupabase>["from"]
+>;
 
 /**
  * Generic select query with flexible filtering
- * 
+ *
  * @example
  * const { data, error } = await querySelect<Coach>(
  *   'coaches',
@@ -59,21 +59,21 @@ export type SupabaseQueryBuilder = ReturnType<
 export async function querySelect<T>(
   table: string,
   options?: {
-    select?: string
-    filters?: Record<string, unknown>
-    order?: { column: string; ascending?: boolean }
-    limit?: number
+    select?: string;
+    filters?: Record<string, unknown>;
+    order?: { column: string; ascending?: boolean };
+    limit?: number;
   },
-  ctx?: QueryContext
+  ctx?: QueryContext,
 ): Promise<QueryResult<T[]>> {
   try {
-    const supabase = useSupabase()
-    let query = supabase.from(table).select(options?.select || '*')
+    const supabase = useSupabase();
+    let query = supabase.from(table).select(options?.select || "*");
 
     // Apply filters
     if (options?.filters) {
       for (const [key, value] of Object.entries(options.filters)) {
-        query = query.eq(key, value)
+        query = query.eq(key, value);
       }
     }
 
@@ -81,44 +81,44 @@ export async function querySelect<T>(
     if (options?.order) {
       query = query.order(options.order.column, {
         ascending: options.order.ascending !== false,
-      })
+      });
     }
 
     // Apply limit
     if (options?.limit) {
-      query = query.limit(options.limit)
+      query = query.limit(options.limit);
     }
 
-    const { data, error } = await query
+    const { data, error } = await query;
 
     if (error) {
-      throw new Error(`[${table}] ${error.message}`)
+      throw new Error(`[${table}] ${error.message}`);
     }
 
     if (!ctx?.silent) {
       console.log(
-        `[querySelect] ${table}${ctx?.context ? ` (${ctx.context})` : ''}`,
-        `returned ${Array.isArray(data) ? data.length : 0} records`
-      )
+        `[querySelect] ${table}${ctx?.context ? ` (${ctx.context})` : ""}`,
+        `returned ${Array.isArray(data) ? data.length : 0} records`,
+      );
     }
 
-    return { data: data as T[], error: null }
+    return { data: data as T[], error: null };
   } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err))
+    const error = err instanceof Error ? err : new Error(String(err));
     if (!ctx?.silent) {
       console.error(
-        `[querySelect] ${table}${ctx?.context ? ` (${ctx.context})` : ''}:`,
+        `[querySelect] ${table}${ctx?.context ? ` (${ctx.context})` : ""}:`,
         error.message,
-        ctx?.metadata
-      )
+        ctx?.metadata,
+      );
     }
-    return { data: null, error }
+    return { data: null, error };
   }
 }
 
 /**
  * Get a single record by ID or first matching filter
- * 
+ *
  * @example
  * const { data, error } = await querySingle<Coach>(
  *   'coaches',
@@ -129,49 +129,49 @@ export async function querySelect<T>(
 export async function querySingle<T>(
   table: string,
   filters: Record<string, unknown>,
-  ctx?: QueryContext
+  ctx?: QueryContext,
 ): Promise<QueryResult<T>> {
   try {
-    const supabase = useSupabase()
-    let query = supabase.from(table).select('*')
+    const supabase = useSupabase();
+    let query = supabase.from(table).select("*");
 
     // Apply filters
     for (const [key, value] of Object.entries(filters)) {
-      query = query.eq(key, value)
+      query = query.eq(key, value);
     }
 
-    const { data, error } = await query.single()
+    const { data, error } = await query.single();
 
     if (error) {
       // 406 = no rows, 409 = multiple rows
-      if (error.code === 'PGRST116') {
-        throw new Error(`No record found in ${table}`)
+      if (error.code === "PGRST116") {
+        throw new Error(`No record found in ${table}`);
       }
-      throw new Error(`[${table}] ${error.message}`)
+      throw new Error(`[${table}] ${error.message}`);
     }
 
     if (!ctx?.silent) {
       console.log(
-        `[querySingle] ${table}${ctx?.context ? ` (${ctx.context})` : ''} found`
-      )
+        `[querySingle] ${table}${ctx?.context ? ` (${ctx.context})` : ""} found`,
+      );
     }
 
-    return { data: data as T, error: null }
+    return { data: data as T, error: null };
   } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err))
+    const error = err instanceof Error ? err : new Error(String(err));
     if (!ctx?.silent) {
       console.error(
-        `[querySingle] ${table}${ctx?.context ? ` (${ctx.context})` : ''}:`,
-        error.message
-      )
+        `[querySingle] ${table}${ctx?.context ? ` (${ctx.context})` : ""}:`,
+        error.message,
+      );
     }
-    return { data: null, error }
+    return { data: null, error };
   }
 }
 
 /**
  * Insert one or more records
- * 
+ *
  * @example
  * const { data, error } = await queryInsert<Coach>(
  *   'coaches',
@@ -182,47 +182,44 @@ export async function querySingle<T>(
 export async function queryInsert<T>(
   table: string,
   records: Record<string, unknown> | Record<string, unknown>[],
-  ctx?: QueryContext
+  ctx?: QueryContext,
 ): Promise<QueryResult<T | T[]>> {
   try {
-    const supabase = useSupabase()
-    const payload = Array.isArray(records) ? records : [records]
+    const supabase = useSupabase();
+    const payload = Array.isArray(records) ? records : [records];
 
-    const { data, error } = await supabase
-      .from(table)
-      .insert(payload)
-      .select()
+    const { data, error } = await supabase.from(table).insert(payload).select();
 
     if (error) {
-      throw new Error(`[${table}] ${error.message}`)
+      throw new Error(`[${table}] ${error.message}`);
     }
 
     if (!ctx?.silent) {
       console.log(
-        `[queryInsert] ${table}${ctx?.context ? ` (${ctx.context})` : ''}`,
-        `inserted ${Array.isArray(records) ? records.length : 1} record(s)`
-      )
+        `[queryInsert] ${table}${ctx?.context ? ` (${ctx.context})` : ""}`,
+        `inserted ${Array.isArray(records) ? records.length : 1} record(s)`,
+      );
     }
 
     return {
       data: (Array.isArray(records) ? data : data?.[0]) as T | T[],
       error: null,
-    }
+    };
   } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err))
+    const error = err instanceof Error ? err : new Error(String(err));
     if (!ctx?.silent) {
       console.error(
-        `[queryInsert] ${table}${ctx?.context ? ` (${ctx.context})` : ''}:`,
-        error.message
-      )
+        `[queryInsert] ${table}${ctx?.context ? ` (${ctx.context})` : ""}:`,
+        error.message,
+      );
     }
-    return { data: null, error }
+    return { data: null, error };
   }
 }
 
 /**
  * Update records matching filters
- * 
+ *
  * @example
  * const { data, error } = await queryUpdate<Coach>(
  *   'coaches',
@@ -235,46 +232,46 @@ export async function queryUpdate<T>(
   table: string,
   updates: Record<string, unknown>,
   filters: Record<string, unknown>,
-  ctx?: QueryContext
+  ctx?: QueryContext,
 ): Promise<QueryResult<T[]>> {
   try {
-    const supabase = useSupabase()
-    let query = supabase.from(table).update(updates)
+    const supabase = useSupabase();
+    let query = supabase.from(table).update(updates);
 
     // Apply filters
     for (const [key, value] of Object.entries(filters)) {
-      query = query.eq(key, value)
+      query = query.eq(key, value);
     }
 
-    const { data, error } = await query.select()
+    const { data, error } = await query.select();
 
     if (error) {
-      throw new Error(`[${table}] ${error.message}`)
+      throw new Error(`[${table}] ${error.message}`);
     }
 
     if (!ctx?.silent) {
       console.log(
-        `[queryUpdate] ${table}${ctx?.context ? ` (${ctx.context})` : ''}`,
-        `updated ${Array.isArray(data) ? data.length : 0} record(s)`
-      )
+        `[queryUpdate] ${table}${ctx?.context ? ` (${ctx.context})` : ""}`,
+        `updated ${Array.isArray(data) ? data.length : 0} record(s)`,
+      );
     }
 
-    return { data: data as T[], error: null }
+    return { data: data as T[], error: null };
   } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err))
+    const error = err instanceof Error ? err : new Error(String(err));
     if (!ctx?.silent) {
       console.error(
-        `[queryUpdate] ${table}${ctx?.context ? ` (${ctx.context})` : ''}:`,
-        error.message
-      )
+        `[queryUpdate] ${table}${ctx?.context ? ` (${ctx.context})` : ""}:`,
+        error.message,
+      );
     }
-    return { data: null, error }
+    return { data: null, error };
   }
 }
 
 /**
  * Delete records matching filters
- * 
+ *
  * @example
  * const { error } = await queryDelete(
  *   'coaches',
@@ -285,46 +282,46 @@ export async function queryUpdate<T>(
 export async function queryDelete(
   table: string,
   filters: Record<string, unknown>,
-  ctx?: QueryContext
+  ctx?: QueryContext,
 ): Promise<QueryResult<null>> {
   try {
-    const supabase = useSupabase()
-    let query = supabase.from(table).delete()
+    const supabase = useSupabase();
+    let query = supabase.from(table).delete();
 
     // Apply filters
     for (const [key, value] of Object.entries(filters)) {
-      query = query.eq(key, value)
+      query = query.eq(key, value);
     }
 
-    const { error } = await query
+    const { error } = await query;
 
     if (error) {
-      throw new Error(`[${table}] ${error.message}`)
+      throw new Error(`[${table}] ${error.message}`);
     }
 
     if (!ctx?.silent) {
       console.log(
-        `[queryDelete] ${table}${ctx?.context ? ` (${ctx.context})` : ''}`,
-        'deleted'
-      )
+        `[queryDelete] ${table}${ctx?.context ? ` (${ctx.context})` : ""}`,
+        "deleted",
+      );
     }
 
-    return { data: null, error: null }
+    return { data: null, error: null };
   } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err))
+    const error = err instanceof Error ? err : new Error(String(err));
     if (!ctx?.silent) {
       console.error(
-        `[queryDelete] ${table}${ctx?.context ? ` (${ctx.context})` : ''}:`,
-        error.message
-      )
+        `[queryDelete] ${table}${ctx?.context ? ` (${ctx.context})` : ""}:`,
+        error.message,
+      );
     }
-    return { data: null, error }
+    return { data: null, error };
   }
 }
 
 /**
  * Helper to extract error message from query result
- * 
+ *
  * @example
  * const { data, error } = await querySelect(...)
  * if (error) {
@@ -334,14 +331,14 @@ export async function queryDelete(
  */
 export function getQueryErrorMessage(
   error: Error,
-  defaultMessage = 'Operation failed'
+  defaultMessage = "Operation failed",
 ): string {
-  return getErrorMessage(error, defaultMessage)
+  return getErrorMessage(error, defaultMessage);
 }
 
 /**
  * Check if query was successful
- * 
+ *
  * @example
  * const result = await querySelect(...)
  * if (isQuerySuccess(result)) {
@@ -349,16 +346,16 @@ export function getQueryErrorMessage(
  * }
  */
 export function isQuerySuccess<T>(
-  result: QueryResult<T>
+  result: QueryResult<T>,
 ): result is { data: T; error: null } {
-  return result.error === null && result.data !== null
+  return result.error === null && result.data !== null;
 }
 
 /**
  * Check if query failed
  */
 export function isQueryError<T>(
-  result: QueryResult<T>
+  result: QueryResult<T>,
 ): result is { data: null; error: Error } {
-  return result.error !== null
+  return result.error !== null;
 }

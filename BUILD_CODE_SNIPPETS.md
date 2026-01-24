@@ -23,13 +23,16 @@ export default {
   // Add if using dynamic classes
   safelist: [
     {
-      pattern: /bg-(blue|red|green|yellow|purple|gray)-(50|100|200|300|400|500|600|700|800|900)/,
+      pattern:
+        /bg-(blue|red|green|yellow|purple|gray)-(50|100|200|300|400|500|600|700|800|900)/,
     },
     {
-      pattern: /text-(blue|red|green|yellow|purple|gray)-(50|100|200|300|400|500|600|700|800|900)/,
+      pattern:
+        /text-(blue|red|green|yellow|purple|gray)-(50|100|200|300|400|500|600|700|800|900)/,
     },
     {
-      pattern: /border-(blue|red|green|yellow|purple|gray)-(50|100|200|300|400|500|600|700|800|900)/,
+      pattern:
+        /border-(blue|red|green|yellow|purple|gray)-(50|100|200|300|400|500|600|700|800|900)/,
     },
   ],
 
@@ -59,27 +62,27 @@ export default defineNuxtConfig({
   // NEW: Vite caching configuration
   vite: {
     // Cache directory for faster builds
-    cacheDir: '.vite',
+    cacheDir: ".vite",
 
     // Pre-bundle frequently used dependencies
     optimizeDeps: {
       include: [
-        'vue',
-        '@pinia/nuxt',
-        '@supabase/supabase-js',
-        'chart.js',
-        'fuse.js',
-        'leaflet',
-        '@vueuse/core',
-        'date-fns',
+        "vue",
+        "@pinia/nuxt",
+        "@supabase/supabase-js",
+        "chart.js",
+        "fuse.js",
+        "leaflet",
+        "@vueuse/core",
+        "date-fns",
       ],
       exclude: [
         // These are heavy or change often; exclude for rebunding on change
-        'html2canvas',
-        'jspdf',
-        'jspdf-autotable',
-      ]
-    }
+        "html2canvas",
+        "jspdf",
+        "jspdf-autotable",
+      ],
+    },
   },
 
   nitro: {
@@ -165,24 +168,28 @@ export default defineNuxtConfig({
 ### Before: composables/useCoachAnalytics.ts (EAGER)
 
 ```typescript
-import Chart from 'chart.js/auto'
-import ChartjsPluginAnnotation from 'chartjs-plugin-annotation'
+import Chart from "chart.js/auto";
+import ChartjsPluginAnnotation from "chartjs-plugin-annotation";
 
 export const useCoachAnalytics = () => {
   const createChart = (canvasRef: HTMLCanvasElement) => {
-    Chart.register(ChartjsPluginAnnotation)
+    Chart.register(ChartjsPluginAnnotation);
 
     const chart = new Chart(canvasRef, {
-      type: 'line',
-      data: { /* ... */ },
-      options: { /* ... */ }
-    })
+      type: "line",
+      data: {
+        /* ... */
+      },
+      options: {
+        /* ... */
+      },
+    });
 
-    return chart
-  }
+    return chart;
+  };
 
-  return { createChart }
-}
+  return { createChart };
+};
 ```
 
 ### After: composables/useCoachAnalytics.ts (LAZY)
@@ -191,22 +198,26 @@ export const useCoachAnalytics = () => {
 export const useCoachAnalytics = () => {
   const createChart = async (canvasRef: HTMLCanvasElement) => {
     // Import only when needed
-    const { default: Chart } = await import('chart.js/auto')
-    const { default: Annotation } = await import('chartjs-plugin-annotation')
+    const { default: Chart } = await import("chart.js/auto");
+    const { default: Annotation } = await import("chartjs-plugin-annotation");
 
-    Chart.register(Annotation)
+    Chart.register(Annotation);
 
     const chart = new Chart(canvasRef, {
-      type: 'line',
-      data: { /* ... */ },
-      options: { /* ... */ }
-    })
+      type: "line",
+      data: {
+        /* ... */
+      },
+      options: {
+        /* ... */
+      },
+    });
 
-    return chart
-  }
+    return chart;
+  };
 
-  return { createChart }
-}
+  return { createChart };
+};
 ```
 
 ### Usage in Component
@@ -220,17 +231,17 @@ export const useCoachAnalytics = () => {
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useCoachAnalytics } from '~/composables/useCoachAnalytics'
+import { ref } from "vue";
+import { useCoachAnalytics } from "~/composables/useCoachAnalytics";
 
-const loaded = ref(false)
-const chartContainer = ref(null)
-const { createChart } = useCoachAnalytics()
+const loaded = ref(false);
+const chartContainer = ref(null);
+const { createChart } = useCoachAnalytics();
 
 const loadAnalytics = async () => {
-  const chart = await createChart(chartContainer.value)
-  loaded.value = true
-}
+  const chart = await createChart(chartContainer.value);
+  loaded.value = true;
+};
 </script>
 ```
 
@@ -246,15 +257,15 @@ const loadAnalytics = async () => {
 </template>
 
 <script setup>
-import { jsPDF } from 'jspdf'
-import html2canvas from 'html2canvas'
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
 const generatePDF = async () => {
-  const canvas = await html2canvas(document.body)
-  const pdf = new jsPDF()
-  pdf.addImage(canvas.toDataURL(), 'PNG', 0, 0)
-  pdf.save('report.pdf')
-}
+  const canvas = await html2canvas(document.body);
+  const pdf = new jsPDF();
+  pdf.addImage(canvas.toDataURL(), "PNG", 0, 0);
+  pdf.save("report.pdf");
+};
 </script>
 ```
 
@@ -270,14 +281,14 @@ const generatePDF = async () => {
 </template>
 
 <script setup>
-import { ref, defineAsyncComponent } from 'vue'
+import { ref, defineAsyncComponent } from "vue";
 
-const showExport = ref(false)
+const showExport = ref(false);
 
 // Only load PDF libs when export modal is opened
-const ExportModalLazy = defineAsyncComponent(() =>
-  import('~/components/Reports/ExportModal.vue')
-)
+const ExportModalLazy = defineAsyncComponent(
+  () => import("~/components/Reports/ExportModal.vue"),
+);
 </script>
 ```
 
@@ -293,36 +304,36 @@ const ExportModalLazy = defineAsyncComponent(() =>
 </template>
 
 <script setup>
-const emit = defineEmits(['close'])
+const emit = defineEmits(["close"]);
 
 const generatePDF = async () => {
   // Lazy import only when user clicks
-  const { jsPDF } = await import('jspdf')
-  const html2canvas = (await import('html2canvas')).default
+  const { jsPDF } = await import("jspdf");
+  const html2canvas = (await import("html2canvas")).default;
 
-  const canvas = await html2canvas(document.body)
-  const pdf = new jsPDF()
-  pdf.addImage(canvas.toDataURL(), 'PNG', 0, 0)
-  pdf.save('report.pdf')
+  const canvas = await html2canvas(document.body);
+  const pdf = new jsPDF();
+  pdf.addImage(canvas.toDataURL(), "PNG", 0, 0);
+  pdf.save("report.pdf");
 
-  emit('close')
-}
+  emit("close");
+};
 
 const generateExcel = async () => {
   // Lazy import only when user clicks
-  const XLSX = (await import('xlsx')).default
+  const XLSX = (await import("xlsx")).default;
 
   const worksheet = XLSX.utils.json_to_sheet([
-    { name: 'John', email: 'john@example.com' },
-    { name: 'Jane', email: 'jane@example.com' }
-  ])
+    { name: "John", email: "john@example.com" },
+    { name: "Jane", email: "jane@example.com" },
+  ]);
 
-  const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Coaches')
-  XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' })
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Coaches");
+  XLSX.write(workbook, { bookType: "xlsx", type: "binary" });
 
-  emit('close')
-}
+  emit("close");
+};
 </script>
 ```
 
@@ -341,7 +352,7 @@ const generateExcel = async () => {
 </template>
 
 <script setup>
-import { LMap, LTileLayer, LMarker } from 'vue-leaflet'
+import { LMap, LTileLayer, LMarker } from "vue-leaflet";
 </script>
 ```
 
@@ -364,14 +375,14 @@ import { LMap, LTileLayer, LMarker } from 'vue-leaflet'
 </template>
 
 <script setup>
-import { ref, defineAsyncComponent } from 'vue'
+import { ref, defineAsyncComponent } from "vue";
 
-const showMap = ref(false)
+const showMap = ref(false);
 
 // Only load leaflet when map is requested
-const SchoolMapLazy = defineAsyncComponent(() =>
-  import('~/components/Schools/SchoolMap.vue')
-)
+const SchoolMapLazy = defineAsyncComponent(
+  () => import("~/components/Schools/SchoolMap.vue"),
+);
 </script>
 ```
 
@@ -398,10 +409,10 @@ const SchoolMapLazy = defineAsyncComponent(() =>
 </template>
 
 <script setup>
-import { LMap, LTileLayer, LMarker, LPopup } from 'vue-leaflet'
-import { useSchools } from '~/composables/useSchools'
+import { LMap, LTileLayer, LMarker, LPopup } from "vue-leaflet";
+import { useSchools } from "~/composables/useSchools";
 
-const { schools } = useSchools()
+const { schools } = useSchools();
 </script>
 
 <style scoped>
@@ -417,28 +428,20 @@ const { schools } = useSchools()
 ## 7. Updated vitest.config.ts
 
 ```typescript
-import { defineConfig } from 'vitest/config'
-import vue from '@vitejs/plugin-vue'
-import { fileURLToPath } from 'node:url'
+import { defineConfig } from "vitest/config";
+import vue from "@vitejs/plugin-vue";
+import { fileURLToPath } from "node:url";
 
 export default defineConfig({
   plugins: [vue()],
   test: {
     globals: true,
-    environment: 'happy-dom',
-    setupFiles: ['./tests/setup.ts'],
+    environment: "happy-dom",
+    setupFiles: ["./tests/setup.ts"],
 
     // Use glob patterns instead of explicit file list
-    include: [
-      'tests/unit/**/*.spec.ts',
-      'tests/integration/**/*.spec.ts'
-    ],
-    exclude: [
-      'node_modules/',
-      'dist/',
-      '.nuxt/',
-      'tests/e2e/**',
-    ],
+    include: ["tests/unit/**/*.spec.ts", "tests/integration/**/*.spec.ts"],
+    exclude: ["node_modules/", "dist/", ".nuxt/", "tests/e2e/**"],
 
     // Optimize based on environment
     // Local: use 8 workers, no isolation = fast
@@ -454,12 +457,14 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      '~': fileURLToPath(new URL('./', import.meta.url)),
-      '#app': fileURLToPath(new URL('./node_modules/nuxt/dist/app', import.meta.url)),
-      '#': fileURLToPath(new URL('./', import.meta.url)),
+      "~": fileURLToPath(new URL("./", import.meta.url)),
+      "#app": fileURLToPath(
+        new URL("./node_modules/nuxt/dist/app", import.meta.url),
+      ),
+      "#": fileURLToPath(new URL("./", import.meta.url)),
     },
   },
-})
+});
 ```
 
 ---
@@ -467,48 +472,50 @@ export default defineConfig({
 ## 8. Updated playwright.config.ts
 
 ```typescript
-import { defineConfig, devices } from '@playwright/test'
+import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: "./tests/e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: "html",
 
   use: {
-    baseURL: 'http://localhost:3003',
-    trace: 'on-first-retry',
+    baseURL: "http://localhost:3003",
+    trace: "on-first-retry",
   },
 
   projects: [
     // Always run Chromium
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
 
     // Only run Firefox/WebKit in CI (or with FULL_TESTS=1)
-    ...(process.env.CI || process.env.FULL_TESTS ? [
-      {
-        name: 'firefox',
-        use: { ...devices['Desktop Firefox'] }
-      },
-      {
-        name: 'webkit',
-        use: { ...devices['Desktop Safari'] }
-      }
-    ] : [])
+    ...(process.env.CI || process.env.FULL_TESTS
+      ? [
+          {
+            name: "firefox",
+            use: { ...devices["Desktop Firefox"] },
+          },
+          {
+            name: "webkit",
+            use: { ...devices["Desktop Safari"] },
+          },
+        ]
+      : []),
   ],
 
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3003',
+    command: "npm run dev",
+    url: "http://localhost:3003",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
-})
+});
 ```
 
 ---
@@ -606,6 +613,7 @@ body {
 ```
 
 ### Then delete these files:
+
 ```bash
 rm assets/styles/theme.css
 rm assets/styles/transitions.css
@@ -672,6 +680,7 @@ echo "════════════════════════�
 ```
 
 ### Make executable:
+
 ```bash
 chmod +x scripts/measure-build.sh
 ```
@@ -694,27 +703,23 @@ export default defineNuxtConfig({
   // Vite optimization and caching
   vite: {
     // Use filesystem cache for faster rebuilds
-    cacheDir: '.vite',
+    cacheDir: ".vite",
 
     // Pre-optimize dependencies
     optimizeDeps: {
       include: [
-        'vue',
-        '@pinia/nuxt',
-        '@supabase/supabase-js',
-        'chart.js',
-        'fuse.js',
-        'leaflet',
-        '@vueuse/core',
-        'date-fns',
-        'autoprefixer',
+        "vue",
+        "@pinia/nuxt",
+        "@supabase/supabase-js",
+        "chart.js",
+        "fuse.js",
+        "leaflet",
+        "@vueuse/core",
+        "date-fns",
+        "autoprefixer",
       ],
-      exclude: [
-        'html2canvas',
-        'jspdf',
-        'jspdf-autotable',
-      ]
-    }
+      exclude: ["html2canvas", "jspdf", "jspdf-autotable"],
+    },
   },
 
   nitro: {
@@ -753,6 +758,7 @@ Copy-paste ready checklist for tracking implementation:
 ## Build Optimization Implementation
 
 ### Phase 1: Quick Wins (Week 1)
+
 - [ ] Update `nuxt.config.ts` with Vite caching
 - [ ] Update `tailwind.config.js` with safelist
 - [ ] Create `netlify.toml` with build cache
@@ -761,6 +767,7 @@ Copy-paste ready checklist for tracking implementation:
 - [ ] Run `npm run perf:measure` and document baseline
 
 ### Phase 2: Consolidation (Week 2)
+
 - [ ] Create consolidated `assets/css/main.css`
 - [ ] Delete redundant CSS files
 - [ ] Update `vitest.config.ts` with glob patterns
@@ -768,6 +775,7 @@ Copy-paste ready checklist for tracking implementation:
 - [ ] Run `npm run perf:measure` and compare
 
 ### Phase 3: Architecture (Week 3+)
+
 - [ ] Create build measurement script (`scripts/measure-build.sh`)
 - [ ] Add perf scripts to package.json
 - [ ] Document CSS architecture guidelines
@@ -775,6 +783,7 @@ Copy-paste ready checklist for tracking implementation:
 - [ ] Optional: Image optimization setup
 
 ### Validation
+
 - [ ] All tests passing locally
 - [ ] All tests passing in CI
 - [ ] Bundle sizes improved
@@ -789,16 +798,15 @@ Copy-paste ready checklist for tracking implementation:
 
 **Q: My styles disappeared after CSS consolidation**
 A: Check that @import paths in main.css are relative paths, not absolute.
+
 ```css
 /* ✗ Wrong */
-@import 'theme.css'
-
-/* ✓ Correct */
-@import './theme.css'
+@import "theme.css" /* ✓ Correct */ @import "./theme.css";
 ```
 
 **Q: Lazy-loaded components show blank**
 A: Add Suspense with fallback:
+
 ```vue
 <Suspense>
   <template #default>
@@ -812,6 +820,7 @@ A: Add Suspense with fallback:
 
 **Q: Build not using Vite cache**
 A: Clear cache and rebuild:
+
 ```bash
 rm -rf .vite .nuxt .output
 npm run build
@@ -819,6 +828,7 @@ npm run build
 
 **Q: Tests running slowly**
 A: Verify config uses 8 workers locally:
+
 ```bash
 npm run test 2>&1 | grep -i worker
 # Should show: workers (8) or maxWorkers (8)

@@ -10,26 +10,34 @@
 ## Quick Navigation
 
 ### For New to This Testing Project
+
 **Start Here:** Read in this order
+
 1. `SCHOOL_TESTS_README.md` (15 min) - Quick overview
 2. `SCHOOL_TESTING_IMPLEMENTATION.md` (15 min) - What's delivered
 3. `SCHOOL_TESTING_PLAN.md` (30 min) - Full specifications
 
 ### For Implementing Tests
+
 **Reference Files:**
+
 1. `SCHOOL_TESTING_PLAN.md` - Specific test cases for each component
 2. `tests/unit/composables/useSchoolMatching.spec.ts` - Example patterns
 3. `tests/fixtures/schools.fixture.ts` - Mock data factories
 
 ### For Checking Progress
+
 **See:** `DELIVERABLES.md` section "Phase Breakdown"
+
 - Phase 1: Complete ✅
 - Phase 2: Ready (0 hours spent)
 - Phase 3: Ready (0 hours spent)
 - Phase 4: Ready (0 hours spent)
 
 ### For Quick Questions
+
 **See:** `SCHOOL_TESTS_README.md` sections:
+
 - "Common Testing Patterns" (how to test)
 - "Troubleshooting" (problem solving)
 - "Running Tests" (commands)
@@ -40,31 +48,34 @@
 
 ### Documentation (3 files, 1,817 lines)
 
-| File | Size | Purpose | Read Time |
-|------|------|---------|-----------|
-| **SCHOOL_TESTING_PLAN.md** | 830 lines | Complete test specification | 45 min |
-| **SCHOOL_TESTING_IMPLEMENTATION.md** | 419 lines | What's delivered & roadmap | 20 min |
-| **SCHOOL_TESTS_README.md** | 568 lines | Quick reference guide | 25 min |
+| File                                 | Size      | Purpose                     | Read Time |
+| ------------------------------------ | --------- | --------------------------- | --------- |
+| **SCHOOL_TESTING_PLAN.md**           | 830 lines | Complete test specification | 45 min    |
+| **SCHOOL_TESTING_IMPLEMENTATION.md** | 419 lines | What's delivered & roadmap  | 20 min    |
+| **SCHOOL_TESTS_README.md**           | 568 lines | Quick reference guide       | 25 min    |
 
 ### Test Code (2 files, 823 lines)
 
-| File | Size | Purpose | Tests |
-|------|------|---------|-------|
-| **tests/fixtures/schools.fixture.ts** | 282 lines | Mock data factories | 20+ |
-| **tests/unit/composables/useSchoolMatching.spec.ts** | 541 lines | Matching logic tests | 85 |
+| File                                                 | Size      | Purpose              | Tests |
+| ---------------------------------------------------- | --------- | -------------------- | ----- |
+| **tests/fixtures/schools.fixture.ts**                | 282 lines | Mock data factories  | 20+   |
+| **tests/unit/composables/useSchoolMatching.spec.ts** | 541 lines | Matching logic tests | 85    |
 
 ### Meta Documentation (This file)
-| File | Size | Purpose |
-|------|------|---------|
-| **TEST_SUITE_INDEX.md** | This file | Master navigation |
-| **DELIVERABLES.md** | 400+ lines | Complete delivery summary |
+
+| File                    | Size       | Purpose                   |
+| ----------------------- | ---------- | ------------------------- |
+| **TEST_SUITE_INDEX.md** | This file  | Master navigation         |
+| **DELIVERABLES.md**     | 400+ lines | Complete delivery summary |
 
 ---
 
 ## Implementation Roadmap
 
 ### Phase 1: Planning & Fixtures ✅ COMPLETE
+
 **Status:** All deliverables ready
+
 - [x] Test plan (830 lines)
 - [x] Implementation guide (419 lines)
 - [x] Quick reference (568 lines)
@@ -76,7 +87,9 @@
 **Next:** Proceed to Phase 2
 
 ### Phase 2: High-Priority Components (Week 1)
+
 **Status:** Ready to implement
+
 - [ ] useSchoolLogos.spec.ts (~150 lines)
 - [ ] SchoolCard.spec.ts (~120 lines)
 - [ ] SchoolLogo.spec.ts (~150 lines)
@@ -87,7 +100,9 @@
 **Expected Coverage:** 40%
 
 ### Phase 3: Core Functionality (Week 2)
+
 **Status:** Specifications ready
+
 - [ ] useSchoolStore.spec.ts (~200 lines)
 - [ ] schools-fit-score.spec.ts (~150 lines)
 - [ ] SchoolForm.spec.ts (~150 lines)
@@ -97,7 +112,9 @@
 **Expected Coverage:** 65%
 
 ### Phase 4: Integration & E2E (Week 3)
+
 **Status:** Specifications ready
+
 - [ ] Integration tests (~200 lines)
 - [ ] E2E tests (~200 lines)
 - [ ] Coverage verification
@@ -111,14 +128,18 @@
 ## Key Features
 
 ### 1. Comprehensive Planning
+
 Every test case specified with:
+
 - Purpose and rationale
 - Expected inputs/outputs
 - Edge cases to cover
 - Example implementation
 
 ### 2. Reusable Fixtures
+
 20+ factory functions:
+
 - Base schools (all fields)
 - Academic profiles (elite to accessible)
 - Divisions (D1-D3, JUCO, NAIA)
@@ -128,7 +149,9 @@ Every test case specified with:
 - Regions (Northeast, Southeast, West)
 
 ### 3. Example Test Suite
+
 85 tests covering:
+
 - Weight calculations
 - Matching logic
 - Academic ratings
@@ -137,6 +160,7 @@ Every test case specified with:
 - Edge cases and fallbacks
 
 ### 4. Multi-Layer Documentation
+
 - High-level plans (SCHOOL_TESTING_PLAN.md)
 - Implementation guides (SCHOOL_TESTING_IMPLEMENTATION.md)
 - Quick references (SCHOOL_TESTS_README.md)
@@ -148,8 +172,10 @@ Every test case specified with:
 ## How to Use Each Document
 
 ### SCHOOL_TESTING_PLAN.md
+
 **Use for:** Detailed test specifications
 **Read sections:**
+
 1. Test structure (section 1) - Organization
 2. Unit tests by area (sections 2.1-2.6) - Specific test cases
 3. Component testing (section 3) - UI testing approach
@@ -158,14 +184,17 @@ Every test case specified with:
 6. E2E tests (section 6) - User workflows
 
 **Example: Find tests for useSchoolMatching**
+
 - Go to section 2.2
 - Find your test case (e.g., "calculateMatchScore")
 - Review test requirements and examples
 - Implement in useSchoolMatching.spec.ts
 
 ### SCHOOL_TESTING_IMPLEMENTATION.md
+
 **Use for:** Understanding what's been done and what's next
 **Read sections:**
+
 1. What's delivered - Summary of files
 2. Quick start - 4 steps to begin
 3. Implementation roadmap - Phase breakdown
@@ -173,6 +202,7 @@ Every test case specified with:
 5. Next actions - What to do now
 
 **Example: Understand Phase 2**
+
 - Go to section "Implementation Roadmap"
 - Find "Phase 2 (Week 1)"
 - See which tests to implement
@@ -180,8 +210,10 @@ Every test case specified with:
 - Check SCHOOL_TESTING_PLAN.md for specs
 
 ### SCHOOL_TESTS_README.md
+
 **Use for:** Quick reference while coding
 **Read sections:**
+
 1. Quick start - 3 steps to get going
 2. Use test fixtures - Reduce boilerplate
 3. Follow test patterns - From useSchoolMatching
@@ -190,14 +222,17 @@ Every test case specified with:
 6. Troubleshooting - Problem solving
 
 **Example: You need to test a utility**
+
 - Go to "Common Testing Patterns"
 - Find boundary testing pattern
 - Copy structure to your test file
 - Adjust for your utility
 
 ### tests/fixtures/schools.fixture.ts
+
 **Use for:** Mock data in your tests
 **Factory types:**
+
 - Basic: `createMockSchool()`, `createMockSchools(n)`
 - Academic: `createEliteSchool()`, `createMidTierSchool()`, etc.
 - Division: `createD3School()`, `createJucoSchool()`
@@ -207,20 +242,23 @@ Every test case specified with:
 - Regional: `createNortheastSchools()`, `createSoutheastSchools()`
 
 **Example: Test school sizes**
-```typescript
-import { createSmallSchool, createLargeSchool } from '~/tests/fixtures'
 
-it('should handle different sizes', () => {
-  const small = createSmallSchool()
-  const large = createLargeSchool()
-  
+```typescript
+import { createSmallSchool, createLargeSchool } from "~/tests/fixtures";
+
+it("should handle different sizes", () => {
+  const small = createSmallSchool();
+  const large = createLargeSchool();
+
   // test code
-})
+});
 ```
 
 ### tests/unit/composables/useSchoolMatching.spec.ts
+
 **Use for:** Reference patterns
 **Patterns demonstrated:**
+
 1. Mocking external dependencies
 2. Setting up test data with factories
 3. Testing weighted calculations
@@ -231,6 +269,7 @@ it('should handle different sizes', () => {
 8. Testing computed values
 
 **Example: How to test weighted scoring**
+
 - Look at calculateMatchScore section
 - Find test "should calculate weighted score based on priority"
 - Review structure: mock setup → factory data → call function → assertion
@@ -241,17 +280,20 @@ it('should handle different sizes', () => {
 ## Test Coverage by Component
 
 ### Complete (85 tests)
+
 - ✅ **useSchoolMatching** - Matching algorithm, 90%+ coverage
   - Status: DONE (541 lines)
   - Reference: useSchoolMatching.spec.ts
 
 ### Existing (Needs Expansion)
+
 - 📝 **useSchools** - CRUD operations
   - Status: ~40 tests exist (see: useSchools.spec.ts)
   - Plan: SCHOOL_TESTING_PLAN.md section 2.1
   - Next: Add missing sanitization & edge case tests
 
 ### Planned
+
 - ⏳ **useSchoolLogos** - Logo caching & fetching
   - Status: Plan ready (SCHOOL_TESTING_PLAN.md 2.3)
   - Time: ~150 lines, 8-10 hours (Phase 2)
@@ -299,6 +341,7 @@ it('should handle different sizes', () => {
 ### For Chris (Implementing Tests)
 
 **Step 1 (Now):** Read documentation
+
 ```bash
 # 1 hour total
 Read in this order:
@@ -309,6 +352,7 @@ Read in this order:
 ```
 
 **Step 2 (Today):** Review example tests
+
 ```bash
 npm run test:ui
 # Navigate to useSchoolMatching.spec.ts
@@ -317,6 +361,7 @@ npm run test:ui
 ```
 
 **Step 3 (This week):** Implement Phase 2
+
 ```bash
 # Follow SCHOOL_TESTING_PLAN.md section 2.3-2.5
 # Use fixtures from tests/fixtures/schools.fixture.ts
@@ -325,6 +370,7 @@ npm run test:ui
 ```
 
 **Step 4 (Next week):** Implement Phase 3 & 4
+
 ```bash
 # Repeat pattern for remaining components
 # ~18-22 hours
@@ -333,12 +379,14 @@ npm run test:ui
 ### For New Team Members
 
 **Quick Introduction:**
+
 1. Read: TEST_SUITE_INDEX.md (this file)
 2. Skim: SCHOOL_TESTING_PLAN.md section 1 (organization)
 3. Review: tests/unit/composables/useSchoolMatching.spec.ts (examples)
 4. Run: `npm run test:ui` and explore tests
 
 **To Understand a Specific Component:**
+
 1. Find component in SCHOOL_TESTING_PLAN.md
 2. Review test cases and rationale
 3. Check example tests (useSchoolMatching.spec.ts)
@@ -382,26 +430,34 @@ npm run type-check && npm run lint && npm run test:coverage
 ## Support & Questions
 
 ### For Test Specification Questions
+
 **File:** SCHOOL_TESTING_PLAN.md
+
 - Find your component (section 2-4)
 - Review test case description
 - Check example if provided
 - Follow pattern from useSchoolMatching.spec.ts
 
 ### For Test Pattern Questions
+
 **File:** SCHOOL_TESTS_README.md
+
 - Section "Common Testing Patterns"
 - Check "Troubleshooting" for specific issues
 - Review examples in useSchoolMatching.spec.ts
 
 ### For Fixture/Mock Data Questions
+
 **File:** tests/fixtures/schools.fixture.ts
+
 - Browse available factories (20+)
 - Review factory documentation
 - Copy factory usage from useSchoolMatching.spec.ts
 
 ### For "What's Next" Questions
+
 **File:** SCHOOL_TESTING_IMPLEMENTATION.md
+
 - Section "Implementation Roadmap"
 - See phase breakdown
 - Check time estimates
@@ -425,6 +481,7 @@ npm run type-check && npm run lint && npm run test:coverage
 ## Summary
 
 You have:
+
 - ✅ Complete test strategy documented (830 lines)
 - ✅ Mock data factory library (282 lines, 20+ factories)
 - ✅ Example test suite (541 lines, 85 tests)
@@ -433,6 +490,7 @@ You have:
 - ✅ This index (master navigation)
 
 Next:
+
 1. Read documentation (~1 hour)
 2. Implement Phase 2 tests (~8-10 hours)
 3. Repeat for Phases 3-4 (~18-22 hours)

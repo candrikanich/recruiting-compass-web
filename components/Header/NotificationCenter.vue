@@ -42,7 +42,9 @@
         class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-slate-200 z-50 max-h-96 flex flex-col"
       >
         <!-- Header -->
-        <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+        <div
+          class="px-4 py-3 border-b border-slate-200 flex items-center justify-between"
+        >
           <h3 class="font-semibold text-slate-900">Notifications</h3>
           <button
             v-if="notifications.length > 0"
@@ -61,7 +63,7 @@
             @click="handleNotificationClick(notification)"
             :class="[
               'w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors',
-              !notification.read_at ? 'bg-blue-50' : ''
+              !notification.read_at ? 'bg-blue-50' : '',
             ]"
           >
             <div class="flex items-start gap-3">
@@ -70,9 +72,15 @@
                 class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"
               />
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-slate-900">{{ notification.title }}</p>
-                <p class="text-sm text-slate-600 mt-0.5 line-clamp-2">{{ notification.message }}</p>
-                <p class="text-xs text-slate-400 mt-1">{{ formatDate(notification.scheduled_for) }}</p>
+                <p class="text-sm font-medium text-slate-900">
+                  {{ notification.title }}
+                </p>
+                <p class="text-sm text-slate-600 mt-0.5 line-clamp-2">
+                  {{ notification.message }}
+                </p>
+                <p class="text-xs text-slate-400 mt-1">
+                  {{ formatDate(notification.scheduled_for) }}
+                </p>
               </div>
             </div>
           </button>
@@ -106,73 +114,72 @@
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <div
-          v-if="isOpen"
-          class="fixed inset-0 z-40"
-          @click="isOpen = false"
-        />
+        <div v-if="isOpen" class="fixed inset-0 z-40" @click="isOpen = false" />
       </Transition>
     </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
 interface Notification {
-  id: string
-  title: string
-  message: string
-  scheduled_for: string
-  read_at?: string
+  id: string;
+  title: string;
+  message: string;
+  scheduled_for: string;
+  read_at?: string;
 }
 
 interface Props {
-  notifications?: Notification[]
+  notifications?: Notification[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   notifications: () => [],
-})
+});
 
 const emit = defineEmits<{
-  'notification-click': [notification: Notification]
-  'mark-as-read': [id: string]
-}>()
+  "notification-click": [notification: Notification];
+  "mark-as-read": [id: string];
+}>();
 
-const isOpen = ref(false)
+const isOpen = ref(false);
 
 const unreadCount = computed(() => {
-  return props.notifications.filter(n => !n.read_at).length
-})
+  return props.notifications.filter((n) => !n.read_at).length;
+});
 
 const handleNotificationClick = (notification: Notification) => {
-  emit('notification-click', notification)
+  emit("notification-click", notification);
   if (!notification.read_at) {
-    emit('mark-as-read', notification.id)
+    emit("mark-as-read", notification.id);
   }
-  isOpen.value = false
-}
+  isOpen.value = false;
+};
 
 const markAllAsRead = () => {
-  props.notifications.forEach(notification => {
+  props.notifications.forEach((notification) => {
     if (!notification.read_at) {
-      emit('mark-as-read', notification.id)
+      emit("mark-as-read", notification.id);
     }
-  })
-}
+  });
+};
 
 const formatDate = (date: string): string => {
-  const now = new Date()
-  const notifDate = new Date(date)
-  const diffMs = now.getTime() - notifDate.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
+  const now = new Date();
+  const notifDate = new Date(date);
+  const diffMs = now.getTime() - notifDate.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
-  return notifDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return notifDate.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+};
 </script>

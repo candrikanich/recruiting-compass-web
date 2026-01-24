@@ -5,7 +5,9 @@
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-slate-600">Total Interactions</p>
-          <p class="text-3xl font-bold mt-2 text-slate-900">{{ metrics.totalInteractions }}</p>
+          <p class="text-3xl font-bold mt-2 text-slate-900">
+            {{ metrics.totalInteractions }}
+          </p>
         </div>
         <div class="text-4xl text-blue-100">📊</div>
       </div>
@@ -19,9 +21,13 @@
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-slate-600">Response Rate</p>
-          <p class="text-3xl font-bold mt-2 text-slate-900">{{ metrics.responseRate }}%</p>
+          <p class="text-3xl font-bold mt-2 text-slate-900">
+            {{ metrics.responseRate }}%
+          </p>
         </div>
-        <div :class="getResponseRateColorClass()">{{ getResponseRateIcon() }}</div>
+        <div :class="getResponseRateColorClass()">
+          {{ getResponseRateIcon() }}
+        </div>
       </div>
       <p class="text-xs mt-3 text-slate-600">{{ getResponseRateLabel() }}</p>
     </div>
@@ -31,7 +37,9 @@
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-slate-600">Avg Response Time</p>
-          <p class="text-3xl font-bold mt-2 text-slate-900">{{ metrics.averageResponseTime }}h</p>
+          <p class="text-3xl font-bold mt-2 text-slate-900">
+            {{ metrics.averageResponseTime }}h
+          </p>
         </div>
         <div :class="getResponseTimeColorClass()">⏱️</div>
       </div>
@@ -44,7 +52,9 @@
         <div>
           <p class="text-sm font-medium text-slate-600">Days Since Contact</p>
           <p class="text-3xl font-bold mt-2 text-slate-900">
-            {{ metrics.daysSinceContact >= 0 ? metrics.daysSinceContact : 'N/A' }}
+            {{
+              metrics.daysSinceContact >= 0 ? metrics.daysSinceContact : "N/A"
+            }}
           </p>
         </div>
         <div :class="getContactColorClass()">{{ getContactIcon() }}</div>
@@ -55,32 +65,32 @@
 </template>
 
 <script setup lang="ts">
-import type { CoachMetrics } from '~/composables/useCoachAnalytics'
+import type { CoachMetrics } from "~/composables/useCoachAnalytics";
 
 defineProps<{
-  metrics: CoachMetrics
-}>()
+  metrics: CoachMetrics;
+}>();
 
-const getResponseRateIcon = () => '✓'
+const getResponseRateIcon = () => "✓";
 const getResponseRateColorClass = (): string => {
-  return 'text-2xl text-emerald-200'
-}
+  return "text-2xl text-emerald-200";
+};
 const getResponseRateLabel = () => {
-  return 'Percentage of outbound that got response'
-}
+  return "Percentage of outbound that got response";
+};
 
 const getResponseTimeColorClass = (): string => {
-  return 'text-2xl text-purple-200'
-}
+  return "text-2xl text-purple-200";
+};
 const getResponseTimeLabel = () => {
-  return 'Average time to respond'
-}
+  return "Average time to respond";
+};
 
 const getContactColorClass = (): string => {
-  return 'text-2xl text-orange-200'
-}
-const getContactIcon = () => '📅'
+  return "text-2xl text-orange-200";
+};
+const getContactIcon = () => "📅";
 const getContactLabel = () => {
-  return 'Time since last contact'
-}
+  return "Time since last contact";
+};
 </script>

@@ -7,8 +7,18 @@
       title="Send feedback"
       aria-label="Send feedback"
     >
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+      <svg
+        class="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+        />
       </svg>
     </button>
 
@@ -26,14 +36,26 @@
             @click.stop
           >
             <!-- Header -->
-            <div class="flex items-center justify-between p-6 border-b border-slate-200">
+            <div
+              class="flex items-center justify-between p-6 border-b border-slate-200"
+            >
               <h2 class="text-xl font-bold text-slate-900">Send Feedback</h2>
               <button
                 @click="closeModal"
                 class="transition text-slate-600 hover:text-slate-900"
               >
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -113,12 +135,18 @@
               </div>
 
               <!-- Error Message -->
-              <div v-if="error" class="p-3 rounded-lg text-sm bg-red-50 border border-red-300 text-red-700">
+              <div
+                v-if="error"
+                class="p-3 rounded-lg text-sm bg-red-50 border border-red-300 text-red-700"
+              >
                 {{ error }}
               </div>
 
               <!-- Success Message -->
-              <div v-if="success" class="p-3 rounded-lg text-sm flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700">
+              <div
+                v-if="success"
+                class="p-3 rounded-lg text-sm flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700"
+              >
                 <CheckIcon class="w-4 h-4" />
                 <span>Thank you for your feedback!</span>
               </div>
@@ -137,7 +165,7 @@
                   :disabled="loading"
                   class="flex-1 px-4 py-2 rounded-lg transition font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {{ loading ? 'Sending...' : 'Send' }}
+                  {{ loading ? "Sending..." : "Send" }}
                 </button>
               </div>
             </form>
@@ -149,67 +177,68 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { CheckIcon } from '@heroicons/vue/24/solid'
+import { ref, reactive } from "vue";
+import { CheckIcon } from "@heroicons/vue/24/solid";
 
-const isOpen = ref(false)
-const loading = ref(false)
-const error = ref('')
-const success = ref(false)
+const isOpen = ref(false);
+const loading = ref(false);
+const error = ref("");
+const success = ref(false);
 
 const form = reactive({
-  name: '',
-  email: '',
-  feedbackType: '',
-  page: '',
-  message: ''
-})
+  name: "",
+  email: "",
+  feedbackType: "",
+  page: "",
+  message: "",
+});
 
 const closeModal = () => {
-  isOpen.value = false
+  isOpen.value = false;
   // Reset form after modal closes
   setTimeout(() => {
-    form.name = ''
-    form.email = ''
-    form.feedbackType = ''
-    form.page = ''
-    form.message = ''
-    error.value = ''
-    success.value = false
-  }, 300)
-}
+    form.name = "";
+    form.email = "";
+    form.feedbackType = "";
+    form.page = "";
+    form.message = "";
+    error.value = "";
+    success.value = false;
+  }, 300);
+};
 
 const submitFeedback = async () => {
-  error.value = ''
-  success.value = false
-  loading.value = true
+  error.value = "";
+  success.value = false;
+  loading.value = true;
 
   try {
-    const response = await $fetch('/api/feedback', {
-      method: 'POST',
+    const response = await $fetch("/api/feedback", {
+      method: "POST",
       body: {
         name: form.name,
         email: form.email,
         feedbackType: form.feedbackType,
         page: form.page,
-        message: form.message
-      }
-    })
+        message: form.message,
+      },
+    });
 
     if (response.success) {
-      success.value = true
+      success.value = true;
       // Close modal after 2 seconds
       setTimeout(() => {
-        closeModal()
-      }, 2000)
+        closeModal();
+      }, 2000);
     }
   } catch (err: any) {
-    error.value = err.data?.message || 'Failed to send feedback. Please try again.'
-    console.error('Feedback submission error:', err)
+    error.value =
+      err.data?.message || "Failed to send feedback. Please try again.";
+    console.error("Feedback submission error:", err);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>

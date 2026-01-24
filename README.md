@@ -141,14 +141,14 @@ web/
 
 ## Available Scripts
 
-| Script | Purpose |
-|--------|---------|
-| `npm run dev` | Start development server (<http://localhost:3000>) |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build locally |
-| `npm run type-check` | Check TypeScript types |
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Fix ESLint issues automatically |
+| Script               | Purpose                                            |
+| -------------------- | -------------------------------------------------- |
+| `npm run dev`        | Start development server (<http://localhost:3000>) |
+| `npm run build`      | Build for production                               |
+| `npm run preview`    | Preview production build locally                   |
+| `npm run type-check` | Check TypeScript types                             |
+| `npm run lint`       | Run ESLint                                         |
+| `npm run lint:fix`   | Fix ESLint issues automatically                    |
 
 ## Technology Stack
 

@@ -3,7 +3,12 @@
     <!-- Header -->
     <div class="flex items-center gap-3 mb-5">
       <div class="p-2 bg-slate-100 rounded-lg">
-        <svg class="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          class="w-5 h-5 text-slate-700"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -17,7 +22,11 @@
 
     <!-- Loading state -->
     <div v-if="loading" class="space-y-3">
-      <div v-for="i in 3" :key="i" class="h-6 bg-slate-100 rounded animate-pulse" />
+      <div
+        v-for="i in 3"
+        :key="i"
+        class="h-6 bg-slate-100 rounded animate-pulse"
+      />
     </div>
 
     <!-- Portfolio stats -->
@@ -25,7 +34,9 @@
       <!-- Reaches -->
       <div class="flex items-center justify-between">
         <span class="text-sm text-slate-600">Reaches</span>
-        <span class="text-sm font-medium text-slate-900">{{ reaches ?? '—' }} schools</span>
+        <span class="text-sm font-medium text-slate-900"
+          >{{ reaches ?? "—" }} schools</span
+        >
       </div>
       <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
         <div
@@ -38,7 +49,9 @@
       <!-- Matches -->
       <div class="flex items-center justify-between pt-2">
         <span class="text-sm text-slate-600">Matches</span>
-        <span class="text-sm font-medium text-slate-900">{{ matches ?? '—' }} schools</span>
+        <span class="text-sm font-medium text-slate-900"
+          >{{ matches ?? "—" }} schools</span
+        >
       </div>
       <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
         <div
@@ -51,7 +64,9 @@
       <!-- Safeties -->
       <div class="flex items-center justify-between pt-2">
         <span class="text-sm text-slate-600">Safeties</span>
-        <span class="text-sm font-medium text-slate-900">{{ safeties ?? '—' }} schools</span>
+        <span class="text-sm font-medium text-slate-900"
+          >{{ safeties ?? "—" }} schools</span
+        >
       </div>
       <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
         <div
@@ -64,7 +79,8 @@
       <!-- Info message -->
       <div class="mt-4 pt-3 border-t border-slate-100">
         <p class="text-xs text-slate-500">
-          ℹ️ Comprehensive portfolio analysis with personalized recommendations coming in Phase 6
+          ℹ️ Comprehensive portfolio analysis with personalized recommendations
+          coming in Phase 6
         </p>
       </div>
     </div>
@@ -73,14 +89,14 @@
 
 <script setup lang="ts">
 interface Props {
-  reaches?: number
-  matches?: number
-  safeties?: number
-  unlikelies?: number
-  loading?: boolean
+  reaches?: number;
+  matches?: number;
+  safeties?: number;
+  unlikelies?: number;
+  loading?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
-  loading: false
-})
+  loading: false,
+});
 </script>

@@ -26,6 +26,7 @@ Phase 4 testing is now ready to begin! Here's what's been set up:
 Choose your starting point:
 
 **Option A: Start with Unit Tests (Recommended)**
+
 ```bash
 # Create useDocumentsConsolidated tests first
 touch tests/unit/composables/useDocumentsConsolidated.spec.ts
@@ -36,6 +37,7 @@ touch tests/unit/composables/useDocumentsConsolidated.spec.ts
 ```
 
 **Option B: Start with E2E Tests**
+
 ```bash
 # Create document CRUD E2E tests
 touch tests/e2e/documents-crud.spec.ts
@@ -46,6 +48,7 @@ touch tests/e2e/documents-crud.spec.ts
 ```
 
 **Option C: Start with Deprecation Audit**
+
 ```bash
 # Run the deprecation audit
 grep -r "useDocuments()" composables/ pages/ components/ --include="*.ts" --include="*.vue" | grep -v "useDocumentsConsolidated"
@@ -94,23 +97,23 @@ import {
   createMockFile,
   createMockSearchResult,
   createMockSearchResults,
-} from '~/tests/fixtures'
+} from "~/tests/fixtures";
 
-describe('My Test', () => {
-  it('should work with mock data', () => {
+describe("My Test", () => {
+  it("should work with mock data", () => {
     // Create single document
-    const doc = createMockDocument({ title: 'Custom Title' })
+    const doc = createMockDocument({ title: "Custom Title" });
 
     // Create multiple documents
-    const docs = createMockDocuments(5)
+    const docs = createMockDocuments(5);
 
     // Create mock file for upload tests
-    const file = createMockFile('PDF content', 'test.pdf')
+    const file = createMockFile("PDF content", "test.pdf");
 
     // Create search results
-    const results = createMockSearchResults(10)
-  })
-})
+    const results = createMockSearchResults(10);
+  });
+});
 ```
 
 ---
@@ -118,22 +121,26 @@ describe('My Test', () => {
 ## 📋 Phase 4 Checklist
 
 ### Unit Tests
+
 - [ ] useDocumentsConsolidated tests (25-30 tests)
 - [ ] useSearchConsolidated tests (20-25 tests)
 - [ ] Component integration tests (15-20 tests)
 - [ ] Achieve 80%+ coverage
 
 ### E2E Tests
+
 - [ ] Document CRUD workflows (8-10 tests)
 - [ ] Document sharing workflows (5-7 tests)
 - [ ] Search workflows (5-8 tests)
 
 ### Deprecation Audit
+
 - [ ] Audit deprecated composables
 - [ ] Create deprecation warnings
 - [ ] Document DEPRECATION_AUDIT.md
 
 ### Final Verification
+
 - [ ] All tests passing
 - [ ] Coverage reports generated
 - [ ] No TypeScript errors
@@ -174,6 +181,7 @@ npm run test:e2e:ui
 **Main Reference:** [PHASE_4_TESTING.md](./PHASE_4_TESTING.md)
 
 **Sections:**
+
 1. **Phase 4 Overview** - Goals and scope
 2. **Test Implementation Priority** - 3 priority areas
 3. **Test Implementation Steps** - Step-by-step guide
@@ -197,6 +205,7 @@ npm run test:e2e:ui
 ## ⚠️ Common Issues & Solutions
 
 **Issue: "Cannot find module" when importing fixtures**
+
 ```
 Solution: Ensure import path is correct
 ✅ import { createMockDocument } from '~/tests/fixtures'
@@ -204,6 +213,7 @@ Solution: Ensure import path is correct
 ```
 
 **Issue: Tests timeout on E2E**
+
 ```
 Solution: Increase timeout or check dev server is running
 npm run dev    # Start on port 3003
@@ -211,6 +221,7 @@ npm run test:e2e:ui  # Use UI mode to debug
 ```
 
 **Issue: Coverage not meeting targets**
+
 ```
 Solution: Run coverage report and identify gaps
 npm run test:coverage

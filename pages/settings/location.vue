@@ -1,22 +1,34 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div
+    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+  >
     <!-- Global Navigation -->
 
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-        <NuxtLink to="/settings" class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 mb-2">
+        <NuxtLink
+          to="/settings"
+          class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 mb-2"
+        >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
         </NuxtLink>
         <h1 class="text-2xl font-semibold text-slate-900">Home Location</h1>
-        <p class="text-slate-600">Set your home address to calculate distances to schools</p>
+        <p class="text-slate-600">
+          Set your home address to calculate distances to schools
+        </p>
       </div>
     </div>
 
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-      <div v-if="loading && !homeLocation" class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <div
+        v-if="loading && !homeLocation"
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+      >
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+        ></div>
         <p class="text-slate-600">Loading preferences...</p>
       </div>
 
@@ -26,7 +38,9 @@
           <h2 class="text-lg font-semibold text-slate-900 mb-4">Address</h2>
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">Street Address</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Street Address</label
+              >
               <input
                 v-model="localLocation.address"
                 type="text"
@@ -37,7 +51,9 @@
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div class="col-span-2">
-                <label class="block text-sm font-medium text-slate-700 mb-1">City</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >City</label
+                >
                 <input
                   v-model="localLocation.city"
                   type="text"
@@ -46,7 +62,9 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">State</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >State</label
+                >
                 <input
                   v-model="localLocation.state"
                   type="text"
@@ -56,7 +74,9 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">ZIP Code</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >ZIP Code</label
+                >
                 <input
                   v-model="localLocation.zip"
                   type="text"
@@ -74,7 +94,9 @@
           <div class="flex items-center justify-between mb-4">
             <div>
               <h2 class="text-lg font-semibold text-slate-900">Coordinates</h2>
-              <p class="text-sm text-slate-500">Auto-detected from address or enter manually</p>
+              <p class="text-sm text-slate-500">
+                Auto-detected from address or enter manually
+              </p>
             </div>
             <button
               @click="handleGeocode"
@@ -82,17 +104,22 @@
               class="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition flex items-center gap-2"
             >
               <MapPinIcon class="w-4 h-4" />
-              {{ geocoding ? 'Looking up...' : 'Lookup from Address' }}
+              {{ geocoding ? "Looking up..." : "Lookup from Address" }}
             </button>
           </div>
 
-          <div v-if="geocodeError" class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+          <div
+            v-if="geocodeError"
+            class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm"
+          >
             {{ geocodeError }}
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">Latitude</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Latitude</label
+              >
               <input
                 v-model.number="localLocation.latitude"
                 type="number"
@@ -102,7 +129,9 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">Longitude</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Longitude</label
+              >
               <input
                 v-model.number="localLocation.longitude"
                 type="number"
@@ -113,7 +142,10 @@
             </div>
           </div>
 
-          <p v-if="localLocation.latitude && localLocation.longitude" class="mt-3 text-sm text-emerald-600 flex items-center gap-1">
+          <p
+            v-if="localLocation.latitude && localLocation.longitude"
+            class="mt-3 text-sm text-emerald-600 flex items-center gap-1"
+          >
             <CheckCircleIcon class="w-4 h-4" />
             Coordinates set - distances will be calculated automatically
           </p>
@@ -132,18 +164,24 @@
             :disabled="saving"
             class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
           >
-            {{ saving ? 'Saving...' : 'Save Location' }}
+            {{ saving ? "Saving..." : "Save Location" }}
           </button>
         </div>
 
         <!-- Success/Error Messages -->
-        <div v-if="saveSuccess" class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+        <div
+          v-if="saveSuccess"
+          class="bg-emerald-50 border border-emerald-200 rounded-lg p-4"
+        >
           <p class="text-emerald-700 flex items-center gap-2">
             <CheckCircleIcon class="w-5 h-5" />
             Home location saved successfully
           </p>
         </div>
-        <div v-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div
+          v-if="error"
+          class="bg-red-50 border border-red-200 rounded-lg p-4"
+        >
           <p class="text-red-700">Error: {{ error }}</p>
         </div>
       </div>
@@ -152,33 +190,42 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed, onMounted } from 'vue'
-import { useUserPreferences } from '~/composables/useUserPreferences'
-import { useGeocoding } from '~/composables/useGeocoding'
-import Header from '~/components/Header.vue'
-import { ArrowLeftIcon, MapPinIcon, CheckCircleIcon } from '@heroicons/vue/24/outline'
-import type { HomeLocation } from '~/types/models'
+import { ref, reactive, watch, computed, onMounted } from "vue";
+import { useUserPreferences } from "~/composables/useUserPreferences";
+import { useGeocoding } from "~/composables/useGeocoding";
+import Header from "~/components/Header.vue";
+import {
+  ArrowLeftIcon,
+  MapPinIcon,
+  CheckCircleIcon,
+} from "@heroicons/vue/24/outline";
+import type { HomeLocation } from "~/types/models";
 
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: "auth" });
 
-const { homeLocation, loading, error, fetchPreferences, updateHomeLocation } = useUserPreferences()
-const { geocodeAddress, loading: geocoding, error: geocodeError } = useGeocoding()
+const { homeLocation, loading, error, fetchPreferences, updateHomeLocation } =
+  useUserPreferences();
+const {
+  geocodeAddress,
+  loading: geocoding,
+  error: geocodeError,
+} = useGeocoding();
 
 const localLocation = reactive<HomeLocation>({
-  address: '',
-  city: '',
-  state: '',
-  zip: '',
+  address: "",
+  city: "",
+  state: "",
+  zip: "",
   latitude: undefined,
   longitude: undefined,
-})
+});
 
-const saving = ref(false)
-const saveSuccess = ref(false)
+const saving = ref(false);
+const saveSuccess = ref(false);
 
 const hasAddress = computed(() => {
-  return localLocation.address || localLocation.city || localLocation.zip
-})
+  return localLocation.address || localLocation.city || localLocation.zip;
+});
 
 const fullAddress = computed(() => {
   const parts = [
@@ -186,52 +233,56 @@ const fullAddress = computed(() => {
     localLocation.city,
     localLocation.state,
     localLocation.zip,
-  ].filter(Boolean)
-  return parts.join(', ')
-})
+  ].filter(Boolean);
+  return parts.join(", ");
+});
 
-watch(homeLocation, (location) => {
-  if (location) {
-    Object.assign(localLocation, location)
-  }
-}, { immediate: true })
+watch(
+  homeLocation,
+  (location) => {
+    if (location) {
+      Object.assign(localLocation, location);
+    }
+  },
+  { immediate: true },
+);
 
 const handleGeocode = async () => {
-  if (!fullAddress.value) return
+  if (!fullAddress.value) return;
 
-  const result = await geocodeAddress(fullAddress.value)
+  const result = await geocodeAddress(fullAddress.value);
   if (result) {
-    localLocation.latitude = result.latitude
-    localLocation.longitude = result.longitude
+    localLocation.latitude = result.latitude;
+    localLocation.longitude = result.longitude;
   }
-}
+};
 
 const handleSave = async () => {
-  saving.value = true
-  saveSuccess.value = false
+  saving.value = true;
+  saveSuccess.value = false;
 
-  await updateHomeLocation(localLocation)
+  await updateHomeLocation(localLocation);
 
   if (!error.value) {
-    saveSuccess.value = true
-    setTimeout(() => (saveSuccess.value = false), 3000)
+    saveSuccess.value = true;
+    setTimeout(() => (saveSuccess.value = false), 3000);
   }
 
-  saving.value = false
-}
+  saving.value = false;
+};
 
 const handleClear = () => {
   Object.assign(localLocation, {
-    address: '',
-    city: '',
-    state: '',
-    zip: '',
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
     latitude: undefined,
     longitude: undefined,
-  })
-}
+  });
+};
 
 onMounted(() => {
-  fetchPreferences()
-})
+  fetchPreferences();
+});
 </script>

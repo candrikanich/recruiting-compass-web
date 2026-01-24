@@ -3,8 +3,12 @@
     <div class="max-w-2xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Batch Fetch School Logos</h1>
-        <p class="text-gray-600 mt-2">Fetch favicons for all schools in the database</p>
+        <h1 class="text-3xl font-bold text-gray-900">
+          Batch Fetch School Logos
+        </h1>
+        <p class="text-gray-600 mt-2">
+          Fetch favicons for all schools in the database
+        </p>
       </div>
 
       <!-- Status Card -->
@@ -12,12 +16,14 @@
         <!-- Idle State -->
         <div v-if="status === 'idle'" class="space-y-4">
           <p class="text-gray-600">
-            This utility will fetch and store favicon URLs for all schools in your database that don't have one yet.
+            This utility will fetch and store favicon URLs for all schools in
+            your database that don't have one yet.
           </p>
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p class="text-sm text-blue-800">
-              <strong>Note:</strong> This process may take a minute or two depending on the number of schools. The page
-              can be left open while it processes.
+              <strong>Note:</strong> This process may take a minute or two
+              depending on the number of schools. The page can be left open
+              while it processes.
             </p>
           </div>
           <button
@@ -32,7 +38,9 @@
         <div v-else-if="status === 'loading'" class="space-y-4">
           <div class="flex items-center gap-3">
             <div class="spinner"></div>
-            <span class="text-lg font-medium text-gray-900">Fetching logos...</span>
+            <span class="text-lg font-medium text-gray-900"
+              >Fetching logos...</span
+            >
           </div>
           <p class="text-gray-600">{{ statusMessage }}</p>
           <div class="bg-gray-100 rounded h-2 overflow-hidden">
@@ -45,14 +53,20 @@
 
         <!-- Success State -->
         <div v-else-if="status === 'success'" class="space-y-4">
-          <div class="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
+          <div
+            class="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2"
+          >
             <CheckIcon class="w-5 h-5 text-green-800" />
-            <p class="text-sm text-green-800 font-medium">Batch fetch completed successfully!</p>
+            <p class="text-sm text-green-800 font-medium">
+              Batch fetch completed successfully!
+            </p>
           </div>
           <div v-if="result" class="space-y-2 text-sm">
             <p><strong>Total schools:</strong> {{ result.processed }}</p>
             <p><strong>Logos fetched:</strong> {{ result.fetched }}</p>
-            <p v-if="result.message" class="text-gray-600">{{ result.message }}</p>
+            <p v-if="result.message" class="text-gray-600">
+              {{ result.message }}
+            </p>
           </div>
           <button
             @click="resetForm"
@@ -64,10 +78,14 @@
 
         <!-- Error State -->
         <div v-else-if="status === 'error'" class="space-y-4">
-          <div class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-2">
+          <div
+            class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-2"
+          >
             <XMarkIcon class="w-5 h-5 text-red-800 flex-shrink-0 mt-0.5" />
             <div>
-              <p class="text-sm text-red-800 font-medium">Error during batch fetch</p>
+              <p class="text-sm text-red-800 font-medium">
+                Error during batch fetch
+              </p>
               <p v-if="error" class="text-sm text-red-700 mt-2">{{ error }}</p>
             </div>
           </div>
@@ -90,11 +108,16 @@
           </li>
           <li class="flex gap-3">
             <span class="font-medium text-gray-900 flex-shrink-0">2.</span>
-            <span>For each school without a favicon URL, attempts to fetch from their website</span>
+            <span
+              >For each school without a favicon URL, attempts to fetch from
+              their website</span
+            >
           </li>
           <li class="flex gap-3">
             <span class="font-medium text-gray-900 flex-shrink-0">3.</span>
-            <span>Tries multiple sources (favicon.ico, DuckDuckGo, Google)</span>
+            <span
+              >Tries multiple sources (favicon.ico, DuckDuckGo, Google)</span
+            >
           </li>
           <li class="flex gap-3">
             <span class="font-medium text-gray-900 flex-shrink-0">4.</span>
@@ -107,66 +130,68 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { CheckIcon, XMarkIcon } from '@heroicons/vue/24/solid'
-import { useUserStore } from '~/stores/user'
-import { useSupabase } from '~/composables/useSupabase'
+import { ref } from "vue";
+import { CheckIcon, XMarkIcon } from "@heroicons/vue/24/solid";
+import { useUserStore } from "~/stores/user";
+import { useSupabase } from "~/composables/useSupabase";
 
-const status = ref<'idle' | 'loading' | 'success' | 'error'>('idle')
-const statusMessage = ref('')
-const progress = ref(0)
-const error = ref<string | null>(null)
-const result = ref<any>(null)
+const status = ref<"idle" | "loading" | "success" | "error">("idle");
+const statusMessage = ref("");
+const progress = ref(0);
+const error = ref<string | null>(null);
+const result = ref<any>(null);
 
 const startBatchFetch = async () => {
-  status.value = 'loading'
-  statusMessage.value = 'Initializing...'
-  progress.value = 0
-  error.value = null
+  status.value = "loading";
+  statusMessage.value = "Initializing...";
+  progress.value = 0;
+  error.value = null;
 
   try {
     // Get authenticated user from store and get their session token
-    const userStore = useUserStore()
-    const supabase = useSupabase()
+    const userStore = useUserStore();
+    const supabase = useSupabase();
 
     if (!userStore.user) {
-      throw new Error('User not authenticated')
+      throw new Error("User not authenticated");
     }
 
     // Get session token for server-side auth
-    const { data: { session } } = await supabase.auth.getSession()
-    const token = session?.access_token
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
 
-    const response = await $fetch('/api/admin/batch-fetch-logos', {
-      method: 'POST',
+    const response = await $fetch("/api/admin/batch-fetch-logos", {
+      method: "POST",
       body: { userId: userStore.user.id, token },
-    })
+    });
 
     // Simulate progress
     for (let i = progress.value; i < 90; i += 10) {
-      progress.value = i
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      progress.value = i;
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
-    statusMessage.value = 'Processing results...'
-    progress.value = 95
+    statusMessage.value = "Processing results...";
+    progress.value = 95;
 
-    result.value = response
-    progress.value = 100
-    status.value = 'success'
+    result.value = response;
+    progress.value = 100;
+    status.value = "success";
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Unknown error'
-    status.value = 'error'
+    error.value = err instanceof Error ? err.message : "Unknown error";
+    status.value = "error";
   }
-}
+};
 
 const resetForm = () => {
-  status.value = 'idle'
-  statusMessage.value = ''
-  progress.value = 0
-  error.value = null
-  result.value = null
-}
+  status.value = "idle";
+  statusMessage.value = "";
+  progress.value = 0;
+  error.value = null;
+  result.value = null;
+};
 </script>
 
 <style scoped>

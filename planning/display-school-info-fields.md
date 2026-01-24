@@ -1,16 +1,20 @@
 # Plan: Display All School Information Fields
 
 ## Problem Statement
+
 When editing a school, users can enter detailed information (campus address, mascot, baseball facility, undergraduate size, website, Twitter handle), but after saving, these fields don't appear in the school detail page's "Information" section. Users see no visual confirmation that their edits were saved.
 
 ## Current State Analysis
 
 ### What Gets Displayed (Display Info section, lines 145-176)
+
 Currently showing:
+
 1. Website (clickable link) - line 147-153
 2. College Scorecard Data (student size, tuition, admission rate) - lines 156-175
 
 ### What Gets Saved but NOT Displayed
+
 1. **Campus Address** - stored in `school.academic_info.address`
 2. **Baseball Facility** - stored in `school.academic_info.baseball_facility_address`
 3. **Mascot** - stored in `school.academic_info.mascot`
@@ -18,6 +22,7 @@ Currently showing:
 5. **Twitter Handle** - stored in `school.twitter_handle` (direct field)
 
 ### Data Flow Verification
+
 **File:** `/pages/schools/[id]/index.vue`
 
 - **Edit Form** (lines 113-143): Collects all 6 fields into `editedBasicInfo`
@@ -31,13 +36,16 @@ The fields are properly saved but never displayed.
 ## Solution Design
 
 ### UI/UX Approach
+
 Expand the "Display Info" section (currently lines 145-176) to show all editable fields organized in a clean grid layout with:
+
 - Icons for visual recognition
 - Conditional rendering (only show if data exists)
 - Consistent styling with existing website display
 - Clear section headers
 
 ### Layout Structure
+
 ```
 Information Section
 ├── [Lookup] [Edit/Cancel buttons]
@@ -59,7 +67,9 @@ Information Section
 ```
 
 ### Data Sources
+
 All fields already have getters in the component:
+
 - `school.academic_info?.address`
 - `school.academic_info?.baseball_facility_address`
 - `school.academic_info?.mascot`
@@ -72,6 +82,7 @@ No additional data fetching or store changes needed.
 ## Implementation Details
 
 ### File to Modify
+
 - **Primary:** `pages/schools/[id]/index.vue`
 
 ### Changes Required
@@ -79,6 +90,7 @@ No additional data fetching or store changes needed.
 **1. Add Display Section (lines 145-177, in the `<!-- Display Info -->` block)**
 
 Replace the current Display Info section with:
+
 - Keep Website section as-is
 - Add new "School Information" section with grid layout showing:
   - Campus Address (with location icon)
@@ -89,17 +101,20 @@ Replace the current Display Info section with:
 
 **2. Use Existing Icons**
 Already imported from `@heroicons/vue/24/outline`:
+
 - `MapPinIcon` - for address
 - `UserGroupIcon` - for undergraduate size
 - (May need to add: `GlobeAltIcon` for website, `AtSymbolIcon` for twitter)
 
 **3. Responsive Grid**
+
 - Mobile (1 column)
 - Tablet/Desktop (2 columns for personal details, separate for contact/social)
 
 ### Implementation Strategy
 
 **Option A (Recommended):** Add new sub-sections within Display Info
+
 ```typescript
 <!-- Display Info -->
 ├── Website (existing, moved to "Contact & Social" section)
@@ -118,6 +133,7 @@ Already imported from `@heroicons/vue/24/outline`:
 Same fields but in a single grid without section headers.
 
 ## Files Affected
+
 - **Primary Change:** `/pages/schools/[id]/index.vue` (Display Info section, ~30-40 lines added)
 - **No Changes Required:**
   - Database schema (fields already stored)
@@ -126,6 +142,7 @@ Same fields but in a single grid without section headers.
   - Types/validation (already defined)
 
 ## Testing Checklist
+
 1. Create a new school and fill all editable fields
 2. Save the school
 3. Verify all 6 fields display in Information section:
@@ -142,10 +159,12 @@ Same fields but in a single grid without section headers.
 8. Manual smoke test on /schools/[id] page
 
 ## Risk Assessment
+
 - **Risk Level:** Very Low
 - **Change Scope:** Single file, display-only logic (no data mutations)
 - **Breaking Changes:** None (only adds display functionality)
 - **Browser Compatibility:** Uses existing Heroicons, no new dependencies
 
 ## Unresolved Questions
+
 None - all data sources and storage locations are clear.

@@ -1,7 +1,10 @@
 <template>
   <div class="space-y-6">
     <!-- Upcoming Events -->
-    <div v-if="showEvents" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6">
+    <div
+      v-if="showEvents"
+      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    >
       <div class="flex items-center justify-between mb-5">
         <div class="flex items-center gap-3">
           <div class="p-2 bg-slate-100 rounded-lg">
@@ -9,7 +12,10 @@
           </div>
           <h3 class="text-slate-900 font-semibold">Upcoming Events</h3>
         </div>
-        <div v-if="upcomingEvents.length > 0" class="px-3 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-full text-sm font-medium">
+        <div
+          v-if="upcomingEvents.length > 0"
+          class="px-3 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-full text-sm font-medium"
+        >
           {{ upcomingEvents.length }}
         </div>
       </div>
@@ -19,11 +25,19 @@
           :key="event.id"
           class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
         >
-          <div :class="['w-2 h-2 rounded-full mt-2', getEventDotColor(index)]" />
+          <div
+            :class="['w-2 h-2 rounded-full mt-2', getEventDotColor(index)]"
+          />
           <div class="flex-1 min-w-0">
-            <div class="text-slate-900 font-medium truncate">{{ event.name }}</div>
-            <div class="text-slate-600 text-sm mt-0.5">{{ formatEventDate(event.start_date) }}</div>
-            <div v-if="event.location" class="text-slate-500 text-sm truncate">{{ event.location }}</div>
+            <div class="text-slate-900 font-medium truncate">
+              {{ event.name }}
+            </div>
+            <div class="text-slate-600 text-sm mt-0.5">
+              {{ formatEventDate(event.start_date) }}
+            </div>
+            <div v-if="event.location" class="text-slate-500 text-sm truncate">
+              {{ event.location }}
+            </div>
           </div>
         </div>
       </div>
@@ -39,7 +53,10 @@
     </div>
 
     <!-- Recent Activity / Notifications -->
-    <div v-if="showNotifications" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6">
+    <div
+      v-if="showNotifications"
+      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    >
       <div class="flex items-center justify-between mb-5">
         <div class="flex items-center gap-3">
           <div class="p-2 bg-slate-100 rounded-lg">
@@ -54,19 +71,30 @@
           Refresh
         </button>
       </div>
-      <div v-if="notifications.length > 0" class="space-y-3 max-h-64 overflow-y-auto">
+      <div
+        v-if="notifications.length > 0"
+        class="space-y-3 max-h-64 overflow-y-auto"
+      >
         <div
           v-for="notification in notifications"
           :key="notification.id"
           :class="[
             'p-3 rounded-lg cursor-pointer transition-colors',
-            notification.read_at ? 'bg-slate-50 hover:bg-slate-100' : 'bg-brand-blue-100 hover:bg-brand-blue-200'
+            notification.read_at
+              ? 'bg-slate-50 hover:bg-slate-100'
+              : 'bg-brand-blue-100 hover:bg-brand-blue-200',
           ]"
           @click="$emit('notification-click', notification)"
         >
-          <div class="font-medium text-slate-900 text-sm">{{ notification.title }}</div>
-          <div class="text-slate-600 text-sm mt-1 line-clamp-2">{{ notification.message }}</div>
-          <div class="text-slate-400 text-xs mt-1">{{ formatNotificationDate(notification.scheduled_for) }}</div>
+          <div class="font-medium text-slate-900 text-sm">
+            {{ notification.title }}
+          </div>
+          <div class="text-slate-600 text-sm mt-1 line-clamp-2">
+            {{ notification.message }}
+          </div>
+          <div class="text-slate-400 text-xs mt-1">
+            {{ formatNotificationDate(notification.scheduled_for) }}
+          </div>
         </div>
       </div>
       <div v-else class="text-center py-6 text-slate-500">
@@ -81,15 +109,23 @@
     </div>
 
     <!-- Quick Tasks -->
-    <div v-if="showTasks" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6">
+    <div
+      v-if="showTasks"
+      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    >
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-md">
+          <div
+            class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-md"
+          >
             <CheckIcon class="w-5 h-5 text-white" />
           </div>
           <div class="flex items-center gap-2">
             <h3 class="text-slate-900 font-semibold">Quick Tasks</h3>
-            <span v-if="pendingCount > 0" class="px-3 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-full text-xs font-semibold">
+            <span
+              v-if="pendingCount > 0"
+              class="px-3 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-full text-xs font-semibold"
+            >
               {{ pendingCount }} pending
             </span>
           </div>
@@ -104,7 +140,10 @@
       </div>
 
       <!-- Add Task Form -->
-      <div v-if="showTaskForm" class="mb-4 p-3 rounded-xl border-2 border-brand-blue-500 bg-brand-blue-100">
+      <div
+        v-if="showTaskForm"
+        class="mb-4 p-3 rounded-xl border-2 border-brand-blue-500 bg-brand-blue-100"
+      >
         <input
           v-model="newTask"
           type="text"
@@ -134,23 +173,30 @@
         <div
           v-for="task in tasks"
           :key="task.id"
-          :class="['flex items-center gap-3 p-3 rounded-xl border-2 transition-all group',
+          :class="[
+            'flex items-center gap-3 p-3 rounded-xl border-2 transition-all group',
             task.completed
               ? 'bg-slate-50 border-slate-200'
-              : 'bg-white border-slate-200 hover:border-blue-300'
+              : 'bg-white border-slate-200 hover:border-blue-300',
           ]"
         >
           <button
             @click="$emit('toggle-task', task.id)"
-            :class="['w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0',
+            :class="[
+              'w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0',
               task.completed
                 ? 'bg-blue-500 border-blue-500'
-                : 'border-slate-300 hover:border-blue-400'
+                : 'border-slate-300 hover:border-blue-400',
             ]"
           >
             <CheckIcon v-if="task.completed" class="w-3 h-3 text-white" />
           </button>
-          <span :class="['flex-1 text-sm transition-all', task.completed ? 'text-slate-400 line-through' : 'text-slate-700']">
+          <span
+            :class="[
+              'flex-1 text-sm transition-all',
+              task.completed ? 'text-slate-400 line-through' : 'text-slate-700',
+            ]"
+          >
             {{ task.text }}
           </span>
           <button
@@ -179,7 +225,10 @@
     </div>
 
     <!-- Social Media -->
-    <div v-if="showSocial" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6">
+    <div
+      v-if="showSocial"
+      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    >
       <div class="flex items-center gap-3 mb-5">
         <div class="p-2 bg-slate-100 rounded-lg">
           <ShareIcon class="w-5 h-5 text-slate-700" />
@@ -206,7 +255,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 import {
   CalendarDaysIcon,
   BellIcon,
@@ -214,32 +263,32 @@ import {
   PlusIcon,
   XMarkIcon,
   ShareIcon,
-} from '@heroicons/vue/24/outline'
-import type { Notification as NotificationModel } from '~/types/models'
+} from "@heroicons/vue/24/outline";
+import type { Notification as NotificationModel } from "~/types/models";
 
 interface Event {
-  id: string
-  name: string
-  start_date: string
-  location?: string | null
+  id: string;
+  name: string;
+  start_date: string;
+  location?: string | null;
 }
 
-type Notification = NotificationModel
+type Notification = NotificationModel;
 
 interface Task {
-  id: string
-  text: string
-  completed: boolean
+  id: string;
+  text: string;
+  completed: boolean;
 }
 
 interface Props {
-  upcomingEvents?: Event[]
-  notifications?: Notification[]
-  tasks?: Task[]
-  showEvents?: boolean
-  showNotifications?: boolean
-  showTasks?: boolean
-  showSocial?: boolean
+  upcomingEvents?: Event[];
+  notifications?: Notification[];
+  tasks?: Task[];
+  showEvents?: boolean;
+  showNotifications?: boolean;
+  showTasks?: boolean;
+  showSocial?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -250,43 +299,53 @@ const props = withDefaults(defineProps<Props>(), {
   showNotifications: true,
   showTasks: true,
   showSocial: true,
-})
+});
 
 defineEmits<{
-  'refresh-notifications': []
-  'notification-click': [notification: Notification]
-  'add-task': [text: string]
-  'toggle-task': [id: string]
-  'delete-task': [id: string]
-  'clear-completed': []
-}>()
+  "refresh-notifications": [];
+  "notification-click": [notification: Notification];
+  "add-task": [text: string];
+  "toggle-task": [id: string];
+  "delete-task": [id: string];
+  "clear-completed": [];
+}>();
 
-const showTaskForm = ref(false)
-const newTask = ref('')
+const showTaskForm = ref(false);
+const newTask = ref("");
 
-const pendingCount = computed(() => props.tasks.filter(t => !t.completed).length)
-const completedCount = computed(() => props.tasks.filter(t => t.completed).length)
+const pendingCount = computed(
+  () => props.tasks.filter((t) => !t.completed).length,
+);
+const completedCount = computed(
+  () => props.tasks.filter((t) => t.completed).length,
+);
 
 const getEventDotColor = (index: number): string => {
-  const colors = ['bg-blue-500', 'bg-purple-500', 'bg-orange-500']
-  return colors[index % colors.length]
-}
+  const colors = ["bg-blue-500", "bg-purple-500", "bg-orange-500"];
+  return colors[index % colors.length];
+};
 
 const formatEventDate = (date: string): string => {
-  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+};
 
 const formatNotificationDate = (date: string): string => {
-  const now = new Date()
-  const notifDate = new Date(date)
-  const diffMs = now.getTime() - notifDate.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
+  const now = new Date();
+  const notifDate = new Date(date);
+  const diffMs = now.getTime() - notifDate.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
-  return notifDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return notifDate.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+};
 </script>

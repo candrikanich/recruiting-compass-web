@@ -4,47 +4,47 @@
  */
 
 export function isError(value: unknown): value is Error {
-  return value instanceof Error
+  return value instanceof Error;
 }
 
 export function isString(value: unknown): value is string {
-  return typeof value === 'string'
+  return typeof value === "string";
 }
 
 export function isNumber(value: unknown): value is number {
-  return typeof value === 'number' && !isNaN(value)
+  return typeof value === "number" && !isNaN(value);
 }
 
 export function isBoolean(value: unknown): value is boolean {
-  return typeof value === 'boolean'
+  return typeof value === "boolean";
 }
 
 export function isArray<T>(value: unknown): value is T[] {
-  return Array.isArray(value)
+  return Array.isArray(value);
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 export function hasProperty<K extends PropertyKey>(
   value: unknown,
-  key: K
+  key: K,
 ): value is Record<K, unknown> {
-  return isRecord(value) && key in value
+  return isRecord(value) && key in value;
 }
 
 export function satisfiesProperties<T extends Record<string, unknown>>(
   value: unknown,
-  keys: (keyof T)[]
+  keys: (keyof T)[],
 ): value is T {
-  if (!isRecord(value)) return false
-  return keys.every((key) => key in value)
+  if (!isRecord(value)) return false;
+  return keys.every((key) => key in value);
 }
 
 export function isPartial<T extends Record<string, unknown>>(
   value: unknown,
-  validator: (v: unknown) => v is T
+  validator: (v: unknown) => v is T,
 ): value is Partial<T> {
-  return isRecord(value)
+  return isRecord(value);
 }

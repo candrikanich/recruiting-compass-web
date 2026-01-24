@@ -1,10 +1,12 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Back Button -->
       <div class="mb-6">
-        <NuxtLink to="/events" class="text-blue-600 hover:text-blue-700 font-semibold">
+        <NuxtLink
+          to="/events"
+          class="text-blue-600 hover:text-blue-700 font-semibold"
+        >
           ← Back to Events
         </NuxtLink>
       </div>
@@ -15,14 +17,23 @@
       </div>
 
       <!-- Error State -->
-      <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+      <div
+        v-else-if="error"
+        class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+      >
         <p class="text-red-700">{{ error }}</p>
       </div>
 
       <!-- Event Not Found -->
-      <div v-else-if="!event" class="bg-white rounded-lg shadow p-12 text-center">
+      <div
+        v-else-if="!event"
+        class="bg-white rounded-lg shadow p-12 text-center"
+      >
         <p class="text-gray-600 mb-2">Event not found</p>
-        <NuxtLink to="/events" class="text-blue-600 hover:text-blue-700 font-semibold">
+        <NuxtLink
+          to="/events"
+          class="text-blue-600 hover:text-blue-700 font-semibold"
+        >
           Return to Events →
         </NuxtLink>
       </div>
@@ -34,12 +45,18 @@
           <div class="flex items-start justify-between mb-4">
             <div>
               <div class="flex items-center gap-3 mb-2">
-                <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
+                <span
+                  class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full"
+                >
                   {{ getEventTypeLabel(event.type) }}
                 </span>
-                <h1 class="text-3xl font-bold text-gray-900">{{ event.name }}</h1>
+                <h1 class="text-3xl font-bold text-gray-900">
+                  {{ event.name }}
+                </h1>
               </div>
-              <p class="text-gray-600">{{ formatDateRange(event.start_date, event.end_date) }}</p>
+              <p class="text-gray-600">
+                {{ formatDateRange(event.start_date, event.end_date) }}
+              </p>
             </div>
             <div class="flex gap-2">
               <button
@@ -65,15 +82,21 @@
             </div>
             <div v-if="event.checkin_time" class="text-sm">
               <p class="text-gray-600">✔️ Check-in</p>
-              <p class="font-semibold text-gray-900">{{ event.checkin_time }}</p>
+              <p class="font-semibold text-gray-900">
+                {{ event.checkin_time }}
+              </p>
             </div>
             <div v-if="event.cost" class="text-sm">
               <p class="text-gray-600">💰 Cost</p>
-              <p class="font-semibold text-gray-900">${{ event.cost.toFixed(2) }}</p>
+              <p class="font-semibold text-gray-900">
+                ${{ event.cost.toFixed(2) }}
+              </p>
             </div>
             <div v-if="event.event_source" class="text-sm">
               <p class="text-gray-600">📌 Source</p>
-              <p class="font-semibold text-gray-900">{{ getSourceLabel(event.event_source) }}</p>
+              <p class="font-semibold text-gray-900">
+                {{ getSourceLabel(event.event_source) }}
+              </p>
             </div>
             <div class="text-sm">
               <p class="text-gray-600">✅ Status</p>
@@ -86,7 +109,10 @@
           </div>
 
           <!-- Location Info -->
-          <div v-if="event.address || event.city || event.location" class="mt-6 border-t border-gray-200 pt-6">
+          <div
+            v-if="event.address || event.city || event.location"
+            class="mt-6 border-t border-gray-200 pt-6"
+          >
             <h3 class="font-semibold text-gray-900 mb-3">📍 Location</h3>
             <div class="space-y-2 text-gray-700">
               <p v-if="event.address">{{ event.address }}</p>
@@ -107,7 +133,10 @@
           </div>
 
           <!-- Event Description -->
-          <div v-if="event.description" class="mt-6 border-t border-gray-200 pt-6">
+          <div
+            v-if="event.description"
+            class="mt-6 border-t border-gray-200 pt-6"
+          >
             <h3 class="font-semibold text-gray-900 mb-2">Event Description</h3>
             <p class="text-gray-700">{{ event.description }}</p>
           </div>
@@ -115,22 +144,34 @@
           <!-- Event URL -->
           <div v-if="event.url" class="mt-4">
             <h3 class="font-semibold text-gray-900 mb-2">Event Link</h3>
-            <a :href="event.url" target="_blank" class="text-blue-600 hover:text-blue-700 break-all">
+            <a
+              :href="event.url"
+              target="_blank"
+              class="text-blue-600 hover:text-blue-700 break-all"
+            >
               {{ event.url }}
             </a>
           </div>
 
           <!-- Performance Notes -->
-          <div v-if="event.performance_notes" class="mt-6 border-t border-gray-200 pt-6">
+          <div
+            v-if="event.performance_notes"
+            class="mt-6 border-t border-gray-200 pt-6"
+          >
             <h3 class="font-semibold text-gray-900 mb-2">Performance Notes</h3>
             <p class="text-gray-700">{{ event.performance_notes }}</p>
           </div>
         </div>
 
         <!-- Metrics Recorded at This Event -->
-        <div v-if="eventMetrics.length > 0" class="bg-white rounded-lg shadow p-6">
+        <div
+          v-if="eventMetrics.length > 0"
+          class="bg-white rounded-lg shadow p-6"
+        >
           <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Metrics Recorded at This Event</h2>
+            <h2 class="text-2xl font-bold text-gray-900">
+              Metrics Recorded at This Event
+            </h2>
             <ExportButton variant="icon" @click="showExportModal = true" />
           </div>
           <div class="space-y-4">
@@ -140,11 +181,17 @@
               class="flex items-start justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
             >
               <div>
-                <p class="font-semibold text-gray-900">{{ getMetricLabel(metric.metric_type) }}</p>
-                <p class="text-2xl font-bold text-blue-600 mt-1">
-                  {{ metric.value }} <span class="text-gray-600 text-sm">{{ metric.unit }}</span>
+                <p class="font-semibold text-gray-900">
+                  {{ getMetricLabel(metric.metric_type) }}
                 </p>
-                <p v-if="metric.verified" class="text-xs text-green-600 mt-2 flex items-center gap-1">
+                <p class="text-2xl font-bold text-blue-600 mt-1">
+                  {{ metric.value }}
+                  <span class="text-gray-600 text-sm">{{ metric.unit }}</span>
+                </p>
+                <p
+                  v-if="metric.verified"
+                  class="text-xs text-green-600 mt-2 flex items-center gap-1"
+                >
                   <CheckIcon class="w-3 h-3" />
                   <span>Verified by third party</span>
                 </p>
@@ -188,7 +235,9 @@
                   :key="coach.id"
                   :value="coach.id"
                 >
-                  {{ coach.first_name }} {{ coach.last_name }} ({{ coach.role }})
+                  {{ coach.first_name }} {{ coach.last_name }} ({{
+                    coach.role
+                  }})
                 </option>
               </select>
               <button
@@ -199,7 +248,10 @@
                 Add
               </button>
               <button
-                @click="showAddCoach = false; selectedCoachId = ''"
+                @click="
+                  showAddCoach = false;
+                  selectedCoachId = '';
+                "
                 class="px-4 py-2 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition"
               >
                 Cancel
@@ -208,7 +260,10 @@
           </div>
 
           <!-- Coaches List -->
-          <div v-if="coachesAtEvent.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div
+            v-if="coachesAtEvent.length > 0"
+            class="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
             <div
               v-for="coach in coachesAtEvent"
               :key="coach.id"
@@ -220,7 +275,9 @@
                     <h3 class="font-semibold text-gray-900">
                       {{ coach.first_name }} {{ coach.last_name }}
                     </h3>
-                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                    <span
+                      class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full"
+                    >
                       {{ getRoleLabel(coach.role) }}
                     </span>
                   </div>
@@ -242,18 +299,19 @@
           <!-- Empty State -->
           <div v-else class="text-center py-8 text-gray-600">
             <p v-if="!event?.school_id">
-              Event not associated with a school. Coaches can only be tracked for school-specific events.
+              Event not associated with a school. Coaches can only be tracked
+              for school-specific events.
             </p>
-            <p v-else>
-              No coaches recorded at this event yet.
-            </p>
+            <p v-else>No coaches recorded at this event yet.</p>
           </div>
         </div>
 
         <!-- Log Performance Metric -->
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Log Performance Metric</h2>
+            <h2 class="text-2xl font-bold text-gray-900">
+              Log Performance Metric
+            </h2>
             <button
               v-if="!showMetricForm"
               @click="showMetricForm = true"
@@ -263,11 +321,18 @@
             </button>
           </div>
 
-          <form v-if="showMetricForm" @submit.prevent="handleAddMetric" class="space-y-6">
+          <form
+            v-if="showMetricForm"
+            @submit.prevent="handleAddMetric"
+            class="space-y-6"
+          >
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <!-- Metric Type -->
               <div>
-                <label for="metricType" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="metricType"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Metric Type <span class="text-red-600">*</span>
                 </label>
                 <select
@@ -290,7 +355,10 @@
 
               <!-- Value -->
               <div>
-                <label for="value" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="value"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Value <span class="text-red-600">*</span>
                 </label>
                 <input
@@ -306,7 +374,10 @@
 
               <!-- Unit -->
               <div>
-                <label for="unit" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="unit"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Unit
                 </label>
                 <input
@@ -320,14 +391,23 @@
 
               <!-- Verified Checkbox -->
               <div class="flex items-center">
-                <input v-model="newMetric.verified" type="checkbox" class="w-4 h-4 rounded" />
-                <label class="ml-2 text-sm text-gray-700">Verified by third party</label>
+                <input
+                  v-model="newMetric.verified"
+                  type="checkbox"
+                  class="w-4 h-4 rounded"
+                />
+                <label class="ml-2 text-sm text-gray-700"
+                  >Verified by third party</label
+                >
               </div>
             </div>
 
             <!-- Notes -->
             <div>
-              <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                for="notes"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Notes
               </label>
               <textarea
@@ -343,10 +423,14 @@
             <div class="flex gap-4">
               <button
                 type="submit"
-                :disabled="metricLoading || !newMetric.metric_type || newMetric.value === null"
+                :disabled="
+                  metricLoading ||
+                  !newMetric.metric_type ||
+                  newMetric.value === null
+                "
                 class="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
               >
-                {{ metricLoading ? 'Logging...' : 'Log Metric' }}
+                {{ metricLoading ? "Logging..." : "Log Metric" }}
               </button>
               <button
                 type="button"
@@ -360,9 +444,16 @@
         </div>
 
         <!-- Edit Event Modal -->
-        <div v-if="showEditForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-screen overflow-y-auto">
-            <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+        <div
+          v-if="showEditForm"
+          class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        >
+          <div
+            class="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-screen overflow-y-auto"
+          >
+            <div
+              class="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between"
+            >
               <h2 class="text-2xl font-bold text-gray-900">Edit Event</h2>
               <button
                 @click="showEditForm = false"
@@ -375,7 +466,10 @@
             <form @submit.prevent="handleUpdateEvent" class="p-6 space-y-6">
               <!-- Event Name -->
               <div>
-                <label for="editName" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="editName"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Event Name <span class="text-red-600">*</span>
                 </label>
                 <input
@@ -389,7 +483,10 @@
 
               <!-- Event Type -->
               <div>
-                <label for="editType" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="editType"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Event Type <span class="text-red-600">*</span>
                 </label>
                 <select
@@ -409,7 +506,10 @@
 
               <!-- Location -->
               <div>
-                <label for="editLocation" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="editLocation"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Location
                 </label>
                 <input
@@ -424,7 +524,10 @@
               <!-- Dates -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label for="editStartDate" class="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    for="editStartDate"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Start Date <span class="text-red-600">*</span>
                   </label>
                   <input
@@ -436,7 +539,10 @@
                   />
                 </div>
                 <div>
-                  <label for="editEndDate" class="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    for="editEndDate"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     End Date
                   </label>
                   <input
@@ -450,7 +556,10 @@
 
               <!-- Cost -->
               <div>
-                <label for="editCost" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="editCost"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Cost ($)
                 </label>
                 <input
@@ -466,7 +575,10 @@
 
               <!-- Performance Notes -->
               <div>
-                <label for="editNotes" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="editNotes"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Performance Notes
                 </label>
                 <textarea
@@ -492,7 +604,7 @@
                   :disabled="isUpdating"
                   class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
                 >
-                  {{ isUpdating ? 'Saving...' : 'Save Changes' }}
+                  {{ isUpdating ? "Saving..." : "Save Changes" }}
                 </button>
               </div>
             </form>
@@ -514,298 +626,334 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed } from 'vue'
-import { useEvents } from '~/composables/useEvents'
-import { usePerformance } from '~/composables/usePerformance'
-import { useCoaches } from '~/composables/useCoaches'
-import { CheckIcon, XMarkIcon } from '@heroicons/vue/24/solid'
-import ExportButton from '~/components/Performance/ExportButton.vue'
-import ExportModal from '~/components/Performance/ExportModal.vue'
-import type { Event, PerformanceMetric, Coach } from '~/types/models'
+import { ref, onMounted, reactive, computed } from "vue";
+import { useEvents } from "~/composables/useEvents";
+import { usePerformance } from "~/composables/usePerformance";
+import { useCoaches } from "~/composables/useCoaches";
+import { CheckIcon, XMarkIcon } from "@heroicons/vue/24/solid";
+import ExportButton from "~/components/Performance/ExportButton.vue";
+import ExportModal from "~/components/Performance/ExportModal.vue";
+import type { Event, PerformanceMetric, Coach } from "~/types/models";
 
 definePageMeta({
-  middleware: 'auth',
-})
+  middleware: "auth",
+});
 
-const route = useRoute()
-const router = useRouter()
-const eventId = route.params.id as string
+const route = useRoute();
+const router = useRouter();
+const eventId = route.params.id as string;
 
-const { fetchEvent, deleteEvent: deleteEventAPI, updateEvent } = useEvents()
-const { createMetric, deleteMetric: deleteMetricAPI } = usePerformance()
-const { fetchCoaches } = useCoaches()
+const { fetchEvent, deleteEvent: deleteEventAPI, updateEvent } = useEvents();
+const { createMetric, deleteMetric: deleteMetricAPI } = usePerformance();
+const { fetchCoaches } = useCoaches();
 
-const event = ref<Event | null>(null)
-const eventMetrics = ref<PerformanceMetric[]>([])
-const loading = ref(true)
-const metricLoading = ref(false)
-const error = ref<string | null>(null)
-const showMetricForm = ref(false)
-const showEditForm = ref(false)
-const showExportModal = ref(false)
-const isUpdating = ref(false)
-const showAddCoach = ref(false)
-const selectedCoachId = ref('')
-const schoolCoaches = ref<Coach[]>([])
-const coachesAtEvent = ref<Coach[]>([])
+const event = ref<Event | null>(null);
+const eventMetrics = ref<PerformanceMetric[]>([]);
+const loading = ref(true);
+const metricLoading = ref(false);
+const error = ref<string | null>(null);
+const showMetricForm = ref(false);
+const showEditForm = ref(false);
+const showExportModal = ref(false);
+const isUpdating = ref(false);
+const showAddCoach = ref(false);
+const selectedCoachId = ref("");
+const schoolCoaches = ref<Coach[]>([]);
+const coachesAtEvent = ref<Coach[]>([]);
 
 const newMetric = reactive({
-  metric_type: '',
+  metric_type: "",
   value: null as number | null,
-  unit: '',
-  notes: '',
+  unit: "",
+  notes: "",
   verified: false,
-})
+});
 
 const editFormData = reactive({
-  name: '',
-  type: '',
-  location: '',
-  start_date: '',
-  end_date: '',
+  name: "",
+  type: "",
+  location: "",
+  start_date: "",
+  end_date: "",
   cost: 0,
-  performance_notes: '',
-})
+  performance_notes: "",
+});
 
 const getEventTypeLabel = (type: string): string => {
   const labels: Record<string, string> = {
-    showcase: 'Showcase',
-    camp: 'Camp',
-    official_visit: 'Official Visit',
-    unofficial_visit: 'Unofficial Visit',
-    game: 'Game',
-  }
-  return labels[type] || type
-}
+    showcase: "Showcase",
+    camp: "Camp",
+    official_visit: "Official Visit",
+    unofficial_visit: "Unofficial Visit",
+    game: "Game",
+  };
+  return labels[type] || type;
+};
 
-const formatDateRange = (startDate: string, endDate?: string | null): string => {
-  const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
-  const startStr = new Date(startYear, startMonth - 1, startDay).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  if (!endDate || endDate === startDate) return startStr
-  const [endYear, endMonth, endDay] = endDate.split('-').map(Number)
-  const endStr = new Date(endYear, endMonth - 1, endDay).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  return `${startStr} - ${endStr}`
-}
+const formatDateRange = (
+  startDate: string,
+  endDate?: string | null,
+): string => {
+  const [startYear, startMonth, startDay] = startDate.split("-").map(Number);
+  const startStr = new Date(
+    startYear,
+    startMonth - 1,
+    startDay,
+  ).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  if (!endDate || endDate === startDate) return startStr;
+  const [endYear, endMonth, endDay] = endDate.split("-").map(Number);
+  const endStr = new Date(endYear, endMonth - 1, endDay).toLocaleDateString(
+    "en-US",
+    { month: "short", day: "numeric", year: "numeric" },
+  );
+  return `${startStr} - ${endStr}`;
+};
 
 const getMetricLabel = (type: string): string => {
   const labels: Record<string, string> = {
-    velocity: 'Fastball Velocity',
-    exit_velo: 'Exit Velocity',
-    sixty_time: '60-Yard Dash',
-    pop_time: 'Pop Time',
-    batting_avg: 'Batting Average',
-    era: 'ERA',
-    strikeouts: 'Strikeouts',
-    other: 'Other Metric',
-  }
-  return labels[type] || type
-}
+    velocity: "Fastball Velocity",
+    exit_velo: "Exit Velocity",
+    sixty_time: "60-Yard Dash",
+    pop_time: "Pop Time",
+    batting_avg: "Batting Average",
+    era: "ERA",
+    strikeouts: "Strikeouts",
+    other: "Other Metric",
+  };
+  return labels[type] || type;
+};
 
-const eventSchoolId = computed(() => event.value?.school_id)
+const eventSchoolId = computed(() => event.value?.school_id);
 
 const availableCoaches = computed(() => {
-  const presentIds = event.value?.coaches_present || []
-  return schoolCoaches.value.filter(c => !presentIds.includes(c.id))
-})
+  const presentIds = event.value?.coaches_present || [];
+  return schoolCoaches.value.filter((c) => !presentIds.includes(c.id));
+});
 
 const getRoleLabel = (role: string): string => {
   const labels: Record<string, string> = {
-    head: 'Head Coach',
-    assistant: 'Assistant',
-    recruiting: 'Recruiting Coordinator',
-  }
-  return labels[role] || role
-}
+    head: "Head Coach",
+    assistant: "Assistant",
+    recruiting: "Recruiting Coordinator",
+  };
+  return labels[role] || role;
+};
 
 const getSourceLabel = (source: string): string => {
   const labels: Record<string, string> = {
-    email: 'Email',
-    flyer: 'Flyer',
-    web_search: 'Web Search',
-    recommendation: 'Recommendation',
-    friend: 'Friend',
-    other: 'Other',
-  }
-  return labels[source] || source
-}
+    email: "Email",
+    flyer: "Flyer",
+    web_search: "Web Search",
+    recommendation: "Recommendation",
+    friend: "Friend",
+    other: "Other",
+  };
+  return labels[source] || source;
+};
 
 const openDirections = () => {
-  if (!event.value) return
-  let query = ''
-  if (event.value.address) query += event.value.address
-  if (event.value.city) query += (query ? ', ' : '') + event.value.city
-  if (event.value.state) query += (query ? ', ' : '') + event.value.state
+  if (!event.value) return;
+  let query = "";
+  if (event.value.address) query += event.value.address;
+  if (event.value.city) query += (query ? ", " : "") + event.value.city;
+  if (event.value.state) query += (query ? ", " : "") + event.value.state;
 
   if (query.trim()) {
-    const encodedQuery = encodeURIComponent(query)
-    window.open(`https://www.google.com/maps/search/${encodedQuery}`, '_blank')
+    const encodedQuery = encodeURIComponent(query);
+    window.open(`https://www.google.com/maps/search/${encodedQuery}`, "_blank");
   }
-}
+};
 
 const loadCoaches = async () => {
-  if (!eventSchoolId.value) return
+  if (!eventSchoolId.value) return;
 
   try {
-    await fetchCoaches(eventSchoolId.value)
+    await fetchCoaches(eventSchoolId.value);
 
-    const presentIds = event.value?.coaches_present || []
-    const coaches = schoolCoaches.value
-    coachesAtEvent.value = coaches.filter((c: any) => presentIds.includes(c.id))
+    const presentIds = event.value?.coaches_present || [];
+    const coaches = schoolCoaches.value;
+    coachesAtEvent.value = coaches.filter((c: any) =>
+      presentIds.includes(c.id),
+    );
   } catch (err) {
-    console.error('Failed to load coaches:', err)
+    console.error("Failed to load coaches:", err);
   }
-}
+};
 
 const addCoach = async () => {
-  if (!selectedCoachId.value || !event.value) return
+  if (!selectedCoachId.value || !event.value) return;
 
   try {
-    const updatedCoaches = [...(event.value.coaches_present || []), selectedCoachId.value]
+    const updatedCoaches = [
+      ...(event.value.coaches_present || []),
+      selectedCoachId.value,
+    ];
 
     await updateEvent(eventId, {
       coaches_present: updatedCoaches,
-    })
+    });
 
-    showAddCoach.value = false
-    selectedCoachId.value = ''
-    await loadCoaches()
+    showAddCoach.value = false;
+    selectedCoachId.value = "";
+    await loadCoaches();
   } catch (err) {
-    console.error('Failed to add coach:', err)
+    console.error("Failed to add coach:", err);
   }
-}
+};
 
 const removeCoach = async (coachId: string) => {
-  if (!event.value) return
+  if (!event.value) return;
 
   try {
-    const updatedCoaches = (event.value.coaches_present || []).filter(id => id !== coachId)
+    const updatedCoaches = (event.value.coaches_present || []).filter(
+      (id) => id !== coachId,
+    );
 
     await updateEvent(eventId, {
       coaches_present: updatedCoaches,
-    })
+    });
 
-    await loadCoaches()
+    await loadCoaches();
   } catch (err) {
-    console.error('Failed to remove coach:', err)
+    console.error("Failed to remove coach:", err);
   }
-}
+};
 
 const handleAddMetric = async () => {
   try {
-    metricLoading.value = true
+    metricLoading.value = true;
     await createMetric({
-      metric_type: newMetric.metric_type as 'velocity' | 'exit_velo' | 'sixty_time' | 'pop_time' | 'batting_avg' | 'era' | 'strikeouts' | 'other',
+      metric_type: newMetric.metric_type as
+        | "velocity"
+        | "exit_velo"
+        | "sixty_time"
+        | "pop_time"
+        | "batting_avg"
+        | "era"
+        | "strikeouts"
+        | "other",
       value: newMetric.value!,
       recorded_date: event.value!.start_date,
-      unit: newMetric.unit || 'unit',
+      unit: newMetric.unit || "unit",
       notes: newMetric.notes || null,
       verified: newMetric.verified,
       event_id: eventId,
-    })
+    });
 
     // Reset form
-    newMetric.metric_type = ''
-    newMetric.value = null
-    newMetric.unit = ''
-    newMetric.notes = ''
-    newMetric.verified = false
-    showMetricForm.value = false
+    newMetric.metric_type = "";
+    newMetric.value = null;
+    newMetric.unit = "";
+    newMetric.notes = "";
+    newMetric.verified = false;
+    showMetricForm.value = false;
 
     // Reload metrics
-    await loadEventMetrics()
+    await loadEventMetrics();
   } catch (err) {
-    console.error('Failed to log metric:', err)
+    console.error("Failed to log metric:", err);
   } finally {
-    metricLoading.value = false
+    metricLoading.value = false;
   }
-}
+};
 
 const deleteMetric = async (metricId: string) => {
-  if (confirm('Delete this metric?')) {
+  if (confirm("Delete this metric?")) {
     try {
-      await deleteMetricAPI(metricId)
-      await loadEventMetrics()
+      await deleteMetricAPI(metricId);
+      await loadEventMetrics();
     } catch (err) {
-      console.error('Failed to delete metric:', err)
+      console.error("Failed to delete metric:", err);
     }
   }
-}
+};
 
 const deleteEvent = async () => {
-  if (confirm('Delete this event?')) {
+  if (confirm("Delete this event?")) {
     try {
-      await deleteEventAPI(eventId)
-      await router.push('/events')
+      await deleteEventAPI(eventId);
+      await router.push("/events");
     } catch (err) {
-      console.error('Failed to delete event:', err)
+      console.error("Failed to delete event:", err);
     }
   }
-}
+};
 
 const openEditForm = () => {
   if (event.value) {
-    editFormData.name = event.value.name
-    editFormData.type = event.value.type
-    editFormData.location = event.value.location || ''
-    editFormData.start_date = event.value.start_date.split('T')[0]
-    editFormData.end_date = event.value.end_date ? event.value.end_date.split('T')[0] : ''
-    editFormData.cost = event.value.cost || 0
-    editFormData.performance_notes = event.value.performance_notes || ''
-    showEditForm.value = true
+    editFormData.name = event.value.name;
+    editFormData.type = event.value.type;
+    editFormData.location = event.value.location || "";
+    editFormData.start_date = event.value.start_date.split("T")[0];
+    editFormData.end_date = event.value.end_date
+      ? event.value.end_date.split("T")[0]
+      : "";
+    editFormData.cost = event.value.cost || 0;
+    editFormData.performance_notes = event.value.performance_notes || "";
+    showEditForm.value = true;
   }
-}
+};
 
 const handleUpdateEvent = async () => {
-  if (!event.value) return
+  if (!event.value) return;
 
   try {
-    isUpdating.value = true
+    isUpdating.value = true;
     await updateEvent(eventId, {
       name: editFormData.name,
-      type: editFormData.type as 'camp' | 'showcase' | 'official_visit' | 'unofficial_visit' | 'game',
+      type: editFormData.type as
+        | "camp"
+        | "showcase"
+        | "official_visit"
+        | "unofficial_visit"
+        | "game",
       location: editFormData.location || null,
       start_date: editFormData.start_date,
       end_date: editFormData.end_date || null,
       cost: editFormData.cost || null,
       performance_notes: editFormData.performance_notes || null,
-    })
+    });
 
     // Reload event data
-    event.value = await fetchEvent(eventId)
-    showEditForm.value = false
+    event.value = await fetchEvent(eventId);
+    showEditForm.value = false;
   } catch (err) {
-    console.error('Failed to update event:', err)
-    error.value = err instanceof Error ? err.message : 'Failed to update event'
+    console.error("Failed to update event:", err);
+    error.value = err instanceof Error ? err.message : "Failed to update event";
   } finally {
-    isUpdating.value = false
+    isUpdating.value = false;
   }
-}
+};
 
 const loadEventMetrics = async () => {
   try {
-    const { metrics, fetchMetrics } = usePerformance()
-    await fetchMetrics({ eventId })
-    eventMetrics.value = metrics.value.filter((m) => m.event_id === eventId)
+    const { metrics, fetchMetrics } = usePerformance();
+    await fetchMetrics({ eventId });
+    eventMetrics.value = metrics.value.filter((m) => m.event_id === eventId);
   } catch (err) {
-    console.error('Failed to load event metrics:', err)
+    console.error("Failed to load event metrics:", err);
   }
-}
+};
 
 onMounted(async () => {
   try {
-    loading.value = true
-    event.value = await fetchEvent(eventId)
+    loading.value = true;
+    event.value = await fetchEvent(eventId);
     if (event.value) {
-      await loadEventMetrics()
-      await loadCoaches()
+      await loadEventMetrics();
+      await loadCoaches();
     } else {
-      error.value = 'Event not found'
+      error.value = "Event not found";
     }
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to load event'
-    error.value = message
+    const message = err instanceof Error ? err.message : "Failed to load event";
+    error.value = message;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-})
+});
 </script>

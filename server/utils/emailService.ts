@@ -1,31 +1,33 @@
-import type { NotificationPriority } from '~/types/models'
+import type { NotificationPriority } from "~/types/models";
 
 export interface SendNotificationEmailOptions {
-  to: string
-  subject: string
-  title: string
-  message: string
-  actionUrl?: string
-  priority: NotificationPriority
+  to: string;
+  subject: string;
+  title: string;
+  message: string;
+  actionUrl?: string;
+  priority: NotificationPriority;
 }
 
-export const sendNotificationEmail = async (options: SendNotificationEmailOptions) => {
-  const { to, subject, title, message, actionUrl, priority } = options
+export const sendNotificationEmail = async (
+  options: SendNotificationEmailOptions,
+) => {
+  const { to, subject, title, message, actionUrl, priority } = options;
 
   // Check if Resend API key is available
   if (!process.env.RESEND_API_KEY) {
-    console.warn('RESEND_API_KEY not configured, email notifications disabled')
-    return { success: false, error: 'Email service not configured' }
+    console.warn("RESEND_API_KEY not configured, email notifications disabled");
+    return { success: false, error: "Email service not configured" };
   }
 
   const priorityBadge =
-    priority === 'high'
+    priority === "high"
       ? '<span style="display: inline-block; background: #dc2626; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">HIGH PRIORITY</span>'
-      : ''
+      : "";
 
   const actionButton = actionUrl
     ? `<a href="${actionUrl}" style="display: inline-block; background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; margin-top: 20px;">View Details</a>`
-    : ''
+    : "";
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -50,34 +52,35 @@ export const sendNotificationEmail = async (options: SendNotificationEmailOption
         </p>
       </body>
     </html>
-  `
+  `;
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: 'College Recruiting <notifications@recruiting.chrisandrikanich.com>',
+        from: "College Recruiting <notifications@recruiting.chrisandrikanich.com>",
         to,
         subject,
-        html: htmlContent
-      })
-    })
+        html: htmlContent,
+      }),
+    });
 
     if (!response.ok) {
-      const error = await response.json()
-      console.error('Resend API error:', error)
-      return { success: false, error: error.message }
+      const error = await response.json();
+      console.error("Resend API error:", error);
+      return { success: false, error: error.message };
     }
 
-    const data = await response.json()
-    return { success: true, messageId: data.id }
+    const data = await response.json();
+    return { success: true, messageId: data.id };
   } catch (err) {
-    console.error('Failed to send email:', err)
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error sending email'
-    return { success: false, error: errorMessage }
+    console.error("Failed to send email:", err);
+    const errorMessage =
+      err instanceof Error ? err.message : "Unknown error sending email";
+    return { success: false, error: errorMessage };
   }
-}
+};
