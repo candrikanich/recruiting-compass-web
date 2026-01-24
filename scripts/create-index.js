@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+ 
 import { writeFileSync, existsSync, mkdirSync } from "fs";
 import { resolve } from "path";
 

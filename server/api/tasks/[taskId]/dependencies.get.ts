@@ -15,17 +15,21 @@ interface DependenciesResponse {
 }
 
 // Helper to safely get dependency task IDs
-function getDependencyTaskIds(task: any): string[] {
+function getDependencyTaskIds(task: unknown): string[] {
+  const taskRecord = task as Record<string, unknown>;
   return typeof task === "object" &&
     task !== null &&
-    Array.isArray(task.dependency_task_ids)
-    ? task.dependency_task_ids
+    Array.isArray(taskRecord.dependency_task_ids)
+    ? (taskRecord.dependency_task_ids as string[])
     : [];
 }
 
 // Helper to check if athlete task is completed
-function isAthleteTaskCompleted(at: any): boolean {
-  return typeof at === "object" && at !== null && at.status === "completed";
+function isAthleteTaskCompleted(at: unknown): boolean {
+  const atRecord = at as Record<string, unknown>;
+  return (
+    typeof at === "object" && at !== null && atRecord.status === "completed"
+  );
 }
 
 export default defineEventHandler(async (event) => {
@@ -99,15 +103,18 @@ export default defineEventHandler(async (event) => {
     }
 
     // Create map for quick lookup
-    const athleteTaskMap = new Map(
-      (Array.isArray(athleteTasksData) ? athleteTasksData : [])
-        .map((at: any) =>
-          typeof at === "object" && at !== null && "task_id" in at
-            ? [at.task_id, at]
-            : null,
-        )
-        .filter((entry): entry is [string, any] => entry !== null),
-    );
+    const validTasks = (Array.isArray(athleteTasksData) ? athleteTasksData : [])
+      .map((at: unknown) => {
+        const atRecord = at as Record<string, unknown>;
+        return typeof at === "object" && at !== null && "task_id" in atRecord
+          ? [atRecord.task_id as string, atRecord]
+          : null;
+      })
+      .filter(
+        (entry): entry is [string, Record<string, unknown>] => entry !== null,
+      ) as [string, Record<string, unknown>][];
+
+    const athleteTaskMap = new Map(validTasks);
 
     // Separate complete and incomplete prerequisites
     const completePrerequisites = (
@@ -119,8 +126,9 @@ export default defineEventHandler(async (event) => {
 
     const incompletePrerequisites = (
       Array.isArray(prerequisitesData) ? prerequisitesData : []
-    ).filter((task: any) => {
-      const athleteTask = athleteTaskMap.get(task.id);
+    ).filter((task: unknown) => {
+      const taskRecord = task as Record<string, unknown>;
+      const athleteTask = athleteTaskMap.get(taskRecord.id as string);
       return !athleteTask || !isAthleteTaskCompleted(athleteTask);
     });
 

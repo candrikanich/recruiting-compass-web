@@ -40,6 +40,7 @@ export interface User {
   email: string;
   role?: "parent" | "student";
   full_name?: string;
+  profile_photo_url?: string | null;
   linked_accounts?: LinkedAccount[];
   // Timeline fields (from Phase 1)
   current_phase?: "freshman" | "sophomore" | "junior" | "senior" | "committed";

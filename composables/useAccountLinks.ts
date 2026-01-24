@@ -5,7 +5,7 @@ import { useToast } from "./useToast";
 import type { AccountLink, LinkedAccount } from "~/types/models";
 
 // Temporary types to fix build
-interface AccountLinksInsert {
+interface _AccountLinksInsert {
   parent_user_id?: string | null;
   player_user_id?: string | null;
   invited_email?: string;
@@ -48,7 +48,7 @@ export const useAccountLinks = () => {
         .from("account_links")
         .select("*")
         .or(
-          `parent_user_id.eq.${getUserStore().user.id},player_user_id.eq.${getUserStore().user.id}`,
+          `parent_user_id.eq.${getUserStore().user?.id},player_user_id.eq.${getUserStore().user?.id}`,
         );
 
       if (fetchError) {
@@ -126,7 +126,7 @@ export const useAccountLinks = () => {
 
       // Check if invitee email is same as current user
       if (
-        inviteeEmail.toLowerCase() === getUserStore().user.email.toLowerCase()
+        inviteeEmail.toLowerCase() === getUserStore().user?.email?.toLowerCase()
       ) {
         error.value = "You cannot invite yourself";
         return false;
@@ -147,7 +147,8 @@ export const useAccountLinks = () => {
       }
 
       if (existingLinks && existingLinks.length >= 5) {
-        error.value = "You have reached the maximum of 5 linked accounts (including pending invitations)";
+        error.value =
+          "You have reached the maximum of 5 linked accounts (including pending invitations)";
         return false;
       }
 
@@ -223,7 +224,7 @@ export const useAccountLinks = () => {
           await $fetch("/api/account-links/invite", {
             method: "POST",
             body: {
-              invitedEmail,
+              inviteeEmail,
               linkId: createdLink.id,
             },
           });

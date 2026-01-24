@@ -7,10 +7,20 @@
       class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
     >
       <!-- Avatar -->
-      <div
-        class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center text-white text-sm font-semibold"
-      >
-        {{ userInitials }}
+      <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center">
+        <img
+          v-if="profilePhotoUrl"
+          :src="profilePhotoUrl"
+          :alt="userName"
+          class="w-full h-full object-cover"
+          @error="handleImageError"
+        />
+        <span
+          v-else
+          class="text-white text-sm font-semibold"
+        >
+          {{ userInitials }}
+        </span>
       </div>
       <!-- Chevron -->
       <svg
@@ -116,6 +126,15 @@ const userInitials = computed(() => {
   }
   return name.charAt(0).toUpperCase();
 });
+
+const profilePhotoUrl = computed(() => {
+  return userStore?.user?.profile_photo_url || null;
+});
+
+const handleImageError = () => {
+  // Image failed to load, initials will show as fallback
+  console.error("Failed to load profile photo in header");
+};
 
 const handleLogout = async () => {
   isOpen.value = false;

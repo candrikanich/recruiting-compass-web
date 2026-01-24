@@ -71,10 +71,13 @@ export default defineEventHandler(async (event) => {
     );
 
     return { generated: count };
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw createError({
       statusCode: 500,
-      message: error.message || "Failed to evaluate suggestions",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to evaluate suggestions",
     });
   }
 });

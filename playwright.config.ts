@@ -1,4 +1,3 @@
-// @ts-ignore - Playwright test module types
 import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({

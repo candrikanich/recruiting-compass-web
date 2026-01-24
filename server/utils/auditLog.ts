@@ -19,11 +19,11 @@ interface AuditLogParams {
   resourceId?: string;
   tableName?: string;
   description?: string;
-  oldValues?: Record<string, any>;
-  newValues?: Record<string, any>;
+  oldValues?: Record<string, unknown>;
+  newValues?: Record<string, unknown>;
   status?: "success" | "failure";
   errorMessage?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -69,7 +69,7 @@ export async function auditLog(
       status: params.status || "success",
       error_message: params.errorMessage || null,
       metadata: params.metadata || {},
-    } as any);
+    });
 
     if (error) {
       logger.error("Failed to create audit log", {
@@ -115,7 +115,7 @@ export async function auditLogBatch(
       metadata: p.metadata || {},
     })) as AuditLogInsert[];
 
-    const { error } = await supabase.from("audit_logs").insert(entries as any);
+    const { error } = await supabase.from("audit_logs").insert(entries);
 
     if (error) {
       logger.error("Failed to batch create audit logs", {

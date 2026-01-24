@@ -162,5 +162,11 @@ export const useUserStore = defineStore("user", {
         console.error("Error refreshing verification status:", err);
       }
     },
+
+    setProfilePhotoUrl(photoUrl: string | null) {
+      if (this.user) {
+        this.user.profile_photo_url = photoUrl;
+      }
+    },
   },
 });

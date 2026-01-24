@@ -30,28 +30,31 @@ interface SyncSummary {
 }
 
 // Helper to safely extract handles from entities
-const getHandles = (entities: any[], handleKey: string): string[] => {
+const getHandles = (entities: unknown[], handleKey: string): string[] => {
   if (!Array.isArray(entities)) return [];
   return entities
     .filter(
-      (e) =>
+      (e): e is Record<string, unknown> =>
         typeof e === "object" &&
         e !== null &&
         handleKey in e &&
-        typeof e[handleKey] === "string",
+        typeof (e as Record<string, unknown>)[handleKey] === "string",
     )
-    .map((e) => e[handleKey]);
+    .map((e) => (e as Record<string, unknown>)[handleKey] as string);
 };
 
 // Helper to safely find entity by handle
 const findEntityByHandle = (
-  entities: any[],
+  entities: unknown[],
   handleKey: string,
   targetHandle: string,
 ) => {
   if (!Array.isArray(entities)) return undefined;
   return entities.find(
-    (e) => typeof e === "object" && e !== null && e[handleKey] === targetHandle,
+    (e): e is Record<string, unknown> =>
+      typeof e === "object" &&
+      e !== null &&
+      (e as Record<string, unknown>)[handleKey] === targetHandle,
   );
 };
 
@@ -76,7 +79,7 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
       .select("id, name, twitter_handle, instagram_handle")
       .eq("user_id", user.id);
 
-    const { data: coaches, error: coachesError } = await supabase
+    const { data: coaches, error: _coachesError } = await supabase
       .from("coaches")
       .select("id, name, twitter_handle, instagram_handle");
 

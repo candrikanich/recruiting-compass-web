@@ -777,6 +777,7 @@ export type Database = {
           id: string;
           phase_milestone_data: Json | null;
           phone: string | null;
+          profile_photo_url: string | null;
           recovery_mode_active: boolean | null;
           recovery_plan_shown_at: string | null;
           role: Database["public"]["Enums"]["user_role"];
@@ -793,6 +794,7 @@ export type Database = {
           id: string;
           phase_milestone_data?: Json | null;
           phone?: string | null;
+          profile_photo_url?: string | null;
           recovery_mode_active?: boolean | null;
           recovery_plan_shown_at?: string | null;
           role: Database["public"]["Enums"]["user_role"];
@@ -809,6 +811,7 @@ export type Database = {
           id?: string;
           phase_milestone_data?: Json | null;
           phone?: string | null;
+          profile_photo_url?: string | null;
           recovery_mode_active?: boolean | null;
           recovery_plan_shown_at?: string | null;
           role?: Database["public"]["Enums"]["user_role"];

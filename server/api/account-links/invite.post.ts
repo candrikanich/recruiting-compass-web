@@ -8,13 +8,25 @@
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
-import { serverSupabaseServiceRole, serverSupabaseUser } from "#supabase/server";
+import {
+  serverSupabaseServiceRole,
+  serverSupabaseUser,
+} from "#supabase/server";
 import { sendEmail } from "~/server/utils/emailService";
+import type { Database } from "~/types/database";
 
 interface InviteRequest {
   invitedEmail: string;
   linkId: string;
 }
+
+type AccountLinkWithUser =
+  Database["public"]["Tables"]["account_links"]["Row"] & {
+    users: {
+      full_name: string | null;
+      email: string;
+    } | null;
+  };
 
 export default defineEventHandler(async (event) => {
   try {
@@ -56,7 +68,7 @@ export default defineEventHandler(async (event) => {
     const invitationUrl = `${appUrl}/settings/account-linking?token=${link.invitation_token}`;
 
     // Get initiator name
-    const linkData = link as any;
+    const linkData = link as AccountLinkWithUser;
     const initiatorName = linkData.users?.full_name || "A family member";
     const initiatorEmail = linkData.users?.email || "unknown@example.com";
 

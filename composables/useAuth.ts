@@ -17,7 +17,7 @@ import type { SessionPreferences } from "~/types/session";
  *
  * @returns Object with auth actions and readonly state
  */
-interface AuthActions {
+interface _AuthActions {
   restoreSession: () => Promise<Session | null>;
   login: (
     email: string,
@@ -94,11 +94,7 @@ export const useAuth = () => {
    * @param password User password
    * @param rememberMe Whether to extend session to 30 days (defaults to false for 1 day)
    */
-  const login = async (
-    email: string,
-    password: string,
-    rememberMe = false,
-  ) => {
+  const login = async (email: string, password: string, rememberMe = false) => {
     loading.value = true;
     error.value = null;
 
@@ -129,7 +125,10 @@ export const useAuth = () => {
               ? Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
               : Date.now() + 24 * 60 * 60 * 1000, // 1 day
           };
-          localStorage.setItem("session_preferences", JSON.stringify(preferences));
+          localStorage.setItem(
+            "session_preferences",
+            JSON.stringify(preferences),
+          );
         }
       }
 

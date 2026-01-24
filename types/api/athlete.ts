@@ -5,11 +5,10 @@
 
 import type { Phase, MilestoneProgress, StatusLabel } from "~/types/timeline";
 
-/* eslint-disable @typescript-eslint/no-empty-object-type */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AthleteAPI {
   // Phase endpoints
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+
   export interface GetPhaseRequest {
     // Empty interface - no properties needed
   }

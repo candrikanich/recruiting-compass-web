@@ -45,6 +45,17 @@
 
       <!-- Form -->
       <form v-if="!loading" @submit.prevent="handleSave" class="space-y-8">
+        <!-- Profile Photo Section -->
+        <div
+          class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
+          data-testid="profile-photo-section"
+        >
+          <h2 class="text-lg font-semibold text-slate-900 mb-4">
+            Profile Photo
+          </h2>
+          <ProfilePhotoUpload />
+        </div>
+
         <!-- Basic Info -->
         <div
           class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
