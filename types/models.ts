@@ -96,6 +96,7 @@ export interface School {
     | "offer_received"
     | "declined"
     | "committed";
+  priority_tier?: "A" | "B" | "C" | null;
   notes: string | null;
   pros: string[];
   cons: string[];
