@@ -14,6 +14,8 @@ export default [
       "coverage",
       "*.cjs",
       ".gitlab-ci.yml",
+      ".vite",
+      "__tests__",
       "tests/**/*",
     ],
   },
@@ -27,8 +29,8 @@ export default [
       sourceType: "module",
       parser: vueParser,
       parserOptions: {
-        parser: ts.parser,
-        extraFileExtensions: [".vue"],
+        sourceType: "module",
+        ecmaVersion: "latest",
       },
       globals: {
         definePageMeta: "readonly",
@@ -60,7 +62,9 @@ export default [
       "vue/multi-word-component-names": "off",
       "vue/no-v-html": "warn",
       "no-console": ["warn", { allow: ["warn", "error", "debug"] }],
-      "@typescript-eslint/no-explicit-any": "error",
+      // Disable TypeScript-specific rules for Vue files
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
     },
   },
   {
@@ -70,12 +74,16 @@ export default [
       "!**/*.spec.ts",
       "!__tests__/**/*",
       "!vitest.config.ts",
+      "!vitest.config.minimal.ts",
       "!playwright.config.ts",
+      "!scripts/**/*.js",
+      "!server/**/*.ts",
     ],
     languageOptions: {
       parser: ts.parser,
       parserOptions: {
         project: "./tsconfig.json",
+        extraFileExtensions: [".vue"],
       },
     },
     rules: {

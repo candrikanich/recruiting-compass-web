@@ -39,7 +39,7 @@ export function useValidation<T>(
 ): UseValidationReturn<T> {
   // Deprecation warning: prefer useFormValidation()
   if (process.env.NODE_ENV !== "test") {
-    // eslint-disable-next-line no-console
+     
     console.warn(
       "[DEPRECATED] `useValidation()` is deprecated. Please migrate to `useFormValidation()` from `~/composables/useFormValidation`.",
     );

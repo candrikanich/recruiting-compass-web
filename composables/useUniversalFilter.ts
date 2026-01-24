@@ -114,7 +114,7 @@ export const useUniversalFilter = <T extends Record<string, unknown>>(
   };
 
   // Debounced filter value updates
-  let debounceTimeouts: Record<string, ReturnType<typeof setTimeout>> = {};
+  const debounceTimeouts: Record<string, ReturnType<typeof setTimeout>> = {};
 
   // Set individual filter value with debounce support
   const setFilterValue = (field: string, value: FilterValue) => {

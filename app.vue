@@ -3,7 +3,7 @@
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
-    <DesignSystem-Toast />
+    <DesignSystemToast />
     <FeedbackButton />
   </div>
 </template>
