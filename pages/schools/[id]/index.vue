@@ -69,6 +69,13 @@
                     <option value="declined">Declined</option>
                     <option value="committed">Committed</option>
                   </select>
+                  <div class="py-1">
+                    <SchoolPrioritySelector
+                      :model-value="school.priority_tier"
+                      @update:model-value="updatePriorityTier"
+                      :data-testid="`priority-selector-${id}`"
+                    />
+                  </div>
                   <span
                     v-if="calculatedSize"
                     class="px-2 py-1 text-xs font-medium rounded-full"
@@ -835,6 +842,7 @@ const id = route.params.id as string;
 const userStore = useUserStore();
 const school = ref<School | null>(null);
 const statusUpdating = ref(false);
+const priorityTierUpdating = ref(false);
 const schoolCoaches = computed(() => allCoaches.value);
 const schoolDocuments = computed(() =>
   documents.value.filter((doc: Document) =>
@@ -915,6 +923,17 @@ const updateStatus = async () => {
     if (updated) school.value = updated;
   } finally {
     statusUpdating.value = false;
+  }
+};
+
+const updatePriorityTier = async (tier: "A" | "B" | "C" | null) => {
+  if (!school.value) return;
+  priorityTierUpdating.value = true;
+  try {
+    const updated = await updateSchool(id, { priority_tier: tier });
+    if (updated) school.value = updated;
+  } finally {
+    priorityTierUpdating.value = false;
   }
 };
 
