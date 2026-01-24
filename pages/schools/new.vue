@@ -121,6 +121,15 @@
             @cancel="() => navigateTo('/schools')"
           />
 
+          <!-- Duplicate School Dialog -->
+          <DuplicateSchoolDialog
+            :isOpen="isDuplicateDialogOpen"
+            :duplicate="duplicateSchool!"
+            :matchType="duplicateMatchType"
+            @confirm="proceedWithDuplicate"
+            @cancel="closeDuplicateDialog"
+          />
+
           <!-- College Scorecard Data (Display Only) -->
           <div
             v-if="collegeScorecardData"
@@ -197,16 +206,19 @@
 import { ref, reactive } from "vue";
 import { CheckIcon } from "@heroicons/vue/24/solid";
 import { useSchools } from "~/composables/useSchools";
+import { useSchoolDuplication } from "~/composables/useSchoolDuplication";
 import { useNcaaLookup } from "~/composables/useNcaaLookup";
 import {
   useCollegeData,
   type CollegeDataResult,
 } from "~/composables/useCollegeData";
 import type { CollegeSearchResult } from "~/types/api";
+import type { School } from "~/types/models";
 
 definePageMeta({});
 
 const { createSchool, loading, error } = useSchools();
+const { findDuplicate } = useSchoolDuplication();
 const { lookupDivision } = useNcaaLookup();
 const {
   fetchByName,
@@ -226,6 +238,12 @@ const autoFilledFields = reactive({
   division: false,
   conference: false,
 });
+
+// Duplicate dialog state
+const isDuplicateDialogOpen = ref(false);
+const duplicateSchool = ref<School | null>(null);
+const duplicateMatchType = ref<"name" | "domain" | "ncaa_id" | null>(null);
+const pendingSchoolData = ref<any>(null);
 
 const handleCollegeSelect = async (college: CollegeSearchResult) => {
   selectedCollege.value = college;
@@ -277,6 +295,22 @@ const clearSelection = () => {
 };
 
 const handleSchoolFormSubmit = async (formData: any) => {
+  // Check for duplicates
+  const { duplicate, matchType } = findDuplicate(formData);
+
+  if (duplicate) {
+    duplicateSchool.value = duplicate;
+    duplicateMatchType.value = matchType;
+    pendingSchoolData.value = formData;
+    isDuplicateDialogOpen.value = true;
+    return;
+  }
+
+  // No duplicate found, proceed with creation
+  await createSchoolWithData(formData);
+};
+
+const createSchoolWithData = async (formData: any) => {
   try {
     const academic_info = collegeScorecardData.value
       ? {
@@ -307,5 +341,17 @@ const handleSchoolFormSubmit = async (formData: any) => {
       err instanceof Error ? err.message : "Failed to create school";
     console.error("Failed to create school:", message);
   }
+};
+
+const proceedWithDuplicate = async () => {
+  closeDuplicateDialog();
+  await createSchoolWithData(pendingSchoolData.value);
+};
+
+const closeDuplicateDialog = () => {
+  isDuplicateDialogOpen.value = false;
+  duplicateSchool.value = null;
+  duplicateMatchType.value = null;
+  pendingSchoolData.value = null;
 };
 </script>
