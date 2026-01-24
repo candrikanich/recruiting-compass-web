@@ -27,22 +27,22 @@ import { useDocumentSharing } from "./useDocumentSharing";
  * @returns Combined object with all document operations
  */
 export const useDocuments = (): {
-  documents: any;
-  documentsByType: any;
-  fetchDocuments: any;
-  fetchDocumentVersions: any;
-  updateDocument: any;
-  deleteDocument: any;
-  isUploading: any;
-  uploadProgress: any;
-  uploadDocument: any;
-  uploadNewVersion: any;
-  validateFile: any;
-  isSharing: any;
-  shareDocumentWithSchools: any;
-  removeSchoolAccess: any;
-  error: ComputedRef<any>;
-  loading: ComputedRef<any>;
+  documents: unknown;
+  documentsByType: unknown;
+  fetchDocuments: unknown;
+  fetchDocumentVersions: unknown;
+  updateDocument: unknown;
+  deleteDocument: unknown;
+  isUploading: unknown;
+  uploadProgress: unknown;
+  uploadDocument: unknown;
+  uploadNewVersion: unknown;
+  validateFile: unknown;
+  isSharing: unknown;
+  shareDocumentWithSchools: unknown;
+  removeSchoolAccess: unknown;
+  error: ComputedRef<string | null>;
+  loading: ComputedRef<boolean>;
 } => {
   const fetch = useDocumentFetch();
   const upload = useDocumentUpload();

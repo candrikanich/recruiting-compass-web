@@ -23,7 +23,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
       userStore = useUserStore();
       const { linkedAccounts: la } = useAccountLinks();
       linkedAccounts = la;
-    } catch (_storeError) {
+    } catch {
       // Store not ready yet, skip logging
       return;
     }

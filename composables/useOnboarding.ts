@@ -5,7 +5,6 @@
 
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
-import type { AthleteTask } from "~/types/timeline";
 
 export interface OnboardingAssessment {
   hasHighlightVideo: boolean;

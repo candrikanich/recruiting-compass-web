@@ -70,8 +70,12 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
     const config = useRuntimeConfig();
 
     // Initialize services
-    const twitterService = new TwitterService(config.twitterBearerToken);
-    const instagramService = new InstagramService(config.instagramAccessToken);
+    const twitterService = new TwitterService(
+      config.twitterBearerToken as string,
+    );
+    const instagramService = new InstagramService(
+      config.instagramAccessToken as string,
+    );
 
     // Get user's schools and coaches with social media handles
     const { data: schools, error: schoolsError } = await supabase
@@ -93,13 +97,25 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
 
     // Collect all Twitter and Instagram handles using helper functions
     const rawTwitterHandles = [
-      ...getHandles(schools as any[], "twitter_handle"),
-      ...getHandles(coaches as any[], "twitter_handle"),
+      ...getHandles(
+        (schools || []) as Array<{ twitter_handle?: string }>,
+        "twitter_handle",
+      ),
+      ...getHandles(
+        (coaches || []) as Array<{ twitter_handle?: string }>,
+        "twitter_handle",
+      ),
     ];
 
     const rawInstagramHandles = [
-      ...getHandles(schools as any[], "instagram_handle"),
-      ...getHandles(coaches as any[], "instagram_handle"),
+      ...getHandles(
+        (schools || []) as Array<{ instagram_handle?: string }>,
+        "instagram_handle",
+      ),
+      ...getHandles(
+        (coaches || []) as Array<{ instagram_handle?: string }>,
+        "instagram_handle",
+      ),
     ];
 
     // Filter to only valid handles (prevents injection and API errors)

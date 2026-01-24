@@ -6,14 +6,7 @@
 import { ref, computed, type ComputedRef, type Ref } from "vue";
 import type { Phase, MilestoneProgress } from "~/types/timeline";
 import type { AthleteAPI } from "~/types/api/athlete";
-import {
-  calculatePhase,
-  getMilestoneProgress,
-  canAdvancePhase,
-  getNextPhase,
-  buildPhaseMilestoneData,
-  PHASE_INFO,
-} from "~/utils/phaseCalculation";
+import { getNextPhase, PHASE_INFO } from "~/utils/phaseCalculation";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 
 export const usePhaseCalculation = (): {

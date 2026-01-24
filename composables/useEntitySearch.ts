@@ -75,7 +75,7 @@ export const useEntitySearch = () => {
   /**
    * Apply fuzzy search to result set
    */
-  const applyFuzzySearch = <T extends any>(
+  const applyFuzzySearch = <T>(
     items: T[],
     searchQuery: string,
     keys: string[],
@@ -94,7 +94,10 @@ export const useEntitySearch = () => {
   /**
    * Search schools by name
    */
-  const searchSchools = async (searchQuery: string, filters: any) => {
+  const searchSchools = async (
+    searchQuery: string,
+    filters: Record<string, unknown>,
+  ) => {
     if (!userStore.user) return;
 
     try {
@@ -133,7 +136,10 @@ export const useEntitySearch = () => {
   /**
    * Search coaches
    */
-  const searchCoaches = async (searchQuery: string, filters: any) => {
+  const searchCoaches = async (
+    searchQuery: string,
+    filters: Record<string, unknown>,
+  ) => {
     if (!userStore.user) return;
 
     try {
@@ -175,7 +181,10 @@ export const useEntitySearch = () => {
   /**
    * Search interactions
    */
-  const searchInteractions = async (searchQuery: string, filters: any) => {
+  const searchInteractions = async (
+    searchQuery: string,
+    filters: Record<string, unknown>,
+  ) => {
     if (!userStore.user) return;
 
     try {
@@ -225,7 +234,10 @@ export const useEntitySearch = () => {
   /**
    * Search metrics
    */
-  const searchMetrics = async (searchQuery: string, filters: any) => {
+  const searchMetrics = async (
+    searchQuery: string,
+    filters: Record<string, unknown>,
+  ) => {
     if (!userStore.user) return;
 
     try {

@@ -90,8 +90,10 @@ export const useSchoolMatching = () => {
         const academicRating = getAcademicRating(school);
         return academicRating >= (pref.value as number);
 
-      case "school_size":
-        return evaluateSchoolSize(school, pref.value as string);
+      case "school_size": {
+        const schoolSize = pref.value;
+        return evaluateSchoolSize(school, schoolSize);
+      }
 
       case "scholarship_required":
         // This would need offer data - for now, assume matches

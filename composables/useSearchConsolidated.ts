@@ -44,7 +44,7 @@ import type {
  * @returns Object with search methods, results, and filter management
  */
 export const useSearchConsolidated = () => {
-  const supabase = useSupabase();
+  const _supabase = useSupabase();
   const userStore = useUserStore();
   const { getErrorMessage, logError } = useErrorHandler();
 

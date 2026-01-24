@@ -72,7 +72,7 @@ export const useFollowUpReminders = () => {
     title: string,
     dueDate: string,
     reminderType: FollowUpReminder["reminder_type"],
-    priority: FollowUpReminder["priority"] = "medium",
+    _priority: FollowUpReminder["priority"] = "medium",
     description?: string,
     schoolId?: string,
     coachId?: string,

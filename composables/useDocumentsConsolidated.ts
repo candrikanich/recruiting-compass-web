@@ -1,11 +1,10 @@
-import { ref, computed, type ComputedRef } from "vue";
+import { ref, computed } from "vue";
 import {
   querySelect,
   querySingle,
   queryInsert,
   queryUpdate,
   queryDelete,
-  isQuerySuccess,
 } from "~/utils/supabaseQuery";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useSupabase } from "./useSupabase";
@@ -322,7 +321,10 @@ export const useDocumentsConsolidated = () => {
 
     // Validate file
     try {
-      validateFile(file, type as any);
+      validateFile(
+        file,
+        type as "transcript" | "test_score" | "video" | "resume" | "other",
+      );
     } catch (err) {
       const fileError = err instanceof Error ? err.message : "Invalid file";
       uploadError.value = fileError;

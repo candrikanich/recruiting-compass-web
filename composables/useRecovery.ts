@@ -2,7 +2,6 @@ import { ref } from "vue";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
 import { useTasks } from "~/composables/useTasks";
-import type { Interaction, School } from "~/types/models";
 
 export type RecoveryTriggerType =
   | "critical_task_missed"
@@ -12,7 +11,7 @@ export type RecoveryTriggerType =
 
 export interface RecoveryTrigger {
   type: RecoveryTriggerType;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   severity: "high" | "medium";
 }
 

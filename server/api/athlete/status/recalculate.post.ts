@@ -96,7 +96,7 @@ export default defineEventHandler(async (event) => {
     );
 
     // Fetch all schools and interactions in single query to avoid N+1
-    const { data: schoolsData, error: schoolsError } = await supabase
+    const { data: schoolsData } = await supabase
       .from("schools")
       .select("id")
       .eq("user_id", user.id);

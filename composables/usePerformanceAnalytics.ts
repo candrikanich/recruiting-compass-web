@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import type { Performance } from "~/types/models";
 
 /**
@@ -305,7 +305,7 @@ export const usePerformanceAnalytics = () => {
    * Group items by category field
    * Returns array of categories with counts and percentages
    */
-  const groupByCategory = <T extends Record<string, any>>(
+  const groupByCategory = <T>(
     items: T[],
     categoryField: keyof T,
   ): Array<{ label: string; value: number; percentage: number }> => {

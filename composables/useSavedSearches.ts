@@ -99,7 +99,7 @@ export const useSavedSearches = () => {
     query: string,
     searchType: SavedSearch["searchType"],
     filters: SavedSearch["filters"],
-    description?: string,
+    _description?: string,
   ): Promise<SavedSearch | null> => {
     if (!userStore.user) return null;
 
@@ -189,7 +189,7 @@ export const useSavedSearches = () => {
     query: string,
     searchType: SearchHistory["searchType"],
     resultsCount: number,
-    filtersApplied?: Record<string, any>,
+    filtersApplied?: Record<string, unknown>,
   ): Promise<void> => {
     if (!userStore.user) return;
 

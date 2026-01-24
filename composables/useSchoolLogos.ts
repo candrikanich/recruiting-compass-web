@@ -23,7 +23,7 @@ const GENERIC_SCHOOL_ICON = "🏫"; // Fallback emoji
 
 export const useSchoolLogos = () => {
   const supabase = useSupabase();
-  const userStore = useUserStore();
+  const _userStore = useUserStore();
   const fetchingLogos = ref(new Set<string>());
   const logoMap = ref(new Map<string, string | null>());
 

@@ -60,7 +60,7 @@ export const useSearch = () => {
   const applyFilter = async (
     category: string,
     filterName: string,
-    value: any,
+    value: unknown,
   ) => {
     filterMgmt.applyFilter(category, filterName, value);
     if (entitySearch.query.value) {

@@ -109,7 +109,7 @@ export default defineEventHandler(async (event) => {
     }
 
     return { success: true, message: "Thank you for your feedback!" };
-  } catch (error: any) {
+  } catch (error: unknown) {
     const userId = await tryGetUserId(event);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
@@ -135,7 +135,9 @@ export default defineEventHandler(async (event) => {
   }
 });
 
-async function tryGetUserId(event: any): Promise<string | null> {
+async function tryGetUserId(event: {
+  context?: { user?: { id: string } };
+}): Promise<string | null> {
   try {
     const user = await requireAuth(event);
     return user.id;

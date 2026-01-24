@@ -57,8 +57,8 @@ export const useProfilePhoto = (): {
       }
 
       const storagePath = `${userId}/profile-${Date.now()}.jpg`;
-      const { data: uploadData, error: uploadError } = await supabase
-        .storage.from("profile-photos")
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("profile-photos")
         .upload(storagePath, compressedFile, {
           cacheControl: "3600",
           upsert: false,
@@ -85,7 +85,7 @@ export const useProfilePhoto = (): {
 
       // Update database
       uploadProgress.value = 90;
-      const { data: updateData, error: updateError } = await supabase
+      const { error: updateError } = await supabase
         .from("users")
         .update({ profile_photo_url: publicUrl })
         .eq("id", userId)
