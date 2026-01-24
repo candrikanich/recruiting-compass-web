@@ -528,20 +528,18 @@ const handleResetPassword = async () => {
   }
 };
 
-// Initialize - check for token and validate
+// Initialize - check for session set by Supabase from URL hash
 onMounted(async () => {
-  const token = route.query.access_token as string;
+  const supabase = useSupabase();
 
-  // No token in URL
-  if (!token) {
+  // Supabase automatically parses the hash fragment (#access_token=...)
+  // and sets up the session. Check if session exists.
+  const { data } = await supabase.auth.getSession();
+
+  if (!data.session) {
     invalidToken.value = true;
     passwordReset.error.value =
       "No reset link provided. Please request a new password reset.";
-    return;
   }
-
-  // Token exists - validate by attempting to use Supabase session
-  // The token will be validated when user submits the form
-  // For now, just mark as valid so form can be shown
 });
 </script>
