@@ -8,6 +8,8 @@ import { ref, readonly } from "vue";
  * - Confirming new password with reset token
  * - Handling reset token validation and expiration
  *
+ * Calls Supabase Auth directly for MVP (no backend endpoint)
+ *
  * @example
  * const { requestPasswordReset, confirmPasswordReset } = usePasswordReset()
  * const success = await requestPasswordReset('user@example.com')
@@ -25,7 +27,7 @@ export const usePasswordReset = () => {
 
   /**
    * Request password reset email
-   * Calls backend endpoint to send reset link to user email
+   * Calls Supabase Auth to send reset link to user email
    */
   const requestPasswordReset = async (email: string): Promise<boolean> => {
     loading.value = true;
@@ -38,21 +40,26 @@ export const usePasswordReset = () => {
         return false;
       }
 
-      const response = await $fetch("/api/auth/request-password-reset", {
-        method: "POST",
-        body: {
-          email: email.trim(),
-        },
-      });
+      const supabase = useSupabase();
+      const appUrl = useRuntimeConfig().public.supabaseUrl
+        ? location.origin
+        : "http://localhost:3000";
 
-      if (response && response.success) {
-        emailSent.value = true;
-        return true;
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        {
+          redirectTo: `${appUrl}/reset-password`,
+        },
+      );
+
+      if (resetError) {
+        error.value = resetError.message || "Failed to request password reset";
+        console.error("Password reset request error:", resetError);
+        return false;
       }
 
-      error.value =
-        response?.message || "Failed to request password reset";
-      return false;
+      emailSent.value = true;
+      return true;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to request password reset";
@@ -66,8 +73,8 @@ export const usePasswordReset = () => {
 
   /**
    * Confirm password reset with new password
-   * Calls backend endpoint to update user password
-   * Requires valid reset token (from URL or session)
+   * Calls Supabase Auth to update user password
+   * Requires valid reset token (from URL hash)
    */
   const confirmPasswordReset = async (password: string): Promise<boolean> => {
     loading.value = true;
@@ -80,21 +87,20 @@ export const usePasswordReset = () => {
         return false;
       }
 
-      const response = await $fetch("/api/auth/confirm-password-reset", {
-        method: "POST",
-        body: {
-          password: password.trim(),
-        },
+      const supabase = useSupabase();
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: password.trim(),
       });
 
-      if (response && response.success) {
-        passwordUpdated.value = true;
-        return true;
+      if (updateError) {
+        error.value = updateError.message || "Failed to reset password";
+        console.error("Password reset confirmation error:", updateError);
+        return false;
       }
 
-      error.value =
-        response?.message || "Failed to reset password";
-      return false;
+      passwordUpdated.value = true;
+      return true;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to reset password";
