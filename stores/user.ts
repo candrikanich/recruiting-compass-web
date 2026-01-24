@@ -6,6 +6,7 @@ export interface UserState {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
+  isEmailVerified: boolean;
 }
 
 export const useUserStore = defineStore("user", {
@@ -13,12 +14,14 @@ export const useUserStore = defineStore("user", {
     user: null,
     loading: false,
     isAuthenticated: false,
+    isEmailVerified: false,
   }),
 
   getters: {
     currentUser: (state) => state.user,
     userRole: (state) => state.user?.role,
     isLoggedIn: (state) => state.isAuthenticated,
+    emailVerified: (state) => state.isEmailVerified,
   },
 
   actions: {
@@ -43,6 +46,11 @@ export const useUserStore = defineStore("user", {
             role: "student", // Default role
           };
           this.isAuthenticated = true;
+
+          // Check email verification status
+          this.isEmailVerified =
+            session.user.email_confirmed_at !== null &&
+            session.user.email_confirmed_at !== undefined;
 
           // Try to fetch full profile but don't fail if it doesn't exist
           try {
@@ -128,6 +136,31 @@ export const useUserStore = defineStore("user", {
     logout() {
       this.user = null;
       this.isAuthenticated = false;
+      this.isEmailVerified = false;
+    },
+
+    async refreshVerificationStatus() {
+      const supabase = useSupabase();
+
+      try {
+        // Get current user from auth
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+
+        if (error || !user) {
+          console.error("Error fetching verification status:", error);
+          return;
+        }
+
+        // Update email verification status
+        this.isEmailVerified =
+          user.email_confirmed_at !== null &&
+          user.email_confirmed_at !== undefined;
+      } catch (err) {
+        console.error("Error refreshing verification status:", err);
+      }
     },
   },
 });

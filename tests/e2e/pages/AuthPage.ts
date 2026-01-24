@@ -52,8 +52,8 @@ export class AuthPage extends BasePage {
     await this.waitForElementEnabled('[data-testid="signup-button"]');
     await this.click('[data-testid="signup-button"]');
 
-    // Wait for navigation with longer timeout
-    await this.page.waitForURL("/dashboard", { timeout: 15000 });
+    // Wait for navigation to verify-email page (email verification flow)
+    await this.page.waitForURL(/\/verify-email/, { timeout: 15000 });
   }
 
   async logout() {
@@ -82,6 +82,13 @@ export class AuthPage extends BasePage {
   async expectDashboard() {
     await this.expectURL("/dashboard");
     await this.expectVisible("h1");
+  }
+
+  async expectVerifyEmail() {
+    await this.expectURL(/\/verify-email/);
+    // Check for verify email page header
+    const header = this.page.locator("h1:has-text('Verify Your Email')");
+    await header.waitFor({ state: "visible", timeout: 5000 });
   }
 
   async expectError(message: string) {

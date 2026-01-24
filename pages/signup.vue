@@ -628,8 +628,8 @@ const handleSignup = async () => {
     // Update user store with new user info and refresh session
     await userStore.initializeUser();
 
-    // Redirect to dashboard
-    await navigateTo("/dashboard");
+    // Redirect to email verification page
+    await navigateTo(`/verify-email?email=${encodeURIComponent(validated.email)}`);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Signup failed";
     // Set form-level error

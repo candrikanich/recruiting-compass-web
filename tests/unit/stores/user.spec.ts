@@ -48,6 +48,7 @@ describe("useUserStore", () => {
     const mockSupabase = {
       auth: {
         getSession: vi.fn(),
+        getUser: vi.fn(),
       },
       from: vi.fn().mockReturnValue(mockQuery),
     };
@@ -551,6 +552,151 @@ describe("useUserStore", () => {
     it("should accept null", () => {
       store.setUser(null);
       expect(store.user).toBeNull();
+    });
+  });
+
+  describe("Email Verification Status", () => {
+    it("should initialize isEmailVerified from session", async () => {
+      const mockSession = {
+        user: {
+          id: "user-123",
+          email: "test@example.com",
+          email_confirmed_at: "2024-01-02T00:00:00Z",
+        },
+      };
+      const mockUser = createMockUser();
+
+      const { mockSupabase, mockQuery } = getMockSupabase();
+
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: mockSession },
+      });
+      mockQuery.single.mockResolvedValue({ data: mockUser, error: null });
+
+      await store.initializeUser();
+
+      expect(store.isEmailVerified).toBe(true);
+    });
+
+    it("should set isEmailVerified to false for unverified email", async () => {
+      const mockSession = {
+        user: {
+          id: "user-123",
+          email: "test@example.com",
+          email_confirmed_at: null,
+        },
+      };
+      const mockUser = createMockUser();
+
+      const { mockSupabase, mockQuery } = getMockSupabase();
+
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: mockSession },
+      });
+      mockQuery.single.mockResolvedValue({ data: mockUser, error: null });
+
+      await store.initializeUser();
+
+      expect(store.isEmailVerified).toBe(false);
+    });
+
+    it("emailVerified getter should return verification status", () => {
+      store.isEmailVerified = true;
+      expect(store.emailVerified).toBe(true);
+
+      store.isEmailVerified = false;
+      expect(store.emailVerified).toBe(false);
+    });
+
+    it("should refresh verification status from auth", async () => {
+      const mockUser = {
+        id: "user-123",
+        email: "test@example.com",
+        email_confirmed_at: "2024-01-02T00:00:00Z",
+      };
+
+      const { mockSupabase } = getMockSupabase();
+
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      store.isEmailVerified = false;
+      await store.refreshVerificationStatus();
+
+      expect(store.isEmailVerified).toBe(true);
+      expect(mockSupabase.auth.getUser).toHaveBeenCalled();
+    });
+
+    it("should handle unverified email in refreshVerificationStatus", async () => {
+      const mockUser = {
+        id: "user-123",
+        email: "test@example.com",
+        email_confirmed_at: null,
+      };
+
+      const { mockSupabase } = getMockSupabase();
+
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
+
+      store.isEmailVerified = true;
+      await store.refreshVerificationStatus();
+
+      expect(store.isEmailVerified).toBe(false);
+    });
+
+    it("should handle error in refreshVerificationStatus", async () => {
+      const { mockSupabase } = getMockSupabase();
+
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: new Error("Auth error"),
+      });
+
+      store.isEmailVerified = true;
+      await store.refreshVerificationStatus();
+
+      // Should not change on error
+      expect(store.isEmailVerified).toBe(true);
+      expect(console.error).toHaveBeenCalled();
+    });
+
+    it("should clear email verification status on logout", () => {
+      store.isEmailVerified = true;
+      store.user = createMockUser();
+      store.isAuthenticated = true;
+
+      store.logout();
+
+      expect(store.isEmailVerified).toBe(false);
+      expect(store.user).toBeNull();
+      expect(store.isAuthenticated).toBe(false);
+    });
+
+    it("should handle undefined email_confirmed_at as unverified", async () => {
+      const mockSession = {
+        user: {
+          id: "user-123",
+          email: "test@example.com",
+          email_confirmed_at: undefined,
+        },
+      };
+      const mockUser = createMockUser();
+
+      const { mockSupabase, mockQuery } = getMockSupabase();
+
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: mockSession },
+      });
+      mockQuery.single.mockResolvedValue({ data: mockUser, error: null });
+
+      await store.initializeUser();
+
+      expect(store.isEmailVerified).toBe(false);
     });
   });
 });
