@@ -20,13 +20,23 @@
 
         <!-- Division Badge -->
         <div
-          v-if="school.division"
+          v-if="school.division || school.priority_tier"
           class="flex items-center gap-2 mt-2 flex-wrap"
         >
           <span
+            v-if="school.division"
             class="inline-block px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-700"
           >
             {{ school.division }}
+          </span>
+          <span
+            v-if="school.priority_tier"
+            class="inline-block px-2 py-1 text-xs font-medium rounded"
+            :class="priorityTierBadgeClass"
+            :data-testid="`priority-tier-badge-${school.priority_tier}`"
+            :title="`Priority: ${priorityTierLabel}`"
+          >
+            {{ school.priority_tier }} - {{ priorityTierLabel }}
           </span>
           <span
             v-if="school.conference"
@@ -140,6 +150,28 @@ const fitScoreBadgeClass = computed(() => {
   } else {
     return "bg-red-100 text-red-700";
   }
+});
+
+// Priority tier badge styling
+const priorityTierBadgeClass = computed(() => {
+  const tier = props.school.priority_tier;
+  const colors: Record<"A" | "B" | "C", string> = {
+    A: "bg-red-100 text-red-700",
+    B: "bg-amber-100 text-amber-700",
+    C: "bg-slate-100 text-slate-700",
+  };
+  return colors[tier as "A" | "B" | "C"] || "bg-slate-100 text-slate-700";
+});
+
+// Priority tier label
+const priorityTierLabel = computed(() => {
+  const tier = props.school.priority_tier;
+  const labels: Record<"A" | "B" | "C", string> = {
+    A: "Top Choice",
+    B: "Strong Interest",
+    C: "Fallback",
+  };
+  return labels[tier as "A" | "B" | "C"] || "";
 });
 
 const navigate = () => {
