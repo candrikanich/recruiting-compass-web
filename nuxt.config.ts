@@ -38,13 +38,7 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    preset: "node",
-    hooks: {
-      close: async () => {
-        // Force process exit after build completes
-        process.exit(0);
-      },
-    },
+    preset: "static",
   },
 
   postcss: {
