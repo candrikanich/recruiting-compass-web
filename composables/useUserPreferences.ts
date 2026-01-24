@@ -31,13 +31,7 @@ export const useUserPreferences = (): {
   updateDashboardLayout: (layout: DashboardWidgetVisibility) => Promise<void>;
 } => {
   const supabase = useSupabase();
-  let _userStore: ReturnType<typeof useUserStore> | undefined;
-  const getUserStore = () => {
-    if (!_userStore) {
-      _userStore = useUserStore();
-    }
-    return _userStore;
-  };
+  const userStore = useUserStore();
 
   const preferences = ref<UserPreferences | null>(null);
   const loading = ref(false);

@@ -1,6 +1,7 @@
 import type { Rule, RuleContext } from "./rules/index";
 import { isDuplicateSuggestion } from "./rules/index";
 import type { SuggestionData } from "~/types/timeline";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export class RuleEngine {
   private rules: Rule[] = [];
@@ -31,7 +32,7 @@ export class RuleEngine {
   }
 
   async generateSuggestions(
-    supabase: any,
+    supabase: SupabaseClient,
     athleteId: string,
     context: RuleContext,
   ): Promise<number> {

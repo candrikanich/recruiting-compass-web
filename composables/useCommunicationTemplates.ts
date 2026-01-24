@@ -129,8 +129,8 @@ export const useCommunicationTemplates = (): {
     type: CommunicationTemplate["type"],
     body: string,
     subject?: string,
-    description?: string,
-    tags?: string[],
+    _description?: string,
+    _tags?: string[],
   ): Promise<CommunicationTemplate | null> => {
     if (!userStore.user) return null;
 
@@ -252,7 +252,7 @@ export const useCommunicationTemplates = (): {
 
     // Replace variables with provided values
     Object.entries(variables).forEach(([key, value]) => {
-      const pattern = new RegExp(`\{\{${key}\}\}`, "g");
+      const pattern = new RegExp(`\\{\\{${key}\\}\\}`, "g");
       rendered = rendered.replace(pattern, value);
     });
 

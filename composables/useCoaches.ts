@@ -6,7 +6,7 @@ import type { Database } from "~/types/database";
 import { coachSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
 
-type CoachesInsert = Database["public"]["Tables"]["coaches"]["Insert"];
+type _CoachesInsert = Database["public"]["Tables"]["coaches"]["Insert"];
 type CoachesUpdate = Database["public"]["Tables"]["coaches"]["Update"];
 
 /**

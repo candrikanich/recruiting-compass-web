@@ -3,7 +3,7 @@ import { useCookie } from "#app";
 const CSRF_COOKIE_NAME = "csrf-token";
 const CSRF_HEADER_NAME = "x-csrf-token";
 
-interface CsrfTokenResponse {
+interface _CsrfTokenResponse {
   token: string;
 }
 
@@ -30,20 +30,20 @@ export function useCsrf(): {
   ) => Promise<Record<string, string>>;
   post: (
     url: string,
-    body?: Record<string, any>,
+    body?: Record<string, unknown>,
     options?: FetchOptions,
-  ) => Promise<any>;
+  ) => Promise<unknown>;
   put: (
     url: string,
-    body?: Record<string, any>,
+    body?: Record<string, unknown>,
     options?: FetchOptions,
-  ) => Promise<any>;
+  ) => Promise<unknown>;
   patch: (
     url: string,
-    body?: Record<string, any>,
+    body?: Record<string, unknown>,
     options?: FetchOptions,
-  ) => Promise<any>;
-  delete: (url: string, options?: FetchOptions) => Promise<any>;
+  ) => Promise<unknown>;
+  delete: (url: string, options?: FetchOptions) => Promise<unknown>;
 } {
   const token = useCookie(CSRF_COOKIE_NAME);
 
@@ -97,7 +97,7 @@ export function useCsrf(): {
    */
   const post = async (
     url: string,
-    body?: Record<string, any>,
+    body?: Record<string, unknown>,
     options?: FetchOptions,
   ) => {
     const headers = await addCsrfHeader(options?.headers);
@@ -115,7 +115,7 @@ export function useCsrf(): {
    */
   const put = async (
     url: string,
-    body?: Record<string, any>,
+    body?: Record<string, unknown>,
     options?: FetchOptions,
   ) => {
     const headers = await addCsrfHeader(options?.headers);
@@ -133,7 +133,7 @@ export function useCsrf(): {
    */
   const patch = async (
     url: string,
-    body?: Record<string, any>,
+    body?: Record<string, unknown>,
     options?: FetchOptions,
   ) => {
     const headers = await addCsrfHeader(options?.headers);

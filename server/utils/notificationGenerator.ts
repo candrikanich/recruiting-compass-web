@@ -105,14 +105,14 @@ export async function generateOfferNotifications(
     if (!offers || offers.length === 0) return { count: 0, type: "offers" };
 
     // Get schools for names
-    const schoolIds = [...new Set(offers.map((o: any) => o.school_id))];
+    const schoolIds = [...new Set(offers.map((o) => o.school_id))];
     const { data: schools, error: schoolsError } = await supabase
       .from("schools")
       .select("id, name")
       .in("id", schoolIds);
 
     if (schoolsError) throw schoolsError;
-    const schoolMap = new Map(schools?.map((s: any) => [s.id, s.name]) || []);
+    const schoolMap = new Map(schools?.map((s) => [s.id, s.name]) || []);
 
     let createdCount = 0;
     const now = new Date();

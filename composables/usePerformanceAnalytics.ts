@@ -1,4 +1,4 @@
-import { computed } from "vue";
+import { _computed } from "vue";
 import type { Performance } from "~/types/models";
 
 /**

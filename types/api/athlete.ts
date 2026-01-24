@@ -9,7 +9,7 @@ import type { Phase, MilestoneProgress, StatusLabel } from "~/types/timeline";
 export namespace AthleteAPI {
   // Phase endpoints
 
-  export interface GetPhaseRequest extends Record<string, never> {}
+  export type GetPhaseRequest = Record<string, never>;
 
   export interface GetPhaseResponse {
     phase: Phase;
@@ -17,7 +17,7 @@ export namespace AthleteAPI {
     canAdvance: boolean;
   }
 
-  export interface AdvancePhaseRequest extends Record<string, never> {}
+  export type AdvancePhaseRequest = Record<string, never>;
 
   export interface AdvancePhaseResponse {
     success: boolean;
@@ -26,7 +26,7 @@ export namespace AthleteAPI {
   }
 
   // Status endpoints
-  export interface GetStatusRequest extends Record<string, never> {}
+  export type GetStatusRequest = Record<string, never>;
 
   export interface StatusScoreResult {
     status_label: StatusLabel;
@@ -41,12 +41,12 @@ export namespace AthleteAPI {
 
   export type GetStatusResponse = StatusScoreResult;
 
-  export interface RecalculateStatusRequest extends Record<string, never> {}
+  export type RecalculateStatusRequest = Record<string, never>;
 
   export type RecalculateStatusResponse = StatusScoreResult;
 
   // Portfolio health endpoint
-  export interface GetPortfolioHealthRequest extends Record<string, never> {}
+  export type GetPortfolioHealthRequest = Record<string, never>;
 
   export interface PortfolioHealthScore {
     overall_health_score: number;

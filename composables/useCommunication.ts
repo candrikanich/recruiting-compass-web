@@ -2,7 +2,7 @@ import { ref } from "vue";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoaches } from "~/composables/useCoaches";
 import { useUserStore } from "~/stores/user";
-import type { Coach, School } from "~/types/models";
+import type { Coach } from "~/types/models";
 
 /**
  * Composable for managing communication panel state and interaction logging

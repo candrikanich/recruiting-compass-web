@@ -1,8 +1,5 @@
 import { ref } from "vue";
-import type {
-  CollegeScorecardResponse,
-  CollegeScorecardSchool,
-} from "~/types/api";
+import type { CollegeScorecardResponse } from "~/types/api";
 import { collegeScorecardResponseSchema } from "~/utils/validation/schemas";
 import { sanitizeUrl } from "~/utils/validation/sanitize";
 
@@ -47,7 +44,7 @@ export const useCollegeData = () => {
   /**
    * Validate numeric field is a valid number (not NaN or Infinity)
    */
-  const isValidNumber = (value: any): boolean => {
+  const isValidNumber = (value: unknown): boolean => {
     if (value === null || value === undefined) return false;
     const num = Number(value);
     return !isNaN(num) && isFinite(num);
@@ -56,7 +53,9 @@ export const useCollegeData = () => {
   /**
    * Transform College Scorecard API response to our format with validation
    */
-  const transformData = (school: any): CollegeDataResult => {
+  const transformData = (
+    school: Record<string, unknown>,
+  ): CollegeDataResult => {
     const city = school["school.city"] || "";
     const state = school["school.state"] || "";
     const address = [city, state].filter(Boolean).join(", ") || null;

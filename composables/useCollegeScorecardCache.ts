@@ -87,7 +87,7 @@ export const useCollegeScorecardCache = () => {
    */
   const fetchScorecardData = async (
     schoolName: string,
-    apiKey?: string,
+    _apiKey?: string,
   ): Promise<ScorecardData | null> => {
     if (!schoolName || schoolName.trim().length === 0) {
       return null;
@@ -154,9 +154,9 @@ export const useCollegeScorecardCache = () => {
    */
   const enrichWithScorecardData = (
     schoolName: string,
-    ncaaData: any,
+    ncaaData: unknown,
   ): {
-    ncaa: any;
+    ncaa: unknown;
     scorecard: ScorecardData | null;
   } => {
     const normalizedName = schoolName.toLowerCase().trim();

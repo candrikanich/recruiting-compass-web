@@ -4,18 +4,18 @@ import { logger } from "./logger";
 import { createServerSupabaseClient } from "./supabase";
 
 interface ExportData {
-  profile: Record<string, any>;
-  schools: Record<string, any>[];
-  coaches: Record<string, any>[];
-  interactions: Record<string, any>[];
-  events: Record<string, any>[];
+  profile: Record<string, unknown>;
+  schools: Record<string, unknown>[];
+  coaches: Record<string, unknown>[];
+  interactions: Record<string, unknown>[];
+  events: Record<string, unknown>[];
   documents: Array<{
-    metadata: Record<string, any>;
+    metadata: Record<string, unknown>;
     content?: Buffer;
   }>;
-  performanceMetrics: Record<string, any>[];
-  offers: Record<string, any>[];
-  auditLogs: Record<string, any>[];
+  performanceMetrics: Record<string, unknown>[];
+  offers: Record<string, unknown>[];
+  auditLogs: Record<string, unknown>[];
 }
 
 /**
@@ -83,10 +83,19 @@ export async function gatherUserData(userId: string): Promise<ExportData> {
  */
 async function fetchDocumentContent(
   supabase: ReturnType<typeof createServerSupabaseClient>,
-  documents: any[],
+  documents: Array<{
+    id: string;
+    name: string;
+    type: string;
+    created_at: string;
+    updated_at: string;
+    school_id?: string;
+    storage_path?: string;
+  }>,
   userId: string,
-): Promise<Array<{ metadata: Record<string, any>; content?: Buffer }>> {
-  const result: Array<{ metadata: Record<string, any>; content?: Buffer }> = [];
+): Promise<Array<{ metadata: Record<string, unknown>; content?: Buffer }>> {
+  const result: Array<{ metadata: Record<string, unknown>; content?: Buffer }> =
+    [];
 
   for (const doc of documents) {
     try {
@@ -116,7 +125,7 @@ async function fetchDocumentContent(
             // File not found, just save metadata
             result.push({ metadata: docMetadata });
           }
-        } catch (_err) {
+        } catch (_error) {
           // Fallback if download fails
           result.push({ metadata: docMetadata });
         }
@@ -214,7 +223,7 @@ export async function generateUserExportZip(userId: string): Promise<Buffer> {
 /**
  * Convert JSON array to CSV format
  */
-function jsonToCSV(data: Record<string, any>[]): string {
+function jsonToCSV(data: Record<string, unknown>[]): string {
   if (data.length === 0) return "";
 
   // Get all unique keys from all objects
