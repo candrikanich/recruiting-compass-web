@@ -39,6 +39,12 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: "static",
+    hooks: {
+      close: async () => {
+        // Force process exit after build completes to prevent timeout in CI/CD
+        process.exit(0);
+      },
+    },
   },
 
   postcss: {
