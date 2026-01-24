@@ -31,6 +31,11 @@ export default [
       parserOptions: {
         sourceType: "module",
         ecmaVersion: "latest",
+        parser: ts.parser,
+        parserOptions: {
+          project: "./tsconfig.json",
+          extraFileExtensions: [".vue"],
+        },
       },
       globals: {
         definePageMeta: "readonly",

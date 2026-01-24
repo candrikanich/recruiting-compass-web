@@ -51,6 +51,14 @@
             </p>
           </div>
 
+  <!-- Timeout Message -->
+          <div
+            v-if="timeoutMessage"
+            class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"
+          >
+            <p class="text-sm text-yellow-800">{{ timeoutMessage }}</p>
+          </div>
+
           <!-- Form error summary -->
           <FormErrorSummary
             v-if="hasErrors"
@@ -115,6 +123,23 @@
               <FieldError :error="fieldErrors.password" />
             </div>
 
+            <!-- Remember Me Checkbox -->
+            <div class="flex items-center">
+              <input
+                id="rememberMe"
+                v-model="rememberMe"
+                data-testid="remember-me-checkbox"
+                type="checkbox"
+                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+              />
+              <label
+                for="rememberMe"
+                class="ml-2 text-sm font-medium text-slate-700 cursor-pointer"
+              >
+                Remember me on this device (30 days)
+              </label>
+            </div>
+
             <!-- Submit -->
             <button
               data-testid="login-button"
@@ -164,6 +189,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { useRoute } from "vue-router";
 import { useAuth } from "~/composables/useAuth";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useUserStore } from "~/stores/user";
@@ -181,8 +207,10 @@ import FieldError from "~/components/DesignSystem/FieldError.vue";
 const EMAIL_SCHEMA = z.object({ email: loginSchema.shape.email });
 const PASSWORD_SCHEMA = z.object({ password: loginSchema.shape.password });
 
+const route = useRoute();
 const email = ref("");
 const password = ref("");
+const rememberMe = ref(false);
 const loading = ref(false);
 const validating = ref(false);
 
@@ -196,6 +224,13 @@ const {
   hasErrors,
   setErrors,
 } = useFormValidation();
+
+// Computed property for timeout message
+const timeoutMessage = computed(() => {
+  return route.query.reason === "timeout"
+    ? "You were logged out due to inactivity. Please log in again."
+    : null;
+});
 
 // Computed property for form validity
 const isFormValid = computed(
@@ -230,6 +265,7 @@ const handleLogin = async () => {
     {
       email: email.value,
       password: password.value,
+      rememberMe: rememberMe.value,
     },
     loginSchema,
   );
@@ -242,7 +278,7 @@ const handleLogin = async () => {
 
   try {
     const userStore = useUserStore();
-    await login(validated.email, validated.password);
+    await login(validated.email, validated.password, rememberMe.value);
 
     // Manually trigger user store initialization after successful login
     await userStore.initializeUser();

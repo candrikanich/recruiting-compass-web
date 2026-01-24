@@ -33,6 +33,7 @@ export const loginSchema = z.object({
     .string()
     .min(8, "Password must be at least 8 characters")
     .max(128, "Password must not exceed 128 characters"),
+  rememberMe: z.boolean().optional().default(false),
 });
 
 export const signupSchema = z
@@ -356,6 +357,7 @@ export const playerPreferencesSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type SignupInput = z.infer<typeof signupSchema>;
+export type { SessionPreferences, SessionTimeoutConfig } from "~/types/session";
 export type SchoolInput = z.infer<typeof schoolSchema>;
 export type CoachInput = z.infer<typeof coachSchema>;
 export type InteractionInput = z.infer<typeof interactionSchema>;

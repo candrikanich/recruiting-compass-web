@@ -2,14 +2,23 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ref } from "vue";
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useUserStore } from "~/stores/user";
 import { useAuth } from "~/composables/useAuth";
 import { useFormValidation } from "~/composables/useFormValidation";
 import login from "~/pages/login.vue";
 
+// Mock useRoute with default empty query
+const mockRoute = {
+  query: {},
+};
+
 // Mock dependencies
-vi.mock("vue-router");
+vi.mock("vue-router", () => ({
+  useRouter: vi.fn(),
+  useRoute: () => mockRoute,
+}));
+
 vi.mock("~/stores/user");
 vi.mock("~/composables/useAuth");
 vi.mock("~/composables/useFormValidation");
@@ -231,6 +240,7 @@ describe("login.vue", () => {
       mockValidation.validate.mockResolvedValue({
         email: "test@example.com",
         password: "password123",
+        rememberMe: false,
       });
       mockAuth.login.mockResolvedValue({
         data: { user: { id: "user-123" } },
@@ -250,6 +260,7 @@ describe("login.vue", () => {
         {
           email: "test@example.com",
           password: "password123",
+          rememberMe: false,
         },
         expect.any(Object),
       );
@@ -257,6 +268,7 @@ describe("login.vue", () => {
       expect(mockAuth.login).toHaveBeenCalledWith(
         "test@example.com",
         "password123",
+        false,
       );
       expect(mockUserStore.initializeUser).toHaveBeenCalled();
     });
@@ -320,6 +332,7 @@ describe("login.vue", () => {
       mockValidation.validate.mockResolvedValue({
         email: "test@example.com",
         password: "password123",
+        rememberMe: false,
       });
       mockAuth.login.mockResolvedValue({
         data: { user: { id: "user-123" } },
@@ -338,6 +351,7 @@ describe("login.vue", () => {
         {
           email: "test@example.com", // Transformed value (email schema trims)
           password: "password123",
+          rememberMe: false,
         },
         expect.any(Object),
       );
@@ -346,6 +360,7 @@ describe("login.vue", () => {
       expect(mockAuth.login).toHaveBeenCalledWith(
         "test@example.com",
         "password123",
+        false,
       );
     });
   });
@@ -493,6 +508,121 @@ describe("login.vue", () => {
         (wrapper.find('input[type="password"]').element as HTMLInputElement)
           .value,
       ).toBe(specialPassword);
+    });
+  });
+
+  describe("Remember Me Checkbox", () => {
+    it("should render Remember Me checkbox", () => {
+      const wrapper = createWrapper();
+
+      const checkbox = wrapper.find('[data-testid="remember-me-checkbox"]');
+      expect(checkbox.exists()).toBe(true);
+      expect(checkbox.attributes("type")).toBe("checkbox");
+    });
+
+    it("should have checkbox with proper id and label association", () => {
+      const wrapper = createWrapper();
+
+      const checkbox = wrapper.find('[data-testid="remember-me-checkbox"]');
+      const label = wrapper.find('label[for="rememberMe"]');
+
+      expect(checkbox.attributes("id")).toBe("rememberMe");
+      expect(label.exists()).toBe(true);
+      expect(label.text()).toContain("Remember me on this device");
+    });
+
+    it("should have checkbox unchecked by default", () => {
+      const wrapper = createWrapper();
+
+      const checkbox = wrapper.find(
+        '[data-testid="remember-me-checkbox"]'
+      ) as any;
+      expect((checkbox.element as HTMLInputElement).checked).toBe(false);
+    });
+
+    it("should pass rememberMe true to login when checkbox is checked", async () => {
+      mockValidation.validate.mockResolvedValue({
+        email: "test@example.com",
+        password: "password123",
+        rememberMe: true,
+      });
+      mockAuth.login.mockResolvedValue({
+        data: { user: { id: "user-123" } },
+        error: null,
+      });
+
+      const wrapper = createWrapper();
+
+      // Check the Remember Me checkbox
+      await wrapper
+        .find('[data-testid="remember-me-checkbox"]')
+        .setValue(true);
+
+      // Fill in form
+      await wrapper.find('input[type="email"]').setValue("test@example.com");
+      await wrapper.find('input[type="password"]').setValue("password123");
+
+      // Submit form
+      await wrapper.find("form").trigger("submit.prevent");
+
+      // Should pass rememberMe=true to login
+      expect(mockAuth.login).toHaveBeenCalledWith(
+        "test@example.com",
+        "password123",
+        true,
+      );
+    });
+
+    it("should pass rememberMe false to login when checkbox is unchecked", async () => {
+      mockValidation.validate.mockResolvedValue({
+        email: "test@example.com",
+        password: "password123",
+        rememberMe: false,
+      });
+      mockAuth.login.mockResolvedValue({
+        data: { user: { id: "user-123" } },
+        error: null,
+      });
+
+      const wrapper = createWrapper();
+
+      // Don't check the checkbox (default)
+      await wrapper.find('input[type="email"]').setValue("test@example.com");
+      await wrapper.find('input[type="password"]').setValue("password123");
+
+      await wrapper.find("form").trigger("submit.prevent");
+
+      // Should pass rememberMe=false to login
+      expect(mockAuth.login).toHaveBeenCalledWith(
+        "test@example.com",
+        "password123",
+        false,
+      );
+    });
+
+    it("should have checkbox with description text", () => {
+      const wrapper = createWrapper();
+
+      const label = wrapper.find('label[for="rememberMe"]');
+      expect(label.text()).toContain("30 days");
+    });
+
+    it("should toggle checkbox state when clicked", async () => {
+      const wrapper = createWrapper();
+
+      const checkbox = wrapper.find(
+        '[data-testid="remember-me-checkbox"]'
+      ) as any;
+
+      expect((checkbox.element as HTMLInputElement).checked).toBe(false);
+
+      await checkbox.setValue(true);
+
+      expect((checkbox.element as HTMLInputElement).checked).toBe(true);
+
+      await checkbox.setValue(false);
+
+      expect((checkbox.element as HTMLInputElement).checked).toBe(false);
     });
   });
 });

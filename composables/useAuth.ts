@@ -1,6 +1,7 @@
 import { ref, readonly, onBeforeUnmount, getCurrentInstance } from "vue";
 import type { User, Session } from "@supabase/supabase-js";
 import { useSupabase } from "~/composables/useSupabase";
+import type { SessionPreferences } from "~/types/session";
 
 /**
  * Composable for authentication operations
@@ -21,6 +22,7 @@ interface AuthActions {
   login: (
     email: string,
     password: string,
+    rememberMe?: boolean,
   ) => Promise<{ data: any; error: null }>;
   logout: () => Promise<void>;
   signup: (
@@ -88,8 +90,15 @@ export const useAuth = () => {
 
   /**
    * Login with email and password
+   * @param email User email
+   * @param password User password
+   * @param rememberMe Whether to extend session to 30 days (defaults to false for 1 day)
    */
-  const login = async (email: string, password: string) => {
+  const login = async (
+    email: string,
+    password: string,
+    rememberMe = false,
+  ) => {
     loading.value = true;
     error.value = null;
 
@@ -110,6 +119,18 @@ export const useAuth = () => {
       // Store initialization is handled by caller
       if (data.session?.user) {
         session.value = data.session;
+
+        // Store session preferences in localStorage
+        if (typeof window !== "undefined") {
+          const preferences: SessionPreferences = {
+            rememberMe,
+            lastActivity: Date.now(),
+            expiresAt: rememberMe
+              ? Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
+              : Date.now() + 24 * 60 * 60 * 1000, // 1 day
+          };
+          localStorage.setItem("session_preferences", JSON.stringify(preferences));
+        }
       }
 
       return { data, error: null };
@@ -139,6 +160,12 @@ export const useAuth = () => {
       // Clear session (store logout is handled by caller)
       session.value = null;
       isInitialized.value = false;
+
+      // Clear session preferences from localStorage
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("session_preferences");
+        localStorage.removeItem("last_activity");
+      }
     } catch (err: unknown) {
       const authError = err instanceof Error ? err : new Error("Logout failed");
       error.value = authError;
