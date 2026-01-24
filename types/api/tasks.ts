@@ -15,6 +15,7 @@ export namespace TasksAPI {
   export type GetTasksWithStatusResponse = TaskWithStatus[];
 
   // Task dependencies endpoint
+  /* eslint-disable-next-line @typescript-eslint/no-empty-object-type */
   export interface GetTaskDependenciesRequest {
     // Empty interface - dependencies retrieved from task ID
   }

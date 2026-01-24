@@ -9,7 +9,7 @@ export default defineNuxtConfig({
 
   css: ["~/assets/css/main.css"],
 
-  modules: ["@pinia/nuxt"],
+  modules: ["@pinia/nuxt", "@nuxtjs/supabase"],
 
   // Vite caching configuration
   vite: {
@@ -64,5 +64,12 @@ export default defineNuxtConfig({
       collegeScorecardApiKey:
         process.env.NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY || "",
     },
+  },
+
+  supabase: {
+    url: process.env.NUXT_PUBLIC_SUPABASE_URL,
+    key: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY,
+    serviceRole: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    redirect: false,
   },
 });

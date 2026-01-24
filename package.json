@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
+    "@nuxtjs/supabase": "^2.0.3",
     "@pinia/nuxt": "^0.5.1",
     "@sindresorhus/is": "^7.1.1",
     "@supabase/supabase-js": "^2.86.0",
