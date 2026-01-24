@@ -9,6 +9,12 @@ export interface SendNotificationEmailOptions {
   priority: NotificationPriority;
 }
 
+export interface SendEmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+}
+
 export const sendNotificationEmail = async (
   options: SendNotificationEmailOptions,
 ) => {
@@ -66,6 +72,46 @@ export const sendNotificationEmail = async (
         to,
         subject,
         html: htmlContent,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Resend API error:", error);
+      return { success: false, error: error.message };
+    }
+
+    const data = await response.json();
+    return { success: true, messageId: data.id };
+  } catch (err) {
+    console.error("Failed to send email:", err);
+    const errorMessage =
+      err instanceof Error ? err.message : "Unknown error sending email";
+    return { success: false, error: errorMessage };
+  }
+};
+
+export const sendEmail = async (options: SendEmailOptions) => {
+  const { to, subject, html } = options;
+
+  // Check if Resend API key is available
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not configured, email notifications disabled");
+    return { success: false, error: "Email service not configured" };
+  }
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "College Recruiting <notifications@recruiting.chrisandrikanich.com>",
+        to,
+        subject,
+        html,
       }),
     });
 

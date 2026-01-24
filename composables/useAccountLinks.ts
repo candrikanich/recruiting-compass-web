@@ -132,6 +132,25 @@ export const useAccountLinks = () => {
         return false;
       }
 
+      // Check if user has reached the 5-user limit (accepted + pending)
+      const { data: existingLinks, error: limitError } = await supabase
+        .from("account_links")
+        .select("id")
+        .or(
+          `parent_user_id.eq.${getUserStore().user?.id},player_user_id.eq.${getUserStore().user?.id}`,
+        )
+        .in("status", ["accepted", "pending"]);
+
+      if (limitError) {
+        error.value = limitError.message;
+        return false;
+      }
+
+      if (existingLinks && existingLinks.length >= 5) {
+        error.value = "You have reached the maximum of 5 linked accounts (including pending invitations)";
+        return false;
+      }
+
       // Look for existing user with this email
       const { data: existingUser } = await supabase
         .from("users")
@@ -172,7 +191,7 @@ export const useAccountLinks = () => {
       }
 
       // Create invitation
-      const { error: createError } = await supabase
+      const { data: createdLink, error: createError } = await supabase
         .from("account_links")
         .insert([
           {
@@ -196,6 +215,22 @@ export const useAccountLinks = () => {
       if (createError) {
         error.value = createError.message;
         return false;
+      }
+
+      // Send email invitation
+      if (createdLink) {
+        try {
+          await $fetch("/api/account-links/invite", {
+            method: "POST",
+            body: {
+              invitedEmail,
+              linkId: createdLink.id,
+            },
+          });
+        } catch (emailError) {
+          console.warn("Failed to send invitation email:", emailError);
+          // Don't fail the entire invitation if email fails - link was created successfully
+        }
       }
 
       showToast(

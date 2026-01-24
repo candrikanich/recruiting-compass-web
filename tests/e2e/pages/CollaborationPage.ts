@@ -90,4 +90,20 @@ export class CollaborationPage extends BasePage {
   async expectActivityLogged(action: string) {
     await this.expectVisible(`text=${action}`);
   }
+
+  async getInvitationToken(invitedEmail: string): Promise<string | null> {
+    // Navigate to account linking settings where pending invitations are shown
+    await this.page.goto("/settings/account-linking");
+
+    // Try to find the invitation token from pending invitations element
+    const tokenElement = await this.page
+      .locator(`[data-invitation-email="${invitedEmail}"]`)
+      .getAttribute("data-token");
+
+    return tokenElement;
+  }
+
+  async expectInvitationError(errorMessage: string) {
+    await this.expectVisible(`text=${errorMessage}`);
+  }
 }

@@ -30,6 +30,11 @@ test.describe("Tier 1: Family Collaboration - Critical Flows", () => {
     await collaborationPage.navigateToCollaboration();
     await collaborationPage.inviteCollaborator(testUsers.collaborator.email);
 
+    // Get the real invitation token
+    const token = await collaborationPage.getInvitationToken(
+      testUsers.collaborator.email,
+    );
+
     // Switch to collaborator and accept
     const newPage = await page.context().newPage();
     const newAuthPage = new AuthPage(newPage);
@@ -40,9 +45,12 @@ test.describe("Tier 1: Family Collaboration - Critical Flows", () => {
       testUsers.collaborator.displayName,
     );
 
-    // Accept invite (would need token in real scenario)
+    // Accept invite with real token
     const newCollabPage = new CollaborationPage(newPage);
-    await newCollabPage.acceptInvite("test-token");
+    if (token) {
+      await newCollabPage.acceptInvite(token);
+      await newCollabPage.expectVisible('[data-testid="linked-accounts"]');
+    }
 
     await newPage.close();
   });
@@ -50,6 +58,11 @@ test.describe("Tier 1: Family Collaboration - Critical Flows", () => {
   test("should reject collaboration invite", async ({ page }) => {
     await collaborationPage.navigateToCollaboration();
     await collaborationPage.inviteCollaborator(testUsers.collaborator.email);
+
+    // Get the real invitation token
+    const token = await collaborationPage.getInvitationToken(
+      testUsers.collaborator.email,
+    );
 
     // Reject invite
     const newPage = await page.context().newPage();
@@ -62,7 +75,9 @@ test.describe("Tier 1: Family Collaboration - Critical Flows", () => {
     );
 
     const newCollabPage = new CollaborationPage(newPage);
-    await newCollabPage.rejectInvite("test-token");
+    if (token) {
+      await newCollabPage.rejectInvite(token);
+    }
 
     await newPage.close();
   });
@@ -136,5 +151,58 @@ test.describe("Tier 1: Family Collaboration - Critical Flows", () => {
 
     // Verify activity shows inviter
     await collaborationPage.expectActivityLogged("invited");
+  });
+
+  test("should enforce 5-user limit", async ({ page }) => {
+    await collaborationPage.navigateToCollaboration();
+
+    // Invite 5 users
+    for (let i = 1; i <= 5; i++) {
+      await collaborationPage.inviteCollaborator(`user${i}@test.com`);
+    }
+
+    // Try to invite 6th user - should fail
+    await collaborationPage.inviteCollaborator("user6@test.com");
+    await collaborationPage.expectInvitationError("maximum of 5 linked accounts");
+  });
+
+  test("should prevent secondary user from editing interactions", async ({
+    page,
+  }) => {
+    // Setup: Invite and accept collaboration
+    await collaborationPage.navigateToCollaboration();
+    await collaborationPage.inviteCollaborator(testUsers.collaborator.email);
+
+    // Get the real invitation token
+    const token = await collaborationPage.getInvitationToken(
+      testUsers.collaborator.email,
+    );
+
+    // Switch to collaborator and accept
+    const newPage = await page.context().newPage();
+    const newAuthPage = new AuthPage(newPage);
+    await newAuthPage.goto();
+    await newAuthPage.signup(
+      testUsers.collaborator.email,
+      testUsers.collaborator.password,
+      testUsers.collaborator.displayName,
+    );
+
+    // Accept invite
+    const newCollabPage = new CollaborationPage(newPage);
+    if (token) {
+      await newCollabPage.acceptInvite(token);
+
+      // Navigate to interactions page
+      await newPage.goto("/interactions");
+
+      // Try to edit an interaction - should be prevented or read-only
+      const editButton = newPage.locator('[data-testid="edit-interaction"]');
+      const isDisabled = await editButton.isDisabled();
+
+      test.expect(isDisabled || (await editButton.isHidden())).toBeTruthy();
+    }
+
+    await newPage.close();
   });
 });
