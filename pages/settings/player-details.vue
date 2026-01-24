@@ -5,13 +5,16 @@
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-        <NuxtLink
-          to="/settings"
-          class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 mb-2"
-        >
-          <ArrowLeftIcon class="w-4 h-4" />
-          Back to Settings
-        </NuxtLink>
+        <div class="flex justify-between items-start mb-2">
+          <NuxtLink
+            to="/settings"
+            class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+          >
+            <ArrowLeftIcon class="w-4 h-4" />
+            Back to Settings
+          </NuxtLink>
+          <ProfileEditHistory />
+        </div>
         <h1
           data-testid="page-title"
           class="text-2xl font-semibold text-slate-900"
@@ -45,6 +48,24 @@
 
       <!-- Form -->
       <form v-if="!loading" @submit.prevent="handleSave" class="space-y-8">
+        <!-- Read-only Warning Banner for Parents -->
+        <div
+          v-if="isParentRole"
+          class="mb-6 rounded-lg bg-amber-50 border-l-4 border-amber-400 p-4"
+        >
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <ExclamationCircleIcon class="h-5 w-5 text-amber-400" />
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-amber-800">Read-only view</h3>
+              <div class="mt-2 text-sm text-amber-700">
+                <p>You're viewing this profile as a parent. Contact your athlete to make changes.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Profile Photo Section -->
         <div
           class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
@@ -72,7 +93,8 @@
               </label>
               <select
                 v-model="form.graduation_year"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                :disabled="isParentRole"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               >
                 <option :value="undefined">Select Year</option>
                 <option
@@ -91,9 +113,10 @@
               >
               <input
                 v-model="form.high_school"
+                :disabled="isParentRole"
                 type="text"
                 placeholder="e.g., Lincoln High School"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -103,9 +126,10 @@
               >
               <input
                 v-model="form.club_team"
+                :disabled="isParentRole"
                 type="text"
                 placeholder="e.g., East Coast Sox"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -123,9 +147,10 @@
               v-for="pos in POSITIONS"
               :key="pos.value"
               type="button"
+              :disabled="isParentRole"
               @click="togglePosition(pos.value)"
               :class="[
-                'px-4 py-3 rounded-lg font-medium text-sm transition border-2',
+                'px-4 py-3 rounded-lg font-medium text-sm transition border-2 disabled:opacity-50 disabled:cursor-not-allowed',
                 isPositionSelected(pos.value)
                   ? 'bg-blue-600 text-white border-blue-600'
                   : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400',
@@ -156,15 +181,16 @@
                 <label
                   v-for="opt in BATS_OPTIONS"
                   :key="opt.value"
-                  class="flex items-center gap-2 cursor-pointer"
+                  :class="['flex items-center gap-2', isParentRole ? '' : 'cursor-pointer']"
                 >
                   <input
                     type="radio"
                     :value="opt.value"
                     v-model="form.bats"
-                    class="w-4 h-4 text-blue-600"
+                    :disabled="isParentRole"
+                    class="w-4 h-4 text-blue-600 disabled:cursor-not-allowed"
                   />
-                  <span class="text-gray-700">{{ opt.label }}</span>
+                  <span :class="['text-gray-700', isParentRole ? 'text-gray-500' : '']">{{ opt.label }}</span>
                 </label>
               </div>
             </div>
@@ -177,15 +203,16 @@
                 <label
                   v-for="opt in THROWS_OPTIONS"
                   :key="opt.value"
-                  class="flex items-center gap-2 cursor-pointer"
+                  :class="['flex items-center gap-2', isParentRole ? '' : 'cursor-pointer']"
                 >
                   <input
                     type="radio"
                     :value="opt.value"
                     v-model="form.throws"
-                    class="w-4 h-4 text-blue-600"
+                    :disabled="isParentRole"
+                    class="w-4 h-4 text-blue-600 disabled:cursor-not-allowed"
                   />
-                  <span class="text-gray-700">{{ opt.label }}</span>
+                  <span :class="['text-gray-700', isParentRole ? 'text-gray-500' : '']">{{ opt.label }}</span>
                 </label>
               </div>
             </div>
@@ -197,7 +224,8 @@
               <div class="flex gap-2">
                 <select
                   v-model="heightFeet"
-                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  :disabled="isParentRole"
+                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option :value="undefined">Feet</option>
                   <option v-for="ft in [4, 5, 6, 7]" :key="ft" :value="ft">
@@ -206,7 +234,8 @@
                 </select>
                 <select
                   v-model="heightInches"
-                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  :disabled="isParentRole"
+                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option :value="undefined">Inches</option>
                   <option v-for="i in 12" :key="i - 1" :value="i - 1">
@@ -222,11 +251,12 @@
               >
               <input
                 v-model.number="form.weight_lbs"
+                :disabled="isParentRole"
                 type="number"
                 min="100"
                 max="400"
                 placeholder="e.g., 185"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -243,12 +273,13 @@
               >
               <input
                 v-model.number="form.gpa"
+                :disabled="isParentRole"
                 type="number"
                 step="0.01"
                 min="0"
                 max="5"
                 placeholder="e.g., 3.75"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -258,11 +289,12 @@
               >
               <input
                 v-model.number="form.sat_score"
+                :disabled="isParentRole"
                 type="number"
                 min="400"
                 max="1600"
                 placeholder="e.g., 1200"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -272,11 +304,12 @@
               >
               <input
                 v-model.number="form.act_score"
+                :disabled="isParentRole"
                 type="number"
                 min="1"
                 max="36"
                 placeholder="e.g., 28"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -298,9 +331,10 @@
               >
               <input
                 v-model="form.ncaa_id"
+                :disabled="isParentRole"
                 type="text"
                 placeholder="NCAA Eligibility ID"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -310,9 +344,10 @@
               >
               <input
                 v-model="form.perfect_game_id"
+                :disabled="isParentRole"
                 type="text"
                 placeholder="Perfect Game Player ID"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -322,9 +357,10 @@
               >
               <input
                 v-model="form.prep_baseball_id"
+                :disabled="isParentRole"
                 type="text"
                 placeholder="Prep Baseball Report ID"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -349,9 +385,10 @@
                 <span class="text-gray-500">@</span>
                 <input
                   v-model="form.twitter_handle"
+                  :disabled="isParentRole"
                   type="text"
                   placeholder="username"
-                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -367,9 +404,10 @@
                 <span class="text-gray-500">@</span>
                 <input
                   v-model="form.instagram_handle"
+                  :disabled="isParentRole"
                   type="text"
                   placeholder="username"
-                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -382,9 +420,10 @@
                 <span class="text-gray-500">@</span>
                 <input
                   v-model="form.tiktok_handle"
+                  :disabled="isParentRole"
                   type="text"
                   placeholder="username"
-                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -395,9 +434,10 @@
               >
               <input
                 v-model="form.facebook_url"
+                :disabled="isParentRole"
                 type="url"
                 placeholder="https://facebook.com/..."
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -420,9 +460,10 @@
                 >
                 <input
                   v-model="form.phone"
+                  :disabled="isParentRole"
                   type="tel"
                   placeholder="(123) 456-7890"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -432,9 +473,10 @@
                 >
                 <input
                   v-model="form.email"
+                  :disabled="isParentRole"
                   type="email"
                   placeholder="your.email@example.com"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -444,23 +486,25 @@
                 Sharing Permissions
               </p>
               <div class="space-y-3">
-                <label class="flex items-center gap-3 cursor-pointer">
+                <label :class="['flex items-center gap-3', isParentRole ? '' : 'cursor-pointer']">
                   <input
                     v-model="form.allow_share_phone"
+                    :disabled="isParentRole"
                     type="checkbox"
-                    class="w-4 h-4 text-blue-600 rounded"
+                    class="w-4 h-4 text-blue-600 rounded disabled:cursor-not-allowed"
                   />
-                  <span class="text-gray-700"
+                  <span :class="['text-gray-700', isParentRole ? 'text-gray-500' : '']"
                     >Allow coaches to see my phone number</span
                   >
                 </label>
-                <label class="flex items-center gap-3 cursor-pointer">
+                <label :class="['flex items-center gap-3', isParentRole ? '' : 'cursor-pointer']">
                   <input
                     v-model="form.allow_share_email"
+                    :disabled="isParentRole"
                     type="checkbox"
-                    class="w-4 h-4 text-blue-600 rounded"
+                    class="w-4 h-4 text-blue-600 rounded disabled:cursor-not-allowed"
                   />
-                  <span class="text-gray-700"
+                  <span :class="['text-gray-700', isParentRole ? 'text-gray-500' : '']"
                     >Allow coaches to see my email</span
                   >
                 </label>
@@ -482,9 +526,10 @@
               >
               <input
                 v-model="form.school_name"
+                :disabled="isParentRole"
                 type="text"
                 placeholder="e.g., Lincoln High School"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -494,9 +539,10 @@
               >
               <input
                 v-model="form.school_address"
+                :disabled="isParentRole"
                 type="text"
                 placeholder="e.g., 123 Main St"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -506,9 +552,10 @@
               >
               <input
                 v-model="form.school_city"
+                :disabled="isParentRole"
                 type="text"
                 placeholder="e.g., Atlanta"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -518,10 +565,11 @@
               >
               <input
                 v-model="form.school_state"
+                :disabled="isParentRole"
                 type="text"
                 placeholder="e.g., GA"
                 maxlength="2"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -549,9 +597,10 @@
                   >
                   <input
                     v-model="form.ninth_grade_team"
+                    :disabled="isParentRole"
                     type="text"
                     placeholder="e.g., Freshman Team"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div>
@@ -560,9 +609,10 @@
                   >
                   <input
                     v-model="form.ninth_grade_coach"
+                    :disabled="isParentRole"
                     type="text"
                     placeholder="Coach name"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -580,9 +630,10 @@
                   >
                   <input
                     v-model="form.tenth_grade_team"
+                    :disabled="isParentRole"
                     type="text"
                     placeholder="e.g., Junior Varsity"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div>
@@ -591,9 +642,10 @@
                   >
                   <input
                     v-model="form.tenth_grade_coach"
+                    :disabled="isParentRole"
                     type="text"
                     placeholder="Coach name"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -611,9 +663,10 @@
                   >
                   <input
                     v-model="form.eleventh_grade_team"
+                    :disabled="isParentRole"
                     type="text"
                     placeholder="e.g., Varsity"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div>
@@ -622,9 +675,10 @@
                   >
                   <input
                     v-model="form.eleventh_grade_coach"
+                    :disabled="isParentRole"
                     type="text"
                     placeholder="Coach name"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -642,9 +696,10 @@
                   >
                   <input
                     v-model="form.twelfth_grade_team"
+                    :disabled="isParentRole"
                     type="text"
                     placeholder="e.g., Varsity"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div>
@@ -653,9 +708,10 @@
                   >
                   <input
                     v-model="form.twelfth_grade_coach"
+                    :disabled="isParentRole"
                     type="text"
                     placeholder="Coach name"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -674,11 +730,12 @@
               >
               <input
                 v-model.number="form.travel_team_year"
+                :disabled="isParentRole"
                 type="number"
                 :min="new Date().getFullYear()"
                 :max="new Date().getFullYear() + 5"
                 placeholder="e.g., 2024"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -688,9 +745,10 @@
               >
               <input
                 v-model="form.travel_team_name"
+                :disabled="isParentRole"
                 type="text"
                 placeholder="e.g., East Coast Sox"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -700,9 +758,10 @@
               >
               <input
                 v-model="form.travel_team_coach"
+                :disabled="isParentRole"
                 type="text"
                 placeholder="Coach name"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -727,15 +786,17 @@
           <button
             data-testid="save-player-details-button"
             type="submit"
-            :disabled="saving"
+            :disabled="saving || isParentRole"
             class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             {{
-              saving
-                ? recalculating
-                  ? "Recalculating fit scores..."
-                  : "Saving..."
-                : "Save Player Details"
+              isParentRole
+                ? "Read-only view"
+                : saving
+                  ? recalculating
+                    ? "Recalculating fit scores..."
+                    : "Saving..."
+                  : "Save Player Details"
             }}
           </button>
         </div>
@@ -746,11 +807,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
-import { ShareIcon, PhotoIcon, ArrowLeftIcon } from "@heroicons/vue/24/outline";
+import { ExclamationCircleIcon, ShareIcon, PhotoIcon, ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useUserPreferences } from "~/composables/useUserPreferences";
 import { useToast } from "~/composables/useToast";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFitScoreRecalculation } from "~/composables/useFitScoreRecalculation";
+import { useUserStore } from "~/stores/user";
 import { playerDetailsSchema } from "~/utils/validation/schemas";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import type { PlayerDetails } from "~/types/models";
@@ -759,6 +821,7 @@ definePageMeta({
   middleware: "auth",
 });
 
+const userStore = useUserStore();
 const { playerDetails, loading, error, fetchPreferences, updatePlayerDetails } =
   useUserPreferences();
 const { showToast } = useToast();
@@ -766,6 +829,8 @@ const { recalculateAllFitScores, loading: recalculating } =
   useFitScoreRecalculation();
 const { errors, fieldErrors, clearErrors, hasErrors } =
   useValidation(playerDetailsSchema);
+
+const isParentRole = computed(() => userStore.user?.role === "parent");
 
 const POSITIONS = [
   { value: "P", label: "P" },
@@ -888,8 +953,11 @@ const togglePosition = (pos: string) => {
 const handleSave = async () => {
   saving.value = true;
   try {
-    // Save player details
-    await updatePlayerDetails(form.value);
+    // Call API endpoint instead of direct Supabase
+    await $fetch("/api/user/preferences/player-details", {
+      method: "PATCH",
+      body: form.value,
+    });
 
     // Trigger fit score recalculation (blocking)
     try {
