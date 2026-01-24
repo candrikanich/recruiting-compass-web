@@ -271,6 +271,8 @@ const handleSubmit = async () => {
     if (success) {
       emailSent.value = true;
       submittedEmail.value = validated.email;
+      // Clear error state after successful submission
+      passwordReset.clearError();
     }
   } finally {
     loading.value = false;

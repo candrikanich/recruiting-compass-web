@@ -530,7 +530,7 @@ const handleResetPassword = async () => {
 
 // Initialize - check for token and validate
 onMounted(async () => {
-  const token = route.query.token as string;
+  const token = route.query.access_token as string;
 
   // No token in URL
   if (!token) {
