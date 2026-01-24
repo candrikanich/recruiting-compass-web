@@ -33,11 +33,16 @@ describe("useUserStore", () => {
   });
 
   const getMockSupabase = () => {
+    const mockSingle = vi.fn();
+    const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
+    const mockSelect = vi.fn().mockReturnValue({ eq: mockEq, single: mockSingle });
+    const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
+
     const mockQuery = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn(),
-      insert: vi.fn().mockReturnThis(),
+      select: mockSelect,
+      eq: mockEq,
+      single: mockSingle,
+      insert: mockInsert,
     };
 
     const mockSupabase = {
@@ -48,7 +53,7 @@ describe("useUserStore", () => {
     };
 
     mockUseSupabase.mockReturnValue(mockSupabase);
-    return { mockSupabase, mockQuery };
+    return { mockSupabase, mockQuery, mockSingle, mockSelect, mockEq };
   };
 
   afterEach(() => {
@@ -427,15 +432,16 @@ describe("useUserStore", () => {
         user: { id: "user-123", email: "test@example.com" },
       };
 
-      const { mockSupabase, mockQuery } = getMockSupabase();
+      const { mockSupabase, mockSingle, mockSelect } = getMockSupabase();
 
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: mockSession },
       });
-      mockQuery.single.mockResolvedValue({ data: null, error: null });
-      mockQuery.insert.mockReturnValue(mockQuery);
-      mockQuery.select.mockResolvedValue({
-        data: [{ id: "user-123" }],
+      // First call to single() returns null (no profile found)
+      // Then insert().select() returns created user
+      mockSingle.mockResolvedValueOnce({ data: null, error: null });
+      mockSelect.mockResolvedValue({
+        data: [{ id: "user-123", email: "test@example.com", role: "student", full_name: "" }],
         error: null,
       });
 

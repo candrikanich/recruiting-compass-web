@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { ref } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
@@ -34,7 +33,25 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
   };
 
   beforeEach(() => {
+    // Clear call history
     vi.clearAllMocks();
+
+    // Create a fresh default mock for useSupabase
+    const defaultMock: any = {
+      auth: {
+        getSession: vi.fn(),
+        signInWithPassword: vi.fn(),
+        signOut: vi.fn(),
+        signUp: vi.fn(),
+        onAuthStateChange: vi.fn(),
+      },
+      from: vi.fn(),
+    };
+
+    // Reset mockUseSupabase to return a fresh mock
+    mockUseSupabase.mockReturnValue(defaultMock);
+
+    // Set up console mocks
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "log").mockImplementation(() => {});
 
@@ -55,11 +72,27 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
       onAuthStateChange: vi.fn(),
     };
 
-    // Create complete mock chain for database operations
+    // Create a proper mock chain that handles chaining correctly
     const mockSingle = vi.fn();
-    const mockEq = vi.fn(() => ({ single: mockSingle }));
-    const mockSelect = vi.fn(() => ({ eq: mockEq }));
-    const mockInsert = vi.fn(() => ({ select: vi.fn() }));
+    const mockEq = vi.fn().mockReturnThis();
+    const mockSelect = vi.fn().mockReturnThis();
+    const mockInsert = vi.fn().mockReturnThis();
+
+    // Set up the chain endpoints
+    mockEq.mockImplementation(() => ({
+      single: mockSingle,
+      eq: mockEq,
+    }));
+
+    mockSelect.mockImplementation(() => ({
+      eq: mockEq,
+      select: mockSelect,
+    }));
+
+    mockInsert.mockImplementation(() => ({
+      select: mockSelect,
+    }));
+
     const mockFrom = vi.fn((table: string) => {
       if (table === "users") {
         return {
@@ -257,7 +290,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
     });
 
     it("should handle user store initialization failure gracefully", async () => {
-      const { mockSupabase, mockAuth } = getMockSupabase();
+      const { mockAuth } = getMockSupabase();
 
       // Mock successful session
       mockAuth.getSession.mockResolvedValue({
@@ -266,15 +299,18 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
       });
 
       // Mock database failure
-      const mockFrom = vi.fn().mockReturnThis();
-      const mockSelect = vi.fn().mockReturnThis();
-      const mockEq = vi.fn().mockReturnThis();
       const mockSingle = vi.fn().mockRejectedValue(new Error("Database error"));
+      const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+      const mockFrom = vi.fn().mockReturnValue({
+        select: mockSelect,
+        insert: vi.fn(),
+      });
 
-      mockSupabase.from = mockFrom;
-      mockFrom.select = mockSelect;
-      mockSelect.eq = mockEq;
-      mockEq.single = mockSingle;
+      mockUseSupabase.mockReturnValue({
+        auth: mockAuth,
+        from: mockFrom,
+      } as any);
 
       const auth = useAuth();
       const userStore = useUserStore();
@@ -390,7 +426,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
       const userStore = useUserStore();
 
       // Set up auth listener
-      auth.setupAuthListener(async (user) => {
+      auth.setupAuthListener(async (user: User | null) => {
         if (user) {
           await userStore.initializeUser();
         } else {

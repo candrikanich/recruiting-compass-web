@@ -35,6 +35,7 @@ describe("useInteractions - Extended", () => {
   let userStore: ReturnType<typeof useUserStore>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     setActivePinia(createPinia());
     userStore = useUserStore();
 
@@ -52,10 +53,6 @@ describe("useInteractions - Extended", () => {
     };
 
     mockSupabase.from.mockReturnValue(mockQuery);
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
   });
 
   const createMockInteraction = (overrides = {}): Interaction => ({

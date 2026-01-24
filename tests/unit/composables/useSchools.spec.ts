@@ -17,6 +17,7 @@ describe("useSchools", () => {
   let userStore: ReturnType<typeof useUserStore>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     setActivePinia(createPinia());
     userStore = useUserStore();
     userStore.user = {
@@ -34,7 +35,6 @@ describe("useSchools", () => {
     };
 
     mockSupabase.from.mockReturnValue(mockQuery);
-    vi.clearAllMocks();
   });
 
   describe("createSchool", () => {
