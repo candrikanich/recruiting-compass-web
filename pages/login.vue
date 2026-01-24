@@ -123,21 +123,29 @@
               <FieldError :error="fieldErrors.password" />
             </div>
 
-            <!-- Remember Me Checkbox -->
-            <div class="flex items-center">
-              <input
-                id="rememberMe"
-                v-model="rememberMe"
-                data-testid="remember-me-checkbox"
-                type="checkbox"
-                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-              />
-              <label
-                for="rememberMe"
-                class="ml-2 text-sm font-medium text-slate-700 cursor-pointer"
+            <!-- Remember Me & Forgot Password -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <input
+                  id="rememberMe"
+                  v-model="rememberMe"
+                  data-testid="remember-me-checkbox"
+                  type="checkbox"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                />
+                <label
+                  for="rememberMe"
+                  class="ml-2 text-sm font-medium text-slate-700 cursor-pointer"
+                >
+                  Remember me on this device (30 days)
+                </label>
+              </div>
+              <NuxtLink
+                to="/forgot-password"
+                class="text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
-                Remember me on this device (30 days)
-              </label>
+                Forgot password?
+              </NuxtLink>
             </div>
 
             <!-- Submit -->

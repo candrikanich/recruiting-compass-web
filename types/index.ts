@@ -2,8 +2,7 @@
  * Re-export commonly used types with shorter names
  */
 
-import type { Database } from "./database";
-import type { Schools } from "./database-helpers";
+// import type { Schools } from "./database-helpers"; // Unused - available if needed
 import type { School as SchoolModel } from "./models";
 
 export type School = SchoolModel;

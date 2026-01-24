@@ -8,9 +8,10 @@ export const portfolioHealthRule: Rule = {
   async evaluate(context: RuleContext): Promise<SuggestionData | null> {
     if (context.schools.length === 0) return null;
 
-    const allUnlikely = context.schools.every(
-      (s: any) => (s.fit_score || 0) < 50,
-    );
+    const allUnlikely = context.schools.every((s: unknown) => {
+      const school = s as Record<string, unknown>;
+      return ((school.fit_score as number) || 0) < 50;
+    });
 
     if (allUnlikely) {
       return {

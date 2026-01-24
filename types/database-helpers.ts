@@ -34,13 +34,13 @@ export interface AuditLog {
   resource_id: string | null;
   table_name: string | null;
   description: string | null;
-  old_values: Record<string, any> | null;
-  new_values: Record<string, any> | null;
+  old_values: Record<string, unknown> | null;
+  new_values: Record<string, unknown> | null;
   ip_address: string | null;
   user_agent: string | null;
   status: "success" | "failure";
   error_message: string | null;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string | null;
   expires_at: string | null;
 }
@@ -60,13 +60,13 @@ export interface AuditLogInsert {
   resource_id?: string | null;
   table_name?: string | null;
   description?: string | null;
-  old_values?: Record<string, any> | null;
-  new_values?: Record<string, any> | null;
+  old_values?: Record<string, unknown> | null;
+  new_values?: Record<string, unknown> | null;
   ip_address?: string | null;
   user_agent?: string | null;
   status?: "success" | "failure";
   error_message?: string | null;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   created_at?: string | null;
   expires_at?: string | null;
 }
@@ -81,7 +81,7 @@ export interface School extends Omit<Schools, "academic_info"> {
 }
 
 export interface AcademicInfo {
-  [key: string]: any;
+  [key: string]: unknown;
   address?: string;
   baseball_facility_address?: string;
   mascot?: string;

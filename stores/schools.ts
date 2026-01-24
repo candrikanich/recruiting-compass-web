@@ -67,7 +67,9 @@ export const useSchoolStore = defineStore("schools", {
         if (
           state.filters.priorityTiers &&
           state.filters.priorityTiers.length > 0 &&
-          !state.filters.priorityTiers.includes(s.priority_tier as any)
+          !state.filters.priorityTiers.includes(
+            s.priority_tier as "A" | "B" | "C",
+          )
         ) {
           return false;
         }
@@ -94,9 +96,8 @@ export const useSchoolStore = defineStore("schools", {
     /**
      * Get schools by priority tier
      */
-    schoolsByPriorityTier:
-      (state) => (tier: "A" | "B" | "C") =>
-        state.schools.filter((s) => s.priority_tier === tier),
+    schoolsByPriorityTier: (state) => (tier: "A" | "B" | "C") =>
+      state.schools.filter((s) => s.priority_tier === tier),
 
     /**
      * Check if schools have been fetched

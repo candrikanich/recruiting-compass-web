@@ -1,14 +1,16 @@
-import type { Suggestion, SuggestionData } from "~/types/timeline";
+import type { SuggestionData } from "~/types/timeline";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "~/types/database";
 
 export interface RuleContext {
   athleteId: string;
-  athlete: any;
-  schools: any[];
-  interactions: any[];
-  tasks: any[];
-  athleteTasks: any[];
-  videos: any[];
-  events: any[];
+  athlete: unknown;
+  schools: unknown[];
+  interactions: unknown[];
+  tasks: unknown[];
+  athleteTasks: unknown[];
+  videos: unknown[];
+  events: unknown[];
 }
 
 export interface Rule {
@@ -19,7 +21,7 @@ export interface Rule {
 }
 
 export async function isDuplicateSuggestion(
-  supabase: any,
+  supabase: SupabaseClient<Database>,
   athleteId: string,
   suggestion: SuggestionData,
   daysWindow: number = 7,

@@ -5,16 +5,19 @@
 
 import type { TaskWithStatus } from "~/types/timeline";
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace TasksAPI {
   // Tasks with status endpoint
   export interface GetTasksWithStatusRequest {
     gradeLevel?: number;
   }
 
-  export interface GetTasksWithStatusResponse extends Array<TaskWithStatus> {}
+  export type GetTasksWithStatusResponse = TaskWithStatus[];
 
   // Task dependencies endpoint
-  export interface GetTaskDependenciesRequest {}
+  export interface GetTaskDependenciesRequest {
+    // Empty interface - dependencies retrieved from task ID
+  }
 
   export interface TaskDependency {
     id: string;

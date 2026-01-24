@@ -5,9 +5,14 @@
 
 import type { Phase, MilestoneProgress, StatusLabel } from "~/types/timeline";
 
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AthleteAPI {
   // Phase endpoints
-  export interface GetPhaseRequest {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  export interface GetPhaseRequest {
+    // Empty interface - no properties needed
+  }
 
   export interface GetPhaseResponse {
     phase: Phase;
@@ -15,7 +20,9 @@ export namespace AthleteAPI {
     canAdvance: boolean;
   }
 
-  export interface AdvancePhaseRequest {}
+  export interface AdvancePhaseRequest {
+    // Empty interface - trigger-based advancement
+  }
 
   export interface AdvancePhaseResponse {
     success: boolean;
@@ -24,7 +31,9 @@ export namespace AthleteAPI {
   }
 
   // Status endpoints
-  export interface GetStatusRequest {}
+  export interface GetStatusRequest {
+    // Empty interface - status retrieved from session
+  }
 
   export interface StatusScoreResult {
     status_label: StatusLabel;
@@ -39,12 +48,16 @@ export namespace AthleteAPI {
 
   export interface GetStatusResponse extends StatusScoreResult {}
 
-  export interface RecalculateStatusRequest {}
+  export interface RecalculateStatusRequest {
+    // Empty interface - trigger-based recalculation
+  }
 
   export interface RecalculateStatusResponse extends StatusScoreResult {}
 
   // Portfolio health endpoint
-  export interface GetPortfolioHealthRequest {}
+  export interface GetPortfolioHealthRequest {
+    // Empty interface - health calculated from athlete data
+  }
 
   export interface PortfolioHealthScore {
     overall_health_score: number;

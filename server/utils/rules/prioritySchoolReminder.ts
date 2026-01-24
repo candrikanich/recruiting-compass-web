@@ -6,23 +6,36 @@ export const prioritySchoolReminderRule: Rule = {
   name: "Priority School Check-In",
   description: "Top priority school needs attention",
   async evaluate(context: RuleContext): Promise<SuggestionData | null> {
-    const priorityASchools = context.schools.filter(
-      (s: any) => s.priority === "A",
-    );
+    const priorityASchools = context.schools.filter((s: unknown) => {
+      const school = s as Record<string, unknown>;
+      return school.priority === "A";
+    });
 
     for (const school of priorityASchools) {
+      const schoolRecord = school as Record<string, unknown>;
       const lastInteraction = context.interactions
-        .filter((i: any) => i.school_id === school.id)
-        .sort(
-          (a: any, b: any) =>
-            new Date(b.interaction_date).getTime() -
-            new Date(a.interaction_date).getTime(),
-        )[0];
+        .filter((i: unknown) => {
+          const interaction = i as Record<string, unknown>;
+          return interaction.school_id === schoolRecord.id;
+        })
+        .sort((a: unknown, b: unknown) => {
+          const intA = a as Record<string, unknown>;
+          const intB = b as Record<string, unknown>;
+          return (
+            new Date(intB.interaction_date as string).getTime() -
+            new Date(intA.interaction_date as string).getTime()
+          );
+        })[0];
 
-      const daysSinceContact = lastInteraction
+      const lastInteractionRecord = lastInteraction as
+        | Record<string, unknown>
+        | undefined;
+      const daysSinceContact = lastInteractionRecord
         ? Math.floor(
             (Date.now() -
-              new Date(lastInteraction.interaction_date).getTime()) /
+              new Date(
+                lastInteractionRecord.interaction_date as string,
+              ).getTime()) /
               (1000 * 60 * 60 * 24),
           )
         : 999;
@@ -31,9 +44,9 @@ export const prioritySchoolReminderRule: Rule = {
         return {
           rule_type: "priority-school-reminder",
           urgency: "high",
-          message: `${school.name} is your top priority. Check in with coaches this week.`,
+          message: `${schoolRecord.name as string} is your top priority. Check in with coaches this week.`,
           action_type: "log_interaction",
-          related_school_id: school.id,
+          related_school_id: schoolRecord.id as string,
         };
       }
     }

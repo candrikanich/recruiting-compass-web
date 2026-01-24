@@ -1,5 +1,8 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "~/types/database";
+
 export async function surfacePendingSuggestions(
-  supabase: any,
+  supabase: SupabaseClient<Database>,
   athleteId: string,
   limit: number = 3,
 ): Promise<number> {
@@ -16,7 +19,9 @@ export async function surfacePendingSuggestions(
     return 0;
   }
 
-  const ids = pending.map((s: any) => s.id);
+  const ids = pending.map(
+    (s: unknown) => (s as Record<string, unknown>).id as string,
+  );
 
   const { error: updateError } = await supabase
     .from("suggestion")
@@ -30,11 +35,11 @@ export async function surfacePendingSuggestions(
 }
 
 export async function getSurfacedSuggestions(
-  supabase: any,
+  supabase: SupabaseClient<Database>,
   athleteId: string,
   location: "dashboard" | "school_detail",
   schoolId?: string,
-): Promise<any[]> {
+): Promise<unknown[]> {
   let query = supabase
     .from("suggestion")
     .select("*")
