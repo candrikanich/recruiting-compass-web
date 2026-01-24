@@ -9,7 +9,7 @@
 export interface AppError extends Error {
   code?: string;
   statusCode?: number;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 /**
@@ -34,10 +34,24 @@ export function getErrorMessage(
 
   // Object with message property
   if (typeof error === "object" && error !== null) {
-    const errorObj = error as Record<string, any>;
-    if (errorObj.message) return errorObj.message;
-    if (errorObj.error?.message) return errorObj.error.message;
-    if (errorObj.data?.message) return errorObj.data.message;
+    const errorObj = error as Record<string, unknown>;
+    if (typeof errorObj.message === "string") return errorObj.message;
+    if (
+      errorObj.error &&
+      typeof errorObj.error === "object" &&
+      errorObj.error !== null
+    ) {
+      const err = errorObj.error as Record<string, unknown>;
+      if (typeof err.message === "string") return err.message;
+    }
+    if (
+      errorObj.data &&
+      typeof errorObj.data === "object" &&
+      errorObj.data !== null
+    ) {
+      const data = errorObj.data as Record<string, unknown>;
+      if (typeof data.message === "string") return data.message;
+    }
   }
 
   // Fallback
@@ -53,16 +67,22 @@ export function getErrorMessage(
  */
 export function handleError(
   error: unknown,
-  context?: Record<string, any>,
+  context?: Record<string, unknown>,
 ): AppError {
   const message = getErrorMessage(error);
   const appError = new Error(message) as AppError;
 
   // Extract status code if available
   if (typeof error === "object" && error !== null) {
-    const errorObj = error as Record<string, any>;
-    appError.statusCode = errorObj.statusCode || errorObj.status;
-    appError.code = errorObj.code;
+    const errorObj = error as Record<string, unknown>;
+    appError.statusCode =
+      typeof errorObj.statusCode === "number"
+        ? errorObj.statusCode
+        : typeof errorObj.status === "number"
+          ? errorObj.status
+          : undefined;
+    appError.code =
+      typeof errorObj.code === "string" ? errorObj.code : undefined;
     appError.context = context;
   }
 
@@ -85,7 +105,7 @@ export function handleError(
  * @param onError - Optional custom error handler
  * @returns Wrapped function
  */
-export function asyncErrorHandler<T extends any[], R>(
+export function asyncErrorHandler<T extends unknown[], R>(
   fn: (...args: T) => Promise<R>,
   onError?: (error: AppError) => void,
 ) {
@@ -108,13 +128,16 @@ export function asyncErrorHandler<T extends any[], R>(
  * @param requiredFields - Array of required field names
  * @returns true if all required fields exist and are non-null
  */
-export function validateResponse(data: any, requiredFields: string[]): boolean {
+export function validateResponse(
+  data: unknown,
+  requiredFields: string[],
+): boolean {
   if (!data || typeof data !== "object") {
     return false;
   }
 
   return requiredFields.every((field) => {
-    const value = data[field];
+    const value = (data as Record<string, unknown>)[field];
     return value !== undefined && value !== null;
   });
 }
@@ -167,7 +190,7 @@ export function formatUserError(
  * @param fallback - Fallback value if parsing fails
  * @returns Parsed object or fallback value
  */
-export function safeJsonParse<T = any>(
+export function safeJsonParse<T = unknown>(
   json: string,
   fallback: T | null = null,
 ): T | null {

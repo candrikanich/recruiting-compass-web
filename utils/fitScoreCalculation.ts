@@ -127,7 +127,7 @@ export function calculateAthleticFit(
   athleteVelo: number | null, // mph for pitchers or exit velo for hitters
   schoolPositionNeeds: string[] = [],
   coachInterestLevel: "low" | "medium" | "high" = "low",
-  rosterDepth: number = 50, // percentage of roster filled at position
+  _rosterDepth: number = 50, // percentage of roster filled at position
 ): number {
   let score = 0;
 

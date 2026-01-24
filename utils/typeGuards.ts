@@ -44,7 +44,7 @@ export function satisfiesProperties<T extends Record<string, unknown>>(
 
 export function isPartial<T extends Record<string, unknown>>(
   value: unknown,
-  validator: (v: unknown) => v is T,
+  _validator: (v: unknown) => v is T,
 ): value is Partial<T> {
   return isRecord(value);
 }

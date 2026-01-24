@@ -98,7 +98,7 @@ export const taskTriggers: TaskTriggerMapping = {
  */
 export async function checkAndCompleteTask(
   triggerAction: string,
-  athleteId: string,
+  _athleteId: string,
 ): Promise<string[]> {
   const taskIds = taskTriggers[triggerAction] || [];
 
@@ -111,7 +111,7 @@ export async function checkAndCompleteTask(
       taskIds.map(async (taskId) => {
         try {
           // Check if task already completed
-          const existingResponse = await $fetch("/api/athlete-tasks", {
+          await $fetch("/api/athlete-tasks", {
             method: "GET",
           });
 

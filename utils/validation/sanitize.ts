@@ -84,7 +84,7 @@ export const stripHtml = (html: string | null | undefined): string => {
  * Recursively sanitizes specified fields in an object.
  * Useful for sanitizing API responses or form data before storage.
  */
-export const sanitizeObject = <T extends Record<string, any>>(
+export const sanitizeObject = <T extends Record<string, unknown>>(
   obj: T,
   fieldsToSanitize: (keyof T)[] = [],
 ): T => {

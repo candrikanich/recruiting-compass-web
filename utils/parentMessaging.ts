@@ -14,7 +14,7 @@ export interface ParentMessageContext {
  * Provides educational guidance and reassurance
  */
 export function getParentMessage(context: ParentMessageContext): string | null {
-  const { phase, division, status, daysInPhase = 0 } = context;
+  const { phase, status, daysInPhase = 0 } = context;
 
   // Early phase messages
   if (phase === "freshman") {

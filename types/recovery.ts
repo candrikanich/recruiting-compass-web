@@ -14,7 +14,7 @@ export interface RecoveryTrigger {
   title: string;
   description: string;
   severity: "medium" | "high";
-  details: Record<string, any>;
+  details: Record<string, unknown>;
 }
 
 export interface RecoveryStep {

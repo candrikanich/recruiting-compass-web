@@ -8,7 +8,7 @@ import { downloadFile } from "./exportHelpers";
 // Extend jsPDF type to include autoTable
 declare module "jspdf" {
   interface jsPDF {
-    autoTable: any;
+    autoTable: (options: Record<string, unknown>) => void;
     lastAutoTable: {
       finalY: number;
     };
@@ -22,7 +22,7 @@ declare module "jspdf" {
 /**
  * Escape a value for CSV format
  */
-const escapeCSV = (value: any): string => {
+const escapeCSV = (value: unknown): string => {
   if (value === null || value === undefined) return "";
   const str = String(value);
   // Escape quotes and wrap in quotes if contains comma, quote, or newline
@@ -35,7 +35,7 @@ const escapeCSV = (value: any): string => {
 /**
  * Convert array of objects to CSV string
  */
-export const toCSV = (headers: string[], rows: any[][]): string => {
+export const toCSV = (headers: string[], rows: unknown[][]): string => {
   const headerRow = headers.map(escapeCSV).join(",");
   const dataRows = rows.map((row) => row.map(escapeCSV).join(","));
   return [headerRow, ...dataRows].join("\n");
@@ -573,7 +573,7 @@ export const exportAnalyticsPDF = async (
  */
 export const exportAnalyticsExcel = async (
   chartImages: Array<{ title: string; imageData: string }>,
-  data: Array<Record<string, any>>,
+  data: Array<Record<string, unknown>>,
   filename?: string,
 ): Promise<void> => {
   try {

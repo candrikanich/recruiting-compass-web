@@ -136,15 +136,15 @@ export const printContent = (title: string, htmlContent: string) => {
  * Generate HTML table from array of objects
  */
 export const generateHtmlTable = (
-  data: any[],
+  data: unknown[],
   columns: Array<{ key: string; label: string }>,
 ) => {
   const headerHtml = columns.map((col) => `<th>${col.label}</th>`).join("");
-
-  const rowsHtml = data
+  const bodyHtml = data
     .map((row) => {
+      const rowData = row as Record<string, unknown>;
       const cells = columns
-        .map((col) => `<td>${row[col.key] || ""}</td>`)
+        .map((col) => `<td>${rowData[col.key] || ""}</td>`)
         .join("");
       return `<tr>${cells}</tr>`;
     })
@@ -156,7 +156,7 @@ export const generateHtmlTable = (
         <tr>${headerHtml}</tr>
       </thead>
       <tbody>
-        ${rowsHtml}
+        ${bodyHtml}
       </tbody>
     </table>
   `;

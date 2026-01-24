@@ -207,7 +207,7 @@ export interface Event {
     | null;
   coaches_present?: string[];
   performance_notes?: string | null;
-  stats_recorded?: Record<string, any> | null;
+  stats_recorded?: Record<string, unknown> | null;
   cost?: number | null;
   registered: boolean;
   attended: boolean;
@@ -279,8 +279,8 @@ export interface Offer {
   status: "pending" | "accepted" | "declined" | "expired";
   notes?: string | null;
   conditions?: string | null;
-  academic_requirements?: Record<string, any> | null;
-  athletic_requirements?: Record<string, any> | null;
+  academic_requirements?: Record<string, unknown> | null;
+  athletic_requirements?: Record<string, unknown> | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -395,7 +395,7 @@ export interface SchoolPreference {
   id: string;
   category: "location" | "academic" | "program" | "custom";
   type: string;
-  value: any;
+  value: unknown;
   priority: number;
   is_dealbreaker: boolean;
 }
@@ -411,8 +411,8 @@ export interface PreferenceHistoryEntry {
   changed_by: string;
   changes: {
     field: string;
-    old_value: any;
-    new_value: any;
+    old_value: unknown;
+    new_value: unknown;
   }[];
 }
 
@@ -451,7 +451,7 @@ export interface DashboardWidgetVisibility {
 export interface UserPreferences {
   user_id: string;
   notification_settings: NotificationSettings;
-  communication_templates?: Record<string, any>;
+  communication_templates?: Record<string, unknown>;
   dashboard_layout?: DashboardWidgetVisibility;
   home_location?: HomeLocation;
   player_details?: PlayerDetails;
@@ -469,10 +469,10 @@ export interface SavedSearch {
   query: string;
   searchType: "all" | "schools" | "coaches" | "interactions" | "metrics";
   filters: {
-    schools?: Record<string, any>;
-    coaches?: Record<string, any>;
-    interactions?: Record<string, any>;
-    metrics?: Record<string, any>;
+    schools?: Record<string, unknown>;
+    coaches?: Record<string, unknown>;
+    interactions?: Record<string, unknown>;
+    metrics?: Record<string, unknown>;
   };
   is_favorite: boolean;
   use_count: number;
@@ -487,7 +487,7 @@ export interface SearchHistory {
   searchType: "all" | "schools" | "coaches" | "interactions" | "metrics";
   results_count: number;
   searched_at: string;
-  filters_applied?: Record<string, any>;
+  filters_applied?: Record<string, unknown>;
 }
 
 export interface CommunicationTemplate {
@@ -500,7 +500,7 @@ export interface CommunicationTemplate {
   body: string;
   tags?: string[];
   variables?: string[]; // e.g., {{coach_name}}, {{school_name}}
-  unlock_conditions?: Record<string, any> | null; // Unlock condition groups for predefined templates
+  unlock_conditions?: Record<string, unknown> | null; // Unlock condition groups for predefined templates
   is_predefined?: boolean; // True for system-provided templates
   is_favorite: boolean;
   use_count: number;
@@ -514,13 +514,13 @@ export interface InteractionAutomation {
   name: string;
   description?: string | null;
   trigger: "date_based" | "event_based" | "manual";
-  trigger_config?: Record<string, any>;
+  trigger_config?: Record<string, unknown>;
   action:
     | "create_reminder"
     | "send_email"
     | "log_interaction"
     | "update_status";
-  action_config: Record<string, any>;
+  action_config: Record<string, unknown>;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;

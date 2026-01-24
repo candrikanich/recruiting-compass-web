@@ -179,7 +179,7 @@ export function calculateAcademicStandingScore(
   gpa: number | null,
   testScores: { sat?: number; act?: number } | null,
   eligibilityStatus: "registered" | "pending" | "not_started",
-  targetDivisions: Division[],
+  _targetDivisions: Division[],
 ): number {
   let score = 0;
 

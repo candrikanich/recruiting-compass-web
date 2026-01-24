@@ -7,7 +7,12 @@ declare class JsPDF {
   };
   setFontSize(size: number): void;
   setFont(name: string, weight: string): void;
-  text(text: string, x: number, y: number, options?: any): void;
+  text(
+    text: string,
+    x: number,
+    y: number,
+    options?: Record<string, unknown>,
+  ): void;
   setDrawColor(r: number, g: number, b: number): void;
   rect(x: number, y: number, w: number, h: number, style?: string): void;
   internal: {
