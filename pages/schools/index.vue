@@ -58,7 +58,7 @@
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"
       >
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <!-- Search -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1"
@@ -150,6 +150,12 @@
               <option value="true">Favorites Only</option>
             </select>
           </div>
+
+          <!-- Priority Tier Filter -->
+          <SchoolPriorityTierFilter
+            :model-value="priorityTierFilter"
+            @update:model-value="updatePriorityTierFilter"
+          />
         </div>
 
         <!-- Active Filters -->
@@ -406,6 +412,7 @@ const { coaches: coachesData, fetchAllCoaches } = useCoaches();
 
 const allInteractions = ref<any[]>([]);
 const allCoaches = ref<any[]>([]);
+const priorityTierFilter = ref<("A" | "B" | "C")[] | null>(null);
 
 const hasPreferences = computed(() => {
   return (schoolPreferences.value?.preferences?.length || 0) > 0;
@@ -487,6 +494,13 @@ const activeFiltersDisplay = computed(() => {
 const filteredSchools = computed(() => {
   let filtered = filteredItems.value as unknown as School[];
 
+  // Apply priority tier filter if selected
+  if (priorityTierFilter.value && priorityTierFilter.value.length > 0) {
+    filtered = filtered.filter((s: School) =>
+      priorityTierFilter.value?.includes(s.priority_tier as "A" | "B" | "C"),
+    );
+  }
+
   // Apply match filter if enabled
   const showMatches = filterValues.value.show_matches;
   if (showMatches && hasPreferences.value) {
@@ -507,6 +521,10 @@ const handleFilterUpdate = (field: string, value: any) => {
 
 const handleRemoveFilter = (field: string) => {
   setFilterValue(field, null);
+};
+
+const updatePriorityTierFilter = (tiers: ("A" | "B" | "C")[] | null) => {
+  priorityTierFilter.value = tiers;
 };
 
 // Badge helpers
