@@ -642,7 +642,7 @@
           </div>
 
           <!-- Coaching Philosophy Card -->
-          <CoachingPhilosophy
+          <SchoolCoachingPhilosophy
             :school="school"
             :school-id="id"
             @update="updateCoachingPhilosophy"

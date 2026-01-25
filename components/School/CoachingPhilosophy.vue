@@ -136,6 +136,7 @@
 import { ref, computed, watch } from "vue";
 import { PencilIcon } from "@heroicons/vue/24/outline";
 import type { School } from "~/types/models";
+import NotesHistory from "~/components/School/NotesHistory.vue";
 
 const props = defineProps<{
   school: School;
