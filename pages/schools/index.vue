@@ -56,8 +56,9 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Refined Filter Panel -->
       <div class="space-y-6 mb-8">
-        <!-- Filter Header with Search -->
-        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <!-- Filter Header with Search + Distance -->
+        <div class="flex flex-col lg:flex-row lg:items-end gap-4">
+          <!-- Search (left) -->
           <div class="flex-1">
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
               Find Schools
@@ -81,8 +82,46 @@
             </div>
           </div>
 
+          <!-- Distance Range (right, 50% width) -->
+          <div class="w-full lg:w-1/2">
+            <div class="flex items-end justify-between mb-3">
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                Distance
+              </label>
+              <span class="text-sm font-semibold text-blue-600">
+                {{
+                  (filterValues.value as any)?.distance?.max ??
+                  3000
+                }}
+                <span class="text-xs text-slate-500">mi</span>
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="3000"
+              step="50"
+              :value="
+                (filterValues.value as any)?.distance?.max ?? 3000
+              "
+              @input="
+                handleFilterUpdate('distance', {
+                  max: parseInt(($event.target as HTMLInputElement).value),
+                })
+              "
+              :disabled="!homeLocation"
+              class="w-full h-2.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+            />
+            <p
+              v-if="!homeLocation"
+              class="text-xs text-amber-700 mt-2 px-2 py-1 bg-amber-50 rounded border border-amber-200"
+            >
+              ⚠️ Set home location to enable
+            </p>
+          </div>
+
           <!-- Result Count -->
-          <div class="text-right">
+          <div class="hidden lg:block text-right whitespace-nowrap">
             <p class="text-2xl font-semibold text-slate-900">
               {{ filteredSchools.length }}
             </p>
@@ -216,9 +255,9 @@
                 style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2rem;"
               >
                 <option value="">All</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
+                <option value="A">A - Top Choice</option>
+                <option value="B">B - Strong Interest</option>
+                <option value="C">C - Fallback</option>
               </select>
             </div>
 
@@ -241,11 +280,10 @@
             </div>
           </div>
 
-          <!-- Range Filters -->
           <!-- Fit Score Range -->
-          <div class="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-xl p-5 border border-slate-200/50">
+          <div class="lg:col-span-4 bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-xl p-5 border border-slate-200/50">
             <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-4">
-              Fit Score
+              Fit Score Range
             </label>
             <div class="flex gap-3 items-end">
               <div class="flex-1">
@@ -290,44 +328,6 @@
                 />
               </div>
             </div>
-          </div>
-
-          <!-- Distance Range -->
-          <div class="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-xl p-5 border border-slate-200/50 lg:col-span-3">
-            <div class="flex items-start justify-between mb-4">
-              <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                Distance
-              </label>
-              <span class="text-sm font-semibold text-blue-600">
-                {{
-                  (filterValues.value as any)?.distance?.max ??
-                  3000
-                }}
-                <span class="text-xs text-slate-500">mi</span>
-              </span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="3000"
-              step="50"
-              :value="
-                (filterValues.value as any)?.distance?.max ?? 3000
-              "
-              @input="
-                handleFilterUpdate('distance', {
-                  max: parseInt(($event.target as HTMLInputElement).value),
-                })
-              "
-              :disabled="!homeLocation"
-              class="w-full h-2.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-            />
-            <p
-              v-if="!homeLocation"
-              class="text-xs text-amber-700 mt-3 px-3 py-2 bg-amber-50 rounded-lg border border-amber-200"
-            >
-              ⚠️ Set your home location in preferences to enable distance filtering
-            </p>
           </div>
         </div>
 
