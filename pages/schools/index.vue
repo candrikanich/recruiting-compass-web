@@ -751,7 +751,12 @@ const filterConfigs: FilterConfig[] = [
     label: "State",
     options: stateOptions,
     filterFn: (item: School, filterValue: string) => {
-      const schoolState = item.academic_info?.state || (item.state as string | undefined);
+      let schoolState =
+        item.academic_info?.state || (item.state as string | undefined);
+      // Fallback: extract state from location
+      if (!schoolState && item.location) {
+        schoolState = extractStateFromLocation(item.location) || undefined;
+      }
       return schoolState === filterValue;
     },
   },

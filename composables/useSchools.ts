@@ -311,10 +311,22 @@ export const useSchools = (): {
     error.value = null;
 
     try {
-      // Find current school to get previous status
-      const school = schools.value.find((s) => s.id === schoolId);
+      // Find current school to get previous status (from local cache or fetch from DB)
+      let school = schools.value.find((s) => s.id === schoolId);
+
       if (!school) {
-        throw new Error("School not found");
+        // If not in local cache, fetch from database (e.g., viewing detail page)
+        const { data: fetchedSchool, error: fetchError } = await supabase
+          .from("schools")
+          .select("*")
+          .eq("id", schoolId)
+          .eq("user_id", userStore.user.id)
+          .single();
+
+        if (fetchError || !fetchedSchool) {
+          throw new Error("School not found");
+        }
+        school = fetchedSchool as School;
       }
 
       const previousStatus = school.status;

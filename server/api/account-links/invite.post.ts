@@ -28,7 +28,7 @@ type AccountLinkWithUser =
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = await requireAuth(event);
+    await requireAuth(event);
 
     const body = await readBody<InviteRequest>(event);
     const { invitedEmail, linkId } = body;
@@ -55,14 +55,16 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Generate invitation URL with token
-    const appUrl = process.env.NUXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const invitationUrl = `${appUrl}/settings/account-linking?token=${link.invitation_token}`;
-
-    // Get initiator name
-    const linkData = link as AccountLinkWithUser;
+    // Get initiator name and invitation token
+    const linkData = link as AccountLinkWithUser & {
+      invitation_token: string | null;
+    };
     const initiatorName = linkData.users?.full_name || "A family member";
     const initiatorEmail = linkData.users?.email || "unknown@example.com";
+
+    // Generate invitation URL with token
+    const appUrl = process.env.NUXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const invitationUrl = `${appUrl}/settings/account-linking?token=${linkData.invitation_token}`;
 
     // Send email invitation
     const emailResult = await sendEmail({
