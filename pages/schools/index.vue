@@ -56,7 +56,7 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Refined Filter Panel -->
       <div class="space-y-6 mb-8">
-        <!-- Filter Header with Search + Distance -->
+        <!-- Filter Header with Search + Sliders -->
         <div class="flex flex-col lg:flex-row lg:items-end gap-4">
           <!-- Search (left) -->
           <div class="flex-1">
@@ -82,8 +82,60 @@
             </div>
           </div>
 
-          <!-- Distance Range (right, 50% width) -->
-          <div class="w-full lg:w-1/2">
+          <!-- Fit Score Slider (right, equal width) -->
+          <div class="w-full lg:w-1/4">
+            <div class="flex items-end justify-between mb-3">
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                Fit Score
+              </label>
+              <span class="text-sm font-semibold text-blue-600">
+                {{
+                  (filterValues.value as any)?.fit_score?.min ?? 0
+                }}–{{
+                  (filterValues.value as any)?.fit_score?.max ?? 100
+                }}
+              </span>
+            </div>
+            <div class="flex gap-2 items-end">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                :value="
+                  (filterValues.value as any)?.fit_score?.min ?? 0
+                "
+                @input="
+                  handleFilterUpdate('fit_score', {
+                    min: parseInt(($event.target as HTMLInputElement).value),
+                    max:
+                      (filterValues.value as any)?.fit_score?.max ?? 100,
+                  })
+                "
+                class="flex-1 h-2.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 transition-opacity"
+              />
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                :value="
+                  (filterValues.value as any)?.fit_score?.max ?? 100
+                "
+                @input="
+                  handleFilterUpdate('fit_score', {
+                    min:
+                      (filterValues.value as any)?.fit_score?.min ?? 0,
+                    max: parseInt(($event.target as HTMLInputElement).value),
+                  })
+                "
+                class="flex-1 h-2.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 transition-opacity"
+              />
+            </div>
+          </div>
+
+          <!-- Distance Slider (right, equal width) -->
+          <div class="w-full lg:w-1/4">
             <div class="flex items-end justify-between mb-3">
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 Distance
@@ -116,7 +168,7 @@
               v-if="!homeLocation"
               class="text-xs text-amber-700 mt-2 px-2 py-1 bg-amber-50 rounded border border-amber-200"
             >
-              ⚠️ Set home location to enable
+              ⚠️ Set home location
             </p>
           </div>
 
@@ -280,55 +332,6 @@
             </div>
           </div>
 
-          <!-- Fit Score Range -->
-          <div class="lg:col-span-4 bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-xl p-5 border border-slate-200/50">
-            <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-4">
-              Fit Score Range
-            </label>
-            <div class="flex gap-3 items-end">
-              <div class="flex-1">
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="5"
-                  :value="
-                    (filterValues.value as any)?.fit_score?.min ?? 0
-                  "
-                  @input="
-                    handleFilterUpdate('fit_score', {
-                      min: parseInt(($event.target as HTMLInputElement).value),
-                      max:
-                        (filterValues.value as any)?.fit_score?.max ?? 100,
-                    })
-                  "
-                  placeholder="Min"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                />
-              </div>
-              <span class="text-slate-400 text-lg">–</span>
-              <div class="flex-1">
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="5"
-                  :value="
-                    (filterValues.value as any)?.fit_score?.max ?? 100
-                  "
-                  @input="
-                    handleFilterUpdate('fit_score', {
-                      min:
-                        (filterValues.value as any)?.fit_score?.min ?? 0,
-                      max: parseInt(($event.target as HTMLInputElement).value),
-                    })
-                  "
-                  placeholder="Max"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                />
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Active Filters Chips -->
