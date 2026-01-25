@@ -849,6 +849,14 @@ const filteredSchools = computed(() => {
 
   let filtered = filteredItems.value as unknown as School[];
 
+  // Debug logging
+  if (schools.value.length > 0 && filtered.length === 0) {
+    console.debug(
+      `[Schools] WARNING: schools loaded (${schools.value.length}) but filteredItems is empty!`,
+      { filteredItems: filteredItems.value, filterValues: filterValues.value },
+    );
+  }
+
   // Apply priority tier filter if selected
   if (priorityTierFilter.value && priorityTierFilter.value.length > 0) {
     filtered = filtered.filter((s: School) =>
