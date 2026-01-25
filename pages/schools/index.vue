@@ -58,9 +58,10 @@
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"
       >
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-          <!-- Search -->
-          <div>
+        <!-- Row 1: Main filters -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4 mb-4">
+          <!-- Search (2 cols) -->
+          <div class="lg:col-span-2">
             <label class="block text-sm font-medium text-slate-700 mb-1"
               >Search</label
             >
@@ -157,6 +158,32 @@
             @update:model-value="updatePriorityTierFilter"
           />
 
+          <!-- State -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1"
+              >State</label
+            >
+            <select
+              :value="String((filterValues.value as any)?.state ?? '')"
+              @change="
+                handleFilterUpdate(
+                  'state',
+                  ($event.target as HTMLSelectElement).value || null,
+                )
+              "
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">-- All --</option>
+              <option
+                v-for="option in stateOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+
           <!-- Sort Selector -->
           <SortSelector
             :model-value="sortBy"
@@ -164,6 +191,93 @@
             @update:model-value="sortBy = $event"
             @update:sort-order="sortOrder = $event"
           />
+        </div>
+
+        <!-- Row 2: Range filters -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <!-- Fit Score Range (2 cols) -->
+          <div class="lg:col-span-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Fit Score Range</label
+            >
+            <div class="flex gap-2 items-center">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="5"
+                :value="
+                  (filterValues.value as any)?.fit_score?.min ?? 0
+                "
+                @input="
+                  handleFilterUpdate('fit_score', {
+                    min: parseInt(($event.target as HTMLInputElement).value),
+                    max:
+                      (filterValues.value as any)?.fit_score?.max ?? 100,
+                  })
+                "
+                placeholder="Min"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <span class="text-slate-500">-</span>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="5"
+                :value="
+                  (filterValues.value as any)?.fit_score?.max ?? 100
+                "
+                @input="
+                  handleFilterUpdate('fit_score', {
+                    min:
+                      (filterValues.value as any)?.fit_score?.min ?? 0,
+                    max: parseInt(($event.target as HTMLInputElement).value),
+                  })
+                "
+                placeholder="Max"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          <!-- Distance Range (2 cols) -->
+          <div class="lg:col-span-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Distance Range</label
+            >
+            <div class="flex items-center gap-2">
+              <input
+                type="range"
+                min="0"
+                max="3000"
+                step="50"
+                :value="
+                  (filterValues.value as any)?.distance?.max ?? 3000
+                "
+                @input="
+                  handleFilterUpdate('distance', {
+                    max: parseInt(($event.target as HTMLInputElement).value),
+                  })
+                "
+                :disabled="!homeLocation"
+                class="w-full h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              <span class="text-sm font-medium text-slate-700 whitespace-nowrap min-w-fit">
+                {{
+                  (filterValues.value as any)?.distance?.max ??
+                  3000
+                }}
+                mi
+              </span>
+            </div>
+            <p
+              v-if="!homeLocation"
+              class="text-xs text-amber-600 mt-1"
+            >
+              Set home location to filter by distance
+            </p>
+          </div>
         </div>
 
         <!-- Active Filters -->
@@ -471,6 +585,53 @@ const shouldShowSchoolWarning = computed(() => {
   return schools.value.length >= 30;
 });
 
+// Compute dynamic state options from schools
+const stateOptions = computed(() => {
+  const states = new Set<string>();
+  schools.value.forEach((school) => {
+    const state =
+      school.academic_info?.state || (school.state as string | undefined);
+    if (state && typeof state === "string") {
+      states.add(state);
+    }
+  });
+  return Array.from(states)
+    .sort()
+    .map((state) => ({ value: state, label: state }));
+});
+
+// Memoized distance cache to avoid recalculating distances
+const distanceCache = computed(() => {
+  const cache = new Map<string, number>();
+  if (!homeLocation.value?.latitude || !homeLocation.value?.longitude) {
+    return cache;
+  }
+
+  schools.value.forEach((school) => {
+    const coords = school.academic_info;
+    if (
+      coords?.latitude &&
+      coords?.longitude &&
+      typeof coords.latitude === "number" &&
+      typeof coords.longitude === "number"
+    ) {
+      const distance = calculateDistance(
+        {
+          latitude: homeLocation.value!.latitude,
+          longitude: homeLocation.value!.longitude,
+        },
+        {
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        },
+      );
+      cache.set(school.id, distance);
+    }
+  });
+
+  return cache;
+});
+
 // Filter configurations
 const filterConfigs: FilterConfig[] = [
   {
@@ -512,6 +673,50 @@ const filterConfigs: FilterConfig[] = [
     ],
   },
   { type: "boolean", field: "is_favorite", label: "Favorites Only" },
+  {
+    type: "select",
+    field: "state",
+    label: "State",
+    options: stateOptions,
+    filterFn: (item: School, filterValue: string) => {
+      const schoolState = item.academic_info?.state || (item.state as string | undefined);
+      return schoolState === filterValue;
+    },
+  },
+  {
+    type: "range",
+    field: "fit_score",
+    label: "Fit Score",
+    min: 0,
+    max: 100,
+    step: 5,
+    defaultValue: { min: 0, max: 100 },
+    filterFn: (item: School, filterValue: { min?: number; max?: number }) => {
+      const score = item.fit_score;
+      if (score === null || score === undefined) return false;
+      const min = filterValue?.min ?? 0;
+      const max = filterValue?.max ?? 100;
+      return score >= min && score <= max;
+    },
+  },
+  {
+    type: "range",
+    field: "distance",
+    label: "Distance",
+    min: 0,
+    max: 3000,
+    step: 50,
+    defaultValue: { max: 3000 },
+    filterFn: (item: School, filterValue: { max?: number }) => {
+      if (!homeLocation.value?.latitude || !homeLocation.value?.longitude) {
+        return true;
+      }
+      const distance = distanceCache.value.get(item.id);
+      if (distance === undefined) return false;
+      const maxDistance = filterValue?.max ?? 3000;
+      return distance <= maxDistance;
+    },
+  },
 ];
 
 const {
@@ -535,6 +740,23 @@ const activeFiltersDisplay = computed(() => {
         display[key] = "Favorites";
       } else if (key === "name") {
         display[key] = `"${value}"`;
+      } else if (key === "fit_score") {
+        if (typeof value === "object" && value !== null) {
+          const min = value.min ?? 0;
+          const max = value.max ?? 100;
+          if (min === 0 && max === 100) {
+            return; // Default range, don't display
+          }
+          display[key] = `${min} - ${max}`;
+        }
+      } else if (key === "distance") {
+        if (typeof value === "object" && value !== null) {
+          const max = value.max ?? 3000;
+          if (max === 3000) {
+            return; // Default max, don't display
+          }
+          display[key] = `Within ${max} miles`;
+        }
       } else {
         display[key] = String(value);
       }
@@ -543,8 +765,10 @@ const activeFiltersDisplay = computed(() => {
   return display;
 });
 
-// Apply additional filtering and sorting
+// Apply additional filtering and sorting with performance tracking
 const filteredSchools = computed(() => {
+  const startTime = typeof performance !== "undefined" ? performance.now() : 0;
+
   let filtered = filteredItems.value as unknown as School[];
 
   // Apply priority tier filter if selected
@@ -582,16 +806,9 @@ const filteredSchools = computed(() => {
         }
 
         const getDistance = (school: School): number => {
-          if (!school.academic_info) return Infinity;
-          const lat = school.academic_info["latitude"] as number | undefined;
-          const lng = school.academic_info["longitude"] as number | undefined;
-
-          if (!lat || !lng) return Infinity;
-
-          return calculateDistance(
-            { latitude: homeLocation.value!.latitude, longitude: homeLocation.value!.longitude },
-            { latitude: lat, longitude: lng },
-          );
+          const cached = distanceCache.value.get(school.id);
+          if (cached !== undefined) return cached;
+          return Infinity;
         };
 
         const distA = getDistance(a);
@@ -614,6 +831,16 @@ const filteredSchools = computed(() => {
     // Apply sort order (desc reverses the comparison)
     return sortOrder.value === "asc" ? comparison : -comparison;
   });
+
+  // Log performance in dev mode
+  if (typeof performance !== "undefined" && import.meta.env.DEV) {
+    const duration = performance.now() - startTime;
+    if (duration > 100) {
+      console.warn(
+        `Filter execution time exceeded 100ms: ${duration.toFixed(2)}ms for ${sorted.length} schools`,
+      );
+    }
+  }
 
   return sorted;
 });
