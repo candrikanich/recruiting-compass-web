@@ -64,13 +64,14 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
     const user = await requireAuth(event);
     const supabase = createServerSupabaseClient();
 
-    // Type assertion for Supabase operations without proper types
-    const supabaseAny = supabase as unknown;
-
     // Ensure requesting user is not a parent (mutation restricted)
-    await assertNotParent(user.id, supabaseAny as any);
+    await assertNotParent(user.id, supabase);
 
     const config = useRuntimeConfig();
+
+    // Type assertion for Supabase operations without proper types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const supabaseAny = supabase as any;
 
     // Initialize services
     const twitterService = new TwitterService(
