@@ -36,6 +36,140 @@
         </div>
       </div>
 
+      <!-- Filters -->
+      <div
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+      >
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <!-- Type Filter -->
+          <div>
+            <label
+              for="type-filter"
+              class="block text-sm font-medium text-slate-700 mb-2"
+            >
+              Type
+            </label>
+            <select
+              id="type-filter"
+              v-model="selectedType"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Types</option>
+              <option value="email">Email</option>
+              <option value="phone_call">Phone Call</option>
+              <option value="text">Text Message</option>
+              <option value="in_person_visit">In-Person Visit</option>
+              <option value="virtual_meeting">Virtual Meeting</option>
+              <option value="dm">Direct Message</option>
+              <option value="tweet">Tweet</option>
+            </select>
+          </div>
+
+          <!-- Direction Filter -->
+          <div>
+            <label
+              for="direction-filter"
+              class="block text-sm font-medium text-slate-700 mb-2"
+            >
+              Direction
+            </label>
+            <select
+              id="direction-filter"
+              v-model="selectedDirection"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Both</option>
+              <option value="outbound">Sent by Us</option>
+              <option value="inbound">Received</option>
+            </select>
+          </div>
+
+          <!-- Date Range Filter -->
+          <div>
+            <label
+              for="date-filter"
+              class="block text-sm font-medium text-slate-700 mb-2"
+            >
+              Date Range
+            </label>
+            <select
+              id="date-filter"
+              v-model="selectedDateRange"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Time</option>
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+              <option value="180">Last 6 Months</option>
+            </select>
+          </div>
+
+          <!-- Sentiment Filter -->
+          <div>
+            <label
+              for="sentiment-filter"
+              class="block text-sm font-medium text-slate-700 mb-2"
+            >
+              Sentiment
+            </label>
+            <select
+              id="sentiment-filter"
+              v-model="selectedSentiment"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Sentiments</option>
+              <option value="very_positive">Very Positive</option>
+              <option value="positive">Positive</option>
+              <option value="neutral">Neutral</option>
+              <option value="negative">Negative</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Clear Filters Button -->
+        <div>
+          <button
+            @click="clearFilters"
+            class="px-3 py-1 text-sm text-slate-600 hover:text-slate-900 font-medium"
+          >
+            Clear Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary Metrics -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+          <p class="text-slate-600 text-xs sm:text-sm font-medium">
+            Total Interactions
+          </p>
+          <p class="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
+            {{ filteredInteractions.length }}
+          </p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+          <p class="text-slate-600 text-xs sm:text-sm font-medium">Sent</p>
+          <p class="text-2xl sm:text-3xl font-bold text-blue-600 mt-1">
+            {{ outboundCount }}
+          </p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+          <p class="text-slate-600 text-xs sm:text-sm font-medium">Received</p>
+          <p class="text-2xl sm:text-3xl font-bold text-emerald-600 mt-1">
+            {{ inboundCount }}
+          </p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+          <p class="text-slate-600 text-xs sm:text-sm font-medium">
+            Last Contact
+          </p>
+          <p class="text-xl sm:text-2xl font-bold text-purple-600 mt-1">
+            {{ lastContactDisplay }}
+          </p>
+        </div>
+      </div>
+
       <!-- Add Interaction Form -->
       <div
         v-if="showAddForm"
@@ -348,7 +482,7 @@
         <p class="text-slate-600">Loading interactions...</p>
       </div>
 
-      <!-- Empty State -->
+      <!-- Empty State (No Interactions at All) -->
       <div
         v-if="!loading && interactions.length === 0"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
@@ -367,10 +501,29 @@
         </button>
       </div>
 
+      <!-- Empty State (No Matching Filters) -->
+      <div
+        v-if="!loading && interactions.length > 0 && filteredInteractions.length === 0"
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+      >
+        <ChatBubbleLeftRightIcon
+          class="w-12 h-12 text-slate-300 mx-auto mb-4"
+        />
+        <p class="text-slate-900 font-medium mb-2">
+          No interactions match your filters
+        </p>
+        <button
+          @click="clearFilters"
+          class="text-blue-600 hover:text-blue-700 font-medium text-sm"
+        >
+          Clear Filters
+        </button>
+      </div>
+
       <!-- Interactions Timeline -->
-      <div v-if="interactions.length > 0" class="space-y-4">
+      <div v-if="filteredInteractions.length > 0" class="space-y-4">
         <div
-          v-for="interaction in interactions"
+          v-for="interaction in filteredInteractions"
           :key="interaction.id"
           class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition overflow-hidden"
         >
@@ -474,7 +627,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, type Component } from "vue";
+import { ref, onMounted, reactive, computed, type Component } from "vue";
 import { useRoute } from "vue-router";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoaches } from "~/composables/useCoaches";
@@ -511,6 +664,12 @@ const showAddForm = ref(false);
 const schoolName = ref("");
 const coachMap = ref<Record<string, string>>({});
 
+// Filters
+const selectedType = ref("");
+const selectedDirection = ref("");
+const selectedDateRange = ref("");
+const selectedSentiment = ref("");
+
 const newInteraction = reactive({
   type: "",
   direction: "",
@@ -525,6 +684,76 @@ const reminderEnabled = ref(false);
 const reminderDate = ref("");
 const reminderType = ref<"email" | "sms" | "phone_call">("email");
 const selectedFiles = ref<File[]>([]);
+
+// Computed: Filtered interactions
+const filteredInteractions = computed(() => {
+  let filtered = interactions.value;
+
+  if (selectedType.value) {
+    filtered = filtered.filter((i) => i.type === selectedType.value);
+  }
+
+  if (selectedDirection.value) {
+    filtered = filtered.filter((i) => i.direction === selectedDirection.value);
+  }
+
+  if (selectedSentiment.value) {
+    filtered = filtered.filter((i) => i.sentiment === selectedSentiment.value);
+  }
+
+  if (selectedDateRange.value) {
+    const days = parseInt(selectedDateRange.value);
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    filtered = filtered.filter(
+      (i) => new Date(i.occurred_at || "") > cutoffDate
+    );
+  }
+
+  // Sort by date descending (newest first)
+  return filtered.sort(
+    (a, b) =>
+      new Date(b.occurred_at || "").getTime() -
+      new Date(a.occurred_at || "").getTime()
+  );
+});
+
+// Computed: Outbound count
+const outboundCount = computed(
+  () => filteredInteractions.value.filter((i) => i.direction === "outbound").length
+);
+
+// Computed: Inbound count
+const inboundCount = computed(
+  () => filteredInteractions.value.filter((i) => i.direction === "inbound").length
+);
+
+// Computed: Last contact time (human-readable)
+const lastContactDisplay = computed(() => {
+  if (filteredInteractions.value.length === 0) return "—";
+  const lastInteraction = filteredInteractions.value[0];
+  if (!lastInteraction.occurred_at) return "Unknown";
+
+  const date = new Date(lastInteraction.occurred_at);
+  const now = new Date();
+  const secondsAgo = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (secondsAgo < 60) return "just now";
+  if (secondsAgo < 3600) return `${Math.floor(secondsAgo / 60)}m ago`;
+  if (secondsAgo < 86400) return `${Math.floor(secondsAgo / 3600)}h ago`;
+  if (secondsAgo < 604800) return `${Math.floor(secondsAgo / 86400)}d ago`;
+  if (secondsAgo < 2592000) return "weeks ago";
+
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+});
+
+// Method: Clear all filters
+const clearFilters = () => {
+  selectedType.value = "";
+  selectedDirection.value = "";
+  selectedDateRange.value = "";
+  selectedSentiment.value = "";
+};
 
 const getTodayDate = (): string => {
   return new Date().toISOString().split("T")[0];
