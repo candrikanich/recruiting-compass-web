@@ -245,7 +245,14 @@ onMounted(async () => {
       return;
     }
 
-    const athleteIds = accountLinks.map((link) => link.player_user_id);
+    const athleteIds = accountLinks
+      .map((link) => link.player_user_id)
+      .filter((id): id is string => id !== null);
+
+    if (athleteIds.length === 0) {
+      loading.value = false;
+      return;
+    }
 
     // Fetch athlete user data
     const { data: athletes, error: athletesError } = await supabase

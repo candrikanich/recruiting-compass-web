@@ -29,19 +29,16 @@ describe("useAuth - Remember Me Functionality", () => {
     expires_at: Date.now() / 1000 + 3600,
   };
 
+  let mockSupabase: any;
+  let mockAuth: any;
+
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
     vi.spyOn(console, "error").mockImplementation(() => {});
-  });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-    localStorage.clear();
-  });
-
-  const getMockSupabase = () => {
-    const mockAuth = {
+    // Create fresh mock objects for each test
+    mockAuth = {
       getSession: vi.fn(),
       signInWithPassword: vi.fn(),
       signOut: vi.fn(),
@@ -49,11 +46,18 @@ describe("useAuth - Remember Me Functionality", () => {
       onAuthStateChange: vi.fn(),
     };
 
-    const mockSupabase = {
+    mockSupabase = {
       auth: mockAuth,
     };
 
     mockUseSupabase.mockReturnValue(mockSupabase);
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  const getMockSupabase = () => {
     return { mockSupabase, mockAuth };
   };
 

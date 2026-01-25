@@ -54,7 +54,6 @@ describe("useAuth", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-    vi.restoreAllMocks();
   });
 
   const getMockSupabase = () => {

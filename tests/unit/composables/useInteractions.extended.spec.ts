@@ -1,12 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useInteractions } from "~/composables/useInteractions";
 import { setActivePinia, createPinia } from "pinia";
 import { useUserStore } from "~/stores/user";
 import type { Interaction } from "~/types/models";
 
-const mockSupabase = {
-  from: vi.fn(),
-};
+let mockSupabase: any;
 
 let mockUser: {
   id: string;
@@ -39,17 +37,48 @@ describe("useInteractions - Extended", () => {
     setActivePinia(createPinia());
     userStore = useUserStore();
 
+    // Create chainable mock that returns itself for each method
     mockQuery = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockReturnThis(),
-      single: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockReturnThis(),
-      lte: vi.fn().mockReturnThis(),
-      then: vi.fn((resolve) => resolve({ data: [], error: null })),
+      select: vi.fn(),
+      eq: vi.fn(),
+      order: vi.fn(),
+      insert: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      single: vi.fn(),
+      gte: vi.fn(),
+      lte: vi.fn(),
+    };
+
+    // Make each chainable method return the mock query itself
+    mockQuery.select.mockReturnValue(mockQuery);
+    mockQuery.eq.mockReturnValue(mockQuery);
+    mockQuery.order.mockReturnValue(mockQuery);
+    mockQuery.insert.mockReturnValue(mockQuery);
+    mockQuery.update.mockReturnValue(mockQuery);
+    mockQuery.delete.mockReturnValue(mockQuery);
+    mockQuery.single.mockReturnValue(mockQuery);
+    mockQuery.gte.mockReturnValue(mockQuery);
+    mockQuery.lte.mockReturnValue(mockQuery);
+
+    // Store for test data that gets resolved
+    let testResponse = { data: [], error: null };
+
+    // Make mockQuery thenable with a proper .then() method
+    Object.defineProperty(mockQuery, "then", {
+      value: (onFulfilled: (value: any) => any, onRejected?: (reason: any) => any) => {
+        return Promise.resolve(testResponse).then(onFulfilled, onRejected);
+      },
+    });
+
+    // Allow tests to set the response data
+    mockQuery.__setTestResponse = (response: any) => {
+      testResponse = response;
+    };
+
+    // Create fresh mockSupabase for each test
+    mockSupabase = {
+      from: vi.fn(),
     };
 
     mockSupabase.from.mockReturnValue(mockQuery);
@@ -82,9 +111,7 @@ describe("useInteractions - Extended", () => {
         }),
       ];
       // Set up the mock to resolve with interactions data
-      mockQuery.then = vi.fn((resolve) =>
-        resolve({ data: mockInteractions, error: null }),
-      );
+      mockQuery.__setTestResponse({ data: mockInteractions, error: null });
 
       const { fetchInteractions, interactions } = useInteractions();
       await fetchInteractions({ type: "email", direction: "outbound" });
@@ -110,9 +137,7 @@ describe("useInteractions - Extended", () => {
       const mockInteractions = [validInteraction];
 
       // Set up the mock to resolve with interactions data
-      mockQuery.then = vi.fn((resolve) =>
-        resolve({ data: mockInteractions, error: null }),
-      );
+      mockQuery.__setTestResponse({ data: mockInteractions, error: null });
 
       const { fetchInteractions, interactions } = useInteractions();
       await fetchInteractions({
@@ -134,9 +159,7 @@ describe("useInteractions - Extended", () => {
 
     it("should handle fetch errors gracefully", async () => {
       const mockError = new Error("Fetch failed");
-      mockQuery.then = vi.fn((resolve) =>
-        resolve({ data: null, error: mockError }),
-      );
+      mockQuery.__setTestResponse({ data: null, error: mockError });
 
       const { fetchInteractions, error } = useInteractions();
       await fetchInteractions();
@@ -155,9 +178,7 @@ describe("useInteractions - Extended", () => {
         }),
       ];
 
-      mockQuery.then = vi.fn((resolve) =>
-        resolve({ data: mockInteractions, error: null }),
-      );
+      mockQuery.__setTestResponse({ data: mockInteractions, error: null });
 
       const { exportToCSV, fetchInteractions } = useInteractions();
       await fetchInteractions();
@@ -178,9 +199,7 @@ describe("useInteractions - Extended", () => {
         }),
       ];
 
-      mockQuery.then = vi.fn((resolve) =>
-        resolve({ data: mockInteractions, error: null }),
-      );
+      mockQuery.__setTestResponse({ data: mockInteractions, error: null });
 
       const { exportToCSV, fetchInteractions } = useInteractions();
       await fetchInteractions();
@@ -247,9 +266,7 @@ describe("useInteractions - Extended", () => {
 
   describe("deleteInteraction", () => {
     it("should delete interaction by id", async () => {
-      mockQuery.delete = vi.fn().mockReturnValue(mockQuery);
-      mockQuery.eq = vi.fn().mockReturnValue(mockQuery);
-      mockQuery.then = vi.fn((resolve) => resolve({ data: null, error: null }));
+      mockQuery.__setTestResponse({ data: null, error: null });
 
       const { deleteInteraction } = useInteractions();
       await deleteInteraction("550e8400-e29b-41d4-a716-446655440000");

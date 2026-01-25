@@ -816,14 +816,19 @@ onMounted(async () => {
         .eq("parent_user_id", userStore.user.id);
 
       if (!linksError && accountLinks && accountLinks.length > 0) {
-        const athleteIds = accountLinks.map((link) => link.player_user_id);
-        const { data: athletes, error: athletesError } = await supabase
-          .from("users")
-          .select("*")
-          .in("id", athleteIds);
+        const athleteIds = accountLinks
+          .map((link) => link.player_user_id)
+          .filter((id): id is string => id !== null);
 
-        if (!athletesError && athletes) {
-          linkedAthletes.value = athletes;
+        if (athleteIds.length > 0) {
+          const { data: athletes, error: athletesError } = await supabase
+            .from("users")
+            .select("*")
+            .in("id", athleteIds);
+
+          if (!athletesError && athletes) {
+            linkedAthletes.value = athletes;
+          }
         }
       }
     }
