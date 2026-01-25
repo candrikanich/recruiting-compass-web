@@ -606,6 +606,7 @@ import {
 } from "~/utils/exportUtils";
 import { getCarnegieSize } from "~/utils/schoolSize";
 import { calculateDistance } from "~/utils/distance";
+import { extractStateFromLocation } from "~/utils/locationParser";
 import type { FilterConfig } from "~/types/filters";
 
 definePageMeta({});
@@ -653,8 +654,15 @@ const shouldShowSchoolWarning = computed(() => {
 const stateOptions = computed(() => {
   const states = new Set<string>();
   schools.value.forEach((school) => {
-    const state =
+    // Try dedicated state field first
+    let state =
       school.academic_info?.state || (school.state as string | undefined);
+
+    // Fallback: extract state from location (e.g., "Berea, OH" → "OH")
+    if (!state && school.location) {
+      state = extractStateFromLocation(school.location);
+    }
+
     if (state && typeof state === "string") {
       states.add(state);
     }
