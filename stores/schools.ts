@@ -226,6 +226,21 @@ export const useSchoolStore = defineStore("schools", {
             .filter((c: string | undefined): c is string => !!c)
             .map((c) => sanitizeHtml(c));
         }
+        if (sanitized.coaching_philosophy) {
+          sanitized.coaching_philosophy = sanitizeHtml(sanitized.coaching_philosophy);
+        }
+        if (sanitized.coaching_style) {
+          sanitized.coaching_style = sanitizeHtml(sanitized.coaching_style);
+        }
+        if (sanitized.recruiting_approach) {
+          sanitized.recruiting_approach = sanitizeHtml(sanitized.recruiting_approach);
+        }
+        if (sanitized.communication_style) {
+          sanitized.communication_style = sanitizeHtml(sanitized.communication_style);
+        }
+        if (sanitized.success_metrics) {
+          sanitized.success_metrics = sanitizeHtml(sanitized.success_metrics);
+        }
 
         const { data, error: insertError } = await supabase
           .from("schools")
@@ -286,6 +301,21 @@ export const useSchoolStore = defineStore("schools", {
           sanitized.cons = sanitized.cons
             .filter((c): c is string => !!c)
             .map((c) => sanitizeHtml(c));
+        }
+        if (sanitized.coaching_philosophy) {
+          sanitized.coaching_philosophy = sanitizeHtml(sanitized.coaching_philosophy);
+        }
+        if (sanitized.coaching_style) {
+          sanitized.coaching_style = sanitizeHtml(sanitized.coaching_style);
+        }
+        if (sanitized.recruiting_approach) {
+          sanitized.recruiting_approach = sanitizeHtml(sanitized.recruiting_approach);
+        }
+        if (sanitized.communication_style) {
+          sanitized.communication_style = sanitizeHtml(sanitized.communication_style);
+        }
+        if (sanitized.success_metrics) {
+          sanitized.success_metrics = sanitizeHtml(sanitized.success_metrics);
         }
 
         const { data, error: updateError } = await supabase

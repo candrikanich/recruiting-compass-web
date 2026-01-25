@@ -641,6 +641,13 @@
             </div>
           </div>
 
+          <!-- Coaching Philosophy Card -->
+          <CoachingPhilosophy
+            :school="school"
+            :school-id="id"
+            @update="updateCoachingPhilosophy"
+          />
+
           <!-- Shared Documents -->
           <div
             class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
@@ -1103,6 +1110,14 @@ const saveBasicInfo = async () => {
   if (updated) {
     school.value = updated;
     editingBasicInfo.value = false;
+  }
+};
+
+const updateCoachingPhilosophy = async (data: Partial<School>) => {
+  if (!school.value) return;
+  const updated = await updateSchool(id, data);
+  if (updated) {
+    school.value = updated;
   }
 };
 

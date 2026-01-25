@@ -328,6 +328,11 @@ export type Database = {
           private_notes: Json | null;
           offer_details: Json | null;
           academic_info: Json | null;
+          coaching_philosophy: string | null;
+          coaching_style: string | null;
+          recruiting_approach: string | null;
+          communication_style: string | null;
+          success_metrics: string | null;
           created_at: string | null;
           updated_at: string | null;
         };
@@ -362,6 +367,11 @@ export type Database = {
           private_notes?: Json | null;
           offer_details?: Json | null;
           academic_info?: Json | null;
+          coaching_philosophy?: string | null;
+          coaching_style?: string | null;
+          recruiting_approach?: string | null;
+          communication_style?: string | null;
+          success_metrics?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -396,6 +406,11 @@ export type Database = {
           private_notes?: Json | null;
           offer_details?: Json | null;
           academic_info?: Json | null;
+          coaching_philosophy?: string | null;
+          coaching_style?: string | null;
+          recruiting_approach?: string | null;
+          communication_style?: string | null;
+          success_metrics?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };

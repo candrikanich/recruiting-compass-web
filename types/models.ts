@@ -110,6 +110,11 @@ export interface School {
   offer_details?: OfferDetails | null;
   academic_info?: AcademicInfo | null;
   amenities?: Amenities | null;
+  coaching_philosophy?: string | null;
+  coaching_style?: string | null;
+  recruiting_approach?: string | null;
+  communication_style?: string | null;
+  success_metrics?: string | null;
   created_by?: string;
   updated_by?: string;
   created_at?: string;

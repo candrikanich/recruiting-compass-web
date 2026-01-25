@@ -119,6 +119,38 @@ describe("useSchoolStore", () => {
       ]);
     });
 
+    it("should accept coaching philosophy fields during creation", async () => {
+      const schoolData = createMockSchool({
+        id: undefined,
+        created_at: undefined,
+        updated_at: undefined,
+        user_id: undefined,
+        created_by: undefined,
+        updated_by: undefined,
+      });
+
+      mockQuery.single.mockResolvedValue({
+        data: { ...schoolData, id: "new-school-id", user_id: "user-123" },
+        error: null,
+      });
+
+      // Create with coaching philosophy fields
+      const dataWithCoaching = {
+        ...schoolData,
+        coaching_philosophy: '<script>alert("xss")</script>Development',
+        coaching_style: '<b>High-intensity</b> approach',
+      } as any;
+
+      await schoolStore.createSchool(dataWithCoaching);
+
+      expect(mockQuery.insert).toHaveBeenCalled();
+      const insertCall = mockQuery.insert.mock.calls[0][0][0];
+      expect(insertCall).toBeDefined();
+      // Verify sanitization removed HTML tags
+      expect(insertCall.coaching_philosophy).not.toContain('<script>');
+      expect(insertCall.coaching_style).not.toContain('<b>');
+    });
+
     it("should handle empty/null pros and cons arrays", async () => {
       const schoolData = createMockSchool({
         id: undefined,
@@ -236,6 +268,81 @@ describe("useSchoolStore", () => {
           cons: ["New con"],
           updated_by: "user-123",
           updated_at: expect.any(String),
+        }),
+      );
+    });
+
+    it("should sanitize HTML in coaching philosophy fields", async () => {
+      const updates = {
+        coaching_philosophy: '<script>alert("xss")</script>Player development',
+        coaching_style: '<b>High-intensity</b> training',
+        recruiting_approach: 'Early recruiting<img src=x onerror=alert(1)>',
+        communication_style: '<i>Regular</i> emails',
+        success_metrics: 'MLB placement<script>alert("xss")</script>',
+      };
+
+      mockQuery.single.mockResolvedValue({
+        data: { ...existingSchool, ...updates },
+        error: null,
+      });
+
+      await schoolStore.updateSchool("existing-school", updates);
+
+      expect(mockQuery.update).toHaveBeenCalled();
+      const updateCall = mockQuery.update.mock.calls[0][0];
+      expect(updateCall).toBeDefined();
+      // Verify sanitization removed HTML tags
+      expect(updateCall.coaching_philosophy).not.toContain('<script>');
+      expect(updateCall.coaching_style).not.toContain('<b>');
+      expect(updateCall.recruiting_approach).not.toContain('<img');
+      expect(updateCall.communication_style).not.toContain('<i>');
+      expect(updateCall.success_metrics).not.toContain('<script>');
+    });
+
+    it("should handle null coaching philosophy fields", async () => {
+      const updates = {
+        coaching_philosophy: null,
+        coaching_style: null,
+        recruiting_approach: null,
+        communication_style: null,
+        success_metrics: null,
+      };
+
+      mockQuery.single.mockResolvedValue({
+        data: { ...existingSchool, ...updates },
+        error: null,
+      });
+
+      await schoolStore.updateSchool("existing-school", updates);
+
+      expect(mockQuery.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          coaching_philosophy: null,
+          coaching_style: null,
+          recruiting_approach: null,
+          communication_style: null,
+          success_metrics: null,
+        }),
+      );
+    });
+
+    it("should update coaching philosophy independently from other fields", async () => {
+      const updates = {
+        coaching_philosophy: 'Updated philosophy<script>alert("xss")</script>',
+        notes: 'Unchanged notes',
+      };
+
+      mockQuery.single.mockResolvedValue({
+        data: { ...existingSchool, ...updates },
+        error: null,
+      });
+
+      await schoolStore.updateSchool("existing-school", updates);
+
+      expect(mockQuery.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          coaching_philosophy: 'Updated philosophyalert("xss")',
+          notes: 'Unchanged notes',
         }),
       );
     });
