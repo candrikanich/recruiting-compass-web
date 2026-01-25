@@ -94,7 +94,12 @@ export default defineEventHandler(async (event) => {
     // Log parent view if applicable
     const role = await getUserRole(user.id, supabase);
     if (role === "parent") {
-      const schoolData = school as unknown as Record<string, any>;
+      const schoolData = school as {
+        user_id: string;
+        name: string;
+        fit_score: number | null;
+        fit_score_data: unknown | null;
+      };
       await supabase.from("parent_view_logs").insert({
         parent_user_id: user.id,
         athlete_id: schoolData?.user_id,
@@ -104,9 +109,11 @@ export default defineEventHandler(async (event) => {
     }
 
     // Return fit score and breakdown with proper type safety
-    const schoolName = (school as any)?.name || "";
-    const fitScore = (school as any)?.fit_score || null;
-    const fitScoreData = (school as any)?.fit_score_data || null;
+    const schoolName = (school as { name: string })?.name || "";
+    const fitScore =
+      (school as { fit_score: number | null })?.fit_score || null;
+    const fitScoreData =
+      (school as { fit_score_data: unknown | null })?.fit_score_data || null;
 
     return {
       success: true,

@@ -2,7 +2,7 @@ import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useToast } from "./useToast";
-import type { AccountLink, LinkedAccount, User } from "~/types/models";
+import type { AccountLink, LinkedAccount } from "~/types/models";
 import type { Database } from "~/types/database";
 
 // Types from database

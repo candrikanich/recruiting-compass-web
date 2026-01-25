@@ -180,7 +180,7 @@ export const useSearchConsolidated = () => {
     if (!userStore.user) return;
 
     try {
-      const filterObj: Record<string, any> = {
+      const filterObj: Record<string, string | number | boolean | null> = {
         user_id: userStore.user.id,
       };
 
@@ -227,7 +227,7 @@ export const useSearchConsolidated = () => {
     if (!userStore.user) return;
 
     try {
-      const filterObj: Record<string, any> = {
+      const filterObj: Record<string, string | number | boolean | null> = {
         user_id: userStore.user.id,
       };
 
@@ -256,7 +256,7 @@ export const useSearchConsolidated = () => {
       if (results && filters.value.coaches.responseRate > 0) {
         results = results.filter(
           (c) =>
-            ((c as any).response_rate || 0) >=
+            ((c as Coach & { response_rate?: number }).response_rate || 0) >=
             filters.value.coaches.responseRate / 100,
         );
       }
@@ -281,7 +281,7 @@ export const useSearchConsolidated = () => {
     if (!userStore.user) return;
 
     try {
-      const filterObj: Record<string, any> = {
+      const filterObj: Record<string, string | number | boolean | null> = {
         user_id: userStore.user.id,
       };
 
@@ -341,7 +341,7 @@ export const useSearchConsolidated = () => {
     if (!userStore.user) return;
 
     try {
-      const filterObj: Record<string, any> = {
+      const filterObj: Record<string, string | number | boolean | null> = {
         user_id: userStore.user.id,
       };
 
@@ -407,7 +407,9 @@ export const useSearchConsolidated = () => {
   /**
    * Check if cached results are valid (within TTL)
    */
-  const isCacheValid = (cacheEntry: any): boolean => {
+  const isCacheValid = (
+    cacheEntry: { timestamp: number } | null | undefined,
+  ): boolean => {
     if (!cacheEntry) return false;
     return Date.now() - cacheEntry.timestamp < CACHE_TTL;
   };
@@ -444,7 +446,7 @@ export const useSearchConsolidated = () => {
     // Check cache first
     const cacheKey = getCacheKey();
     const cachedResult = searchCache.get(cacheKey);
-    if (isCacheValid(cachedResult)) {
+    if (cachedResult && isCacheValid(cachedResult)) {
       schoolResults.value = cachedResult?.results.schools || [];
       coachResults.value = cachedResult?.results.coaches || [];
       interactionResults.value = cachedResult?.results.interactions || [];
@@ -520,11 +522,11 @@ export const useSearchConsolidated = () => {
   const applyFilter = async (
     category: "schools" | "coaches" | "interactions" | "metrics",
     filterName: string,
-    value: any,
+    value: unknown,
   ) => {
     const categoryFilter = filters.value[category];
     if (categoryFilter) {
-      (categoryFilter as Record<string, any>)[filterName] = value;
+      (categoryFilter as Record<string, unknown>)[filterName] = value;
     }
 
     // Re-run search if query is active
@@ -561,9 +563,9 @@ export const useSearchConsolidated = () => {
   const getFilterValue = (
     category: "schools" | "coaches" | "interactions" | "metrics",
     filterName: string,
-  ): any => {
+  ): unknown => {
     return (
-      (filters.value[category] as Record<string, any>)?.[filterName] || null
+      (filters.value[category] as Record<string, unknown>)?.[filterName] || null
     );
   };
 
