@@ -60,6 +60,13 @@
             </div>
             <div class="flex gap-2">
               <button
+                v-if="!event.attended"
+                @click="markAsAttended"
+                class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition text-sm font-semibold"
+              >
+                ✓ Mark Attended
+              </button>
+              <button
                 @click="openEditForm"
                 class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm font-semibold"
               >
@@ -612,6 +619,103 @@
         </div>
       </div>
 
+      <!-- Quick Interaction Logging Modal -->
+      <Teleport to="body">
+        <div
+          v-if="showQuickLogModal"
+          class="fixed inset-0 z-50 flex items-center justify-center"
+        >
+          <div class="absolute inset-0 bg-black/50" @click="showQuickLogModal = false"></div>
+          <div class="relative bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 p-6">
+            <h3 class="text-xl font-bold text-slate-900 mb-2">
+              Log Interactions
+            </h3>
+            <p class="text-sm text-slate-600 mb-6">
+              Did you have any coaching interactions at {{ event?.name }}?
+            </p>
+
+            <form @submit.prevent="handleQuickLogInteraction" class="space-y-4">
+              <!-- Type -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                  Interaction Type
+                </label>
+                <select
+                  v-model="quickLogData.type"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="in_person_visit">In-Person Meeting</option>
+                  <option value="phone_call">Phone Call</option>
+                  <option value="email">Email</option>
+                  <option value="game">Game Appearance</option>
+                </select>
+              </div>
+
+              <!-- Direction -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                  Who initiated?
+                </label>
+                <select
+                  v-model="quickLogData.direction"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="inbound">Coach contacted us</option>
+                  <option value="outbound">We contacted coach</option>
+                </select>
+              </div>
+
+              <!-- Notes -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                  What was discussed? <span class="text-red-600">*</span>
+                </label>
+                <textarea
+                  v-model="quickLogData.content"
+                  rows="3"
+                  required
+                  placeholder="Brief notes about the interaction..."
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                ></textarea>
+              </div>
+
+              <!-- Sentiment -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                  How did it go?
+                </label>
+                <select
+                  v-model="quickLogData.sentiment"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="very_positive">Very Positive</option>
+                  <option value="positive">Positive</option>
+                  <option value="neutral">Neutral</option>
+                  <option value="negative">Negative</option>
+                </select>
+              </div>
+
+              <!-- Buttons -->
+              <div class="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+                >
+                  Log Interaction
+                </button>
+                <button
+                  type="button"
+                  @click="showQuickLogModal = false"
+                  class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition"
+                >
+                  Skip for Now
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </Teleport>
+
       <!-- Export Modal -->
       <ExportModal
         v-if="showExportModal"
@@ -627,9 +731,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useEvents } from "~/composables/useEvents";
 import { usePerformance } from "~/composables/usePerformance";
 import { useCoaches } from "~/composables/useCoaches";
+import { useInteractions } from "~/composables/useInteractions";
 import { CheckIcon, XMarkIcon } from "@heroicons/vue/24/solid";
 import ExportButton from "~/components/Performance/ExportButton.vue";
 import ExportModal from "~/components/Performance/ExportModal.vue";
@@ -646,6 +752,7 @@ const eventId = route.params.id as string;
 const { fetchEvent, deleteEvent: deleteEventAPI, updateEvent } = useEvents();
 const { createMetric, deleteMetric: deleteMetricAPI } = usePerformance();
 const { fetchCoaches } = useCoaches();
+const { createInteraction } = useInteractions();
 
 const event = ref<Event | null>(null);
 const eventMetrics = ref<PerformanceMetric[]>([]);
@@ -660,6 +767,13 @@ const showAddCoach = ref(false);
 const selectedCoachId = ref("");
 const schoolCoaches = ref<Coach[]>([]);
 const coachesAtEvent = ref<Coach[]>([]);
+const showQuickLogModal = ref(false);
+const quickLogData = reactive({
+  type: "in_person_visit",
+  direction: "inbound",
+  content: "",
+  sentiment: "positive",
+});
 
 const newMetric = reactive({
   metric_type: "",
@@ -820,6 +934,51 @@ const removeCoach = async (coachId: string) => {
     await loadCoaches();
   } catch (err) {
     console.error("Failed to remove coach:", err);
+  }
+};
+
+const markAsAttended = async () => {
+  if (!event.value) return;
+
+  try {
+    await updateEvent(eventId, { attended: true });
+    event.value.attended = true;
+    // Show quick interaction logging modal
+    showQuickLogModal.value = true;
+  } catch (err) {
+    console.error("Failed to mark event as attended:", err);
+  }
+};
+
+const handleQuickLogInteraction = async () => {
+  if (!event.value || !event.value.school_id) return;
+
+  try {
+    const occurredAt = new Date(event.value.start_date).toISOString();
+
+    await createInteraction({
+      school_id: event.value.school_id,
+      coach_id: null,
+      event_id: eventId,
+      type: quickLogData.type as any,
+      direction: quickLogData.direction as "outbound" | "inbound",
+      subject: `Interaction at ${event.value.name}`,
+      content: quickLogData.content,
+      sentiment: quickLogData.sentiment as any,
+      occurred_at: occurredAt,
+      logged_by: "", // Server will set from auth
+      attachments: [],
+    });
+
+    // Reset and close modal
+    quickLogData.type = "in_person_visit";
+    quickLogData.direction = "inbound";
+    quickLogData.content = "";
+    quickLogData.sentiment = "positive";
+    showQuickLogModal.value = false;
+  } catch (err) {
+    console.error("Failed to log interaction:", err);
+    alert("Failed to log interaction. Please try again.");
   }
 };
 

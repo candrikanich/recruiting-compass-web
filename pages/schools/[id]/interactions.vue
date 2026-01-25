@@ -69,6 +69,10 @@
               <option value="virtual_meeting">Virtual Meeting</option>
               <option value="camp">Camp</option>
               <option value="showcase">Showcase</option>
+              <option value="game">Game</option>
+              <option value="unofficial_visit">Unofficial Visit</option>
+              <option value="official_visit">Official Visit</option>
+              <option value="other">Other</option>
               <option value="tweet">Tweet</option>
               <option value="dm">Direct Message</option>
             </select>
@@ -159,6 +163,57 @@
             />
           </div>
 
+          <!-- Attachments (Optional) -->
+          <div>
+            <label
+              for="attachments"
+              class="block text-sm font-medium text-slate-700 mb-2"
+            >
+              Attachments (Optional)
+              <span class="text-xs text-slate-500 font-normal">
+                PDF, images, documents up to 10MB
+              </span>
+            </label>
+            <div class="relative">
+              <input
+                id="attachments"
+                type="file"
+                multiple
+                accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.txt"
+                @change="handleFileSelect"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                :disabled="loading"
+              />
+            </div>
+
+            <!-- File Preview -->
+            <div v-if="selectedFiles.length > 0" class="mt-3 space-y-2">
+              <p class="text-xs font-medium text-slate-600">
+                Selected files ({{ selectedFiles.length }})
+              </p>
+              <div
+                v-for="(file, idx) in selectedFiles"
+                :key="idx"
+                class="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200"
+              >
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-lg flex-shrink-0">📎</span>
+                  <div class="min-w-0">
+                    <p class="text-sm text-slate-700 truncate">{{ file.name }}</p>
+                    <p class="text-xs text-slate-500">{{ formatFileSize(file.size) }}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  @click="removeFile(idx)"
+                  class="text-red-600 hover:text-red-700 text-sm font-medium flex-shrink-0 ml-2"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Sentiment -->
           <div>
             <label
@@ -197,6 +252,63 @@
               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               :disabled="loading"
             />
+          </div>
+
+          <!-- Follow-up Reminder (Optional) -->
+          <div class="border-t border-slate-200 pt-5">
+            <div class="flex items-center gap-2 mb-3">
+              <input
+                id="reminder-enabled"
+                v-model="reminderEnabled"
+                type="checkbox"
+                class="w-4 h-4 border border-slate-300 rounded text-blue-600 focus:ring-2 focus:ring-blue-500"
+                :disabled="loading"
+              />
+              <label for="reminder-enabled" class="text-sm font-medium text-slate-700">
+                Set Follow-up Reminder
+              </label>
+            </div>
+
+            <div v-if="reminderEnabled" class="space-y-4 ml-6 bg-slate-50 p-4 rounded-lg">
+              <!-- Reminder Date -->
+              <div>
+                <label
+                  for="reminder-date"
+                  class="block text-sm font-medium text-slate-700 mb-2"
+                >
+                  Reminder Date
+                </label>
+                <input
+                  id="reminder-date"
+                  v-model="reminderDate"
+                  type="date"
+                  :min="getTodayDate()"
+                  required
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  :disabled="loading"
+                />
+              </div>
+
+              <!-- Reminder Type -->
+              <div>
+                <label
+                  for="reminder-type"
+                  class="block text-sm font-medium text-slate-700 mb-2"
+                >
+                  Reminder Type
+                </label>
+                <select
+                  id="reminder-type"
+                  v-model="reminderType"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  :disabled="loading"
+                >
+                  <option value="email">Email Reminder</option>
+                  <option value="sms">Text Reminder</option>
+                  <option value="phone_call">Phone Call Reminder</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <!-- Buttons -->
@@ -367,6 +479,7 @@ import { useRoute } from "vue-router";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
+import { useFollowUpReminders } from "~/composables/useFollowUpReminders";
 import type { Interaction } from "~/types/models";
 import {
   EnvelopeIcon,
@@ -392,6 +505,7 @@ const {
 } = useInteractions();
 const { coaches, fetchCoaches } = useCoaches();
 const { getSchool } = useSchools();
+const { createReminder } = useFollowUpReminders();
 
 const showAddForm = ref(false);
 const schoolName = ref("");
@@ -406,6 +520,37 @@ const newInteraction = reactive({
   sentiment: "",
   occurred_at: new Date().toISOString().slice(0, 16),
 });
+
+const reminderEnabled = ref(false);
+const reminderDate = ref("");
+const reminderType = ref<"email" | "sms" | "phone_call">("email");
+const selectedFiles = ref<File[]>([]);
+
+const getTodayDate = (): string => {
+  return new Date().toISOString().split("T")[0];
+};
+
+const handleFileSelect = (event: Event): void => {
+  const target = event.target as HTMLInputElement;
+  if (target.files) {
+    selectedFiles.value = Array.from(target.files);
+  }
+};
+
+const removeFile = (index: number): void => {
+  selectedFiles.value = selectedFiles.value.filter((_, i) => i !== index);
+  // Reset input so same file can be selected again
+  const fileInput = document.getElementById("attachments") as HTMLInputElement;
+  if (fileInput) {
+    fileInput.value = "";
+  }
+};
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+};
 
 const roleLabel = (role: string) => {
   const labels: Record<string, string> = {
@@ -425,6 +570,10 @@ const getTypeIcon = (type: string): Component => {
     virtual_meeting: VideoCameraIcon,
     camp: UserGroupIcon,
     showcase: UserGroupIcon,
+    game: UserGroupIcon,
+    unofficial_visit: UserGroupIcon,
+    official_visit: UserGroupIcon,
+    other: ChatBubbleLeftIcon,
     tweet: ChatBubbleLeftIcon,
     dm: ChatBubbleLeftIcon,
   };
@@ -440,6 +589,10 @@ const getTypeIconBg = (type: string): string => {
     virtual_meeting: "bg-indigo-100",
     camp: "bg-orange-100",
     showcase: "bg-pink-100",
+    game: "bg-red-100",
+    unofficial_visit: "bg-teal-100",
+    official_visit: "bg-cyan-100",
+    other: "bg-gray-100",
     tweet: "bg-sky-100",
     dm: "bg-violet-100",
   };
@@ -455,6 +608,10 @@ const getTypeIconColor = (type: string): string => {
     virtual_meeting: "text-indigo-600",
     camp: "text-orange-600",
     showcase: "text-pink-600",
+    game: "text-red-600",
+    unofficial_visit: "text-teal-600",
+    official_visit: "text-cyan-600",
+    other: "text-gray-600",
     tweet: "text-sky-600",
     dm: "text-violet-600",
   };
@@ -470,6 +627,10 @@ const formatType = (type: string): string => {
     virtual_meeting: "Virtual Meeting",
     camp: "Camp",
     showcase: "Showcase",
+    game: "Game",
+    unofficial_visit: "Unofficial Visit",
+    official_visit: "Official Visit",
+    other: "Other",
     tweet: "Tweet",
     dm: "Direct Message",
   };
@@ -532,19 +693,43 @@ const handleAddInteraction = async () => {
     const occurredAtDate = new Date(newInteraction.occurred_at);
     const isoDatetime = occurredAtDate.toISOString();
 
-    await createInteraction({
-      school_id: id,
-      coach_id: newInteraction.coach_id ? newInteraction.coach_id : null,
-      event_id: null,
-      type: newInteraction.type as Interaction["type"],
-      direction: newInteraction.direction as "outbound" | "inbound",
-      subject: newInteraction.subject || null,
-      content: newInteraction.content,
-      sentiment: (newInteraction.sentiment || null) as Interaction["sentiment"],
-      occurred_at: isoDatetime,
-      logged_by: "", // Server will set this from auth
-      attachments: [],
-    });
+    const createdInteraction = await createInteraction(
+      {
+        school_id: id,
+        coach_id: newInteraction.coach_id ? newInteraction.coach_id : null,
+        event_id: null,
+        type: newInteraction.type as Interaction["type"],
+        direction: newInteraction.direction as "outbound" | "inbound",
+        subject: newInteraction.subject || null,
+        content: newInteraction.content,
+        sentiment: (newInteraction.sentiment || null) as Interaction["sentiment"],
+        occurred_at: isoDatetime,
+        logged_by: "", // Server will set this from auth
+        attachments: [],
+      },
+      selectedFiles.value.length > 0 ? selectedFiles.value : undefined
+    );
+
+    // Create reminder if enabled
+    if (reminderEnabled.value && reminderDate.value && createdInteraction?.id) {
+      try {
+        // Convert date string to ISO format with midnight time
+        const reminderDateTime = new Date(reminderDate.value).toISOString();
+        await createReminder(
+          `Follow up on ${newInteraction.subject || "interaction"}`,
+          reminderDateTime,
+          reminderType.value,
+          "medium",
+          newInteraction.content,
+          id,
+          newInteraction.coach_id ? newInteraction.coach_id : undefined,
+          createdInteraction.id
+        );
+      } catch (reminderErr) {
+        console.error("Failed to create reminder:", reminderErr);
+        // Don't fail the entire operation if reminder creation fails
+      }
+    }
 
     // Reset form
     newInteraction.type = "";
@@ -554,6 +739,14 @@ const handleAddInteraction = async () => {
     newInteraction.content = "";
     newInteraction.sentiment = "";
     newInteraction.occurred_at = new Date().toISOString().slice(0, 16);
+    reminderEnabled.value = false;
+    reminderDate.value = "";
+    reminderType.value = "email";
+    selectedFiles.value = [];
+    const fileInput = document.getElementById("attachments") as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
+    }
     showAddForm.value = false;
 
     // Refresh list

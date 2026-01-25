@@ -21,54 +21,35 @@ CREATE POLICY "Users can view interactions for own and linked schools" ON public
     )
   );
 
--- Policy: INSERT - Block parents from creating interactions
-CREATE POLICY "Non-parents can insert interactions" ON public.interactions
+-- Policy: INSERT - Allow all authenticated users to create interactions for accessible schools
+CREATE POLICY "Users can insert interactions" ON public.interactions
   FOR INSERT
   WITH CHECK (
     school_id IN (
       SELECT id FROM public.schools
       WHERE user_id IN (SELECT * FROM public.get_linked_user_ids())
     )
-    AND NOT EXISTS (
-      SELECT 1 FROM public.schools s
-      INNER JOIN public.users u ON u.id = auth.uid()
-      WHERE s.id = school_id
-        AND u.role = 'parent'
-        AND public.is_parent_viewing_linked_athlete(s.user_id)
-    )
   );
 
--- Policy: UPDATE - Block parents from updating interactions
-CREATE POLICY "Non-parents can update interactions" ON public.interactions
+-- Policy: UPDATE - Allow users to update their own interactions
+CREATE POLICY "Users can update their own interactions" ON public.interactions
   FOR UPDATE
   USING (
-    school_id IN (
+    logged_by = auth.uid()
+    AND school_id IN (
       SELECT id FROM public.schools
       WHERE user_id IN (SELECT * FROM public.get_linked_user_ids())
-    )
-    AND NOT EXISTS (
-      SELECT 1 FROM public.schools s
-      INNER JOIN public.users u ON u.id = auth.uid()
-      WHERE s.id = school_id
-        AND u.role = 'parent'
-        AND public.is_parent_viewing_linked_athlete(s.user_id)
     )
   );
 
--- Policy: DELETE - Block parents from deleting interactions
-CREATE POLICY "Non-parents can delete interactions" ON public.interactions
+-- Policy: DELETE - Allow users to delete their own interactions
+CREATE POLICY "Users can delete their own interactions" ON public.interactions
   FOR DELETE
   USING (
-    school_id IN (
+    logged_by = auth.uid()
+    AND school_id IN (
       SELECT id FROM public.schools
       WHERE user_id IN (SELECT * FROM public.get_linked_user_ids())
-    )
-    AND NOT EXISTS (
-      SELECT 1 FROM public.schools s
-      INNER JOIN public.users u ON u.id = auth.uid()
-      WHERE s.id = school_id
-        AND u.role = 'parent'
-        AND public.is_parent_viewing_linked_athlete(s.user_id)
     )
   );
 
@@ -76,11 +57,11 @@ CREATE POLICY "Non-parents can delete interactions" ON public.interactions
 COMMENT ON POLICY "Users can view interactions for own and linked schools" ON public.interactions IS
   'Allows viewing interactions for schools owned by user or linked accounts';
 
-COMMENT ON POLICY "Non-parents can insert interactions" ON public.interactions IS
-  'Only non-parents can create interactions. Blocks parents from logging interactions for linked athletes.';
+COMMENT ON POLICY "Users can insert interactions" ON public.interactions IS
+  'Allows authenticated users to create interactions for accessible schools.';
 
-COMMENT ON POLICY "Non-parents can update interactions" ON public.interactions IS
-  'Only non-parents can update interactions. Blocks parents from modifying interaction records.';
+COMMENT ON POLICY "Users can update their own interactions" ON public.interactions IS
+  'Allows users to update interactions they created (logged_by = auth.uid()).';
 
-COMMENT ON POLICY "Non-parents can delete interactions" ON public.interactions IS
-  'Only non-parents can delete interactions. Blocks parents from removing interaction records.';
+COMMENT ON POLICY "Users can delete their own interactions" ON public.interactions IS
+  'Allows users to delete interactions they created (logged_by = auth.uid()).';
