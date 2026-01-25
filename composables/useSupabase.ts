@@ -18,7 +18,15 @@ export const useSupabase = () => {
       throw new Error("Supabase configuration is missing");
     }
 
-    supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+    // Create client with session persistence enabled
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: typeof window !== "undefined" ? window.localStorage : undefined,
+      },
+    });
   }
 
   return supabaseClient as ReturnType<typeof createClient>;
