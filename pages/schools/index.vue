@@ -54,20 +54,17 @@
     </div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <!-- Filter Bar -->
-      <div
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"
-      >
-        <!-- Row 1: Main filters -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4 mb-4">
-          <!-- Search (2 cols) -->
-          <div class="lg:col-span-2">
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >Search</label
-            >
-            <div class="relative">
+      <!-- Refined Filter Panel -->
+      <div class="space-y-6 mb-8">
+        <!-- Filter Header with Search -->
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+          <div class="flex-1">
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+              Find Schools
+            </label>
+            <div class="relative group">
               <MagnifyingGlassIcon
-                class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
               />
               <input
                 type="text"
@@ -78,243 +75,279 @@
                     ($event.target as HTMLInputElement).value,
                   )
                 "
-                placeholder="School name or location..."
-                class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Search by name or location..."
+                class="w-full pl-12 pr-4 py-3 text-slate-700 placeholder-slate-400 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300"
               />
             </div>
           </div>
 
-          <!-- Division -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >Division</label
-            >
-            <select
-              :value="String((filterValues.value as any)?.division ?? '')"
-              @change="
-                handleFilterUpdate(
-                  'division',
-                  ($event.target as HTMLSelectElement).value || null,
-                )
-              "
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">-- All --</option>
-              <option value="D1">Division I</option>
-              <option value="D2">Division II</option>
-              <option value="D3">Division III</option>
-              <option value="NAIA">NAIA</option>
-              <option value="JUCO">JUCO</option>
-            </select>
-          </div>
-
-          <!-- Status -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >Status</label
-            >
-            <select
-              :value="String((filterValues.value as any)?.status ?? '')"
-              @change="
-                handleFilterUpdate(
-                  'status',
-                  ($event.target as HTMLSelectElement).value || null,
-                )
-              "
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">-- All --</option>
-              <option value="researching">Researching</option>
-              <option value="contacted">Contacted</option>
-              <option value="interested">Interested</option>
-              <option value="offer_received">Offer Received</option>
-              <option value="committed">Committed</option>
-            </select>
-          </div>
-
-          <!-- Favorites -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >Favorites Only</label
-            >
-            <select
-              :value="(filterValues.value as any)?.is_favorite ? 'true' : ''"
-              @change="
-                handleFilterUpdate(
-                  'is_favorite',
-                  ($event.target as HTMLSelectElement).value === 'true' || null,
-                )
-              "
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">-- All --</option>
-              <option value="true">Favorites Only</option>
-            </select>
-          </div>
-
-          <!-- Priority Tier Filter -->
-          <SchoolPriorityTierFilter
-            :model-value="priorityTierFilter"
-            @update:model-value="updatePriorityTierFilter"
-          />
-
-          <!-- State -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >State</label
-            >
-            <select
-              :value="String((filterValues.value as any)?.state ?? '')"
-              @change="
-                handleFilterUpdate(
-                  'state',
-                  ($event.target as HTMLSelectElement).value || null,
-                )
-              "
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">-- All --</option>
-              <option
-                v-for="option in stateOptions"
-                :key="option.value"
-                :value="option.value"
-              >
-                {{ option.label }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Sort Selector -->
-          <SortSelector
-            :model-value="sortBy"
-            :sort-order="sortOrder"
-            @update:model-value="sortBy = $event"
-            @update:sort-order="sortOrder = $event"
-          />
-        </div>
-
-        <!-- Row 2: Range filters -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <!-- Fit Score Range (2 cols) -->
-          <div class="lg:col-span-2">
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >Fit Score Range</label
-            >
-            <div class="flex gap-2 items-center">
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="5"
-                :value="
-                  (filterValues.value as any)?.fit_score?.min ?? 0
-                "
-                @input="
-                  handleFilterUpdate('fit_score', {
-                    min: parseInt(($event.target as HTMLInputElement).value),
-                    max:
-                      (filterValues.value as any)?.fit_score?.max ?? 100,
-                  })
-                "
-                placeholder="Min"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <span class="text-slate-500">-</span>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="5"
-                :value="
-                  (filterValues.value as any)?.fit_score?.max ?? 100
-                "
-                @input="
-                  handleFilterUpdate('fit_score', {
-                    min:
-                      (filterValues.value as any)?.fit_score?.min ?? 0,
-                    max: parseInt(($event.target as HTMLInputElement).value),
-                  })
-                "
-                placeholder="Max"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-
-          <!-- Distance Range (2 cols) -->
-          <div class="lg:col-span-2">
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >Distance Range</label
-            >
-            <div class="flex items-center gap-2">
-              <input
-                type="range"
-                min="0"
-                max="3000"
-                step="50"
-                :value="
-                  (filterValues.value as any)?.distance?.max ?? 3000
-                "
-                @input="
-                  handleFilterUpdate('distance', {
-                    max: parseInt(($event.target as HTMLInputElement).value),
-                  })
-                "
-                :disabled="!homeLocation"
-                class="w-full h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-              <span class="text-sm font-medium text-slate-700 whitespace-nowrap min-w-fit">
-                {{
-                  (filterValues.value as any)?.distance?.max ??
-                  3000
-                }}
-                mi
-              </span>
-            </div>
-            <p
-              v-if="!homeLocation"
-              class="text-xs text-amber-600 mt-1"
-            >
-              Set home location to filter by distance
+          <!-- Result Count -->
+          <div class="text-right">
+            <p class="text-2xl font-semibold text-slate-900">
+              {{ filteredSchools.length }}
+            </p>
+            <p class="text-xs text-slate-500 uppercase tracking-wide">
+              school{{ filteredSchools.length !== 1 ? "s" : "" }}
             </p>
           </div>
         </div>
 
-        <!-- Active Filters -->
+        <!-- Filter Sections Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <!-- Select Filters Row -->
+          <div class="lg:col-span-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+            <!-- Division -->
+            <div class="group">
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                Division
+              </label>
+              <select
+                :value="String((filterValues.value as any)?.division ?? '')"
+                @change="
+                  handleFilterUpdate(
+                    'division',
+                    ($event.target as HTMLSelectElement).value || null,
+                  )
+                "
+                class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
+                style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2rem;"
+              >
+                <option value="">All</option>
+                <option value="D1">D1</option>
+                <option value="D2">D2</option>
+                <option value="D3">D3</option>
+                <option value="NAIA">NAIA</option>
+                <option value="JUCO">JUCO</option>
+              </select>
+            </div>
+
+            <!-- Status -->
+            <div class="group">
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                Status
+              </label>
+              <select
+                :value="String((filterValues.value as any)?.status ?? '')"
+                @change="
+                  handleFilterUpdate(
+                    'status',
+                    ($event.target as HTMLSelectElement).value || null,
+                  )
+                "
+                class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
+                style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2rem;"
+              >
+                <option value="">All</option>
+                <option value="researching">Researching</option>
+                <option value="contacted">Contacted</option>
+                <option value="interested">Interested</option>
+                <option value="offer_received">Offer</option>
+                <option value="committed">Committed</option>
+              </select>
+            </div>
+
+            <!-- State -->
+            <div class="group">
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                State
+              </label>
+              <select
+                :value="String((filterValues.value as any)?.state ?? '')"
+                @change="
+                  handleFilterUpdate(
+                    'state',
+                    ($event.target as HTMLSelectElement).value || null,
+                  )
+                "
+                class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
+                style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2rem;"
+              >
+                <option value="">All</option>
+                <option
+                  v-for="option in stateOptions"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Favorites -->
+            <div class="group">
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                Favorites
+              </label>
+              <select
+                :value="(filterValues.value as any)?.is_favorite ? 'true' : ''"
+                @change="
+                  handleFilterUpdate(
+                    'is_favorite',
+                    ($event.target as HTMLSelectElement).value === 'true' || null,
+                  )
+                "
+                class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
+                style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2rem;"
+              >
+                <option value="">All</option>
+                <option value="true">⭐ Starred</option>
+              </select>
+            </div>
+
+            <!-- Priority Tier Filter -->
+            <div class="group">
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                Priority
+              </label>
+              <SchoolPriorityTierFilter
+                :model-value="priorityTierFilter"
+                @update:model-value="updatePriorityTierFilter"
+              />
+            </div>
+
+            <!-- Sort Selector -->
+            <div class="group">
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                Sort
+              </label>
+              <SortSelector
+                :model-value="sortBy"
+                :sort-order="sortOrder"
+                @update:model-value="sortBy = $event"
+                @update:sort-order="sortOrder = $event"
+              />
+            </div>
+          </div>
+
+          <!-- Range Filters -->
+          <!-- Fit Score Range -->
+          <div class="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-xl p-5 border border-slate-200/50">
+            <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-4">
+              Fit Score
+            </label>
+            <div class="flex gap-3 items-end">
+              <div class="flex-1">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="5"
+                  :value="
+                    (filterValues.value as any)?.fit_score?.min ?? 0
+                  "
+                  @input="
+                    handleFilterUpdate('fit_score', {
+                      min: parseInt(($event.target as HTMLInputElement).value),
+                      max:
+                        (filterValues.value as any)?.fit_score?.max ?? 100,
+                    })
+                  "
+                  placeholder="Min"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                />
+              </div>
+              <span class="text-slate-400 text-lg">–</span>
+              <div class="flex-1">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="5"
+                  :value="
+                    (filterValues.value as any)?.fit_score?.max ?? 100
+                  "
+                  @input="
+                    handleFilterUpdate('fit_score', {
+                      min:
+                        (filterValues.value as any)?.fit_score?.min ?? 0,
+                      max: parseInt(($event.target as HTMLInputElement).value),
+                    })
+                  "
+                  placeholder="Max"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Distance Range -->
+          <div class="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-xl p-5 border border-slate-200/50 lg:col-span-3">
+            <div class="flex items-start justify-between mb-4">
+              <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                Distance
+              </label>
+              <span class="text-sm font-semibold text-blue-600">
+                {{
+                  (filterValues.value as any)?.distance?.max ??
+                  3000
+                }}
+                <span class="text-xs text-slate-500">mi</span>
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="3000"
+              step="50"
+              :value="
+                (filterValues.value as any)?.distance?.max ?? 3000
+              "
+              @input="
+                handleFilterUpdate('distance', {
+                  max: parseInt(($event.target as HTMLInputElement).value),
+                })
+              "
+              :disabled="!homeLocation"
+              class="w-full h-2.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+            />
+            <p
+              v-if="!homeLocation"
+              class="text-xs text-amber-700 mt-3 px-3 py-2 bg-amber-50 rounded-lg border border-amber-200"
+            >
+              ⚠️ Set your home location in preferences to enable distance filtering
+            </p>
+          </div>
+        </div>
+
+        <!-- Active Filters Chips -->
         <div
           v-if="hasActiveFilters"
-          class="flex items-center gap-2 mt-4 pt-4 border-t border-slate-200"
+          class="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100"
         >
-          <span class="text-sm text-slate-600">Active filters:</span>
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            Filters:
+          </span>
           <div class="flex flex-wrap gap-2">
             <span
               v-for="(value, key) in activeFiltersDisplay"
               :key="key"
-              class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
+              class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-medium border border-blue-200 hover:bg-blue-100 transition-colors group"
             >
+              <span class="text-blue-500">●</span>
               {{ value }}
               <button
                 @click="handleRemoveFilter(key as string)"
-                class="hover:text-blue-900"
+                class="ml-1 text-blue-400 hover:text-blue-600 transition-colors group-hover:opacity-100"
               >
-                <XMarkIcon class="w-3 h-3" />
+                <XMarkIcon class="w-3.5 h-3.5" />
               </button>
             </span>
           </div>
           <button
             @click="clearFilters"
-            class="text-sm text-slate-500 hover:text-slate-700 ml-2"
+            class="ml-auto text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors"
           >
             Clear all
           </button>
         </div>
       </div>
 
-      <!-- Results Count -->
-      <div class="text-right text-slate-600 text-sm mb-4">
-        {{ filteredSchools.length }} result{{
-          filteredSchools.length !== 1 ? "s" : ""
-        }}
+      <!-- Results Intro -->
+      <div v-if="!loading" class="mb-6">
+        <p class="text-sm text-slate-600">
+          <span class="font-semibold text-slate-900">{{ filteredSchools.length }}</span>
+          result{{ filteredSchools.length !== 1 ? "s" : "" }} found
+        </p>
       </div>
 
       <!-- Loading State -->
