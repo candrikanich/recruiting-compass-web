@@ -197,12 +197,29 @@
             <!-- Priority Tier Filter -->
             <div class="group">
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                Priority
+                Tier
               </label>
-              <SchoolPriorityTierFilter
-                :model-value="priorityTierFilter"
-                @update:model-value="updatePriorityTierFilter"
-              />
+              <select
+                :value="
+                  priorityTierFilter && priorityTierFilter.length === 1
+                    ? priorityTierFilter[0]
+                    : ''
+                "
+                @change="
+                  updatePriorityTierFilter(
+                    ($event.target as HTMLSelectElement).value
+                      ? [($event.target as HTMLSelectElement).value as 'A' | 'B' | 'C']
+                      : null,
+                  )
+                "
+                class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
+                style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2rem;"
+              >
+                <option value="">All</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+              </select>
             </div>
 
             <!-- Sort Selector -->
@@ -210,12 +227,17 @@
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                 Sort
               </label>
-              <SortSelector
-                :model-value="sortBy"
-                :sort-order="sortOrder"
-                @update:model-value="sortBy = $event"
-                @update:sort-order="sortOrder = $event"
-              />
+              <select
+                :value="sortBy"
+                @change="sortBy = ($event.target as HTMLSelectElement).value"
+                class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
+                style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2rem;"
+              >
+                <option value="a-z">A-Z</option>
+                <option value="fit-score">Fit Score</option>
+                <option value="distance">Distance</option>
+                <option value="last-contact">Last Contact</option>
+              </select>
             </div>
           </div>
 
@@ -608,7 +630,6 @@ const allInteractions = ref<any[]>([]);
 const allCoaches = ref<any[]>([]);
 const priorityTierFilter = ref<("A" | "B" | "C")[] | null>(null);
 const sortBy = ref<string>("a-z");
-const sortOrder = ref<"asc" | "desc">("asc");
 
 const hasPreferences = computed(() => {
   return (schoolPreferences.value?.preferences?.length || 0) > 0;
@@ -795,6 +816,12 @@ const activeFiltersDisplay = computed(() => {
       }
     }
   });
+
+  // Add priority tier filter if selected
+  if (priorityTierFilter.value && priorityTierFilter.value.length > 0) {
+    display["priority_tier"] = priorityTierFilter.value.join(", ");
+  }
+
   return display;
 });
 
@@ -828,7 +855,7 @@ const filteredSchools = computed(() => {
       case "fit-score": {
         const scoreA = a.fit_score ?? -1;
         const scoreB = b.fit_score ?? -1;
-        comparison = scoreA - scoreB;
+        comparison = scoreB - scoreA; // Highest fit score first
         break;
       }
       case "distance": {
@@ -846,13 +873,13 @@ const filteredSchools = computed(() => {
 
         const distA = getDistance(a);
         const distB = getDistance(b);
-        comparison = distA - distB;
+        comparison = distA - distB; // Closest first
         break;
       }
       case "last-contact": {
         const dateA = new Date(a.updated_at || 0).getTime();
         const dateB = new Date(b.updated_at || 0).getTime();
-        comparison = dateB - dateA; // Reverse for most recent first
+        comparison = dateB - dateA; // Most recent first
         break;
       }
       case "a-z":
@@ -861,8 +888,7 @@ const filteredSchools = computed(() => {
         break;
     }
 
-    // Apply sort order (desc reverses the comparison)
-    return sortOrder.value === "asc" ? comparison : -comparison;
+    return comparison;
   });
 
   // Log performance in dev mode
@@ -884,7 +910,11 @@ const handleFilterUpdate = (field: string, value: any) => {
 };
 
 const handleRemoveFilter = (field: string) => {
-  setFilterValue(field, null);
+  if (field === "priority_tier") {
+    priorityTierFilter.value = null;
+  } else {
+    setFilterValue(field, null);
+  }
 };
 
 const updatePriorityTierFilter = (tiers: ("A" | "B" | "C")[] | null) => {
