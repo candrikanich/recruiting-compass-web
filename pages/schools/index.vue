@@ -1033,6 +1033,10 @@ const handleExportPDF = () => {
 onMounted(async () => {
   console.debug("[Schools] Page mounted");
 
+  // Clear stale filters from previous session immediately on mount
+  console.debug("[Schools] Clearing filter cache on mount");
+  clearFilters();
+
   await Promise.all([
     fetchSchools(),
     fetchPreferences(),
@@ -1044,6 +1048,7 @@ onMounted(async () => {
   allCoaches.value = coachesData.value;
 
   console.debug(`[Schools] onMounted complete - schools count: ${schools.value.length}`);
+  console.debug("[Schools] Current filter values:", filterValues.value);
 
   if (schools.value.length > 0) {
     fetchMultipleLogos(schools.value).catch((err) => {
