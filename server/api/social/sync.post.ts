@@ -161,12 +161,12 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
           if (!existing) {
             // Find associated school or coach
             const school = findEntityByHandle(
-              schools as any[],
+              schools as Array<{ id: string; twitter_handle?: string }>,
               "twitter_handle",
               post.author_handle,
             );
             const coach = findEntityByHandle(
-              coaches as any[],
+              coaches as Array<{ id: string; twitter_handle?: string }>,
               "twitter_handle",
               post.author_handle,
             );
@@ -191,9 +191,9 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
         }
 
         if (newPosts.length > 0) {
-          const { error: insertError } = await supabase
-            .from("social_media_posts")
-            .insert(newPosts as any[]);
+          const { error: insertError } = await (
+            supabase.from("social_media_posts") as any
+          ).insert(newPosts as unknown as Record<string, unknown>[]);
 
           if (insertError) {
             logger.error("Failed to insert Twitter posts", insertError);
@@ -223,12 +223,12 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
           if (!existing) {
             // Find associated school or coach
             const school = findEntityByHandle(
-              schools as any[],
+              schools as Array<{ id: string; instagram_handle?: string }>,
               "instagram_handle",
               post.author_handle,
             );
             const coach = findEntityByHandle(
-              coaches as any[],
+              coaches as Array<{ id: string; instagram_handle?: string }>,
               "instagram_handle",
               post.author_handle,
             );
@@ -253,9 +253,9 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
         }
 
         if (newPosts.length > 0) {
-          const { error: insertError } = await supabase
-            .from("social_media_posts")
-            .insert(newPosts as any[]);
+          const { error: insertError } = await (
+            supabase.from("social_media_posts") as any
+          ).insert(newPosts as unknown as Record<string, unknown>[]);
 
           if (insertError) {
             logger.error("Failed to insert Instagram posts", insertError);
@@ -299,8 +299,11 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
 
     // Log failed sync
     await auditLog(event, {
-      userId: (await requireAuth(event).catch(() => ({ id: "unknown" }) as any))
-        .id,
+      userId: (
+        await requireAuth(event).catch(
+          () => ({ id: "unknown" }) as { id: string },
+        )
+      ).id,
       action: "CREATE",
       resourceType: "social_media_posts",
       errorMessage,

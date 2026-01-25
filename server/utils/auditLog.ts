@@ -6,15 +6,7 @@ import type { AuditLogInsert } from "~/types/database-helpers";
 
 interface AuditLogParams {
   userId: string;
-  action:
-    | "CREATE"
-    | "READ"
-    | "UPDATE"
-    | "DELETE"
-    | "LOGIN"
-    | "LOGOUT"
-    | "EXPORT"
-    | "IMPORT";
+  action: string;
   resourceType: string;
   resourceId?: string;
   tableName?: string;
@@ -58,7 +50,15 @@ export async function auditLog(
     // Create audit log entry
     const auditEntry: AuditLogInsert = {
       user_id: params.userId,
-      action: params.action,
+      action: params.action as
+        | "CREATE"
+        | "READ"
+        | "UPDATE"
+        | "DELETE"
+        | "LOGIN"
+        | "LOGOUT"
+        | "EXPORT"
+        | "IMPORT",
       resource_type: params.resourceType,
       resource_id: params.resourceId || null,
       table_name: params.tableName || null,
@@ -72,9 +72,9 @@ export async function auditLog(
       metadata: params.metadata || undefined,
     };
 
-    const { error } = await supabase
-      .from("audit_logs")
-      .insert(auditEntry as any);
+    const { error } = await (supabase.from("audit_logs") as any).insert(
+      auditEntry as unknown as Record<string, unknown>,
+    );
 
     if (error) {
       logger.error("Failed to create audit log", {
@@ -120,7 +120,9 @@ export async function auditLogBatch(
       metadata: p.metadata || {},
     })) as AuditLogInsert[];
 
-    const { error } = await supabase.from("audit_logs").insert(entries);
+    const { error } = await (supabase.from("audit_logs") as any).insert(
+      entries,
+    );
 
     if (error) {
       logger.error("Failed to batch create audit logs", {
@@ -158,7 +160,7 @@ function getClientIP(event: H3Event): string {
  */
 export function sanitizeForAuditLog(
   data: Record<string, unknown>,
-): Record<string, any> {
+): Record<string, unknown> {
   const sensitiveFields = [
     "password",
     "password_hash",

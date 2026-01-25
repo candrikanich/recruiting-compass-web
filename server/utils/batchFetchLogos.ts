@@ -172,7 +172,7 @@ async function fetchFaviconForSchool(
           clearTimeout(timeoutId);
           throw error;
         }
-      } catch (_error) {
+      } catch {
         // Continue to next source on error
         continue;
       }

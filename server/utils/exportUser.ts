@@ -125,7 +125,7 @@ async function fetchDocumentContent(
             // File not found, just save metadata
             result.push({ metadata: docMetadata });
           }
-        } catch (_error) {
+        } catch {
           // Fallback if download fails
           result.push({ metadata: docMetadata });
         }

@@ -130,7 +130,11 @@ export default defineEventHandler(async (event) => {
       throw updateError;
     }
 
-    const updatedRecord = updated as unknown as Record<string, any>;
+    const updatedRecord = updated as unknown as {
+      fit_score: number;
+      fit_score_data: unknown;
+      updated_at: string;
+    };
 
     // Log successful fit score update
     await logCRUD(event, {

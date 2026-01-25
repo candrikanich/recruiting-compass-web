@@ -116,10 +116,10 @@ export default defineEventHandler(async (event) => {
 
     const athleteTaskMap = new Map(validTasks);
 
-    // Separate complete and incomplete prerequisites
-    const completePrerequisites = (
+    // Complete prerequisites (for future use)
+    const _completePrerequisites = (
       Array.isArray(prerequisitesData) ? prerequisitesData : []
-    ).filter((task: any) => {
+    ).filter((task: { id: string }) => {
       const athleteTask = athleteTaskMap.get(task.id);
       return athleteTask && isAthleteTaskCompleted(athleteTask);
     });

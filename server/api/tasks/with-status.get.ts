@@ -57,78 +57,64 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Helper to safely extract task_id from athlete task
-    const getAthleteTaskId = (at: any): string | undefined => {
-      return typeof at === "object" &&
-        at !== null &&
-        "task_id" in at &&
-        typeof at.task_id === "string"
-        ? at.task_id
-        : undefined;
-    };
-
-    // Helper to safely check if athlete task is completed
-    const isAthleteTaskCompleted = (at: any): boolean => {
-      return (
-        typeof at === "object" &&
-        at !== null &&
-        "status" in at &&
-        at.status === "completed"
-      );
-    };
-
     // Create map for quick lookup
-    const athleteTaskMap = new Map(
-      (Array.isArray(athleteTasksData) ? athleteTasksData : [])
-        .map((at) => {
-          const taskId = getAthleteTaskId(at);
-          return taskId ? [taskId, at] : null;
-        })
-        .filter((entry): entry is [string, any] => entry !== null),
-    );
-
-    // Merge tasks with athlete data
-    const merged = (Array.isArray(tasksData) ? tasksData : []).map(
-      (task: any) => {
-        const athleteTask = athleteTaskMap.get(task.id);
-        const dependencies = (task.dependency_task_ids || [])
-          .map((depId: string) => tasksData?.find((t: any) => t.id === depId))
-          .filter(Boolean);
-
-        const allDepsComplete =
-          dependencies.length === 0 ||
-          dependencies.every((dep: any) => {
-            const depAthleteTask = athleteTaskMap.get(dep.id);
-            return depAthleteTask && isAthleteTaskCompleted(depAthleteTask);
-          });
-
-        return {
-          ...task,
-          athlete_task: athleteTask,
-          has_incomplete_prerequisites:
-            task.dependency_task_ids?.length > 0 && !allDepsComplete,
-          prerequisite_tasks: dependencies,
-        } as TaskWithStatus;
-      },
-    );
-
-    return merged;
-  } catch (err) {
-    if (err instanceof Error && err.message === "Unauthorized") {
-      throw createError({
-        statusCode: 401,
-        statusMessage: "Unauthorized",
+    const athleteTaskMap = new Map<string, unknown>();
+    if (Array.isArray(athleteTasksData)) {
+      athleteTasksData.forEach((at) => {
+        if (
+          at &&
+          typeof at === "object" &&
+          "task_id" in at &&
+          typeof at.task_id === "string"
+        ) {
+          athleteTaskMap.set(at.task_id, at);
+        }
       });
     }
 
-    if (err instanceof Error && "statusCode" in err) {
-      throw err;
-    }
+    // Merge tasks with athlete data
+    const merged = (Array.isArray(tasksData) ? tasksData : []).map((task) => {
+      const athleteTask = athleteTaskMap.get((task as { id: string }).id);
+      const dependencies = ((task as any).dependency_task_ids || [])
+        .map((depId: string) =>
+          (tasksData as any[])?.find((t: any) => t.id === depId),
+        )
+        .filter((dep: any) => Boolean(dep));
 
-    console.error("Error in GET /api/tasks/with-status:", err);
+      const allDepsComplete =
+        dependencies.length === 0 ||
+        dependencies.every((dep: any) => {
+          const depAthleteTask = athleteTaskMap.get(dep.id);
+          return (
+            depAthleteTask &&
+            typeof depAthleteTask === "object" &&
+            depAthleteTask !== null &&
+            "status" in depAthleteTask &&
+            depAthleteTask.status === "completed"
+          );
+        });
+
+      return {
+        ...task,
+        athlete_task: athleteTask,
+        has_incomplete_prerequisites:
+          ((task as any).dependency_task_ids?.length || 0) > 0 &&
+          !allDepsComplete,
+        prerequisite_tasks: dependencies,
+      } as TaskWithStatus;
+    });
+
+    return {
+      success: true,
+      data: merged,
+    };
+  } catch (err: unknown) {
+    const message =
+      err instanceof Error ? err.message : "Failed to fetch tasks with status";
+    console.error("Tasks with status fetch error:", err);
     throw createError({
       statusCode: 500,
-      statusMessage: "Failed to fetch tasks with status",
+      statusMessage: message,
     });
   }
 });

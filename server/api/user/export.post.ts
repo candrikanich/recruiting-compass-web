@@ -165,7 +165,9 @@ async function setExportCache(
   }, ttl * 1000);
 }
 
-async function tryGetUserId(event: any): Promise<string | null> {
+async function tryGetUserId(event: {
+  context?: { user?: { id: string } };
+}): Promise<string | null> {
   try {
     const user = await requireAuth(event);
     return user.id;

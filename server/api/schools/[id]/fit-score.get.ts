@@ -6,7 +6,7 @@
 
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
-import { requireAuth, getUserRole } from "~/server/utils/auth";
+import { requireAuth } from "~/server/utils/auth";
 import type { Database } from "~/types/database";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -31,13 +31,13 @@ async function hasAccessToSchool(
   }
 
   // Check if user is a parent with access to the school owner (athlete)
-  const { data: school } = await supabase
+  const schoolResult = await supabase
     .from("schools")
     .select("user_id")
     .eq("id", schoolId)
     .single();
 
-  if (!school) {
+  if (!schoolResult.data?.user_id) {
     return false;
   }
 
@@ -46,7 +46,7 @@ async function hasAccessToSchool(
     .from("account_links")
     .select("id")
     .eq("parent_user_id", userId)
-    .eq("player_user_id", school.user_id)
+    .eq("player_user_id", schoolResult.data.user_id)
     .eq("status", "accepted")
     .single();
 
@@ -88,23 +88,6 @@ export default defineEventHandler(async (event) => {
       throw createError({
         statusCode: 404,
         statusMessage: "School not found",
-      });
-    }
-
-    // Log parent view if applicable
-    const role = await getUserRole(user.id, supabase);
-    if (role === "parent") {
-      const schoolData = school as {
-        user_id: string;
-        name: string;
-        fit_score: number | null;
-        fit_score_data: unknown | null;
-      };
-      await supabase.from("parent_view_logs").insert({
-        parent_user_id: user.id,
-        athlete_id: schoolData?.user_id,
-        viewed_item_type: "fit_score",
-        viewed_item_id: schoolId,
       });
     }
 
