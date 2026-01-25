@@ -117,6 +117,38 @@ describe("useUserStore", () => {
       store.isAuthenticated = true;
       expect(store.isLoggedIn).toBe(true);
     });
+
+    it("should return true for isAthlete when role is student", () => {
+      store.user = createMockUser({ role: "student" });
+
+      expect(store.isAthlete).toBe(true);
+    });
+
+    it("should return false for isAthlete when role is not student", () => {
+      store.user = createMockUser({ role: "parent" });
+
+      expect(store.isAthlete).toBe(false);
+    });
+
+    it("should return false for isAthlete when no user", () => {
+      expect(store.isAthlete).toBe(false);
+    });
+
+    it("should return true for isParent when role is parent", () => {
+      store.user = createMockUser({ role: "parent" });
+
+      expect(store.isParent).toBe(true);
+    });
+
+    it("should return false for isParent when role is not parent", () => {
+      store.user = createMockUser({ role: "student" });
+
+      expect(store.isParent).toBe(false);
+    });
+
+    it("should return false for isParent when no user", () => {
+      expect(store.isParent).toBe(false);
+    });
   });
 
   describe("initializeUser", () => {
