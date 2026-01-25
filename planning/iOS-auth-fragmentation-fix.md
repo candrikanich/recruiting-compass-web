@@ -17,13 +17,16 @@ The web app had a critical bug where 31 different user_ids were created for a si
 ## 🔴 The Problem (Background)
 
 ### What Happened (Web App)
+
 - User authentication system called "create user profile" multiple times
 - Each time it created a NEW user record instead of checking if one existed
 - Result: 1 auth account fragmented into 31 different user records
 - Cause: User initialization wasn't idempotent (calling it twice = bad state)
 
 ### Why It Matters for iOS
+
 Same bug can happen in iOS if:
+
 - Profile creation is called multiple times during app launch
 - App is backgrounded/foregrounded (triggering re-initialization)
 - User logs out and back in quickly
@@ -34,30 +37,36 @@ Same bug can happen in iOS if:
 ## 🛡️ The Fix (Database Level)
 
 ### Migration 012: Added Constraint
+
 ```sql
 ALTER TABLE public.users
 ADD CONSTRAINT users_email_unique UNIQUE(email);
+
 ```
 
 ### What This Means for iOS
 
 **Before**: Creating a profile with same email twice = 2 records (BAD)
-```
+
+```text
 users table:
 id                    | email              | role
 ------------------------+------------------+--------
 user-id-1            | chris@example.com | student
 user-id-2            | chris@example.com | student  ❌ DUPLICATE
+
 ```
 
 **After**: Creating a profile with same email twice = Conflict error (GOOD)
-```
+
+```text
 users table:
 id                    | email              | role
 ------------------------+------------------+--------
 user-id-1            | chris@example.com | student
 
 Second insert attempt → HTTP 409 Conflict error
+
 ```
 
 ---
@@ -92,6 +101,7 @@ func createUserProfile(email: String, fullName: String) async throws {
         throw error
     }
 }
+
 ```
 
 ### 2. Check Before Creating (Idempotent Pattern)
@@ -132,6 +142,7 @@ func ensureUserProfile(userId: String, email: String, fullName: String) async th
         throw error
     }
 }
+
 ```
 
 ### 3. Centralize User Initialization
@@ -154,11 +165,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 }
+
 ```
 
 ### 4. Don't Re-initialize Unnecessarily
 
 **❌ DON'T do this** (causes fragmentation):
+
 ```swift
 // In every view that appears
 override func viewDidAppear(_ animated: Bool) {
@@ -169,9 +182,11 @@ override func viewDidAppear(_ animated: Bool) {
         try await authManager.initializeUser()
     }
 }
+
 ```
 
 **✅ DO this** (centralized):
+
 ```swift
 // Initialize ONCE in AppDelegate
 // Views use the already-initialized state from authManager
@@ -182,6 +197,7 @@ override func viewDidAppear(_ animated: Bool) {
     let currentUser = authManager.currentUser
     updateUI(with: currentUser)
 }
+
 ```
 
 ---
@@ -191,6 +207,7 @@ override func viewDidAppear(_ animated: Bool) {
 ### Unit Tests
 
 1. **Idempotence Test**: Calling profile creation twice returns success both times
+
 ```swift
 func testCreateUserProfileIsIdempotent() async throws {
     let userId = UUID().uuidString
@@ -211,9 +228,11 @@ func testCreateUserProfileIsIdempotent() async throws {
 
     XCTAssertEqual(profiles.count, 1)
 }
+
 ```
 
 2. **Conflict Handling Test**: 409 Conflict handled gracefully
+
 ```swift
 func testHandles409ConflictGracefully() async throws {
     let userId = UUID().uuidString
@@ -227,6 +246,7 @@ func testHandles409ConflictGracefully() async throws {
 
     XCTAssertTrue(result)  // Should indicate success
 }
+
 ```
 
 ### Manual Testing on Device
@@ -304,16 +324,19 @@ logger.debug("[AuthManager] Profile already exists, skipping")
 logger.debug("[AuthManager] Profile created successfully")
 logger.debug("[AuthManager] Conflict error (409), treating as success")
 logger.error("[AuthManager] Failed to create profile: \(error)")
+
 ```
 
 ### Debug Query (Supabase Dashboard)
 
 Check for duplicate emails:
+
 ```sql
 SELECT email, COUNT(*) as count
 FROM public.users
 GROUP BY email
 HAVING COUNT(*) > 1;
+
 ```
 
 Expected result: Empty (no duplicates)
