@@ -173,6 +173,16 @@
               :errors="errors"
               @dismiss="clearErrors"
             />
+
+            <!-- API error from password reset -->
+            <div
+              v-if="passwordReset.error && !passwordUpdated && !invalidToken"
+              class="p-4 bg-red-50 border border-red-200 rounded-lg"
+            >
+              <p class="text-red-800 text-sm font-medium">
+                {{ passwordReset.error }}
+              </p>
+            </div>
           </div>
 
           <!-- Form -->
