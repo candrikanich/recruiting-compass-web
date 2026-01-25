@@ -22,6 +22,8 @@ export const useUserStore = defineStore("user", {
     userRole: (state) => state.user?.role,
     isLoggedIn: (state) => state.isAuthenticated,
     emailVerified: (state) => state.isEmailVerified,
+    isAthlete: (state) => state.user?.role === "student",
+    isParent: (state) => state.user?.role === "parent",
   },
 
   actions: {

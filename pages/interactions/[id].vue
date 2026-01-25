@@ -149,10 +149,14 @@ import { useInteractions } from "~/composables/useInteractions";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useEvents } from "~/composables/useEvents";
-import type { Interaction } from "~/types/models";
+import { useSupabase } from "~/composables/useSupabase";
+import { useUserStore } from "~/stores/user";
+import type { Interaction, User } from "~/types/models";
 
 const route = useRoute();
 const router = useRouter();
+const supabase = useSupabase();
+const userStore = useUserStore();
 const { getInteraction, deleteInteraction: deleteInt } = useInteractions();
 const { schools } = useSchools();
 const { coaches } = useCoaches();
@@ -160,9 +164,22 @@ const { events } = useEvents();
 
 const interactionId = route.params.id as string;
 const interaction = ref<Interaction | null>(null);
+const loggedByUser = ref<User | null>(null);
 
 onMounted(async () => {
   interaction.value = await getInteraction(interactionId);
+
+  if (interaction.value?.logged_by) {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", interaction.value.logged_by)
+      .single();
+
+    if (!error && data) {
+      loggedByUser.value = data;
+    }
+  }
 });
 
 const school = computed(() => {
@@ -187,8 +204,17 @@ const event = computed(() => {
 });
 
 const loggedByName = computed(() => {
-  // In a real app, fetch user by ID. For now show initials or ID
-  return "You";
+  if (!interaction.value?.logged_by) return "Unknown";
+
+  if (userStore.user?.id === interaction.value.logged_by) {
+    return "You";
+  }
+
+  if (loggedByUser.value) {
+    return loggedByUser.value.full_name || "Unknown";
+  }
+
+  return "Unknown User";
 });
 
 const sentimentClass = computed(() => {

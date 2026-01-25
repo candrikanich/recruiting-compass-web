@@ -7,7 +7,9 @@
         <div
           class="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white px-8 py-6"
         >
-          <h1 class="text-2xl font-bold mb-1">Log Interaction</h1>
+          <h1 class="text-2xl font-bold mb-1">
+            {{ userStore.isAthlete ? "Log My Interaction" : "Log Interaction" }}
+          </h1>
           <p class="text-indigo-100 text-sm">
             Record a new communication with a school or coach
           </p>
@@ -462,6 +464,7 @@ import { useInteractions } from "~/composables/useInteractions";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useFormValidation } from "~/composables/useFormValidation";
+import { useUserStore } from "~/stores/user";
 import { interactionSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
@@ -471,6 +474,8 @@ import type { Interaction } from "~/types/models";
 definePageMeta({
   middleware: "auth",
 });
+
+const userStore = useUserStore();
 
 // Dropdown style for selects
 const selectDropdownStyle = computed(() => ({

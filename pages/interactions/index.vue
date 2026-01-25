@@ -16,12 +16,17 @@
           class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         >
           <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Interactions</h1>
+            <h1 class="text-2xl font-semibold text-slate-900">
+              {{ userStore.isAthlete ? "My Interactions" : "Interactions" }}
+            </h1>
             <p class="text-slate-600">
               {{ filteredInteractions.length }} interaction{{
                 filteredInteractions.length !== 1 ? "s" : ""
               }}
               found
+            </p>
+            <p v-if="userStore.isAthlete" class="text-sm text-slate-500 mt-1">
+              Your recruiting interactions are visible to your linked parent(s)
             </p>
           </div>
           <div class="flex items-center gap-3">
@@ -123,7 +128,10 @@
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"
       >
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div :class="{
+          'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4': !userStore.isParent,
+          'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4': userStore.isParent,
+        }">
           <!-- Search -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1"
@@ -173,6 +181,29 @@
               <option value="showcase">Showcase</option>
               <option value="tweet">Tweet</option>
               <option value="dm">Direct Message</option>
+            </select>
+          </div>
+
+          <!-- Logged By (Parents only) -->
+          <div v-if="userStore.isParent">
+            <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Logged By</label
+            >
+            <select
+              :value="filterValues.get('loggedBy') || ''"
+              @change="
+                handleFilterUpdate(
+                  'loggedBy',
+                  ($event.target as HTMLSelectElement).value || null,
+                )
+              "
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">-- All --</option>
+              <option v-if="userStore.user" :value="userStore.user.id">Me (Parent)</option>
+              <option v-for="athlete in linkedAthletes" :key="athlete.id" :value="athlete.id">
+                {{ athlete.full_name }}
+              </option>
             </select>
           </div>
 
@@ -264,6 +295,14 @@
             class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium"
           >
             Type: {{ formatType(filterValues.get("type") as string) }}
+            <XMarkIcon class="w-3 h-3" />
+          </button>
+          <button
+            v-if="filterValues.get('loggedBy')"
+            @click="handleFilterUpdate('loggedBy', null)"
+            class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium"
+          >
+            Logged By: {{ formatLoggedBy(filterValues.get("loggedBy") as string) }}
             <XMarkIcon class="w-3 h-3" />
           </button>
           <button
@@ -387,6 +426,11 @@
                     >
                       {{ formatDirection(interaction.direction) }}
                     </span>
+                    <LoggedByBadge
+                      v-if="userStore.user"
+                      :loggedByUserId="interaction.logged_by"
+                      :currentUserId="userStore.user.id"
+                    />
                     <span
                       v-if="interaction.sentiment"
                       class="px-2 py-0.5 text-xs font-medium rounded-full"
@@ -467,8 +511,11 @@ import { useInteractions } from "~/composables/useInteractions";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useUserStore } from "~/stores/user";
+import { useSupabase } from "~/composables/useSupabase";
 import Header from "~/components/Header.vue";
 import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
+import LoggedByBadge from "~/components/Interaction/LoggedByBadge.vue";
+import type { User } from "~/types/models";
 import {
   MagnifyingGlassIcon,
   XMarkIcon,
@@ -497,6 +544,7 @@ definePageMeta({
 });
 
 const userStore = useUserStore();
+const supabase = useSupabase();
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { schools: schoolsData, fetchSchools } = useSchools();
 const { coaches: coachesData, fetchAllCoaches } = useCoaches();
@@ -505,6 +553,7 @@ const { coaches: coachesData, fetchAllCoaches } = useCoaches();
 const allInteractions = ref<Interaction[]>([]);
 const schools = ref<any[]>([]);
 const coaches = ref<any[]>([]);
+const linkedAthletes = ref<User[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const filterValues = ref(new Map<string, string | null>());
@@ -565,6 +614,12 @@ const filteredInteractions = computed(() => {
       // Type filter
       const typeFilter = filterValues.value.get("type");
       if (typeFilter && interaction.type !== typeFilter) {
+        return false;
+      }
+
+      // Logged By filter
+      const loggedByFilter = filterValues.value.get("loggedBy");
+      if (loggedByFilter && interaction.logged_by !== loggedByFilter) {
         return false;
       }
 
@@ -675,6 +730,14 @@ const formatSentiment = (sentiment: string): string => {
   return sentimentMap[sentiment] || sentiment;
 };
 
+const formatLoggedBy = (userId: string): string => {
+  if (userStore.user?.id === userId) {
+    return "Me (Parent)";
+  }
+  const athlete = linkedAthletes.value.find((a) => a.id === userId);
+  return athlete?.full_name || "Unknown";
+};
+
 const getSentimentBadgeClass = (sentiment: string): string => {
   const classes: Record<string, string> = {
     very_positive: "bg-emerald-100 text-emerald-700",
@@ -741,9 +804,39 @@ onMounted(async () => {
 
   try {
     loading.value = true;
+
     await fetchSchools();
     await fetchAllCoaches();
-    await fetchInteractions({});
+
+    // Load linked athletes if parent
+    if (userStore.isParent) {
+      const { data: accountLinks, error: linksError } = await supabase
+        .from("account_links")
+        .select("linked_user_id")
+        .eq("primary_user_id", userStore.user.id);
+
+      if (!linksError && accountLinks && accountLinks.length > 0) {
+        const athleteIds = accountLinks.map((link) => link.linked_user_id);
+        const { data: athletes, error: athletesError } = await supabase
+          .from("users")
+          .select("*")
+          .in("id", athleteIds);
+
+        if (!athletesError && athletes) {
+          linkedAthletes.value = athletes;
+        }
+      }
+    }
+
+    // Fetch interactions
+    if (userStore.isAthlete) {
+      // Athletes only see their own interactions by default
+      await fetchInteractions({ loggedBy: userStore.user.id });
+    } else {
+      // Parents see all interactions
+      await fetchInteractions({});
+    }
+
     schools.value = schoolsData.value;
     coaches.value = coachesData.value;
     allInteractions.value = interactionsData.value;

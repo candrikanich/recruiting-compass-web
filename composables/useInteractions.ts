@@ -23,19 +23,22 @@ type NotificationInsert =
  * - CRUD operations (add, update, delete interactions)
  * - Error handling and loading states
  */
+type InteractionFilters = {
+  schoolId?: string;
+  coachId?: string;
+  type?: string;
+  direction?: string;
+  sentiment?: string;
+  startDate?: string;
+  endDate?: string;
+  loggedBy?: string;
+};
+
 export const useInteractions = (): {
   interactions: ComputedRef<Interaction[]>;
   loading: ComputedRef<boolean>;
   error: ComputedRef<string | null>;
-  fetchInteractions: (filters?: {
-    schoolId?: string;
-    coachId?: string;
-    type?: string;
-    direction?: string;
-    sentiment?: string;
-    startDate?: string;
-    endDate?: string;
-  }) => Promise<void>;
+  fetchInteractions: (filters?: InteractionFilters) => Promise<void>;
   getInteraction: (id: string) => Promise<Interaction | null>;
   createInteraction: (
     interactionData: Omit<Interaction, "id" | "created_at">,
@@ -52,6 +55,11 @@ export const useInteractions = (): {
   ) => Promise<string[]>;
   exportToCSV: () => string;
   downloadCSV: () => void;
+  fetchMyInteractions: (filters?: Omit<InteractionFilters, "loggedBy">) => Promise<void>;
+  fetchAthleteInteractions: (
+    athleteUserId: string,
+    filters?: Omit<InteractionFilters, "loggedBy">,
+  ) => Promise<void>;
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
@@ -68,6 +76,7 @@ export const useInteractions = (): {
     sentiment?: string;
     startDate?: string;
     endDate?: string;
+    loggedBy?: string;
   }) => {
     loading.value = true;
     error.value = null;
@@ -102,6 +111,10 @@ export const useInteractions = (): {
 
       if (filters?.sentiment) {
         query = query.eq("sentiment", filters.sentiment);
+      }
+
+      if (filters?.loggedBy) {
+        query = query.eq("logged_by", filters.loggedBy);
       }
 
       // Move date filtering to SQL (10x less data transferred, faster)
@@ -455,6 +468,41 @@ export const useInteractions = (): {
     }
   };
 
+  const fetchMyInteractions = async (filters?: {
+    schoolId?: string;
+    coachId?: string;
+    type?: string;
+    direction?: string;
+    sentiment?: string;
+    startDate?: string;
+    endDate?: string;
+  }) => {
+    if (!userStore.user) throw new Error("User not authenticated");
+
+    await fetchInteractions({
+      ...filters,
+      loggedBy: userStore.user.id,
+    });
+  };
+
+  const fetchAthleteInteractions = async (
+    athleteUserId: string,
+    filters?: {
+      schoolId?: string;
+      coachId?: string;
+      type?: string;
+      direction?: string;
+      sentiment?: string;
+      startDate?: string;
+      endDate?: string;
+    },
+  ) => {
+    await fetchInteractions({
+      ...filters,
+      loggedBy: athleteUserId,
+    });
+  };
+
   return {
     interactions: computed(() => interactions.value),
     loading: computed(() => loading.value),
@@ -467,5 +515,7 @@ export const useInteractions = (): {
     uploadAttachments,
     exportToCSV,
     downloadCSV,
+    fetchMyInteractions,
+    fetchAthleteInteractions,
   };
 };
