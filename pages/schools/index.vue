@@ -630,8 +630,13 @@ const sortBy = ref<string>("a-z");
 watch(
   () => userStore.user?.id,
   async (newUserId) => {
+    console.debug(
+      `[Schools] User watcher fired: userId=${newUserId}, schools=${schools.value.length}`,
+    );
     if (newUserId && schools.value.length === 0) {
+      console.debug("[Schools] User initialized, re-fetching schools");
       await fetchSchools();
+      console.debug(`[Schools] Re-fetch complete: ${schools.value.length} schools`);
     }
   },
 );
@@ -1019,6 +1024,7 @@ const handleExportPDF = () => {
 };
 
 onMounted(async () => {
+  console.debug("[Schools] Page mounted, fetching data");
   await Promise.all([
     fetchSchools(),
     fetchPreferences(),
@@ -1029,6 +1035,7 @@ onMounted(async () => {
   allInteractions.value = interactionsData.value;
   allCoaches.value = coachesData.value;
 
+  console.debug(`[Schools] onMounted complete: ${schools.value.length} schools loaded`);
   if (schools.value.length > 0) {
     fetchMultipleLogos(schools.value).catch((err) => {
       console.warn("Failed to fetch logos:", err);

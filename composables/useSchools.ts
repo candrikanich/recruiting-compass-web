@@ -53,8 +53,13 @@ export const useSchools = (): {
   );
 
   const fetchSchools = async () => {
-    if (!userStore.user) return;
+    console.debug("[useSchools] fetchSchools called");
+    if (!userStore.user) {
+      console.debug("[useSchools] No user, skipping fetch");
+      return;
+    }
 
+    console.debug(`[useSchools] Fetching for user: ${userStore.user.id}`);
     loading.value = true;
     error.value = null;
 
@@ -68,10 +73,12 @@ export const useSchools = (): {
       if (fetchError) throw fetchError;
 
       schools.value = data || [];
+      console.debug(`[useSchools] Loaded ${schools.value.length} schools`);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch schools";
       error.value = message;
+      console.error("[useSchools] Error:", message);
     } finally {
       loading.value = false;
     }
