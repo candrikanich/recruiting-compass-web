@@ -37,8 +37,7 @@ export const useUserStore = defineStore("user", {
         } = await supabase.auth.getSession();
 
         if (session?.user) {
-          // For now, use Supabase auth user directly
-          // Can optionally fetch extended profile from users table
+          // Set user from auth session first
           this.user = {
             id: session.user.id,
             email: session.user.email || "",
@@ -52,39 +51,55 @@ export const useUserStore = defineStore("user", {
             session.user.email_confirmed_at !== null &&
             session.user.email_confirmed_at !== undefined;
 
-          // Try to fetch full profile but don't fail if it doesn't exist
-          try {
-            const { data: profile } = await supabase
-              .from("users")
-              .select("*")
-              .eq("id", session.user.id)
-              .single();
+          console.debug(
+            "[initializeUser] User authenticated:",
+            session.user.email,
+          );
 
-            if (profile) {
-              this.user = profile;
-            } else {
-              // Profile doesn't exist, create it
-              await this.createUserProfile(
-                session.user.id,
-                session.user.email || "",
-                session.user.user_metadata?.full_name || "",
-              );
-            }
-          } catch (profileError) {
-            console.log("Profile not found, creating one:", profileError);
-            // Create user profile if it doesn't exist
-            await this.createUserProfile(
+          // Try to fetch full profile from users table
+          const { data: profile, error: fetchError } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
+
+          // Handle fetch errors (but not "not found")
+          if (fetchError && fetchError.code !== "PGRST116") {
+            // PGRST116 = "not found", which is expected if profile doesn't exist
+            console.error(
+              "[initializeUser] Unexpected fetch error:",
+              fetchError,
+            );
+          }
+
+          if (profile) {
+            // Profile exists, use it
+            this.user = profile;
+            console.debug("[initializeUser] Existing profile loaded");
+          } else {
+            // Profile doesn't exist, try to create it
+            console.debug("[initializeUser] No profile found, attempting creation");
+            const created = await this.createUserProfile(
               session.user.id,
               session.user.email || "",
               session.user.user_metadata?.full_name || "",
             );
+
+            if (!created) {
+              // Creation failed but don't block - user is still authenticated
+              console.warn(
+                "[initializeUser] Failed to create profile for user:",
+                session.user.id,
+              );
+            }
           }
         } else {
           this.user = null;
           this.isAuthenticated = false;
+          console.debug("[initializeUser] No active session");
         }
       } catch (error) {
-        console.error("Failed to initialize user:", error);
+        console.error("[initializeUser] Unexpected error:", error);
         this.user = null;
         this.isAuthenticated = false;
       } finally {
@@ -92,12 +107,37 @@ export const useUserStore = defineStore("user", {
       }
     },
 
-    async createUserProfile(userId: string, email: string, fullName: string) {
+    async createUserProfile(
+      userId: string,
+      email: string,
+      fullName: string,
+    ): Promise<boolean> {
       const supabase = useSupabase();
 
       try {
-        console.log("Creating user profile for:", userId, email);
-        const { error, data } = await supabase
+        console.debug("[createUserProfile] Attempting to create profile for:", email);
+
+        // First, check if profile already exists
+        const { data: existing, error: checkError } = await supabase
+          .from("users")
+          .select("id")
+          .eq("id", userId)
+          .single();
+
+        if (existing) {
+          console.debug("[createUserProfile] Profile already exists, skipping");
+          return true; // Already exists, treat as success
+        }
+
+        // Check for unexpected errors (not "not found")
+        if (checkError && checkError.code !== "PGRST116") {
+          throw new Error(
+            `[createUserProfile] Check failed: ${checkError.message}`,
+          );
+        }
+
+        // Profile doesn't exist, create it
+        const { error, data: _data } = await supabase
           .from("users")
           .insert([
             {
@@ -110,21 +150,32 @@ export const useUserStore = defineStore("user", {
           .select();
 
         if (error) {
-          console.error("Failed to create user profile:", error);
-          return;
+          // Check if it's a duplicate key error (email or id already exists)
+          if (error.code === "23505") {
+            console.debug(
+              "[createUserProfile] Profile exists (duplicate key), treating as success",
+            );
+            return true; // It exists, treat as success
+          }
+          throw error;
         }
 
-        console.log("User profile created successfully:", data);
+        console.debug("[createUserProfile] Profile created successfully");
 
         // Update local state
         this.user = {
           id: userId,
           email,
           full_name: fullName || email.split("@")[0],
-          role: "student", // Default role
+          role: "student",
         };
+
+        return true; // Success
       } catch (err) {
-        console.error("Exception creating user profile:", err);
+        const message =
+          err instanceof Error ? err.message : "Unknown error";
+        console.error("[createUserProfile] Failed:", message);
+        return false; // Failure
       }
     },
 

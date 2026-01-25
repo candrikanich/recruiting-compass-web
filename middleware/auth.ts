@@ -3,10 +3,8 @@ import type { SessionPreferences } from "~/types/session";
 export default defineNuxtRouteMiddleware(async (to, _from) => {
   const userStore = useUserStore();
 
-  // Initialize user store if not already done
-  if (!userStore.user && !userStore.loading && process.client) {
-    await userStore.initializeUser();
-  }
+  // User is initialized from app.vue, no need to initialize here
+  // This middleware now only handles session timeout
 
   // Check session timeout on client side
   if (process.client) {

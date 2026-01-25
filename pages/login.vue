@@ -688,12 +688,10 @@ const handleLogin = async () => {
   loading.value = true;
 
   try {
-    const userStore = useUserStore();
     await login(validated.email, validated.password, rememberMe.value);
 
-    // Manually trigger user store initialization after successful login
-    await userStore.initializeUser();
-
+    // User store will be initialized by app.vue, no need to call here
+    // Session is automatically updated in Supabase auth
     await navigateTo("/dashboard");
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Login failed";

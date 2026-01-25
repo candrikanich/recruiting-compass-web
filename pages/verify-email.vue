@@ -712,11 +712,7 @@ onMounted(async () => {
   // Check if there's a verification token in URL
   await handleTokenVerification();
 
-  // Refresh user store to get latest verification status
-  try {
-    await userStore.initializeUser();
-  } catch (err) {
-    console.error("Error initializing user store:", err);
-  }
+  // User store will be initialized by app.vue, no need to call here
+  // It will pick up the latest verification status automatically
 });
 </script>

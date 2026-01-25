@@ -625,8 +625,8 @@ const handleSignup = async () => {
 
     console.log("User preferences created successfully");
 
-    // Update user store with new user info and refresh session
-    await userStore.initializeUser();
+    // User store will be initialized by app.vue, no need to call here
+    // Session is automatically updated in Supabase auth
 
     // Redirect to email verification page
     await navigateTo(`/verify-email?email=${encodeURIComponent(validated.email)}`);

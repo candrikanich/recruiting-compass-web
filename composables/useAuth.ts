@@ -35,7 +35,7 @@ interface _AuthActions {
     role?: string,
   ) => Promise<{
     data: { user: User | null; session: Session | null } | null;
-    error: any;
+    error: { message: string; status?: number } | null;
   }>;
   setupAuthListener: (callback: (user: User | null) => void) => () => void;
 }
@@ -47,19 +47,33 @@ export const useAuth = () => {
   const loading = ref(false);
   const error = ref<Error | null>(null);
   const isInitialized = ref(false); // Guard to prevent redundant initialization
+  const initializationAttempt = ref(false); // Track if initialization is in progress
   const session = ref<Session | null>(null);
   const subscriptions: (() => void)[] = [];
 
   /**
    * Restores session from Supabase
    * Guards against redundant calls with isInitialized flag
+   * Prevents concurrent initialization attempts
    */
-  const restoreSession = async () => {
-    // Guard: prevent redundant calls
+  const restoreSession = async (): Promise<Session | null> => {
+    // Guard: already initialized, return current session
     if (isInitialized.value) {
-      return null;
+      console.debug("[useAuth] Session already initialized, returning cached session");
+      return session.value;
     }
 
+    // Guard: initialization already in progress, wait for it
+    if (initializationAttempt.value) {
+      console.debug("[useAuth] Session initialization in progress, waiting...");
+      // Wait for initialization to complete
+      while (initializationAttempt.value && !isInitialized.value) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      return session.value;
+    }
+
+    initializationAttempt.value = true;
     loading.value = true;
     error.value = null;
 
@@ -76,21 +90,27 @@ export const useAuth = () => {
       if (sessionData?.user) {
         session.value = sessionData;
         isInitialized.value = true;
+        console.debug(
+          "[useAuth] Session restored successfully for user:",
+          sessionData.user.email,
+        );
         // Store initialization is handled by caller
         return sessionData;
       }
 
       session.value = null;
       isInitialized.value = true;
+      console.debug("[useAuth] No active session found");
       return null;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to restore session";
       error.value = err instanceof Error ? err : new Error(message);
-      console.error(message);
+      console.error("[useAuth] Session restoration failed:", message);
       return null;
     } finally {
       loading.value = false;
+      initializationAttempt.value = false;
     }
   };
 
