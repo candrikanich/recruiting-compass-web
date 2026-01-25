@@ -69,7 +69,7 @@
               />
               <input
                 type="text"
-                :value="String((filterValues.value as any)?.name ?? '')"
+                :value="String((filterValues as any)?.name ?? '')"
                 @input="
                   handleFilterUpdate(
                     'name',
