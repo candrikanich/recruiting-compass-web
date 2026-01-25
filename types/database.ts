@@ -815,6 +815,7 @@ export type Database = {
           current_phase: string | null;
           email: string;
           full_name: string | null;
+          graduation_year: number | null;
           icloud_sync_enabled: boolean | null;
           id: string;
           phase_milestone_data: Json | null;
@@ -832,6 +833,7 @@ export type Database = {
           current_phase?: string | null;
           email: string;
           full_name?: string | null;
+          graduation_year?: number | null;
           icloud_sync_enabled?: boolean | null;
           id: string;
           phase_milestone_data?: Json | null;
@@ -849,6 +851,7 @@ export type Database = {
           current_phase?: string | null;
           email?: string;
           full_name?: string | null;
+          graduation_year?: number | null;
           icloud_sync_enabled?: boolean | null;
           id?: string;
           phase_milestone_data?: Json | null;

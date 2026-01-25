@@ -74,8 +74,29 @@
         </button>
       </div>
 
-      <!-- Main Grid -->
-      <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Content Section -->
+      <div v-else>
+        <!-- Parent Guidance Sections (Tier 1 - Visible First) -->
+        <div class="space-y-6 mb-8">
+          <!-- Row 1: Action-oriented guidance (2 columns) -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <WhatMattersNow
+              :priorities="whatMattersNow"
+              :phase-label="getPhaseDisplayName(currentPhase)"
+              @priority-click="handlePriorityClick"
+            />
+            <UpcomingMilestones :milestones="upcomingMilestones" />
+          </div>
+
+          <!-- Row 2: Reassurance guidance (2 columns) -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <CommonWorries :worries="commonWorries" />
+            <WhatNotToStress :messages="reassuranceMessages" />
+          </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left Column: Phase Cards -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Freshman Phase Card -->
@@ -278,6 +299,7 @@
             </button>
           </div>
         </div>
+        </div>
       </div>
     </main>
   </div>
@@ -300,13 +322,21 @@
 </style>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import { useTasks } from "~/composables/useTasks";
 import { usePhaseCalculation } from "~/composables/usePhaseCalculation";
 import { useStatusScore } from "~/composables/useStatusScore";
 import type { Phase, TaskWithStatus, StatusLabel } from "~/types/timeline";
 import PhaseCardInline from "~/components/Timeline/PhaseCardInline.vue";
 import PortfolioHealth from "~/components/Timeline/PortfolioHealth.vue";
+import WhatMattersNow from "~/components/Timeline/WhatMattersNow.vue";
+import CommonWorries from "~/components/Timeline/CommonWorries.vue";
+import WhatNotToStress from "~/components/Timeline/WhatNotToStress.vue";
+import UpcomingMilestones from "~/components/Timeline/UpcomingMilestones.vue";
+import { getWhatMattersNow } from "~/utils/whatMattersNow";
+import { getCommonWorries } from "~/utils/parentWorries";
+import { getReassuranceMessages } from "~/utils/parentReassurance";
+import { getUpcomingMilestones } from "~/server/utils/ncaaRecruitingCalendar";
 
 definePageMeta({
   middleware: "auth",
@@ -359,6 +389,31 @@ const tasksByGrade = computed(() => ({
   12: tasksWithStatus.value.filter((t) => t.grade_level === 12),
 }));
 
+// Parent guidance sections computed properties
+const whatMattersNow = computed(() =>
+  getWhatMattersNow({
+    phase: currentPhase.value,
+    tasksWithStatus: tasksWithStatus.value,
+  }),
+);
+
+const commonWorries = computed(() =>
+  getCommonWorries(currentPhase.value),
+);
+
+const reassuranceMessages = computed(() =>
+  getReassuranceMessages(currentPhase.value),
+);
+
+const upcomingMilestones = computed(() =>
+  getUpcomingMilestones({
+    currentDate: new Date(),
+    phase: currentPhase.value,
+    graduationYear: 2027, // TODO: Get from user profile via graduation_year field
+    limit: 5,
+  }),
+);
+
 // Initialize expanded state based on current phase
 const initializeExpanded = () => {
   const phaseGrades: Record<Phase, number> = {
@@ -403,6 +458,26 @@ const retryFetch = async () => {
 const advancePhase = async () => {
   await phaseAdvancePhase();
   initializeExpanded();
+};
+
+const handlePriorityClick = (taskId: string) => {
+  // Find which phase card contains this task
+  const task = tasksWithStatus.value.find((t) => t.id === taskId);
+  if (!task) return;
+
+  const gradeLevel = task.grade_level;
+
+  // Expand the appropriate phase card
+  if (gradeLevel === 9) freshmanExpanded.value = true;
+  else if (gradeLevel === 10) sophomoreExpanded.value = true;
+  else if (gradeLevel === 11) juniorExpanded.value = true;
+  else if (gradeLevel === 12) seniorExpanded.value = true;
+
+  // Wait for expansion animation, then scroll to task
+  nextTick(() => {
+    const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+    taskElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
 };
 
 // Helper functions
