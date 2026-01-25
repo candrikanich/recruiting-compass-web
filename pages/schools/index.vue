@@ -1030,54 +1030,78 @@ input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
+  height: 10px;
   background: transparent;
   cursor: pointer;
+  outline: none;
 }
 
 /* Webkit browsers (Chrome, Safari, Edge) */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  background: linear-gradient(to right, #cbd5e1, #a1a5ab);
+  border-radius: 3px;
+}
+
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #3b82f6;
-  border: 3px solid white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   cursor: pointer;
+  margin-top: -5px;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   background: #2563eb;
-}
-
-input[type="range"]::-webkit-slider-thumb:active {
-  background: #1d4ed8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* Firefox */
+input[type="range"]::-moz-range-track {
+  background: linear-gradient(to right, #cbd5e1, #a1a5ab);
+  height: 6px;
+  border-radius: 3px;
+  border: none;
+}
+
+input[type="range"]::-moz-range-progress {
+  background: linear-gradient(to right, #cbd5e1, #a1a5ab);
+  height: 6px;
+  border-radius: 3px;
+}
+
 input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #3b82f6;
-  border: 3px solid white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   cursor: pointer;
 }
 
 input[type="range"]::-moz-range-thumb:hover {
   background: #2563eb;
-}
-
-input[type="range"]::-moz-range-thumb:active {
-  background: #1d4ed8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* Disabled state */
+input[type="range"]:disabled::-webkit-slider-runnable-track {
+  background: #e2e8f0;
+}
+
 input[type="range"]:disabled::-webkit-slider-thumb {
   background: #cbd5e1;
   cursor: not-allowed;
+}
+
+input[type="range"]:disabled::-moz-range-track {
+  background: #e2e8f0;
 }
 
 input[type="range"]:disabled::-moz-range-thumb {
