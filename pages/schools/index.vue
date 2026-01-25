@@ -576,7 +576,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useSchools } from "~/composables/useSchools";
 import { useSchoolLogos } from "~/composables/useSchoolLogos";
 import { useSchoolMatching } from "~/composables/useSchoolMatching";
@@ -584,6 +584,7 @@ import { useUserPreferences } from "~/composables/useUserPreferences";
 import { useOffers } from "~/composables/useOffers";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoaches } from "~/composables/useCoaches";
+import { useUserStore } from "~/stores/user";
 import { useUniversalFilter } from "~/composables/useUniversalFilter";
 import type { School } from "~/types";
 import {
@@ -618,11 +619,22 @@ const { fetchPreferences, schoolPreferences, homeLocation } =
 const { offers, fetchOffers } = useOffers();
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { coaches: coachesData, fetchAllCoaches } = useCoaches();
+const userStore = useUserStore();
 
 const allInteractions = ref<any[]>([]);
 const allCoaches = ref<any[]>([]);
 const priorityTierFilter = ref<("A" | "B" | "C")[] | null>(null);
 const sortBy = ref<string>("a-z");
+
+// Re-fetch schools if user is initialized after mount (race condition safety)
+watch(
+  () => userStore.user?.id,
+  () => {
+    if (userStore.user && schools.value.length === 0) {
+      fetchSchools();
+    }
+  },
+);
 
 const hasPreferences = computed(() => {
   return (schoolPreferences.value?.preferences?.length || 0) > 0;
