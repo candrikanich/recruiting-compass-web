@@ -537,7 +537,7 @@
           </div>
 
           <!-- Pros and Cons -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div v-if="school" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Pros -->
             <div
               class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
