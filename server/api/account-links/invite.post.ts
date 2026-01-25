@@ -8,10 +8,8 @@
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
-import {
-  serverSupabaseServiceRole,
-  serverSupabaseUser,
-} from "#supabase/server";
+import { requireAuth } from "~/server/utils/auth";
+import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { sendEmail } from "~/server/utils/emailService";
 import type { Database } from "~/types/database";
 
@@ -30,13 +28,7 @@ type AccountLinkWithUser =
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = await serverSupabaseUser(event);
-    if (!user) {
-      throw createError({
-        statusCode: 401,
-        message: "Unauthorized",
-      });
-    }
+    const user = await requireAuth(event);
 
     const body = await readBody<InviteRequest>(event);
     const { invitedEmail, linkId } = body;
@@ -49,7 +41,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Get link details with initiator user info
-    const supabase = serverSupabaseServiceRole(event);
+    const supabase = createServerSupabaseClient();
     const { data: link, error: fetchError } = await supabase
       .from("account_links")
       .select("*, users!account_links_initiator_user_id_fkey(full_name, email)")
