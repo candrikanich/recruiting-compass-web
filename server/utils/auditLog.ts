@@ -42,6 +42,9 @@ export async function auditLog(
   try {
     const supabase = createServerSupabaseClient();
 
+    // Type assertion for Supabase operations without proper types
+    const supabaseAny = supabase as any;
+
     // Extract client info from request
     const ipAddress = getClientIP(event);
     const userAgent = getHeader(event, "user-agent") || "Unknown";
@@ -72,9 +75,7 @@ export async function auditLog(
       metadata: params.metadata || undefined,
     };
 
-    const { error } = await (supabase.from("audit_logs") as any).insert(
-      auditEntry as unknown as Record<string, unknown>,
-    );
+    const { error } = await supabaseAny.from("audit_logs").insert(auditEntry);
 
     if (error) {
       logger.error("Failed to create audit log", {
@@ -101,6 +102,10 @@ export async function auditLogBatch(
     if (params.length === 0) return;
 
     const supabase = createServerSupabaseClient();
+
+    // Type assertion for Supabase operations without proper types
+    const supabaseAny = supabase as any;
+
     const ipAddress = getClientIP(event);
     const userAgent = getHeader(event, "user-agent") || "Unknown";
 
@@ -120,9 +125,7 @@ export async function auditLogBatch(
       metadata: p.metadata || {},
     })) as AuditLogInsert[];
 
-    const { error } = await (supabase.from("audit_logs") as any).insert(
-      entries,
-    );
+    const { error } = await supabaseAny.from("audit_logs").insert(entries);
 
     if (error) {
       logger.error("Failed to batch create audit logs", {
@@ -244,7 +247,7 @@ export async function logError(
 ): Promise<void> {
   return auditLog(event, {
     userId: params.userId,
-    action: params.action as any,
+    action: params.action,
     resourceType: params.resourceType,
     resourceId: params.resourceId,
     description: params.description,

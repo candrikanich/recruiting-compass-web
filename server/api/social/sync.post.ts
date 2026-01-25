@@ -64,6 +64,9 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
     const user = await requireAuth(event);
     const supabase = createServerSupabaseClient();
 
+    // Type assertion for Supabase operations without proper types
+    const supabaseAny = supabase as any;
+
     // Ensure requesting user is not a parent (mutation restricted)
     await assertNotParent(user.id, supabase);
 
@@ -191,9 +194,9 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
         }
 
         if (newPosts.length > 0) {
-          const { error: insertError } = await (
-            supabase.from("social_media_posts") as any
-          ).insert(newPosts as unknown as Record<string, unknown>[]);
+          const { error: insertError } = await supabaseAny
+            .from("social_media_posts")
+            .insert(newPosts);
 
           if (insertError) {
             logger.error("Failed to insert Twitter posts", insertError);
@@ -253,9 +256,9 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
         }
 
         if (newPosts.length > 0) {
-          const { error: insertError } = await (
-            supabase.from("social_media_posts") as any
-          ).insert(newPosts as unknown as Record<string, unknown>[]);
+          const { error: insertError } = await supabaseAny
+            .from("social_media_posts")
+            .insert(newPosts);
 
           if (insertError) {
             logger.error("Failed to insert Instagram posts", insertError);

@@ -75,15 +75,21 @@ export default defineEventHandler(async (event) => {
     // Merge tasks with athlete data
     const merged = (Array.isArray(tasksData) ? tasksData : []).map((task) => {
       const athleteTask = athleteTaskMap.get((task as { id: string }).id);
-      const dependencies = ((task as any).dependency_task_ids || [])
+      const dependencies = (
+        (task as { dependency_task_ids?: string[] }).dependency_task_ids || []
+      )
         .map((depId: string) =>
-          (tasksData as any[])?.find((t: any) => t.id === depId),
+          (tasksData as Array<{ id: string }>)?.find(
+            (t: { id: string }) => t.id === depId,
+          ),
         )
-        .filter((dep: any) => Boolean(dep));
+        .filter((dep: { id: string } | undefined): dep is { id: string } =>
+          Boolean(dep),
+        );
 
       const allDepsComplete =
         dependencies.length === 0 ||
-        dependencies.every((dep: any) => {
+        dependencies.every((dep: { id: string }) => {
           const depAthleteTask = athleteTaskMap.get(dep.id);
           return (
             depAthleteTask &&
@@ -95,11 +101,11 @@ export default defineEventHandler(async (event) => {
         });
 
       return {
-        ...task,
+        ...(task as Record<string, unknown>),
         athlete_task: athleteTask,
         has_incomplete_prerequisites:
-          ((task as any).dependency_task_ids?.length || 0) > 0 &&
-          !allDepsComplete,
+          ((task as { dependency_task_ids?: string[] }).dependency_task_ids
+            ?.length || 0) > 0 && !allDepsComplete,
         prerequisite_tasks: dependencies,
       } as TaskWithStatus;
     });
