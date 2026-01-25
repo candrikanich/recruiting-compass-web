@@ -77,11 +77,19 @@ export const useAccountLinks = () => {
       return;
     }
 
-    const linkedUserIds = acceptedLinks.map((link) => {
-      return link.parent_user_id === getUserStore().user?.id
-        ? link.player_user_id
-        : link.parent_user_id;
-    });
+    const linkedUserIds = acceptedLinks
+      .map((link) => {
+        return link.parent_user_id === getUserStore().user?.id
+          ? link.player_user_id
+          : link.parent_user_id;
+      })
+      .filter((id): id is string => id !== null && id !== undefined);
+
+    // Guard against empty array after filtering
+    if (linkedUserIds.length === 0) {
+      linkedAccounts.value = [];
+      return;
+    }
 
     try {
       const { data } = await supabase
