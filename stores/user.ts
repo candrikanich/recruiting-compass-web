@@ -188,6 +188,11 @@ export const useUserStore = defineStore("user", {
       this.user = null;
       this.isAuthenticated = false;
       this.isEmailVerified = false;
+      // Clear all filter caches on logout to prevent stale filters from showing after login
+      localStorage.removeItem("schools-filters");
+      localStorage.removeItem("coaches-filters");
+      localStorage.removeItem("interactions-filters");
+      localStorage.removeItem("offers-filters");
     },
 
     async refreshVerificationStatus() {

@@ -626,14 +626,17 @@ const allCoaches = ref<any[]>([]);
 const priorityTierFilter = ref<("A" | "B" | "C")[] | null>(null);
 const sortBy = ref<string>("a-z");
 
-// Re-fetch schools if user is initialized after mount (race condition safety)
+// Re-fetch schools and clear stale filters when user changes
 watch(
   () => userStore.user?.id,
   async (newUserId, oldUserId) => {
     if (newUserId && newUserId !== oldUserId) {
       console.debug(
-        `[Schools] User changed from ${oldUserId} to ${newUserId}, re-fetching schools`,
+        `[Schools] User changed from ${oldUserId} to ${newUserId}`,
       );
+      // Clear stale filters from previous session
+      clearFilters();
+      // Re-fetch schools for new user
       await fetchSchools();
       console.debug(
         `[Schools] Re-fetch complete, schools count: ${schools.value.length}`,
@@ -1024,6 +1027,8 @@ const handleExportPDF = () => {
 };
 
 onMounted(async () => {
+  console.debug("[Schools] Page mounted");
+
   await Promise.all([
     fetchSchools(),
     fetchPreferences(),
@@ -1033,6 +1038,8 @@ onMounted(async () => {
   ]);
   allInteractions.value = interactionsData.value;
   allCoaches.value = coachesData.value;
+
+  console.debug(`[Schools] onMounted complete - schools count: ${schools.value.length}`);
 
   if (schools.value.length > 0) {
     fetchMultipleLogos(schools.value).catch((err) => {
