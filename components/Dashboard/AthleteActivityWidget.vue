@@ -231,8 +231,8 @@ onMounted(async () => {
     // Fetch linked athletes
     const { data: accountLinks, error: linksError } = await supabase
       .from("account_links")
-      .select("linked_user_id")
-      .eq("primary_user_id", userStore.user.id);
+      .select("player_user_id")
+      .eq("parent_user_id", userStore.user.id);
 
     if (linksError) {
       console.error("Failed to fetch linked accounts:", linksError);
@@ -245,7 +245,7 @@ onMounted(async () => {
       return;
     }
 
-    const athleteIds = accountLinks.map((link) => link.linked_user_id);
+    const athleteIds = accountLinks.map((link) => link.player_user_id);
 
     // Fetch athlete user data
     const { data: athletes, error: athletesError } = await supabase

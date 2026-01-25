@@ -812,11 +812,11 @@ onMounted(async () => {
     if (userStore.isParent) {
       const { data: accountLinks, error: linksError } = await supabase
         .from("account_links")
-        .select("linked_user_id")
-        .eq("primary_user_id", userStore.user.id);
+        .select("player_user_id")
+        .eq("parent_user_id", userStore.user.id);
 
       if (!linksError && accountLinks && accountLinks.length > 0) {
-        const athleteIds = accountLinks.map((link) => link.linked_user_id);
+        const athleteIds = accountLinks.map((link) => link.player_user_id);
         const { data: athletes, error: athletesError } = await supabase
           .from("users")
           .select("*")

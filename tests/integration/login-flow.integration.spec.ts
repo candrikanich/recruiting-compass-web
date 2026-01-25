@@ -76,24 +76,20 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
       onAuthStateChange: vi.fn(),
     };
 
-    // Create a proper mock chain that handles chaining correctly
+    // Create chainable mock functions that properly handle Supabase query patterns
     const mockSingle = vi.fn();
-    const mockEq = vi.fn().mockReturnThis();
-    const mockSelect = vi.fn().mockReturnThis();
-    const mockInsert = vi.fn().mockReturnThis();
 
-    // Set up the chain endpoints
-    mockEq.mockImplementation(() => ({
+    const mockEq = vi.fn().mockImplementation(() => ({
       single: mockSingle,
       eq: mockEq,
     }));
 
-    mockSelect.mockImplementation(() => ({
+    const mockSelect = vi.fn().mockImplementation(() => ({
       eq: mockEq,
       select: mockSelect,
     }));
 
-    mockInsert.mockImplementation(() => ({
+    const mockInsert = vi.fn().mockImplementation(() => ({
       select: mockSelect,
     }));
 
