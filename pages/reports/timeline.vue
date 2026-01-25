@@ -81,6 +81,10 @@
               <input v-model="showOffers" type="checkbox" class="rounded" />
               <span class="text-sm text-gray-700">Offers</span>
             </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input v-model="showStatusChanges" type="checkbox" class="rounded" />
+              <span class="text-sm text-gray-700">Status Changes</span>
+            </label>
           </div>
         </div>
       </div>
@@ -252,10 +256,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { navigateTo } from "#app";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
 import { useOffers } from "~/composables/useOffers";
 import { useEvents } from "~/composables/useEvents";
+import { useSchoolStore } from "~/stores/schools";
 
 definePageMeta({
   middleware: "auth",
@@ -263,7 +269,7 @@ definePageMeta({
 
 interface TimelineItem {
   id: string;
-  type: "event" | "interaction" | "offer";
+  type: "event" | "interaction" | "offer" | "status_change";
   typeLabel: string;
   emoji: string;
   label: string;
@@ -271,12 +277,16 @@ interface TimelineItem {
   endDate?: Date;
   schoolId?: string;
   schoolName?: string;
+  details?: string;
 }
 
 const { schools, fetchSchools } = useSchools();
 const { interactions, fetchInteractions } = useInteractions();
 const { offers, fetchOffers } = useOffers();
 const { events, fetchEvents } = useEvents();
+const schoolStore = useSchoolStore();
+
+const allStatusHistories = ref<Array<any>>([]);
 
 const loading = ref(true);
 const viewRange = ref("6");
@@ -284,6 +294,7 @@ const selectedSchool = ref("");
 const showEvents = ref(true);
 const showInteractions = ref(true);
 const showOffers = ref(true);
+const showStatusChanges = ref(true);
 
 const today = new Date();
 today.setHours(0, 0, 0, 0);
@@ -382,6 +393,26 @@ const timelineItems = computed<TimelineItem[]>(() => {
         date: new Date(offer.offer_date || offer.created_at || ""),
         schoolId: offer.school_id || undefined,
         schoolName: schools.value.find((s) => s.id === offer.school_id)?.name,
+      });
+    });
+  }
+
+  if (showStatusChanges.value) {
+    allStatusHistories.value.forEach((history) => {
+      const statusLabel = formatStatus(history.new_status);
+      const previousLabel = history.previous_status
+        ? formatStatus(history.previous_status)
+        : "Initial";
+      items.push({
+        id: `status-${history.id}`,
+        type: "status_change",
+        typeLabel: "Status Change",
+        emoji: "📊",
+        label: `Status: ${previousLabel} → ${statusLabel}`,
+        date: new Date(history.changed_at),
+        schoolId: history.school_id,
+        schoolName: schools.value.find((s) => s.id === history.school_id)?.name,
+        details: history.notes || undefined,
       });
     });
   }
@@ -560,6 +591,21 @@ const formatOfferType = (type: string) => {
   return types[type] || type;
 };
 
+const formatStatus = (status: string) => {
+  const statuses: Record<string, string> = {
+    interested: "Interested",
+    contacted: "Contacted",
+    camp_invite: "Camp Invite",
+    recruited: "Recruited",
+    official_visit_invited: "Official Visit Invited",
+    official_visit_scheduled: "Official Visit Scheduled",
+    offer_received: "Offer Received",
+    committed: "Committed",
+    not_pursuing: "Not Pursuing",
+  };
+  return statuses[status] || status;
+};
+
 const viewItem = (item: TimelineItem) => {
   if (item.type === "event") {
     const eventId = item.id.replace("event-", "");
@@ -579,13 +625,28 @@ const printTimeline = () => {
 
 onMounted(async () => {
   loading.value = true;
-  await Promise.all([
-    fetchSchools(),
-    fetchInteractions({}),
-    fetchOffers(),
-    fetchEvents(),
-  ]);
-  loading.value = false;
+  try {
+    await Promise.all([
+      fetchSchools(),
+      fetchInteractions({}),
+      fetchOffers(),
+      fetchEvents(),
+    ]);
+
+    // Fetch status history for all schools (Story 3.4)
+    const schoolList = schools.value;
+    if (schoolList.length > 0) {
+      const historyPromises = schoolList.map((school) =>
+        schoolStore.getStatusHistory(school.id).catch(() => []),
+      );
+      const allHistories = await Promise.all(historyPromises);
+      allStatusHistories.value = allHistories.flat();
+    }
+  } catch (error) {
+    console.error("Error loading timeline data:", error);
+  } finally {
+    loading.value = false;
+  }
 });
 </script>
 

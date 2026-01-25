@@ -23,14 +23,20 @@ interface _AuthActions {
     email: string,
     password: string,
     rememberMe?: boolean,
-  ) => Promise<{ data: any; error: null }>;
+  ) => Promise<{
+    data: { user: User | null; session: Session | null };
+    error: null;
+  }>;
   logout: () => Promise<void>;
   signup: (
     email: string,
     password: string,
     fullName?: string,
     role?: string,
-  ) => Promise<any>;
+  ) => Promise<{
+    data: { user: User | null; session: Session | null } | null;
+    error: any;
+  }>;
   setupAuthListener: (callback: (user: User | null) => void) => () => void;
 }
 
@@ -189,7 +195,16 @@ export const useAuth = () => {
     try {
       const trimmedEmail = email.trim();
 
-      const signUpParams: any = {
+      const signUpParams: {
+        email: string;
+        password: string;
+        options?: {
+          data: {
+            full_name?: string;
+            role?: string;
+          };
+        };
+      } = {
         email: trimmedEmail,
         password,
       };

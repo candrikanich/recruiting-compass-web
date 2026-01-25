@@ -86,9 +86,10 @@ export const useSchoolMatching = () => {
           pref.value as string[],
         );
 
-      case "min_academic_rating":
+      case "min_academic_rating": {
         const academicRating = getAcademicRating(school);
         return academicRating >= (pref.value as number);
+      }
 
       case "school_size": {
         const schoolSize = pref.value;

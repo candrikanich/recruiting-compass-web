@@ -14,7 +14,9 @@ export const useCachedSearch = () => {
   const searchComposable = useSearch();
 
   // Helper to safely extract ref value
-  const getRefValue = <T>(ref: any): T[] => {
+  const getRefValue = <T>(
+    ref: { value: T[] | null | undefined } | null | undefined,
+  ): T[] => {
     return ref &&
       typeof ref === "object" &&
       "value" in ref &&

@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import type { School } from "~/types/models";
+import type { School, SchoolStatusHistory } from "~/types/models";
 
 export interface SchoolFilters {
   division: string;
@@ -15,6 +15,7 @@ export interface SchoolState {
   error: string | null;
   isFetched: boolean;
   filters: SchoolFilters;
+  statusHistory: Map<string, SchoolStatusHistory[]>;
 }
 
 /**
@@ -43,6 +44,7 @@ export const useSchoolStore = defineStore("schools", {
       state: "",
       verified: null,
     },
+    statusHistory: new Map(),
   }),
 
   getters: {
@@ -103,6 +105,12 @@ export const useSchoolStore = defineStore("schools", {
      * Check if schools have been fetched
      */
     hasSchools: (state) => state.schools.length > 0,
+
+    /**
+     * Get status history for a specific school
+     */
+    statusHistoryFor: (state) => (schoolId: string) =>
+      state.statusHistory.get(schoolId) || [],
   },
 
   actions: {
@@ -397,6 +405,124 @@ export const useSchoolStore = defineStore("schools", {
         this.error = message;
       } finally {
         this.loading = false;
+      }
+    },
+
+    /**
+     * Update school status and create a history entry
+     * Story 3.4: Status change timestamped and tracked in history
+     */
+    async updateStatus(
+      schoolId: string,
+      newStatus: School["status"],
+      notes?: string,
+    ) {
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const { useUserStore } = await import("./user");
+      const userStore = useUserStore();
+      const supabase = useSupabase();
+
+      this.loading = true;
+      this.error = null;
+
+      try {
+        if (!userStore.user) {
+          throw new Error("User not authenticated");
+        }
+
+        // Find current school to get previous status
+        const school = this.schools.find((s) => s.id === schoolId);
+        if (!school) {
+          throw new Error("School not found");
+        }
+
+        const previousStatus = school.status;
+        const now = new Date().toISOString();
+
+        // Update school status and status_changed_at timestamp
+        const { data: updatedSchool, error: schoolError } = await supabase
+          .from("schools")
+          .update({
+            status: newStatus,
+            status_changed_at: now,
+            updated_by: userStore.user.id,
+            updated_at: now,
+          })
+          .eq("id", schoolId)
+          .eq("user_id", userStore.user.id)
+          .select()
+          .single();
+
+        if (schoolError) throw schoolError;
+
+        // Create status history entry
+        const { error: historyError } = await supabase
+          .from("school_status_history")
+          .insert([
+            {
+              school_id: schoolId,
+              previous_status: previousStatus,
+              new_status: newStatus,
+              changed_by: userStore.user.id,
+              changed_at: now,
+              notes: notes || null,
+            },
+          ]);
+
+        if (historyError) throw historyError;
+
+        // Update local state
+        const index = this.schools.findIndex((s) => s.id === schoolId);
+        if (index !== -1) {
+          this.schools[index] = updatedSchool;
+        }
+
+        // Clear status history cache for this school to force refresh
+        this.statusHistory.delete(schoolId);
+
+        return updatedSchool;
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to update school status";
+        this.error = message;
+        throw err;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    /**
+     * Fetch status history for a school
+     * Story 3.4: View status change history and timeline
+     */
+    async getStatusHistory(schoolId: string) {
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const supabase = useSupabase();
+
+      try {
+        // Check cache first
+        if (this.statusHistory.has(schoolId)) {
+          return this.statusHistory.get(schoolId) || [];
+        }
+
+        const { data, error } = await supabase
+          .from("school_status_history")
+          .select("*")
+          .eq("school_id", schoolId)
+          .order("changed_at", { ascending: false });
+
+        if (error) throw error;
+
+        // Cache the result
+        this.statusHistory.set(schoolId, data || []);
+        return data || [];
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Failed to fetch status history";
+        this.error = message;
+        throw err;
       }
     },
 

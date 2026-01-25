@@ -92,12 +92,16 @@ export interface School {
   instagram_handle: string | null;
   ncaa_id?: string | null;
   status:
-    | "researching"
-    | "contacted"
     | "interested"
+    | "contacted"
+    | "camp_invite"
+    | "recruited"
+    | "official_visit_invited"
+    | "official_visit_scheduled"
     | "offer_received"
-    | "declined"
-    | "committed";
+    | "committed"
+    | "not_pursuing";
+  status_changed_at?: string | null;
   priority_tier?: "A" | "B" | "C" | null;
   notes: string | null;
   pros: string[];
@@ -110,6 +114,17 @@ export interface School {
   updated_by?: string;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface SchoolStatusHistory {
+  id: string;
+  school_id: string;
+  previous_status: string | null;
+  new_status: string;
+  changed_by: string;
+  changed_at: string;
+  notes?: string | null;
+  created_at: string;
 }
 
 export interface Coach {

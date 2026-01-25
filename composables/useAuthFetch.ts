@@ -9,10 +9,10 @@ export const useAuthFetch = () => {
   /**
    * Make authenticated fetch call with auto-injected auth header
    */
-  const $fetchAuth = async <T = any>(
+  const $fetchAuth = async (
     url: string,
-    options?: Record<string, any>,
-  ): Promise<T> => {
+    options?: Record<string, unknown>,
+  ): Promise<unknown> => {
     try {
       const supabase = useSupabase();
       const {
@@ -26,7 +26,7 @@ export const useAuthFetch = () => {
       }
 
       // Make fetch call with auth header
-      return await $fetch<T>(url, {
+      return await $fetch(url, {
         ...options,
         headers,
       });

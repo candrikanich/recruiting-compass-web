@@ -27,7 +27,7 @@ const migrations = [
   "007_parent_view_log_policies.sql",
 ];
 
-function prepareMigration(filename, _index) {
+function prepareMigration(filename) {
   const filepath = path.join(__dirname, "../server/migrations", filename);
 
   try {

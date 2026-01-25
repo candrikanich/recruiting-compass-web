@@ -310,12 +310,17 @@ export type Database = {
           twitter_handle: string | null;
           instagram_handle: string | null;
           status:
-            | "researching"
-            | "contacted"
             | "interested"
+            | "contacted"
+            | "camp_invite"
+            | "recruited"
+            | "official_visit_invited"
+            | "official_visit_scheduled"
             | "offer_received"
-            | "declined"
-            | "committed";
+            | "committed"
+            | "not_pursuing";
+          status_changed_at: string | null;
+          priority_tier: "A" | "B" | "C" | null;
           amenities: Json | null;
           pros: string[] | null;
           cons: string[] | null;
@@ -339,12 +344,17 @@ export type Database = {
           twitter_handle?: string | null;
           instagram_handle?: string | null;
           status?:
-            | "researching"
-            | "contacted"
             | "interested"
+            | "contacted"
+            | "camp_invite"
+            | "recruited"
+            | "official_visit_invited"
+            | "official_visit_scheduled"
             | "offer_received"
-            | "declined"
-            | "committed";
+            | "committed"
+            | "not_pursuing";
+          status_changed_at?: string | null;
+          priority_tier?: "A" | "B" | "C" | null;
           amenities?: Json | null;
           pros?: string[] | null;
           cons?: string[] | null;
@@ -368,12 +378,17 @@ export type Database = {
           twitter_handle?: string | null;
           instagram_handle?: string | null;
           status?:
-            | "researching"
-            | "contacted"
             | "interested"
+            | "contacted"
+            | "camp_invite"
+            | "recruited"
+            | "official_visit_invited"
+            | "official_visit_scheduled"
             | "offer_received"
-            | "declined"
-            | "committed";
+            | "committed"
+            | "not_pursuing";
+          status_changed_at?: string | null;
+          priority_tier?: "A" | "B" | "C" | null;
           amenities?: Json | null;
           pros?: string[] | null;
           cons?: string[] | null;
@@ -1244,17 +1259,68 @@ export type Database = {
         };
         Relationships: [];
       };
+      school_status_history: {
+        Row: {
+          id: string;
+          school_id: string;
+          previous_status: string | null;
+          new_status: string;
+          changed_by: string;
+          changed_at: string;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          school_id: string;
+          previous_status?: string | null;
+          new_status: string;
+          changed_by: string;
+          changed_at?: string;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          school_id?: string;
+          previous_status?: string | null;
+          new_status?: string;
+          changed_by?: string;
+          changed_at?: string;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "school_status_history_school_id_fkey";
+            columns: ["school_id"];
+            isOneToOne: false;
+            referencedRelation: "schools";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "school_status_history_changed_by_fkey";
+            columns: ["changed_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Enums: {
       user_role: "parent" | "student";
       school_division: "D1" | "D2" | "D3" | "NAIA" | "JUCO";
       school_status:
-        | "researching"
-        | "contacted"
         | "interested"
+        | "contacted"
+        | "camp_invite"
+        | "recruited"
+        | "official_visit_invited"
+        | "official_visit_scheduled"
         | "offer_received"
-        | "declined"
-        | "committed";
+        | "committed"
+        | "not_pursuing";
       coach_role: "head" | "assistant" | "recruiting";
       interaction_type:
         | "email"

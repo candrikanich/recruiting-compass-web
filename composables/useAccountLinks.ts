@@ -2,17 +2,13 @@ import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useToast } from "./useToast";
-import type { AccountLink, LinkedAccount } from "~/types/models";
+import type { AccountLink, LinkedAccount, User } from "~/types/models";
+import type { Database } from "~/types/database";
 
-// Temporary types to fix build
-interface _AccountLinksInsert {
-  parent_user_id?: string | null;
-  player_user_id?: string | null;
-  invited_email?: string;
-  initiator_user_id?: string;
-  initiator_role?: string;
-  status?: string;
-}
+// Types from database
+type AccountLinkInsert =
+  Database["public"]["Tables"]["account_links"]["Insert"];
+type DatabaseUser = Database["public"]["Tables"]["users"]["Row"];
 
 interface AccountLinksUpdate {
   status?: string;
@@ -211,16 +207,16 @@ export const useAccountLinks = () => {
             parent_user_id:
               getUserStore().user?.role === "parent"
                 ? getUserStore().user?.id
-                : (existingUser as any)?.id || null,
+                : (existingUser as unknown as DatabaseUser)?.id || null,
             player_user_id:
               getUserStore().user?.role === "student"
                 ? getUserStore().user?.id
-                : (existingUser as any)?.id || null,
+                : (existingUser as unknown as DatabaseUser)?.id || null,
             invited_email: inviteeEmail,
             initiator_user_id: getUserStore().user?.id || "",
             initiator_role: getUserStore().user?.role || "parent",
             status: "pending",
-          },
+          } as AccountLinkInsert,
         ])
         .select()
         .single();
@@ -282,7 +278,7 @@ export const useAccountLinks = () => {
       }
 
       // Check if invitation has expired
-      const linkData = link as any;
+      const linkData = link as AccountLink;
       if (new Date(linkData.expires_at || "") < new Date()) {
         error.value = "This invitation has expired";
         return false;
@@ -389,7 +385,7 @@ export const useAccountLinks = () => {
 
       // Duplicate data for both users
       try {
-        const linkData = link as any; // Type assertion to access database fields
+        const linkData = link as AccountLink; // Type assertion to access database fields
         const parentId = linkData.parent_user_id;
         const playerId = linkData.player_user_id;
 

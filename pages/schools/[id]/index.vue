@@ -62,12 +62,15 @@
                       statusUpdating ? 'opacity-50' : '',
                     ]"
                   >
-                    <option value="researching">Researching</option>
-                    <option value="contacted">Contacted</option>
                     <option value="interested">Interested</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="camp_invite">Camp Invite</option>
+                    <option value="recruited">Recruited</option>
+                    <option value="official_visit_invited">Official Visit Invited</option>
+                    <option value="official_visit_scheduled">Official Visit Scheduled</option>
                     <option value="offer_received">Offer Received</option>
-                    <option value="declined">Declined</option>
                     <option value="committed">Committed</option>
+                    <option value="not_pursuing">Not Pursuing</option>
                   </select>
                   <div class="py-1">
                     <SchoolPrioritySelector
@@ -107,6 +110,9 @@
               </button>
             </div>
           </div>
+
+          <!-- Status History Card (Story 3.4) -->
+          <SchoolStatusHistory :school-id="id" />
 
           <!-- Fit Score Card -->
           <div
@@ -959,12 +965,15 @@ const editedBasicInfo = ref({
 
 const statusBadgeColor = (status: string) => {
   const colors: Record<string, string> = {
-    researching: "bg-slate-100 text-slate-700",
-    contacted: "bg-amber-100 text-amber-700",
     interested: "bg-blue-100 text-blue-700",
-    offer_received: "bg-emerald-100 text-emerald-700",
-    committed: "bg-purple-100 text-purple-700",
-    declined: "bg-red-100 text-red-700",
+    contacted: "bg-slate-100 text-slate-700",
+    camp_invite: "bg-purple-100 text-purple-700",
+    recruited: "bg-green-100 text-green-700",
+    official_visit_invited: "bg-amber-100 text-amber-700",
+    official_visit_scheduled: "bg-orange-100 text-orange-700",
+    offer_received: "bg-red-100 text-red-700",
+    committed: "bg-green-800 text-white",
+    not_pursuing: "bg-gray-300 text-gray-700",
   };
   return colors[status] || "bg-slate-100 text-slate-700";
 };
@@ -981,8 +990,11 @@ const updateStatus = async () => {
   if (!school.value) return;
   statusUpdating.value = true;
   try {
-    const updated = await updateSchool(id, { status: school.value.status });
+    const { updateStatus: updateSchoolStatus } = useSchools();
+    const updated = await updateSchoolStatus(id, school.value.status);
     if (updated) school.value = updated;
+  } catch (err) {
+    console.error("Failed to update status:", err);
   } finally {
     statusUpdating.value = false;
   }

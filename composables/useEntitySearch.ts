@@ -33,6 +33,8 @@ import type {
  *
  * @returns Object with search methods and results
  */
+type _SearchFilters = Record<string, unknown>;
+
 export const useEntitySearch = () => {
   if (process.env.NODE_ENV === "development") {
     console.warn(
@@ -96,7 +98,7 @@ export const useEntitySearch = () => {
    */
   const searchSchools = async (
     searchQuery: string,
-    filters: Record<string, unknown>,
+    filters: _SearchFilters,
   ) => {
     if (!userStore.user) return;
 
@@ -138,7 +140,7 @@ export const useEntitySearch = () => {
    */
   const searchCoaches = async (
     searchQuery: string,
-    filters: Record<string, unknown>,
+    filters: _SearchFilters,
   ) => {
     if (!userStore.user) return;
 
@@ -183,7 +185,7 @@ export const useEntitySearch = () => {
    */
   const searchInteractions = async (
     searchQuery: string,
-    filters: Record<string, unknown>,
+    filters: _SearchFilters,
   ) => {
     if (!userStore.user) return;
 
@@ -236,7 +238,7 @@ export const useEntitySearch = () => {
    */
   const searchMetrics = async (
     searchQuery: string,
-    filters: Record<string, unknown>,
+    filters: _SearchFilters,
   ) => {
     if (!userStore.user) return;
 
@@ -279,7 +281,10 @@ export const useEntitySearch = () => {
   /**
    * Perform main search across configured entity types
    */
-  const performSearch = async (searchQuery: string, filters: any) => {
+  const performSearch = async (
+    searchQuery: string,
+    filters: _SearchFilters,
+  ) => {
     if (!searchQuery.trim()) {
       clearResults();
       return;

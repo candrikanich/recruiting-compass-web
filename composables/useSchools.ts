@@ -39,6 +39,7 @@ export const useSchools = (): {
   deleteSchool: (id: string) => Promise<void>;
   toggleFavorite: (id: string, isFavorite: boolean) => Promise<School>;
   updateRanking: (schools_: School[]) => Promise<void>;
+  updateStatus: (schoolId: string, newStatus: School["status"], notes?: string) => Promise<School>;
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
@@ -288,6 +289,79 @@ export const useSchools = (): {
     }
   };
 
+  /**
+   * Update school status with history tracking
+   * Story 3.4: Status change timestamped and tracked in history
+   */
+  const updateStatus = async (
+    schoolId: string,
+    newStatus: School["status"],
+    notes?: string,
+  ): Promise<School> => {
+    if (!userStore.user) throw new Error("User not authenticated");
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      // Find current school to get previous status
+      const school = schools.value.find((s) => s.id === schoolId);
+      if (!school) {
+        throw new Error("School not found");
+      }
+
+      const previousStatus = school.status;
+      const now = new Date().toISOString();
+
+      // Update school status and status_changed_at timestamp
+      const { data: updatedSchool, error: schoolError } = await supabase
+        .from("schools")
+        .update({
+          status: newStatus,
+          status_changed_at: now,
+          updated_by: userStore.user.id,
+          updated_at: now,
+        })
+        .eq("id", schoolId)
+        .eq("user_id", userStore.user.id)
+        .select()
+        .single();
+
+      if (schoolError) throw schoolError;
+
+      // Create status history entry
+      const { error: historyError } = await supabase
+        .from("school_status_history")
+        .insert([
+          {
+            school_id: schoolId,
+            previous_status: previousStatus,
+            new_status: newStatus,
+            changed_by: userStore.user.id,
+            changed_at: now,
+            notes: notes || null,
+          },
+        ]);
+
+      if (historyError) throw historyError;
+
+      // Update local state
+      const index = schools.value.findIndex((s) => s.id === schoolId);
+      if (index !== -1) {
+        schools.value[index] = updatedSchool;
+      }
+
+      return updatedSchool;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update school status";
+      error.value = message;
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     schools: computed(() => schools.value),
     favoriteSchools,
@@ -300,5 +374,6 @@ export const useSchools = (): {
     deleteSchool,
     toggleFavorite,
     updateRanking,
+    updateStatus,
   };
 };
