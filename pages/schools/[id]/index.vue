@@ -62,15 +62,11 @@
                       statusUpdating ? 'opacity-50' : '',
                     ]"
                   >
-                    <option value="interested">Interested</option>
+                    <option value="researching">Researching</option>
                     <option value="contacted">Contacted</option>
-                    <option value="camp_invite">Camp Invite</option>
-                    <option value="recruited">Recruited</option>
-                    <option value="official_visit_invited">Official Visit Invited</option>
-                    <option value="official_visit_scheduled">Official Visit Scheduled</option>
+                    <option value="interested">Interested</option>
                     <option value="offer_received">Offer Received</option>
                     <option value="committed">Committed</option>
-                    <option value="not_pursuing">Not Pursuing</option>
                   </select>
                   <div class="py-1">
                     <SchoolPrioritySelector
@@ -554,7 +550,7 @@
               </h3>
               <div class="space-y-2 mb-4">
                 <div
-                  v-for="(pro, index) in school.pros"
+                  v-for="(pro, index) in school.pros ?? []"
                   :key="`pro-${index}`"
                   class="flex items-center justify-between p-2 bg-emerald-50 rounded-lg text-emerald-700 text-sm"
                 >
@@ -567,7 +563,7 @@
                   </button>
                 </div>
                 <div
-                  v-if="school.pros.length === 0"
+                  v-if="!(school.pros ?? []).length"
                   class="text-slate-400 text-sm"
                 >
                   No pros added yet
@@ -607,7 +603,7 @@
               </h3>
               <div class="space-y-2 mb-4">
                 <div
-                  v-for="(con, index) in school.cons"
+                  v-for="(con, index) in school.cons ?? []"
                   :key="`con-${index}`"
                   class="flex items-center justify-between p-2 bg-red-50 rounded-lg text-red-700 text-sm"
                 >
@@ -620,7 +616,7 @@
                   </button>
                 </div>
                 <div
-                  v-if="school.cons.length === 0"
+                  v-if="!(school.cons ?? []).length"
                   class="text-slate-400 text-sm"
                 >
                   No cons added yet
@@ -1050,14 +1046,14 @@ const savePrivateNotes = async () => {
 
 const removePro = async (index: number) => {
   if (!school.value) return;
-  const newPros = school.value.pros.filter((_, i) => i !== index);
+  const newPros = (school.value.pros ?? []).filter((_, i) => i !== index);
   const updated = await updateSchool(id, { pros: newPros });
   if (updated) school.value = updated;
 };
 
 const removeCon = async (index: number) => {
   if (!school.value) return;
-  const newCons = school.value.cons.filter((_, i) => i !== index);
+  const newCons = (school.value.cons ?? []).filter((_, i) => i !== index);
   const updated = await updateSchool(id, { cons: newCons });
   if (updated) school.value = updated;
 };
@@ -1065,7 +1061,7 @@ const removeCon = async (index: number) => {
 const addPro = async () => {
   if (!school.value || !newPro.value.trim()) return;
   const updated = await updateSchool(id, {
-    pros: [...school.value.pros, newPro.value],
+    pros: [...(school.value.pros ?? []), newPro.value],
   });
   if (updated) {
     school.value = updated;
@@ -1076,7 +1072,7 @@ const addPro = async () => {
 const addCon = async () => {
   if (!school.value || !newCon.value.trim()) return;
   const updated = await updateSchool(id, {
-    cons: [...school.value.cons, newCon.value],
+    cons: [...(school.value.cons ?? []), newCon.value],
   });
   if (updated) {
     school.value = updated;
