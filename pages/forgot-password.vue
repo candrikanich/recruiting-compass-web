@@ -251,19 +251,20 @@ const validateEmail = async () => {
 };
 
 const handleSubmit = async () => {
-  // Validate entire form before submission
-  const validated = await validate(
-    { email: email.value },
-    forgotPasswordSchema,
-  );
-
-  if (!validated) {
-    return;
-  }
-
+  clearErrors();
   loading.value = true;
 
   try {
+    // Validate email
+    const validated = await validate(
+      { email: email.value },
+      forgotPasswordSchema,
+    );
+
+    if (!validated) {
+      return;
+    }
+
     const success = await passwordReset.requestPasswordReset(
       validated.email,
     );
@@ -271,9 +272,8 @@ const handleSubmit = async () => {
     if (success) {
       emailSent.value = true;
       submittedEmail.value = validated.email;
-      // Clear error state after successful submission
       passwordReset.clearError();
-      // Start cooldown so resend button doesn't show "Sending..."
+      // Start cooldown timer
       resendCooldown.value = 60;
       const interval = setInterval(() => {
         resendCooldown.value--;
