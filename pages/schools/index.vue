@@ -57,7 +57,7 @@
       <!-- Refined Filter Panel -->
       <div class="space-y-6 mb-8">
         <!-- Filter Header with Search + Sliders -->
-        <div class="flex flex-col lg:flex-row lg:items-end gap-4">
+        <div class="flex flex-col lg:flex-row lg:items-center gap-4">
           <!-- Search (left) -->
           <div class="flex-1">
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
@@ -82,9 +82,9 @@
             </div>
           </div>
 
-          <!-- Fit Score Slider (right, equal width) -->
+          <!-- Fit Score Slider (equal width) -->
           <div class="w-full lg:w-1/4">
-            <div class="flex items-end justify-between mb-3">
+            <div class="flex items-center justify-between mb-2">
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 Fit Score
               </label>
@@ -96,7 +96,7 @@
                 }}
               </span>
             </div>
-            <div class="flex gap-2 items-end">
+            <div class="flex gap-2">
               <input
                 type="range"
                 min="0"
@@ -134,9 +134,9 @@
             </div>
           </div>
 
-          <!-- Distance Slider (right, equal width) -->
+          <!-- Distance Slider (equal width) -->
           <div class="w-full lg:w-1/4">
-            <div class="flex items-end justify-between mb-3">
+            <div class="flex items-center justify-between mb-2">
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 Distance
               </label>
@@ -166,19 +166,9 @@
             />
             <p
               v-if="!homeLocation"
-              class="text-xs text-amber-700 mt-2 px-2 py-1 bg-amber-50 rounded border border-amber-200"
+              class="text-xs text-amber-700 mt-1 px-2 py-0.5 bg-amber-50 rounded border border-amber-200"
             >
               ⚠️ Set home location
-            </p>
-          </div>
-
-          <!-- Result Count -->
-          <div class="hidden lg:block text-right whitespace-nowrap">
-            <p class="text-2xl font-semibold text-slate-900">
-              {{ filteredSchools.length }}
-            </p>
-            <p class="text-xs text-slate-500 uppercase tracking-wide">
-              school{{ filteredSchools.length !== 1 ? "s" : "" }}
             </p>
           </div>
         </div>
