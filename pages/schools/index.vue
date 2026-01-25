@@ -634,8 +634,12 @@ watch(
       console.debug(
         `[Schools] User changed from ${oldUserId} to ${newUserId}`,
       );
-      // Clear stale filters from previous session
+      console.debug(`[Schools] Clearing stale filters`);
       clearFilters();
+      console.debug(
+        `[Schools] Filters cleared, filterValues:`,
+        filterValues.value,
+      );
       // Re-fetch schools for new user
       await fetchSchools();
       console.debug(
