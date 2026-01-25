@@ -88,6 +88,7 @@
 
       <!-- Additional Widgets (Full Width) -->
       <div class="mt-8 space-y-6">
+        <AthleteActivityWidget v-if="userStore.isParent && showWidget('athleteActivity', 'widgets')" />
         <LinkedAccountsWidget v-if="showWidget('linkedAccounts', 'widgets')" />
         <SchoolMapWidget
           v-if="showWidget('schoolMapWidget', 'widgets')"
@@ -126,6 +127,7 @@ import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue"
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
 import DashboardCharts from "~/components/Dashboard/DashboardCharts.vue";
 import DashboardAnalytics from "~/components/Dashboard/DashboardAnalytics.vue";
+import AthleteActivityWidget from "~/components/Dashboard/AthleteActivityWidget.vue";
 import SchoolMapWidget from "~/components/Dashboard/SchoolMapWidget.vue";
 import CoachFollowupWidget from "~/components/Dashboard/CoachFollowupWidget.vue";
 import AtAGlanceSummary from "~/components/Dashboard/AtAGlanceSummary.vue";
