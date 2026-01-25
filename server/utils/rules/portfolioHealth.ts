@@ -5,7 +5,7 @@ export const portfolioHealthRule: Rule = {
   id: "portfolio-health",
   name: "Portfolio Health Issue",
   description: "All schools are unlikely fits",
-  async evaluate(context: RuleContext): Promise<SuggestionData | null> {
+  async evaluate(context: RuleContext): Promise<SuggestionData | SuggestionData[] | null> {
     if (context.schools.length === 0) return null;
 
     const allUnlikely = context.schools.every((s: unknown) => {

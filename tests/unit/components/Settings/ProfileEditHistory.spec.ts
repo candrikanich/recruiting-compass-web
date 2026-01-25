@@ -1,19 +1,26 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { ref } from "vue";
 import { mount } from "@vue/test-utils";
 import ProfileEditHistory from "~/components/Settings/ProfileEditHistory.vue";
 import type { FormattedHistoryEntry } from "~/composables/useProfileEditHistory";
 
-// Mock the composable
-const mockHistory = { value: [] as FormattedHistoryEntry[] };
-const mockLoading = { value: false };
-const mockError = { value: null as string | null };
+// Mock state - will be reset in beforeEach
+let mockHistory: any;
+let mockLoading: any;
+let mockError: any;
 const mockFetchHistory = vi.fn();
 
 vi.mock("~/composables/useProfileEditHistory", () => ({
   useProfileEditHistory: () => ({
-    history: mockHistory,
-    loading: mockLoading,
-    error: mockError,
+    get history() {
+      return mockHistory;
+    },
+    get loading() {
+      return mockLoading;
+    },
+    get error() {
+      return mockError;
+    },
     fetchHistory: mockFetchHistory,
   }),
 }));
@@ -27,9 +34,9 @@ vi.mock("@heroicons/vue/24/outline", () => ({
 describe("ProfileEditHistory Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockHistory.value = [];
-    mockLoading.value = false;
-    mockError.value = null;
+    mockHistory = ref([] as FormattedHistoryEntry[]);
+    mockLoading = ref(false);
+    mockError = ref(null as string | null);
   });
 
   it("renders the trigger button", () => {

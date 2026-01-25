@@ -5,6 +5,7 @@ export function useSuggestions() {
   const suggestions = ref<Suggestion[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const pendingCount = ref(0);
 
   async function fetchSuggestions(
     location: "dashboard" | "school_detail",
@@ -19,6 +20,7 @@ export function useSuggestions() {
 
       const response = await $fetch(`/api/suggestions?${params}`);
       suggestions.value = response.suggestions;
+      pendingCount.value = response.pendingCount || 0;
     } catch (e: unknown) {
       error.value =
         e instanceof Error ? e.message : "Failed to fetch suggestions";
@@ -55,18 +57,32 @@ export function useSuggestions() {
     }
   }
 
+  async function surfaceMoreSuggestions(): Promise<void> {
+    try {
+      await $fetch("/api/suggestions/surface", { method: "POST" });
+      await fetchSuggestions("dashboard");
+    } catch (e: unknown) {
+      error.value =
+        e instanceof Error ? e.message : "Failed to surface more suggestions";
+    }
+  }
+
   const dashboardSuggestions = computed(() => suggestions.value.slice(0, 3));
   const highUrgencySuggestions = computed(() =>
     suggestions.value.filter((s) => s.urgency === "high"),
   );
+  const moreCount = computed(() => Math.max(0, pendingCount.value - suggestions.value.length));
 
   return {
     suggestions,
     loading,
     error,
+    pendingCount,
+    moreCount,
     fetchSuggestions,
     dismissSuggestion,
     completeSuggestion,
+    surfaceMoreSuggestions,
     dashboardSuggestions,
     highUrgencySuggestions,
   };

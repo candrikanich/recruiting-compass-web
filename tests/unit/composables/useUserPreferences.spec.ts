@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useUserPreferences } from "~/composables/useUserPreferences";
 import { useSupabase } from "~/composables/useSupabase";
 import { useUserStore } from "~/stores/user";
+import { nextTick } from "vue";
 import type {
   UserPreferences,
   PlayerDetails,
@@ -174,7 +175,7 @@ describe("useUserPreferences", () => {
             setTimeout(() => {
               resolve({ data: null, error: null });
             }, 10);
-          })
+          }),
       );
 
       const { fetchPreferences, loading } = useUserPreferences();
@@ -284,13 +285,14 @@ describe("useUserPreferences", () => {
         ],
       };
 
-      mockSupabase.single.mockResolvedValueOnce({
+      mockSupabase.single.mockResolvedValue({
         data: updatedPrefs,
         error: null,
       });
 
       const { updatePlayerDetails, playerDetails } = useUserPreferences();
       await updatePlayerDetails(newDetails);
+      await nextTick();
 
       expect(playerDetails.value).toEqual(newDetails);
       expect(mockSupabase.update).toHaveBeenCalled();
@@ -313,13 +315,14 @@ describe("useUserPreferences", () => {
         preference_history: [], // No history entry added
       };
 
-      mockSupabase.single.mockResolvedValueOnce({
+      mockSupabase.single.mockResolvedValue({
         data: updatedPrefs,
         error: null,
       });
 
       const { updatePlayerDetails } = useUserPreferences();
       await updatePlayerDetails(details);
+      await nextTick();
 
       expect(mockSupabase.update).toHaveBeenCalled();
     });
@@ -348,13 +351,14 @@ describe("useUserPreferences", () => {
         preference_history: history.slice(-50), // Keep last 50
       };
 
-      mockSupabase.single.mockResolvedValueOnce({
+      mockSupabase.single.mockResolvedValue({
         data: updatedPrefs,
         error: null,
       });
 
       const { updatePlayerDetails } = useUserPreferences();
       await updatePlayerDetails(details);
+      await nextTick();
 
       expect(mockSupabase.update).toHaveBeenCalled();
     });
@@ -425,7 +429,7 @@ describe("useUserPreferences", () => {
         preference_history: [],
       };
 
-      mockSupabase.single.mockResolvedValueOnce({
+      mockSupabase.single.mockResolvedValue({
         data: updatedPrefs,
         error: null,
       });
@@ -433,6 +437,7 @@ describe("useUserPreferences", () => {
       const { updateNotificationSettings, notificationSettings } =
         useUserPreferences();
       await updateNotificationSettings(newSettings);
+      await nextTick();
 
       expect(notificationSettings.value?.followUpReminderDays).toBe(14);
     });
@@ -487,7 +492,7 @@ describe("useUserPreferences", () => {
         ],
       };
 
-      mockSupabase.single.mockResolvedValueOnce({
+      mockSupabase.single.mockResolvedValue({
         data: updatedPrefs,
         error: null,
       });
@@ -495,6 +500,7 @@ describe("useUserPreferences", () => {
       const { updateSchoolPreferences, schoolPreferences } =
         useUserPreferences();
       await updateSchoolPreferences(schoolPrefs);
+      await nextTick();
 
       expect(schoolPreferences.value?.target_division).toBe("D1");
     });

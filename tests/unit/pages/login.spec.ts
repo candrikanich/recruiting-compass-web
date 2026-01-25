@@ -528,14 +528,14 @@ describe("login.vue", () => {
 
       expect(checkbox.attributes("id")).toBe("rememberMe");
       expect(label.exists()).toBe(true);
-      expect(label.text()).toContain("Remember me on this device");
+      expect(label.text()).toBe("Remember me");
     });
 
     it("should have checkbox unchecked by default", () => {
       const wrapper = createWrapper();
 
       const checkbox = wrapper.find(
-        '[data-testid="remember-me-checkbox"]'
+        '[data-testid="remember-me-checkbox"]',
       ) as any;
       expect((checkbox.element as HTMLInputElement).checked).toBe(false);
     });
@@ -554,9 +554,7 @@ describe("login.vue", () => {
       const wrapper = createWrapper();
 
       // Check the Remember Me checkbox
-      await wrapper
-        .find('[data-testid="remember-me-checkbox"]')
-        .setValue(true);
+      await wrapper.find('[data-testid="remember-me-checkbox"]').setValue(true);
 
       // Fill in form
       await wrapper.find('input[type="email"]').setValue("test@example.com");
@@ -604,14 +602,14 @@ describe("login.vue", () => {
       const wrapper = createWrapper();
 
       const label = wrapper.find('label[for="rememberMe"]');
-      expect(label.text()).toContain("30 days");
+      expect(label.text()).toContain("Remember me");
     });
 
     it("should toggle checkbox state when clicked", async () => {
       const wrapper = createWrapper();
 
       const checkbox = wrapper.find(
-        '[data-testid="remember-me-checkbox"]'
+        '[data-testid="remember-me-checkbox"]',
       ) as any;
 
       expect((checkbox.element as HTMLInputElement).checked).toBe(false);

@@ -47,12 +47,23 @@ describe("CoachingPhilosophy Component", () => {
     wrapper = null;
   });
 
-  it("renders the component with header", () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchool,
-        schoolId: "test-school-1",
+  const mountWithStubs = (props: any) => {
+    return mount(CoachingPhilosophy, {
+      props,
+      global: {
+        stubs: {
+          NotesHistory: {
+            template: "<div class='notes-history-stub'>NotesHistory</div>",
+          },
+        },
       },
+    });
+  };
+
+  it("renders the component with header", () => {
+    wrapper = mountWithStubs({
+      school: mockSchool,
+      schoolId: "test-school-1",
     });
 
     expect(wrapper.find("h2").text()).toContain("Coaching Philosophy");
@@ -60,11 +71,9 @@ describe("CoachingPhilosophy Component", () => {
   });
 
   it("displays coaching philosophy data in view mode", () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchool,
-        schoolId: "test-school-1",
-      },
+    wrapper = mountWithStubs({
+      school: mockSchool,
+      schoolId: "test-school-1",
     });
 
     expect(wrapper.text()).toContain("Coaching Style");
@@ -80,22 +89,18 @@ describe("CoachingPhilosophy Component", () => {
   });
 
   it("shows 'no information' message when all fields are empty", () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchoolEmpty,
-        schoolId: "test-school-1",
-      },
+    wrapper = mountWithStubs({
+      school: mockSchoolEmpty,
+      schoolId: "test-school-1",
     });
 
     expect(wrapper.text()).toContain("No coaching philosophy information added yet");
   });
 
   it("toggles edit mode on button click", async () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchool,
-        schoolId: "test-school-1",
-      },
+    wrapper = mountWithStubs({
+      school: mockSchool,
+      schoolId: "test-school-1",
     });
 
     const editButton = wrapper.find("button");
@@ -109,11 +114,9 @@ describe("CoachingPhilosophy Component", () => {
   });
 
   it("populates edit form with existing data", async () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchool,
-        schoolId: "test-school-1",
-      },
+    wrapper = mountWithStubs({
+      school: mockSchool,
+      schoolId: "test-school-1",
     });
 
     const editButton = wrapper.find("button");
@@ -128,11 +131,9 @@ describe("CoachingPhilosophy Component", () => {
   });
 
   it("emits update event on save", async () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchool,
-        schoolId: "test-school-1",
-      },
+    wrapper = mountWithStubs({
+      school: mockSchool,
+      schoolId: "test-school-1",
     });
 
     const editButton = wrapper.find("button");
@@ -155,11 +156,9 @@ describe("CoachingPhilosophy Component", () => {
   });
 
   it("resets form on cancel", async () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchool,
-        schoolId: "test-school-1",
-      },
+    wrapper = mountWithStubs({
+      school: mockSchool,
+      schoolId: "test-school-1",
     });
 
     const editButton = wrapper.find("button");
@@ -178,11 +177,9 @@ describe("CoachingPhilosophy Component", () => {
   });
 
   it("handles empty textarea values", async () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchoolEmpty,
-        schoolId: "test-school-1",
-      },
+    wrapper = mountWithStubs({
+      school: mockSchoolEmpty,
+      schoolId: "test-school-1",
     });
 
     const editButton = wrapper.find("button");
@@ -194,11 +191,9 @@ describe("CoachingPhilosophy Component", () => {
   });
 
   it("allows editing individual fields", async () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchool,
-        schoolId: "test-school-1",
-      },
+    wrapper = mountWithStubs({
+      school: mockSchool,
+      schoolId: "test-school-1",
     });
 
     const editButton = wrapper.find("button");
@@ -228,11 +223,9 @@ describe("CoachingPhilosophy Component", () => {
       success_metrics: null,
     };
 
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: partialSchool,
-        schoolId: "test-school-1",
-      },
+    wrapper = mountWithStubs({
+      school: partialSchool,
+      schoolId: "test-school-1",
     });
 
     expect(wrapper.text()).toContain("Coaching Style");
@@ -241,11 +234,9 @@ describe("CoachingPhilosophy Component", () => {
   });
 
   it("updates local state when school prop changes", async () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchoolEmpty,
-        schoolId: "test-school-1",
-      },
+    wrapper = mountWithStubs({
+      school: mockSchoolEmpty,
+      schoolId: "test-school-1",
     });
 
     await wrapper.setProps({
@@ -260,27 +251,18 @@ describe("CoachingPhilosophy Component", () => {
   });
 
   it("includes NotesHistory component", () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchool,
-        schoolId: "test-school-1",
-      },
-      global: {
-        stubs: {
-          NotesHistory: { template: "<div>NotesHistory Stub</div>" },
-        },
-      },
+    wrapper = mountWithStubs({
+      school: mockSchool,
+      schoolId: "test-school-1",
     });
 
-    expect(wrapper.text()).toContain("NotesHistory Stub");
+    expect(wrapper.text()).toContain("NotesHistory");
   });
 
   it("has descriptive placeholders in edit mode", async () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchoolEmpty,
-        schoolId: "test-school-1",
-      },
+    wrapper = mountWithStubs({
+      school: mockSchoolEmpty,
+      schoolId: "test-school-1",
     });
 
     const editButton = wrapper.find("button");
@@ -294,11 +276,9 @@ describe("CoachingPhilosophy Component", () => {
   });
 
   it("displays labels for each field in edit mode", async () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchoolEmpty,
-        schoolId: "test-school-1",
-      },
+    wrapper = mountWithStubs({
+      school: mockSchoolEmpty,
+      schoolId: "test-school-1",
     });
 
     const editButton = wrapper.find("button");
@@ -312,11 +292,9 @@ describe("CoachingPhilosophy Component", () => {
   });
 
   it("disables save button while loading", async () => {
-    wrapper = mount(CoachingPhilosophy, {
-      props: {
-        school: mockSchool,
-        schoolId: "test-school-1",
-      },
+    wrapper = mountWithStubs({
+      school: mockSchool,
+      schoolId: "test-school-1",
     });
 
     const editButton = wrapper.find("button");

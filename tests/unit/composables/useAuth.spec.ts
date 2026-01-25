@@ -141,7 +141,10 @@ describe("useAuth", () => {
       expect(auth.isInitialized.value).toBe(false);
       expect(auth.session.value).toBe(null);
       expect(result).toBe(null);
-      expect(console.error).toHaveBeenCalledWith("Session fetch failed");
+      expect(console.error).toHaveBeenCalledWith(
+        "[useAuth] Session restoration failed:",
+        "Session fetch failed",
+      );
     });
 
     it("should prevent redundant calls", async () => {

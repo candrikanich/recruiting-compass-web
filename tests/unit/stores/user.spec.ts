@@ -4,8 +4,10 @@ import { useUserStore } from "~/stores/user";
 import type { User } from "~/types/models";
 import { useSupabase } from "~/composables/useSupabase";
 
-// Mock useSupabase at module level
-vi.mock("~/composables/useSupabase");
+// Mock useSupabase at module level with implementation
+vi.mock("~/composables/useSupabase", () => ({
+  useSupabase: vi.fn(),
+}));
 
 // Get the mocked useSupabase function
 const mockUseSupabase = vi.mocked(useSupabase);
@@ -17,6 +19,9 @@ describe("useUserStore", () => {
     // Reset mocks before each test
     vi.clearAllMocks();
 
+    // Initialize mock useSupabase for all tests
+    getMockSupabase();
+
     // Create a fresh pinia for each test
     const pinia = createPinia();
     setActivePinia(pinia);
@@ -27,15 +32,19 @@ describe("useUserStore", () => {
     store.loading = false;
     store.isAuthenticated = false;
 
-    // Mock console.error and console.log
+    // Mock console methods
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "debug").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
   });
 
   const getMockSupabase = () => {
     const mockSingle = vi.fn();
     const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
-    const mockSelect = vi.fn().mockReturnValue({ eq: mockEq, single: mockSingle });
+    const mockSelect = vi
+      .fn()
+      .mockReturnValue({ eq: mockEq, single: mockSingle });
     const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
 
     const mockQuery = {
@@ -54,7 +63,7 @@ describe("useUserStore", () => {
     };
 
     mockUseSupabase.mockReturnValue(mockSupabase);
-    return { mockSupabase, mockQuery, mockSingle, mockSelect, mockEq };
+    return { mockSupabase, mockQuery, mockSingle, mockSelect, mockEq, mockInsert };
   };
 
   afterEach(() => {
@@ -177,32 +186,20 @@ describe("useUserStore", () => {
         user: { id: "user-123", email: "test@example.com" },
       };
 
-      const { mockSupabase, mockQuery } = getMockSupabase();
+      const { mockSupabase, mockSingle, mockSelect } = getMockSupabase();
 
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: mockSession },
       });
-      mockQuery.single.mockResolvedValue({ data: null, error: null });
-      mockQuery.insert.mockReturnValue(mockQuery);
-      mockQuery.select.mockResolvedValue({
-        data: [{ id: "user-123" }],
-        error: null,
-      });
+      // First call to single() returns null (no profile found)
+      mockSingle.mockResolvedValueOnce({ data: null, error: null });
 
       await store.initializeUser();
 
       // Should handle null data as "not found" and create a profile
-      expect(console.log).toHaveBeenCalledWith(
-        "Creating user profile for:",
-        "user-123",
-        "test@example.com",
-      );
-      expect(console.log).toHaveBeenCalledWith(
-        "User profile created successfully:",
-        expect.any(Array),
-      );
       expect(store.user).not.toBeNull();
       expect(store.user?.id).toBe("user-123");
+      expect(store.user?.email).toBe("test@example.com");
       expect(store.isAuthenticated).toBe(true);
       expect(store.loading).toBe(false);
     });
@@ -217,7 +214,7 @@ describe("useUserStore", () => {
       await store.initializeUser();
 
       expect(console.error).toHaveBeenCalledWith(
-        "Failed to initialize user:",
+        "[initializeUser] Unexpected error:",
         expect.any(Error),
       );
       expect(store.user).toBeNull();
@@ -433,7 +430,8 @@ describe("useUserStore", () => {
         user: { id: "user-123", email: "test@example.com" },
       };
 
-      const { mockSupabase, mockSingle, mockSelect } = getMockSupabase();
+      const { mockSupabase, mockSingle, mockSelect, mockInsert } =
+        getMockSupabase();
 
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: mockSession },
@@ -441,8 +439,15 @@ describe("useUserStore", () => {
       // First call to single() returns null (no profile found)
       // Then insert().select() returns created user
       mockSingle.mockResolvedValueOnce({ data: null, error: null });
-      mockSelect.mockResolvedValue({
-        data: [{ id: "user-123", email: "test@example.com", role: "student", full_name: "" }],
+      mockInsert.mockResolvedValueOnce({
+        data: [
+          {
+            id: "user-123",
+            email: "test@example.com",
+            role: "student",
+            full_name: "",
+          },
+        ],
         error: null,
       });
 

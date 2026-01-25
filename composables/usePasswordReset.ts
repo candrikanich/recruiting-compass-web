@@ -1,4 +1,5 @@
 import { ref, readonly } from "vue";
+import { useSupabase } from "./useSupabase";
 
 /**
  * Composable for password reset operations

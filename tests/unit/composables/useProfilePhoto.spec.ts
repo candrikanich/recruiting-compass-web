@@ -130,7 +130,8 @@ describe("useProfilePhoto", () => {
         data: { publicUrl },
       });
 
-      mockSupabase.update.mockResolvedValueOnce({
+      const chainedMethods = mockSupabase.from("users");
+      chainedMethods.single.mockResolvedValueOnce({
         data: [{ profile_photo_url: publicUrl }],
         error: null,
       });
@@ -143,11 +144,16 @@ describe("useProfilePhoto", () => {
     });
 
     it("should validate file before upload", async () => {
-      const invalidFile = new File(["text"], "file.txt", { type: "text/plain" });
+      const invalidFile = new File(["text"], "file.txt", {
+        type: "text/plain",
+      });
 
       const { uploadProfilePhoto } = useProfilePhoto();
 
-      await expect(uploadProfilePhoto(invalidFile)).rejects.toThrow();
+      const result = await uploadProfilePhoto(invalidFile);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Invalid image file");
     });
 
     it("should compress image before upload", async () => {
@@ -163,7 +169,8 @@ describe("useProfilePhoto", () => {
         data: { publicUrl },
       });
 
-      mockSupabase.update.mockResolvedValueOnce({
+      const chainedMethods = mockSupabase.from("users");
+      chainedMethods.single.mockResolvedValueOnce({
         data: [{ profile_photo_url: publicUrl }],
         error: null,
       });
@@ -188,7 +195,8 @@ describe("useProfilePhoto", () => {
         data: { publicUrl },
       });
 
-      mockSupabase.update.mockResolvedValueOnce({
+      const chainedMethods = mockSupabase.from("users");
+      chainedMethods.single.mockResolvedValueOnce({
         data: [{ profile_photo_url: publicUrl }],
         error: null,
       });
@@ -232,7 +240,8 @@ describe("useProfilePhoto", () => {
         data: { publicUrl },
       });
 
-      mockSupabase.update.mockResolvedValueOnce({
+      const chainedMethods = mockSupabase.from("users");
+      chainedMethods.single.mockResolvedValueOnce({
         data: [{ profile_photo_url: publicUrl }],
         error: null,
       });
@@ -261,7 +270,8 @@ describe("useProfilePhoto", () => {
         data: { publicUrl },
       });
 
-      mockSupabase.update.mockResolvedValueOnce({
+      const chainedMethods = mockSupabase.from("users");
+      chainedMethods.single.mockResolvedValueOnce({
         data: [{ profile_photo_url: publicUrl }],
         error: null,
       });
@@ -279,13 +289,14 @@ describe("useProfilePhoto", () => {
   describe("deleteProfilePhoto", () => {
     it("should delete profile photo successfully", async () => {
       mockUserStore.user.profile_photo_url =
-        "https://example.com/photo.jpg";
+        "https://example.com/profile-photos/user-123/profile-123.jpg";
       mockStorage.remove.mockResolvedValueOnce({
         data: {},
         error: null,
       });
 
-      mockSupabase.update.mockResolvedValueOnce({
+      const chainedMethods = mockSupabase.from("users");
+      chainedMethods.single.mockResolvedValueOnce({
         data: [{ profile_photo_url: null }],
         error: null,
       });
@@ -298,13 +309,14 @@ describe("useProfilePhoto", () => {
 
     it("should clear profile photo URL in database on deletion", async () => {
       mockUserStore.user.profile_photo_url =
-        "https://example.com/photo.jpg";
+        "https://example.com/profile-photos/user-123/profile-123.jpg";
       mockStorage.remove.mockResolvedValueOnce({
         data: {},
         error: null,
       });
 
-      mockSupabase.update.mockResolvedValueOnce({
+      const deleteChainedMethods = mockSupabase.from("users");
+      deleteChainedMethods.single.mockResolvedValueOnce({
         data: [{ profile_photo_url: null }],
         error: null,
       });
@@ -313,12 +325,13 @@ describe("useProfilePhoto", () => {
       await deleteProfilePhoto();
 
       // Verify update was called to clear photo URL
-      expect(mockSupabase.update).toHaveBeenCalled();
+      const updateChainedMethods = mockSupabase.from("users");
+      expect(updateChainedMethods.update).toHaveBeenCalled();
     });
 
     it("should handle deletion errors", async () => {
       mockUserStore.user.profile_photo_url =
-        "https://example.com/photo.jpg";
+        "https://example.com/profile-photos/user-123/profile-123.jpg";
       mockStorage.remove.mockResolvedValueOnce({
         data: null,
         error: new Error("Delete failed"),
@@ -347,11 +360,14 @@ describe("useProfilePhoto", () => {
 
   describe("Computed properties", () => {
     it("profilePhotoUrl should return user photo URL", () => {
-      mockUserStore.user.profile_photo_url = "https://example.com/photo.jpg";
+      mockUserStore.user.profile_photo_url =
+        "https://example.com/profile-photos/user-123/profile-123.jpg";
 
       const { profilePhotoUrl } = useProfilePhoto();
 
-      expect(profilePhotoUrl.value).toBe("https://example.com/photo.jpg");
+      expect(profilePhotoUrl.value).toBe(
+        "https://example.com/profile-photos/user-123/profile-123.jpg",
+      );
     });
 
     it("profilePhotoUrl should return null if user has no photo", () => {
@@ -363,7 +379,8 @@ describe("useProfilePhoto", () => {
     });
 
     it("hasProfilePhoto should be true when photo URL exists", () => {
-      mockUserStore.user.profile_photo_url = "https://example.com/photo.jpg";
+      mockUserStore.user.profile_photo_url =
+        "https://example.com/profile-photos/user-123/profile-123.jpg";
 
       const { hasProfilePhoto } = useProfilePhoto();
 
@@ -393,7 +410,8 @@ describe("useProfilePhoto", () => {
         data: { publicUrl },
       });
 
-      mockSupabase.update.mockResolvedValueOnce({
+      const chainedMethods = mockSupabase.from("users");
+      chainedMethods.single.mockResolvedValueOnce({
         data: [{ profile_photo_url: publicUrl }],
         error: null,
       });

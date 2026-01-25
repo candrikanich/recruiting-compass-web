@@ -5,11 +5,13 @@ export const prioritySchoolReminderRule: Rule = {
   id: "priority-school-reminder",
   name: "Priority School Check-In",
   description: "Top priority school needs attention",
-  async evaluate(context: RuleContext): Promise<SuggestionData | null> {
+  async evaluate(context: RuleContext): Promise<SuggestionData | SuggestionData[] | null> {
     const priorityASchools = context.schools.filter((s: unknown) => {
       const school = s as Record<string, unknown>;
       return school.priority === "A";
     });
+
+    const suggestions: SuggestionData[] = [];
 
     for (const school of priorityASchools) {
       const schoolRecord = school as Record<string, unknown>;
@@ -41,16 +43,16 @@ export const prioritySchoolReminderRule: Rule = {
         : 999;
 
       if (daysSinceContact >= 14) {
-        return {
+        suggestions.push({
           rule_type: "priority-school-reminder",
           urgency: "high",
           message: `${schoolRecord.name as string} is your top priority. Check in with coaches this week.`,
           action_type: "log_interaction",
           related_school_id: schoolRecord.id as string,
-        };
+        });
       }
     }
 
-    return null;
+    return suggestions.length > 0 ? suggestions : null;
   },
 };

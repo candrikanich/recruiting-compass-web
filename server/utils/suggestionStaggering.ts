@@ -60,3 +60,18 @@ export async function getSurfacedSuggestions(
 
   return error ? [] : data;
 }
+
+export async function getPendingSuggestionCount(
+  supabase: SupabaseClient<Database>,
+  athleteId: string,
+): Promise<number> {
+  const { count, error } = await supabase
+    .from("suggestion")
+    .select("id", { count: "exact", head: true })
+    .eq("athlete_id", athleteId)
+    .eq("pending_surface", true)
+    .eq("dismissed", false)
+    .eq("completed", false);
+
+  return error ? 0 : count || 0;
+}

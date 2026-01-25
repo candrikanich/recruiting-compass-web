@@ -1,12 +1,34 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { usePasswordReset } from "~/composables/usePasswordReset";
+import { useSupabase } from "~/composables/useSupabase";
 
-// Mock $fetch
-global.$fetch = vi.fn();
+// Mock useSupabase at module level with implementation
+vi.mock("~/composables/useSupabase", () => ({
+  useSupabase: vi.fn(),
+}));
+
+// Get the mocked useSupabase function
+const mockUseSupabase = vi.mocked(useSupabase);
 
 describe("usePasswordReset", () => {
+  let mockAuth: any;
+
+  const getMockSupabase = () => {
+    mockAuth = {
+      resetPasswordForEmail: vi.fn(),
+      updateUser: vi.fn(),
+    };
+
+    const mockSupabase = {
+      auth: mockAuth,
+    };
+
+    mockUseSupabase.mockReturnValue(mockSupabase);
+    return { mockSupabase, mockAuth };
+  };
+
   beforeEach(() => {
-    vi.clearAllMocks();
+    getMockSupabase();
   });
 
   describe("Initial State", () => {
@@ -32,14 +54,12 @@ describe("usePasswordReset", () => {
 
   describe("requestPasswordReset()", () => {
     it("should successfully request password reset", async () => {
+      const { mockAuth } = getMockSupabase();
       const { requestPasswordReset, emailSent, error, loading } =
         usePasswordReset();
 
-      // Mock successful API response
-      vi.mocked(global.$fetch).mockResolvedValueOnce({
-        success: true,
-        message: "Password reset email sent",
-      });
+      // Mock successful Supabase response
+      mockAuth.resetPasswordForEmail.mockResolvedValue({ error: null });
 
       const result = await requestPasswordReset("test@example.com");
 
@@ -48,11 +68,10 @@ describe("usePasswordReset", () => {
       expect(error.value).toBeNull();
       expect(loading.value).toBe(false);
 
-      expect(global.$fetch).toHaveBeenCalledWith(
-        "/api/auth/request-password-reset",
+      expect(mockAuth.resetPasswordForEmail).toHaveBeenCalledWith(
+        "test@example.com",
         expect.objectContaining({
-          method: "POST",
-          body: { email: "test@example.com" },
+          redirectTo: expect.stringContaining("/reset-password"),
         }),
       );
     });
@@ -67,29 +86,28 @@ describe("usePasswordReset", () => {
     });
 
     it("should trim email input", async () => {
+      const { mockAuth } = getMockSupabase();
       const { requestPasswordReset } = usePasswordReset();
 
-      vi.mocked(global.$fetch).mockResolvedValueOnce({
-        success: true,
-        message: "Email sent",
-      });
+      mockAuth.resetPasswordForEmail.mockResolvedValue({ error: null });
 
       await requestPasswordReset("  test@example.com  ");
 
-      expect(global.$fetch).toHaveBeenCalledWith(
-        "/api/auth/request-password-reset",
+      expect(mockAuth.resetPasswordForEmail).toHaveBeenCalledWith(
+        "test@example.com",
         expect.objectContaining({
-          body: { email: "test@example.com" },
+          redirectTo: expect.stringContaining("/reset-password"),
         }),
       );
     });
 
     it("should handle API error response", async () => {
+      const { mockAuth } = getMockSupabase();
       const { requestPasswordReset, error } = usePasswordReset();
 
-      vi.mocked(global.$fetch).mockResolvedValueOnce({
-        success: false,
-        message: "Failed to send reset email",
+      // Mock Supabase error
+      mockAuth.resetPasswordForEmail.mockResolvedValue({
+        error: { message: "Failed to send reset email" },
       });
 
       const result = await requestPasswordReset("test@example.com");
@@ -99,10 +117,13 @@ describe("usePasswordReset", () => {
     });
 
     it("should handle network error", async () => {
+      const { mockAuth } = getMockSupabase();
       const { requestPasswordReset, error } = usePasswordReset();
 
-      const networkError = new Error("Network failed");
-      vi.mocked(global.$fetch).mockRejectedValueOnce(networkError);
+      // Mock network error
+      mockAuth.resetPasswordForEmail.mockRejectedValue(
+        new Error("Network failed"),
+      );
 
       const result = await requestPasswordReset("test@example.com");
 
@@ -111,31 +132,34 @@ describe("usePasswordReset", () => {
     });
 
     it("should set loading state during request", async () => {
+      const { mockAuth } = getMockSupabase();
       const { requestPasswordReset, loading } = usePasswordReset();
 
-      let loadingDuringCall = false;
+      // Mock successful Supabase response with delay
+      mockAuth.resetPasswordForEmail.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ error: null }), 10),
+          ),
+      );
 
-      vi.mocked(global.$fetch).mockImplementationOnce(() => {
-        loadingDuringCall = loading.value;
-        return Promise.resolve({ success: true, message: "Email sent" });
-      });
+      const promise = requestPasswordReset("test@example.com");
 
-      await requestPasswordReset("test@example.com");
+      // Loading should be true during the call
+      expect(loading.value).toBe(true);
+      await promise;
 
-      expect(loadingDuringCall).toBe(true);
       expect(loading.value).toBe(false);
     });
   });
 
   describe("confirmPasswordReset()", () => {
     it("should successfully confirm password reset", async () => {
+      const { mockAuth } = getMockSupabase();
       const { confirmPasswordReset, passwordUpdated, error } =
         usePasswordReset();
 
-      vi.mocked(global.$fetch).mockResolvedValueOnce({
-        success: true,
-        message: "Password reset successfully",
-      });
+      mockAuth.updateUser.mockResolvedValue({ error: null });
 
       const result = await confirmPasswordReset("NewPassword123");
 
@@ -143,13 +167,9 @@ describe("usePasswordReset", () => {
       expect(passwordUpdated.value).toBe(true);
       expect(error.value).toBeNull();
 
-      expect(global.$fetch).toHaveBeenCalledWith(
-        "/api/auth/confirm-password-reset",
-        expect.objectContaining({
-          method: "POST",
-          body: { password: "NewPassword123" },
-        }),
-      );
+      expect(mockAuth.updateUser).toHaveBeenCalledWith({
+        password: "NewPassword123",
+      });
     });
 
     it("should handle missing password", async () => {
@@ -162,11 +182,11 @@ describe("usePasswordReset", () => {
     });
 
     it("should handle invalid token error", async () => {
+      const { mockAuth } = getMockSupabase();
       const { confirmPasswordReset, error } = usePasswordReset();
 
-      vi.mocked(global.$fetch).mockResolvedValueOnce({
-        success: false,
-        message: "Invalid or expired reset token",
+      mockAuth.updateUser.mockResolvedValue({
+        error: { message: "Invalid or expired reset token" },
       });
 
       const result = await confirmPasswordReset("NewPassword123");
@@ -176,11 +196,11 @@ describe("usePasswordReset", () => {
     });
 
     it("should handle expired token error", async () => {
+      const { mockAuth } = getMockSupabase();
       const { confirmPasswordReset, error } = usePasswordReset();
 
-      vi.mocked(global.$fetch).mockResolvedValueOnce({
-        success: false,
-        message: "Reset link has expired",
+      mockAuth.updateUser.mockResolvedValue({
+        error: { message: "Reset link has expired" },
       });
 
       const result = await confirmPasswordReset("NewPassword123");
@@ -190,11 +210,11 @@ describe("usePasswordReset", () => {
     });
 
     it("should handle weak password error", async () => {
+      const { mockAuth } = getMockSupabase();
       const { confirmPasswordReset, error } = usePasswordReset();
 
-      vi.mocked(global.$fetch).mockResolvedValueOnce({
-        success: false,
-        message: "Password does not meet strength requirements",
+      mockAuth.updateUser.mockResolvedValue({
+        error: { message: "Password does not meet strength requirements" },
       });
 
       const result = await confirmPasswordReset("weak");
@@ -204,13 +224,16 @@ describe("usePasswordReset", () => {
     });
 
     it("should set loading state during reset", async () => {
+      const { mockAuth } = getMockSupabase();
       const { confirmPasswordReset, loading } = usePasswordReset();
 
       let loadingDuringCall = false;
 
-      vi.mocked(global.$fetch).mockImplementationOnce(() => {
+      mockAuth.updateUser.mockImplementationOnce(() => {
         loadingDuringCall = loading.value;
-        return Promise.resolve({ success: true, message: "Password reset" });
+        return new Promise((resolve) =>
+          setTimeout(() => resolve({ error: null }), 10),
+        );
       });
 
       await confirmPasswordReset("NewPassword123");
@@ -239,9 +262,10 @@ describe("usePasswordReset", () => {
     });
 
     it("should handle non-Error objects in catch", async () => {
+      const { mockAuth } = getMockSupabase();
       const { requestPasswordReset, error } = usePasswordReset();
 
-      vi.mocked(global.$fetch).mockRejectedValueOnce("String error");
+      mockAuth.resetPasswordForEmail.mockRejectedValueOnce("String error");
 
       await requestPasswordReset("test@example.com");
 
@@ -251,18 +275,13 @@ describe("usePasswordReset", () => {
 
   describe("Edge Cases", () => {
     it("should handle concurrent reset requests gracefully", async () => {
+      const { mockAuth } = getMockSupabase();
       const { requestPasswordReset } = usePasswordReset();
 
       // Mock multiple responses for concurrent requests
-      vi.mocked(global.$fetch)
-        .mockResolvedValueOnce({
-          success: true,
-          message: "Email sent",
-        })
-        .mockResolvedValueOnce({
-          success: true,
-          message: "Email sent",
-        });
+      mockAuth.resetPasswordForEmail
+        .mockResolvedValueOnce({ error: null })
+        .mockResolvedValueOnce({ error: null });
 
       const promise1 = requestPasswordReset("test1@example.com");
       const promise2 = requestPasswordReset("test2@example.com");
@@ -274,11 +293,11 @@ describe("usePasswordReset", () => {
     });
 
     it("should not overwrite emailSent on error", async () => {
+      const { mockAuth } = getMockSupabase();
       const { requestPasswordReset, emailSent } = usePasswordReset();
 
-      vi.mocked(global.$fetch).mockResolvedValueOnce({
-        success: false,
-        message: "Error",
+      mockAuth.resetPasswordForEmail.mockResolvedValueOnce({
+        error: { message: "Error" },
       });
 
       await requestPasswordReset("test@example.com");
@@ -287,11 +306,11 @@ describe("usePasswordReset", () => {
     });
 
     it("should not overwrite passwordUpdated on error", async () => {
+      const { mockAuth } = getMockSupabase();
       const { confirmPasswordReset, passwordUpdated } = usePasswordReset();
 
-      vi.mocked(global.$fetch).mockResolvedValueOnce({
-        success: false,
-        message: "Error",
+      mockAuth.updateUser.mockResolvedValueOnce({
+        error: { message: "Error" },
       });
 
       await confirmPasswordReset("NewPassword123");
@@ -300,19 +319,17 @@ describe("usePasswordReset", () => {
     });
 
     it("should handle email with special characters", async () => {
+      const { mockAuth } = getMockSupabase();
       const { requestPasswordReset } = usePasswordReset();
 
-      vi.mocked(global.$fetch).mockResolvedValueOnce({
-        success: true,
-        message: "Email sent",
-      });
+      mockAuth.resetPasswordForEmail.mockResolvedValueOnce({ error: null });
 
       await requestPasswordReset("test+tag@example.co.uk");
 
-      expect(global.$fetch).toHaveBeenCalledWith(
-        "/api/auth/request-password-reset",
+      expect(mockAuth.resetPasswordForEmail).toHaveBeenCalledWith(
+        "test+tag@example.co.uk",
         expect.objectContaining({
-          body: { email: "test+tag@example.co.uk" },
+          redirectTo: expect.stringContaining("/reset-password"),
         }),
       );
     });

@@ -5,8 +5,10 @@ import { useSupabase } from "~/composables/useSupabase";
 import type { User, Session } from "@supabase/supabase-js";
 import { setActivePinia, createPinia } from "pinia";
 
-// Mock useSupabase at module level
-vi.mock("~/composables/useSupabase");
+// Mock useSupabase at module level with implementation
+vi.mock("~/composables/useSupabase", () => ({
+  useSupabase: vi.fn(),
+}));
 
 // Get the mocked useSupabase function
 const mockUseSupabase = vi.mocked(useSupabase);
@@ -54,6 +56,8 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
     // Set up console mocks
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "debug").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
 
     // Create fresh Pinia instance for each test
     setActivePinia(createPinia());
@@ -220,7 +224,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
 
   describe("Logout Flow Integration", () => {
     it("should sync logout across auth composable and user store", async () => {
-      const { mockSupabase, mockAuth } = getMockSupabase();
+      const { mockSupabase, mockAuth, mockSingle } = getMockSupabase();
 
       // Mock successful logout
       mockAuth.signOut.mockResolvedValue({ error: null });
@@ -231,6 +235,17 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
       // Mock initial session instead of setting internal state
       mockAuth.getSession.mockResolvedValue({
         data: { session: mockSession },
+        error: null,
+      });
+
+      // Mock user profile fetch
+      mockSingle.mockResolvedValue({
+        data: {
+          id: mockUser.id,
+          email: mockUser.email,
+          full_name: "Test User",
+          role: "student",
+        },
         error: null,
       });
 
@@ -263,7 +278,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
 
   describe("Error Handling Integration", () => {
     it("should handle login failure and keep user store in unauthenticated state", async () => {
-      const { mockSupabase, mockAuth } = getMockSupabase();
+      const { mockSupabase, mockAuth, mockSingle } = getMockSupabase();
 
       const loginError = new Error("Invalid credentials");
       mockAuth.signInWithPassword.mockResolvedValue({
@@ -290,7 +305,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
     });
 
     it("should handle user store initialization failure gracefully", async () => {
-      const { mockAuth } = getMockSupabase();
+      const { mockAuth, mockSingle } = getMockSupabase();
 
       // Mock successful session
       mockAuth.getSession.mockResolvedValue({
@@ -298,19 +313,18 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
         error: null,
       });
 
-      // Mock database failure
-      const mockSingle = vi.fn().mockRejectedValue(new Error("Database error"));
-      const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({
-        select: mockSelect,
-        insert: vi.fn(),
-      });
-
-      mockUseSupabase.mockReturnValue({
-        auth: mockAuth,
-        from: mockFrom,
-      } as any);
+      // Mock database failure on profile fetch, then successful fetch for retry
+      mockSingle
+        .mockRejectedValueOnce(new Error("Database error"))
+        .mockResolvedValueOnce({
+          data: {
+            id: mockUser.id,
+            email: mockUser.email,
+            full_name: "Test User",
+            role: "student",
+          },
+          error: null,
+        });
 
       const auth = useAuth();
       const userStore = useUserStore();
@@ -324,10 +338,9 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
 
       // User store should handle error and set user based on session
       expect(userStore.loading).toBe(false);
-      expect(console.log).toHaveBeenCalledWith(
-        "Profile not found, creating one:",
-        expect.any(Error),
-      );
+      // User should be set from session even if profile fetch fails
+      expect(userStore.isAuthenticated).toBe(true);
+      expect(userStore.user).not.toBeNull();
     });
   });
 
