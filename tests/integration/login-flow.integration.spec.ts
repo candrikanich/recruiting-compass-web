@@ -313,18 +313,8 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
         error: null,
       });
 
-      // Mock database failure on profile fetch, then successful fetch for retry
-      mockSingle
-        .mockRejectedValueOnce(new Error("Database error"))
-        .mockResolvedValueOnce({
-          data: {
-            id: mockUser.id,
-            email: mockUser.email,
-            full_name: "Test User",
-            role: "student",
-          },
-          error: null,
-        });
+      // Mock database failure on profile fetch
+      mockSingle.mockRejectedValueOnce(new Error("Database error"));
 
       const auth = useAuth();
       const userStore = useUserStore();
@@ -336,11 +326,12 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
       // Initialize user store should handle database error gracefully
       await userStore.initializeUser();
 
-      // User store should handle error and set user based on session
+      // User store should handle error and clear state when database fails
       expect(userStore.loading).toBe(false);
-      // User should be set from session even if profile fetch fails
-      expect(userStore.isAuthenticated).toBe(true);
-      expect(userStore.user).not.toBeNull();
+      // When profile fetch fails with rejection, user is cleared as precaution
+      // (only "not found" errors allow automatic profile creation)
+      expect(userStore.user).toBeNull();
+      expect(userStore.isAuthenticated).toBe(false);
     });
   });
 

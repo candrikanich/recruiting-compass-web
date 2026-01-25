@@ -251,8 +251,8 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
   describe("Timeline Display", () => {
     it("should display interactions in chronological order", () => {
       // Verify interactions are sorted by date (newest first)
-      expect(new Date(mockInteractions[0].date)).toBeGreaterThanOrEqual(
-        new Date(mockInteractions[1].date)
+      expect(new Date(mockInteractions[0].date).getTime()).toBeGreaterThanOrEqual(
+        new Date(mockInteractions[1].date).getTime()
       );
     });
 

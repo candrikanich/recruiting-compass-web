@@ -11,8 +11,12 @@ import type {
   SchoolPreferences,
 } from "~/types/models";
 
-vi.mock("~/composables/useSupabase");
-vi.mock("~/stores/user");
+vi.mock("~/composables/useSupabase", () => ({
+  useSupabase: vi.fn(),
+}));
+vi.mock("~/stores/user", () => ({
+  useUserStore: vi.fn(),
+}));
 
 const mockUseSupabase = vi.mocked(useSupabase);
 const mockUseUserStore = vi.mocked(useUserStore);
@@ -24,6 +28,8 @@ describe("useUserPreferences", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "debug").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
 
     // Setup mock supabase
     mockSupabase = {
@@ -252,7 +258,8 @@ describe("useUserPreferences", () => {
     });
 
     it("should update player details successfully", async () => {
-      const { fetchPreferences } = useUserPreferences();
+      const { fetchPreferences, updatePlayerDetails, playerDetails } =
+        useUserPreferences();
       await fetchPreferences();
 
       const newDetails: PlayerDetails = {
@@ -290,7 +297,6 @@ describe("useUserPreferences", () => {
         error: null,
       });
 
-      const { updatePlayerDetails, playerDetails } = useUserPreferences();
       await updatePlayerDetails(newDetails);
       await nextTick();
 
@@ -299,7 +305,7 @@ describe("useUserPreferences", () => {
     });
 
     it("should not create history entry if no changes", async () => {
-      const { fetchPreferences } = useUserPreferences();
+      const { fetchPreferences, updatePlayerDetails } = useUserPreferences();
       await fetchPreferences();
 
       const details: PlayerDetails = {
@@ -320,7 +326,6 @@ describe("useUserPreferences", () => {
         error: null,
       });
 
-      const { updatePlayerDetails } = useUserPreferences();
       await updatePlayerDetails(details);
       await nextTick();
 
@@ -328,7 +333,7 @@ describe("useUserPreferences", () => {
     });
 
     it("should limit history to last 50 entries", async () => {
-      const { fetchPreferences } = useUserPreferences();
+      const { fetchPreferences, updatePlayerDetails } = useUserPreferences();
       await fetchPreferences();
 
       // Create 51 history entries
@@ -356,7 +361,6 @@ describe("useUserPreferences", () => {
         error: null,
       });
 
-      const { updatePlayerDetails } = useUserPreferences();
       await updatePlayerDetails(details);
       await nextTick();
 
@@ -404,7 +408,8 @@ describe("useUserPreferences", () => {
     });
 
     it("should update notification settings successfully", async () => {
-      const { fetchPreferences } = useUserPreferences();
+      const { fetchPreferences, updateNotificationSettings, notificationSettings } =
+        useUserPreferences();
       await fetchPreferences();
 
       const newSettings: Partial<NotificationSettings> = {
@@ -434,8 +439,6 @@ describe("useUserPreferences", () => {
         error: null,
       });
 
-      const { updateNotificationSettings, notificationSettings } =
-        useUserPreferences();
       await updateNotificationSettings(newSettings);
       await nextTick();
 
@@ -459,7 +462,8 @@ describe("useUserPreferences", () => {
     });
 
     it("should update school preferences successfully", async () => {
-      const { fetchPreferences } = useUserPreferences();
+      const { fetchPreferences, updateSchoolPreferences, schoolPreferences } =
+        useUserPreferences();
       await fetchPreferences();
 
       const schoolPrefs: SchoolPreferences = {
@@ -497,8 +501,6 @@ describe("useUserPreferences", () => {
         error: null,
       });
 
-      const { updateSchoolPreferences, schoolPreferences } =
-        useUserPreferences();
       await updateSchoolPreferences(schoolPrefs);
       await nextTick();
 
