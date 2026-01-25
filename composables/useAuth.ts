@@ -141,6 +141,7 @@ export const useAuth = () => {
       // Store initialization is handled by caller
       if (data.session?.user) {
         session.value = data.session;
+        console.debug("[useAuth] Login successful for user:", data.session.user.email);
 
         // Store session preferences in localStorage
         if (typeof window !== "undefined") {
@@ -155,7 +156,10 @@ export const useAuth = () => {
             "session_preferences",
             JSON.stringify(preferences),
           );
+          console.debug("[useAuth] Session preferences stored");
         }
+      } else {
+        console.warn("[useAuth] Login returned but no session in data");
       }
 
       return { data, error: null };

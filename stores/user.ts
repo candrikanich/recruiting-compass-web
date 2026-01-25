@@ -31,10 +31,35 @@ export const useUserStore = defineStore("user", {
       this.loading = true;
 
       try {
-        // Get current session
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
+        // Get current session with retry for post-login timing
+        let session = null;
+        let attempts = 0;
+        const maxAttempts = 10;
+        const retryDelay = 50;
+
+        while (!session && attempts < maxAttempts) {
+          const attemptNum = attempts + 1;
+          const {
+            data: { session: currentSession },
+            error: sessionError,
+          } = await supabase.auth.getSession();
+
+          if (sessionError) {
+            console.error(`[initializeUser] Attempt ${attemptNum}: Error getting session:`, sessionError);
+          } else if (currentSession) {
+            console.debug(`[initializeUser] Attempt ${attemptNum}: Session found!`);
+            session = currentSession;
+            break;
+          } else {
+            console.debug(`[initializeUser] Attempt ${attemptNum}: No session yet`);
+          }
+
+          if (!session && attempts < maxAttempts - 1) {
+            // Wait before retrying
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+          }
+          attempts++;
+        }
 
         if (session?.user) {
           // Set user from auth session first

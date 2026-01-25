@@ -18,6 +18,7 @@
 import { onBeforeMount } from "vue";
 import { useSessionTimeout } from "~/composables/useSessionTimeout";
 import { useUserStore } from "~/stores/user";
+import SessionTimeoutWarning from "~/components/Auth/SessionTimeoutWarning.vue";
 
 const { isWarningVisible, secondsUntilLogout, dismissWarning, handleTimeout } =
   useSessionTimeout();

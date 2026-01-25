@@ -626,6 +626,7 @@ const loading = ref(false);
 const validating = ref(false);
 
 const { login } = useAuth();
+const userStore = useUserStore();
 const {
   errors,
   fieldErrors,
@@ -690,8 +691,13 @@ const handleLogin = async () => {
   try {
     await login(validated.email, validated.password, rememberMe.value);
 
-    // User store will be initialized by app.vue, no need to call here
-    // Session is automatically updated in Supabase auth
+    // Give Supabase time to persist session to localStorage
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Reinitialize user store now that session is established
+    await userStore.initializeUser();
+
+    // Navigate to dashboard
     await navigateTo("/dashboard");
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Login failed";

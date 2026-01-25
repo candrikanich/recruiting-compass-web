@@ -757,7 +757,7 @@ const filterConfigs: FilterConfig[] = [
     defaultValue: { min: 0, max: 100 },
     filterFn: (item: School, filterValue: { min?: number; max?: number }) => {
       const score = item.fit_score;
-      if (score === null || score === undefined) return false;
+      if (score === null || score === undefined) return true;
       const min = filterValue?.min ?? 0;
       const max = filterValue?.max ?? 100;
       return score >= min && score <= max;
@@ -776,7 +776,7 @@ const filterConfigs: FilterConfig[] = [
         return true;
       }
       const distance = distanceCache.value.get(item.id);
-      if (distance === undefined) return false;
+      if (distance === undefined) return true;
       const maxDistance = filterValue?.max ?? 3000;
       return distance <= maxDistance;
     },
