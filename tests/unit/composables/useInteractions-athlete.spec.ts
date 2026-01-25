@@ -215,8 +215,8 @@ describe("useInteractions - Athlete Features", () => {
   describe("createInteraction with logged_by", () => {
     it("should set logged_by to current user", async () => {
       const newInteraction = {
-        school_id: "school-123",
-        coach_id: "coach-123",
+        school_id: "550e8400-e29b-41d4-a716-446655440000",
+        coach_id: "550e8400-e29b-41d4-a716-446655440001",
         type: "email" as const,
         direction: "outbound" as const,
         occurred_at: "2024-01-01T12:00:00Z",

@@ -31,17 +31,12 @@ describe("useAuth", () => {
     expires_at: Date.now() / 1000 + 3600,
   };
 
+  let mockSupabase: any;
+  let mockAuth: any;
+
   beforeEach(() => {
-    vi.clearAllMocks();
-    vi.spyOn(console, "error").mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  const getMockSupabase = () => {
-    const mockAuth = {
+    // Create fresh mock objects for each test
+    mockAuth = {
       getSession: vi.fn(),
       signInWithPassword: vi.fn(),
       signOut: vi.fn(),
@@ -49,11 +44,20 @@ describe("useAuth", () => {
       onAuthStateChange: vi.fn(),
     };
 
-    const mockSupabase = {
+    mockSupabase = {
       auth: mockAuth,
     };
 
     mockUseSupabase.mockReturnValue(mockSupabase);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+  });
+
+  const getMockSupabase = () => {
     return { mockSupabase, mockAuth };
   };
 
