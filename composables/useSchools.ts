@@ -53,16 +53,12 @@ export const useSchools = (): {
   );
 
   const fetchSchools = async () => {
-    if (!userStore.user) {
-      console.debug("[useSchools] Skipping fetch - user not loaded");
-      return;
-    }
+    if (!userStore.user) return;
 
     loading.value = true;
     error.value = null;
 
     try {
-      console.debug(`[useSchools] Fetching schools for user: ${userStore.user.id}`);
       const { data, error: fetchError } = await supabase
         .from("schools")
         .select("*")
@@ -72,12 +68,10 @@ export const useSchools = (): {
       if (fetchError) throw fetchError;
 
       schools.value = data || [];
-      console.debug(`[useSchools] Loaded ${schools.value.length} schools`);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch schools";
       error.value = message;
-      console.error("[useSchools] Error fetching schools:", message);
     } finally {
       loading.value = false;
     }

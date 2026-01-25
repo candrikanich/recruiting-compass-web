@@ -576,7 +576,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useSchools } from "~/composables/useSchools";
 import { useSchoolLogos } from "~/composables/useSchoolLogos";
 import { useSchoolMatching } from "~/composables/useSchoolMatching";
@@ -584,7 +584,6 @@ import { useUserPreferences } from "~/composables/useUserPreferences";
 import { useOffers } from "~/composables/useOffers";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoaches } from "~/composables/useCoaches";
-import { useUserStore } from "~/stores/user";
 import { useUniversalFilter } from "~/composables/useUniversalFilter";
 import type { School } from "~/types";
 import {
@@ -619,35 +618,13 @@ const { fetchPreferences, schoolPreferences, homeLocation } =
 const { offers, fetchOffers } = useOffers();
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { coaches: coachesData, fetchAllCoaches } = useCoaches();
-const userStore = useUserStore();
 
 const allInteractions = ref<any[]>([]);
 const allCoaches = ref<any[]>([]);
 const priorityTierFilter = ref<("A" | "B" | "C")[] | null>(null);
 const sortBy = ref<string>("a-z");
 
-// Re-fetch schools and clear stale filters when user changes
-watch(
-  () => userStore.user?.id,
-  async (newUserId, oldUserId) => {
-    if (newUserId && newUserId !== oldUserId) {
-      console.debug(
-        `[Schools] User changed from ${oldUserId} to ${newUserId}`,
-      );
-      console.debug(`[Schools] Clearing stale filters`);
-      clearFilters();
-      console.debug(
-        `[Schools] Filters cleared, filterValues:`,
-        filterValues.value,
-      );
-      // Re-fetch schools for new user
-      await fetchSchools();
-      console.debug(
-        `[Schools] Re-fetch complete, schools count: ${schools.value.length}`,
-      );
-    }
-  },
-);
+// Note: Filter persistence is disabled, so no need to clear stale filters on user change
 
 const hasPreferences = computed(() => {
   return (schoolPreferences.value?.preferences?.length || 0) > 0;
@@ -801,6 +778,7 @@ const {
   getFilterDisplayValue,
 } = useUniversalFilter(schools as any, filterConfigs, {
   storageKey: "schools-filters",
+  persistState: false, // Don't persist filters to prevent stale state on login/logout
 });
 
 // Computed for active filters display
@@ -848,14 +826,6 @@ const filteredSchools = computed(() => {
   const startTime = typeof performance !== "undefined" ? performance.now() : 0;
 
   let filtered = filteredItems.value as unknown as School[];
-
-  // Debug logging
-  if (schools.value.length > 0 && filtered.length === 0) {
-    console.debug(
-      `[Schools] WARNING: schools loaded (${schools.value.length}) but filteredItems is empty!`,
-      { filteredItems: filteredItems.value, filterValues: filterValues.value },
-    );
-  }
 
   // Apply priority tier filter if selected
   if (priorityTierFilter.value && priorityTierFilter.value.length > 0) {
@@ -1039,12 +1009,6 @@ const handleExportPDF = () => {
 };
 
 onMounted(async () => {
-  console.debug("[Schools] Page mounted");
-
-  // Clear stale filters from previous session immediately on mount
-  console.debug("[Schools] Clearing filter cache on mount");
-  clearFilters();
-
   await Promise.all([
     fetchSchools(),
     fetchPreferences(),
@@ -1054,9 +1018,6 @@ onMounted(async () => {
   ]);
   allInteractions.value = interactionsData.value;
   allCoaches.value = coachesData.value;
-
-  console.debug(`[Schools] onMounted complete - schools count: ${schools.value.length}`);
-  console.debug("[Schools] Current filter values:", filterValues.value);
 
   if (schools.value.length > 0) {
     fetchMultipleLogos(schools.value).catch((err) => {
