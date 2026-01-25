@@ -65,10 +65,10 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
     const supabase = createServerSupabaseClient();
 
     // Type assertion for Supabase operations without proper types
-    const supabaseAny = supabase as any;
+    const supabaseAny = supabase as unknown;
 
     // Ensure requesting user is not a parent (mutation restricted)
-    await assertNotParent(user.id, supabase);
+    await assertNotParent(user.id, supabaseAny as any);
 
     const config = useRuntimeConfig();
 

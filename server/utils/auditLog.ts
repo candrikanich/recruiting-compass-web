@@ -43,7 +43,7 @@ export async function auditLog(
     const supabase = createServerSupabaseClient();
 
     // Type assertion for Supabase operations without proper types
-    const supabaseAny = supabase as any;
+    const supabaseAny = supabase as unknown;
 
     // Extract client info from request
     const ipAddress = getClientIP(event);
@@ -104,7 +104,7 @@ export async function auditLogBatch(
     const supabase = createServerSupabaseClient();
 
     // Type assertion for Supabase operations without proper types
-    const supabaseAny = supabase as any;
+    const supabaseAny = supabase as unknown;
 
     const ipAddress = getClientIP(event);
     const userAgent = getHeader(event, "user-agent") || "Unknown";
