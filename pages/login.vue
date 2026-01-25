@@ -124,25 +124,25 @@
             </div>
 
             <!-- Remember Me & Forgot Password -->
-            <div class="flex items-center justify-between">
-              <div class="flex items-center">
+            <div class="flex items-center justify-between pt-1">
+              <label
+                for="rememberMe"
+                class="flex items-center gap-2 cursor-pointer group"
+              >
                 <input
                   id="rememberMe"
                   v-model="rememberMe"
                   data-testid="remember-me-checkbox"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                  class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-2 focus:ring-blue-500 cursor-pointer"
                 />
-                <label
-                  for="rememberMe"
-                  class="ml-2 text-sm font-medium text-slate-700 cursor-pointer"
-                >
-                  Remember me on this device (30 days)
-                </label>
-              </div>
+                <span class="text-sm text-slate-600 group-hover:text-slate-700">
+                  Remember me
+                </span>
+              </label>
               <NuxtLink
                 to="/forgot-password"
-                class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                class="text-sm text-slate-600 hover:text-blue-600 transition-colors"
               >
                 Forgot password?
               </NuxtLink>
