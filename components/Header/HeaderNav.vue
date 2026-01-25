@@ -97,18 +97,6 @@
       Documents
     </NuxtLink>
     <NuxtLink
-      to="/events"
-      data-testid="nav-events"
-      :class="[
-        'px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-        isActive('/events')
-          ? 'bg-brand-blue-100 text-brand-blue-700'
-          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
-      ]"
-    >
-      Events
-    </NuxtLink>
-    <NuxtLink
       to="/settings"
       data-testid="nav-settings"
       :class="[
@@ -143,18 +131,6 @@
       ]"
     >
       Analytics
-    </NuxtLink>
-    <NuxtLink
-      to="/documents"
-      data-testid="nav-documents"
-      :class="[
-        'px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-        isActive('/documents')
-          ? 'bg-brand-blue-100 text-brand-blue-700'
-          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
-      ]"
-    >
-      Documents
     </NuxtLink>
   </nav>
 </template>
