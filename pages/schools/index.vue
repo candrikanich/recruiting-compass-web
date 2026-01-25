@@ -629,10 +629,15 @@ const sortBy = ref<string>("a-z");
 // Re-fetch schools if user is initialized after mount (race condition safety)
 watch(
   () => userStore.user?.id,
-  async () => {
-    if (userStore.user) {
-      // Always re-fetch to ensure we have latest data for this user
+  async (newUserId, oldUserId) => {
+    if (newUserId && newUserId !== oldUserId) {
+      console.debug(
+        `[Schools] User changed from ${oldUserId} to ${newUserId}, re-fetching schools`,
+      );
       await fetchSchools();
+      console.debug(
+        `[Schools] Re-fetch complete, schools count: ${schools.value.length}`,
+      );
     }
   },
 );
