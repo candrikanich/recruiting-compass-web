@@ -25,6 +25,7 @@ export type Phase =
 export type StatusLabel = "on_track" | "slightly_behind" | "at_risk";
 export type FitTier = "reach" | "match" | "safety" | "unlikely";
 export type Urgency = "low" | "medium" | "high";
+export type DeadlineUrgency = "critical" | "urgent" | "upcoming" | "future" | "none";
 
 // Core Task Types
 export interface Task {
@@ -38,8 +39,18 @@ export interface Task {
   why_it_matters: string | null;
   failure_risk: string | null;
   division_applicability: Division[];
+  deadline_date: string | null;
   created_at: string | null;
   updated_at: string | null;
+}
+
+// Deadline Types
+export interface DeadlineInfo {
+  daysRemaining: number | null;
+  urgency: DeadlineUrgency;
+  isPastDue: boolean;
+  urgencyColor: string;
+  urgencyLabel: string;
 }
 
 export interface AthleteTask {

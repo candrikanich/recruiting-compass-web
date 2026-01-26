@@ -34,6 +34,12 @@
           {{ task.title }}
         </div>
 
+        <!-- Deadline badge -->
+        <DeadlineBadge
+          :deadline-date="task.deadline_date"
+          :is-completed="isCompleted"
+        />
+
         <!-- Recovery task indicator -->
         <span
           v-if="task.athlete_task?.is_recovery_task"
@@ -154,6 +160,7 @@ import { getCategoryColor, formatCategory } from "~/utils/taskHelpers";
 import type { TaskWithStatus } from "~/types/timeline";
 import StatusIndicator from "~/components/Timeline/StatusIndicator.vue";
 import DependencyWarning from "~/components/Timeline/DependencyWarning.vue";
+import DeadlineBadge from "~/components/Timeline/DeadlineBadge.vue";
 import { useParentContext } from "~/composables/useParentContext";
 
 interface Props {

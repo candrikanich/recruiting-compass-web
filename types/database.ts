@@ -264,6 +264,7 @@ export type Database = {
         Row: {
           category: string;
           created_at: string | null;
+          deadline_date: string | null;
           dependency_task_ids: string[] | null;
           description: string | null;
           division_applicability: string[] | null;
@@ -278,6 +279,7 @@ export type Database = {
         Insert: {
           category: string;
           created_at?: string | null;
+          deadline_date?: string | null;
           dependency_task_ids?: string[] | null;
           description?: string | null;
           division_applicability?: string[] | null;
@@ -292,6 +294,7 @@ export type Database = {
         Update: {
           category?: string;
           created_at?: string | null;
+          deadline_date?: string | null;
           dependency_task_ids?: string[] | null;
           description?: string | null;
           division_applicability?: string[] | null;
