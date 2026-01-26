@@ -4,7 +4,10 @@ import { setActivePinia, createPinia } from "pinia";
 import { useUserStore } from "~/stores/user";
 import type { Interaction } from "~/types/models";
 
-let mockSupabase: any;
+// Initialize BEFORE vi.mock() to avoid closure capturing undefined
+const mockSupabase = {
+  from: vi.fn(),
+};
 
 let mockUser: {
   id: string;
@@ -76,11 +79,8 @@ describe("useInteractions - Extended", () => {
       testResponse = response;
     };
 
-    // Create fresh mockSupabase for each test
-    mockSupabase = {
-      from: vi.fn(),
-    };
-
+    // Reset mockSupabase.from for this test
+    mockSupabase.from.mockClear();
     mockSupabase.from.mockReturnValue(mockQuery);
   });
 
