@@ -106,6 +106,7 @@
               <input
                 v-model="form.subject"
                 type="text"
+                :maxlength="MAX_SUBJECT_LENGTH"
                 class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter subject line"
               />
@@ -120,6 +121,7 @@
               <textarea
                 v-model="form.body"
                 rows="6"
+                :maxlength="MAX_BODY_LENGTH"
                 class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 placeholder="Write your message here..."
               />
@@ -209,6 +211,19 @@ const form = ref({
   body: props.defaultBody || "",
 });
 
+// Enforce character limits
+const enforceSubjectLimit = (value: string) => {
+  if (value.length > MAX_SUBJECT_LENGTH) {
+    form.value.subject = value.substring(0, MAX_SUBJECT_LENGTH);
+  }
+};
+
+const enforceBodyLimit = (value: string) => {
+  if (value.length > MAX_BODY_LENGTH) {
+    form.value.body = value.substring(0, MAX_BODY_LENGTH);
+  }
+};
+
 const availableCoaches = computed(() => props.availableCoaches || []);
 
 // Parse manual emails from comma-separated input
@@ -288,6 +303,17 @@ const reset = () => {
   };
   error.value = null;
 };
+
+// Enforce character limits when form values change
+watch(
+  () => form.value.subject,
+  (newVal) => enforceSubjectLimit(newVal)
+);
+
+watch(
+  () => form.value.body,
+  (newVal) => enforceBodyLimit(newVal)
+);
 
 // Update default values when props change
 watch(
