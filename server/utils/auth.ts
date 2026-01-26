@@ -3,7 +3,7 @@
  */
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { H3Event } from "h3";
+import { createError, getCookie, getHeader, type H3Event } from "h3";
 import type { Database } from "~/types/database";
 import { createLogger } from "./logger";
 
