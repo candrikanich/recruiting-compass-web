@@ -1,12 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useAuth } from "~/composables/useAuth";
-import { useSupabase } from "~/composables/useSupabase";
+import { mockSupabase } from "~/tests/setup";
 import type { User, Session } from "@supabase/supabase-js";
 import type { SessionPreferences } from "~/types/session";
-
-vi.mock("~/composables/useSupabase");
-
-const mockUseSupabase = vi.mocked(useSupabase);
 
 describe("useAuth - Remember Me Functionality", () => {
   const mockUser: User = {
@@ -29,42 +25,46 @@ describe("useAuth - Remember Me Functionality", () => {
     expires_at: Date.now() / 1000 + 3600,
   };
 
-  let mockSupabase: any;
-  let mockAuth: any;
-
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
     vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "debug").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    // Create fresh mock objects for each test
-    mockAuth = {
-      getSession: vi.fn(),
-      signInWithPassword: vi.fn(),
-      signOut: vi.fn(),
-      signUp: vi.fn(),
-      onAuthStateChange: vi.fn(),
-    };
-
-    mockSupabase = {
-      auth: mockAuth,
-    };
-
-    mockUseSupabase.mockReturnValue(mockSupabase);
+    // Configure global mock auth methods with proper return values
+    mockSupabase.auth.getSession.mockClear().mockResolvedValue({
+      data: { session: null },
+      error: null,
+    });
+    mockSupabase.auth.signInWithPassword.mockClear().mockResolvedValue({
+      data: { session: null, user: null },
+      error: null,
+    });
+    mockSupabase.auth.signOut.mockClear().mockResolvedValue({
+      error: null,
+    });
+    mockSupabase.auth.signUp.mockClear().mockResolvedValue({
+      data: { user: null, session: null },
+      error: null,
+    });
+    mockSupabase.auth.onAuthStateChange.mockClear().mockReturnValue({
+      data: {
+        subscription: {
+          unsubscribe: vi.fn(),
+        },
+      },
+    });
   });
 
   afterEach(() => {
     localStorage.clear();
+    vi.restoreAllMocks();
   });
-
-  const getMockSupabase = () => {
-    return { mockSupabase, mockAuth };
-  };
 
   describe("Login with Remember Me", () => {
     it("should store session preferences with 30-day expiry when rememberMe is true", async () => {
-      const { mockAuth } = getMockSupabase();
-      mockAuth.signInWithPassword.mockResolvedValue({
+      mockSupabase.auth.signInWithPassword.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
@@ -91,8 +91,7 @@ describe("useAuth - Remember Me Functionality", () => {
     });
 
     it("should store session preferences with 1-day expiry when rememberMe is false", async () => {
-      const { mockAuth } = getMockSupabase();
-      mockAuth.signInWithPassword.mockResolvedValue({
+      mockSupabase.auth.signInWithPassword.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
@@ -119,8 +118,7 @@ describe("useAuth - Remember Me Functionality", () => {
     });
 
     it("should default to rememberMe false when not provided", async () => {
-      const { mockAuth } = getMockSupabase();
-      mockAuth.signInWithPassword.mockResolvedValue({
+      mockSupabase.auth.signInWithPassword.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
@@ -136,8 +134,7 @@ describe("useAuth - Remember Me Functionality", () => {
     });
 
     it("should update lastActivity timestamp on login", async () => {
-      const { mockAuth } = getMockSupabase();
-      mockAuth.signInWithPassword.mockResolvedValue({
+      mockSupabase.auth.signInWithPassword.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
@@ -157,12 +154,11 @@ describe("useAuth - Remember Me Functionality", () => {
 
   describe("Logout Clears Session Preferences", () => {
     it("should remove session_preferences from localStorage on logout", async () => {
-      const { mockAuth } = getMockSupabase();
-      mockAuth.signInWithPassword.mockResolvedValue({
+      mockSupabase.auth.signInWithPassword.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
-      mockAuth.signOut.mockResolvedValue({ error: null });
+      mockSupabase.auth.signOut.mockResolvedValue({ error: null });
 
       const auth = useAuth();
 
@@ -177,12 +173,11 @@ describe("useAuth - Remember Me Functionality", () => {
     });
 
     it("should clear last_activity from localStorage on logout", async () => {
-      const { mockAuth } = getMockSupabase();
-      mockAuth.signInWithPassword.mockResolvedValue({
+      mockSupabase.auth.signInWithPassword.mockResolvedValue({
         data: { session: mockSession },
         error: null,
       });
-      mockAuth.signOut.mockResolvedValue({ error: null });
+      mockSupabase.auth.signOut.mockResolvedValue({ error: null });
 
       const auth = useAuth();
 
@@ -198,9 +193,8 @@ describe("useAuth - Remember Me Functionality", () => {
 
   describe("Session Preferences Storage Validation", () => {
     it("should handle login errors without storing preferences", async () => {
-      const { mockAuth } = getMockSupabase();
       const loginError = new Error("Invalid credentials");
-      mockAuth.signInWithPassword.mockResolvedValue({
+      mockSupabase.auth.signInWithPassword.mockResolvedValue({
         data: { session: null },
         error: loginError,
       });
@@ -217,8 +211,7 @@ describe("useAuth - Remember Me Functionality", () => {
     });
 
     it("should not store preferences if login returns null session", async () => {
-      const { mockAuth } = getMockSupabase();
-      mockAuth.signInWithPassword.mockResolvedValue({
+      mockSupabase.auth.signInWithPassword.mockResolvedValue({
         data: { session: null },
         error: null,
       });
