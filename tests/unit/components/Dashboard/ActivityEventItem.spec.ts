@@ -1,21 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import ActivityEventItem from '~/components/Dashboard/ActivityEventItem.vue';
 import type { ActivityEvent } from '~/composables/useActivityFeed';
 
-// Mock #app for useRouter
-vi.mock('#app', () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-  }),
-}));
-
 describe('ActivityEventItem', () => {
-  let mockRouter: any;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    mockRouter = { push: vi.fn() };
   });
 
   const createActivity = (overrides?: Partial<ActivityEvent>): ActivityEvent => ({
@@ -37,11 +27,6 @@ describe('ActivityEventItem', () => {
 
     const wrapper = mount(ActivityEventItem, {
       props: { event: activity },
-      global: {
-        mocks: {
-          $router: mockRouter,
-        },
-      },
     });
 
     expect(wrapper.text()).toContain('Test Activity');
@@ -52,11 +37,6 @@ describe('ActivityEventItem', () => {
 
     const wrapper = mount(ActivityEventItem, {
       props: { event: activity },
-      global: {
-        mocks: {
-          $router: mockRouter,
-        },
-      },
     });
 
     expect(wrapper.text()).toContain('Test description');
@@ -67,11 +47,6 @@ describe('ActivityEventItem', () => {
 
     const wrapper = mount(ActivityEventItem, {
       props: { event: activity },
-      global: {
-        mocks: {
-          $router: mockRouter,
-        },
-      },
     });
 
     expect(wrapper.text()).toContain('📧');
@@ -84,11 +59,6 @@ describe('ActivityEventItem', () => {
 
     const wrapper = mount(ActivityEventItem, {
       props: { event: activity },
-      global: {
-        mocks: {
-          $router: mockRouter,
-        },
-      },
     });
 
     expect(wrapper.text()).toContain('3h ago');
@@ -99,11 +69,6 @@ describe('ActivityEventItem', () => {
 
     const wrapper = mount(ActivityEventItem, {
       props: { event: activity },
-      global: {
-        mocks: {
-          $router: mockRouter,
-        },
-      },
     });
 
     const element = wrapper.find('[data-testid="activity-event-item"]');
@@ -115,11 +80,6 @@ describe('ActivityEventItem', () => {
 
     const wrapper = mount(ActivityEventItem, {
       props: { event: activity },
-      global: {
-        mocks: {
-          $router: mockRouter,
-        },
-      },
     });
 
     const element = wrapper.find('[data-testid="activity-event-item"]');
@@ -132,11 +92,6 @@ describe('ActivityEventItem', () => {
 
     const wrapper = mount(ActivityEventItem, {
       props: { event: activity },
-      global: {
-        mocks: {
-          $router: mockRouter,
-        },
-      },
     });
 
     // The component should truncate, so we won't see all 100 characters
@@ -151,11 +106,6 @@ describe('ActivityEventItem', () => {
 
     const wrapper = mount(ActivityEventItem, {
       props: { event: activity },
-      global: {
-        mocks: {
-          $router: mockRouter,
-        },
-      },
     });
 
     expect(wrapper.text()).toContain('1h ago');
@@ -166,11 +116,6 @@ describe('ActivityEventItem', () => {
 
     const wrapper = mount(ActivityEventItem, {
       props: { event: activity },
-      global: {
-        mocks: {
-          $router: mockRouter,
-        },
-      },
     });
 
     expect(wrapper.text()).not.toContain('undefined');
@@ -181,11 +126,6 @@ describe('ActivityEventItem', () => {
 
     const wrapper = mount(ActivityEventItem, {
       props: { event: activity },
-      global: {
-        mocks: {
-          $router: mockRouter,
-        },
-      },
     });
 
     expect(wrapper.find('[data-testid="activity-event-item"]').exists()).toBe(true);

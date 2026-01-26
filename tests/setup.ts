@@ -100,6 +100,11 @@ vi.mock("#app", () => ({
       supabaseAnonKey: "test-anon-key",
     },
   }),
+  useRouter: () => ({
+    push: vi.fn(),
+    back: vi.fn(),
+    go: vi.fn(),
+  }),
 }));
 
 // Global component stubs to prevent resolution errors
