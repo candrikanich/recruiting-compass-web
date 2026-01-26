@@ -60,6 +60,12 @@ export default defineNuxtConfig({
       supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || "",
       collegeScorecardApiKey:
         process.env.NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY || "",
+      authEnforcementEnabled:
+        process.env.NUXT_PUBLIC_AUTH_ENFORCEMENT_ENABLED === "true",
+      useConsolidatedComposables:
+        process.env.NUXT_PUBLIC_USE_CONSOLIDATED_COMPOSABLES === "true",
+      serverSidePreferences:
+        process.env.NUXT_PUBLIC_SERVER_SIDE_PREFERENCES === "true",
     },
   },
 });
