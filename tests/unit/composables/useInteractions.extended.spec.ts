@@ -1,87 +1,113 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { useInteractions } from "~/composables/useInteractions";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
-import { useUserStore } from "~/stores/user";
 import type { Interaction } from "~/types/models";
 
-// Initialize BEFORE vi.mock() to avoid closure capturing undefined
-const mockSupabase = {
-  from: vi.fn(),
+// Factory functions to create fresh mock instances per test
+const createMockQuery = () => {
+  let testResponse = { data: [], error: null };
+
+  const mockQuery = {
+    select: vi.fn(),
+    eq: vi.fn(),
+    order: vi.fn(),
+    insert: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    single: vi.fn(),
+    gte: vi.fn(),
+    lte: vi.fn(),
+  };
+
+  // Make each chainable method return the mock query itself
+  mockQuery.select.mockReturnValue(mockQuery);
+  mockQuery.eq.mockReturnValue(mockQuery);
+  mockQuery.order.mockReturnValue(mockQuery);
+  mockQuery.insert.mockReturnValue(mockQuery);
+  mockQuery.update.mockReturnValue(mockQuery);
+  mockQuery.delete.mockReturnValue(mockQuery);
+  mockQuery.single.mockReturnValue(mockQuery);
+  mockQuery.gte.mockReturnValue(mockQuery);
+  mockQuery.lte.mockReturnValue(mockQuery);
+
+  // Make mockQuery thenable with a proper .then() method
+  Object.defineProperty(mockQuery, "then", {
+    value: (onFulfilled: (value: any) => any, onRejected?: (reason: any) => any) => {
+      return Promise.resolve(testResponse).then(onFulfilled, onRejected);
+    },
+  });
+
+  // Allow tests to set the response data
+  mockQuery.__setTestResponse = (response: any) => {
+    testResponse = response;
+  };
+
+  return mockQuery;
 };
 
-let mockUser: {
-  id: string;
-  email: string;
-} | null = {
+const createMockSupabase = () => ({
+  from: vi.fn().mockReturnValue(createMockQuery()),
+  auth: {
+    getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
+  },
+});
+
+const createMockUser = () => ({
   id: "user-123",
   email: "test@example.com",
-};
+});
 
-vi.mock("~/composables/useSupabase", () => ({
-  useSupabase: () => mockSupabase,
-}));
-
-vi.mock("~/stores/user", () => ({
-  useUserStore: () => ({
-    get user() {
-      return mockUser;
-    },
-    loading: false,
-    isAuthenticated: true,
-  }),
-}));
+// These will be reassigned in beforeEach
+let mockSupabase = createMockSupabase();
+let mockUser = createMockUser();
 
 describe("useInteractions - Extended", () => {
   let mockQuery: any;
-  let userStore: ReturnType<typeof useUserStore>;
+  let useInteractions: any;
+  let useUserStore: any;
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    setActivePinia(createPinia());
-    userStore = useUserStore();
+  beforeEach(async () => {
+    // Clear module cache to reimport with fresh mocks
+    vi.resetModules();
 
-    // Create chainable mock that returns itself for each method
-    mockQuery = {
-      select: vi.fn(),
-      eq: vi.fn(),
-      order: vi.fn(),
-      insert: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      single: vi.fn(),
-      gte: vi.fn(),
-      lte: vi.fn(),
-    };
+    // Create fresh mock instances for this test
+    mockSupabase = createMockSupabase();
+    mockQuery = createMockQuery();
+    mockUser = createMockUser();
 
-    // Make each chainable method return the mock query itself
-    mockQuery.select.mockReturnValue(mockQuery);
-    mockQuery.eq.mockReturnValue(mockQuery);
-    mockQuery.order.mockReturnValue(mockQuery);
-    mockQuery.insert.mockReturnValue(mockQuery);
-    mockQuery.update.mockReturnValue(mockQuery);
-    mockQuery.delete.mockReturnValue(mockQuery);
-    mockQuery.single.mockReturnValue(mockQuery);
-    mockQuery.gte.mockReturnValue(mockQuery);
-    mockQuery.lte.mockReturnValue(mockQuery);
+    // Register fresh mocks for this test
+    vi.doMock("~/composables/useSupabase", () => ({
+      useSupabase: () => mockSupabase,
+    }));
 
-    // Store for test data that gets resolved
-    let testResponse = { data: [], error: null };
+    vi.doMock("~/stores/user", () => ({
+      useUserStore: () => ({
+        get user() {
+          return mockUser;
+        },
+        loading: false,
+        isAuthenticated: true,
+      }),
+    }));
 
-    // Make mockQuery thenable with a proper .then() method
-    Object.defineProperty(mockQuery, "then", {
-      value: (onFulfilled: (value: any) => any, onRejected?: (reason: any) => any) => {
-        return Promise.resolve(testResponse).then(onFulfilled, onRejected);
-      },
-    });
-
-    // Allow tests to set the response data
-    mockQuery.__setTestResponse = (response: any) => {
-      testResponse = response;
-    };
-
-    // Reset mockSupabase.from for this test
-    mockSupabase.from.mockClear();
+    // Set up mockSupabase.from to return the chainable mockQuery
     mockSupabase.from.mockReturnValue(mockQuery);
+
+    // Dynamically import after mocks are registered
+    const composableModule = await import("~/composables/useInteractions");
+    useInteractions = composableModule.useInteractions;
+
+    const storeModule = await import("~/stores/user");
+    useUserStore = storeModule.useUserStore;
+
+    // Reset Pinia after mocks are set up
+    setActivePinia(createPinia());
+  });
+
+  afterEach(() => {
+    // Clean up
+    vi.unmock("~/composables/useSupabase");
+    vi.unmock("~/stores/user");
+    vi.clearAllMocks();
   });
 
   const createMockInteraction = (overrides = {}): Interaction => ({
