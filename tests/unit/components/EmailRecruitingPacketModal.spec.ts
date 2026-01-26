@@ -1,7 +1,28 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { mount } from "@vue/test-utils";
+import { mount, flushPromises } from "@vue/test-utils";
 import EmailRecruitingPacketModal from "~/components/EmailRecruitingPacketModal.vue";
 import type { Coach } from "~/types/models";
+
+// Mock Teleport to render inline instead of teleporting to body
+// This resolves Vue Test Utils happy-dom incompatibility with Teleport
+vi.mock("vue", async () => {
+  const actual = await vi.importActual<typeof import("vue")>("vue");
+  const { defineComponent } = actual;
+
+  return {
+    ...actual,
+    Teleport: defineComponent({
+      name: "Teleport",
+      props: {
+        to: String,
+      },
+      setup(_, { slots }) {
+        // Render slots inline instead of teleporting
+        return () => slots.default?.();
+      },
+    }),
+  };
+});
 
 describe("EmailRecruitingPacketModal", () => {
   const mockCoaches: Coach[] = [
@@ -25,7 +46,7 @@ describe("EmailRecruitingPacketModal", () => {
 
   let wrapper: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     wrapper = mount(EmailRecruitingPacketModal, {
       props: {
         isOpen: true,
@@ -34,6 +55,9 @@ describe("EmailRecruitingPacketModal", () => {
         defaultBody: "Here is my recruiting packet for your review.",
       },
     });
+    // Wait for Transition to complete
+    await flushPromises();
+    await wrapper.vm.$nextTick();
   });
 
   describe("Rendering", () => {
@@ -43,6 +67,8 @@ describe("EmailRecruitingPacketModal", () => {
 
     it("should not render modal when isOpen is false", async () => {
       await wrapper.setProps({ isOpen: false });
+      await flushPromises();
+      await wrapper.vm.$nextTick();
       expect(wrapper.find(".fixed").exists()).toBe(false);
     });
 
