@@ -226,7 +226,7 @@ describe("useRecruitingPacket", () => {
 
       const result = await generatePacket();
 
-      expect(result.filename).toMatch(/John_Smith_RecruitingPacket_\d{4}-\d{2}-\d{2}\.pdf/);
+      expect(result.filename).toBe("John_Smith_RecruitingPacket.pdf");
     });
 
     it("should set loading state during generation", async () => {
@@ -466,6 +466,39 @@ describe("useRecruitingPacket", () => {
 
       const breakdown = data.activitySummary.interactionBreakdown;
       expect(breakdown.emails + breakdown.calls + breakdown.camps).toBeGreaterThan(0);
+    });
+  });
+
+  describe("Email defaults", () => {
+    it("should generate default subject with athlete name", async () => {
+      const { generatePacket, defaultEmailSubject } = useRecruitingPacket();
+
+      await generatePacket();
+
+      expect(defaultEmailSubject.value).toContain("John Smith");
+      expect(defaultEmailSubject.value).toContain("Recruiting Profile");
+      expect(defaultEmailSubject.value).toBe("John Smith - Recruiting Profile");
+    });
+
+    it("should generate default body with athlete details", async () => {
+      const { generatePacket, defaultEmailBody } = useRecruitingPacket();
+
+      await generatePacket();
+
+      expect(defaultEmailBody.value).toContain("John Smith");
+      expect(defaultEmailBody.value).toContain("Dear Coach");
+      expect(defaultEmailBody.value).toContain("Pitcher");
+      expect(defaultEmailBody.value).toContain("2024");
+    });
+
+    it("should include professional intro in email body", async () => {
+      const { generatePacket, defaultEmailBody } = useRecruitingPacket();
+
+      await generatePacket();
+
+      expect(defaultEmailBody.value).toContain("recruiting profile");
+      expect(defaultEmailBody.value).toContain("collegiate baseball opportunities");
+      expect(defaultEmailBody.value).toContain("Best regards");
     });
   });
 });

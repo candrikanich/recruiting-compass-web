@@ -12,28 +12,28 @@ describe("recruitingPacketExport", () => {
   describe("generatePacketFilename", () => {
     it("should generate valid filename with athlete name", () => {
       const filename = generatePacketFilename("John Smith");
-      expect(filename).toMatch(/^John_Smith_RecruitingPacket_\d{4}-\d{2}-\d{2}\.pdf$/);
+      expect(filename).toBe("John_Smith_RecruitingPacket.pdf");
     });
 
     it("should handle names with special characters", () => {
       const filename = generatePacketFilename("María José O'Connor");
-      expect(filename).toMatch(/^Mara_Jos_OConnor_RecruitingPacket_/);
+      expect(filename).toBe("Mara_Jos_OConnor_RecruitingPacket.pdf");
     });
 
     it("should handle multiple spaces in names", () => {
       const filename = generatePacketFilename("John   Michael   Smith");
-      expect(filename).toMatch(/John_Michael_Smith/);
+      expect(filename).toBe("John_Michael_Smith_RecruitingPacket.pdf");
     });
 
     it("should trim whitespace", () => {
       const filename = generatePacketFilename("  John Smith  ");
-      expect(filename).toMatch(/^John_Smith_RecruitingPacket_/);
+      expect(filename).toBe("John_Smith_RecruitingPacket.pdf");
     });
 
-    it("should include today's date in filename", () => {
-      const today = new Date().toISOString().split("T")[0];
+    it("should not include date in filename", () => {
       const filename = generatePacketFilename("John");
-      expect(filename).toContain(today);
+      expect(filename).toBe("John_RecruitingPacket.pdf");
+      expect(filename).not.toMatch(/\d{4}-\d{2}-\d{2}/);
     });
   });
 

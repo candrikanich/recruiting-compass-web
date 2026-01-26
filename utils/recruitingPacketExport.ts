@@ -73,8 +73,7 @@ export const generatePacketFilename = (athleteName: string): string => {
     .trim()
     .replace(/[^a-zA-Z\s]/g, "")
     .replace(/\s+/g, "_");
-  const date = new Date().toISOString().split("T")[0];
-  return `${sanitized}_RecruitingPacket_${date}.pdf`;
+  return `${sanitized}_RecruitingPacket.pdf`;
 };
 
 /**

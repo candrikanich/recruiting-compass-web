@@ -92,6 +92,30 @@
           </svg>
           {{ recruitingPacketLoading ? "Generating..." : "Generate Recruiting Packet" }}
         </button>
+
+        <button
+          @click="handleEmailPacket"
+          :disabled="!recruitingPacketComposable.hasGeneratedPacket.value || recruitingPacketLoading"
+          class="inline-flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200"
+          :class="!recruitingPacketComposable.hasGeneratedPacket.value || recruitingPacketLoading
+            ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
+            : 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 shadow-sm hover:shadow-md'"
+        >
+          <svg
+            class="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            />
+          </svg>
+          Email to Coach
+        </button>
       </div>
 
       <!-- Recruiting Packet Error -->
@@ -166,6 +190,16 @@
           :offers="allOffers"
         />
       </div>
+
+      <!-- Email Recruiting Packet Modal -->
+      <EmailRecruitingPacketModal
+        :is-open="recruitingPacketComposable.showEmailModal.value"
+        :available-coaches="allCoaches"
+        :default-subject="recruitingPacketComposable.defaultEmailSubject.value"
+        :default-body="recruitingPacketComposable.defaultEmailBody.value"
+        @close="recruitingPacketComposable.setShowEmailModal(false)"
+        @send="handleSendEmail"
+      />
     </main>
   </div>
 </template>
@@ -195,6 +229,7 @@ import CoachFollowupWidget from "~/components/Dashboard/CoachFollowupWidget.vue"
 import AtAGlanceSummary from "~/components/Dashboard/AtAGlanceSummary.vue";
 import LinkedAccountsWidget from "~/components/Dashboard/LinkedAccountsWidget.vue";
 import RecentActivityFeed from "~/components/Dashboard/RecentActivityFeed.vue";
+import EmailRecruitingPacketModal from "~/components/EmailRecruitingPacketModal.vue";
 import { EyeIcon } from "@heroicons/vue/24/solid";
 import { getCarnegieSize } from "~/utils/schoolSize";
 import type {
@@ -541,6 +576,49 @@ const handleGeneratePacket = async () => {
     console.error("Packet generation error:", err);
   } finally {
     recruitingPacketLoading.value = false;
+  }
+};
+
+const handleEmailPacket = async () => {
+  recruitingPacketLoading.value = true;
+  recruitingPacketError.value = null;
+
+  try {
+    // Generate packet if not already generated
+    if (!recruitingPacketComposable.hasGeneratedPacket.value) {
+      await recruitingPacketComposable.generatePacket();
+    }
+
+    // Open email modal
+    recruitingPacketComposable.setShowEmailModal(true);
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to prepare packet for email";
+    recruitingPacketError.value = message;
+    showToast(message, "error");
+    console.error("Packet email prep error:", err);
+  } finally {
+    recruitingPacketLoading.value = false;
+  }
+};
+
+const handleSendEmail = async (emailData: {
+  recipients: string[];
+  subject: string;
+  body: string;
+}) => {
+  try {
+    await recruitingPacketComposable.emailPacket(emailData);
+    showToast(
+      `Email sent to ${emailData.recipients.length} coach${emailData.recipients.length === 1 ? "" : "es"}!`,
+      "success"
+    );
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to send email";
+    recruitingPacketError.value = message;
+    showToast(message, "error");
+    console.error("Email sending error:", err);
   }
 };
 

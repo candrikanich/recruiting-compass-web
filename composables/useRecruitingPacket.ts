@@ -353,6 +353,36 @@ export const useRecruitingPacket = () => {
   };
 
   /**
+   * Get default email subject
+   */
+  const getDefaultEmailSubject = (): string => {
+    const athleteName = generatedData.value?.athlete.full_name || "Athlete";
+    return `${athleteName} - Recruiting Profile`;
+  };
+
+  /**
+   * Get default email body
+   */
+  const getDefaultEmailBody = (): string => {
+    const athleteName = generatedData.value?.athlete.full_name || "Athlete";
+    const graduationYear = generatedData.value?.athlete.graduation_year || "N/A";
+    const position = generatedData.value?.athlete.position || "Baseball Player";
+
+    return `Dear Coach,
+
+I hope this email finds you well. I am excited to share my recruiting profile with you as I explore collegiate baseball opportunities.
+
+${athleteName} is a ${position} graduating in ${graduationYear}. The attached recruiting packet includes my athletic profile, academic information, schools of interest, and recent recruiting activity.
+
+I am very interested in learning more about your program and would welcome the opportunity to discuss how I might contribute to your team.
+
+Thank you for your time and consideration. I look forward to hearing from you.
+
+Best regards,
+${athleteName}`;
+  };
+
+  /**
    * Reset generated packet
    */
   const resetPacket = (): void => {
@@ -370,6 +400,8 @@ export const useRecruitingPacket = () => {
     generatedData: computed(() => generatedData.value),
     showEmailModal: computed(() => showEmailModal.value),
     hasGeneratedPacket: computed(() => hasGeneratedPacket.value),
+    defaultEmailSubject: computed(() => getDefaultEmailSubject()),
+    defaultEmailBody: computed(() => getDefaultEmailBody()),
 
     // Methods
     generatePacket,
