@@ -57,6 +57,74 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // Validate dependencies only when attempting to complete or start
+    if (body.status === "completed" || body.status === "in_progress") {
+      // Get the task to check for dependencies
+      const { data: taskData, error: taskError } = await supabase
+        .from("task")
+        .select("id, title, dependency_task_ids")
+        .eq("id", taskId)
+        .single();
+
+      if (taskError || !taskData) {
+        throw createError({
+          statusCode: 404,
+          statusMessage: "Task not found",
+        });
+      }
+
+      // Check if task has dependencies
+      const dependencies = taskData.dependency_task_ids || [];
+      if (dependencies.length > 0) {
+        // Fetch incomplete prerequisite tasks
+        const { data: prerequisiteTasks, error: prerequisiteError } =
+          await supabase
+            .from("task")
+            .select("id, title")
+            .in("id", dependencies);
+
+        if (prerequisiteError) {
+          console.error("Error fetching prerequisites:", prerequisiteError);
+          throw createError({
+            statusCode: 500,
+            statusMessage: "Failed to validate dependencies",
+          });
+        }
+
+        // Check completion status of each prerequisite
+        const incompletePrerequisites = [];
+        for (const prereq of prerequisiteTasks || []) {
+          const { data: athleteTaskData, error: athleteTaskError } =
+            await supabase
+              .from("athlete_task")
+              .select("status")
+              .eq("athlete_id", user.id)
+              .eq("task_id", prereq.id)
+              .maybeSingle();
+
+          if (athleteTaskError) {
+            console.error(
+              "Error checking prerequisite status:",
+              athleteTaskError
+            );
+          }
+
+          const status = athleteTaskData?.status || "not_started";
+          if (status !== "completed") {
+            incompletePrerequisites.push(prereq.title);
+          }
+        }
+
+        // If any prerequisites incomplete, reject
+        if (incompletePrerequisites.length > 0) {
+          throw createError({
+            statusCode: 400,
+            statusMessage: `Cannot complete task. Please complete these prerequisites first: ${incompletePrerequisites.join(", ")}`,
+          });
+        }
+      }
+    }
+
     // Prepare update data
     const updateData: UpdateTaskData = {
       athlete_id: user.id,

@@ -6,18 +6,20 @@
     <input
       type="checkbox"
       :checked="isCompleted"
-      :disabled="isViewingAsParent.value"
+      :disabled="isViewingAsParent.value || isLocked"
       @change="$emit('toggle-complete', task.id)"
       :class="[
         'mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 flex-shrink-0 transition',
-        isViewingAsParent.value
+        isViewingAsParent.value || isLocked
           ? 'opacity-50 cursor-not-allowed'
           : 'cursor-pointer',
       ]"
       :title="
         isViewingAsParent.value
           ? 'Parents can view tasks but cannot mark them complete'
-          : 'Mark task complete'
+          : isLocked
+            ? 'Complete prerequisites to unlock this task'
+            : 'Mark task complete'
       "
     />
 
@@ -27,12 +29,22 @@
       <div class="flex items-start gap-2">
         <div
           class="text-sm font-medium transition-colors flex-1"
-          :class="
-            isCompleted ? 'text-slate-500 line-through' : 'text-slate-900'
-          "
+          :class="{
+            'text-slate-500 line-through': isCompleted,
+            'text-slate-400': isLocked && !isCompleted,
+            'text-slate-900': !isCompleted && !isLocked,
+          }"
         >
           {{ task.title }}
         </div>
+
+        <!-- Lock badge -->
+        <span
+          v-if="isLocked"
+          class="inline-block px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-700 flex-shrink-0"
+        >
+          🔒 Locked
+        </span>
 
         <!-- Deadline badge -->
         <DeadlineBadge
@@ -145,6 +157,7 @@
           <DependencyWarning
             v-if="task.has_incomplete_prerequisites"
             :task="task"
+            :show-continue-option="!isLocked"
             @complete-prerequisite="$emit('complete-prerequisite', $event)"
             @continue-anyway="$emit('continue-anyway')"
           />
@@ -168,12 +181,14 @@ interface Props {
   expandable?: boolean;
   showCategory?: boolean;
   showStatus?: boolean;
+  isLocked?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   expandable: true,
   showCategory: true,
   showStatus: true,
+  isLocked: false,
 });
 
 defineEmits<{

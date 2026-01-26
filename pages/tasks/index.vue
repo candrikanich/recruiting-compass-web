@@ -17,12 +17,15 @@ const {
   fetchTasksWithStatus,
   updateTaskStatus,
   getCompletionStats,
+  isTaskLocked,
+  lockedTaskIds,
 } = useTasks();
 
 const currentGradeLevel = ref(10);
 const athleteProfile = ref<{ full_name: string; graduation_year: number | null } | null>(null);
 const showSuccessMessage = ref(false);
 const expandedTaskId = ref<string | null>(null);
+const seenLockedTasks = ref<Set<string>>(new Set());
 
 // Filter state
 const statusFilter = ref<'all' | 'not_started' | 'in_progress' | 'completed'>('all');
@@ -117,6 +120,32 @@ const handleToggleTask = async (taskId: string, currentStatus: string) => {
   if (isViewingAsParent.value) return;
 
   const newStatus = currentStatus === 'completed' ? 'not_started' : 'completed';
+
+  // Check if task is locked when attempting to complete
+  if (newStatus === 'completed' && isTaskLocked(taskId)) {
+    const task = tasksWithStatus.value.find((t) => t.id === taskId);
+    const incompleteTitles = (task?.dependency_task_ids || [])
+      .map((depId) => {
+        const depTask = tasksWithStatus.value.find((t) => t.id === depId);
+        const depAthleteTask = tasksWithStatus.value.find(
+          (t) => t.id === depId,
+        )?.athlete_task;
+        return {
+          title: depTask?.title || 'Unknown',
+          isComplete: depAthleteTask?.status === 'completed',
+        };
+      })
+      .filter((dep) => !dep.isComplete)
+      .map((dep) => dep.title);
+
+    if (incompleteTitles.length > 0) {
+      alert(
+        `Cannot complete task. Please complete these prerequisites first:\n\n${incompleteTitles.join('\n')}`
+      );
+      return;
+    }
+  }
+
   try {
     await updateTaskStatus(taskId, newStatus);
 
@@ -131,6 +160,7 @@ const handleToggleTask = async (taskId: string, currentStatus: string) => {
     await fetchTasksWithStatus(currentGradeLevel.value);
   } catch (err) {
     console.error('Error updating task status:', err);
+    alert('Error updating task: ' + (err instanceof Error ? err.message : 'Unknown error'));
   }
 };
 
@@ -152,6 +182,36 @@ onMounted(async () => {
   }
 
   await fetchTasksWithStatus(currentGradeLevel.value);
+
+  // Load seen locked tasks from localStorage
+  const athleteId = viewingAthleteId.value || user.value?.id;
+  if (athleteId) {
+    const storageKey = `seen-locked-tasks-${athleteId}`;
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      try {
+        seenLockedTasks.value = new Set(JSON.parse(stored));
+      } catch (e) {
+        console.error('Failed to load seen locked tasks:', e);
+      }
+    }
+  }
+
+  // Auto-expand first locked task not in seenLockedTasks
+  const firstUnseenLockedTask = lockedTaskIds.value.find(
+    (taskId) => !seenLockedTasks.value.has(taskId)
+  );
+  if (firstUnseenLockedTask && !expandedTaskId.value) {
+    expandedTaskId.value = firstUnseenLockedTask;
+    seenLockedTasks.value.add(firstUnseenLockedTask);
+
+    // Save to localStorage
+    const athleteId = viewingAthleteId.value || user.value?.id;
+    if (athleteId) {
+      const storageKey = `seen-locked-tasks-${athleteId}`;
+      localStorage.setItem(storageKey, JSON.stringify(Array.from(seenLockedTasks.value)));
+    }
+  }
 });
 
 // Watch for filter changes and save
@@ -319,17 +379,17 @@ const onUrgencyFilterChange = () => {
                 type="checkbox"
                 :data-testid="`task-checkbox-${task.id}`"
                 :checked="task.athlete_task?.status === 'completed'"
-                :disabled="isViewingAsParent.value"
+                :disabled="isViewingAsParent.value || isTaskLocked(task.id)"
                 @change="
                   handleToggleTask(task.id, task.athlete_task?.status || 'not_started')
                 "
                 :class="[
                   'mt-1 w-5 h-5 text-blue-600 rounded flex-shrink-0',
-                  isViewingAsParent.value
+                  isViewingAsParent.value || isTaskLocked(task.id)
                     ? 'opacity-50 cursor-not-allowed'
                     : 'cursor-pointer'
                 ]"
-                :title="isViewingAsParent.value ? 'Parents can view tasks but cannot mark them complete' : 'Mark task complete'"
+                :title="isViewingAsParent.value ? 'Parents can view tasks but cannot mark them complete' : isTaskLocked(task.id) ? 'Complete prerequisites to unlock this task' : 'Mark task complete'"
               />
 
               <!-- Task Info -->
@@ -340,7 +400,22 @@ const onUrgencyFilterChange = () => {
                   class="w-full text-left hover:opacity-75 transition"
                 >
                   <div class="flex items-center gap-2 mb-1">
-                    <h3 class="font-semibold text-slate-900">{{ task.title }}</h3>
+                    <h3
+                      class="font-semibold"
+                      :class="{
+                        'text-slate-900': !isTaskLocked(task.id),
+                        'text-slate-400': isTaskLocked(task.id) && task.athlete_task?.status !== 'completed',
+                        'text-slate-500 line-through': task.athlete_task?.status === 'completed',
+                      }"
+                    >
+                      {{ task.title }}
+                    </h3>
+                    <span
+                      v-if="isTaskLocked(task.id)"
+                      class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full flex-shrink-0"
+                    >
+                      🔒 Locked
+                    </span>
                     <span
                       v-if="task.required"
                       class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full flex-shrink-0"
@@ -403,7 +478,23 @@ const onUrgencyFilterChange = () => {
                   </h4>
                   <p class="text-sm text-slate-600">{{ task.failure_risk }}</p>
                 </div>
-                <div v-if="task.has_incomplete_prerequisites" class="bg-amber-50 border border-amber-200 rounded p-3">
+                <div v-if="isTaskLocked(task.id)" class="bg-red-50 border border-red-200 rounded p-3">
+                  <h4 class="font-semibold text-sm text-red-900 mb-2">
+                    🔒 Complete These First
+                  </h4>
+                  <p class="text-sm text-red-800 mb-2">
+                    This task is locked until you complete:
+                  </p>
+                  <ul class="text-sm text-red-800 list-disc list-inside space-y-1">
+                    <li
+                      v-for="prereq in task.prerequisite_tasks"
+                      :key="prereq.id"
+                    >
+                      {{ prereq.title }}
+                    </li>
+                  </ul>
+                </div>
+                <div v-else-if="task.has_incomplete_prerequisites" class="bg-amber-50 border border-amber-200 rounded p-3">
                   <h4 class="font-semibold text-sm text-amber-900 mb-1">
                     Prerequisites
                   </h4>

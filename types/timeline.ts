@@ -80,6 +80,7 @@ export interface TaskWithAthleteData extends Task {
 export interface TaskDependencyAnalysis {
   task: Task;
   canProceed: boolean;
+  isLocked: boolean;
   warning: {
     message: string;
     prerequisiteTask: Task;
@@ -263,6 +264,8 @@ export interface UseTasksState {
   tasksWithStatus: TaskWithStatus[];
   loading: boolean;
   error: string | null;
+  lockedTaskIds: string[];
+  isTaskLocked: (taskId: string) => boolean;
 }
 
 export interface UsePhaseState {

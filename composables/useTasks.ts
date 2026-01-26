@@ -34,6 +34,7 @@ export const useTasks = (): {
   checkDependenciesComplete: (
     taskId: string,
   ) => Promise<{ complete: boolean; incompletePrerequisites: Task[] }>;
+  isTaskLocked: (taskId: string) => boolean;
   getRequiredTasksForPhase: (phase: Phase) => Task[];
   calculateTaskCompletionRate: (gradeLevel: number) => number;
   getTaskWithDependencyWarning: (
@@ -42,6 +43,7 @@ export const useTasks = (): {
   getCompletionStats: (gradeLevel: number) => TaskCompletionStats;
   completedTaskIds: ComputedRef<string[]>;
   inProgressTaskIds: ComputedRef<string[]>;
+  lockedTaskIds: ComputedRef<string[]>;
   recoveryTasks: ComputedRef<AthleteTask[]>;
   requiredCompletedTasks: ComputedRef<Task[]>;
 } => {
@@ -162,6 +164,22 @@ export const useTasks = (): {
   };
 
   /**
+   * Check if a task is locked due to incomplete dependencies
+   */
+  const isTaskLocked = (taskId: string): boolean => {
+    const task = tasksWithStatus.value.find((t) => t.id === taskId);
+    if (!task || !task.dependency_task_ids || task.dependency_task_ids.length === 0) {
+      return false;
+    }
+
+    // Check if all dependencies are completed
+    return task.dependency_task_ids.some((depId) => {
+      const depTask = athleteTasks.value.find((at) => at.task_id === depId);
+      return !depTask || depTask.status !== "completed";
+    });
+  };
+
+  /**
    * Update task status for the current athlete
    */
   const updateTaskStatus = async (
@@ -172,6 +190,29 @@ export const useTasks = (): {
     error.value = null;
 
     try {
+      // Check lock status when attempting to complete or start
+      if (
+        (status === "completed" || status === "in_progress") &&
+        isTaskLocked(taskId)
+      ) {
+        const task = tasksWithStatus.value.find((t) => t.id === taskId);
+        const incompleteTitles = (task?.dependency_task_ids || [])
+          .map((depId) => {
+            const depTask = tasksWithStatus.value.find((t) => t.id === depId);
+            return depTask?.title;
+          })
+          .filter((title) => {
+            const depId = task?.dependency_task_ids.find(
+              (id) => tasksWithStatus.value.find((t) => t.id === id)?.title === title,
+            );
+            const depAthleteTask = athleteTasks.value.find((at) => at.task_id === depId);
+            return !depAthleteTask || depAthleteTask.status !== "completed";
+          });
+
+        error.value = `Cannot complete task. Please complete these prerequisites first: ${incompleteTitles.join(", ")}`;
+        throw new Error(error.value);
+      }
+
       const { $fetchAuth } = useAuthFetch();
       const response = await $fetchAuth<AthleteTask>(
         `/api/athlete-tasks/${taskId}`,
@@ -407,6 +448,12 @@ export const useTasks = (): {
     ),
   );
 
+  const lockedTaskIds = computed(() =>
+    tasksWithStatus.value
+      .filter((task) => isTaskLocked(task.id))
+      .map((task) => task.id),
+  );
+
   return {
     // State
     tasks,
@@ -422,6 +469,7 @@ export const useTasks = (): {
     updateTaskStatus,
     getTaskDependencies,
     checkDependenciesComplete,
+    isTaskLocked,
     getRequiredTasksForPhase,
     calculateTaskCompletionRate,
     getTaskWithDependencyWarning,
@@ -430,6 +478,7 @@ export const useTasks = (): {
     // Computed
     completedTaskIds,
     inProgressTaskIds,
+    lockedTaskIds,
     recoveryTasks,
     requiredCompletedTasks,
   };

@@ -49,6 +49,7 @@
         Complete Prerequisite
       </button>
       <button
+        v-if="showContinueOption"
         @click="$emit('continue-anyway')"
         class="px-3 py-1 text-xs rounded border border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition font-medium"
       >
@@ -65,10 +66,12 @@ import type { TaskWithStatus, Task } from "~/types/timeline";
 interface Props {
   task: TaskWithStatus;
   prerequisiteTasks?: Task[];
+  showContinueOption?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   prerequisiteTasks: () => [],
+  showContinueOption: true,
 });
 
 defineEmits<{
