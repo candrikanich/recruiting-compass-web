@@ -397,6 +397,10 @@ onMounted(async () => {
     if (notificationsComposable) {
       await notificationsComposable.fetchNotifications();
     }
+    // Fetch suggestions on dashboard load
+    if (suggestionsComposable) {
+      await suggestionsComposable.fetchSuggestions("dashboard");
+    }
   }
 });
 

@@ -29,5 +29,8 @@
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
 
+[functions."daily-suggestions"]
+  schedule = "0 8 * * *"
+
 [context.production]
   environment = { NODE_ENV = "production" }

@@ -4,11 +4,12 @@
  * Parents cannot perform this action (read-only view)
  */
 
-import { defineEventHandler, readBody } from "h3";
+import { defineEventHandler, readBody, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import { playerDetailsSchema } from "~/utils/validation/schemas";
+import { triggerSuggestionUpdate } from "~/server/utils/triggerSuggestionUpdate";
 import type { PlayerDetails, PreferenceHistoryEntry } from "~/types/models";
 
 /**
@@ -167,6 +168,24 @@ export default defineEventHandler(async (event) => {
       },
       description: `Updated player details with ${changes.length} field change(s)`,
     });
+
+    // Trigger suggestion re-evaluation if profile data changed
+    if (changes.length > 0) {
+      try {
+        await triggerSuggestionUpdate(supabase, user.id, "profile_change");
+      } catch (triggerError) {
+        // Log error but don't fail the request - suggestions are non-critical
+        console.error("Failed to trigger suggestion update after profile change:", triggerError);
+        await logError(event, {
+          userId: user.id,
+          action: "UPDATE",
+          resourceType: "suggestions",
+          resourceId: user.id,
+          errorMessage: triggerError instanceof Error ? triggerError.message : "Unknown error",
+          description: "Failed to trigger suggestion re-evaluation after player details update",
+        });
+      }
+    }
 
     return {
       player_details: updatedPrefs.player_details,

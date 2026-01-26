@@ -339,6 +339,23 @@ export const useInteractionStore = defineStore("interactions", {
           }
         }
 
+        // Trigger suggestion re-evaluation after interaction logged
+        if (userStore.user) {
+          try {
+            await $fetch("/api/suggestions/trigger-update", {
+              method: "POST",
+              body: {
+                reason: "interaction_logged",
+                interactionSchoolId: data.school_id,
+                interactionCoachId: data.coach_id,
+              },
+            });
+          } catch (err) {
+            // Don't fail interaction creation if suggestion update fails
+            console.error("Failed to trigger suggestion update after interaction logged:", err);
+          }
+        }
+
         this.interactions.unshift(data);
         return data;
       } catch (err: unknown) {

@@ -10,7 +10,9 @@ export function useSuggestions() {
   async function fetchSuggestions(
     location: "dashboard" | "school_detail",
     schoolId?: string,
+    options?: { onUpdate?: (newCount: number) => void },
   ): Promise<void> {
+    const previousCount = suggestions.value.length;
     loading.value = true;
     error.value = null;
 
@@ -21,6 +23,12 @@ export function useSuggestions() {
       const response = await $fetch(`/api/suggestions?${params}`);
       suggestions.value = response.suggestions;
       pendingCount.value = response.pendingCount || 0;
+
+      // Notify if new suggestions were added
+      const newCount = suggestions.value.length - previousCount;
+      if (newCount > 0 && options?.onUpdate) {
+        options.onUpdate(newCount);
+      }
     } catch (e: unknown) {
       error.value =
         e instanceof Error ? e.message : "Failed to fetch suggestions";

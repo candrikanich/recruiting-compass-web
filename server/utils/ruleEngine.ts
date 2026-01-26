@@ -170,7 +170,7 @@ export class RuleEngine {
     supabase: SupabaseClient,
     athleteId: string,
     context: RuleContext,
-  ): Promise<number> {
+  ): Promise<{ count: number; ids: string[] }> {
     // Get new suggestions from normal rule evaluation
     const suggestions = await this.evaluateAll(context);
 
@@ -183,7 +183,7 @@ export class RuleEngine {
 
     // Combine both regular and re-evaluated suggestions
     const allSuggestions = [...suggestions, ...reappearingSuggestions];
-    let insertedCount = 0;
+    const insertedIds: string[] = [];
 
     for (const suggestion of allSuggestions) {
       const isDuplicate = await isDuplicateSuggestion(
@@ -193,20 +193,24 @@ export class RuleEngine {
       );
 
       if (!isDuplicate) {
-        const { error } = await supabase.from("suggestion").insert({
-          athlete_id: athleteId,
-          ...suggestion,
-          pending_surface: true,
-        });
+        const { data, error } = await supabase
+          .from("suggestion")
+          .insert({
+            athlete_id: athleteId,
+            ...suggestion,
+            pending_surface: true,
+          })
+          .select("id")
+          .single();
 
-        if (!error) {
-          insertedCount++;
+        if (!error && data?.id) {
+          insertedIds.push(data.id);
         } else {
           console.error("Failed to insert suggestion:", error);
         }
       }
     }
 
-    return insertedCount;
+    return { count: insertedIds.length, ids: insertedIds };
   }
 }

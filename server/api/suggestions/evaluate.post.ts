@@ -76,13 +76,13 @@ export default defineEventHandler(async (event) => {
       prioritySchoolReminderRule,
     ]);
 
-    const count = await engine.generateSuggestions(
+    const result = await engine.generateSuggestions(
       supabase,
       athleteId,
       context,
     );
 
-    return { generated: count };
+    return { generated: result.count, ids: result.ids };
   } catch (error: unknown) {
     throw createError({
       statusCode: 500,
