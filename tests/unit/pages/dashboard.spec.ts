@@ -144,6 +144,7 @@ describe("Dashboard Page Logic", () => {
 
       // Use UTC to avoid timezone conversion ambiguity
       const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+      const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0));
 
       const interactions: Interaction[] = [
         {
@@ -168,7 +169,8 @@ describe("Dashboard Page Logic", () => {
 
       const contactCount = interactions.filter((i) => {
         const interactionDate = new Date(i.occurred_at || i.created_at || "");
-        return interactionDate >= startOfMonth && interactionDate <= now;
+        // Use end of month as upper bound instead of 'now' to handle timezone issues
+        return interactionDate >= startOfMonth && interactionDate < endOfMonth;
       }).length;
 
       expect(contactCount).toBe(2);
@@ -181,6 +183,7 @@ describe("Dashboard Page Logic", () => {
 
       // Use UTC to avoid timezone conversion ambiguity
       const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+      const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0));
       const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
       const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
@@ -207,7 +210,7 @@ describe("Dashboard Page Logic", () => {
 
       const contactCount = interactions.filter((i) => {
         const interactionDate = new Date(i.occurred_at || i.created_at || "");
-        return interactionDate >= startOfMonth && interactionDate <= now;
+        return interactionDate >= startOfMonth && interactionDate < endOfMonth;
       }).length;
 
       expect(contactCount).toBe(1);
@@ -220,6 +223,7 @@ describe("Dashboard Page Logic", () => {
 
       // Use UTC to avoid timezone conversion ambiguity
       const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+      const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0));
       const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
       const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
 
@@ -246,7 +250,7 @@ describe("Dashboard Page Logic", () => {
 
       const contactCount = interactions.filter((i) => {
         const interactionDate = new Date(i.occurred_at || i.created_at || "");
-        return interactionDate >= startOfMonth && interactionDate <= now;
+        return interactionDate >= startOfMonth && interactionDate < endOfMonth;
       }).length;
 
       expect(contactCount).toBe(1);
@@ -259,6 +263,7 @@ describe("Dashboard Page Logic", () => {
 
       // Use UTC to avoid timezone conversion ambiguity
       const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+      const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0));
       const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
       const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
@@ -276,7 +281,7 @@ describe("Dashboard Page Logic", () => {
 
       const contactCount = interactions.filter((i) => {
         const interactionDate = new Date(i.occurred_at || i.created_at || "");
-        return interactionDate >= startOfMonth && interactionDate <= now;
+        return interactionDate >= startOfMonth && interactionDate < endOfMonth;
       }).length;
 
       expect(contactCount).toBe(0);
@@ -284,7 +289,12 @@ describe("Dashboard Page Logic", () => {
 
     it("uses created_at when occurred_at is missing", () => {
       const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const currentMonth = now.getUTCMonth();
+      const currentYear = now.getUTCFullYear();
+
+      // Use UTC to avoid timezone conversion ambiguity
+      const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+      const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0));
 
       const interactions: Interaction[] = [
         {
@@ -293,14 +303,14 @@ describe("Dashboard Page Logic", () => {
           type: "email",
           direction: "outbound",
           occurred_at: undefined,
-          created_at: new Date(now.getFullYear(), now.getMonth(), 15).toISOString(),
+          created_at: new Date(Date.UTC(currentYear, currentMonth, 15, 12, 0, 0)).toISOString(),
           logged_by: "user-1",
         },
       ];
 
       const contactCount = interactions.filter((i) => {
         const interactionDate = new Date(i.occurred_at || i.created_at || "");
-        return interactionDate >= startOfMonth && interactionDate <= now;
+        return interactionDate >= startOfMonth && interactionDate < endOfMonth;
       }).length;
 
       expect(contactCount).toBe(1);
@@ -308,8 +318,13 @@ describe("Dashboard Page Logic", () => {
 
     it("counts multiple interactions on same day", () => {
       const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const sameDay = new Date(now.getFullYear(), now.getMonth(), 15);
+      const currentMonth = now.getUTCMonth();
+      const currentYear = now.getUTCFullYear();
+
+      // Use UTC to avoid timezone conversion ambiguity
+      const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+      const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0));
+      const sameDayISO = new Date(Date.UTC(currentYear, currentMonth, 15, 12, 0, 0)).toISOString();
 
       const interactions: Interaction[] = [
         {
@@ -317,30 +332,33 @@ describe("Dashboard Page Logic", () => {
           school_id: "school-1",
           type: "email",
           direction: "outbound",
-          occurred_at: sameDay.toISOString(),
+          occurred_at: sameDayISO,
           logged_by: "user-1",
+          created_at: new Date().toISOString(),
         },
         {
           id: "2",
           school_id: "school-2",
           type: "phone_call",
           direction: "outbound",
-          occurred_at: sameDay.toISOString(),
+          occurred_at: sameDayISO,
           logged_by: "user-1",
+          created_at: new Date().toISOString(),
         },
         {
           id: "3",
           school_id: "school-3",
           type: "text",
           direction: "inbound",
-          occurred_at: sameDay.toISOString(),
+          occurred_at: sameDayISO,
           logged_by: "user-1",
+          created_at: new Date().toISOString(),
         },
       ];
 
       const contactCount = interactions.filter((i) => {
         const interactionDate = new Date(i.occurred_at || i.created_at || "");
-        return interactionDate >= startOfMonth && interactionDate <= now;
+        return interactionDate >= startOfMonth && interactionDate < endOfMonth;
       }).length;
 
       expect(contactCount).toBe(3);

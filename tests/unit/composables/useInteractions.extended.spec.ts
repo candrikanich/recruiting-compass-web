@@ -104,9 +104,7 @@ describe("useInteractions - Extended", () => {
   });
 
   afterEach(() => {
-    // Clean up
-    vi.unmock("~/composables/useSupabase");
-    vi.unmock("~/stores/user");
+    // Clear all mocks (vi.doMock mocks are file-scoped, no need to unmock globally)
     vi.clearAllMocks();
   });
 
