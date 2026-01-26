@@ -2,8 +2,16 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useSuggestions } from "~/composables/useSuggestions";
 import type { Suggestion } from "~/types/timeline";
 
-// Mock $fetch globally
-global.$fetch = vi.fn();
+const { mockFetchAuth } = vi.hoisted(() => ({
+  mockFetchAuth: vi.fn(),
+}));
+
+// Mock useAuthFetch composable
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: () => ({
+    $fetchAuth: mockFetchAuth,
+  }),
+}));
 
 describe("useSuggestions", () => {
   beforeEach(() => {
@@ -33,7 +41,7 @@ describe("useSuggestions", () => {
         },
       ];
 
-      (global.$fetch as any).mockResolvedValue({
+      mockFetchAuth.mockResolvedValue({
         suggestions: mockSuggestions,
         pendingCount: 5,
       });
@@ -46,7 +54,7 @@ describe("useSuggestions", () => {
       await fetchSuggestions("dashboard");
 
       expect(suggestions.value).toEqual(mockSuggestions);
-      expect((global.$fetch as any)).toHaveBeenCalledWith(
+      expect(mockFetchAuth).toHaveBeenCalledWith(
         expect.stringContaining("/api/suggestions?location=dashboard"),
       );
     });
@@ -54,7 +62,7 @@ describe("useSuggestions", () => {
     it("should fetch suggestions for school_detail location with schoolId", async () => {
       const mockSuggestions: Suggestion[] = [];
 
-      (global.$fetch as any).mockResolvedValue({
+      mockFetchAuth.mockResolvedValue({
         suggestions: mockSuggestions,
         pendingCount: 0,
       });
@@ -63,14 +71,14 @@ describe("useSuggestions", () => {
 
       await fetchSuggestions("school_detail", "school-123");
 
-      expect((global.$fetch as any)).toHaveBeenCalledWith(
+      expect(mockFetchAuth).toHaveBeenCalledWith(
         expect.stringContaining("schoolId=school-123"),
       );
     });
 
     it("should update error state on fetch failure", async () => {
       const error = new Error("Network error");
-      (global.$fetch as any).mockRejectedValue(error);
+      mockFetchAuth.mockRejectedValue(error);
 
       const { error: errorState, fetchSuggestions } = useSuggestions();
 
@@ -81,7 +89,7 @@ describe("useSuggestions", () => {
 
     it("should set loading state during fetch", async () => {
       let resolveFunc: () => void = () => {};
-      (global.$fetch as any).mockImplementation(
+      mockFetchAuth.mockImplementation(
         () =>
           new Promise((resolve) => {
             resolveFunc = () => resolve({ suggestions: [], pendingCount: 0 });
@@ -100,7 +108,7 @@ describe("useSuggestions", () => {
     });
 
     it("should update pendingCount from response", async () => {
-      (global.$fetch as any).mockResolvedValue({
+      mockFetchAuth.mockResolvedValue({
         suggestions: [],
         pendingCount: 10,
       });
@@ -134,7 +142,7 @@ describe("useSuggestions", () => {
         updated_at: new Date().toISOString(),
       };
 
-      (global.$fetch as any).mockResolvedValue({});
+      mockFetchAuth.mockResolvedValue({});
 
       const { suggestions, dismissSuggestion } = useSuggestions();
       suggestions.value = [suggestion];
@@ -142,7 +150,7 @@ describe("useSuggestions", () => {
       await dismissSuggestion("sug-1");
 
       expect(suggestions.value).toEqual([]);
-      expect((global.$fetch as any)).toHaveBeenCalledWith(
+      expect(mockFetchAuth).toHaveBeenCalledWith(
         "/api/suggestions/sug-1/dismiss",
         { method: "PATCH" },
       );
@@ -150,7 +158,7 @@ describe("useSuggestions", () => {
 
     it("should set error state on dismiss failure", async () => {
       const error = new Error("Dismiss failed");
-      (global.$fetch as any).mockRejectedValue(error);
+      mockFetchAuth.mockRejectedValue(error);
 
       const { error: errorState, dismissSuggestion } = useSuggestions();
 
@@ -181,7 +189,7 @@ describe("useSuggestions", () => {
         updated_at: new Date().toISOString(),
       };
 
-      (global.$fetch as any).mockResolvedValue({});
+      mockFetchAuth.mockResolvedValue({});
 
       const { suggestions, completeSuggestion } = useSuggestions();
       suggestions.value = [suggestion];
@@ -189,7 +197,7 @@ describe("useSuggestions", () => {
       await completeSuggestion("sug-1");
 
       expect(suggestions.value).toEqual([]);
-      expect((global.$fetch as any)).toHaveBeenCalledWith(
+      expect(mockFetchAuth).toHaveBeenCalledWith(
         "/api/suggestions/sug-1/complete",
         { method: "PATCH" },
       );
@@ -198,7 +206,7 @@ describe("useSuggestions", () => {
 
   describe("surfaceMoreSuggestions", () => {
     it("should surface more and refetch", async () => {
-      (global.$fetch as any).mockResolvedValue({
+      mockFetchAuth.mockResolvedValue({
         suggestions: [],
         pendingCount: 0,
       });
@@ -207,13 +215,13 @@ describe("useSuggestions", () => {
 
       await surfaceMoreSuggestions();
 
-      expect((global.$fetch as any)).toHaveBeenCalledWith(
+      expect(mockFetchAuth).toHaveBeenCalledWith(
         "/api/suggestions/surface",
         { method: "POST" },
       );
 
       // Should call fetch again
-      expect((global.$fetch as any).mock.calls.length).toBeGreaterThan(1);
+      expect(mockFetchAuth.mock.calls.length).toBeGreaterThan(1);
     });
   });
 
