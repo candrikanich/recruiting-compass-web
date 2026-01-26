@@ -4,27 +4,19 @@ import { setActivePinia, createPinia } from "pinia";
 import { useUserStore } from "~/stores/user";
 import type { Interaction } from "~/types/models";
 
-const mockSupabase = {
-  from: vi.fn(),
-};
+let mockSupabase: any;
+let mockUser: any;
 
 vi.mock("~/composables/useSupabase", () => ({
   useSupabase: () => mockSupabase,
 }));
-
-let mockUser: {
-  id: string;
-  email: string;
-} | null = {
-  id: "athlete-123",
-  email: "athlete@example.com",
-};
 
 vi.mock("~/stores/user", () => ({
   useUserStore: () => ({
     get user() {
       return mockUser;
     },
+    loading: false,
     isAuthenticated: true,
   }),
 }));
@@ -34,6 +26,12 @@ describe("useInteractions - Athlete Features", () => {
   let userStore: ReturnType<typeof useUserStore>;
 
   beforeEach(() => {
+    // Create fresh mockUser for each test
+    mockUser = {
+      id: "athlete-123",
+      email: "athlete@example.com",
+    };
+
     setActivePinia(createPinia());
     userStore = useUserStore();
 
@@ -66,11 +64,17 @@ describe("useInteractions - Athlete Features", () => {
       testResponses.data = data;
     };
 
+    // Create fresh mockSupabase for each test
+    mockSupabase = {
+      from: vi.fn(),
+    };
     mockSupabase.from.mockReturnValue(mockQuery);
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    // Reset to prevent pollution
+    mockUser = null;
+    mockSupabase = null;
   });
 
   const createMockInteraction = (
