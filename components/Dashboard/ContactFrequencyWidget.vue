@@ -19,16 +19,54 @@
       </div>
     </div>
 
-    <div v-if="recentContacts.length > 0" class="space-y-3">
-      <p class="text-sm text-slate-600 mb-3">
+    <div v-if="recentContacts.length > 0 || totalSchoolsTracked > 0" class="space-y-4">
+      <!-- Summary Metrics -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-3 bg-slate-50 rounded-lg">
+        <div
+          class="text-center"
+          data-testid="metric-total-schools"
+        >
+          <div class="text-lg font-bold text-slate-900">{{ totalSchoolsTracked }}</div>
+          <div class="text-xs text-slate-600">Total Schools</div>
+        </div>
+        <div
+          class="text-center"
+          data-testid="metric-contacted-7days"
+        >
+          <div class="text-lg font-bold text-slate-900">{{ schoolsContactedLast7Days }}</div>
+          <div class="text-xs text-slate-600">Last 7 Days</div>
+        </div>
+        <div
+          class="text-center"
+          data-testid="metric-avg-frequency"
+        >
+          <div class="text-lg font-bold text-slate-900">{{ averageContactFrequency }}</div>
+          <div class="text-xs text-slate-600">Avg/Month</div>
+        </div>
+        <div
+          class="text-center cursor-pointer hover:bg-slate-100 rounded transition-colors p-1"
+          data-testid="metric-need-attention"
+        >
+          <div class="text-lg font-bold text-slate-900">{{ schoolsWithNoRecentContact }}</div>
+          <div class="text-xs text-slate-600">Need Attention</div>
+        </div>
+      </div>
+
+      <p v-if="recentContacts.length > 0" class="text-sm text-slate-600 mb-3">
         Schools contacted in the last 7 days
       </p>
-      <div class="space-y-2 max-h-64 overflow-y-auto">
-        <div
+      <div v-if="recentContacts.length > 0" class="space-y-2 max-h-64 overflow-y-auto">
+        <NuxtLink
           v-for="contact in recentContacts.slice(0, 5)"
           :key="contact.schoolId"
+          :to="`/schools/${contact.schoolId}`"
           :data-testid="`contacted-school-${contact.schoolId}`"
-          class="flex items-start justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
+          class="flex items-start justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer border-l-4"
+          :class="[
+            contact.contactRecency === 'green' && 'border-green-500',
+            contact.contactRecency === 'yellow' && 'border-yellow-500',
+            contact.contactRecency === 'red' && 'border-red-500',
+          ]"
         >
           <div class="flex-1 min-w-0">
             <div class="text-slate-900 font-medium truncate">
@@ -41,14 +79,14 @@
           <div class="ml-2 px-2 py-1 bg-brand-blue-100 text-brand-blue-700 rounded text-xs font-medium whitespace-nowrap">
             {{ contact.contactCount }}
           </div>
-        </div>
+        </NuxtLink>
       </div>
     </div>
 
     <div v-else class="text-center py-6 text-slate-500">
-      <p>No recent contacts</p>
+      <p>No schools tracked yet</p>
       <p class="text-sm text-slate-400 mt-1">
-        Your contacts from the last 7 days will appear here
+        Add schools to start tracking contact frequency
       </p>
     </div>
   </div>
@@ -64,6 +102,7 @@ interface ContactRecord {
   schoolName: string;
   lastContactDate: string;
   contactCount: number;
+  contactRecency: "green" | "yellow" | "red";
 }
 
 interface Props {
@@ -75,6 +114,16 @@ const props = withDefaults(defineProps<Props>(), {
   interactions: () => [],
   schools: () => [],
 });
+
+const getContactRecency = (lastContactDate: string): "green" | "yellow" | "red" => {
+  const now = new Date();
+  const contactDate = new Date(lastContactDate);
+  const diffDays = Math.floor((now.getTime() - contactDate.getTime()) / 86400000);
+
+  if (diffDays <= 7) return "green";
+  if (diffDays <= 30) return "yellow";
+  return "red";
+};
 
 const recentContacts = computed((): ContactRecord[] => {
   if (!props.interactions || !props.schools) {
@@ -117,11 +166,14 @@ const recentContacts = computed((): ContactRecord[] => {
         return dateB - dateA;
       })[0];
 
+      const lastContactDate = mostRecent.occurred_at || mostRecent.created_at || "";
+
       contacts.push({
         schoolId,
         schoolName: school.name,
-        lastContactDate: mostRecent.occurred_at || mostRecent.created_at || "",
+        lastContactDate,
         contactCount: interactions.length,
+        contactRecency: getContactRecency(lastContactDate),
       });
     }
   });
@@ -132,6 +184,38 @@ const recentContacts = computed((): ContactRecord[] => {
     const dateB = new Date(b.lastContactDate).getTime();
     return dateB - dateA;
   });
+});
+
+const totalSchoolsTracked = computed(() => props.schools?.length || 0);
+
+const schoolsContactedLast7Days = computed(() => recentContacts.value.length);
+
+const averageContactFrequency = computed(() => {
+  if (!props.schools || props.schools.length === 0) return "0.0";
+  const totalInteractions = props.interactions?.length || 0;
+  const monthsTracked = 1; // One month average
+  const avg = totalInteractions / props.schools.length / monthsTracked;
+  return avg.toFixed(1);
+});
+
+const schoolsWithNoRecentContact = computed(() => {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  return (
+    props.schools?.filter((school) => {
+      const lastInteraction = props.interactions
+        ?.filter((i) => i.school_id === school.id)
+        ?.sort((a, b) => {
+          const dateA = new Date(a.occurred_at || a.created_at).getTime();
+          const dateB = new Date(b.occurred_at || b.created_at).getTime();
+          return dateB - dateA;
+        })[0];
+
+      if (!lastInteraction) return true;
+      return new Date(lastInteraction.occurred_at || lastInteraction.created_at) < thirtyDaysAgo;
+    }).length || 0
+  );
 });
 
 const formatLastContactDate = (date: string): string => {

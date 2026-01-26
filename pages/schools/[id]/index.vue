@@ -700,6 +700,15 @@
             @close="showUploadModal = false"
             @success="handleDocumentUploadSuccess"
           />
+
+          <!-- Email Send Modal -->
+          <EmailSendModal
+            v-if="showEmailModal"
+            :is-open="showEmailModal"
+            :recipient-email="schoolCoaches.length > 0 ? schoolCoaches[0].email : ''"
+            :recipient-name="school?.name || ''"
+            @close="showEmailModal = false"
+          />
         </div>
 
         <!-- Sidebar - Right Column -->
@@ -717,6 +726,13 @@
                 <ChatBubbleLeftRightIcon class="w-4 h-4" />
                 Log Interaction
               </NuxtLink>
+              <button
+                @click="showEmailModal = true"
+                class="block w-full px-4 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 transition text-center flex items-center justify-center gap-2"
+              >
+                <EnvelopeIcon class="w-4 h-4" />
+                Send Email
+              </button>
               <NuxtLink
                 :to="`/schools/${id}/coaches`"
                 class="block w-full px-4 py-2.5 bg-slate-600 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition text-center flex items-center justify-center gap-2"
@@ -868,6 +884,7 @@ import Header from "~/components/Header.vue";
 import SchoolLogo from "~/components/School/SchoolLogo.vue";
 import SchoolMap from "~/components/School/SchoolMap.vue";
 import NotesHistory from "~/components/School/NotesHistory.vue";
+import EmailSendModal from "~/components/EmailSendModal.vue";
 import {
   ArrowLeftIcon,
   MapPinIcon,
@@ -955,6 +972,7 @@ const editingBasicInfo = ref(false);
 const newPro = ref("");
 const newCon = ref("");
 const showUploadModal = ref(false);
+const showEmailModal = ref(false);
 const editedBasicInfo = ref({
   address: "",
   baseball_facility_address: "",

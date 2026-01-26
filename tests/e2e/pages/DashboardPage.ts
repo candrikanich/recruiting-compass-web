@@ -221,4 +221,47 @@ export class DashboardPage extends BasePage {
 
     return labels;
   }
+
+  // User Story 8.2 - Contact Frequency Summary Methods
+  async getContactFrequencySummaryMetrics() {
+    const totalSchools = await this.getText('[data-testid="metric-total-schools"]');
+    const contacted7Days = await this.getText('[data-testid="metric-contacted-7days"]');
+    const avgFrequency = await this.getText('[data-testid="metric-avg-frequency"]');
+    const needAttention = await this.getText('[data-testid="metric-need-attention"]');
+
+    return {
+      totalSchools: totalSchools.match(/\d+/)?.[0] || "0",
+      contacted7Days: contacted7Days.match(/\d+/)?.[0] || "0",
+      avgFrequency: avgFrequency.match(/\d+\.\d+/)?.[0] || "0.0",
+      needAttention: needAttention.match(/\d+/)?.[0] || "0",
+    };
+  }
+
+  async clickContactSchool(schoolId: string) {
+    const schoolLink = this.page.locator(`[data-testid="contacted-school-${schoolId}"]`);
+    await schoolLink.click();
+    await this.page.waitForURL((url) => url.pathname.includes("/schools/"));
+  }
+
+  async expectColorCoding(schoolId: string, expectedColor: "green" | "yellow" | "red") {
+    const schoolRow = this.page.locator(`[data-testid="contacted-school-${schoolId}"]`);
+    const classes = await schoolRow.getAttribute("class");
+    expect(classes).toContain(`border-${expectedColor}-500`);
+  }
+
+  async expectContactSummaryMetrics() {
+    await this.expectVisible('[data-testid="metric-total-schools"]');
+    await this.expectVisible('[data-testid="metric-contacted-7days"]');
+    await this.expectVisible('[data-testid="metric-avg-frequency"]');
+    await this.expectVisible('[data-testid="metric-need-attention"]');
+  }
+
+  async getSchoolRowCount(): Promise<number> {
+    return await this.getCount('[data-testid^="contacted-school-"]');
+  }
+
+  async expectMaxSchoolsDisplayed(maxCount: number = 5) {
+    const count = await this.getSchoolRowCount();
+    expect(count).toBeLessThanOrEqual(maxCount);
+  }
 }
