@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
     <!-- Coaches Card -->
     <NuxtLink
       v-if="showCoaches"
@@ -121,6 +121,56 @@
         class="absolute inset-0 rounded-xl ring-2 ring-white/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
       />
     </NuxtLink>
+
+    <!-- A-tier Schools Card -->
+    <NuxtLink
+      v-if="showATier"
+      data-testid="stat-card-a-tier"
+      to="/schools?tier=A"
+      class="relative group rounded-xl overflow-hidden"
+    >
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-600 opacity-90 group-hover:opacity-100 transition-opacity"
+      />
+      <div class="relative p-6 text-white">
+        <div class="flex items-start justify-between mb-4">
+          <div class="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
+            <AcademicCapIcon class="w-6 h-6" />
+          </div>
+        </div>
+        <div class="text-3xl font-bold mb-1">{{ aTierSchoolCount }}</div>
+        <div class="text-white/90 font-medium">A-tier</div>
+        <div class="text-white/70 text-sm mt-1">Priority schools</div>
+      </div>
+      <div
+        class="absolute inset-0 rounded-xl ring-2 ring-white/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+      />
+    </NuxtLink>
+
+    <!-- Monthly Contacts Card -->
+    <NuxtLink
+      v-if="showMonthlyContacts"
+      data-testid="stat-card-monthly-contacts"
+      to="/interactions"
+      class="relative group rounded-xl overflow-hidden"
+    >
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-teal-500 to-teal-600 opacity-90 group-hover:opacity-100 transition-opacity"
+      />
+      <div class="relative p-6 text-white">
+        <div class="flex items-start justify-between mb-4">
+          <div class="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
+            <CalendarIcon class="w-6 h-6" />
+          </div>
+        </div>
+        <div class="text-3xl font-bold mb-1">{{ contactsThisMonth }}</div>
+        <div class="text-white/90 font-medium">Contacts</div>
+        <div class="text-white/70 text-sm mt-1">This month</div>
+      </div>
+      <div
+        class="absolute inset-0 rounded-xl ring-2 ring-white/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+      />
+    </NuxtLink>
   </div>
 </template>
 
@@ -130,6 +180,8 @@ import {
   BuildingLibraryIcon,
   ChatBubbleLeftRightIcon,
   GiftIcon,
+  AcademicCapIcon,
+  CalendarIcon,
 } from "@heroicons/vue/24/outline";
 
 interface Props {
@@ -138,10 +190,14 @@ interface Props {
   interactionCount: number;
   totalOffers: number;
   acceptedOffers: number;
+  aTierSchoolCount: number;
+  contactsThisMonth: number;
   showCoaches?: boolean;
   showSchools?: boolean;
   showInteractions?: boolean;
   showOffers?: boolean;
+  showATier?: boolean;
+  showMonthlyContacts?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -149,5 +205,7 @@ withDefaults(defineProps<Props>(), {
   showSchools: true,
   showInteractions: true,
   showOffers: true,
+  showATier: true,
+  showMonthlyContacts: true,
 });
 </script>

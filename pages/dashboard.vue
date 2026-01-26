@@ -42,6 +42,8 @@
         :interaction-count="interactionCount"
         :total-offers="totalOffers"
         :accepted-offers="acceptedOffers"
+        :a-tier-school-count="aTierSchoolCount"
+        :contacts-this-month="contactsThisMonth"
       />
 
       <!-- Suggestions Component -->
@@ -77,6 +79,8 @@
           :upcoming-events="upcomingEvents"
           :notifications="recentNotifications"
           :tasks="userTasksComposable?.tasks.value || []"
+          :contact-frequency-interactions="allInteractions"
+          :schools="allSchools"
           @refresh-notifications="generateNotifications"
           @notification-click="handleNotificationClick"
           @add-task="addTask"
@@ -238,6 +242,19 @@ const totalOffers = computed(() => {
 
 const acceptedOffers = computed(() => {
   return allOffers.value.filter((o) => o.status === "accepted").length;
+});
+
+const aTierSchoolCount = computed(() => {
+  return allSchools.value.filter((s) => s.priority_tier === "A").length;
+});
+
+const contactsThisMonth = computed(() => {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  return allInteractions.value.filter((i) => {
+    const interactionDate = new Date(i.occurred_at || i.created_at || "");
+    return interactionDate >= startOfMonth && interactionDate <= now;
+  }).length;
 });
 
 // Calculate school size breakdown

@@ -52,6 +52,13 @@
       </NuxtLink>
     </div>
 
+    <!-- Contact Frequency -->
+    <ContactFrequencyWidget
+      v-if="contactFrequencyInteractions && schools"
+      :interactions="contactFrequencyInteractions"
+      :schools="schools"
+    />
+
     <!-- Recent Activity / Notifications -->
     <div
       v-if="showNotifications"
@@ -264,7 +271,8 @@ import {
   XMarkIcon,
   ShareIcon,
 } from "@heroicons/vue/24/outline";
-import type { Notification as NotificationModel } from "~/types/models";
+import type { Notification as NotificationModel, Interaction, School } from "~/types/models";
+import ContactFrequencyWidget from "~/components/Dashboard/ContactFrequencyWidget.vue";
 
 interface Event {
   id: string;
@@ -285,6 +293,8 @@ interface Props {
   upcomingEvents?: Event[];
   notifications?: Notification[];
   tasks?: Task[];
+  contactFrequencyInteractions?: Interaction[];
+  schools?: School[];
   showEvents?: boolean;
   showNotifications?: boolean;
   showTasks?: boolean;
@@ -295,6 +305,8 @@ const props = withDefaults(defineProps<Props>(), {
   upcomingEvents: () => [],
   notifications: () => [],
   tasks: () => [],
+  contactFrequencyInteractions: () => [],
+  schools: () => [],
   showEvents: true,
   showNotifications: true,
   showTasks: true,
