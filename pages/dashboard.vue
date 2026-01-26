@@ -92,6 +92,7 @@
 
       <!-- Additional Widgets (Full Width) -->
       <div class="mt-8 space-y-6">
+        <RecentActivityFeed v-if="showWidget('recentActivityFeed', 'widgets')" />
         <AthleteActivityWidget v-if="userStore.isParent && showWidget('athleteActivity', 'widgets')" />
         <LinkedAccountsWidget v-if="showWidget('linkedAccounts', 'widgets')" />
         <SchoolMapWidget
@@ -136,6 +137,7 @@ import SchoolMapWidget from "~/components/Dashboard/SchoolMapWidget.vue";
 import CoachFollowupWidget from "~/components/Dashboard/CoachFollowupWidget.vue";
 import AtAGlanceSummary from "~/components/Dashboard/AtAGlanceSummary.vue";
 import LinkedAccountsWidget from "~/components/Dashboard/LinkedAccountsWidget.vue";
+import RecentActivityFeed from "~/components/Dashboard/RecentActivityFeed.vue";
 import { EyeIcon } from "@heroicons/vue/24/solid";
 import { getCarnegieSize } from "~/utils/schoolSize";
 import type {
