@@ -1,7 +1,9 @@
 import { ref, computed } from "vue";
 import type { Suggestion } from "~/types/timeline";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 
 export function useSuggestions() {
+  const { $fetchAuth } = useAuthFetch();
   const suggestions = ref<Suggestion[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -20,7 +22,7 @@ export function useSuggestions() {
       const params = new URLSearchParams({ location });
       if (schoolId) params.append("schoolId", schoolId);
 
-      const response = await $fetch(`/api/suggestions?${params}`);
+      const response = await $fetchAuth(`/api/suggestions?${params}`);
       suggestions.value = response.suggestions;
       pendingCount.value = response.pendingCount || 0;
 
@@ -39,7 +41,7 @@ export function useSuggestions() {
 
   async function dismissSuggestion(suggestionId: string): Promise<void> {
     try {
-      await $fetch(`/api/suggestions/${suggestionId}/dismiss`, {
+      await $fetchAuth(`/api/suggestions/${suggestionId}/dismiss`, {
         method: "PATCH",
       });
       suggestions.value = suggestions.value.filter(
@@ -53,7 +55,7 @@ export function useSuggestions() {
 
   async function completeSuggestion(suggestionId: string): Promise<void> {
     try {
-      await $fetch(`/api/suggestions/${suggestionId}/complete`, {
+      await $fetchAuth(`/api/suggestions/${suggestionId}/complete`, {
         method: "PATCH",
       });
       suggestions.value = suggestions.value.filter(
@@ -67,7 +69,7 @@ export function useSuggestions() {
 
   async function surfaceMoreSuggestions(): Promise<void> {
     try {
-      await $fetch("/api/suggestions/surface", { method: "POST" });
+      await $fetchAuth("/api/suggestions/surface", { method: "POST" });
       await fetchSuggestions("dashboard");
     } catch (e: unknown) {
       error.value =
