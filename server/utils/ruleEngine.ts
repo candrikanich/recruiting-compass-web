@@ -1,8 +1,9 @@
 import type { Rule, RuleContext } from "./rules/index";
 import { isDuplicateSuggestion } from "./rules/index";
-import type { SuggestionData } from "~/types/timeline";
+import type { SuggestionData, Suggestion, Urgency } from "~/types/timeline";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isDeadPeriod } from "./ncaaRecruitingCalendar";
+import { escalateUrgency } from "./rules/ruleEngineHelpers";
 
 const CONTACT_RULES = [
   "interaction-gap",
@@ -70,15 +71,121 @@ export class RuleEngine {
     return suggestions;
   }
 
+  private async reEvaluateDismissedSuggestions(
+    supabase: SupabaseClient,
+    athleteId: string,
+    context: RuleContext,
+  ): Promise<SuggestionData[]> {
+    const reappearingSuggestions: SuggestionData[] = [];
+
+    // Fetch dismissed suggestions that are old enough for re-evaluation
+    const { data: dismissedSuggestions, error: fetchError } = await supabase
+      .from("suggestion")
+      .select("*")
+      .eq("athlete_id", athleteId)
+      .eq("dismissed", true)
+      .eq("reappeared", false)
+      .lte("dismissed_at", new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString());
+
+    if (fetchError || !dismissedSuggestions) {
+      console.error("Failed to fetch dismissed suggestions:", fetchError);
+      return [];
+    }
+
+    // Group dismissed suggestions by rule type
+    const suggestionsByRuleType = dismissedSuggestions.reduce(
+      (acc: Record<string, Suggestion[]>, sugg: unknown) => {
+        const suggestion = sugg as Suggestion;
+        if (!acc[suggestion.rule_type]) {
+          acc[suggestion.rule_type] = [];
+        }
+        acc[suggestion.rule_type].push(suggestion);
+        return acc;
+      },
+      {},
+    );
+
+    // Check each rule if it has re-evaluation support
+    for (const rule of this.rules) {
+      if (!rule.shouldReEvaluate) {
+        continue;
+      }
+
+      const dismissedForThisRule = suggestionsByRuleType[rule.id] || [];
+
+      for (const dismissedSuggestion of dismissedForThisRule) {
+        try {
+          // Check if this dismissed suggestion should be re-evaluated
+          const shouldReEvaluate = await rule.shouldReEvaluate(
+            dismissedSuggestion,
+            context,
+          );
+
+          if (shouldReEvaluate) {
+            // Re-evaluate the rule to get current suggestion data
+            const currentResult = await rule.evaluate(context);
+
+            if (currentResult) {
+              const currentSuggestions = Array.isArray(currentResult)
+                ? currentResult
+                : [currentResult];
+
+              // Find the corresponding suggestion for the dismissed school
+              const relatedSuggestion = currentSuggestions.find((s) => {
+                if (dismissedSuggestion.related_school_id) {
+                  return s.related_school_id === dismissedSuggestion.related_school_id;
+                }
+                return s.rule_type === dismissedSuggestion.rule_type;
+              });
+
+              if (relatedSuggestion) {
+                // Escalate urgency and mark as reappeared
+                reappearingSuggestions.push({
+                  ...relatedSuggestion,
+                  urgency: escalateUrgency(relatedSuggestion.urgency as Urgency),
+                  reappeared: true,
+                  previous_suggestion_id: dismissedSuggestion.id,
+                  condition_snapshot:
+                    rule.createConditionSnapshot?.(
+                      context,
+                      dismissedSuggestion.related_school_id,
+                    ) || null,
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.error(
+            `Re-evaluation failed for dismissed suggestion ${dismissedSuggestion.id}:`,
+            error,
+          );
+        }
+      }
+    }
+
+    return reappearingSuggestions;
+  }
+
   async generateSuggestions(
     supabase: SupabaseClient,
     athleteId: string,
     context: RuleContext,
   ): Promise<number> {
+    // Get new suggestions from normal rule evaluation
     const suggestions = await this.evaluateAll(context);
+
+    // Check for dismissed suggestions that should re-evaluate
+    const reappearingSuggestions = await this.reEvaluateDismissedSuggestions(
+      supabase,
+      athleteId,
+      context,
+    );
+
+    // Combine both regular and re-evaluated suggestions
+    const allSuggestions = [...suggestions, ...reappearingSuggestions];
     let insertedCount = 0;
 
-    for (const suggestion of suggestions) {
+    for (const suggestion of allSuggestions) {
       const isDuplicate = await isDuplicateSuggestion(
         supabase,
         athleteId,

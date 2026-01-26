@@ -17,9 +17,18 @@
 
       <!-- Content -->
       <div class="flex-1 min-w-0">
-        <p class="text-sm font-medium text-slate-900 mb-2">
-          {{ suggestion.message }}
-        </p>
+        <div class="flex items-center gap-2 mb-2">
+          <p class="text-sm font-medium text-slate-900">
+            {{ suggestion.message }}
+          </p>
+          <span
+            v-if="suggestion.reappeared"
+            class="inline-flex px-2 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded whitespace-nowrap"
+            title="This suggestion has returned because conditions have worsened"
+          >
+            Returned
+          </span>
+        </div>
 
         <!-- Action buttons -->
         <div class="flex items-center gap-2 flex-wrap">

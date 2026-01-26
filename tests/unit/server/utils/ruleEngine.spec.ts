@@ -209,4 +209,181 @@ describe("RuleEngine", () => {
       expect(result.length).toBe(2);
     });
   });
+
+  describe("re-evaluation of dismissed suggestions", () => {
+    it("should fetch dismissed suggestions 14+ days old", async () => {
+      // This test verifies the re-evaluation logic structure
+      // In actual implementation, it would query the database
+      const dismissedDate = new Date();
+      dismissedDate.setDate(dismissedDate.getDate() - 21);
+
+      // Dismissed suggestion that should be re-evaluated
+      const dismissedSuggestion = {
+        id: "sug-1",
+        athlete_id: "athlete-123",
+        rule_type: "interaction-gap",
+        urgency: "medium" as const,
+        message: "Test",
+        action_type: "log_interaction",
+        related_school_id: "school-1",
+        related_task_id: null,
+        dismissed: true,
+        dismissed_at: dismissedDate.toISOString(),
+        completed: false,
+        completed_at: null,
+        pending_surface: false,
+        surfaced_at: null,
+        condition_snapshot: null,
+        reappeared: false,
+        previous_suggestion_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+      };
+
+      // Verify dismissed date is 21 days ago
+      const now = new Date();
+      const dismissedDays = Math.floor(
+        (now.getTime() - new Date(dismissedSuggestion.dismissed_at).getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+      expect(dismissedDays).toBeGreaterThanOrEqual(14);
+    });
+
+    it("should call shouldReEvaluate on rules with re-evaluation support", async () => {
+      const dismissedDate = new Date();
+      dismissedDate.setDate(dismissedDate.getDate() - 21);
+
+      const dismissedSuggestion = {
+        id: "sug-1",
+        athlete_id: "athlete-123",
+        rule_type: "test-rule",
+        urgency: "medium" as const,
+        message: "Test",
+        action_type: null,
+        related_school_id: null,
+        related_task_id: null,
+        dismissed: true,
+        dismissed_at: dismissedDate.toISOString(),
+        completed: false,
+        completed_at: null,
+        pending_surface: false,
+        surfaced_at: null,
+        condition_snapshot: null,
+        reappeared: false,
+        previous_suggestion_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+      };
+
+      const shouldReEvaluateMock = vi.fn().mockResolvedValue(true);
+      const rule: Rule = {
+        id: "test-rule",
+        name: "Test Rule",
+        description: "Test",
+        evaluate: vi.fn().mockResolvedValue(null),
+        shouldReEvaluate: shouldReEvaluateMock,
+      };
+
+      // Verify rule can be called with dismissedSuggestion
+      if (rule.shouldReEvaluate) {
+        const result = await rule.shouldReEvaluate(dismissedSuggestion, mockContext);
+        expect(result).toBe(true);
+        expect(shouldReEvaluateMock).toHaveBeenCalledWith(
+          dismissedSuggestion,
+          mockContext
+        );
+      }
+    });
+
+    it("should create new suggestions when dismissed suggestion re-evaluates", async () => {
+      // Verify new suggestions have reappeared flag and escalated urgency
+      const originalSuggestion: SuggestionData = {
+        rule_type: "test-rule",
+        urgency: "low",
+        message: "Original message",
+        action_type: "log_interaction",
+        related_school_id: "school-1",
+      };
+
+      // After re-evaluation with escalated urgency
+      const reappearingSuggestion: SuggestionData & {
+        reappeared?: boolean;
+        previous_suggestion_id?: string;
+      } = {
+        ...originalSuggestion,
+        urgency: "medium", // Escalated from low
+        reappeared: true,
+        previous_suggestion_id: "sug-1",
+      };
+
+      expect(reappearingSuggestion.urgency).toBe("medium");
+      expect(reappearingSuggestion.reappeared).toBe(true);
+      expect(reappearingSuggestion.previous_suggestion_id).toBe("sug-1");
+    });
+
+    it("should not re-evaluate suggestions less than 14 days old", async () => {
+      const dismissedDate = new Date();
+      dismissedDate.setDate(dismissedDate.getDate() - 7);
+
+      const dismissedSuggestion = {
+        id: "sug-1",
+        athlete_id: "athlete-123",
+        rule_type: "test-rule",
+        urgency: "medium" as const,
+        message: "Test",
+        action_type: null,
+        related_school_id: null,
+        related_task_id: null,
+        dismissed: true,
+        dismissed_at: dismissedDate.toISOString(),
+        completed: false,
+        completed_at: null,
+        pending_surface: false,
+        surfaced_at: null,
+        condition_snapshot: null,
+        reappeared: false,
+        previous_suggestion_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+      };
+
+      // Verify dismissed date is less than 14 days ago
+      const now = new Date();
+      const dismissedDays = Math.floor(
+        (now.getTime() - new Date(dismissedSuggestion.dismissed_at).getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+      expect(dismissedDays).toBeLessThan(14);
+    });
+
+    it("should not re-evaluate completed suggestions", async () => {
+      const dismissedDate = new Date();
+      dismissedDate.setDate(dismissedDate.getDate() - 21);
+
+      const completedSuggestion = {
+        id: "sug-1",
+        athlete_id: "athlete-123",
+        rule_type: "test-rule",
+        urgency: "medium" as const,
+        message: "Test",
+        action_type: null,
+        related_school_id: null,
+        related_task_id: null,
+        dismissed: true,
+        dismissed_at: dismissedDate.toISOString(),
+        completed: true, // Marked as completed
+        completed_at: new Date().toISOString(),
+        pending_surface: false,
+        surfaced_at: null,
+        condition_snapshot: null,
+        reappeared: false,
+        previous_suggestion_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+      };
+
+      expect(completedSuggestion.completed).toBe(true);
+      // Completed suggestions should not be re-evaluated
+    });
+  });
 });

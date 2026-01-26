@@ -29,6 +29,9 @@ describe("SuggestionCard", () => {
       completed_at: null,
       pending_surface: false,
       surfaced_at: null,
+      condition_snapshot: null,
+      reappeared: false,
+      previous_suggestion_id: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -156,6 +159,47 @@ describe("SuggestionCard", () => {
       });
 
       expect(wrapper.text()).toContain("Take Action");
+    });
+  });
+
+  describe("reappeared badge", () => {
+    it("should display 'Returned' badge when reappeared is true", () => {
+      mockSuggestion.reappeared = true;
+      const wrapper = mount(SuggestionCard, {
+        props: { suggestion: mockSuggestion },
+      });
+
+      expect(wrapper.text()).toContain("Returned");
+    });
+
+    it("should not display 'Returned' badge when reappeared is false", () => {
+      mockSuggestion.reappeared = false;
+      const wrapper = mount(SuggestionCard, {
+        props: { suggestion: mockSuggestion },
+      });
+
+      expect(wrapper.text()).not.toContain("Returned");
+    });
+
+    it("should apply orange styling to returned badge", () => {
+      mockSuggestion.reappeared = true;
+      const wrapper = mount(SuggestionCard, {
+        props: { suggestion: mockSuggestion },
+      });
+
+      const badge = wrapper.find("span");
+      expect(badge.classes()).toContain("bg-orange-100");
+      expect(badge.classes()).toContain("text-orange-700");
+    });
+
+    it("should have descriptive title on returned badge", () => {
+      mockSuggestion.reappeared = true;
+      const wrapper = mount(SuggestionCard, {
+        props: { suggestion: mockSuggestion },
+      });
+
+      const badge = wrapper.find("span");
+      expect(badge.attributes("title")).toContain("condition");
     });
   });
 

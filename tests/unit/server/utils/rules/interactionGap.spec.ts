@@ -319,4 +319,275 @@ describe("interactionGapRule", () => {
       expect((suggestion.message as string).includes("35")).toBe(true);
     });
   });
+
+  describe("createConditionSnapshot", () => {
+    it("should create snapshot with days_since_contact and school_priority", async () => {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      mockContext.schools = [
+        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+      ] as unknown[];
+
+      mockContext.interactions = [
+        {
+          id: "int-1",
+          school_id: "school-1",
+          interaction_date: thirtyDaysAgo.toISOString(),
+        },
+      ] as unknown[];
+
+      const snapshot = interactionGapRule.createConditionSnapshot?.(
+        mockContext,
+        "school-1"
+      );
+
+      expect(snapshot).toBeDefined();
+      expect(snapshot).toHaveProperty("days_since_contact");
+      expect(snapshot).toHaveProperty("school_priority");
+      expect(snapshot).toHaveProperty("school_status");
+    });
+
+    it("should correctly calculate days_since_contact", async () => {
+      const twentyDaysAgo = new Date();
+      twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);
+
+      mockContext.schools = [
+        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+      ] as unknown[];
+
+      mockContext.interactions = [
+        {
+          id: "int-1",
+          school_id: "school-1",
+          interaction_date: twentyDaysAgo.toISOString(),
+        },
+      ] as unknown[];
+
+      const snapshot = interactionGapRule.createConditionSnapshot?.(
+        mockContext,
+        "school-1"
+      ) as Record<string, unknown>;
+
+      expect(snapshot.days_since_contact).toBe(20);
+    });
+
+    it("should capture school priority from priority_tier field", async () => {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      mockContext.schools = [
+        { id: "school-1", priority_tier: "A", status: "interested", name: "School 1" },
+      ] as unknown[];
+
+      mockContext.interactions = [
+        {
+          id: "int-1",
+          school_id: "school-1",
+          interaction_date: thirtyDaysAgo.toISOString(),
+        },
+      ] as unknown[];
+
+      const snapshot = interactionGapRule.createConditionSnapshot?.(
+        mockContext,
+        "school-1"
+      ) as Record<string, unknown>;
+
+      expect(snapshot.school_priority).toBe("A");
+    });
+  });
+
+  describe("shouldReEvaluate", () => {
+    it("returns false if dismissed < 14 days ago", async () => {
+      const dismissedDate = new Date();
+      dismissedDate.setDate(dismissedDate.getDate() - 7);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      mockContext.schools = [
+        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+      ] as unknown[];
+
+      mockContext.interactions = [
+        {
+          id: "int-1",
+          school_id: "school-1",
+          interaction_date: thirtyDaysAgo.toISOString(),
+        },
+      ] as unknown[];
+
+      const dismissedSuggestion = {
+        id: "sug-1",
+        athlete_id: "athlete-123",
+        rule_type: "interaction-gap",
+        urgency: "medium" as const,
+        message: "Test",
+        action_type: null,
+        related_school_id: "school-1",
+        related_task_id: null,
+        dismissed: true,
+        dismissed_at: dismissedDate.toISOString(),
+        completed: false,
+        completed_at: null,
+        pending_surface: false,
+        surfaced_at: null,
+        condition_snapshot: { days_since_contact: 21, school_priority: "A" },
+        reappeared: false,
+        previous_suggestion_id: null,
+        created_at: null,
+        updated_at: null,
+      };
+
+      const result = await interactionGapRule.shouldReEvaluate?.(
+        dismissedSuggestion,
+        mockContext
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it("returns true if gap increased by 14+ days", async () => {
+      const dismissedDate = new Date();
+      dismissedDate.setDate(dismissedDate.getDate() - 21); // Dismissed 21 days ago
+      const thirtyfiveDaysAgo = new Date();
+      thirtyfiveDaysAgo.setDate(thirtyfiveDaysAgo.getDate() - 35); // Now 35 days gap
+
+      mockContext.schools = [
+        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+      ] as unknown[];
+
+      mockContext.interactions = [
+        {
+          id: "int-1",
+          school_id: "school-1",
+          interaction_date: thirtyfiveDaysAgo.toISOString(),
+        },
+      ] as unknown[];
+
+      const dismissedSuggestion = {
+        id: "sug-1",
+        athlete_id: "athlete-123",
+        rule_type: "interaction-gap",
+        urgency: "medium" as const,
+        message: "Test",
+        action_type: null,
+        related_school_id: "school-1",
+        related_task_id: null,
+        dismissed: true,
+        dismissed_at: dismissedDate.toISOString(),
+        completed: false,
+        completed_at: null,
+        pending_surface: false,
+        surfaced_at: null,
+        condition_snapshot: { days_since_contact: 21, school_priority: "A" },
+        reappeared: false,
+        previous_suggestion_id: null,
+        created_at: null,
+        updated_at: null,
+      };
+
+      const result = await interactionGapRule.shouldReEvaluate?.(
+        dismissedSuggestion,
+        mockContext
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it("returns true if school priority changed", async () => {
+      const dismissedDate = new Date();
+      dismissedDate.setDate(dismissedDate.getDate() - 21);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      mockContext.schools = [
+        { id: "school-1", priority: "B", status: "interested", name: "School 1" }, // Changed to B
+      ] as unknown[];
+
+      mockContext.interactions = [
+        {
+          id: "int-1",
+          school_id: "school-1",
+          interaction_date: thirtyDaysAgo.toISOString(),
+        },
+      ] as unknown[];
+
+      const dismissedSuggestion = {
+        id: "sug-1",
+        athlete_id: "athlete-123",
+        rule_type: "interaction-gap",
+        urgency: "medium" as const,
+        message: "Test",
+        action_type: null,
+        related_school_id: "school-1",
+        related_task_id: null,
+        dismissed: true,
+        dismissed_at: dismissedDate.toISOString(),
+        completed: false,
+        completed_at: null,
+        pending_surface: false,
+        surfaced_at: null,
+        condition_snapshot: { days_since_contact: 21, school_priority: "A" }, // Was A
+        reappeared: false,
+        previous_suggestion_id: null,
+        created_at: null,
+        updated_at: null,
+      };
+
+      const result = await interactionGapRule.shouldReEvaluate?.(
+        dismissedSuggestion,
+        mockContext
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it("returns false if gap only increased by < 14 days", async () => {
+      const dismissedDate = new Date();
+      dismissedDate.setDate(dismissedDate.getDate() - 21);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30); // Only 30 days, was 21
+
+      mockContext.schools = [
+        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+      ] as unknown[];
+
+      mockContext.interactions = [
+        {
+          id: "int-1",
+          school_id: "school-1",
+          interaction_date: thirtyDaysAgo.toISOString(),
+        },
+      ] as unknown[];
+
+      const dismissedSuggestion = {
+        id: "sug-1",
+        athlete_id: "athlete-123",
+        rule_type: "interaction-gap",
+        urgency: "medium" as const,
+        message: "Test",
+        action_type: null,
+        related_school_id: "school-1",
+        related_task_id: null,
+        dismissed: true,
+        dismissed_at: dismissedDate.toISOString(),
+        completed: false,
+        completed_at: null,
+        pending_surface: false,
+        surfaced_at: null,
+        condition_snapshot: { days_since_contact: 21, school_priority: "A" },
+        reappeared: false,
+        previous_suggestion_id: null,
+        created_at: null,
+        updated_at: null,
+      };
+
+      const result = await interactionGapRule.shouldReEvaluate?.(
+        dismissedSuggestion,
+        mockContext
+      );
+
+      expect(result).toBe(false);
+    });
+  });
 });

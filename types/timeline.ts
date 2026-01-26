@@ -156,6 +156,9 @@ export interface Suggestion {
   completed_at: string | null;
   pending_surface: boolean;
   surfaced_at: string | null;
+  condition_snapshot: Record<string, unknown> | null;
+  reappeared: boolean;
+  previous_suggestion_id: string | null;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -167,6 +170,9 @@ export interface SuggestionData {
   action_type: string;
   related_school_id?: string;
   related_task_id?: string;
+  reappeared?: boolean;
+  previous_suggestion_id?: string | null;
+  condition_snapshot?: Record<string, unknown> | null;
 }
 
 // Parent View Types
