@@ -46,6 +46,62 @@
         :contacts-this-month="contactsThisMonth"
       />
 
+      <!-- Athlete Tools Bar -->
+      <div class="flex flex-wrap gap-3 my-6">
+        <button
+          @click="handleGeneratePacket"
+          :disabled="recruitingPacketLoading"
+          class="inline-flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200"
+          :class="recruitingPacketLoading
+            ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
+            : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow-md'"
+        >
+          <svg
+            v-if="!recruitingPacketLoading"
+            class="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 19l9 2-9-18-9 18 9-2m0 0v-8m0 8l-4-2m4 2l4-2"
+            />
+          </svg>
+          <svg
+            v-else
+            class="w-4 h-4 mr-2 animate-spin"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            />
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+          {{ recruitingPacketLoading ? "Generating..." : "Generate Recruiting Packet" }}
+        </button>
+      </div>
+
+      <!-- Recruiting Packet Error -->
+      <div
+        v-if="recruitingPacketError"
+        class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"
+      >
+        {{ recruitingPacketError }}
+      </div>
+
       <!-- Suggestions Component -->
       <DashboardSuggestions
         :suggestions="suggestionsComposable?.dashboardSuggestions.value || []"
@@ -128,6 +184,7 @@ import { useUserPreferences } from "~/composables/useUserPreferences";
 import { useSuggestions } from "~/composables/useSuggestions";
 import { useParentContext } from "~/composables/useParentContext";
 import { useViewLogging } from "~/composables/useViewLogging";
+import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
 import DashboardCharts from "~/components/Dashboard/DashboardCharts.vue";
@@ -168,8 +225,11 @@ const userTasksComposable = useUserTasks();
 const suggestionsComposable = useSuggestions();
 const parentContextComposable = useParentContext();
 const viewLoggingComposable = useViewLogging();
+const recruitingPacketComposable = useRecruitingPacket();
 
 const user = ref<any>(null);
+const recruitingPacketLoading = ref(false);
+const recruitingPacketError = ref<string | null>(null);
 const coachCount = ref(0);
 const schoolCount = ref(0);
 const interactionCount = ref(0);
@@ -463,6 +523,24 @@ const generateNotifications = async () => {
 const handleNotificationClick = (notification: Notification) => {
   if (!notification.read_at && notificationsComposable) {
     notificationsComposable.markAsRead(notification.id);
+  }
+};
+
+const handleGeneratePacket = async () => {
+  recruitingPacketLoading.value = true;
+  recruitingPacketError.value = null;
+
+  try {
+    await recruitingPacketComposable.openPacketPreview();
+    showToast("Recruiting packet generated successfully!", "success");
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to generate recruiting packet";
+    recruitingPacketError.value = message;
+    showToast(message, "error");
+    console.error("Packet generation error:", err);
+  } finally {
+    recruitingPacketLoading.value = false;
   }
 };
 
