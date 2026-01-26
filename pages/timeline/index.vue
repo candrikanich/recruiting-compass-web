@@ -165,6 +165,9 @@
           <!-- Portfolio Health -->
           <PortfolioHealth />
 
+          <!-- Overall Status Card -->
+          <OverallStatusCard />
+
           <!-- Status Breakdown (if available) -->
           <div
             v-if="!statusLoading && scoreBreakdown"
@@ -329,6 +332,7 @@ import { useStatusScore } from "~/composables/useStatusScore";
 import type { Phase, TaskWithStatus, StatusLabel } from "~/types/timeline";
 import PhaseCardInline from "~/components/Timeline/PhaseCardInline.vue";
 import PortfolioHealth from "~/components/Timeline/PortfolioHealth.vue";
+import OverallStatusCard from "~/components/Timeline/OverallStatusCard.vue";
 import WhatMattersNow from "~/components/Timeline/WhatMattersNow.vue";
 import CommonWorries from "~/components/Timeline/CommonWorries.vue";
 import WhatNotToStress from "~/components/Timeline/WhatNotToStress.vue";
