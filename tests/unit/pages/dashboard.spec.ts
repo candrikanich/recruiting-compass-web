@@ -139,7 +139,11 @@ describe("Dashboard Page Logic", () => {
   describe("contactsThisMonth computed property", () => {
     it("counts interactions occurring this month", () => {
       const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const currentMonth = now.getUTCMonth();
+      const currentYear = now.getUTCFullYear();
+
+      // Use UTC to avoid timezone conversion ambiguity
+      const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
 
       const interactions: Interaction[] = [
         {
@@ -147,16 +151,18 @@ describe("Dashboard Page Logic", () => {
           school_id: "school-1",
           type: "email",
           direction: "outbound",
-          occurred_at: new Date(now.getFullYear(), now.getMonth(), 15).toISOString(),
+          occurred_at: new Date(Date.UTC(currentYear, currentMonth, 15, 12, 0, 0)).toISOString(),
           logged_by: "user-1",
+          created_at: new Date().toISOString(),
         },
         {
           id: "2",
           school_id: "school-2",
           type: "email",
           direction: "outbound",
-          occurred_at: new Date(now.getFullYear(), now.getMonth(), 20).toISOString(),
+          occurred_at: new Date(Date.UTC(currentYear, currentMonth, 20, 14, 30, 0)).toISOString(),
           logged_by: "user-1",
+          created_at: new Date().toISOString(),
         },
       ];
 
@@ -170,8 +176,13 @@ describe("Dashboard Page Logic", () => {
 
     it("excludes interactions from previous month", () => {
       const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 15);
+      const currentMonth = now.getUTCMonth();
+      const currentYear = now.getUTCFullYear();
+
+      // Use UTC to avoid timezone conversion ambiguity
+      const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+      const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+      const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
       const interactions: Interaction[] = [
         {
@@ -179,16 +190,18 @@ describe("Dashboard Page Logic", () => {
           school_id: "school-1",
           type: "email",
           direction: "outbound",
-          occurred_at: lastMonth.toISOString(),
+          occurred_at: new Date(Date.UTC(previousYear, previousMonth, 28, 12, 0, 0)).toISOString(),
           logged_by: "user-1",
+          created_at: new Date().toISOString(),
         },
         {
           id: "2",
           school_id: "school-2",
           type: "email",
           direction: "outbound",
-          occurred_at: new Date(now.getFullYear(), now.getMonth(), 15).toISOString(),
+          occurred_at: new Date(Date.UTC(currentYear, currentMonth, 15, 12, 0, 0)).toISOString(),
           logged_by: "user-1",
+          created_at: new Date().toISOString(),
         },
       ];
 
@@ -202,8 +215,13 @@ describe("Dashboard Page Logic", () => {
 
     it("excludes interactions from future months", () => {
       const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 15);
+      const currentMonth = now.getUTCMonth();
+      const currentYear = now.getUTCFullYear();
+
+      // Use UTC to avoid timezone conversion ambiguity
+      const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+      const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+      const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
 
       const interactions: Interaction[] = [
         {
@@ -211,16 +229,18 @@ describe("Dashboard Page Logic", () => {
           school_id: "school-1",
           type: "email",
           direction: "outbound",
-          occurred_at: nextMonth.toISOString(),
+          occurred_at: new Date(Date.UTC(nextYear, nextMonth, 15, 12, 0, 0)).toISOString(),
           logged_by: "user-1",
+          created_at: new Date().toISOString(),
         },
         {
           id: "2",
           school_id: "school-2",
           type: "email",
           direction: "outbound",
-          occurred_at: new Date(now.getFullYear(), now.getMonth(), 15).toISOString(),
+          occurred_at: new Date(Date.UTC(currentYear, currentMonth, 15, 12, 0, 0)).toISOString(),
           logged_by: "user-1",
+          created_at: new Date().toISOString(),
         },
       ];
 
@@ -234,8 +254,13 @@ describe("Dashboard Page Logic", () => {
 
     it("returns 0 when no interactions this month", () => {
       const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 15);
+      const currentMonth = now.getUTCMonth();
+      const currentYear = now.getUTCFullYear();
+
+      // Use UTC to avoid timezone conversion ambiguity
+      const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+      const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+      const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
       const interactions: Interaction[] = [
         {
@@ -243,8 +268,9 @@ describe("Dashboard Page Logic", () => {
           school_id: "school-1",
           type: "email",
           direction: "outbound",
-          occurred_at: lastMonth.toISOString(),
+          occurred_at: new Date(Date.UTC(previousYear, previousMonth, 28, 12, 0, 0)).toISOString(),
           logged_by: "user-1",
+          created_at: new Date().toISOString(),
         },
       ];
 
