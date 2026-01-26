@@ -15,6 +15,11 @@ import { eventFollowUpRule } from "~/server/utils/rules/eventFollowUp";
 import { videoLinkHealthRule } from "~/server/utils/rules/videoLinkHealth";
 import { portfolioHealthRule } from "~/server/utils/rules/portfolioHealth";
 import { prioritySchoolReminderRule } from "~/server/utils/rules/prioritySchoolReminder";
+import { schoolListRule } from "~/server/utils/rules/schoolList";
+import { showcaseAttendanceRule } from "~/server/utils/rules/showcaseAttendance";
+import { ncaaRegistrationRule } from "~/server/utils/rules/ncaaRegistration";
+import { formalOutreachRule } from "~/server/utils/rules/formalOutreach";
+import { officialVisitRule } from "~/server/utils/rules/officialVisit";
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
@@ -56,6 +61,13 @@ export default defineEventHandler(async (event) => {
     };
 
     const engine = new RuleEngine([
+      // Phase-critical rules first
+      ncaaRegistrationRule,
+      schoolListRule,
+      officialVisitRule,
+      formalOutreachRule,
+      showcaseAttendanceRule,
+      // Existing rules
       interactionGapRule,
       missingVideoRule,
       eventFollowUpRule,

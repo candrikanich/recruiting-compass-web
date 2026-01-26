@@ -33,6 +33,14 @@
           </button>
 
           <button
+            @click="showHelpModal = true"
+            class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
+            title="Learn more about this suggestion"
+          >
+            Learn More
+          </button>
+
+          <button
             @click="$emit('dismiss', suggestion.id)"
             class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
           >
@@ -42,10 +50,19 @@
       </div>
     </div>
   </div>
+
+  <!-- Help Modal -->
+  <SuggestionHelpModal
+    :is-open="showHelpModal"
+    :rule-type="suggestion.rule_type"
+    :urgency="suggestion.urgency"
+    @close="showHelpModal = false"
+    @action="handleAction"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import type { Suggestion } from "~/types/timeline";
 
 interface Props {
@@ -56,6 +73,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   showAction: true,
 });
+
+const showHelpModal = ref(false);
 
 defineEmits<{
   action: [suggestionId: string];
