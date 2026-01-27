@@ -250,6 +250,7 @@ describe("useCoaches", () => {
           role: "assistant",
           school_id: "school-123",
           twitter_handle: "coachdoe",
+          user_id: "user-123",
         },
       ]);
 
