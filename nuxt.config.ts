@@ -66,6 +66,13 @@ export default defineNuxtConfig({
         process.env.NUXT_PUBLIC_USE_CONSOLIDATED_COMPOSABLES === "true",
       serverSidePreferences:
         process.env.NUXT_PUBLIC_SERVER_SIDE_PREFERENCES === "true",
+      // Phase 3: Composable Consolidation feature flags
+      useConsolidatedFiles:
+        process.env.NUXT_PUBLIC_USE_CONSOLIDATED_FILES !== "false",
+      useConsolidatedPerformance:
+        process.env.NUXT_PUBLIC_USE_CONSOLIDATED_PERFORMANCE !== "false",
+      useConsolidatedInteractions:
+        process.env.NUXT_PUBLIC_USE_CONSOLIDATED_INTERACTIONS !== "false",
     },
   },
 });

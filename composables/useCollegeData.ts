@@ -19,13 +19,98 @@ export interface CollegeDataResult {
   longitude: number | null;
 }
 
+/**
+ * Session-based cache for College Scorecard lookups (inlined from useCollegeScorecardCache)
+ */
+let scoreboardCache: Map<string, CollegeDataResult> | null = null;
+
 export const useCollegeData = () => {
   const data = ref<CollegeDataResult | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const cacheSize = ref(0);
 
   const config = useRuntimeConfig();
   const apiKey = config.public.collegeScorecardApiKey as string;
+
+  /**
+   * Initialize cache if not already done
+   */
+  const initializeCache = () => {
+    if (!scoreboardCache) {
+      scoreboardCache = new Map();
+    }
+  };
+
+  /**
+   * Get cached result for a normalized school name
+   */
+  const getCached = (normalizedName: string): CollegeDataResult | null => {
+    initializeCache();
+    return scoreboardCache!.get(normalizedName) || null;
+  };
+
+  /**
+   * Store result in cache
+   */
+  const setCached = (
+    normalizedName: string,
+    result: CollegeDataResult,
+  ): void => {
+    initializeCache();
+    scoreboardCache!.set(normalizedName, result);
+    cacheSize.value = scoreboardCache!.size;
+  };
+
+  /**
+   * Check if result is cached
+   */
+  const isCached = (normalizedName: string): boolean => {
+    initializeCache();
+    return scoreboardCache!.has(normalizedName);
+  };
+
+  /**
+   * Clear all cache entries
+   */
+  const clearCache = (): void => {
+    if (scoreboardCache) {
+      scoreboardCache.clear();
+      cacheSize.value = 0;
+    }
+  };
+
+  /**
+   * Invalidate cache entry for a specific school
+   */
+  const invalidateEntry = (normalizedName: string): void => {
+    if (scoreboardCache?.has(normalizedName)) {
+      scoreboardCache.delete(normalizedName);
+      cacheSize.value = scoreboardCache.size;
+    }
+  };
+
+  /**
+   * Get current cache statistics
+   */
+  const getCacheStats = () => {
+    initializeCache();
+    return {
+      size: scoreboardCache!.size,
+      entries: Array.from(scoreboardCache!.keys()),
+    };
+  };
+
+  /**
+   * Preload cache with multiple entries
+   */
+  const preloadCache = (entries: Array<[string, CollegeDataResult]>): void => {
+    initializeCache();
+    for (const [key, value] of entries) {
+      scoreboardCache!.set(key, value);
+    }
+    cacheSize.value = scoreboardCache!.size;
+  };
 
   /**
    * Format website URL to include protocol and sanitize
@@ -109,6 +194,14 @@ export const useCollegeData = () => {
       return null;
     }
 
+    // Check cache first
+    const normalizedName = schoolName.toLowerCase().trim();
+    if (isCached(normalizedName)) {
+      const cached = getCached(normalizedName);
+      data.value = cached;
+      return cached;
+    }
+
     loading.value = true;
     error.value = null;
     data.value = null;
@@ -154,6 +247,8 @@ export const useCollegeData = () => {
 
       const result = transformData(apiData.results[0]);
       data.value = result;
+      // Cache the result
+      setCached(normalizedName, result);
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
@@ -178,6 +273,14 @@ export const useCollegeData = () => {
     if (!apiKey) {
       error.value = "College Scorecard API not configured";
       return null;
+    }
+
+    // Check cache first using ID as key
+    const cacheKey = `id:${scoreId}`;
+    if (isCached(cacheKey)) {
+      const cached = getCached(cacheKey);
+      data.value = cached;
+      return cached;
     }
 
     loading.value = true;
@@ -218,6 +321,8 @@ export const useCollegeData = () => {
 
       const result = transformData(apiData.results[0]);
       data.value = result;
+      // Cache the result
+      setCached(cacheKey, result);
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
@@ -232,7 +337,16 @@ export const useCollegeData = () => {
     data,
     loading,
     error,
+    cacheSize,
     fetchByName,
     fetchById,
+    // Cache methods (inlined from useCollegeScorecardCache)
+    getCached,
+    setCached,
+    isCached,
+    clearCache,
+    invalidateEntry,
+    getCacheStats,
+    preloadCache,
   };
 };

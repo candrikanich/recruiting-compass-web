@@ -3,6 +3,7 @@ import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { Interaction } from "~/types/models";
 import type { Database } from "~/types/database";
+import type { AuditLog } from "~/types/database-helpers";
 import { interactionSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
 
@@ -11,6 +12,15 @@ type InteractionInsert = Database["public"]["Tables"]["interactions"]["Insert"];
 type InteractionUpdate = Database["public"]["Tables"]["interactions"]["Update"];
 type NotificationInsert =
   Database["public"]["Tables"]["notifications"]["Insert"];
+
+export interface NoteHistoryEntry {
+  id: string;
+  timestamp: string;
+  editedBy: string;
+  editedByName?: string;
+  previousContent: string | null;
+  currentContent: string | null;
+}
 
 /**
  * useInteractions composable
@@ -60,6 +70,11 @@ export const useInteractions = (): {
     athleteUserId: string,
     filters?: Omit<InteractionFilters, "loggedBy">,
   ) => Promise<void>;
+  noteHistory: ComputedRef<NoteHistoryEntry[]>;
+  noteHistoryLoading: ComputedRef<boolean>;
+  noteHistoryError: ComputedRef<string | null>;
+  formattedNoteHistory: ComputedRef<Array<NoteHistoryEntry & { formattedTime: string; isCurrentVersion: boolean }>>;
+  fetchNoteHistory: (schoolId: string) => Promise<void>;
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
@@ -67,6 +82,11 @@ export const useInteractions = (): {
   const interactions = ref<Interaction[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
+
+  // Note history state (consolidated from useNotesHistory)
+  const noteHistory = ref<NoteHistoryEntry[]>([]);
+  const noteHistoryLoading = ref(false);
+  const noteHistoryError = ref<string | null>(null);
 
   const fetchInteractions = async (filters?: {
     schoolId?: string;
@@ -503,6 +523,68 @@ export const useInteractions = (): {
     });
   };
 
+  // Fetch note history from audit logs (consolidated from useNotesHistory)
+  const fetchNoteHistory = async (schoolId: string): Promise<void> => {
+    if (!userStore.user) return;
+
+    noteHistoryLoading.value = true;
+    noteHistoryError.value = null;
+
+    try {
+      // Query audit logs for note updates on this school
+      const { data, error: fetchError } = await supabase
+        .from("audit_logs")
+        .select("*")
+        .eq("user_id", userStore.user.id)
+        .eq("resource_type", "school")
+        .eq("resource_id", schoolId)
+        .eq("action", "UPDATE")
+        .order("created_at", { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      // Filter logs that contain note changes
+      const noteEntries: NoteHistoryEntry[] = [];
+
+      if (data) {
+        for (const log of data) {
+          const auditLog = log as AuditLog;
+
+          // Check if this log entry includes a notes field change
+          if (
+            auditLog.new_values?.notes !== undefined ||
+            auditLog.old_values?.notes !== undefined
+          ) {
+            noteEntries.push({
+              id: auditLog.id,
+              timestamp: auditLog.created_at || new Date().toISOString(),
+              editedBy: auditLog.user_id || "Unknown",
+              previousContent: auditLog.old_values?.notes || null,
+              currentContent: auditLog.new_values?.notes || null,
+            });
+          }
+        }
+      }
+
+      noteHistory.value = noteEntries;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch note history";
+      noteHistoryError.value = message;
+      noteHistory.value = [];
+    } finally {
+      noteHistoryLoading.value = false;
+    }
+  };
+
+  const formattedNoteHistory = computed(() => {
+    return noteHistory.value.map((entry) => ({
+      ...entry,
+      formattedTime: new Date(entry.timestamp).toLocaleString(),
+      isCurrentVersion: entry === noteHistory.value[0], // Most recent is current
+    }));
+  });
+
   return {
     interactions: computed(() => interactions.value),
     loading: computed(() => loading.value),
@@ -517,5 +599,10 @@ export const useInteractions = (): {
     downloadCSV,
     fetchMyInteractions,
     fetchAthleteInteractions,
+    noteHistory: computed(() => noteHistory.value),
+    noteHistoryLoading: computed(() => noteHistoryLoading.value),
+    noteHistoryError: computed(() => noteHistoryError.value),
+    formattedNoteHistory,
+    fetchNoteHistory,
   };
 };

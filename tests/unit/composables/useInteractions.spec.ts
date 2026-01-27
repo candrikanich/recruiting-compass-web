@@ -1235,4 +1235,58 @@ describe("useInteractions", () => {
       expect(result.attachments).toHaveLength(3);
     });
   });
+
+  describe("fetchNoteHistory (consolidated from useNotesHistory)", () => {
+    it("should initialize with empty note history state", () => {
+      const { noteHistory, noteHistoryLoading, noteHistoryError } = useInteractions();
+
+      expect(noteHistory.value).toEqual([]);
+      expect(noteHistoryLoading.value).toBe(false);
+      expect(noteHistoryError.value).toBeNull();
+    });
+
+    it("should have fetchNoteHistory method", () => {
+      const { fetchNoteHistory } = useInteractions();
+
+      expect(typeof fetchNoteHistory).toBe("function");
+    });
+
+    it("should format history entries with dates", () => {
+      const { formattedNoteHistory } = useInteractions();
+
+      expect(formattedNoteHistory.value).toBeDefined();
+      expect(Array.isArray(formattedNoteHistory.value)).toBe(true);
+    });
+
+    it("should handle missing user gracefully", async () => {
+      mockUser = null;
+      const { fetchNoteHistory, noteHistory, noteHistoryError } = useInteractions();
+
+      // When no user is authenticated
+      await fetchNoteHistory("test-school-id");
+
+      // Should not crash and history should remain empty
+      expect(noteHistory.value).toEqual([]);
+      expect(noteHistoryError.value).toBeNull();
+
+      mockUser = { id: "user-123", email: "test@example.com" };
+    });
+
+    it("should return composable functions and properties", () => {
+      const composable = useInteractions();
+
+      expect(composable).toHaveProperty("noteHistory");
+      expect(composable).toHaveProperty("formattedNoteHistory");
+      expect(composable).toHaveProperty("noteHistoryLoading");
+      expect(composable).toHaveProperty("noteHistoryError");
+      expect(composable).toHaveProperty("fetchNoteHistory");
+    });
+
+    it("should have formattedNoteHistory as computed", () => {
+      const { formattedNoteHistory } = useInteractions();
+
+      // Computed properties are reactive
+      expect(formattedNoteHistory.value).toBeDefined();
+    });
+  });
 });

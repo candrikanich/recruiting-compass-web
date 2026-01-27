@@ -627,6 +627,88 @@ export const useSearchConsolidated = () => {
     }
   };
 
+  /**
+   * Get college name suggestions from College Scorecard API
+   * Merged from useCollegeAutocomplete for unified search interface
+   * Requires minimum 3 characters to avoid excessive API calls
+   */
+  const getCollegeSuggestions = async (query: string): Promise<
+    Array<{
+      id: string;
+      name: string;
+      location: string;
+    }>
+  > => {
+    // Clear on short queries
+    if (query.length < 3) return [];
+
+    const config = useRuntimeConfig();
+    const apiKey = config.public.collegeScorecardApiKey as string;
+
+    if (!apiKey) {
+      return [];
+    }
+
+    try {
+      const params = new URLSearchParams({
+        api_key: apiKey,
+        "school.name": query,
+        fields:
+          "id,school.name,school.city,school.state,location.lat,location.lon",
+        per_page: "10",
+      });
+
+      const url = `https://api.data.gov/ed/collegescorecard/v1/schools?${params.toString()}`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        return [];
+      }
+
+      const data = (await response.json()) as {
+        results?: Array<{
+          id: number;
+          "school.name": string;
+          "school.city": string;
+          "school.state": string;
+        }>;
+      };
+
+      if (!data.results || data.results.length === 0) {
+        return [];
+      }
+
+      // Deduplicate and transform results
+      const uniqueSchools = new Map<
+        string,
+        {
+          id: string;
+          name: string;
+          location: string;
+        }
+      >();
+
+      for (const school of data.results) {
+        const id = String(school.id);
+        if (!uniqueSchools.has(id)) {
+          const city = school["school.city"] || "";
+          const state = school["school.state"] || "";
+          const location = [city, state].filter(Boolean).join(", ");
+
+          uniqueSchools.set(id, {
+            id,
+            name: school["school.name"],
+            location,
+          });
+        }
+      }
+
+      return Array.from(uniqueSchools.values());
+    } catch {
+      return [];
+    }
+  };
+
   return {
     // Search state
     query,
@@ -659,8 +741,9 @@ export const useSearchConsolidated = () => {
     // Cache methods
     clearCache,
 
-    // Suggestions
+    // Suggestions (including college autocomplete inlined from useCollegeAutocomplete)
     getSchoolSuggestions,
     getCoachSuggestions,
+    getCollegeSuggestions,
   };
 };
