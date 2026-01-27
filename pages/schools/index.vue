@@ -161,11 +161,11 @@
                   max: parseInt(($event.target as HTMLInputElement).value),
                 })
               "
-              :disabled="!homeLocation"
+              :disabled="!userHomeLocation"
               class="w-full h-2.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
             />
             <p
-              v-if="!homeLocation"
+              v-if="!userHomeLocation"
               class="text-xs text-amber-700 mt-1 px-2 py-0.5 bg-amber-50 rounded border border-amber-200"
             >
               ⚠️ Set home location
@@ -580,7 +580,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useSchools } from "~/composables/useSchools";
 import { useSchoolLogos } from "~/composables/useSchoolLogos";
 import { useSchoolMatching } from "~/composables/useSchoolMatching";
-import { useUserPreferences } from "~/composables/useUserPreferences";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useOffers } from "~/composables/useOffers";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoaches } from "~/composables/useCoaches";
@@ -615,8 +615,8 @@ const { schools, loading, error, fetchSchools, toggleFavorite, deleteSchool } =
   useSchools();
 const { fetchMultipleLogos } = useSchoolLogos();
 const { calculateMatchScore } = useSchoolMatching();
-const { fetchPreferences, schoolPreferences, homeLocation } =
-  useUserPreferences();
+const { getSchoolPreferences, getHomeLocation } =
+  usePreferenceManager();
 const { offers, fetchOffers } = useOffers();
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { coaches: coachesData, fetchAllCoaches } = useCoaches();
@@ -642,8 +642,11 @@ watch(
   },
 );
 
+const userHomeLocation = computed(() => getHomeLocation());
+
 const hasPreferences = computed(() => {
-  return (schoolPreferences.value?.preferences?.length || 0) > 0;
+  const prefs = getSchoolPreferences();
+  return (prefs?.preferences?.length || 0) > 0;
 });
 
 const shouldShowSchoolWarning = computed(() => {
@@ -675,7 +678,8 @@ const stateOptions = computed(() => {
 // Memoized distance cache to avoid recalculating distances
 const distanceCache = computed(() => {
   const cache = new Map<string, number>();
-  if (!homeLocation.value?.latitude || !homeLocation.value?.longitude) {
+  const homeLocation = getHomeLocation();
+  if (!homeLocation?.latitude || !homeLocation?.longitude) {
     return cache;
   }
 
@@ -689,8 +693,8 @@ const distanceCache = computed(() => {
     ) {
       const distance = calculateDistance(
         {
-          latitude: homeLocation.value!.latitude,
-          longitude: homeLocation.value!.longitude,
+          latitude: homeLocation.latitude,
+          longitude: homeLocation.longitude,
         },
         {
           latitude: coords.latitude,
@@ -785,7 +789,8 @@ const filterConfigs: FilterConfig[] = [
     step: 50,
     defaultValue: { max: 3000 },
     filterFn: (item: School, filterValue: { max?: number }) => {
-      if (!homeLocation.value?.latitude || !homeLocation.value?.longitude) {
+      const homeLoc = getHomeLocation();
+      if (!homeLoc?.latitude || !homeLoc?.longitude) {
         return true;
       }
       const distance = distanceCache.value.get(item.id);
@@ -1040,7 +1045,6 @@ onMounted(async () => {
   console.debug("[Schools] Page mounted, fetching data");
   await Promise.all([
     fetchSchools(),
-    fetchPreferences(),
     fetchOffers(),
     fetchAllCoaches(),
     fetchInteractions({}),

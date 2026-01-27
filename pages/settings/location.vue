@@ -23,7 +23,7 @@
 
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <div
-        v-if="loading && !homeLocation"
+        v-if="isLoading"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
       >
         <div
@@ -190,8 +190,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed, onMounted } from "vue";
-import { useUserPreferences } from "~/composables/useUserPreferences";
+import { ref, reactive, computed, onMounted } from "vue";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useGeocoding } from "~/composables/useGeocoding";
 import Header from "~/components/Header.vue";
 import {
@@ -203,8 +203,8 @@ import type { HomeLocation } from "~/types/models";
 
 definePageMeta({ middleware: "auth" });
 
-const { homeLocation, loading, error, fetchPreferences, updateHomeLocation } =
-  useUserPreferences();
+const { isLoading, error, getHomeLocation, setHomeLocation } =
+  usePreferenceManager();
 const {
   geocodeAddress,
   loading: geocoding,
@@ -237,16 +237,6 @@ const fullAddress = computed(() => {
   return parts.join(", ");
 });
 
-watch(
-  homeLocation,
-  (location) => {
-    if (location) {
-      Object.assign(localLocation, location);
-    }
-  },
-  { immediate: true },
-);
-
 const handleGeocode = async () => {
   if (!fullAddress.value) return;
 
@@ -261,14 +251,15 @@ const handleSave = async () => {
   saving.value = true;
   saveSuccess.value = false;
 
-  await updateHomeLocation(localLocation);
-
-  if (!error.value) {
+  try {
+    await setHomeLocation(localLocation);
     saveSuccess.value = true;
     setTimeout(() => (saveSuccess.value = false), 3000);
+  } catch (err) {
+    console.error("Failed to save home location:", err);
+  } finally {
+    saving.value = false;
   }
-
-  saving.value = false;
 };
 
 const handleClear = () => {
@@ -283,6 +274,9 @@ const handleClear = () => {
 };
 
 onMounted(() => {
-  fetchPreferences();
+  const location = getHomeLocation();
+  if (location) {
+    Object.assign(localLocation, location);
+  }
 });
 </script>

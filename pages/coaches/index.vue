@@ -25,6 +25,13 @@
             </p>
           </div>
           <div class="flex items-center gap-3">
+            <NuxtLink
+              to="/coaches/new"
+              class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-sm"
+            >
+              <PlusIcon class="w-4 h-4" />
+              Add Coach
+            </NuxtLink>
             <button
               v-if="filteredCoaches.length > 0"
               @click="handleExportCSV"
@@ -454,6 +461,7 @@ import {
   EnvelopeIcon,
   PhoneIcon,
   ChatBubbleLeftIcon,
+  PlusIcon,
 } from "@heroicons/vue/24/outline";
 import type { Coach, School } from "~/types/models";
 

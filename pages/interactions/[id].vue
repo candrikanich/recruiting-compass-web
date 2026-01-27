@@ -167,6 +167,12 @@ const interaction = ref<Interaction | null>(null);
 const loggedByUser = ref<User | null>(null);
 
 onMounted(async () => {
+  // Redirect to add page if trying to create new interaction
+  if (interactionId === "new") {
+    await router.push("/interactions/add");
+    return;
+  }
+
   interaction.value = await getInteraction(interactionId);
 
   if (interaction.value?.logged_by) {

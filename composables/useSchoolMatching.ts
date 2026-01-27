@@ -1,4 +1,4 @@
-import { useUserPreferences } from "./useUserPreferences";
+import { usePreferenceManager } from "./usePreferenceManager";
 import { calculateDistance } from "~/utils/distance";
 import type { School, SchoolPreference } from "~/types/models";
 
@@ -11,13 +11,14 @@ export interface MatchResult {
 }
 
 export const useSchoolMatching = () => {
-  const { schoolPreferences, homeLocation } = useUserPreferences();
+  const { getSchoolPreferences, getHomeLocation } = usePreferenceManager();
 
   /**
    * Calculate match score for a school against user preferences
    */
   const calculateMatchScore = (school: School): MatchResult => {
-    const prefs = schoolPreferences.value?.preferences || [];
+    const schoolPrefs = getSchoolPreferences();
+    const prefs = schoolPrefs?.preferences || [];
 
     if (prefs.length === 0) {
       return {
@@ -116,7 +117,7 @@ export const useSchoolMatching = () => {
    * Evaluate distance preference
    */
   const evaluateDistance = (school: School, maxMiles: number): boolean => {
-    const home = homeLocation.value;
+    const home = getHomeLocation();
     if (!home?.latitude || !home?.longitude) return true; // Can't evaluate without home
 
     const academicInfo = school.academic_info as {

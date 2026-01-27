@@ -30,7 +30,7 @@
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <!-- Loading State -->
       <div
-        v-if="loading"
+        v-if="isLoading"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
       >
         <div
@@ -41,13 +41,13 @@
 
       <!-- Error summary -->
       <FormErrorSummary
-        v-if="hasErrors && !loading"
+        v-if="hasErrors && !isLoading"
         :errors="errors"
         @dismiss="clearErrors"
       />
 
       <!-- Form -->
-      <form v-if="!loading" @submit.prevent="handleSave" class="space-y-8">
+      <form v-if="!isLoading" @submit.prevent="handleSave" class="space-y-8">
         <!-- Read-only Warning Banner for Parents -->
         <div
           v-if="isParentRole"
@@ -808,7 +808,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 import { ExclamationCircleIcon, ShareIcon, PhotoIcon, ArrowLeftIcon } from "@heroicons/vue/24/outline";
-import { useUserPreferences } from "~/composables/useUserPreferences";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useToast } from "~/composables/useToast";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFitScoreRecalculation } from "~/composables/useFitScoreRecalculation";
@@ -822,8 +822,8 @@ definePageMeta({
 });
 
 const userStore = useUserStore();
-const { playerDetails, loading, error, fetchPreferences, updatePlayerDetails } =
-  useUserPreferences();
+const { isLoading, getPlayerDetails, setPlayerDetails } =
+  usePreferenceManager();
 const { showToast } = useToast();
 const { recalculateAllFitScores, loading: recalculating } =
   useFitScoreRecalculation();
@@ -953,11 +953,8 @@ const togglePosition = (pos: string) => {
 const handleSave = async () => {
   saving.value = true;
   try {
-    // Call API endpoint instead of direct Supabase
-    await $fetch("/api/user/preferences/player-details", {
-      method: "PATCH",
-      body: form.value,
-    });
+    // Save player details
+    await setPlayerDetails(form.value);
 
     // Trigger fit score recalculation (blocking)
     try {
@@ -982,10 +979,10 @@ const handleSave = async () => {
 };
 
 onMounted(async () => {
-  await fetchPreferences();
-  if (playerDetails.value) {
-    form.value = { ...form.value, ...playerDetails.value };
-    initializeHeight(playerDetails.value.height_inches);
+  const playerDetails = getPlayerDetails();
+  if (playerDetails) {
+    form.value = { ...form.value, ...playerDetails };
+    initializeHeight(playerDetails.height_inches);
   }
 });
 </script>

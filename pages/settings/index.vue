@@ -135,7 +135,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
-import { useUserPreferences } from "~/composables/useUserPreferences";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useAccountLinks } from "~/composables/useAccountLinks";
 import Header from "~/components/Header.vue";
 import SettingsCard from "~/components/Settings/SettingsCard.vue";
@@ -144,27 +144,31 @@ definePageMeta({
   middleware: "auth",
 });
 
-const { preferences, fetchUserPreferences } = useUserPreferences();
+const {
+  getHomeLocation,
+  getPlayerDetails,
+  getSchoolPreferences,
+} = usePreferenceManager();
 const { linkedAccounts, fetchAccountLinks } = useAccountLinks();
 
 const hasHomeLocation = computed(() => {
-  const loc = preferences.value?.home_location;
+  const loc = getHomeLocation();
   return !!(loc?.latitude && loc?.longitude);
 });
 
 const hasPlayerDetails = computed(() => {
-  const details = preferences.value?.player_details;
+  const details = getPlayerDetails();
   return !!(details?.graduation_year || details?.positions?.length);
 });
 
 const hasSchoolPreferences = computed(() => {
-  const prefs = preferences.value?.school_preferences;
+  const prefs = getSchoolPreferences();
   return !!prefs?.preferences?.length;
 });
 
 const hasLinkedAccount = computed(() => linkedAccounts.value.length > 0);
 
 onMounted(async () => {
-  await Promise.all([fetchUserPreferences(), fetchAccountLinks()]);
+  await fetchAccountLinks();
 });
 </script>

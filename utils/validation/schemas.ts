@@ -103,7 +103,7 @@ export const coachSchema = z.object({
   first_name: sanitizedTextSchema(100),
   last_name: sanitizedTextSchema(100),
   role: z.enum(["head", "assistant", "recruiting"]),
-  email: emailSchema.nullable().optional(),
+  email: emailSchema.or(z.literal("")).optional(),
   phone: phoneSchema,
   twitter_handle: twitterHandleSchema,
   instagram_handle: instagramHandleSchema,

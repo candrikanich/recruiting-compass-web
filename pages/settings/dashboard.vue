@@ -484,53 +484,26 @@
 import { ref, onMounted } from "vue";
 import { CheckIcon, XMarkIcon, BellIcon } from "@heroicons/vue/24/solid";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
-import { useUserPreferences } from "~/composables/useUserPreferences";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
+import {
+  getDefaultDashboardLayout,
+} from "~/utils/preferenceValidation";
 import type { DashboardWidgetVisibility } from "~/types/models";
 import Header from "~/components/Header.vue";
 
-const { preferences, fetchUserPreferences, updateDashboardLayout, loading } =
-  useUserPreferences();
+const { isLoading, getDashboardLayout, setDashboardLayout } =
+  usePreferenceManager();
 
-const localLayout = ref<DashboardWidgetVisibility>({
-  statsCards: {
-    coaches: true,
-    schools: true,
-    interactions: true,
-    offers: true,
-    events: true,
-    performance: true,
-    notifications: true,
-    socialMedia: true,
-  },
-  widgets: {
-    recentNotifications: true,
-    linkedAccounts: true,
-    recruitingCalendar: true,
-    quickTasks: true,
-    atAGlanceSummary: true,
-    offerStatusOverview: true,
-    interactionTrendChart: true,
-    schoolInterestChart: true,
-    schoolMapWidget: true,
-    coachFollowupWidget: true,
-    eventsSummary: true,
-    performanceSummary: true,
-    recentDocuments: true,
-    interactionStats: true,
-    schoolStatusOverview: true,
-    coachResponsiveness: true,
-    upcomingDeadlines: true,
-  },
-});
+const localLayout = ref<DashboardWidgetVisibility>(
+  getDefaultDashboardLayout()
+);
 
 const successMessage = ref<string | null>(null);
 const errorMessage = ref<string | null>(null);
 
 onMounted(async () => {
-  await fetchUserPreferences();
-  if (preferences.value?.dashboard_layout) {
-    localLayout.value = preferences.value.dashboard_layout;
-  }
+  const layout = getDashboardLayout();
+  localLayout.value = layout;
 });
 
 const selectAllStats = () => {
@@ -602,7 +575,7 @@ const saveChanges = async () => {
   errorMessage.value = null;
 
   try {
-    await updateDashboardLayout(localLayout.value);
+    await setDashboardLayout(localLayout.value);
     successMessage.value = "Dashboard customization saved successfully!";
     setTimeout(() => {
       successMessage.value = null;

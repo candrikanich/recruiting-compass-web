@@ -181,9 +181,8 @@
                 type="text"
                 placeholder="Email subject, call topic, etc."
                 class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400"
-                @blur="validateSubject"
               />
-              <FieldError :error="fieldErrors.subject" />
+              <DesignSystemFieldError :error="fieldErrors.subject" />
             </div>
 
             <!-- Content -->
@@ -200,7 +199,6 @@
                 rows="4"
                 placeholder="Details about the interaction..."
                 class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none placeholder:text-slate-400"
-                @blur="validateContent"
               />
               <DesignSystemFieldError :error="fieldErrors.content" />
             </div>
@@ -492,11 +490,6 @@ const { coaches, fetchAllCoaches, createCoach } = useCoaches();
 const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } =
   useFormValidation();
 
-// Field validators
-const validators = {
-  subject: z.object({ subject: interactionSchema.shape.subject }),
-  content: z.object({ content: interactionSchema.shape.content }),
-};
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const selectedFiles = ref<File[]>([]);
@@ -612,15 +605,6 @@ const removeFile = (idx: number) => {
   selectedFiles.value.splice(idx, 1);
 };
 
-const validateSubject = async () => {
-  const validator = validateField("subject", validators.subject.shape.subject);
-  await validator(form.value.subject);
-};
-
-const validateContent = async () => {
-  const validator = validateField("content", validators.content.shape.content);
-  await validator(form.value.content);
-};
 
 const handleSubmit = async () => {
   if (
@@ -633,14 +617,6 @@ const handleSubmit = async () => {
   }
 
   try {
-    // Validate subject and content fields
-    await validateSubject();
-    await validateContent();
-
-    // Check for validation errors
-    if (hasErrors.value) {
-      return;
-    }
 
     // Capture interest level from calibration component if available
     if (calibrationComponent.value) {
@@ -658,12 +634,16 @@ const handleSubmit = async () => {
       finalContent = (finalContent || "") + calibrationNote;
     }
 
+    // Convert local datetime to UTC ISO string
+    const localDate = new Date(form.value.occurred_at);
+    const utcDatetime = localDate.toISOString();
+
     const interactionData: Omit<Interaction, "id" | "created_at"> = {
       school_id: form.value.school_id,
       coach_id: form.value.coach_id || null,
       type: form.value.type as Interaction["type"],
       direction: form.value.direction as Interaction["direction"],
-      occurred_at: form.value.occurred_at,
+      occurred_at: utcDatetime,
       subject: form.value.subject || null,
       content: finalContent || null,
       sentiment: form.value.sentiment as Interaction["sentiment"],

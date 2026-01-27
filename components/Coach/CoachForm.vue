@@ -193,6 +193,7 @@
 
 <script setup lang="ts">
 import { reactive, watch, toRefs } from "vue";
+import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { coachSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
@@ -320,9 +321,6 @@ const handleSubmit = async () => {
     return;
   }
 
-  emit("submit", {
-    ...validated,
-    school_id: "",
-  });
+  emit("submit", validated);
 };
 </script>

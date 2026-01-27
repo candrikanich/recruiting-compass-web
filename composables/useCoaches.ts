@@ -201,18 +201,34 @@ export const useCoaches = (): {
         validated.notes = sanitizeHtml(validated.notes);
       }
 
+      // Convert empty strings to null for optional fields
+      const dataToInsert = {
+        ...validated,
+        school_id: schoolId,
+        user_id: userStore.user.id,
+        email: validated.email || null,
+        phone: validated.phone || null,
+        twitter_handle: validated.twitter_handle || null,
+        instagram_handle: validated.instagram_handle || null,
+        notes: validated.notes || null,
+      };
+
       const { data, error: insertError } = await supabase
         .from("coaches")
-        .insert([
-          {
-            ...validated,
-            school_id: schoolId,
-          },
-        ])
+        .insert([dataToInsert])
         .select()
         .single();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error("Supabase insert error details:", {
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint,
+          code: insertError.code,
+          dataAttempted: dataToInsert,
+        });
+        throw insertError;
+      }
 
       coaches.value.push(data);
       return data;

@@ -876,7 +876,7 @@ import { useDivisionRecommendations } from "~/composables/useDivisionRecommendat
 import type { Document, AcademicInfo } from "~/types/models";
 import type { FitScoreResult, DivisionRecommendation } from "~/types/timeline";
 import { useCollegeData } from "~/composables/useCollegeData";
-import { useUserPreferences } from "~/composables/useUserPreferences";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useUserStore } from "~/stores/user";
 import { getCarnegieSize, getSizeColorClass } from "~/utils/schoolSize";
 import { calculateDistance, formatDistance } from "~/utils/distance";
@@ -922,7 +922,7 @@ const {
   loading: collegeDataLoading,
   error: collegeDataError,
 } = useCollegeData();
-const { homeLocation, fetchPreferences } = useUserPreferences();
+const { getHomeLocation } = usePreferenceManager();
 
 const id = route.params.id as string;
 const userStore = useUserStore();
@@ -952,8 +952,9 @@ const calculatedDistanceFromHome = computed(() => {
     | number
     | null
     | undefined;
-  const homeLat = homeLocation.value?.latitude;
-  const homeLng = homeLocation.value?.longitude;
+  const homeLoc = getHomeLocation();
+  const homeLat = homeLoc?.latitude;
+  const homeLng = homeLoc?.longitude;
   if (schoolLat && schoolLng && homeLat && homeLng) {
     const distance = calculateDistance(
       { latitude: homeLat, longitude: homeLng },
@@ -1227,7 +1228,6 @@ const lookupCollegeData = async () => {
 };
 
 onMounted(async () => {
-  fetchPreferences();
   school.value = await getSchool(id);
   if (school.value) {
     editedNotes.value = school.value.notes || "";

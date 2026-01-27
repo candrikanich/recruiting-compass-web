@@ -23,7 +23,7 @@
 
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <div
-        v-if="loading && !notificationSettings"
+        v-if="isLoading"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
       >
         <div
@@ -32,7 +32,7 @@
         <p class="text-slate-600">Loading preferences...</p>
       </div>
 
-      <div v-else-if="notificationSettings" class="space-y-6">
+      <div v-else class="space-y-6">
         <!-- In-App Notifications Section -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
           <h2 class="text-xl font-semibold text-gray-900 mb-4">
@@ -215,71 +215,47 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
-import { useUserPreferences } from "~/composables/useUserPreferences";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
+import {
+  getDefaultNotificationSettings,
+} from "~/utils/preferenceValidation";
 import type { NotificationSettings } from "~/types/models";
 
 definePageMeta({ middleware: "auth" });
 
-const {
-  notificationSettings,
-  loading,
-  error,
-  fetchPreferences,
-  updateNotificationSettings,
-} = useUserPreferences();
+const { isLoading, error, getNotificationSettings, setNotificationSettings } =
+  usePreferenceManager();
 
-const localSettings = reactive<NotificationSettings>({
-  followUpReminderDays: 7,
-  enableFollowUpReminders: true,
-  enableDeadlineAlerts: true,
-  enableDailyDigest: true,
-  enableInboundInteractionAlerts: true,
-  enableEmailNotifications: true,
-  emailOnlyHighPriority: true,
-});
+const localSettings = reactive<NotificationSettings>(
+  getDefaultNotificationSettings()
+);
 
 const saving = ref(false);
 const saveSuccess = ref(false);
-
-watch(
-  notificationSettings,
-  (settings) => {
-    if (settings) {
-      Object.assign(localSettings, settings);
-    }
-  },
-  { immediate: true },
-);
 
 const handleSave = async () => {
   saving.value = true;
   saveSuccess.value = false;
 
-  await updateNotificationSettings(localSettings);
-
-  if (!error.value) {
+  try {
+    await setNotificationSettings(localSettings);
     saveSuccess.value = true;
     setTimeout(() => (saveSuccess.value = false), 3000);
+  } catch (err) {
+    console.error("Failed to save notification settings:", err);
+  } finally {
+    saving.value = false;
   }
-
-  saving.value = false;
 };
 
 const handleReset = () => {
-  Object.assign(localSettings, {
-    followUpReminderDays: 7,
-    enableFollowUpReminders: true,
-    enableDeadlineAlerts: true,
-    enableDailyDigest: true,
-    enableInboundInteractionAlerts: true,
-    enableEmailNotifications: true,
-    emailOnlyHighPriority: true,
-  });
+  Object.assign(localSettings, getDefaultNotificationSettings());
 };
 
-onMounted(() => {
-  fetchPreferences();
+onMounted(async () => {
+  const settings = getNotificationSettings();
+  Object.assign(localSettings, settings);
 });
 </script>

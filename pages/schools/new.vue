@@ -121,15 +121,6 @@
             @cancel="() => navigateTo('/schools')"
           />
 
-          <!-- Duplicate School Dialog -->
-          <DuplicateSchoolDialog
-            :isOpen="isDuplicateDialogOpen"
-            :duplicate="duplicateSchool!"
-            :matchType="duplicateMatchType"
-            @confirm="proceedWithDuplicate"
-            @cancel="closeDuplicateDialog"
-          />
-
           <!-- College Scorecard Data (Display Only) -->
           <div
             v-if="collegeScorecardData"
@@ -216,7 +207,7 @@ import type { School } from "~/types/models";
 
 definePageMeta({});
 
-const { createSchool, loading, error, findDuplicate } = useSchools();
+const { createSchool, loading, error } = useSchools();
 const { lookupDivision } = useNcaaLookup();
 const {
   fetchByName,
@@ -237,11 +228,6 @@ const autoFilledFields = reactive({
   conference: false,
 });
 
-// Duplicate dialog state
-const isDuplicateDialogOpen = ref(false);
-const duplicateSchool = ref<School | null>(null);
-const duplicateMatchType = ref<"name" | "domain" | "ncaa_id" | null>(null);
-const pendingSchoolData = ref<any>(null);
 
 const handleCollegeSelect = async (college: CollegeSearchResult) => {
   selectedCollege.value = college;
@@ -293,18 +279,6 @@ const clearSelection = () => {
 };
 
 const handleSchoolFormSubmit = async (formData: any) => {
-  // Check for duplicates
-  const { duplicate, matchType } = findDuplicate(formData);
-
-  if (duplicate) {
-    duplicateSchool.value = duplicate;
-    duplicateMatchType.value = matchType;
-    pendingSchoolData.value = formData;
-    isDuplicateDialogOpen.value = true;
-    return;
-  }
-
-  // No duplicate found, proceed with creation
   await createSchoolWithData(formData);
 };
 
@@ -339,17 +313,5 @@ const createSchoolWithData = async (formData: any) => {
       err instanceof Error ? err.message : "Failed to create school";
     console.error("Failed to create school:", message);
   }
-};
-
-const proceedWithDuplicate = async () => {
-  closeDuplicateDialog();
-  await createSchoolWithData(pendingSchoolData.value);
-};
-
-const closeDuplicateDialog = () => {
-  isDuplicateDialogOpen.value = false;
-  duplicateSchool.value = null;
-  duplicateMatchType.value = null;
-  pendingSchoolData.value = null;
 };
 </script>

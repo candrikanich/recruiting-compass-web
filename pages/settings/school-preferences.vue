@@ -24,7 +24,7 @@
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <!-- Loading State -->
       <div
-        v-if="loading"
+        v-if="isLoading"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
       >
         <div
@@ -456,7 +456,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
-import { useUserPreferences } from "~/composables/useUserPreferences";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useToast } from "~/composables/useToast";
 import type { SchoolPreference, SchoolPreferences } from "~/types/models";
 
@@ -464,13 +464,8 @@ definePageMeta({
   middleware: "auth",
 });
 
-const {
-  schoolPreferences,
-  loading,
-  error,
-  fetchPreferences,
-  updateSchoolPreferences,
-} = useUserPreferences();
+const { isLoading, error, getSchoolPreferences, setSchoolPreferences } =
+  usePreferenceManager();
 const { showToast } = useToast();
 
 const CATEGORIES = [
@@ -751,7 +746,7 @@ const handleSave = async () => {
       template_used: appliedTemplate.value || undefined,
       last_updated: new Date().toISOString(),
     };
-    await updateSchoolPreferences(data);
+    await setSchoolPreferences(data);
     showToast("School preferences saved successfully", "success");
   } catch (err) {
     console.error("Failed to save school preferences:", err);
@@ -762,10 +757,10 @@ const handleSave = async () => {
 };
 
 onMounted(async () => {
-  await fetchPreferences();
-  if (schoolPreferences.value?.preferences) {
-    preferences.value = [...schoolPreferences.value.preferences];
-    appliedTemplate.value = schoolPreferences.value.template_used || null;
+  const schoolPrefs = getSchoolPreferences();
+  if (schoolPrefs?.preferences) {
+    preferences.value = [...schoolPrefs.preferences];
+    appliedTemplate.value = schoolPrefs.template_used || null;
   }
 });
 </script>
