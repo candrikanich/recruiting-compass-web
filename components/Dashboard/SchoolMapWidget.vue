@@ -189,10 +189,14 @@ const initializeMap = () => {
           title: school.name,
         });
 
+        const city = school.academic_info?.city || school.city || "";
+        const state = school.academic_info?.state || school.state || "";
+        const location = [city, state].filter(Boolean).join(", ") || "Location TBD";
+
         marker.bindPopup(`
           <div class="text-sm">
             <p class="font-bold">${school.name}</p>
-            <p class="text-gray-600">${school.city}, ${school.state}</p>
+            <p class="text-gray-600">${location}</p>
             <p class="text-gray-600 capitalize">Status: ${school.status?.replace("_", " ") || "Unknown"}</p>
           </div>
         `);

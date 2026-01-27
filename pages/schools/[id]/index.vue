@@ -1199,12 +1199,12 @@ const lookupCollegeData = async () => {
   const result = await fetchByName(school.value.name);
   if (result) {
     const updates = {
-      city: result.city || school.value.city,
-      state: result.state || school.value.state,
       website: result.website || school.value.website,
       academic_info: {
         ...(school.value.academic_info || {}),
         address: result.address || school.value.academic_info?.address,
+        city: result.city || school.value.academic_info?.city,
+        state: result.state || school.value.academic_info?.state,
         student_size: String(result.studentSize || ""),
         carnegie_size: result.carnegieSize,
         enrollment_all: result.enrollmentAll,

@@ -19,7 +19,12 @@ export interface AcademicInfo {
   sat_requirement?: number;
   act_requirement?: number;
   additional_requirements?: string[];
-  [key: string]: number | string[] | null | undefined;
+  address?: string;
+  city?: string;
+  state?: string;
+  latitude?: number;
+  longitude?: number;
+  [key: string]: number | string | string[] | null | undefined;
 }
 
 export interface Amenities {
