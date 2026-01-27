@@ -870,7 +870,7 @@ import { navigateTo } from "#app";
 import { useSchools } from "~/composables/useSchools";
 import { useSchoolLogos } from "~/composables/useSchoolLogos";
 import { useCoaches } from "~/composables/useCoaches";
-import { useDocuments } from "~/composables/useDocuments";
+import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import { useFitScore } from "~/composables/useFitScore";
 import { useDivisionRecommendations } from "~/composables/useDivisionRecommendations";
 import type { Document, AcademicInfo } from "~/types/models";
@@ -915,7 +915,7 @@ const {
 } = useSchools();
 const { fetchSchoolLogo } = useSchoolLogos();
 const { coaches: allCoaches, fetchCoaches } = useCoaches();
-const { documents, fetchDocuments } = useDocuments();
+const { documents, fetchDocuments } = useDocumentsConsolidated();
 const { calculateSchoolFitScore, getFitScore } = useFitScore();
 const {
   fetchByName,
