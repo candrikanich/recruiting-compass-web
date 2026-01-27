@@ -194,10 +194,10 @@ const initializeMap = () => {
         const location = [city, state].filter(Boolean).join(", ") || "Location TBD";
 
         marker.bindPopup(`
-          <div class="text-sm">
-            <p class="font-bold">${school.name}</p>
-            <p class="text-gray-600">${location}</p>
-            <p class="text-gray-600 capitalize">Status: ${school.status?.replace("_", " ") || "Unknown"}</p>
+          <div style="font-size: 12px; min-width: 280px;">
+            <p style="margin: 4px 0; font-weight: bold; font-size: 13px;">${school.name}</p>
+            <p style="margin: 2px 0; color: #666;">${location}</p>
+            <p style="margin: 2px 0; color: #666; text-transform: capitalize;">Status: ${school.status?.replace("_", " ") || "Unknown"}</p>
           </div>
         `);
 
@@ -233,13 +233,24 @@ watch(() => props.schools, () => {
   font-family: inherit;
 }
 
+:deep(.leaflet-popup) {
+  margin-bottom: 0;
+}
+
 :deep(.leaflet-popup-content-wrapper) {
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 8px 12px;
 }
 
 :deep(.leaflet-popup-content) {
   margin: 0;
   width: auto !important;
+  min-width: 280px;
+  max-width: 320px;
+}
+
+:deep(.leaflet-popup-tip) {
+  background: white;
 }
 </style>
