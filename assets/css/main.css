@@ -1,3 +1,5 @@
+@import "leaflet/dist/leaflet.css";
+@import "../styles/theme.css";
 @import "../styles/transitions.css";
 
 @tailwind base;
