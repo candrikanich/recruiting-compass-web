@@ -157,10 +157,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { XMarkIcon, CheckCircleIcon } from "@heroicons/vue/24/outline";
-import { useCommunicationTemplates } from "~/composables/useCommunicationTemplates";
-import { useTemplateUnlock } from "~/composables/useTemplateUnlock";
+import {
+  useCommunicationTemplates,
+  type TemplateWithUnlockStatus,
+} from "~/composables/useCommunicationTemplates";
 import type { CommunicationTemplate } from "~/types/models";
-import type { TemplateWithUnlockStatus } from "~/composables/useTemplateUnlock";
 
 interface Props {
   isOpen: boolean;
@@ -177,8 +178,8 @@ const emit = defineEmits<{
   select: [template: CommunicationTemplate];
 }>();
 
-const { templates, loadTemplates } = useCommunicationTemplates();
-const { getTemplatesWithUnlockStatus } = useTemplateUnlock();
+const { templates, loadTemplates, getTemplatesWithUnlockStatus } =
+  useCommunicationTemplates();
 
 const templateTypes = ["email", "message", "phone_script"] as const;
 type TemplateType = (typeof templateTypes)[number];
