@@ -206,7 +206,6 @@
 import { ref, reactive } from "vue";
 import { CheckIcon } from "@heroicons/vue/24/solid";
 import { useSchools } from "~/composables/useSchools";
-import { useSchoolDuplication } from "~/composables/useSchoolDuplication";
 import { useNcaaLookup } from "~/composables/useNcaaLookup";
 import {
   useCollegeData,
@@ -217,8 +216,7 @@ import type { School } from "~/types/models";
 
 definePageMeta({});
 
-const { createSchool, loading, error } = useSchools();
-const { findDuplicate } = useSchoolDuplication();
+const { createSchool, loading, error, findDuplicate } = useSchools();
 const { lookupDivision } = useNcaaLookup();
 const {
   fetchByName,
