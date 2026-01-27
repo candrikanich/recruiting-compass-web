@@ -46,86 +46,6 @@
         :contacts-this-month="contactsThisMonth"
       />
 
-      <!-- Athlete Tools Bar -->
-      <div class="flex flex-wrap gap-3 my-6">
-        <button
-          @click="handleGeneratePacket"
-          :disabled="recruitingPacketLoading"
-          class="inline-flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200"
-          :class="recruitingPacketLoading
-            ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
-            : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow-md'"
-        >
-          <svg
-            v-if="!recruitingPacketLoading"
-            class="w-4 h-4 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 19l9 2-9-18-9 18 9-2m0 0v-8m0 8l-4-2m4 2l4-2"
-            />
-          </svg>
-          <svg
-            v-else
-            class="w-4 h-4 mr-2 animate-spin"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              class="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              stroke-width="4"
-            />
-            <path
-              class="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-          {{ recruitingPacketLoading ? "Generating..." : "Generate Recruiting Packet" }}
-        </button>
-
-        <button
-          @click="handleEmailPacket"
-          :disabled="!recruitingPacketComposable.hasGeneratedPacket.value || recruitingPacketLoading"
-          class="inline-flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200"
-          :class="!recruitingPacketComposable.hasGeneratedPacket.value || recruitingPacketLoading
-            ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
-            : 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 shadow-sm hover:shadow-md'"
-        >
-          <svg
-            class="w-4 h-4 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-            />
-          </svg>
-          Email to Coach
-        </button>
-      </div>
-
-      <!-- Recruiting Packet Error -->
-      <div
-        v-if="recruitingPacketError"
-        class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"
-      >
-        {{ recruitingPacketError }}
-      </div>
-
       <!-- Suggestions Component -->
       <DashboardSuggestions
         :suggestions="suggestionsComposable?.dashboardSuggestions.value || []"
@@ -136,55 +56,76 @@
         @dismiss="handleSuggestionDismiss"
       />
 
-      <!-- Main Grid: 2/3 + 1/3 Layout -->
+      <!-- UNIFIED 3-COLUMN GRID -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left Column - Charts Component -->
-        <DashboardCharts
-          :school-count="schoolCount"
-          :school-size-breakdown="schoolSizeBreakdown"
+        <!-- Row 1: Charts (2 cols) + Recruiting Packet (1 col) -->
+        <div class="lg:col-span-2">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <InteractionTrendChart :interactions="allInteractions" />
+            <SchoolInterestChart :schools="allSchools" />
+          </div>
+        </div>
+        <div class="lg:col-span-1 space-y-6">
+          <RecruitingPacketWidget
+            :recruiting-packet-loading="recruitingPacketLoading"
+            :recruiting-packet-error="recruitingPacketError"
+            :has-generated-packet="recruitingPacketComposable.hasGeneratedPacket.value"
+            @generate-packet="handleGeneratePacket"
+            @email-packet="handleEmailPacket"
+          />
+          <SchoolsBySizeWidget :breakdown="schoolSizeBreakdown" :count="schoolCount" />
+        </div>
+
+        <!-- Row 2: Performance Metrics (2 cols) + Upcoming Events (1 col) -->
+        <PerformanceMetricsWidget
           :metrics="allMetrics"
           :top-metrics="topMetrics"
-          :interactions="allInteractions"
-          :schools="allSchools"
-          :graduation-year="graduationYear"
-          :athlete-id="parentContextComposable?.currentAthleteId.value || ''"
-          :is-viewing-as-parent="
-            parentContextComposable?.isViewingAsParent.value || false
-          "
-          :show-quick-actions="true"
-          :show-schools-metric="true"
           :show-performance="true"
-          :show-charts="true"
-          :show-calendar="showWidget('recruitingCalendar', 'widgets')"
+          class="lg:col-span-2"
+        />
+        <UpcomingEventsWidget
+          :events="upcomingEvents"
+          :show-events="true"
+          class="lg:col-span-1"
         />
 
-        <!-- Right Column - Analytics Component -->
-        <DashboardAnalytics
-          :upcoming-events="upcomingEvents"
-          :notifications="recentNotifications"
-          :tasks="userTasksComposable?.tasks.value || []"
-          :contact-frequency-interactions="allInteractions"
+        <!-- Row 3: School Map (2 cols) + Recent Activity (1 col) -->
+        <SchoolMapWidget
+          v-if="showWidget('schoolMapWidget', 'widgets')"
           :schools="allSchools"
-          @refresh-notifications="generateNotifications"
-          @notification-click="handleNotificationClick"
+          class="lg:col-span-2"
+        />
+        <div class="lg:col-span-1">
+          <RecentActivityFeed v-if="showWidget('recentActivityFeed', 'widgets')" />
+        </div>
+
+        <!-- Row 4: Tasks, Contact Frequency, Social (each 1 col) -->
+        <QuickTasksWidget
+          :tasks="userTasksComposable?.tasks.value || []"
+          :show-tasks="true"
           @add-task="addTask"
           @toggle-task="toggleTask"
           @delete-task="deleteTask"
           @clear-completed="() => userTasksComposable?.clearCompleted()"
         />
-      </div>
-
-      <!-- Additional Widgets (Full Width) -->
-      <div class="mt-8 space-y-6">
-        <RecentActivityFeed v-if="showWidget('recentActivityFeed', 'widgets')" />
-        <AthleteActivityWidget v-if="userStore.isParent && showWidget('athleteActivity', 'widgets')" />
-        <LinkedAccountsWidget v-if="showWidget('linkedAccounts', 'widgets')" />
-        <SchoolMapWidget
-          v-if="showWidget('schoolMapWidget', 'widgets')"
+        <ContactFrequencyWidget
+          :interactions="allInteractions"
           :schools="allSchools"
         />
+        <SocialMediaWidget :show-social="true" />
+
+        <!-- Row 5: Full-width widgets (3 cols each) -->
         <CoachFollowupWidget
           v-if="showWidget('coachFollowupWidget', 'widgets')"
+          class="lg:col-span-3"
+        />
+        <AthleteActivityWidget
+          v-if="userStore.isParent && showWidget('athleteActivity', 'widgets')"
+          class="lg:col-span-3"
+        />
+        <LinkedAccountsWidget
+          v-if="showWidget('linkedAccounts', 'widgets')"
+          class="lg:col-span-3"
         />
         <AtAGlanceSummary
           v-if="showWidget('atAGlanceSummary', 'widgets')"
@@ -192,6 +133,7 @@
           :schools="allSchools"
           :interactions="allInteractions"
           :offers="allOffers"
+          class="lg:col-span-3"
         />
       </div>
 
@@ -225,14 +167,21 @@ import { useViewLogging } from "~/composables/useViewLogging";
 import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
-import DashboardCharts from "~/components/Dashboard/DashboardCharts.vue";
-import DashboardAnalytics from "~/components/Dashboard/DashboardAnalytics.vue";
-import AthleteActivityWidget from "~/components/Dashboard/AthleteActivityWidget.vue";
+import InteractionTrendChart from "~/components/Dashboard/InteractionTrendChart.vue";
+import SchoolInterestChart from "~/components/Dashboard/SchoolInterestChart.vue";
+import RecruitingPacketWidget from "~/components/Dashboard/RecruitingPacketWidget.vue";
+import SchoolsBySizeWidget from "~/components/Dashboard/SchoolsBySizeWidget.vue";
+import PerformanceMetricsWidget from "~/components/Dashboard/PerformanceMetricsWidget.vue";
+import UpcomingEventsWidget from "~/components/Dashboard/UpcomingEventsWidget.vue";
 import SchoolMapWidget from "~/components/Dashboard/SchoolMapWidget.vue";
-import CoachFollowupWidget from "~/components/Dashboard/CoachFollowupWidget.vue";
-import AtAGlanceSummary from "~/components/Dashboard/AtAGlanceSummary.vue";
-import LinkedAccountsWidget from "~/components/Dashboard/LinkedAccountsWidget.vue";
 import RecentActivityFeed from "~/components/Dashboard/RecentActivityFeed.vue";
+import QuickTasksWidget from "~/components/Dashboard/QuickTasksWidget.vue";
+import ContactFrequencyWidget from "~/components/Dashboard/ContactFrequencyWidget.vue";
+import SocialMediaWidget from "~/components/Dashboard/SocialMediaWidget.vue";
+import CoachFollowupWidget from "~/components/Dashboard/CoachFollowupWidget.vue";
+import AthleteActivityWidget from "~/components/Dashboard/AthleteActivityWidget.vue";
+import LinkedAccountsWidget from "~/components/Dashboard/LinkedAccountsWidget.vue";
+import AtAGlanceSummary from "~/components/Dashboard/AtAGlanceSummary.vue";
 import EmailRecruitingPacketModal from "~/components/EmailRecruitingPacketModal.vue";
 import { EyeIcon } from "@heroicons/vue/24/solid";
 import { getCarnegieSize } from "~/utils/schoolSize";
@@ -380,11 +329,15 @@ const schoolSizeBreakdown = computed(() => {
   return breakdown;
 });
 
-const addTask = async () => {
-  if (newTask.value.trim() && userTasksComposable) {
-    await userTasksComposable.addTask(newTask.value);
-    newTask.value = "";
-    showTaskForm.value = false;
+const addTask = async (taskText: string) => {
+  if (taskText.trim() && userTasksComposable) {
+    try {
+      await userTasksComposable.addTask(taskText);
+      showToast(`Task added!`, "success");
+    } catch (err) {
+      console.error("Failed to add task:", err);
+      showToast("Failed to add task", "error");
+    }
   }
 };
 

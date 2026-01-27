@@ -1,5 +1,4 @@
 import { ref, computed } from "vue";
-import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 
 export interface UserTask {
@@ -11,7 +10,6 @@ export interface UserTask {
 }
 
 export const useUserTasks = () => {
-  const supabase = useSupabase();
   // Lazy-load store to avoid Pinia timing issues
   let userStore: ReturnType<typeof useUserStore> | undefined;
 
@@ -25,71 +23,39 @@ export const useUserTasks = () => {
   const tasks = ref<UserTask[]>([]);
   const loading = ref(false);
 
-  // Fetch tasks from Supabase user_preferences
+  const STORAGE_KEY = "user_tasks";
+
+  // Fetch tasks from localStorage
   const fetchTasks = async () => {
     const store = getUserStore();
     if (!store.user) return;
 
     loading.value = true;
     try {
-      const { data, error } = await supabase
-        .from("user_preferences")
-        .select("user_tasks")
-        .eq("user_id", store.user.id)
-        .single();
-
-      if (error && error.code !== "PGRST116") {
-        console.error("Failed to fetch tasks:", error);
-        return;
-      }
-
-      if (data?.user_tasks?.tasks) {
-        tasks.value = data.user_tasks.tasks;
+      const savedTasks = localStorage.getItem(`${STORAGE_KEY}-${store.user.id}`);
+      if (savedTasks) {
+        tasks.value = JSON.parse(savedTasks);
       } else {
-        // Migrate from localStorage if exists
-        const savedTasks = localStorage.getItem("recruitingTasks");
-        if (savedTasks) {
-          const localTasks = JSON.parse(savedTasks);
-          tasks.value = localTasks.map(
-            (t: { text: string; completed: boolean }, idx: number) => ({
-              id: `migrated-${idx}-${Date.now()}`,
-              text: t.text,
-              completed: t.completed,
-              created_at: new Date().toISOString(),
-              completed_at: t.completed ? new Date().toISOString() : null,
-            }),
-          );
-          // Save migrated tasks to Supabase
-          await saveTasks();
-          // Clear localStorage
-          localStorage.removeItem("recruitingTasks");
-        } else {
-          tasks.value = [];
-        }
+        tasks.value = [];
       }
     } catch (e) {
       console.error("Failed to fetch tasks:", e);
+      tasks.value = [];
     } finally {
       loading.value = false;
     }
   };
 
-  // Save tasks to Supabase
+  // Save tasks to localStorage
   const saveTasks = async () => {
     const store = getUserStore();
     if (!store.user) return;
 
     try {
-      const { error } = await supabase
-        .from("user_preferences")
-        .update({
-          user_tasks: { tasks: tasks.value },
-        })
-        .eq("user_id", store.user.id);
-
-      if (error) {
-        console.error("Failed to save tasks:", error);
-      }
+      localStorage.setItem(
+        `${STORAGE_KEY}-${store.user.id}`,
+        JSON.stringify(tasks.value),
+      );
     } catch (e) {
       console.error("Failed to save tasks:", e);
     }
