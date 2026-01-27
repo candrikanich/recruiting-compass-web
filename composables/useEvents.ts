@@ -112,6 +112,7 @@ export const useEvents = (): {
 
   const fetchEvent = async (id: string): Promise<Event | null> => {
     if (!userStore.user) return null;
+    if (!id || id.trim() === "" || id === "new") return null;
 
     loading.value = true;
     error.value = null;
@@ -152,6 +153,7 @@ export const useEvents = (): {
         .insert([
           {
             ...eventData,
+            user_id: userStore.user.id,
           },
         ] as EventInsert[])
         .select()

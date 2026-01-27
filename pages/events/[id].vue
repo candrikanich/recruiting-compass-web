@@ -749,6 +749,14 @@ const route = useRoute();
 const router = useRouter();
 const eventId = route.params.id as string;
 
+// Validate event ID - redirect to create if invalid
+const isValidEventId = (id: string): boolean => {
+  // UUID v4 format check
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    id,
+  );
+};
+
 const { fetchEvent, deleteEvent: deleteEventAPI, updateEvent } = useEvents();
 const { createMetric, deleteMetric: deleteMetricAPI } = usePerformance();
 const { fetchCoaches } = useCoaches();
@@ -1073,7 +1081,10 @@ const handleUpdateEvent = async () => {
       location: editFormData.location || null,
       start_date: editFormData.start_date,
       end_date: editFormData.end_date || null,
-      cost: editFormData.cost || null,
+      cost:
+        editFormData.cost && typeof editFormData.cost === "number"
+          ? editFormData.cost
+          : null,
       performance_notes: editFormData.performance_notes || null,
     });
 
@@ -1099,6 +1110,12 @@ const loadEventMetrics = async () => {
 };
 
 onMounted(async () => {
+  // Redirect to create page if ID is invalid (e.g., "new")
+  if (!isValidEventId(eventId)) {
+    await router.push("/events/create");
+    return;
+  }
+
   try {
     loading.value = true;
     event.value = await fetchEvent(eventId);

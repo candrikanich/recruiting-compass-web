@@ -698,7 +698,7 @@ const handleSubmit = async () => {
         | "friend"
         | "other"
         | null,
-      cost: form.cost,
+      cost: form.cost && typeof form.cost === "number" ? form.cost : null,
       registered: form.registered,
       attended: form.attended,
       performance_notes: form.performance_notes || null,

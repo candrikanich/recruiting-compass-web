@@ -1,5 +1,126 @@
 <template>
   <div class="space-y-6">
+    <!-- Recruiting Packet Actions -->
+    <div
+      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    >
+      <h3 class="text-slate-900 font-semibold mb-4">Recruiting Packet</h3>
+      <div class="space-y-2">
+        <button
+          @click="emit('generate-packet')"
+          :disabled="recruitingPacketLoading"
+          class="w-full inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200"
+          :class="recruitingPacketLoading
+            ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
+            : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow-md'"
+        >
+          <svg
+            v-if="!recruitingPacketLoading"
+            class="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 19l9 2-9-18-9 18 9-2m0 0v-8m0 8l-4-2m4 2l4-2"
+            />
+          </svg>
+          <svg
+            v-else
+            class="w-4 h-4 mr-2 animate-spin"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            />
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+          {{ recruitingPacketLoading ? "Generating..." : "Generate Packet" }}
+        </button>
+
+        <button
+          @click="emit('email-packet')"
+          :disabled="!hasGeneratedPacket || recruitingPacketLoading"
+          class="w-full inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200"
+          :class="!hasGeneratedPacket || recruitingPacketLoading
+            ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
+            : 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 shadow-sm hover:shadow-md'"
+        >
+          <svg
+            class="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            />
+          </svg>
+          Email to Coach
+        </button>
+      </div>
+      <div
+        v-if="recruitingPacketError"
+        class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"
+      >
+        {{ recruitingPacketError }}
+      </div>
+    </div>
+
+    <!-- Schools by Size -->
+    <div
+      v-if="schoolCount > 0"
+      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    >
+      <h3 class="text-slate-900 font-semibold mb-4">Schools by Size</h3>
+      <div class="space-y-3">
+        <div
+          v-for="size in [
+            'Very Small',
+            'Small',
+            'Medium',
+            'Large',
+            'Very Large',
+          ]"
+          :key="size"
+        >
+          <div v-if="schoolSizeBreakdown[size] > 0">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-slate-700 text-sm">{{ size }}</span>
+              <span class="text-slate-900 font-medium text-sm">{{
+                schoolSizeBreakdown[size]
+              }}</span>
+            </div>
+            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                :class="getSizeBarColor(size)"
+                class="h-full transition-all duration-500"
+                :style="{
+                  width: `${(schoolSizeBreakdown[size] / schoolCount) * 100}%`,
+                }"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Upcoming Events -->
     <div
       v-if="showEvents"
@@ -59,62 +180,6 @@
       :schools="schools"
     />
 
-    <!-- Recent Activity / Notifications -->
-    <div
-      v-if="showNotifications"
-      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
-    >
-      <div class="flex items-center justify-between mb-5">
-        <div class="flex items-center gap-3">
-          <div class="p-2 bg-slate-100 rounded-lg">
-            <BellIcon class="w-5 h-5 text-slate-700" />
-          </div>
-          <h3 class="text-slate-900 font-semibold">Recent Activity</h3>
-        </div>
-        <button
-          @click="$emit('refresh-notifications')"
-          class="px-3 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-full text-sm font-medium hover:bg-brand-blue-200 transition"
-        >
-          Refresh
-        </button>
-      </div>
-      <div
-        v-if="notifications.length > 0"
-        class="space-y-3 max-h-64 overflow-y-auto"
-      >
-        <div
-          v-for="notification in notifications"
-          :key="notification.id"
-          :class="[
-            'p-3 rounded-lg cursor-pointer transition-colors',
-            notification.read_at
-              ? 'bg-slate-50 hover:bg-slate-100'
-              : 'bg-brand-blue-100 hover:bg-brand-blue-200',
-          ]"
-          @click="$emit('notification-click', notification)"
-        >
-          <div class="font-medium text-slate-900 text-sm">
-            {{ notification.title }}
-          </div>
-          <div class="text-slate-600 text-sm mt-1 line-clamp-2">
-            {{ notification.message }}
-          </div>
-          <div class="text-slate-400 text-xs mt-1">
-            {{ formatNotificationDate(notification.scheduled_for) }}
-          </div>
-        </div>
-      </div>
-      <div v-else class="text-center py-6 text-slate-500">
-        <p>No recent activity</p>
-      </div>
-      <NuxtLink
-        to="/notifications"
-        class="mt-4 block w-full py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-slate-700 text-center"
-      >
-        View All Notifications
-      </NuxtLink>
-    </div>
-
     <!-- Quick Tasks -->
     <div
       v-if="showTasks"
@@ -156,12 +221,12 @@
           type="text"
           placeholder="Enter task..."
           class="w-full bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400 mb-2"
-          @keyup.enter="$emit('add-task', newTask)"
+          @keyup.enter="handleAddTask"
           autofocus
         />
         <div class="flex gap-2 justify-end">
           <button
-            @click="$emit('add-task', newTask)"
+            @click="handleAddTask"
             class="px-3 py-1.5 text-blue-600 hover:text-blue-700 font-medium hover:bg-blue-100 rounded transition-colors"
           >
             <CheckIcon class="w-4 h-4" />
@@ -231,10 +296,66 @@
       </button>
     </div>
 
+    <!-- Recent Activity / Notifications -->
+    <div
+      v-if="showNotifications"
+      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    >
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-slate-100 rounded-lg">
+            <BellIcon class="w-5 h-5 text-slate-700" />
+          </div>
+          <h3 class="text-slate-900 font-semibold">Recent Activity</h3>
+        </div>
+        <button
+          @click="$emit('refresh-notifications')"
+          class="px-3 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-full text-sm font-medium hover:bg-brand-blue-200 transition"
+        >
+          Refresh
+        </button>
+      </div>
+      <div
+        v-if="notifications.length > 0"
+        class="space-y-3 max-h-64 overflow-y-auto"
+      >
+        <div
+          v-for="notification in notifications"
+          :key="notification.id"
+          :class="[
+            'p-3 rounded-lg cursor-pointer transition-colors',
+            notification.read_at
+              ? 'bg-slate-50 hover:bg-slate-100'
+              : 'bg-brand-blue-100 hover:bg-brand-blue-200',
+          ]"
+          @click="$emit('notification-click', notification)"
+        >
+          <div class="font-medium text-slate-900 text-sm">
+            {{ notification.title }}
+          </div>
+          <div class="text-slate-600 text-sm mt-1 line-clamp-2">
+            {{ notification.message }}
+          </div>
+          <div class="text-slate-400 text-xs mt-1">
+            {{ formatNotificationDate(notification.scheduled_for) }}
+          </div>
+        </div>
+      </div>
+      <div v-else class="text-center py-6 text-slate-500">
+        <p>No recent activity</p>
+      </div>
+      <NuxtLink
+        to="/notifications"
+        class="mt-4 block w-full py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-slate-700 text-center"
+      >
+        View All Notifications
+      </NuxtLink>
+    </div>
+
     <!-- Social Media -->
     <div
       v-if="showSocial"
-      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6 mt-6"
     >
       <div class="flex items-center gap-3 mb-5">
         <div class="p-2 bg-slate-100 rounded-lg">
@@ -295,6 +416,11 @@ interface Props {
   tasks?: Task[];
   contactFrequencyInteractions?: Interaction[];
   schools?: School[];
+  schoolCount?: number;
+  schoolSizeBreakdown?: Record<string, number>;
+  recruitingPacketLoading?: boolean;
+  recruitingPacketError?: string | null;
+  hasGeneratedPacket?: boolean;
   showEvents?: boolean;
   showNotifications?: boolean;
   showTasks?: boolean;
@@ -307,23 +433,38 @@ const props = withDefaults(defineProps<Props>(), {
   tasks: () => [],
   contactFrequencyInteractions: () => [],
   schools: () => [],
+  schoolCount: 0,
+  schoolSizeBreakdown: () => ({}),
+  recruitingPacketLoading: false,
+  recruitingPacketError: null,
+  hasGeneratedPacket: false,
   showEvents: true,
   showNotifications: true,
   showTasks: true,
   showSocial: true,
 });
 
-defineEmits<{
+const emit = defineEmits<{
   "refresh-notifications": [];
   "notification-click": [notification: Notification];
   "add-task": [text: string];
   "toggle-task": [id: string];
   "delete-task": [id: string];
   "clear-completed": [];
+  "generate-packet": [];
+  "email-packet": [];
 }>();
 
 const showTaskForm = ref(false);
 const newTask = ref("");
+
+const handleAddTask = () => {
+  if (newTask.value.trim()) {
+    emit("add-task", newTask.value);
+    newTask.value = "";
+    showTaskForm.value = false;
+  }
+};
 
 const pendingCount = computed(
   () => props.tasks.filter((t) => !t.completed).length,
@@ -359,5 +500,16 @@ const formatNotificationDate = (date: string): string => {
     month: "short",
     day: "numeric",
   });
+};
+
+const getSizeBarColor = (size: string): string => {
+  const colors: Record<string, string> = {
+    "Very Small": "bg-blue-500",
+    Small: "bg-blue-400",
+    Medium: "bg-blue-300",
+    Large: "bg-orange-400",
+    "Very Large": "bg-orange-500",
+  };
+  return colors[size] || "bg-slate-300";
 };
 </script>

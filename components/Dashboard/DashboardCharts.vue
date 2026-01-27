@@ -103,7 +103,7 @@
 
     <!-- Performance Metrics -->
     <div
-      v-if="showPerformance && metrics.length > 0"
+      v-if="showPerformance"
       class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
     >
       <div class="flex items-center gap-3 mb-5">
@@ -112,32 +112,47 @@
         </div>
         <h3 class="text-slate-900 font-semibold">Performance Metrics</h3>
       </div>
-      <div class="grid grid-cols-3 gap-4">
-        <div
-          v-for="metric in topMetrics"
-          :key="metric.id"
-          class="text-center p-4 bg-slate-50 rounded-lg border border-slate-200"
-        >
-          <div class="text-slate-600 text-sm mb-1">
-            {{ metric.metric_type }}
-          </div>
+
+      <!-- With Metrics -->
+      <div v-if="metrics.length > 0" class="space-y-4">
+        <div class="grid grid-cols-3 gap-4">
           <div
-            class="text-xl font-bold"
-            :class="getMetricColor(metric.metric_type)"
+            v-for="metric in topMetrics"
+            :key="metric.id"
+            class="text-center p-4 bg-slate-50 rounded-lg border border-slate-200"
           >
-            {{ metric.value }}
-            <span v-if="metric.unit" class="text-slate-500 text-sm ml-1">{{
-              metric.unit
-            }}</span>
+            <div class="text-slate-600 text-sm mb-1">
+              {{ metric.metric_type }}
+            </div>
+            <div
+              class="text-xl font-bold"
+              :class="getMetricColor(metric.metric_type)"
+            >
+              {{ metric.value }}
+              <span v-if="metric.unit" class="text-slate-500 text-sm ml-1">{{
+                metric.unit
+              }}</span>
+            </div>
           </div>
         </div>
+        <NuxtLink
+          to="/performance"
+          class="mt-4 block w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center font-medium"
+        >
+          View All Metrics →
+        </NuxtLink>
       </div>
-      <NuxtLink
-        to="/performance"
-        class="mt-4 block w-full py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-slate-700 text-center"
-      >
-        View All Metrics
-      </NuxtLink>
+
+      <!-- Empty State -->
+      <div v-else class="text-center py-8">
+        <p class="text-slate-600 mb-4">No performance metrics logged yet</p>
+        <NuxtLink
+          to="/performance"
+          class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+        >
+          Log Your First Metric →
+        </NuxtLink>
+      </div>
     </div>
 
     <!-- Recruiting Calendar -->
