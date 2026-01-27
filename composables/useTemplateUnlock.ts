@@ -1,4 +1,19 @@
 /**
+ * @deprecated Use `useCommunicationTemplates()` instead. All unlock and template
+ * functionality has been consolidated into the useCommunicationTemplates composable.
+ * This composable will be removed in a future version.
+ *
+ * Migration: Replace `useTemplateUnlock()` with `useCommunicationTemplates()` and access
+ * the unlock methods from the same composable.
+ *
+ * Before:
+ *   const { getTemplatesWithUnlockStatus } = useTemplateUnlock();
+ *
+ * After:
+ *   const { getTemplatesWithUnlockStatus } = useCommunicationTemplates();
+ */
+
+/**
  * useTemplateUnlock composable
  * Manages checking unlock conditions for email templates and rendering with variable substitution
  */

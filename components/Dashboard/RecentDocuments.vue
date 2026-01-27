@@ -63,11 +63,11 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
-import { useDocuments } from "~/composables/useDocuments";
+import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import type { Document } from "~/types/models";
 
 // Defer composable initialization to onMounted
-let documentsComposable: ReturnType<typeof useDocuments> | undefined;
+let documentsComposable: ReturnType<typeof useDocumentsConsolidated> | undefined;
 
 const recentDocuments = computed(() => {
   return (documentsComposable?.documents.value || [])
@@ -81,7 +81,7 @@ const recentDocuments = computed(() => {
 });
 
 onMounted(() => {
-  documentsComposable = useDocuments();
+  documentsComposable = useDocumentsConsolidated();
 });
 
 const formatDate = (dateString: string): string => {

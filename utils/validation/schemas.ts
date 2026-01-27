@@ -21,6 +21,8 @@ import {
   uuidSchema,
   dateTimeSchema,
   dateSchema,
+  strongPasswordSchema,
+  weakPasswordSchema,
 } from "./validators";
 
 // ============================================================================
@@ -29,10 +31,7 @@ import {
 
 export const loginSchema = z.object({
   email: emailSchema,
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(128, "Password must not exceed 128 characters"),
+  password: weakPasswordSchema,
   rememberMe: z.boolean().optional().default(false),
 });
 
@@ -40,13 +39,7 @@ export const signupSchema = z
   .object({
     fullName: sanitizedTextSchema(255),
     email: emailSchema,
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .max(128, "Password must not exceed 128 characters")
-      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-      .regex(/[0-9]/, "Password must contain at least one number"),
+    password: strongPasswordSchema,
     confirmPassword: z.string(),
     role: z.enum(["parent", "student"]),
   })
@@ -61,13 +54,7 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z
   .object({
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .max(128, "Password must not exceed 128 characters")
-      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-      .regex(/[0-9]/, "Password must contain at least one number"),
+    password: strongPasswordSchema,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {

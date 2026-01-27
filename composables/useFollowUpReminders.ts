@@ -1,3 +1,18 @@
+/**
+ * @deprecated Use `useInteractions()` instead. All reminder functionality
+ * has been consolidated into the useInteractions composable.
+ * This composable will be removed in a future version.
+ *
+ * Migration: Replace `useFollowUpReminders()` with `useInteractions()` and access
+ * the reminder methods from the same composable.
+ *
+ * Before:
+ *   const { createReminder } = useFollowUpReminders();
+ *
+ * After:
+ *   const { createReminder } = useInteractions();
+ */
+
 import { ref, computed } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";

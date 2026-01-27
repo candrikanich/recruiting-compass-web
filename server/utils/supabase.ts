@@ -50,6 +50,14 @@ export function createServerSupabaseUserClient(
 }
 
 /**
+ * Alias for createServerSupabaseClient for convenient access
+ * Returns an admin client with full privileges using service role key
+ */
+export function useSupabaseAdmin(): SupabaseClient<Database> {
+  return createServerSupabaseClient();
+}
+
+/**
  * Wraps a promise with a timeout
  * Rejects if the promise doesn't resolve within the specified time
  * Performance optimization: Prevents long-running queries from blocking the application

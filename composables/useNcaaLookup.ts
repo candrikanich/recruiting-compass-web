@@ -2,12 +2,27 @@
  * NCAA Division Lookup Composable
  * Maps college names to NCAA divisions using comprehensive school database
  * Supports D1, D2, D3 divisions for baseball
+ * Includes built-in session-based caching for performance
  */
 
 import { ref } from "vue";
-import { useNcaaCache, type NcaaLookupResult } from "./useNcaaCache";
 import { DIVISION_SCHOOLS } from "./ncaaDatabase";
 import type { NcaaDivision, SchoolInfo } from "./ncaaDatabase";
+
+/**
+ * NCAA Lookup Result with caching
+ */
+export interface NcaaLookupResult {
+  division: "D1" | "D2" | "D3";
+  conference?: string;
+  logo?: string;
+}
+
+/**
+ * Session-based cache for NCAA lookups
+ * Key: normalized school name, Value: lookup result
+ */
+let lookupCache: Map<string, NcaaLookupResult> | null = null;
 
 /**
  * Normalize school name for better matching
@@ -99,7 +114,86 @@ const schoolNameMatches = (schoolName: string, knownName: string): boolean => {
 
 export const useNcaaLookup = () => {
   const loading = ref(false);
-  const cache = useNcaaCache();
+  const cacheSize = ref(0);
+
+  /**
+   * Initialize cache if not already done
+   */
+  const initializeCache = () => {
+    if (!lookupCache) {
+      lookupCache = new Map();
+    }
+  };
+
+  /**
+   * Get cached result for a normalized school name
+   */
+  const getCached = (normalizedName: string): NcaaLookupResult | null => {
+    initializeCache();
+    return lookupCache!.get(normalizedName) || null;
+  };
+
+  /**
+   * Store result in cache
+   */
+  const setCached = (
+    normalizedName: string,
+    result: NcaaLookupResult,
+  ): void => {
+    initializeCache();
+    lookupCache!.set(normalizedName, result);
+    cacheSize.value = lookupCache!.size;
+  };
+
+  /**
+   * Check if a result is cached
+   */
+  const isCached = (normalizedName: string): boolean => {
+    initializeCache();
+    return lookupCache!.has(normalizedName);
+  };
+
+  /**
+   * Clear all cache entries
+   */
+  const clearCache = (): void => {
+    if (lookupCache) {
+      lookupCache.clear();
+      cacheSize.value = 0;
+    }
+  };
+
+  /**
+   * Invalidate cache entry for a specific school
+   */
+  const invalidateEntry = (normalizedName: string): void => {
+    if (lookupCache?.has(normalizedName)) {
+      lookupCache.delete(normalizedName);
+      cacheSize.value = lookupCache.size;
+    }
+  };
+
+  /**
+   * Get current cache statistics
+   */
+  const getCacheStats = () => {
+    initializeCache();
+    return {
+      size: lookupCache!.size,
+      entries: Array.from(lookupCache!.keys()),
+    };
+  };
+
+  /**
+   * Preload cache with multiple entries
+   */
+  const preloadCache = (entries: Array<[string, NcaaLookupResult]>): void => {
+    initializeCache();
+    for (const [key, value] of entries) {
+      lookupCache!.set(key, value);
+    }
+    cacheSize.value = lookupCache!.size;
+  };
 
   /**
    * Get all schools for a specific division
@@ -130,8 +224,8 @@ export const useNcaaLookup = () => {
 
     // Check cache first
     const cacheKey = normalizeSchoolName(schoolName);
-    if (cache.isCached(cacheKey)) {
-      return cache.getCached(cacheKey);
+    if (isCached(cacheKey)) {
+      return getCached(cacheKey);
     }
 
     loading.value = true;
@@ -150,7 +244,7 @@ export const useNcaaLookup = () => {
             };
 
             // Cache the result
-            cache.setCached(cacheKey, result);
+            setCached(cacheKey, result);
             return result;
           }
         }
@@ -171,9 +265,18 @@ export const useNcaaLookup = () => {
 
   return {
     loading,
+    cacheSize,
     lookupSchool,
     lookupDivision, // Backwards compatibility
     getSchools,
     getNcaaDatabase,
+    // Cache methods (inlined from useNcaaCache)
+    getCached,
+    setCached,
+    isCached,
+    clearCache,
+    invalidateEntry,
+    getCacheStats,
+    preloadCache,
   };
 };

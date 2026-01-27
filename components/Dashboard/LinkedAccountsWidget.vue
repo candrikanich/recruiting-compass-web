@@ -115,18 +115,14 @@ import { onMounted, computed } from "vue";
 import { useAccountLinks } from "~/composables/useAccountLinks";
 import { useUserStore } from "~/stores/user";
 
-// Defer composable initialization to onMounted (safe Pinia access)
-let accountLinksComposable: ReturnType<typeof useAccountLinks> | undefined;
+const accountLinksComposable = useAccountLinks();
 
-const linkedAccounts = computed(
-  () => accountLinksComposable?.linkedAccounts.value || [],
-);
+const linkedAccounts = computed(() => accountLinksComposable.linkedAccounts.value);
 const pendingInvitations = computed(
-  () => accountLinksComposable?.pendingInvitations.value || [],
+  () => accountLinksComposable.pendingInvitations.value,
 );
 
 onMounted(() => {
-  // Skip data loading - dashboard rendering without data for now
-  // Data loading deferred until Pinia timing issues are resolved
+  accountLinksComposable.fetchAccountLinks();
 });
 </script>

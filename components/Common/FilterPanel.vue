@@ -88,7 +88,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 
 // Mobile/desktop state
 const isOpen = ref(false);
-const isDesktop = ref(window.innerWidth >= 1024);
+const isDesktop = ref(false); // SSR-safe default
 
 // Handle window resize
 const handleResize = () => {
@@ -102,6 +102,7 @@ const handleResize = () => {
 };
 
 onMounted(() => {
+  isDesktop.value = window.innerWidth >= 1024;
   window.addEventListener("resize", handleResize);
 });
 

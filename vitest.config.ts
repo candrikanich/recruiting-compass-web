@@ -14,11 +14,11 @@ export default defineConfig({
     exclude: ["node_modules/", "dist/", ".nuxt/", "tests/e2e/**"],
 
     // Optimize based on environment
-    // Local: use 8 workers, no isolation = fast
-    // CI: use 2 workers, with isolation = stable memory
-    maxWorkers: process.env.CI ? 2 : 8,
+    // Local: use 4 workers with isolation for test stability
+    // CI: use 2 workers with isolation for stable memory
+    maxWorkers: process.env.CI ? 2 : 4,
     minWorkers: 1,
-    isolate: process.env.CI ? true : false,
+    isolate: true,
     testTimeout: 10000,
     teardownTimeout: 5000,
     logHeapUsage: process.env.CI ? true : false,

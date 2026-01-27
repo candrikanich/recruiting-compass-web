@@ -1,16 +1,32 @@
-import { ref, computed, type ComputedRef } from "vue";
+import { ref, computed, readonly, shallowRef, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
-import type { Interaction } from "~/types/models";
+import { useToast } from "~/composables/useToast";
+import type { Interaction, FollowUpReminder } from "~/types/models";
 import type { Database } from "~/types/database";
+import type { AuditLog } from "~/types/database-helpers";
 import { interactionSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { exportInteractionsToCSV, downloadInteractionsCSV } from "~/utils/interactions/exportCSV";
+import { validateAttachmentFile, uploadInteractionAttachments } from "~/utils/interactions/attachments";
+import { createInboundInteractionAlert } from "~/utils/interactions/inboundAlerts";
 
 // Type aliases for Supabase casting
 type InteractionInsert = Database["public"]["Tables"]["interactions"]["Insert"];
 type InteractionUpdate = Database["public"]["Tables"]["interactions"]["Update"];
-type NotificationInsert =
-  Database["public"]["Tables"]["notifications"]["Insert"];
+type FollowUpReminderInsert =
+  Database["public"]["Tables"]["follow_up_reminders"]["Insert"];
+type FollowUpReminderUpdate =
+  Database["public"]["Tables"]["follow_up_reminders"]["Update"];
+
+export interface NoteHistoryEntry {
+  id: string;
+  timestamp: string;
+  editedBy: string;
+  editedByName?: string;
+  previousContent: string | null;
+  currentContent: string | null;
+}
 
 /**
  * useInteractions composable
@@ -60,13 +76,86 @@ export const useInteractions = (): {
     athleteUserId: string,
     filters?: Omit<InteractionFilters, "loggedBy">,
   ) => Promise<void>;
+  noteHistory: ComputedRef<NoteHistoryEntry[]>;
+  noteHistoryLoading: ComputedRef<boolean>;
+  noteHistoryError: ComputedRef<string | null>;
+  formattedNoteHistory: ComputedRef<Array<NoteHistoryEntry & { formattedTime: string; isCurrentVersion: boolean }>>;
+  fetchNoteHistory: (schoolId: string) => Promise<void>;
+  reminders: ComputedRef<FollowUpReminder[]>;
+  remindersLoading: ComputedRef<boolean>;
+  remindersError: ComputedRef<string | null>;
+  activeReminders: ComputedRef<FollowUpReminder[]>;
+  overdueReminders: ComputedRef<FollowUpReminder[]>;
+  upcomingReminders: ComputedRef<FollowUpReminder[]>;
+  completedReminders: ComputedRef<FollowUpReminder[]>;
+  highPriorityReminders: ComputedRef<FollowUpReminder[]>;
+  loadReminders: () => Promise<void>;
+  createReminder: (
+    title: string,
+    dueDate: string,
+    reminderType: FollowUpReminder["reminder_type"],
+    priority?: FollowUpReminder["priority"],
+    description?: string,
+    schoolId?: string,
+    coachId?: string,
+    interactionId?: string,
+  ) => Promise<FollowUpReminder | null>;
+  completeReminder: (id: string) => Promise<boolean>;
+  deleteReminder: (id: string) => Promise<boolean>;
+  updateReminder: (
+    id: string,
+    updates: Partial<FollowUpReminder>,
+  ) => Promise<boolean>;
+  getRemindersFor: (
+    entityType: "school" | "coach" | "interaction",
+    entityId: string,
+  ) => FollowUpReminder[];
+  formatDueDate: (dueDate: string) => string;
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const toast = useToast();
 
-  const interactions = ref<Interaction[]>([]);
+  const interactions = shallowRef<Interaction[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
+
+  // Note history state (consolidated from useNotesHistory)
+  const noteHistory = shallowRef<NoteHistoryEntry[]>([]);
+  const noteHistoryLoading = ref(false);
+  const noteHistoryError = ref<string | null>(null);
+
+  // Follow-up reminders state (consolidated from useFollowUpReminders)
+  const reminders = shallowRef<FollowUpReminder[]>([]);
+  const remindersLoading = ref(false);
+  const remindersError = ref<string | null>(null);
+
+  // Reminder computed filters
+  const activeReminders = computed(() => {
+    return reminders.value.filter((r) => !r.is_completed);
+  });
+
+  const overdueReminders = computed(() => {
+    const now = new Date();
+    return activeReminders.value.filter((r) => new Date(r.due_date) < now);
+  });
+
+  const upcomingReminders = computed(() => {
+    const now = new Date();
+    const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return activeReminders.value.filter(
+      (r) =>
+        new Date(r.due_date) >= now && new Date(r.due_date) <= oneWeekFromNow,
+    );
+  });
+
+  const completedReminders = computed(() => {
+    return reminders.value.filter((r) => r.is_completed);
+  });
+
+  const highPriorityReminders = computed(() => {
+    return activeReminders.value.filter((r) => r.priority === "high");
+  });
 
   const fetchInteractions = async (filters?: {
     schoolId?: string;
@@ -148,56 +237,12 @@ export const useInteractions = (): {
 
   // Export interactions to CSV
   const exportToCSV = (): string => {
-    if (interactions.value.length === 0) return "";
-
-    // Headers
-    const headers = [
-      "Date",
-      "Type",
-      "Direction",
-      "School",
-      "Coach",
-      "Subject",
-      "Content",
-      "Sentiment",
-    ];
-    const rows = interactions.value.map((i) => [
-      i.occurred_at ? new Date(i.occurred_at).toLocaleDateString() : "",
-      i.type,
-      i.direction,
-      i.school_id || "",
-      i.coach_id || "",
-      i.subject || "",
-      (i.content || "").replace(/"/g, '""'), // Escape quotes
-      i.sentiment || "",
-    ]);
-
-    // Build CSV
-    const csvContent = [
-      headers.map((h) => `"${h}"`).join(","),
-      ...rows.map((r) => r.map((cell) => `"${cell}"`).join(",")),
-    ].join("\n");
-
-    return csvContent;
+    return exportInteractionsToCSV(interactions.value);
   };
 
   // Download CSV file
   const downloadCSV = () => {
-    const csv = exportToCSV();
-    if (!csv) return;
-
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `interactions-${new Date().toISOString().split("T")[0]}.csv`,
-    );
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadInteractionsCSV(interactions.value);
   };
 
   const getInteraction = async (id: string): Promise<Interaction | null> => {
@@ -223,61 +268,18 @@ export const useInteractions = (): {
     }
   };
 
-  // Validate file before upload
-  const validateAttachmentFile = (file: File): void => {
-    const ALLOWED_TYPES = [
-      "application/pdf",
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/vnd.ms-excel",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "text/plain",
-    ];
-
-    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      throw new Error(
-        `File type ${file.type} not allowed. Accepted: PDF, images, Word docs, Excel, text files`,
-      );
-    }
-
-    if (file.size > MAX_SIZE) {
-      throw new Error(
-        `File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum: 10MB`,
-      );
-    }
-  };
-
+  // Validate and upload attachment files
   const uploadAttachments = async (
     files: File[],
     interactionId: string,
   ): Promise<string[]> => {
-    const uploadedPaths: string[] = [];
-
+    // Validate all files first
     for (const file of files) {
-      try {
-        const timestamp = Date.now();
-        const filename = `${timestamp}-${file.name}`;
-        const filepath = `interactions/${interactionId}/${filename}`;
-
-        const { data, error: uploadError } = await supabase.storage
-          .from("interaction-attachments")
-          .upload(filepath, file);
-
-        if (uploadError) throw uploadError;
-        if (data) {
-          uploadedPaths.push(data.path);
-        }
-      } catch (err) {
-        console.error(`Failed to upload file ${file.name}:`, err);
-      }
+      validateAttachmentFile(file);
     }
 
-    return uploadedPaths;
+    // Upload validated files
+    return uploadInteractionAttachments(supabase, files, interactionId);
   };
 
   const createInteraction = async (
@@ -336,50 +338,11 @@ export const useInteractions = (): {
 
       // Create inbound interaction alert if enabled
       if (data.direction === "inbound" && userStore.user) {
-        try {
-          // Parallelize preference and coach queries
-          const [prefsRes, coachRes] = await Promise.all([
-            supabase
-              .from("user_preferences")
-              .select("notification_settings")
-              .eq("user_id", userStore.user.id)
-              .single(),
-            data.coach_id
-              ? supabase
-                  .from("coaches")
-                  .select("first_name, last_name")
-                  .eq("id", data.coach_id)
-                  .single()
-              : Promise.resolve({ data: null }),
-          ]);
-
-          const prefs = prefsRes.data;
-          const coach = coachRes.data;
-
-          if (prefs?.notification_settings?.enableInboundInteractionAlerts) {
-            // Get coach name for notification
-            let coachName = "A coach";
-            if (coach) {
-              coachName = `${coach.first_name} ${coach.last_name}`.trim();
-            }
-
-            // Create notification
-            await supabase.from("notifications").insert([
-              {
-                user_id: userStore.user.id,
-                type: "inbound_interaction",
-                title: `New Contact from ${coachName}`,
-                message: `${coachName} reached out via ${data.type}. View the interaction to see details.`,
-                related_entity_type: "interaction",
-                related_entity_id: data.id,
-                scheduled_for: new Date().toISOString(),
-              },
-            ] as NotificationInsert[]);
-          }
-        } catch (err) {
-          console.error("Failed to create inbound interaction alert:", err);
-          // Don't throw - this shouldn't block interaction creation
-        }
+        await createInboundInteractionAlert({
+          interaction: data,
+          userId: userStore.user.id,
+          supabase,
+        });
       }
 
       interactions.value.unshift(data);
@@ -503,10 +466,290 @@ export const useInteractions = (): {
     });
   };
 
+  // Fetch note history from audit logs (consolidated from useNotesHistory)
+  const fetchNoteHistory = async (schoolId: string): Promise<void> => {
+    if (!userStore.user) return;
+
+    noteHistoryLoading.value = true;
+    noteHistoryError.value = null;
+
+    try {
+      // Query audit logs for note updates on this school
+      const { data, error: fetchError } = await supabase
+        .from("audit_logs")
+        .select("*")
+        .eq("user_id", userStore.user.id)
+        .eq("resource_type", "school")
+        .eq("resource_id", schoolId)
+        .eq("action", "UPDATE")
+        .order("created_at", { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      // Filter logs that contain note changes
+      const noteEntries: NoteHistoryEntry[] = [];
+
+      if (data) {
+        for (const log of data) {
+          const auditLog = log as AuditLog;
+
+          // Check if this log entry includes a notes field change
+          if (
+            auditLog.new_values?.notes !== undefined ||
+            auditLog.old_values?.notes !== undefined
+          ) {
+            noteEntries.push({
+              id: auditLog.id,
+              timestamp: auditLog.created_at || new Date().toISOString(),
+              editedBy: auditLog.user_id || "Unknown",
+              previousContent: auditLog.old_values?.notes || null,
+              currentContent: auditLog.new_values?.notes || null,
+            });
+          }
+        }
+      }
+
+      noteHistory.value = noteEntries;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch note history";
+      noteHistoryError.value = message;
+      noteHistory.value = [];
+    } finally {
+      noteHistoryLoading.value = false;
+    }
+  };
+
+  const formattedNoteHistory = computed(() => {
+    return noteHistory.value.map((entry) => ({
+      ...entry,
+      formattedTime: new Date(entry.timestamp).toLocaleString(),
+      isCurrentVersion: entry === noteHistory.value[0], // Most recent is current
+    }));
+  });
+
+  // Follow-up reminder CRUD methods (migrated from useFollowUpReminders)
+  const loadReminders = async () => {
+    if (!userStore.user) return;
+
+    remindersLoading.value = true;
+    remindersError.value = null;
+
+    try {
+      const { data, error: err } = await supabase
+        .from("follow_up_reminders")
+        .select("*")
+        .eq("user_id", userStore.user.id)
+        .order("due_date", { ascending: true });
+
+      if (err) throw err;
+      reminders.value = data || [];
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load reminders";
+      remindersError.value = message;
+      console.error("Load reminders error:", err);
+      toast.error("Failed to load reminders. Please try again.");
+    } finally {
+      remindersLoading.value = false;
+    }
+  };
+
+  const createReminder = async (
+    title: string,
+    dueDate: string,
+    reminderType: FollowUpReminder["reminder_type"],
+    _priority: FollowUpReminder["priority"] = "medium",
+    description?: string,
+    schoolId?: string,
+    coachId?: string,
+    interactionId?: string,
+  ): Promise<FollowUpReminder | null> => {
+    if (!userStore.user) return null;
+
+    remindersError.value = null;
+
+    try {
+      const newReminder: FollowUpReminderInsert = {
+        user_id: userStore.user.id,
+        notes: description,
+        reminder_date: dueDate,
+        reminder_type: reminderType as "email" | "sms" | "phone_call" | null,
+        school_id: schoolId,
+        coach_id: coachId,
+        interaction_id: interactionId,
+        is_completed: false,
+      };
+
+      const { data, error: err } = await supabase
+        .from("follow_up_reminders")
+        .insert([newReminder] as FollowUpReminderInsert[])
+        .select()
+        .single();
+
+      if (err) throw err;
+
+      reminders.value = [data, ...reminders.value];
+      return data;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to create reminder";
+      remindersError.value = message;
+      console.error("Create reminder error:", err);
+      toast.error("Failed to create reminder. Please try again.");
+      return null;
+    }
+  };
+
+  const completeReminder = async (id: string): Promise<boolean> => {
+    if (!userStore.user) return false;
+
+    remindersError.value = null;
+
+    try {
+      const { error: err } = await supabase
+        .from("follow_up_reminders")
+        .update({
+          is_completed: true,
+          completed_at: new Date().toISOString(),
+        } as FollowUpReminderUpdate)
+        .eq("id", id)
+        .eq("user_id", userStore.user.id);
+
+      if (err) throw err;
+
+      const index = reminders.value.findIndex((r) => r.id === id);
+      if (index !== -1) {
+        reminders.value[index].is_completed = true;
+        reminders.value[index].completed_at = new Date().toISOString();
+      }
+
+      return true;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to complete reminder";
+      remindersError.value = message;
+      console.error("Complete reminder error:", err);
+      toast.error("Failed to complete reminder. Please try again.");
+      return false;
+    }
+  };
+
+  const deleteReminder = async (id: string): Promise<boolean> => {
+    if (!userStore.user) return false;
+
+    remindersError.value = null;
+
+    try {
+      const { error: err } = await supabase
+        .from("follow_up_reminders")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", userStore.user.id);
+
+      if (err) throw err;
+
+      reminders.value = reminders.value.filter((r) => r.id !== id);
+      return true;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete reminder";
+      remindersError.value = message;
+      console.error("Delete reminder error:", err);
+      toast.error("Failed to delete reminder. Please try again.");
+      return false;
+    }
+  };
+
+  const updateReminder = async (
+    id: string,
+    updates: Partial<FollowUpReminder>,
+  ): Promise<boolean> => {
+    if (!userStore.user) return false;
+
+    remindersError.value = null;
+
+    try {
+      const { error: err } = await supabase
+        .from("follow_up_reminders")
+        .update(updates as FollowUpReminderUpdate)
+        .eq("id", id)
+        .eq("user_id", userStore.user.id);
+
+      if (err) throw err;
+
+      const index = reminders.value.findIndex((r) => r.id === id);
+      if (index !== -1) {
+        reminders.value[index] = { ...reminders.value[index], ...updates };
+      }
+
+      return true;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update reminder";
+      remindersError.value = message;
+      console.error("Update reminder error:", err);
+      toast.error("Failed to update reminder. Please try again.");
+      return false;
+    }
+  };
+
+  const getRemindersFor = (
+    entityType: "school" | "coach" | "interaction",
+    entityId: string,
+  ): FollowUpReminder[] => {
+    const key =
+      entityType === "school"
+        ? "school_id"
+        : entityType === "coach"
+          ? "coach_id"
+          : "interaction_id";
+    return reminders.value.filter(
+      (r) => r[key as keyof FollowUpReminder] === entityId,
+    );
+  };
+
+  const formatDueDate = (dueDate: string): string => {
+    const date = new Date(dueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const oneWeekFromNow = new Date(today);
+    oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+
+    const dateAtMidnight = new Date(date);
+    dateAtMidnight.setHours(0, 0, 0, 0);
+
+    if (dateAtMidnight.getTime() === today.getTime()) {
+      return "Today";
+    }
+    if (dateAtMidnight.getTime() === tomorrow.getTime()) {
+      return "Tomorrow";
+    }
+    if (dateAtMidnight < today) {
+      const daysOverdue = Math.floor(
+        (today.getTime() - dateAtMidnight.getTime()) / (24 * 60 * 60 * 1000),
+      );
+      return "Overdue by " + daysOverdue + " day(s)";
+    }
+    if (dateAtMidnight <= oneWeekFromNow) {
+      const daysUntil = Math.floor(
+        (dateAtMidnight.getTime() - today.getTime()) / (24 * 60 * 60 * 1000),
+      );
+      return "In " + daysUntil + " day(s)";
+    }
+
+    return date.toLocaleDateString();
+  };
+
   return {
-    interactions: computed(() => interactions.value),
-    loading: computed(() => loading.value),
-    error: computed(() => error.value),
+    // Interaction state and methods
+    interactions: readonly(interactions),
+    loading: readonly(loading),
+    error: readonly(error),
     fetchInteractions,
     getInteraction,
     createInteraction,
@@ -517,5 +760,29 @@ export const useInteractions = (): {
     downloadCSV,
     fetchMyInteractions,
     fetchAthleteInteractions,
+
+    // Note history methods
+    noteHistory: readonly(noteHistory),
+    noteHistoryLoading: readonly(noteHistoryLoading),
+    noteHistoryError: readonly(noteHistoryError),
+    formattedNoteHistory,
+    fetchNoteHistory,
+
+    // Reminder state and methods (migrated from useFollowUpReminders)
+    reminders: readonly(reminders),
+    remindersLoading: readonly(remindersLoading),
+    remindersError: readonly(remindersError),
+    activeReminders,
+    overdueReminders,
+    upcomingReminders,
+    completedReminders,
+    highPriorityReminders,
+    loadReminders,
+    createReminder,
+    completeReminder,
+    deleteReminder,
+    updateReminder,
+    getRemindersFor,
+    formatDueDate,
   };
 };
