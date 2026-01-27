@@ -151,6 +151,10 @@
           :is-viewing-as-parent="
             parentContextComposable?.isViewingAsParent.value || false
           "
+          :show-quick-actions="true"
+          :show-schools-metric="true"
+          :show-performance="true"
+          :show-charts="true"
           :show-calendar="showWidget('recruitingCalendar', 'widgets')"
         />
 
@@ -206,6 +210,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from "vue";
+import { useRouter } from "vue-router";
 import { useSupabase } from "~/composables/useSupabase";
 import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
@@ -263,6 +268,7 @@ const viewLoggingComposable = useViewLogging();
 const recruitingPacketComposable = useRecruitingPacket();
 
 const user = ref<any>(null);
+const router = useRouter();
 const recruitingPacketLoading = ref(false);
 const recruitingPacketError = ref<string | null>(null);
 const coachCount = ref(0);
@@ -530,6 +536,16 @@ watch(
       await fetchCounts();
       await suggestionsComposable?.fetchSuggestions("dashboard");
       await viewLoggingComposable?.logParentView("dashboard", newId);
+    }
+  },
+);
+
+// Refetch data when returning to dashboard (e.g., after editing a school)
+watch(
+  () => router.currentRoute.value.path,
+  async (newPath) => {
+    if (newPath === "/dashboard") {
+      await fetchCounts();
     }
   },
 );
