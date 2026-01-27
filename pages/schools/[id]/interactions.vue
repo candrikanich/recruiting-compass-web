@@ -647,7 +647,6 @@ import { useRoute } from "vue-router";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
-import { useFollowUpReminders } from "~/composables/useFollowUpReminders";
 import type { Interaction } from "~/types/models";
 import {
   EnvelopeIcon,
@@ -673,10 +672,10 @@ const {
   fetchInteractions,
   createInteraction,
   deleteInteraction: deleteInteractionAPI,
+  createReminder,
 } = useInteractions();
 const { coaches, fetchCoaches } = useCoaches();
 const { getSchool } = useSchools();
-const { createReminder } = useFollowUpReminders();
 
 const showAddForm = ref(false);
 const schoolName = ref("");
