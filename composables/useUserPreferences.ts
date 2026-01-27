@@ -11,6 +11,22 @@ import type {
   DashboardWidgetVisibility,
 } from "~/types/models";
 
+/**
+ * ⚠️ DEPRECATED - useUserPreferences (V1)
+ *
+ * This composable is deprecated as of Phase 2. The server-side user preferences
+ * system (V2) provides better scalability and consistency.
+ *
+ * Migration Guide: See /docs/DEPRECATION_GUIDE_PHASE2.md
+ *
+ * The V1 API remains fully functional for backward compatibility, but you should
+ * plan to migrate to useUserPreferencesV2() in your components.
+ *
+ * Timeline:
+ * - Phase 2: Deprecated (this version)
+ * - Phase 3: Adapter layer available
+ * - Phase 4: Removed entirely
+ */
 export const useUserPreferences = (): {
   preferences: Ref<UserPreferences | null>;
   notificationSettings: ComputedRef<NotificationSettings | null>;
@@ -30,6 +46,16 @@ export const useUserPreferences = (): {
   updateSchoolPreferences: (prefs: SchoolPreferences) => Promise<void>;
   updateDashboardLayout: (layout: DashboardWidgetVisibility) => Promise<void>;
 } => {
+  // Show deprecation warning in development mode
+  if (process.env.NODE_ENV === "development") {
+    console.warn(
+      "%c[DEPRECATED] useUserPreferences (V1) is deprecated as of Phase 2\n" +
+      "Migration: Use useUserPreferencesV2() instead\n" +
+      "Docs: See /docs/DEPRECATION_GUIDE_PHASE2.md",
+      "color: orange; font-weight: bold; font-size: 1.1em;",
+    );
+  }
+
   const supabase = useSupabase();
   const userStore = useUserStore();
 

@@ -142,6 +142,41 @@ Used in components:
 const { data, loading, fetchData } = useMyFeature();
 ```
 
+### Key Composables (Domain-Organized)
+
+**Schools Domain** (`useSchools`)
+- School CRUD operations, filtering, ranking, status tracking
+- Duplicate detection (name, NCAA ID, domain matching)
+- Favorite management and search functionality
+- **Related features**: Academic data, college scorecard integration, school logos
+
+**Communication Domain** (`useCommunicationTemplates`)
+- Template CRUD for email, messages, and phone scripts
+- Template rendering with variable substitution
+- Unlock conditions for template availability (profile field checks, document requirements)
+- Template filtering and search by type/tag
+
+**Interactions Domain** (`useInteractions`)
+- Interaction CRUD (logs, notes, attachments)
+- Note history tracking via audit logs
+- Follow-up reminders and reminder filtering (active, overdue, upcoming)
+- Interaction export to CSV and inbound alerts
+- **Related features**: Attachment uploads, notification creation, coach details lookup
+
+**Coaches Domain** (`useCoaches`)
+- Coach CRUD by school, filtering, ordering
+- Coach search and sorting capabilities
+- Contact information management
+
+**Tasks Domain** (`useTasks`)
+- Recruiting timeline phase tasks with dependencies
+- Task locking based on phase progression
+- Grade requirements for task completion
+
+**Performance Domain** (`usePerformanceAnalytics`)
+- Athletic performance metrics and grades
+- Fit score calculation and analytics
+
 ## Configuration & Environment
 
 ### Environment Variables
@@ -395,10 +430,71 @@ npm run test:e2e:ui           # Run Playwright in UI mode
 - Run all checks before pushing: type-check, lint, tests, E2E
 - Create PR to `main`; merge after review
 
+## Composable Consolidations (Phase 3)
+
+### Completed Consolidations
+
+**Phase 3** completed consolidation of 5 composables into 3 core composables to reduce fragmentation and improve domain cohesion:
+
+1. **useSchoolDuplication → useSchools** (Consolidation #1)
+   - **Merged functions**: `findDuplicate`, `hasDuplicate`, `isNameDuplicate`, `isDomainDuplicate`, `isNCAAAIDuplicate`
+   - **Rationale**: Duplicate detection is intrinsically a school validation concern
+   - **Status**: Complete, all tests passing
+
+2. **useTemplateUnlock → useCommunicationTemplates** (Consolidation #2)
+   - **Merged functions**: `checkUnlockCondition`, `checkTemplateUnlocked`, `getTemplatesWithUnlockStatus`, `filterPredefined`
+   - **Merged types**: `UnlockCondition`, `UnlockConditionGroup`, `TemplateWithUnlockStatus`
+   - **Rationale**: Unlock conditions determine template availability; these are tightly coupled concerns
+   - **Status**: Complete, 22 comprehensive tests added
+
+3. **useFollowUpReminders → useInteractions** (Consolidation #3)
+   - **Merged functions**: `loadReminders`, `createReminder`, `completeReminder`, `deleteReminder`, `updateReminder`, `getRemindersFor`, `formatDueDate`
+   - **Merged computed filters**: `activeReminders`, `overdueReminders`, `upcomingReminders`, `completedReminders`, `highPriorityReminders`
+   - **Rationale**: Reminders are often created from interactions; logically grouped in interaction management
+   - **Status**: Complete, useInteractions grew from 608 → 879 lines (within guidelines)
+
+### Migration Guide for Deprecated Composables
+
+All deprecated composables are marked with `@deprecated` notices in their source files. Update imports as follows:
+
+**Migration: useSchoolDuplication**
+```typescript
+// Before
+import { useSchoolDuplication } from "~/composables/useSchoolDuplication";
+const { findDuplicate } = useSchoolDuplication();
+
+// After
+import { useSchools } from "~/composables/useSchools";
+const { findDuplicate } = useSchools();
+```
+
+**Migration: useTemplateUnlock**
+```typescript
+// Before
+import { useTemplateUnlock, type TemplateWithUnlockStatus } from "~/composables/useTemplateUnlock";
+const { getTemplatesWithUnlockStatus } = useTemplateUnlock();
+
+// After
+import { useCommunicationTemplates, type TemplateWithUnlockStatus } from "~/composables/useCommunicationTemplates";
+const { getTemplatesWithUnlockStatus } = useCommunicationTemplates();
+```
+
+**Migration: useFollowUpReminders**
+```typescript
+// Before
+import { useFollowUpReminders } from "~/composables/useFollowUpReminders";
+const { createReminder } = useFollowUpReminders();
+
+// After
+import { useInteractions } from "~/composables/useInteractions";
+const { createReminder } = useInteractions();
+```
+
 ## Notes for Future Development
 
-- **Composable proliferation**: Many composables (60+); consolidate related logic if it grows further
-- **Test coverage gaps**: Some legacy composables lack tests; prioritize new features
+- **Composable organization**: Currently ~57 composables (reduced from 60+ via Phase 3 consolidations); continue consolidating related logic into domain-focused composables
+- **Test coverage**: Enhanced during consolidations; maintain >80% coverage for core features
 - **Component structure**: Organize by domain (Coach/, School/, Interaction/) to avoid naming collisions
 - **Store patterns**: Avoid direct state mutation; always use actions for consistency
 - **API layer**: Consider creating service functions if API calls become complex
+- **Deprecated composables**: Plan removal of `useSchoolDuplication`, `useTemplateUnlock`, `useFollowUpReminders` in next major version

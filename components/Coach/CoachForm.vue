@@ -192,7 +192,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch } from "vue";
+import { reactive, watch, toRefs } from "vue";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { coachSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
@@ -232,26 +232,22 @@ const formData = reactive({
 });
 
 // Watch for changes to initialData from parent
-watch(
-  () => props.initialData,
-  (newData) => {
-    if (newData) {
-      if (newData.role !== undefined) formData.role = newData.role;
-      if (newData.first_name !== undefined)
-        formData.first_name = newData.first_name;
-      if (newData.last_name !== undefined)
-        formData.last_name = newData.last_name;
-      if (newData.email !== undefined) formData.email = newData.email;
-      if (newData.phone !== undefined) formData.phone = newData.phone;
-      if (newData.twitter_handle !== undefined)
-        formData.twitter_handle = newData.twitter_handle;
-      if (newData.instagram_handle !== undefined)
-        formData.instagram_handle = newData.instagram_handle;
-      if (newData.notes !== undefined) formData.notes = newData.notes;
-    }
-  },
-  { deep: true },
-);
+const { initialData } = toRefs(props);
+
+watch(initialData, (newData) => {
+  if (newData) {
+    Object.assign(formData, {
+      role: newData.role ?? formData.role,
+      first_name: newData.first_name ?? formData.first_name,
+      last_name: newData.last_name ?? formData.last_name,
+      email: newData.email ?? formData.email,
+      phone: newData.phone ?? formData.phone,
+      twitter_handle: newData.twitter_handle ?? formData.twitter_handle,
+      instagram_handle: newData.instagram_handle ?? formData.instagram_handle,
+      notes: newData.notes ?? formData.notes,
+    });
+  }
+}, { deep: true });
 
 // Field validators
 const validators = {

@@ -3,6 +3,21 @@ import type { School } from "~/types/models"
 import { useSchools } from "~/composables/useSchools"
 
 /**
+ * @deprecated Use `useSchools()` instead. All duplicate detection functions
+ * have been consolidated into the useSchools composable.
+ * This composable will be removed in a future version.
+ *
+ * Migration: Replace `useSchoolDuplication()` with `useSchools()` and access
+ * the duplicate detection functions from the same composable.
+ *
+ * Before:
+ *   const { findDuplicate } = useSchoolDuplication();
+ *
+ * After:
+ *   const { findDuplicate } = useSchools();
+ */
+
+/**
  * Composable for detecting duplicate schools
  * Checks for duplicates by name, NCAA ID, and website domain
  */

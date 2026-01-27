@@ -272,10 +272,14 @@
               id="subject"
               v-model="newInteraction.subject"
               type="text"
+              :maxlength="MAX_SUBJECT_LENGTH"
               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="e.g., Initial contact, Recruitment conversation"
               :disabled="loading"
             />
+            <p class="text-xs text-slate-500 mt-1">
+              {{ newInteraction.subject.length }}/{{ MAX_SUBJECT_LENGTH }} characters
+            </p>
           </div>
 
           <!-- Content -->
@@ -291,10 +295,21 @@
               v-model="newInteraction.content"
               required
               rows="5"
+              :maxlength="MAX_CONTENT_LENGTH"
               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Details about the interaction..."
               :disabled="loading"
             />
+            <p
+              :class="[
+                'text-xs mt-1',
+                newInteraction.content.length > MAX_CONTENT_LENGTH * 0.9
+                  ? 'text-red-600'
+                  : 'text-slate-500',
+              ]"
+            >
+              {{ newInteraction.content.length }}/{{ MAX_CONTENT_LENGTH }} characters
+            </p>
           </div>
 
           <!-- Attachments (Optional) -->
@@ -632,7 +647,6 @@ import { useRoute } from "vue-router";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
-import { useFollowUpReminders } from "~/composables/useFollowUpReminders";
 import type { Interaction } from "~/types/models";
 import {
   EnvelopeIcon,
@@ -646,6 +660,9 @@ import {
 
 definePageMeta({});
 
+const MAX_SUBJECT_LENGTH = 500;
+const MAX_CONTENT_LENGTH = 10000;
+
 const route = useRoute();
 const id = route.params.id as string;
 
@@ -655,10 +672,10 @@ const {
   fetchInteractions,
   createInteraction,
   deleteInteraction: deleteInteractionAPI,
+  createReminder,
 } = useInteractions();
 const { coaches, fetchCoaches } = useCoaches();
 const { getSchool } = useSchools();
-const { createReminder } = useFollowUpReminders();
 
 const showAddForm = ref(false);
 const schoolName = ref("");

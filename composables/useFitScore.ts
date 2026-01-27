@@ -289,6 +289,48 @@ export const useFitScore = (): {
   }
 
   /**
+   * Batch recalculate fit scores via server endpoint
+   * Triggered when athlete profile changes (consolidated from useFitScoreRecalculation)
+   * @returns Recalculation result with counts of updated and failed scores
+   */
+  async function recalculateAllFitScoresViaServer(): Promise<{
+    success: boolean;
+    updated: number;
+    failed: number;
+    message: string;
+  }> {
+    state.value.loading = true;
+    state.value.error = null;
+
+    try {
+      const response = await $fetch<{
+        success: boolean;
+        updated: number;
+        failed: number;
+        message: string;
+      }>("/api/athlete/fit-scores/recalculate-all", {
+        method: "POST",
+      });
+
+      if (!response.success) {
+        throw new Error(response.message || "Recalculation failed");
+      }
+
+      return response;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to recalculate fit scores";
+      state.value.error = message;
+      console.error("Server fit score recalculation error:", err);
+      throw err;
+    } finally {
+      state.value.loading = false;
+    }
+  }
+
+  /**
    * Clear all cached fit scores
    */
   function clearCache(): void {
@@ -312,6 +354,7 @@ export const useFitScore = (): {
     // Methods
     calculateSchoolFitScore,
     recalculateAllFitScores,
+    recalculateAllFitScoresViaServer, // Inlined from useFitScoreRecalculation
     getPortfolioHealth,
     getFitScore,
     clearCache,

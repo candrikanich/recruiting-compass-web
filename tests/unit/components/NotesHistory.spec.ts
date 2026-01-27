@@ -3,12 +3,25 @@ import { mount } from "@vue/test-utils";
 import NotesHistory from "~/components/School/NotesHistory.vue";
 
 // Mock the composable
-vi.mock("~/composables/useNotesHistory", () => ({
-  useNotesHistory: () => ({
-    history: { value: [] },
-    formattedHistory: { value: [] },
+vi.mock("~/composables/useInteractions", () => ({
+  useInteractions: () => ({
+    interactions: { value: [] },
     loading: { value: false },
     error: { value: null },
+    fetchInteractions: vi.fn(),
+    getInteraction: vi.fn(),
+    createInteraction: vi.fn(),
+    updateInteraction: vi.fn(),
+    deleteInteraction: vi.fn(),
+    uploadAttachments: vi.fn(),
+    exportToCSV: vi.fn(),
+    downloadCSV: vi.fn(),
+    fetchMyInteractions: vi.fn(),
+    fetchAthleteInteractions: vi.fn(),
+    noteHistory: { value: [] },
+    noteHistoryLoading: { value: false },
+    noteHistoryError: { value: null },
+    formattedNoteHistory: { value: [] },
     fetchNoteHistory: vi.fn(),
   }),
 }));

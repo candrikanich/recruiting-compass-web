@@ -162,7 +162,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed } from "vue";
 import { XMarkIcon } from "@heroicons/vue/24/solid";
 import { useUserStore } from "~/stores/user";
 import {
@@ -189,8 +189,7 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-// Defer store initialization to onMounted
-let userStore: ReturnType<typeof useUserStore> | undefined;
+const userStore = useUserStore();
 const selectedType = ref("comprehensive");
 const selectedMetric = ref("");
 const formatPDF = ref(true);
@@ -235,7 +234,6 @@ const canExport = computed(() => {
 });
 
 const handleExport = async () => {
-  if (!userStore) return;
   isExporting.value = true;
 
   try {
@@ -308,8 +306,4 @@ const handleExport = async () => {
     isExporting.value = false;
   }
 };
-
-onMounted(() => {
-  userStore = useUserStore();
-});
 </script>
