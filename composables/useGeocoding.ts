@@ -4,12 +4,7 @@
  */
 
 import { ref } from "vue";
-
-export interface GeocodingResult {
-  latitude: number;
-  longitude: number;
-  displayName: string;
-}
+import type { GeocodingResult } from "~/utils/geocoding";
 
 export const useGeocoding = () => {
   const loading = ref(false);
