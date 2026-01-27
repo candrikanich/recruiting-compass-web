@@ -72,9 +72,6 @@ const createMockQuery = () => {
   return query;
 };
 
-// Create a default mock query instance for reuse
-const defaultMockQuery = createMockQuery();
-
 export const mockSupabase = {
   auth: {
     signInWithPassword: vi.fn(),
@@ -83,7 +80,7 @@ export const mockSupabase = {
     onAuthStateChange: vi.fn(),
     getSession: vi.fn(),
   },
-  from: vi.fn(() => defaultMockQuery),
+  from: vi.fn(() => createMockQuery()),
 };
 
 // Global mock for @supabase/supabase-js - prevents network calls
