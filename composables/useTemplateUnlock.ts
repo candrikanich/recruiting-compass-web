@@ -22,27 +22,11 @@ import { ref, type Ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { CommunicationTemplate } from "~/types/models";
-
-export interface UnlockCondition {
-  type: "profile_field" | "document_exists" | "task_completed" | "school_count";
-  field?: string;
-  documentType?: string;
-  taskId?: string;
-  minCount?: number;
-  description: string;
-}
-
-export interface UnlockConditionGroup {
-  type: "AND" | "OR";
-  conditions: UnlockCondition[];
-}
-
-export interface TemplateWithUnlockStatus {
-  template: CommunicationTemplate;
-  unlocked: boolean;
-  missingConditions: UnlockCondition[];
-  progressPercent: number;
-}
+import type {
+  UnlockCondition,
+  UnlockConditionGroup,
+  TemplateWithUnlockStatus,
+} from "./useCommunicationTemplates";
 
 export const useTemplateUnlock = (): {
   loading: Ref<boolean>;
