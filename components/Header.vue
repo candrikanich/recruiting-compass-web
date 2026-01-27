@@ -159,6 +159,10 @@ import {
   DocumentTextIcon,
   LinkIcon,
   ArrowRightOnRectangleIcon,
+  CalendarDaysIcon,
+  ClockIcon,
+  MagnifyingGlassIcon,
+  ChartPieIcon,
 } from "@heroicons/vue/24/outline";
 
 const route = useRoute();
@@ -173,8 +177,14 @@ const navItems = [
   { to: "/schools", label: "Schools", icon: BuildingLibraryIcon },
   { to: "/coaches", label: "Coaches", icon: UserGroupIcon },
   { to: "/interactions", label: "Interactions", icon: ChatBubbleLeftRightIcon },
+  { to: "/events", label: "Events", icon: CalendarDaysIcon },
+  { to: "/timeline", label: "Timeline", icon: ClockIcon },
+  { to: "/performance", label: "Performance", icon: ChartBarIcon },
   { to: "/offers", label: "Offers", icon: GiftIcon },
-  { to: "/reports", label: "Reports", icon: ChartBarIcon },
+  { to: "/documents", label: "Documents", icon: DocumentTextIcon },
+  { to: "/settings", label: "Settings", icon: AdjustmentsHorizontalIcon },
+  { to: "/search", label: "Search", icon: MagnifyingGlassIcon },
+  { to: "/analytics", label: "Analytics", icon: ChartPieIcon },
 ];
 
 const settingsItems = [

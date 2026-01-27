@@ -21,24 +21,35 @@
       <canvas ref="chartCanvas"></canvas>
     </div>
 
-    <div v-else class="h-64 flex items-center justify-center text-slate-500">
-      <p>No interaction data available</p>
+    <div v-else class="h-64 flex flex-col items-center justify-center rounded-lg bg-slate-50 text-slate-600">
+      <ChatBubbleLeftRightIcon class="w-12 h-12 mb-3 text-slate-400" />
+      <p class="text-sm font-medium">No interactions in the last 30 days</p>
+      <p class="text-xs text-slate-500 mt-1">Log your first interaction to see trends here</p>
+      <NuxtLink
+        to="/interactions/new"
+        class="mt-4 px-4 py-2 bg-brand-blue-500 text-white text-sm rounded-lg hover:bg-brand-blue-600 transition-colors"
+      >
+        Log Interaction
+      </NuxtLink>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  LineController,
   LineElement,
   PointElement,
   Title,
   Tooltip,
   Legend,
+  Filler,
 } from "chart.js";
+import { ChatBubbleLeftRightIcon } from "@heroicons/vue/24/outline";
 import type { Interaction } from "~/types/models";
 
 interface Props {
@@ -47,22 +58,39 @@ interface Props {
 
 const props = defineProps<Props>();
 const chartCanvas = ref<HTMLCanvasElement | null>(null);
-// @ts-ignore - used for chart lifecycle
+let chartInstance: ChartJS | null = null;
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  LineController,
   LineElement,
   PointElement,
   Title,
   Tooltip,
   Legend,
+  Filler,
 );
 
 const totalInteractions = computed(() => props.interactions.length);
 
+const recentInteractionCount = computed(() => {
+  if (props.interactions.length === 0) return 0;
+
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  return props.interactions.filter((interaction) => {
+    const recordedDate = interaction.recorded_date || interaction.created_at;
+    if (!recordedDate) return false;
+    const date = new Date(recordedDate);
+    return date >= thirtyDaysAgo;
+  }).length;
+});
+
 const chartData = computed(() => {
-  if (props.interactions.length === 0) return null;
+  // Show empty state if no recent interactions
+  if (recentInteractionCount.value === 0) return null;
 
   // Get last 30 days
   const now = new Date();
@@ -70,6 +98,7 @@ const chartData = computed(() => {
 
   // Group interactions by date
   const dateGroups: Record<string, number> = {};
+
   props.interactions.forEach((interaction) => {
     const recordedDate = interaction.recorded_date || interaction.created_at;
     if (!recordedDate) return;
@@ -99,8 +128,18 @@ const chartData = computed(() => {
   return { labels, data };
 });
 
-onMounted(() => {
-  if (chartCanvas.value && chartData.value) {
+const initializeChart = () => {
+  try {
+    if (!chartCanvas.value || !chartData.value) {
+      return;
+    }
+
+    // Destroy existing chart instance if it exists
+    if (chartInstance) {
+      chartInstance.destroy();
+      chartInstance = null;
+    }
+
     // Get computed colors from CSS variables
     const root = document.documentElement;
     const brandBlue600 =
@@ -110,7 +149,7 @@ onMounted(() => {
       getComputedStyle(root).getPropertyValue("--muted-foreground").trim() ||
       "#666";
 
-    new ChartJS(chartCanvas.value, {
+    chartInstance = new ChartJS(chartCanvas.value, {
       type: "line",
       data: {
         labels: chartData.value.labels,
@@ -119,7 +158,7 @@ onMounted(() => {
             label: "Interactions",
             data: chartData.value.data,
             borderColor: brandBlue600,
-            backgroundColor: `${brandBlue600}19`, // Add alpha for transparency
+            backgroundColor: `${brandBlue600}19`,
             tension: 0.4,
             fill: true,
             pointRadius: 4,
@@ -159,6 +198,16 @@ onMounted(() => {
         },
       },
     });
+  } catch (error) {
+    console.error('[InteractionTrendChart] Error:', error);
   }
+};
+
+onMounted(() => {
+  initializeChart();
+});
+
+watch(chartData, () => {
+  initializeChart();
 });
 </script>

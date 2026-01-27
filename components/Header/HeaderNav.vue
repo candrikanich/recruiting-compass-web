@@ -61,82 +61,24 @@
       Events
     </NuxtLink>
     <NuxtLink
-      to="/performance"
-      data-testid="nav-performance"
+      to="/timeline"
+      data-testid="nav-timeline"
       :class="[
         'px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-        isActive('/performance')
+        isActive('/timeline')
           ? 'bg-brand-blue-100 text-brand-blue-700'
           : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
       ]"
     >
-      Performance
+      Timeline
     </NuxtLink>
-    <NuxtLink
-      to="/offers"
-      data-testid="nav-offers"
-      :class="[
-        'px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-        isActive('/offers')
-          ? 'bg-brand-blue-100 text-brand-blue-700'
-          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
-      ]"
-    >
-      Offers
-    </NuxtLink>
-    <NuxtLink
-      to="/documents"
-      data-testid="nav-documents"
-      :class="[
-        'px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-        isActive('/documents')
-          ? 'bg-brand-blue-100 text-brand-blue-700'
-          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
-      ]"
-    >
-      Documents
-    </NuxtLink>
-    <NuxtLink
-      to="/settings"
-      data-testid="nav-settings"
-      :class="[
-        'px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-        isActive('/settings')
-          ? 'bg-brand-blue-100 text-brand-blue-700'
-          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
-      ]"
-    >
-      Settings
-    </NuxtLink>
-    <NuxtLink
-      to="/search"
-      data-testid="nav-search"
-      :class="[
-        'px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-        isActive('/search')
-          ? 'bg-brand-blue-100 text-brand-blue-700'
-          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
-      ]"
-    >
-      Search
-    </NuxtLink>
-    <NuxtLink
-      to="/analytics"
-      data-testid="nav-analytics"
-      :class="[
-        'px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-        isActive('/analytics')
-          ? 'bg-brand-blue-100 text-brand-blue-700'
-          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
-      ]"
-    >
-      Analytics
-    </NuxtLink>
+    <HeaderNavMore />
   </nav>
 </template>
 
 <script setup lang="ts">
 import { useRoute } from "vue-router";
+import HeaderNavMore from "./HeaderNavMore.vue";
 
 const route = useRoute();
 

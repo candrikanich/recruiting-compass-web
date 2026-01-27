@@ -57,40 +57,40 @@
       <div class="grid grid-cols-2 gap-3">
         <NuxtLink
           to="/coaches/new"
-          class="bg-brand-blue-500 hover:bg-brand-blue-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
+          class="flex flex-col bg-brand-blue-500 hover:bg-brand-blue-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
         >
           <UserPlusIcon
-            class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform"
+            class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform text-white"
           />
           <div class="font-medium mb-1">Add Coach</div>
           <div class="text-white/80 text-sm">Connect with a new coach</div>
         </NuxtLink>
         <NuxtLink
           to="/interactions/new"
-          class="bg-brand-emerald-500 hover:bg-brand-emerald-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
+          class="flex flex-col bg-brand-emerald-500 hover:bg-brand-emerald-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
         >
           <ChatBubbleLeftRightIcon
-            class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform"
+            class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform text-white"
           />
           <div class="font-medium mb-1">Log Interaction</div>
           <div class="text-white/80 text-sm">Record a conversation</div>
         </NuxtLink>
         <NuxtLink
           to="/schools/new"
-          class="bg-brand-purple-500 hover:bg-brand-purple-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
+          class="flex flex-col bg-brand-purple-500 hover:bg-brand-purple-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
         >
           <BuildingLibraryIcon
-            class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform"
+            class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform text-white"
           />
           <div class="font-medium mb-1">Add School</div>
           <div class="text-white/80 text-sm">Research a new school</div>
         </NuxtLink>
         <NuxtLink
           to="/events/new"
-          class="bg-brand-orange-500 hover:bg-brand-orange-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
+          class="flex flex-col bg-brand-orange-500 hover:bg-brand-orange-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
         >
           <CalendarDaysIcon
-            class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform"
+            class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform text-white"
           />
           <div class="font-medium mb-1">Schedule Event</div>
           <div class="text-white/80 text-sm">Register for a camp</div>

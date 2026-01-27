@@ -4,7 +4,7 @@
     <button
       data-testid="profile-menu"
       @click="isOpen = !isOpen"
-      class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+      class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-all"
     >
       <!-- Avatar -->
       <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center">
