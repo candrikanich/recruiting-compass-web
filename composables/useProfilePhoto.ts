@@ -2,12 +2,7 @@ import { ref, computed, type ComputedRef, type Ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { compressImage, validateImageFile } from "~/utils/image/compressImage";
-
-export interface UploadResult {
-  success: boolean;
-  photoUrl?: string;
-  error?: string;
-}
+import type { UploadResult } from "./useProfile";
 
 export const useProfilePhoto = (): {
   uploading: Ref<boolean>;

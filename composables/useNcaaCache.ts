@@ -5,12 +5,7 @@
  */
 
 import { ref } from "vue";
-
-export interface NcaaLookupResult {
-  division: "D1" | "D2" | "D3";
-  conference?: string;
-  logo?: string;
-}
+import type { NcaaLookupResult } from "./useNcaaLookup";
 
 /**
  * Session-based cache for NCAA lookups
