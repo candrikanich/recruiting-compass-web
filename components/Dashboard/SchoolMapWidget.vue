@@ -18,9 +18,17 @@
 
     <div
       v-else
-      class="h-96 flex items-center justify-center rounded-lg bg-slate-50 text-slate-600"
+      class="h-96 flex flex-col items-center justify-center rounded-lg bg-slate-50 text-slate-600"
     >
-      <p>Add schools to see them on the map</p>
+      <MapPinIcon class="w-12 h-12 mb-3 text-slate-400" />
+      <p class="text-sm font-medium">No school locations to display</p>
+      <p class="text-xs text-slate-500 mt-1">Schools will appear on the map once you add them</p>
+      <NuxtLink
+        to="/schools/new"
+        class="mt-4 px-4 py-2 bg-brand-blue-500 text-white text-sm rounded-lg hover:bg-brand-blue-600 transition-colors"
+      >
+        Add School
+      </NuxtLink>
     </div>
 
     <!-- Legend -->
@@ -53,8 +61,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import L from "leaflet";
+import { MapPinIcon } from "@heroicons/vue/24/outline";
+import { useUserStore } from "~/stores/user";
 import type { School } from "~/types/models";
 
 interface Props {
@@ -63,7 +73,17 @@ interface Props {
 
 const props = defineProps<Props>();
 const mapContainer = ref<HTMLDivElement | null>(null);
+const userStore = useUserStore();
 let mapInstance: L.Map | null = null;
+let isInitializing = false;
+
+const getMapCenter = (): [number, number] => {
+  const user = userStore.user;
+  if (user?.home_location?.latitude && user?.home_location?.longitude) {
+    return [user.home_location.latitude, user.home_location.longitude];
+  }
+  return [39.8283, -98.5795];
+};
 
 const getMarkerColor = (status?: string): string => {
   // Resolve design token colors
@@ -97,64 +117,110 @@ const createMarkerIcon = (color: string) => {
   });
 };
 
-onMounted(() => {
-  if (!mapContainer.value || props.schools.length === 0) return;
+const initializeMap = () => {
+  try {
+    if (!mapContainer.value || isInitializing) return;
 
-  // Initialize map centered on US
-  mapInstance = L.map(mapContainer.value).setView([39.8283, -98.5795], 3);
+    isInitializing = true;
 
-  // Add tile layer
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap contributors",
-    maxZoom: 19,
-  }).addTo(mapInstance);
+    // Destroy existing map instance if it exists
+    if (mapInstance) {
+      mapInstance.remove();
+      mapInstance = null;
+    }
 
-  // Add markers for schools
-  const schoolsWithCoords: Array<School & { lat: number; lng: number }> = [];
+    // Clear the container
+    if (mapContainer.value) {
+      mapContainer.value.innerHTML = '';
+    }
 
-  props.schools.forEach((school) => {
-    // Use city/state as fallback, or approximate coordinates
-    // In a production app, you'd geocode these properly
-    let lat = 39.8283;
-    let lng = -98.5795;
+    const center = getMapCenter();
+    const zoom = props.schools.length > 0 ? 3 : 6;
 
-    // Simple hash-based positioning for demo (should be proper geocoding)
-    const hash = (school.name || "")
-      .split("")
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    lat += (hash % 40) - 20;
-    lng += (hash % 80) - 40;
+    // Initialize map
+    mapInstance = L.map(mapContainer.value).setView(center, zoom);
 
-    schoolsWithCoords.push({ ...school, lat, lng });
-  });
+    // Add tile layer
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors",
+      maxZoom: 19,
+    }).addTo(mapInstance);
 
-  // Create a feature group for clustering
-  const markerGroup = L.featureGroup();
+    // Add home location marker if no schools
+    if (props.schools.length === 0 && (center[0] !== 39.8283 || center[1] !== -98.5795)) {
+      const homeMarker = L.marker(center, {
+        icon: L.divIcon({
+          html: '<div class="w-8 h-8 rounded-full bg-green-500 border-2 border-white shadow-lg flex items-center justify-center"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg></div>',
+          iconSize: [32, 32],
+          className: "custom-marker",
+        }),
+        title: "Your Home Location",
+      }).bindPopup(`
+        <div class="text-sm">
+          <p class="font-bold">Your Home Location</p>
+          <p class="text-gray-600">Schools will appear on the map as you add them</p>
+        </div>
+      `);
 
-  schoolsWithCoords.forEach((school) => {
-    const color = getMarkerColor(school.status);
-    const marker = L.marker([school.lat, school.lng], {
-      icon: createMarkerIcon(color),
-      title: school.name,
-    });
+      homeMarker.addTo(mapInstance);
+    }
 
-    marker.bindPopup(`
-      <div class="text-sm">
-        <p class="font-bold">${school.name}</p>
-        <p class="text-gray-600">${school.city}, ${school.state}</p>
-        <p class="text-gray-600 capitalize">Status: ${school.status?.replace("_", " ") || "Unknown"}</p>
-      </div>
-    `);
+    // Add school markers if schools exist
+    if (props.schools.length > 0) {
+      const schoolsWithCoords: Array<School & { lat: number; lng: number }> = [];
 
-    marker.addTo(markerGroup);
-  });
+      props.schools.forEach((school) => {
+        // Use actual coordinates from academic_info if available
+        const lat = school.academic_info?.latitude;
+        const lng = school.academic_info?.longitude;
 
-  markerGroup.addTo(mapInstance);
+        if (typeof lat === "number" && typeof lng === "number") {
+          schoolsWithCoords.push({ ...school, lat, lng });
+        }
+      });
 
-  // Fit bounds to all markers
-  if (markerGroup.getLayers().length > 0) {
-    mapInstance.fitBounds(markerGroup.getBounds(), { padding: [50, 50] });
+      // Create a feature group for clustering
+      const markerGroup = L.featureGroup();
+
+      schoolsWithCoords.forEach((school) => {
+        const color = getMarkerColor(school.status);
+        const marker = L.marker([school.lat, school.lng], {
+          icon: createMarkerIcon(color),
+          title: school.name,
+        });
+
+        marker.bindPopup(`
+          <div class="text-sm">
+            <p class="font-bold">${school.name}</p>
+            <p class="text-gray-600">${school.city}, ${school.state}</p>
+            <p class="text-gray-600 capitalize">Status: ${school.status?.replace("_", " ") || "Unknown"}</p>
+          </div>
+        `);
+
+        marker.addTo(markerGroup);
+      });
+
+      markerGroup.addTo(mapInstance);
+
+      // Fit bounds to all markers
+      if (markerGroup.getLayers().length > 0) {
+        mapInstance.fitBounds(markerGroup.getBounds(), { padding: [50, 50] });
+      }
+    }
+
+    isInitializing = false;
+  } catch (error) {
+    console.error('[SchoolMapWidget] Error initializing map:', error);
+    isInitializing = false;
   }
+};
+
+onMounted(() => {
+  initializeMap();
+});
+
+watch(() => props.schools, () => {
+  initializeMap();
 });
 </script>
 
