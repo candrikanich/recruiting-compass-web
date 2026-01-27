@@ -114,10 +114,10 @@
         />
         <SocialMediaWidget :show-social="true" />
 
-        <!-- Row 5: Full-width widgets (3 cols each) -->
+        <!-- Row 5: Full-width widgets -->
         <CoachFollowupWidget
           v-if="showWidget('coachFollowupWidget', 'widgets')"
-          class="lg:col-span-3"
+          class="lg:col-span-2"
         />
         <AthleteActivityWidget
           v-if="userStore.isParent && showWidget('athleteActivity', 'widgets')"
