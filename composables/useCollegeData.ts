@@ -8,6 +8,8 @@ export interface CollegeDataResult {
   name: string;
   website: string | null;
   address: string | null; // City, State
+  city: string | null;
+  state: string | null;
   studentSize: number | null;
   carnegieSize: string | null; // Size category (e.g., "Small", "Medium", "Large")
   enrollmentAll: number | null; // Alternative enrollment field
@@ -141,8 +143,8 @@ export const useCollegeData = () => {
   const transformData = (
     school: Record<string, unknown>,
   ): CollegeDataResult => {
-    const city = school["school.city"] || "";
-    const state = school["school.state"] || "";
+    const city = String(school["school.city"] || "");
+    const state = String(school["school.state"] || "");
     const address = [city, state].filter(Boolean).join(", ") || null;
 
     return {
@@ -150,6 +152,8 @@ export const useCollegeData = () => {
       name: school["school.name"],
       website: formatWebsite(school["school.school_url"]),
       address,
+      city: city || null,
+      state: state || null,
       studentSize: isValidNumber(school["latest.student.size"])
         ? school["latest.student.size"]
         : null,

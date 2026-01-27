@@ -1199,6 +1199,8 @@ const lookupCollegeData = async () => {
   const result = await fetchByName(school.value.name);
   if (result) {
     const updates = {
+      city: result.city || school.value.city,
+      state: result.state || school.value.state,
       website: result.website || school.value.website,
       academic_info: {
         ...(school.value.academic_info || {}),
