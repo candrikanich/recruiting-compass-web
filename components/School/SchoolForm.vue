@@ -303,7 +303,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, computed } from "vue";
+import { reactive, watch, computed, toRefs } from "vue";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { schoolSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
@@ -375,39 +375,32 @@ const autoFilledFields = reactive({
 });
 
 // Watch for changes to initialData from parent (college selection)
-watch(
-  () => props.initialData,
-  (newData) => {
-    if (newData) {
-      if (newData.name !== undefined) formData.name = newData.name;
-      if (newData.location !== undefined) formData.location = newData.location;
-      if (newData.division !== undefined) formData.division = newData.division;
-      if (newData.conference !== undefined)
-        formData.conference = newData.conference;
-      if (newData.website !== undefined) formData.website = newData.website;
-    }
-  },
-  { deep: true },
-);
+const { initialData, initialAutoFilledFields } = toRefs(props);
+
+watch(initialData, (newData) => {
+  if (newData) {
+    Object.assign(formData, {
+      name: newData.name ?? formData.name,
+      location: newData.location ?? formData.location,
+      division: newData.division ?? formData.division,
+      conference: newData.conference ?? formData.conference,
+      website: newData.website ?? formData.website,
+    });
+  }
+}, { deep: true });
 
 // Watch for changes to autoFilledFields from parent
-watch(
-  () => props.initialAutoFilledFields,
-  (newFields) => {
-    if (newFields) {
-      if (newFields.name !== undefined) autoFilledFields.name = newFields.name;
-      if (newFields.location !== undefined)
-        autoFilledFields.location = newFields.location;
-      if (newFields.website !== undefined)
-        autoFilledFields.website = newFields.website;
-      if (newFields.division !== undefined)
-        autoFilledFields.division = newFields.division;
-      if (newFields.conference !== undefined)
-        autoFilledFields.conference = newFields.conference;
-    }
-  },
-  { deep: true },
-);
+watch(initialAutoFilledFields, (newFields) => {
+  if (newFields) {
+    Object.assign(autoFilledFields, {
+      name: newFields.name ?? autoFilledFields.name,
+      location: newFields.location ?? autoFilledFields.location,
+      website: newFields.website ?? autoFilledFields.website,
+      division: newFields.division ?? autoFilledFields.division,
+      conference: newFields.conference ?? autoFilledFields.conference,
+    });
+  }
+}, { deep: true });
 
 // Field validators
 const validators = {

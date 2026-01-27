@@ -100,24 +100,17 @@ import { useCommunication } from "~/composables/useCommunication";
 import type { Coach, School } from "~/types/models";
 
 const supabase = useSupabase();
-// Defer store initialization to onMounted
-let userStore: ReturnType<typeof useUserStore> | undefined;
-let communicationComposable: ReturnType<typeof useCommunication> | undefined;
+const userStore = useUserStore();
+const communicationComposable = useCommunication();
 
-const showPanel = computed(
-  () => communicationComposable?.showPanel.value || false,
-);
-const selectedCoach = computed(
-  () => communicationComposable?.selectedCoach.value || null,
-);
+const showPanel = computed(() => communicationComposable.showPanel.value);
+const selectedCoach = computed(() => communicationComposable.selectedCoach.value);
 const communicationType = computed(
-  () => communicationComposable?.communicationType.value || null,
+  () => communicationComposable.communicationType.value,
 );
 
 const openCommunication = (coach: Coach, type: string) => {
-  if (communicationComposable) {
-    communicationComposable.openCommunication(coach, type);
-  }
+  communicationComposable.openCommunication(coach, type);
 };
 
 const allCoaches = ref<Coach[]>([]);
@@ -223,7 +216,6 @@ const fetchData = async () => {
 
 // Handle interaction logging - refresh data after successful log
 const onInteractionLogged = async (interactionData: any) => {
-  if (!communicationComposable) return;
   try {
     await communicationComposable.handleInteractionLogged(
       interactionData,
@@ -235,7 +227,6 @@ const onInteractionLogged = async (interactionData: any) => {
 };
 
 onMounted(() => {
-  // Skip data loading - dashboard rendering without data for now
-  // Data loading deferred until Pinia timing issues are resolved
+  fetchData();
 });
 </script>

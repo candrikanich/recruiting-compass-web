@@ -533,8 +533,7 @@ export const useCommunicationTemplates = (): {
     templatesInput: CommunicationTemplate[],
   ): CommunicationTemplate[] => {
     return templatesInput.filter((t) => {
-      const template = t as unknown as Record<string, unknown>;
-      return template.is_predefined === true;
+      return "is_predefined" in t && t.is_predefined === true;
     });
   };
 

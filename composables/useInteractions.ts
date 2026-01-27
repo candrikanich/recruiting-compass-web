@@ -1,17 +1,19 @@
-import { ref, computed, type ComputedRef } from "vue";
+import { ref, computed, readonly, shallowRef, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { useToast } from "~/composables/useToast";
 import type { Interaction, FollowUpReminder } from "~/types/models";
 import type { Database } from "~/types/database";
 import type { AuditLog } from "~/types/database-helpers";
 import { interactionSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { exportInteractionsToCSV, downloadInteractionsCSV } from "~/utils/interactions/exportCSV";
+import { validateAttachmentFile, uploadInteractionAttachments } from "~/utils/interactions/attachments";
+import { createInboundInteractionAlert } from "~/utils/interactions/inboundAlerts";
 
 // Type aliases for Supabase casting
 type InteractionInsert = Database["public"]["Tables"]["interactions"]["Insert"];
 type InteractionUpdate = Database["public"]["Tables"]["interactions"]["Update"];
-type NotificationInsert =
-  Database["public"]["Tables"]["notifications"]["Insert"];
 type FollowUpReminderInsert =
   Database["public"]["Tables"]["follow_up_reminders"]["Insert"];
 type FollowUpReminderUpdate =
@@ -112,18 +114,19 @@ export const useInteractions = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const toast = useToast();
 
-  const interactions = ref<Interaction[]>([]);
+  const interactions = shallowRef<Interaction[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
   // Note history state (consolidated from useNotesHistory)
-  const noteHistory = ref<NoteHistoryEntry[]>([]);
+  const noteHistory = shallowRef<NoteHistoryEntry[]>([]);
   const noteHistoryLoading = ref(false);
   const noteHistoryError = ref<string | null>(null);
 
   // Follow-up reminders state (consolidated from useFollowUpReminders)
-  const reminders = ref<FollowUpReminder[]>([]);
+  const reminders = shallowRef<FollowUpReminder[]>([]);
   const remindersLoading = ref(false);
   const remindersError = ref<string | null>(null);
 
@@ -234,56 +237,12 @@ export const useInteractions = (): {
 
   // Export interactions to CSV
   const exportToCSV = (): string => {
-    if (interactions.value.length === 0) return "";
-
-    // Headers
-    const headers = [
-      "Date",
-      "Type",
-      "Direction",
-      "School",
-      "Coach",
-      "Subject",
-      "Content",
-      "Sentiment",
-    ];
-    const rows = interactions.value.map((i) => [
-      i.occurred_at ? new Date(i.occurred_at).toLocaleDateString() : "",
-      i.type,
-      i.direction,
-      i.school_id || "",
-      i.coach_id || "",
-      i.subject || "",
-      (i.content || "").replace(/"/g, '""'), // Escape quotes
-      i.sentiment || "",
-    ]);
-
-    // Build CSV
-    const csvContent = [
-      headers.map((h) => `"${h}"`).join(","),
-      ...rows.map((r) => r.map((cell) => `"${cell}"`).join(",")),
-    ].join("\n");
-
-    return csvContent;
+    return exportInteractionsToCSV(interactions.value);
   };
 
   // Download CSV file
   const downloadCSV = () => {
-    const csv = exportToCSV();
-    if (!csv) return;
-
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `interactions-${new Date().toISOString().split("T")[0]}.csv`,
-    );
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadInteractionsCSV(interactions.value);
   };
 
   const getInteraction = async (id: string): Promise<Interaction | null> => {
@@ -309,61 +268,18 @@ export const useInteractions = (): {
     }
   };
 
-  // Validate file before upload
-  const validateAttachmentFile = (file: File): void => {
-    const ALLOWED_TYPES = [
-      "application/pdf",
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/vnd.ms-excel",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "text/plain",
-    ];
-
-    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      throw new Error(
-        `File type ${file.type} not allowed. Accepted: PDF, images, Word docs, Excel, text files`,
-      );
-    }
-
-    if (file.size > MAX_SIZE) {
-      throw new Error(
-        `File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum: 10MB`,
-      );
-    }
-  };
-
+  // Validate and upload attachment files
   const uploadAttachments = async (
     files: File[],
     interactionId: string,
   ): Promise<string[]> => {
-    const uploadedPaths: string[] = [];
-
+    // Validate all files first
     for (const file of files) {
-      try {
-        const timestamp = Date.now();
-        const filename = `${timestamp}-${file.name}`;
-        const filepath = `interactions/${interactionId}/${filename}`;
-
-        const { data, error: uploadError } = await supabase.storage
-          .from("interaction-attachments")
-          .upload(filepath, file);
-
-        if (uploadError) throw uploadError;
-        if (data) {
-          uploadedPaths.push(data.path);
-        }
-      } catch (err) {
-        console.error(`Failed to upload file ${file.name}:`, err);
-      }
+      validateAttachmentFile(file);
     }
 
-    return uploadedPaths;
+    // Upload validated files
+    return uploadInteractionAttachments(supabase, files, interactionId);
   };
 
   const createInteraction = async (
@@ -422,50 +338,11 @@ export const useInteractions = (): {
 
       // Create inbound interaction alert if enabled
       if (data.direction === "inbound" && userStore.user) {
-        try {
-          // Parallelize preference and coach queries
-          const [prefsRes, coachRes] = await Promise.all([
-            supabase
-              .from("user_preferences")
-              .select("notification_settings")
-              .eq("user_id", userStore.user.id)
-              .single(),
-            data.coach_id
-              ? supabase
-                  .from("coaches")
-                  .select("first_name, last_name")
-                  .eq("id", data.coach_id)
-                  .single()
-              : Promise.resolve({ data: null }),
-          ]);
-
-          const prefs = prefsRes.data;
-          const coach = coachRes.data;
-
-          if (prefs?.notification_settings?.enableInboundInteractionAlerts) {
-            // Get coach name for notification
-            let coachName = "A coach";
-            if (coach) {
-              coachName = `${coach.first_name} ${coach.last_name}`.trim();
-            }
-
-            // Create notification
-            await supabase.from("notifications").insert([
-              {
-                user_id: userStore.user.id,
-                type: "inbound_interaction",
-                title: `New Contact from ${coachName}`,
-                message: `${coachName} reached out via ${data.type}. View the interaction to see details.`,
-                related_entity_type: "interaction",
-                related_entity_id: data.id,
-                scheduled_for: new Date().toISOString(),
-              },
-            ] as NotificationInsert[]);
-          }
-        } catch (err) {
-          console.error("Failed to create inbound interaction alert:", err);
-          // Don't throw - this shouldn't block interaction creation
-        }
+        await createInboundInteractionAlert({
+          interaction: data,
+          userId: userStore.user.id,
+          supabase,
+        });
       }
 
       interactions.value.unshift(data);
@@ -668,9 +545,11 @@ export const useInteractions = (): {
       if (err) throw err;
       reminders.value = data || [];
     } catch (err) {
-      remindersError.value =
+      const message =
         err instanceof Error ? err.message : "Failed to load reminders";
+      remindersError.value = message;
       console.error("Load reminders error:", err);
+      toast.error("Failed to load reminders. Please try again.");
     } finally {
       remindersLoading.value = false;
     }
@@ -713,9 +592,11 @@ export const useInteractions = (): {
       reminders.value = [data, ...reminders.value];
       return data;
     } catch (err) {
-      remindersError.value =
+      const message =
         err instanceof Error ? err.message : "Failed to create reminder";
+      remindersError.value = message;
       console.error("Create reminder error:", err);
+      toast.error("Failed to create reminder. Please try again.");
       return null;
     }
   };
@@ -745,9 +626,11 @@ export const useInteractions = (): {
 
       return true;
     } catch (err) {
-      remindersError.value =
+      const message =
         err instanceof Error ? err.message : "Failed to complete reminder";
+      remindersError.value = message;
       console.error("Complete reminder error:", err);
+      toast.error("Failed to complete reminder. Please try again.");
       return false;
     }
   };
@@ -769,9 +652,11 @@ export const useInteractions = (): {
       reminders.value = reminders.value.filter((r) => r.id !== id);
       return true;
     } catch (err) {
-      remindersError.value =
+      const message =
         err instanceof Error ? err.message : "Failed to delete reminder";
+      remindersError.value = message;
       console.error("Delete reminder error:", err);
+      toast.error("Failed to delete reminder. Please try again.");
       return false;
     }
   };
@@ -800,9 +685,11 @@ export const useInteractions = (): {
 
       return true;
     } catch (err) {
-      remindersError.value =
+      const message =
         err instanceof Error ? err.message : "Failed to update reminder";
+      remindersError.value = message;
       console.error("Update reminder error:", err);
+      toast.error("Failed to update reminder. Please try again.");
       return false;
     }
   };
@@ -860,9 +747,9 @@ export const useInteractions = (): {
 
   return {
     // Interaction state and methods
-    interactions: computed(() => interactions.value),
-    loading: computed(() => loading.value),
-    error: computed(() => error.value),
+    interactions: readonly(interactions),
+    loading: readonly(loading),
+    error: readonly(error),
     fetchInteractions,
     getInteraction,
     createInteraction,
@@ -875,16 +762,16 @@ export const useInteractions = (): {
     fetchAthleteInteractions,
 
     // Note history methods
-    noteHistory: computed(() => noteHistory.value),
-    noteHistoryLoading: computed(() => noteHistoryLoading.value),
-    noteHistoryError: computed(() => noteHistoryError.value),
+    noteHistory: readonly(noteHistory),
+    noteHistoryLoading: readonly(noteHistoryLoading),
+    noteHistoryError: readonly(noteHistoryError),
     formattedNoteHistory,
     fetchNoteHistory,
 
     // Reminder state and methods (migrated from useFollowUpReminders)
-    reminders: computed(() => reminders.value),
-    remindersLoading: computed(() => remindersLoading.value),
-    remindersError: computed(() => remindersError.value),
+    reminders: readonly(reminders),
+    remindersLoading: readonly(remindersLoading),
+    remindersError: readonly(remindersError),
     activeReminders,
     overdueReminders,
     upcomingReminders,

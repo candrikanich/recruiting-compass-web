@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref, computed, readonly, shallowRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { School } from "~/types/models";
@@ -54,7 +54,7 @@ export const useSchools = (): {
   const supabase = useSupabase();
   const userStore = useUserStore();
 
-  const schools = ref<School[]>([]);
+  const schools = shallowRef<School[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -162,7 +162,7 @@ export const useSchools = (): {
 
       if (insertError) throw insertError;
 
-      schools.value.push(data);
+      schools.value = [...schools.value, data];
 
       // Fetch logo asynchronously (don't block school creation)
       // Use dynamic import to avoid circular dependency
@@ -490,10 +490,10 @@ export const useSchools = (): {
   };
 
   return {
-    schools: computed(() => schools.value),
+    schools: readonly(schools),
     favoriteSchools,
-    loading: computed(() => loading.value),
-    error: computed(() => error.value),
+    loading: readonly(loading),
+    error: readonly(error),
     fetchSchools,
     getSchool,
     createSchool,
