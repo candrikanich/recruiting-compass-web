@@ -121,7 +121,7 @@
         />
         <AthleteActivityWidget
           v-if="userStore.isParent && showWidget('athleteActivity', 'widgets')"
-          class="lg:col-span-3"
+          class="lg:col-span-1"
         />
         <LinkedAccountsWidget
           v-if="showWidget('linkedAccounts', 'widgets')"
