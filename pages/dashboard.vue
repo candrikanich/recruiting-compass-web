@@ -99,20 +99,22 @@
           <RecentActivityFeed v-if="showWidget('recentActivityFeed', 'widgets')" />
         </div>
 
-        <!-- Row 4: Tasks, Contact Frequency, Social (each 1 col) -->
-        <QuickTasksWidget
-          :tasks="userTasksComposable?.tasks.value || []"
-          :show-tasks="true"
-          @add-task="addTask"
-          @toggle-task="toggleTask"
-          @delete-task="deleteTask"
-          @clear-completed="() => userTasksComposable?.clearCompleted()"
-        />
-        <ContactFrequencyWidget
-          :interactions="allInteractions"
-          :schools="allSchools"
-        />
+        <!-- Row 4: Social (1 col) + Tasks & Frequency (2 cols stacked) -->
         <SocialMediaWidget :show-social="true" />
+        <div class="lg:col-span-2 space-y-6">
+          <QuickTasksWidget
+            :tasks="userTasksComposable?.tasks.value || []"
+            :show-tasks="true"
+            @add-task="addTask"
+            @toggle-task="toggleTask"
+            @delete-task="deleteTask"
+            @clear-completed="() => userTasksComposable?.clearCompleted()"
+          />
+          <ContactFrequencyWidget
+            :interactions="allInteractions"
+            :schools="allSchools"
+          />
+        </div>
 
         <!-- Row 5: Full-width widgets -->
         <CoachFollowupWidget
