@@ -599,6 +599,8 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ layout: "public" });
+
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useAuth } from "~/composables/useAuth";

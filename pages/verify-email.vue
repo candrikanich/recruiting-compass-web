@@ -598,6 +598,8 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ layout: "public" });
+
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";

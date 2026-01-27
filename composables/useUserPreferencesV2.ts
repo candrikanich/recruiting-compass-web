@@ -23,6 +23,7 @@
  */
 
 import { ref, computed, watch, onBeforeUnmount } from "vue";
+import { useSupabase } from "~/composables/useSupabase";
 
 export type PreferenceCategory =
   | "session"
@@ -39,6 +40,7 @@ interface UserPreferencesState {
 }
 
 export function useUserPreferencesV2(category: PreferenceCategory) {
+  const supabase = useSupabase();
   // State
   const preferences = ref<Record<string, unknown>>({});
   const state = ref<UserPreferencesState>({
@@ -64,8 +66,19 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
     state.value.error = null;
 
     try {
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        throw new Error("No authentication token available");
+      }
+
       const response = await $fetch(`/api/user/preferences/${category}`, {
         method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response?.data) {
@@ -105,8 +118,19 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
     state.value.error = null;
 
     try {
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        throw new Error("No authentication token available");
+      }
+
       const response = await $fetch(`/api/user/preferences/${category}`, {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: {
           data: preferences.value,
         },
@@ -151,8 +175,19 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
     state.value.error = null;
 
     try {
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        throw new Error("No authentication token available");
+      }
+
       await $fetch(`/api/user/preferences/${category}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       preferences.value = {};

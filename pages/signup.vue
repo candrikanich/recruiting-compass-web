@@ -482,6 +482,8 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ layout: "public" });
+
 import { ref } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useSupabase } from "~/composables/useSupabase";

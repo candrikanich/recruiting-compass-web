@@ -585,6 +585,8 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ layout: "public" });
+
 import { ref, computed } from "vue";
 import {
   ArrowLeftIcon,

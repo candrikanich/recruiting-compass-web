@@ -206,9 +206,13 @@ const initializeMap = () => {
 
       markerGroup.addTo(mapInstance);
 
-      // Fit bounds to all markers
+      // Fit bounds to all markers with animation disabled to prevent zoom animation crashes
       if (markerGroup.getLayers().length > 0) {
-        mapInstance.fitBounds(markerGroup.getBounds(), { padding: [50, 50] });
+        mapInstance.fitBounds(markerGroup.getBounds(), {
+          padding: [50, 50],
+          animate: false,
+          duration: 0,
+        });
       }
     }
 

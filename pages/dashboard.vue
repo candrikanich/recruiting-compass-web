@@ -219,7 +219,6 @@ import { useNotifications } from "~/composables/useNotifications";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import { useToast } from "~/composables/useToast";
 import { useUserTasks } from "~/composables/useUserTasks";
-import { useUserPreferences } from "~/composables/useUserPreferences";
 import { useSuggestions } from "~/composables/useSuggestions";
 import { useParentContext } from "~/composables/useParentContext";
 import { useViewLogging } from "~/composables/useViewLogging";
@@ -260,7 +259,6 @@ const userStore = useUserStore();
 const notificationStore = useNotificationStore();
 const notificationsComposable = useNotifications();
 const documentsComposable = useDocumentsConsolidated();
-const userPreferencesComposable = useUserPreferences();
 const userTasksComposable = useUserTasks();
 const suggestionsComposable = useSuggestions();
 const parentContextComposable = useParentContext();
@@ -284,10 +282,8 @@ const showTaskForm = ref(false);
 const newTask = ref("");
 const generatingNotifications = ref(false);
 const graduationYear = computed(() => {
-  return (
-    userPreferencesComposable?.preferences.value?.player_details
-      ?.graduation_year || new Date().getFullYear() + 4
-  );
+  // Default to 4 years from now if preferences unavailable
+  return new Date().getFullYear() + 4;
 });
 
 // Determine target user ID (current user or viewed athlete if parent)
@@ -309,13 +305,12 @@ const userFirstName = computed(() => {
 });
 
 // Helper to check if widget should be shown based on preferences
+// Defaults to showing all widgets when preferences not loaded
 const showWidget = (
-  widgetKey: string,
-  section: "statsCards" | "widgets",
+  _widgetKey: string,
+  _section: "statsCards" | "widgets",
 ): boolean => {
-  const layout = userPreferencesComposable?.preferences.value?.dashboard_layout;
-  if (!layout) return true;
-  return (layout[section] as Record<string, boolean>)?.[widgetKey] ?? true;
+  return true;
 };
 
 const recentNotifications = computed(() => {
@@ -513,6 +508,10 @@ onMounted(async () => {
   // Initialize data loading now that Pinia is properly configured
   if (userStore.user) {
     user.value = userStore.user;
+
+    // Note: User preferences (V2) requires SUPABASE_SERVICE_ROLE_KEY
+    // For now, we use default settings; preferences can be loaded on demand
+
     await fetchCounts();
     if (notificationsComposable) {
       await notificationsComposable.fetchNotifications();

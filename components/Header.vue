@@ -32,6 +32,14 @@
 
         <!-- Right Side -->
         <div class="flex items-center gap-2">
+          <NuxtLink
+            to="/search"
+            class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition"
+            title="Search"
+            data-testid="nav-search-button"
+          >
+            <MagnifyingGlassIcon class="w-5 h-5" />
+          </NuxtLink>
           <NotificationCenter />
           <HeaderProfile class="hidden md:block" />
 

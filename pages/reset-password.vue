@@ -806,6 +806,8 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ layout: "public" });
+
 import { ref, onMounted, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import {
