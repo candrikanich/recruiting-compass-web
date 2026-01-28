@@ -43,9 +43,10 @@ export interface Amenities {
 export interface User {
   id: string;
   email: string;
-  role?: "parent" | "student";
+  role?: "admin" | "parent" | "student";
   full_name?: string;
   profile_photo_url?: string | null;
+  is_admin?: boolean;
   linked_accounts?: LinkedAccount[];
   // Timeline fields (from Phase 1)
   current_phase?: "freshman" | "sophomore" | "junior" | "senior" | "committed";
@@ -62,7 +63,7 @@ export interface AccountLink {
   player_user_id: string | null;
   invited_email: string;
   initiator_user_id: string;
-  initiator_role: "parent" | "student";
+  initiator_role: "admin" | "parent" | "student";
   invitation_token: string;
   expires_at: string;
   status: "pending" | "accepted" | "rejected" | "expired";
@@ -76,8 +77,8 @@ export interface LinkedAccount {
   user_id: string;
   email: string;
   full_name?: string;
-  role: "parent" | "student";
-  relationship: "parent" | "student"; // From perspective of current user
+  role: "admin" | "parent" | "student";
+  relationship: "parent" | "student" | "admin"; // From perspective of current user
 }
 
 export interface School {

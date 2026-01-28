@@ -830,6 +830,7 @@ export type Database = {
           graduation_year: number | null;
           icloud_sync_enabled: boolean | null;
           id: string;
+          is_admin: boolean;
           phase_milestone_data: Json | null;
           phone: string | null;
           profile_photo_url: string | null;
@@ -848,6 +849,7 @@ export type Database = {
           graduation_year?: number | null;
           icloud_sync_enabled?: boolean | null;
           id: string;
+          is_admin?: boolean;
           phase_milestone_data?: Json | null;
           phone?: string | null;
           profile_photo_url?: string | null;
@@ -866,6 +868,7 @@ export type Database = {
           graduation_year?: number | null;
           icloud_sync_enabled?: boolean | null;
           id?: string;
+          is_admin?: boolean;
           phase_milestone_data?: Json | null;
           phone?: string | null;
           profile_photo_url?: string | null;
@@ -1351,7 +1354,7 @@ export type Database = {
       };
     };
     Enums: {
-      user_role: "parent" | "student";
+      user_role: "admin" | "parent" | "student";
       school_division: "D1" | "D2" | "D3" | "NAIA" | "JUCO";
       school_status:
         | "interested"

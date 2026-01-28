@@ -68,6 +68,14 @@
           >
             Settings
           </NuxtLink>
+          <NuxtLink
+            v-if="isAdmin"
+            to="/admin"
+            class="block px-4 py-2 text-sm text-brand-blue-600 hover:bg-blue-50 transition-colors font-medium"
+            @click="isOpen = false"
+          >
+            Admin Dashboard
+          </NuxtLink>
           <button
             data-testid="logout-button"
             @click="handleLogout"
@@ -129,6 +137,10 @@ const userInitials = computed(() => {
 
 const profilePhotoUrl = computed(() => {
   return userStore?.user?.profile_photo_url || null;
+});
+
+const isAdmin = computed(() => {
+  return userStore?.user?.is_admin === true;
 });
 
 const handleImageError = () => {

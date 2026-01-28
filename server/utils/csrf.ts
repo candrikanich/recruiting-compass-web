@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import type { H3Event } from "h3";
+import { createError, getHeader, getCookie, setCookie } from "h3";
 
 const CSRF_TOKEN_HEADER = "x-csrf-token";
 const CSRF_COOKIE_NAME = "csrf-token";
