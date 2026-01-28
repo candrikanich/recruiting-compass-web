@@ -439,9 +439,10 @@ As of **January 27, 2026**, the full migration from monolithic V1 preferences to
 **What Changed:**
 
 1. **Database Schema**: Migrated from V1 (single row per user with named columns like `notification_settings`, `home_location`, etc.) to V2 (multiple rows per user with category-based storage)
-   - Migration `017_migrate_user_preferences_v1_to_v2` applied successfully
-   - All 299 existing user preference records converted and preserved
-   - New `preference_history` audit table created for change tracking
+   - Migration 017 applied directly via Supabase console (no file-based migration)
+   - All 283 V1 preference records converted and preserved in backup table `user_preferences_v1_backup`
+   - New V2 `user_preferences` table created with 287 category-based records
+   - New `preference_history` audit table created for change tracking (1 record exists)
    - RLS policies configured for security
 
 2. **New Composables:**
@@ -498,7 +499,10 @@ const history = await getPreferenceHistory('notifications');
 ### Deprecated Files
 
 The following files are marked as deprecated but remain for backward compatibility during the transition period:
-- `composables/useUserPreferences.ts` (V1) - Will be removed in next major version
+- `composables/useUserPreferences.ts` (V1) - Scheduled for removal in Phase 2 tech debt remediation
+- `composables/useSchoolDuplication.ts` - Duplicated functionality migrated to `useSchools`
+- `composables/useTemplateUnlock.ts` - Functionality migrated to `useCommunicationTemplates`
+- `composables/useFollowUpReminders.ts` - Functionality consolidated into `useInteractions`
 
 ---
 

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useSearch } from "~/composables/useSearch";
 import { useSavedSearches } from "~/composables/useSavedSearches";
 import { useCommunicationTemplates } from "~/composables/useCommunicationTemplates";
-import { useFollowUpReminders } from "~/composables/useFollowUpReminders";
+import { useInteractions } from "~/composables/useInteractions";
 import { useReports } from "~/composables/useReports";
 import { useCollaboration } from "~/composables/useCollaboration";
 import { createPinia, setActivePinia } from "pinia";
@@ -268,12 +268,12 @@ describe("Phase 4 Integration Tests", () => {
     });
 
     it("should create reminders and track follow-ups", async () => {
-      const reminders = useFollowUpReminders();
+      const interactions = useInteractions();
 
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
       // Create follow-up reminder
-      const reminder = await reminders.createReminder(
+      const reminder = await interactions.createReminder(
         "Follow up with Coach Johnson",
         tomorrow,
         "follow_up",
@@ -285,14 +285,14 @@ describe("Phase 4 Integration Tests", () => {
       expect(reminder?.priority).toBe("high");
 
       // Check upcoming
-      const upcoming = reminders.upcomingReminders.value;
+      const upcoming = interactions.upcomingReminders.value;
       expect(upcoming.length).toBeGreaterThanOrEqual(0);
     });
 
     it("should complete reminder workflow", async () => {
-      const reminders = useFollowUpReminders();
+      const interactions = useInteractions();
 
-      const reminder = await reminders.createReminder(
+      const reminder = await interactions.createReminder(
         "Call coach",
         new Date().toISOString(),
         "follow_up",
@@ -300,12 +300,12 @@ describe("Phase 4 Integration Tests", () => {
       );
 
       if (reminder) {
-        const active = reminders.activeReminders.value.length;
+        const active = interactions.activeReminders.value.length;
 
         // Complete reminder
-        await reminders.completeReminder(reminder.id);
+        await interactions.completeReminder(reminder.id);
 
-        const activeAfter = reminders.activeReminders.value.length;
+        const activeAfter = interactions.activeReminders.value.length;
         expect(activeAfter).toBeLessThanOrEqual(active);
       }
     });
@@ -382,7 +382,7 @@ describe("Phase 4 Integration Tests", () => {
       const search = useSearch();
       const saved = useSavedSearches();
       const templates = useCommunicationTemplates();
-      const reminders = useFollowUpReminders();
+      const interactions = useInteractions();
       const collaboration = useCollaboration();
 
       await search.performSearch("D1 baseball programs");
@@ -407,7 +407,7 @@ describe("Phase 4 Integration Tests", () => {
       const nextWeek = new Date(
         Date.now() + 7 * 24 * 60 * 60 * 1000,
       ).toISOString();
-      const reminder = await reminders.createReminder(
+      const reminder = await interactions.createReminder(
         "Follow up",
         nextWeek,
         "follow_up",
