@@ -51,10 +51,12 @@ export default defineEventHandler(async (event) => {
     }
 
     // Update the link
-    const { error: updateError } = await supabase
+    const { data: updatedLink, error: updateError } = await supabase
       .from("account_links")
       .update(updateData)
-      .eq("id", link.id);
+      .eq("id", link.id)
+      .select()
+      .single();
 
     if (updateError) {
       throw createError({
@@ -63,9 +65,19 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    if (!updatedLink) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Update succeeded but no data returned - link may not exist",
+      });
+    }
+
+    console.log("✅ Link updated successfully:", updatedLink);
+
     return {
       success: true,
       message: "Invitation accepted successfully",
+      link: updatedLink,
     };
   } catch (err) {
     console.error("Error in accept-by-token:", err);
