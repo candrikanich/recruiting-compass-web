@@ -250,6 +250,9 @@ export const useAccountLinks = () => {
         existingUser?.role,
       );
 
+      // Generate invitation token (UUID v4)
+      const invitationToken = crypto.randomUUID();
+
       // Create invitation with new status and relationship_type
       const { data: createdLink, error: createError } = await supabase
         .from("account_links")
@@ -268,6 +271,7 @@ export const useAccountLinks = () => {
             initiator_role: getUserStore().user?.role || "parent",
             status: "pending_acceptance",
             relationship_type: relationshipType,
+            invitation_token: invitationToken,
           } as AccountLinkInsert,
         ])
         .select()
