@@ -64,9 +64,9 @@ export default defineEventHandler(async (event) => {
     const initiatorName = linkData.users?.full_name || "A family member";
     const initiatorEmail = linkData.users?.email || "unknown@example.com";
 
-    // Generate invitation URL with token
+    // Generate invitation URL with token (for acceptance step)
     const appUrl = process.env.NUXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const invitationUrl = `${appUrl}/settings/account-linking?token=${linkData.invitation_token}`;
+    const invitationUrl = `${appUrl}/accept-invitation?token=${linkData.invitation_token}`;
 
     // Send email invitation
     const emailResult = await sendEmail({

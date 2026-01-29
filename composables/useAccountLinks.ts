@@ -13,6 +13,7 @@ type DatabaseUser = Database["public"]["Tables"]["users"]["Row"];
 interface AccountLinksUpdate {
   status?: string;
   accepted_at?: string;
+  confirmed_at?: string;
 }
 
 export const useAccountLinks = () => {
@@ -28,9 +29,23 @@ export const useAccountLinks = () => {
 
   const links = ref<AccountLink[]>([]);
   const linkedAccounts = ref<LinkedAccount[]>([]);
-  const pendingInvitations = ref<AccountLink[]>([]);
+  const sentInvitations = ref<AccountLink[]>([]); // I initiated, awaiting response
+  const receivedInvitations = ref<AccountLink[]>([]); // Sent to me, I need to accept
+  const pendingConfirmations = ref<AccountLink[]>([]); // Invitee accepted, I need to confirm
   const loading = ref(false);
   const error = ref<string | null>(null);
+
+  // Helper: determine relationship type based on roles
+  const determineRelationshipType = (
+    initiatorRole: string,
+    inviteeExists: boolean,
+    inviteeRole?: string,
+  ): string | null => {
+    if (initiatorRole === "parent") {
+      return inviteeExists && inviteeRole === "parent" ? "parent-parent" : "parent-player";
+    }
+    return "player-parent";
+  };
 
   // Fetch all account links for current user
   const fetchAccountLinks = async () => {
@@ -40,11 +55,14 @@ export const useAccountLinks = () => {
     error.value = null;
 
     try {
+      const userId = getUserStore().user?.id;
+
+      // Fetch all links where user is either initiator, parent, or player
       const { data, error: fetchError } = await supabase
         .from("account_links")
         .select("*")
         .or(
-          `parent_user_id.eq.${getUserStore().user?.id},player_user_id.eq.${getUserStore().user?.id}`,
+          `initiator_user_id.eq.${userId},parent_user_id.eq.${userId},player_user_id.eq.${userId}`,
         );
 
       if (fetchError) {
@@ -54,10 +72,24 @@ export const useAccountLinks = () => {
 
       links.value = data || [];
 
-      // Separate accepted vs pending
+      // Categorize by status and role
       const accepted = links.value.filter((link) => link.status === "accepted");
-      pendingInvitations.value = links.value.filter(
-        (link) => link.status === "pending",
+
+      // Sent invitations: I initiated AND status is pending_acceptance
+      sentInvitations.value = links.value.filter(
+        (link) => link.initiator_user_id === userId && link.status === "pending_acceptance",
+      );
+
+      // Received invitations: sent to my email AND status is pending_acceptance
+      receivedInvitations.value = links.value.filter(
+        (link) =>
+          link.invited_email?.toLowerCase() === getUserStore().user?.email?.toLowerCase() &&
+          link.status === "pending_acceptance",
+      );
+
+      // Pending confirmations: I initiated AND status is pending_confirmation
+      pendingConfirmations.value = links.value.filter(
+        (link) => link.initiator_user_id === userId && link.status === "pending_confirmation",
       );
 
       // Fetch user details for accepted links
@@ -202,7 +234,14 @@ export const useAccountLinks = () => {
         }
       }
 
-      // Create invitation
+      // Determine relationship type
+      const relationshipType = determineRelationshipType(
+        getUserStore().user?.role || "parent",
+        !!existingUser,
+        (existingUser as any)?.role,
+      );
+
+      // Create invitation with new status and relationship_type
       const { data: createdLink, error: createError } = await supabase
         .from("account_links")
         .insert([
@@ -218,7 +257,8 @@ export const useAccountLinks = () => {
             invited_email: inviteeEmail,
             initiator_user_id: getUserStore().user?.id || "",
             initiator_role: getUserStore().user?.role || "parent",
-            status: "pending",
+            status: "pending_acceptance",
+            relationship_type: relationshipType,
           } as AccountLinkInsert,
         ])
         .select()
@@ -275,15 +315,105 @@ export const useAccountLinks = () => {
     }
   };
 
-  // Accept invitation
-  const acceptInvitation = async (linkId: string): Promise<boolean> => {
+  // Accept invitation (Step 2: Invitee accepts)
+  // Updates status to pending_confirmation, awaiting initiator confirmation
+  const acceptInvitationAsInvitee = async (token: string): Promise<boolean> => {
     if (!getUserStore().user) return false;
 
     loading.value = true;
     error.value = null;
 
     try {
-      // Get the link to check expiry
+      // Find link by invitation token
+      const { data: link, error: fetchError } = await supabase
+        .from("account_links")
+        .select("*")
+        .eq("invitation_token", token)
+        .single();
+
+      if (fetchError || !link) {
+        error.value = "Invitation not found or is invalid";
+        return false;
+      }
+
+      const linkData = link as AccountLink;
+
+      // Check if invitation has expired
+      if (new Date(linkData.expires_at || "") < new Date()) {
+        error.value = "This invitation has expired";
+        return false;
+      }
+
+      // Verify logged-in user email matches invited_email
+      if (linkData.invited_email?.toLowerCase() !== getUserStore().user?.email?.toLowerCase()) {
+        error.value = "This invitation was sent to a different email address";
+        return false;
+      }
+
+      // Update user ID in the link based on their role
+      const updateData: AccountLinksUpdate & { player_user_id?: string | null; parent_user_id?: string | null } = {
+        status: "pending_confirmation",
+        accepted_at: new Date().toISOString(),
+      };
+
+      // Set the appropriate user ID field
+      if (getUserStore().user?.role === "parent") {
+        updateData.parent_user_id = getUserStore().user?.id;
+      } else {
+        updateData.player_user_id = getUserStore().user?.id;
+      }
+
+      // Update link status to pending_confirmation
+      const { error: updateError } = await supabase
+        .from("account_links")
+        .update(updateData)
+        .eq("id", linkData.id);
+
+      if (updateError) {
+        error.value = updateError.message;
+        return false;
+      }
+
+      // Call API to send notification to initiator
+      try {
+        await $fetch("/api/notifications/create", {
+          method: "POST",
+          body: {
+            user_id: linkData.initiator_user_id,
+            type: "account_link_invitation_accepted",
+            title: `${getUserStore().user?.full_name} accepted your invitation`,
+            message: `${getUserStore().user?.full_name} has accepted your invitation. Please confirm this is the person you invited.`,
+            priority: "high",
+            action_url: "/settings/account-linking",
+          },
+        });
+      } catch (notifyErr) {
+        console.warn("Failed to send notification:", notifyErr);
+        // Continue despite notification error
+      }
+
+      showToast("Invitation accepted! Please wait for confirmation.", "success");
+      await fetchAccountLinks();
+      return true;
+    } catch (err) {
+      error.value =
+        err instanceof Error ? err.message : "Failed to accept invitation";
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // Confirm link (Step 3: Initiator confirms)
+  // Updates status from pending_confirmation to accepted and activates data sharing
+  const confirmLinkAsInitiator = async (linkId: string): Promise<boolean> => {
+    if (!getUserStore().user) return false;
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      // Get the link details
       const { data: link, error: fetchError } = await supabase
         .from("account_links")
         .select("*")
@@ -291,23 +421,30 @@ export const useAccountLinks = () => {
         .single();
 
       if (fetchError || !link) {
-        error.value = "Invitation not found";
+        error.value = "Link not found";
         return false;
       }
 
-      // Check if invitation has expired
       const linkData = link as AccountLink;
-      if (new Date(linkData.expires_at || "") < new Date()) {
-        error.value = "This invitation has expired";
+
+      // Verify current user is the initiator
+      if (linkData.initiator_user_id !== getUserStore().user?.id) {
+        error.value = "You are not authorized to confirm this link";
         return false;
       }
 
-      // Update link status
+      // Verify status is pending_confirmation
+      if (linkData.status !== "pending_confirmation") {
+        error.value = "This link is not awaiting confirmation";
+        return false;
+      }
+
+      // Update status to accepted
       const { error: updateError } = await supabase
         .from("account_links")
         .update({
           status: "accepted",
-          accepted_at: new Date().toISOString(),
+          confirmed_at: new Date().toISOString(),
         } as AccountLinksUpdate)
         .eq("id", linkId);
 
@@ -318,16 +455,8 @@ export const useAccountLinks = () => {
 
       // Call snapshot function to record data ownership
       try {
-        const parentId =
-          linkData.parent_user_id ||
-          (getUserStore().user?.role === "parent"
-            ? getUserStore().user?.id
-            : null);
-        const playerId =
-          linkData.player_user_id ||
-          (getUserStore().user?.role === "student"
-            ? getUserStore().user?.id
-            : null);
+        const parentId = linkData.parent_user_id;
+        const playerId = linkData.player_user_id;
 
         if (parentId && playerId) {
           await supabase.rpc("snapshot_data_ownership", {
@@ -341,17 +470,176 @@ export const useAccountLinks = () => {
         // Continue despite snapshot error - link is still accepted
       }
 
-      showToast("Invitation accepted! Your data is now shared.", "success");
+      // Send notifications to both users
+      try {
+        // Notify invitee
+        const inviteeId = linkData.player_user_id || linkData.parent_user_id;
+        if (inviteeId) {
+          await $fetch("/api/notifications/create", {
+            method: "POST",
+            body: {
+              user_id: inviteeId,
+              type: "account_link_confirmed",
+              title: "Account link confirmed",
+              message: "Your account link has been confirmed. Data sharing is now active.",
+              priority: "medium",
+              action_url: "/settings/account-linking",
+            },
+          });
+        }
+
+        // Notify initiator
+        await $fetch("/api/notifications/create", {
+          method: "POST",
+          body: {
+            user_id: linkData.initiator_user_id,
+            type: "account_link_confirmed",
+            title: "Account link confirmed",
+            message: "Account link confirmed. Data sharing is now active.",
+            priority: "medium",
+            action_url: "/settings/account-linking",
+          },
+        });
+      } catch (notifyErr) {
+        console.warn("Failed to send notifications:", notifyErr);
+      }
+
+      showToast("Link confirmed! Data sharing is now active.", "success");
       await fetchAccountLinks();
       return true;
     } catch (err) {
       error.value =
-        err instanceof Error ? err.message : "Failed to accept invitation";
+        err instanceof Error ? err.message : "Failed to confirm link";
       return false;
     } finally {
       loading.value = false;
     }
   };
+
+  // Reject confirmation (Initiator rejects after invitee accepts)
+  const rejectConfirmation = async (linkId: string): Promise<boolean> => {
+    if (!getUserStore().user) return false;
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      // Get the link
+      const { data: link, error: fetchError } = await supabase
+        .from("account_links")
+        .select("*")
+        .eq("id", linkId)
+        .single();
+
+      if (fetchError || !link) {
+        error.value = "Link not found";
+        return false;
+      }
+
+      const linkData = link as AccountLink;
+
+      // Verify current user is the initiator
+      if (linkData.initiator_user_id !== getUserStore().user?.id) {
+        error.value = "You are not authorized to reject this link";
+        return false;
+      }
+
+      // Update status to rejected
+      const { error: updateError } = await supabase
+        .from("account_links")
+        .update({ status: "rejected" } as AccountLinksUpdate)
+        .eq("id", linkId);
+
+      if (updateError) {
+        error.value = updateError.message;
+        return false;
+      }
+
+      // Notify invitee
+      try {
+        const inviteeId = linkData.player_user_id || linkData.parent_user_id;
+        if (inviteeId) {
+          await $fetch("/api/notifications/create", {
+            method: "POST",
+            body: {
+              user_id: inviteeId,
+              type: "account_link_rejected",
+              title: "Account link rejected",
+              message: "Your account link request was rejected.",
+              priority: "medium",
+              action_url: "/settings/account-linking",
+            },
+          });
+        }
+      } catch (notifyErr) {
+        console.warn("Failed to send notification:", notifyErr);
+      }
+
+      showToast("Link rejected", "info");
+      await fetchAccountLinks();
+      return true;
+    } catch (err) {
+      error.value =
+        err instanceof Error ? err.message : "Failed to reject confirmation";
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // Cancel sent invitation (Initiator cancels before invitee accepts)
+  const cancelInvitation = async (linkId: string): Promise<boolean> => {
+    if (!getUserStore().user) return false;
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      // Get the link
+      const { data: link, error: fetchError } = await supabase
+        .from("account_links")
+        .select("*")
+        .eq("id", linkId)
+        .single();
+
+      if (fetchError || !link) {
+        error.value = "Link not found";
+        return false;
+      }
+
+      const linkData = link as AccountLink;
+
+      // Verify current user is the initiator
+      if (linkData.initiator_user_id !== getUserStore().user?.id) {
+        error.value = "You are not authorized to cancel this invitation";
+        return false;
+      }
+
+      // Delete the link
+      const { error: deleteError } = await supabase
+        .from("account_links")
+        .delete()
+        .eq("id", linkId);
+
+      if (deleteError) {
+        error.value = deleteError.message;
+        return false;
+      }
+
+      showToast("Invitation cancelled", "info");
+      await fetchAccountLinks();
+      return true;
+    } catch (err) {
+      error.value =
+        err instanceof Error ? err.message : "Failed to cancel invitation";
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // Accept invitation (legacy method for backward compat, calls acceptInvitationAsInvitee)
+  const acceptInvitation = acceptInvitationAsInvitee;
 
   // Reject invitation
   const rejectInvitation = async (linkId: string): Promise<boolean> => {
@@ -454,12 +742,18 @@ export const useAccountLinks = () => {
   return {
     links,
     linkedAccounts,
-    pendingInvitations,
+    sentInvitations,
+    receivedInvitations,
+    pendingConfirmations,
     loading,
     error,
     fetchAccountLinks,
     sendInvitation,
     acceptInvitation,
+    acceptInvitationAsInvitee,
+    confirmLinkAsInitiator,
+    rejectConfirmation,
+    cancelInvitation,
     rejectInvitation,
     unlinkAccount,
   };
