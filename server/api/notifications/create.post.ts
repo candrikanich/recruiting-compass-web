@@ -4,6 +4,8 @@
  * CSRF protection disabled: endpoint requires authentication via requireAuth()
  */
 
+import { createServerSupabaseClient } from "~/server/utils/supabase";
+
 export default defineEventHandler(async (event) => {
   try {
     await requireAuth(event);
