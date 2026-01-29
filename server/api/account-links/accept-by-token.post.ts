@@ -59,19 +59,32 @@ export default defineEventHandler(async (event) => {
 
     // Set the appropriate user ID field
     const userRole = user.user.user_metadata?.role || "student";
+    console.log("📝 Accepting invitation:", {
+      linkId: link.id,
+      userId: user.user.id,
+      userEmail: user.user.email,
+      userRole,
+    });
+
     if (userRole === "parent") {
       updateData.parent_user_id = user.user.id;
     } else {
       updateData.player_user_id = user.user.id;
     }
 
+    console.log("🔄 Update data:", updateData);
+
     // Update link status to pending_confirmation
-    const { error: updateError } = await supabase
+    const { data: updateResult, error: updateError } = await supabase
       .from("account_links")
       .update(updateData)
-      .eq("id", link.id);
+      .eq("id", link.id)
+      .select();
+
+    console.log("✅ Update response:", { updateResult, updateError });
 
     if (updateError) {
+      console.error("❌ Update failed:", updateError);
       throw createError({
         statusCode: 500,
         statusMessage: updateError.message,
