@@ -104,13 +104,6 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Get initiator details for notification
-    const { data: initiator } = await supabase
-      .from("users")
-      .select("full_name")
-      .eq("id", linkData.initiator_user_id)
-      .single();
-
     // Create notification for initiator
     try {
       await supabase.from("notifications").insert([

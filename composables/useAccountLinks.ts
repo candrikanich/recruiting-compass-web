@@ -238,7 +238,7 @@ export const useAccountLinks = () => {
       const relationshipType = determineRelationshipType(
         getUserStore().user?.role || "parent",
         !!existingUser,
-        (existingUser as any)?.role,
+        (existingUser as unknown as DatabaseUser)?.role,
       );
 
       // Create invitation with new status and relationship_type
