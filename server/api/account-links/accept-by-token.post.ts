@@ -79,53 +79,64 @@ export default defineEventHandler(async (event) => {
     }
 
     // Get initiator info for email
-    const { data: initiatorUser } = await supabase
+    const { data: initiatorUser, error: initiatorError } = await supabase
       .from("users")
       .select("email, full_name")
       .eq("id", link.initiator_user_id)
       .single();
 
+    if (initiatorError || !initiatorUser?.email) {
+      console.error("Failed to fetch initiator user:", initiatorError || "No email found");
+    }
+
     const accepterName = user.user.user_metadata?.full_name || user.user.email;
 
     // Send email to initiator
-    try {
-      const appUrl = process.env.NUXT_PUBLIC_APP_URL || "http://localhost:3000";
-      const confirmUrl = `${appUrl}/settings/account-linking`;
+    if (initiatorUser?.email) {
+      try {
+        const appUrl = process.env.NUXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const confirmUrl = `${appUrl}/settings/account-linking`;
 
-      await sendEmail({
-        to: initiatorUser?.email || "",
-        subject: `${accepterName} accepted your family account link invitation`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px;">
-            <h2 style="margin: 0 0 16px 0; color: #111827;">Invitation Accepted! ✅</h2>
+        await sendEmail({
+          to: initiatorUser.email,
+          subject: `${accepterName} accepted your family account link invitation`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px;">
+              <h2 style="margin: 0 0 16px 0; color: #111827;">Invitation Accepted! ✅</h2>
 
-            <p style="margin: 16px 0; color: #4b5563; font-size: 16px;">
-              <strong>${accepterName}</strong> has accepted your family account link invitation!
-            </p>
+              <p style="margin: 16px 0; color: #4b5563; font-size: 16px;">
+                <strong>${accepterName}</strong> has accepted your family account link invitation!
+              </p>
 
-            <p style="margin: 16px 0; color: #4b5563; font-size: 16px;">
-              To complete the link and activate data sharing, please confirm this is the person you invited.
-            </p>
+              <p style="margin: 16px 0; color: #4b5563; font-size: 16px;">
+                To complete the link and activate data sharing, please confirm this is the person you invited.
+              </p>
 
-            <div style="margin: 32px 0; background: #eff6ff; border-left: 4px solid #2563eb; padding: 16px;">
-              <p style="margin: 0; color: #1e40af; font-size: 14px;">
-                <strong>Next Step:</strong> Click the button below to review and confirm the link.
+              <div style="margin: 32px 0; background: #eff6ff; border-left: 4px solid #2563eb; padding: 16px;">
+                <p style="margin: 0; color: #1e40af; font-size: 14px;">
+                  <strong>Next Step:</strong> Click the button below to review and confirm the link.
+                </p>
+              </div>
+
+              <div style="margin: 32px 0;">
+                <a href="${confirmUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">Confirm Link</a>
+              </div>
+
+              <p style="margin: 24px 0 0 0; color: #9ca3af; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
+                Once you confirm, you'll both be able to view and share recruiting data.
               </p>
             </div>
-
-            <div style="margin: 32px 0;">
-              <a href="${confirmUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">Confirm Link</a>
-            </div>
-
-            <p style="margin: 24px 0 0 0; color: #9ca3af; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
-              Once you confirm, you'll both be able to view and share recruiting data.
-            </p>
-          </div>
-        `,
-      });
-    } catch (emailErr) {
-      console.warn("Failed to send confirmation email:", emailErr);
-      // Continue despite email error
+          `,
+        });
+      } catch (emailErr) {
+        console.error("Failed to send confirmation email to parent:", {
+          parentEmail: initiatorUser.email,
+          error: emailErr,
+        });
+        // Continue despite email error - notification was created instead
+      }
+    } else {
+      console.warn("No email found for initiator, skipping confirmation email");
     }
 
     // Call API to send notification to initiator
