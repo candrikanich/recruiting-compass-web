@@ -54,7 +54,7 @@ export const sendNotificationEmail = async (
           ${actionButton}
         </div>
         <p style="margin-top: 24px; font-size: 12px; color: #9ca3af; text-align: center;">
-          College Baseball Recruiting Compass
+          The Recruiting Compass
         </p>
       </body>
     </html>

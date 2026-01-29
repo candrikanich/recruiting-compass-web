@@ -8,7 +8,6 @@ import type { Database } from "~/types/database";
 // Types from database
 type AccountLinkInsert =
   Database["public"]["Tables"]["account_links"]["Insert"];
-type DatabaseUser = Database["public"]["Tables"]["users"]["Row"];
 
 interface AccountLinksUpdate {
   status?: string;
@@ -196,18 +195,22 @@ export const useAccountLinks = () => {
         return false;
       }
 
-      // Look for existing user with this email
-      const { data: existingUser } = await supabase
-        .from("users")
-        .select("id, role")
-        .eq("email", inviteeEmail)
-        .single();
+      // Look for existing user with this email via API endpoint
+      const { exists, user: existingUser } = await $fetch<{
+        exists: boolean;
+        user: {
+          id: string;
+          role: string;
+          email_confirmed_at: string | null;
+        } | null;
+      }>(`/api/account-links/check-user?email=${encodeURIComponent(inviteeEmail)}`);
 
-      // If user exists, verify they have correct role
-      if (existingUser) {
+      // If user exists, verify they have correct role and email is verified
+      if (exists && existingUser) {
         const user = existingUser as {
           id: string;
           role: string;
+          email_confirmed_at: string | null;
         }; // Type assertion to access database fields
 
         const currentUserRole = getUserStore().user?.role || "parent";
@@ -216,6 +219,12 @@ export const useAccountLinks = () => {
 
         if (user.role !== expectedInviteeRole) {
           error.value = `That user is a ${user.role}, not a ${expectedInviteeRole}`;
+          return false;
+        }
+
+        // Check if user's email is verified
+        if (!user.email_confirmed_at) {
+          error.value = "That user has not verified their email address yet. They will need to verify their email before you can link accounts.";
           return false;
         }
 
@@ -237,8 +246,8 @@ export const useAccountLinks = () => {
       // Determine relationship type
       const relationshipType = determineRelationshipType(
         getUserStore().user?.role || "parent",
-        !!existingUser,
-        (existingUser as unknown as DatabaseUser)?.role,
+        exists,
+        existingUser?.role,
       );
 
       // Create invitation with new status and relationship_type
@@ -249,11 +258,11 @@ export const useAccountLinks = () => {
             parent_user_id:
               getUserStore().user?.role === "parent"
                 ? getUserStore().user?.id
-                : (existingUser as unknown as DatabaseUser)?.id || null,
+                : existingUser?.id || null,
             player_user_id:
               getUserStore().user?.role === "student"
                 ? getUserStore().user?.id
-                : (existingUser as unknown as DatabaseUser)?.id || null,
+                : existingUser?.id || null,
             invited_email: inviteeEmail,
             initiator_user_id: getUserStore().user?.id || "",
             initiator_role: getUserStore().user?.role || "parent",
@@ -376,8 +385,15 @@ export const useAccountLinks = () => {
 
       // Call API to send notification to initiator
       try {
+        const { token: csrfToken } = await $fetch<{ token: string }>(
+          "/api/csrf-token"
+        );
+
         await $fetch("/api/notifications/create", {
           method: "POST",
+          headers: {
+            "x-csrf-token": csrfToken,
+          },
           body: {
             user_id: linkData.initiator_user_id,
             type: "account_link_invitation_accepted",
@@ -472,11 +488,19 @@ export const useAccountLinks = () => {
 
       // Send notifications to both users
       try {
+        // Get CSRF token for notification requests
+        const { token: csrfToken } = await $fetch<{ token: string }>(
+          "/api/csrf-token"
+        );
+
         // Notify invitee
         const inviteeId = linkData.player_user_id || linkData.parent_user_id;
         if (inviteeId) {
           await $fetch("/api/notifications/create", {
             method: "POST",
+            headers: {
+              "x-csrf-token": csrfToken,
+            },
             body: {
               user_id: inviteeId,
               type: "account_link_confirmed",
@@ -491,6 +515,9 @@ export const useAccountLinks = () => {
         // Notify initiator
         await $fetch("/api/notifications/create", {
           method: "POST",
+          headers: {
+            "x-csrf-token": csrfToken,
+          },
           body: {
             user_id: linkData.initiator_user_id,
             type: "account_link_confirmed",
@@ -557,10 +584,17 @@ export const useAccountLinks = () => {
 
       // Notify invitee
       try {
+        const { token: csrfToken } = await $fetch<{ token: string }>(
+          "/api/csrf-token"
+        );
+
         const inviteeId = linkData.player_user_id || linkData.parent_user_id;
         if (inviteeId) {
           await $fetch("/api/notifications/create", {
             method: "POST",
+            headers: {
+              "x-csrf-token": csrfToken,
+            },
             body: {
               user_id: inviteeId,
               type: "account_link_rejected",

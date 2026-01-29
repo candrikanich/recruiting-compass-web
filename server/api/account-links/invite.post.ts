@@ -71,13 +71,13 @@ export default defineEventHandler(async (event) => {
     // Send email invitation
     const emailResult = await sendEmail({
       to: invitedEmail,
-      subject: `${initiatorName} invited you to link accounts on College Baseball Recruiting Compass`,
+      subject: `${initiatorName} invited you to link accounts on The Recruiting Compass`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px;">
           <h2 style="margin: 0 0 16px 0; color: #111827;">You've been invited to link accounts</h2>
 
           <p style="margin: 16px 0; color: #4b5563; font-size: 16px;">
-            <strong>${initiatorName}</strong> (${initiatorEmail}) has invited you to link your College Baseball Recruiting Compass accounts.
+            <strong>${initiatorName}</strong> (${initiatorEmail}) has invited you to link your The Recruiting Compass accounts.
           </p>
 
           <h3 style="margin: 24px 0 12px 0; color: #1f2937; font-size: 16px;">What does this mean?</h3>
