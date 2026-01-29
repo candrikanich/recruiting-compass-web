@@ -13,7 +13,7 @@
         <div>
           <h2 class="text-slate-900 font-semibold">Family Collaboration</h2>
           <p class="text-sm mt-1 text-slate-600">
-            Share recruiting data with parent or player
+            Share recruiting data with family members
           </p>
         </div>
       </div>
@@ -47,22 +47,41 @@
             {{ account.full_name || account.email }}
           </p>
           <p class="text-xs capitalize text-slate-600">
-            {{ account.relationship }} • Linked
+            {{ account.role }} • Linked
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Pending Invitations -->
-    <div v-if="pendingInvitations.length > 0" class="space-y-3 mb-4">
-      <div
-        v-for="invitation in pendingInvitations"
-        :key="invitation.id"
-        class="flex items-center gap-3 p-3 rounded-xl bg-amber-50 border border-amber-200"
-      >
-        <span class="text-lg">⏳</span>
+    <!-- Action Required: Pending Confirmations -->
+    <div
+      v-if="pendingConfirmations.length > 0"
+      class="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200"
+    >
+      <div class="flex items-start gap-2">
+        <span class="text-lg flex-shrink-0">⚠️</span>
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-slate-900">Invitation pending</p>
+          <p class="text-sm font-medium text-amber-900">
+            {{ pendingConfirmations.length }}
+            {{ pendingConfirmations.length === 1 ? "confirmation" : "confirmations" }} needed
+          </p>
+          <p class="text-xs text-amber-700 mt-0.5">
+            Action required to activate data sharing
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Received Invitations -->
+    <div v-if="receivedInvitations.length > 0" class="space-y-3 mb-4">
+      <div
+        v-for="invitation in receivedInvitations"
+        :key="invitation.id"
+        class="flex items-center gap-3 p-3 rounded-xl bg-blue-50 border border-blue-200"
+      >
+        <span class="text-lg">📨</span>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-slate-900">Invitation to accept</p>
           <p class="text-xs text-slate-600">{{ invitation.invited_email }}</p>
         </div>
       </div>
@@ -70,10 +89,15 @@
 
     <!-- Empty State -->
     <div
-      v-if="linkedAccounts.length === 0 && pendingInvitations.length === 0"
+      v-if="
+        linkedAccounts.length === 0 &&
+        sentInvitations.length === 0 &&
+        receivedInvitations.length === 0 &&
+        pendingConfirmations.length === 0
+      "
       class="text-center py-6"
     >
-      <p class="text-sm text-slate-600 mb-3">No linked accounts yet</p>
+      <p class="text-sm text-slate-600 mb-3">No linked accounts or invitations</p>
       <NuxtLink
         to="/settings/account-linking"
         class="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
@@ -84,25 +108,35 @@
 
     <!-- Stats -->
     <div
-      v-if="linkedAccounts.length > 0 || pendingInvitations.length > 0"
+      v-if="
+        linkedAccounts.length > 0 ||
+        sentInvitations.length > 0 ||
+        receivedInvitations.length > 0 ||
+        pendingConfirmations.length > 0
+      "
       class="mt-6 pt-4 border-t border-slate-200"
     >
-      <div class="grid grid-cols-2 gap-4">
-        <div v-if="linkedAccounts.length > 0" class="text-center">
-          <p class="text-2xl font-bold text-indigo-600">
+      <div class="grid grid-cols-2 gap-3 text-center">
+        <div v-if="linkedAccounts.length > 0">
+          <p class="text-2xl font-bold text-emerald-600">
             {{ linkedAccounts.length }}
           </p>
           <p class="text-xs text-slate-600">
             {{ linkedAccounts.length === 1 ? "Account" : "Accounts" }} Linked
           </p>
         </div>
-        <div v-if="pendingInvitations.length > 0" class="text-center">
+        <div v-if="pendingConfirmations.length > 0">
           <p class="text-2xl font-bold text-amber-600">
-            {{ pendingInvitations.length }}
+            {{ pendingConfirmations.length }}
+          </p>
+          <p class="text-xs text-slate-600">Action Required</p>
+        </div>
+        <div v-if="sentInvitations.length > 0" class="col-span-2">
+          <p class="text-2xl font-bold text-slate-500">
+            {{ sentInvitations.length }}
           </p>
           <p class="text-xs text-slate-600">
-            {{ pendingInvitations.length === 1 ? "Invitation" : "Invitations" }}
-            Pending
+            {{ sentInvitations.length === 1 ? "Invitation" : "Invitations" }} Pending
           </p>
         </div>
       </div>
@@ -113,13 +147,16 @@
 <script setup lang="ts">
 import { onMounted, computed } from "vue";
 import { useAccountLinks } from "~/composables/useAccountLinks";
-import { useUserStore } from "~/stores/user";
 
 const accountLinksComposable = useAccountLinks();
 
 const linkedAccounts = computed(() => accountLinksComposable.linkedAccounts.value);
-const pendingInvitations = computed(
-  () => accountLinksComposable.pendingInvitations.value,
+const sentInvitations = computed(() => accountLinksComposable.sentInvitations.value);
+const receivedInvitations = computed(
+  () => accountLinksComposable.receivedInvitations.value,
+);
+const pendingConfirmations = computed(
+  () => accountLinksComposable.pendingConfirmations.value,
 );
 
 onMounted(() => {

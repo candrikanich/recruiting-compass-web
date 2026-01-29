@@ -57,6 +57,44 @@
         <div class="px-4 py-3 border-b border-slate-200">
           <p class="text-sm font-medium text-slate-900">{{ userName }}</p>
           <p class="text-xs text-slate-500">{{ userEmail }}</p>
+
+          <!-- Linked Accounts -->
+          <div v-if="linkedAccounts.length > 0" class="mt-2 pt-2 border-t border-slate-100">
+            <p class="text-xs font-medium text-slate-600 mb-1">Linked with:</p>
+            <div class="space-y-1">
+              <div
+                v-for="account in linkedAccounts"
+                :key="account.user_id"
+                class="flex items-center justify-between text-xs"
+              >
+                <span class="text-slate-700">{{ account.full_name || account.email }}</span>
+                <span
+                  :class="[
+                    'px-1.5 py-0.5 rounded text-xs font-medium',
+                    account.role === 'parent'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-purple-100 text-purple-700',
+                  ]"
+                >
+                  {{ account.role }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pending Confirmations Badge -->
+          <div
+            v-if="pendingConfirmations.length > 0"
+            class="mt-2 pt-2 border-t border-slate-100"
+          >
+            <div class="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 rounded">
+              <span class="text-xs text-amber-700 font-medium">
+                ⚠️ {{ pendingConfirmations.length }}
+                {{ pendingConfirmations.length === 1 ? "confirmation" : "confirmations" }}
+                pending
+              </span>
+            </div>
+          </div>
         </div>
 
         <!-- Menu Items -->
@@ -67,6 +105,14 @@
             @click="isOpen = false"
           >
             Settings
+          </NuxtLink>
+          <NuxtLink
+            v-if="linkedAccounts.length > 0 || pendingConfirmations.length > 0"
+            to="/settings/account-linking"
+            class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+            @click="isOpen = false"
+          >
+            Manage Family Links
           </NuxtLink>
           <NuxtLink
             v-if="isAdmin"
@@ -107,10 +153,14 @@
 import { ref, computed, onMounted } from "vue";
 import { useUserStore } from "~/stores/user";
 import { useAuth } from "~/composables/useAuth";
+import { useAccountLinks } from "~/composables/useAccountLinks";
 
 const userStore = useUserStore();
 const { logout } = useAuth();
 const isOpen = ref(false);
+
+// Fetch linked accounts
+const { linkedAccounts, pendingConfirmations, fetchAccountLinks } = useAccountLinks();
 
 const userName = computed(() => {
   const user = userStore?.user;
@@ -153,6 +203,10 @@ const handleLogout = async () => {
   await logout();
   await navigateTo("/login");
 };
+
+onMounted(async () => {
+  await fetchAccountLinks();
+});
 
 // Store initialization now handled immediately since Pinia is working;
 </script>
