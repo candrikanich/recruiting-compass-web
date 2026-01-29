@@ -89,22 +89,55 @@ export default defineEventHandler(
       }
 
       // 5. Get user to delete by email from users table
-      const { data: targetUserData, error: getUserError } =
-        await supabaseAdmin
-          .from("users")
-          .select("id")
-          .eq("email", targetEmail)
-          .single();
+      const { data: targetUserData } = await supabaseAdmin
+        .from("users")
+        .select("id")
+        .eq("email", targetEmail)
+        .single();
 
-      if (getUserError || !targetUserData?.id) {
-        logger.warn(`Delete user attempt for non-existent email: ${targetEmail}`);
-        throw createError({
-          statusCode: 404,
-          statusMessage: "User not found",
-        });
+      let targetUserId: string;
+
+      // If user exists in public.users, use that ID
+      if (targetUserData?.id) {
+        targetUserId = targetUserData.id;
+      } else {
+        // If not in public.users, try to find in auth system
+        // This handles cases where user was deleted from public.users but auth record remains
+        try {
+          const { data: { users }, error: authSearchError } =
+            await supabaseAdmin.auth.admin.listUsers();
+
+          if (authSearchError) {
+            throw authSearchError;
+          }
+
+          const authUser = users?.find(
+            (u) => u.email?.toLowerCase() === targetEmail.toLowerCase(),
+          );
+
+          if (!authUser?.id) {
+            logger.warn(`Delete user attempt for non-existent email: ${targetEmail}`);
+            throw createError({
+              statusCode: 404,
+              statusMessage: "User not found in database or auth system",
+            });
+          }
+
+          targetUserId = authUser.id;
+          logger.info(
+            `Found user in auth system only (not in public.users): ${targetEmail} (${targetUserId})`,
+          );
+        } catch (error) {
+          if (error instanceof Error && "statusCode" in error) {
+            throw error;
+          }
+          logger.warn(`Delete user attempt for non-existent email: ${targetEmail}`);
+          throw createError({
+            statusCode: 404,
+            statusMessage: "User not found",
+          });
+        }
       }
-
-      const targetUserId = targetUserData.id;
 
       // 6. Delete all user data from database tables in order of dependencies
       // Only include tables that actually exist in the schema
@@ -146,7 +179,8 @@ export default defineEventHandler(
         }
       }
 
-      // 7. Try to delete user from auth system (if admin API is available)
+      // 7. Delete user from auth system (if admin API is available)
+      let authDeleted = false;
       try {
         if (supabaseAdmin.auth.admin?.deleteUser) {
           const { error: deleteError } =
@@ -158,6 +192,11 @@ export default defineEventHandler(
               deleteError,
             );
             // Continue anyway - we already deleted the user data from tables
+          } else {
+            authDeleted = true;
+            logger.info(
+              `Successfully deleted auth user ${targetUserId} (${targetEmail})`,
+            );
           }
         }
       } catch (authError) {
@@ -170,12 +209,12 @@ export default defineEventHandler(
 
       // 8. Log successful deletion
       logger.info(
-        `User ${targetEmail} (${targetUserId}) and all associated data deleted by admin ${user.id}`,
+        `User ${targetEmail} (${targetUserId}) and all associated data deleted by admin ${user.id}. Auth record deleted: ${authDeleted}`,
       );
 
       return {
         success: true,
-        message: `User ${targetEmail} and all associated data have been permanently deleted`,
+        message: `User ${targetEmail} and all associated data have been permanently deleted${authDeleted ? " (including auth records)" : ""}`,
       };
     } catch (error) {
       logger.error("Delete user endpoint failed", error);

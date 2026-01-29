@@ -68,7 +68,7 @@ export const sendNotificationEmail = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "College Recruiting <notifications@recruiting.chrisandrikanich.com>",
+        from: "The Recruiting Compass <info@therecruitingcompass.com>",
         to,
         subject,
         html: htmlContent,
@@ -108,7 +108,7 @@ export const sendEmail = async (options: SendEmailOptions) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "College Recruiting <notifications@recruiting.chrisandrikanich.com>",
+        from: "The Recruiting Compass <info@therecruitingcompass.com>",
         to,
         subject,
         html,

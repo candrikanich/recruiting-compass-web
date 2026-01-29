@@ -10,8 +10,34 @@
         <p class="text-slate-600">Manage users and system settings</p>
       </div>
 
+      <!-- Tab Navigation -->
+      <div class="flex gap-4 mb-8">
+        <button
+          @click="activeTab = 'users'"
+          :class="[
+            'px-4 py-2 font-medium rounded-lg transition',
+            activeTab === 'users'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+          ]"
+        >
+          Users ({{ users.length }})
+        </button>
+        <button
+          @click="activeTab = 'invitations'"
+          :class="[
+            'px-4 py-2 font-medium rounded-lg transition',
+            activeTab === 'invitations'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+          ]"
+        >
+          Pending Invitations ({{ invitations.length }})
+        </button>
+      </div>
+
       <!-- Users Section -->
-      <div class="bg-white rounded-lg shadow-md p-6">
+      <div v-if="activeTab === 'users'" class="bg-white rounded-lg shadow-md p-6">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-bold text-slate-900">Users</h2>
 
@@ -132,15 +158,187 @@
           </div>
         </div>
       </div>
+
+      <!-- Invitations Section -->
+      <div v-else-if="activeTab === 'invitations'" class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-slate-900">Pending Invitations</h2>
+        </div>
+
+        <!-- Toolbar with select mode and bulk delete -->
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-4">
+            <button
+              @click="isInvitationSelectMode = !isInvitationSelectMode"
+              :class="[
+                'px-4 py-2 rounded-lg font-medium transition',
+                isInvitationSelectMode
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+              ]"
+            >
+              {{ isInvitationSelectMode ? 'Cancel Selection' : 'Select Multiple' }}
+            </button>
+
+            <button
+              v-if="isInvitationSelectMode && selectedInvitationCount > 0"
+              @click="showBulkDeleteInvitationsModal = true"
+              class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+            >
+              Delete Selected ({{ selectedInvitationCount }})
+            </button>
+          </div>
+
+          <!-- Filter Buttons -->
+          <div class="flex gap-2">
+            <button
+              v-for="filterType in ['all', 'expiring-soon', 'active']"
+              :key="filterType"
+              @click="invitationFilter = filterType as InvitationFilterType"
+              :class="[
+                'px-3 py-1 rounded text-sm font-medium transition',
+                invitationFilter === filterType
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+              ]"
+            >
+              {{ filterType === 'all' ? 'All' : filterType === 'expiring-soon' ? 'Expiring Soon' : 'Active' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading/Error/Table -->
+        <div v-if="invitationsLoading" class="text-center py-12">
+          <p class="text-slate-600">Loading invitations...</p>
+        </div>
+
+        <div v-else-if="invitationsError" class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p class="text-red-800">{{ invitationsError }}</p>
+        </div>
+
+        <div v-else-if="filteredInvitations.length === 0" class="text-center py-12">
+          <p class="text-slate-600">No pending invitations found.</p>
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-slate-200">
+                <th v-if="isInvitationSelectMode" class="py-3 px-4 w-12">
+                  <input
+                    type="checkbox"
+                    :checked="allInvitationsSelected"
+                    @change="toggleSelectAllInvitations"
+                    class="rounded"
+                  />
+                </th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">Sent By</th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">Role</th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">Invited Email</th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">Link ID</th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">Created</th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">Expires</th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">Status</th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">Accept Link</th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="invitation in filteredInvitations"
+                :key="invitation.id"
+                :class="[
+                  'border-b border-slate-100 hover:bg-slate-50',
+                  selectedInvitationIds.has(invitation.id) ? 'bg-blue-50' : ''
+                ]"
+              >
+                <td v-if="isInvitationSelectMode" class="py-3 px-4">
+                  <input
+                    type="checkbox"
+                    :checked="selectedInvitationIds.has(invitation.id)"
+                    @change="toggleInvitationSelection(invitation.id)"
+                    class="rounded"
+                  />
+                </td>
+                <td class="py-3 px-4">
+                  <div class="font-medium text-slate-900">{{ invitation.initiator_name || 'Unknown' }}</div>
+                  <div class="text-sm text-slate-600">{{ invitation.initiator_email }}</div>
+                </td>
+                <td class="py-3 px-4 text-sm">
+                  <span
+                    :class="[
+                      'px-2 py-1 rounded-full text-xs font-medium',
+                      invitation.initiator_role === 'parent' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
+                    ]"
+                  >
+                    {{ invitation.initiator_role }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-sm text-slate-900">{{ invitation.invited_email }}</td>
+                <td class="py-3 px-4 text-sm text-slate-600 font-mono text-xs">
+                  {{ invitation.id.slice(0, 8) }}...
+                </td>
+                <td class="py-3 px-4 text-sm text-slate-600">{{ formatDate(invitation.created_at) }}</td>
+                <td class="py-3 px-4 text-sm text-slate-600">{{ formatDate(invitation.expires_at) }}</td>
+                <td class="py-3 px-4 text-sm">
+                  <span
+                    :class="[
+                      'px-2 py-1 rounded-full text-xs font-medium',
+                      getExpiryStatus(invitation.expires_at) === 'expired'
+                        ? 'bg-red-100 text-red-800'
+                        : getExpiryStatus(invitation.expires_at) === 'expiring-soon'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-green-100 text-green-800'
+                    ]"
+                  >
+                    {{ getExpiryStatus(invitation.expires_at) === 'expired' ? 'Expired' :
+                       getExpiryStatus(invitation.expires_at) === 'expiring-soon' ? 'Expiring Soon' : 'Active' }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-sm">
+                  <a
+                    v-if="invitation.invitation_token"
+                    :href="`/settings/account-linking?token=${invitation.invitation_token}`"
+                    target="_blank"
+                    class="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    View Link
+                  </a>
+                  <span v-else class="text-slate-400">No token</span>
+                </td>
+                <td class="py-3 px-4 text-sm">
+                  <button
+                    @click="deleteInvitation(invitation.id)"
+                    :disabled="deletingInvitation === invitation.id"
+                    class="text-red-600 hover:text-red-800 disabled:text-slate-400 disabled:cursor-not-allowed font-medium transition"
+                  >
+                    {{ deletingInvitation === invitation.id ? "Deleting..." : "Delete" }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Bulk Delete Confirmation Modal -->
+  <!-- Bulk Delete Users Modal -->
   <BulkDeleteConfirmModal
     :is-open="showBulkDeleteModal"
     :emails="Array.from(selectedUserEmails)"
     @confirm="bulkDeleteUsers"
     @cancel="showBulkDeleteModal = false"
+  />
+
+  <!-- Bulk Delete Invitations Modal -->
+  <BulkDeleteConfirmModal
+    :is-open="showBulkDeleteInvitationsModal"
+    :emails="Array.from(selectedInvitationIds).map(id =>
+      invitations.find(inv => inv.id === id)?.invited_email || ''
+    ).filter(Boolean)"
+    @confirm="bulkDeleteInvitations"
+    @cancel="showBulkDeleteInvitationsModal = false"
   />
 </template>
 
@@ -150,6 +348,7 @@ import { useAuth } from "~/composables/useAuth";
 import { useSupabase } from "~/composables/useSupabase";
 import { useToast } from "~/composables/useToast";
 import BulkDeleteConfirmModal from "~/components/Admin/BulkDeleteConfirmModal.vue";
+import type { PendingInvitation, InvitationFilterType } from "~/types/admin";
 
 definePageMeta({
   layout: "default",
@@ -168,6 +367,10 @@ const { session } = useAuth();
 const supabase = useSupabase();
 const { showToast } = useToast();
 
+// Tab state
+const activeTab = ref<'users' | 'invitations'>('users');
+
+// Users state
 const users = ref<User[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
@@ -177,6 +380,16 @@ const selectedUserEmails = ref<Set<string>>(new Set());
 const bulkDeleting = ref(false);
 const showBulkDeleteModal = ref(false);
 const currentUserEmail = ref<string>("");
+
+// Invitations state
+const invitations = ref<PendingInvitation[]>([]);
+const invitationsLoading = ref(false);
+const invitationsError = ref<string | null>(null);
+const deletingInvitation = ref<string | null>(null);
+const isInvitationSelectMode = ref(false);
+const selectedInvitationIds = ref<Set<string>>(new Set());
+const showBulkDeleteInvitationsModal = ref(false);
+const invitationFilter = ref<InvitationFilterType>('all');
 
 const currentUserEmailComputed = computed(() => {
   const sessionValue = session.value;
@@ -196,6 +409,31 @@ const selectedCount = computed(() => selectedUserEmails.value.size);
 const allSelected = computed(() =>
   selectableUsers.value.length > 0 &&
   selectedUserEmails.value.size === selectableUsers.value.length,
+);
+
+const filteredInvitations = computed(() => {
+  if (invitationFilter.value === 'all') return invitations.value;
+
+  const now = new Date();
+  const fortyEightHours = 48 * 60 * 60 * 1000;
+
+  return invitations.value.filter(inv => {
+    const expiresAt = new Date(inv.expires_at);
+    const timeUntilExpiry = expiresAt.getTime() - now.getTime();
+
+    if (invitationFilter.value === 'expiring-soon') {
+      return timeUntilExpiry > 0 && timeUntilExpiry <= fortyEightHours;
+    } else { // 'active'
+      return timeUntilExpiry > fortyEightHours;
+    }
+  });
+});
+
+const selectedInvitationCount = computed(() => selectedInvitationIds.value.size);
+
+const allInvitationsSelected = computed(() =>
+  filteredInvitations.value.length > 0 &&
+  selectedInvitationIds.value.size === filteredInvitations.value.length,
 );
 
 const loadUsers = async () => {
@@ -363,7 +601,138 @@ const bulkDeleteUsers = async () => {
   }
 };
 
-onMounted(() => {
-  loadUsers();
+const fetchInvitations = async () => {
+  console.log("[Admin] fetchInvitations called");
+  invitationsLoading.value = true;
+  invitationsError.value = null;
+
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+
+    console.log("[Admin] Token retrieved:", !!token);
+
+    if (!token) {
+      throw new Error("Not authenticated");
+    }
+
+    console.log("[Admin] Calling /api/admin/pending-invitations...");
+    invitations.value = await $fetch("/api/admin/pending-invitations", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("[Admin] Invitations loaded:", invitations.value.length);
+  } catch (err) {
+    invitationsError.value = err instanceof Error ? err.message : "Failed to load invitations";
+    console.error("[Admin] Error loading invitations:", invitationsError.value, err);
+  } finally {
+    invitationsLoading.value = false;
+  }
+};
+
+const toggleInvitationSelection = (id: string) => {
+  if (selectedInvitationIds.value.has(id)) {
+    selectedInvitationIds.value.delete(id);
+  } else {
+    selectedInvitationIds.value.add(id);
+  }
+};
+
+const toggleSelectAllInvitations = () => {
+  if (allInvitationsSelected.value) {
+    selectedInvitationIds.value.clear();
+  } else {
+    filteredInvitations.value.forEach(inv => {
+      selectedInvitationIds.value.add(inv.id);
+    });
+  }
+};
+
+const deleteInvitation = async (id: string) => {
+  if (!confirm("Delete this invitation?")) return;
+
+  deletingInvitation.value = id;
+
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+
+    if (!token) {
+      throw new Error("Not authenticated");
+    }
+
+    await $fetch(`/api/admin/pending-invitations/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    invitations.value = invitations.value.filter(inv => inv.id !== id);
+    showToast("Invitation deleted successfully", "success");
+  } catch (err) {
+    const errMessage = err instanceof Error ? err.message : "Failed to delete invitation";
+    invitationsError.value = errMessage;
+    showToast(errMessage, "error");
+    console.error(errMessage, err);
+  } finally {
+    deletingInvitation.value = null;
+  }
+};
+
+const bulkDeleteInvitations = async () => {
+  showBulkDeleteInvitationsModal.value = false;
+  const ids = Array.from(selectedInvitationIds.value);
+
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+
+    if (!token) throw new Error("Not authenticated");
+
+    await $fetch("/api/admin/bulk-delete-invitations", {
+      method: "POST",
+      body: { invitationIds: ids },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    invitations.value = invitations.value.filter(inv => !selectedInvitationIds.value.has(inv.id));
+    selectedInvitationIds.value.clear();
+    isInvitationSelectMode.value = false;
+    showToast(`Successfully deleted ${ids.length} invitation(s)`, "success");
+  } catch (err) {
+    const errMessage = err instanceof Error ? err.message : "Failed to bulk delete invitations";
+    invitationsError.value = errMessage;
+    showToast(errMessage, "error");
+    console.error(errMessage, err);
+  }
+};
+
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const getExpiryStatus = (expiresAt: string): 'expired' | 'expiring-soon' | 'active' => {
+  const now = new Date();
+  const expiry = new Date(expiresAt);
+  const hoursUntilExpiry = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+  if (hoursUntilExpiry <= 0) return "expired";
+  if (hoursUntilExpiry <= 48) return "expiring-soon";
+  return "active";
+};
+
+onMounted(async () => {
+  await loadUsers();
+  await fetchInvitations();
 });
 </script>

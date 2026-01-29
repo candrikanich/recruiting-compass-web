@@ -167,21 +167,16 @@ export const useAccountLinks = () => {
       // Look for existing user with this email
       const { data: existingUser } = await supabase
         .from("users")
-        .select("id, role, email_confirmed_at")
+        .select("id, role")
         .eq("email", inviteeEmail)
         .single();
 
-      // If user exists, verify they have correct role and email verified
+      // If user exists, verify they have correct role
       if (existingUser) {
         const user = existingUser as {
           id: string;
           role: string;
-          email_confirmed_at: string | null;
         }; // Type assertion to access database fields
-        if (!user.email_confirmed_at) {
-          error.value = "That user has not verified their email yet";
-          return false;
-        }
 
         const currentUserRole = getUserStore().user?.role || "parent";
         const expectedInviteeRole =
@@ -237,10 +232,25 @@ export const useAccountLinks = () => {
       // Send email invitation
       if (createdLink) {
         try {
+          // Get CSRF token and auth token for POST request
+          const { token: csrfToken } = await $fetch<{ token: string }>(
+            "/api/csrf-token",
+          );
+
+          // Get Supabase session for Authorization header
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          const authToken = session?.access_token;
+
           await $fetch("/api/account-links/invite", {
             method: "POST",
+            headers: {
+              "x-csrf-token": csrfToken,
+              ...(authToken && { Authorization: `Bearer ${authToken}` }),
+            },
             body: {
-              inviteeEmail,
+              invitedEmail: inviteeEmail,
               linkId: createdLink.id,
             },
           });

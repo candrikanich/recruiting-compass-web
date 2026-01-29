@@ -57,6 +57,10 @@ export interface User {
   updated_at?: string;
 }
 
+export type LinkStatus = "pending_acceptance" | "pending_confirmation" | "accepted" | "rejected" | "expired";
+
+export type RelationshipType = "parent-player" | "parent-parent" | "player-parent";
+
 export interface AccountLink {
   id: string;
   parent_user_id: string | null;
@@ -66,9 +70,11 @@ export interface AccountLink {
   initiator_role: "admin" | "parent" | "student";
   invitation_token: string;
   expires_at: string;
-  status: "pending" | "accepted" | "rejected" | "expired";
+  status: LinkStatus;
+  relationship_type?: RelationshipType | null;
   invited_at: string;
   accepted_at?: string | null;
+  confirmed_at?: string | null;
   created_at?: string;
   updated_at?: string;
 }

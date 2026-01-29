@@ -5,6 +5,8 @@
  * Body:
  *   - invitedEmail: string (email of invited user)
  *   - linkId: string (ID of the account link record)
+ *
+ * CSRF protection disabled: endpoint requires authentication via requireAuth()
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
