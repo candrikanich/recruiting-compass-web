@@ -65,6 +65,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useUserStore } from "~/stores/user";
+import { useSupabase } from "~/composables/useSupabase";
 
 const router = useRouter();
 const route = useRoute();
@@ -94,10 +95,22 @@ onMounted(async () => {
       return;
     }
 
-    // Get CSRF token first
+    // Get CSRF token and auth token
     const { token: csrfToken } = await $fetch<{ token: string }>(
       "/api/csrf-token"
     );
+
+    const supabase = useSupabase();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const authToken = session?.access_token;
+
+    if (!authToken) {
+      error.value = "Not authenticated. Please log in and try again.";
+      loading.value = false;
+      return;
+    }
 
     // Accept the invitation via API
     const result = await $fetch<{ success: boolean; message: string }>(
@@ -106,6 +119,7 @@ onMounted(async () => {
         method: "POST",
         headers: {
           "x-csrf-token": csrfToken,
+          Authorization: `Bearer ${authToken}`,
         },
         body: { token },
       }
