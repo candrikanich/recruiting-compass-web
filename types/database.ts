@@ -1068,7 +1068,11 @@ export type Database = {
         | "follow_up_reminder"
         | "deadline_alert"
         | "daily_digest"
-        | "inbound_interaction";
+        | "inbound_interaction"
+        | "account_link_invitation_accepted"
+        | "account_link_confirmation_request"
+        | "account_link_confirmed"
+        | "account_link_rejected";
       school_division: "D1" | "D2" | "D3" | "NAIA" | "JUCO";
       school_status:
         | "researching"

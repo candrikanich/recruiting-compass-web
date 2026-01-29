@@ -324,7 +324,11 @@ export type NotificationType =
   | "daily_digest"
   | "inbound_interaction"
   | "offer"
-  | "event";
+  | "event"
+  | "account_link_invitation_accepted"
+  | "account_link_confirmation_request"
+  | "account_link_confirmed"
+  | "account_link_rejected";
 
 export type NotificationPriority = "low" | "normal" | "high";
 
