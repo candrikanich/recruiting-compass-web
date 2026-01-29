@@ -1,3 +1,5 @@
+import { useSupabaseAdmin } from "~/server/utils/supabase";
+
 export default defineEventHandler(async (event) => {
   const email = getQuery(event).email as string;
 
@@ -8,7 +10,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const supabase = useSupabaseServer(event);
+  const supabase = useSupabaseAdmin();
   const user = await supabase.auth.admin.getUserByEmail(email);
 
   if (user.error) {
