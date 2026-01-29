@@ -1,3 +1,6 @@
+import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { sendEmail } from "~/server/utils/emailService";
+
 export default defineEventHandler(async (event) => {
   try {
     const user = await requireAuth(event);
