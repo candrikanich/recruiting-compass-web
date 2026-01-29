@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Verify logged-in user email matches invited_email
-    if (link.invited_email?.toLowerCase() !== user.user.email?.toLowerCase()) {
+    if (link.invited_email?.toLowerCase() !== user.email?.toLowerCase()) {
       throw createError({
         statusCode: 403,
         statusMessage: "This invitation was sent to a different email address",
@@ -58,18 +58,18 @@ export default defineEventHandler(async (event) => {
     };
 
     // Set the appropriate user ID field
-    const userRole = user.user.user_metadata?.role || "student";
+    const userRole = user.user_metadata?.role || "student";
     console.log("📝 Accepting invitation:", {
       linkId: link.id,
-      userId: user.user.id,
-      userEmail: user.user.email,
+      userId: user.id,
+      userEmail: user.email,
       userRole,
     });
 
     if (userRole === "parent") {
-      updateData.parent_user_id = user.user.id;
+      updateData.parent_user_id = user.id;
     } else {
-      updateData.player_user_id = user.user.id;
+      updateData.player_user_id = user.id;
     }
 
     console.log("🔄 Update data:", updateData);
@@ -102,7 +102,7 @@ export default defineEventHandler(async (event) => {
       console.error("Failed to fetch initiator user:", initiatorError || "No email found");
     }
 
-    const accepterName = user.user.user_metadata?.full_name || user.user.email;
+    const accepterName = user.user_metadata?.full_name || user.email;
 
     // Send email to initiator
     if (initiatorUser?.email) {
