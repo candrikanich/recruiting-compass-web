@@ -16,7 +16,7 @@
           Family Account Linking
         </h1>
         <p class="text-slate-600">
-          Share recruiting data with a parent or player account
+          Share recruiting data with family members
         </p>
       </div>
     </div>
@@ -30,13 +30,17 @@
         <p class="text-sm text-red-700">{{ error }}</p>
       </div>
 
-      <!-- Linked Accounts Section -->
-      <div
+      <!-- Section 1: Linked Accounts (status: accepted) -->
+      <section
+        v-if="linkedAccounts.length > 0"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
       >
         <h2 class="text-xl font-bold text-gray-900 mb-4">👥 Linked Accounts</h2>
+        <p class="text-sm text-gray-600 mb-4">
+          These family members have confirmed account links and can see your shared data.
+        </p>
 
-        <div v-if="linkedAccounts.length > 0" class="space-y-4">
+        <div class="space-y-4">
           <LinkedAccountCard
             v-for="account in linkedAccounts"
             :key="account.user_id"
@@ -45,46 +49,100 @@
             @unlink="handleUnlink"
           />
         </div>
+      </section>
 
-        <div v-else class="text-center py-8 text-gray-500">
-          <p class="text-sm">No linked accounts yet</p>
-          <p class="text-xs mt-1">
-            Send an invitation below to link with a parent or player
-          </p>
-        </div>
-      </div>
-
-      <!-- Pending Invitations Section -->
-      <div
-        v-if="pendingInvitations.length > 0"
+      <!-- Section 2: Pending Confirmations (I need to confirm) -->
+      <section
+        v-if="pendingConfirmations.length > 0"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
       >
-        <h2 class="text-xl font-bold text-gray-900 mb-4">
-          ⏳ Pending Invitations
+        <h2 class="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+          <ExclamationCircleIcon class="w-6 h-6 text-amber-600" />
+          <span>Pending Confirmations</span>
+          <span class="inline-flex items-center justify-center w-6 h-6 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">
+            {{ pendingConfirmations.length }}
+          </span>
         </h2>
+        <p class="text-sm text-gray-600 mb-4">
+          Action required! Please confirm these people before data sharing is activated.
+        </p>
+
+        <div class="space-y-4">
+          <ConfirmationCard
+            v-for="link in pendingConfirmations"
+            :key="link.id"
+            :link="link"
+            :initiator-name="null"
+            :loading="loading"
+            @confirm="handleConfirm"
+            @reject="handleRejectConfirmation"
+          />
+        </div>
+      </section>
+
+      <!-- Section 3: Received Invitations (I need to accept) -->
+      <section
+        v-if="receivedInvitations.length > 0"
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+      >
+        <h2 class="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+          <EnvelopeIcon class="w-6 h-6 text-blue-600" />
+          <span>Received Invitations</span>
+          <span class="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">
+            {{ receivedInvitations.length }}
+          </span>
+        </h2>
+        <p class="text-sm text-gray-600 mb-4">
+          Accept these invitations to link your accounts and share data.
+        </p>
 
         <div class="space-y-4">
           <PendingInvitationCard
-            v-for="invitation in pendingInvitations"
+            v-for="invitation in receivedInvitations"
+            :key="invitation.id"
+            :invitation="invitation"
+            :initiator-name="null"
+            :loading="loading"
+            @accept="handleAccept"
+            @reject="handleRejectInvitation"
+          />
+        </div>
+      </section>
+
+      <!-- Section 4: Sent Invitations (awaiting their response) -->
+      <section
+        v-if="sentInvitations.length > 0"
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+      >
+        <h2 class="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+          <PaperAirplaneIcon class="w-6 h-6 text-slate-600" />
+          <span>Sent Invitations</span>
+          <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-700 rounded-full text-xs font-bold">
+            {{ sentInvitations.length }}
+          </span>
+        </h2>
+        <p class="text-sm text-gray-600 mb-4">
+          Waiting for these people to accept your invitations.
+        </p>
+
+        <div class="space-y-4">
+          <SentInvitationCard
+            v-for="invitation in sentInvitations"
             :key="invitation.id"
             :invitation="invitation"
             :loading="loading"
-            @accept="handleAccept"
-            @reject="handleReject"
+            @cancel="handleCancelInvitation"
           />
         </div>
-      </div>
+      </section>
 
-      <!-- Send Invitation Section -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <!-- Section 5: Send New Invitation Form -->
+      <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <h2 class="text-xl font-bold text-gray-900 mb-4">📨 Send Invitation</h2>
 
         <form @submit.prevent="handleSendInvitation" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
-              {{
-                userStore.user?.role === "parent" ? "Player" : "Parent"
-              }}
               Email Address
               <span class="text-red-600">*</span>
             </label>
@@ -97,11 +155,7 @@
               :disabled="loading"
             />
             <p class="text-xs text-gray-500 mt-2">
-              {{
-                userStore.user?.role === "parent"
-                  ? "Enter your player's email address"
-                  : "Enter your parent's email address"
-              }}
+              Invite a parent, another parent, or a player to link accounts
             </p>
           </div>
 
@@ -122,37 +176,44 @@
         </form>
 
         <div class="mt-6 pt-6 border-t border-gray-200">
-          <p class="text-sm text-gray-600">
-            <strong>How it works:</strong>
+          <p class="text-sm text-gray-600 font-medium mb-3">
+            How the 3-step linking process works:
           </p>
-          <ul class="text-sm text-gray-600 mt-3 space-y-2">
-            <li class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">1.</span>
-              <span
-                >Enter the email address of the parent or player you want to
-                link with</span
-              >
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start gap-3">
+              <span class="inline-flex items-center justify-center w-5 h-5 bg-blue-100 text-blue-600 rounded-full text-xs font-bold flex-shrink-0 mt-0.5">1</span>
+              <span><strong>You send:</strong> Enter email and send invitation</span>
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">2.</span>
-              <span
-                >They'll receive a notification to accept or decline the
-                invitation</span
-              >
+            <li class="flex items-start gap-3">
+              <span class="inline-flex items-center justify-center w-5 h-5 bg-blue-100 text-blue-600 rounded-full text-xs font-bold flex-shrink-0 mt-0.5">2</span>
+              <span><strong>They accept:</strong> Recipient clicks link in email and accepts</span>
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">3.</span>
-              <span
-                >Once accepted, you'll both see the same schools, coaches,
-                events, and interactions</span
-              >
+            <li class="flex items-start gap-3">
+              <span class="inline-flex items-center justify-center w-5 h-5 bg-blue-100 text-blue-600 rounded-full text-xs font-bold flex-shrink-0 mt-0.5">3</span>
+              <span><strong>You confirm:</strong> You verify and confirm the link</span>
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">4.</span>
-              <span>Private notes remain separate for each person</span>
+            <li class="flex items-start gap-3">
+              <span class="inline-flex items-center justify-center w-5 h-5 bg-green-100 text-green-600 rounded-full text-xs font-bold flex-shrink-0 mt-0.5">✓</span>
+              <span><strong>Data shared:</strong> Both see schools, coaches, events, and interactions</span>
             </li>
           </ul>
         </div>
+      </section>
+
+      <!-- Empty state if nothing pending -->
+      <div
+        v-if="
+          linkedAccounts.length === 0 &&
+          sentInvitations.length === 0 &&
+          receivedInvitations.length === 0 &&
+          pendingConfirmations.length === 0
+        "
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+      >
+        <p class="text-gray-500 mb-2">No linked accounts or pending invitations</p>
+        <p class="text-sm text-gray-400">
+          Send an invitation above to link with a family member
+        </p>
       </div>
     </main>
   </div>
@@ -160,12 +221,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
+import { ArrowLeftIcon, ExclamationCircleIcon, EnvelopeIcon, PaperAirplaneIcon } from "@heroicons/vue/24/outline";
 import { useAccountLinks } from "~/composables/useAccountLinks";
 import { useUserStore } from "~/stores/user";
-import Header from "~/components/Header.vue";
 import LinkedAccountCard from "~/components/AccountLinking/LinkedAccountCard.vue";
 import PendingInvitationCard from "~/components/AccountLinking/PendingInvitationCard.vue";
+import ConfirmationCard from "~/components/AccountLinking/ConfirmationCard.vue";
+import SentInvitationCard from "~/components/AccountLinking/SentInvitationCard.vue";
 
 definePageMeta({
   middleware: "auth",
@@ -174,11 +236,19 @@ definePageMeta({
 const userStore = useUserStore();
 const {
   linkedAccounts,
-  pendingInvitations,
+  sentInvitations,
+  receivedInvitations,
+  pendingConfirmations,
   loading,
   error,
   fetchAccountLinks,
   sendInvitation,
+  acceptInvitation,
+  confirmLinkAsInitiator,
+  rejectConfirmation,
+  cancelInvitation,
+  rejectInvitation,
+  unlinkAccount,
 } = useAccountLinks();
 
 const inviteEmail = ref("");
@@ -199,22 +269,46 @@ const handleSendInvitation = async () => {
 };
 
 const handleAccept = async (linkId: string) => {
-  const { acceptInvitation } = useAccountLinks();
-  await acceptInvitation(linkId);
-  await fetchAccountLinks();
+  const success = await acceptInvitation(linkId);
+  if (!success) {
+    sendError.value = error.value || "Failed to accept invitation";
+  }
 };
 
-const handleReject = async (linkId: string) => {
-  const { rejectInvitation } = useAccountLinks();
-  await rejectInvitation(linkId);
-  await fetchAccountLinks();
+const handleConfirm = async (linkId: string) => {
+  const success = await confirmLinkAsInitiator(linkId);
+  if (!success) {
+    sendError.value = error.value || "Failed to confirm link";
+  }
+};
+
+const handleRejectConfirmation = async (linkId: string) => {
+  const success = await rejectConfirmation(linkId);
+  if (!success) {
+    sendError.value = error.value || "Failed to reject confirmation";
+  }
+};
+
+const handleRejectInvitation = async (linkId: string) => {
+  const success = await rejectInvitation(linkId);
+  if (!success) {
+    sendError.value = error.value || "Failed to reject invitation";
+  }
+};
+
+const handleCancelInvitation = async (linkId: string) => {
+  const success = await cancelInvitation(linkId);
+  if (!success) {
+    sendError.value = error.value || "Failed to cancel invitation";
+  }
 };
 
 const handleUnlink = async (linkId: string) => {
   if (confirm("Are you sure? Both accounts will keep copies of shared data.")) {
-    const { unlinkAccount } = useAccountLinks();
-    await unlinkAccount(linkId);
-    await fetchAccountLinks();
+    const success = await unlinkAccount(linkId);
+    if (!success) {
+      sendError.value = error.value || "Failed to unlink account";
+    }
   }
 };
 </script>

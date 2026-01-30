@@ -15,7 +15,7 @@ import {
 } from "~/tests/fixtures/schools.fixture";
 import type { SchoolPreference } from "~/types/models";
 
-// Mock useUserPreferences
+// Mock usePreferenceManager
 const mockSchoolPreferences = {
   preferences: [] as SchoolPreference[],
 };
@@ -26,14 +26,12 @@ const mockHomeLocation = {
   address: "Boston, MA",
 };
 
-vi.mock("~/composables/useUserPreferences", () => ({
-  useUserPreferences: () => ({
-    schoolPreferences: {
-      value: mockSchoolPreferences,
-    },
-    homeLocation: {
-      value: mockHomeLocation,
-    },
+vi.mock("~/composables/usePreferenceManager", () => ({
+  usePreferenceManager: () => ({
+    getSchoolPreferences: () => ({
+      preferences: mockSchoolPreferences.preferences,
+    }),
+    getHomeLocation: () => mockHomeLocation,
   }),
 }));
 

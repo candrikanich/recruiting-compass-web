@@ -15,6 +15,7 @@ export type Database = {
       account_links: {
         Row: {
           accepted_at: string | null;
+          confirmed_at: string | null;
           created_at: string | null;
           expires_at: string | null;
           id: string;
@@ -25,11 +26,13 @@ export type Database = {
           invited_email: string;
           parent_user_id: string | null;
           player_user_id: string | null;
+          relationship_type: string | null;
           status: string;
           updated_at: string | null;
         };
         Insert: {
           accepted_at?: string | null;
+          confirmed_at?: string | null;
           created_at?: string | null;
           expires_at?: string | null;
           id?: string;
@@ -40,11 +43,13 @@ export type Database = {
           invited_email: string;
           parent_user_id?: string | null;
           player_user_id?: string | null;
+          relationship_type?: string | null;
           status?: string;
           updated_at?: string | null;
         };
         Update: {
           accepted_at?: string | null;
+          confirmed_at?: string | null;
           created_at?: string | null;
           expires_at?: string | null;
           id?: string;
@@ -55,6 +60,7 @@ export type Database = {
           invited_email?: string;
           parent_user_id?: string | null;
           player_user_id?: string | null;
+          relationship_type?: string | null;
           status?: string;
           updated_at?: string | null;
         };
@@ -130,696 +136,843 @@ export type Database = {
           },
         ];
       };
-      parent_view_log: {
+      coaches: {
         Row: {
-          athlete_id: string;
-          id: string;
-          parent_user_id: string;
-          viewed_at: string | null;
-          viewed_item_id: string | null;
-          viewed_item_type: string;
-        };
-        Insert: {
-          athlete_id: string;
-          id?: string;
-          parent_user_id: string;
-          viewed_at?: string | null;
-          viewed_item_id?: string | null;
-          viewed_item_type: string;
-        };
-        Update: {
-          athlete_id?: string;
-          id?: string;
-          parent_user_id?: string;
-          viewed_at?: string | null;
-          viewed_item_id?: string | null;
-          viewed_item_type?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "parent_view_log_athlete_id_fkey";
-            columns: ["athlete_id"];
-            isOneToOne: false;
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "parent_view_log_parent_user_id_fkey";
-            columns: ["parent_user_id"];
-            isOneToOne: false;
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      suggestion: {
-        Row: {
-          action_type: string | null;
-          athlete_id: string;
-          completed: boolean | null;
-          completed_at: string | null;
-          condition_snapshot: Json | null;
+          availability: Json | null;
           created_at: string | null;
-          dismissed: boolean | null;
-          dismissed_at: string | null;
+          created_by: string | null;
+          email: string | null;
+          first_name: string;
           id: string;
-          message: string;
-          pending_surface: boolean | null;
-          previous_suggestion_id: string | null;
-          related_school_id: string | null;
-          related_task_id: string | null;
-          reappeared: boolean | null;
-          rule_type: string;
-          surfaced_at: string | null;
+          instagram_handle: string | null;
+          last_contact_date: string | null;
+          last_name: string;
+          notes: string | null;
+          phone: string | null;
+          private_notes: string | null;
+          responsiveness_score: number | null;
+          role: Database["public"]["Enums"]["coach_role"];
+          school_id: string;
+          twitter_handle: string | null;
           updated_at: string | null;
-          urgency: string;
+          updated_by: string | null;
+          user_id: string;
         };
         Insert: {
-          action_type?: string | null;
-          athlete_id: string;
-          completed?: boolean | null;
-          completed_at?: string | null;
-          condition_snapshot?: Json | null;
+          availability?: Json | null;
           created_at?: string | null;
-          dismissed?: boolean | null;
-          dismissed_at?: string | null;
+          created_by?: string | null;
+          email?: string | null;
+          first_name: string;
           id?: string;
-          message: string;
-          pending_surface?: boolean | null;
-          previous_suggestion_id?: string | null;
-          related_school_id?: string | null;
-          related_task_id?: string | null;
-          reappeared?: boolean | null;
-          rule_type: string;
-          surfaced_at?: string | null;
+          instagram_handle?: string | null;
+          last_contact_date?: string | null;
+          last_name: string;
+          notes?: string | null;
+          phone?: string | null;
+          private_notes?: string | null;
+          responsiveness_score?: number | null;
+          role: Database["public"]["Enums"]["coach_role"];
+          school_id: string;
+          twitter_handle?: string | null;
           updated_at?: string | null;
-          urgency: string;
+          updated_by?: string | null;
+          user_id: string;
         };
         Update: {
-          action_type?: string | null;
-          athlete_id?: string;
-          completed?: boolean | null;
-          completed_at?: string | null;
-          condition_snapshot?: Json | null;
+          availability?: Json | null;
           created_at?: string | null;
-          dismissed?: boolean | null;
-          dismissed_at?: string | null;
+          created_by?: string | null;
+          email?: string | null;
+          first_name?: string;
           id?: string;
-          message?: string;
-          pending_surface?: boolean | null;
-          previous_suggestion_id?: string | null;
-          related_school_id?: string | null;
-          related_task_id?: string | null;
-          reappeared?: boolean | null;
-          rule_type?: string;
-          surfaced_at?: string | null;
+          instagram_handle?: string | null;
+          last_contact_date?: string | null;
+          last_name?: string;
+          notes?: string | null;
+          phone?: string | null;
+          private_notes?: string | null;
+          responsiveness_score?: number | null;
+          role?: Database["public"]["Enums"]["coach_role"];
+          school_id?: string;
+          twitter_handle?: string | null;
           updated_at?: string | null;
-          urgency?: string;
+          updated_by?: string | null;
+          user_id?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "suggestion_athlete_id_fkey";
-            columns: ["athlete_id"];
+            foreignKeyName: "coaches_created_by_fkey";
+            columns: ["created_by"];
             isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "suggestion_related_school_id_fkey";
-            columns: ["related_school_id"];
+            foreignKeyName: "coaches_school_id_fkey";
+            columns: ["school_id"];
             isOneToOne: false;
             referencedRelation: "schools";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "suggestion_related_task_id_fkey";
-            columns: ["related_task_id"];
+            foreignKeyName: "coaches_updated_by_fkey";
+            columns: ["updated_by"];
             isOneToOne: false;
-            referencedRelation: "task";
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "coaches_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];
       };
-      task: {
+      communication_templates: {
+        Row: {
+          body: string;
+          created_at: string | null;
+          description: string | null;
+          id: string;
+          is_favorite: boolean | null;
+          is_predefined: boolean | null;
+          name: string;
+          subject: string | null;
+          tags: string[] | null;
+          type: string;
+          unlock_conditions: Json | null;
+          updated_at: string | null;
+          use_count: number | null;
+          user_id: string | null;
+        };
+        Insert: {
+          body: string;
+          created_at?: string | null;
+          description?: string | null;
+          id?: string;
+          is_favorite?: boolean | null;
+          is_predefined?: boolean | null;
+          name: string;
+          subject?: string | null;
+          tags?: string[] | null;
+          type: string;
+          unlock_conditions?: Json | null;
+          updated_at?: string | null;
+          use_count?: number | null;
+          user_id?: string | null;
+        };
+        Update: {
+          body?: string;
+          created_at?: string | null;
+          description?: string | null;
+          id?: string;
+          is_favorite?: boolean | null;
+          is_predefined?: boolean | null;
+          name?: string;
+          subject?: string | null;
+          tags?: string[] | null;
+          type?: string;
+          unlock_conditions?: Json | null;
+          updated_at?: string | null;
+          use_count?: number | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "communication_templates_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      documents: {
+        Row: {
+          created_at: string | null;
+          description: string | null;
+          file_type: string | null;
+          file_url: string;
+          health_status: string | null;
+          id: string;
+          is_current: boolean | null;
+          last_health_check: string | null;
+          school_id: string | null;
+          shared_with_schools: string[] | null;
+          title: string;
+          type: Database["public"]["Enums"]["document_type"];
+          updated_at: string | null;
+          uploaded_by: string;
+          user_id: string;
+          version: number | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          description?: string | null;
+          file_type?: string | null;
+          file_url: string;
+          health_status?: string | null;
+          id?: string;
+          is_current?: boolean | null;
+          last_health_check?: string | null;
+          school_id?: string | null;
+          shared_with_schools?: string[] | null;
+          title: string;
+          type: Database["public"]["Enums"]["document_type"];
+          updated_at?: string | null;
+          uploaded_by: string;
+          user_id: string;
+          version?: number | null;
+        };
+        Update: {
+          created_at?: string | null;
+          description?: string | null;
+          file_type?: string | null;
+          file_url?: string;
+          health_status?: string | null;
+          id?: string;
+          is_current?: boolean | null;
+          last_health_check?: string | null;
+          school_id?: string | null;
+          shared_with_schools?: string[] | null;
+          title?: string;
+          type?: Database["public"]["Enums"]["document_type"];
+          updated_at?: string | null;
+          uploaded_by?: string;
+          user_id?: string;
+          version?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "documents_school_id_fkey";
+            columns: ["school_id"];
+            isOneToOne: false;
+            referencedRelation: "schools";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "documents_uploaded_by_fkey";
+            columns: ["uploaded_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "documents_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      events: {
+        Row: {
+          address: string | null;
+          attended: boolean | null;
+          checkin_time: string | null;
+          city: string | null;
+          coaches_present: string[] | null;
+          cost: number | null;
+          created_at: string | null;
+          created_by: string | null;
+          description: string | null;
+          end_date: string | null;
+          end_time: string | null;
+          event_source: string | null;
+          id: string;
+          location: string | null;
+          name: string;
+          performance_notes: string | null;
+          registered: boolean | null;
+          school_id: string | null;
+          start_date: string;
+          start_time: string | null;
+          state: string | null;
+          stats_recorded: Json | null;
+          type: Database["public"]["Enums"]["event_type"];
+          updated_at: string | null;
+          updated_by: string | null;
+          url: string | null;
+          user_id: string;
+        };
+        Insert: {
+          address?: string | null;
+          attended?: boolean | null;
+          checkin_time?: string | null;
+          city?: string | null;
+          coaches_present?: string[] | null;
+          cost?: number | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          end_date?: string | null;
+          end_time?: string | null;
+          event_source?: string | null;
+          id?: string;
+          location?: string | null;
+          name: string;
+          performance_notes?: string | null;
+          registered?: boolean | null;
+          school_id?: string | null;
+          start_date: string;
+          start_time?: string | null;
+          state?: string | null;
+          stats_recorded?: Json | null;
+          type: Database["public"]["Enums"]["event_type"];
+          updated_at?: string | null;
+          updated_by?: string | null;
+          url?: string | null;
+          user_id: string;
+        };
+        Update: {
+          address?: string | null;
+          attended?: boolean | null;
+          checkin_time?: string | null;
+          city?: string | null;
+          coaches_present?: string[] | null;
+          cost?: number | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          end_date?: string | null;
+          end_time?: string | null;
+          event_source?: string | null;
+          id?: string;
+          location?: string | null;
+          name?: string;
+          performance_notes?: string | null;
+          registered?: boolean | null;
+          school_id?: string | null;
+          start_date?: string;
+          start_time?: string | null;
+          state?: string | null;
+          stats_recorded?: Json | null;
+          type?: Database["public"]["Enums"]["event_type"];
+          updated_at?: string | null;
+          updated_by?: string | null;
+          url?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "events_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "events_school_id_fkey";
+            columns: ["school_id"];
+            isOneToOne: false;
+            referencedRelation: "schools";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "events_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "events_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      interactions: {
+        Row: {
+          attachments: string[] | null;
+          coach_id: string | null;
+          content: string | null;
+          created_at: string | null;
+          direction: Database["public"]["Enums"]["interaction_direction"];
+          event_id: string | null;
+          id: string;
+          logged_by: string;
+          occurred_at: string;
+          school_id: string;
+          sentiment: Database["public"]["Enums"]["interaction_sentiment"] | null;
+          subject: string | null;
+          type: Database["public"]["Enums"]["interaction_type"];
+          updated_by: string | null;
+        };
+        Insert: {
+          attachments?: string[] | null;
+          coach_id?: string | null;
+          content?: string | null;
+          created_at?: string | null;
+          direction: Database["public"]["Enums"]["interaction_direction"];
+          event_id?: string | null;
+          id?: string;
+          logged_by: string;
+          occurred_at: string;
+          school_id: string;
+          sentiment?:
+            | Database["public"]["Enums"]["interaction_sentiment"]
+            | null;
+          subject?: string | null;
+          type: Database["public"]["Enums"]["interaction_type"];
+          updated_by?: string | null;
+        };
+        Update: {
+          attachments?: string[] | null;
+          coach_id?: string | null;
+          content?: string | null;
+          created_at?: string | null;
+          direction?: Database["public"]["Enums"]["interaction_direction"];
+          event_id?: string | null;
+          id?: string;
+          logged_by?: string;
+          occurred_at?: string;
+          school_id?: string;
+          sentiment?:
+            | Database["public"]["Enums"]["interaction_sentiment"]
+            | null;
+          subject?: string | null;
+          type?: Database["public"]["Enums"]["interaction_type"];
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fk_interactions_event_id";
+            columns: ["event_id"];
+            isOneToOne: false;
+            referencedRelation: "events";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "interactions_coach_id_fkey";
+            columns: ["coach_id"];
+            isOneToOne: false;
+            referencedRelation: "coaches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "interactions_logged_by_fkey";
+            columns: ["logged_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "interactions_school_id_fkey";
+            columns: ["school_id"];
+            isOneToOne: false;
+            referencedRelation: "schools";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "interactions_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notifications: {
+        Row: {
+          created_at: string | null;
+          email_sent: boolean | null;
+          email_sent_at: string | null;
+          id: string;
+          message: string | null;
+          priority: string | null;
+          read_at: string | null;
+          related_entity_id: string | null;
+          related_entity_type: string | null;
+          scheduled_for: string | null;
+          sent_at: string | null;
+          title: string;
+          type: Database["public"]["Enums"]["notification_type"];
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          email_sent?: boolean | null;
+          email_sent_at?: string | null;
+          id?: string;
+          message?: string | null;
+          priority?: string | null;
+          read_at?: string | null;
+          related_entity_id?: string | null;
+          related_entity_type?: string | null;
+          scheduled_for?: string | null;
+          sent_at?: string | null;
+          title: string;
+          type: Database["public"]["Enums"]["notification_type"];
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          email_sent?: boolean | null;
+          email_sent_at?: string | null;
+          id?: string;
+          message?: string | null;
+          priority?: string | null;
+          read_at?: string | null;
+          related_entity_id?: string | null;
+          related_entity_type?: string | null;
+          scheduled_for?: string | null;
+          sent_at?: string | null;
+          title?: string;
+          type?: Database["public"]["Enums"]["notification_type"];
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      offers: {
+        Row: {
+          coach_id: string | null;
+          conditions: string | null;
+          created_at: string | null;
+          deadline_date: string | null;
+          id: string;
+          notes: string | null;
+          offer_date: string;
+          offer_type: string;
+          scholarship_amount: number | null;
+          scholarship_percentage: number | null;
+          school_id: string;
+          status: string | null;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          coach_id?: string | null;
+          conditions?: string | null;
+          created_at?: string | null;
+          deadline_date?: string | null;
+          id?: string;
+          notes?: string | null;
+          offer_date?: string;
+          offer_type: string;
+          scholarship_amount?: number | null;
+          scholarship_percentage?: number | null;
+          school_id: string;
+          status?: string | null;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          coach_id?: string | null;
+          conditions?: string | null;
+          created_at?: string | null;
+          deadline_date?: string | null;
+          id?: string;
+          notes?: string | null;
+          offer_date?: string;
+          offer_type?: string;
+          scholarship_amount?: number | null;
+          scholarship_percentage?: number | null;
+          school_id?: string;
+          status?: string | null;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "offers_coach_id_fkey";
+            columns: ["coach_id"];
+            isOneToOne: false;
+            referencedRelation: "coaches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "offers_school_id_fkey";
+            columns: ["school_id"];
+            isOneToOne: false;
+            referencedRelation: "schools";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "offers_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      performance_metrics: {
+        Row: {
+          created_at: string | null;
+          event_id: string | null;
+          id: string;
+          metric_type: string;
+          notes: string | null;
+          recorded_date: string;
+          unit: string | null;
+          user_id: string;
+          value: number;
+          verified: boolean | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          event_id?: string | null;
+          id?: string;
+          metric_type: string;
+          notes?: string | null;
+          recorded_date: string;
+          unit?: string | null;
+          user_id: string;
+          value: number;
+          verified?: boolean | null;
+        };
+        Update: {
+          created_at?: string | null;
+          event_id?: string | null;
+          id?: string;
+          metric_type?: string;
+          notes?: string | null;
+          recorded_date?: string;
+          unit?: string | null;
+          user_id?: string;
+          value?: number;
+          verified?: boolean | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "performance_metrics_event_id_fkey";
+            columns: ["event_id"];
+            isOneToOne: false;
+            referencedRelation: "events";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "performance_metrics_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      preference_history: {
+        Row: {
+          category: string;
+          changed_by: string;
+          changed_fields: string[];
+          created_at: string | null;
+          id: string;
+          new_value: Json | null;
+          old_value: Json | null;
+          user_id: string;
+        };
+        Insert: {
+          category: string;
+          changed_by: string;
+          changed_fields?: string[];
+          created_at?: string | null;
+          id?: string;
+          new_value?: Json | null;
+          old_value?: Json | null;
+          user_id: string;
+        };
+        Update: {
+          category?: string;
+          changed_by?: string;
+          changed_fields?: string[];
+          created_at?: string | null;
+          id?: string;
+          new_value?: Json | null;
+          old_value?: Json | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "preference_history_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      schools: {
+        Row: {
+          academic_info: Json | null;
+          amenities: Json | null;
+          coaching_philosophy: string | null;
+          coaching_style: string | null;
+          communication_style: string | null;
+          conference: string | null;
+          cons: string[] | null;
+          created_at: string | null;
+          created_by: string | null;
+          division: Database["public"]["Enums"]["school_division"] | null;
+          favicon_url: string | null;
+          fit_score: number | null;
+          fit_score_data: Json | null;
+          fit_tier: string | null;
+          id: string;
+          instagram_handle: string | null;
+          is_favorite: boolean | null;
+          location: string | null;
+          name: string;
+          notes: string | null;
+          offer_details: Json | null;
+          priority_tier: string | null;
+          private_notes: Json | null;
+          pros: string[] | null;
+          ranking: number | null;
+          recruiting_approach: string | null;
+          status: Database["public"]["Enums"]["school_status"] | null;
+          status_changed_at: string | null;
+          success_metrics: string | null;
+          twitter_handle: string | null;
+          updated_at: string | null;
+          updated_by: string | null;
+          user_id: string;
+          website: string | null;
+        };
+        Insert: {
+          academic_info?: Json | null;
+          amenities?: Json | null;
+          coaching_philosophy?: string | null;
+          coaching_style?: string | null;
+          communication_style?: string | null;
+          conference?: string | null;
+          cons?: string[] | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          division?: Database["public"]["Enums"]["school_division"] | null;
+          favicon_url?: string | null;
+          fit_score?: number | null;
+          fit_score_data?: Json | null;
+          fit_tier?: string | null;
+          id?: string;
+          instagram_handle?: string | null;
+          is_favorite?: boolean | null;
+          location?: string | null;
+          name: string;
+          notes?: string | null;
+          offer_details?: Json | null;
+          priority_tier?: string | null;
+          private_notes?: Json | null;
+          pros?: string[] | null;
+          ranking?: number | null;
+          recruiting_approach?: string | null;
+          status?: Database["public"]["Enums"]["school_status"] | null;
+          status_changed_at?: string | null;
+          success_metrics?: string | null;
+          twitter_handle?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          user_id: string;
+          website?: string | null;
+        };
+        Update: {
+          academic_info?: Json | null;
+          amenities?: Json | null;
+          coaching_philosophy?: string | null;
+          coaching_style?: string | null;
+          communication_style?: string | null;
+          conference?: string | null;
+          cons?: string[] | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          division?: Database["public"]["Enums"]["school_division"] | null;
+          favicon_url?: string | null;
+          fit_score?: number | null;
+          fit_score_data?: Json | null;
+          fit_tier?: string | null;
+          id?: string;
+          instagram_handle?: string | null;
+          is_favorite?: boolean | null;
+          location?: string | null;
+          name?: string;
+          notes?: string | null;
+          offer_details?: Json | null;
+          priority_tier?: string | null;
+          private_notes?: Json | null;
+          pros?: string[] | null;
+          ranking?: number | null;
+          recruiting_approach?: string | null;
+          status?: Database["public"]["Enums"]["school_status"] | null;
+          status_changed_at?: string | null;
+          success_metrics?: string | null;
+          twitter_handle?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          user_id?: string;
+          website?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "schools_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "schools_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "schools_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      user_preferences: {
         Row: {
           category: string;
           created_at: string | null;
-          deadline_date: string | null;
-          dependency_task_ids: string[] | null;
-          description: string | null;
-          division_applicability: string[] | null;
-          failure_risk: string | null;
-          grade_level: number;
+          data: Json;
           id: string;
-          required: boolean | null;
-          title: string;
           updated_at: string | null;
-          why_it_matters: string | null;
+          user_id: string;
         };
         Insert: {
           category: string;
           created_at?: string | null;
-          deadline_date?: string | null;
-          dependency_task_ids?: string[] | null;
-          description?: string | null;
-          division_applicability?: string[] | null;
-          failure_risk?: string | null;
-          grade_level: number;
+          data?: Json;
           id?: string;
-          required?: boolean | null;
-          title: string;
           updated_at?: string | null;
-          why_it_matters?: string | null;
+          user_id: string;
         };
         Update: {
           category?: string;
           created_at?: string | null;
-          deadline_date?: string | null;
-          dependency_task_ids?: string[] | null;
-          description?: string | null;
-          division_applicability?: string[] | null;
-          failure_risk?: string | null;
-          grade_level?: number;
+          data?: Json;
           id?: string;
-          required?: boolean | null;
-          title?: string;
           updated_at?: string | null;
-          why_it_matters?: string | null;
-        };
-        Relationships: [];
-      };
-      schools: {
-        Row: {
-          id: string;
-          user_id: string;
-          name: string;
-          location: string | null;
-          division: "D1" | "D2" | "D3" | "NAIA" | "JUCO" | null;
-          conference: string | null;
-          ranking: number | null;
-          is_favorite: boolean;
-          website: string | null;
-          twitter_handle: string | null;
-          instagram_handle: string | null;
-          status:
-            | "interested"
-            | "contacted"
-            | "camp_invite"
-            | "recruited"
-            | "official_visit_invited"
-            | "official_visit_scheduled"
-            | "offer_received"
-            | "committed"
-            | "not_pursuing";
-          status_changed_at: string | null;
-          priority_tier: "A" | "B" | "C" | null;
-          amenities: Json | null;
-          pros: string[] | null;
-          cons: string[] | null;
-          notes: string | null;
-          private_notes: Json | null;
-          offer_details: Json | null;
-          academic_info: Json | null;
-          coaching_philosophy: string | null;
-          coaching_style: string | null;
-          recruiting_approach: string | null;
-          communication_style: string | null;
-          success_metrics: string | null;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          name: string;
-          location?: string | null;
-          division?: "D1" | "D2" | "D3" | "NAIA" | "JUCO" | null;
-          conference?: string | null;
-          ranking?: number | null;
-          is_favorite?: boolean;
-          website?: string | null;
-          twitter_handle?: string | null;
-          instagram_handle?: string | null;
-          status?:
-            | "interested"
-            | "contacted"
-            | "camp_invite"
-            | "recruited"
-            | "official_visit_invited"
-            | "official_visit_scheduled"
-            | "offer_received"
-            | "committed"
-            | "not_pursuing";
-          status_changed_at?: string | null;
-          priority_tier?: "A" | "B" | "C" | null;
-          amenities?: Json | null;
-          pros?: string[] | null;
-          cons?: string[] | null;
-          notes?: string | null;
-          private_notes?: Json | null;
-          offer_details?: Json | null;
-          academic_info?: Json | null;
-          coaching_philosophy?: string | null;
-          coaching_style?: string | null;
-          recruiting_approach?: string | null;
-          communication_style?: string | null;
-          success_metrics?: string | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
           user_id?: string;
-          name?: string;
-          location?: string | null;
-          division?: "D1" | "D2" | "D3" | "NAIA" | "JUCO" | null;
-          conference?: string | null;
-          ranking?: number | null;
-          is_favorite?: boolean;
-          website?: string | null;
-          twitter_handle?: string | null;
-          instagram_handle?: string | null;
-          status?:
-            | "interested"
-            | "contacted"
-            | "camp_invite"
-            | "recruited"
-            | "official_visit_invited"
-            | "official_visit_scheduled"
-            | "offer_received"
-            | "committed"
-            | "not_pursuing";
-          status_changed_at?: string | null;
-          priority_tier?: "A" | "B" | "C" | null;
-          amenities?: Json | null;
-          pros?: string[] | null;
-          cons?: string[] | null;
-          notes?: string | null;
-          private_notes?: Json | null;
-          offer_details?: Json | null;
-          academic_info?: Json | null;
-          coaching_philosophy?: string | null;
-          coaching_style?: string | null;
-          recruiting_approach?: string | null;
-          communication_style?: string | null;
-          success_metrics?: string | null;
-          created_at?: string | null;
-          updated_at?: string | null;
         };
-        Relationships: [];
-      };
-      coaches: {
-        Row: {
-          id: string;
-          school_id: string;
-          role: "head" | "assistant" | "recruiting";
-          first_name: string;
-          last_name: string;
-          email: string | null;
-          phone: string | null;
-          twitter_handle: string | null;
-          instagram_handle: string | null;
-          notes: string | null;
-          responsiveness_score: number | null;
-          last_contact_date: string | null;
-          availability: Json | null;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          school_id: string;
-          role: "head" | "assistant" | "recruiting";
-          first_name: string;
-          last_name: string;
-          email?: string | null;
-          phone?: string | null;
-          twitter_handle?: string | null;
-          instagram_handle?: string | null;
-          notes?: string | null;
-          responsiveness_score?: number | null;
-          last_contact_date?: string | null;
-          availability?: Json | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          school_id?: string;
-          role?: "head" | "assistant" | "recruiting";
-          first_name?: string;
-          last_name?: string;
-          email?: string | null;
-          phone?: string | null;
-          twitter_handle?: string | null;
-          instagram_handle?: string | null;
-          notes?: string | null;
-          responsiveness_score?: number | null;
-          last_contact_date?: string | null;
-          availability?: Json | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      interactions: {
-        Row: {
-          id: string;
-          school_id: string;
-          coach_id: string | null;
-          event_id: string | null;
-          type:
-            | "email"
-            | "text"
-            | "phone_call"
-            | "in_person_visit"
-            | "virtual_meeting"
-            | "camp"
-            | "showcase"
-            | "tweet"
-            | "dm"
-            | "game"
-            | "unofficial_visit"
-            | "official_visit"
-            | "other";
-          direction: "outbound" | "inbound";
-          subject: string | null;
-          content: string | null;
-          sentiment:
-            | "positive"
-            | "neutral"
-            | "negative"
-            | "very_positive"
-            | null;
-          occurred_at: string;
-          logged_by: string;
-          attachments: string[] | null;
-          notification_settings: Json | null;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          school_id: string;
-          coach_id?: string | null;
-          event_id?: string | null;
-          type:
-            | "email"
-            | "text"
-            | "phone_call"
-            | "in_person_visit"
-            | "virtual_meeting"
-            | "camp"
-            | "showcase"
-            | "tweet"
-            | "dm"
-            | "game"
-            | "unofficial_visit"
-            | "official_visit"
-            | "other";
-          direction: "outbound" | "inbound";
-          subject?: string | null;
-          content?: string | null;
-          sentiment?:
-            | "positive"
-            | "neutral"
-            | "negative"
-            | "very_positive"
-            | null;
-          occurred_at: string;
-          logged_by: string;
-          attachments?: string[] | null;
-          notification_settings?: Json | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          school_id?: string;
-          coach_id?: string | null;
-          event_id?: string | null;
-          type?:
-            | "email"
-            | "text"
-            | "phone_call"
-            | "in_person_visit"
-            | "virtual_meeting"
-            | "camp"
-            | "showcase"
-            | "tweet"
-            | "dm"
-            | "game"
-            | "unofficial_visit"
-            | "official_visit"
-            | "other";
-          direction?: "outbound" | "inbound";
-          subject?: string | null;
-          content?: string | null;
-          sentiment?:
-            | "positive"
-            | "neutral"
-            | "negative"
-            | "very_positive"
-            | null;
-          occurred_at?: string;
-          logged_by?: string;
-          attachments?: string[] | null;
-          notification_settings?: Json | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      events: {
-        Row: {
-          id: string;
-          school_id: string | null;
-          type:
-            | "showcase"
-            | "camp"
-            | "official_visit"
-            | "unofficial_visit"
-            | "game";
-          name: string;
-          location: string | null;
-          start_date: string;
-          end_date: string;
-          coaches_present: string[] | null;
-          performance_notes: string | null;
-          stats_recorded: Json | null;
-          cost: number | null;
-          registered: boolean | null;
-          attended: boolean | null;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          school_id?: string | null;
-          type:
-            | "showcase"
-            | "camp"
-            | "official_visit"
-            | "unofficial_visit"
-            | "game";
-          name: string;
-          location?: string | null;
-          start_date: string;
-          end_date: string;
-          coaches_present?: string[] | null;
-          performance_notes?: string | null;
-          stats_recorded?: Json | null;
-          cost?: number | null;
-          registered?: boolean | null;
-          attended?: boolean | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          school_id?: string | null;
-          type?:
-            | "showcase"
-            | "camp"
-            | "official_visit"
-            | "unofficial_visit"
-            | "game";
-          name?: string;
-          location?: string | null;
-          start_date?: string;
-          end_date?: string;
-          coaches_present?: string[] | null;
-          performance_notes?: string | null;
-          stats_recorded?: Json | null;
-          cost?: number | null;
-          registered?: boolean | null;
-          attended?: boolean | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      performance_metrics: {
-        Row: {
-          id: string;
-          user_id: string;
-          recorded_date: string;
-          metric_type: string;
-          value: number;
-          unit: string | null;
-          event_id: string | null;
-          notes: string | null;
-          verified: boolean | null;
-          created_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          recorded_date: string;
-          metric_type: string;
-          value: number;
-          unit?: string | null;
-          event_id?: string | null;
-          notes?: string | null;
-          verified?: boolean | null;
-          created_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          recorded_date?: string;
-          metric_type?: string;
-          value?: number;
-          unit?: string | null;
-          event_id?: string | null;
-          notes?: string | null;
-          verified?: boolean | null;
-          created_at?: string | null;
-        };
-        Relationships: [];
-      };
-      documents: {
-        Row: {
-          id: string;
-          user_id: string;
-          type:
-            | "highlight_video"
-            | "transcript"
-            | "resume"
-            | "rec_letter"
-            | "questionnaire"
-            | "stats_sheet";
-          title: string;
-          description: string | null;
-          file_url: string | null;
-          file_type: string | null;
-          version: number | null;
-          school_id: string | null;
-          is_current: boolean | null;
-          shared_with_schools: string[] | null;
-          uploaded_by: string;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          type:
-            | "highlight_video"
-            | "transcript"
-            | "resume"
-            | "rec_letter"
-            | "questionnaire"
-            | "stats_sheet";
-          title: string;
-          description?: string | null;
-          file_url?: string | null;
-          file_type?: string | null;
-          version?: number | null;
-          school_id?: string | null;
-          is_current?: boolean | null;
-          shared_with_schools?: string[] | null;
-          uploaded_by: string;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          type?:
-            | "highlight_video"
-            | "transcript"
-            | "resume"
-            | "rec_letter"
-            | "questionnaire"
-            | "stats_sheet";
-          title?: string;
-          description?: string | null;
-          file_url?: string | null;
-          file_type?: string | null;
-          version?: number | null;
-          school_id?: string | null;
-          is_current?: boolean | null;
-          shared_with_schools?: string[] | null;
-          uploaded_by?: string;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      notifications: {
-        Row: {
-          id: string;
-          user_id: string;
-          type:
-            | "follow_up_reminder"
-            | "deadline_alert"
-            | "daily_digest"
-            | "inbound_interaction";
-          title: string;
-          message: string | null;
-          related_entity_type: string | null;
-          related_entity_id: string | null;
-          scheduled_for: string | null;
-          sent_at: string | null;
-          read_at: string | null;
-          created_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          type:
-            | "follow_up_reminder"
-            | "deadline_alert"
-            | "daily_digest"
-            | "inbound_interaction";
-          title: string;
-          message?: string | null;
-          related_entity_type?: string | null;
-          related_entity_id?: string | null;
-          scheduled_for?: string | null;
-          sent_at?: string | null;
-          read_at?: string | null;
-          created_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          type?:
-            | "follow_up_reminder"
-            | "deadline_alert"
-            | "daily_digest"
-            | "inbound_interaction";
-          title?: string;
-          message?: string | null;
-          related_entity_type?: string | null;
-          related_entity_id?: string | null;
-          scheduled_for?: string | null;
-          sent_at?: string | null;
-          read_at?: string | null;
-          created_at?: string | null;
-        };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_user_id_fkey1";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       users: {
         Row: {
@@ -828,13 +981,8 @@ export type Database = {
           email: string;
           full_name: string | null;
           graduation_year: number | null;
-          icloud_sync_enabled: boolean | null;
           id: string;
-          phase_milestone_data: Json | null;
-          phone: string | null;
-          profile_photo_url: string | null;
-          recovery_mode_active: boolean | null;
-          recovery_plan_shown_at: string | null;
+          is_admin: boolean | null;
           role: Database["public"]["Enums"]["user_role"];
           status_label: string | null;
           status_score: number | null;
@@ -846,13 +994,8 @@ export type Database = {
           email: string;
           full_name?: string | null;
           graduation_year?: number | null;
-          icloud_sync_enabled?: boolean | null;
           id: string;
-          phase_milestone_data?: Json | null;
-          phone?: string | null;
-          profile_photo_url?: string | null;
-          recovery_mode_active?: boolean | null;
-          recovery_plan_shown_at?: string | null;
+          is_admin?: boolean | null;
           role: Database["public"]["Enums"]["user_role"];
           status_label?: string | null;
           status_score?: number | null;
@@ -864,13 +1007,8 @@ export type Database = {
           email?: string;
           full_name?: string | null;
           graduation_year?: number | null;
-          icloud_sync_enabled?: boolean | null;
           id?: string;
-          phase_milestone_data?: Json | null;
-          phone?: string | null;
-          profile_photo_url?: string | null;
-          recovery_mode_active?: boolean | null;
-          recovery_plan_shown_at?: string | null;
+          is_admin?: boolean | null;
           role?: Database["public"]["Enums"]["user_role"];
           status_label?: string | null;
           status_score?: number | null;
@@ -878,492 +1016,44 @@ export type Database = {
         };
         Relationships: [];
       };
-      offers: {
-        Row: {
-          id: string;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      expire_old_invitations: { Args: Record<string, never>; Returns: undefined };
+      get_linked_user_ids: {
+        Args: Record<string, never>;
+        Returns: {
           user_id: string;
-          school_id: string;
-          status: "pending" | "accepted" | "declined" | "expired";
-          scholarship_amount: number | null;
-          conditions: string | null;
-          notes: string | null;
-          deadline_date: string | null;
-          received_date: string | null;
-          athletic_requirements: Json | null;
-          academic_requirements: Json | null;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          school_id: string;
-          status?: "pending" | "accepted" | "declined" | "expired";
-          scholarship_amount?: number | null;
-          conditions?: string | null;
-          notes?: string | null;
-          deadline_date?: string | null;
-          received_date?: string | null;
-          athletic_requirements?: Json | null;
-          academic_requirements?: Json | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          school_id?: string;
-          status?: "pending" | "accepted" | "declined" | "expired";
-          scholarship_amount?: number | null;
-          conditions?: string | null;
-          notes?: string | null;
-          deadline_date?: string | null;
-          received_date?: string | null;
-          athletic_requirements?: Json | null;
-          academic_requirements?: Json | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
+        }[];
       };
-      user_preferences: {
-        Row: {
-          user_id: string;
-          notification_settings: Json | null;
-          communication_templates: Json | null;
-          dashboard_layout: Json | null;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          user_id: string;
-          notification_settings?: Json | null;
-          communication_templates?: Json | null;
-          dashboard_layout?: Json | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          user_id?: string;
-          notification_settings?: Json | null;
-          communication_templates?: Json | null;
-          dashboard_layout?: Json | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      communication_templates: {
-        Row: {
-          id: string;
-          user_id: string;
-          template_type: string;
-          name: string;
-          subject: string | null;
-          body: string | null;
-          variables: Json | null;
-          is_default: boolean | null;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          template_type: string;
-          name: string;
-          subject?: string | null;
-          body?: string | null;
-          variables?: Json | null;
-          is_default?: boolean | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          template_type?: string;
-          name?: string;
-          subject?: string | null;
-          body?: string | null;
-          variables?: Json | null;
-          is_default?: boolean | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      follow_up_reminders: {
-        Row: {
-          id: string;
-          user_id: string;
-          coach_id: string | null;
-          school_id: string | null;
-          interaction_id: string | null;
-          reminder_date: string;
-          reminder_type: "email" | "sms" | "phone_call" | null;
-          notes: string | null;
-          is_completed: boolean | null;
-          completed_at: string | null;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          coach_id?: string | null;
-          school_id?: string | null;
-          interaction_id?: string | null;
-          reminder_date: string;
-          reminder_type?: "email" | "sms" | "phone_call" | null;
-          notes?: string | null;
-          is_completed?: boolean | null;
-          completed_at?: string | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          coach_id?: string | null;
-          school_id?: string | null;
-          interaction_id?: string | null;
-          reminder_date?: string;
-          reminder_type?: "email" | "sms" | "phone_call" | null;
-          notes?: string | null;
-          is_completed?: boolean | null;
-          completed_at?: string | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      saved_searches: {
-        Row: {
-          id: string;
-          user_id: string;
-          name: string;
-          filters: Json | null;
-          is_default: boolean | null;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          name: string;
-          filters?: Json | null;
-          is_default?: boolean | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          name?: string;
-          filters?: Json | null;
-          is_default?: boolean | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      search_history: {
-        Row: {
-          id: string;
-          user_id: string;
-          search_term: string;
-          filters: Json | null;
-          result_count: number | null;
-          searched_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          search_term: string;
-          filters?: Json | null;
-          result_count?: number | null;
-          searched_at: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          search_term?: string;
-          filters?: Json | null;
-          result_count?: number | null;
-          searched_at?: string;
-        };
-        Relationships: [];
-      };
-      social_media_posts: {
-        Row: {
-          id: string;
-          coach_id: string | null;
-          school_id: string;
-          platform: "twitter" | "instagram";
-          post_url: string;
-          post_content: string | null;
-          post_date: string | null;
-          is_recruiting_related: boolean | null;
-          flagged_for_review: boolean | null;
-          sentiment:
-            | "positive"
-            | "neutral"
-            | "negative"
-            | "very_positive"
-            | null;
-          engagement_count: number | null;
-          author_name: string | null;
-          author_handle: string | null;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          coach_id?: string | null;
-          school_id: string;
-          platform: "twitter" | "instagram";
-          post_url: string;
-          post_content?: string | null;
-          post_date?: string | null;
-          is_recruiting_related?: boolean | null;
-          flagged_for_review?: boolean | null;
-          sentiment?:
-            | "positive"
-            | "neutral"
-            | "negative"
-            | "very_positive"
-            | null;
-          engagement_count?: number | null;
-          author_name?: string | null;
-          author_handle?: string | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          coach_id?: string | null;
-          school_id?: string;
-          platform?: "twitter" | "instagram";
-          post_url?: string;
-          post_content?: string | null;
-          post_date?: string | null;
-          is_recruiting_related?: boolean | null;
-          flagged_for_review?: boolean | null;
-          sentiment?:
-            | "positive"
-            | "neutral"
-            | "negative"
-            | "very_positive"
-            | null;
-          engagement_count?: number | null;
-          author_name?: string | null;
-          author_handle?: string | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      shared_records: {
-        Row: {
-          id: string;
-          shared_by_user_id: string;
-          shared_with_user_id: string;
-          record_type: string;
-          record_id: string;
-          access_level: "view" | "edit" | "admin";
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          shared_by_user_id: string;
-          shared_with_user_id: string;
-          record_type: string;
-          record_id: string;
-          access_level: "view" | "edit" | "admin";
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          shared_by_user_id?: string;
-          shared_with_user_id?: string;
-          record_type?: string;
-          record_id?: string;
-          access_level?: "view" | "edit" | "admin";
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      record_comments: {
-        Row: {
-          id: string;
-          shared_record_id: string;
-          user_id: string;
-          comment: string;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          shared_record_id: string;
-          user_id: string;
-          comment: string;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          shared_record_id?: string;
-          user_id?: string;
-          comment?: string;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      user_tasks: {
-        Row: {
-          id: string;
-          user_id: string;
-          tasks: Json | null;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          tasks?: Json | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          tasks?: Json | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      recommendation_letters: {
-        Row: {
-          id: string;
-          user_id: string;
-          writer_name: string;
-          writer_title: string | null;
-          writer_email: string | null;
-          relationship: string | null;
-          requested_date: string | null;
-          due_date: string | null;
-          received_date: string | null;
-          status: "not_requested" | "requested" | "received" | "submitted";
-          schools_submitted_to: string[] | null;
-          document_id: string | null;
-          notes: string | null;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          writer_name: string;
-          writer_title?: string | null;
-          writer_email?: string | null;
-          relationship?: string | null;
-          requested_date?: string | null;
-          due_date?: string | null;
-          received_date?: string | null;
-          status?: "not_requested" | "requested" | "received" | "submitted";
-          schools_submitted_to?: string[] | null;
-          document_id?: string | null;
-          notes?: string | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          writer_name?: string;
-          writer_title?: string | null;
-          writer_email?: string | null;
-          relationship?: string | null;
-          requested_date?: string | null;
-          due_date?: string | null;
-          received_date?: string | null;
-          status?: "not_requested" | "requested" | "received" | "submitted";
-          schools_submitted_to?: string[] | null;
-          document_id?: string | null;
-          notes?: string | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      school_status_history: {
-        Row: {
-          id: string;
-          school_id: string;
-          previous_status: string | null;
-          new_status: string;
-          changed_by: string;
-          changed_at: string;
-          notes: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          school_id: string;
-          previous_status?: string | null;
-          new_status: string;
-          changed_by: string;
-          changed_at?: string;
-          notes?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          school_id?: string;
-          previous_status?: string | null;
-          new_status?: string;
-          changed_by?: string;
-          changed_at?: string;
-          notes?: string | null;
-          created_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "school_status_history_school_id_fkey";
-            columns: ["school_id"];
-            isOneToOne: false;
-            referencedRelation: "schools";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "school_status_history_changed_by_fkey";
-            columns: ["changed_by"];
-            isOneToOne: false;
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-        ];
+      snapshot_data_ownership: {
+        Args: { p_link_id: string; p_parent_id: string; p_player_id: string };
+        Returns: undefined;
       };
     };
     Enums: {
-      user_role: "parent" | "student";
-      school_division: "D1" | "D2" | "D3" | "NAIA" | "JUCO";
-      school_status:
-        | "interested"
-        | "contacted"
-        | "camp_invite"
-        | "recruited"
-        | "official_visit_invited"
-        | "official_visit_scheduled"
-        | "offer_received"
-        | "committed"
-        | "not_pursuing";
       coach_role: "head" | "assistant" | "recruiting";
+      document_type:
+        | "highlight_video"
+        | "transcript"
+        | "resume"
+        | "rec_letter"
+        | "questionnaire"
+        | "stats_sheet";
+      event_type:
+        | "showcase"
+        | "camp"
+        | "official_visit"
+        | "unofficial_visit"
+        | "game";
+      interaction_direction: "outbound" | "inbound";
+      interaction_sentiment:
+        | "positive"
+        | "neutral"
+        | "negative"
+        | "very_positive";
       interaction_type:
         | "email"
         | "text"
@@ -1374,36 +1064,32 @@ export type Database = {
         | "showcase"
         | "tweet"
         | "dm";
-      interaction_direction: "outbound" | "inbound";
-      interaction_sentiment:
-        | "positive"
-        | "neutral"
-        | "negative"
-        | "very_positive";
-      event_type:
-        | "showcase"
-        | "camp"
-        | "official_visit"
-        | "unofficial_visit"
-        | "game";
-      document_type:
-        | "highlight_video"
-        | "transcript"
-        | "resume"
-        | "rec_letter"
-        | "questionnaire"
-        | "stats_sheet";
-      recommendation_status:
-        | "not_requested"
-        | "requested"
-        | "received"
-        | "submitted";
       notification_type:
         | "follow_up_reminder"
         | "deadline_alert"
         | "daily_digest"
-        | "inbound_interaction";
-      social_platform: "twitter" | "instagram";
+        | "inbound_interaction"
+        | "account_link_invitation_accepted"
+        | "account_link_confirmation_request"
+        | "account_link_confirmed"
+        | "account_link_rejected";
+      school_division: "D1" | "D2" | "D3" | "NAIA" | "JUCO";
+      school_status:
+        | "researching"
+        | "contacted"
+        | "interested"
+        | "offer_received"
+        | "declined"
+        | "committed"
+        | "camp_invite"
+        | "recruited"
+        | "official_visit_invited"
+        | "official_visit_scheduled"
+        | "not_pursuing";
+      user_role: "admin" | "parent" | "student";
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 };

@@ -54,7 +54,7 @@ export const sendNotificationEmail = async (
           ${actionButton}
         </div>
         <p style="margin-top: 24px; font-size: 12px; color: #9ca3af; text-align: center;">
-          College Baseball Recruiting Compass
+          The Recruiting Compass
         </p>
       </body>
     </html>
@@ -68,7 +68,7 @@ export const sendNotificationEmail = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "College Recruiting <notifications@recruiting.chrisandrikanich.com>",
+        from: "The Recruiting Compass <info@therecruitingcompass.com>",
         to,
         subject,
         html: htmlContent,
@@ -108,7 +108,7 @@ export const sendEmail = async (options: SendEmailOptions) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "College Recruiting <notifications@recruiting.chrisandrikanich.com>",
+        from: "The Recruiting Compass <info@therecruitingcompass.com>",
         to,
         subject,
         html,

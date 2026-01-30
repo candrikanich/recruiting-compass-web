@@ -21,9 +21,12 @@
         <p class="text-sm text-gray-600">{{ account.email }}</p>
         <div class="flex items-center gap-2 mt-1">
           <span
-            class="inline-block px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium"
+            :class="[
+              'inline-block px-2 py-1 rounded text-xs font-medium capitalize',
+              roleColor,
+            ]"
           >
-            {{ account.relationship }}
+            {{ account.role }}
           </span>
           <span class="text-xs text-gray-500 flex items-center gap-1">
             <CheckIcon class="w-3 h-3" />
@@ -45,10 +48,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { CheckIcon } from "@heroicons/vue/24/solid";
 import type { LinkedAccount } from "~/types/models";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     account: LinkedAccount;
     loading?: boolean;
@@ -61,4 +65,17 @@ withDefaults(
 defineEmits<{
   unlink: [userId: string];
 }>();
+
+const roleColor = computed(() => {
+  switch (props.account.role) {
+    case "parent":
+      return "bg-blue-100 text-blue-700";
+    case "student":
+      return "bg-purple-100 text-purple-700";
+    case "admin":
+      return "bg-red-100 text-red-700";
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+});
 </script>

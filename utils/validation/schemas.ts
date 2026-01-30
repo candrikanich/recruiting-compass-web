@@ -48,6 +48,19 @@ export const signupSchema = z
     path: ["confirmPassword"],
   });
 
+export const adminSignupSchema = z
+  .object({
+    fullName: sanitizedTextSchema(255),
+    email: emailSchema,
+    password: strongPasswordSchema,
+    confirmPassword: z.string(),
+    role: z.literal("admin"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
 export const forgotPasswordSchema = z.object({
   email: emailSchema,
 });

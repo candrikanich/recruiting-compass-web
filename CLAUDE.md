@@ -177,6 +177,49 @@ const { data, loading, fetchData } = useMyFeature();
 - Athletic performance metrics and grades
 - Fit score calculation and analytics
 
+**Account Linking Domain** (`useAccountLinks`)
+- Family account linking with 3-step verification workflow
+- Categorized refs for each invitation type: `sentInvitations`, `receivedInvitations`, `pendingConfirmations`, `linkedAccounts`
+- Dedicated methods for workflow steps: `acceptInvitationAsInvitee()`, `confirmLinkAsInitiator()`, `rejectConfirmation()`, `cancelInvitation()`
+- Relationship type determination based on user roles (parent-player, parent-parent, player-parent)
+- Notification creation integrated at each workflow step with proper priority levels
+
+### Multi-Step Workflow Pattern
+
+When implementing features with sequential steps (e.g., send invitation → accept → confirm), use this composable pattern:
+
+```typescript
+export const useMultiStepFeature = () => {
+  // Separate refs for each logical state
+  const sentItems = ref<Item[]>([]);        // I initiated, awaiting response
+  const receivedItems = ref<Item[]>([]);    // Sent to me, I need to act
+  const pendingItems = ref<Item[]>([]);     // Awaiting my confirmation
+  const completedItems = ref<Item[]>([]);   // Finalized
+
+  // Dedicated methods for each step
+  const initiateAction = async (email: string) => {
+    // Step 1: Create with pending_acceptance status
+  };
+
+  const acceptAsReceiver = async (token: string) => {
+    // Step 2: Verify token matches current user, update to pending_confirmation
+  };
+
+  const confirmAsInitiator = async (itemId: string) => {
+    // Step 3: Verify authorization, update to accepted, trigger RPC/notifications
+  };
+
+  // Helper to determine relationship metadata from roles
+  const determineRelationship = (initiatorRole: string, receiverRole: string) => {
+    // Returns relationship_type based on role combinations
+  };
+
+  return { sentItems, receivedItems, pendingItems, completedItems, ... };
+};
+```
+
+**Benefits**: Clear separation of concerns, easier to test each step independently, clear permission boundaries for who can take each action.
+
 ## Configuration & Environment
 
 ### Environment Variables
@@ -221,6 +264,61 @@ Runtime config accessed via `useRuntimeConfig()` in composables/API endpoints.
 - TailwindCSS utility classes only; avoid arbitrary CSS
 - Component-scoped styles in `<style scoped>` when needed
 - Global styles in `assets/css/main.css`
+
+### Card Component Pattern for Item State Management
+
+When building list management UIs with multiple item states (e.g., invitations, approvals), create separate card components for each state:
+
+**Pattern:**
+```vue
+<!-- SentInvitationCard.vue (initiator perspective) -->
+<template>
+  <div class="border border-gray-200 bg-gray-50 rounded-lg p-4">
+    <p class="font-semibold">Invitation sent to {{ email }}</p>
+    <div class="mt-2">
+      <span class="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs">
+        ⏳ Awaiting response
+      </span>
+    </div>
+    <button @click="$emit('cancel', id)" class="mt-4 px-4 py-2 border border-gray-300">
+      Cancel
+    </button>
+  </div>
+</template>
+
+<script setup>
+defineProps<{ email: string; id: string }>();
+defineEmits<{ cancel: [id: string] }>();
+</script>
+
+<!-- ConfirmationCard.vue (initiator needs to act) -->
+<template>
+  <div class="border border-amber-200 bg-amber-50 rounded-lg p-4">
+    <p class="font-semibold">{{ name }} accepted your invitation!</p>
+    <p class="text-sm text-amber-800 mt-2">Please verify this is the person you invited</p>
+    <div class="mt-4 flex gap-2">
+      <button @click="$emit('confirm', id)" class="px-4 py-2 bg-green-600 text-white">
+        Confirm
+      </button>
+      <button @click="$emit('reject', id)" class="px-4 py-2 border border-red-300 text-red-600">
+        Reject
+      </button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+defineProps<{ name: string; id: string }>();
+defineEmits<{ confirm: [id: string]; reject: [id: string] }>();
+</script>
+```
+
+**Design principles:**
+- Color-code backgrounds/borders by state (amber=action-needed, blue=received, gray=sent, green=accepted)
+- Only show action buttons relevant to the current user's role
+- Display metadata appropriate to the state (timestamps, role badges, status indicators)
+- Emit specific events (not generic callbacks) for each action type
+- Keep cards focused—don't combine multiple states into one card
 
 ### Testing
 
@@ -292,9 +390,103 @@ coachStore.coaches.push(newCoach);
 await coachStore.createCoach(schoolId, coachData);
 ```
 
-## Testing Guidelines
+### Notification Triggers in Multi-Step Workflows
 
-### Vitest Unit Tests
+For features with sequential approval/action steps, trigger notifications strategically:
+
+**Step 2 (User initiates → Receiver acts):**
+- Send HIGH priority notification to next actor
+- Include specific call-to-action in message
+- Example: "Chris accepted your invitation - Please verify and confirm"
+
+**Step 3 (Actor confirms → Both notified):**
+- Send MEDIUM priority notifications to both parties
+- Include status confirmation in messages
+- Example (for both): "Account link confirmed - Data sharing is now active"
+
+**General patterns:**
+- Always include `action_url` pointing to relevant management page
+- Handle notification creation failures gracefully—don't block workflow
+- Use typed notification types (enum) to prevent invalid types
+- Create notifications in API endpoint after DB update succeeds
+
+```typescript
+// In confirm.post.ts
+await supabase
+  .from("account_links")
+  .update({ status: "accepted", confirmed_at: now })
+  .eq("id", linkId);
+
+// Only notify if update succeeded
+try {
+  await supabase.from("notifications").insert([
+    {
+      user_id: linkData.initiator_user_id,
+      type: "account_link_confirmed",
+      title: "Account link confirmed",
+      priority: "medium",
+      action_url: "/settings/account-linking",
+      scheduled_for: new Date().toISOString(),
+    },
+  ]);
+} catch (err) {
+  console.warn("Notification failed but workflow succeeded:", err);
+  // Continue - don't break the workflow
+}
+```
+
+### Settings Page Organization Pattern
+
+When building settings pages with multi-step workflows or actions where user perspective matters:
+
+**Section Organization (by action, not just state):**
+```vue
+<!-- Section 1: Items where user can take action -->
+<section v-if="pendingConfirmations.length > 0">
+  <h2>⚠️ Pending Confirmations <Badge>{{ count }}</Badge></h2>
+  <p class="text-sm text-gray-600">Action required!</p>
+  <ConfirmationCard v-for="item in pendingConfirmations" ... />
+</section>
+
+<!-- Section 2: Items awaiting user input -->
+<section v-if="receivedInvitations.length > 0">
+  <h2>📨 Received Invitations <Badge>{{ count }}</Badge></h2>
+  <p class="text-sm text-gray-600">Accept these to proceed</p>
+  <PendingInvitationCard v-for="item in receivedInvitations" ... />
+</section>
+
+<!-- Section 3: Items initiated by user, awaiting others -->
+<section v-if="sentInvitations.length > 0">
+  <h2>⏳ Sent Invitations <Badge>{{ count }}</Badge></h2>
+  <SentInvitationCard v-for="item in sentInvitations" ... />
+</section>
+
+<!-- Section 4: Completed items -->
+<section v-if="completedItems.length > 0">
+  <h2>✅ Completed <Badge>{{ count }}</Badge></h2>
+  <CompletedCard v-for="item in completedItems" ... />
+</section>
+
+<!-- Section 5: Action form -->
+<section>
+  <h2>➕ Create New</h2>
+  <form @submit.prevent="handleCreate">...</form>
+</section>
+
+<!-- Empty state if nothing present -->
+<div v-if="allEmpty">
+  <p>No items yet</p>
+</div>
+```
+
+**Design principles:**
+- Organize by ACTION (what user can DO) not just data state
+- Add badge counts to headers (blue for action-needed, amber for warnings)
+- Use icons + headers for visual distinction between sections
+- Conditionally render entire sections (no empty sections)
+- Include clear explanation of the workflow at the bottom
+- Show empty state only when ALL sections are empty
+- One section = one action type to avoid confusion
 
 - Located in `tests/unit/`
 - Test composables, stores, utilities in isolation
@@ -384,7 +576,29 @@ await supabase
 
 ### Type Definitions
 
-Database types defined in `types/database.ts` (generated from Supabase schema). Update when schema changes.
+Database types defined in `types/database.ts` (generated from Supabase schema). Update when schema changes by running `npx supabase gen types typescript --local > types/database.ts` after applying migrations.
+
+### Schema Expansion Without Breaking Changes
+
+When adding columns to existing tables:
+- Add new fields as nullable (allow NULL) to avoid migration failures
+- Separate data migration into second step after schema change
+- Use CHECK constraints for enum-like VARCHAR fields instead of PostgreSQL enums (more flexible for future additions)
+- Apply migrations via `server/migrations/` directory, then regenerate `types/database.ts`
+- Always add timestamp fields (`created_at`, `updated_at`, `confirmed_at`) for audit trails and debugging
+
+Example migration:
+```sql
+-- Step 1: Add columns as nullable
+ALTER TABLE account_links
+ADD COLUMN IF NOT EXISTS relationship_type VARCHAR(20),
+ADD COLUMN IF NOT EXISTS confirmed_at TIMESTAMP WITH TIME ZONE,
+ADD CONSTRAINT account_links_relationship_check
+  CHECK (relationship_type IN ('parent-player', 'parent-parent', 'player-parent'));
+
+-- Step 2: Migrate existing data (separate transaction)
+UPDATE account_links SET relationship_type = 'parent-player' WHERE id IS NOT NULL;
+```
 
 ## Debugging & Troubleshooting
 
@@ -439,9 +653,10 @@ As of **January 27, 2026**, the full migration from monolithic V1 preferences to
 **What Changed:**
 
 1. **Database Schema**: Migrated from V1 (single row per user with named columns like `notification_settings`, `home_location`, etc.) to V2 (multiple rows per user with category-based storage)
-   - Migration `017_migrate_user_preferences_v1_to_v2` applied successfully
-   - All 299 existing user preference records converted and preserved
-   - New `preference_history` audit table created for change tracking
+   - Migration 017 applied directly via Supabase console (no file-based migration)
+   - All 283 V1 preference records converted and preserved in backup table `user_preferences_v1_backup`
+   - New V2 `user_preferences` table created with 287 category-based records
+   - New `preference_history` audit table created for change tracking (1 record exists)
    - RLS policies configured for security
 
 2. **New Composables:**
@@ -498,7 +713,10 @@ const history = await getPreferenceHistory('notifications');
 ### Deprecated Files
 
 The following files are marked as deprecated but remain for backward compatibility during the transition period:
-- `composables/useUserPreferences.ts` (V1) - Will be removed in next major version
+- `composables/useUserPreferences.ts` (V1) - Scheduled for removal in Phase 2 tech debt remediation
+- `composables/useSchoolDuplication.ts` - Duplicated functionality migrated to `useSchools`
+- `composables/useTemplateUnlock.ts` - Functionality migrated to `useCommunicationTemplates`
+- `composables/useFollowUpReminders.ts` - Functionality consolidated into `useInteractions`
 
 ---
 

@@ -540,11 +540,11 @@
 
             <!-- Error message -->
             <div
-              v-if="emailVerification.error && !verificationChecking"
+              v-if="emailVerification.error.value && !verificationChecking"
               class="p-4 bg-red-50 border border-red-200 rounded-lg"
             >
               <p class="text-red-800 text-sm font-medium">
-                {{ emailVerification.error }}
+                {{ emailVerification.error.value }}
               </p>
             </div>
           </div>
@@ -675,11 +675,6 @@ const checkVerificationStatus = async () => {
  * Includes cooldown to prevent abuse
  */
 const handleResendEmail = async () => {
-  if (!userEmail.value) {
-    emailVerification.error.value = "Email address is required";
-    return;
-  }
-
   const success = await emailVerification.resendVerificationEmail(userEmail.value);
 
   if (success) {

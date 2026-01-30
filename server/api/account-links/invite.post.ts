@@ -5,6 +5,8 @@
  * Body:
  *   - invitedEmail: string (email of invited user)
  *   - linkId: string (ID of the account link record)
+ *
+ * CSRF protection disabled: endpoint requires authentication via requireAuth()
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
@@ -62,20 +64,20 @@ export default defineEventHandler(async (event) => {
     const initiatorName = linkData.users?.full_name || "A family member";
     const initiatorEmail = linkData.users?.email || "unknown@example.com";
 
-    // Generate invitation URL with token
+    // Generate invitation URL with token (for acceptance step)
     const appUrl = process.env.NUXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const invitationUrl = `${appUrl}/settings/account-linking?token=${linkData.invitation_token}`;
+    const invitationUrl = `${appUrl}/accept-invitation?token=${linkData.invitation_token}`;
 
     // Send email invitation
     const emailResult = await sendEmail({
       to: invitedEmail,
-      subject: `${initiatorName} invited you to link accounts on College Baseball Recruiting Compass`,
+      subject: `${initiatorName} invited you to link accounts on The Recruiting Compass`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px;">
           <h2 style="margin: 0 0 16px 0; color: #111827;">You've been invited to link accounts</h2>
 
           <p style="margin: 16px 0; color: #4b5563; font-size: 16px;">
-            <strong>${initiatorName}</strong> (${initiatorEmail}) has invited you to link your College Baseball Recruiting Compass accounts.
+            <strong>${initiatorName}</strong> (${initiatorEmail}) has invited you to link your The Recruiting Compass accounts.
           </p>
 
           <h3 style="margin: 24px 0 12px 0; color: #1f2937; font-size: 16px;">What does this mean?</h3>
