@@ -378,6 +378,7 @@ const onUrgencyFilterChange = () => {
               <input
                 type="checkbox"
                 :data-testid="`task-checkbox-${task.id}`"
+                class="task-checkbox"
                 :checked="task.athlete_task?.status === 'completed'"
                 :disabled="isViewingAsParent.value || isTaskLocked(task.id)"
                 @change="
@@ -396,6 +397,7 @@ const onUrgencyFilterChange = () => {
               <div class="flex-1 min-w-0">
                 <button
                   type="button"
+                  :data-testid="`task-title-${task.id}`"
                   @click="toggleTaskDetails(task.id)"
                   class="w-full text-left hover:opacity-75 transition"
                 >

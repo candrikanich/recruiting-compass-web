@@ -273,6 +273,7 @@
               >
               <input
                 v-model.number="form.gpa"
+                data-testid="gpa-input"
                 :disabled="isParentRole"
                 type="number"
                 step="0.01"

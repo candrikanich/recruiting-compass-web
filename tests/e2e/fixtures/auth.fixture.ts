@@ -1,6 +1,7 @@
 import { Page, expect } from "@playwright/test";
 import { AuthPage } from "../pages/AuthPage";
 import { testUsers } from "./testData";
+import { TEST_ACCOUNTS, type TestAccountType } from "../config/test-accounts";
 
 /**
  * Auth fixture for E2E tests
@@ -157,5 +158,59 @@ export const authFixture = {
     }
 
     await authPage.expectLoginPage();
+  },
+
+  /**
+   * Fast login using pre-seeded test account (< 1 second)
+   * Bypasses UI and directly uses API credentials
+   */
+  async loginFast(page: Page, accountType: TestAccountType = "player") {
+    const account = TEST_ACCOUNTS[accountType];
+
+    // Navigate to app first
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+
+    // Inject auth session via Supabase client
+    try {
+      await page.evaluate(
+        async ({ email, password }) => {
+          // Access Supabase client from the app
+          const supabase = (window as any).$nuxt?.$supabase;
+          if (!supabase) {
+            throw new Error("Supabase client not available");
+          }
+
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          if (error) {
+            throw error;
+          }
+
+          // Session is automatically stored by Supabase client
+          return data.session;
+        },
+        { email: account.email, password: account.password },
+      );
+
+      // Navigate to dashboard to confirm auth
+      await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+
+      // Verify we're logged in
+      await expect(page).toHaveURL(/\/dashboard|\/$/);
+      return account;
+    } catch (error) {
+      console.error(`Fast login failed for ${accountType}, falling back to UI login...`);
+
+      // Fallback to standard login via UI
+      return await authFixture.loginOrSignup(
+        page,
+        account.email,
+        account.password,
+        account.displayName,
+      );
+    }
   },
 };

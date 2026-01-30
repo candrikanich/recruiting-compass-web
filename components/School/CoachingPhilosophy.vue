@@ -1,10 +1,11 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6" data-testid="coaching-philosophy-section">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-lg font-semibold text-slate-900">Coaching Philosophy</h2>
       <div class="flex items-center gap-2">
         <NotesHistory :school-id="schoolId" />
         <button
+          data-testid="coaching-philosophy-edit-btn"
           @click="toggleEditing"
           class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition flex items-center gap-1"
         >
@@ -22,6 +23,7 @@
         </label>
         <textarea
           v-model="editedCoachingData.coaching_style"
+          data-testid="coaching-style-textarea"
           rows="3"
           placeholder="e.g., High-intensity, Player development focused, Defensive emphasis..."
           class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -34,6 +36,7 @@
         </label>
         <textarea
           v-model="editedCoachingData.recruiting_approach"
+          data-testid="recruiting-approach-textarea"
           rows="3"
           placeholder="e.g., Early recruiting, Late bloomers, All-around athletes..."
           class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -46,6 +49,7 @@
         </label>
         <textarea
           v-model="editedCoachingData.communication_style"
+          data-testid="communication-style-textarea"
           rows="3"
           placeholder="e.g., Regular emails, Phone calls, In-person only, Direct and honest..."
           class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -58,6 +62,7 @@
         </label>
         <textarea
           v-model="editedCoachingData.success_metrics"
+          data-testid="success-metrics-textarea"
           rows="3"
           placeholder="e.g., Success with similar athletes, Draft history, MLB placement..."
           class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -70,6 +75,7 @@
         </label>
         <textarea
           v-model="editedCoachingData.coaching_philosophy"
+          data-testid="overall-philosophy-textarea"
           rows="3"
           placeholder="General notes about the coaching philosophy and program culture..."
           class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -77,6 +83,7 @@
       </div>
 
       <button
+        data-testid="save-philosophy-btn"
         @click="savePhilosophy"
         :disabled="loading"
         class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50"

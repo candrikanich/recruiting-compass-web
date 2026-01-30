@@ -69,7 +69,7 @@ export class AuthPage extends BasePage {
         sessionStorage.clear();
       });
       await this.page.context().clearCookies();
-      await this.goto("/login");
+      await this.goto();
     }
     await this.waitForURL("/login");
   }
