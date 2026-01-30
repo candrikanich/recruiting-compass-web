@@ -1,7 +1,11 @@
 import { test, expect } from "@playwright/test";
+import { authFixture } from "./fixtures/auth.fixture";
 
 test.describe("Notes Edit History", () => {
   test.beforeEach(async ({ page }) => {
+    // Ensure user is logged in first
+    await authFixture.ensureLoggedIn(page);
+
     // This test assumes there's at least one school with notes
     // Navigate to schools and select the first school
     await page.goto("/schools");

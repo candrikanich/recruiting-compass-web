@@ -6,6 +6,7 @@ export default [
   {
     ignores: [
       ".nuxt",
+      ".nuxt/**/*",
       "dist",
       "node_modules",
       ".output",
@@ -16,6 +17,8 @@ export default [
       "__tests__",
       "tests/**/*",
       "**/*.vue", // Temporarily ignore Vue files due to parsing issues
+      ".env*",
+      "PORT=*/**/*",
     ],
   },
   js.configs.recommended,
