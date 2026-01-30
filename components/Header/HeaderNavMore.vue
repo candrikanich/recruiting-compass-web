@@ -76,7 +76,6 @@ import {
   ChartBarIcon,
   GiftIcon,
   DocumentTextIcon,
-  AdjustmentsHorizontalIcon,
   ChartPieIcon,
 } from "@heroicons/vue/24/outline";
 
@@ -87,7 +86,6 @@ const moreItems = [
   { to: "/performance", label: "Performance", icon: ChartBarIcon },
   { to: "/offers", label: "Offers", icon: GiftIcon },
   { to: "/documents", label: "Documents", icon: DocumentTextIcon },
-  { to: "/settings", label: "Settings", icon: AdjustmentsHorizontalIcon },
   { to: "/analytics", label: "Analytics", icon: ChartPieIcon },
 ];
 

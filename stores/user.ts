@@ -83,7 +83,7 @@ export const useUserStore = defineStore("user", {
             session.user.email,
           );
 
-          // Try to fetch full profile from users table
+          // Try to fetch full profile from users table (includes is_admin)
           const { data: profile, error: fetchError } = await supabase
             .from("users")
             .select("*")

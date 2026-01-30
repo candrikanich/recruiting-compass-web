@@ -43,9 +43,10 @@ export interface Amenities {
 export interface User {
   id: string;
   email: string;
-  role?: "parent" | "student";
+  role?: "admin" | "parent" | "student";
   full_name?: string;
   profile_photo_url?: string | null;
+  is_admin?: boolean;
   linked_accounts?: LinkedAccount[];
   // Timeline fields (from Phase 1)
   current_phase?: "freshman" | "sophomore" | "junior" | "senior" | "committed";
@@ -56,18 +57,24 @@ export interface User {
   updated_at?: string;
 }
 
+export type LinkStatus = "pending_acceptance" | "pending_confirmation" | "accepted" | "rejected" | "expired";
+
+export type RelationshipType = "parent-player" | "parent-parent" | "player-parent";
+
 export interface AccountLink {
   id: string;
   parent_user_id: string | null;
   player_user_id: string | null;
   invited_email: string;
   initiator_user_id: string;
-  initiator_role: "parent" | "student";
+  initiator_role: "admin" | "parent" | "student";
   invitation_token: string;
   expires_at: string;
-  status: "pending" | "accepted" | "rejected" | "expired";
+  status: LinkStatus;
+  relationship_type?: RelationshipType | null;
   invited_at: string;
   accepted_at?: string | null;
+  confirmed_at?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -76,8 +83,8 @@ export interface LinkedAccount {
   user_id: string;
   email: string;
   full_name?: string;
-  role: "parent" | "student";
-  relationship: "parent" | "student"; // From perspective of current user
+  role: "admin" | "parent" | "student";
+  relationship: "parent" | "student" | "admin"; // From perspective of current user
 }
 
 export interface School {
@@ -317,7 +324,11 @@ export type NotificationType =
   | "daily_digest"
   | "inbound_interaction"
   | "offer"
-  | "event";
+  | "event"
+  | "account_link_invitation_accepted"
+  | "account_link_confirmation_request"
+  | "account_link_confirmed"
+  | "account_link_rejected";
 
 export type NotificationPriority = "low" | "normal" | "high";
 

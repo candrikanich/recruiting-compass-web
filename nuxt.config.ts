@@ -55,6 +55,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    adminTokenSecret: process.env.NUXT_ADMIN_TOKEN_SECRET || "",
     public: {
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || "",
       supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || "",

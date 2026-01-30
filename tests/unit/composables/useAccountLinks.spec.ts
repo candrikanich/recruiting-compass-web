@@ -8,6 +8,9 @@ vi.mock("~/composables/useSupabase");
 vi.mock("~/stores/user");
 vi.mock("~/composables/useToast");
 
+// Mock global $fetch
+global.$fetch = vi.fn();
+
 describe("useAccountLinks", () => {
   let mockSupabase: any;
   let mockUserStore: any;
@@ -54,14 +57,14 @@ describe("useAccountLinks", () => {
         error: null,
       });
 
-      // Mock: existing user found
-      mockSupabase.single.mockResolvedValueOnce({
-        data: {
+      // Mock: API check-user endpoint returns existing user
+      vi.mocked(global.$fetch).mockResolvedValueOnce({
+        exists: true,
+        user: {
           id: "user-456",
           role: "student",
           email_confirmed_at: "2024-01-01T00:00:00Z",
         },
-        error: null,
       });
 
       // Mock: no existing link
@@ -75,6 +78,9 @@ describe("useAccountLinks", () => {
         data: { id: "link-1", status: "pending" },
         error: null,
       });
+
+      // Mock: API invite endpoint succeeds
+      vi.mocked(global.$fetch).mockResolvedValueOnce(undefined);
 
       const { sendInvitation, error } = useAccountLinks();
       const result = await sendInvitation("student@test.com");
@@ -132,14 +138,14 @@ describe("useAccountLinks", () => {
         error: null,
       });
 
-      // Mock: existing user found
-      mockSupabase.single.mockResolvedValueOnce({
-        data: {
+      // Mock: API check-user endpoint returns existing user
+      vi.mocked(global.$fetch).mockResolvedValueOnce({
+        exists: true,
+        user: {
           id: "user-456",
           role: "student",
           email_confirmed_at: "2024-01-01T00:00:00Z",
         },
-        error: null,
       });
 
       // Mock: no existing link
@@ -153,6 +159,9 @@ describe("useAccountLinks", () => {
         data: { id: "link-5", status: "pending" },
         error: null,
       });
+
+      // Mock: API invite endpoint succeeds
+      vi.mocked(global.$fetch).mockResolvedValueOnce(undefined);
 
       const { sendInvitation, error } = useAccountLinks();
       const result = await sendInvitation("new@test.com");
@@ -168,14 +177,14 @@ describe("useAccountLinks", () => {
         error: null,
       });
 
-      // Mock: existing user with parent role (same as inviter)
-      mockSupabase.single.mockResolvedValueOnce({
-        data: {
+      // Mock: API check-user endpoint returns user with wrong role
+      vi.mocked(global.$fetch).mockResolvedValueOnce({
+        exists: true,
+        user: {
           id: "user-456",
           role: "parent",
           email_confirmed_at: "2024-01-01T00:00:00Z",
         },
-        error: null,
       });
 
       const { sendInvitation, error } = useAccountLinks();
@@ -192,14 +201,14 @@ describe("useAccountLinks", () => {
         error: null,
       });
 
-      // Mock: existing user without email verification
-      mockSupabase.single.mockResolvedValueOnce({
-        data: {
+      // Mock: API check-user endpoint returns unverified user
+      vi.mocked(global.$fetch).mockResolvedValueOnce({
+        exists: true,
+        user: {
           id: "user-456",
           role: "student",
           email_confirmed_at: null,
         },
-        error: null,
       });
 
       const { sendInvitation, error } = useAccountLinks();
@@ -216,14 +225,14 @@ describe("useAccountLinks", () => {
         error: null,
       });
 
-      // Mock: existing user found
-      mockSupabase.single.mockResolvedValueOnce({
-        data: {
+      // Mock: API check-user endpoint returns existing user
+      vi.mocked(global.$fetch).mockResolvedValueOnce({
+        exists: true,
+        user: {
           id: "user-456",
           role: "student",
           email_confirmed_at: "2024-01-01T00:00:00Z",
         },
-        error: null,
       });
 
       // Mock: existing link found
@@ -431,18 +440,24 @@ describe("useAccountLinks", () => {
           status: "accepted",
           parent_user_id: "parent-123",
           player_user_id: "player-1",
+          initiator_user_id: "parent-123",
+          invited_email: "p1@test.com",
         },
         {
           id: "2",
-          status: "pending",
-          parent_user_id: "parent-123",
-          player_user_id: "player-2",
+          status: "pending_acceptance",
+          parent_user_id: null,
+          player_user_id: null,
+          initiator_user_id: "parent-123",
+          invited_email: "parent@test.com",
         },
         {
           id: "3",
           status: "accepted",
           parent_user_id: "parent-123",
           player_user_id: "player-3",
+          initiator_user_id: "parent-123",
+          invited_email: "p3@test.com",
         },
       ];
 
@@ -461,11 +476,11 @@ describe("useAccountLinks", () => {
         error: null,
       });
 
-      const { fetchAccountLinks, linkedAccounts, pendingInvitations } = useAccountLinks();
+      const { fetchAccountLinks, linkedAccounts, receivedInvitations } = useAccountLinks();
       await fetchAccountLinks();
 
       expect(linkedAccounts.value).toHaveLength(2);
-      expect(pendingInvitations.value).toHaveLength(1);
+      expect(receivedInvitations.value).toHaveLength(1);
     });
 
     it("should handle empty links list", async () => {
@@ -475,11 +490,11 @@ describe("useAccountLinks", () => {
         error: null,
       });
 
-      const { fetchAccountLinks, linkedAccounts, pendingInvitations } = useAccountLinks();
+      const { fetchAccountLinks, linkedAccounts, receivedInvitations } = useAccountLinks();
       await fetchAccountLinks();
 
       expect(linkedAccounts.value).toHaveLength(0);
-      expect(pendingInvitations.value).toHaveLength(0);
+      expect(receivedInvitations.value).toHaveLength(0);
     });
 
     it("should handle fetch errors gracefully", async () => {
@@ -525,14 +540,18 @@ describe("useAccountLinks", () => {
       const {
         links,
         linkedAccounts,
-        pendingInvitations,
+        sentInvitations,
+        receivedInvitations,
+        pendingConfirmations,
         loading,
         error,
       } = useAccountLinks();
 
       expect(links.value).toEqual([]);
       expect(linkedAccounts.value).toEqual([]);
-      expect(pendingInvitations.value).toEqual([]);
+      expect(sentInvitations.value).toEqual([]);
+      expect(receivedInvitations.value).toEqual([]);
+      expect(pendingConfirmations.value).toEqual([]);
       expect(loading.value).toBe(false);
       expect(error.value).toBe(null);
     });

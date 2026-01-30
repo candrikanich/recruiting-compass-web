@@ -430,12 +430,12 @@
                 />
                 <span class="text-slate-700 text-sm">
                   I agree to the
-                  <a href="#" class="text-blue-600 hover:text-blue-700"
-                    >Terms and Conditions</a
+                  <NuxtLink to="/legal/terms" class="text-blue-600 hover:text-blue-700"
+                    >Terms and Conditions</NuxtLink
                   >
                   and
-                  <a href="#" class="text-blue-600 hover:text-blue-700"
-                    >Privacy Policy</a
+                  <NuxtLink to="/legal/privacy" class="text-blue-600 hover:text-blue-700"
+                    >Privacy Policy</NuxtLink
                   >
                 </span>
               </label>
@@ -484,7 +484,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: "public" });
 
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useSupabase } from "~/composables/useSupabase";
 import { useUserStore } from "~/stores/user";
@@ -499,7 +499,6 @@ import {
 } from "@heroicons/vue/24/outline";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import FieldError from "~/components/DesignSystem/FieldError.vue";
-import type { UserPreferences } from "~/types/models";
 
 const firstName = ref("");
 const lastName = ref("");
@@ -544,6 +543,19 @@ const validateRole = async () => {
   await validateField("role", role.value, roleSchema.shape.role);
 };
 
+// Clear terms error when checkbox is checked
+watch(agreeToTerms, (isChecked) => {
+  if (isChecked) {
+    // Remove the terms error if present
+    const updatedErrors = errors.value.filter(
+      (err) => err.message !== "Please agree to the terms and conditions",
+    );
+    if (updatedErrors.length < errors.value.length) {
+      setErrors(updatedErrors);
+    }
+  }
+});
+
 const handleSignup = async () => {
   // Check passwords match
   if (password.value !== confirmPassword.value) {
@@ -580,20 +592,49 @@ const handleSignup = async () => {
   loading.value = true;
 
   try {
-    // Sign up with Supabase Auth (including role in metadata)
-    const authData = await signup(
-      validated.email,
-      validated.password,
-      validated.fullName as string,
-      validated.role,
-    );
-    console.log("Auth signup returned:", authData);
+    let userId: string;
 
-    if (!authData?.user?.id) {
-      throw new Error("No user returned from signup");
+    try {
+      // Sign up with Supabase Auth (including role in metadata)
+      const authData = await signup(
+        validated.email,
+        validated.password,
+        validated.fullName as string,
+        validated.role,
+      );
+      console.log("Auth signup returned:", authData);
+
+      if (!authData?.user?.id) {
+        throw new Error("No user returned from signup");
+      }
+
+      userId = authData.user.id;
+    } catch (signupErr: unknown) {
+      // Handle "User already registered" error - the account may have been created
+      // in a previous request (race condition or double-submit)
+      const errMessage =
+        signupErr instanceof Error ? signupErr.message : String(signupErr);
+
+      if (errMessage.includes("already registered")) {
+        console.log("User already registered, checking current session...");
+
+        // Try to get the current session
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (session?.user?.id) {
+          console.log("Session exists for user, proceeding with profile creation");
+          userId = session.user.id;
+        } else {
+          // No active session - this is a real error
+          throw signupErr;
+        }
+      } else {
+        // Different error - rethrow it
+        throw signupErr;
+      }
     }
-
-    const userId = authData.user.id;
 
     // Create user profile in public.users table using the returned user ID
     const { error: insertError } = await supabase.from("users").insert([
@@ -612,20 +653,8 @@ const handleSignup = async () => {
 
     console.log("User profile created successfully");
 
-    // Create default user preferences
-    const preferenceData: Partial<UserPreferences> = {
-      user_id: userId,
-    };
-    const { error: prefsError } = await supabase
-      .from("user_preferences")
-      .insert(preferenceData);
-
-    if (prefsError) {
-      console.error("Error creating user preferences:", prefsError);
-      throw prefsError;
-    }
-
-    console.log("User preferences created successfully");
+    // User preferences are created on-demand when the user first accesses settings
+    // No need to create them during signup
 
     // User store will be initialized by app.vue, no need to call here
     // Session is automatically updated in Supabase auth

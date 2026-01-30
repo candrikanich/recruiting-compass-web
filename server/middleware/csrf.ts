@@ -25,6 +25,11 @@ export default defineEventHandler((event) => {
     return; // GET, HEAD, OPTIONS, etc. don't need CSRF protection
   }
 
+  // Check if CSRF validation is being skipped (e.g., for admin endpoints)
+  if (event.context._skipCsrfValidation) {
+    return;
+  }
+
   // Skip CSRF for auth endpoints (they use other protections)
   // and for endpoints that don't require authentication
   if (path?.startsWith("/api/auth")) {

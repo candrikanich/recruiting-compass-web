@@ -1,15 +1,16 @@
 <template>
-  <div class="border border-yellow-200 bg-yellow-50 rounded-lg p-4">
+  <div class="border border-amber-200 bg-amber-50 rounded-lg p-4">
     <div class="flex items-start justify-between gap-4">
       <div class="flex-1">
         <p class="font-semibold text-gray-900">
-          {{
-            invitation.parent_user_id
-              ? "Parent wants to link accounts"
-              : "Player wants to link accounts"
-          }}
+          You've been invited to link accounts
         </p>
-        <p class="text-sm text-gray-600 mt-1">{{ invitation.invited_email }}</p>
+        <p class="text-sm text-gray-700 mt-2">
+          <span class="font-medium">{{ initiatorName }}</span> ({{ invitation.invited_email }}) has invited you to link your Recruiting Compass accounts.
+        </p>
+        <p class="text-sm text-gray-600 mt-1">
+          This will let you share recruiting data while keeping separate logins.
+        </p>
 
         <!-- Expiry warning -->
         <div v-if="isExpiringSoon" class="mt-2 flex items-center gap-2">
@@ -66,9 +67,11 @@ import type { AccountLink } from "~/types/models";
 const props = withDefaults(
   defineProps<{
     invitation: AccountLink;
+    initiatorName?: string | null;
     loading?: boolean;
   }>(),
   {
+    initiatorName: null,
     loading: false,
   },
 );
