@@ -13,12 +13,27 @@ vi.mock("~/composables/useSupabase", () => ({
   useSupabase: () => mockSupabase,
 }));
 
+vi.mock("~/composables/useActiveFamily", () => ({
+  useActiveFamily: () => ({
+    activeFamilyId: { value: "family-123" },
+    activeAthleteId: { value: "athlete-123" },
+    isParentViewing: { value: false },
+    familyMembers: { value: [] },
+    getAccessibleAthletes: () => [],
+    switchAthlete: vi.fn(),
+    loading: { value: false },
+    error: { value: null },
+  }),
+}));
+
 let mockUser: {
   id: string;
   email: string;
+  role?: string;
 } | null = {
   id: "user-123",
   email: "test@example.com",
+  role: "student",
 };
 
 vi.mock("~/stores/user", () => ({
@@ -37,6 +52,13 @@ describe("useInteractions", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     userStore = useUserStore();
+
+    // Ensure mockUser is set correctly with student role
+    mockUser = {
+      id: "user-123",
+      email: "test@example.com",
+      role: "student",
+    };
 
     // Create mock query that returns itself for chaining
     mockQuery = {
@@ -388,6 +410,7 @@ describe("useInteractions", () => {
       mockUser = {
         id: "user-123",
         email: "test@example.com",
+        role: "student",
       };
     });
 
@@ -571,6 +594,7 @@ describe("useInteractions", () => {
       mockUser = {
         id: "user-123",
         email: "test@example.com",
+        role: "student",
       };
     });
 
@@ -680,6 +704,7 @@ describe("useInteractions", () => {
       mockUser = {
         id: "user-123",
         email: "test@example.com",
+        role: "student",
       };
     });
 
@@ -1269,7 +1294,7 @@ describe("useInteractions", () => {
       expect(noteHistory.value).toEqual([]);
       expect(noteHistoryError.value).toBeNull();
 
-      mockUser = { id: "user-123", email: "test@example.com" };
+      mockUser = { id: "user-123", email: "test@example.com", role: "student" };
     });
 
     it("should return composable functions and properties", () => {

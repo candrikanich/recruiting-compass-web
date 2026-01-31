@@ -8,6 +8,19 @@ vi.mock("~/composables/useSupabase");
 vi.mock("~/stores/user");
 vi.mock("~/composables/useToast");
 
+vi.mock("~/composables/useActiveFamily", () => ({
+  useActiveFamily: () => ({
+    activeFamilyId: { value: "family-123" },
+    activeAthleteId: { value: "athlete-123" },
+    isParentViewing: { value: false },
+    familyMembers: { value: [] },
+    getAccessibleAthletes: () => [],
+    switchAthlete: vi.fn(),
+    loading: { value: false },
+    error: { value: null },
+  }),
+}));
+
 // Mock global $fetch
 global.$fetch = vi.fn();
 

@@ -12,6 +12,19 @@ vi.mock("~/composables/useSupabase", () => ({
   useSupabase: () => mockSupabase,
 }));
 
+vi.mock("~/composables/useActiveFamily", () => ({
+  useActiveFamily: () => ({
+    activeFamilyId: { value: "family-123" },
+    activeAthleteId: { value: "athlete-123" },
+    isParentViewing: { value: false },
+    familyMembers: { value: [] },
+    getAccessibleAthletes: () => [],
+    switchAthlete: vi.fn(),
+    loading: { value: false },
+    error: { value: null },
+  }),
+}));
+
 describe("useSchools", () => {
   let mockQuery: any;
   let userStore: ReturnType<typeof useUserStore>;
@@ -23,6 +36,7 @@ describe("useSchools", () => {
     userStore.user = {
       id: "user-123",
       email: "test@example.com",
+      role: "student",
     } as any;
 
     mockQuery = {
