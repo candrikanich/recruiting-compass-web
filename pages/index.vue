@@ -584,5 +584,8 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  layout: "public",
+});
 // Store initialization handled by auth plugin only
 </script>
