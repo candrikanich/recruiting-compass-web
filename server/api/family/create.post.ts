@@ -1,6 +1,6 @@
 import { defineEventHandler, createError, readBody } from "h3";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseServer } from "~/server/utils/supabase";
+import { useSupabaseAdmin } from "~/server/utils/supabase";
 
 interface CreateFamilyBody {
   studentId: string;
@@ -10,7 +10,7 @@ interface CreateFamilyBody {
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event);
-  const supabase = useSupabaseServer();
+  const supabase = useSupabaseAdmin();
 
   const { studentId, familyName, parentIds = [] } = await readBody<CreateFamilyBody>(
     event

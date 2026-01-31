@@ -1,10 +1,10 @@
 import { defineEventHandler, createError, getQuery } from "h3";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseServer } from "~/server/utils/supabase";
+import { useSupabaseAdmin } from "~/server/utils/supabase";
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
-  const supabase = useSupabaseServer();
+  const supabase = useSupabaseAdmin();
   const query = getQuery(event);
   const familyId = query.familyId as string;
 
