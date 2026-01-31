@@ -54,7 +54,7 @@
                   </span>
                   <select
                     v-model="school.status"
-                    @change="updateStatus"
+                    @change="updateStatusHandler"
                     :disabled="statusUpdating"
                     class="px-2 py-1 text-xs font-medium rounded-full border-0 cursor-pointer focus:ring-2 focus:ring-blue-500"
                     :class="[
@@ -911,6 +911,7 @@ const {
   getSchool,
   updateSchool,
   deleteSchool: deleteSchoolAPI,
+  updateStatus: updateSchoolStatus,
   loading,
 } = useSchools();
 const { fetchSchoolLogo } = useSchoolLogos();
@@ -1008,11 +1009,10 @@ const toggleFavorite = async () => {
   if (updated) school.value = updated;
 };
 
-const updateStatus = async () => {
+const updateStatusHandler = async () => {
   if (!school.value) return;
   statusUpdating.value = true;
   try {
-    const { updateStatus: updateSchoolStatus } = useSchools();
     const updated = await updateSchoolStatus(id, school.value.status);
     if (updated) school.value = updated;
   } catch (err) {
