@@ -485,6 +485,7 @@
 definePageMeta({ layout: "public" });
 
 import { ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import { useAuth } from "~/composables/useAuth";
 import { useSupabase } from "~/composables/useSupabase";
 import { useUserStore } from "~/stores/user";
@@ -512,6 +513,7 @@ const loading = ref(false);
 const { signup } = useAuth();
 const supabase = useSupabase();
 const userStore = useUserStore();
+const route = useRoute();
 const {
   errors,
   fieldErrors,
@@ -659,8 +661,21 @@ const handleSignup = async () => {
     // User store will be initialized by app.vue, no need to call here
     // Session is automatically updated in Supabase auth
 
-    // Redirect to email verification page
-    await navigateTo(`/verify-email?email=${encodeURIComponent(validated.email)}`);
+    // Check if there's a redirect URL (e.g., from accept-invitation page)
+    const encodedRedirectUrl = route.query.redirect as string;
+    console.log("Checking redirect:", { encodedRedirectUrl, routeQuery: route.query });
+
+    if (encodedRedirectUrl) {
+      // Decode the redirect URL (it was encoded to preserve query params)
+      const redirectUrl = decodeURIComponent(encodedRedirectUrl);
+      console.log("Redirecting to:", redirectUrl);
+      await navigateTo(redirectUrl);
+    } else {
+      // Default: redirect to email verification page
+      const verifyUrl = `/verify-email?email=${encodeURIComponent(validated.email)}`;
+      console.log("Redirecting to verify-email:", verifyUrl);
+      await navigateTo(verifyUrl);
+    }
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Signup failed";
     // Set form-level error

@@ -154,8 +154,14 @@ export const useAccountLinks = () => {
   };
 
   // Send invitation
-  const sendInvitation = async (inviteeEmail: string): Promise<boolean> => {
+  const sendInvitation = async (inviteeEmail: string, inviteeRole: string): Promise<boolean> => {
     if (!getUserStore().user) return false;
+
+    // Validate role
+    if (!inviteeRole || !["parent", "student"].includes(inviteeRole)) {
+      error.value = "Please select a valid role";
+      return false;
+    }
 
     loading.value = true;
     error.value = null;
@@ -243,11 +249,11 @@ export const useAccountLinks = () => {
         }
       }
 
-      // Determine relationship type
+      // Determine relationship type based on the specified invitee role
       const relationshipType = determineRelationshipType(
         getUserStore().user?.role || "parent",
-        exists,
-        existingUser?.role,
+        true, // Treat as if we know the invitee's role (user specified it)
+        inviteeRole,
       );
 
       // Generate invitation token (UUID v4)
@@ -261,11 +267,11 @@ export const useAccountLinks = () => {
             parent_user_id:
               getUserStore().user?.role === "parent"
                 ? getUserStore().user?.id
-                : existingUser?.id || null,
+                : null,
             player_user_id:
               getUserStore().user?.role === "student"
                 ? getUserStore().user?.id
-                : existingUser?.id || null,
+                : null,
             invited_email: inviteeEmail,
             initiator_user_id: getUserStore().user?.id || "",
             initiator_role: getUserStore().user?.role || "parent",

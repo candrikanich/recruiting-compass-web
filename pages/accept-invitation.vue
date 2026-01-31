@@ -87,10 +87,10 @@ onMounted(async () => {
 
     // Check if user is logged in
     if (!userStore.user?.id) {
-      // Redirect to signup with return URL
+      // Redirect to signup with return URL (encode the full path to preserve query params)
       router.push({
         path: "/signup",
-        query: { redirect: route.fullPath },
+        query: { redirect: encodeURIComponent(route.fullPath) },
       });
       return;
     }

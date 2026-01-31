@@ -159,6 +159,26 @@
             </p>
           </div>
 
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Their Role
+              <span class="text-red-600">*</span>
+            </label>
+            <select
+              v-model="inviteeRole"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              :disabled="loading"
+            >
+              <option value="">Select a role...</option>
+              <option value="parent">Parent / Guardian</option>
+              <option value="student">Student / Athlete</option>
+            </select>
+            <p class="text-xs text-gray-500 mt-2">
+              What role will this person have in the account link?
+            </p>
+          </div>
+
           <div
             v-if="sendError"
             class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm"
@@ -252,6 +272,7 @@ const {
 } = useAccountLinks();
 
 const inviteEmail = ref("");
+const inviteeRole = ref("");
 const sendError = ref<string | null>(null);
 
 onMounted(async () => {
@@ -260,9 +281,10 @@ onMounted(async () => {
 
 const handleSendInvitation = async () => {
   sendError.value = null;
-  const success = await sendInvitation(inviteEmail.value);
+  const success = await sendInvitation(inviteEmail.value, inviteeRole.value);
   if (success) {
     inviteEmail.value = "";
+    inviteeRole.value = "";
   } else {
     sendError.value = error.value || "Failed to send invitation";
   }

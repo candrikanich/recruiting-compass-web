@@ -37,14 +37,23 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Determine which field to update based on role
+    // Determine which field to update based on role and relationship type
     const userRole = user.user_metadata?.role || "student";
     const updateData: { status: string; accepted_at: string; parent_user_id?: string; player_user_id?: string } = {
       status: "pending_confirmation",
       accepted_at: new Date().toISOString(),
     };
 
-    if (userRole === "parent") {
+    // For parent-parent relationships, set the empty field (whichever isn't already set)
+    // For mixed relationships, set based on the acceptor's role
+    if (link.relationship_type === "parent-parent" && userRole === "parent") {
+      // Both are parents - set the field that isn't already set
+      if (link.parent_user_id) {
+        updateData.player_user_id = user.id;
+      } else {
+        updateData.parent_user_id = user.id;
+      }
+    } else if (userRole === "parent") {
       updateData.parent_user_id = user.id;
     } else {
       updateData.player_user_id = user.id;

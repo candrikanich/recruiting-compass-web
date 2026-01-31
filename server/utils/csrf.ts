@@ -23,7 +23,7 @@ export function setCsrfToken(event: H3Event, token?: string): string {
 
   setCookie(event, CSRF_COOKIE_NAME, csrfToken, {
     httpOnly: false, // Must be readable by client to send in header
-    secure: true, // HTTPS only in production
+    secure: process.env.NODE_ENV === "production", // HTTPS only in production
     sameSite: "strict",
     maxAge: 60 * 60 * 24, // 24 hours
     path: "/",
