@@ -176,6 +176,26 @@ export default defineEventHandler(async (event) => {
           }
         }
 
+        // Also add initiator as parent if they're a parent (for parent-parent links)
+        if (familyUnitId && linkData.initiator_role === "parent") {
+          const { error: initiatorInsertError } = await supabase
+            .from("family_members")
+            .insert({
+              family_unit_id: familyUnitId,
+              user_id: linkData.initiator_user_id,
+              role: "parent",
+            })
+            .onConflict("family_unit_id,user_id")
+            .ignore();
+
+          if (initiatorInsertError) {
+            console.warn(
+              "[confirm.post] Failed to add initiator parent to family:",
+              initiatorInsertError
+            );
+          }
+        }
+
         console.log(
           `[confirm.post] Family structure created for player ${playerId}, family: ${familyUnitId}`
         );
