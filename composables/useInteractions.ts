@@ -1,6 +1,7 @@
 import { ref, computed, readonly, shallowRef, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { useActiveFamily } from "./useActiveFamily";
 import { useToast } from "~/composables/useToast";
 import type { Interaction, FollowUpReminder } from "~/types/models";
 import type { Database } from "~/types/database";
@@ -32,12 +33,20 @@ export interface NoteHistoryEntry {
  * useInteractions composable
  * Manages all interaction (communication) data for the recruiting tracker
  *
+ * FAMILY-BASED ACCESS CONTROL (v2.0):
+ * - Interactions are owned by family units, not individual users
+ * - Students see their own interactions (their family)
+ * - Parents see all interactions in accessible families
+ * - Queries filter by family_unit_id instead of user_id
+ * - ONLY STUDENTS can create interactions (enforced at DB level)
+ *
  * Key features:
  * - Fetch interactions with optional filters (school, coach, type, direction, sentiment)
  * - Client-side date range filtering for precise control
  * - CSV export functionality for reporting
  * - CRUD operations (add, update, delete interactions)
  * - Error handling and loading states
+ * - Follow-up reminders and tracking
  */
 type InteractionFilters = {
   schoolId?: string;
@@ -114,6 +123,7 @@ export const useInteractions = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const activeFamily = useActiveFamily();
   const toast = useToast();
 
   const interactions = shallowRef<Interaction[]>([]);
@@ -167,6 +177,11 @@ export const useInteractions = (): {
     endDate?: string;
     loggedBy?: string;
   }) => {
+    if (!activeFamily.activeFamilyId.value) {
+      error.value = "No family context";
+      return;
+    }
+
     loading.value = true;
     error.value = null;
 
@@ -180,6 +195,7 @@ export const useInteractions = (): {
       let query = supabase
         .from("interactions")
         .select("*")
+        .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .order("occurred_at", { ascending: false });
 
       if (filters?.schoolId) {
@@ -287,6 +303,12 @@ export const useInteractions = (): {
     files?: File[],
   ) => {
     if (!userStore.user) throw new Error("User not authenticated");
+    if (userStore.user.role !== "student") {
+      throw new Error("Only students can create interactions");
+    }
+    if (!activeFamily.activeFamilyId.value) {
+      throw new Error("No family context available");
+    }
 
     loading.value = true;
     error.value = null;
@@ -316,6 +338,7 @@ export const useInteractions = (): {
           {
             ...validated,
             logged_by: userStore.user.id,
+            family_unit_id: activeFamily.activeFamilyId.value,
           },
         ] as InteractionInsert[])
         .select()

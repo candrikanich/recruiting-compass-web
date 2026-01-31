@@ -9,6 +9,11 @@
       <StatusSnippet context="schools" />
     </div>
 
+    <!-- Athlete Selector (for parents) -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4" v-if="isParent">
+      <AthleteSelector />
+    </div>
+
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
@@ -548,9 +553,12 @@
             <p v-if="school.conference" class="text-slate-600 text-sm mb-2">
               {{ school.conference }}
             </p>
-            <p v-if="school.notes" class="text-slate-600 text-sm line-clamp-2">
+            <p v-if="school.notes" class="text-slate-600 text-sm line-clamp-2 mb-4">
               {{ school.notes }}
             </p>
+
+            <!-- Private Notes Card -->
+            <PrivateNotesCard entity-type="school" :entity-id="school.id" class="mb-4" />
           </div>
 
           <!-- Actions -->
@@ -626,6 +634,8 @@ const allInteractions = ref<any[]>([]);
 const allCoaches = ref<any[]>([]);
 const priorityTierFilter = ref<("A" | "B" | "C")[] | null>(null);
 const sortBy = ref<string>("a-z");
+
+const isParent = computed(() => userStore.user?.role === "parent");
 
 // Re-fetch schools if user initializes after page mount (race condition safety)
 watch(

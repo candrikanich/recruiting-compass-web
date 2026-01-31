@@ -1,6 +1,7 @@
 import { ref, computed, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { useActiveFamily } from "./useActiveFamily";
 import type { Coach } from "~/types/models";
 import type { Database } from "~/types/database";
 import { coachSchema } from "~/utils/validation/schemas";
@@ -12,6 +13,13 @@ type CoachesUpdate = Database["public"]["Tables"]["coaches"]["Update"];
 /**
  * useCoaches composable
  * Manages coach information and communication tracking
+ *
+ * FAMILY-BASED ACCESS CONTROL (v2.0):
+ * - Coaches are owned by family units, not individual users
+ * - Students see their own coaches (their family)
+ * - Parents see all coaches in accessible families
+ * - Queries filter by family_unit_id instead of user_id
+ * - Coach-created coaches are scoped to their family
  *
  * Coach roles:
  * - head: Head coach
@@ -50,6 +58,7 @@ export const useCoaches = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const activeFamily = useActiveFamily();
 
   const coaches = ref<Coach[]>([]);
   const loading = ref(false);
@@ -87,11 +96,19 @@ export const useCoaches = (): {
     role?: string;
     schoolId?: string;
   }) => {
+    if (!activeFamily.activeFamilyId.value) {
+      error.value = "No family context";
+      return;
+    }
+
     loading.value = true;
     error.value = null;
 
     try {
-      let query = supabase.from("coaches").select("*");
+      let query = supabase
+        .from("coaches")
+        .select("*")
+        .eq("family_unit_id", activeFamily.activeFamilyId.value);
 
       if (filters?.schoolId) {
         query = query.eq("school_id", filters.schoolId);
@@ -130,7 +147,7 @@ export const useCoaches = (): {
   };
 
   const fetchCoachesBySchools = async (schoolIds: string[]) => {
-    if (schoolIds.length === 0) {
+    if (schoolIds.length === 0 || !activeFamily.activeFamilyId.value) {
       coaches.value = [];
       return;
     }
@@ -143,6 +160,7 @@ export const useCoaches = (): {
         .from("coaches")
         .select("*")
         .in("school_id", schoolIds)
+        .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .order("school_id", { ascending: true })
         .order("last_name", { ascending: true });
 
@@ -187,7 +205,9 @@ export const useCoaches = (): {
     schoolId: string,
     coachData: Omit<Coach, "id" | "created_at" | "updated_at">,
   ) => {
-    if (!userStore.user) throw new Error("User not authenticated");
+    if (!userStore.user || !activeFamily.activeFamilyId.value) {
+      throw new Error("User not authenticated or family not loaded");
+    }
 
     loading.value = true;
     error.value = null;
@@ -206,6 +226,7 @@ export const useCoaches = (): {
         ...validated,
         school_id: schoolId,
         user_id: userStore.user.id,
+        family_unit_id: activeFamily.activeFamilyId.value,
         email: validated.email || null,
         phone: validated.phone || null,
         twitter_handle: validated.twitter_handle || null,
@@ -243,7 +264,9 @@ export const useCoaches = (): {
   };
 
   const updateCoach = async (id: string, updates: Partial<Coach>) => {
-    if (!userStore.user) throw new Error("User not authenticated");
+    if (!userStore.user || !activeFamily.activeFamilyId.value) {
+      throw new Error("User not authenticated or family not loaded");
+    }
 
     loading.value = true;
     error.value = null;
@@ -264,6 +287,7 @@ export const useCoaches = (): {
           updated_at: new Date().toISOString(),
         } as CoachesUpdate)
         .eq("id", id)
+        .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .select()
         .single();
 
@@ -287,7 +311,9 @@ export const useCoaches = (): {
   };
 
   const deleteCoach = async (id: string) => {
-    if (!userStore.user) throw new Error("User not authenticated");
+    if (!userStore.user || !activeFamily.activeFamilyId.value) {
+      throw new Error("User not authenticated or family not loaded");
+    }
 
     loading.value = true;
     error.value = null;
@@ -296,7 +322,9 @@ export const useCoaches = (): {
       const { error: deleteError } = await supabase
         .from("coaches")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .eq("family_unit_id", activeFamily.activeFamilyId.value)
+        .eq("user_id", userStore.user.id);
 
       if (deleteError) throw deleteError;
 

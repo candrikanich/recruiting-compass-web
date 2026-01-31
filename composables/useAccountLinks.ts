@@ -479,6 +479,70 @@ export const useAccountLinks = () => {
         return false;
       }
 
+      // Create family unit structure if needed
+      try {
+        const parentId = linkData.parent_user_id;
+        const playerId = linkData.player_user_id;
+
+        if (parentId && playerId) {
+          // Check if family unit exists for this student
+          const { data: existingFamily } = await supabase
+            .from("family_units")
+            .select("id")
+            .eq("student_user_id", playerId)
+            .single();
+
+          let familyUnitId = existingFamily?.id;
+
+          // Create family unit if it doesn't exist
+          if (!familyUnitId) {
+            const { data: playerData } = await supabase
+              .from("users")
+              .select("full_name")
+              .eq("id", playerId)
+              .single();
+
+            const { data: newFamily, error: familyCreateError } = await supabase
+              .from("family_units")
+              .insert({
+                student_user_id: playerId,
+                family_name: playerData?.full_name ? `${playerData.full_name}'s Family` : "Family",
+              })
+              .select()
+              .single();
+
+            if (familyCreateError) {
+              console.warn("Failed to create family unit:", familyCreateError);
+            } else if (newFamily) {
+              familyUnitId = newFamily.id;
+
+              // Add student to family
+              await supabase.from("family_members").insert({
+                family_unit_id: familyUnitId,
+                user_id: playerId,
+                role: "student",
+              });
+            }
+          }
+
+          // Add parent to family
+          if (familyUnitId) {
+            await supabase
+              .from("family_members")
+              .insert({
+                family_unit_id: familyUnitId,
+                user_id: parentId,
+                role: "parent",
+              })
+              .onConflict("family_unit_id,user_id")
+              .ignore();
+          }
+        }
+      } catch (familyErr) {
+        console.warn("Failed to set up family structure:", familyErr);
+        // Continue despite family creation error - link is still accepted
+      }
+
       // Call snapshot function to record data ownership
       try {
         const parentId = linkData.parent_user_id;

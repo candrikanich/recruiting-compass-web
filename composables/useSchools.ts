@@ -1,6 +1,7 @@
 import { ref, computed, readonly, shallowRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { useActiveFamily } from "./useActiveFamily";
 import type { School } from "~/types/models";
 import { schoolSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
@@ -8,6 +9,13 @@ import { sanitizeHtml } from "~/utils/validation/sanitize";
 /**
  * useSchools composable
  * Manages college/university program data and recruiting status
+ *
+ * FAMILY-BASED ACCESS CONTROL (v2.0):
+ * - Schools are owned by family units, not individual users
+ * - Students see their own schools (their family)
+ * - Parents see all schools in accessible families
+ * - Queries filter by family_unit_id instead of user_id
+ * - Student-created schools are scoped to their family
  *
  * School status levels:
  * - researching: Initial exploration phase
@@ -53,6 +61,7 @@ export const useSchools = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const activeFamily = useActiveFamily();
 
   const schools = shallowRef<School[]>([]);
   const loading = ref(false);
@@ -64,12 +73,14 @@ export const useSchools = (): {
 
   const fetchSchools = async () => {
     console.debug("[useSchools] fetchSchools called");
-    if (!userStore.user) {
-      console.debug("[useSchools] No user, skipping fetch");
+    if (!userStore.user || !activeFamily.activeFamilyId.value) {
+      console.debug("[useSchools] No user or family, skipping fetch");
       return;
     }
 
-    console.debug(`[useSchools] Fetching for user: ${userStore.user.id}`);
+    console.debug(
+      `[useSchools] Fetching for family: ${activeFamily.activeFamilyId.value}`
+    );
     loading.value = true;
     error.value = null;
 
@@ -77,7 +88,7 @@ export const useSchools = (): {
       const { data, error: fetchError } = await supabase
         .from("schools")
         .select("*")
-        .eq("user_id", userStore.user.id)
+        .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .order("ranking", { ascending: true, nullsFirst: false });
 
       if (fetchError) throw fetchError;
@@ -95,7 +106,7 @@ export const useSchools = (): {
   };
 
   const getSchool = async (id: string): Promise<School | null> => {
-    if (!userStore.user) return null;
+    if (!userStore.user || !activeFamily.activeFamilyId.value) return null;
 
     loading.value = true;
     error.value = null;
@@ -105,7 +116,7 @@ export const useSchools = (): {
         .from("schools")
         .select("*")
         .eq("id", id)
-        .eq("user_id", userStore.user.id)
+        .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .single();
 
       if (fetchError) throw fetchError;
@@ -123,7 +134,9 @@ export const useSchools = (): {
   const createSchool = async (
     schoolData: Omit<School, "id" | "createdAt" | "updatedAt">,
   ) => {
-    if (!userStore.user) throw new Error("User not authenticated");
+    if (!userStore.user || !activeFamily.activeFamilyId.value) {
+      throw new Error("User not authenticated or family not loaded");
+    }
 
     loading.value = true;
     error.value = null;
@@ -153,6 +166,7 @@ export const useSchools = (): {
           {
             ...validated,
             user_id: userStore.user.id,
+            family_unit_id: activeFamily.activeFamilyId.value,
             created_by: userStore.user.id,
             updated_by: userStore.user.id,
           },
@@ -190,7 +204,9 @@ export const useSchools = (): {
   };
 
   const updateSchool = async (id: string, updates: Partial<School>) => {
-    if (!userStore.user) throw new Error("User not authenticated");
+    if (!userStore.user || !activeFamily.activeFamilyId.value) {
+      throw new Error("User not authenticated or family not loaded");
+    }
 
     loading.value = true;
     error.value = null;
@@ -221,7 +237,7 @@ export const useSchools = (): {
           updated_at: new Date().toISOString(),
         })
         .eq("id", id)
-        .eq("user_id", userStore.user.id)
+        .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .select()
         .single();
 
@@ -245,7 +261,9 @@ export const useSchools = (): {
   };
 
   const deleteSchool = async (id: string) => {
-    if (!userStore.user) throw new Error("User not authenticated");
+    if (!userStore.user || !activeFamily.activeFamilyId.value) {
+      throw new Error("User not authenticated or family not loaded");
+    }
 
     loading.value = true;
     error.value = null;
@@ -255,6 +273,7 @@ export const useSchools = (): {
         .from("schools")
         .delete()
         .eq("id", id)
+        .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .eq("user_id", userStore.user.id);
 
       if (deleteError) throw deleteError;
@@ -413,7 +432,9 @@ export const useSchools = (): {
     newStatus: School["status"],
     notes?: string,
   ): Promise<School> => {
-    if (!userStore.user) throw new Error("User not authenticated");
+    if (!userStore.user || !activeFamily.activeFamilyId.value) {
+      throw new Error("User not authenticated or family not loaded");
+    }
 
     loading.value = true;
     error.value = null;
@@ -428,7 +449,7 @@ export const useSchools = (): {
           .from("schools")
           .select("*")
           .eq("id", schoolId)
-          .eq("user_id", userStore.user.id)
+          .eq("family_unit_id", activeFamily.activeFamilyId.value)
           .single();
 
         if (fetchError || !fetchedSchool) {
@@ -450,7 +471,7 @@ export const useSchools = (): {
           updated_at: now,
         })
         .eq("id", schoolId)
-        .eq("user_id", userStore.user.id)
+        .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .select()
         .single();
 
