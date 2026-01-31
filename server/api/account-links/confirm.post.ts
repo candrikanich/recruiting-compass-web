@@ -92,6 +92,99 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // Create/manage family structure and add members
+    try {
+      const parentId = linkData.parent_user_id;
+      const playerId = linkData.player_user_id;
+
+      if (parentId && playerId) {
+        // Get or create family unit for the player
+        const { data: existingFamily } = await supabase
+          .from("family_units")
+          .select("id")
+          .eq("student_user_id", playerId)
+          .single();
+
+        let familyUnitId = existingFamily?.id;
+
+        // Create family unit if it doesn't exist
+        if (!familyUnitId) {
+          const { data: playerData } = await supabase
+            .from("users")
+            .select("full_name")
+            .eq("id", playerId)
+            .single();
+
+          const { data: newFamily, error: familyCreateError } = await supabase
+            .from("family_units")
+            .insert({
+              student_user_id: playerId,
+              family_name: playerData?.full_name
+                ? `${playerData.full_name}'s Family`
+                : "Family",
+            })
+            .select()
+            .single();
+
+          if (familyCreateError) {
+            console.warn(
+              "[confirm.post] Failed to create family unit:",
+              familyCreateError
+            );
+          } else {
+            familyUnitId = newFamily?.id;
+          }
+        }
+
+        // Add player to family_members as student (if not already there)
+        if (familyUnitId && playerId) {
+          const { error: studentInsertError } = await supabase
+            .from("family_members")
+            .insert({
+              family_unit_id: familyUnitId,
+              user_id: playerId,
+              role: "student",
+            })
+            .onConflict("family_unit_id,user_id")
+            .ignore();
+
+          if (studentInsertError) {
+            console.warn(
+              "[confirm.post] Failed to add student to family:",
+              studentInsertError
+            );
+          }
+        }
+
+        // Add parent to family_members as parent
+        if (familyUnitId && parentId) {
+          const { error: parentInsertError } = await supabase
+            .from("family_members")
+            .insert({
+              family_unit_id: familyUnitId,
+              user_id: parentId,
+              role: "parent",
+            })
+            .onConflict("family_unit_id,user_id")
+            .ignore();
+
+          if (parentInsertError) {
+            console.warn(
+              "[confirm.post] Failed to add parent to family:",
+              parentInsertError
+            );
+          }
+        }
+
+        console.log(
+          `[confirm.post] Family structure created for player ${playerId}, family: ${familyUnitId}`
+        );
+      }
+    } catch (familyErr) {
+      console.warn("Failed to create family structure:", familyErr);
+      // Continue despite error - link is still accepted
+    }
+
     // Call snapshot function to record data ownership
     try {
       const parentId = linkData.parent_user_id;
