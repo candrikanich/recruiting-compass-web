@@ -111,20 +111,19 @@
         </div>
       </div>
 
-      <!-- Account Section -->
+      <!-- Family Section -->
       <div class="mb-8">
         <h2
           class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3"
         >
-          Account
+          Family
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <SettingsCard
-            to="/settings/account-linking"
-            icon="🔗"
-            title="Family Account Linking"
-            description="Share recruiting data with parent or player"
-            :status="hasLinkedAccount ? 'complete' : undefined"
+            to="/settings/family-management"
+            icon="👨‍👩‍👧‍👦"
+            title="Family Management"
+            description="Manage family members and share recruiting data"
             variant="red"
           />
         </div>
@@ -134,9 +133,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { useAccountLinks } from "~/composables/useAccountLinks";
 import Header from "~/components/Header.vue";
 import SettingsCard from "~/components/Settings/SettingsCard.vue";
 
@@ -149,7 +147,6 @@ const {
   getPlayerDetails,
   getSchoolPreferences,
 } = usePreferenceManager();
-const { linkedAccounts, fetchAccountLinks } = useAccountLinks();
 
 const hasHomeLocation = computed(() => {
   const loc = getHomeLocation();
@@ -164,11 +161,5 @@ const hasPlayerDetails = computed(() => {
 const hasSchoolPreferences = computed(() => {
   const prefs = getSchoolPreferences();
   return !!prefs?.preferences?.length;
-});
-
-const hasLinkedAccount = computed(() => linkedAccounts.value.length > 0);
-
-onMounted(async () => {
-  await fetchAccountLinks();
 });
 </script>

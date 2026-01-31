@@ -165,7 +165,6 @@ import {
   AdjustmentsHorizontalIcon,
   BellIcon,
   DocumentTextIcon,
-  LinkIcon,
   ArrowRightOnRectangleIcon,
   CalendarDaysIcon,
   ClockIcon,
@@ -209,7 +208,7 @@ const settingsItems = [
     label: "Templates",
     icon: DocumentTextIcon,
   },
-  { to: "/settings/account-linking", label: "Account Linking", icon: LinkIcon },
+  { to: "/settings/family-management", label: "Family Management", icon: AdjustmentsHorizontalIcon },
 ];
 
 const userInitials = computed(() => {

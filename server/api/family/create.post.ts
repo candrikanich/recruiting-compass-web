@@ -1,119 +1,89 @@
-import { defineEventHandler, createError, readBody } from "h3";
+import { defineEventHandler, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
-
-interface CreateFamilyBody {
-  studentId: string;
-  familyName?: string;
-  parentIds?: string[];
-}
+import { generateFamilyCode } from "~/server/utils/familyCode";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event);
+  const user = await requireAuth(event);
   const supabase = useSupabaseAdmin();
 
-  const { studentId, familyName, parentIds = [] } = await readBody<CreateFamilyBody>(
-    event
-  );
-
-  if (!studentId) {
+  // Only students can create families
+  if (user.role !== "student") {
     throw createError({
-      statusCode: 400,
-      message: "studentId is required",
+      statusCode: 403,
+      message: "Only students can create families",
     });
   }
 
-  // Verify student exists and is a student
-  const { data: student, error: studentError } = await supabase
-    .from("users")
-    .select("id, role, full_name")
-    .eq("id", studentId)
-    .single();
-
-  if (studentError || !student) {
-    throw createError({
-      statusCode: 400,
-      message: "Invalid student or student not found",
-    });
-  }
-
-  if (student.role !== "student") {
-    throw createError({
-      statusCode: 400,
-      message: "User is not a student",
-    });
-  }
-
-  // Check if family already exists for this student
+  // Check if student already has a family
   const { data: existingFamily } = await supabase
     .from("family_units")
-    .select("id")
-    .eq("student_user_id", studentId)
+    .select("id, family_code")
+    .eq("student_user_id", user.id)
     .single();
 
   if (existingFamily) {
-    throw createError({
-      statusCode: 400,
-      message: "Family already exists for this student",
-    });
+    return {
+      success: true,
+      familyId: existingFamily.id,
+      familyCode: existingFamily.family_code,
+      message: "Family already exists",
+    };
   }
 
+  // Generate unique code
+  const familyCode = await generateFamilyCode(supabase);
+
   // Create family unit
-  const { data: family, error: familyError } = await supabase
+  const { data: newFamily, error: familyError } = await supabase
     .from("family_units")
     .insert({
-      student_user_id: studentId,
-      family_name: familyName || `${student.full_name}'s Family`,
+      student_user_id: user.id,
+      family_name: user.full_name ? `${user.full_name}'s Family` : "My Family",
+      family_code: familyCode,
+      code_generated_at: new Date().toISOString(),
     })
     .select()
     .single();
 
-  if (familyError || !family) {
+  if (familyError || !newFamily) {
     throw createError({
       statusCode: 500,
-      message: "Failed to create family unit",
+      message: "Failed to create family",
     });
   }
 
-  // Add student to family
-  const { error: studentMemberError } = await supabase
+  // Add student to family_members
+  const { error: memberError } = await supabase
     .from("family_members")
     .insert({
-      family_unit_id: family.id,
-      user_id: studentId,
+      family_unit_id: newFamily.id,
+      user_id: user.id,
       role: "student",
     });
 
-  if (studentMemberError) {
+  if (memberError) {
     throw createError({
       statusCode: 500,
       message: "Failed to add student to family",
     });
   }
 
-  // Add parents if provided
-  if (parentIds && parentIds.length > 0) {
-    const parentMembers = parentIds.map((parentId) => ({
-      family_unit_id: family.id,
-      user_id: parentId,
-      role: "parent" as const,
-    }));
-
-    const { error: parentError } = await supabase
-      .from("family_members")
-      .insert(parentMembers);
-
-    if (parentError) {
-      throw createError({
-        statusCode: 500,
-        message: "Failed to add parents to family",
-      });
-    }
-  }
+  // Log code generation
+  await supabase
+    .from("family_code_usage_log")
+    .insert({
+      family_unit_id: newFamily.id,
+      user_id: user.id,
+      code_used: familyCode,
+      action: "generated",
+    })
+    .catch((err) => console.warn("Failed to log code generation:", err));
 
   return {
     success: true,
-    family,
-    message: "Family created successfully",
+    familyId: newFamily.id,
+    familyCode: familyCode,
+    familyName: newFamily.family_name,
   };
 });

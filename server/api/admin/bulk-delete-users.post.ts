@@ -152,7 +152,6 @@ export default defineEventHandler(
             { table: "offers", columns: ["user_id"] },
             { table: "coaches", columns: ["user_id"] },
             { table: "schools", columns: ["user_id"] },
-            { table: "account_links", columns: ["initiator_user_id", "parent_user_id", "player_user_id"] },
             { table: "notifications", columns: ["user_id"] },
             { table: "communication_templates", columns: ["user_id"] },
             { table: "users", columns: ["id"] },

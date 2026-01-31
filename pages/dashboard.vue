@@ -125,10 +125,6 @@
           v-if="userStore.isParent && showWidget('athleteActivity', 'widgets')"
           class="lg:col-span-1"
         />
-        <LinkedAccountsWidget
-          v-if="showWidget('linkedAccounts', 'widgets')"
-          class="lg:col-span-3"
-        />
         <AtAGlanceSummary
           v-if="showWidget('atAGlanceSummary', 'widgets')"
           :coaches="allCoaches"
@@ -182,7 +178,6 @@ import ContactFrequencyWidget from "~/components/Dashboard/ContactFrequencyWidge
 import SocialMediaWidget from "~/components/Dashboard/SocialMediaWidget.vue";
 import CoachFollowupWidget from "~/components/Dashboard/CoachFollowupWidget.vue";
 import AthleteActivityWidget from "~/components/Dashboard/AthleteActivityWidget.vue";
-import LinkedAccountsWidget from "~/components/Dashboard/LinkedAccountsWidget.vue";
 import AtAGlanceSummary from "~/components/Dashboard/AtAGlanceSummary.vue";
 import EmailRecruitingPacketModal from "~/components/EmailRecruitingPacketModal.vue";
 import { EyeIcon } from "@heroicons/vue/24/solid";

@@ -92,7 +92,7 @@ export const useFamilyCode = () => {
   };
 
   /**
-   * Creates a new family (students only) - calls API endpoint
+   * Creates a new family (students only) - calls API endpoint with auth
    */
   const createFamily = async () => {
     if (currentUserRole.value !== "student") {
@@ -105,15 +105,17 @@ export const useFamilyCode = () => {
     successMessage.value = null;
 
     try {
-      // Call API endpoint which handles code generation and everything
-      const response = await $fetch<{
+      const { $fetchAuth } = useAuthFetch();
+
+      // Call API endpoint which handles code generation
+      const response = await $fetchAuth("/api/family/create", {
+        method: "POST",
+      }) as {
         success: boolean;
         familyCode: string;
         familyId: string;
         familyName: string;
-      }>("/api/family/create", {
-        method: "POST",
-      });
+      };
 
       myFamilyCode.value = response.familyCode;
       myFamilyId.value = response.familyId;
@@ -147,7 +149,9 @@ export const useFamilyCode = () => {
     successMessage.value = null;
 
     try {
-      const response = await $fetch("/api/family/code/join", {
+      const { $fetchAuth } = useAuthFetch();
+
+      const response = await $fetchAuth("/api/family/code/join", {
         method: "POST",
         body: { familyCode: familyCode.trim().toUpperCase() },
       });
@@ -194,7 +198,9 @@ export const useFamilyCode = () => {
     successMessage.value = null;
 
     try {
-      const response = await $fetch("/api/family/code/regenerate", {
+      const { $fetchAuth } = useAuthFetch();
+
+      const response = await $fetchAuth("/api/family/code/regenerate", {
         method: "POST",
         body: { familyId: myFamilyId.value },
       });
