@@ -506,11 +506,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, type Component } from "vue";
+import { ref, computed, onMounted, watch, inject, type Component } from "vue";
 import { useInteractions } from "~/composables/useInteractions";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
-import { useActiveFamily } from "~/composables/useActiveFamily";
+import { useFamilyContext } from "~/composables/useFamilyContext";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
 import Header from "~/components/Header.vue";
@@ -546,7 +546,9 @@ definePageMeta({
 
 const userStore = useUserStore();
 const supabase = useSupabase();
-const { activeFamilyId } = useActiveFamily();
+// Inject family context provided at app.vue level (with singleton fallback)
+const activeFamily = inject("activeFamily") || useFamilyContext();
+const { activeFamilyId } = activeFamily;
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { schools: schoolsData, fetchSchools } = useSchools();
 const { coaches: coachesData, fetchAllCoaches } = useCoaches();
@@ -811,6 +813,7 @@ watch(
       await fetchInteractions();
     }
   },
+  { immediate: true },
 );
 
 // Load data

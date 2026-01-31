@@ -584,7 +584,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, inject } from "vue";
 import { useSchools } from "~/composables/useSchools";
 import { useSchoolLogos } from "~/composables/useSchoolLogos";
 import { useSchoolMatching } from "~/composables/useSchoolMatching";
@@ -592,6 +592,7 @@ import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useOffers } from "~/composables/useOffers";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoaches } from "~/composables/useCoaches";
+import { useFamilyContext } from "~/composables/useFamilyContext";
 import { useUserStore } from "~/stores/user";
 import { useUniversalFilter } from "~/composables/useUniversalFilter";
 import type { School } from "~/types";
@@ -619,6 +620,11 @@ import type { FilterConfig } from "~/types/filters";
 
 definePageMeta({});
 
+// Inject family context provided at app.vue level (with singleton fallback)
+const activeFamily = inject("activeFamily") || useFamilyContext();
+const { activeFamilyId } = activeFamily;
+
+// Call composables that depend on the family context
 const { schools, loading, error, fetchSchools, toggleFavorite, deleteSchool } =
   useSchools();
 const { fetchMultipleLogos } = useSchoolLogos();
@@ -628,7 +634,7 @@ const { getSchoolPreferences, getHomeLocation } =
 const { offers, fetchOffers } = useOffers();
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { coaches: coachesData, fetchAllCoaches } = useCoaches();
-const { activeFamilyId } = useActiveFamily();
+
 const userStore = useUserStore();
 
 const allInteractions = ref<any[]>([]);
@@ -661,9 +667,12 @@ watch(
       console.debug(
         `[Schools] Family changed: familyId=${newFamilyId}, re-fetching schools`,
       );
+      // Pass the family context to the fetch to ensure it has access to it
+      console.debug(`[Schools] Current activeFamily ID for fetch: ${activeFamily.activeFamilyId.value}`);
       await fetchSchools();
     }
   },
+  { immediate: true },
 );
 
 const userHomeLocation = computed(() => getHomeLocation());
@@ -1067,8 +1076,9 @@ const handleExportPDF = () => {
 
 onMounted(async () => {
   console.debug("[Schools] Page mounted, fetching data");
+  // Don't fetch schools here - the watchers will handle it when family context is ready
+  // Just fetch other data that doesn't depend on family context
   await Promise.all([
-    fetchSchools(),
     fetchOffers(),
     fetchAllCoaches(),
     fetchInteractions({}),

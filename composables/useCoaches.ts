@@ -1,7 +1,8 @@
-import { ref, computed, type ComputedRef } from "vue";
+import { ref, computed, inject, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
+import { useFamilyContext } from "./useFamilyContext";
 import type { Coach } from "~/types/models";
 import type { Database } from "~/types/database";
 import { coachSchema } from "~/utils/validation/schemas";
@@ -58,7 +59,16 @@ export const useCoaches = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
-  const activeFamily = useActiveFamily();
+  // Try to get the provided family context (from page), fall back to singleton
+  const injectedFamily = inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+  const activeFamily = injectedFamily || useFamilyContext();
+
+  if (!injectedFamily) {
+    console.warn(
+      "[useCoaches] activeFamily injection failed, using singleton fallback. " +
+      "This may cause data sync issues when parent switches athletes."
+    );
+  }
 
   const coaches = ref<Coach[]>([]);
   const loading = ref(false);
@@ -225,7 +235,7 @@ export const useCoaches = (): {
       const dataToInsert = {
         ...validated,
         school_id: schoolId,
-        user_id: userStore.user.id,
+        user_id: activeFamily.getDataOwnerUserId(),
         family_unit_id: activeFamily.activeFamilyId.value,
         email: validated.email || null,
         phone: validated.phone || null,

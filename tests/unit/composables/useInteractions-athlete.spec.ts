@@ -12,6 +12,7 @@ const mockSupabase = {
 let mockUser: any = {
   id: "athlete-123",
   email: "athlete@example.com",
+  role: "student",
 };
 
 vi.mock("~/composables/useSupabase", () => ({
@@ -28,6 +29,22 @@ vi.mock("~/stores/user", () => ({
   }),
 }));
 
+vi.mock("~/composables/useActiveFamily", () => ({
+  useActiveFamily: () => ({
+    activeFamilyId: { value: "family-123" },
+    activeAthleteId: { value: "athlete-123" },
+    isParentViewing: { value: false },
+    familyMembers: { value: [] },
+    getAccessibleAthletes: () => [],
+    getDataOwnerUserId: () => "athlete-123",
+    switchAthlete: vi.fn(),
+    initializeFamily: vi.fn(),
+    fetchFamilyMembers: vi.fn(),
+    loading: { value: false },
+    error: { value: null },
+  }),
+}));
+
 describe("useInteractions - Athlete Features", () => {
   let mockQuery: any;
   let userStore: ReturnType<typeof useUserStore>;
@@ -37,6 +54,7 @@ describe("useInteractions - Athlete Features", () => {
     mockUser = {
       id: "athlete-123",
       email: "athlete@example.com",
+      role: "student",
     };
 
     setActivePinia(createPinia());

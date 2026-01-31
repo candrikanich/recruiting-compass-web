@@ -15,15 +15,20 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount } from "vue";
+import { onBeforeMount, provide } from "vue";
 import { useSessionTimeout } from "~/composables/useSessionTimeout";
 import { useUserStore } from "~/stores/user";
+import { useActiveFamily } from "~/composables/useActiveFamily";
 import SessionTimeoutWarning from "~/components/Auth/SessionTimeoutWarning.vue";
 
 const { isWarningVisible, secondsUntilLogout, dismissWarning, handleTimeout } =
   useSessionTimeout();
 
 const userStore = useUserStore();
+
+// Provide family context to all pages and composables
+const activeFamily = useActiveFamily();
+provide("activeFamily", activeFamily);
 
 // Single point of user initialization at app startup
 // This prevents race conditions from multiple initialization attempts

@@ -1,7 +1,8 @@
-import { ref, computed, readonly, shallowRef } from "vue";
+import { ref, computed, readonly, shallowRef, inject } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
+import { useFamilyContext } from "./useFamilyContext";
 import type { School } from "~/types/models";
 import { schoolSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
@@ -61,7 +62,16 @@ export const useSchools = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
-  const activeFamily = useActiveFamily();
+  // Try to get the provided family context (from page), fall back to singleton
+  const injectedFamily = inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+  const activeFamily = injectedFamily || useFamilyContext();
+
+  if (!injectedFamily) {
+    console.warn(
+      "[useSchools] activeFamily injection failed, using singleton fallback. " +
+      "This may cause data sync issues when parent switches athletes."
+    );
+  }
 
   const schools = shallowRef<School[]>([]);
   const loading = ref(false);
@@ -73,8 +83,17 @@ export const useSchools = (): {
 
   const fetchSchools = async () => {
     console.debug("[useSchools] fetchSchools called");
-    if (!userStore.user || !activeFamily.activeFamilyId.value) {
-      console.debug("[useSchools] No user or family, skipping fetch");
+    console.debug(`[useSchools] User: ${userStore.user?.id || "null"}`);
+    console.debug(`[useSchools] Active Family ID: ${activeFamily.activeFamilyId?.value || "null"}`);
+
+    // Ensure we have both user and family context
+    if (!userStore.user) {
+      console.debug("[useSchools] No user, skipping fetch");
+      return;
+    }
+
+    if (!activeFamily.activeFamilyId?.value) {
+      console.debug("[useSchools] No family context, skipping fetch");
       return;
     }
 
@@ -134,8 +153,16 @@ export const useSchools = (): {
   const createSchool = async (
     schoolData: Omit<School, "id" | "createdAt" | "updatedAt">,
   ) => {
-    if (!userStore.user || !activeFamily.activeFamilyId.value) {
-      throw new Error("User not authenticated or family not loaded");
+    if (!userStore.user) {
+      throw new Error("User not authenticated");
+    }
+    if (!activeFamily.activeFamilyId.value) {
+      throw new Error("Family context not loaded");
+    }
+
+    const dataOwnerUserId = activeFamily.getDataOwnerUserId();
+    if (!dataOwnerUserId) {
+      throw new Error("Athlete context not set");
     }
 
     loading.value = true;
@@ -165,7 +192,7 @@ export const useSchools = (): {
         .insert([
           {
             ...validated,
-            user_id: userStore.user.id,
+            user_id: dataOwnerUserId,
             family_unit_id: activeFamily.activeFamilyId.value,
             created_by: userStore.user.id,
             updated_by: userStore.user.id,

@@ -1,4 +1,4 @@
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
@@ -128,9 +128,12 @@ export const useActiveFamily = () => {
           .from("family_units")
           .select("id, family_name")
           .eq("student_user_id", userStore.user.id)
-          .single();
+          .maybeSingle();
 
-        if (fetchError) throw fetchError;
+        if (fetchError) {
+          console.error("[useActiveFamily] Error fetching student family unit:", fetchError);
+          // Don't throw - just log and continue. Family will be null but we can still proceed.
+        }
         if (data) {
           studentFamilyId.value = data.id;
         }
@@ -226,7 +229,13 @@ export const useActiveFamily = () => {
       return;
     }
 
+    const previousAthleteId = currentAthleteId.value;
     currentAthleteId.value = athleteId;
+
+    console.debug(
+      `[useActiveFamily] Athlete switched: ${previousAthleteId} → ${athleteId}, ` +
+      `instance: ${_debugInstanceId}, family: ${activeFamilyId.value}`
+    );
 
     // Persist to localStorage
     if (typeof window !== "undefined") {
@@ -256,11 +265,39 @@ export const useActiveFamily = () => {
     };
   };
 
-  // Initialize on mount
+  // Initialize on mount and when user role changes
   onMounted(async () => {
     await initializeFamily();
     await fetchFamilyMembers();
   });
+
+  // Reinitialize if user role changes (e.g., from unloaded to parent/student)
+  watch(
+    () => userStore.user?.role,
+    async (newRole) => {
+      if (newRole) {
+        console.debug(
+          `[useActiveFamily] User role changed to "${newRole}", reinitializing...`
+        );
+        await initializeFamily();
+        await fetchFamilyMembers();
+      }
+    }
+  );
+
+  /**
+   * Get the user ID that should own new data
+   * - If viewing as parent (parent looking at child's data): return child's ID
+   * - Otherwise: return logged-in user's ID
+   *
+   * This ensures data residency with the athlete/student, even when created by parent
+   */
+  const getDataOwnerUserId = (): string | null => {
+    return activeAthleteId.value;
+  };
+
+  // Debug instance ID for verifying singleton usage
+  const _debugInstanceId = Math.random().toString(36).slice(2, 9);
 
   return {
     // State
@@ -282,5 +319,9 @@ export const useActiveFamily = () => {
     switchAthlete,
     getAccessibleAthletes,
     getDisplayContext,
+    getDataOwnerUserId,
+
+    // Debug
+    _debugInstanceId,
   };
 };

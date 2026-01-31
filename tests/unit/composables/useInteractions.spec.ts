@@ -149,12 +149,17 @@ describe("useInteractions", () => {
         }),
       ];
 
-      // The mock query object needs to resolve on the final method call
-      // Since eq is called after order, we need to mock eq to resolve the promise
-      mockQuery.eq.mockResolvedValue({
-        data: mockInteractions,
-        error: null,
+      // Mock eq to handle both family_unit_id and school_id filters
+      mockQuery.eq.mockImplementation((field, value) => {
+        if (field === "school_id") {
+          return Promise.resolve({
+            data: mockInteractions,
+            error: null,
+          });
+        }
+        return mockQuery;
       });
+      mockQuery.order.mockReturnThis();
 
       const { fetchInteractions } = useInteractions();
       await fetchInteractions({
@@ -381,6 +386,7 @@ describe("useInteractions", () => {
         {
           ...newInteractionData,
           logged_by: "user-123",
+          family_unit_id: "family-123",
         },
       ]);
       expect(result).toEqual(createdInteraction);
@@ -931,10 +937,10 @@ describe("useInteractions", () => {
       await fetchInteractions();
 
       expect(mockQuery.select).toHaveBeenCalledWith("*");
+      expect(mockQuery.eq).toHaveBeenCalledWith("family_unit_id", "family-123");
       expect(mockQuery.order).toHaveBeenCalledWith("occurred_at", {
         ascending: false,
       });
-      expect(mockQuery.eq).not.toHaveBeenCalled();
     });
 
     it("should build correct query with only schoolId filter", async () => {
@@ -995,12 +1001,16 @@ describe("useInteractions", () => {
         coachId: "550e8400-e29b-41d4-a716-446655440002",
       });
 
-      expect(eqCalls).toHaveLength(2);
+      expect(eqCalls).toHaveLength(3);
       expect(eqCalls[0]).toEqual([
+        "family_unit_id",
+        "family-123",
+      ]);
+      expect(eqCalls[1]).toEqual([
         "school_id",
         "550e8400-e29b-41d4-a716-446655440001",
       ]);
-      expect(eqCalls[1]).toEqual([
+      expect(eqCalls[2]).toEqual([
         "coach_id",
         "550e8400-e29b-41d4-a716-446655440002",
       ]);

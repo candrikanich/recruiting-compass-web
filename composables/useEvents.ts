@@ -1,6 +1,8 @@
-import { ref, computed, type ComputedRef } from "vue";
+import { ref, computed, inject, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { useActiveFamily } from "./useActiveFamily";
+import { useFamilyContext } from "./useFamilyContext";
 import type { Event } from "~/types/models";
 import type { Database } from "~/types/database";
 
@@ -48,6 +50,16 @@ export const useEvents = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  // Try to get the provided family context (from page), fall back to singleton
+  const injectedFamily = inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+  const activeFamily = injectedFamily || useFamilyContext();
+
+  if (!injectedFamily) {
+    console.warn(
+      "[useEvents] activeFamily injection failed, using singleton fallback. " +
+      "This may cause data sync issues when parent switches athletes."
+    );
+  }
 
   const events = ref<Event[]>([]);
   const loading = ref(false);
@@ -153,7 +165,7 @@ export const useEvents = (): {
         .insert([
           {
             ...eventData,
-            user_id: userStore.user.id,
+            user_id: activeFamily.getDataOwnerUserId(),
           },
         ] as EventInsert[])
         .select()

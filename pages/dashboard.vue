@@ -17,7 +17,7 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Parent Context Banner -->
       <div
-        v-if="parentContextComposable?.isViewingAsParent.value"
+        v-if="activeFamily.isViewingAsParent.value"
         class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg mb-6"
       >
         <div class="flex items-center">
@@ -26,7 +26,7 @@
             You're viewing
             <strong
               >{{
-                parentContextComposable?.getCurrentAthlete()?.full_name ||
+                activeFamily.parentAccessibleFamilies.value.find(f => f.athleteId === activeFamily.activeAthleteId.value)?.athleteName ||
                 "this athlete"
               }}'s</strong
             >
@@ -50,9 +50,9 @@
       <DashboardSuggestions
         :suggestions="suggestionsComposable?.dashboardSuggestions.value || []"
         :is-viewing-as-parent="
-          parentContextComposable?.isViewingAsParent.value || false
+          activeFamily.isViewingAsParent.value || false
         "
-        :athlete-name="parentContextComposable?.getCurrentAthlete()?.full_name"
+        :athlete-name="activeFamily.parentAccessibleFamilies.value.find(f => f.athleteId === activeFamily.activeAthleteId.value)?.athleteName"
         @dismiss="handleSuggestionDismiss"
       />
 
@@ -153,7 +153,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from "vue";
+import { ref, onMounted, watch, computed, inject } from "vue";
 import { useRouter } from "vue-router";
 import { useSupabase } from "~/composables/useSupabase";
 import { useAuth } from "~/composables/useAuth";
@@ -164,7 +164,7 @@ import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated
 import { useToast } from "~/composables/useToast";
 import { useUserTasks } from "~/composables/useUserTasks";
 import { useSuggestions } from "~/composables/useSuggestions";
-import { useParentContext } from "~/composables/useParentContext";
+import { useFamilyContext } from "~/composables/useFamilyContext";
 import { useViewLogging } from "~/composables/useViewLogging";
 import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
@@ -212,7 +212,8 @@ const notificationsComposable = useNotifications();
 const documentsComposable = useDocumentsConsolidated();
 const userTasksComposable = useUserTasks();
 const suggestionsComposable = useSuggestions();
-const parentContextComposable = useParentContext();
+// Inject family context provided at app.vue level (with singleton fallback)
+const activeFamily = inject("activeFamily") || useFamilyContext();
 const viewLoggingComposable = useViewLogging();
 const recruitingPacketComposable = useRecruitingPacket();
 
@@ -239,8 +240,8 @@ const graduationYear = computed(() => {
 
 // Determine target user ID (current user or viewed athlete if parent)
 const targetUserId = computed(() => {
-  return parentContextComposable?.isViewingAsParent.value
-    ? parentContextComposable.currentAthleteId.value
+  return activeFamily.isViewingAsParent.value
+    ? activeFamily.activeAthleteId.value
     : userStore?.user?.id;
 });
 
@@ -362,16 +363,16 @@ const handleSuggestionDismiss = async (suggestionId: string) => {
 };
 
 const fetchCounts = async () => {
-  if (!targetUserId.value) {
+  if (!activeFamily.activeFamilyId.value) {
     return;
   }
 
   try {
-    // Fetch schools
+    // Fetch schools (filtered by family unit, not user)
     const { data: schoolsData, error: schoolsError } = await supabase
       .from("schools")
       .select("*")
-      .eq("user_id", targetUserId.value);
+      .eq("family_unit_id", activeFamily.activeFamilyId.value);
 
     if (schoolsError) {
       console.error("Error fetching schools:", schoolsError);
@@ -480,12 +481,12 @@ onMounted(async () => {
 
 // Watch for athlete switches
 watch(
-  () => parentContextComposable?.currentAthleteId.value,
+  () => activeFamily.activeAthleteId.value,
   async (newId, oldId) => {
     if (
       newId &&
       newId !== oldId &&
-      parentContextComposable?.isViewingAsParent.value
+      activeFamily.isViewingAsParent.value
     ) {
       await fetchCounts();
       await suggestionsComposable?.fetchSuggestions("dashboard");

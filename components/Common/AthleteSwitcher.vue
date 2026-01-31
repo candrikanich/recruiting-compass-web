@@ -26,18 +26,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, inject } from "vue";
 import { UserCircleIcon } from "@heroicons/vue/24/outline";
-import { useActiveFamily } from "~/composables/useActiveFamily";
+import { useFamilyContext } from "~/composables/useFamilyContext";
 
-const activeFamily = useActiveFamily();
+const injected = inject("activeFamily");
+console.debug("[AthleteSwitcher] Injection result:", { injected: !!injected });
+
+const activeFamily = injected || useFamilyContext();
 
 // Show switcher only if parent has multiple children
-const showSwitcher = computed(
-  () =>
-    activeFamily.isParent.value &&
-    activeFamily.parentAccessibleFamilies.value.length > 1
-);
+const showSwitcher = computed(() => {
+  const isParent = activeFamily.isParent.value;
+  const familiesCount = activeFamily.parentAccessibleFamilies.value.length;
+  const show = isParent && familiesCount > 1;
+
+  console.debug(
+    `[AthleteSwitcher] isParent=${isParent}, familiesCount=${familiesCount}, show=${show}`,
+    activeFamily.parentAccessibleFamilies.value
+  );
+
+  return show;
+});
 
 const accessibleAthletes = computed(() =>
   activeFamily.parentAccessibleFamilies.value

@@ -1,7 +1,8 @@
-import { ref, computed, readonly, shallowRef, type ComputedRef } from "vue";
+import { ref, computed, readonly, shallowRef, inject, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
+import { useFamilyContext } from "./useFamilyContext";
 import { useToast } from "~/composables/useToast";
 import type { Interaction, FollowUpReminder } from "~/types/models";
 import type { Database } from "~/types/database";
@@ -123,8 +124,17 @@ export const useInteractions = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
-  const activeFamily = useActiveFamily();
+  // Try to get the provided family context (from page), fall back to singleton
+  const injectedFamily = inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+  const activeFamily = injectedFamily || useFamilyContext();
   const toast = useToast();
+
+  if (!injectedFamily) {
+    console.warn(
+      "[useInteractions] activeFamily injection failed, using singleton fallback. " +
+      "This may cause data sync issues when parent switches athletes."
+    );
+  }
 
   const interactions = shallowRef<Interaction[]>([]);
   const loading = ref(false);
@@ -594,7 +604,7 @@ export const useInteractions = (): {
 
     try {
       const newReminder: FollowUpReminderInsert = {
-        user_id: userStore.user.id,
+        user_id: activeFamily.getDataOwnerUserId(),
         notes: description,
         reminder_date: dueDate,
         reminder_type: reminderType as "email" | "sms" | "phone_call" | null,

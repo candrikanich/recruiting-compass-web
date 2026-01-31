@@ -54,6 +54,7 @@ const createMockSupabase = () => ({
 const createMockUser = () => ({
   id: "user-123",
   email: "test@example.com",
+  role: "student",
 });
 
 // These will be reassigned in beforeEach
@@ -86,6 +87,22 @@ describe("useInteractions - Extended", () => {
         },
         loading: false,
         isAuthenticated: true,
+      }),
+    }));
+
+    vi.doMock("~/composables/useActiveFamily", () => ({
+      useActiveFamily: () => ({
+        activeFamilyId: { value: "family-123" },
+        activeAthleteId: { value: "athlete-123" },
+        isParentViewing: { value: false },
+        familyMembers: { value: [] },
+        getAccessibleAthletes: () => [],
+        getDataOwnerUserId: () => "athlete-123",
+        switchAthlete: vi.fn(),
+        initializeFamily: vi.fn(),
+        fetchFamilyMembers: vi.fn(),
+        loading: { value: false },
+        error: { value: null },
       }),
     }));
 

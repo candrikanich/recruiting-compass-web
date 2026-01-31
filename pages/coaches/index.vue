@@ -446,11 +446,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, inject } from "vue";
 import { navigateTo } from "#app";
 import { useSupabase } from "~/composables/useSupabase";
 import { useCommunication } from "~/composables/useCommunication";
-import { useActiveFamily } from "~/composables/useActiveFamily";
+import { useFamilyContext } from "~/composables/useFamilyContext";
 import { useUserStore } from "~/stores/user";
 import Header from "~/components/Header.vue";
 import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
@@ -472,7 +472,9 @@ definePageMeta({
 
 const supabase = useSupabase();
 const userStore = useUserStore();
-const { activeFamilyId } = useActiveFamily();
+// Inject family context provided at app.vue level (with singleton fallback)
+const activeFamily = inject("activeFamily") || useFamilyContext();
+const { activeFamilyId } = activeFamily;
 const {
   showPanel,
   selectedCoach,
@@ -771,6 +773,7 @@ watch(
       await fetchData();
     }
   },
+  { immediate: true },
 );
 
 onMounted(async () => {

@@ -15,11 +15,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from "vue";
-import { useActiveFamily } from "~/composables/useActiveFamily";
+import { computed, ref, onMounted, watch, inject } from "vue";
+import { useFamilyContext } from "~/composables/useFamilyContext";
 import { useUserStore } from "~/stores/user";
 
-const activeFamily = useActiveFamily();
+const activeFamily = inject("activeFamily") || useFamilyContext();
 const userStore = useUserStore();
 const loading = ref(false);
 const selectedAthleteId = ref<string>("");

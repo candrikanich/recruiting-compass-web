@@ -20,7 +20,10 @@ vi.mock("~/composables/useActiveFamily", () => ({
     isParentViewing: { value: false },
     familyMembers: { value: [] },
     getAccessibleAthletes: () => [],
+    getDataOwnerUserId: () => "athlete-123",
     switchAthlete: vi.fn(),
+    initializeFamily: vi.fn(),
+    fetchFamilyMembers: vi.fn(),
     loading: { value: false },
     error: { value: null },
   }),
@@ -264,7 +267,8 @@ describe("useCoaches", () => {
           role: "assistant",
           school_id: "school-123",
           twitter_handle: "coachdoe",
-          user_id: "user-123",
+          user_id: "athlete-123",
+          family_unit_id: "family-123",
         },
       ]);
 
