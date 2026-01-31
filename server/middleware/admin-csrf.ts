@@ -1,14 +1,18 @@
 /**
- * Middleware to disable CSRF protection for admin endpoints
- * Admin endpoints are protected by auth + admin checks, so CSRF is redundant
+ * Middleware to disable CSRF protection for admin and auth-protected endpoints
+ * These endpoints are protected by authentication checks, so CSRF is redundant
  */
 
 export default defineEventHandler((event) => {
   const url = event.node.req.url || "";
 
-  // Disable CSRF for admin API endpoints
+  // Disable CSRF for admin API endpoints (protected by admin checks)
   if (url.startsWith("/api/admin/")) {
-    // Set a flag that tells h3-csrf to skip validation
+    event.context._skipCsrfValidation = true;
+  }
+
+  // Disable CSRF for family code endpoints (protected by requireAuth)
+  if (url.startsWith("/api/family/code/")) {
     event.context._skipCsrfValidation = true;
   }
 });
