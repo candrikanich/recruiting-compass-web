@@ -628,6 +628,7 @@ const { getSchoolPreferences, getHomeLocation } =
 const { offers, fetchOffers } = useOffers();
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { coaches: coachesData, fetchAllCoaches } = useCoaches();
+const { activeFamilyId } = useActiveFamily();
 const userStore = useUserStore();
 
 const allInteractions = ref<any[]>([]);
@@ -648,6 +649,19 @@ watch(
       console.debug("[Schools] User initialized, re-fetching schools");
       await fetchSchools();
       console.debug(`[Schools] Re-fetch complete: ${schools.value.length} schools`);
+    }
+  },
+);
+
+// Re-fetch schools when active athlete changes (for parents switching between children)
+watch(
+  () => activeFamilyId.value,
+  async (newFamilyId) => {
+    if (newFamilyId) {
+      console.debug(
+        `[Schools] Family changed: familyId=${newFamilyId}, re-fetching schools`,
+      );
+      await fetchSchools();
     }
   },
 );

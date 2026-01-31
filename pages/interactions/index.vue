@@ -506,10 +506,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, type Component } from "vue";
+import { ref, computed, onMounted, watch, type Component } from "vue";
 import { useInteractions } from "~/composables/useInteractions";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
+import { useActiveFamily } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
 import Header from "~/components/Header.vue";
@@ -545,6 +546,7 @@ definePageMeta({
 
 const userStore = useUserStore();
 const supabase = useSupabase();
+const { activeFamilyId } = useActiveFamily();
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { schools: schoolsData, fetchSchools } = useSchools();
 const { coaches: coachesData, fetchAllCoaches } = useCoaches();
@@ -797,6 +799,19 @@ const handleExportPDF = () => {
   if (data.length === 0) return;
   generateInteractionsPDF(data);
 };
+
+// Re-fetch interactions when active athlete changes (for parents switching between children)
+watch(
+  () => activeFamilyId.value,
+  async (newFamilyId) => {
+    if (newFamilyId) {
+      console.debug(
+        `[Interactions] Family changed: familyId=${newFamilyId}, re-fetching interactions`,
+      );
+      await fetchInteractions();
+    }
+  },
+);
 
 // Load data
 onMounted(async () => {

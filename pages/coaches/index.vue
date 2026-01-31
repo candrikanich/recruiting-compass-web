@@ -446,10 +446,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { navigateTo } from "#app";
 import { useSupabase } from "~/composables/useSupabase";
 import { useCommunication } from "~/composables/useCommunication";
+import { useActiveFamily } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 import Header from "~/components/Header.vue";
 import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
@@ -471,6 +472,7 @@ definePageMeta({
 
 const supabase = useSupabase();
 const userStore = useUserStore();
+const { activeFamilyId } = useActiveFamily();
 const {
   showPanel,
   selectedCoach,
@@ -718,23 +720,23 @@ const handleExportPDF = () => {
 };
 
 const fetchData = async () => {
-  if (!userStore.user) return;
+  if (!userStore.user || !activeFamilyId.value) return;
 
   loading.value = true;
   error.value = null;
 
   try {
-    // Fetch all schools for this user
+    // Fetch all schools for this family
     const { data: schoolsData, error: schoolsError } = await supabase
       .from("schools")
       .select("*")
-      .eq("user_id", userStore.user.id);
+      .eq("family_unit_id", activeFamilyId.value);
 
     if (schoolsError) throw schoolsError;
 
     schools.value = schoolsData || [];
 
-    // Fetch coaches for all user's schools
+    // Fetch coaches for all family's schools
     if (schools.value.length > 0) {
       const schoolIds = schools.value.map((s) => s.id);
       const { data: coachesData, error: coachesError } = await supabase
@@ -757,6 +759,19 @@ const fetchData = async () => {
     loading.value = false;
   }
 };
+
+// Re-fetch coaches when active athlete changes (for parents switching between children)
+watch(
+  () => activeFamilyId.value,
+  async (newFamilyId) => {
+    if (newFamilyId) {
+      console.debug(
+        `[Coaches] Family changed: familyId=${newFamilyId}, re-fetching coaches`,
+      );
+      await fetchData();
+    }
+  },
+);
 
 onMounted(async () => {
   await fetchData();
