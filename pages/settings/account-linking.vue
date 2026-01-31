@@ -30,6 +30,73 @@
         <p class="text-sm text-red-700">{{ error }}</p>
       </div>
 
+      <!-- Success Messages -->
+      <div v-if="familyCodeSuccess" class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+        <p class="text-sm text-green-700">{{ familyCodeSuccess }}</p>
+      </div>
+
+      <div v-if="familyCodeError" class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        <p class="text-sm text-red-700">{{ familyCodeError }}</p>
+      </div>
+
+      <!-- NEW: Family Code Section for Students -->
+      <section v-if="isStudent && myFamilyCode" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+        <FamilyCodeDisplay
+          :family-code="myFamilyCode"
+          :code-generated-at="codeGeneratedAt"
+          @copy="handleCopyCode"
+          @regenerate="handleRegenerateCode"
+        />
+      </section>
+
+      <!-- NEW: Create Family Section for Students -->
+      <section v-if="isStudent && !myFamilyCode" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Create Your Family</h2>
+        <p class="text-sm text-gray-700 mb-4">
+          Create a family to share your recruiting data with parents and guardians.
+          You'll receive a code to share with them.
+        </p>
+        <button
+          @click="handleCreateFamily"
+          :disabled="familyCodeLoading"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+        >
+          {{ familyCodeLoading ? "Creating..." : "Create My Family" }}
+        </button>
+      </section>
+
+      <!-- NEW: Join Family Section for Parents -->
+      <section v-if="isParent" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+        <FamilyCodeInput
+          :loading="familyCodeLoading"
+          @submit="handleJoinFamily"
+        />
+      </section>
+
+      <!-- NEW: Joined Families for Parents -->
+      <section v-if="isParent && parentFamilies.length > 0" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">
+          My Families <span class="text-sm text-gray-600">({{ parentFamilies.length }})</span>
+        </h2>
+        <div class="space-y-3">
+          <div
+            v-for="family in parentFamilies"
+            :key="family.familyId"
+            class="border border-green-200 bg-green-50 rounded-lg p-4"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-semibold text-green-900">{{ family.familyName }}</h3>
+                <p class="text-sm text-green-700 font-mono">{{ family.familyCode }}</p>
+              </div>
+              <span class="px-2 py-1 bg-green-200 text-green-800 rounded text-xs">
+                ✓ Joined
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Section 1: Linked Accounts (status: accepted) -->
       <section
         v-if="linkedAccounts.length > 0"
@@ -240,20 +307,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { ArrowLeftIcon, ExclamationCircleIcon, EnvelopeIcon, PaperAirplaneIcon } from "@heroicons/vue/24/outline";
 import { useAccountLinks } from "~/composables/useAccountLinks";
+import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useUserStore } from "~/stores/user";
 import LinkedAccountCard from "~/components/AccountLinking/LinkedAccountCard.vue";
 import PendingInvitationCard from "~/components/AccountLinking/PendingInvitationCard.vue";
 import ConfirmationCard from "~/components/AccountLinking/ConfirmationCard.vue";
 import SentInvitationCard from "~/components/AccountLinking/SentInvitationCard.vue";
+import FamilyCodeDisplay from "~/components/Family/FamilyCodeDisplay.vue";
+import FamilyCodeInput from "~/components/Family/FamilyCodeInput.vue";
 
 definePageMeta({
   middleware: "auth",
 });
 
 const userStore = useUserStore();
+const isStudent = computed(() => userStore.user?.role === "student");
+const isParent = computed(() => userStore.user?.role === "parent");
+
 const {
   linkedAccounts,
   sentInvitations,
@@ -271,12 +344,29 @@ const {
   unlinkAccount,
 } = useAccountLinks();
 
+const {
+  myFamilyCode,
+  myFamilyId,
+  myFamilyName,
+  parentFamilies,
+  loading: familyCodeLoading,
+  error: familyCodeError,
+  successMessage: familyCodeSuccess,
+  fetchMyCode,
+  createFamily,
+  joinByCode,
+  regenerateCode,
+  copyCodeToClipboard,
+} = useFamilyCode();
+
+const codeGeneratedAt = ref<string | null>(null);
 const inviteEmail = ref("");
 const inviteeRole = ref("");
 const sendError = ref<string | null>(null);
 
 onMounted(async () => {
   await fetchAccountLinks();
+  await fetchMyCode();
 });
 
 const handleSendInvitation = async () => {
@@ -331,6 +421,30 @@ const handleUnlink = async (linkId: string) => {
     if (!success) {
       sendError.value = error.value || "Failed to unlink account";
     }
+  }
+};
+
+const handleCreateFamily = async () => {
+  const success = await createFamily();
+  if (success) {
+    await fetchMyCode();
+  }
+};
+
+const handleJoinFamily = async (code: string) => {
+  await joinByCode(code);
+};
+
+const handleCopyCode = async (code: string) => {
+  await copyCodeToClipboard(code);
+};
+
+const handleRegenerateCode = async () => {
+  const confirmed = confirm(
+    "Are you sure you want to regenerate your family code? The old code will no longer work."
+  );
+  if (confirmed) {
+    await regenerateCode();
   }
 };
 </script>
