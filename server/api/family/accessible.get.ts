@@ -32,6 +32,7 @@ export default defineEventHandler(async (event) => {
     }
 
     console.log("[/api/family/accessible] Found family members:", familyMembers?.length || 0);
+    console.log("[/api/family/accessible] Family member details:", familyMembers);
 
     if (!familyMembers || familyMembers.length === 0) {
       console.log("[/api/family/accessible] No family memberships found, returning empty");
@@ -75,7 +76,10 @@ export default defineEventHandler(async (event) => {
       familyName: family.family_name || "Family",
     }));
 
-    console.log("[/api/family/accessible] Returning families:", accessibleFamilies);
+    console.log(
+      `[/api/family/accessible] Returning ${accessibleFamilies.length} families for user ${user.id}:`,
+      accessibleFamilies
+    );
     return {
       success: true,
       families: accessibleFamilies,

@@ -149,6 +149,11 @@ export const useActiveFamily = () => {
             },
           });
 
+          console.debug(
+            `[useActiveFamily] API response: ${response.families?.length || 0} families`,
+            response.families
+          );
+
           if (response.families) {
             parentAccessibleFamilies.value = response.families;
 
