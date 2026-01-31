@@ -18,26 +18,69 @@ export const useFamilyCode = () => {
   const successMessage = ref<string | null>(null);
 
   const userStore = useUserStore();
+  const supabase = useSupabase();
   const currentUserRole = computed(
     () => userStore.user?.role || "parent"
   );
 
   /**
-   * Fetches family code for current user
+   * Fetches family code for current user using Supabase
    */
   const fetchMyCode = async () => {
     loading.value = true;
     error.value = null;
 
     try {
-      const response = await $fetch("/api/family/code/my-code");
-
       if (currentUserRole.value === "student") {
-        myFamilyCode.value = response.familyCode;
-        myFamilyId.value = response.familyId;
-        myFamilyName.value = response.familyName;
+        // Students: Get their family code
+        const { data: family, error: fetchError } = await supabase
+          .from("family_units")
+          .select("id, family_code, family_name, code_generated_at")
+          .eq("student_user_id", userStore.user?.id)
+          .single();
+
+        if (fetchError) {
+          error.value = fetchError.message;
+          return;
+        }
+
+        myFamilyCode.value = family?.family_code || null;
+        myFamilyId.value = family?.id || null;
+        myFamilyName.value = family?.family_name || null;
       } else {
-        parentFamilies.value = response.families || [];
+        // Parents: Get codes for families they belong to
+        const { data: memberships, error: fetchError } = await supabase
+          .from("family_members")
+          .select(
+            `
+            family_unit_id,
+            family_units!inner(id, family_code, family_name, code_generated_at)
+          `
+          )
+          .eq("user_id", userStore.user?.id)
+          .eq("role", "parent");
+
+        if (fetchError) {
+          error.value = fetchError.message;
+          return;
+        }
+
+        type MembershipRow = {
+          family_units: {
+            id: string;
+            family_code: string | null;
+            family_name: string | null;
+            code_generated_at: string | null;
+          };
+        };
+
+        parentFamilies.value =
+          memberships?.map((m: MembershipRow) => ({
+            familyId: m.family_units.id,
+            familyCode: m.family_units.family_code || "",
+            familyName: m.family_units.family_name || "",
+            codeGeneratedAt: m.family_units.code_generated_at || "",
+          })) || [];
       }
     } catch (e) {
       error.value =
@@ -49,7 +92,7 @@ export const useFamilyCode = () => {
   };
 
   /**
-   * Creates a new family (students only)
+   * Creates a new family (students only) - calls API endpoint
    */
   const createFamily = async () => {
     if (currentUserRole.value !== "student") {
@@ -62,7 +105,13 @@ export const useFamilyCode = () => {
     successMessage.value = null;
 
     try {
-      const response = await $fetch("/api/family/create", {
+      // Call API endpoint which handles code generation and everything
+      const response = await $fetch<{
+        success: boolean;
+        familyCode: string;
+        familyId: string;
+        familyName: string;
+      }>("/api/family/create", {
         method: "POST",
       });
 
