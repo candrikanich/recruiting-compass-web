@@ -41,6 +41,7 @@ export const useActiveFamily = () => {
       familyUnitId: string;
       athleteId: string;
       athleteName: string;
+      graduationYear: number | null;
       familyName: string;
     }>
   >([]);
@@ -85,6 +86,31 @@ export const useActiveFamily = () => {
     return isParent.value && currentAthleteId.value !== null;
   });
 
+  /**
+   * Select athlete closest to graduation
+   * Returns athlete with earliest (lowest) graduation year
+   * Handles null graduation years by treating them as lowest priority
+   */
+  const selectClosestToGraduation = (): string | null => {
+    if (parentAccessibleFamilies.value.length === 0) return null;
+
+    const athletesWithYear = parentAccessibleFamilies.value.filter(
+      (f) => f.graduationYear !== null
+    );
+
+    if (athletesWithYear.length === 0) {
+      // All null years, return first
+      return parentAccessibleFamilies.value[0].athleteId;
+    }
+
+    // Sort by graduation year ascending (earliest first)
+    const sorted = [...athletesWithYear].sort(
+      (a, b) => a.graduationYear! - b.graduationYear!
+    );
+
+    return sorted[0].athleteId;
+  };
+
   // Fetch family structure for current user
   const initializeFamily = async () => {
     if (!userStore.user) {
@@ -109,68 +135,54 @@ export const useActiveFamily = () => {
           studentFamilyId.value = data.id;
         }
       } else if (isParent.value) {
-        // For parents, fetch all accessible families
-        const { data, error: fetchError } = await supabase
-          .from("family_members")
-          .select(
-            `
-            family_unit_id,
-            family_units (
-              id,
-              student_user_id,
-              family_name
-            )
-          `
-          )
-          .eq("user_id", userStore.user.id)
-          .eq("role", "parent");
+        // For parents, fetch all accessible families via API
+        try {
+          // Get auth session to include token
+          const { data: { session } } = await supabase.auth.getSession();
 
-        if (fetchError) throw fetchError;
+          const response = await $fetch("/api/family/accessible", {
+            headers: {
+              Authorization: `Bearer ${session?.access_token}`,
+            },
+          });
 
-        if (data) {
-          parentAccessibleFamilies.value = data
-            .map((member) => {
-              const family = member.family_units as unknown as {
-                id: string;
-                student_user_id: string;
-                family_name: string | null;
-              };
-              return {
-                familyUnitId: member.family_unit_id,
-                athleteId: family.student_user_id,
-                athleteName: "Unknown", // Will fetch full names separately if needed
-                familyName: family.family_name || "Family",
-              };
-            })
-            .filter((f) => f.athleteId);
+          if (response.families) {
+            parentAccessibleFamilies.value = response.families;
 
-          // Set current athlete from route param or first accessible
-          const athleteIdFromRoute = route.query.athlete_id as string | undefined;
-          if (
-            athleteIdFromRoute &&
-            parentAccessibleFamilies.value.some(
-              (f) => f.athleteId === athleteIdFromRoute
-            )
-          ) {
-            currentAthleteId.value = athleteIdFromRoute;
-          } else if (parentAccessibleFamilies.value.length > 0) {
-            // Use first family, or check localStorage
-            const savedAthleteId =
-              typeof window !== "undefined"
-                ? localStorage.getItem("parent_last_viewed_athlete")
-                : null;
+            // Set current athlete: route param > localStorage > closest to graduation > first
+            const athleteIdFromRoute = route.query.athlete_id as string | undefined;
 
             if (
-              savedAthleteId &&
+              athleteIdFromRoute &&
               parentAccessibleFamilies.value.some(
-                (f) => f.athleteId === savedAthleteId
+                (f) => f.athleteId === athleteIdFromRoute
               )
             ) {
-              currentAthleteId.value = savedAthleteId;
+              // Query param takes precedence
+              currentAthleteId.value = athleteIdFromRoute;
+            } else if (typeof window !== "undefined") {
+              // Try localStorage (only on client side)
+              const savedAthleteId = localStorage.getItem("parent_last_viewed_athlete");
+
+              if (
+                savedAthleteId &&
+                parentAccessibleFamilies.value.some((f) => f.athleteId === savedAthleteId)
+              ) {
+                currentAthleteId.value = savedAthleteId;
+              } else {
+                // Auto-select athlete closest to graduation
+                currentAthleteId.value = selectClosestToGraduation();
+              }
             } else {
-              currentAthleteId.value = parentAccessibleFamilies.value[0].athleteId;
+              // Server-side fallback
+              currentAthleteId.value = selectClosestToGraduation();
             }
           }
+        } catch (err) {
+          // If API call fails, log the error for debugging
+          const errMsg = err instanceof Error ? err.message : JSON.stringify(err);
+          console.error("[useActiveFamily] API call failed:", errMsg);
+          parentAccessibleFamilies.value = [];
         }
       }
     } catch (err: unknown) {

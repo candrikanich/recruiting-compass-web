@@ -10,11 +10,14 @@
           @change="handleSwitch"
         >
           <option
-            v-for="athlete in linkedAthletes"
-            :key="athlete.user_id"
-            :value="athlete.user_id"
+            v-for="athlete in accessibleAthletes"
+            :key="athlete.athleteId"
+            :value="athlete.athleteId"
           >
-            {{ athlete.full_name || athlete.email }}
+            {{ athlete.athleteName }}
+            <template v-if="athlete.graduationYear">
+              ({{ athlete.graduationYear }})
+            </template>
           </option>
         </select>
       </div>
@@ -23,40 +26,42 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from "vue";
+import { computed, ref, watch } from "vue";
 import { UserCircleIcon } from "@heroicons/vue/24/outline";
-import { useParentContext } from "~/composables/useParentContext";
+import { useActiveFamily } from "~/composables/useActiveFamily";
 
-// Defer composable initialization to onMounted (safe Pinia access)
-let parentContext: ReturnType<typeof useParentContext> | undefined;
+const activeFamily = useActiveFamily();
+
+// Show switcher only if parent has multiple children
 const showSwitcher = computed(
   () =>
-    parentContext?.isParent.value &&
-    parentContext?.linkedAthletes.value.length > 1,
+    activeFamily.isParent.value &&
+    activeFamily.parentAccessibleFamilies.value.length > 1
 );
+
+const accessibleAthletes = computed(() =>
+  activeFamily.parentAccessibleFamilies.value
+);
+
 const selectedId = ref("");
 
-// Update selectedId when currentAthleteId changes (from initialization or route param)
+// Sync selectedId with active athlete
 watch(
-  () => parentContext?.currentAthleteId.value,
+  () => activeFamily.activeAthleteId.value,
   (newId) => {
     if (newId) {
       selectedId.value = newId;
     }
   },
+  { immediate: true }
 );
 
 const handleSwitch = async () => {
-  if (!parentContext) return;
   if (
     selectedId.value &&
-    selectedId.value !== parentContext.currentAthleteId.value
+    selectedId.value !== activeFamily.activeAthleteId.value
   ) {
-    await parentContext.switchAthlete(selectedId.value);
+    await activeFamily.switchAthlete(selectedId.value);
   }
 };
-
-onMounted(() => {
-  parentContext = useParentContext();
-});
 </script>
