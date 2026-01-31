@@ -49,6 +49,30 @@
         />
       </section>
 
+      <!-- Family Members Section for Students -->
+      <section
+        v-if="isStudent && myFamilyCode && familyMembers.length > 0"
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+      >
+        <h2 class="text-xl font-bold text-gray-900 mb-4">
+          Family Members <span class="text-sm text-gray-600">({{ familyMembers.length }})</span>
+        </h2>
+
+        <div v-if="loadingMembers" class="text-center py-4">
+          <p class="text-gray-500">Loading members...</p>
+        </div>
+
+        <div v-else class="space-y-3">
+          <FamilyMemberCard
+            v-for="member in familyMembers"
+            :key="member.id"
+            :member="member"
+            :is-student="isStudent"
+            @remove="handleRemoveMember"
+          />
+        </div>
+      </section>
+
       <!-- Create Family Section for Students -->
       <section v-if="isStudent && !myFamilyCode" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
         <h2 class="text-xl font-bold text-gray-900 mb-4">Create Your Family</h2>
@@ -118,8 +142,26 @@ import { ref, onMounted, computed } from "vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useUserStore } from "~/stores/user";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 import FamilyCodeDisplay from "~/components/Family/FamilyCodeDisplay.vue";
 import FamilyCodeInput from "~/components/Family/FamilyCodeInput.vue";
+import FamilyMemberCard from "~/components/Family/FamilyMemberCard.vue";
+
+interface User {
+  id: string;
+  email: string;
+  full_name: string | null;
+  role: string;
+}
+
+interface FamilyMember {
+  id: string;
+  family_unit_id: string;
+  user_id: string;
+  role: string;
+  added_at: string;
+  users: User;
+}
 
 definePageMeta({
   middleware: "auth",
@@ -142,13 +184,39 @@ const {
   joinByCode,
   regenerateCode,
   copyCodeToClipboard,
+  removeFamilyMember,
 } = useFamilyCode();
 
 const codeGeneratedAt = ref<string | null>(null);
 const error = ref<string | null>(null);
+const familyMembers = ref<FamilyMember[]>([]);
+const loadingMembers = ref(false);
+
+const fetchFamilyMembers = async () => {
+  if (!myFamilyId.value) return;
+  loadingMembers.value = true;
+  try {
+    const { $fetchAuth } = useAuthFetch();
+    const response = (await $fetchAuth(
+      `/api/family/members?familyId=${myFamilyId.value}`
+    )) as {
+      success: boolean;
+      members: FamilyMember[];
+    };
+    familyMembers.value = response.members || [];
+  } catch (err) {
+    error.value = "Failed to load family members";
+    console.error("fetchFamilyMembers error:", err);
+  } finally {
+    loadingMembers.value = false;
+  }
+};
 
 onMounted(async () => {
   await fetchMyCode();
+  if (isStudent.value && myFamilyId.value) {
+    await fetchFamilyMembers();
+  }
 });
 
 const handleCreateFamily = async () => {
@@ -172,6 +240,21 @@ const handleRegenerateCode = async () => {
   );
   if (confirmed) {
     await regenerateCode();
+  }
+};
+
+const handleRemoveMember = async (memberId: string) => {
+  const member = familyMembers.value.find((m) => m.id === memberId);
+  const memberName = member?.users?.full_name || member?.users?.email || "this member";
+
+  const confirmed = confirm(
+    `Are you sure you want to remove ${memberName}? They will lose access to your recruiting data.`
+  );
+  if (!confirmed) return;
+
+  const success = await removeFamilyMember(memberId);
+  if (success) {
+    await fetchFamilyMembers();
   }
 };
 </script>

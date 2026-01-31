@@ -239,6 +239,35 @@ export const useFamilyCode = () => {
     }
   };
 
+  /**
+   * Removes a family member (students only)
+   */
+  const removeFamilyMember = async (memberId: string) => {
+    loading.value = true;
+    error.value = null;
+    successMessage.value = null;
+
+    try {
+      const { $fetchAuth } = useAuthFetch();
+      await $fetchAuth(`/api/family/members/${memberId}`, {
+        method: "DELETE",
+      });
+      successMessage.value = "Family member removed successfully";
+      await fetchMyCode();
+      return true;
+    } catch (err) {
+      const errorData = err as Record<string, unknown>;
+      const message =
+        ((errorData.data as Record<string, unknown>)?.message as string) ||
+        (err instanceof Error ? err.message : "Failed to remove member");
+      error.value = message;
+      console.error("removeFamilyMember error:", err);
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // State
     myFamilyCode,
@@ -256,5 +285,6 @@ export const useFamilyCode = () => {
     joinByCode,
     regenerateCode,
     copyCodeToClipboard,
+    removeFamilyMember,
   };
 };
