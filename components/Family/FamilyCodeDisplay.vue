@@ -40,7 +40,7 @@
 <script setup lang="ts">
 defineProps<{
   familyCode: string;
-  codeGeneratedAt: string;
+  codeGeneratedAt: string | null;
 }>();
 
 defineEmits<{
@@ -48,7 +48,8 @@ defineEmits<{
   regenerate: [];
 }>();
 
-const formatDate = (date: string) => {
+const formatDate = (date: string | null) => {
+  if (!date) return "Date unknown";
   return new Date(date).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
