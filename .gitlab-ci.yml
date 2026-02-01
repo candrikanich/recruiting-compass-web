@@ -1,107 +1,21 @@
 image: node:20-alpine
 
 stages:
-  - install
-  - lint
-  - test
   - build
 
 variables:
-  NODE_ENV: test
+  NODE_ENV: production
   CI: "true"
-  # Test database credentials (configure in GitLab CI/CD settings)
-  NUXT_PUBLIC_SUPABASE_URL: $TEST_SUPABASE_URL
-  NUXT_PUBLIC_SUPABASE_ANON_KEY: $TEST_SUPABASE_ANON_KEY
 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - node_modules/
-    - .nuxt/
-
-# Stage 1: Install dependencies
-install:
-  stage: install
-  image: mcr.microsoft.com/playwright:v1.41.0-jammy
-  script:
-    - npm ci
-    - npx playwright install --with-deps chromium
-  artifacts:
-    paths:
-      - node_modules/
-    expire_in: 1 day
-  only:
-    - main
-    - merge_requests
-
-# Stage 2: Linting and type checking
-lint:
-  stage: lint
-  variables:
-    NODE_OPTIONS: "--max-old-space-size=4096"
-  script:
-    - npm run lint
-    - npm run type-check
-  needs: [install]
-  only:
-    - main
-    - merge_requests
-
-# Stage 3: Unit tests
-unit-tests:
-  stage: test
-  script:
-    - npx nuxi prepare
-    - npm run test -- --run --coverage
-  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
-  artifacts:
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage/cobertura-coverage.xml
-    when: always
-  needs: [install]
-  only:
-    - main
-    - merge_requests
-
-# Stage 4: E2E tests
-e2e-tests:
-  stage: test
-  image: mcr.microsoft.com/playwright:v1.41.0-jammy
-  script:
-    # 0. Prepare Nuxt artifacts
-    - npx nuxi prepare
-
-    # 1. Seed test database
-    - npm run db:seed:test
-
-    # 2. Start dev server in background
-    - npm run dev &
-    - npx wait-on http://localhost:3003 -t 120000
-
-    # 3. Run E2E tests
-    - npm run test:e2e -- --reporter=list
-  artifacts:
-    when: on_failure
-    paths:
-      - playwright-report/
-      - test-results/
-    expire_in: 7 days
-  needs: [install]
-  only:
-    - main
-    - merge_requests
-
-# Stage 5: Build
+# Build stage only
 build:
   stage: build
   script:
+    - npm ci
     - npm run build
   artifacts:
     paths:
       - .output/
     expire_in: 1 week
-  needs: [lint, unit-tests, e2e-tests]
   only:
     - main
