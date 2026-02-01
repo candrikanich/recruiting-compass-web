@@ -37,6 +37,8 @@ install:
 # Stage 2: Linting and type checking
 lint:
   stage: lint
+  variables:
+    NODE_OPTIONS: "--max-old-space-size=4096"
   script:
     - npm run lint
     - npm run type-check
@@ -49,6 +51,7 @@ lint:
 unit-tests:
   stage: test
   script:
+    - npx nuxi prepare
     - npm run test -- --run --coverage
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
   artifacts:
@@ -67,6 +70,9 @@ e2e-tests:
   stage: test
   image: mcr.microsoft.com/playwright:v1.41.0-jammy
   script:
+    # 0. Prepare Nuxt artifacts
+    - npx nuxi prepare
+
     # 1. Seed test database
     - npm run db:seed:test
 

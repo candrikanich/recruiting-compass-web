@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import prettier from "eslint-config-prettier";
 import ts from "typescript-eslint";
+import process from "process";
 
 export default [
   {
@@ -28,8 +29,9 @@ export default [
     languageOptions: {
       parser: ts.parser,
       parserOptions: {
-        project: "./tsconfig.json",
-        extraFileExtensions: [".vue"],
+        // Only enable type-aware linting for composables, stores, and utils
+        // to reduce memory usage in CI environments
+        ...(process.env.CI ? {} : { project: "./tsconfig.json", extraFileExtensions: [".vue"] }),
       },
     },
     rules: {
