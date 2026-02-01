@@ -68,9 +68,7 @@
 
             <!-- Selected count -->
             <span v-if="selectedCount > 0" class="text-slate-700 font-medium">
-              {{ selectedCount }} user{{
-                selectedCount !== 1 ? "s" : ""
-              }}
+              {{ selectedCount }} user{{ selectedCount !== 1 ? "s" : "" }}
               selected
             </span>
           </div>

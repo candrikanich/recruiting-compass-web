@@ -278,9 +278,7 @@
               :disabled="loading"
             />
             <p class="text-xs text-slate-500 mt-1">
-              {{ newInteraction.subject.length }}/{{
-                MAX_SUBJECT_LENGTH
-              }}
+              {{ newInteraction.subject.length }}/{{ MAX_SUBJECT_LENGTH }}
               characters
             </p>
           </div>
@@ -311,9 +309,7 @@
                   : 'text-slate-500',
               ]"
             >
-              {{ newInteraction.content.length }}/{{
-                MAX_CONTENT_LENGTH
-              }}
+              {{ newInteraction.content.length }}/{{ MAX_CONTENT_LENGTH }}
               characters
             </p>
           </div>

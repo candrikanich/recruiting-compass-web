@@ -113,9 +113,7 @@
                       clip-rule="evenodd"
                     />
                   </svg>
-                  {{
-                    expandedIds.includes(entry.id) ? "Hide" : "Show"
-                  }}
+                  {{ expandedIds.includes(entry.id) ? "Hide" : "Show" }}
                   previous version
                 </button>
 

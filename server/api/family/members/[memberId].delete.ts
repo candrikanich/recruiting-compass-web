@@ -30,7 +30,15 @@ export default defineEventHandler(async (event) => {
     .eq("id", memberId)
     .single();
 
-  if (memberError || !member) {
+  if (memberError) {
+    console.error("Family member fetch error:", memberError);
+    throw createError({
+      statusCode: 500,
+      message: "Failed to fetch member details",
+    });
+  }
+
+  if (!member) {
     throw createError({
       statusCode: 404,
       message: "Member not found",
@@ -43,6 +51,13 @@ export default defineEventHandler(async (event) => {
     family_name: string;
     student_user_id: string;
   };
+
+  if (!family || !family.student_user_id) {
+    throw createError({
+      statusCode: 500,
+      message: "Family data not found for member",
+    });
+  }
 
   if (family.student_user_id !== user.id) {
     throw createError({
@@ -74,14 +89,18 @@ export default defineEventHandler(async (event) => {
     .eq("id", memberId);
 
   if (deleteError) {
+    console.error("Family member delete error:", deleteError);
     throw createError({
       statusCode: 500,
       message: "Failed to remove member",
     });
   }
 
-  // Log action to family_code_usage_log
-  await supabase
+  // Return success immediately - other operations run in background
+  // (Fire-and-forget operations that don't block the response)
+
+  // Log action (non-blocking)
+  supabase
     .from("family_code_usage_log")
     .insert({
       family_unit_id: family.id,
@@ -89,41 +108,53 @@ export default defineEventHandler(async (event) => {
       action: "removed_member",
       code_used: null,
     })
+    .then(() => {
+      // Success - do nothing
+    })
     .catch((err) => console.warn("Failed to log removal action:", err));
 
-  // Get member info for notifications
+  // Get member info for notifications (may be null if relationship not populated)
   const memberInfo = member.users as unknown as {
     id: string;
     email: string;
     full_name: string | null;
     role: string;
-  };
+  } | null;
 
-  // Create notification for removed parent (HIGH priority)
-  await supabase
-    .from("notifications")
-    .insert({
-      user_id: memberInfo.id,
-      type: "family_member_removed",
-      title: "Removed from family",
-      message: `You have been removed from ${family.family_name}`,
-      priority: "high",
-    })
-    .catch((err) => console.warn("Failed to create parent notification:", err));
+  // Create notifications in background (non-blocking, fire-and-forget)
+  if (memberInfo) {
+    supabase
+      .from("notifications")
+      .insert({
+        user_id: memberInfo.id,
+        type: "family_member_removed",
+        title: "Removed from family",
+        message: `You have been removed from ${family.family_name}`,
+        priority: "high",
+      })
+      .then(() => {
+        // Success - do nothing
+      })
+      .catch((err) =>
+        console.warn("Failed to create parent notification:", err),
+      );
 
-  // Create notification for student (LOW priority)
-  await supabase
-    .from("notifications")
-    .insert({
-      user_id: user.id,
-      type: "family_member_removed",
-      title: "Family member removed",
-      message: `${memberInfo.full_name || memberInfo.email} has been removed from your family`,
-      priority: "low",
-    })
-    .catch((err) =>
-      console.warn("Failed to create student notification:", err),
-    );
+    supabase
+      .from("notifications")
+      .insert({
+        user_id: user.id,
+        type: "family_member_removed",
+        title: "Family member removed",
+        message: `${memberInfo.full_name || memberInfo.email} has been removed from your family`,
+        priority: "low",
+      })
+      .then(() => {
+        // Success - do nothing
+      })
+      .catch((err) =>
+        console.warn("Failed to create student notification:", err),
+      );
+  }
 
   return {
     success: true,

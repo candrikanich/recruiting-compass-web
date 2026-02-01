@@ -1,5 +1,5 @@
 import { defineEventHandler, readBody, getRequestIP, createError } from "h3";
-import { requireAuth } from "~/server/utils/auth";
+import { requireAuth, getUserRole } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import {
   isValidFamilyCodeFormat,
@@ -16,6 +16,15 @@ export default defineEventHandler(async (event) => {
   const { familyCode } = body;
   const supabase = useSupabaseAdmin();
 
+  // Get user role from database
+  const userRole = await getUserRole(user.id, supabase);
+  if (userRole !== "parent") {
+    throw createError({
+      statusCode: 403,
+      message: "Only parents can join families using codes",
+    });
+  }
+
   // Rate limiting
   const ip = getRequestIP(event) || "unknown";
   if (!checkRateLimit(ip)) {
@@ -30,14 +39,6 @@ export default defineEventHandler(async (event) => {
     throw createError({
       statusCode: 400,
       message: "Invalid family code format. Expected: FAM-XXXXXX",
-    });
-  }
-
-  // Only parents can join families
-  if (user.role !== "parent") {
-    throw createError({
-      statusCode: 403,
-      message: "Only parents can join families using codes",
     });
   }
 
@@ -93,8 +94,16 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Log usage
-  await supabase
+  // Return success immediately - other operations run in background
+  const successResponse = {
+    success: true,
+    familyId: family.id,
+    familyName: family.family_name,
+    message: `Successfully joined ${family.family_name}`,
+  };
+
+  // Log usage (non-blocking, fire-and-forget)
+  supabase
     .from("family_code_usage_log")
     .insert({
       family_unit_id: family.id,
@@ -102,10 +111,13 @@ export default defineEventHandler(async (event) => {
       code_used: familyCode,
       action: "joined",
     })
+    .then(() => {
+      // Success - do nothing
+    })
     .catch((err) => console.warn("Failed to log join action:", err));
 
-  // Create notification for student
-  await supabase
+  // Create notification for student (non-blocking, fire-and-forget)
+  supabase
     .from("notifications")
     .insert({
       user_id: family.student_user_id,
@@ -114,12 +126,10 @@ export default defineEventHandler(async (event) => {
       message: `${user.full_name || user.email} joined your family`,
       priority: "medium",
     })
+    .then(() => {
+      // Success - do nothing
+    })
     .catch((err) => console.warn("Notification creation failed:", err));
 
-  return {
-    success: true,
-    familyId: family.id,
-    familyName: family.family_name,
-    message: `Successfully joined ${family.family_name}`,
-  };
+  return successResponse;
 });

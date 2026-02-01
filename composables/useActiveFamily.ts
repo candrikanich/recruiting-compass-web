@@ -1,4 +1,4 @@
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch, getCurrentInstance } from "vue";
 import { useRoute } from "vue-router";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
@@ -283,10 +283,19 @@ export const useActiveFamily = () => {
   };
 
   // Initialize on mount and when user role changes
-  onMounted(async () => {
-    await initializeFamily();
-    await fetchFamilyMembers();
-  });
+  // Only register lifecycle hook if we're in a component context
+  if (getCurrentInstance()) {
+    onMounted(async () => {
+      await initializeFamily();
+      await fetchFamilyMembers();
+    });
+  } else {
+    // If not in component context (e.g., in middleware), initialize immediately
+    // without awaiting to avoid blocking
+    initializeFamily().catch((err) =>
+      console.warn("Failed to initialize family context:", err),
+    );
+  }
 
   // Reinitialize if user role changes (e.g., from unloaded to parent/student)
   watch(

@@ -48,7 +48,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Email confirmed, account activated
 - [ ] Can login with new credentials
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Duplicate email error
 
@@ -57,7 +57,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Account not created
 - [ ] Can see password reset/login links in error message
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Password validation
 
@@ -68,7 +68,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Enter valid password (8+ chars)
 - [ ] **Verify**: Signup button becomes enabled
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Email format validation
 
@@ -77,7 +77,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Enter valid email format
 - [ ] **Verify**: Error clears, form proceeds normally
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -88,7 +88,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Duplicate email prevention works
 - [ ] Passwords securely hashed (check via admin panel/database)
 
-**Story 1.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 1.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -106,7 +106,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Redirected to dashboard
 - [ ] **Verify**: Dashboard shows user's data
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Incorrect password
 
@@ -117,7 +117,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Error message "Invalid email or password" displays (generic, not revealing which is wrong)
 - [ ] **Verify**: Remain on login page, not logged in
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Remember Me checkbox
 
@@ -132,7 +132,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Wait 30 days (or fast-forward in system if possible)
 - [ ] **Verify**: Session expires and login required
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Session timeout
 
@@ -142,7 +142,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Logged out, redirected to login page
 - [ ] **Verify**: Message "Your session has expired" or similar
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -153,7 +153,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] HTTPS enforced (check URL bar)
 - [ ] Error message doesn't reveal which field is incorrect
 
-**Story 1.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 1.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -172,7 +172,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Email sent to spouse's address within 1 minute
 - [ ] **Verify**: Invitation listed in settings with "Pending" status
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Secondary user accepts invitation
 
@@ -185,7 +185,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Can login with own credentials
 - [ ] **Verify**: Can access all data from primary account
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Secondary user read-only access
 
@@ -196,7 +196,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Edit button disabled or hidden
 - [ ] **Verify**: "Read-Only Access" indicator visible on page
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Primary user removes secondary user
 
@@ -210,7 +210,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Login as removed secondary user
 - [ ] **Verify**: Access denied, message "Access revoked"
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Duplicate invitation prevention
 
@@ -218,7 +218,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Warning "Invitation already sent to this email" or similar
 - [ ] **Verify**: Second invitation not created
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -229,7 +229,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Secondary user clearly labeled in UI
 - [ ] Cannot add duplicate invitations
 
-**Story 1.3 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 1.3 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -246,7 +246,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Message "Check your email for reset instructions"
 - [ ] **Verify**: Reset email sent within 5 minutes
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Use reset link
 
@@ -256,7 +256,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Taken to password reset page
 - [ ] **Verify**: Page asks for new password (not old password)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Complete password reset
 
@@ -269,7 +269,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Can login with new password
 - [ ] Old password no longer works
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Reset link expiration
 
@@ -279,7 +279,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Error "This reset link has expired"
 - [ ] **Verify**: Can request new reset link from error page
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Password reset validation
 
@@ -291,7 +291,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Enter valid password
 - [ ] **Verify**: Button enabled, reset succeeds
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -302,7 +302,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Can login immediately with new password
 - [ ] Link expires after 24 hours
 
-**Story 1.4 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 1.4 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -327,7 +327,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Redirected to athlete dashboard
 - [ ] **Verify**: Profile data displays correctly
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Add optional athletic information
 
@@ -340,7 +340,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Optional information stored
 - [ ] **Verify**: Can view and edit later
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Add academic information
 
@@ -355,7 +355,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Academic information stored
 - [ ] **Verify**: Timeline adjusts based on new GPA/scores
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Add video links
 
@@ -368,7 +368,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Links appear on profile
 - [ ] **Verify**: Links are clickable and functional
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Upload profile photo
 
@@ -381,7 +381,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Test with image over 5MB
 - [ ] **Verify**: Error message, file rejected
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 6: Field validation
 
@@ -394,7 +394,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Try ACT outside 1-36
 - [ ] **Verify**: Error prevents invalid entry
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -408,7 +408,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] GPA validation 0.0-4.0 enforced
 - [ ] Test score validation enforced
 
-**Story 2.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 2.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -427,7 +427,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Timeline recalculates based on new info
 - [ ] **Verify**: Message "Profile updated"
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Athlete views profile read-only
 
@@ -439,7 +439,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Try to directly edit (e.g., via form manipulation)
 - [ ] **Verify**: Backend prevents athlete from editing own profile
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Profile changes trigger fit score recalculation
 
@@ -450,7 +450,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Note which schools changed significantly
 - [ ] **Verify**: Rule-based suggestions update based on new fit scores
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Parent views edit history
 
@@ -461,7 +461,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Shows before/after values
 - [ ] **Verify**: Timestamps are accurate
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Secondary user cannot edit
 
@@ -470,7 +470,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Edit button disabled or hidden
 - [ ] **Verify**: Cannot save any profile changes
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -481,7 +481,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Edit history logged with timestamps
 - [ ] Athlete cannot edit own profile
 
-**Story 2.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 2.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -507,7 +507,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Location: Tempe, AZ
   - [ ] Conference: PAC-12 (if applicable)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Add school not in database
 
@@ -522,7 +522,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Custom school added to list
 - [ ] **Verify**: Appears with same formatting as database schools
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Prevent duplicates
 
@@ -531,7 +531,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: School not duplicated
 - [ ] Duplicate still shows in warning even if exact match check is case-insensitive
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: School info auto-population
 
@@ -542,7 +542,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Conference populated (if D1)
   - [ ] Coach information available
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Add up to 50 schools
 
@@ -552,7 +552,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Try adding beyond maximum
 - [ ] **Verify**: Error or warning when limit reached
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -563,7 +563,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Cannot add duplicate schools
 - [ ] Custom schools have all required fields
 
-**Story 3.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 3.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -583,7 +583,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] New Mexico: 75
   - [ ] Cal State Bakersfield: 78
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Fit score breakdown
 
@@ -595,7 +595,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Opportunity Fit: 78 (with reasoning, e.g., "Coach expressed interest")
   - [ ] Personal Fit: 82 (with reasoning, e.g., "Good school-life fit")
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Fit score updates with profile changes
 
@@ -606,7 +606,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: ASU fit score recalculates to ~82 within 1 second
 - [ ] **Verify**: Notification "Fit scores updated"
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Honest assessment
 
@@ -616,7 +616,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: App suggests D2/D3 schools as better fits
 - [ ] No false hope; scores are realistic
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Algorithm transparency
 
@@ -624,7 +624,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Algorithm documented and transparent
 - [ ] Parents understand how score calculated
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -634,7 +634,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Honest assessment (not false hope)
 - [ ] Algorithm documented and transparent
 
-**Story 3.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 3.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -652,7 +652,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Clear filter, try Tier B and Tier C
 - [ ] **Verify**: Each filters correctly
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Filter by status
 
@@ -663,7 +663,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Try other statuses
 - [ ] **Verify**: Each status filters correctly
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Filter by fit score range
 
@@ -674,7 +674,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Try other ranges (60-75, 0-50, etc.)
 - [ ] **Verify**: Each range filters correctly
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Sort by distance
 
@@ -684,7 +684,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Distance in miles displayed next to each
 - [ ] Verify distances are accurate (can spot-check with map)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Multiple filters combined
 
@@ -697,7 +697,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Change one filter, verify results update
 - [ ] Clear all filters, verify full list returns
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 6: Filter performance
 
@@ -705,7 +705,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Results load in under 100ms
 - [ ] No UI freezing or lag
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -719,7 +719,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Multiple filters work together
 - [ ] Filter results load under 100ms
 
-**Story 3.3 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 3.3 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -739,7 +739,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Change priority to B
 - [ ] **Verify**: Updated correctly
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Track recruiting status
 
@@ -760,7 +760,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Status updated
 - [ ] **Verify**: Other users see this status context (if applicable)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Status change timestamped
 
@@ -771,7 +771,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Click "View History" or similar
 - [ ] **Verify**: See history of all status changes with dates
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Priority independent of status
 
@@ -782,7 +782,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Status still Recruited
 - [ ] These are independent fields
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -793,7 +793,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Can view status history for each school
 - [ ] Status changes visible in interaction timeline
 
-**Story 3.4 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 3.4 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -812,7 +812,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Refresh page
 - [ ] **Verify**: Notes persist
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: View coaching philosophy/info
 
@@ -824,7 +824,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Communication Style
   - [ ] Success with similar athletes
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Edit notes
 
@@ -836,7 +836,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Updated date recorded
 - [ ] **Verify**: New content visible on page
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Notes field constraints
 
@@ -846,14 +846,14 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Save notes with exactly 5,000 characters
 - [ ] **Verify**: Saves successfully
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Notes save performance
 
 - [ ] Add notes
 - [ ] **Verify**: Save completes in under 2 seconds
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -863,7 +863,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Can edit notes any time
 - [ ] Edit history recorded (shows when last updated)
 
-**Story 3.5 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 3.5 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -884,7 +884,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Phone number
 - [ ] **Example**: Head Coach info visible with correct school affiliation
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Auto-populate from database
 
@@ -895,7 +895,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: No manual entry required
 - [ ] Verify data looks current and reasonable
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Manually add coach
 
@@ -912,7 +912,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] View interaction logging form
 - [ ] **Verify**: New coach appears in dropdown
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: View coach communication history
 
@@ -924,7 +924,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Notes: Previous conversation notes
 - [ ] Verify history matches interactions logged elsewhere
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Edit coach information
 
@@ -935,7 +935,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Information updated
 - [ ] **Verify**: Changes reflected in interactions going forward
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -945,7 +945,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Interaction history visible from coach page
 - [ ] Can edit coach information if database is outdated
 
-**Story 4.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 4.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -961,7 +961,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Suggestion appears: "You haven't contacted [Coach A] at [School] for 21 days. Consider a follow-up email."
 - [ ] **Verify**: Suggestion has high priority (orange/red color)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Reminder is actionable
 
@@ -972,7 +972,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Log interaction
 - [ ] **Verify**: Reminder disappears
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Reminder frequency not spammy
 
@@ -983,7 +983,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Wait 1+ week, same coach still not contacted
 - [ ] **Verify**: Reminder reappears
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Respect NCAA dead periods
 
@@ -992,7 +992,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Reminders do NOT suggest contacting coaches during dead periods
 - [ ] **Verify**: Note visible: "Dead period - no recruiting contact permitted"
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Reminder severity
 
@@ -1002,7 +1002,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Fast-forward to 30+ days
 - [ ] **Verify**: Reminder turns red/high severity
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -1012,7 +1012,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Respects NCAA recruiting windows (no reminders during dead periods)
 - [ ] Reminder severity matches recency (21 days = yellow, 30 days = red)
 
-**Story 4.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 4.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -1038,7 +1038,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Appears in timeline
 - [ ] **Verify**: Timestamp recorded
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Log phone call
 
@@ -1052,7 +1052,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Call logged
 - [ ] **Verify**: "Last Contact" date updates to today
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Log camp attendance
 
@@ -1066,7 +1066,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Camp visit logged
 - [ ] **Verify**: Counts toward "contact frequency" calculations
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Set follow-up reminder during logging
 
@@ -1079,7 +1079,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Check reminders/calendar
 - [ ] **Verify**: Reminder appears on scheduled date
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Quick logging after event
 
@@ -1090,7 +1090,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Fill in and save interaction in under 30 seconds
 - [ ] **Verify**: Interaction logged with minimal steps
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 6: Interaction type variety
 
@@ -1107,7 +1107,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Other
 - [ ] **Verify**: All types available and save correctly
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 7: File attachments
 
@@ -1119,7 +1119,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Try attaching file over 10MB
 - [ ] **Verify**: Error or rejection
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 8: Last contact auto-calculation
 
@@ -1131,7 +1131,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] View school-level last contact
 - [ ] **Verify**: Shows most recent interaction with any coach at school
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -1144,7 +1144,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Interactions timestamped
 - [ ] Last contact auto-calculates
 
-**Story 5.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 5.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -1163,7 +1163,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Dec 20 | Email | Inbound | Coach expressed interest
 - [ ] Verify newest at top or bottom (consistent ordering)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Coach-specific timeline
 
@@ -1174,7 +1174,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Dec 20 | Email | Coach replied with interest
 - [ ] Verify only interactions with selected coach shown
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Timeline summary metrics
 
@@ -1185,7 +1185,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Contact frequency: 1.5 emails/month
   - [ ] Outbound vs Inbound: 3 outbound, 5 inbound
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Timeline filters by type
 
@@ -1196,7 +1196,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Try other filters (Calls only, Camps only, etc.)
 - [ ] **Verify**: Each filter works correctly
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Timeline filters by date range
 
@@ -1206,7 +1206,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Try other ranges
 - [ ] **Verify**: Filters work correctly
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 6: Interaction notes visible
 
@@ -1217,7 +1217,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Click away
 - [ ] **Verify**: Timeline still intact
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 7: Timeline performance
 
@@ -1227,7 +1227,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Filter results load quickly
 - [ ] No UI lag or freezing
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -1238,7 +1238,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Interaction notes visible in timeline
 - [ ] Timeline loads under 1 second
 
-**Story 5.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 5.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -1259,7 +1259,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Interaction logged
 - [ ] **Verify**: Parent can see it in timeline
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Athlete logs phone call received
 
@@ -1274,7 +1274,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Parent sees interaction
 - [ ] **Verify**: Parent can follow up if needed
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Athlete views interaction history
 
@@ -1285,7 +1285,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] View coach detail from athlete account
 - [ ] **Verify**: Athlete can see communication history
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Athlete logging speed
 
@@ -1293,7 +1293,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Completes in under 1 minute
 - [ ] Form is simplified vs. parent's version (less fields)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Parent sees athlete-logged interactions
 
@@ -1305,7 +1305,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] View coaching staff communication history
 - [ ] **Verify**: Athlete interaction appears
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -1314,7 +1314,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Athlete sees full interaction history
 - [ ] Athlete interaction logging under 1 minute
 
-**Story 5.3 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 5.3 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -1333,7 +1333,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Visual timeline showing 4-year progression with freshman highlighted
   - [ ] Stage description: "You're in the Foundation Stage. Right now, it's all about development, not recruitment..."
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Stage-appropriate guidance
 
@@ -1345,7 +1345,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] What NOT to stress: "Don't worry about college offers yet..." etc.
 - [ ] Tone is reassuring and conversational, not corporate
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Timeline adjusts by grade
 
@@ -1357,7 +1357,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] View timeline
 - [ ] **Verify**: See "Sophomore Stage" content
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Upcoming milestones
 
@@ -1369,7 +1369,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Early decision deadline: November 1, 2026
   - [ ] Other relevant dates based on athlete's profile
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Timeline loading and responsiveness
 
@@ -1380,7 +1380,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Content readable, no excessive scrolling
 - [ ] All sections accessible on mobile
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -1392,7 +1392,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Mobile responsive
 - [ ] Loads in under 1 second
 
-**Story 6.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 6.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -1410,7 +1410,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] School Tracking: 8 schools tracked
   - [ ] GPA Status: Solid (3.4 unweighted)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Status "Slightly Behind"
 
@@ -1423,7 +1423,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Next Steps: "Consider adding more schools and logging interactions"
 - [ ] Color is yellow/orange warning
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Status "At Risk"
 
@@ -1435,7 +1435,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Action Items: Specific recommendations to get back on track
 - [ ] Color is red/high alert
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Status recalculation
 
@@ -1445,7 +1445,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Status updates to "On Track" or improved status
 - [ ] Status is dynamically calculated, not static
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Status for different grades
 
@@ -1455,7 +1455,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: "At Risk" may show (more critical for junior)
 - [ ] Grade-appropriate urgency levels
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -1464,7 +1464,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Status updates based on profile changes
 - [ ] Clear action items for "Behind" and "At Risk" statuses
 
-**Story 6.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 6.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -1484,7 +1484,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] "You haven't contacted [School] in 3 weeks" | Medium priority | Click to log interaction
   - [ ] "Register with NCAA eligibility center" | High priority | Click for info
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Stage-appropriate suggestions
 
@@ -1495,7 +1495,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] "Attend summer showcases"
 - [ ] **Verify**: NOT see suggestions like "Schedule official visits" (junior year activity)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Different suggestions for juniors
 
@@ -1507,7 +1507,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] "Complete professional highlight video"
 - [ ] Different from sophomore suggestions
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Suggestion links to action
 
@@ -1519,7 +1519,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Acceptance criteria for videos
 - [ ] Can complete action from linked page
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Suggestion sorting
 
@@ -1529,7 +1529,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Less important lower
 - [ ] Sorting makes sense for athlete's situation
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 6: Mobile friendly
 
@@ -1538,7 +1538,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Suggestions readable and actionable on small screen
 - [ ] Action buttons easy to tap
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -1549,7 +1549,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Suggestions sorted by urgency/relevance
 - [ ] Mobile friendly
 
-**Story 7.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 7.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -1566,7 +1566,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Refresh page
 - [ ] **Verify**: Still hidden
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Mark suggestion complete
 
@@ -1576,7 +1576,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Disappears from active suggestions
 - [ ] **Verify**: New suggestion appears in its place
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Dismissed suggestion reappears if condition changes
 
@@ -1585,7 +1585,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Wait 21+ days without contacting Coach A
 - [ ] **Verify**: Suggestion reappears (because "no contact 21 days" rule triggered again)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Suggestion frequency respects time limits
 
@@ -1594,7 +1594,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Same suggestion does NOT reappear
 - [ ] **Verify**: Different suggestions shown instead
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Completed suggestions never reappear
 
@@ -1603,7 +1603,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Suggestion never reappears
 - [ ] Can view completed suggestions in history (if available)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 6: Multiple suggestion management
 
@@ -1614,7 +1614,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Refresh page
 - [ ] **Verify**: State persists correctly
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -1625,7 +1625,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Suggestions reappear if conditions change
 - [ ] Completed suggestions never reappear
 
-**Story 7.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 7.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -1642,7 +1642,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Old suggestion "Focus on D2/D3 schools" may change to "ASU is now in your realistic range"
 - [ ] Dashboard refreshes and shows new suggestions
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Suggestions update after interaction logging
 
@@ -1653,7 +1653,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Disappears from active list
 - [ ] New suggestion appears in its place
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Daily suggestion refresh
 
@@ -1663,7 +1663,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: New relevant suggestions may appear based on passing time
 - [ ] Example: "X days until SAT test"
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Real-time notification of changes
 
@@ -1672,7 +1672,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] View updated suggestions
 - [ ] Changes are recent and relevant
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -1680,7 +1680,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Daily suggestion refresh occurs
 - [ ] Users see notification when suggestions change
 
-**Story 7.3 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 7.3 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -1702,7 +1702,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Recent Activity: Latest interactions (emails, calls, camps)
   - [ ] Quick Actions: Add school, Log interaction, Review timeline
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Dashboard mobile responsive
 
@@ -1713,7 +1713,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Try on different screen sizes
 - [ ] **Verify**: Responsive to all sizes
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Dashboard loading performance
 
@@ -1722,7 +1722,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: All data visible immediately
 - [ ] No spinners/loaders after initial load
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Quick action buttons
 
@@ -1737,7 +1737,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Click "Review Timeline"
 - [ ] **Verify**: Takes to recruiting timeline
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Dashboard no console errors
 
@@ -1746,7 +1746,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: No JavaScript errors
 - [ ] **Verify**: No warnings that affect functionality
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -1757,7 +1757,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Quick action buttons prominent
 - [ ] No console errors
 
-**Story 8.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 8.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -1774,7 +1774,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Average contact frequency: 1.2 contacts per school per month
   - [ ] Schools with no recent contact: 2 (links to follow-up)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Color-coded by frequency
 
@@ -1785,7 +1785,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Red: No recent contact (30+ days)
 - [ ] Verify color coding is consistent with actual contact dates
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Click school needing attention
 
@@ -1796,7 +1796,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Click "Log Interaction"
 - [ ] **Verify**: Form opens pre-filled with school/coaches
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Real-time contact frequency updates
 
@@ -1807,7 +1807,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Contact frequency updates in real-time
 - [ ] School now shows recent contact
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -1816,7 +1816,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Links to follow-up actions
 - [ ] Updates in real-time
 
-**Story 8.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 8.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -1834,7 +1834,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Added school: Northern Colorado | Jan 7
   - [ ] Logged interaction: Camp at CU | Jan 5
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Activity feed shows interactions
 
@@ -1847,7 +1847,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Date: When it occurred
   - [ ] Summary: First 50 characters of notes
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Activity feed shows profile updates
 
@@ -1860,7 +1860,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] New value: 1350
   - [ ] Date: When changed
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Activity feed shows latest events
 
@@ -1869,7 +1869,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Feed updates with latest events
 - [ ] Oldest events pushed off the bottom
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Click event for details
 
@@ -1879,7 +1879,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Click away or back
 - [ ] **Verify**: Feed still intact, not disrupted
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 6: Activity feed timestamps
 
@@ -1888,7 +1888,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Recent events show time (e.g., "2 hours ago")
 - [ ] Older events show date (e.g., "Jan 5")
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -1897,7 +1897,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Feed updates in real-time
 - [ ] Can click event to view details
 
-**Story 8.3 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 8.3 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -1919,7 +1919,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Research SAT/ACT schedule | Completed | -
 - [ ] Verify tasks are appropriate for sophomore
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: See progress
 
@@ -1927,7 +1927,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: See "You've completed 4 of 20 tasks (20%)"
 - [ ] **Verify**: Progress bar shows 20% completion
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Mark task complete
 
@@ -1939,7 +1939,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Refresh page
 - [ ] **Verify**: Task completion persists
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: View task details
 
@@ -1953,7 +1953,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Click resource links
 - [ ] **Verify**: Links work and open helpful information
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Task completion flow
 
@@ -1963,7 +1963,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Progress bar visually updates
 - [ ] Motivational message or celebration (if implemented)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 6: Mobile view
 
@@ -1972,7 +1972,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Checkboxes large and easy to tap
 - [ ] **Verify**: Task details readable on small screen
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -1983,7 +1983,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Task details are clear and helpful
 - [ ] Mobile view is clean and easy to navigate
 
-**Story 9.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 9.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -1999,7 +1999,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: See progress "9/20 tasks completed"
 - [ ] **Verify**: Can see which tasks are overdue or urgent
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Filter by not-started
 
@@ -2008,7 +2008,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Grouped by priority
 - [ ] See which tasks need immediate attention
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: See task deadlines with color coding
 
@@ -2019,7 +2019,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Yellow: Due in 2+ weeks
 - [ ] Deadline colors align with urgency
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Parent cannot edit athlete's tasks
 
@@ -2029,7 +2029,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Edit/check button disabled or hidden
 - [ ] Athlete owns their progress, not parent
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Parent sees task details
 
@@ -2038,7 +2038,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Can use this to support and encourage athlete
 - [ ] Share resources with athlete if helpful
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 6: Task completion visibility
 
@@ -2047,7 +2047,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Completion immediately visible
 - [ ] **Verify**: Progress counter updates
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -2057,7 +2057,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Parent sees deadlines and urgency
 - [ ] Parent can see task details to provide support
 
-**Story 9.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 9.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -2073,7 +2073,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Task B is locked/hidden
 - [ ] **Verify**: See message "You'll unlock this task once you complete 'Register with NCSA'"
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Locked task unlocks automatically
 
@@ -2084,7 +2084,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Unlock happens within 1 second
 - [ ] Athlete sees new task immediately
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Task list respects logical order
 
@@ -2097,7 +2097,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Complete in order
 - [ ] **Verify**: Each unlock enables next
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: Task dependency database
 
@@ -2106,7 +2106,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Task has `prerequisite_task_id` field
   - [ ] Dependencies configured correctly
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Multiple dependencies
 
@@ -2117,7 +2117,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Complete second prerequisite
 - [ ] **Verify**: Task now unlocks
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -2127,7 +2127,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Unlocking is immediate (within 1 second)
 - [ ] Athlete understands why task is locked
 
-**Story 9.3 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 9.3 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -2145,7 +2145,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Filename: "John_Smith_RecruitingPacket.pdf"
 - [ ] **Verify**: File downloads or is ready to view
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: PDF includes athlete profile
 
@@ -2160,7 +2160,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Social Media: Instagram, Twitter handles
 - [ ] Verify all data is current and accurate
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: PDF includes school list
 
@@ -2173,7 +2173,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Northern Colorado | B | Interested | 91
 - [ ] Verify schools are accurate and complete
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: PDF includes interaction summary
 
@@ -2187,7 +2187,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
   - [ ] Coach calls: 2
 - [ ] Verify numbers are accurate
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: PDF professional and readable
 
@@ -2201,7 +2201,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Print PDF
 - [ ] **Verify**: Prints clearly and professionally
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 6: PDF data accuracy
 
@@ -2212,7 +2212,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Generate PDF again
 - [ ] **Verify**: All changes reflected
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -2224,7 +2224,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] PDF file size under 10MB
 - [ ] Includes date generated
 
-**Story 10.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 10.1 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
@@ -2241,7 +2241,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Open downloaded file
 - [ ] **Verify**: Content intact and readable
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 2: Email PDF to coach
 
@@ -2255,7 +2255,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Click "Send"
 - [ ] **Verify**: Email sent successfully
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 3: Email to multiple coaches
 
@@ -2267,7 +2267,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: Emails sent to all selected coaches
 - [ ] Verify each received (check email or system logs)
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 4: PDF reflects current data
 
@@ -2276,7 +2276,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] **Verify**: PDF includes updated data
 - [ ] Coach receives current information
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 5: Professional email template
 
@@ -2286,7 +2286,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Formatting clean and readable
 - [ ] Coach receives professional impression
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Scenario 6: Customize email
 
@@ -2297,7 +2297,7 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Send customized email
 - [ ] **Verify**: Coach receives customized message
 
-**Notes**: ********\_********
+**Notes**: **\*\*\*\***\_**\*\*\*\***
 
 #### Acceptance Criteria Checklist
 
@@ -2308,43 +2308,43 @@ Once all scenarios in a story pass, mark the story as **APPROVED** with:
 - [ ] Email has professional template
 - [ ] Can customize email before sending
 
-**Story 10.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: ****\_\_\_****
+**Story 10.2 Status**: ☐ PASS ☐ FAIL | Date: **\_** | Tester: \***\*\_\_\_\*\***
 
 ---
 
 ## Testing Completion Summary
 
-| Epic | Story | Status | Date   | Tester       |
-| ---- | ----- | ------ | ------ | ------------ |
-| 1    | 1.1   | ☐      | **\_** | ****\_\_**** |
-| 1    | 1.2   | ☐      | **\_** | ****\_\_**** |
-| 1    | 1.3   | ☐      | **\_** | ****\_\_**** |
-| 1    | 1.4   | ☐      | **\_** | ****\_\_**** |
-| 2    | 2.1   | ☐      | **\_** | ****\_\_**** |
-| 2    | 2.2   | ☐      | **\_** | ****\_\_**** |
-| 3    | 3.1   | ☐      | **\_** | ****\_\_**** |
-| 3    | 3.2   | ☐      | **\_** | ****\_\_**** |
-| 3    | 3.3   | ☐      | **\_** | ****\_\_**** |
-| 3    | 3.4   | ☐      | **\_** | ****\_\_**** |
-| 3    | 3.5   | ☐      | **\_** | ****\_\_**** |
-| 4    | 4.1   | ☐      | **\_** | ****\_\_**** |
-| 4    | 4.2   | ☐      | **\_** | ****\_\_**** |
-| 5    | 5.1   | ☐      | **\_** | ****\_\_**** |
-| 5    | 5.2   | ☐      | **\_** | ****\_\_**** |
-| 5    | 5.3   | ☐      | **\_** | ****\_\_**** |
-| 6    | 6.1   | ☐      | **\_** | ****\_\_**** |
-| 6    | 6.2   | ☐      | **\_** | ****\_\_**** |
-| 7    | 7.1   | ☐      | **\_** | ****\_\_**** |
-| 7    | 7.2   | ☐      | **\_** | ****\_\_**** |
-| 7    | 7.3   | ☐      | **\_** | ****\_\_**** |
-| 8    | 8.1   | ☐      | **\_** | ****\_\_**** |
-| 8    | 8.2   | ☐      | **\_** | ****\_\_**** |
-| 8    | 8.3   | ☐      | **\_** | ****\_\_**** |
-| 9    | 9.1   | ☐      | **\_** | ****\_\_**** |
-| 9    | 9.2   | ☐      | **\_** | ****\_\_**** |
-| 9    | 9.3   | ☐      | **\_** | ****\_\_**** |
-| 10   | 10.1  | ☐      | **\_** | ****\_\_**** |
-| 10   | 10.2  | ☐      | **\_** | ****\_\_**** |
+| Epic | Story | Status | Date   | Tester           |
+| ---- | ----- | ------ | ------ | ---------------- |
+| 1    | 1.1   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 1    | 1.2   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 1    | 1.3   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 1    | 1.4   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 2    | 2.1   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 2    | 2.2   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 3    | 3.1   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 3    | 3.2   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 3    | 3.3   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 3    | 3.4   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 3    | 3.5   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 4    | 4.1   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 4    | 4.2   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 5    | 5.1   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 5    | 5.2   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 5    | 5.3   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 6    | 6.1   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 6    | 6.2   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 7    | 7.1   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 7    | 7.2   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 7    | 7.3   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 8    | 8.1   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 8    | 8.2   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 8    | 8.3   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 9    | 9.1   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 9    | 9.2   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 9    | 9.3   | ☐      | **\_** | \***\*\_\_\*\*** |
+| 10   | 10.1  | ☐      | **\_** | \***\*\_\_\*\*** |
+| 10   | 10.2  | ☐      | **\_** | \***\*\_\_\*\*** |
 
 ---
 

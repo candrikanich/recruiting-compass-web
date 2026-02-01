@@ -2,14 +2,10 @@ import { defineEventHandler, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 
-interface FamilyWithUserDetails {
+interface UserDetails {
   id: string;
-  student_user_id: string;
-  family_name: string | null;
-  users?: {
-    full_name: string | null;
-    graduation_year: number | null;
-  } | null;
+  full_name: string | null;
+  graduation_year: number | null;
 }
 
 export default defineEventHandler(async (event) => {
@@ -19,7 +15,15 @@ export default defineEventHandler(async (event) => {
 
     const supabase = useSupabaseAdmin();
 
-    // Fetch all family_units where the user is a member
+    // For non-parents, return empty families list
+    if (!user.id) {
+      return {
+        success: true,
+        families: [],
+      };
+    }
+
+    // Fetch all family_units where the user is a member (only parents have family access)
     const { data: familyMembers, error: membersError } = await supabase
       .from("family_members")
       .select("family_unit_id")
@@ -31,6 +35,8 @@ export default defineEventHandler(async (event) => {
         "[/api/family/accessible] familyMembers error:",
         membersError,
       );
+      // Log full error details
+      console.error("Full error object:", JSON.stringify(membersError));
       throw membersError;
     }
 
@@ -57,42 +63,57 @@ export default defineEventHandler(async (event) => {
     const familyUnitIds = familyMembers.map((fm) => fm.family_unit_id);
     console.log("[/api/family/accessible] Family unit IDs:", familyUnitIds);
 
-    // Fetch family unit details with athlete names and graduation years
+    // Fetch family unit details
     const { data: families, error: familiesError } = await supabase
       .from("family_units")
-      .select(
-        `
-        id,
-        student_user_id,
-        family_name,
-        users!student_user_id (
-          full_name,
-          graduation_year
-        )
-      `,
-      )
+      .select("id, student_user_id, family_name")
       .in("id", familyUnitIds);
 
     if (familiesError) {
       console.error("[/api/family/accessible] families error:", familiesError);
+      console.error("Full families error:", JSON.stringify(familiesError));
       throw familiesError;
     }
+
+    // Get student user IDs and fetch user details separately
+    const studentUserIds = families?.map((f) => f.student_user_id) || [];
+    const { data: users, error: usersError } = await supabase
+      .from("users")
+      .select("id, full_name, graduation_year")
+      .in("id", studentUserIds);
+
+    if (usersError) {
+      console.error("[/api/family/accessible] users error:", usersError);
+      console.error("Full users error:", JSON.stringify(usersError));
+      throw usersError;
+    }
+
+    // Create a map of user details
+    const usersMap = (users || []).reduce(
+      (map, user) => {
+        map[user.id] = user;
+        return map;
+      },
+      {} as Record<string, UserDetails>,
+    );
 
     console.log(
       "[/api/family/accessible] Found families:",
       families?.length || 0,
     );
+    console.log("[/api/family/accessible] Found users:", users?.length || 0);
 
     // Map to response format
-    const accessibleFamilies = (
-      (families as FamilyWithUserDetails[]) || []
-    ).map((family) => ({
-      familyUnitId: family.id,
-      athleteId: family.student_user_id,
-      athleteName: family.users?.full_name || "Unknown Athlete",
-      graduationYear: family.users?.graduation_year || null,
-      familyName: family.family_name || "Family",
-    }));
+    const accessibleFamilies = (families || []).map((family) => {
+      const userDetails = usersMap[family.student_user_id];
+      return {
+        familyUnitId: family.id,
+        athleteId: family.student_user_id,
+        athleteName: userDetails?.full_name || "Unknown Athlete",
+        graduationYear: userDetails?.graduation_year || null,
+        familyName: family.family_name || "Family",
+      };
+    });
 
     console.log(
       `[/api/family/accessible] Returning ${accessibleFamilies.length} families for user ${user.id}:`,
