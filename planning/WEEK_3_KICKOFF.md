@@ -28,20 +28,21 @@ Transform Week 1-2 documentation into interactive video tutorials, in-app help s
 
 **8-10 Videos (2-5 minutes each)**
 
-| # | Title | Duration | Topic | Script Ready? |
-|---|-------|----------|-------|---------------|
-| 1 | Getting Started | 3 min | Sign up, profile, first school | ⏳ Need script |
-| 2 | Adding Your First School | 2 min | Search, add, set tier | ⏳ Need script |
-| 3 | Logging Coach Interactions | 3 min | Add coach, log interaction | ⏳ Need script |
-| 4 | Understanding Your Timeline | 4 min | Phases, tasks, progress | ⏳ Need script |
-| 5 | Using Email Templates | 2 min | Create, customize, send email | ⏳ Need script |
-| 6 | Parent View & Account Linking | 3 min | Invite parent, parent dashboard | ⏳ Need script |
-| 7 | Tracking Performance Metrics | 2 min | Add stats, view trends | ⏳ Need script |
-| 8 | Understanding Fit Scores | 4 min | What are fit scores, how calculated | ⏳ Need script |
-| 9 | Event Management | 2 min | Create event, log attendance | ⏳ Need script |
-| 10 | Using AI Suggestions | 3 min | View suggestions, take action | ⏳ Need script |
+| #   | Title                         | Duration | Topic                               | Script Ready?  |
+| --- | ----------------------------- | -------- | ----------------------------------- | -------------- |
+| 1   | Getting Started               | 3 min    | Sign up, profile, first school      | ⏳ Need script |
+| 2   | Adding Your First School      | 2 min    | Search, add, set tier               | ⏳ Need script |
+| 3   | Logging Coach Interactions    | 3 min    | Add coach, log interaction          | ⏳ Need script |
+| 4   | Understanding Your Timeline   | 4 min    | Phases, tasks, progress             | ⏳ Need script |
+| 5   | Using Email Templates         | 2 min    | Create, customize, send email       | ⏳ Need script |
+| 6   | Parent View & Account Linking | 3 min    | Invite parent, parent dashboard     | ⏳ Need script |
+| 7   | Tracking Performance Metrics  | 2 min    | Add stats, view trends              | ⏳ Need script |
+| 8   | Understanding Fit Scores      | 4 min    | What are fit scores, how calculated | ⏳ Need script |
+| 9   | Event Management              | 2 min    | Create event, log attendance        | ⏳ Need script |
+| 10  | Using AI Suggestions          | 3 min    | View suggestions, take action       | ⏳ Need script |
 
 **Process:**
+
 - [ ] Create script for each video
 - [ ] Record using Loom (screen + webcam)
 - [ ] Upload to YouTube (unlisted or public)
@@ -62,27 +63,26 @@ Transform Week 1-2 documentation into interactive video tutorials, in-app help s
 **Components to Create:**
 
 ```vue
-components/Help/
-  ├── HelpIcon.vue              # "?" icon with tooltip trigger
-  ├── TooltipGuide.vue          # Hover tooltip with explanation
-  ├── HelpModal.vue             # Full help modal for deep dives
-  └── helpDefinitions.ts        # Centralized help content
+components/Help/ ├── HelpIcon.vue # "?" icon with tooltip trigger ├──
+TooltipGuide.vue # Hover tooltip with explanation ├── HelpModal.vue # Full help
+modal for deep dives └── helpDefinitions.ts # Centralized help content
 ```
 
 **Help Content to Add:**
 
-| Page/Feature | Tooltip Needed | Help Text |
-|--------------|----------------|-----------|
-| Timeline Phases | ✅ 4 tooltips | Current phase + next steps |
-| Fit Scores | ✅ 2 tooltips | What is fit score, how calculated |
-| Interest Calibration | ✅ 1 tooltip | 6-question rubric explanation |
-| Task Dependencies | ✅ 1 tooltip | Why tasks are locked |
-| Dashboard Widgets | ✅ 3 tooltips | What each metric means |
-| Responsiveness Score | ✅ 1 tooltip | Coach engagement metric |
-| Recovery Plan | ✅ 1 tooltip | Re-engagement strategy |
-| Priority Tiers | ✅ 1 tooltip | Reach/Target/Safety explanation |
+| Page/Feature         | Tooltip Needed | Help Text                         |
+| -------------------- | -------------- | --------------------------------- |
+| Timeline Phases      | ✅ 4 tooltips  | Current phase + next steps        |
+| Fit Scores           | ✅ 2 tooltips  | What is fit score, how calculated |
+| Interest Calibration | ✅ 1 tooltip   | 6-question rubric explanation     |
+| Task Dependencies    | ✅ 1 tooltip   | Why tasks are locked              |
+| Dashboard Widgets    | ✅ 3 tooltips  | What each metric means            |
+| Responsiveness Score | ✅ 1 tooltip   | Coach engagement metric           |
+| Recovery Plan        | ✅ 1 tooltip   | Re-engagement strategy            |
+| Priority Tiers       | ✅ 1 tooltip   | Reach/Target/Safety explanation   |
 
 **Implementation:**
+
 - [ ] Create HelpIcon component
 - [ ] Create TooltipGuide component
 - [ ] Create helpDefinitions.ts with all content
@@ -98,16 +98,17 @@ components/Help/
 
 **4 System Diagrams (Mermaid.js)**
 
-| # | Diagram | Focus | Components |
-|---|---------|-------|-----------|
-| 1 | **System Architecture** | Overall structure | Client → API → DB |
-| 2 | **Data Flow** | Request/response cycle | User action → DB → UI |
-| 3 | **Component Hierarchy** | Vue structure | Pages → Components → Composables |
-| 4 | **Authentication Flow** | User auth | Login → JWT → Protected routes |
+| #   | Diagram                 | Focus                  | Components                       |
+| --- | ----------------------- | ---------------------- | -------------------------------- |
+| 1   | **System Architecture** | Overall structure      | Client → API → DB                |
+| 2   | **Data Flow**           | Request/response cycle | User action → DB → UI            |
+| 3   | **Component Hierarchy** | Vue structure          | Pages → Components → Composables |
+| 4   | **Authentication Flow** | User auth              | Login → JWT → Protected routes   |
 
 **Diagram Details:**
 
 **Diagram 1: System Architecture**
+
 ```
 ┌─────────────────┐
 │   Web Client    │ (Nuxt 3 + Vue)
@@ -131,6 +132,7 @@ components/Help/
 ```
 
 **Diagram 2: Data Flow**
+
 ```
 User Action
     ↓
@@ -152,6 +154,7 @@ UI Update
 ```
 
 **Diagram 3: Component Hierarchy**
+
 ```
 App (root)
   ├── Layout
@@ -166,6 +169,7 @@ App (root)
 ```
 
 **Diagram 4: Authentication Flow**
+
 ```
 User → Login Page
   ↓
@@ -183,6 +187,7 @@ Protected API Calls
 ```
 
 **Implementation:**
+
 - [ ] Create ARCHITECTURE_DIAGRAMS.md
 - [ ] Write 4 Mermaid diagrams
 - [ ] Add explanatory text for each
@@ -196,17 +201,18 @@ Protected API Calls
 
 **5 Algorithm/Process Diagrams (Mermaid.js)**
 
-| # | Diagram | Focus | Decision Points |
-|---|---------|-------|-----------------|
-| 1 | **Timeline Phase Advancement** | How phases advance | Conditions for unlock |
-| 2 | **Fit Score Calculation** | Score algorithm | 5 components, weights |
-| 3 | **AI Suggestion Engine** | Recommendation logic | Input factors, triggers |
-| 4 | **Interest Calibration** | Survey → action mapping | 6 questions → next steps |
-| 5 | **Recovery Plan Trigger** | Silent coach detection | 30-day threshold logic |
+| #   | Diagram                        | Focus                   | Decision Points          |
+| --- | ------------------------------ | ----------------------- | ------------------------ |
+| 1   | **Timeline Phase Advancement** | How phases advance      | Conditions for unlock    |
+| 2   | **Fit Score Calculation**      | Score algorithm         | 5 components, weights    |
+| 3   | **AI Suggestion Engine**       | Recommendation logic    | Input factors, triggers  |
+| 4   | **Interest Calibration**       | Survey → action mapping | 6 questions → next steps |
+| 5   | **Recovery Plan Trigger**      | Silent coach detection  | 30-day threshold logic   |
 
 **Diagram Details:**
 
 **Diagram 1: Timeline Phase Advancement**
+
 ```
 Current Phase: Freshman
     ↓
@@ -224,6 +230,7 @@ Update UI + notify user
 ```
 
 **Diagram 2: Fit Score Calculation**
+
 ```
 User Profile Complete?
   ├─ No → Use available data
@@ -248,6 +255,7 @@ Weighted Average = Overall Score (1-10)
 ```
 
 **Diagram 3: AI Suggestion Engine**
+
 ```
 Suggestion Generation Trigger:
   ├─ Daily (scheduled)
@@ -272,6 +280,7 @@ User sees "New Suggestions"
 ```
 
 **Diagram 4: Interest Calibration**
+
 ```
 After Coach Interaction:
     ↓
@@ -294,6 +303,7 @@ Trigger Suggestions:
 ```
 
 **Diagram 5: Recovery Plan Trigger**
+
 ```
 Daily Check: Coach Status
     ↓
@@ -318,6 +328,7 @@ Reset timer
 ```
 
 **Implementation:**
+
 - [ ] Create FEATURE_FLOW_DIAGRAMS.md
 - [ ] Write 5 Mermaid diagrams
 - [ ] Add explanatory text
@@ -335,33 +346,39 @@ Reset timer
 # Contributing to Recruiting Compass
 
 ## Code of Conduct
+
 - Respectful, inclusive community
 - No harassment, discrimination
 - Help each other succeed
 
 ## Getting Started
+
 - Fork repo, create feature branch
 - Setup development environment
 - Run tests before committing
 
 ## Development Standards
+
 - TypeScript only (no `any`)
 - Composition API (Vue 3)
 - Test coverage required
 - Follow code style (ESLint)
 
 ## Commit Message Format
+
 - Conventional commits
 - Format: `type(scope): description`
 - Examples: `feat(timeline): add phase advancement`, `fix(api): handle null response`
 
 ## Testing Requirements
+
 - Unit tests (Vitest)
 - Integration tests
 - E2E tests (Playwright)
 - Coverage: >80% for new code
 
 ## PR Process
+
 - Create PR against `main`
 - Link to GitHub issue
 - Describe changes clearly
@@ -369,6 +386,7 @@ Reset timer
 - CI/CD must pass
 
 ## Code Review Checklist
+
 - [ ] Follows code style
 - [ ] Tests included
 - [ ] Documentation updated
@@ -377,6 +395,7 @@ Reset timer
 ```
 
 **Implementation:**
+
 - [ ] Create `/CONTRIBUTING.md`
 - [ ] Add all sections above
 - [ ] Include setup instructions
@@ -391,12 +410,14 @@ Reset timer
 **Launch Week Content (3-5 posts/day for 5 days)**
 
 **Platforms:**
+
 - Twitter (X)
 - Instagram
 - Facebook
 - LinkedIn (optional)
 
 **Content Types:**
+
 - Launch announcement
 - Feature spotlight
 - User testimonial
@@ -406,6 +427,7 @@ Reset timer
 **Example Posts:**
 
 **Twitter:**
+
 ```
 🚀 We're live! Recruiting Compass helps student-athletes organize their college recruiting journey in one place. Schools, coaches, interactions, timeline—all organized.
 
@@ -414,6 +436,7 @@ No credit card required. #BaseballRecruiting #CollegeAthletics
 ```
 
 **Instagram Story:**
+
 ```
 [Video of app demo]
 Tired of tracking recruiting in spreadsheets? 📊
@@ -428,6 +451,7 @@ Sign up free today!
 ```
 
 **LinkedIn:**
+
 ```
 Exciting news: We're launching Recruiting Compass, a free platform for student-athletes and families to navigate college baseball recruiting.
 
@@ -435,6 +459,7 @@ The recruiting process is overwhelming. Families track everything in spreadsheet
 ```
 
 **Implementation:**
+
 - [ ] Create SOCIAL_MEDIA_CONTENT.md
 - [ ] Write 15-20 posts for launch week
 - [ ] Include hashtag strategy
@@ -449,15 +474,16 @@ The recruiting process is overwhelming. Families track everything in spreadsheet
 
 **3 Template Posts:**
 
-| # | Title | Format | Length |
-|---|-------|--------|--------|
-| 1 | Announcement Post | Press release style | 500-700 words |
-| 2 | How-To Post | Tutorial style | 800-1200 words |
-| 3 | Recruiting Advice | Educational style | 1000-1500 words |
+| #   | Title             | Format              | Length          |
+| --- | ----------------- | ------------------- | --------------- |
+| 1   | Announcement Post | Press release style | 500-700 words   |
+| 2   | How-To Post       | Tutorial style      | 800-1200 words  |
+| 3   | Recruiting Advice | Educational style   | 1000-1500 words |
 
 **Template Examples:**
 
 **Post 1: Announcement**
+
 ```
 Headline: "Announcing Recruiting Compass: Your Free College Recruiting Assistant"
 
@@ -475,6 +501,7 @@ Includes: 1-2 screenshots, CTA button
 ```
 
 **Post 2: How-To**
+
 ```
 Headline: "How to Organize Your Target School List in 10 Minutes"
 
@@ -492,6 +519,7 @@ Includes: 5-10 screenshots, step-by-step
 ```
 
 **Post 3: Recruiting Advice**
+
 ```
 Headline: "5 Mistakes Parents Make in College Baseball Recruiting (And How to Avoid Them)"
 
@@ -513,6 +541,7 @@ Includes: 2-3 screenshots, examples
 ```
 
 **Implementation:**
+
 - [ ] Create BLOG_POST_TEMPLATES.md
 - [ ] Write 3 complete template posts
 - [ ] Include formatting guidelines
@@ -525,6 +554,7 @@ Includes: 2-3 screenshots, examples
 While I create Week 3 deliverables, please complete:
 
 ### Week 1 Screenshots (Pending)
+
 - [ ] 20 core app screenshots (Dashboard, Schools, Coaches, Timeline, Interactions, Settings)
 - [ ] Use staged/demo data
 - [ ] Store in `/documentation/user/screenshots/`
@@ -533,6 +563,7 @@ While I create Week 3 deliverables, please complete:
 - **Deadline:** Mid-Week 3
 
 ### One-Pager Design (Pending)
+
 - [ ] Design in Canva (landscape format)
 - [ ] Include: Logo, problem, solution, features, contact
 - [ ] Use brand colors
@@ -541,6 +572,7 @@ While I create Week 3 deliverables, please complete:
 - **Deadline:** By Week 3 start if possible
 
 ### Pitch Deck (Pending)
+
 - [ ] Build from PITCH_DECK_OUTLINE.md in Canva
 - [ ] 20 slides total
 - [ ] Add screenshots once captured
@@ -549,6 +581,7 @@ While I create Week 3 deliverables, please complete:
 - **Deadline:** By Week 3 end
 
 ### Video Script Callouts (Optional)
+
 - [ ] For each video, note any specific screens/features to show
 - [ ] Timing notes (where to slow down, pause, etc.)
 - [ ] Examples of data to use in demo
@@ -560,17 +593,20 @@ While I create Week 3 deliverables, please complete:
 ## Week 3 Timeline
 
 ### Monday-Tuesday
+
 - [ ] Create video scripts (all 10)
 - [ ] Create HelpIcon and TooltipGuide components
 - [ ] Begin recording videos
 
 ### Wednesday-Thursday
+
 - [ ] Complete video recording
 - [ ] Upload videos to YouTube
 - [ ] Create ARCHITECTURE_DIAGRAMS.md
 - [ ] Create FEATURE_FLOW_DIAGRAMS.md
 
 ### Friday
+
 - [ ] Create CONTRIBUTING.md
 - [ ] Create SOCIAL_MEDIA_CONTENT.md
 - [ ] Create BLOG_POST_TEMPLATES.md
@@ -627,23 +663,24 @@ While I create Week 3 deliverables, please complete:
 
 ## Week 3 Estimated Effort
 
-| Task | Hours | Status |
-|------|-------|--------|
-| Video Scripts | 3 | ⏳ To do |
-| Video Recording | 4 | ⏳ To do |
-| Help Components | 3 | ⏳ To do |
-| Architecture Diagrams | 2 | ⏳ To do |
-| Feature Flow Diagrams | 2 | ⏳ To do |
-| Contributing Guide | 2 | ⏳ To do |
-| Social Content | 2 | ⏳ To do |
-| Blog Templates | 2 | ⏳ To do |
-| **Total** | **20 hours** | ⏳ To do |
+| Task                  | Hours        | Status   |
+| --------------------- | ------------ | -------- |
+| Video Scripts         | 3            | ⏳ To do |
+| Video Recording       | 4            | ⏳ To do |
+| Help Components       | 3            | ⏳ To do |
+| Architecture Diagrams | 2            | ⏳ To do |
+| Feature Flow Diagrams | 2            | ⏳ To do |
+| Contributing Guide    | 2            | ⏳ To do |
+| Social Content        | 2            | ⏳ To do |
+| Blog Templates        | 2            | ⏳ To do |
+| **Total**             | **20 hours** | ⏳ To do |
 
 ---
 
 ## Week 4 Preview (After Week 3)
 
 **Remaining Deliverables:**
+
 - [ ] Documentation website (optional, Docusaurus/VitePress)
 - [ ] SEO optimization
 - [ ] Product directory submissions
@@ -652,6 +689,7 @@ While I create Week 3 deliverables, please complete:
 - [ ] Screenshots integration
 
 **Launch Checklist:**
+
 - [ ] All documentation complete
 - [ ] Screenshots captured
 - [ ] Videos uploaded

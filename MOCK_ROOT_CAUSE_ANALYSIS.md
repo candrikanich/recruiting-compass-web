@@ -22,7 +22,7 @@ vi.mock("~/composables/useSupabase", () => ({
 
 // tests/unit/composables/useInteractions.extended.spec.ts (SECOND - Local mock)
 vi.mock("~/composables/useSupabase", () => ({
-  useSupabase: () => mockSupabase,  // Uses external variable
+  useSupabase: () => mockSupabase, // Uses external variable
 }));
 ```
 
@@ -33,12 +33,14 @@ vi.mock("~/composables/useSupabase", () => ({
 The original code tried to reference external mock state through a getter:
 
 ```typescript
-let mockUser: User | null = { /* initial state */ };
+let mockUser: User | null = {
+  /* initial state */
+};
 
 vi.mock("~/stores/user", () => ({
   useUserStore: () => ({
     get user() {
-      return mockUser;  // References external variable
+      return mockUser; // References external variable
     },
   }),
 }));
@@ -46,17 +48,17 @@ vi.mock("~/stores/user", () => ({
 
 **Problem**: The mock returns a fresh object each time, but that object's `user` getter references an external variable that might not be synchronized with the actual Pinia store. When `setActivePinia(createPinia())` is called in beforeEach, a new store instance is created, but the mock doesn't know about it.
 
-###  Cause 3: Mock Implementation Clearing
+### Cause 3: Mock Implementation Clearing
 
 The test called `vi.clearAllMocks()` at the start of beforeEach:
 
 ```typescript
 beforeEach(() => {
-  vi.clearAllMocks();  // CLEARS THE MOCK SETUP
+  vi.clearAllMocks(); // CLEARS THE MOCK SETUP
 
   // Then tries to use mocks:
   mockSupabase = {
-    from: vi.fn().mockReturnValue(mockQuery),  // But mockSupabase is still null
+    from: vi.fn().mockReturnValue(mockQuery), // But mockSupabase is still null
   };
 });
 ```
@@ -72,7 +74,9 @@ mockQuery = {
   select: vi.fn().mockReturnThis(),
   // ...
 };
-Object.defineProperty(mockQuery, "then", { /* thenable */ });
+Object.defineProperty(mockQuery, "then", {
+  /* thenable */
+});
 ```
 
 **Problem**: By the time the mockQuery's "then" property was defined, the composable might have already tried to use it, causing "is not a function" errors for methods like `.select()`.
@@ -99,12 +103,12 @@ import { useSupabase } from "~/composables/useSupabase";
 
 describe("useInteractions - Extended", () => {
   beforeEach(() => {
-    vi.clearAllMocks();  // Clear call history, not setup
+    vi.clearAllMocks(); // Clear call history, not setup
     setActivePinia(createPinia());
     userStore = useUserStore();
 
     // Set user on the REAL store
-    userStore.user = { id: "user-123", /* ... */ };
+    userStore.user = { id: "user-123" /* ... */ };
 
     // Use vi.mocked() to get the mock and configure it
     const mockUseSupabase = vi.mocked(useSupabase);
@@ -121,6 +125,7 @@ Remove the local vi.mock() calls entirely and only test through the global mocks
 ## Key Learning
 
 In Vitest (and Jest), when a module is already mocked globally:
+
 - ❌ Do NOT try to mock it again in individual test files
 - ❌ Do NOT reference external state from within a vi.mock() wrapper function
 - ✅ DO use `vi.mocked()` to get the already-mocked function

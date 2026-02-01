@@ -20,7 +20,7 @@ describe("useSessionTimeout", () => {
     const prefs: SessionPreferences = {
       rememberMe,
       lastActivity: Date.now(),
-      expiresAt: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days
+      expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
     };
     localStorage.setItem("session_preferences", JSON.stringify(prefs));
   };
@@ -71,7 +71,7 @@ describe("useSessionTimeout", () => {
       initializeTracking();
 
       const prefs = JSON.parse(
-        localStorage.getItem("session_preferences")!
+        localStorage.getItem("session_preferences")!,
       ) as SessionPreferences;
       const originalActivity = prefs.lastActivity;
 
@@ -81,7 +81,7 @@ describe("useSessionTimeout", () => {
       handleActivity();
 
       const updatedPrefs = JSON.parse(
-        localStorage.getItem("session_preferences")!
+        localStorage.getItem("session_preferences")!,
       ) as SessionPreferences;
 
       expect(updatedPrefs.lastActivity).toBeGreaterThan(originalActivity);
@@ -94,12 +94,12 @@ describe("useSessionTimeout", () => {
       initializeTracking();
 
       const prefs1 = JSON.parse(
-        localStorage.getItem("session_preferences")!
+        localStorage.getItem("session_preferences")!,
       ) as SessionPreferences;
 
       handleActivity();
       const prefs2 = JSON.parse(
-        localStorage.getItem("session_preferences")!
+        localStorage.getItem("session_preferences")!,
       ) as SessionPreferences;
 
       // First call should update (initial throttle)
@@ -110,7 +110,7 @@ describe("useSessionTimeout", () => {
       handleActivity();
 
       const prefs3 = JSON.parse(
-        localStorage.getItem("session_preferences")!
+        localStorage.getItem("session_preferences")!,
       ) as SessionPreferences;
 
       // Should NOT update (throttled)
@@ -121,7 +121,7 @@ describe("useSessionTimeout", () => {
       handleActivity();
 
       const prefs4 = JSON.parse(
-        localStorage.getItem("session_preferences")!
+        localStorage.getItem("session_preferences")!,
       ) as SessionPreferences;
 
       expect(prefs4.lastActivity).toBeGreaterThan(prefs3.lastActivity);
@@ -172,7 +172,7 @@ describe("useSessionTimeout", () => {
       const prefs: SessionPreferences = {
         rememberMe: true,
         lastActivity: Date.now() - (thirtyDays - 4 * 60 * 1000),
-        expiresAt: Date.now() + (5 * 24 * 60 * 60 * 1000),
+        expiresAt: Date.now() + 5 * 24 * 60 * 60 * 1000,
       };
       localStorage.setItem("session_preferences", JSON.stringify(prefs));
 
@@ -190,8 +190,8 @@ describe("useSessionTimeout", () => {
       // Set lastActivity to 30+ days ago
       const prefs: SessionPreferences = {
         rememberMe: true,
-        lastActivity: Date.now() - (31 * 24 * 60 * 60 * 1000),
-        expiresAt: Date.now() - (1 * 60 * 1000), // Already expired
+        lastActivity: Date.now() - 31 * 24 * 60 * 60 * 1000,
+        expiresAt: Date.now() - 1 * 60 * 1000, // Already expired
       };
       localStorage.setItem("session_preferences", JSON.stringify(prefs));
 
@@ -212,7 +212,7 @@ describe("useSessionTimeout", () => {
       const prefs: SessionPreferences = {
         rememberMe: true,
         lastActivity: Date.now() - (thirtyDays - 4 * 60 * 1000),
-        expiresAt: Date.now() + (5 * 24 * 60 * 60 * 1000),
+        expiresAt: Date.now() + 5 * 24 * 60 * 60 * 1000,
       };
       localStorage.setItem("session_preferences", JSON.stringify(prefs));
 
@@ -240,7 +240,7 @@ describe("useSessionTimeout", () => {
       const prefs: SessionPreferences = {
         rememberMe: true,
         lastActivity: Date.now() - (thirtyDays - 4 * 60 * 1000),
-        expiresAt: Date.now() + (5 * 24 * 60 * 60 * 1000),
+        expiresAt: Date.now() + 5 * 24 * 60 * 60 * 1000,
       };
       localStorage.setItem("session_preferences", JSON.stringify(prefs));
 
@@ -262,7 +262,7 @@ describe("useSessionTimeout", () => {
       const prefs: SessionPreferences = {
         rememberMe: true,
         lastActivity: Date.now() - (thirtyDays - 4 * 60 * 1000),
-        expiresAt: Date.now() + (5 * 24 * 60 * 60 * 1000),
+        expiresAt: Date.now() + 5 * 24 * 60 * 60 * 1000,
       };
       localStorage.setItem("session_preferences", JSON.stringify(prefs));
 
@@ -278,7 +278,7 @@ describe("useSessionTimeout", () => {
 
       // lastActivity should be updated
       const updatedPrefs = JSON.parse(
-        localStorage.getItem("session_preferences")!
+        localStorage.getItem("session_preferences")!,
       ) as SessionPreferences;
       expect(updatedPrefs.lastActivity).toBeGreaterThan(prefs.lastActivity);
     });
@@ -313,7 +313,7 @@ describe("useSessionTimeout", () => {
         "session_preferences",
         JSON.stringify({
           invalidField: true,
-        })
+        }),
       );
 
       const { checkTimeout } = useSessionTimeout();

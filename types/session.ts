@@ -18,6 +18,6 @@ export interface SessionTimeoutConfig {
 export const DEFAULT_TIMEOUT_CONFIG: SessionTimeoutConfig = {
   inactivityThresholdMs: 30 * 24 * 60 * 60 * 1000, // 30 days
   warningBeforeLogoutMs: 5 * 60 * 1000, // 5 minutes
-  activityEvents: ['mousemove', 'keydown', 'scroll', 'click', 'touchstart'],
+  activityEvents: ["mousemove", "keydown", "scroll", "click", "touchstart"],
   activityThrottleMs: 30 * 1000, // 30 seconds throttle
 };

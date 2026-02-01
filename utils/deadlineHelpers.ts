@@ -1,6 +1,8 @@
 import type { DeadlineInfo, DeadlineUrgency } from "~/types/timeline";
 
-export function calculateDeadlineInfo(deadlineDate: string | null): DeadlineInfo {
+export function calculateDeadlineInfo(
+  deadlineDate: string | null,
+): DeadlineInfo {
   if (!deadlineDate) {
     return {
       daysRemaining: null,
@@ -15,11 +17,15 @@ export function calculateDeadlineInfo(deadlineDate: string | null): DeadlineInfo
   const deadline = new Date(deadlineDate);
 
   // Normalize to midnight for day comparison
-  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayMidnight = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  );
   const deadlineMidnight = new Date(
     deadline.getFullYear(),
     deadline.getMonth(),
-    deadline.getDate()
+    deadline.getDate(),
   );
 
   const diffMs = deadlineMidnight.getTime() - todayMidnight.getTime();
@@ -60,11 +66,15 @@ export function formatDeadlineDate(deadlineDate: string | null): string {
   const deadline = new Date(deadlineDate);
 
   // Normalize to midnight for day comparison
-  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayMidnight = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  );
   const deadlineMidnight = new Date(
     deadline.getFullYear(),
     deadline.getMonth(),
-    deadline.getDate()
+    deadline.getDate(),
   );
 
   const diffMs = deadlineMidnight.getTime() - todayMidnight.getTime();

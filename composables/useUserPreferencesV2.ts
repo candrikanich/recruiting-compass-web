@@ -67,7 +67,9 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
 
     try {
       // Get auth token
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const token = session?.access_token;
 
       if (!token) {
@@ -86,19 +88,23 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
         state.value.isDirty = false;
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to load preferences";
-      console.warn(`[useUserPreferencesV2] Failed to load ${category}:`, message);
+      const message =
+        err instanceof Error ? err.message : "Failed to load preferences";
+      console.warn(
+        `[useUserPreferencesV2] Failed to load ${category}:`,
+        message,
+      );
       state.value.error = message;
 
       // Fallback: try to load from localStorage if offline
       if (typeof window !== "undefined") {
-        const cached = localStorage.getItem(
-          `user_prefs_${category}`
-        );
+        const cached = localStorage.getItem(`user_prefs_${category}`);
         if (cached) {
           try {
             preferences.value = JSON.parse(cached);
-            console.debug(`[useUserPreferencesV2] Loaded ${category} from localStorage fallback`);
+            console.debug(
+              `[useUserPreferencesV2] Loaded ${category} from localStorage fallback`,
+            );
           } catch {
             // Ignore parse errors
           }
@@ -119,7 +125,9 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
 
     try {
       // Get auth token
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const token = session?.access_token;
 
       if (!token) {
@@ -143,21 +151,25 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
       if (typeof window !== "undefined") {
         localStorage.setItem(
           `user_prefs_${category}`,
-          JSON.stringify(preferences.value)
+          JSON.stringify(preferences.value),
         );
       }
 
       return response;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to save preferences";
-      console.error(`[useUserPreferencesV2] Failed to save ${category}:`, message);
+      const message =
+        err instanceof Error ? err.message : "Failed to save preferences";
+      console.error(
+        `[useUserPreferencesV2] Failed to save ${category}:`,
+        message,
+      );
       state.value.error = message;
 
       // Still cache to localStorage so changes aren't lost
       if (typeof window !== "undefined") {
         localStorage.setItem(
           `user_prefs_${category}`,
-          JSON.stringify(preferences.value)
+          JSON.stringify(preferences.value),
         );
       }
 
@@ -176,7 +188,9 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
 
     try {
       // Get auth token
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const token = session?.access_token;
 
       if (!token) {
@@ -198,8 +212,12 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
         localStorage.removeItem(`user_prefs_${category}`);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to delete preferences";
-      console.error(`[useUserPreferencesV2] Failed to delete ${category}:`, message);
+      const message =
+        err instanceof Error ? err.message : "Failed to delete preferences";
+      console.error(
+        `[useUserPreferencesV2] Failed to delete ${category}:`,
+        message,
+      );
       state.value.error = message;
 
       throw err;
@@ -254,7 +272,7 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
           });
         }, debounceMs);
       },
-      { deep: true }
+      { deep: true },
     );
 
     // Cleanup on unmount

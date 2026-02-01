@@ -223,7 +223,9 @@ describe("DocumentUploadModal", () => {
     });
 
     // Find the close button (×) at the top of the modal header
-    const closeButton = wrapper.findAll("button").find((btn) => btn.text() === "×");
+    const closeButton = wrapper
+      .findAll("button")
+      .find((btn) => btn.text() === "×");
     expect(closeButton).toBeDefined();
     if (closeButton) {
       await closeButton.trigger("click");

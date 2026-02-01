@@ -1,7 +1,10 @@
 import { defineEventHandler, getQuery } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
-import { getSurfacedSuggestions, getPendingSuggestionCount } from "~/server/utils/suggestionStaggering";
+import {
+  getSurfacedSuggestions,
+  getPendingSuggestionCount,
+} from "~/server/utils/suggestionStaggering";
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);

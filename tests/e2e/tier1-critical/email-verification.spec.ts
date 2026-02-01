@@ -5,7 +5,9 @@ test.describe("Email Verification Flow", () => {
   const testPassword = "TestPassword123!";
   const testDisplayName = "Email Verification Test";
 
-  test("should redirect to verify-email page after signup", async ({ page }) => {
+  test("should redirect to verify-email page after signup", async ({
+    page,
+  }) => {
     // Navigate to signup
     await page.goto("/signup");
 
@@ -40,11 +42,15 @@ test.describe("Email Verification Flow", () => {
     await expect(heading).toContainText("Verify Your Email");
 
     // Check for main message
-    const mainMessage = page.locator("text=Check your email for a verification link");
+    const mainMessage = page.locator(
+      "text=Check your email for a verification link",
+    );
     await expect(mainMessage).toBeVisible();
 
     // Check for resend button
-    const resendButton = page.locator("button:has-text('Resend Verification Email')");
+    const resendButton = page.locator(
+      "button:has-text('Resend Verification Email')",
+    );
     await expect(resendButton).toBeVisible();
 
     // Check for back link
@@ -65,7 +71,9 @@ test.describe("Email Verification Flow", () => {
     await expect(emailDisplay).toBeVisible();
   });
 
-  test("should show loading state when checking verification", async ({ page }) => {
+  test("should show loading state when checking verification", async ({
+    page,
+  }) => {
     await page.goto("/verify-email");
 
     // The page should check verification status on mount
@@ -78,7 +86,9 @@ test.describe("Email Verification Flow", () => {
     await page.goto("/verify-email");
 
     // Check for proper labels and ARIA attributes
-    const resendButton = page.locator("button:has-text('Resend Verification Email')");
+    const resendButton = page.locator(
+      "button:has-text('Resend Verification Email')",
+    );
     const homeLink = page.locator("a:has-text('Back to Home')");
 
     // Both should be visible and accessible
@@ -86,7 +96,9 @@ test.describe("Email Verification Flow", () => {
     await expect(homeLink).toBeVisible();
 
     // Check page structure
-    const mainContent = page.locator("main, [role=main]").or(page.locator(".min-h-screen"));
+    const mainContent = page
+      .locator("main, [role=main]")
+      .or(page.locator(".min-h-screen"));
     await expect(mainContent).toBeVisible();
   });
 
@@ -110,7 +122,9 @@ test.describe("Email Verification Flow", () => {
     await page.goto("/verify-email");
 
     // Look for the verification status section
-    const statusCard = page.locator(".p-4.bg-amber-50, .p-4.bg-emerald-50, .p-4.bg-blue-50");
+    const statusCard = page.locator(
+      ".p-4.bg-amber-50, .p-4.bg-emerald-50, .p-4.bg-blue-50",
+    );
     await expect(statusCard).toBeVisible();
   });
 
@@ -149,11 +163,15 @@ test.describe("Email Verification Flow", () => {
     await expect(helpText).toBeVisible();
   });
 
-  test("resend button should be available when unverified", async ({ page }) => {
+  test("resend button should be available when unverified", async ({
+    page,
+  }) => {
     await page.goto("/verify-email");
 
     // Look for resend button
-    const resendButton = page.locator("button:has-text('Resend Verification Email')");
+    const resendButton = page.locator(
+      "button:has-text('Resend Verification Email')",
+    );
 
     // Should be visible
     await expect(resendButton).toBeVisible();

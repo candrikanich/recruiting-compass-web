@@ -27,15 +27,26 @@ export default defineEventHandler(async (event) => {
       .eq("role", "parent");
 
     if (membersError) {
-      console.error("[/api/family/accessible] familyMembers error:", membersError);
+      console.error(
+        "[/api/family/accessible] familyMembers error:",
+        membersError,
+      );
       throw membersError;
     }
 
-    console.log("[/api/family/accessible] Found family members:", familyMembers?.length || 0);
-    console.log("[/api/family/accessible] Family member details:", familyMembers);
+    console.log(
+      "[/api/family/accessible] Found family members:",
+      familyMembers?.length || 0,
+    );
+    console.log(
+      "[/api/family/accessible] Family member details:",
+      familyMembers,
+    );
 
     if (!familyMembers || familyMembers.length === 0) {
-      console.log("[/api/family/accessible] No family memberships found, returning empty");
+      console.log(
+        "[/api/family/accessible] No family memberships found, returning empty",
+      );
       return {
         success: true,
         families: [],
@@ -49,7 +60,8 @@ export default defineEventHandler(async (event) => {
     // Fetch family unit details with athlete names and graduation years
     const { data: families, error: familiesError } = await supabase
       .from("family_units")
-      .select(`
+      .select(
+        `
         id,
         student_user_id,
         family_name,
@@ -57,7 +69,8 @@ export default defineEventHandler(async (event) => {
           full_name,
           graduation_year
         )
-      `)
+      `,
+      )
       .in("id", familyUnitIds);
 
     if (familiesError) {
@@ -65,10 +78,15 @@ export default defineEventHandler(async (event) => {
       throw familiesError;
     }
 
-    console.log("[/api/family/accessible] Found families:", families?.length || 0);
+    console.log(
+      "[/api/family/accessible] Found families:",
+      families?.length || 0,
+    );
 
     // Map to response format
-    const accessibleFamilies = (families as FamilyWithUserDetails[] || []).map((family) => ({
+    const accessibleFamilies = (
+      (families as FamilyWithUserDetails[]) || []
+    ).map((family) => ({
       familyUnitId: family.id,
       athleteId: family.student_user_id,
       athleteName: family.users?.full_name || "Unknown Athlete",
@@ -78,14 +96,15 @@ export default defineEventHandler(async (event) => {
 
     console.log(
       `[/api/family/accessible] Returning ${accessibleFamilies.length} families for user ${user.id}:`,
-      accessibleFamilies
+      accessibleFamilies,
     );
     return {
       success: true,
       families: accessibleFamilies,
     };
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to fetch families";
+    const message =
+      err instanceof Error ? err.message : "Failed to fetch families";
     console.error("[/api/family/accessible] ERROR:", message, err);
     throw createError({
       statusCode: 500,

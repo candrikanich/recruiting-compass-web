@@ -10,7 +10,12 @@
     <div class="flex items-center justify-between">
       <div class="flex-1">
         <div class="flex items-center gap-2">
-          <h3 class="font-semibold" :class="[member.role === 'student' ? 'text-blue-900' : 'text-green-900']">
+          <h3
+            class="font-semibold"
+            :class="[
+              member.role === 'student' ? 'text-blue-900' : 'text-green-900',
+            ]"
+          >
             {{ member.users?.full_name || member.users?.email }}
           </h3>
           <span
@@ -21,16 +26,23 @@
                 : 'bg-green-200 text-green-800',
             ]"
           >
-            {{ member.role === 'student' ? '👤 Student' : '👨‍👩‍👧 Parent' }}
+            {{ member.role === "student" ? "👤 Student" : "👨‍👩‍👧 Parent" }}
           </span>
         </div>
-        <p class="text-sm" :class="[member.role === 'student' ? 'text-blue-700' : 'text-green-700']">
+        <p
+          class="text-sm"
+          :class="[
+            member.role === 'student' ? 'text-blue-700' : 'text-green-700',
+          ]"
+        >
           {{ member.users?.email }}
         </p>
         <p
           v-if="member.added_at"
           class="text-xs mt-1"
-          :class="[member.role === 'student' ? 'text-blue-600' : 'text-green-600']"
+          :class="[
+            member.role === 'student' ? 'text-blue-600' : 'text-green-600',
+          ]"
         >
           Joined {{ formatDate(member.added_at) }}
         </p>
@@ -80,7 +92,8 @@ const formatDate = (dateString: string) => {
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
-      year: date.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
+      year:
+        date.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
     });
   } catch {
     return "unknown date";

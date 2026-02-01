@@ -89,7 +89,11 @@ describe("useUserNotes", () => {
 
       const emptyNote = saveNote("school", "id-1", "");
       const longNote = saveNote("school", "id-2", "A".repeat(1000));
-      const specialChars = saveNote("school", "id-3", "Notes with @#$% special chars");
+      const specialChars = saveNote(
+        "school",
+        "id-3",
+        "Notes with @#$% special chars",
+      );
 
       expect(emptyNote).toBeInstanceOf(Promise);
       expect(longNote).toBeInstanceOf(Promise);

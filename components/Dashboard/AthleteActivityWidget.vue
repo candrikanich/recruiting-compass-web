@@ -85,7 +85,9 @@
 
             <!-- Date -->
             <p class="text-xs text-slate-400 mt-1">
-              {{ formatDate(interaction.occurred_at || interaction.created_at) }}
+              {{
+                formatDate(interaction.occurred_at || interaction.created_at)
+              }}
             </p>
           </div>
         </div>

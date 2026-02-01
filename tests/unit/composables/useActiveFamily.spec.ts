@@ -217,9 +217,8 @@ describe("useActiveFamily", () => {
       const userStore = useUserStore();
       userStore.user = { id: "parent-1", role: "parent" } as any;
 
-      const { useActiveFamily: useActiveFamilyNew } = await import(
-        "~/composables/useActiveFamily"
-      );
+      const { useActiveFamily: useActiveFamilyNew } =
+        await import("~/composables/useActiveFamily");
       const activeFamily = useActiveFamilyNew();
       await activeFamily.initializeFamily();
 

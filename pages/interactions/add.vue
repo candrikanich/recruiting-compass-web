@@ -490,7 +490,6 @@ const { coaches, fetchAllCoaches, createCoach } = useCoaches();
 const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } =
   useFormValidation();
 
-
 const fileInput = ref<HTMLInputElement | null>(null);
 const selectedFiles = ref<File[]>([]);
 const showAddCoachModal = ref(false);
@@ -605,7 +604,6 @@ const removeFile = (idx: number) => {
   selectedFiles.value.splice(idx, 1);
 };
 
-
 const handleSubmit = async () => {
   if (
     !form.value.school_id ||
@@ -617,7 +615,6 @@ const handleSubmit = async () => {
   }
 
   try {
-
     // Capture interest level from calibration component if available
     if (calibrationComponent.value) {
       form.value.interest_level = calibrationComponent.value.interestLevel as

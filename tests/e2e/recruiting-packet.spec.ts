@@ -144,9 +144,9 @@ test.describe("Recruiting Packet Feature", () => {
     const content = await popup.content();
 
     // Should have image element or placeholder
-    expect(
-      content.includes("<img") || content.includes("profile-photo")
-    ).toBe(true);
+    expect(content.includes("<img") || content.includes("profile-photo")).toBe(
+      true,
+    );
   });
 
   test("should include generation date in packet", async ({ page }) => {

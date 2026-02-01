@@ -18,7 +18,9 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
     });
 
     // Find a suggestion to dismiss
-    const suggestionCards = await page.locator('[data-testid="suggestion-card"]');
+    const suggestionCards = await page.locator(
+      '[data-testid="suggestion-card"]',
+    );
     const count = await suggestionCards.count();
     expect(count).toBeGreaterThan(0);
 
@@ -27,9 +29,7 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
     const suggestionText = await firstCard.locator("p").first().textContent();
 
     // Click dismiss button on first suggestion
-    const dismissButton = firstCard.locator(
-      'button:has-text("Dismiss")'
-    );
+    const dismissButton = firstCard.locator('button:has-text("Dismiss")');
     await dismissButton.click();
 
     // Wait for suggestion to disappear
@@ -37,7 +37,7 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
 
     // Verify the dismissed suggestion is no longer visible on dashboard
     const updatedSuggestions = await page.locator(
-      '[data-testid="suggestion-card"]'
+      '[data-testid="suggestion-card"]',
     );
     const updatedCount = await updatedSuggestions.count();
     expect(updatedCount).toBeLessThanOrEqual(count);
@@ -54,7 +54,9 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
     });
 
     // Find and dismiss a suggestion
-    const suggestionCard = page.locator('[data-testid="suggestion-card"]').first();
+    const suggestionCard = page
+      .locator('[data-testid="suggestion-card"]')
+      .first();
     await suggestionCard.locator('button:has-text("Dismiss")').click();
 
     // Wait for dismissal
@@ -63,7 +65,7 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
     // Manually trigger suggestion re-evaluation (simulating daily check)
     // This would normally be done via API call to /api/suggestions/evaluate
     const evaluateResponse = await page.request.post(
-      "http://localhost:3003/api/suggestions/evaluate"
+      "http://localhost:3003/api/suggestions/evaluate",
     );
     expect([200, 401]).toContain(evaluateResponse.status()); // 401 if not authenticated
 
@@ -74,9 +76,7 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
     });
 
     // Find suggestions marked with "Returned" badge
-    const returnedBadges = await page.locator(
-      'span:has-text("Returned")'
-    );
+    const returnedBadges = await page.locator('span:has-text("Returned")');
     const returnedCount = await returnedBadges.count();
 
     // Should not have any returned suggestions since dismissed < 14 days ago
@@ -95,7 +95,7 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
 
     // Find suggestions with "Returned" badge
     const returnedBadges = await page.locator(
-      '[data-testid="suggestion-card"]'
+      '[data-testid="suggestion-card"]',
     );
 
     // If any returned suggestions exist (from system state),
@@ -103,9 +103,9 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
     const count = await returnedBadges.count();
     if (count > 0) {
       const firstCard = returnedBadges.first();
-      const badgeText = await firstCard.locator(
-        'span:has-text("Returned")'
-      ).first();
+      const badgeText = await firstCard
+        .locator('span:has-text("Returned")')
+        .first();
 
       // Badge should be visible with orange styling
       await expect(badgeText).toBeVisible();
@@ -125,9 +125,7 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
     });
 
     // Find any returned suggestion with the badge
-    const returnedBadge = page.locator(
-      'span:has-text("Returned")'
-    ).first();
+    const returnedBadge = page.locator('span:has-text("Returned")').first();
 
     // Check if it exists on page
     const count = await returnedBadge.count();
@@ -168,7 +166,7 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
         expect(
           classes.includes("orange") ||
             classes.includes("red") ||
-            classes.includes("blue")
+            classes.includes("blue"),
         ).toBe(true);
       }
     }
@@ -189,9 +187,7 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
     const firstCard = cards.first();
 
     // Click "Learn More" button
-    const learnMoreButton = firstCard.locator(
-      'button:has-text("Learn More")'
-    );
+    const learnMoreButton = firstCard.locator('button:has-text("Learn More")');
     await learnMoreButton.click();
 
     // Wait for modal to appear
@@ -223,9 +219,7 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
     const firstCard = cards.first();
 
     // Click dismiss on any card
-    const dismissButton = firstCard.locator(
-      'button:has-text("Dismiss")'
-    );
+    const dismissButton = firstCard.locator('button:has-text("Dismiss")');
     await dismissButton.click();
 
     // Wait for suggestion to disappear
@@ -309,9 +303,7 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
     });
 
     // Look for "Show more" button if there are pending suggestions
-    const showMoreButton = page.locator(
-      'button:has-text("Show More")'
-    );
+    const showMoreButton = page.locator('button:has-text("Show More")');
 
     const showMoreExists = await showMoreButton.count();
     if (showMoreExists > 0) {
@@ -322,7 +314,9 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
       await page.waitForTimeout(500);
 
       // Verify we now have more suggestions displayed
-      const updatedCards = await page.locator('[data-testid="suggestion-card"]');
+      const updatedCards = await page.locator(
+        '[data-testid="suggestion-card"]',
+      );
       const updatedCount = await updatedCards.count();
 
       expect(updatedCount).toBeGreaterThan(0);

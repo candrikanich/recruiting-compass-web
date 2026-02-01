@@ -19,35 +19,39 @@
       </div>
     </div>
 
-    <div v-if="recentContacts.length > 0 || totalSchoolsTracked > 0" class="space-y-4">
+    <div
+      v-if="recentContacts.length > 0 || totalSchoolsTracked > 0"
+      class="space-y-4"
+    >
       <!-- Summary Metrics -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-3 bg-slate-50 rounded-lg">
-        <div
-          class="text-center"
-          data-testid="metric-total-schools"
-        >
-          <div class="text-lg font-bold text-slate-900">{{ totalSchoolsTracked }}</div>
+      <div
+        class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-3 bg-slate-50 rounded-lg"
+      >
+        <div class="text-center" data-testid="metric-total-schools">
+          <div class="text-lg font-bold text-slate-900">
+            {{ totalSchoolsTracked }}
+          </div>
           <div class="text-xs text-slate-600">Total Schools</div>
         </div>
-        <div
-          class="text-center"
-          data-testid="metric-contacted-7days"
-        >
-          <div class="text-lg font-bold text-slate-900">{{ schoolsContactedLast7Days }}</div>
+        <div class="text-center" data-testid="metric-contacted-7days">
+          <div class="text-lg font-bold text-slate-900">
+            {{ schoolsContactedLast7Days }}
+          </div>
           <div class="text-xs text-slate-600">Last 7 Days</div>
         </div>
-        <div
-          class="text-center"
-          data-testid="metric-avg-frequency"
-        >
-          <div class="text-lg font-bold text-slate-900">{{ averageContactFrequency }}</div>
+        <div class="text-center" data-testid="metric-avg-frequency">
+          <div class="text-lg font-bold text-slate-900">
+            {{ averageContactFrequency }}
+          </div>
           <div class="text-xs text-slate-600">Avg/Month</div>
         </div>
         <div
           class="text-center cursor-pointer hover:bg-slate-100 rounded transition-colors p-1"
           data-testid="metric-need-attention"
         >
-          <div class="text-lg font-bold text-slate-900">{{ schoolsWithNoRecentContact }}</div>
+          <div class="text-lg font-bold text-slate-900">
+            {{ schoolsWithNoRecentContact }}
+          </div>
           <div class="text-xs text-slate-600">Need Attention</div>
         </div>
       </div>
@@ -55,7 +59,10 @@
       <p v-if="recentContacts.length > 0" class="text-sm text-slate-600 mb-3">
         Schools contacted in the last 7 days
       </p>
-      <div v-if="recentContacts.length > 0" class="space-y-2 max-h-64 overflow-y-auto">
+      <div
+        v-if="recentContacts.length > 0"
+        class="space-y-2 max-h-64 overflow-y-auto"
+      >
         <NuxtLink
           v-for="contact in recentContacts.slice(0, 5)"
           :key="contact.schoolId"
@@ -76,7 +83,9 @@
               {{ formatLastContactDate(contact.lastContactDate) }}
             </div>
           </div>
-          <div class="ml-2 px-2 py-1 bg-brand-blue-100 text-brand-blue-700 rounded text-xs font-medium whitespace-nowrap">
+          <div
+            class="ml-2 px-2 py-1 bg-brand-blue-100 text-brand-blue-700 rounded text-xs font-medium whitespace-nowrap"
+          >
             {{ contact.contactCount }}
           </div>
         </NuxtLink>
@@ -115,10 +124,14 @@ const props = withDefaults(defineProps<Props>(), {
   schools: () => [],
 });
 
-const getContactRecency = (lastContactDate: string): "green" | "yellow" | "red" => {
+const getContactRecency = (
+  lastContactDate: string,
+): "green" | "yellow" | "red" => {
   const now = new Date();
   const contactDate = new Date(lastContactDate);
-  const diffDays = Math.floor((now.getTime() - contactDate.getTime()) / 86400000);
+  const diffDays = Math.floor(
+    (now.getTime() - contactDate.getTime()) / 86400000,
+  );
 
   if (diffDays <= 7) return "green";
   if (diffDays <= 30) return "yellow";
@@ -135,7 +148,9 @@ const recentContacts = computed((): ContactRecord[] => {
 
   // Filter interactions from the last 7 days
   const recentInteractions = props.interactions.filter((interaction) => {
-    const interactionDate = new Date(interaction.occurred_at || interaction.created_at || "");
+    const interactionDate = new Date(
+      interaction.occurred_at || interaction.created_at || "",
+    );
     return interactionDate >= sevenDaysAgo;
   });
 
@@ -166,7 +181,8 @@ const recentContacts = computed((): ContactRecord[] => {
         return dateB - dateA;
       })[0];
 
-      const lastContactDate = mostRecent.occurred_at || mostRecent.created_at || "";
+      const lastContactDate =
+        mostRecent.occurred_at || mostRecent.created_at || "";
 
       contacts.push({
         schoolId,
@@ -213,7 +229,10 @@ const schoolsWithNoRecentContact = computed(() => {
         })[0];
 
       if (!lastInteraction) return true;
-      return new Date(lastInteraction.occurred_at || lastInteraction.created_at) < thirtyDaysAgo;
+      return (
+        new Date(lastInteraction.occurred_at || lastInteraction.created_at) <
+        thirtyDaysAgo
+      );
     }).length || 0
   );
 });

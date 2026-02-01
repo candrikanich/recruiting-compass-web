@@ -82,11 +82,13 @@ describe("deadlineHelpers", () => {
 
     it("returns correct urgency labels", () => {
       expect(calculateDeadlineInfo(null).urgencyLabel).toBe("");
-      expect(calculateDeadlineInfo(new Date("2026-01-15T12:00:00Z").toISOString()).urgencyLabel).toBe(
-        "Due Today"
-      );
       expect(
-        calculateDeadlineInfo(new Date("2026-01-16T12:00:00Z").toISOString()).urgencyLabel
+        calculateDeadlineInfo(new Date("2026-01-15T12:00:00Z").toISOString())
+          .urgencyLabel,
+      ).toBe("Due Today");
+      expect(
+        calculateDeadlineInfo(new Date("2026-01-16T12:00:00Z").toISOString())
+          .urgencyLabel,
       ).toBe("Due Tomorrow");
     });
   });

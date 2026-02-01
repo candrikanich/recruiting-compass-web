@@ -80,13 +80,11 @@ export default defineEventHandler(async (event) => {
   }
 
   // Add parent to family_members
-  const { error: memberError } = await supabase
-    .from("family_members")
-    .insert({
-      family_unit_id: family.id,
-      user_id: user.id,
-      role: "parent",
-    });
+  const { error: memberError } = await supabase.from("family_members").insert({
+    family_unit_id: family.id,
+    user_id: user.id,
+    role: "parent",
+  });
 
   if (memberError) {
     throw createError({

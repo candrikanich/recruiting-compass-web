@@ -3,6 +3,7 @@
 ## Overview
 
 Create comprehensive documentation for the Baseball Recruiting Tracker MVP to support:
+
 - **Users** (families with student-athletes): Non-technical user guides and tutorials
 - **Stakeholders** (investors, partners): Pitch materials and business case
 - **Developers** (contributors): Enhanced technical documentation with visual diagrams
@@ -16,11 +17,13 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 ## Current State
 
 ### Strengths
+
 - Excellent developer onboarding (README.md, CLAUDE.md)
 - Comprehensive testing documentation
 - Feature-rich, production-ready application
 
 ### Critical Gaps
+
 - **Zero user-facing documentation** (no guides, FAQ, help system)
 - No stakeholder pitch materials
 - No marketing copy or promotional content
@@ -37,6 +40,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 #### Week 1 Deliverables
 
 **Quick Start Guide** (`/documentation/user/QUICK_START_GUIDE.md`)
+
 - Account creation walkthrough (athlete vs parent roles)
 - First 15 minutes: Profile setup, add first school, add first coach
 - Key concepts glossary (timeline phases, fit scores, interaction logging)
@@ -44,11 +48,13 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 - 5-10 pages, heavily annotated with screenshots
 
 **Glossary** (`/documentation/user/GLOSSARY.md`)
+
 - Alphabetical list of recruiting and app-specific terms
 - Examples: Fit Score, Timeline Phase, Interest Calibration, Recovery Plan, Priority Tier
 - Simple definitions with context
 
 **Capture 20 Core Screenshots**
+
 - Dashboard (athlete + parent views)
 - School list, school detail
 - Coach list, coach detail
@@ -59,6 +65,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 #### Week 2 Deliverables
 
 **User Manual** (`/documentation/user/USER_MANUAL.md`)
+
 - Comprehensive 30-40 page guide covering:
   1. Introduction & Account Management
   2. Core Features (dashboard, schools, coaches, interactions, timeline, events, performance, documents, offers)
@@ -69,16 +76,19 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 - Step-by-step workflows
 
 **FAQ Document** (`/documentation/user/FAQ.md`)
+
 - Sections: Getting Started, Account & Billing, Core Features, Scores & Metrics, Parent Collaboration, Privacy, Technical Issues, Feature Requests
 - 30-40 common questions with clear answers
 
 **Capture Remaining Screenshots** (20-30 more)
+
 - All remaining pages and modals
 - Total: 40-50 annotated screenshots
 
 #### Week 3 Deliverables
 
 **Video Tutorials** (`/documentation/user/videos/`)
+
 - 8-10 videos, 2-5 minutes each
 - Topics:
   1. Getting Started (3 min)
@@ -95,6 +105,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 - Host: YouTube (embed in app)
 
 **In-App Help System**
+
 - Create components: `/components/Help/TooltipGuide.vue`, `/components/Help/HelpIcon.vue`
 - Add contextual tooltips to:
   - Timeline phases (explain current phase + next steps)
@@ -113,6 +124,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 #### Week 1 Deliverables
 
 **Pitch Deck** (`/documentation/stakeholder/PITCH_DECK.pptx` + `.pdf`)
+
 - 15-20 slides covering:
   1. Cover (logo + tagline)
   2. Problem Statement (recruiting chaos for families)
@@ -133,6 +145,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 - Export to PDF for sharing
 
 **Product Brief** (`/documentation/stakeholder/PRODUCT_BRIEF.md`)
+
 - 6-8 pages covering:
   - Executive Summary (1 page)
   - Problem & Opportunity
@@ -145,6 +158,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
   - Success Metrics
 
 **One-Pager** (`/documentation/stakeholder/ONE_PAGER.pdf`)
+
 - Single landscape page with:
   - Logo + tagline
   - Problem (3 bullets)
@@ -164,6 +178,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 #### Week 2 Deliverables
 
 **Database Schema Documentation** (`/documentation/technical/DATABASE_SCHEMA.md`)
+
 - Entity-Relationship Diagram (Mermaid.js or dbdiagram.io)
 - Table definitions for:
   - users, schools, coaches, interactions
@@ -174,6 +189,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 - Row-Level Security (RLS) policies
 
 **API Reference** (`/documentation/technical/API_REFERENCE.md`)
+
 - OpenAPI-style documentation for each endpoint:
   - `/api/schools` (GET, POST, PATCH, DELETE)
   - `/api/coaches` (GET, POST, PATCH, DELETE)
@@ -186,6 +202,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 - For each: URL, method, description, request/response schemas, examples, error codes
 
 **User Journey Maps** (`/documentation/technical/diagrams/`)
+
 - 3 diagrams (Mermaid.js):
   1. New athlete onboarding journey
   2. Parent account linking flow
@@ -194,6 +211,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 #### Week 3 Deliverables
 
 **Architecture Diagrams** (`/documentation/technical/ARCHITECTURE_OVERVIEW.md`)
+
 - 4 diagrams (Mermaid.js):
   1. System Architecture (Client → Server → Supabase)
   2. Data Flow (User action → API → DB → UI update)
@@ -201,6 +219,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
   4. Authentication Flow (Login → JWT → Protected routes)
 
 **Feature Flow Diagrams** (`/documentation/technical/DATA_FLOW_DIAGRAMS.md`)
+
 - 5 diagrams (Mermaid.js):
   1. Timeline phase advancement logic
   2. Fit score calculation algorithm
@@ -209,6 +228,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
   5. Recovery plan trigger conditions
 
 **Contributing Guide** (`/CONTRIBUTING.md`)
+
 - Code of Conduct
 - Development setup
 - Branch naming conventions
@@ -226,6 +246,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 #### Week 1 Deliverables
 
 **Landing Page Copy** (`/documentation/marketing/LANDING_PAGE_COPY.md`)
+
 - Hero headline + subheadline
 - Value propositions (3 bullets)
 - Feature showcase (6 features with descriptions)
@@ -235,6 +256,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 - Footer (privacy, terms, contact)
 
 **Sample Copy:**
+
 ```
 Headline: Navigate Your College Recruiting Journey with Confidence
 Subheadline: The all-in-one platform for student-athletes and families to organize schools, track coach interactions, and stay on top of recruiting milestones.
@@ -248,6 +270,7 @@ Value Props:
 #### Week 2 Deliverables
 
 **Feature Highlight Pages** (`/documentation/marketing/`)
+
 - 4 feature pages:
   - `FEATURE_TIMELINE.md` (4-year recruiting roadmap)
   - `FEATURE_FIT_SCORE.md` (data-driven school matching)
@@ -262,6 +285,7 @@ Value Props:
   - CTA
 
 **Email Templates** (`/documentation/marketing/`)
+
 - `EMAIL_WELCOME.md` - Immediate after signup
 - `EMAIL_ONBOARDING_SERIES.md` - 5 emails over 2 weeks:
   1. Welcome + Quick Start (Day 0)
@@ -274,11 +298,13 @@ Value Props:
 #### Week 3 Deliverables
 
 **Blog Post Templates** (`/documentation/marketing/`)
+
 - `BLOG_ANNOUNCEMENT_POST.md` - "Announcing Recruiting Compass: Your Free College Recruiting Assistant"
 - `BLOG_HOW_TO_POST.md` - "How to Organize Your Target School List in 10 Minutes"
 - `BLOG_RECRUITING_TIPS.md` - "5 Mistakes Parents Make in College Recruiting (And How to Avoid Them)"
 
 **Social Media Content** (`/documentation/marketing/SOCIAL_MEDIA_CONTENT.md`)
+
 - Content plan for Twitter, Instagram, Facebook, LinkedIn
 - Types: Launch announcement, feature spotlights, user tips, testimonials, recruiting advice
 - 3-5 posts per week for first month
@@ -289,6 +315,7 @@ Value Props:
 ## Implementation Roadmap
 
 ### Week 1: MVP Essentials (Critical for Launch)
+
 - [ ] Quick Start Guide (user)
 - [ ] Glossary (user)
 - [ ] Pitch Deck (stakeholder)
@@ -300,6 +327,7 @@ Value Props:
 **Deliverables:** 6 documents + pitch deck + 20 screenshots
 
 ### Week 2: Comprehensive User & Marketing Docs
+
 - [ ] User Manual (30-40 pages)
 - [ ] FAQ Document
 - [ ] Email Templates (marketing)
@@ -312,6 +340,7 @@ Value Props:
 **Deliverables:** 10+ documents + 50 total screenshots + 3 diagrams
 
 ### Week 3: Videos & Developer Enhancements
+
 - [ ] Record 8-10 video tutorials
 - [ ] In-app help system (tooltips + help icons)
 - [ ] Architecture diagrams (4 diagrams)
@@ -324,6 +353,7 @@ Value Props:
 **Deliverables:** 10 videos + in-app help + 9 diagrams + 5+ documents
 
 ### Week 4: Polish & Distribution (Optional)
+
 - [ ] Review all documentation for consistency
 - [ ] Add missing screenshots
 - [ ] Table of contents for user manual
@@ -376,6 +406,7 @@ Value Props:
 ## Recommended Tools
 
 ### Documentation Writing
+
 - **Markdown Editor:** VS Code with Markdown Preview
 - **Screenshot Tool:** macOS built-in (Cmd+Shift+4) or Cleanshot X
 - **Annotation:** Preview (macOS), Snagit, or Figma
@@ -383,11 +414,13 @@ Value Props:
 - **Diagrams:** Mermaid.js (code-based, version-controlled)
 
 ### Design
+
 - **Pitch Deck:** Canva (templates) or PowerPoint/Keynote
 - **One-Pager:** Canva or Figma
 - **Screenshot Editing:** Figma or Photoshop
 
 ### Hosting
+
 - **Videos:** YouTube (public, free embedding)
 - **Documentation Site (Optional):** Docusaurus or VitePress
 - **Images:** Store in `/documentation/user/screenshots/` (Git LFS if large)
@@ -397,22 +430,26 @@ Value Props:
 ## Success Metrics
 
 ### User Documentation
+
 - 80%+ of new users view Quick Start Guide
 - 40% reduction in "how-to" support tickets
 - 60%+ onboarding task completion rate
 - 70%+ average video watch time
 
 ### Stakeholder Documentation
+
 - 20+ demo requests from pitch deck in first month
 - 5+ high school/club partnership conversations
 - 3+ investor meetings from pitch materials
 
 ### Developer Documentation
+
 - New developer productive in <4 hours
 - Zero API-related GitHub issues in first month
 - 2+ external contributions in first quarter
 
 ### Marketing Documentation
+
 - 5%+ signup conversion rate from landing page
 - 40%+ email open rate on welcome email
 - 100+ social media engagements on launch week
@@ -423,6 +460,7 @@ Value Props:
 ## Verification & Testing
 
 ### Pre-Launch Checklist
+
 - [ ] All Week 1-2 documentation complete
 - [ ] Screenshots captured and annotated
 - [ ] Pitch deck reviewed by advisor/mentor
@@ -432,6 +470,7 @@ Value Props:
 - [ ] At least 5 videos recorded and uploaded
 
 ### Post-Launch Monitoring
+
 - Track documentation page views (Google Analytics)
 - Monitor support ticket themes (identify doc gaps)
 - Collect user feedback on documentation clarity

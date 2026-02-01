@@ -105,7 +105,9 @@ test.describe("Admin Dashboard - Bulk Delete Users", () => {
     expect(selectedCount).toBe(userCount);
   });
 
-  test("should show bulk delete button when users selected", async ({ page }) => {
+  test("should show bulk delete button when users selected", async ({
+    page,
+  }) => {
     const userCount = await adminPage.getUserCount();
     test.skip(userCount < 1, "No users to select");
 
@@ -198,7 +200,7 @@ test.describe("Admin Dashboard - Bulk Delete Users", () => {
 
     // Try to interact with "Current" user (should have no checkbox)
     const currentUserCheckboxes = page.locator(
-      'td:has-text("Current") input[type="checkbox"]'
+      'td:has-text("Current") input[type="checkbox"]',
     );
     const currentUserCheckboxCount = await currentUserCheckboxes.count();
 

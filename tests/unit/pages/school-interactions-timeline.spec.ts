@@ -114,13 +114,13 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         if (selectedDirection.value) {
           filtered = filtered.filter(
-            (i) => i.direction === selectedDirection.value
+            (i) => i.direction === selectedDirection.value,
           );
         }
 
         if (selectedSentiment.value) {
           filtered = filtered.filter(
-            (i) => i.sentiment === selectedSentiment.value
+            (i) => i.sentiment === selectedSentiment.value,
           );
         }
 
@@ -129,14 +129,14 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - days);
           filtered = filtered.filter(
-            (i) => new Date(i.occurred_at || "") > cutoffDate
+            (i) => new Date(i.occurred_at || "") > cutoffDate,
           );
         }
 
         return filtered.sort(
           (a, b) =>
             new Date(b.occurred_at || "").getTime() -
-            new Date(a.occurred_at || "").getTime()
+            new Date(a.occurred_at || "").getTime(),
         );
       });
 
@@ -159,13 +159,13 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         if (selectedDirection.value) {
           filtered = filtered.filter(
-            (i) => i.direction === selectedDirection.value
+            (i) => i.direction === selectedDirection.value,
           );
         }
 
         if (selectedSentiment.value) {
           filtered = filtered.filter(
-            (i) => i.sentiment === selectedSentiment.value
+            (i) => i.sentiment === selectedSentiment.value,
           );
         }
 
@@ -174,20 +174,20 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - days);
           filtered = filtered.filter(
-            (i) => new Date(i.occurred_at || "") > cutoffDate
+            (i) => new Date(i.occurred_at || "") > cutoffDate,
           );
         }
 
         return filtered.sort(
           (a, b) =>
             new Date(b.occurred_at || "").getTime() -
-            new Date(a.occurred_at || "").getTime()
+            new Date(a.occurred_at || "").getTime(),
         );
       });
 
       expect(filteredInteractions.value.length).toBe(2); // i1 and i3 are emails
       expect(filteredInteractions.value.every((i) => i.type === "email")).toBe(
-        true
+        true,
       );
     });
 
@@ -207,13 +207,13 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         if (selectedDirection.value) {
           filtered = filtered.filter(
-            (i) => i.direction === selectedDirection.value
+            (i) => i.direction === selectedDirection.value,
           );
         }
 
         if (selectedSentiment.value) {
           filtered = filtered.filter(
-            (i) => i.sentiment === selectedSentiment.value
+            (i) => i.sentiment === selectedSentiment.value,
           );
         }
 
@@ -222,20 +222,20 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - days);
           filtered = filtered.filter(
-            (i) => new Date(i.occurred_at || "") > cutoffDate
+            (i) => new Date(i.occurred_at || "") > cutoffDate,
           );
         }
 
         return filtered.sort(
           (a, b) =>
             new Date(b.occurred_at || "").getTime() -
-            new Date(a.occurred_at || "").getTime()
+            new Date(a.occurred_at || "").getTime(),
         );
       });
 
       expect(filteredInteractions.value.length).toBe(3); // i1, i3, i5
       expect(
-        filteredInteractions.value.every((i) => i.direction === "outbound")
+        filteredInteractions.value.every((i) => i.direction === "outbound"),
       ).toBe(true);
     });
 
@@ -255,13 +255,13 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         if (selectedDirection.value) {
           filtered = filtered.filter(
-            (i) => i.direction === selectedDirection.value
+            (i) => i.direction === selectedDirection.value,
           );
         }
 
         if (selectedSentiment.value) {
           filtered = filtered.filter(
-            (i) => i.sentiment === selectedSentiment.value
+            (i) => i.sentiment === selectedSentiment.value,
           );
         }
 
@@ -270,20 +270,20 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - days);
           filtered = filtered.filter(
-            (i) => new Date(i.occurred_at || "") > cutoffDate
+            (i) => new Date(i.occurred_at || "") > cutoffDate,
           );
         }
 
         return filtered.sort(
           (a, b) =>
             new Date(b.occurred_at || "").getTime() -
-            new Date(a.occurred_at || "").getTime()
+            new Date(a.occurred_at || "").getTime(),
         );
       });
 
       expect(filteredInteractions.value.length).toBe(2); // i1, i5 are positive
       expect(
-        filteredInteractions.value.every((i) => i.sentiment === "positive")
+        filteredInteractions.value.every((i) => i.sentiment === "positive"),
       ).toBe(true);
     });
 
@@ -303,13 +303,13 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         if (selectedDirection.value) {
           filtered = filtered.filter(
-            (i) => i.direction === selectedDirection.value
+            (i) => i.direction === selectedDirection.value,
           );
         }
 
         if (selectedSentiment.value) {
           filtered = filtered.filter(
-            (i) => i.sentiment === selectedSentiment.value
+            (i) => i.sentiment === selectedSentiment.value,
           );
         }
 
@@ -318,14 +318,14 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - days);
           filtered = filtered.filter(
-            (i) => new Date(i.occurred_at || "") > cutoffDate
+            (i) => new Date(i.occurred_at || "") > cutoffDate,
           );
         }
 
         return filtered.sort(
           (a, b) =>
             new Date(b.occurred_at || "").getTime() -
-            new Date(a.occurred_at || "").getTime()
+            new Date(a.occurred_at || "").getTime(),
         );
       });
 
@@ -349,13 +349,13 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         if (selectedDirection.value) {
           filtered = filtered.filter(
-            (i) => i.direction === selectedDirection.value
+            (i) => i.direction === selectedDirection.value,
           );
         }
 
         if (selectedSentiment.value) {
           filtered = filtered.filter(
-            (i) => i.sentiment === selectedSentiment.value
+            (i) => i.sentiment === selectedSentiment.value,
           );
         }
 
@@ -364,24 +364,24 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - days);
           filtered = filtered.filter(
-            (i) => new Date(i.occurred_at || "") > cutoffDate
+            (i) => new Date(i.occurred_at || "") > cutoffDate,
           );
         }
 
         return filtered.sort(
           (a, b) =>
             new Date(b.occurred_at || "").getTime() -
-            new Date(a.occurred_at || "").getTime()
+            new Date(a.occurred_at || "").getTime(),
         );
       });
 
       // Should only include outbound emails (i1 and i3)
       expect(filteredInteractions.value.length).toBe(2);
+      expect(filteredInteractions.value.every((i) => i.type === "email")).toBe(
+        true,
+      );
       expect(
-        filteredInteractions.value.every((i) => i.type === "email")
-      ).toBe(true);
-      expect(
-        filteredInteractions.value.every((i) => i.direction === "outbound")
+        filteredInteractions.value.every((i) => i.direction === "outbound"),
       ).toBe(true);
     });
 
@@ -401,13 +401,13 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         if (selectedDirection.value) {
           filtered = filtered.filter(
-            (i) => i.direction === selectedDirection.value
+            (i) => i.direction === selectedDirection.value,
           );
         }
 
         if (selectedSentiment.value) {
           filtered = filtered.filter(
-            (i) => i.sentiment === selectedSentiment.value
+            (i) => i.sentiment === selectedSentiment.value,
           );
         }
 
@@ -416,14 +416,14 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - days);
           filtered = filtered.filter(
-            (i) => new Date(i.occurred_at || "") > cutoffDate
+            (i) => new Date(i.occurred_at || "") > cutoffDate,
           );
         }
 
         return filtered.sort(
           (a, b) =>
             new Date(b.occurred_at || "").getTime() -
-            new Date(a.occurred_at || "").getTime()
+            new Date(a.occurred_at || "").getTime(),
         );
       });
 
@@ -451,13 +451,13 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         if (selectedDirection.value) {
           filtered = filtered.filter(
-            (i) => i.direction === selectedDirection.value
+            (i) => i.direction === selectedDirection.value,
           );
         }
 
         if (selectedSentiment.value) {
           filtered = filtered.filter(
-            (i) => i.sentiment === selectedSentiment.value
+            (i) => i.sentiment === selectedSentiment.value,
           );
         }
 
@@ -466,21 +466,21 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - days);
           filtered = filtered.filter(
-            (i) => new Date(i.occurred_at || "") > cutoffDate
+            (i) => new Date(i.occurred_at || "") > cutoffDate,
           );
         }
 
         return filtered.sort(
           (a, b) =>
             new Date(b.occurred_at || "").getTime() -
-            new Date(a.occurred_at || "").getTime()
+            new Date(a.occurred_at || "").getTime(),
         );
       });
 
       const outboundCount = computed(
         () =>
           filteredInteractions.value.filter((i) => i.direction === "outbound")
-            .length
+            .length,
       );
 
       expect(outboundCount.value).toBe(3); // i1, i3, i5
@@ -502,13 +502,13 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         if (selectedDirection.value) {
           filtered = filtered.filter(
-            (i) => i.direction === selectedDirection.value
+            (i) => i.direction === selectedDirection.value,
           );
         }
 
         if (selectedSentiment.value) {
           filtered = filtered.filter(
-            (i) => i.sentiment === selectedSentiment.value
+            (i) => i.sentiment === selectedSentiment.value,
           );
         }
 
@@ -517,21 +517,21 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - days);
           filtered = filtered.filter(
-            (i) => new Date(i.occurred_at || "") > cutoffDate
+            (i) => new Date(i.occurred_at || "") > cutoffDate,
           );
         }
 
         return filtered.sort(
           (a, b) =>
             new Date(b.occurred_at || "").getTime() -
-            new Date(a.occurred_at || "").getTime()
+            new Date(a.occurred_at || "").getTime(),
         );
       });
 
       const inboundCount = computed(
         () =>
           filteredInteractions.value.filter((i) => i.direction === "inbound")
-            .length
+            .length,
       );
 
       expect(inboundCount.value).toBe(2); // i2, i4
@@ -553,13 +553,13 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         if (selectedDirection.value) {
           filtered = filtered.filter(
-            (i) => i.direction === selectedDirection.value
+            (i) => i.direction === selectedDirection.value,
           );
         }
 
         if (selectedSentiment.value) {
           filtered = filtered.filter(
-            (i) => i.sentiment === selectedSentiment.value
+            (i) => i.sentiment === selectedSentiment.value,
           );
         }
 
@@ -568,14 +568,14 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - days);
           filtered = filtered.filter(
-            (i) => new Date(i.occurred_at || "") > cutoffDate
+            (i) => new Date(i.occurred_at || "") > cutoffDate,
           );
         }
 
         return filtered.sort(
           (a, b) =>
             new Date(b.occurred_at || "").getTime() -
-            new Date(a.occurred_at || "").getTime()
+            new Date(a.occurred_at || "").getTime(),
         );
       });
 
@@ -586,15 +586,11 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         const date = new Date(lastInteraction.occurred_at);
         const now = new Date();
-        const secondsAgo = Math.floor(
-          (now.getTime() - date.getTime()) / 1000
-        );
+        const secondsAgo = Math.floor((now.getTime() - date.getTime()) / 1000);
 
         if (secondsAgo < 60) return "just now";
-        if (secondsAgo < 3600)
-          return `${Math.floor(secondsAgo / 60)}m ago`;
-        if (secondsAgo < 86400)
-          return `${Math.floor(secondsAgo / 3600)}h ago`;
+        if (secondsAgo < 3600) return `${Math.floor(secondsAgo / 60)}m ago`;
+        if (secondsAgo < 86400) return `${Math.floor(secondsAgo / 3600)}h ago`;
         if (secondsAgo < 604800)
           return `${Math.floor(secondsAgo / 86400)}d ago`;
         if (secondsAgo < 2592000) return "weeks ago";
@@ -625,13 +621,13 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         if (selectedDirection.value) {
           filtered = filtered.filter(
-            (i) => i.direction === selectedDirection.value
+            (i) => i.direction === selectedDirection.value,
           );
         }
 
         if (selectedSentiment.value) {
           filtered = filtered.filter(
-            (i) => i.sentiment === selectedSentiment.value
+            (i) => i.sentiment === selectedSentiment.value,
           );
         }
 
@@ -640,27 +636,27 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - days);
           filtered = filtered.filter(
-            (i) => new Date(i.occurred_at || "") > cutoffDate
+            (i) => new Date(i.occurred_at || "") > cutoffDate,
           );
         }
 
         return filtered.sort(
           (a, b) =>
             new Date(b.occurred_at || "").getTime() -
-            new Date(a.occurred_at || "").getTime()
+            new Date(a.occurred_at || "").getTime(),
         );
       });
 
       const outboundCount = computed(
         () =>
           filteredInteractions.value.filter((i) => i.direction === "outbound")
-            .length
+            .length,
       );
 
       const inboundCount = computed(
         () =>
           filteredInteractions.value.filter((i) => i.direction === "inbound")
-            .length
+            .length,
       );
 
       const lastContactDisplay = computed(() => {
@@ -692,13 +688,13 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         if (selectedDirection.value) {
           filtered = filtered.filter(
-            (i) => i.direction === selectedDirection.value
+            (i) => i.direction === selectedDirection.value,
           );
         }
 
         if (selectedSentiment.value) {
           filtered = filtered.filter(
-            (i) => i.sentiment === selectedSentiment.value
+            (i) => i.sentiment === selectedSentiment.value,
           );
         }
 
@@ -707,14 +703,14 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - days);
           filtered = filtered.filter(
-            (i) => new Date(i.occurred_at || "") > cutoffDate
+            (i) => new Date(i.occurred_at || "") > cutoffDate,
           );
         }
 
         return filtered.sort(
           (a, b) =>
             new Date(b.occurred_at || "").getTime() -
-            new Date(a.occurred_at || "").getTime()
+            new Date(a.occurred_at || "").getTime(),
         );
       });
 
@@ -739,13 +735,13 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
 
         if (selectedDirection.value) {
           filtered = filtered.filter(
-            (i) => i.direction === selectedDirection.value
+            (i) => i.direction === selectedDirection.value,
           );
         }
 
         if (selectedSentiment.value) {
           filtered = filtered.filter(
-            (i) => i.sentiment === selectedSentiment.value
+            (i) => i.sentiment === selectedSentiment.value,
           );
         }
 
@@ -754,14 +750,14 @@ describe("School Interactions Timeline Filtering & Metrics", () => {
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - days);
           filtered = filtered.filter(
-            (i) => new Date(i.occurred_at || "") > cutoffDate
+            (i) => new Date(i.occurred_at || "") > cutoffDate,
           );
         }
 
         return filtered.sort(
           (a, b) =>
             new Date(b.occurred_at || "").getTime() -
-            new Date(a.occurred_at || "").getTime()
+            new Date(a.occurred_at || "").getTime(),
         );
       });
 

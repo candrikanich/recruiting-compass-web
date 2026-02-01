@@ -239,7 +239,7 @@ test.describe("Tier 1: Session Timeout - Warning and Logout", () => {
       if (prefs) {
         const parsed = JSON.parse(prefs);
         // Set lastActivity to 31+ days ago
-        parsed.lastActivity = Date.now() - (31 * 24 * 60 * 60 * 1000);
+        parsed.lastActivity = Date.now() - 31 * 24 * 60 * 60 * 1000;
         localStorage.setItem("session_preferences", JSON.stringify(parsed));
       }
     });

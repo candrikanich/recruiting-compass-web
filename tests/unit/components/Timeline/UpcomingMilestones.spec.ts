@@ -199,7 +199,9 @@ describe("UpcomingMilestones Component", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Important dates to have on your calendar");
+    expect(wrapper.text()).toContain(
+      "Important dates to have on your calendar",
+    );
   });
 
   it("should handle milestones without URL gracefully", () => {

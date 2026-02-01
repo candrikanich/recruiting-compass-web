@@ -43,14 +43,14 @@ const showSwitcher = computed(() => {
 
   console.debug(
     `[AthleteSwitcher] isParent=${isParent}, familiesCount=${familiesCount}, show=${show}`,
-    activeFamily.parentAccessibleFamilies.value
+    activeFamily.parentAccessibleFamilies.value,
   );
 
   return show;
 });
 
-const accessibleAthletes = computed(() =>
-  activeFamily.parentAccessibleFamilies.value
+const accessibleAthletes = computed(
+  () => activeFamily.parentAccessibleFamilies.value,
 );
 
 const selectedId = ref("");
@@ -63,7 +63,7 @@ watch(
       selectedId.value = newId;
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const handleSwitch = async () => {

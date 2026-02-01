@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
       role,
       family_units(id, family_name, student_user_id),
       users(id, email, full_name, role)
-    `
+    `,
     )
     .eq("id", memberId)
     .single();
@@ -121,7 +121,9 @@ export default defineEventHandler(async (event) => {
       message: `${memberInfo.full_name || memberInfo.email} has been removed from your family`,
       priority: "low",
     })
-    .catch((err) => console.warn("Failed to create student notification:", err));
+    .catch((err) =>
+      console.warn("Failed to create student notification:", err),
+    );
 
   return {
     success: true,

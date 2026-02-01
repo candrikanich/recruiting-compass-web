@@ -533,8 +533,8 @@
                 <span class="font-semibold">{{ userEmail }}</span>
               </p>
               <p class="text-amber-700 text-sm mt-2">
-                Click the verification link in the email to confirm your account.
-                It may take a minute to arrive.
+                Click the verification link in the email to confirm your
+                account. It may take a minute to arrive.
               </p>
             </div>
 
@@ -587,8 +587,8 @@
           <div class="mt-8 p-4 bg-slate-50 rounded-lg border border-slate-200">
             <p class="text-slate-600 text-xs leading-relaxed">
               <span class="font-semibold text-slate-700">Need help?</span>
-              Check your spam folder if you haven't received the verification email.
-              If you continue to have issues, please contact support.
+              Check your spam folder if you haven't received the verification
+              email. If you continue to have issues, please contact support.
             </p>
           </div>
         </div>
@@ -675,7 +675,9 @@ const checkVerificationStatus = async () => {
  * Includes cooldown to prevent abuse
  */
 const handleResendEmail = async () => {
-  const success = await emailVerification.resendVerificationEmail(userEmail.value);
+  const success = await emailVerification.resendVerificationEmail(
+    userEmail.value,
+  );
 
   if (success) {
     // Start cooldown timer (60 seconds)

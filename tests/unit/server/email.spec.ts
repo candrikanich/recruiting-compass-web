@@ -13,11 +13,11 @@ describe("Recruiting Packet Email API", () => {
       .array(z.string().email("Invalid email address"))
       .min(1, "At least one recipient is required")
       .max(10, "Maximum 10 recipients per send"),
-    subject: z.string().min(1, "Subject is required").max(200, "Subject too long"),
-    body: z
+    subject: z
       .string()
-      .min(1, "Body is required")
-      .max(2000, "Body too long"),
+      .min(1, "Subject is required")
+      .max(200, "Subject too long"),
+    body: z.string().min(1, "Body is required").max(2000, "Body too long"),
     htmlContent: z.string().optional(),
     pdfBase64: z.string().optional(),
     athleteName: z.string().optional(),
@@ -61,7 +61,10 @@ describe("Recruiting Packet Email API", () => {
     });
 
     it("should limit to maximum 10 recipients", () => {
-      const emails = Array.from({ length: 11 }, (_, i) => `coach${i}@example.com`);
+      const emails = Array.from(
+        { length: 11 },
+        (_, i) => `coach${i}@example.com`,
+      );
       const invalidRequest = {
         recipients: emails,
         subject: "Test",
@@ -152,7 +155,9 @@ describe("Recruiting Packet Email API", () => {
       emailRateLimitStore = new Map();
     });
 
-    const createCheckRateLimit = (store: Map<string, { count: number; resetTime: number }>) => {
+    const createCheckRateLimit = (
+      store: Map<string, { count: number; resetTime: number }>,
+    ) => {
       return (userId: string, maxEmails: number = 20): boolean => {
         const now = Date.now();
         const entry = store.get(userId);
@@ -224,7 +229,7 @@ describe("Recruiting Packet Email API", () => {
   describe("Email Formatting", () => {
     const formatEmailHtml = (
       body: string,
-      athleteName: string | undefined
+      athleteName: string | undefined,
     ): string => {
       return `
     <!DOCTYPE html>
@@ -329,7 +334,7 @@ describe("Recruiting Packet Email API", () => {
     it("should accept bulk email to 10 recipients", () => {
       const emails = Array.from(
         { length: 10 },
-        (_, i) => `coach${i}@example.com`
+        (_, i) => `coach${i}@example.com`,
       );
       const request = {
         recipients: emails,

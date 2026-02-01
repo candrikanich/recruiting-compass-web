@@ -3,7 +3,9 @@ import type { Interaction } from "~/types/models";
 /**
  * Export interactions to CSV format
  */
-export const exportInteractionsToCSV = (interactions: Interaction[]): string => {
+export const exportInteractionsToCSV = (
+  interactions: Interaction[],
+): string => {
   if (interactions.length === 0) return "";
 
   // Headers

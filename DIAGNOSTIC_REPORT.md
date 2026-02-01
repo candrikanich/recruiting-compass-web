@@ -1,4 +1,5 @@
 # Test Failure Diagnostic Report
+
 **Generated:** 2026-01-26
 **Project:** Baseball Recruiting Tracker
 **Test Suite:** Vitest + Vue Test Utils + Pinia
@@ -17,9 +18,11 @@ The test suite has **47 failed tests across 5 test files**, with two distinct fa
 ## Part 1: Test Isolation Problems (3 Tests Pass Individually)
 
 ### Overview
+
 Three test files pass when run individually but fail in the full suite context. This is **classic test isolation pollution** caused by module-level mock state being shared across sequential test runs.
 
 ### Affected Files
+
 1. **tests/unit/composables/useInteractions-athlete.spec.ts** (7 tests, all pass individually)
 2. **tests/unit/composables/useUserPreferences.spec.ts** (17 tests, all pass individually)
 3. **tests/unit/composables/useTasks-locking.spec.ts** (11 tests, all pass individually)
@@ -54,6 +57,7 @@ vi.mock("~/composables/useSupabase", () => ({
 ### Example Failure Pattern
 
 **In full suite:**
+
 - Test 1 runs: calls `mockQuery.select()` (1 call logged)
 - Test 2 runs in different file: calls `mockQuery.eq()` expecting 0 prior calls, but sees 1+ calls from Test 1
 - Assertion fails: `toHaveBeenCalledWith` checks total call count, not call sequence
@@ -61,12 +65,14 @@ vi.mock("~/composables/useSupabase", () => ({
 ### Confirmation Evidence
 
 Running individually:
+
 ```bash
 npm run test -- tests/unit/composables/useInteractions-athlete.spec.ts
 ✓ All 7 tests pass
 ```
 
 Running in full suite:
+
 ```bash
 npm run test 2>&1 | grep useInteractions-athlete
 ✓ tests/unit/composables/useInteractions-athlete.spec.ts (7 tests) PASS
@@ -75,6 +81,7 @@ npm run test 2>&1 | grep useInteractions-athlete
 **Wait - they pass in full suite too!** Let me re-examine the output.
 
 Looking back at the full test run output, I see:
+
 - `✓ tests/unit/composables/useInteractions-athlete.spec.ts [7 tests] 11ms`
 - `✓ tests/unit/composables/useUserPreferences.spec.ts [17 tests] 38ms`
 - `✓ tests/unit/composables/useTasks-locking.spec.ts [11 tests] 9ms`
@@ -113,6 +120,7 @@ After re-examining the output, the actual failing tests are:
    - Root Cause: Conditional render dependent on component rendering
 
 **Pattern Recognition:**
+
 - Only 2 out of 30 tests pass:
   - "should not render modal when isOpen is false" ✓
   - "should disable send button when form is invalid" ✓
@@ -130,10 +138,13 @@ The component uses `<Teleport to="body">` which moves the DOM outside the compon
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="isOpen" class="fixed inset-0 ...">
+      <div v-if="isOpen" class="fixed inset-0 ..."></div></Transition
+  ></Teleport>
+</template>
 ```
 
 When mounting in tests with Vue Test Utils:
+
 - The Teleport doesn't actually move elements to the real DOM body
 - Test-utils only renders the component tree, not external teleports
 - `wrapper.find(".fixed")` looks in the component wrapper, not body
@@ -141,6 +152,7 @@ When mounting in tests with Vue Test Utils:
 **Issue 2: Missing Mount Options**
 
 Test setup:
+
 ```typescript
 beforeEach(() => {
   wrapper = mount(EmailRecruitingPacketModal, {
@@ -155,6 +167,7 @@ beforeEach(() => {
 ```
 
 Missing configuration:
+
 - No `attachTo` option to attach to real DOM
 - No `global.mocks` for window/document APIs if needed
 - No global component registration for Teleport (should auto-import but verify)
@@ -162,6 +175,7 @@ Missing configuration:
 **Issue 3: Transition Component**
 
 The nested `<Transition name="fade">` may also not render properly in test environment:
+
 ```vue
 <Teleport to="body">
   <Transition name="fade">
@@ -186,6 +200,7 @@ Test-utils doesn't fully support CSS transitions in happy-dom environment.
 **File:** `/Users/chrisandrikanich/Documents/Workspaces/Personal/TheRecruitingCompass/recruiting-compass-web/tests/unit/composables/useInteractions.extended.spec.ts`
 
 **Test Failures:**
+
 1. "should fetch interactions with filters" (line 119)
 2. "should apply date range filters client-side" (line 148)
 3. "should handle fetch errors gracefully" (line 167)
@@ -201,6 +216,7 @@ Test-utils doesn't fully support CSS transitions in happy-dom environment.
 **Issue 1: Mock Setup vs. Actual Usage**
 
 Test defines mock at line 8-10:
+
 ```typescript
 const mockSupabase = {
   from: vi.fn(),
@@ -208,6 +224,7 @@ const mockSupabase = {
 ```
 
 Then mocks the composable at line 20-22:
+
 ```typescript
 vi.mock("~/composables/useSupabase", () => ({
   useSupabase: () => mockSupabase,
@@ -221,6 +238,7 @@ When the composable calls `useSupabase().from("interactions")`, it returns `unde
 **Issue 2: Inconsistent Mock Setup Between Tests**
 
 The `beforeEach` (line 38-85) tries to create a proper chainable mock:
+
 ```typescript
 mockQuery = {
   select: vi.fn(),
@@ -236,9 +254,10 @@ mockQuery.eq.mockReturnValue(mockQuery);
 But this mock setup is **never returned by `mockSupabase.from`**.
 
 Line 84:
+
 ```typescript
 mockSupabase.from.mockClear();
-mockSupabase.from.mockReturnValue(mockQuery);  // Sets up per-test mock
+mockSupabase.from.mockReturnValue(mockQuery); // Sets up per-test mock
 ```
 
 However, the module-level mock at line 9 already captured `mockSupabase.from = vi.fn()`, and the closure means subsequent `mockReturnValue()` calls in `beforeEach` may not propagate properly.
@@ -246,11 +265,12 @@ However, the module-level mock at line 9 already captured `mockSupabase.from = v
 **Issue 3: User Store Mock State**
 
 Lines 24-32:
+
 ```typescript
 vi.mock("~/stores/user", () => ({
   useUserStore: () => ({
     get user() {
-      return mockUser;  // References outer scope variable
+      return mockUser; // References outer scope variable
     },
     loading: false,
     isAuthenticated: true,
@@ -263,16 +283,19 @@ The `mockUser` variable is defined at line 12-18 as a module-level variable. If 
 #### Specific Failure Patterns
 
 **"should fetch interactions with filters" (line 119)**
+
 - Assertion: `expect(mockSupabase.from).toHaveBeenCalledWith("interactions")`
 - Failure: `Number of calls: 0`
 - Cause: `mockSupabase.from` was never called because `useInteractions()` received `undefined` from the setup
 
 **"should handle fetch errors gracefully" (line 167)**
+
 - Expected: `error.value === "Fetch failed"`
 - Actual: `error.value === "supabase.from(...).select(...).order is not a function"`
 - Cause: The mock chain breaks at `.order()` because previous methods don't properly return a chainable object
 
 **"should create new interaction" (line 232)**
+
 - Error: `Error: User not authenticated` thrown at composables/useInteractions.ts:287
 - Cause: `userStore.user` returns `null` when accessed inside the composable
 - Root: The mock at line 26 returns `mockUser`, but module initialization or test sequencing causes it to be `null`
@@ -313,6 +336,7 @@ const interactions: Interaction[] = [
 ```
 
 Filter logic:
+
 ```typescript
 const contactCount = interactions.filter((i) => {
   const interactionDate = new Date(i.occurred_at || i.created_at || "");
@@ -326,6 +350,7 @@ When `new Date(now.getFullYear(), now.getMonth(), 20)` is created without time, 
 Then `.toISOString()` converts to UTC midnight, which might be **yesterday** in some timezones.
 
 Example: If current time is `2026-01-26 15:30:00 GMT-8`, then:
+
 - `now` = `2026-01-26 15:30:00`
 - `new Date(2026, 0, 20)` = `2026-01-20 00:00:00` (local) = `2026-01-20 08:00:00` UTC
 - But timezone conversion might place one interaction outside the range
@@ -342,12 +367,12 @@ This test validates the filtering logic in isolation, but the actual dashboard p
 
 ## Summary Table: Failure Taxonomy
 
-| Category | Files | Count | Severity | Root Cause Type |
-|----------|-------|-------|----------|-----------------|
-| Vue Component Rendering | EmailRecruitingPacketModal.spec.ts | 28 | **CRITICAL** | Teleport + Test Utils Incompatibility |
-| Mock Initialization Chain | useInteractions.extended.spec.ts | 9 | **HIGH** | Module-Level Mock Setup / Closure Problem |
-| Date/Time Logic | dashboard.spec.ts | 1 | **MEDIUM** | Timezone/Date Boundary Edge Case |
-| User Store Mock State | useInteractions.extended.spec.ts (shared) | Multiple | **HIGH** | Module-Level Variable Mutation |
+| Category                  | Files                                     | Count    | Severity     | Root Cause Type                           |
+| ------------------------- | ----------------------------------------- | -------- | ------------ | ----------------------------------------- |
+| Vue Component Rendering   | EmailRecruitingPacketModal.spec.ts        | 28       | **CRITICAL** | Teleport + Test Utils Incompatibility     |
+| Mock Initialization Chain | useInteractions.extended.spec.ts          | 9        | **HIGH**     | Module-Level Mock Setup / Closure Problem |
+| Date/Time Logic           | dashboard.spec.ts                         | 1        | **MEDIUM**   | Timezone/Date Boundary Edge Case          |
+| User Store Mock State     | useInteractions.extended.spec.ts (shared) | Multiple | **HIGH**     | Module-Level Variable Mutation            |
 
 **Total: 47 failed tests across 2-5 files (some overlapping causes)**
 
@@ -358,6 +383,7 @@ This test validates the filtering logic in isolation, but the actual dashboard p
 ### Connection 1: Mock Initialization Affects Multiple Test Files
 
 The global `mockSupabase` in `tests/setup.ts` is shared across ALL test files:
+
 - `EmailRecruitingPacketModal.spec.ts` - doesn't directly use it (Vue component test)
 - `useInteractions.extended.spec.ts` - tries to override it with file-scoped `vi.mock()`
 - Other composable tests - inherit the default mock
@@ -367,13 +393,15 @@ The global `mockSupabase` in `tests/setup.ts` is shared across ALL test files:
 ### Connection 2: Pinia Store Reset Insufficient for Mock State
 
 Both `EmailRecruitingPacketModal.spec.ts` and `useInteractions.extended.spec.ts` call:
+
 ```typescript
 beforeEach(() => {
-  setActivePinia(createPinia());  // Resets Pinia
+  setActivePinia(createPinia()); // Resets Pinia
 });
 ```
 
 **But they don't reset:**
+
 - Module-level `mockUser` variable in useInteractions.extended.spec.ts
 - Module-level `mockSupabase` object from setup.ts
 - Module-level `defaultMockQuery` instance from setup.ts
@@ -381,12 +409,14 @@ beforeEach(() => {
 ### Connection 3: Test File Isolation Settings
 
 Looking at `vitest.config.ts`:
+
 ```typescript
 isolate: process.env.CI ? true : false,  // Isolation OFF in local dev!
 maxWorkers: process.env.CI ? 8 : 2,      // Workers vary by env
 ```
 
 **Impact:**
+
 - Local dev tests run in SAME process with NO isolation (isolate: false)
 - CI tests run with isolation (isolate: true)
 - **This explains why tests pass individually but fail in suite** - isolated runs get fresh module state, while non-isolated runs share state
@@ -436,6 +466,7 @@ Error: Failed to execute 'startTask()' on 'AsyncTaskManager':
 ```
 
 This suggests some component is trying to perform async operations after the test environment has cleaned up. Likely related to:
+
 - Teleport rendering timing
 - Pending timers in Transition
 - Fetch requests that haven't resolved
@@ -457,12 +488,14 @@ This appears in some tests that try to make actual HTTP requests, suggesting mis
 To confirm these diagnoses:
 
 1. **Isolate Test:**
+
    ```bash
    npm run test -- tests/unit/components/EmailRecruitingPacketModal.spec.ts
    # If it passes, confirms the rendering issue is environment/state dependent
    ```
 
 2. **Check Mock Returns:**
+
    ```bash
    npm run test -- tests/unit/composables/useInteractions.extended.spec.ts --reporter=verbose
    # Look for actual mock return values vs. expected

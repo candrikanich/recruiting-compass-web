@@ -43,13 +43,11 @@ test.describe("Auth Enforcement - Protected Routes", () => {
   }) => {
     await page.goto(`${baseURL}/dashboard`);
     expect(page.url()).toContain(
-      `redirect=${encodeURIComponent("/dashboard")}`
+      `redirect=${encodeURIComponent("/dashboard")}`,
     );
   });
 
-  test("should preserve redirect URL for nested routes", async ({
-    page,
-  }) => {
+  test("should preserve redirect URL for nested routes", async ({ page }) => {
     await page.goto(`${baseURL}/coaches/123/analytics`);
     expect(page.url()).toContain("redirect=");
     expect(page.url()).toContain("coaches");

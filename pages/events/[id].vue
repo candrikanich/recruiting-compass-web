@@ -625,8 +625,13 @@
           v-if="showQuickLogModal"
           class="fixed inset-0 z-50 flex items-center justify-center"
         >
-          <div class="absolute inset-0 bg-black/50" @click="showQuickLogModal = false"></div>
-          <div class="relative bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 p-6">
+          <div
+            class="absolute inset-0 bg-black/50"
+            @click="showQuickLogModal = false"
+          ></div>
+          <div
+            class="relative bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 p-6"
+          >
             <h3 class="text-xl font-bold text-slate-900 mb-2">
               Log Interactions
             </h3>

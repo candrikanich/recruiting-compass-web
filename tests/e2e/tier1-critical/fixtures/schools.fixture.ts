@@ -50,7 +50,9 @@ export const schoolFixtures = {
   } as SchoolData,
 };
 
-export const createSchoolData = (overrides?: Partial<SchoolData>): SchoolData => {
+export const createSchoolData = (
+  overrides?: Partial<SchoolData>,
+): SchoolData => {
   const defaults: SchoolData = {
     name: `Test School ${Date.now()}`,
     location: "Test City, USA",
@@ -73,18 +75,24 @@ export const schoolSelectors = {
   addSchoolButton: 'button:has-text("Add School"), button[aria-label*="Add"]',
   // Form fields
   nameInput: 'input[placeholder*="Name"], input[aria-label*="Name"]',
-  locationInput: 'input[placeholder*="Location"], input[aria-label*="Location"]',
-  divisionSelect: 'select[aria-label*="Division"], [data-testid="division-select"]',
+  locationInput:
+    'input[placeholder*="Location"], input[aria-label*="Location"]',
+  divisionSelect:
+    'select[aria-label*="Division"], [data-testid="division-select"]',
   statusSelect: 'select[aria-label*="Status"], [data-testid="status-select"]',
   websiteInput: 'input[placeholder*="Website"], input[aria-label*="Website"]',
   twitterInput: 'input[placeholder*="Twitter"], input[aria-label*="Twitter"]',
-  instagramInput: 'input[placeholder*="Instagram"], input[aria-label*="Instagram"]',
+  instagramInput:
+    'input[placeholder*="Instagram"], input[aria-label*="Instagram"]',
   // Buttons
-  createButton: 'button:has-text("Create"), button[type="submit"]:has-text("Create")',
-  updateButton: 'button:has-text("Update"), button[type="submit"]:has-text("Update")',
+  createButton:
+    'button:has-text("Create"), button[type="submit"]:has-text("Create")',
+  updateButton:
+    'button:has-text("Update"), button[type="submit"]:has-text("Update")',
   deleteButton: 'button:has-text("Delete"), button[aria-label*="Delete"]',
   cancelButton: 'button:has-text("Cancel"), button[aria-label*="Cancel"]',
-  confirmDeleteButton: 'button:has-text("Confirm"), button[aria-label*="Confirm"]',
+  confirmDeleteButton:
+    'button:has-text("Confirm"), button[aria-label*="Confirm"]',
   favoriteButton: 'button[aria-label*="Favorite"], button:has-text("Favorite")',
   // Detail page
   schoolName: 'h1, [data-testid="school-name"]',
@@ -161,14 +169,14 @@ export const schoolHelpers = {
 
     if (data.pros && data.pros.length > 0) {
       const prosList = page.locator(schoolSelectors.schoolPros);
-      if (await prosList.count() > 0) {
+      if ((await prosList.count()) > 0) {
         await prosList.waitFor({ state: "visible" });
       }
     }
 
     if (data.cons && data.cons.length > 0) {
       const consList = page.locator(schoolSelectors.schoolCons);
-      if (await consList.count() > 0) {
+      if ((await consList.count()) > 0) {
         await consList.waitFor({ state: "visible" });
       }
     }
@@ -179,7 +187,7 @@ export const schoolHelpers = {
     // This is a placeholder that can be customized based on actual implementation
     for (const pro of pros) {
       const addButton = page.locator('button:has-text("Add Pro")').first();
-      if (await addButton.count() > 0) {
+      if ((await addButton.count()) > 0) {
         await addButton.click();
         const inputs = page.locator('input[placeholder*="Pro"]');
         const lastInput = inputs.last();
@@ -193,7 +201,7 @@ export const schoolHelpers = {
     // This is a placeholder that can be customized based on actual implementation
     for (const con of cons) {
       const addButton = page.locator('button:has-text("Add Con")').first();
-      if (await addButton.count() > 0) {
+      if ((await addButton.count()) > 0) {
         await addButton.click();
         const inputs = page.locator('input[placeholder*="Con"]');
         const lastInput = inputs.last();

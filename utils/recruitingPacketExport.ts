@@ -477,11 +477,14 @@ const renderCoverPage = (athlete: AthletePacketData): string => {
         ${athlete.high_school ? `${athlete.high_school}` : ""}
         ${athlete.graduation_year ? ` • Class of ${athlete.graduation_year}` : ""}
       </div>
-      <div class="generation-date">Generated on ${new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })}</div>
+      <div class="generation-date">Generated on ${new Date().toLocaleDateString(
+        "en-US",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        },
+      )}</div>
     </div>
   `;
 };
@@ -510,7 +513,10 @@ const renderAthleteProfile = (athlete: AthletePacketData): string => {
       </div>
 
       ${
-        athlete.gpa || athlete.sat_score || athlete.act_score || athlete.core_courses
+        athlete.gpa ||
+        athlete.sat_score ||
+        athlete.act_score ||
+        athlete.core_courses
           ? `
         <h2>Academic Information</h2>
         <div class="contact-info">
@@ -549,7 +555,10 @@ const renderAthleteProfile = (athlete: AthletePacketData): string => {
  * Render schools section grouped by priority tier
  */
 const renderSchoolsSection = (schools: SchoolGroupedByPriority): string => {
-  const renderSchoolTier = (tier: SchoolPacketData[], tierName: string): string => {
+  const renderSchoolTier = (
+    tier: SchoolPacketData[],
+    tierName: string,
+  ): string => {
     if (tier.length === 0) return "";
 
     return `
@@ -667,8 +676,10 @@ const getStatusBadge = (status: string): string => {
     contacted: '<span class="badge badge-blue">Contacted</span>',
     camp_invite: '<span class="badge badge-yellow">Camp Invite</span>',
     recruited: '<span class="badge badge-green">Recruited</span>',
-    official_visit_invited: '<span class="badge badge-yellow">Visit Invited</span>',
-    official_visit_scheduled: '<span class="badge badge-yellow">Visit Scheduled</span>',
+    official_visit_invited:
+      '<span class="badge badge-yellow">Visit Invited</span>',
+    official_visit_scheduled:
+      '<span class="badge badge-yellow">Visit Scheduled</span>',
     offer_received: '<span class="badge badge-green">Offer</span>',
     committed: '<span class="badge badge-green">Committed</span>',
     declined: '<span class="badge badge-red">Declined</span>',
@@ -680,7 +691,9 @@ const getStatusBadge = (status: string): string => {
 /**
  * Generate complete recruiting packet HTML
  */
-export const generateRecruitingPacketHTML = (data: RecruitingPacketData): string => {
+export const generateRecruitingPacketHTML = (
+  data: RecruitingPacketData,
+): string => {
   const styles = getRecruitingPacketStyles();
 
   const html = `

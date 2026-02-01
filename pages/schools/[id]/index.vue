@@ -705,7 +705,9 @@
           <EmailSendModal
             v-if="showEmailModal"
             :is-open="showEmailModal"
-            :recipient-email="schoolCoaches.length > 0 ? schoolCoaches[0].email : ''"
+            :recipient-email="
+              schoolCoaches.length > 0 ? schoolCoaches[0].email : ''
+            "
             :recipient-name="school?.name || ''"
             @close="showEmailModal = false"
           />

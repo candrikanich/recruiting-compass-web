@@ -133,7 +133,9 @@ describe("useCommunicationTemplates", () => {
 
     it("should filter phone script templates", () => {
       expect(composable.phoneScriptTemplates.value).toHaveLength(1);
-      expect(composable.phoneScriptTemplates.value[0].type).toBe("phone_script");
+      expect(composable.phoneScriptTemplates.value[0].type).toBe(
+        "phone_script",
+      );
     });
 
     it("should filter favorite templates", () => {
@@ -145,7 +147,9 @@ describe("useCommunicationTemplates", () => {
 
     it("should sort favorites by use count descending", () => {
       const favorites = composable.favoriteTemplates.value;
-      expect(favorites[0].use_count).toBeGreaterThanOrEqual(favorites[1].use_count);
+      expect(favorites[0].use_count).toBeGreaterThanOrEqual(
+        favorites[1].use_count,
+      );
     });
   });
 

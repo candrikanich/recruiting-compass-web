@@ -59,11 +59,8 @@ describe("useProfile", () => {
     });
 
     it("should have all required methods", () => {
-      const {
-        uploadProfilePhoto,
-        deleteProfilePhoto,
-        fetchEditHistory,
-      } = useProfile();
+      const { uploadProfilePhoto, deleteProfilePhoto, fetchEditHistory } =
+        useProfile();
 
       expect(typeof uploadProfilePhoto).toBe("function");
       expect(typeof deleteProfilePhoto).toBe("function");
@@ -137,12 +134,8 @@ describe("useProfile", () => {
 
   describe("State Separation", () => {
     it("should maintain independent photo and history states", () => {
-      const {
-        uploading,
-        historyLoading,
-        photoError,
-        historyError,
-      } = useProfile();
+      const { uploading, historyLoading, photoError, historyError } =
+        useProfile();
 
       uploading.value = true;
       expect(historyLoading.value).toBe(false);

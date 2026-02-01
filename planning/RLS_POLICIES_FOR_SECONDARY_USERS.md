@@ -5,6 +5,7 @@
 **Good News**: Interactions and athlete_task tables already have RLS policies in place from migrations 005-006!
 
 **Action Items**:
+
 1. ✅ Create `get_linked_user_ids()` helper function (may be missing)
 2. ✅ Create RLS policies for **schools** table
 3. ⚠️ Decide on **coaches** table approach (needs user_id column or indirect RLS)
@@ -13,12 +14,12 @@
 
 ## Database Schema Reference
 
-| Table | User Column | Ownership | Has RLS | Status |
-|-------|------------|-----------|---------|--------|
-| schools | `user_id` (UUID) | Direct | ❌ MISSING | Action required |
-| coaches | ❌ None | Via `school_id` | ❌ MISSING | **Requires decision** |
-| interactions | Via `school_id` | Indirect | ✅ EXISTS | Read-only for parents ✓ |
-| athlete_task | `athlete_id` (UUID) | Direct | ✅ EXISTS | Athletes only ✓ |
+| Table        | User Column         | Ownership       | Has RLS    | Status                  |
+| ------------ | ------------------- | --------------- | ---------- | ----------------------- |
+| schools      | `user_id` (UUID)    | Direct          | ❌ MISSING | Action required         |
+| coaches      | ❌ None             | Via `school_id` | ❌ MISSING | **Requires decision**   |
+| interactions | Via `school_id`     | Indirect        | ✅ EXISTS  | Read-only for parents ✓ |
+| athlete_task | `athlete_id` (UUID) | Direct          | ✅ EXISTS  | Athletes only ✓         |
 
 ---
 
@@ -57,6 +58,7 @@ GRANT EXECUTE ON FUNCTION public.get_linked_user_ids TO authenticated;
 ## Step 2: Create RLS Policies for Schools
 
 **Table Structure**:
+
 - `user_id` (UUID) - Record owner
 - All other columns (name, location, etc.)
 
@@ -232,12 +234,14 @@ USING (
 ### Interactions Table - Read-Only (Migration 006)
 
 **Policies Already Exist**:
+
 - ✅ "Users can view interactions for own and linked schools" (SELECT)
 - ✅ "Non-parents can insert interactions" (INSERT - parents blocked)
 - ✅ "Non-parents can update interactions" (UPDATE - parents blocked)
 - ✅ "Non-parents can delete interactions" (DELETE - parents blocked)
 
 **Why This Works**:
+
 - Interactions reference `school_id`
 - Users can read interactions for schools they own or are linked to
 - Parents are blocked from writing by role check (role != 'parent')
@@ -248,12 +252,14 @@ USING (
 ### Athlete Tasks Table - Read-Only (Migration 005)
 
 **Policies Already Exist**:
+
 - ✅ "Users can view own and linked athlete tasks" (SELECT)
 - ✅ "Athletes can create own task records" (INSERT - athletes only)
 - ✅ "Athletes can update own task status" (UPDATE - athletes only)
 - ✅ "Athletes can delete own task records" (DELETE - athletes only)
 
 **Why This Works**:
+
 - Tasks reference `athlete_id` directly
 - Uses `get_linked_user_ids()` to allow parent viewing
 - Role check ensures only athletes (not parents) can write
@@ -267,6 +273,7 @@ USING (
 2. **Create Schools RLS policies** (Step 2 SQL above)
 3. **Choose Coaches approach** and apply appropriate SQL (Option A or B)
 4. **Test Access**:
+
    ```sql
    -- Test as primary user (should see own schools)
    SELECT * FROM public.schools WHERE user_id = auth.uid();
@@ -300,19 +307,23 @@ npm run test -- useAccountLinks.spec.ts
 ## Troubleshooting
 
 **Error: Column "user_id" does not exist**
+
 - Likely on interactions table (uses `school_id`, not `user_id`)
 - Use `school_id` reference instead, or check Schema Reference table above
 
 **Error: Function "get_linked_user_ids" does not exist**
+
 - Create the helper function from Step 1
 - Verify it was created: `\df get_linked_user_ids`
 
 **Secondary user cannot see primary's schools**
+
 - Verify account link status is 'accepted'
 - Check `get_linked_user_ids()` returns both users
 - Verify schools RLS policies are enabled and created
 
 **Secondary user can edit interactions (shouldn't be able to)**
+
 - Verify migration 006 policies are applied
 - Check that user's role is not 'student' (should block parents automatically)
 - Run: `SELECT * FROM pg_policies WHERE tablename='interactions'`
@@ -322,12 +333,15 @@ npm run test -- useAccountLinks.spec.ts
 ## References
 
 **Migrations with RLS**:
+
 - `server/migrations/005_athlete_task_parent_restrictions.sql` - Tasks RLS
 - `server/migrations/006_interactions_parent_restrictions.sql` - Interactions RLS
 
 **Type Definitions**:
+
 - `types/database.ts` - Table schemas and columns
 
 **Current Implementation**:
+
 - `composables/useAccountLinks.ts` - 5-user limit validation
 - `server/api/account-links/invite.post.ts` - Email invitations

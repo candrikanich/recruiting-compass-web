@@ -501,7 +501,11 @@
           </div>
 
           <!-- Form -->
-          <form v-if="!emailSent" @submit.prevent="handleSubmit" class="space-y-6">
+          <form
+            v-if="!emailSent"
+            @submit.prevent="handleSubmit"
+            class="space-y-6"
+          >
             <!-- Email -->
             <div>
               <label
@@ -588,10 +592,7 @@
 definePageMeta({ layout: "public" });
 
 import { ref, computed } from "vue";
-import {
-  ArrowLeftIcon,
-  EnvelopeIcon,
-} from "@heroicons/vue/24/outline";
+import { ArrowLeftIcon, EnvelopeIcon } from "@heroicons/vue/24/outline";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import FieldError from "~/components/DesignSystem/FieldError.vue";
 import { usePasswordReset } from "~/composables/usePasswordReset";
@@ -610,14 +611,8 @@ const submittedEmail = ref("");
 const resendCooldown = ref(0);
 
 const passwordReset = usePasswordReset();
-const {
-  errors,
-  fieldErrors,
-  validate,
-  validateField,
-  clearErrors,
-  hasErrors,
-} = useFormValidation();
+const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } =
+  useFormValidation();
 
 // Computed property for form validity
 const isFormValid = computed(
@@ -648,9 +643,7 @@ const handleSubmit = async () => {
       return;
     }
 
-    const success = await passwordReset.requestPasswordReset(
-      validated.email,
-    );
+    const success = await passwordReset.requestPasswordReset(validated.email);
 
     if (success) {
       emailSent.value = true;
@@ -671,7 +664,9 @@ const handleSubmit = async () => {
 };
 
 const handleResend = async () => {
-  const success = await passwordReset.requestPasswordReset(submittedEmail.value);
+  const success = await passwordReset.requestPasswordReset(
+    submittedEmail.value,
+  );
 
   if (success) {
     // Start cooldown timer (60 seconds)

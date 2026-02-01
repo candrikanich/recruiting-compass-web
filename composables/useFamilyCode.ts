@@ -19,9 +19,7 @@ export const useFamilyCode = () => {
 
   const userStore = useUserStore();
   const supabase = useSupabase();
-  const currentUserRole = computed(
-    () => userStore.user?.role || "parent"
-  );
+  const currentUserRole = computed(() => userStore.user?.role || "parent");
 
   /**
    * Fetches family code for current user using Supabase
@@ -55,7 +53,7 @@ export const useFamilyCode = () => {
             `
             family_unit_id,
             family_units!inner(id, family_code, family_name, code_generated_at)
-          `
+          `,
           )
           .eq("user_id", userStore.user?.id)
           .eq("role", "parent");
@@ -83,8 +81,7 @@ export const useFamilyCode = () => {
           })) || [];
       }
     } catch (e) {
-      error.value =
-        e instanceof Error ? e.message : "Failed to fetch code";
+      error.value = e instanceof Error ? e.message : "Failed to fetch code";
       console.error("fetchMyCode error:", e);
     } finally {
       loading.value = false;
@@ -108,9 +105,9 @@ export const useFamilyCode = () => {
       const { $fetchAuth } = useAuthFetch();
 
       // Call API endpoint which handles code generation
-      const response = await $fetchAuth("/api/family/create", {
+      const response = (await $fetchAuth("/api/family/create", {
         method: "POST",
-      }) as {
+      })) as {
         success: boolean;
         familyCode: string;
         familyId: string;

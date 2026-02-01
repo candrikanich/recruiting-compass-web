@@ -79,6 +79,8 @@ export function getReassuranceMessages(phase: Phase): ReassuranceMessage[] {
   return REASSURANCE_MESSAGES.filter((msg) => msg.phases.includes(phase));
 }
 
-export function getReassuranceMessageById(id: string): ReassuranceMessage | undefined {
+export function getReassuranceMessageById(
+  id: string,
+): ReassuranceMessage | undefined {
   return REASSURANCE_MESSAGES.find((msg) => msg.id === id);
 }

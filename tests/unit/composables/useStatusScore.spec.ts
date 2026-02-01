@@ -119,9 +119,9 @@ describe("useStatusScore Composable", () => {
                   status_score: 72,
                   status_label: "slightly_behind",
                 }),
-              10
-            )
-          )
+              10,
+            ),
+          ),
       );
 
       vi.mocked(useAuthFetch).mockReturnValue({
@@ -137,12 +137,10 @@ describe("useStatusScore Composable", () => {
     });
 
     it("should update lastCalculated timestamp", async () => {
-      const mockFetchAuth = vi
-        .fn()
-        .mockResolvedValue({
-          status_score: 72,
-          status_label: "slightly_behind",
-        });
+      const mockFetchAuth = vi.fn().mockResolvedValue({
+        status_score: 72,
+        status_label: "slightly_behind",
+      });
 
       vi.mocked(useAuthFetch).mockReturnValue({
         $fetchAuth: mockFetchAuth,
@@ -243,7 +241,7 @@ describe("useStatusScore Composable", () => {
         "/api/athlete/status/recalculate",
         expect.objectContaining({
           method: "POST",
-        })
+        }),
       );
     });
 
@@ -698,7 +696,13 @@ describe("useStatusScore Composable", () => {
 
     it("should return actions for all phases", () => {
       const { getNextActions } = useStatusScore();
-      const phases = ["freshman", "sophomore", "junior", "senior", "committed"] as const;
+      const phases = [
+        "freshman",
+        "sophomore",
+        "junior",
+        "senior",
+        "committed",
+      ] as const;
 
       phases.forEach((phase) => {
         const actions = getNextActions(phase);

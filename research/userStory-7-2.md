@@ -47,12 +47,14 @@ Feature: Suggestion Management
 ### Key Implementation Details
 
 #### Database Schema (Migration 014)
+
 - Added `condition_snapshot` (JSONB) - Stores rule-specific state at suggestion creation time
 - Added `reappeared` (boolean, default false) - Marks re-evaluated suggestions
 - Added `previous_suggestion_id` (UUID) - Links re-appeared suggestions to original dismissed ones
 - Added indexes for efficient dismissed suggestion queries
 
 #### Rule Engine Enhancements
+
 - Extended `Rule` interface with optional methods:
   - `shouldReEvaluate()` - Determines if dismissed suggestion meets re-evaluation criteria
   - `createConditionSnapshot()` - Captures rule state for comparison during re-evaluation
@@ -63,6 +65,7 @@ Feature: Suggestion Management
   4. Preserve historical data (dismissed suggestions remain in database)
 
 #### interactionGapRule Implementation
+
 - Implements condition snapshot with: `days_since_contact`, `school_priority`, `school_status`
 - Re-evaluation logic:
   - Returns true if gap increased by ≥14 days
@@ -71,17 +74,20 @@ Feature: Suggestion Management
 - Escalates urgency: low→medium, medium→high, high→high
 
 #### UI Component Updates
+
 - SuggestionCard displays "Returned" badge when `reappeared: true`
 - Badge has orange styling with descriptive title
 - Positioned next to message for clear visibility
 
 #### Helper Functions
+
 - `shouldReEvaluateDismissedSuggestion()` - 14-day cooldown check
 - `escalateUrgency()` - Maps urgency escalation
 
 ### Test Coverage
 
 #### Unit Tests (67 tests, all passing)
+
 - **ruleEngineHelpers.spec.ts** (11 tests) - Cooldown and urgency logic
 - **index.spec.ts** (5 tests) - Rule interface optional methods
 - **interactionGap.spec.ts** (18 tests) - Includes re-evaluation scenarios
@@ -89,6 +95,7 @@ Feature: Suggestion Management
 - **SuggestionCard.spec.ts** (20 tests) - "Returned" badge display and styling
 
 #### E2E Tests (suggestions-7-2.spec.ts)
+
 - Dismiss and hide suggestion flow
 - No re-appearance within 14-day window
 - Re-appeared badge visibility and styling
@@ -99,6 +106,7 @@ Feature: Suggestion Management
 - Completed suggestions never reappear
 
 ### Validation Results
+
 - ✅ `npm run type-check` - All types valid
 - ✅ `npm run lint` - No linting errors
 - ✅ `npm run test` - 2390 tests passing (67 new/updated for this feature)

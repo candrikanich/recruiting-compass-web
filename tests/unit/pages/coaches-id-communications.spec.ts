@@ -77,7 +77,7 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
       // Calculate stats from mock data
       const totalInteractions = mockInteractions.length;
       const positiveCount = mockInteractions.filter(
-        (i) => i.sentiment === "positive"
+        (i) => i.sentiment === "positive",
       ).length;
 
       expect(totalInteractions).toBe(2);
@@ -91,11 +91,11 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
 
     it("should handle error state gracefully", () => {
       mockFetchInteractions.mockRejectedValueOnce(
-        new Error("Failed to load interactions")
+        new Error("Failed to load interactions"),
       );
 
       expect(mockFetchInteractions()).rejects.toThrow(
-        "Failed to load interactions"
+        "Failed to load interactions",
       );
     });
   });
@@ -104,7 +104,7 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
     it("should display interaction type", () => {
       mockInteractions.forEach((interaction) => {
         expect(["email", "call", "text", "message"]).toContain(
-          interaction.type
+          interaction.type,
         );
       });
     });
@@ -130,14 +130,16 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
     it("should display sentiment indicator", () => {
       mockInteractions.forEach((interaction) => {
         expect(["positive", "neutral", "negative"]).toContain(
-          interaction.sentiment
+          interaction.sentiment,
         );
       });
     });
 
     it("should color-code by direction", () => {
       // Outbound interactions should have one color, inbound another
-      const outbound = mockInteractions.filter((i) => i.direction === "outbound");
+      const outbound = mockInteractions.filter(
+        (i) => i.direction === "outbound",
+      );
       const inbound = mockInteractions.filter((i) => i.direction === "inbound");
 
       expect(outbound.length).toBeGreaterThan(0);
@@ -156,7 +158,9 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
 
   describe("Filtering", () => {
     it("should filter by type", async () => {
-      const emailInteractions = mockInteractions.filter((i) => i.type === "email");
+      const emailInteractions = mockInteractions.filter(
+        (i) => i.type === "email",
+      );
       mockFilterInteractions.mockResolvedValueOnce(emailInteractions);
 
       const result = await mockFilterInteractions({ type: "email" });
@@ -167,7 +171,7 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
 
     it("should filter by direction", async () => {
       const inboundInteractions = mockInteractions.filter(
-        (i) => i.direction === "inbound"
+        (i) => i.direction === "inbound",
       );
       mockFilterInteractions.mockResolvedValueOnce(inboundInteractions);
 
@@ -179,7 +183,7 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
 
     it("should filter by sentiment", async () => {
       const positiveInteractions = mockInteractions.filter(
-        (i) => i.sentiment === "positive"
+        (i) => i.sentiment === "positive",
       );
       mockFilterInteractions.mockResolvedValueOnce(positiveInteractions);
 
@@ -212,7 +216,7 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
         (i) =>
           i.type === filters.type &&
           i.direction === filters.direction &&
-          i.sentiment === filters.sentiment
+          i.sentiment === filters.sentiment,
       );
 
       mockFilterInteractions.mockResolvedValueOnce(filtered);
@@ -251,9 +255,9 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
   describe("Timeline Display", () => {
     it("should display interactions in chronological order", () => {
       // Verify interactions are sorted by date (newest first)
-      expect(new Date(mockInteractions[0].date).getTime()).toBeGreaterThanOrEqual(
-        new Date(mockInteractions[1].date).getTime()
-      );
+      expect(
+        new Date(mockInteractions[0].date).getTime(),
+      ).toBeGreaterThanOrEqual(new Date(mockInteractions[1].date).getTime());
     });
 
     it("should show timeline connector lines", () => {
@@ -280,7 +284,7 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
           acc[i.type] = (acc[i.type] || 0) + 1;
           return acc;
         },
-        {} as Record<string, number>
+        {} as Record<string, number>,
       );
 
       expect(typeBreakdown.email).toBe(1);
@@ -293,7 +297,7 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
           acc[i.direction] = (acc[i.direction] || 0) + 1;
           return acc;
         },
-        {} as Record<string, number>
+        {} as Record<string, number>,
       );
 
       expect(directionBreakdown.outbound).toBe(1);
@@ -306,7 +310,7 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
           acc[i.sentiment] = (acc[i.sentiment] || 0) + 1;
           return acc;
         },
-        {} as Record<string, number>
+        {} as Record<string, number>,
       );
 
       expect(sentimentBreakdown.positive).toBe(2);
@@ -314,7 +318,9 @@ describe("pages/coaches/[id]/communications.vue - Coach Communications Page", ()
 
     it("should display response rate if applicable", () => {
       // Calculate response rate based on inbound/outbound
-      const outbound = mockInteractions.filter((i) => i.direction === "outbound");
+      const outbound = mockInteractions.filter(
+        (i) => i.direction === "outbound",
+      );
       const inbound = mockInteractions.filter((i) => i.direction === "inbound");
 
       expect(outbound.length).toBeGreaterThan(0);

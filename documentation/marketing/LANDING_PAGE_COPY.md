@@ -7,12 +7,15 @@
 ## Hero Section
 
 ### Headline
+
 **Navigate Your College Recruiting Journey with Confidence**
 
 ### Subheadline
+
 The all-in-one platform for student-athletes and families to organize schools, track coach interactions, and stay on top of recruiting milestones—for free.
 
 ### Call-to-Action Button
+
 **Sign Up Free** (no credit card required)
 
 ---
@@ -24,6 +27,7 @@ Stop tracking recruiting in spreadsheets. Stop missing follow-ups. Stop second-g
 Recruiting Compass brings clarity to the college baseball recruiting process. From managing your target schools to logging every coach interaction, we help you stay organized and make smarter decisions about your future.
 
 **Perfect for:**
+
 - Student-athletes building their recruiting profile
 - Parents supporting their athlete through the process
 - Families navigating D1, D2, D3, JUCO, and NAIA options
@@ -33,18 +37,22 @@ Recruiting Compass brings clarity to the college baseball recruiting process. Fr
 ## Value Propositions (3 Core Benefits)
 
 ### 1. Stay Organized
+
 **Track schools, coaches, and interactions in one place**
 
 Stop juggling spreadsheets and email threads. Keep all your recruiting information organized:
+
 - 10-20 target schools (reach, target, and safety)
 - All coaches at each school with contact info
 - Complete interaction history with every coach
 - Access anywhere, anytime (web or mobile)
 
 ### 2. Never Miss a Step
+
 **Follow a proven 4-year timeline with task reminders**
 
 From freshman year to senior, we'll guide you through phase-appropriate recruiting activities:
+
 - Freshman: Build your skills and get on coaches' radars
 - Sophomore: Active outreach, showcases, and tournaments
 - Junior: Campus visits and peak recruiting period
@@ -53,9 +61,11 @@ From freshman year to senior, we'll guide you through phase-appropriate recruiti
 Stay on track with reminders for upcoming tasks and milestones.
 
 ### 3. Make Smart Decisions
+
 **Understand school fit with data-driven insights**
 
 Get more than just names and stats. Understand how well each school matches your academic, athletic, and personal goals:
+
 - **Fit Scores** (1-10 scale) for every school
 - **Responsiveness Scores** showing which coaches are engaged
 - **AI Suggestions** for next steps (who to follow up with, which schools to add)
@@ -66,9 +76,11 @@ Get more than just names and stats. Understand how well each school matches your
 ## Feature Showcase (6 Key Features)
 
 ### Feature 1: Schools Dashboard
+
 **Organize all your target colleges in one place**
 
 Quickly view every school you're tracking with key information:
+
 - School logo, location, and division level
 - Your fit score for each school (why they're a good match)
 - Number of coaches at each school
@@ -77,9 +89,11 @@ Quickly view every school you're tracking with key information:
 Sort by fit score, location, or tier. Compare schools side-by-side.
 
 ### Feature 2: Coach Management
+
 **Track every coach with full interaction history**
 
 Never lose a coach's contact information again:
+
 - Email, phone, and position
 - Complete interaction history (when you last connected)
 - Responsiveness score (how quickly they reply)
@@ -88,9 +102,11 @@ Never lose a coach's contact information again:
 Know exactly where you stand with every coach.
 
 ### Feature 3: Interaction Logging
+
 **Record every communication and meeting**
 
 Log every conversation with coaches:
+
 - Email exchanges, phone calls, texts
 - Showcase and tournament attendance
 - Coach visits and campus visits
@@ -99,9 +115,11 @@ Log every conversation with coaches:
 Stay accountable and build a detailed relationship history.
 
 ### Feature 4: 4-Year Timeline
+
 **Your recruiting roadmap from freshman through senior**
 
 See exactly what you should be doing at each stage:
+
 - Current phase and progress
 - Phase-specific tasks (things to do right now)
 - Upcoming milestones and deadlines
@@ -110,9 +128,11 @@ See exactly what you should be doing at each stage:
 Know what comes next without guessing.
 
 ### Feature 5: AI Suggestions
+
 **Get smart recommendations based on your profile**
 
 Let AI guide your recruiting efforts:
+
 - Follow up with coaches showing low responsiveness
 - Add schools that match your fit profile
 - Schedule campus visits at top-matched schools
@@ -121,9 +141,11 @@ Let AI guide your recruiting efforts:
 Get personalized next steps, not generic advice.
 
 ### Feature 6: Parent Collaboration
+
 **Keep your family in the loop**
 
 Invite a parent or guardian to see your recruiting progress:
+
 - Parents view your schools, coaches, and interactions
 - See timeline progress and upcoming milestones
 - Get notifications about important updates
@@ -136,7 +158,9 @@ Make recruiting a family discussion.
 ## How It Works (3 Steps)
 
 ### Step 1: Set Up Your Profile (5 minutes)
+
 Create a free account and tell us about yourself:
+
 - Your high school and graduation year
 - Academic stats (GPA, test scores)
 - Athletic info (position, top position)
@@ -144,14 +168,18 @@ Create a free account and tell us about yourself:
 - Geographic interests (regions or states)
 
 ### Step 2: Add Your Target Schools (20 minutes)
+
 Build your recruiting list:
+
 - Search and add 10-20 colleges
 - Set your priority tier for each (Reach, Target, Safety)
 - Add coaches from each school
 - Get a fit score for every school
 
 ### Step 3: Track Your Progress (Ongoing)
+
 Stay engaged and informed:
+
 - Log interactions with coaches (email, call, visit)
 - Follow phase-appropriate timeline tasks
 - Check AI suggestions for next steps
@@ -166,15 +194,19 @@ Stay engaged and informed:
 ### Testimonials
 
 **"Finally, a tool that makes sense for families"**
-> *"We were drowning in spreadsheets and group texts. Recruiting Compass brought everything together. Now I actually understand where things stand." — Maria, Parent, California*
+
+> _"We were drowning in spreadsheets and group texts. Recruiting Compass brought everything together. Now I actually understand where things stand." — Maria, Parent, California_
 
 **"This is what we needed"**
-> *"As an athlete juggling school and recruiting, I need to stay organized. Recruiting Compass keeps me on track without adding more complexity." — Sarah, Student-Athlete, Florida*
+
+> _"As an athlete juggling school and recruiting, I need to stay organized. Recruiting Compass keeps me on track without adding more complexity." — Sarah, Student-Athlete, Florida_
 
 **"We recommend it to all our families"**
-> *"So many families don't have a system for recruiting. We love that Recruiting Compass is free and easy to use." — Coach Wilson, High School Baseball*
+
+> _"So many families don't have a system for recruiting. We love that Recruiting Compass is free and easy to use." — Coach Wilson, High School Baseball_
 
 ### Numbers (Optional - if data exists)
+
 - **1,000+** families organizing their recruiting
 - **50,000+** coach interactions tracked
 - **10,000+** schools and coaches in our database
@@ -198,6 +230,7 @@ Yes. Recruiting Compass is mobile-responsive—use it on desktop, tablet, or pho
 
 **Q: How is my fit score calculated?**
 Your fit score (1-10 scale) is based on:
+
 - Academic alignment (your GPA vs. school's standards)
 - Athletic alignment (your stats vs. team roster)
 - Location preference match
@@ -234,6 +267,7 @@ Many athletes start as freshmen (age 14), but it's never too late. If you're a j
 
 **Q: How many schools should I track?**
 Most athletes track 10-20 schools across all tiers:
+
 - 2-3 reach schools (dream schools, long shot)
 - 4-6 target schools (realistic matches)
 - 2-3 safety schools (likely accepts)
@@ -246,6 +280,7 @@ Update your profile as your stats improve (GPA, athletic performance). Log inter
 ## CTA Section (Before Footer)
 
 ### Primary CTA
+
 **Ready to get organized?**
 
 Sign up for free and start tracking your recruiting journey today. No credit card. No commitment. Just clarity.
@@ -253,6 +288,7 @@ Sign up for free and start tracking your recruiting journey today. No credit car
 **[Sign Up Free]** button
 
 ### Secondary CTA
+
 **Want to see it in action first?**
 
 [View Demo Video] (2-minute walkthrough)
@@ -264,6 +300,7 @@ Sign up for free and start tracking your recruiting journey today. No credit car
 ## Footer
 
 ### Quick Links
+
 - [About Us](#)
 - [User Guide](./QUICK_START_GUIDE.md)
 - [FAQ](#faq)
@@ -271,17 +308,20 @@ Sign up for free and start tracking your recruiting journey today. No credit car
 - [Contact](mailto:chris@recruitingcompass.com)
 
 ### Social Media
+
 - [Twitter](#)
 - [Instagram](#)
 - [Facebook](#)
 - [YouTube](#)
 
 ### Legal
+
 - [Privacy Policy](#)
 - [Terms of Service](#)
 - [Cookie Policy](#)
 
 ### Contact
+
 **Email:** support@recruitingcompass.com
 **Phone:** [To be determined]
 
@@ -290,18 +330,21 @@ Sign up for free and start tracking your recruiting journey today. No credit car
 ## Key Messaging Pillars
 
 ### For Athletes
+
 - **Independence**: Take control of your recruiting without losing family support
 - **Clarity**: Understand school fit and coach interest with data
 - **Organization**: Stop juggling spreadsheets; use one tool for everything
 - **Confidence**: Make informed decisions about your future
 
 ### For Parents
+
 - **Transparency**: See exactly what's happening in your athlete's recruiting
 - **Peace of Mind**: Never miss an important deadline or follow-up
 - **Collaboration**: Work together as a family on this major decision
 - **Guidance**: Have a roadmap for the next 4 years
 
 ### For Stakeholders
+
 - **Market Opportunity**: 50,000+ families annually need this solution
 - **Product-Market Fit**: Built with athletes and families, not for coaches
 - **Revenue Potential**: Free MVP → Freemium ($5-10/month for premium features)
@@ -322,6 +365,7 @@ Sign up for free and start tracking your recruiting journey today. No credit car
 ## Design Notes
 
 ### Layout Suggestions
+
 - **Hero**: Large headline, subheadline, prominent CTA button
 - **Value Props**: 3-column layout (Stay Organized | Never Miss a Step | Make Smart Decisions)
 - **Feature Showcase**: 6 features with icons and 1-2 sentence descriptions
@@ -332,11 +376,13 @@ Sign up for free and start tracking your recruiting journey today. No credit car
 - **Footer**: Standard footer with links and social
 
 ### Color Palette (Suggestions)
+
 - **Primary**: Sport-related (baseball blue #003087, grass green #2E7D32)
 - **Accent**: Energy/growth (orange #FF8C00 for CTAs)
 - **Neutral**: Light gray backgrounds (#F5F5F5), dark text (#333)
 
 ### Imagery
+
 - Hero: Athlete on field, family together, or confident young person
 - Features: Icons representing each feature (organize, timeline, insights, etc.)
 - Testimonials: Real faces (or stock photos if unavailable)
@@ -347,14 +393,17 @@ Sign up for free and start tracking your recruiting journey today. No credit car
 ## Conversion Optimization Notes
 
 ### Primary Conversion Goal
+
 **Free Signup** (not purchase—free MVP)
 
 ### Secondary Goals
+
 1. Demo video views
 2. User guide reads
 3. Demo call bookings
 
 ### Metrics to Track
+
 - Signup conversion rate (visitors → signups)
 - CTA click rates (which button/link most used)
 - Bounce rate (% leaving without action)
@@ -362,6 +411,7 @@ Sign up for free and start tracking your recruiting journey today. No credit car
 - Device/traffic source breakdown
 
 ### A/B Test Opportunities
+
 - Headline variations (benefits vs. pain point focus)
 - CTA button color and text
 - Hero image vs. video

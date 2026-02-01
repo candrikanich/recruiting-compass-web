@@ -1,4 +1,5 @@
 # Refactor Plan - Major Issues Analysis
+
 **Date:** 2026-01-26
 **Scope:** Entire Project Analysis
 **Status:** Planning Complete
@@ -10,11 +11,13 @@
 Found **15 major issues** across the codebase ranging from **CRITICAL security/stability problems** to **HIGH performance/maintainability concerns**.
 
 **Critical Issues (Must Fix):**
+
 - Deprecated code still active in production
 - Incomplete session management (auth middleware has TODO)
 - In-memory rate limiting (resets on deploy)
 
 **High Priority Issues (1-2 weeks):**
+
 - 74 composables with heavy duplication
 - Missing async cleanup (memory leak risk)
 - localStorage used for sensitive data (28 files)
@@ -27,6 +30,7 @@ Found **15 major issues** across the codebase ranging from **CRITICAL security/s
 ### 🔴 CRITICAL (2 issues)
 
 #### 1. Deprecated Code Still Active in Production
+
 - **Files:** `composables/useSearch.ts`, `composables/useDocuments.ts`
 - **Problem:** Deprecated composables emit console warnings, wrapping logic still in production
 - **Risk:** Maintenance confusion, unclear which code path to maintain
@@ -38,6 +42,7 @@ Found **15 major issues** across the codebase ranging from **CRITICAL security/s
 - **Estimated Effort:** 1 week
 
 #### 2. Incomplete Session Management (Auth)
+
 - **Files:** `middleware/auth.ts`, `composables/useAuth.ts`
 - **Problem:** Auth middleware has TODO comments, no route protection enforced
 - **Risk:** All routes unprotected, anyone can access any data
@@ -52,6 +57,7 @@ Found **15 major issues** across the codebase ranging from **CRITICAL security/s
 ### 🟠 HIGH (5 issues)
 
 #### 3. Composable Proliferation & Duplication
+
 - **Files:** 74 composables in `/composables/`
 - **Problem:** 4 search composables, 7 document composables, unclear consolidation path
 - **Risk:** Developer confusion, maintainability nightmare, increased bundle size
@@ -63,6 +69,7 @@ Found **15 major issues** across the codebase ranging from **CRITICAL security/s
 - **Estimated Effort:** 2-3 weeks
 
 #### 4. Missing Async Cleanup (Memory Leaks)
+
 - **Files:** 8+ composables using setTimeout/setInterval without cleanup
 - **Problem:** Event listeners and timers not removed on unmount
 - **Risk:** Memory leaks, performance degradation over time
@@ -74,6 +81,7 @@ Found **15 major issues** across the codebase ranging from **CRITICAL security/s
 - **Estimated Effort:** 3-4 days
 
 #### 5. Rate Limiting Not Persistent
+
 - **Files:** `server/api/recruiting-packet/email.post.ts`
 - **Problem:** In-memory Map resets on server restart, ineffective across distributed servers
 - **Risk:** Rate limits bypassed on deployment, no abuse protection
@@ -85,6 +93,7 @@ Found **15 major issues** across the codebase ranging from **CRITICAL security/s
 - **Estimated Effort:** 2-3 days
 
 #### 6. localStorage Used for Sensitive Data
+
 - **Files:** 28 composables storing session/filter/preference data
 - **Problem:** Session state, filter criteria, user preferences unencrypted in localStorage
 - **Risk:** XSS attacks steal data, shared computers expose info
@@ -97,6 +106,7 @@ Found **15 major issues** across the codebase ranging from **CRITICAL security/s
 - **Estimated Effort:** 5-7 days
 
 #### 7. Insufficient Test Coverage
+
 - **Files:** Multiple critical composables (usePhaseCalculation, useFitScore, etc.)
 - **Problem:** Edge cases not tested, critical recruiting logic unprotected
 - **Risk:** Regression bugs, refactoring becomes dangerous
@@ -112,40 +122,44 @@ Found **15 major issues** across the codebase ranging from **CRITICAL security/s
 
 ### 🟡 MEDIUM (8 issues)
 
-| # | Issue | Files | Impact | Effort |
-|---|-------|-------|--------|--------|
-| 8 | Type Safety Gaps (any types) | 15+ pages | Lost IDE help, runtime errors | 5-7 days |
-| 9 | Query Optimization (select *) | 10+ composables | 2-5x slower queries | 3-5 days |
-| 10 | Event Listener Leaks | useSessionTimeout.ts | Memory accumulation | 1 day |
-| 11 | Input Validation Missing | 5+ API endpoints | Invalid data persisted | 3-4 days |
-| 12 | Concurrent Request Handling | 8+ composables | Race conditions, data inconsistency | 3-5 days |
-| 13 | Direct State Mutations | coaches.ts, schools.ts | Hard to debug, audit trail lost | 2-3 days |
-| 14 | NCAA Data Hardcoded | ncaaDatabase.ts | Stale data, not scalable | 3-5 days |
-| 15 | Silent Error Handling | 10+ files | No error tracking, poor UX | 3-4 days |
+| #   | Issue                          | Files                  | Impact                              | Effort   |
+| --- | ------------------------------ | ---------------------- | ----------------------------------- | -------- |
+| 8   | Type Safety Gaps (any types)   | 15+ pages              | Lost IDE help, runtime errors       | 5-7 days |
+| 9   | Query Optimization (select \*) | 10+ composables        | 2-5x slower queries                 | 3-5 days |
+| 10  | Event Listener Leaks           | useSessionTimeout.ts   | Memory accumulation                 | 1 day    |
+| 11  | Input Validation Missing       | 5+ API endpoints       | Invalid data persisted              | 3-4 days |
+| 12  | Concurrent Request Handling    | 8+ composables         | Race conditions, data inconsistency | 3-5 days |
+| 13  | Direct State Mutations         | coaches.ts, schools.ts | Hard to debug, audit trail lost     | 2-3 days |
+| 14  | NCAA Data Hardcoded            | ncaaDatabase.ts        | Stale data, not scalable            | 3-5 days |
+| 15  | Silent Error Handling          | 10+ files              | No error tracking, poor UX          | 3-4 days |
 
 ---
 
 ## Recommended Fix Priority
 
 ### Week 1 (Immediate - Critical/Security)
+
 - [ ] Disable deprecated composables (feature flag)
 - [ ] Add event listener cleanup to all composables
 - [ ] Move rate limiting to Redis or Supabase
 - [ ] Implement auth middleware properly
 
 ### Weeks 2-3 (High Impact)
+
 - [ ] Add input validation to all API endpoints
 - [ ] Enable `noImplicitAny` TypeScript check
 - [ ] Create deprecation roadmap with timeline
 - [ ] Start composable consolidation audit
 
 ### Weeks 4-6 (Stability)
+
 - [ ] Move session/filter data from localStorage
 - [ ] Add test coverage for critical paths
-- [ ] Fix query optimization (remove select *)
+- [ ] Fix query optimization (remove select \*)
 - [ ] Add concurrent request deduplication
 
 ### Weeks 7-8 (Optimization)
+
 - [ ] Consolidate composables
 - [ ] Move NCAA database to Supabase
 - [ ] Fix direct state mutations

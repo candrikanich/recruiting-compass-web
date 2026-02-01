@@ -10,14 +10,28 @@
           class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         >
           <!-- Header -->
-          <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-            <h2 class="text-xl font-bold text-slate-900">Email Recruiting Packet</h2>
+          <div
+            class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between"
+          >
+            <h2 class="text-xl font-bold text-slate-900">
+              Email Recruiting Packet
+            </h2>
             <button
               @click="handleClose"
               class="text-slate-500 hover:text-slate-700 transition-colors"
             >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -32,7 +46,9 @@
 
               <!-- Coach Quick Select -->
               <div v-if="availableCoaches.length > 0" class="mb-4">
-                <p class="text-xs text-slate-600 mb-2">Quick select from coaches:</p>
+                <p class="text-xs text-slate-600 mb-2">
+                  Quick select from coaches:
+                </p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <label
                     v-for="coach in availableCoaches"
@@ -47,7 +63,9 @@
                     />
                     <span class="ml-2 text-sm text-slate-700">
                       {{ coach.first_name }} {{ coach.last_name }}
-                      <span class="text-xs text-slate-500 block">{{ coach.email }}</span>
+                      <span class="text-xs text-slate-500 block">{{
+                        coach.email
+                      }}</span>
                     </span>
                   </label>
                 </div>
@@ -55,7 +73,9 @@
 
               <!-- Manual Email Entry -->
               <div>
-                <label class="text-xs text-slate-600 mb-1 block">Add manual emails (comma-separated):</label>
+                <label class="text-xs text-slate-600 mb-1 block"
+                  >Add manual emails (comma-separated):</label
+                >
                 <textarea
                   v-model="manualEmails"
                   placeholder="coach1@example.com, coach2@example.com"
@@ -65,7 +85,10 @@
               </div>
 
               <!-- Recipients Display -->
-              <div v-if="allRecipients.length > 0" class="mt-3 flex flex-wrap gap-2">
+              <div
+                v-if="allRecipients.length > 0"
+                class="mt-3 flex flex-wrap gap-2"
+              >
                 <div
                   v-for="(email, idx) in allRecipients"
                   :key="`${email}-${idx}`"
@@ -87,7 +110,11 @@
                 v-if="allRecipients.length > MAX_RECIPIENTS"
                 class="mt-2 text-sm text-red-600 flex items-center"
               >
-                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  class="w-4 h-4 mr-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path
                     fill-rule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -110,7 +137,9 @@
                 class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter subject line"
               />
-              <p class="text-xs text-slate-500 mt-1">{{ form.subject.length }}/200 characters</p>
+              <p class="text-xs text-slate-500 mt-1">
+                {{ form.subject.length }}/200 characters
+              </p>
             </div>
 
             <!-- Email Body -->
@@ -138,13 +167,18 @@
             </div>
 
             <!-- Error Display -->
-            <div v-if="error" class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div
+              v-if="error"
+              class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"
+            >
               {{ error }}
             </div>
           </div>
 
           <!-- Footer -->
-          <div class="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-end gap-3">
+          <div
+            class="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-end gap-3"
+          >
             <button
               @click="handleClose"
               :disabled="loading"
@@ -168,8 +202,19 @@
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
               {{ loading ? "Sending..." : "Send Email" }}
             </button>
@@ -231,12 +276,16 @@ const parsedManualEmails = computed(() => {
   return manualEmails.value
     .split(",")
     .map((email) => email.trim())
-    .filter((email) => email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+    .filter(
+      (email) => email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+    );
 });
 
 // Combine selected and manual emails
 const allRecipients = computed(() => {
-  return Array.from(new Set([...selectedEmails.value, ...parsedManualEmails.value]));
+  return Array.from(
+    new Set([...selectedEmails.value, ...parsedManualEmails.value]),
+  );
 });
 
 // Validation
@@ -307,12 +356,12 @@ const reset = () => {
 // Enforce character limits when form values change
 watch(
   () => form.value.subject,
-  (newVal) => enforceSubjectLimit(newVal)
+  (newVal) => enforceSubjectLimit(newVal),
 );
 
 watch(
   () => form.value.body,
-  (newVal) => enforceBodyLimit(newVal)
+  (newVal) => enforceBodyLimit(newVal),
 );
 
 // Update default values when props change
@@ -322,7 +371,7 @@ watch(
     if (newVal && form.value.subject === "") {
       form.value.subject = newVal;
     }
-  }
+  },
 );
 
 watch(
@@ -331,7 +380,7 @@ watch(
     if (newVal && form.value.body === "") {
       form.value.body = newVal;
     }
-  }
+  },
 );
 </script>
 

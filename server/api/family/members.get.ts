@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
       role,
       added_at,
       users(id, email, full_name, role)
-    `
+    `,
     )
     .eq("family_unit_id", familyId)
     .order("added_at", { ascending: true });

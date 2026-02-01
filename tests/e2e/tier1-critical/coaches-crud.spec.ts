@@ -53,7 +53,10 @@ test.describe("Coaches CRUD Operations", () => {
       await coachesPage.createCoach(coachData);
 
       // Verify coach appears in list
-      await coachesPage.expectCoachInList(coachData.firstName, coachData.lastName);
+      await coachesPage.expectCoachInList(
+        coachData.firstName,
+        coachData.lastName,
+      );
     });
 
     test("should create a complete coach with all fields populated", async ({
@@ -71,11 +74,14 @@ test.describe("Coaches CRUD Operations", () => {
       await coachesPage.createCoach(coachData);
 
       // Verify coach appears in list
-      await coachesPage.expectCoachInList(coachData.firstName, coachData.lastName);
+      await coachesPage.expectCoachInList(
+        coachData.firstName,
+        coachData.lastName,
+      );
 
       // Verify details by clicking to view
       await coachesPage.viewCoachDetails(
-        `${coachData.firstName} ${coachData.lastName}`
+        `${coachData.firstName} ${coachData.lastName}`,
       );
       await expect(page.locator(`text=${coachData.email}`)).toBeVisible({
         timeout: 5000,
@@ -128,11 +134,16 @@ test.describe("Coaches CRUD Operations", () => {
         await coachHelpers.navigateToCoaches(page, schoolId);
         await coachesPage.clickAddCoach();
         await coachesPage.createCoach(coachData);
-        await coachesPage.expectCoachInList(coachData.firstName, coachData.lastName);
+        await coachesPage.expectCoachInList(
+          coachData.firstName,
+          coachData.lastName,
+        );
       }
     });
 
-    test("should handle special characters in coach names", async ({ page }) => {
+    test("should handle special characters in coach names", async ({
+      page,
+    }) => {
       const coachData = createCoachData({
         firstName: "O'Brien",
         lastName: "O'Connor-Smith",
@@ -144,10 +155,15 @@ test.describe("Coaches CRUD Operations", () => {
       await coachesPage.createCoach(coachData);
 
       // Verify coach with special chars appears correctly
-      await coachesPage.expectCoachInList(coachData.firstName, coachData.lastName);
+      await coachesPage.expectCoachInList(
+        coachData.firstName,
+        coachData.lastName,
+      );
     });
 
-    test("should sanitize malicious input (XSS prevention)", async ({ page }) => {
+    test("should sanitize malicious input (XSS prevention)", async ({
+      page,
+    }) => {
       const coachData = createCoachData({
         firstName: "Test<script>alert('xss')</script>",
         lastName: "Coach<img onerror='alert(1)'>",
@@ -161,7 +177,7 @@ test.describe("Coaches CRUD Operations", () => {
       // Verify no script was executed and coach was created
       await coachesPage.expectCoachInList(
         coachData.firstName,
-        coachData.lastName
+        coachData.lastName,
       );
 
       // Verify content is escaped (check page doesn't have actual script tags)
@@ -188,7 +204,10 @@ test.describe("Coaches CRUD Operations", () => {
 
       // Navigate back to list and verify
       await coachHelpers.navigateToCoaches(page, schoolId);
-      await coachesPage.expectCoachInList(coachData.firstName, coachData.lastName);
+      await coachesPage.expectCoachInList(
+        coachData.firstName,
+        coachData.lastName,
+      );
     });
 
     test("should view coach detail page with all information", async ({
@@ -208,13 +227,11 @@ test.describe("Coaches CRUD Operations", () => {
 
       // View coach details
       await coachesPage.viewCoachDetails(
-        `${coachData.firstName} ${coachData.lastName}`
+        `${coachData.firstName} ${coachData.lastName}`,
       );
 
       // Verify coach detail page loaded
-      await expect(page.locator("h1, h2")).toContainText(
-        coachData.firstName
-      );
+      await expect(page.locator("h1, h2")).toContainText(coachData.firstName);
       await expect(page.locator("text=" + coachData.email)).toBeVisible();
     });
 
@@ -233,13 +250,13 @@ test.describe("Coaches CRUD Operations", () => {
 
       // Verify details
       await coachesPage.viewCoachDetails(
-        `${coachData.firstName} ${coachData.lastName}`
+        `${coachData.firstName} ${coachData.lastName}`,
       );
 
       // Contact info should be visible
-      await expect(
-        page.locator(`text=${coachData.email}`)).toBeVisible({ timeout: 5000 }
-      );
+      await expect(page.locator(`text=${coachData.email}`)).toBeVisible({
+        timeout: 5000,
+      });
     });
   });
 
@@ -260,7 +277,7 @@ test.describe("Coaches CRUD Operations", () => {
 
       // View and update coach
       await coachesPage.viewCoachDetails(
-        `${coachData.firstName} ${coachData.lastName}`
+        `${coachData.firstName} ${coachData.lastName}`,
       );
 
       const updatedData = {
@@ -291,7 +308,7 @@ test.describe("Coaches CRUD Operations", () => {
 
       // Update phone
       await coachesPage.viewCoachDetails(
-        `${coachData.firstName} ${coachData.lastName}`
+        `${coachData.firstName} ${coachData.lastName}`,
       );
 
       const updatedData = {
@@ -320,7 +337,7 @@ test.describe("Coaches CRUD Operations", () => {
 
       // Update coach
       await coachesPage.viewCoachDetails(
-        `${coachData.firstName} ${coachData.lastName}`
+        `${coachData.firstName} ${coachData.lastName}`,
       );
 
       const updatedData = {
@@ -356,15 +373,18 @@ test.describe("Coaches CRUD Operations", () => {
       await coachesPage.createCoach(coachData);
 
       // Verify coach exists
-      await coachesPage.expectCoachInList(coachData.firstName, coachData.lastName);
+      await coachesPage.expectCoachInList(
+        coachData.firstName,
+        coachData.lastName,
+      );
 
       // Delete coach
       await coachesPage.viewCoachDetails(
-        `${coachData.firstName} ${coachData.lastName}`
+        `${coachData.firstName} ${coachData.lastName}`,
       );
 
       await coachesPage.deleteCoach(
-        `${coachData.firstName} ${coachData.lastName}`
+        `${coachData.firstName} ${coachData.lastName}`,
       );
 
       // Verify coach is removed from list
@@ -390,11 +410,11 @@ test.describe("Coaches CRUD Operations", () => {
 
       // Delete coach
       await coachesPage.viewCoachDetails(
-        `${coachData.firstName} ${coachData.lastName}`
+        `${coachData.firstName} ${coachData.lastName}`,
       );
 
       await coachesPage.deleteCoach(
-        `${coachData.firstName} ${coachData.lastName}`
+        `${coachData.firstName} ${coachData.lastName}`,
       );
 
       // Verify removed from list

@@ -40,7 +40,7 @@ export class AdminPage extends BasePage {
 
   async getSelectedUserCount(): Promise<number> {
     const selectedCheckboxes = this.page.locator(
-      '[data-testid="user-checkbox"]:checked'
+      '[data-testid="user-checkbox"]:checked',
     );
     return await selectedCheckboxes.count();
   }
@@ -69,14 +69,14 @@ export class AdminPage extends BasePage {
 
   // User table operations
   async getUserCount(): Promise<number> {
-    return await this.getCount('tbody tr');
+    return await this.getCount("tbody tr");
   }
 
   async getUserEmail(index: number): Promise<string> {
-    const rows = this.page.locator('tbody tr');
+    const rows = this.page.locator("tbody tr");
     const row = rows.nth(index);
-    const emailCell = row.locator('td:nth-child(2) code');
-    return await emailCell.textContent() || '';
+    const emailCell = row.locator("td:nth-child(2) code");
+    return (await emailCell.textContent()) || "";
   }
 
   // Verification helpers
@@ -86,16 +86,16 @@ export class AdminPage extends BasePage {
   }
 
   async verifySelectModeVisible(): Promise<boolean> {
-    const firstCheckbox = this.page.locator(
-      '[data-testid="user-checkbox"]'
-    ).first();
+    const firstCheckbox = this.page
+      .locator('[data-testid="user-checkbox"]')
+      .first();
     return await firstCheckbox.isVisible().catch(() => false);
   }
 
   async verifySelectModeHidden(): Promise<boolean> {
-    const firstCheckbox = this.page.locator(
-      '[data-testid="user-checkbox"]'
-    ).first();
+    const firstCheckbox = this.page
+      .locator('[data-testid="user-checkbox"]')
+      .first();
     return !(await firstCheckbox.isVisible().catch(() => false));
   }
 
@@ -103,7 +103,7 @@ export class AdminPage extends BasePage {
     // Wait for bulk delete button to no longer show "Deleting..."
     await this.page.waitForFunction(() => {
       const button = document.querySelector('[data-testid="bulk-delete-btn"]');
-      return button && !button.textContent?.includes('Deleting');
+      return button && !button.textContent?.includes("Deleting");
     });
   }
 }

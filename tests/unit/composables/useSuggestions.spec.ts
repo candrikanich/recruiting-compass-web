@@ -215,10 +215,9 @@ describe("useSuggestions", () => {
 
       await surfaceMoreSuggestions();
 
-      expect(mockFetchAuth).toHaveBeenCalledWith(
-        "/api/suggestions/surface",
-        { method: "POST" },
-      );
+      expect(mockFetchAuth).toHaveBeenCalledWith("/api/suggestions/surface", {
+        method: "POST",
+      });
 
       // Should call fetch again
       expect(mockFetchAuth.mock.calls.length).toBeGreaterThan(1);

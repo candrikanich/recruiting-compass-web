@@ -36,7 +36,9 @@ export default defineEventHandler(
         .single();
 
       if (!adminCheck?.is_admin) {
-        logger.warn(`Non-admin user ${user.id} attempted to delete an invitation`);
+        logger.warn(
+          `Non-admin user ${user.id} attempted to delete an invitation`,
+        );
         throw createError({
           statusCode: 403,
           statusMessage: "Only administrators can delete invitations",
@@ -69,7 +71,9 @@ export default defineEventHandler(
       }
 
       if (invitation.status !== "pending") {
-        logger.warn(`Attempted to delete non-pending invitation: ${invitationId}`);
+        logger.warn(
+          `Attempted to delete non-pending invitation: ${invitationId}`,
+        );
         throw createError({
           statusCode: 400,
           statusMessage: "Only pending invitations can be deleted",
@@ -83,7 +87,10 @@ export default defineEventHandler(
         .eq("id", invitationId);
 
       if (deleteError) {
-        logger.error(`Failed to delete invitation ${invitationId}`, deleteError);
+        logger.error(
+          `Failed to delete invitation ${invitationId}`,
+          deleteError,
+        );
         throw createError({
           statusCode: 500,
           statusMessage: "Failed to delete invitation",
@@ -105,7 +112,9 @@ export default defineEventHandler(
       throw createError({
         statusCode: 500,
         statusMessage:
-          error instanceof Error ? error.message : "Failed to delete invitation",
+          error instanceof Error
+            ? error.message
+            : "Failed to delete invitation",
       });
     }
   },

@@ -60,7 +60,10 @@
             <div class="ml-3">
               <h3 class="text-sm font-medium text-amber-800">Read-only view</h3>
               <div class="mt-2 text-sm text-amber-700">
-                <p>You're viewing this profile as a parent. Contact your athlete to make changes.</p>
+                <p>
+                  You're viewing this profile as a parent. Contact your athlete
+                  to make changes.
+                </p>
               </div>
             </div>
           </div>
@@ -181,7 +184,10 @@
                 <label
                   v-for="opt in BATS_OPTIONS"
                   :key="opt.value"
-                  :class="['flex items-center gap-2', isParentRole ? '' : 'cursor-pointer']"
+                  :class="[
+                    'flex items-center gap-2',
+                    isParentRole ? '' : 'cursor-pointer',
+                  ]"
                 >
                   <input
                     type="radio"
@@ -190,7 +196,13 @@
                     :disabled="isParentRole"
                     class="w-4 h-4 text-blue-600 disabled:cursor-not-allowed"
                   />
-                  <span :class="['text-gray-700', isParentRole ? 'text-gray-500' : '']">{{ opt.label }}</span>
+                  <span
+                    :class="[
+                      'text-gray-700',
+                      isParentRole ? 'text-gray-500' : '',
+                    ]"
+                    >{{ opt.label }}</span
+                  >
                 </label>
               </div>
             </div>
@@ -203,7 +215,10 @@
                 <label
                   v-for="opt in THROWS_OPTIONS"
                   :key="opt.value"
-                  :class="['flex items-center gap-2', isParentRole ? '' : 'cursor-pointer']"
+                  :class="[
+                    'flex items-center gap-2',
+                    isParentRole ? '' : 'cursor-pointer',
+                  ]"
                 >
                   <input
                     type="radio"
@@ -212,7 +227,13 @@
                     :disabled="isParentRole"
                     class="w-4 h-4 text-blue-600 disabled:cursor-not-allowed"
                   />
-                  <span :class="['text-gray-700', isParentRole ? 'text-gray-500' : '']">{{ opt.label }}</span>
+                  <span
+                    :class="[
+                      'text-gray-700',
+                      isParentRole ? 'text-gray-500' : '',
+                    ]"
+                    >{{ opt.label }}</span
+                  >
                 </label>
               </div>
             </div>
@@ -487,25 +508,43 @@
                 Sharing Permissions
               </p>
               <div class="space-y-3">
-                <label :class="['flex items-center gap-3', isParentRole ? '' : 'cursor-pointer']">
+                <label
+                  :class="[
+                    'flex items-center gap-3',
+                    isParentRole ? '' : 'cursor-pointer',
+                  ]"
+                >
                   <input
                     v-model="form.allow_share_phone"
                     :disabled="isParentRole"
                     type="checkbox"
                     class="w-4 h-4 text-blue-600 rounded disabled:cursor-not-allowed"
                   />
-                  <span :class="['text-gray-700', isParentRole ? 'text-gray-500' : '']"
+                  <span
+                    :class="[
+                      'text-gray-700',
+                      isParentRole ? 'text-gray-500' : '',
+                    ]"
                     >Allow coaches to see my phone number</span
                   >
                 </label>
-                <label :class="['flex items-center gap-3', isParentRole ? '' : 'cursor-pointer']">
+                <label
+                  :class="[
+                    'flex items-center gap-3',
+                    isParentRole ? '' : 'cursor-pointer',
+                  ]"
+                >
                   <input
                     v-model="form.allow_share_email"
                     :disabled="isParentRole"
                     type="checkbox"
                     class="w-4 h-4 text-blue-600 rounded disabled:cursor-not-allowed"
                   />
-                  <span :class="['text-gray-700', isParentRole ? 'text-gray-500' : '']"
+                  <span
+                    :class="[
+                      'text-gray-700',
+                      isParentRole ? 'text-gray-500' : '',
+                    ]"
                     >Allow coaches to see my email</span
                   >
                 </label>
@@ -808,7 +847,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
-import { ExclamationCircleIcon, ShareIcon, PhotoIcon, ArrowLeftIcon } from "@heroicons/vue/24/outline";
+import {
+  ExclamationCircleIcon,
+  ShareIcon,
+  PhotoIcon,
+  ArrowLeftIcon,
+} from "@heroicons/vue/24/outline";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useToast } from "~/composables/useToast";
 import { useFormValidation } from "~/composables/useFormValidation";
@@ -962,13 +1006,13 @@ const handleSave = async () => {
       await recalculateAllFitScores();
       showToast(
         "Player details saved and fit scores updated successfully",
-        "success"
+        "success",
       );
     } catch (recalcError) {
       console.error("Fit score recalculation failed:", recalcError);
       showToast(
         "Player details saved, but fit score update failed. Try refreshing.",
-        "warning"
+        "warning",
       );
     }
   } catch (err) {

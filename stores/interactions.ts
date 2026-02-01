@@ -352,7 +352,10 @@ export const useInteractionStore = defineStore("interactions", {
             });
           } catch (err) {
             // Don't fail interaction creation if suggestion update fails
-            console.error("Failed to trigger suggestion update after interaction logged:", err);
+            console.error(
+              "Failed to trigger suggestion update after interaction logged:",
+              err,
+            );
           }
         }
 

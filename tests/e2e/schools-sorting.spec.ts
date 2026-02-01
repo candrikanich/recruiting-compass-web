@@ -6,14 +6,18 @@ test.describe("Schools Sorting", () => {
     await page.goto("/schools");
 
     // Wait for schools to load
-    await page.waitForSelector('[data-testid="school-card"]', { timeout: 10000 }).catch(() => null);
+    await page
+      .waitForSelector('[data-testid="school-card"]', { timeout: 10000 })
+      .catch(() => null);
     // If no test ID, wait for school names to be visible
-    await page.waitForSelector('h3:has-text("school")', { timeout: 5000 }).catch(() => null);
+    await page
+      .waitForSelector('h3:has-text("school")', { timeout: 5000 })
+      .catch(() => null);
   });
 
   test("should display sort selector in filter bar", async ({ page }) => {
     // Look for the sort dropdown (first select element labeled "Sort By")
-    const sortSelects = await page.locator('select').all();
+    const sortSelects = await page.locator("select").all();
     expect(sortSelects.length).toBeGreaterThan(0);
 
     // Find the sort selector by looking for options
@@ -47,9 +51,11 @@ test.describe("Schools Sorting", () => {
     }
   });
 
-  test("should change sort order when ascending/descending button is clicked", async ({ page }) => {
+  test("should change sort order when ascending/descending button is clicked", async ({
+    page,
+  }) => {
     // Find the sort selector and the toggle button (second button in the grid)
-    const selectors = await page.locator('select').all();
+    const selectors = await page.locator("select").all();
     const buttons = await page.locator("button").all();
 
     // Get initial school names
@@ -92,17 +98,17 @@ test.describe("Schools Sorting", () => {
 
   test("should sort by fit score when selected", async ({ page }) => {
     // Find the sort dropdown and select "Fit Score"
-    const sortSelect = await page.locator('select').nth(5); // Assuming it's the 6th select
+    const sortSelect = await page.locator("select").nth(5); // Assuming it's the 6th select
 
     // Try to find it by looking for the select that has fit-score option
-    const allSelects = await page.locator('select').all();
+    const allSelects = await page.locator("select").all();
     let fitScoreSelect = null;
 
     for (const select of allSelects) {
-      const options = await select.locator('option').all();
+      const options = await select.locator("option").all();
       for (const option of options) {
-        const value = await option.getAttribute('value');
-        if (value === 'fit-score') {
+        const value = await option.getAttribute("value");
+        if (value === "fit-score") {
           fitScoreSelect = select;
           break;
         }
@@ -111,28 +117,30 @@ test.describe("Schools Sorting", () => {
     }
 
     if (fitScoreSelect) {
-      await fitScoreSelect.selectOption('fit-score');
+      await fitScoreSelect.selectOption("fit-score");
 
       // Wait for re-sort
       await page.waitForTimeout(300);
 
       // Verify the sort happened (this would require actual fit score data)
-      const schoolCards = await page.locator('h3').all();
+      const schoolCards = await page.locator("h3").all();
       expect(schoolCards.length).toBeGreaterThan(0);
     }
   });
 
-  test("should show warning when distance sort selected without home location", async ({ page }) => {
+  test("should show warning when distance sort selected without home location", async ({
+    page,
+  }) => {
     // This test assumes home location is not set
     // Try to select distance sort
-    const allSelects = await page.locator('select').all();
+    const allSelects = await page.locator("select").all();
     let distanceSelect = null;
 
     for (const select of allSelects) {
-      const options = await select.locator('option').all();
+      const options = await select.locator("option").all();
       for (const option of options) {
-        const value = await option.getAttribute('value');
-        if (value === 'distance') {
+        const value = await option.getAttribute("value");
+        if (value === "distance") {
           distanceSelect = select;
           break;
         }
@@ -141,23 +149,23 @@ test.describe("Schools Sorting", () => {
     }
 
     if (distanceSelect) {
-      await distanceSelect.selectOption('distance');
+      await distanceSelect.selectOption("distance");
 
       // Check if schools are still visible or if there's a message
-      const schoolCards = await page.locator('h3').all();
+      const schoolCards = await page.locator("h3").all();
       expect(schoolCards.length).toBeGreaterThanOrEqual(0);
     }
   });
 
   test("should sort by last contact date when selected", async ({ page }) => {
-    const allSelects = await page.locator('select').all();
+    const allSelects = await page.locator("select").all();
     let lastContactSelect = null;
 
     for (const select of allSelects) {
-      const options = await select.locator('option').all();
+      const options = await select.locator("option").all();
       for (const option of options) {
-        const value = await option.getAttribute('value');
-        if (value === 'last-contact') {
+        const value = await option.getAttribute("value");
+        if (value === "last-contact") {
           lastContactSelect = select;
           break;
         }
@@ -166,27 +174,27 @@ test.describe("Schools Sorting", () => {
     }
 
     if (lastContactSelect) {
-      await lastContactSelect.selectOption('last-contact');
+      await lastContactSelect.selectOption("last-contact");
 
       // Wait for re-sort
       await page.waitForTimeout(300);
 
       // Verify schools are displayed
-      const schoolCards = await page.locator('h3').all();
+      const schoolCards = await page.locator("h3").all();
       expect(schoolCards.length).toBeGreaterThan(0);
     }
   });
 
   test("should maintain sort when applying other filters", async ({ page }) => {
     // First select a sort order (fit-score)
-    const allSelects = await page.locator('select').all();
+    const allSelects = await page.locator("select").all();
     let fitScoreSelect = null;
 
     for (const select of allSelects) {
-      const options = await select.locator('option').all();
+      const options = await select.locator("option").all();
       for (const option of options) {
-        const value = await option.getAttribute('value');
-        if (value === 'fit-score') {
+        const value = await option.getAttribute("value");
+        if (value === "fit-score") {
           fitScoreSelect = select;
           break;
         }
@@ -195,36 +203,38 @@ test.describe("Schools Sorting", () => {
     }
 
     if (fitScoreSelect) {
-      await fitScoreSelect.selectOption('fit-score');
+      await fitScoreSelect.selectOption("fit-score");
       await page.waitForTimeout(200);
 
       // Get initial school list
-      let initialSchools = await page.locator('h3').all();
+      let initialSchools = await page.locator("h3").all();
       const initialCount = initialSchools.length;
 
       // Now apply another filter (e.g., division)
       const divisionSelect = allSelects[1]; // Typically the second select
-      await divisionSelect.selectOption('D1');
+      await divisionSelect.selectOption("D1");
       await page.waitForTimeout(300);
 
       // Verify schools are still sorted
-      let filteredSchools = await page.locator('h3').all();
+      let filteredSchools = await page.locator("h3").all();
       expect(filteredSchools.length).toBeLessThanOrEqual(initialCount);
       expect(filteredSchools.length).toBeGreaterThanOrEqual(0);
     }
   });
 
-  test("should reset sort to A-Z when sort button has default state", async ({ page }) => {
+  test("should reset sort to A-Z when sort button has default state", async ({
+    page,
+  }) => {
     // Get the sort select
-    const allSelects = await page.locator('select').all();
+    const allSelects = await page.locator("select").all();
     if (allSelects.length > 5) {
       const sortSelect = allSelects[5];
 
       // Check if value is 'a-z'
       const value = await sortSelect.inputValue();
       // If default is a-z, schools should be alphabetical
-      if (value === 'a-z') {
-        const schoolNames = await page.locator('h3').all();
+      if (value === "a-z") {
+        const schoolNames = await page.locator("h3").all();
         expect(schoolNames.length).toBeGreaterThanOrEqual(0);
       }
     }

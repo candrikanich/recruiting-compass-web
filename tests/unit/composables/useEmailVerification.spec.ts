@@ -129,7 +129,7 @@ describe("useEmailVerification", () => {
 
       expect(result).toBe(false);
       expect(verification.error.value).toBe(
-        "Verification link is invalid. Please request a new one."
+        "Verification link is invalid. Please request a new one.",
       );
       expect(verification.isVerified.value).toBe(false);
     });
@@ -147,7 +147,7 @@ describe("useEmailVerification", () => {
 
       expect(result).toBe(false);
       expect(verification.error.value).toBe(
-        "Verification link has expired. Please request a new one."
+        "Verification link has expired. Please request a new one.",
       );
     });
 
@@ -225,7 +225,8 @@ describe("useEmailVerification", () => {
       });
 
       const verification = useEmailVerification();
-      const result = await verification.resendVerificationEmail("test@example.com");
+      const result =
+        await verification.resendVerificationEmail("test@example.com");
 
       expect(mock$fetch).toHaveBeenCalledWith("/api/auth/resend-verification", {
         method: "POST",
@@ -256,7 +257,8 @@ describe("useEmailVerification", () => {
       });
 
       const verification = useEmailVerification();
-      const result = await verification.resendVerificationEmail("test@example.com");
+      const result =
+        await verification.resendVerificationEmail("test@example.com");
 
       expect(result).toBe(true);
     });
@@ -271,10 +273,13 @@ describe("useEmailVerification", () => {
       });
 
       const verification = useEmailVerification();
-      const result = await verification.resendVerificationEmail("test@example.com");
+      const result =
+        await verification.resendVerificationEmail("test@example.com");
 
       expect(result).toBe(false);
-      expect(verification.error.value).toContain("Too many verification requests");
+      expect(verification.error.value).toContain(
+        "Too many verification requests",
+      );
     });
 
     it("should handle API errors during resend", async () => {
@@ -284,7 +289,8 @@ describe("useEmailVerification", () => {
       mock$fetch.mockRejectedValue(apiError);
 
       const verification = useEmailVerification();
-      const result = await verification.resendVerificationEmail("test@example.com");
+      const result =
+        await verification.resendVerificationEmail("test@example.com");
 
       expect(result).toBe(false);
       expect(verification.error.value).toBe("Server error");
@@ -301,7 +307,8 @@ describe("useEmailVerification", () => {
       mock$fetch.mockReturnValue(resendPromise as any);
 
       const verification = useEmailVerification();
-      const resendCall = verification.resendVerificationEmail("test@example.com");
+      const resendCall =
+        verification.resendVerificationEmail("test@example.com");
 
       expect(verification.loading.value).toBe(true);
 
@@ -497,11 +504,14 @@ describe("useEmailVerification", () => {
       mock$fetch.mockRejectedValue("String error");
 
       const verification = useEmailVerification();
-      const result = await verification.resendVerificationEmail("test@example.com");
+      const result =
+        await verification.resendVerificationEmail("test@example.com");
 
       expect(result).toBe(false);
       // When non-Error is rejected, it gets wrapped with a generic message
-      expect(verification.error.value).toBe("Failed to resend verification email");
+      expect(verification.error.value).toBe(
+        "Failed to resend verification email",
+      );
     });
 
     it("should handle exceptions in checkEmailVerificationStatus", async () => {

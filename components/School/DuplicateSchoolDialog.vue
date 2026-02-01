@@ -61,7 +61,8 @@
               <span class="text-xs font-semibold text-gray-600 uppercase"
                 >Match Type</span
               >
-              <span class="inline-block px-2 py-1 rounded text-xs font-medium"
+              <span
+                class="inline-block px-2 py-1 rounded text-xs font-medium"
                 :class="getMatchBadgeClass(matchType)"
               >
                 {{ getMatchTypeLabel(matchType) }}

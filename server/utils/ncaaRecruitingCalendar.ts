@@ -135,10 +135,7 @@ export function getNextDeadPeriod(
   division: "D1" | "D2" | "D3" = "D1",
 ): RecruitingPeriod | null {
   const futurePeriods = RECRUITING_CALENDAR_2026.filter(
-    (p) =>
-      p.type === "dead" &&
-      p.division === division &&
-      p.start >= date,
+    (p) => p.type === "dead" && p.division === division && p.start >= date,
   );
 
   if (futurePeriods.length === 0) return null;
@@ -295,7 +292,8 @@ export const COLLEGE_APPLICATION_DEADLINES_2026: Milestone[] = [
     type: "application",
     division: "ALL",
     url: "https://studentaid.gov/h/apply-for-aid/fafsa",
-    description: "Free Application for Federal Student Aid opens for 2027-28 school year",
+    description:
+      "Free Application for Federal Student Aid opens for 2027-28 school year",
   },
   {
     date: "2026-11-01",
@@ -442,9 +440,7 @@ export function getUpcomingMilestones(params: {
   }
 
   // Sort by date and apply limit
-  return filtered
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(0, limit);
+  return filtered.sort((a, b) => a.date.localeCompare(b.date)).slice(0, limit);
 }
 
 /**

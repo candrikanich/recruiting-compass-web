@@ -196,12 +196,12 @@ describe("useRecruitingPacket", () => {
 
       // UT should be in tier_a (offer_received)
       expect(
-        generatedData.value?.schools.tier_a.some((s) => s.id === "school-1")
+        generatedData.value?.schools.tier_a.some((s) => s.id === "school-1"),
       ).toBe(true);
 
       // Rice should be in tier_b (camp_invite)
       expect(
-        generatedData.value?.schools.tier_b.some((s) => s.id === "school-2")
+        generatedData.value?.schools.tier_b.some((s) => s.id === "school-2"),
       ).toBe(true);
     });
 
@@ -213,12 +213,14 @@ describe("useRecruitingPacket", () => {
       expect(generatedData.value?.activitySummary.totalSchools).toBe(2);
       expect(generatedData.value?.activitySummary.totalInteractions).toBe(3);
       expect(
-        generatedData.value?.activitySummary.interactionBreakdown.emails
+        generatedData.value?.activitySummary.interactionBreakdown.emails,
       ).toBe(1);
       expect(
-        generatedData.value?.activitySummary.interactionBreakdown.calls
+        generatedData.value?.activitySummary.interactionBreakdown.calls,
       ).toBe(1);
-      expect(generatedData.value?.activitySummary.interactionBreakdown.camps).toBe(1);
+      expect(
+        generatedData.value?.activitySummary.interactionBreakdown.camps,
+      ).toBe(1);
     });
 
     it("should generate valid filename", async () => {
@@ -382,7 +384,7 @@ describe("useRecruitingPacket", () => {
         "/api/recruiting-packet/email",
         expect.objectContaining({
           method: "POST",
-        })
+        }),
       );
     });
 
@@ -465,7 +467,9 @@ describe("useRecruitingPacket", () => {
       const data = await aggregateAthleteData();
 
       const breakdown = data.activitySummary.interactionBreakdown;
-      expect(breakdown.emails + breakdown.calls + breakdown.camps).toBeGreaterThan(0);
+      expect(
+        breakdown.emails + breakdown.calls + breakdown.camps,
+      ).toBeGreaterThan(0);
     });
   });
 
@@ -497,7 +501,9 @@ describe("useRecruitingPacket", () => {
       await generatePacket();
 
       expect(defaultEmailBody.value).toContain("recruiting profile");
-      expect(defaultEmailBody.value).toContain("collegiate baseball opportunities");
+      expect(defaultEmailBody.value).toContain(
+        "collegiate baseball opportunities",
+      );
       expect(defaultEmailBody.value).toContain("Best regards");
     });
   });

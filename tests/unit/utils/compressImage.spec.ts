@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  compressImage,
-  validateImageFile,
-} from "~/utils/image/compressImage";
+import { compressImage, validateImageFile } from "~/utils/image/compressImage";
 
 // Mock browser-image-compression
 vi.mock("browser-image-compression", () => ({
@@ -209,7 +206,7 @@ describe("compressImage utility", () => {
       const invalid = new File(["data"], "test.txt", { type: "text/plain" });
 
       await expect(compressImage(invalid)).rejects.toThrow(
-        /Invalid.*file|Allowed types/i
+        /Invalid.*file|Allowed types/i,
       );
     });
 

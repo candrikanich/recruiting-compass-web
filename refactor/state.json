@@ -10,9 +10,17 @@
   "nextPhase": "awaiting_user_priority_selection",
   "estimatedTotalEffort": "8-12 weeks",
   "focusAreas": {
-    "security": ["incomplete_auth", "rate_limiting", "localStorage_sensitive_data"],
+    "security": [
+      "incomplete_auth",
+      "rate_limiting",
+      "localStorage_sensitive_data"
+    ],
     "stability": ["memory_leaks", "test_coverage", "concurrent_requests"],
-    "maintainability": ["deprecated_code", "composable_duplication", "type_safety"],
+    "maintainability": [
+      "deprecated_code",
+      "composable_duplication",
+      "type_safety"
+    ],
     "performance": ["query_optimization", "NCAA_data_migration"]
   }
 }

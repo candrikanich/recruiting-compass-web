@@ -30,7 +30,7 @@ export const useFitScoreRecalculation = () => {
         "/api/athlete/fit-scores/recalculate-all",
         {
           method: "POST",
-        }
+        },
       );
 
       if (!response.success) {

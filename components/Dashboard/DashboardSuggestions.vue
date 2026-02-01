@@ -6,7 +6,8 @@
         {{
           deadPeriodMessage && suggestions.length === 0
             ? "No action items at this time"
-            : suggestions.length + " item" +
+            : suggestions.length +
+              " item" +
               (suggestions.length !== 1 ? "s" : "") +
               " need" +
               (suggestions.length !== 1 ? "" : "s") +
@@ -130,9 +131,7 @@ const deadPeriodMessage = computed(() => {
   return null;
 });
 
-const moreCount = computed(
-  () => suggestionsComposable?.moreCount.value || 0,
-);
+const moreCount = computed(() => suggestionsComposable?.moreCount.value || 0);
 
 const handleDismiss = (id: string) => {
   emit("dismiss", id);

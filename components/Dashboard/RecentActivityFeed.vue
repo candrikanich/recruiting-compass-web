@@ -15,13 +15,15 @@
         :disabled="loading"
         class="px-3 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-full text-sm font-medium hover:bg-brand-blue-200 transition disabled:opacity-50"
       >
-        {{ loading ? 'Loading...' : 'Refresh' }}
+        {{ loading ? "Loading..." : "Refresh" }}
       </button>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-8">
-      <div class="animate-spin rounded-full h-6 w-6 border border-brand-blue-300 border-t-brand-blue-600" />
+      <div
+        class="animate-spin rounded-full h-6 w-6 border border-brand-blue-300 border-t-brand-blue-600"
+      />
     </div>
 
     <!-- Error State -->
@@ -48,7 +50,9 @@
     <!-- Empty State -->
     <div v-else class="text-center py-6 text-slate-500">
       <p class="text-sm">No recent activity</p>
-      <p class="text-xs text-slate-400 mt-1">Start logging interactions or updating your profile</p>
+      <p class="text-xs text-slate-400 mt-1">
+        Start logging interactions or updating your profile
+      </p>
     </div>
 
     <!-- View All Link -->
@@ -62,12 +66,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
-import { SparklesIcon } from '@heroicons/vue/24/outline';
-import { useActivityFeed } from '~/composables/useActivityFeed';
-import ActivityEventItem from '~/components/Dashboard/ActivityEventItem.vue';
+import { onMounted, onUnmounted } from "vue";
+import { SparklesIcon } from "@heroicons/vue/24/outline";
+import { useActivityFeed } from "~/composables/useActivityFeed";
+import ActivityEventItem from "~/components/Dashboard/ActivityEventItem.vue";
 
-const { activities, loading, error, fetchActivities, subscribeToUpdates } = useActivityFeed();
+const { activities, loading, error, fetchActivities, subscribeToUpdates } =
+  useActivityFeed();
 
 const refresh = async (): Promise<void> => {
   await fetchActivities();

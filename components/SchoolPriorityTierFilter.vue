@@ -31,67 +31,64 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue"
+import { computed } from "vue";
 
 interface Props {
-  modelValue: ("A" | "B" | "C")[] | null
+  modelValue: ("A" | "B" | "C")[] | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: null,
-})
+});
 
 const emit = defineEmits<{
-  "update:modelValue": [("A" | "B" | "C")[] | null]
-}>()
+  "update:modelValue": [("A" | "B" | "C")[] | null];
+}>();
 
-const tiers: Array<"A" | "B" | "C"> = ["A", "B", "C"]
+const tiers: Array<"A" | "B" | "C"> = ["A", "B", "C"];
 
 const tierLabels: Record<"A" | "B" | "C", string> = {
   A: "Top Choice",
   B: "Strong Interest",
   C: "Fallback",
-}
+};
 
 const tierColors: Record<"A" | "B" | "C", string> = {
   A: "border-red-300 bg-red-100 text-red-700 hover:bg-red-200",
   B: "border-amber-300 bg-amber-100 text-amber-700 hover:bg-amber-200",
   C: "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200",
-}
+};
 
 const hasSelection = computed(() => {
-  return props.modelValue && props.modelValue.length > 0
-})
+  return props.modelValue && props.modelValue.length > 0;
+});
 
 const isSelected = (tier: "A" | "B" | "C") => {
   return (
     props.modelValue &&
     props.modelValue.length > 0 &&
     props.modelValue.includes(tier)
-  )
-}
+  );
+};
 
 const tierLabel = (tier: "A" | "B" | "C") => {
-  return tierLabels[tier]
-}
+  return tierLabels[tier];
+};
 
 const tierSelectedClass = (tier: "A" | "B" | "C") => {
-  return tierColors[tier]
-}
+  return tierColors[tier];
+};
 
 const toggleTier = (tier: "A" | "B" | "C") => {
-  const current = props.modelValue || []
+  const current = props.modelValue || [];
   const newSelection = isSelected(tier)
     ? current.filter((t) => t !== tier)
-    : [...current, tier]
+    : [...current, tier];
 
-  emit(
-    "update:modelValue",
-    newSelection.length > 0 ? newSelection : null,
-  )
-}
+  emit("update:modelValue", newSelection.length > 0 ? newSelection : null);
+};
 
 const clearTiers = () => {
-  emit("update:modelValue", null)
-}
+  emit("update:modelValue", null);
+};
 </script>

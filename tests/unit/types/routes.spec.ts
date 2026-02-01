@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { isProtectedRoute, getPublicRoutes, getProtectedRoutes } from "~/types/routes";
+import {
+  isProtectedRoute,
+  getPublicRoutes,
+  getProtectedRoutes,
+} from "~/types/routes";
 
 describe("Route Protection Matrix", () => {
   describe("isProtectedRoute", () => {

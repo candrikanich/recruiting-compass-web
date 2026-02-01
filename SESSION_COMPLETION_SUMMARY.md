@@ -12,6 +12,7 @@
 ### Phase 5: UI Components ✅ (Complete)
 
 **1. AthleteSelector Component**
+
 - File: `components/AthleteSelector.vue`
 - Purpose: Parents select which child's data to view
 - Features:
@@ -22,6 +23,7 @@
 - Integration: Schools page header
 
 **2. PrivateNotesCard Component**
+
 - File: `components/PrivateNotesCard.vue`
 - Purpose: Personal notes on schools/coaches/interactions
 - Features:
@@ -32,6 +34,7 @@
 - Integration: Schools list view (each school card)
 
 **3. Page Integrations**
+
 - Modified: `pages/schools/index.vue`
   - Added AthleteSelector conditional display
   - Added PrivateNotesCard to each school
@@ -43,6 +46,7 @@
 ### Phase 6: API Endpoints ✅ (Complete)
 
 **1. POST /api/family/create.post.ts**
+
 - Purpose: Manually create family unit (testing/edge cases)
 - Request body:
   ```json
@@ -59,6 +63,7 @@
 - Returns: Created family with success flag
 
 **2. GET /api/family/members.get.ts**
+
 - Purpose: Fetch family members with details
 - Query params: `?familyId=uuid`
 - Validations:
@@ -88,6 +93,7 @@
 **E2E Tests (6 scenarios)**
 
 File: `tests/e2e/family-units.spec.ts`
+
 - Parent viewing school list
 - Parent switching between athletes
 - Student viewing their schools
@@ -100,11 +106,13 @@ File: `tests/e2e/family-units.spec.ts`
 ## Code Quality
 
 ### TypeScript & Linting
+
 - ✅ Zero TypeScript errors (`npm run type-check`)
 - ✅ Zero lint errors (`npm run lint`)
 - ✅ All files follow project conventions
 
 ### Test Results
+
 - ✅ 15/15 new tests passing
 - ⚠️ 57 pre-existing tests failing (see TEST_FAILURE_GUIDE.md)
   - Not regressions in new code
@@ -112,6 +120,7 @@ File: `tests/e2e/family-units.spec.ts`
   - Quick fix available (30-45 min)
 
 ### Code Patterns
+
 - ✅ Follows Vue 3 Composition API patterns
 - ✅ Uses project's type system
 - ✅ Consistent error handling
@@ -154,16 +163,19 @@ pages/
 ## What's Ready to Use
 
 ✅ **All UI components integrated and working**
+
 - Parent athlete switching is fully functional
 - Private notes system is operational
 - Components type-safe and tested
 
 ✅ **API endpoints ready for integration**
+
 - Family creation endpoint available
 - Member lookup endpoint available
 - Both properly authenticated and validated
 
 ✅ **Test infrastructure in place**
+
 - Unit test patterns established
 - E2E test scenarios defined
 - Mock examples provided for fixing existing tests
@@ -173,11 +185,13 @@ pages/
 ## What Needs to Be Done Next
 
 ### 1. Fix Existing Tests (30-45 min) 🔧
+
 - Add useActiveFamily mock to test files
 - Update user setup to include role="student"
 - See `TEST_FAILURE_GUIDE.md` for exact pattern
 
 ### 2. Apply Migrations (5 min) 🗄️
+
 ```bash
 # In Supabase console, run:
 # 1. 021_create_family_units.sql
@@ -187,11 +201,13 @@ npx supabase gen types typescript --local > types/database.ts
 ```
 
 ### 3. Manual Testing (30 min) ⚙️
+
 - Test parent switching in dev server
 - Verify private notes save/load
 - Check family data isolation
 
 ### 4. Deploy (15 min) 🚀
+
 - Commit test fixes
 - Push to main
 - Deploy to staging/production
@@ -223,13 +239,13 @@ npx supabase gen types typescript --local > types/database.ts
 
 ## Estimated Remaining Effort
 
-| Task | Time | Priority |
-|------|------|----------|
-| Fix 57 pre-existing tests | 30-45 min | High |
-| Apply migrations | 5 min | Critical |
-| Manual testing | 30 min | High |
-| Deploy | 15 min | Medium |
-| **Total** | **1.5 hours** | — |
+| Task                      | Time          | Priority |
+| ------------------------- | ------------- | -------- |
+| Fix 57 pre-existing tests | 30-45 min     | High     |
+| Apply migrations          | 5 min         | Critical |
+| Manual testing            | 30 min        | High     |
+| Deploy                    | 15 min        | Medium   |
+| **Total**                 | **1.5 hours** | —        |
 
 ---
 

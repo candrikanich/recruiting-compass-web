@@ -144,17 +144,20 @@ This guide will show you how to build a balanced, realistic school list in just 
 First, get honest about your profile:
 
 **Athletic Profile:**
+
 - What's your position?
 - What are your key stats? (ERA, batting average, velocity, etc.)
 - How do you compare to college athletes at your position?
 - What's your percentile in your region? Top 25%? Top 50%?
 
 **Academic Profile:**
+
 - What's your GPA?
 - What are your test scores (SAT/ACT)?
 - What are you looking to study?
 
 **Personal Preferences:**
+
 - How far are you willing to go from home?
 - What climate/region interests you?
 - What about coaching style matters to you?
@@ -179,6 +182,7 @@ Create three categories:
 
 **Reach Schools (Your stats are below their averages)**
 Example: Your ERA is 3.5, their typical pitcher ERA is 2.8
+
 - Usually 5-7 schools
 - Teams you'd love to play for
 - Long-shot opportunities
@@ -186,6 +190,7 @@ Example: Your ERA is 3.5, their typical pitcher ERA is 2.8
 
 **Target Schools (Your stats align with their averages)**
 Example: Your ERA is 2.8, their typical pitcher ERA is 2.8
+
 - Usually 8-12 schools
 - Where you have the best shot
 - Most of your recruiting focus goes here
@@ -193,6 +198,7 @@ Example: Your ERA is 2.8, their typical pitcher ERA is 2.8
 
 **Safety Schools (Your stats are above their averages)**
 Example: Your ERA is 2.8, their typical pitcher ERA is 3.2
+
 - Usually 5-7 schools
 - Where you're almost certain to be recruited
 - Don't overlook these—they might be perfect
@@ -203,11 +209,13 @@ Example: Your ERA is 2.8, their typical pitcher ERA is 3.2
 Start with schools you'd love to attend. Research 5-7 schools at the reach level.
 
 For each school, find:
+
 - What's their typical recruit look like?
 - Average ERA/stats for your position
 - How competitive is their recruiting class?
 
 Resources:
+
 - Perfect Game rankings
 - College Baseball websites
 - Coaching staff social media
@@ -220,6 +228,7 @@ Write down 5-7 schools.
 Now for your realistic opportunities. This should be your biggest list—8-12 schools where your stats actually match.
 
 Look for schools where:
+
 - Your stats are within range of typical recruits
 - You fit the coaching style
 - The program is headed where you want to go
@@ -232,6 +241,7 @@ Write down 8-12 schools.
 Finally, identify 5-7 schools where you're above their typical recruit profile.
 
 These are schools where:
+
 - Your stats exceed what they typically get
 - You're a strong fit athletically
 - Academics align
@@ -357,6 +367,7 @@ Coaches are busy. They recruit at camps, tournaments, and showcases. Unless your
 Teams have limited scholarships. They get hundreds of emails from interested players. If your son isn't reaching out, he's competing against players who are. It's that simple.
 
 **What to do instead:**
+
 - Encourage your son to identify schools he's interested in
 - Help him research coaches at those schools
 - Support him in writing emails to coaches (even if he doesn't mail them)
@@ -378,6 +389,7 @@ I've seen it happen: A coach sent an email saying "I'd love to talk more," but t
 Your son's recruiting success depends on being responsive and organized. If you miss a coach's message or forget what you discussed, it makes your player look disorganized. Coaches want organized, prepared players.
 
 **What to do instead:**
+
 - Keep a log of all coach interactions (email, call, text, in-person)
 - Note the date, what was discussed, and what comes next
 - Set reminders for follow-ups
@@ -399,6 +411,7 @@ Recruiting is about finding the right fit—not about going to the most famous s
 Example: Your player might get recruited to play at a small Division II program where they're wanted, or be a walk-on at a Division I program that doesn't want them. The former is almost always the better choice.
 
 **What to do instead:**
+
 - Be honest about your player's athletic and academic profile
 - Research realistic schools where your son fits the recruit profile
 - Build a balanced list: 5-7 reach schools, 8-12 target schools, 5-7 safety schools
@@ -420,6 +433,7 @@ Your player needs support. They're managing school, sports, and life while also 
 At the same time, it's your player's future. They need to drive the process and make their own decisions. Parents should advise, not control.
 
 **What to do instead:**
+
 - Have family discussions about recruiting goals early (freshman year)
 - Make sure everyone understands the timeline and process
 - Help your player think through what matters in a school (academics, coaching, location, etc.)
@@ -442,6 +456,7 @@ College is a four-year commitment. Your player will spend more time at this scho
 Recruiting happens over four years for a reason. You should take time to understand your options.
 
 **What to do instead:**
+
 - Set a decision timeline with your player (most players commit junior or senior year)
 - Keep recruiting open longer than your player wants to
 - Encourage your player to explore multiple options
@@ -457,6 +472,7 @@ Final decision should be: "This is the best option for me academically, athletic
 These five mistakes come down to one thing: **Not having a clear recruiting strategy.**
 
 The best families approach recruiting like a project. They:
+
 1. Set clear goals (what schools fit? what timeline makes sense?)
 2. Create a plan (how will we reach out? how will we track progress?)
 3. Execute consistently (contact coaches, attend showcases, track interactions)
@@ -468,6 +484,7 @@ The best families approach recruiting like a project. They:
 Many of these mistakes happen because families lack good systems. Without a central place to track interactions, it's easy to miss opportunities. Without a clear school list, it's easy to chase brand names.
 
 Recruiting Compass solves this:
+
 - **Organize schools** by tier so you focus on realistic targets
 - **Track interactions** so you never miss a coach's message
 - **Follow a timeline** with clear milestones
@@ -518,6 +535,7 @@ If you want to avoid these mistakes and give your player the best shot at recrui
 ## Content Calendar
 
 **Year 1 - Focus Areas:**
+
 - Month 1-2: Educational content (how-to guides, recruiting basics)
 - Month 3-4: Student stories and testimonials
 - Month 5-6: Parent guides and family involvement
@@ -528,4 +546,3 @@ If you want to avoid these mistakes and give your player the best shot at recrui
 ---
 
 **Remember:** Blog posts build authority, drive organic traffic, and give families the guidance they're looking for. Consistent, valuable content is the best marketing.
-

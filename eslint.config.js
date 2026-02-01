@@ -31,7 +31,9 @@ export default [
       parserOptions: {
         // Only enable type-aware linting for composables, stores, and utils
         // to reduce memory usage in CI environments
-        ...(process.env.CI ? {} : { project: "./tsconfig.json", extraFileExtensions: [".vue"] }),
+        ...(process.env.CI
+          ? {}
+          : { project: "./tsconfig.json", extraFileExtensions: [".vue"] }),
       },
     },
     rules: {

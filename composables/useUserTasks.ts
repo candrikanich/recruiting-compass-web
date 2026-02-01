@@ -32,7 +32,9 @@ export const useUserTasks = () => {
 
     loading.value = true;
     try {
-      const savedTasks = localStorage.getItem(`${STORAGE_KEY}-${store.user.id}`);
+      const savedTasks = localStorage.getItem(
+        `${STORAGE_KEY}-${store.user.id}`,
+      );
       if (savedTasks) {
         tasks.value = JSON.parse(savedTasks);
       } else {

@@ -63,7 +63,14 @@ describe("useUserStore", () => {
     };
 
     mockUseSupabase.mockReturnValue(mockSupabase);
-    return { mockSupabase, mockQuery, mockSingle, mockSelect, mockEq, mockInsert };
+    return {
+      mockSupabase,
+      mockQuery,
+      mockSingle,
+      mockSelect,
+      mockEq,
+      mockInsert,
+    };
   };
 
   afterEach(() => {

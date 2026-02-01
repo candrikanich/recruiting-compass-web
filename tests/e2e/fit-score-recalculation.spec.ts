@@ -27,7 +27,7 @@ test.describe.skip("Fit Score Auto-Recalculation", () => {
 
     // Click save button
     const saveButton = page.locator(
-      'button[data-testid="save-player-details-button"]'
+      'button[data-testid="save-player-details-button"]',
     );
     await saveButton.click();
 
@@ -38,7 +38,9 @@ test.describe.skip("Fit Score Auto-Recalculation", () => {
     await expect(saveButton).toContainText("Recalculating fit scores...");
 
     // Wait for success toast
-    const successToast = page.locator("text=Player details saved and fit scores updated successfully");
+    const successToast = page.locator(
+      "text=Player details saved and fit scores updated successfully",
+    );
     await expect(successToast).toBeVisible();
 
     // Button should be re-enabled
@@ -59,7 +61,7 @@ test.describe.skip("Fit Score Auto-Recalculation", () => {
     await gpaInput.fill("3.5");
 
     const saveButton = page.locator(
-      'button[data-testid="save-player-details-button"]'
+      'button[data-testid="save-player-details-button"]',
     );
     await saveButton.click();
 
@@ -74,7 +76,7 @@ test.describe.skip("Fit Score Auto-Recalculation", () => {
     page,
   }) => {
     const saveButton = page.locator(
-      'button[data-testid="save-player-details-button"]'
+      'button[data-testid="save-player-details-button"]',
     );
 
     // Initially should show "Save Player Details"
@@ -106,7 +108,7 @@ test.describe.skip("Fit Score Auto-Recalculation", () => {
 
     // Click save
     const saveButton = page.locator(
-      'button[data-testid="save-player-details-button"]'
+      'button[data-testid="save-player-details-button"]',
     );
     await saveButton.click();
 
@@ -133,7 +135,7 @@ test.describe.skip("Fit Score Auto-Recalculation", () => {
     page,
   }) => {
     const saveButton = page.locator(
-      'button[data-testid="save-player-details-button"]'
+      'button[data-testid="save-player-details-button"]',
     );
 
     // Update a field
@@ -159,13 +161,13 @@ test.describe.skip("Fit Score Auto-Recalculation", () => {
     await gpaInput.fill("3.4");
 
     const saveButton = page.locator(
-      'button[data-testid="save-player-details-button"]'
+      'button[data-testid="save-player-details-button"]',
     );
     await saveButton.click();
 
     // Wait for either success or warning toast
     const toast = page.locator(
-      "text=/Player details saved|fit score update failed/"
+      "text=/Player details saved|fit score update failed/",
     );
     await expect(toast).toBeVisible();
   });

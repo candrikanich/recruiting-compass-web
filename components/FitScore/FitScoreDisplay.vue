@@ -47,7 +47,12 @@
         fill="none"
         stroke="currentColor"
       >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M19 14l-7 7m0 0l-7-7m7 7V3"
+        />
       </svg>
       <svg
         v-else
@@ -57,13 +62,22 @@
         fill="none"
         stroke="currentColor"
       >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M5 10l7-7m0 0l7 7m-7-7v18"
+        />
       </svg>
     </button>
 
     <!-- Breakdown (Optional) -->
     <div
-      v-if="showBreakdown && Object.keys(fitScore.breakdown).length > 0 && isExpanded"
+      v-if="
+        showBreakdown &&
+        Object.keys(fitScore.breakdown).length > 0 &&
+        isExpanded
+      "
       class="bg-slate-50 rounded-lg p-4"
     >
       <h4 class="font-semibold text-sm text-slate-900 mb-3">Score Breakdown</h4>

@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useTasks } from '~/composables/useTasks';
-import { useAuth } from '~/composables/useAuth';
-import { useParentContext } from '~/composables/useParentContext';
-import { calculateCurrentGrade } from '~/utils/gradeHelpers';
-import { calculateDeadlineInfo } from '~/utils/deadlineHelpers';
-import AthleteSwitcher from '~/components/Parent/AthleteSwitcher.vue';
-import type { TaskWithStatus } from '~/types/timeline';
+import { ref, computed, onMounted } from "vue";
+import { useTasks } from "~/composables/useTasks";
+import { useAuth } from "~/composables/useAuth";
+import { useParentContext } from "~/composables/useParentContext";
+import { calculateCurrentGrade } from "~/utils/gradeHelpers";
+import { calculateDeadlineInfo } from "~/utils/deadlineHelpers";
+import AthleteSwitcher from "~/components/Parent/AthleteSwitcher.vue";
+import type { TaskWithStatus } from "~/types/timeline";
 
 const { user } = useAuth();
-const { linkedAthletes, isViewingAsParent, viewingAthleteId } = useParentContext();
+const { linkedAthletes, isViewingAsParent, viewingAthleteId } =
+  useParentContext();
 const {
   tasksWithStatus,
   loading,
@@ -22,14 +23,19 @@ const {
 } = useTasks();
 
 const currentGradeLevel = ref(10);
-const athleteProfile = ref<{ full_name: string; graduation_year: number | null } | null>(null);
+const athleteProfile = ref<{
+  full_name: string;
+  graduation_year: number | null;
+} | null>(null);
 const showSuccessMessage = ref(false);
 const expandedTaskId = ref<string | null>(null);
 const seenLockedTasks = ref<Set<string>>(new Set());
 
 // Filter state
-const statusFilter = ref<'all' | 'not_started' | 'in_progress' | 'completed'>('all');
-const urgencyFilter = ref<'all' | 'critical' | 'urgent' | 'upcoming'>('all');
+const statusFilter = ref<"all" | "not_started" | "in_progress" | "completed">(
+  "all",
+);
+const urgencyFilter = ref<"all" | "critical" | "urgent" | "upcoming">("all");
 
 // Load filters from localStorage
 const loadFilters = () => {
@@ -41,10 +47,10 @@ const loadFilters = () => {
   if (stored) {
     try {
       const filters = JSON.parse(stored);
-      statusFilter.value = filters.statusFilter || 'all';
-      urgencyFilter.value = filters.urgencyFilter || 'all';
+      statusFilter.value = filters.statusFilter || "all";
+      urgencyFilter.value = filters.urgencyFilter || "all";
     } catch (e) {
-      console.error('Failed to load filters:', e);
+      console.error("Failed to load filters:", e);
     }
   }
 };
@@ -60,30 +66,36 @@ const saveFilters = () => {
     JSON.stringify({
       statusFilter: statusFilter.value,
       urgencyFilter: urgencyFilter.value,
-    })
+    }),
   );
 };
 
 const stats = computed(() => getCompletionStats(currentGradeLevel.value));
 
 const filteredTasks = computed(() => {
-  let tasks = tasksWithStatus.value.filter((t) => t.grade_level === currentGradeLevel.value);
+  let tasks = tasksWithStatus.value.filter(
+    (t) => t.grade_level === currentGradeLevel.value,
+  );
 
   // Apply status filter
-  if (statusFilter.value !== 'all') {
+  if (statusFilter.value !== "all") {
     tasks = tasks.filter((t) => t.athlete_task?.status === statusFilter.value);
   }
 
   // Apply urgency filter
-  if (urgencyFilter.value !== 'all') {
+  if (urgencyFilter.value !== "all") {
     tasks = tasks.filter((t) => {
       const info = calculateDeadlineInfo(t.deadline_date);
-      if (urgencyFilter.value === 'critical') {
-        return info.urgency === 'critical' && info.isPastDue;
-      } else if (urgencyFilter.value === 'urgent') {
-        return info.urgency === 'urgent' || info.urgency === 'critical';
-      } else if (urgencyFilter.value === 'upcoming') {
-        return info.urgency === 'upcoming' || info.urgency === 'urgent' || info.urgency === 'critical';
+      if (urgencyFilter.value === "critical") {
+        return info.urgency === "critical" && info.isPastDue;
+      } else if (urgencyFilter.value === "urgent") {
+        return info.urgency === "urgent" || info.urgency === "critical";
+      } else if (urgencyFilter.value === "upcoming") {
+        return (
+          info.urgency === "upcoming" ||
+          info.urgency === "urgent" ||
+          info.urgency === "critical"
+        );
       }
       return true;
     });
@@ -98,7 +110,13 @@ const filteredTasks = computed(() => {
     const aInfo = calculateDeadlineInfo(a.deadline_date);
     const bInfo = calculateDeadlineInfo(b.deadline_date);
 
-    const urgencyOrder = { critical: 0, urgent: 1, upcoming: 2, future: 3, none: 4 };
+    const urgencyOrder = {
+      critical: 0,
+      urgent: 1,
+      upcoming: 2,
+      future: 3,
+      none: 4,
+    };
     const aUrgencyRank = urgencyOrder[aInfo.urgency] || 4;
     const bUrgencyRank = urgencyOrder[bInfo.urgency] || 4;
 
@@ -119,10 +137,10 @@ const filteredTasks = computed(() => {
 const handleToggleTask = async (taskId: string, currentStatus: string) => {
   if (isViewingAsParent.value) return;
 
-  const newStatus = currentStatus === 'completed' ? 'not_started' : 'completed';
+  const newStatus = currentStatus === "completed" ? "not_started" : "completed";
 
   // Check if task is locked when attempting to complete
-  if (newStatus === 'completed' && isTaskLocked(taskId)) {
+  if (newStatus === "completed" && isTaskLocked(taskId)) {
     const task = tasksWithStatus.value.find((t) => t.id === taskId);
     const incompleteTitles = (task?.dependency_task_ids || [])
       .map((depId) => {
@@ -131,8 +149,8 @@ const handleToggleTask = async (taskId: string, currentStatus: string) => {
           (t) => t.id === depId,
         )?.athlete_task;
         return {
-          title: depTask?.title || 'Unknown',
-          isComplete: depAthleteTask?.status === 'completed',
+          title: depTask?.title || "Unknown",
+          isComplete: depAthleteTask?.status === "completed",
         };
       })
       .filter((dep) => !dep.isComplete)
@@ -140,7 +158,7 @@ const handleToggleTask = async (taskId: string, currentStatus: string) => {
 
     if (incompleteTitles.length > 0) {
       alert(
-        `Cannot complete task. Please complete these prerequisites first:\n\n${incompleteTitles.join('\n')}`
+        `Cannot complete task. Please complete these prerequisites first:\n\n${incompleteTitles.join("\n")}`,
       );
       return;
     }
@@ -149,7 +167,7 @@ const handleToggleTask = async (taskId: string, currentStatus: string) => {
   try {
     await updateTaskStatus(taskId, newStatus);
 
-    if (newStatus === 'completed') {
+    if (newStatus === "completed") {
       showSuccessMessage.value = true;
       setTimeout(() => {
         showSuccessMessage.value = false;
@@ -159,8 +177,11 @@ const handleToggleTask = async (taskId: string, currentStatus: string) => {
     // Refetch to update UI
     await fetchTasksWithStatus(currentGradeLevel.value);
   } catch (err) {
-    console.error('Error updating task status:', err);
-    alert('Error updating task: ' + (err instanceof Error ? err.message : 'Unknown error'));
+    console.error("Error updating task status:", err);
+    alert(
+      "Error updating task: " +
+        (err instanceof Error ? err.message : "Unknown error"),
+    );
   }
 };
 
@@ -178,7 +199,9 @@ onMounted(async () => {
 
   // Calculate grade from graduation year if available
   if (athleteProfile.value?.graduation_year) {
-    currentGradeLevel.value = calculateCurrentGrade(athleteProfile.value.graduation_year);
+    currentGradeLevel.value = calculateCurrentGrade(
+      athleteProfile.value.graduation_year,
+    );
   }
 
   await fetchTasksWithStatus(currentGradeLevel.value);
@@ -192,14 +215,14 @@ onMounted(async () => {
       try {
         seenLockedTasks.value = new Set(JSON.parse(stored));
       } catch (e) {
-        console.error('Failed to load seen locked tasks:', e);
+        console.error("Failed to load seen locked tasks:", e);
       }
     }
   }
 
   // Auto-expand first locked task not in seenLockedTasks
   const firstUnseenLockedTask = lockedTaskIds.value.find(
-    (taskId) => !seenLockedTasks.value.has(taskId)
+    (taskId) => !seenLockedTasks.value.has(taskId),
   );
   if (firstUnseenLockedTask && !expandedTaskId.value) {
     expandedTaskId.value = firstUnseenLockedTask;
@@ -209,7 +232,10 @@ onMounted(async () => {
     const athleteId = viewingAthleteId.value || user.value?.id;
     if (athleteId) {
       const storageKey = `seen-locked-tasks-${athleteId}`;
-      localStorage.setItem(storageKey, JSON.stringify(Array.from(seenLockedTasks.value)));
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify(Array.from(seenLockedTasks.value)),
+      );
     }
   }
 });
@@ -225,9 +251,14 @@ const onUrgencyFilterChange = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div
+    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+  >
     <!-- Parent Context Banner -->
-    <div v-if="isViewingAsParent.value" class="bg-blue-50 border-b-2 border-blue-200">
+    <div
+      v-if="isViewingAsParent.value"
+      class="bg-blue-50 border-b-2 border-blue-200"
+    >
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3">
         <p class="text-sm text-blue-700 font-medium">
           👁 Viewing {{ athleteProfile?.full_name }}'s Tasks (Read-Only)
@@ -236,19 +267,32 @@ const onUrgencyFilterChange = () => {
     </div>
 
     <!-- Header -->
-    <div class="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200">
+    <div
+      class="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200"
+    >
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         <h1 class="text-3xl font-bold text-slate-900 mb-2">
-          {{ isViewingAsParent.value ? `${athleteProfile?.full_name}'s Tasks` : 'My Tasks' }}
+          {{
+            isViewingAsParent.value
+              ? `${athleteProfile?.full_name}'s Tasks`
+              : "My Tasks"
+          }}
         </h1>
         <p class="text-slate-600">
-          {{ isViewingAsParent.value ? "Monitor task progress and upcoming deadlines" : "Track your recruiting tasks and progress" }}
+          {{
+            isViewingAsParent.value
+              ? "Monitor task progress and upcoming deadlines"
+              : "Track your recruiting tasks and progress"
+          }}
         </p>
       </div>
     </div>
 
     <!-- Athlete Switcher (Parent view only) -->
-    <div v-if="isViewingAsParent.value && linkedAthletes.length > 0" class="max-w-4xl mx-auto px-4 sm:px-6 pt-6">
+    <div
+      v-if="isViewingAsParent.value && linkedAthletes.length > 0"
+      class="max-w-4xl mx-auto px-4 sm:px-6 pt-6"
+    >
       <AthleteSwitcher
         :linked-athletes="linkedAthletes"
         :current-athlete-id="viewingAthleteId || user?.id || ''"
@@ -262,7 +306,12 @@ const onUrgencyFilterChange = () => {
         class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm mb-4"
       >
         <div class="text-lg font-semibold text-slate-900 mb-3">
-          {{ isViewingAsParent.value ? `${athleteProfile?.full_name} has` : `You've` }} completed {{ stats.completed }} of {{ stats.total }} tasks ({{
+          {{
+            isViewingAsParent.value
+              ? `${athleteProfile?.full_name} has`
+              : `You've`
+          }}
+          completed {{ stats.completed }} of {{ stats.total }} tasks ({{
             Math.round(stats.percentComplete)
           }}%)
         </div>
@@ -280,7 +329,10 @@ const onUrgencyFilterChange = () => {
         <div class="grid grid-cols-2 gap-4">
           <!-- Status Filter -->
           <div>
-            <label for="status-filter" class="block text-sm font-medium text-slate-700 mb-2">
+            <label
+              for="status-filter"
+              class="block text-sm font-medium text-slate-700 mb-2"
+            >
               Status
             </label>
             <select
@@ -299,7 +351,10 @@ const onUrgencyFilterChange = () => {
 
           <!-- Urgency Filter -->
           <div>
-            <label for="urgency-filter" class="block text-sm font-medium text-slate-700 mb-2">
+            <label
+              for="urgency-filter"
+              class="block text-sm font-medium text-slate-700 mb-2"
+            >
               Deadline Urgency
             </label>
             <select
@@ -361,7 +416,9 @@ const onUrgencyFilterChange = () => {
         v-else-if="filteredTasks.length === 0"
         class="bg-white border border-slate-200 rounded-lg p-8 text-center"
       >
-        <p class="text-slate-600 text-lg">No tasks available for this grade level</p>
+        <p class="text-slate-600 text-lg">
+          No tasks available for this grade level
+        </p>
       </div>
 
       <!-- Tasks -->
@@ -382,15 +439,24 @@ const onUrgencyFilterChange = () => {
                 :checked="task.athlete_task?.status === 'completed'"
                 :disabled="isViewingAsParent.value || isTaskLocked(task.id)"
                 @change="
-                  handleToggleTask(task.id, task.athlete_task?.status || 'not_started')
+                  handleToggleTask(
+                    task.id,
+                    task.athlete_task?.status || 'not_started',
+                  )
                 "
                 :class="[
                   'mt-1 w-5 h-5 text-blue-600 rounded flex-shrink-0',
                   isViewingAsParent.value || isTaskLocked(task.id)
                     ? 'opacity-50 cursor-not-allowed'
-                    : 'cursor-pointer'
+                    : 'cursor-pointer',
                 ]"
-                :title="isViewingAsParent.value ? 'Parents can view tasks but cannot mark them complete' : isTaskLocked(task.id) ? 'Complete prerequisites to unlock this task' : 'Mark task complete'"
+                :title="
+                  isViewingAsParent.value
+                    ? 'Parents can view tasks but cannot mark them complete'
+                    : isTaskLocked(task.id)
+                      ? 'Complete prerequisites to unlock this task'
+                      : 'Mark task complete'
+                "
               />
 
               <!-- Task Info -->
@@ -406,8 +472,11 @@ const onUrgencyFilterChange = () => {
                       class="font-semibold"
                       :class="{
                         'text-slate-900': !isTaskLocked(task.id),
-                        'text-slate-400': isTaskLocked(task.id) && task.athlete_task?.status !== 'completed',
-                        'text-slate-500 line-through': task.athlete_task?.status === 'completed',
+                        'text-slate-400':
+                          isTaskLocked(task.id) &&
+                          task.athlete_task?.status !== 'completed',
+                        'text-slate-500 line-through':
+                          task.athlete_task?.status === 'completed',
                       }"
                     >
                       {{ task.title }}
@@ -438,19 +507,21 @@ const onUrgencyFilterChange = () => {
               <div
                 class="text-xs px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0"
                 :class="{
-                  'bg-green-100 text-green-700': task.athlete_task?.status === 'completed',
+                  'bg-green-100 text-green-700':
+                    task.athlete_task?.status === 'completed',
                   'bg-yellow-100 text-yellow-700':
                     task.athlete_task?.status === 'in_progress',
                   'bg-slate-100 text-slate-600':
-                    !task.athlete_task || task.athlete_task?.status === 'not_started',
+                    !task.athlete_task ||
+                    task.athlete_task?.status === 'not_started',
                 }"
               >
                 {{
-                  task.athlete_task?.status === 'completed'
-                    ? 'Completed'
-                    : task.athlete_task?.status === 'in_progress'
-                      ? 'In Progress'
-                      : 'Not Started'
+                  task.athlete_task?.status === "completed"
+                    ? "Completed"
+                    : task.athlete_task?.status === "in_progress"
+                      ? "In Progress"
+                      : "Not Started"
                 }}
               </div>
             </div>
@@ -472,7 +543,9 @@ const onUrgencyFilterChange = () => {
                   <h4 class="font-semibold text-sm text-slate-900 mb-1">
                     Why It Matters
                   </h4>
-                  <p class="text-sm text-slate-600">{{ task.why_it_matters }}</p>
+                  <p class="text-sm text-slate-600">
+                    {{ task.why_it_matters }}
+                  </p>
                 </div>
                 <div v-if="task.failure_risk">
                   <h4 class="font-semibold text-sm text-slate-900 mb-1">
@@ -480,14 +553,19 @@ const onUrgencyFilterChange = () => {
                   </h4>
                   <p class="text-sm text-slate-600">{{ task.failure_risk }}</p>
                 </div>
-                <div v-if="isTaskLocked(task.id)" class="bg-red-50 border border-red-200 rounded p-3">
+                <div
+                  v-if="isTaskLocked(task.id)"
+                  class="bg-red-50 border border-red-200 rounded p-3"
+                >
                   <h4 class="font-semibold text-sm text-red-900 mb-2">
                     🔒 Complete These First
                   </h4>
                   <p class="text-sm text-red-800 mb-2">
                     This task is locked until you complete:
                   </p>
-                  <ul class="text-sm text-red-800 list-disc list-inside space-y-1">
+                  <ul
+                    class="text-sm text-red-800 list-disc list-inside space-y-1"
+                  >
                     <li
                       v-for="prereq in task.prerequisite_tasks"
                       :key="prereq.id"
@@ -496,7 +574,10 @@ const onUrgencyFilterChange = () => {
                     </li>
                   </ul>
                 </div>
-                <div v-else-if="task.has_incomplete_prerequisites" class="bg-amber-50 border border-amber-200 rounded p-3">
+                <div
+                  v-else-if="task.has_incomplete_prerequisites"
+                  class="bg-amber-50 border border-amber-200 rounded p-3"
+                >
                   <h4 class="font-semibold text-sm text-amber-900 mb-1">
                     Prerequisites
                   </h4>

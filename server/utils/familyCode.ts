@@ -5,7 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * Checks for collisions and retries up to 5 times
  */
 export const generateFamilyCode = async (
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
 ): Promise<string> => {
   const maxRetries = 5;
 
@@ -61,10 +61,7 @@ export const isValidFamilyCodeFormat = (code: string): boolean => {
  * Rate limit tracking for join code attempts
  * Limits to 5 attempts per IP address per 5 minutes
  */
-const rateLimitStore = new Map<
-  string,
-  { count: number; resetAt: number }
->();
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
 export const checkRateLimit = (ipAddress: string): boolean => {
   const now = Date.now();

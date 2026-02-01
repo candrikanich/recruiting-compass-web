@@ -114,7 +114,11 @@ describe("useNcaaLookup - Enhanced with Inline Caching", () => {
       const schoolName = "North Carolina";
       // Cache functions take normalized names
       const normalizeSchoolName = (name: string): string => {
-        return name.toLowerCase().replace(/\s+university\b/i, "").replace(/\s+college\b/i, "").trim();
+        return name
+          .toLowerCase()
+          .replace(/\s+university\b/i, "")
+          .replace(/\s+college\b/i, "")
+          .trim();
       };
       const normalizedName = normalizeSchoolName(schoolName);
 
@@ -140,7 +144,11 @@ describe("useNcaaLookup - Enhanced with Inline Caching", () => {
       const schoolName = "Stanford";
       // Cache functions take normalized names
       const normalizeSchoolName = (name: string): string => {
-        return name.toLowerCase().replace(/\s+university\b/i, "").replace(/\s+college\b/i, "").trim();
+        return name
+          .toLowerCase()
+          .replace(/\s+university\b/i, "")
+          .replace(/\s+college\b/i, "")
+          .trim();
       };
       const normalizedName = normalizeSchoolName(schoolName);
 

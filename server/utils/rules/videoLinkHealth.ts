@@ -5,7 +5,9 @@ export const videoLinkHealthRule: Rule = {
   id: "video-link-health",
   name: "Broken Video Link",
   description: "Video URL is not accessible",
-  async evaluate(context: RuleContext): Promise<SuggestionData | SuggestionData[] | null> {
+  async evaluate(
+    context: RuleContext,
+  ): Promise<SuggestionData | SuggestionData[] | null> {
     const suggestions: SuggestionData[] = [];
 
     for (const video of context.videos) {

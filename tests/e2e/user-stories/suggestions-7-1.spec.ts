@@ -15,18 +15,22 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
     }
   });
 
-  test("Scenario 1: Top 3 suggestions appear on dashboard", async ({ page }) => {
+  test("Scenario 1: Top 3 suggestions appear on dashboard", async ({
+    page,
+  }) => {
     // Given I log into my account
     await page.goto(`${BASE_URL}/dashboard`);
 
     // When I view the dashboard
-    const suggestionsSection = await page.locator(
-      'text="Suggestions"',
-    ).isVisible();
+    const suggestionsSection = await page
+      .locator('text="Suggestions"')
+      .isVisible();
     expect(suggestionsSection).toBe(true);
 
     // Then I see a "Suggestions" section with top 3 items
-    const suggestionCards = await page.locator('[data-testid="suggestion-card"]');
+    const suggestionCards = await page.locator(
+      '[data-testid="suggestion-card"]',
+    );
     const count = await suggestionCards.count();
     expect(count).toBeLessThanOrEqual(3);
 
@@ -55,14 +59,20 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
     await page.goto(`${BASE_URL}/dashboard`);
 
     // When I view suggestions
-    const suggestionCards = await page.locator('[data-testid="suggestion-card"]');
+    const suggestionCards = await page.locator(
+      '[data-testid="suggestion-card"]',
+    );
     const count = await suggestionCards.count();
 
     if (count > 0) {
       // Collect all suggestion messages
       const suggestionTexts: string[] = [];
       for (let i = 0; i < count; i++) {
-        const text = await suggestionCards.nth(i).locator("p").first().textContent();
+        const text = await suggestionCards
+          .nth(i)
+          .locator("p")
+          .first()
+          .textContent();
         if (text) suggestionTexts.push(text);
       }
 
@@ -71,10 +81,10 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
       // - "Attend summer showcases"
 
       const hasBuildSchoolList = suggestionTexts.some((t) =>
-        t?.includes("school list")
+        t?.includes("school list"),
       );
-      const hasShowcases = suggestionTexts.some((t) =>
-        t?.includes("showcase") || t?.includes("event"),
+      const hasShowcases = suggestionTexts.some(
+        (t) => t?.includes("showcase") || t?.includes("event"),
       );
 
       // At least one sophomore-appropriate suggestion should be present
@@ -82,27 +92,35 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
 
       // And I do NOT see "Schedule official visits" (junior year suggestion)
       const hasOfficialVisits = suggestionTexts.some((t) =>
-        t?.includes("official visit")
+        t?.includes("official visit"),
       );
       // Note: May or may not be present depending on test data
       // This is more of a documentation than a hard assertion
     }
   });
 
-  test("Scenario 3: Suggestions for juniors are different", async ({ page }) => {
+  test("Scenario 3: Suggestions for juniors are different", async ({
+    page,
+  }) => {
     // This test would require test data setup with grade_level = 11
     // Given my athlete is a junior
     await page.goto(`${BASE_URL}/dashboard`);
 
     // When I view suggestions
-    const suggestionCards = await page.locator('[data-testid="suggestion-card"]');
+    const suggestionCards = await page.locator(
+      '[data-testid="suggestion-card"]',
+    );
     const count = await suggestionCards.count();
 
     if (count > 0) {
       // Collect all suggestion messages
       const suggestionTexts: string[] = [];
       for (let i = 0; i < count; i++) {
-        const text = await suggestionCards.nth(i).locator("p").first().textContent();
+        const text = await suggestionCards
+          .nth(i)
+          .locator("p")
+          .first()
+          .textContent();
         if (text) suggestionTexts.push(text);
       }
 
@@ -111,20 +129,18 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
       // - "Begin formal outreach to coaches"
       // - "Complete professional highlight video"
 
-      const hasNCAARegistration = suggestionTexts.some((t) =>
-        t?.includes("NCAA") || t?.includes("eligibility")
+      const hasNCAARegistration = suggestionTexts.some(
+        (t) => t?.includes("NCAA") || t?.includes("eligibility"),
       );
-      const hasOutreach = suggestionTexts.some((t) =>
-        t?.includes("outreach") || t?.includes("contact")
+      const hasOutreach = suggestionTexts.some(
+        (t) => t?.includes("outreach") || t?.includes("contact"),
       );
-      const hasVideo = suggestionTexts.some((t) =>
-        t?.includes("video") || t?.includes("film")
+      const hasVideo = suggestionTexts.some(
+        (t) => t?.includes("video") || t?.includes("film"),
       );
 
       // At least one junior-appropriate suggestion should be present
-      expect(
-        hasNCAARegistration || hasOutreach || hasVideo,
-      ).toBe(true);
+      expect(hasNCAARegistration || hasOutreach || hasVideo).toBe(true);
     }
   });
 
@@ -132,7 +148,9 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
     // Given I see a suggestion with an action button
     await page.goto(`${BASE_URL}/dashboard`);
 
-    const suggestionCard = await page.locator('[data-testid="suggestion-card"]').first();
+    const suggestionCard = await page
+      .locator('[data-testid="suggestion-card"]')
+      .first();
     const actionButton = suggestionCard.locator(
       'button:has-text("Add Video"), button:has-text("Log Interaction"), button:has-text("Add School"), button:has-text("Update Video")',
     );
@@ -160,7 +178,9 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
     // Given there are suggestions on the dashboard
     await page.goto(`${BASE_URL}/dashboard`);
 
-    const initialCards = await page.locator('[data-testid="suggestion-card"]').count();
+    const initialCards = await page
+      .locator('[data-testid="suggestion-card"]')
+      .count();
 
     if (initialCards > 0) {
       // When I click dismiss on first suggestion
@@ -175,7 +195,9 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
       // Wait for animation/removal
       await page.waitForTimeout(500);
 
-      const afterDismiss = await page.locator('[data-testid="suggestion-card"]').count();
+      const afterDismiss = await page
+        .locator('[data-testid="suggestion-card"]')
+        .count();
       expect(afterDismiss).toBeLessThan(initialCards);
     }
   });
@@ -188,7 +210,9 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
     const showMoreButton = await page.locator('text="Show more"').isVisible();
 
     if (showMoreButton) {
-      const initialCount = await page.locator('[data-testid="suggestion-card"]').count();
+      const initialCount = await page
+        .locator('[data-testid="suggestion-card"]')
+        .count();
 
       // When I click "Show more"
       await page.locator('text="Show more"').click();
@@ -197,7 +221,9 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
       await page.waitForTimeout(500);
 
       // Then additional suggestions surface
-      const afterClick = await page.locator('[data-testid="suggestion-card"]').count();
+      const afterClick = await page
+        .locator('[data-testid="suggestion-card"]')
+        .count();
       expect(afterClick).toBeGreaterThan(initialCount);
     }
   });
@@ -206,10 +232,14 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
     // Given I see a suggestion
     await page.goto(`${BASE_URL}/dashboard`);
 
-    const suggestionCard = await page.locator('[data-testid="suggestion-card"]').first();
+    const suggestionCard = await page
+      .locator('[data-testid="suggestion-card"]')
+      .first();
 
     // When I click "Learn More"
-    const learnMoreButton = suggestionCard.locator('button:has-text("Learn More")');
+    const learnMoreButton = suggestionCard.locator(
+      'button:has-text("Learn More")',
+    );
 
     if (await learnMoreButton.isVisible()) {
       await learnMoreButton.click();
@@ -231,7 +261,9 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
     // Given suggestions are on the dashboard
     await page.goto(`${BASE_URL}/dashboard`);
 
-    const suggestionCards = await page.locator('[data-testid="suggestion-card"]');
+    const suggestionCards = await page.locator(
+      '[data-testid="suggestion-card"]',
+    );
     const count = await suggestionCards.count();
 
     if (count > 0) {
@@ -259,7 +291,9 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
     await page.goto(`${BASE_URL}/dashboard`);
 
     // When I view suggestions
-    const suggestionCards = await page.locator('[data-testid="suggestion-card"]');
+    const suggestionCards = await page.locator(
+      '[data-testid="suggestion-card"]',
+    );
 
     // Then suggestions are visible and readable
     for (let i = 0; i < Math.min(3, await suggestionCards.count()); i++) {

@@ -16,7 +16,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
 
     // Verify phase name displays (Freshman, Sophomore, Junior, or Senior)
     const phaseName = page.locator(
-      'text=/Freshman|Sophomore|Junior|Senior|Committed/'
+      "text=/Freshman|Sophomore|Junior|Senior|Committed/",
     );
     await expect(phaseName).toBeVisible();
 
@@ -45,7 +45,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     await expect(numberOne).toBeVisible();
 
     // Verify lightning bolt icon
-    const icon = page.locator('text=⚡');
+    const icon = page.locator("text=⚡");
     await expect(icon).toBeVisible();
   });
 
@@ -55,7 +55,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     await expect(worriesHeader).toBeVisible();
 
     // Verify question mark icon
-    const questionIcon = page.locator('text=❓');
+    const questionIcon = page.locator("text=❓");
     await expect(questionIcon).toBeVisible();
 
     // Verify expandable details elements exist
@@ -75,17 +75,17 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     page,
   }) => {
     // Verify "What NOT to Stress" section is visible
-    const reassuranceHeader = page.locator(
-      "text=What NOT to Stress About"
-    );
+    const reassuranceHeader = page.locator("text=What NOT to Stress About");
     await expect(reassuranceHeader).toBeVisible();
 
     // Verify shield icon
-    const shieldIcon = page.locator('text=🛡️');
+    const shieldIcon = page.locator("text=🛡️");
     await expect(shieldIcon).toBeVisible();
 
     // Verify reassurance messages display with icons
-    const messages = page.locator("[class*='flex'][class*='items-start'][class*='gap-3']");
+    const messages = page.locator(
+      "[class*='flex'][class*='items-start'][class*='gap-3']",
+    );
     const messageCount = await messages.count();
     expect(messageCount).toBeGreaterThan(0);
   });
@@ -98,11 +98,13 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     await expect(milestonesHeader).toBeVisible();
 
     // Verify calendar icon
-    const calendarIcon = page.locator('text=📅');
+    const calendarIcon = page.locator("text=📅");
     await expect(calendarIcon).toBeVisible();
 
     // Verify milestone items display with dates
-    const milestoneItems = page.locator("a[class*='flex'][class*='items-start']");
+    const milestoneItems = page.locator(
+      "a[class*='flex'][class*='items-start']",
+    );
     const count = await milestoneItems.count();
     if (count > 0) {
       // Should have at least one milestone (SAT, ACT, deadline, etc)
@@ -114,9 +116,9 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     page,
   }) => {
     // Click on a priority item in "What Matters Now"
-    const priorityButton = page.locator(
-      "button[class*='text-left'][class*='group']"
-    ).first();
+    const priorityButton = page
+      .locator("button[class*='text-left'][class*='group']")
+      .first();
 
     if (await priorityButton.isVisible()) {
       // Remember scroll position before click
@@ -130,7 +132,9 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
       // Verify page has scrolled or changed focus
       const scrollAfter = await page.evaluate(() => window.scrollY);
       // Should have either scrolled or task section should be visible
-      expect(scrollAfter !== scrollBefore || (await priorityButton.isVisible())).toBeTruthy();
+      expect(
+        scrollAfter !== scrollBefore || (await priorityButton.isVisible()),
+      ).toBeTruthy();
     }
   });
 
@@ -159,7 +163,9 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
 
     if (whatMattersBox && worriesBox) {
       // On mobile, sections should be vertically stacked (different Y coordinates)
-      expect(worriesBox.y).toBeGreaterThan(whatMattersBox.y + whatMattersBox.height);
+      expect(worriesBox.y).toBeGreaterThan(
+        whatMattersBox.y + whatMattersBox.height,
+      );
     }
   });
 
@@ -246,7 +252,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     if (whatMattersBox && freshmanBox) {
       // Phase cards should be below guidance sections
       expect(freshmanBox.y).toBeGreaterThan(
-        whatMattersBox.y + whatMattersBox.height
+        whatMattersBox.y + whatMattersBox.height,
       );
     }
   });
@@ -256,7 +262,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
   }) => {
     // Find milestone links that have URLs
     const milestonLinks = page.locator(
-      "a[href^='http']:has-text(/Test Date|Opens|Deadline|Period|Signing/)"
+      "a[href^='http']:has-text(/Test Date|Opens|Deadline|Period|Signing/)",
     );
 
     const count = await milestonLinks.count();
@@ -266,7 +272,9 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
       const target = await firstLink.getAttribute("target");
       const rel = await firstLink.getAttribute("rel");
 
-      if (await firstLink.getAttribute("href").then(h => h?.startsWith("http"))) {
+      if (
+        await firstLink.getAttribute("href").then((h) => h?.startsWith("http"))
+      ) {
         expect(target).toBe("_blank");
         expect(rel).toContain("noopener");
       }

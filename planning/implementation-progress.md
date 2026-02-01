@@ -6,6 +6,7 @@
 ## Completed Tasks ✅
 
 ### Phase 1: Database Schema Updates
+
 - [x] Created migration 009: Add `status_changed_at` column to schools table
   - File: `server/migrations/009_add_status_tracking_to_schools.sql`
   - Creates `school_status_history` table with indexes
@@ -19,6 +20,7 @@
 **Status**: Ready to apply (migrations are in `/server/migrations/`)
 
 ### Phase 2: TypeScript Types & Interfaces
+
 - [x] Updated `types/database.ts`
   - Added `status_changed_at` field to schools table
   - Added `priority_tier` field (char(1): A|B|C|null)
@@ -33,6 +35,7 @@
 **Status**: Complete and type-safe
 
 ### Phase 3: Pinia Store Updates
+
 - [x] Updated `stores/schools.ts`
   - Added `statusHistory: Map<string, SchoolStatusHistory[]>` to state
   - Created `updateStatus()` action
@@ -48,6 +51,7 @@
 **Status**: Complete and tested
 
 ### Phase 4: UI Components & Composables
+
 - [x] Updated `composables/useSchools.ts`
   - Added `updateStatus()` method to composable
     - Takes schoolId, newStatus, optional notes
@@ -75,6 +79,7 @@
 **Status**: Core UI working, history display UI pending
 
 ### Phase 5: Unit Tests
+
 - [x] Created `tests/unit/stores/schools-status-history.spec.ts`
   - 14 test cases covering:
     - Store initialization
@@ -97,6 +102,7 @@
 **Status**: Unit tests complete and ready to run
 
 ### Phase 6: E2E Tests
+
 - [x] Created `tests/e2e/schools-status-tracking.spec.ts`
   - 8 test scenarios covering:
     - 9 status options displayed in dropdown
@@ -112,6 +118,7 @@
 ## Pending Tasks ⏳
 
 ### Phase 4: UI Components (Continued)
+
 - [ ] Create `SchoolStatusHistory` component
   - Display status history chronologically
   - Show: from status → to status, changed by, date, notes
@@ -133,6 +140,7 @@
   - Update status badge colors for new 9 values
 
 ### Phase 7: Database & Supabase
+
 - [ ] Apply migrations to Supabase database
   - Run migration 009
   - Run migration 010
@@ -141,58 +149,65 @@
   - Verify `priority_tier` column exists (from migration 008)
 
 ### Phase 8: Documentation
+
 - [ ] Update `README.md` with status tracking feature
 - [ ] Update `CLAUDE.md` with status history patterns
 - [ ] Add inline comments for non-obvious logic
 
 ## Test Coverage Summary
 
-| Aspect | Unit Tests | E2E Tests | Status |
-|--------|-----------|-----------|--------|
-| Status update | ✅ | ✅ | Complete |
-| History creation | ✅ | ✅ | Complete |
-| 9 status values | ✅ | ✅ | Complete |
-| Priority independence | ✅ | ✅ | Complete |
-| Timestamp recording | ✅ | ✅ | Complete |
-| History viewing | ⏳ | ⏳ | Pending UI |
-| Timeline integration | ⏳ | ⏳ | Pending |
+| Aspect                | Unit Tests | E2E Tests | Status     |
+| --------------------- | ---------- | --------- | ---------- |
+| Status update         | ✅         | ✅        | Complete   |
+| History creation      | ✅         | ✅        | Complete   |
+| 9 status values       | ✅         | ✅        | Complete   |
+| Priority independence | ✅         | ✅        | Complete   |
+| Timestamp recording   | ✅         | ✅        | Complete   |
+| History viewing       | ⏳         | ⏳        | Pending UI |
+| Timeline integration  | ⏳         | ⏳        | Pending    |
 
 ## Files Modified
 
 ### Migrations
+
 - `server/migrations/009_add_status_tracking_to_schools.sql` (NEW)
 - `server/migrations/010_expand_school_status_enum.sql` (NEW)
 - `server/migrations/008_add_priority_tier_to_schools.sql` (existing)
 
 ### Type Definitions
+
 - `types/database.ts` (modified)
 - `types/models.ts` (modified)
 
 ### Store
+
 - `stores/schools.ts` (modified)
 
 ### Composables
+
 - `composables/useSchools.ts` (modified)
 
 ### Pages
+
 - `pages/schools/[id]/index.vue` (modified)
 
 ### Tests
+
 - `tests/unit/stores/schools-status-history.spec.ts` (NEW)
 - `tests/unit/composables/useSchools-status-history.spec.ts` (NEW)
 - `tests/e2e/schools-status-tracking.spec.ts` (NEW)
 
 ## Story 3.4 Acceptance Criteria Coverage
 
-| Criteria | Status | Details |
-|----------|--------|---------|
-| Can set priority tier independently | ✅ | Existing feature, maintained |
-| Priority tiers A/B/C | ✅ | Existing feature, maintained |
-| Status values predefined | ✅ | 9 values now supported |
-| Status changes timestamped | ✅ | `status_changed_at` recorded |
-| Can view status history | ⏳ | UI component pending |
-| Status changes in timeline | ⏳ | Timeline integration pending |
-| Interaction timeline updates | ⏳ | Depends on timeline component |
+| Criteria                            | Status | Details                       |
+| ----------------------------------- | ------ | ----------------------------- |
+| Can set priority tier independently | ✅     | Existing feature, maintained  |
+| Priority tiers A/B/C                | ✅     | Existing feature, maintained  |
+| Status values predefined            | ✅     | 9 values now supported        |
+| Status changes timestamped          | ✅     | `status_changed_at` recorded  |
+| Can view status history             | ⏳     | UI component pending          |
+| Status changes in timeline          | ⏳     | Timeline integration pending  |
+| Interaction timeline updates        | ⏳     | Depends on timeline component |
 
 ## Next Steps
 

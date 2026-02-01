@@ -7,6 +7,7 @@
 ### Failure Mechanism Deep Dive
 
 #### Component Architecture
+
 The component uses Vue 3 Composition API with a specific DOM structure:
 
 ```vue
@@ -67,6 +68,7 @@ const wrapper = mount(EmailRecruitingPacketModal, {
 ```
 
 The test looks for `.fixed`:
+
 ```typescript
 expect(wrapper.find(".fixed").exists()).toBe(true);
 // wrapper.find() searches wrapper.element tree, not window.document.body
@@ -83,12 +85,14 @@ The `<Transition>` component from Vue applies CSS transition classes but needs p
 ```
 
 In production browser, the Transition component:
+
 1. Watches for `v-if` changes
 2. Applies `.fade-enter-active` class
 3. Triggers CSS animations
 4. Completes rendering
 
 In happy-dom test environment:
+
 - No real CSS engine
 - Timing may be off (happy-dom is synchronous for most operations)
 - Transition hooks may not fire properly
@@ -116,6 +120,7 @@ it("should not render modal when isOpen is false", async () => {
 ```
 
 This passes because:
+
 - When `isOpen: false`, the `v-if="isOpen"` prevents render
 - Test expects `.fixed` to NOT exist
 - It doesn't exist (never renders)
@@ -129,6 +134,7 @@ it("should disable send button when form is invalid", () => {
 ```
 
 This passes because:
+
 - Test accesses `wrapper.vm` (component instance)
 - Component instance exists even if Teleport content isn't rendered
 - The `canSend` computed property exists and works
@@ -172,10 +178,11 @@ it("should display modal title", () => {
 #### The Setup Contradiction
 
 Module-level code (lines 8-22):
+
 ```typescript
 // Step 1: Create mock at module level
 const mockSupabase = {
-  from: vi.fn(),  // Returns undefined by default
+  from: vi.fn(), // Returns undefined by default
 };
 
 // Step 2: Mock composable to return this mock
@@ -190,6 +197,7 @@ vi.mock("~/composables/useSupabase", () => ({
 ```
 
 Per-test setup (lines 38-85):
+
 ```typescript
 beforeEach(() => {
   mockQuery = { select: vi.fn(), eq: vi.fn(), ... };
@@ -211,7 +219,7 @@ The `vi.mock()` call at module load time creates a closure:
 
 ```typescript
 vi.mock("~/composables/useSupabase", () => ({
-  useSupabase: () => mockSupabase,  // Captures mockSupabase
+  useSupabase: () => mockSupabase, // Captures mockSupabase
 }));
 ```
 
@@ -219,11 +227,12 @@ When the composable calls `useSupabase()` during test execution, it returns the 
 
 ```typescript
 mockSupabase = {
-  from: vi.fn(),  // Returns undefined, has no default behavior
-}
+  from: vi.fn(), // Returns undefined, has no default behavior
+};
 ```
 
 Later in `beforeEach()`:
+
 ```typescript
 mockSupabase.from.mockReturnValue(mockQuery);
 ```
@@ -249,9 +258,9 @@ The import order matters:
 The `beforeEach()` creates this chain:
 
 ```typescript
-mockQuery.select.mockReturnValue(mockQuery);  // select() returns mockQuery
-mockQuery.eq.mockReturnValue(mockQuery);      // eq() returns mockQuery
-mockQuery.order.mockReturnValue(mockQuery);   // order() returns mockQuery
+mockQuery.select.mockReturnValue(mockQuery); // select() returns mockQuery
+mockQuery.eq.mockReturnValue(mockQuery); // eq() returns mockQuery
+mockQuery.order.mockReturnValue(mockQuery); // order() returns mockQuery
 ```
 
 But the **composable code does this:**
@@ -272,6 +281,7 @@ const result = await step3;                       // Await the promise
 **Problem 4: Missing Promise Chain**
 
 The test sets up:
+
 ```typescript
 mockQuery.select.mockReturnValue(mockQuery);
 ```
@@ -279,9 +289,13 @@ mockQuery.select.mockReturnValue(mockQuery);
 But when the composable does `await supabase.from(...).select(...)`, it needs to await a promise. The mock setup doesn't make the chain awaitable:
 
 Lines 71-75 attempt to fix this:
+
 ```typescript
 Object.defineProperty(mockQuery, "then", {
-  value: (onFulfilled: (value: any) => any, onRejected?: (reason: any) => any) => {
+  value: (
+    onFulfilled: (value: any) => any,
+    onRejected?: (reason: any) => any,
+  ) => {
     return Promise.resolve(testResponse).then(onFulfilled, onRejected);
   },
 });
@@ -313,12 +327,13 @@ This asserts `mockSupabase.from` was called, but examining the composable code:
 // composables/useInteractions.ts
 const fetchInteractions = async (options?: any) => {
   const supabase = useSupabase();
-  const query = supabase.from("interactions");  // Calls mockSupabase.from
+  const query = supabase.from("interactions"); // Calls mockSupabase.from
   // ... chain continues
 };
 ```
 
 The composable SHOULD call `mockSupabase.from`. If it doesn't, the issue is:
+
 1. `useSupabase()` not returning the mock
 2. Or the mock not being configured properly
 
@@ -337,12 +352,14 @@ it("should create new interaction", async () => {
 ```
 
 Error thrown:
+
 ```
 Error: User not authenticated
   at createInteraction composables/useInteractions.ts:287:32
 ```
 
 The composable checks:
+
 ```typescript
 if (!userStore.user) throw new Error("User not authenticated");
 ```
@@ -353,11 +370,12 @@ The test expects `userStore.user` to be truthy, but it's `null`. This means:
 2. OR the module-level `mockUser` variable was reset/cleared by a previous test
 
 Looking at the mock:
+
 ```typescript
 vi.mock("~/stores/user", () => ({
   useUserStore: () => ({
     get user() {
-      return mockUser;  // References outer variable
+      return mockUser; // References outer variable
     },
   }),
 }));
@@ -370,7 +388,7 @@ This creates a getter that returns `mockUser`. If any previous test set `mockUse
 ```typescript
 it("should handle fetch errors gracefully", async () => {
   // mockQuery.order fails
-  mockQuery.order.mockReturnValue(undefined);  // Breaks chain
+  mockQuery.order.mockReturnValue(undefined); // Breaks chain
 
   await fetchInteractions();
 
@@ -379,6 +397,7 @@ it("should handle fetch errors gracefully", async () => {
 ```
 
 Error received:
+
 ```
 expected 'supabase.from(...).select(...).order is not a function'
 to be 'Fetch failed'
@@ -387,6 +406,7 @@ to be 'Fetch failed'
 This shows the composable code is trying to call `.order()` on an undefined result. The error message is being caught and set to the full chain string, not the expected "Fetch failed".
 
 The composable likely catches errors like:
+
 ```typescript
 try {
   const result = await supabase
@@ -399,6 +419,7 @@ try {
 ```
 
 When `.order()` returns undefined, calling methods on it throws:
+
 ```
 "undefined is not a function" -> toString() -> "supabase.from(...).select(...).order is not a function"
 ```
@@ -418,7 +439,7 @@ let mockUser: { id: string; email: string } | null = {
 vi.mock("~/stores/user", () => ({
   useUserStore: () => ({
     get user() {
-      return mockUser;  // Dynamic reference
+      return mockUser; // Dynamic reference
     },
   }),
 }));
@@ -428,11 +449,11 @@ If any test modifies `mockUser`:
 
 ```typescript
 // Test A
-mockUser = null;  // Mutation
+mockUser = null; // Mutation
 
 // Test B (same suite, no isolation)
 const userStore = useUserStore();
-expect(userStore.user).toBe(null);  // See A's mutation
+expect(userStore.user).toBe(null); // See A's mutation
 ```
 
 Since `isolate: false` in local dev (vitest.config.ts line 21), all tests in the suite share this variable. Tests that run before this test can pollute its state.
@@ -459,10 +480,12 @@ const interactions: Interaction[] = [
 ```
 
 When `new Date(2026, 0, 20)` is called (where 0 = January):
+
 - JavaScript creates: `2026-01-20T00:00:00` in **local timezone**
 - `.toISOString()` converts to **UTC**
 
 Example timezone impact:
+
 ```
 Local TZ: GMT-8 (PST)
 new Date(2026, 0, 20)         // 2026-01-20 00:00:00 PST
@@ -474,6 +497,7 @@ new Date(2026, 0, 20)         // 2026-01-20 00:00:00 EST
 ```
 
 The test filter:
+
 ```typescript
 const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -484,6 +508,7 @@ const contactCount = interactions.filter((i) => {
 ```
 
 Where:
+
 - `startOfMonth` = midnight local time of first day of month
 - `now` = current time (potentially with seconds/milliseconds)
 - `interactionDate` = created from ISO string (will be in UTC, parsed as UTC)
@@ -504,6 +529,7 @@ Comparison: 2026-01-20T08:00:00Z >= 2026-01-01T08:00:00Z
 ```
 
 But in a GMT+5 timezone:
+
 ```
 startOfMonth = new Date(2026, 0, 1)           // Local midnight
   = 2026-01-01T00:00:00 (local)
@@ -521,13 +547,14 @@ But ONE of the two test dates might fall outside range depending on current time
 **The Real Issue:** The test creates `now` once at the top:
 
 ```typescript
-const now = new Date();  // e.g., 2026-01-26 15:30:45 UTC+timezone
+const now = new Date(); // e.g., 2026-01-26 15:30:45 UTC+timezone
 ```
 
 Then creates test data without time component:
+
 ```typescript
-new Date(now.getFullYear(), now.getMonth(), 15).toISOString()  // Jan 15 midnight
-new Date(now.getFullYear(), now.getMonth(), 20).toISOString()  // Jan 20 midnight
+new Date(now.getFullYear(), now.getMonth(), 15).toISOString(); // Jan 15 midnight
+new Date(now.getFullYear(), now.getMonth(), 20).toISOString(); // Jan 20 midnight
 ```
 
 If `now` is early in the month (e.g., January 3rd), both dates fall AFTER the current date when times are considered. The test expects 2 results but gets 1 because the 20th is after the current date.
@@ -565,15 +592,17 @@ const contactCount = interactions.filter((i) => {
 ```
 
 **The Real Problem:** When the test runs on January 26, 2026:
+
 - 15th passes (15 < 26) ✓
 - 20th passes (20 < 26) ✓
 - Both should be included
 
 But test assertion says it gets only 1 instead of 2.
 
-**Hypothesis:** The dashboard page composable logic is different. The test here is testing *isolated filtering logic*, but the actual dashboard page uses a Pinia store that maintains its own state. The test might not be exercising the actual dashboard code path.
+**Hypothesis:** The dashboard page composable logic is different. The test here is testing _isolated filtering logic_, but the actual dashboard page uses a Pinia store that maintains its own state. The test might not be exercising the actual dashboard code path.
 
 Looking at the test file header:
+
 ```typescript
 vi.mock("~/composables/useSupabase");
 vi.mock("~/composables/useAuth");
@@ -596,12 +625,14 @@ This is a **test-to-code mismatch**, not necessarily a logic bug.
 ### Why Full Suite Fails But Individual Tests Pass
 
 **Vitest Configuration:**
+
 ```typescript
 // vitest.config.ts line 21
 isolate: process.env.CI ? true : false,  // OFF for local dev
 ```
 
 **Local Development (isolate: false):**
+
 ```
 Process: SINGLE shared Node.js process
 Files loaded: ALL test files in same process
@@ -627,6 +658,7 @@ Test Execution:
 ```
 
 **Individual Test Run (isolate: false, single file):**
+
 ```
 Process: NEW Node.js process for this file only
 Module state: FRESH
@@ -643,6 +675,7 @@ Test Execution:
 ### Evidence of Module State Pollution
 
 1. **Shared Mock Instance in setup.ts (line 76):**
+
    ```typescript
    const defaultMockQuery = createMockQuery();
    export const mockSupabase = {
@@ -652,6 +685,7 @@ Test Execution:
    ```
 
 2. **Module-Level Variable in useInteractions.extended.spec.ts (line 12-18):**
+
    ```typescript
    let mockUser: ... = { id: "user-123", ... };
 
@@ -667,7 +701,7 @@ Test Execution:
 3. **No Reset of Module Variables in beforeEach:**
    ```typescript
    beforeEach(() => {
-     setActivePinia(createPinia());  // Resets Pinia ✓
+     setActivePinia(createPinia()); // Resets Pinia ✓
      // But doesn't reset mockUser or mockSupabase!
    });
    ```
@@ -675,6 +709,7 @@ Test Execution:
 ### Why Tests Listed as "Isolation Problems" Actually Pass
 
 Re-examining the test output:
+
 ```
 ✓ tests/unit/composables/useInteractions-athlete.spec.ts (7 tests) 11ms
 ✓ tests/unit/composables/useUserPreferences.spec.ts (17 tests) 38ms
@@ -684,12 +719,14 @@ Re-examining the test output:
 These three files PASS in the full suite. They were mentioned in the investigation request as "Test Isolation Problems" based on the summary, but the actual test run shows they pass.
 
 **Why they pass despite module-level state:**
+
 1. Each file creates its own isolated mocks in the file scope
 2. They don't share module variables with other files (unlike useInteractions.extended.spec.ts)
 3. They properly reset Pinia state in beforeEach
 4. They don't rely on setup.ts's defaultMockQuery
 
 **The actual isolation problem is in:**
+
 - useInteractions.extended.spec.ts uses module-level `mockUser` variable
 - But it passes too (checked individual run above)
 
@@ -699,19 +736,21 @@ So **there is NO actual test isolation problem in the current suite**. All tests
 
 ## Summary: Root Cause Matrix
 
-| Test File | Failure Type | Root Cause | Verification | Severity |
-|-----------|-------------|-----------|--------------|----------|
-| EmailRecruitingPacketModal | Vue rendering | Teleport not accessible to test-utils | Check if Teleport renders in wrapper | CRITICAL |
-| useInteractions.extended | Mock chain setup | Module-level mock not properly initialized | Add logging to mock returns | HIGH |
-| dashboard | Date logic | Timezone boundary / test-to-code mismatch | Verify with explicit UTC times | MEDIUM |
+| Test File                  | Failure Type     | Root Cause                                 | Verification                         | Severity |
+| -------------------------- | ---------------- | ------------------------------------------ | ------------------------------------ | -------- |
+| EmailRecruitingPacketModal | Vue rendering    | Teleport not accessible to test-utils      | Check if Teleport renders in wrapper | CRITICAL |
+| useInteractions.extended   | Mock chain setup | Module-level mock not properly initialized | Add logging to mock returns          | HIGH     |
+| dashboard                  | Date logic       | Timezone boundary / test-to-code mismatch  | Verify with explicit UTC times       | MEDIUM   |
 
 **Total Impact:**
+
 - 28 tests fail (EmailRecruitingPacketModal)
 - 9 tests fail (useInteractions.extended)
 - 1 test fails (dashboard)
 - **47 tests fail in full suite**
 
 **Isolation Problem:**
+
 - No actual test isolation failures detected
 - Module configuration supports local dev without isolation
 - Enables fast local testing while CI has strict isolation

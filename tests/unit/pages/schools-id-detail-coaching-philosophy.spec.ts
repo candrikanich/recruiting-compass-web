@@ -75,7 +75,9 @@ describe("School Detail Page - Coaching Philosophy Integration", () => {
     };
 
     const updated = { ...mockSchool, ...updates };
-    expect(updated.coaching_philosophy).toBe("Player development focused program");
+    expect(updated.coaching_philosophy).toBe(
+      "Player development focused program",
+    );
     expect(updated.notes).toBe("Updated general notes");
   });
 
@@ -86,8 +88,12 @@ describe("School Detail Page - Coaching Philosophy Integration", () => {
 
     const updated = { ...mockSchool, ...updates };
     expect(updated.coaching_style).toBe("New coaching style");
-    expect(updated.recruiting_approach).toBe("Early recruiting, all-around athletes");
-    expect(updated.communication_style).toBe("Regular emails, monthly phone calls");
+    expect(updated.recruiting_approach).toBe(
+      "Early recruiting, all-around athletes",
+    );
+    expect(updated.communication_style).toBe(
+      "Regular emails, monthly phone calls",
+    );
   });
 
   it("should handle partial coaching philosophy updates", () => {
@@ -101,7 +107,9 @@ describe("School Detail Page - Coaching Philosophy Integration", () => {
     expect(updated.coaching_philosophy).toBeNull();
     expect(updated.coaching_style).toBe("Updated style");
     expect(updated.recruiting_approach).toBeNull();
-    expect(updated.communication_style).toBe("Regular emails, monthly phone calls");
+    expect(updated.communication_style).toBe(
+      "Regular emails, monthly phone calls",
+    );
   });
 
   it("should support long coaching philosophy text", () => {
@@ -197,7 +205,8 @@ Line 3: Player development`;
   });
 
   it("should handle coaching philosophy with HTML-like content", () => {
-    const htmlLikeText = "Focus on <strong>player</strong> development [note: will be sanitized]";
+    const htmlLikeText =
+      "Focus on <strong>player</strong> development [note: will be sanitized]";
     const updates: Partial<School> = {
       coaching_philosophy: htmlLikeText,
     };

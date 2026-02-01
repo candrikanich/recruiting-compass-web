@@ -14,7 +14,7 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
     // Fill graduation year (required)
     await page.selectOption(
       "select",
-      { label: /Select Year/ }?.toString() || ""
+      { label: /Select Year/ }?.toString() || "",
     );
     // Select current year or next year from dropdown
     const yearOptions = await page.locator("select option").allTextContents();
@@ -23,7 +23,9 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
 
     // Select a position
     const positionButtons = await page
-      .locator('button:has-text("P"), button:has-text("SS"), button:has-text("C")')
+      .locator(
+        'button:has-text("P"), button:has-text("SS"), button:has-text("C")',
+      )
       .first();
     await positionButtons.click();
 
@@ -32,7 +34,9 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
     expect(asterisks).toBeGreaterThan(0);
 
     // Save the form
-    const saveButton = page.locator('[data-testid="save-player-details-button"]');
+    const saveButton = page.locator(
+      '[data-testid="save-player-details-button"]',
+    );
     await expect(saveButton).toBeEnabled();
     await saveButton.click();
 
@@ -42,7 +46,9 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
 
   test("should validate required fields before save", async ({ page }) => {
     // Try to save without filling required fields
-    const saveButton = page.locator('[data-testid="save-player-details-button"]');
+    const saveButton = page.locator(
+      '[data-testid="save-player-details-button"]',
+    );
     await saveButton.click();
 
     // Should see validation errors
@@ -55,13 +61,13 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
     const startTime = Date.now();
 
     // Fill graduation year
-    const gradYearSelect = page.locator('select').first();
+    const gradYearSelect = page.locator("select").first();
     const options = await gradYearSelect.locator("option").allTextContents();
     await gradYearSelect.selectOption(options[1]);
 
     // Select positions
     const positionButtons = page.locator(
-      'button:has-text("P"), button:has-text("SS")'
+      'button:has-text("P"), button:has-text("SS")',
     );
     if (await positionButtons.first().isVisible()) {
       await positionButtons.first().click();
@@ -82,7 +88,9 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
     }
 
     // Save
-    const saveButton = page.locator('[data-testid="save-player-details-button"]');
+    const saveButton = page.locator(
+      '[data-testid="save-player-details-button"]',
+    );
     await saveButton.click();
 
     const endTime = Date.now();
@@ -93,7 +101,9 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
 
   test("should handle optional athletic information", async ({ page }) => {
     // Fill high school
-    const highSchoolInput = page.locator('input[placeholder="Lincoln High School"]');
+    const highSchoolInput = page.locator(
+      'input[placeholder="Lincoln High School"]',
+    );
     await highSchoolInput.fill("Lincoln High School");
 
     // Fill club team
@@ -101,7 +111,9 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
     await clubTeamInput.fill("East Coast Sox");
 
     // Save
-    const saveButton = page.locator('[data-testid="save-player-details-button"]');
+    const saveButton = page.locator(
+      '[data-testid="save-player-details-button"]',
+    );
     await saveButton.click();
 
     // Reload and verify data persists
@@ -109,7 +121,7 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
     await page.waitForLoadState("networkidle");
 
     const reloadedHighSchool = page.locator(
-      'input[placeholder="Lincoln High School"]'
+      'input[placeholder="Lincoln High School"]',
     );
     await expect(reloadedHighSchool).toHaveValue("Lincoln High School");
   });
@@ -166,7 +178,7 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
 
   test("should validate graduation year within range", async ({ page }) => {
     // Check graduation year dropdown
-    const gradYearSelect = page.locator('select').first();
+    const gradYearSelect = page.locator("select").first();
     const options = await gradYearSelect.locator("option").allTextContents();
 
     // Should have current year and next 4 years (5 total)
@@ -184,9 +196,7 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
 
   test("should display asterisks for required fields", async ({ page }) => {
     // Check for required field asterisks
-    const requiredLabels = page.locator(
-      "label:has(span:has-text('*'))"
-    );
+    const requiredLabels = page.locator("label:has(span:has-text('*'))");
     const count = await requiredLabels.count();
 
     // Should have at least graduation year marked as required
@@ -200,7 +210,9 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
 
     // Fields should not be marked as required (no asterisks)
     const gpaLabel = page.locator("label:has-text('GPA')");
-    const hasAsterisk = await gpaLabel.locator("span:has-text('*')").isVisible();
+    const hasAsterisk = await gpaLabel
+      .locator("span:has-text('*')")
+      .isVisible();
     expect(hasAsterisk).toBe(false);
   });
 
@@ -208,11 +220,15 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
     page,
   }) => {
     // Fill some fields
-    const highSchoolInput = page.locator('input[placeholder="Lincoln High School"]');
+    const highSchoolInput = page.locator(
+      'input[placeholder="Lincoln High School"]',
+    );
     await highSchoolInput.fill("Test High School");
 
     // Save
-    const saveButton = page.locator('[data-testid="save-player-details-button"]');
+    const saveButton = page.locator(
+      '[data-testid="save-player-details-button"]',
+    );
     await saveButton.click();
 
     // Wait for save to complete
@@ -223,7 +239,9 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
     await page.waitForLoadState("networkidle");
 
     // Verify data persists
-    const reloadedInput = page.locator('input[placeholder="Lincoln High School"]');
+    const reloadedInput = page.locator(
+      'input[placeholder="Lincoln High School"]',
+    );
     await expect(reloadedInput).toHaveValue("Test High School");
   });
 
@@ -239,7 +257,9 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
 
   test("should handle save errors gracefully", async ({ page }) => {
     // Try to save form (might fail due to permissions in test env)
-    const saveButton = page.locator('[data-testid="save-player-details-button"]');
+    const saveButton = page.locator(
+      '[data-testid="save-player-details-button"]',
+    );
     await saveButton.click();
 
     // Should either succeed or show error message
@@ -249,7 +269,9 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
 
   test("should allow editing multiple sections", async ({ page }) => {
     // Fill basic info section
-    const highSchoolInput = page.locator('input[placeholder="Lincoln High School"]');
+    const highSchoolInput = page.locator(
+      'input[placeholder="Lincoln High School"]',
+    );
     await highSchoolInput.fill("First Test School");
 
     // Change it
@@ -259,7 +281,9 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
     await expect(highSchoolInput).toHaveValue("Second Test School");
 
     // Save should work with edited data
-    const saveButton = page.locator('[data-testid="save-player-details-button"]');
+    const saveButton = page.locator(
+      '[data-testid="save-player-details-button"]',
+    );
     await expect(saveButton).toBeEnabled();
   });
 });
@@ -288,7 +312,7 @@ test.describe("Profile Photo Component", () => {
     await expect(fileInput).toHaveAttribute("type", "file");
     await expect(fileInput).toHaveAttribute(
       "accept",
-      /image\/jpeg.*image\/png/
+      /image\/jpeg.*image\/png/,
     );
   });
 

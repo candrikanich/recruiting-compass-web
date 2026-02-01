@@ -26,8 +26,9 @@
             You're viewing
             <strong
               >{{
-                activeFamily.parentAccessibleFamilies.value.find(f => f.athleteId === activeFamily.activeAthleteId.value)?.athleteName ||
-                "this athlete"
+                activeFamily.parentAccessibleFamilies.value.find(
+                  (f) => f.athleteId === activeFamily.activeAthleteId.value,
+                )?.athleteName || "this athlete"
               }}'s</strong
             >
             recruiting data. Data is read-only. Your views are visible to them.
@@ -49,10 +50,12 @@
       <!-- Suggestions Component -->
       <DashboardSuggestions
         :suggestions="suggestionsComposable?.dashboardSuggestions.value || []"
-        :is-viewing-as-parent="
-          activeFamily.isViewingAsParent.value || false
+        :is-viewing-as-parent="activeFamily.isViewingAsParent.value || false"
+        :athlete-name="
+          activeFamily.parentAccessibleFamilies.value.find(
+            (f) => f.athleteId === activeFamily.activeAthleteId.value,
+          )?.athleteName
         "
-        :athlete-name="activeFamily.parentAccessibleFamilies.value.find(f => f.athleteId === activeFamily.activeAthleteId.value)?.athleteName"
         @dismiss="handleSuggestionDismiss"
       />
 
@@ -69,11 +72,16 @@
           <RecruitingPacketWidget
             :recruiting-packet-loading="recruitingPacketLoading"
             :recruiting-packet-error="recruitingPacketError"
-            :has-generated-packet="recruitingPacketComposable.hasGeneratedPacket.value"
+            :has-generated-packet="
+              recruitingPacketComposable.hasGeneratedPacket.value
+            "
             @generate-packet="handleGeneratePacket"
             @email-packet="handleEmailPacket"
           />
-          <SchoolsBySizeWidget :breakdown="schoolSizeBreakdown" :count="schoolCount" />
+          <SchoolsBySizeWidget
+            :breakdown="schoolSizeBreakdown"
+            :count="schoolCount"
+          />
         </div>
 
         <!-- Row 2: Performance Metrics (2 cols) + Upcoming Events (1 col) -->
@@ -96,7 +104,9 @@
           class="lg:col-span-2"
         />
         <div class="lg:col-span-1">
-          <RecentActivityFeed v-if="showWidget('recentActivityFeed', 'widgets')" />
+          <RecentActivityFeed
+            v-if="showWidget('recentActivityFeed', 'widgets')"
+          />
         </div>
 
         <!-- Row 4: Tasks, Frequency, Social (each 1 col) -->
@@ -478,11 +488,7 @@ onMounted(async () => {
 watch(
   () => activeFamily.activeAthleteId.value,
   async (newId, oldId) => {
-    if (
-      newId &&
-      newId !== oldId &&
-      activeFamily.isViewingAsParent.value
-    ) {
+    if (newId && newId !== oldId && activeFamily.isViewingAsParent.value) {
       await fetchCounts();
       await suggestionsComposable?.fetchSuggestions("dashboard");
       await viewLoggingComposable?.logParentView("dashboard", newId);
@@ -536,7 +542,9 @@ const handleGeneratePacket = async () => {
     showToast("Recruiting packet generated successfully!", "success");
   } catch (err) {
     const message =
-      err instanceof Error ? err.message : "Failed to generate recruiting packet";
+      err instanceof Error
+        ? err.message
+        : "Failed to generate recruiting packet";
     recruitingPacketError.value = message;
     showToast(message, "error");
     console.error("Packet generation error:", err);
@@ -577,11 +585,10 @@ const handleSendEmail = async (emailData: {
     await recruitingPacketComposable.emailPacket(emailData);
     showToast(
       `Email sent to ${emailData.recipients.length} coach${emailData.recipients.length === 1 ? "" : "es"}!`,
-      "success"
+      "success",
     );
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to send email";
+    const message = err instanceof Error ? err.message : "Failed to send email";
     recruitingPacketError.value = message;
     showToast(message, "error");
     console.error("Email sending error:", err);

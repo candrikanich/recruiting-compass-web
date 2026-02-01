@@ -707,12 +707,14 @@ The Recruiting Compass Team
 ### General Best Practices
 
 **Subject Lines:**
+
 - Keep to 50 characters max
 - Start with benefit or urgency
 - Personalize when possible
 - Examples: "Your First School Added," "New Feature Available," "Deadline Coming This Week"
 
 **Body Copy:**
+
 - Keep paragraphs short (2-3 sentences max)
 - Use bullet points for lists
 - Include a clear CTA (Call To Action)
@@ -721,6 +723,7 @@ The Recruiting Compass Team
 - Sign off professionally
 
 **Frequency:**
+
 - Welcome: Immediately after signup
 - Onboarding: Days 2, 4, 7, 14
 - Ongoing: Weekly tips + monthly progress update
@@ -731,6 +734,7 @@ The Recruiting Compass Team
 ### Customization
 
 All templates should be customized with:
+
 - [First Name] - User's first name
 - [School] - Specific school names from their list
 - [Number] - Activity metrics from their account
@@ -740,6 +744,7 @@ All templates should be customized with:
 ### A/B Testing
 
 Test variations of:
+
 - Subject lines (benefit vs. urgency vs. curiosity)
 - CTA text (Sign In Now vs. Check It Out vs. Learn More)
 - Email length (short vs. detailed)
@@ -749,6 +754,7 @@ Test variations of:
 ### Unsubscribe
 
 All emails should include:
+
 - Unsubscribe link (legal requirement)
 - Preference center (choose which emails to receive)
 - Support contact info

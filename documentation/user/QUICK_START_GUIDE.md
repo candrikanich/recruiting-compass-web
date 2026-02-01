@@ -44,6 +44,7 @@ After email verification, choose your account type:
 ### Step 3: Complete Your Basic Info
 
 Enter:
+
 - Full name
 - High school
 - Graduation year (senior class year)
@@ -98,10 +99,11 @@ Schools are the colleges you're targeting. You'll track coaches, fit, and intera
    - **Reach Schools**: Dream schools (long shot)
    - **Target Schools**: Realistic matches
    - **Safety Schools**: Likely admits
-   - *Choose one; you can change later*
+   - _Choose one; you can change later_
 5. **Click "Add School"**
 
 You'll see your school appear in the list with:
+
 - School logo
 - Location
 - Division level
@@ -130,6 +132,7 @@ Coaches are the people recruiting you at each school. Track interactions with ea
 5. **Click "Add Coach"**
 
 You'll see the coach's card appear with:
+
 - Contact info
 - Interaction history (empty for now)
 - Responsiveness score (builds as you interact)
@@ -172,28 +175,33 @@ Your Dashboard is your recruiting command center. Here's what you'll see:
 ### Key Dashboard Sections
 
 **1. Welcome Banner**
+
 - Your name
 - Current timeline phase (Freshman, Sophomore, Junior, Senior)
 - Quick stats (schools, coaches, interactions tracked)
 
 **2. Active Schools Overview**
+
 - Cards for each school you're tracking
 - Fit score (1-10 scale)
 - Number of coaches at each school
 - Your priority tier (Reach, Target, Safety)
 
 **3. Timeline Section**
+
 - Your 4-year recruiting roadmap
 - Current phase-specific tasks
 - Upcoming milestones and deadlines
 - Progress indicator
 
 **4. Recent Interactions**
+
 - Latest coach interactions across all schools
 - Timestamps
 - Quick preview of notes
 
 **5. Quick Actions**
+
 - "+ Add School"
 - "+ Log Interaction"
 - "View Timeline"
@@ -214,6 +222,7 @@ Want a parent or guardian to see your recruiting progress? Invite them to your a
 5. Click **"Send Invite"**
 
 They'll receive an email with an invite link. Once they accept, they can:
+
 - View your schools, coaches, and interactions
 - See your timeline progress
 - Receive notifications about milestones
@@ -228,6 +237,7 @@ They'll receive an email with an invite link. Once they accept, they can:
 Congratulations! You've set up the essentials. Here's what to do next:
 
 ### This Week
+
 - [ ] Add 5-10 target schools (mix of reach, target, safety)
 - [ ] Add coaches from each school
 - [ ] Log interactions you've already had (past emails, calls, etc.)
@@ -235,6 +245,7 @@ Congratulations! You've set up the essentials. Here's what to do next:
 - [ ] Check the **Suggestions** tab for AI-powered recommendations
 
 ### This Month
+
 - [ ] Complete your profile in detail (academic, athletic, preferences)
 - [ ] Set up email templates for common recruiting emails
 - [ ] Review your **Fit Scores** and understand why schools ranked as they did
@@ -242,6 +253,7 @@ Congratulations! You've set up the essentials. Here's what to do next:
 - [ ] Attend your first showcase or camp and log interactions
 
 ### Going Forward
+
 - [ ] Log interactions within 24 hours (keep your data current)
 - [ ] Review your timeline weekly for upcoming tasks
 - [ ] Check suggestions for next steps based on your activity
@@ -256,12 +268,12 @@ Congratulations! You've set up the essentials. Here's what to do next:
 
 Your recruiting journey follows a 4-year timeline:
 
-| Phase | Grade | Focus |
-|-------|-------|-------|
-| **Freshman** | 9th grade | Foundation: Build skills, get on coaches' radars |
+| Phase         | Grade      | Focus                                                |
+| ------------- | ---------- | ---------------------------------------------------- |
+| **Freshman**  | 9th grade  | Foundation: Build skills, get on coaches' radars     |
 | **Sophomore** | 10th grade | Active Outreach: Attend showcases, send intro emails |
-| **Junior** | 11th grade | Peak Recruiting: Campus visits, build relationships |
-| **Senior** | 12th grade | Decision: Narrow choices, commit |
+| **Junior**    | 11th grade | Peak Recruiting: Campus visits, build relationships  |
+| **Senior**    | 12th grade | Decision: Narrow choices, commit                     |
 
 You can advance phases anytime, but they're designed to guide you through the recruiting timeline naturally.
 
@@ -280,6 +292,7 @@ Fit Score improves as you fill out your profile with academic and athletic info.
 ### Responsiveness Score
 
 Shows how quickly a coach responds to you:
+
 - **High**: Coach replies within 1-3 days
 - **Medium**: Coach replies in 1-2 weeks
 - **Low**: Coach takes 2+ weeks or doesn't respond
@@ -301,18 +314,22 @@ A balanced list typically has: 2-3 reach, 4-6 target, 2-3 safety schools.
 ## Troubleshooting
 
 ### Account & Login
+
 - **Can't sign up?** Check your email for a confirmation link. Resend confirmation email from login page.
 - **Forgot password?** Click "Forgot Password" on login page. Check your email for reset link.
 
 ### Schools & Coaches
+
 - **Can't find my school?** Try variations of the name (e.g., "University of Florida" vs "Univ of Florida"). Email support if it's missing.
 - **Coach info is wrong?** Edit the coach's card—click the pencil icon and update details.
 
 ### Interactions
+
 - **Can't log an old interaction?** Click the date field—you can set any past date.
 - **Accidentally logged an interaction?** Click the three-dot menu on the interaction card and select "Delete."
 
 ### Profile & Data
+
 - **My fit score seems low.** Complete your academic/athletic profile—fit scores improve with more data.
 - **Can't add parent?** Ensure you entered their correct email. They may need to check spam folder for invite.
 

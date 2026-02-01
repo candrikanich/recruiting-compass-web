@@ -19,10 +19,15 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.waitForLoadState("networkidle");
 
       // Verify read-only warning banner is visible using specific selector
-      const warningBanner = page.getByRole("heading", { name: "Read-only view" });
+      const warningBanner = page.getByRole("heading", {
+        name: "Read-only view",
+      });
       await expect(warningBanner).toBeVisible();
 
-      const contactMessage = page.getByText("Contact your athlete to make changes", { exact: false });
+      const contactMessage = page.getByText(
+        "Contact your athlete to make changes",
+        { exact: false },
+      );
       await expect(contactMessage).toBeVisible();
     });
 
@@ -47,7 +52,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.waitForLoadState("networkidle");
 
       const saveButton = page.locator(
-        'button[data-testid="save-player-details-button"]'
+        'button[data-testid="save-player-details-button"]',
       );
       await expect(saveButton).toBeDisabled();
 
@@ -62,7 +67,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       // Check position toggle buttons - use data-testid if available, otherwise check first button
       const positionButtons = page.locator("button[data-testid*='position']");
       // Position buttons should be disabled for parents
-      if (await positionButtons.count() > 0) {
+      if ((await positionButtons.count()) > 0) {
         const firstButton = positionButtons.first();
         const isDisabled = await firstButton.isDisabled();
         expect(isDisabled).toBe(true);
@@ -74,7 +79,9 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       context,
     }) => {
       // Navigate to the settings page to establish auth context
-      await page.goto("/settings/player-details", { waitUntil: "domcontentloaded" });
+      await page.goto("/settings/player-details", {
+        waitUntil: "domcontentloaded",
+      });
       await page.waitForLoadState("networkidle");
 
       // Create API request context with the same cookies/auth as the page
@@ -85,7 +92,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
           data: {
             gpa: 3.8,
           },
-        }
+        },
       );
 
       // Should get 403 Forbidden for parent role trying to edit
@@ -95,7 +102,9 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       const body = await response.json();
       // Check for either read-only error or CSRF error
       const message = body.statusMessage || body.message || "";
-      expect(message.toLowerCase()).toMatch(/(read-only|csrf|unauthorized|forbidden)/i);
+      expect(message.toLowerCase()).toMatch(
+        /(read-only|csrf|unauthorized|forbidden)/i,
+      );
     });
   });
 
@@ -106,7 +115,9 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.waitForLoadState("networkidle");
 
       // Verify no warning banner
-      const warningBanner = page.getByRole("heading", { name: "Read-only view" });
+      const warningBanner = page.getByRole("heading", {
+        name: "Read-only view",
+      });
       await expect(warningBanner).not.toBeVisible();
 
       // Page title should be visible - use specific selector
@@ -148,7 +159,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.waitForLoadState("networkidle");
 
       const saveButton = page.locator(
-        'button[data-testid="save-player-details-button"]'
+        'button[data-testid="save-player-details-button"]',
       );
       await expect(saveButton).not.toBeDisabled();
       await expect(saveButton).toContainText("Save Player Details");
@@ -256,7 +267,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
           data: {
             gpa: 3.8,
           },
-        }
+        },
       );
 
       // Should be rejected with 400/401/403
@@ -269,7 +280,9 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.waitForLoadState("networkidle");
 
       // Verify the endpoint is accessible (may return 403 for parent or succeed for student)
-      const response = await request.get("/api/user/preferences/player-details");
+      const response = await request.get(
+        "/api/user/preferences/player-details",
+      );
 
       // Should respond with some status
       expect(response.status()).toBeGreaterThan(0);

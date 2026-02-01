@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 /**
  * Server-side task locking validation tests
@@ -8,9 +8,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
  * They document the expected behavior of server-side dependency validation.
  */
 
-describe('Server API - Task Locking Validation', () => {
-  describe('PATCH /api/athlete-tasks/[taskId] - Dependency Validation', () => {
-    it('should reject completion when prerequisites incomplete', async () => {
+describe("Server API - Task Locking Validation", () => {
+  describe("PATCH /api/athlete-tasks/[taskId] - Dependency Validation", () => {
+    it("should reject completion when prerequisites incomplete", async () => {
       /**
        * Given:
        * - Task B depends on Task A
@@ -23,16 +23,17 @@ describe('Server API - Task Locking Validation', () => {
        */
       const expectedError = {
         statusCode: 400,
-        statusMessage: 'Cannot complete task. Please complete these prerequisites first: Task A',
+        statusMessage:
+          "Cannot complete task. Please complete these prerequisites first: Task A",
       };
 
       // This test documents the expected behavior
       expect(expectedError.statusCode).toBe(400);
-      expect(expectedError.statusMessage).toContain('Cannot complete task');
-      expect(expectedError.statusMessage).toContain('Task A');
+      expect(expectedError.statusMessage).toContain("Cannot complete task");
+      expect(expectedError.statusMessage).toContain("Task A");
     });
 
-    it('should allow completion when all prerequisites complete', async () => {
+    it("should allow completion when all prerequisites complete", async () => {
       /**
        * Given:
        * - Task B depends on Task A
@@ -45,19 +46,19 @@ describe('Server API - Task Locking Validation', () => {
        * - Include athlete_task data in response
        */
       const expectedResponse = {
-        id: 'athlete-task-b',
-        athlete_id: 'athlete-123',
-        task_id: 'task-b',
-        status: 'completed',
-        completed_at: '2024-01-26T00:00:00Z',
+        id: "athlete-task-b",
+        athlete_id: "athlete-123",
+        task_id: "task-b",
+        status: "completed",
+        completed_at: "2024-01-26T00:00:00Z",
         is_recovery_task: false,
       };
 
-      expect(expectedResponse.status).toBe('completed');
+      expect(expectedResponse.status).toBe("completed");
       expect(expectedResponse.completed_at).toBeDefined();
     });
 
-    it('should allow skipped status regardless of dependencies', async () => {
+    it("should allow skipped status regardless of dependencies", async () => {
       /**
        * Given:
        * - Task B depends on Task A (incomplete)
@@ -69,19 +70,19 @@ describe('Server API - Task Locking Validation', () => {
        * - No prerequisite validation
        */
       const expectedResponse = {
-        id: 'athlete-task-b',
-        athlete_id: 'athlete-123',
-        task_id: 'task-b',
-        status: 'skipped',
+        id: "athlete-task-b",
+        athlete_id: "athlete-123",
+        task_id: "task-b",
+        status: "skipped",
         completed_at: null,
         is_recovery_task: false,
       };
 
-      expect(expectedResponse.status).toBe('skipped');
+      expect(expectedResponse.status).toBe("skipped");
       expect(expectedResponse.completed_at).toBeNull();
     });
 
-    it('should allow in_progress status with incomplete dependencies', async () => {
+    it("should allow in_progress status with incomplete dependencies", async () => {
       /**
        * Given:
        * - Task B depends on Task A (incomplete)
@@ -93,14 +94,15 @@ describe('Server API - Task Locking Validation', () => {
        */
       const expectedError = {
         statusCode: 400,
-        statusMessage: 'Cannot complete task. Please complete these prerequisites first: Task A',
+        statusMessage:
+          "Cannot complete task. Please complete these prerequisites first: Task A",
       };
 
       expect(expectedError.statusCode).toBe(400);
-      expect(expectedError.statusMessage).toContain('Task A');
+      expect(expectedError.statusMessage).toContain("Task A");
     });
 
-    it('should handle multiple incomplete prerequisites', async () => {
+    it("should handle multiple incomplete prerequisites", async () => {
       /**
        * Given:
        * - Task C depends on Tasks A and B (both incomplete)
@@ -112,15 +114,16 @@ describe('Server API - Task Locking Validation', () => {
        */
       const expectedError = {
         statusCode: 400,
-        statusMessage: 'Cannot complete task. Please complete these prerequisites first: Task A, Task B',
+        statusMessage:
+          "Cannot complete task. Please complete these prerequisites first: Task A, Task B",
       };
 
       expect(expectedError.statusCode).toBe(400);
-      expect(expectedError.statusMessage).toContain('Task A');
-      expect(expectedError.statusMessage).toContain('Task B');
+      expect(expectedError.statusMessage).toContain("Task A");
+      expect(expectedError.statusMessage).toContain("Task B");
     });
 
-    it('should not validate when no dependencies exist', async () => {
+    it("should not validate when no dependencies exist", async () => {
       /**
        * Given:
        * - Task A has no dependencies
@@ -132,18 +135,18 @@ describe('Server API - Task Locking Validation', () => {
        * - Task is updated normally
        */
       const expectedResponse = {
-        id: 'athlete-task-a',
-        athlete_id: 'athlete-123',
-        task_id: 'task-a',
-        status: 'completed',
-        completed_at: '2024-01-26T00:00:00Z',
+        id: "athlete-task-a",
+        athlete_id: "athlete-123",
+        task_id: "task-a",
+        status: "completed",
+        completed_at: "2024-01-26T00:00:00Z",
         is_recovery_task: false,
       };
 
-      expect(expectedResponse.status).toBe('completed');
+      expect(expectedResponse.status).toBe("completed");
     });
 
-    it('should allow not_started status without validation', async () => {
+    it("should allow not_started status without validation", async () => {
       /**
        * Given:
        * - Task B depends on Task A (incomplete)
@@ -155,18 +158,18 @@ describe('Server API - Task Locking Validation', () => {
        * - Task status updated to not_started
        */
       const expectedResponse = {
-        id: 'athlete-task-b',
-        athlete_id: 'athlete-123',
-        task_id: 'task-b',
-        status: 'not_started',
+        id: "athlete-task-b",
+        athlete_id: "athlete-123",
+        task_id: "task-b",
+        status: "not_started",
         completed_at: null,
         is_recovery_task: false,
       };
 
-      expect(expectedResponse.status).toBe('not_started');
+      expect(expectedResponse.status).toBe("not_started");
     });
 
-    it('should return detailed error info for debugging', async () => {
+    it("should return detailed error info for debugging", async () => {
       /**
        * Given:
        * - Multiple incomplete prerequisites
@@ -178,11 +181,12 @@ describe('Server API - Task Locking Validation', () => {
        */
       const expectedError = {
         statusCode: 400,
-        statusMessage: 'Cannot complete task. Please complete these prerequisites first: Task A, Task B',
+        statusMessage:
+          "Cannot complete task. Please complete these prerequisites first: Task A, Task B",
         data: {
           incompletePrerequisites: [
-            { id: 'task-a', title: 'Task A' },
-            { id: 'task-b', title: 'Task B' },
+            { id: "task-a", title: "Task A" },
+            { id: "task-b", title: "Task B" },
           ],
         },
       };

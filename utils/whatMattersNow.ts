@@ -12,11 +12,11 @@ export interface WhatMattersItem {
 const CATEGORY_PRIORITY: Record<string, number> = {
   "academic-standing": 10,
   "visibility-building": 8,
-  "communication": 8,
-  "evaluation": 7,
+  communication: 8,
+  evaluation: 7,
   "decision-making": 9,
-  "documentation": 6,
-  "training": 5,
+  documentation: 6,
+  training: 5,
 };
 
 export function getWhatMattersNow(params: {

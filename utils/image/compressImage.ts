@@ -23,7 +23,7 @@ export interface CompressionOptions {
 
 export const validateImageFile = (
   file: File,
-  maxSizeMB: number = DEFAULT_MAX_SIZE_MB
+  maxSizeMB: number = DEFAULT_MAX_SIZE_MB,
 ): ImageValidationResult => {
   if (!file || file.size === 0) {
     return {
@@ -54,7 +54,7 @@ export const validateImageFile = (
 
 export const compressImage = async (
   file: File,
-  options?: CompressionOptions
+  options?: CompressionOptions,
 ): Promise<File> => {
   const validation = validateImageFile(file);
   if (!validation.isValid) {

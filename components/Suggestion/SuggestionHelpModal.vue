@@ -13,8 +13,12 @@
         @click.stop
       >
         <!-- Header -->
-        <div class="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 class="text-xl font-bold text-slate-900">{{ helpContent.title }}</h2>
+        <div
+          class="flex items-center justify-between p-6 border-b border-slate-200"
+        >
+          <h2 class="text-xl font-bold text-slate-900">
+            {{ helpContent.title }}
+          </h2>
           <button
             @click="$emit('close')"
             class="text-slate-500 hover:text-slate-700 transition"
@@ -53,9 +57,14 @@
               How to Complete It
             </h3>
             <ul class="space-y-2">
-              <li v-for="(step, index) in helpContent.howToComplete" :key="index"
-                class="flex gap-3 text-slate-700">
-                <span class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-sm font-semibold">
+              <li
+                v-for="(step, index) in helpContent.howToComplete"
+                :key="index"
+                class="flex gap-3 text-slate-700"
+              >
+                <span
+                  class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-sm font-semibold"
+                >
                   {{ index + 1 }}
                 </span>
                 <span class="leading-relaxed">{{ step }}</span>
@@ -69,8 +78,11 @@
               What Coaches Expect
             </h3>
             <ul class="space-y-2">
-              <li v-for="(expectation, index) in helpContent.coachesExpect" :key="index"
-                class="flex gap-2 text-slate-700">
+              <li
+                v-for="(expectation, index) in helpContent.coachesExpect"
+                :key="index"
+                class="flex gap-2 text-slate-700"
+              >
                 <span class="text-blue-600 font-bold">•</span>
                 <span class="leading-relaxed">{{ expectation }}</span>
               </li>
@@ -288,7 +300,8 @@ const helpContentMap: Record<string, HelpContentItem> = {
       "Realistic assessment of fit from athlete",
       "Genuine interest across the list, not just top-tier schools",
     ],
-    timeline: "Build portfolio by end of sophomore year. Refine in junior year.",
+    timeline:
+      "Build portfolio by end of sophomore year. Refine in junior year.",
   },
 };
 

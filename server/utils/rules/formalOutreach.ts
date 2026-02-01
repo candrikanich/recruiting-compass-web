@@ -4,10 +4,11 @@ import type { SuggestionData } from "~/types/timeline";
 export const formalOutreachRule: Rule = {
   id: "formal-outreach",
   name: "Increase Formal Coach Outreach",
-  description: "Junior+ athletes should maintain monthly touchpoints with coaches",
+  description:
+    "Junior+ athletes should maintain monthly touchpoints with coaches",
   async evaluate(context: RuleContext): Promise<SuggestionData | null> {
-    const gradeLevel = (context.athlete as Record<string, unknown>)
-      ?.grade_level || 9;
+    const gradeLevel =
+      (context.athlete as Record<string, unknown>)?.grade_level || 9;
 
     // Only apply to juniors (11) and seniors (12)
     if (gradeLevel < 11) return null;

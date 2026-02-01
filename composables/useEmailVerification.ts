@@ -51,8 +51,7 @@ export const useEmailVerification = () => {
         return true;
       }
 
-      error.value =
-        response?.message || "Email verification failed";
+      error.value = response?.message || "Email verification failed";
       return false;
     } catch (err: unknown) {
       const message =
@@ -90,12 +89,13 @@ export const useEmailVerification = () => {
         return true;
       }
 
-      error.value =
-        response?.message || "Failed to resend verification email";
+      error.value = response?.message || "Failed to resend verification email";
       return false;
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "Failed to resend verification email";
+        err instanceof Error
+          ? err.message
+          : "Failed to resend verification email";
       error.value = message;
       console.error("Resend verification error:", err);
       return false;
@@ -124,14 +124,17 @@ export const useEmailVerification = () => {
       }
 
       // Check if email_confirmed_at is set (indicates verified)
-      const verified = user.email_confirmed_at !== null &&
+      const verified =
+        user.email_confirmed_at !== null &&
         user.email_confirmed_at !== undefined;
       isVerified.value = verified;
 
       return verified;
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "Failed to check verification status";
+        err instanceof Error
+          ? err.message
+          : "Failed to check verification status";
       error.value = message;
       console.error("Verification status check error:", err);
       return false;

@@ -4,7 +4,9 @@ import FitScoreDisplay from "~/components/FitScore/FitScoreDisplay.vue";
 import type { FitScoreResult } from "~/types/timeline";
 
 describe("FitScoreDisplay", () => {
-  const createMockFitScore = (overrides?: Partial<FitScoreResult>): FitScoreResult => ({
+  const createMockFitScore = (
+    overrides?: Partial<FitScoreResult>,
+  ): FitScoreResult => ({
     score: 82,
     tier: "match",
     breakdown: {
@@ -115,7 +117,8 @@ describe("FitScoreDisplay", () => {
 
     // Initially collapsed - breakdown section heading should not be in HTML
     const initialHtml = wrapper.html();
-    const h4Count = (initialHtml.match(/<h4[^>]*>Score Breakdown<\/h4>/g) || []).length;
+    const h4Count = (initialHtml.match(/<h4[^>]*>Score Breakdown<\/h4>/g) || [])
+      .length;
     expect(h4Count).toBe(0);
 
     // Click to expand
@@ -125,7 +128,9 @@ describe("FitScoreDisplay", () => {
     // Click to collapse
     await wrapper.find("button").trigger("click");
     const finalHtml = wrapper.html();
-    const finalH4Count = (finalHtml.match(/<h4[^>]*>Score Breakdown<\/h4>/g) || []).length;
+    const finalH4Count = (
+      finalHtml.match(/<h4[^>]*>Score Breakdown<\/h4>/g) || []
+    ).length;
     expect(finalH4Count).toBe(0);
   });
 

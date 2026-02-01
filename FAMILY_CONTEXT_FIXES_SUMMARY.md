@@ -9,17 +9,20 @@
 ## Problems Identified & Fixed
 
 ### 1. **Singleton Instance Mismatch** ✅
+
 **Problem:** When a parent switched athletes, the page's family context would update, but composables were using a different singleton instance, causing data to not refresh.
 
 **Root Cause:** `useFamilyContext()` could create a module-level singleton before app.vue's provide() executed, resulting in two different instances.
 
 **Fix:**
+
 - Added explicit injection failure detection to all family-aware composables
 - Enhanced debug logging with instance IDs for verification
 - Added warnings when fallback singleton is used
 - Updated switchAthlete() logging to show family context changes
 
 **Files Changed:**
+
 - `composables/useFamilyContext.ts` - Added singleton creation warnings
 - `composables/useActiveFamily.ts` - Added instance ID tracking and enhanced logging
 - `composables/useSchools.ts` - Added injection failure detection
@@ -31,6 +34,7 @@
 ---
 
 ### 2. **RLS Policies Blocking Parent Data Access** ✅
+
 **Problem:** Parent2 could access Player2028 (they were in family_members), but RLS policies prevented them from viewing data. Parent2 saw 1 school instead of 22.
 
 **Root Cause:** RLS policies used outdated logic checking `family_units.student_user_id = auth.uid()`, which only allowed STUDENTS to see family data, not parents.
@@ -52,6 +56,7 @@ family_unit_id IN (
 ```
 
 **Tables Fixed:**
+
 1. `schools` table
    - Replaced "Users can view schools in their families" policy
    - New policy: "Family members can view schools in their families"
@@ -71,7 +76,9 @@ family_unit_id IN (
 ## Verification & Testing
 
 ### Instance Mismatch Fix
+
 Expected logs when parent switches athletes:
+
 ```
 [useActiveFamily] Athlete switched: <old-id> → <new-id>, instance: abc1234, family: xyz9876
 [Schools] Family changed: familyId=xyz9876, re-fetching schools
@@ -80,7 +87,9 @@ Expected logs when parent switches athletes:
 No warnings about injection failures = ✅ Fix working
 
 ### RLS Policy Fix
+
 Parent2 should now see:
+
 - ✅ All 22 schools (instead of 1) for Player2028
 - ✅ All interactions for Player2028
 - ✅ All offers for Player2028

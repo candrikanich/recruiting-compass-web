@@ -174,7 +174,7 @@ config.global.stubs = {
   },
   Badge: {
     name: "Badge",
-    template: '<span><slot /></span>',
+    template: "<span><slot /></span>",
   },
 };
 

@@ -3,6 +3,7 @@
 **Issue**: 31 different user_ids were created in the database for a single user account (chris@andrikanich.com)
 
 **Root Cause**:
+
 - `initializeUser()` called multiple times without proper guards
 - Profile creation fails silently, leaving user without profile
 - Repeated calls attempt to create profile again, potentially with different context
@@ -13,6 +14,7 @@
 ## Phase 1: Add Safety Guards & Constraints
 
 ### 1.1 Add Unique Constraint on Users Table
+
 **File**: Create new migration `012_add_users_table_constraints.sql`
 
 **Purpose**: Prevent duplicate user records even if profile creation is called multiple times
@@ -31,6 +33,7 @@ COMMENT ON CONSTRAINT users_email_unique ON users IS
 ---
 
 ### 1.2 Add Idempotence Guard to `useAuth` Composable
+
 **File**: `composables/useAuth.ts`
 
 **Current Issue**: `restoreSession()` has an `isInitialized` guard, but it returns null if already initialized, which could be confusing
@@ -51,7 +54,7 @@ const restoreSession = async () => {
     console.log("[useAuth] Session initialization in progress, waiting...");
     // Wait for initialization to complete
     while (initializationAttempt.value && !isInitialized.value) {
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
     }
     return session.value;
   }
@@ -70,6 +73,7 @@ const restoreSession = async () => {
 ## Phase 2: Fix Profile Creation Logic
 
 ### 2.1 Refactor `initializeUser()` with Better Error Handling
+
 **File**: `stores/user.ts`, lines 28-93
 
 **Changes**:
@@ -146,6 +150,7 @@ async initializeUser() {
 ```
 
 ### 2.2 Improve `createUserProfile()` with Better Error Handling
+
 **File**: `stores/user.ts`, lines 95-129
 
 **Changes**:
@@ -230,6 +235,7 @@ async createUserProfile(
 ## Phase 3: Add Initialization Guards
 
 ### 3.1 Single Point of Initialization in App Root
+
 **File**: `app.vue` (or create if doesn't exist)
 
 **Purpose**: Initialize user store ONCE at app startup, not on every route change
@@ -260,6 +266,7 @@ onBeforeMount(async () => {
 ```
 
 ### 3.2 Remove Duplicate Initialization from Middleware
+
 **File**: `middleware/auth.ts`
 
 **Change**: Remove the `initializeUser()` call since it's now done in app.vue
@@ -277,7 +284,9 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
 ```
 
 ### 3.3 Remove Duplicate Initialization from Page Components
+
 **Files to update**:
+
 - `pages/login.vue` - Remove `await userStore.initializeUser()` after successful login
 - `pages/signup.vue` - Remove `await userStore.initializeUser()` after successful signup
 - `pages/verify-email.vue` - Remove `await userStore.initializeUser()` on mount
@@ -289,6 +298,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
 ## Phase 4: Add Monitoring & Diagnostics
 
 ### 4.1 Add Debug Logging Hook
+
 **File**: Create new `composables/useAuthDebug.ts`
 
 ```typescript
@@ -297,8 +307,12 @@ export const useAuthDebug = () => {
   const userStore = useUserStore();
 
   const logAuthState = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
     console.group("[Auth Debug]");
     console.log("Auth User ID:", user?.id);
@@ -320,6 +334,7 @@ export const useAuthDebug = () => {
 ## Phase 5: Database Cleanup
 
 ### 5.1 Audit Existing Users Table
+
 **Purpose**: Identify and clean up duplicate/orphaned user records
 
 ```sql
@@ -340,18 +355,24 @@ ORDER BY u.created_at DESC;
 ```
 
 ### 5.2 Document User ID Stability
+
 **Purpose**: Verify that session.user.id is actually stable from Supabase auth
 
 Create a test to confirm:
+
 ```typescript
 // In browser console during testing
 const supabase = useSupabase();
-const { data: { user: user1 } } = await supabase.auth.getUser();
+const {
+  data: { user: user1 },
+} = await supabase.auth.getUser();
 console.log("User 1:", user1.id);
 
 // Refresh page
 // Then check again
-const { data: { user: user2 } } = await supabase.auth.getUser();
+const {
+  data: { user: user2 },
+} = await supabase.auth.getUser();
 console.log("User 2:", user2.id);
 
 // Should be identical
@@ -373,6 +394,7 @@ console.log("User 2:", user2.id);
 ## Testing Strategy
 
 ### Manual Testing Checklist
+
 - [ ] Sign up new account → verify one user profile created
 - [ ] Log out, log back in → verify same user_id throughout
 - [ ] Hard refresh page → verify user_id stable
@@ -381,6 +403,7 @@ console.log("User 2:", user2.id);
 - [ ] Browser dev tools → run `useAuthDebug().logAuthState()` → verify consistency
 
 ### Automated Testing
+
 - Add unit test for `initializeUser()` idempotency
 - Add integration test for profile creation deduplication
 - Add E2E test for login/logout/login flow
@@ -390,15 +413,18 @@ console.log("User 2:", user2.id);
 ## Risk Assessment
 
 **Low Risk**:
+
 - Adding unique constraint (prevents bugs, no data loss)
 - Refactoring profile creation logic (improved error handling)
 - Adding debug logging
 
 **Medium Risk**:
+
 - Removing initialization from middleware/pages (timing issues possible)
 - Centralizing initialization in app.vue (needs testing)
 
 **Mitigation**:
+
 - Test thoroughly before deploying
 - Add fallback initialization in critical routes
 - Monitor for initialization failures in production
@@ -412,4 +438,3 @@ console.log("User 2:", user2.id);
 ✅ Password reset doesn't create new user_id
 ✅ Hard refresh doesn't create new user_id
 ✅ Console logs show consistent user_id throughout session
-

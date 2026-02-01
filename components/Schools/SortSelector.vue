@@ -4,7 +4,9 @@
     <div class="flex gap-2">
       <select
         :value="modelValue"
-        @change="$emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
+        @change="
+          $emit('update:modelValue', ($event.target as HTMLSelectElement).value)
+        "
         class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="a-z">A - Z</option>
@@ -24,7 +26,12 @@
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M7 16V4m0 0L3 8m4-4l4 4"
+          />
         </svg>
         <svg
           v-else
@@ -33,7 +40,12 @@
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8v12m0 0l-4-4m4 4l4-4" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M7 8v12m0 0l-4-4m4 4l4-4"
+          />
         </svg>
       </button>
     </div>
@@ -43,11 +55,11 @@
 <script setup lang="ts">
 defineProps<{
   modelValue: string;
-  sortOrder: 'asc' | 'desc';
+  sortOrder: "asc" | "desc";
 }>();
 
 defineEmits<{
-  'update:modelValue': [value: string];
-  'update:sortOrder': [value: 'asc' | 'desc'];
+  "update:modelValue": [value: string];
+  "update:sortOrder": [value: "asc" | "desc"];
 }>();
 </script>

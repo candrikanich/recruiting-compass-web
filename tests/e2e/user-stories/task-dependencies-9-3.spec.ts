@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
 /**
  * E2E Tests for User Story 9.3: Task Locking Based on Dependencies
@@ -11,14 +11,16 @@ import { test, expect } from '@playwright/test';
  * - Athletes can skip locked tasks
  */
 
-test.describe('User Story 9.3 - Task Locking', () => {
+test.describe("User Story 9.3 - Task Locking", () => {
   test.beforeEach(async ({ page }) => {
     // Assume user is logged in and on tasks page
-    await page.goto('/tasks');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/tasks");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('Scenario: Task shows as locked with disabled checkbox', async ({ page }) => {
+  test("Scenario: Task shows as locked with disabled checkbox", async ({
+    page,
+  }) => {
     /**
      * Given: A task with incomplete dependencies
      * When: The athlete views the tasks page
@@ -26,10 +28,15 @@ test.describe('User Story 9.3 - Task Locking', () => {
      */
 
     // Find a locked task (one with incomplete prerequisites)
-    const lockedTaskItems = await page.locator('[data-testid="task-item"]').all();
+    const lockedTaskItems = await page
+      .locator('[data-testid="task-item"]')
+      .all();
 
     for (const item of lockedTaskItems) {
-      const hasLockedBadge = await item.locator('text=🔒 Locked').isVisible().catch(() => false);
+      const hasLockedBadge = await item
+        .locator("text=🔒 Locked")
+        .isVisible()
+        .catch(() => false);
 
       if (hasLockedBadge) {
         // Verify checkbox is disabled
@@ -38,24 +45,26 @@ test.describe('User Story 9.3 - Task Locking', () => {
         expect(isDisabled).toBe(true);
 
         // Verify tooltip explains why
-        const title = await checkbox.getAttribute('title');
-        expect(title).toContain('Complete prerequisites');
+        const title = await checkbox.getAttribute("title");
+        expect(title).toContain("Complete prerequisites");
 
         // Verify lock badge exists
-        const badge = item.locator('text=🔒 Locked');
+        const badge = item.locator("text=🔒 Locked");
         await expect(badge).toBeVisible();
 
         // Verify title is greyed out
-        const taskTitle = item.locator('h3');
-        const titleClass = await taskTitle.getAttribute('class');
-        expect(titleClass).toContain('text-slate-400');
+        const taskTitle = item.locator("h3");
+        const titleClass = await taskTitle.getAttribute("class");
+        expect(titleClass).toContain("text-slate-400");
 
         break;
       }
     }
   });
 
-  test('Scenario: Locked task auto-expands to show prerequisites', async ({ page }) => {
+  test("Scenario: Locked task auto-expands to show prerequisites", async ({
+    page,
+  }) => {
     /**
      * Given: A task with incomplete dependencies on first view
      * When: The athlete views the tasks page
@@ -63,11 +72,13 @@ test.describe('User Story 9.3 - Task Locking', () => {
      */
 
     // Check if a locked task is expanded on first view
-    const expandedSections = await page.locator('text=Complete These First').all();
+    const expandedSections = await page
+      .locator("text=Complete These First")
+      .all();
 
     if (expandedSections.length > 0) {
       // Task was auto-expanded
-      const prerequisitesList = await expandedSections[0].locator('li').all();
+      const prerequisitesList = await expandedSections[0].locator("li").all();
       expect(prerequisitesList.length).toBeGreaterThan(0);
 
       // Verify prerequisite titles are shown
@@ -78,7 +89,9 @@ test.describe('User Story 9.3 - Task Locking', () => {
     }
   });
 
-  test('Scenario: Task unlocks reactively after prerequisite completion', async ({ page }) => {
+  test("Scenario: Task unlocks reactively after prerequisite completion", async ({
+    page,
+  }) => {
     /**
      * Given: A task B that depends on task A
      * When: The athlete completes task A
@@ -90,8 +103,14 @@ test.describe('User Story 9.3 - Task Locking', () => {
     let completedTaskId: string | null = null;
 
     for (const item of taskItems) {
-      const hasLockedBadge = await item.locator('text=🔒 Locked').isVisible().catch(() => false);
-      const hasPrerequisites = await item.locator('text=Prerequisites pending').isVisible().catch(() => false);
+      const hasLockedBadge = await item
+        .locator("text=🔒 Locked")
+        .isVisible()
+        .catch(() => false);
+      const hasPrerequisites = await item
+        .locator("text=Prerequisites pending")
+        .isVisible()
+        .catch(() => false);
 
       if (!hasLockedBadge && !hasPrerequisites) {
         // This task has no dependencies
@@ -101,7 +120,9 @@ test.describe('User Story 9.3 - Task Locking', () => {
         if (!isDisabled) {
           // Complete this task
           await checkbox.click();
-          completedTaskId = await item.locator('[data-testid*="task-checkbox"]').getAttribute('data-testid');
+          completedTaskId = await item
+            .locator('[data-testid*="task-checkbox"]')
+            .getAttribute("data-testid");
 
           // Wait for success message or refetch
           await page.waitForTimeout(1000);
@@ -113,15 +134,17 @@ test.describe('User Story 9.3 - Task Locking', () => {
     if (completedTaskId) {
       // Refetch tasks to see if any previously locked tasks are now unlocked
       await page.reload();
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState("networkidle");
 
       // Verify the page still renders without errors
-      const errorElements = await page.locator('text=Error').all();
+      const errorElements = await page.locator("text=Error").all();
       expect(errorElements.length).toBe(0);
     }
   });
 
-  test('Scenario: Locked task prevents completion with clear error', async ({ page }) => {
+  test("Scenario: Locked task prevents completion with clear error", async ({
+    page,
+  }) => {
     /**
      * Given: A locked task
      * When: The athlete attempts to click the checkbox
@@ -129,8 +152,8 @@ test.describe('User Story 9.3 - Task Locking', () => {
      */
 
     // Listen for alert dialogs
-    let alertMessage = '';
-    page.on('dialog', async (dialog) => {
+    let alertMessage = "";
+    page.on("dialog", async (dialog) => {
       alertMessage = dialog.message;
       await dialog.accept();
     });
@@ -139,7 +162,10 @@ test.describe('User Story 9.3 - Task Locking', () => {
     const taskItems = await page.locator('[data-testid="task-item"]').all();
 
     for (const item of taskItems) {
-      const hasLockedBadge = await item.locator('text=🔒 Locked').isVisible().catch(() => false);
+      const hasLockedBadge = await item
+        .locator("text=🔒 Locked")
+        .isVisible()
+        .catch(() => false);
 
       if (hasLockedBadge) {
         const checkbox = item.locator('input[type="checkbox"]');
@@ -149,8 +175,8 @@ test.describe('User Story 9.3 - Task Locking', () => {
         await page.waitForTimeout(500);
 
         if (alertMessage) {
-          expect(alertMessage).toContain('Cannot complete task');
-          expect(alertMessage).toContain('prerequisites');
+          expect(alertMessage).toContain("Cannot complete task");
+          expect(alertMessage).toContain("prerequisites");
         }
 
         break;
@@ -158,7 +184,9 @@ test.describe('User Story 9.3 - Task Locking', () => {
     }
   });
 
-  test('Scenario: Locked task can be skipped for flexibility', async ({ page }) => {
+  test("Scenario: Locked task can be skipped for flexibility", async ({
+    page,
+  }) => {
     /**
      * Given: A locked task
      * When: The athlete chooses to skip it via expanded options
@@ -166,11 +194,15 @@ test.describe('User Story 9.3 - Task Locking', () => {
      */
 
     // Find a locked task with expanded view
-    const expandedSections = await page.locator('text=Complete These First').all();
+    const expandedSections = await page
+      .locator("text=Complete These First")
+      .all();
 
     if (expandedSections.length > 0) {
       // Look for skip button in the expanded section
-      const skipButton = expandedSections[0].locator('button:has-text("Skip")').first();
+      const skipButton = expandedSections[0]
+        .locator('button:has-text("Skip")')
+        .first();
       const skipButtonExists = await skipButton.isVisible().catch(() => false);
 
       // Skip button may or may not be present depending on UI implementation
@@ -182,13 +214,15 @@ test.describe('User Story 9.3 - Task Locking', () => {
         await page.waitForTimeout(500);
 
         // Verify status shows skipped
-        const statusBadge = expandedSections[0].locator('text=Skipped').first();
+        const statusBadge = expandedSections[0].locator("text=Skipped").first();
         await expect(statusBadge).toBeVisible();
       }
     }
   });
 
-  test('Scenario: Task list respects logical order with dependency chain', async ({ page }) => {
+  test("Scenario: Task list respects logical order with dependency chain", async ({
+    page,
+  }) => {
     /**
      * Given: Tasks with chain dependencies (A → B → C)
      * When: The athlete views the tasks page
@@ -201,7 +235,10 @@ test.describe('User Story 9.3 - Task Locking', () => {
     let lockedCount = 0;
 
     for (const item of taskItems) {
-      const hasLockedBadge = await item.locator('text=🔒 Locked').isVisible().catch(() => false);
+      const hasLockedBadge = await item
+        .locator("text=🔒 Locked")
+        .isVisible()
+        .catch(() => false);
 
       if (hasLockedBadge) {
         const checkbox = item.locator('input[type="checkbox"]');
@@ -224,7 +261,10 @@ test.describe('User Story 9.3 - Task Locking', () => {
     }
   });
 
-  test('Scenario: Server prevents bypass of locked tasks', async ({ page, context }) => {
+  test("Scenario: Server prevents bypass of locked tasks", async ({
+    page,
+    context,
+  }) => {
     /**
      * Given: A locked task
      * When: An athlete makes a direct API call to complete it
@@ -232,13 +272,16 @@ test.describe('User Story 9.3 - Task Locking', () => {
      */
 
     // Make direct API call to attempt completing a locked task
-    const response = await context.request.patch('/api/athlete-tasks/some-locked-task-id', {
-      data: { status: 'completed' },
-      headers: {
-        'Content-Type': 'application/json',
-        // Auth headers would be added by the application
+    const response = await context.request.patch(
+      "/api/athlete-tasks/some-locked-task-id",
+      {
+        data: { status: "completed" },
+        headers: {
+          "Content-Type": "application/json",
+          // Auth headers would be added by the application
+        },
       },
-    });
+    );
 
     // If the task is locked, expect 400
     // If the task doesn't exist, expect 404
@@ -247,19 +290,21 @@ test.describe('User Story 9.3 - Task Locking', () => {
 
     if (response.status === 400) {
       const body = await response.json();
-      expect(body.statusMessage).toContain('prerequisites');
+      expect(body.statusMessage).toContain("prerequisites");
     }
   });
 
-  test('Scenario: Multiple prerequisites all show in error message', async ({ page }) => {
+  test("Scenario: Multiple prerequisites all show in error message", async ({
+    page,
+  }) => {
     /**
      * Given: A task with multiple incomplete dependencies
      * When: The athlete attempts to complete it
      * Then: The error message lists all incomplete prerequisites
      */
 
-    let alertMessage = '';
-    page.on('dialog', async (dialog) => {
+    let alertMessage = "";
+    page.on("dialog", async (dialog) => {
       alertMessage = dialog.message;
       await dialog.accept();
     });
@@ -269,12 +314,13 @@ test.describe('User Story 9.3 - Task Locking', () => {
 
     for (const item of taskItems) {
       // Count how many prerequisites
-      const prerequisites = await item.locator('text=Complete These First').then(
-        async (el) => {
-          const list = el.locator('li');
+      const prerequisites = await item
+        .locator("text=Complete These First")
+        .then(async (el) => {
+          const list = el.locator("li");
           return await list.count();
-        }
-      ).catch(() => 0);
+        })
+        .catch(() => 0);
 
       if (prerequisites > 1) {
         const checkbox = item.locator('input[type="checkbox"]');

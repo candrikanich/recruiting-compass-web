@@ -68,11 +68,10 @@ export default defineEventHandler(
 
       // Update user password with Supabase
       // This requires valid session from reset link
-      const { error: updateError } = await event.context.supabase.auth.updateUser(
-        {
+      const { error: updateError } =
+        await event.context.supabase.auth.updateUser({
           password: validationResult.data.password,
-        },
-      );
+        });
 
       if (updateError) {
         console.error("Password update error:", updateError);
@@ -90,10 +89,7 @@ export default defineEventHandler(
           });
         }
 
-        if (
-          updateError.message &&
-          updateError.message.includes("expired")
-        ) {
+        if (updateError.message && updateError.message.includes("expired")) {
           throw createError({
             statusCode: 410,
             statusMessage:
@@ -109,7 +105,8 @@ export default defineEventHandler(
 
       return {
         success: true,
-        message: "Password has been reset successfully. You can now log in with your new password.",
+        message:
+          "Password has been reset successfully. You can now log in with your new password.",
       };
     } catch (err) {
       // If it's already a properly formatted error, re-throw it

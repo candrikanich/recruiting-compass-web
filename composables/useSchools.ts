@@ -48,7 +48,11 @@ export const useSchools = (): {
   deleteSchool: (id: string) => Promise<void>;
   toggleFavorite: (id: string, isFavorite: boolean) => Promise<School>;
   updateRanking: (schools_: School[]) => Promise<void>;
-  updateStatus: (schoolId: string, newStatus: School["status"], notes?: string) => Promise<School>;
+  updateStatus: (
+    schoolId: string,
+    newStatus: School["status"],
+    notes?: string,
+  ) => Promise<School>;
   findDuplicate: (
     schoolData: Partial<School> | Record<string, string | null | undefined>,
   ) => {
@@ -63,13 +67,14 @@ export const useSchools = (): {
   const supabase = useSupabase();
   const userStore = useUserStore();
   // Try to get the provided family context (from page), fall back to singleton
-  const injectedFamily = inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+  const injectedFamily =
+    inject<ReturnType<typeof useActiveFamily>>("activeFamily");
   const activeFamily = injectedFamily || useFamilyContext();
 
   if (!injectedFamily) {
     console.warn(
       "[useSchools] activeFamily injection failed, using singleton fallback. " +
-      "This may cause data sync issues when parent switches athletes."
+        "This may cause data sync issues when parent switches athletes.",
     );
   }
 
@@ -84,7 +89,9 @@ export const useSchools = (): {
   const fetchSchools = async () => {
     console.debug("[useSchools] fetchSchools called");
     console.debug(`[useSchools] User: ${userStore.user?.id || "null"}`);
-    console.debug(`[useSchools] Active Family ID: ${activeFamily.activeFamilyId?.value || "null"}`);
+    console.debug(
+      `[useSchools] Active Family ID: ${activeFamily.activeFamilyId?.value || "null"}`,
+    );
 
     // Ensure we have both user and family context
     if (!userStore.user) {
@@ -98,7 +105,7 @@ export const useSchools = (): {
     }
 
     console.debug(
-      `[useSchools] Fetching for family: ${activeFamily.activeFamilyId.value}`
+      `[useSchools] Fetching for family: ${activeFamily.activeFamilyId.value}`,
     );
     loading.value = true;
     error.value = null;
@@ -372,9 +379,7 @@ export const useSchools = (): {
     if (!newName) return null;
     const normalized = newName.trim().toLowerCase();
     return (
-      schools.value.find(
-        (s) => s.name.toLowerCase() === normalized,
-      ) || null
+      schools.value.find((s) => s.name.toLowerCase() === normalized) || null
     );
   };
 

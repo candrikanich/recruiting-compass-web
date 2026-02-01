@@ -16,7 +16,7 @@ describe("30+ Schools Warning Feature", () => {
       Array.from({ length: 29 }, (_, i) => ({
         id: `school-${i}`,
         name: `School ${i}`,
-      }))
+      })),
     );
 
     const shouldShowWarning = computed(() => schools.value.length >= 30);
@@ -29,7 +29,7 @@ describe("30+ Schools Warning Feature", () => {
       Array.from({ length: 30 }, (_, i) => ({
         id: `school-${i}`,
         name: `School ${i}`,
-      }))
+      })),
     );
 
     const shouldShowWarning = computed(() => schools.value.length >= 30);
@@ -42,7 +42,7 @@ describe("30+ Schools Warning Feature", () => {
       Array.from({ length: 50 }, (_, i) => ({
         id: `school-${i}`,
         name: `School ${i}`,
-      }))
+      })),
     );
 
     const shouldShowWarning = computed(() => schools.value.length >= 30);
@@ -55,7 +55,7 @@ describe("30+ Schools Warning Feature", () => {
       Array.from({ length: 31 }, (_, i) => ({
         id: `school-${i}`,
         name: `School ${i}`,
-      }))
+      })),
     );
 
     const shouldShowWarning = computed(() => schools.value.length >= 30);
@@ -68,7 +68,7 @@ describe("30+ Schools Warning Feature", () => {
       Array.from({ length: 30 }, (_, i) => ({
         id: `school-${i}`,
         name: `School ${i}`,
-      }))
+      })),
     );
 
     const shouldShowWarning = computed(() => schools.value.length >= 30);
@@ -86,7 +86,7 @@ describe("30+ Schools Warning Feature", () => {
       Array.from({ length: 29 }, (_, i) => ({
         id: `school-${i}`,
         name: `School ${i}`,
-      }))
+      })),
     );
 
     const shouldShowWarning = computed(() => schools.value.length >= 30);
@@ -139,7 +139,7 @@ describe("30+ Schools Warning Feature", () => {
       Array.from({ length: 35 }, (_, i) => ({
         id: `school-${i}`,
         name: `School ${i}`,
-      }))
+      })),
     );
 
     expect(schools.value.length).toBe(35);

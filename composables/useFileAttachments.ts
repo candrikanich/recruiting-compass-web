@@ -44,7 +44,7 @@ export const useFileAttachments = () => {
    */
   const uploadAttachments = async (
     interactionId: string,
-    files: File[]
+    files: File[],
   ): Promise<string[]> => {
     if (!userStore.user || files.length === 0) {
       return [];

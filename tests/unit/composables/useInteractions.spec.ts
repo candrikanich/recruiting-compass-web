@@ -1002,10 +1002,7 @@ describe("useInteractions", () => {
       });
 
       expect(eqCalls).toHaveLength(3);
-      expect(eqCalls[0]).toEqual([
-        "family_unit_id",
-        "family-123",
-      ]);
+      expect(eqCalls[0]).toEqual(["family_unit_id", "family-123"]);
       expect(eqCalls[1]).toEqual([
         "school_id",
         "550e8400-e29b-41d4-a716-446655440001",
@@ -1189,7 +1186,7 @@ describe("useInteractions", () => {
           logged_by: "user-123",
           attachments: [],
         },
-        [mockFile]
+        [mockFile],
       );
 
       expect(result).toBeDefined();
@@ -1220,8 +1217,8 @@ describe("useInteractions", () => {
             logged_by: "user-123",
             attachments: [],
           },
-          [mockLargeFile]
-        )
+          [mockLargeFile],
+        ),
       ).rejects.toThrow();
     });
 
@@ -1264,7 +1261,7 @@ describe("useInteractions", () => {
           logged_by: "user-123",
           attachments: [],
         },
-        files
+        files,
       );
 
       expect(result.attachments).toHaveLength(3);
@@ -1273,7 +1270,8 @@ describe("useInteractions", () => {
 
   describe("fetchNoteHistory (consolidated from useNotesHistory)", () => {
     it("should initialize with empty note history state", () => {
-      const { noteHistory, noteHistoryLoading, noteHistoryError } = useInteractions();
+      const { noteHistory, noteHistoryLoading, noteHistoryError } =
+        useInteractions();
 
       expect(noteHistory.value).toEqual([]);
       expect(noteHistoryLoading.value).toBe(false);
@@ -1295,7 +1293,8 @@ describe("useInteractions", () => {
 
     it("should handle missing user gracefully", async () => {
       mockUser = null;
-      const { fetchNoteHistory, noteHistory, noteHistoryError } = useInteractions();
+      const { fetchNoteHistory, noteHistory, noteHistoryError } =
+        useInteractions();
 
       // When no user is authenticated
       await fetchNoteHistory("test-school-id");

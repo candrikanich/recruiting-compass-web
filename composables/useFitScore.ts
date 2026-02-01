@@ -319,9 +319,7 @@ export const useFitScore = (): {
       return response;
     } catch (err: unknown) {
       const message =
-        err instanceof Error
-          ? err.message
-          : "Failed to recalculate fit scores";
+        err instanceof Error ? err.message : "Failed to recalculate fit scores";
       state.value.error = message;
       console.error("Server fit score recalculation error:", err);
       throw err;

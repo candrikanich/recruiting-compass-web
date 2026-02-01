@@ -52,7 +52,8 @@ export const geocodeAddress = async (
       displayName: result.display_name,
     };
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : "Geocoding failed";
+    const errorMessage =
+      err instanceof Error ? err.message : "Geocoding failed";
     console.error("Geocoding error:", err);
     throw new Error(errorMessage);
   }

@@ -33,6 +33,7 @@
 ### Day 1 - Launch
 
 **Post 1A (Morning)**
+
 ```
 🚀 We're live! Recruiting Compass is here.
 
@@ -47,6 +48,7 @@ recruitingcompass.com
 ```
 
 **Post 1B (Afternoon)**
+
 ```
 The recruiting process is overwhelming.
 
@@ -63,6 +65,7 @@ recruitingcompass.com
 ```
 
 **Post 1C (Evening)**
+
 ```
 To every student-athlete: You deserve better tools.
 
@@ -78,6 +81,7 @@ recruitingcompass.com
 ### Day 2 - Features
 
 **Post 2A (Morning)**
+
 ```
 Feature Spotlight: Your School List
 
@@ -94,6 +98,7 @@ Get organized today → recruitingcompass.com
 ```
 
 **Post 2B (Afternoon)**
+
 ```
 Meet Your Timeline.
 
@@ -110,6 +115,7 @@ joinrecruitingcompass.com
 ```
 
 **Post 2C (Evening)**
+
 ```
 Feature: Coach Interaction Tracking
 
@@ -129,6 +135,7 @@ Try free → recruitingcompass.com
 ### Day 3 - Social Proof
 
 **Post 3A (Morning)**
+
 ```
 "Recruiting Compass changed how I manage my recruiting.
 Everything I need is in one place instead of scattered
@@ -143,6 +150,7 @@ recruitingcompass.com
 ```
 
 **Post 3B (Afternoon)**
+
 ```
 Parent perspective:
 
@@ -156,6 +164,7 @@ Try it free → recruitingcompass.com
 ```
 
 **Post 3C (Evening)**
+
 ```
 Real feedback from early users:
 
@@ -171,6 +180,7 @@ Sign up free → recruitingcompass.com
 ### Day 4 - Education
 
 **Post 4A (Morning)**
+
 ```
 🎯 Recruiting Tip: Build a Balanced School List
 
@@ -187,6 +197,7 @@ Learn more → recruitingcompass.com
 ```
 
 **Post 4B (Afternoon)**
+
 ```
 ❓ What's a Fit Score?
 
@@ -204,6 +215,7 @@ Try free → recruitingcompass.com
 ```
 
 **Post 4C (Evening)**
+
 ```
 Recruiting Truth:
 
@@ -221,6 +233,7 @@ recruitingcompass.com
 ### Day 5 - CTA & Momentum
 
 **Post 5A (Morning)**
+
 ```
 One week in and we're amazed.
 
@@ -235,6 +248,7 @@ Join the Recruiting Compass community.
 ```
 
 **Post 5B (Afternoon)**
+
 ```
 POLL: What's your biggest recruiting challenge?
 
@@ -249,6 +263,7 @@ And solve it with Recruiting Compass: recruitingcompass.com
 ```
 
 **Post 5C (Evening/Weekend)**
+
 ```
 This weekend:
 
@@ -272,6 +287,7 @@ recruitingcompass.com
 ### Feed Posts (1-2 per day)
 
 **Day 1 Post**
+
 ```
 Caption:
 Your recruiting headquarters is here. 🎓⚾
@@ -294,6 +310,7 @@ Link in bio to sign up free (no credit card required)
 ```
 
 **Day 3 Post**
+
 ```
 Caption:
 Real talk from a student-athlete:
@@ -314,18 +331,21 @@ Ready to get organized? Link in bio 🔗
 ### Stories (3-5 per day)
 
 **Day 1 Stories**
+
 - Frame 1: Problem ("I'm drowning in recruiting emails 📧📧📧")
 - Frame 2: Solution ("Meet Recruiting Compass")
 - Frame 3: Feature highlight (School list)
 - Frame 4: CTA ("Link in bio to try free")
 
 **Day 3 Stories**
+
 - Frame 1: Testimonial quote
 - Frame 2: Another quote
 - Frame 3: "Join [X] athletes using RC"
 - Frame 4: CTA with link
 
 **Day 5 Stories**
+
 - Frame 1: Throwback to launch
 - Frame 2: Stats (signups, etc.)
 - Frame 3: "Thanks for joining us"
@@ -429,12 +449,14 @@ Join us. Free to start, no credit card required.
 ## Hashtag Strategy
 
 ### Primary Hashtags (All posts)
+
 - #RecruitingCompass
 - #CollegeRecruiting
 - #CollegeAthletics
 - #BaseballRecruiting
 
 ### Secondary Hashtags (Mix and match)
+
 - #StudentAthlete
 - #Recruiting101
 - #CollegeBaseball
@@ -445,6 +467,7 @@ Join us. Free to start, no credit card required.
 - #StudentAthleteCommunity
 
 ### Trending/Seasonal
+
 - #CollegeDecisionDay (May)
 - #EarlySigningDay (November)
 - #RecruitmentSeason (varies)
@@ -455,13 +478,13 @@ Join us. Free to start, no credit card required.
 
 ### Daily Posting Plan
 
-| Time | Platform | Type | Frequency |
-|------|----------|------|-----------|
-| 9 AM | Twitter | Announcement/Tip | Every day |
-| 12 PM | Instagram | Story/Post | Daily story, 1-2 feed posts |
-| 3 PM | Twitter | Feature/Education | Every day |
-| 6 PM | Facebook | Longer content | 1-2x daily |
-| 8 PM | Twitter | CTA/Engagement | Every day |
+| Time  | Platform  | Type              | Frequency                   |
+| ----- | --------- | ----------------- | --------------------------- |
+| 9 AM  | Twitter   | Announcement/Tip  | Every day                   |
+| 12 PM | Instagram | Story/Post        | Daily story, 1-2 feed posts |
+| 3 PM  | Twitter   | Feature/Education | Every day                   |
+| 6 PM  | Facebook  | Longer content    | 1-2x daily                  |
+| 8 PM  | Twitter   | CTA/Engagement    | Every day                   |
 
 ### Engagement Strategy
 
@@ -497,6 +520,7 @@ Join us. Free to start, no credit card required.
 ## Hashtag & Mention Strategy
 
 ### Accounts to Follow/Mention
+
 - @ABCA (American Baseball Coaches Association)
 - @Perfect_Game (recruiting service)
 - @BaseballAmerica (media)
@@ -504,6 +528,7 @@ Join us. Free to start, no credit card required.
 - High school baseball programs
 
 ### Collaboration Opportunities
+
 - Partner with baseball Twitter influencers
 - Feature in baseball news websites
 - Guest post on recruiting blogs
@@ -540,24 +565,26 @@ Join us. Free to start, no credit card required.
 
 ## Content Calendar Template
 
-| Date | Platform | Time | Content Type | Copy | Media | CTA |
-|------|----------|------|--------------|------|-------|-----|
-| Mon 9am | Twitter | 9:00 | Announcement | "🚀 We're live!" | Logo | Sign up |
-| Mon 12pm | Instagram | 12:00 | Story | Problem | Video | Link |
-| Mon 3pm | Twitter | 3:00 | Feature | Schools | Screenshot | Learn |
-| Mon 6pm | Facebook | 6:00 | Long form | How it works | Video | Free trial |
+| Date     | Platform  | Time  | Content Type | Copy             | Media      | CTA        |
+| -------- | --------- | ----- | ------------ | ---------------- | ---------- | ---------- |
+| Mon 9am  | Twitter   | 9:00  | Announcement | "🚀 We're live!" | Logo       | Sign up    |
+| Mon 12pm | Instagram | 12:00 | Story        | Problem          | Video      | Link       |
+| Mon 3pm  | Twitter   | 3:00  | Feature      | Schools          | Screenshot | Learn      |
+| Mon 6pm  | Facebook  | 6:00  | Long form    | How it works     | Video      | Free trial |
 
 ---
 
 ## Crisis Communication Plan
 
 If issues arise:
+
 1. **Acknowledge quickly** (within 1 hour)
 2. **Show empathy** ("We understand this is frustrating")
 3. **Explain action** ("Here's what we're doing")
 4. **Follow up** (Ensure resolution is communicated)
 
 Example response:
+
 ```
 We're aware of [issue] and sincerely apologize.
 Our team is investigating and will have an update
@@ -570,6 +597,7 @@ Thanks for your patience.
 ## Content Inspiration
 
 ### Recruiting Challenges (Educational)
+
 - How to approach coaches
 - Building a balanced school list
 - Understanding fit scores
@@ -579,6 +607,7 @@ Thanks for your patience.
 - Email/communication best practices
 
 ### Student-Athlete Stories
+
 - Journey to college baseball
 - Recruiting lessons learned
 - How Recruiting Compass helped
@@ -586,6 +615,7 @@ Thanks for your patience.
 - Life as student-athlete
 
 ### Parent Perspective
+
 - How to help without taking over
 - Understanding the recruiting process
 - Financial aid basics
@@ -596,6 +626,7 @@ Thanks for your patience.
 ## Week 2+ Strategy
 
 After launch week:
+
 - **Shift to education:** 60% tips/advice, 30% product, 10% other
 - **Weekly themes:** Mondays = tips, Wednesdays = features, Fridays = community
 - **UGC focus:** 50% user-generated content (testimonials, stories)
@@ -605,4 +636,3 @@ After launch week:
 ---
 
 **Launch Week Goal:** Establish presence, drive signups, build community foundation
-

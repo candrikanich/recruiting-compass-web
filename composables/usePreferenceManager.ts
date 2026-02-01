@@ -86,7 +86,10 @@ export function usePreferenceManager() {
         dashboardPrefs.loadPreferences(),
       ]);
     } catch (err) {
-      console.error("[usePreferenceManager] Failed to load all preferences:", err);
+      console.error(
+        "[usePreferenceManager] Failed to load all preferences:",
+        err,
+      );
       throw err;
     }
   };
@@ -129,7 +132,7 @@ export function usePreferenceManager() {
    */
   const getNotificationSettings = (): NotificationSettings => {
     const validated = validateNotificationSettings(
-      notificationPrefs.preferences.value
+      notificationPrefs.preferences.value,
     );
     return validated || getDefaultNotificationSettings();
   };
@@ -138,14 +141,14 @@ export function usePreferenceManager() {
    * Set notification settings and mark as dirty
    */
   const setNotificationSettings = async (
-    settings: Partial<NotificationSettings>
+    settings: Partial<NotificationSettings>,
   ) => {
     const current = getNotificationSettings();
     const updated = { ...current, ...settings };
 
     // Track change before updating
     const oldValue = validateNotificationSettings(
-      notificationPrefs.preferences.value
+      notificationPrefs.preferences.value,
     );
 
     // Update preferences (marks as dirty)
@@ -260,7 +263,7 @@ export function usePreferenceManager() {
   const trackPreferenceChange = async (
     category: string,
     oldValue: unknown,
-    newValue: unknown
+    newValue: unknown,
   ): Promise<void> => {
     if (!userStore?.user) return;
 
@@ -268,7 +271,12 @@ export function usePreferenceManager() {
       // Determine which fields changed
       const changedFields: string[] = [];
 
-      if (oldValue && newValue && typeof oldValue === "object" && typeof newValue === "object") {
+      if (
+        oldValue &&
+        newValue &&
+        typeof oldValue === "object" &&
+        typeof newValue === "object"
+      ) {
         const oldObj = oldValue as Record<string, unknown>;
         const newObj = newValue as Record<string, unknown>;
 
@@ -296,7 +304,7 @@ export function usePreferenceManager() {
     } catch (err) {
       console.warn(
         "[usePreferenceManager] Failed to track preference change:",
-        err
+        err,
       );
       // Don't throw - history tracking failure shouldn't break the save
     }
@@ -312,7 +320,7 @@ export function usePreferenceManager() {
         {
           method: "GET",
           query: { limit },
-        }
+        },
       );
       return response as {
         data: Array<{
@@ -329,7 +337,7 @@ export function usePreferenceManager() {
     } catch (err) {
       console.error(
         `[usePreferenceManager] Failed to fetch history for ${category}:`,
-        err
+        err,
       );
       return { data: [], total: 0 };
     }

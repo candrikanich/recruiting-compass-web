@@ -1,5 +1,8 @@
 <template>
-  <div v-if="showCard" class="border-l-4 border-blue-500 bg-blue-50 p-4 rounded-lg">
+  <div
+    v-if="showCard"
+    class="border-l-4 border-blue-500 bg-blue-50 p-4 rounded-lg"
+  >
     <div class="flex items-center justify-between mb-2">
       <h3 class="text-sm font-semibold text-blue-900">
         <span class="mr-1">🔒</span>Your Private Notes
@@ -15,7 +18,9 @@
 
     <div v-if="!editing" class="mt-2 text-sm text-blue-800">
       <p v-if="noteContent" class="whitespace-pre-wrap">{{ noteContent }}</p>
-      <p v-else class="text-blue-600 italic">No private notes yet. Add your own thoughts here.</p>
+      <p v-else class="text-blue-600 italic">
+        No private notes yet. Add your own thoughts here.
+      </p>
     </div>
 
     <div v-else class="mt-2 space-y-2">
@@ -92,7 +97,7 @@ const saveNote = async () => {
     const success = await userNotes.saveNote(
       props.entityType,
       props.entityId,
-      editedContent.value
+      editedContent.value,
     );
 
     if (success) {
@@ -109,7 +114,10 @@ const saveNote = async () => {
 const deleteNote = async () => {
   saving.value = true;
   try {
-    const success = await userNotes.deleteNote(props.entityType, props.entityId);
+    const success = await userNotes.deleteNote(
+      props.entityType,
+      props.entityId,
+    );
 
     if (success) {
       noteContent.value = "";

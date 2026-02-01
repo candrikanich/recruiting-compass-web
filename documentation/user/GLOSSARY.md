@@ -21,6 +21,7 @@ A college baseball coach at a target school. Tracked individually with contact i
 
 **College Tier**
 A classification of colleges based on competitive level:
+
 - **D1 (NCAA Division I)**: Highest competitive level
 - **D2 (NCAA Division II)**: Mid-tier competitive colleges
 - **D3 (NCAA Division III)**: Smaller colleges, no athletic scholarships
@@ -53,6 +54,7 @@ A recruiting-related activity you plan to attend or have completed: showcase, to
 
 **Fit Score**
 A data-driven assessment of how well a school matches your academic, athletic, and personal goals. Calculated from:
+
 - Academic fit (GPA/test scores vs. school standards)
 - Athletic fit (your stats vs. team roster)
 - Location preference
@@ -68,6 +70,7 @@ Range: 1-10 (10 = perfect fit)
 
 **Interaction**
 Any communication or meeting with a coach:
+
 - Email exchange
 - Phone call
 - Text message
@@ -87,6 +90,7 @@ A quick questionnaire (6 questions) you complete after each coach interaction to
 
 **Log (Interaction Log)**
 Your complete record of all interactions with coaches. Helps you:
+
 - Remember when you last spoke with a coach
 - Track responsiveness
 - Prepare for future conversations
@@ -105,6 +109,7 @@ A major recruiting goal or deadline in your timeline (e.g., "Attend summer showc
 
 **Parent Account**
 A secondary account for a parent/guardian. Can be linked to a student-athlete account to:
+
 - View the recruiting timeline and progress
 - See all coach interactions
 - Receive notifications about important milestones
@@ -112,6 +117,7 @@ A secondary account for a parent/guardian. Can be linked to a student-athlete ac
 
 **Phase** (Timeline Phase)
 A recruiting stage in your 4-year timeline:
+
 - **Freshman Phase**: Foundation building, skill development
 - **Sophomore Phase**: Active outreach, tournament attendance
 - **Junior Phase**: Peak recruiting period, showcases, visits
@@ -119,6 +125,7 @@ A recruiting stage in your 4-year timeline:
 
 **Priority Tier**
 A classification of schools based on your interest level:
+
 - **Reach Schools**: Dream schools (long shot, high standards)
 - **Target Schools**: Realistic matches (good fit, competitive)
 - **Safety Schools**: Likely admits (strong fit, good chance)
@@ -139,6 +146,7 @@ A metric tracking how quickly and frequently a coach responds to you. Helps iden
 
 **School**
 A college or university you're targeting for recruiting. Tracked with:
+
 - Basic info (name, location, division level)
 - Team roster and coaching staff
 - Academic requirements
@@ -151,6 +159,7 @@ An organized baseball event where scouts/coaches view multiple athletes. Commonl
 
 **Suggestion**
 AI-powered recommendations generated based on your profile, interactions, and preferences. Examples:
+
 - "Follow up with Coach Smith (last contact 45 days ago)"
 - "Add new schools matching your fit score criteria"
 - "Schedule campus visit at Target School A"
@@ -164,6 +173,7 @@ See "Email Template"
 
 **Timeline**
 Your 4-year recruiting roadmap from freshman through senior year. Shows:
+
 - Phase-appropriate tasks and milestones
 - Critical deadlines
 - Progress tracking
@@ -171,6 +181,7 @@ Your 4-year recruiting roadmap from freshman through senior year. Shows:
 
 **Task**
 An action item in your recruiting timeline. Examples:
+
 - "Update your recruiting profile"
 - "Send introduction email to Coach A"
 - "Attend at least 2 summer showcases"
@@ -191,6 +202,7 @@ Status of an athlete who has not yet committed to a college. Most users in the R
 
 **Visit** (Campus Visit)
 A trip to visit a college campus, typically to:
+
 - Meet the coaching staff
 - See practice and game facilities
 - Tour campus and academic buildings
@@ -213,6 +225,7 @@ Your primary defensive position(s) on the team (e.g., Shortstop, Catcher, Outfie
 
 **Grade Level**
 Your year in high school:
+
 - **Freshman**: 9th grade
 - **Sophomore**: 10th grade
 - **Junior**: 11th grade
@@ -244,6 +257,7 @@ A measurement of your physical abilities (60-yard dash, vertical jump, exit velo
 ## Questions?
 
 If you encounter a term not in this glossary, check:
+
 1. The [User Manual](/docs/user/USER_MANUAL.md)
 2. The in-app Help system (? icon)
 3. Contact support@recruitingcompass.com

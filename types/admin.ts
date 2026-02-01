@@ -10,4 +10,4 @@ export interface PendingInvitation {
   invited_at: string;
 }
 
-export type InvitationFilterType = 'all' | 'expiring-soon' | 'active';
+export type InvitationFilterType = "all" | "expiring-soon" | "active";

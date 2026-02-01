@@ -7,8 +7,8 @@ export const officialVisitRule: Rule = {
   description:
     "Junior and senior athletes should schedule official visits to top schools",
   async evaluate(context: RuleContext): Promise<SuggestionData | null> {
-    const gradeLevel = (context.athlete as Record<string, unknown>)
-      ?.grade_level || 9;
+    const gradeLevel =
+      (context.athlete as Record<string, unknown>)?.grade_level || 9;
 
     // Only apply to juniors (11) and seniors (12)
     if (gradeLevel < 11) return null;

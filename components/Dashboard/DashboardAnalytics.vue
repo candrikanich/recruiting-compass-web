@@ -10,9 +10,11 @@
           @click="emit('generate-packet')"
           :disabled="recruitingPacketLoading"
           class="w-full inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200"
-          :class="recruitingPacketLoading
-            ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
-            : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow-md'"
+          :class="
+            recruitingPacketLoading
+              ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
+              : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow-md'
+          "
         >
           <svg
             v-if="!recruitingPacketLoading"
@@ -55,9 +57,11 @@
           @click="emit('email-packet')"
           :disabled="!hasGeneratedPacket || recruitingPacketLoading"
           class="w-full inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200"
-          :class="!hasGeneratedPacket || recruitingPacketLoading
-            ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
-            : 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 shadow-sm hover:shadow-md'"
+          :class="
+            !hasGeneratedPacket || recruitingPacketLoading
+              ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
+              : 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 shadow-sm hover:shadow-md'
+          "
         >
           <svg
             class="w-4 h-4 mr-2"
@@ -392,7 +396,11 @@ import {
   XMarkIcon,
   ShareIcon,
 } from "@heroicons/vue/24/outline";
-import type { Notification as NotificationModel, Interaction, School } from "~/types/models";
+import type {
+  Notification as NotificationModel,
+  Interaction,
+  School,
+} from "~/types/models";
 import ContactFrequencyWidget from "~/components/Dashboard/ContactFrequencyWidget.vue";
 
 interface Event {

@@ -54,7 +54,7 @@ test.describe("Family Units", () => {
     await page.waitForLoadState("networkidle");
 
     // Look for athlete selector (should be visible for parents)
-    const athleteSelector = page.locator('select').first();
+    const athleteSelector = page.locator("select").first();
     const isVisible = await athleteSelector.isVisible().catch(() => false);
 
     if (isVisible) {
@@ -116,7 +116,7 @@ test.describe("Family Units", () => {
     await page.waitForLoadState("networkidle");
 
     // Check that athlete selector is not visible (student should not see it)
-    const selectElements = page.locator('select');
+    const selectElements = page.locator("select");
     const count = await selectElements.count();
 
     // If there's a select for athlete switching, it should not be visible for students
@@ -160,17 +160,17 @@ test.describe("Family Units", () => {
 
           // Save the note
           const saveButton = privateNotesCard.locator(
-            "button:has-text('Save')"
+            "button:has-text('Save')",
           );
           if (await saveButton.isVisible().catch(() => false)) {
             await saveButton.click();
             await page.waitForLoadState("networkidle");
 
             // Verify note is saved
-            const savedNote = privateNotesCard.locator("text=Test private note");
-            expect(
-              await savedNote.isVisible().catch(() => false)
-            ).toBeTruthy();
+            const savedNote = privateNotesCard.locator(
+              "text=Test private note",
+            );
+            expect(await savedNote.isVisible().catch(() => false)).toBeTruthy();
           }
         }
       }
@@ -201,9 +201,7 @@ test.describe("Family Units", () => {
 
     // Check for action buttons
     const viewButton = page.locator('button:has-text("View")').first();
-    const isViewButtonVisible = await viewButton
-      .isVisible()
-      .catch(() => false);
+    const isViewButtonVisible = await viewButton.isVisible().catch(() => false);
     expect(isViewButtonVisible).toBeTruthy();
   });
 

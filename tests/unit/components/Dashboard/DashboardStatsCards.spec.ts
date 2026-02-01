@@ -55,7 +55,9 @@ describe("DashboardStatsCards", () => {
       props: defaultProps,
     });
 
-    const contactsCard = wrapper.find('[data-testid="stat-card-monthly-contacts"]');
+    const contactsCard = wrapper.find(
+      '[data-testid="stat-card-monthly-contacts"]',
+    );
     expect(contactsCard.exists()).toBe(true);
     expect(contactsCard.text()).toContain("Contacts");
     expect(contactsCard.text()).toContain("This month");
@@ -123,7 +125,9 @@ describe("DashboardStatsCards", () => {
       },
     });
 
-    const coachesLink = wrapper.findAll("a").find((el) => el.text().includes("Coaches"));
+    const coachesLink = wrapper
+      .findAll("a")
+      .find((el) => el.text().includes("Coaches"));
     expect(coachesLink?.attributes("href")).toBe("/coaches");
   });
 
@@ -137,7 +141,9 @@ describe("DashboardStatsCards", () => {
       },
     });
 
-    const schoolsLink = wrapper.findAll("a").find((el) => el.text().includes("Schools"));
+    const schoolsLink = wrapper
+      .findAll("a")
+      .find((el) => el.text().includes("Schools"));
     expect(schoolsLink?.attributes("href")).toBe("/schools");
   });
 
@@ -151,7 +157,9 @@ describe("DashboardStatsCards", () => {
       },
     });
 
-    const interactionsLink = wrapper.findAll("a").find((el) => el.text().includes("Interactions"));
+    const interactionsLink = wrapper
+      .findAll("a")
+      .find((el) => el.text().includes("Interactions"));
     expect(interactionsLink?.attributes("href")).toBe("/interactions");
   });
 
@@ -165,7 +173,9 @@ describe("DashboardStatsCards", () => {
       },
     });
 
-    const offersLink = wrapper.findAll("a").find((el) => el.text().includes("Offers"));
+    const offersLink = wrapper
+      .findAll("a")
+      .find((el) => el.text().includes("Offers"));
     expect(offersLink?.attributes("href")).toBe("/offers");
   });
 
@@ -193,7 +203,9 @@ describe("DashboardStatsCards", () => {
       },
     });
 
-    const contactsLink = wrapper.find('[data-testid="stat-card-monthly-contacts"]');
+    const contactsLink = wrapper.find(
+      '[data-testid="stat-card-monthly-contacts"]',
+    );
     expect(contactsLink.attributes("href")).toBe("/interactions");
   });
 

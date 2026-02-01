@@ -21,6 +21,7 @@ The `EmailRecruitingPacketModal` component uses `<Teleport to="body">` wrapped i
 ```
 
 **Why tests fail:**
+
 - Teleport renders DOM outside the component tree (into document.body)
 - Vue Test Utils' happy-dom environment doesn't support full Teleport behavior
 - Tests mount component in isolated wrapper, can't access teleported DOM
@@ -28,6 +29,7 @@ The `EmailRecruitingPacketModal` component uses `<Teleport to="body">` wrapped i
 - Transition component timing may require async handling
 
 **Current test status:**
+
 - ✗ Rendering tests fail
 - ✗ Coach selection tests fail (checkboxes not found)
 - ✗ Manual email tests fail (textarea not found)
@@ -40,6 +42,7 @@ The `EmailRecruitingPacketModal` component uses `<Teleport to="body">` wrapped i
 ## Solution Strategy
 
 **Option A: Mock Teleport + Test Component Logic (RECOMMENDED)**
+
 - Override Teleport to render inline (no actual teleport in tests)
 - Focus tests on component logic and props/emits
 - Use unit test approach (test behavior, not full rendering)
@@ -47,6 +50,7 @@ The `EmailRecruitingPacketModal` component uses `<Teleport to="body">` wrapped i
 - **Cons:** Doesn't test actual Teleport behavior
 
 **Option B: Attach to Real DOM + Async Handling**
+
 - Use `attachTo` mount option to attach to real DOM element
 - Use `flushPromises()` to wait for Transition
 - Query document.body directly in tests
@@ -54,6 +58,7 @@ The `EmailRecruitingPacketModal` component uses `<Teleport to="body">` wrapped i
 - **Cons:** Slower, more complex setup, integration test approach
 
 **Option C: Refactor Component to Remove Teleport (NOT RECOMMENDED)**
+
 - Move modal content outside Teleport
 - Test rendering normally
 - **Pros:** Simpler tests
@@ -97,6 +102,7 @@ vi.mock("vue", async () => {
 **Why:** Intercepts Vue's Teleport and replaces it with a pass-through component that renders children inline in the component tree.
 
 **Rationale:**
+
 - Teleport behavior isn't essential to unit test
 - We're testing modal state management, not DOM placement
 - Mocking removes the happy-dom incompatibility
@@ -150,6 +156,7 @@ vi.mock("vue", async () => {
 **Problem:** Transition component may have timing delays
 
 **Solution:**
+
 ```typescript
 import { flushPromises } from "@vue/test-utils";
 
@@ -177,6 +184,7 @@ describe("EmailRecruitingPacketModal", () => {
 ### Phase 4: Verify Mock Doesn't Break Production
 
 **Verification checklist:**
+
 - [ ] Original component still has `<Teleport to="body">` (no changes to component)
 - [ ] Mock only affects test files, not production build
 - [ ] `vi.mock()` is scoped to test file only
@@ -204,6 +212,7 @@ describe("EmailRecruitingPacketModal", () => {
 **Performance:** Tests should run ~20-50ms per test (very fast)
 
 **Coverage:** Tests now reliably check:
+
 - ✓ Modal visibility based on `isOpen` prop
 - ✓ Coach selection logic
 - ✓ Manual email entry
@@ -226,11 +235,13 @@ describe("EmailRecruitingPacketModal", () => {
 ## Risk Assessment
 
 **Low Risk:**
+
 - Change is test-only, no production code modified
 - Mock is a pass-through, preserves component behavior semantically
 - If modal doesn't work in browser, it's a separate issue (not caused by test changes)
 
 **Potential Issues:**
+
 - If component relies on actual Teleport positioning for functionality, we won't catch bugs
   - Mitigation: Add E2E tests to verify modal displays correctly in browser
   - Check browser console for errors when modal opens

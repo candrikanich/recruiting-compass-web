@@ -9,10 +9,10 @@ Tests are failing with **"Cannot destructure property 'data' of '(intermediate v
 **File: `useAuth-rememberMe.spec.ts` (lines 7-11)**
 
 ```typescript
-let mockSupabaseGlobal: any;  // ❌ DECLARED BUT NOT INITIALIZED
+let mockSupabaseGlobal: any; // ❌ DECLARED BUT NOT INITIALIZED
 
 vi.mock("~/composables/useSupabase", () => ({
-  useSupabase: () => mockSupabaseGlobal,  // ❌ Returns undefined
+  useSupabase: () => mockSupabaseGlobal, // ❌ Returns undefined
 }));
 ```
 
@@ -43,6 +43,7 @@ The mock IS being intercepted correctly. But:
 3. So `toHaveBeenCalledTimes()` correctly reports `0` calls
 
 **Example:**
+
 ```typescript
 // Mock returns undefined (should return {data: {...}, error: null})
 const supabase = useSupabase();  // supabase = undefined
@@ -56,6 +57,7 @@ const { data, error } = await supabase.auth.getSession();
 ## Affected Files
 
 **24 test files** define local `vi.mock()` for useSupabase:
+
 - Most define mock correctly (initialized before vi.mock)
 - `useAuth-rememberMe.spec.ts` is the broken one (uninitialized variable)
 - Others may fail due to module cache pollution from the broken mock
@@ -99,6 +101,7 @@ When one test file has a broken mock:
 4. **Tests fail across multiple files** even though each file's code looks correct
 
 This explains why:
+
 - Tests pass when run individually: `npm run test -- useAuth.spec.ts` ✅
 - Tests fail when run together: `npm run test` ❌
 
@@ -115,11 +118,11 @@ The fix isn't about making mocks work—they work fine. The fix is about **ensur
 
 ## Test Failures Explained
 
-| File | Assertion | Why It Fails |
-|------|-----------|-------------|
-| useAuth-rememberMe.spec.ts | login() call | `supabase` is undefined, crashes on first method access |
-| useAuth.spec.ts | `toHaveBeenCalledTimes(1)` | Mock never called because composable errors first |
-| useInteractions.spec.ts | `query.eq.toHaveBeenCalledWith(...)` | Query chain errors on undefined supabase |
+| File                       | Assertion                            | Why It Fails                                            |
+| -------------------------- | ------------------------------------ | ------------------------------------------------------- |
+| useAuth-rememberMe.spec.ts | login() call                         | `supabase` is undefined, crashes on first method access |
+| useAuth.spec.ts            | `toHaveBeenCalledTimes(1)`           | Mock never called because composable errors first       |
+| useInteractions.spec.ts    | `query.eq.toHaveBeenCalledWith(...)` | Query chain errors on undefined supabase                |
 
 All failures have the **same root cause**: uninitialized mock variable.
 
@@ -128,6 +131,7 @@ All failures have the **same root cause**: uninitialized mock variable.
 **Problem**: Uninitialized variable in vi.mock closure (hoisting issue)
 
 **Pattern to Avoid**:
+
 ```typescript
 let mockThing: any;           // ❌ Uninitialized
 vi.mock("...", () => mockThing);  // References undefined
@@ -137,6 +141,7 @@ mockThing = { ... };          // ❌ Too late!
 ```
 
 **Pattern to Use**:
+
 ```typescript
 // ✅ Option A: Initialize before vi.mock
 const mockThing = { ... };

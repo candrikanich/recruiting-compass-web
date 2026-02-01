@@ -37,10 +37,8 @@ export const createInboundInteractionAlert = async ({
     ]);
 
     // Extract results safely
-    const prefs =
-      prefsRes.status === "fulfilled" ? prefsRes.value.data : null;
-    const coach =
-      coachRes.status === "fulfilled" ? coachRes.value.data : null;
+    const prefs = prefsRes.status === "fulfilled" ? prefsRes.value.data : null;
+    const coach = coachRes.status === "fulfilled" ? coachRes.value.data : null;
 
     // Log warnings for failed queries (don't cascade)
     if (prefsRes.status === "rejected") {

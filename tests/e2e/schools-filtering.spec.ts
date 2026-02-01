@@ -22,16 +22,22 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     await page.goto("/schools");
 
     // Wait for schools to load
-    await page.waitForSelector("[data-testid='school-card']", { timeout: 10000 });
+    await page.waitForSelector("[data-testid='school-card']", {
+      timeout: 10000,
+    });
   });
 
   // ============================================================================
   // FIT SCORE RANGE FILTER TESTS
   // ============================================================================
 
-  test("should filter schools by fit score range (70-100)", async ({ page }) => {
+  test("should filter schools by fit score range (70-100)", async ({
+    page,
+  }) => {
     // Get initial count
-    const initialCards = await page.locator("[data-testid='school-card']").count();
+    const initialCards = await page
+      .locator("[data-testid='school-card']")
+      .count();
     expect(initialCards).toBeGreaterThan(0);
 
     // Fill fit score range
@@ -49,12 +55,18 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     await expect(filterChip).toBeVisible();
 
     // Verify results changed
-    const filteredCards = await page.locator("[data-testid='school-card']").count();
+    const filteredCards = await page
+      .locator("[data-testid='school-card']")
+      .count();
     expect(filteredCards).toBeLessThanOrEqual(initialCards);
   });
 
-  test("should remove fit score filter when X button clicked", async ({ page }) => {
-    const initialCards = await page.locator("[data-testid='school-card']").count();
+  test("should remove fit score filter when X button clicked", async ({
+    page,
+  }) => {
+    const initialCards = await page
+      .locator("[data-testid='school-card']")
+      .count();
 
     // Apply fit score filter
     const fitScoreMin = page.locator('input[placeholder="Min"]').first();
@@ -106,12 +118,16 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
   test("should filter schools by distance range (slider)", async ({ page }) => {
     // Check if home location warning appears
-    const warning = page.locator("text=Set home location to filter by distance");
+    const warning = page.locator(
+      "text=Set home location to filter by distance",
+    );
     const warningVisible = await warning.isVisible().catch(() => false);
 
     if (!warningVisible) {
       // Home location is set, test distance filter
-      const initialCards = await page.locator("[data-testid='school-card']").count();
+      const initialCards = await page
+        .locator("[data-testid='school-card']")
+        .count();
 
       // Find and interact with distance slider
       const distanceSlider = page.locator('input[type="range"]');
@@ -124,7 +140,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
       await expect(filterChip).toBeVisible();
 
       // Verify results changed (should be different if many schools)
-      const filteredCards = await page.locator("[data-testid='school-card']").count();
+      const filteredCards = await page
+        .locator("[data-testid='school-card']")
+        .count();
       expect(filteredCards).toBeLessThanOrEqual(initialCards);
     } else {
       // Home location not set, verify warning is visible
@@ -136,8 +154,12 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     }
   });
 
-  test("should show warning when home location is not set", async ({ page }) => {
-    const warning = page.locator("text=Set home location to filter by distance");
+  test("should show warning when home location is not set", async ({
+    page,
+  }) => {
+    const warning = page.locator(
+      "text=Set home location to filter by distance",
+    );
     const warningExists = await warning.isVisible().catch(() => false);
 
     if (warningExists) {
@@ -146,7 +168,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
   });
 
   test("should display distance value next to slider", async ({ page }) => {
-    const warning = page.locator("text=Set home location to filter by distance");
+    const warning = page.locator(
+      "text=Set home location to filter by distance",
+    );
     const warningVisible = await warning.isVisible().catch(() => false);
 
     if (!warningVisible) {
@@ -161,11 +185,15 @@ test.describe("Schools Filtering - User Story 3.3", () => {
   // ============================================================================
 
   test("should filter schools by state", async ({ page }) => {
-    const initialCards = await page.locator("[data-testid='school-card']").count();
+    const initialCards = await page
+      .locator("[data-testid='school-card']")
+      .count();
     expect(initialCards).toBeGreaterThan(0);
 
     // Find state select
-    const stateSelect = page.locator('select').filter({ has: page.locator("text=State") });
+    const stateSelect = page
+      .locator("select")
+      .filter({ has: page.locator("text=State") });
     await stateSelect.selectOption("CA");
 
     await page.waitForTimeout(500);
@@ -175,13 +203,17 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     await expect(filterChip).toBeVisible();
 
     // Verify results changed
-    const filteredCards = await page.locator("[data-testid='school-card']").count();
+    const filteredCards = await page
+      .locator("[data-testid='school-card']")
+      .count();
     expect(filteredCards).toBeLessThanOrEqual(initialCards);
   });
 
   test("should only show states with schools in dropdown", async ({ page }) => {
     // Find state select
-    const stateSelect = page.locator('select').filter({ has: page.locator("text=State") });
+    const stateSelect = page
+      .locator("select")
+      .filter({ has: page.locator("text=State") });
 
     // Get all options
     const options = await stateSelect.locator("option").count();
@@ -191,7 +223,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
   });
 
   test("should remove state filter when changed to 'All'", async ({ page }) => {
-    const stateSelect = page.locator('select').filter({ has: page.locator("text=State") });
+    const stateSelect = page
+      .locator("select")
+      .filter({ has: page.locator("text=State") });
 
     // Select a state
     await stateSelect.selectOption("CA");
@@ -214,11 +248,13 @@ test.describe("Schools Filtering - User Story 3.3", () => {
   // ============================================================================
 
   test("should apply multiple filters together", async ({ page }) => {
-    const initialCards = await page.locator("[data-testid='school-card']").count();
+    const initialCards = await page
+      .locator("[data-testid='school-card']")
+      .count();
     expect(initialCards).toBeGreaterThan(0);
 
     // Apply division filter
-    const divisionSelect = page.locator('select').nth(0);
+    const divisionSelect = page.locator("select").nth(0);
     await divisionSelect.selectOption("D2");
 
     // Apply fit score range
@@ -234,21 +270,27 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     await expect(page.locator("text=70 - 100")).toBeVisible();
 
     // Verify results are different
-    const filteredCards = await page.locator("[data-testid='school-card']").count();
+    const filteredCards = await page
+      .locator("[data-testid='school-card']")
+      .count();
     expect(filteredCards).toBeLessThanOrEqual(initialCards);
   });
 
   test("should update results when combining fit score and state filters", async ({
     page,
   }) => {
-    const initialCards = await page.locator("[data-testid='school-card']").count();
+    const initialCards = await page
+      .locator("[data-testid='school-card']")
+      .count();
 
     // Apply fit score filter
     const fitScoreMin = page.locator('input[placeholder="Min"]').first();
     await fitScoreMin.fill("75");
 
     // Apply state filter
-    const stateSelect = page.locator('select').filter({ has: page.locator("text=State") });
+    const stateSelect = page
+      .locator("select")
+      .filter({ has: page.locator("text=State") });
     await stateSelect.selectOption("CA");
 
     await page.waitForTimeout(500);
@@ -258,7 +300,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     await expect(page.locator("text=CA")).toBeVisible();
 
     // Results should be filtered
-    const filteredCards = await page.locator("[data-testid='school-card']").count();
+    const filteredCards = await page
+      .locator("[data-testid='school-card']")
+      .count();
     expect(filteredCards).toBeLessThanOrEqual(initialCards);
   });
 
@@ -268,7 +312,7 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
   test("should display active filter chips", async ({ page }) => {
     // Apply a filter
-    const divisionSelect = page.locator('select').nth(0);
+    const divisionSelect = page.locator("select").nth(0);
     await divisionSelect.selectOption("D3");
 
     await page.waitForTimeout(500);
@@ -291,7 +335,7 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     expect(isVisible).toBe(false);
 
     // Apply a filter
-    const statusSelect = page.locator('select').nth(2);
+    const statusSelect = page.locator("select").nth(2);
     await statusSelect.selectOption("researching");
 
     await page.waitForTimeout(500);
@@ -303,7 +347,7 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
   test("should allow clearing all filters at once", async ({ page }) => {
     // Apply multiple filters
-    const divisionSelect = page.locator('select').nth(0);
+    const divisionSelect = page.locator("select").nth(0);
     await divisionSelect.selectOption("D1");
 
     const fitScoreMin = page.locator('input[placeholder="Min"]').first();
@@ -365,7 +409,7 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     const initialText = await countText.textContent();
 
     // Apply a filter
-    const divisionSelect = page.locator('select').nth(0);
+    const divisionSelect = page.locator("select").nth(0);
     await divisionSelect.selectOption("D2");
 
     await page.waitForTimeout(500);
@@ -386,7 +430,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     await page.waitForTimeout(300);
 
     // Then apply state filter
-    const stateSelect = page.locator('select').filter({ has: page.locator("text=State") });
+    const stateSelect = page
+      .locator("select")
+      .filter({ has: page.locator("text=State") });
     await stateSelect.selectOption("TX");
 
     await page.waitForTimeout(300);
@@ -402,11 +448,15 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
   test("should display filter bar in two-row grid layout", async ({ page }) => {
     // Check that search input exists in row 1
-    const searchInput = page.locator('input[placeholder="School name or location..."]');
+    const searchInput = page.locator(
+      'input[placeholder="School name or location..."]',
+    );
     await expect(searchInput).toBeVisible();
 
     // Check that fit score inputs exist in row 2
-    const fitScoreInputs = page.locator('input[placeholder="Min"], input[placeholder="Max"]');
+    const fitScoreInputs = page.locator(
+      'input[placeholder="Min"], input[placeholder="Max"]',
+    );
     const fitScoreCount = await fitScoreInputs.count();
     expect(fitScoreCount).toBeGreaterThanOrEqual(2);
 
@@ -417,7 +467,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
   test("should display all required filter controls", async ({ page }) => {
     // Verify all filter inputs are visible
-    await expect(page.locator('input[placeholder="School name or location..."]')).toBeVisible();
+    await expect(
+      page.locator('input[placeholder="School name or location..."]'),
+    ).toBeVisible();
     await expect(page.locator("text=Division")).toBeVisible();
     await expect(page.locator("text=Status")).toBeVisible();
     await expect(page.locator("text=Favorites Only")).toBeVisible();

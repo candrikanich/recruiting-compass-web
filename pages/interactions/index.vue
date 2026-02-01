@@ -128,10 +128,14 @@
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"
       >
-        <div :class="{
-          'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4': !userStore.isParent,
-          'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4': userStore.isParent,
-        }">
+        <div
+          :class="{
+            'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4':
+              !userStore.isParent,
+            'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4':
+              userStore.isParent,
+          }"
+        >
           <!-- Search -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1"
@@ -200,8 +204,14 @@
               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">-- All --</option>
-              <option v-if="userStore.user" :value="userStore.user.id">Me (Parent)</option>
-              <option v-for="athlete in linkedAthletes" :key="athlete.id" :value="athlete.id">
+              <option v-if="userStore.user" :value="userStore.user.id">
+                Me (Parent)
+              </option>
+              <option
+                v-for="athlete in linkedAthletes"
+                :key="athlete.id"
+                :value="athlete.id"
+              >
                 {{ athlete.full_name }}
               </option>
             </select>
@@ -302,7 +312,8 @@
             @click="handleFilterUpdate('loggedBy', null)"
             class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium"
           >
-            Logged By: {{ formatLoggedBy(filterValues.get("loggedBy") as string) }}
+            Logged By:
+            {{ formatLoggedBy(filterValues.get("loggedBy") as string) }}
             <XMarkIcon class="w-3 h-3" />
           </button>
           <button

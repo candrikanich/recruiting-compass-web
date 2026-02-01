@@ -60,7 +60,7 @@ export const useActiveFamily = () => {
     // For parents, find family of currently viewed athlete
     if (isParent.value && currentAthleteId.value) {
       const family = parentAccessibleFamilies.value.find(
-        (f) => f.athleteId === currentAthleteId.value
+        (f) => f.athleteId === currentAthleteId.value,
       );
       return family?.familyUnitId || null;
     }
@@ -95,7 +95,7 @@ export const useActiveFamily = () => {
     if (parentAccessibleFamilies.value.length === 0) return null;
 
     const athletesWithYear = parentAccessibleFamilies.value.filter(
-      (f) => f.graduationYear !== null
+      (f) => f.graduationYear !== null,
     );
 
     if (athletesWithYear.length === 0) {
@@ -105,7 +105,7 @@ export const useActiveFamily = () => {
 
     // Sort by graduation year ascending (earliest first)
     const sorted = [...athletesWithYear].sort(
-      (a, b) => a.graduationYear! - b.graduationYear!
+      (a, b) => a.graduationYear! - b.graduationYear!,
     );
 
     return sorted[0].athleteId;
@@ -131,7 +131,10 @@ export const useActiveFamily = () => {
           .maybeSingle();
 
         if (fetchError) {
-          console.error("[useActiveFamily] Error fetching student family unit:", fetchError);
+          console.error(
+            "[useActiveFamily] Error fetching student family unit:",
+            fetchError,
+          );
           // Don't throw - just log and continue. Family will be null but we can still proceed.
         }
         if (data) {
@@ -141,7 +144,9 @@ export const useActiveFamily = () => {
         // For parents, fetch all accessible families via API
         try {
           // Get auth session to include token
-          const { data: { session } } = await supabase.auth.getSession();
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
 
           const response = await $fetch("/api/family/accessible", {
             headers: {
@@ -151,30 +156,36 @@ export const useActiveFamily = () => {
 
           console.debug(
             `[useActiveFamily] API response: ${response.families?.length || 0} families`,
-            response.families
+            response.families,
           );
 
           if (response.families) {
             parentAccessibleFamilies.value = response.families;
 
             // Set current athlete: route param > localStorage > closest to graduation > first
-            const athleteIdFromRoute = route.query.athlete_id as string | undefined;
+            const athleteIdFromRoute = route.query.athlete_id as
+              | string
+              | undefined;
 
             if (
               athleteIdFromRoute &&
               parentAccessibleFamilies.value.some(
-                (f) => f.athleteId === athleteIdFromRoute
+                (f) => f.athleteId === athleteIdFromRoute,
               )
             ) {
               // Query param takes precedence
               currentAthleteId.value = athleteIdFromRoute;
             } else if (typeof window !== "undefined") {
               // Try localStorage (only on client side)
-              const savedAthleteId = localStorage.getItem("parent_last_viewed_athlete");
+              const savedAthleteId = localStorage.getItem(
+                "parent_last_viewed_athlete",
+              );
 
               if (
                 savedAthleteId &&
-                parentAccessibleFamilies.value.some((f) => f.athleteId === savedAthleteId)
+                parentAccessibleFamilies.value.some(
+                  (f) => f.athleteId === savedAthleteId,
+                )
               ) {
                 currentAthleteId.value = savedAthleteId;
               } else {
@@ -188,7 +199,8 @@ export const useActiveFamily = () => {
           }
         } catch (err) {
           // If API call fails, log the error for debugging
-          const errMsg = err instanceof Error ? err.message : JSON.stringify(err);
+          const errMsg =
+            err instanceof Error ? err.message : JSON.stringify(err);
           console.error("[useActiveFamily] API call failed:", errMsg);
           parentAccessibleFamilies.value = [];
         }
@@ -239,7 +251,7 @@ export const useActiveFamily = () => {
 
     console.debug(
       `[useActiveFamily] Athlete switched: ${previousAthleteId} → ${athleteId}, ` +
-      `instance: ${_debugInstanceId}, family: ${activeFamilyId.value}`
+        `instance: ${_debugInstanceId}, family: ${activeFamilyId.value}`,
     );
 
     // Persist to localStorage
@@ -282,12 +294,12 @@ export const useActiveFamily = () => {
     async (newRole) => {
       if (newRole) {
         console.debug(
-          `[useActiveFamily] User role changed to "${newRole}", reinitializing...`
+          `[useActiveFamily] User role changed to "${newRole}", reinitializing...`,
         );
         await initializeFamily();
         await fetchFamilyMembers();
       }
-    }
+    },
   );
 
   /**

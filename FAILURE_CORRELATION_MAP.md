@@ -16,6 +16,7 @@ Other files                           ✓ PASS (79 tests)
 ## Failure Types & Correlation Patterns
 
 ### Pattern 1: Vue Component Rendering (ISOLATED FAILURE)
+
 **Files affected:** `EmailRecruitingPacketModal.spec.ts`
 **Test count:** 28 failures
 **Root cause:** Teleport component portal architecture incompatible with Vue Test Utils
@@ -30,6 +31,7 @@ Failure sequence:
 ```
 
 **Affected test categories:**
+
 - Rendering checks (5 tests) ✗
 - Coach selection (2 tests) ✗
 - Manual email input (5 tests) ✗
@@ -40,12 +42,14 @@ Failure sequence:
 - BUT: Component state (wrapper.vm) works ✓
 
 **Why 2 tests pass:**
+
 1. "should not render modal when isOpen is false" - Tests negative condition (✓ correct)
 2. "should disable send button when form is invalid" - Accesses wrapper.vm only (✓ correct)
 
 ---
 
 ### Pattern 2: Mock Initialization Chain (SETUP CONFIGURATION ISSUE)
+
 **Files affected:** `useInteractions.extended.spec.ts`
 **Test count:** 9 failures
 **Root cause:** Module-level mock `mockSupabase.from` not properly initialized as chainable
@@ -63,26 +67,30 @@ Failure sequence:
 ```
 
 **Mock setup issues identified:**
+
 1. **Module-level mock incomplete:**
+
    ```typescript
    const mockSupabase = {
-     from: vi.fn(),  // No return value configured
+     from: vi.fn(), // No return value configured
    };
    ```
 
 2. **Per-test configuration doesn't connect:**
+
    ```typescript
    beforeEach(() => {
-     mockSupabase.from.mockReturnValue(mockQuery);  // Might be too late
+     mockSupabase.from.mockReturnValue(mockQuery); // Might be too late
    });
    ```
 
 3. **User store mock relies on mutable variable:**
    ```typescript
-   let mockUser = { id: "user-123" };  // Module-level, can be mutated
+   let mockUser = { id: "user-123" }; // Module-level, can be mutated
    ```
 
 **Affected test categories:**
+
 - Fetch operations (3 tests) - "supabase.from is not called"
 - Filter operations (2 tests) - Chain breaks at filter step
 - CSV export (2 tests) - No data to export
@@ -92,6 +100,7 @@ Failure sequence:
 ---
 
 ### Pattern 3: Date Logic Edge Case (ALGORITHMIC BOUNDARY ISSUE)
+
 **Files affected:** `dashboard.spec.ts`
 **Test count:** 1 failure
 **Root cause:** Timezone-dependent date creation with implicit midnight time
@@ -113,11 +122,13 @@ Actual: 1 match
 ```
 
 **Issues identified:**
+
 1. **Implicit midnight timing:** `new Date(year, month, day)` creates 00:00:00
 2. **Timezone conversion:** `.toISOString()` may shift dates in certain zones
 3. **Test-to-code mismatch:** Test isolation logic doesn't match dashboard computed property
 
 **Why it matters:**
+
 - Test assumes both dates fall within current month (true)
 - But the filter boundary check is timezone-sensitive
 - Fails in some timezones, passes in others
@@ -130,6 +141,7 @@ Actual: 1 match
 ### Module-Level Shared State
 
 **From tests/setup.ts:**
+
 ```
 ┌─────────────────────────────────────────────┐
 │ Global Test Setup (Shared Across All Tests) │
@@ -148,6 +160,7 @@ Actual: 1 match
 ```
 
 **From useInteractions.extended.spec.ts:**
+
 ```
 ┌──────────────────────────────────────────────┐
 │ File-Level Module Variables (Test Specific)  │
@@ -168,6 +181,7 @@ Actual: 1 match
 ## Failure Propagation Model
 
 ### EmailRecruitingPacketModal Cascade
+
 ```
 Input: isOpen prop set to true
   ↓
@@ -187,6 +201,7 @@ CASCADE: All 27 dependent tests also look for same elements
 **Cascade Scope:** Entire component's interaction surface
 
 ### useInteractions.extended Mock Cascade
+
 ```
 Input: beforeEach() mock setup
   ↓
@@ -212,6 +227,7 @@ CASCADE: All 9 tests fail at same point
 **Cascade Scope:** All composable function calls
 
 ### Dashboard Filter Cascade
+
 ```
 Input: Test date creation (implicit midnight)
   ↓
@@ -237,19 +253,25 @@ NO CASCADE: Only this one test affected
 ## Hidden Correlations
 
 ### Correlation 1: Test Utils Limitations
+
 Both EmailRecruitingPacketModal AND useInteractions.extended share a common root:
+
 - **Issue:** Test environment (happy-dom + Vue Test Utils) has limitations
 - **Impact:** Component with portals; Async mock chains with thenable
 - **Pattern:** Mismatch between test environment capabilities and production requirements
 
 ### Correlation 2: Mock State Lifecycle
+
 The useInteractions.extended failure involves mock state that lives longer than tests expect:
+
 - `mockUser` variable persists across test runs
 - `mockSupabase.from` mock configuration might not reset properly
 - **Pattern:** Module-level state + per-test setup contradiction
 
 ### Correlation 3: Timezone Sensitivity
+
 Dashboard failure is timezone-dependent, suggesting:
+
 - Test environment timezone differs from CI
 - Or test written in local timezone, CI runs in different one
 - **Pattern:** Environmental dependency in test
@@ -258,11 +280,11 @@ Dashboard failure is timezone-dependent, suggesting:
 
 ## Failure Risk Stratification
 
-| Category | Severity | Risk | Fix Complexity |
-|----------|----------|------|-----------------|
-| Teleport Rendering | CRITICAL | Affects all modal interactions | HIGH (may need refactor) |
-| Mock Chain | HIGH | Breaks composable testing | MEDIUM (mock reconfiguration) |
-| Date Logic | MEDIUM | Flaky (timezone dependent) | LOW (explicit UTC conversion) |
+| Category           | Severity | Risk                           | Fix Complexity                |
+| ------------------ | -------- | ------------------------------ | ----------------------------- |
+| Teleport Rendering | CRITICAL | Affects all modal interactions | HIGH (may need refactor)      |
+| Mock Chain         | HIGH     | Breaks composable testing      | MEDIUM (mock reconfiguration) |
+| Date Logic         | MEDIUM   | Flaky (timezone dependent)     | LOW (explicit UTC conversion) |
 
 ---
 
@@ -288,18 +310,21 @@ Dashboard failure is timezone-dependent, suggesting:
 ## Key Files for Investigation
 
 **Primary Files:**
+
 - `/tests/unit/components/EmailRecruitingPacketModal.spec.ts` (28 failures)
 - `/components/EmailRecruitingPacketModal.vue` (implementation)
 - `/tests/unit/composables/useInteractions.extended.spec.ts` (9 failures)
 - `/tests/unit/pages/dashboard.spec.ts` (1 failure)
 
 **Supporting Files:**
+
 - `/tests/setup.ts` (global mock configuration)
 - `/vitest.config.ts` (test environment config)
 - `/composables/useInteractions.ts` (implementation)
 - `/stores/user.ts` (user store implementation)
 
 **New Documentation:**
+
 - `/DIAGNOSTIC_REPORT.md` (findings summary)
 - `/INVESTIGATION_DETAILS.md` (technical analysis)
 - `/INVESTIGATION_NEXT_STEPS.md` (verification steps)

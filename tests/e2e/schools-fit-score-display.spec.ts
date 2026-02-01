@@ -51,9 +51,7 @@ test.describe("School Fit Score Display", () => {
     }
 
     // Find low score (<50) - should be red
-    const lowScoreBadges = await page
-      .locator("text=/^Fit: [0-4][0-9]$/")
-      .all();
+    const lowScoreBadges = await page.locator("text=/^Fit: [0-4][0-9]$/").all();
     for (const badge of lowScoreBadges) {
       const classes = await badge.getAttribute("class");
       expect(classes).toContain("red");
@@ -93,9 +91,7 @@ test.describe("School Fit Score Display", () => {
       await page.waitForSelector("h2.text-lg");
 
       // Check for Fit Score Analysis section
-      const fitScoreHeading = await page.locator(
-        "text=School Fit Analysis"
-      );
+      const fitScoreHeading = await page.locator("text=School Fit Analysis");
       if (await fitScoreHeading.isVisible()) {
         expect(await fitScoreHeading.isVisible()).toBe(true);
       }
@@ -147,7 +143,7 @@ test.describe("School Fit Score Display", () => {
 
       // Look for breakdown toggle button
       const toggleButton = await page.locator(
-        "button:has-text(/View Fit Score Breakdown/)"
+        "button:has-text(/View Fit Score Breakdown/)",
       );
 
       if (await toggleButton.isVisible()) {
@@ -192,7 +188,7 @@ test.describe("School Fit Score Display", () => {
 
       // Look for breakdown toggle button
       const toggleButton = await page.locator(
-        "button:has-text(/View Fit Score Breakdown/)"
+        "button:has-text(/View Fit Score Breakdown/)",
       );
 
       if (await toggleButton.isVisible()) {
@@ -206,7 +202,7 @@ test.describe("School Fit Score Display", () => {
         expect(await page.locator("text=Athletic Fit").isVisible()).toBe(true);
         expect(await page.locator("text=Academic Fit").isVisible()).toBe(true);
         expect(await page.locator("text=Opportunity Fit").isVisible()).toBe(
-          true
+          true,
         );
         expect(await page.locator("text=Personal Fit").isVisible()).toBe(true);
 
@@ -236,7 +232,7 @@ test.describe("School Fit Score Display", () => {
 
       // Look for breakdown toggle button
       const toggleButton = await page.locator(
-        "button:has-text(/View Fit Score Breakdown/)"
+        "button:has-text(/View Fit Score Breakdown/)",
       );
 
       if (await toggleButton.isVisible()) {
@@ -287,7 +283,7 @@ test.describe("School Fit Score Display", () => {
           recommendations.map(async (rec) => {
             const text = await rec.textContent();
             return text && text.length > 0;
-          })
+          }),
         ).catch(() => false);
 
         expect(typeof hasText).toBe("boolean");

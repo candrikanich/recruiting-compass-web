@@ -50,7 +50,7 @@ describe("Rule interface", () => {
 
       const result = await ruleWithReEvaluate.shouldReEvaluate?.(
         mockSuggestion,
-        mockContext
+        mockContext,
       );
       expect(result).toBe(true);
     });
@@ -116,7 +116,7 @@ describe("Rule interface", () => {
 
       expect(shouldReEvaluateMock).toHaveBeenCalledWith(
         mockSuggestion,
-        mockContext
+        mockContext,
       );
     });
   });

@@ -227,16 +227,22 @@ export const useSchoolStore = defineStore("schools", {
             .map((c) => sanitizeHtml(c));
         }
         if (sanitized.coaching_philosophy) {
-          sanitized.coaching_philosophy = sanitizeHtml(sanitized.coaching_philosophy);
+          sanitized.coaching_philosophy = sanitizeHtml(
+            sanitized.coaching_philosophy,
+          );
         }
         if (sanitized.coaching_style) {
           sanitized.coaching_style = sanitizeHtml(sanitized.coaching_style);
         }
         if (sanitized.recruiting_approach) {
-          sanitized.recruiting_approach = sanitizeHtml(sanitized.recruiting_approach);
+          sanitized.recruiting_approach = sanitizeHtml(
+            sanitized.recruiting_approach,
+          );
         }
         if (sanitized.communication_style) {
-          sanitized.communication_style = sanitizeHtml(sanitized.communication_style);
+          sanitized.communication_style = sanitizeHtml(
+            sanitized.communication_style,
+          );
         }
         if (sanitized.success_metrics) {
           sanitized.success_metrics = sanitizeHtml(sanitized.success_metrics);
@@ -303,16 +309,22 @@ export const useSchoolStore = defineStore("schools", {
             .map((c) => sanitizeHtml(c));
         }
         if (sanitized.coaching_philosophy) {
-          sanitized.coaching_philosophy = sanitizeHtml(sanitized.coaching_philosophy);
+          sanitized.coaching_philosophy = sanitizeHtml(
+            sanitized.coaching_philosophy,
+          );
         }
         if (sanitized.coaching_style) {
           sanitized.coaching_style = sanitizeHtml(sanitized.coaching_style);
         }
         if (sanitized.recruiting_approach) {
-          sanitized.recruiting_approach = sanitizeHtml(sanitized.recruiting_approach);
+          sanitized.recruiting_approach = sanitizeHtml(
+            sanitized.recruiting_approach,
+          );
         }
         if (sanitized.communication_style) {
-          sanitized.communication_style = sanitizeHtml(sanitized.communication_style);
+          sanitized.communication_style = sanitizeHtml(
+            sanitized.communication_style,
+          );
         }
         if (sanitized.success_metrics) {
           sanitized.success_metrics = sanitizeHtml(sanitized.success_metrics);
@@ -548,9 +560,7 @@ export const useSchoolStore = defineStore("schools", {
         return data || [];
       } catch (err: unknown) {
         const message =
-          err instanceof Error
-            ? err.message
-            : "Failed to fetch status history";
+          err instanceof Error ? err.message : "Failed to fetch status history";
         this.error = message;
         throw err;
       }

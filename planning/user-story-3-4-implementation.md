@@ -10,12 +10,14 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 ## Current State
 
 **Implemented:**
+
 - Priority tier setting (A/B/C) with UI and filtering
 - 6 recruiting statuses with manual updates
 - General `updated_at` and `updated_by` timestamps
 - Interaction logging with 9 types
 
 **Missing:**
+
 - Status change timestamps (`status_changed_at`)
 - Status history/audit trail
 - Status timeline visualization
@@ -27,6 +29,7 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 ### Phase 1: Database Schema Updates
 
 #### 1.1: Add Status History Tracking Table
+
 - **File**: Database migration (Supabase)
 - **Action**: Create `school_status_history` table
 - **Fields**:
@@ -42,12 +45,14 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 **Acceptance**: Migration runs without errors, table structure verified
 
 #### 1.2: Add Status Change Timestamp to Schools Table
+
 - **File**: Database migration
 - **Action**: Add column `status_changed_at` (timestamp, nullable)
 - **Purpose**: Quick reference to last status change time
 - **Acceptance**: Column added, existing records updated to use `updated_at` as fallback
 
 #### 1.3: Ensure Priority Tier in Supabase Schema
+
 - **File**: Database schema
 - **Action**: Verify or add `priority_tier` column (enum: A, B, C, null)
 - **Note**: May already exist but should be confirmed in Supabase UI
@@ -56,6 +61,7 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 ### Phase 2: TypeScript Types & Interfaces
 
 #### 2.1: Update Database Types
+
 - **File**: `types/database.ts`
 - **Action**:
   - Ensure `School` includes `status_changed_at` and `priority_tier`
@@ -68,6 +74,7 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 ### Phase 3: Store Updates (Pinia)
 
 #### 3.1: Add Status History to School Store
+
 - **File**: `stores/schools.ts`
 - **Action**:
   - Add `statusHistory` state to track loaded history
@@ -81,11 +88,13 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
   - Add getter `schoolsByStatus(status)` - update to use new status values
 
 **Acceptance**:
+
 - Store compiles
 - `updateStatus` correctly logs history
 - History queries work (tested via store unit tests)
 
 #### 3.2: Update School Filtering
+
 - **File**: `stores/schools.ts`
 - **Action**: Update `SchoolFilters` interface to accept new status values
 - **Acceptance**: All status filtering works with new enum values
@@ -93,6 +102,7 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 ### Phase 4: UI Components
 
 #### 4.1: Update School Detail Page
+
 - **File**: `pages/schools/[id]/index.vue`
 - **Action**:
   - Update status dropdown to use new 9 status values
@@ -103,12 +113,14 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
   - Update status badge colors/styling if needed
 
 **Acceptance**:
+
 - Status dropdown shows all 9 values
 - Status change logs to history
 - Notes are optional but saved
 - `status_changed_at` displays correctly
 
 #### 4.2: Create Status History Modal/Page
+
 - **Files**: `components/School/SchoolStatusHistory.vue` OR `pages/schools/[id]/status-history.vue`
 - **Action**: Display status history chronologically
 - **Fields**:
@@ -122,12 +134,14 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
   - Export to CSV option (optional, nice-to-have)
 
 **Acceptance**:
+
 - History loads on component mount
 - Displays all status transitions
 - Dates are properly formatted
 - Empty state handled gracefully
 
 #### 4.3: Update Timeline Report
+
 - **File**: `pages/reports/timeline.vue`
 - **Action**:
   - Include "Status Changed" events in timeline
@@ -137,11 +151,13 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
   - Color-code by status
 
 **Acceptance**:
+
 - Status changes appear in timeline
 - Sorted correctly with other events
 - User can see full recruiting journey
 
 #### 4.4: Update Status Badges
+
 - **File**: `components/School/SchoolCard.vue` and other places
 - **Action**: Update status badge colors/labels for new 9 values
 - **Color scheme** (suggested):
@@ -160,6 +176,7 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 ### Phase 5: Unit Tests
 
 #### 5.1: Status History Store Tests
+
 - **File**: `tests/unit/stores/schools-status-history.spec.ts`
 - **Coverage**:
   - `updateStatus()` creates history entry
@@ -173,6 +190,7 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 **Acceptance**: All tests pass, 90%+ coverage of store actions
 
 #### 5.2: Status History Component Tests
+
 - **File**: `tests/unit/components/School/SchoolStatusHistory.spec.ts`
 - **Coverage**:
   - Component renders history list
@@ -185,6 +203,7 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 **Acceptance**: All tests pass, component renders correctly
 
 #### 5.3: Timeline Report Tests
+
 - **File**: `tests/unit/pages/timeline-with-status.spec.ts` (new) or update existing
 - **Coverage**:
   - Status changes appear in timeline
@@ -197,6 +216,7 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 ### Phase 6: E2E Tests
 
 #### 6.1: Status Change Workflow E2E
+
 - **File**: `tests/e2e/schools-status-tracking.spec.ts`
 - **Test Scenarios**:
   1. User opens school detail page
@@ -209,6 +229,7 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 **Acceptance**: Test passes consistently
 
 #### 6.2: Status History Viewing E2E
+
 - **File**: `tests/e2e/schools-status-history.spec.ts`
 - **Test Scenarios**:
   1. User opens school detail page
@@ -222,6 +243,7 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 **Acceptance**: Test passes, history displays correctly
 
 #### 6.3: Timeline Visualization E2E
+
 - **File**: Update `tests/e2e/timeline.spec.ts`
 - **Test Scenarios**:
   1. User opens Timeline Report
@@ -235,11 +257,13 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 ### Phase 7: Documentation
 
 #### 7.1: Update README
+
 - **File**: `README.md`
 - **Action**: Document status tracking features under "Core Features"
 - **Content**: Brief explanation of status history, priority tiers, timeline
 
 #### 7.2: Update CLAUDE.md
+
 - **File**: `CLAUDE.md`
 - **Action**: Add notes about status history patterns and conventions
 
@@ -277,14 +301,14 @@ Complete the implementation of Story 3.4 acceptance criteria by adding status hi
 
 ## Story Acceptance Criteria Mapping
 
-| Criteria | Status | Implementation |
-|----------|--------|-----------------|
-| Can set priority tier independently | ✅ | Existing feature, works |
-| Priority tiers A/B/C | ✅ | Existing feature, works |
-| Status values predefined | ⚠️ | Need to expand from 6 to 9 |
-| Status changes timestamped | ❌ | Add `status_changed_at` + history table |
-| Can view status history | ❌ | Add history component/page |
-| Status changes in timeline | ❌ | Update timeline report |
+| Criteria                            | Status | Implementation                          |
+| ----------------------------------- | ------ | --------------------------------------- |
+| Can set priority tier independently | ✅     | Existing feature, works                 |
+| Priority tiers A/B/C                | ✅     | Existing feature, works                 |
+| Status values predefined            | ⚠️     | Need to expand from 6 to 9              |
+| Status changes timestamped          | ❌     | Add `status_changed_at` + history table |
+| Can view status history             | ❌     | Add history component/page              |
+| Status changes in timeline          | ❌     | Update timeline report                  |
 
 ## Dependencies
 

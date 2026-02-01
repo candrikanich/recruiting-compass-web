@@ -20,8 +20,8 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     fullDescription: `During your freshman year, the focus is on exploration and building a foundation. You're getting to know colleges, attending summer camps, starting to build relationships with coaches, and figuring out what you're looking for in a college. You don't need to have committed to anything yet. Tasks include building your target school list, attending camps, and starting to log interactions with coaches.`,
     relatedLinks: [
       { label: "Timeline Guide", url: "/docs/timeline" },
-      { label: "Freshman Tasks", url: "/timeline/freshman" }
-    ]
+      { label: "Freshman Tasks", url: "/timeline/freshman" },
+    ],
   },
 
   sophomorePhase: {
@@ -31,8 +31,8 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     fullDescription: `Your sophomore year is when recruiting becomes more serious. You're being actively recruited, you're reaching out to coaches, attending showcases, and narrowing down your list. This is when coaches start paying closer attention to your stats and performance. You're building strong relationships with coaches at your target schools.`,
     relatedLinks: [
       { label: "Timeline Guide", url: "/docs/timeline" },
-      { label: "Sophomore Tasks", url: "/timeline/sophomore" }
-    ]
+      { label: "Sophomore Tasks", url: "/timeline/sophomore" },
+    ],
   },
 
   juniorPhase: {
@@ -42,8 +42,8 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     fullDescription: `Junior year is typically the most intense recruiting year. Coaches are watching your performance closely, you're having serious conversations about scholarships, and you're taking official visits. Your stats matter more than ever. This is also the year you might commit to a school if you're ready.`,
     relatedLinks: [
       { label: "Timeline Guide", url: "/docs/timeline" },
-      { label: "Junior Tasks", url: "/timeline/junior" }
-    ]
+      { label: "Junior Tasks", url: "/timeline/junior" },
+    ],
   },
 
   seniorPhase: {
@@ -53,8 +53,8 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     fullDescription: `Your senior year is about making your final decision and committing. You've been through three years of recruiting, you know which schools are interested in you, and now you're choosing where to go. This is the finish line. You're signing your letter of intent and getting ready for the next chapter.`,
     relatedLinks: [
       { label: "Timeline Guide", url: "/docs/timeline" },
-      { label: "Senior Tasks", url: "/timeline/senior" }
-    ]
+      { label: "Senior Tasks", url: "/timeline/senior" },
+    ],
   },
 
   // Fit scores
@@ -65,8 +65,8 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     fullDescription: `Your fit score is a number from 1-10 that shows how well you match with a school both athletically and academically. It's calculated using five components: Academic Fit (30%), Athletic Fit (30%), Location Fit (15%), Program Fit (15%), and Financial Fit (10%). A higher score means the school is a better match for you. Reach schools are typically below 5, target schools are 5-8, and safety schools are 8-10.`,
     relatedLinks: [
       { label: "Understanding Fit Scores", url: "/docs/fit-scores" },
-      { label: "Video: Fit Scores Explained", url: "/videos/fit-scores" }
-    ]
+      { label: "Video: Fit Scores Explained", url: "/videos/fit-scores" },
+    ],
   },
 
   academicFit: {
@@ -111,8 +111,8 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     shortDescription: "6-question survey to assess school interest",
     fullDescription: `After you log a significant interaction (like a call with a coach), we'll ask you 6 quick questions to calibrate your interest level in that school. Questions like: How interested are you? Would you visit campus? Academic fit? Athletic fit? Location? Next action? Your answers help us understand your genuine interest and suggest next steps.`,
     relatedLinks: [
-      { label: "Video: Interest Calibration", url: "/videos/calibration" }
-    ]
+      { label: "Video: Interest Calibration", url: "/videos/calibration" },
+    ],
   },
 
   // Task dependencies
@@ -159,9 +159,7 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     title: "Recovery Plan",
     shortDescription: "Re-engagement strategy for silent coaches",
     fullDescription: `If a coach hasn't interacted with you in 30+ days, Recruiting Compass suggests a recovery plan. This might be a new angle to approach them, optimal timing to reach out, or a sample message to use. It's designed to help you re-engage with coaches who've gone quiet without seeming desperate.`,
-    relatedLinks: [
-      { label: "Recovery Plan Guide", url: "/docs/recovery" }
-    ]
+    relatedLinks: [{ label: "Recovery Plan Guide", url: "/docs/recovery" }],
   },
 
   // Priority tiers
@@ -170,15 +168,25 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     title: "Priority Tiers",
     shortDescription: "Organize schools by recruitment likelihood",
     fullDescription: `Reach schools are harder to get into (your stats are below average). Target schools are realistic matches for you (your stats align with theirs). Safety schools are very likely acceptances (your stats are above average). A balanced list has schools across all tiers so you have realistic options.`,
-    relatedLinks: [
-      { label: "School Tiering Strategy", url: "/docs/tiering" }
-    ]
+    relatedLinks: [{ label: "School Tiering Strategy", url: "/docs/tiering" }],
   },
 };
 
 export const helpCategoryGroups = {
-  timeline: ["freshman-phase", "sophomore-phase", "junior-phase", "senior-phase"],
-  fitScores: ["fit-score", "academic-fit", "athletic-fit", "location-fit", "program-fit", "financial-fit"],
+  timeline: [
+    "freshman-phase",
+    "sophomore-phase",
+    "junior-phase",
+    "senior-phase",
+  ],
+  fitScores: [
+    "fit-score",
+    "academic-fit",
+    "athletic-fit",
+    "location-fit",
+    "program-fit",
+    "financial-fit",
+  ],
   dashboard: ["dashboard-overview", "progress-bar", "suggestions-widget"],
   coaches: ["responsiveness-score", "recovery-plan"],
   organization: ["task-dependencies", "priority-tiers", "interest-calibration"],
@@ -194,7 +202,9 @@ export const getHelpDefinition = (id: string): HelpDefinition | undefined => {
 /**
  * Get all definitions in a category
  */
-export const getHelpsByCategory = (category: keyof typeof helpCategoryGroups) => {
+export const getHelpsByCategory = (
+  category: keyof typeof helpCategoryGroups,
+) => {
   const ids = helpCategoryGroups[category];
-  return ids.map(id => helpDefinitions[id]).filter(Boolean);
+  return ids.map((id) => helpDefinitions[id]).filter(Boolean);
 };

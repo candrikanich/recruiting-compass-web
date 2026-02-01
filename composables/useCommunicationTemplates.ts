@@ -83,9 +83,7 @@ export const useCommunicationTemplates = (): {
     type?: CommunicationTemplate["type"],
   ) => CommunicationTemplate[];
   checkUnlockCondition: (condition: UnlockCondition) => Promise<boolean>;
-  checkTemplateUnlocked: (
-    template: CommunicationTemplate,
-  ) => Promise<{
+  checkTemplateUnlocked: (template: CommunicationTemplate) => Promise<{
     unlocked: boolean;
     missingConditions: UnlockCondition[];
     progressPercent: number;

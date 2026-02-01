@@ -45,7 +45,6 @@ const FILE_SIZE_LIMITS = {
 
 // Deprecation warning: consolidated into useFormValidation().validateFile()
 if (process.env.NODE_ENV !== "test") {
-   
   console.warn(
     "[DEPRECATED] `useDocumentValidation` is deprecated. Use `useFormValidation().validateFile()` from `~/composables/useFormValidation` instead.",
   );

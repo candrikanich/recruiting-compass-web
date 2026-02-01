@@ -15,18 +15,20 @@
 ```typescript
 // Line 8-10: Module level mock (runs once)
 const mockSupabase = {
-  from: vi.fn(),  // ← Uninitialized; no return value
+  from: vi.fn(), // ← Uninitialized; no return value
 };
 
 // Line 20-22: Global mock registration
 vi.mock("~/composables/useSupabase", () => ({
-  useSupabase: () => mockSupabase,  // ← Closure captures module-level mockSupabase
+  useSupabase: () => mockSupabase, // ← Closure captures module-level mockSupabase
 }));
 
 // Line 38-85: Per-test setup (tries to fix it)
 beforeEach(() => {
-  mockQuery = { /* chainable mock */ };
-  mockSupabase.from.mockReturnValue(mockQuery);  // ← Doesn't work reliably
+  mockQuery = {
+    /* chainable mock */
+  };
+  mockSupabase.from.mockReturnValue(mockQuery); // ← Doesn't work reliably
 });
 ```
 
@@ -54,6 +56,7 @@ beforeEach(() => {
 ### Symptom Examples
 
 **Failure 1: "should fetch interactions with filters"**
+
 ```
 Expected: mockSupabase.from to have been called with ("interactions")
 Actual:   0 calls
@@ -61,6 +64,7 @@ Root:     mockSupabase.from was never called because composable received undefin
 ```
 
 **Failure 2: "should handle fetch errors gracefully"**
+
 ```
 Expected: error.value === "Fetch failed"
 Actual:   Error: supabase.from(...).select(...).order is not a function
@@ -68,6 +72,7 @@ Root:     Mock chain broke at .order() because .select() returned undefined
 ```
 
 **Failure 3: "should create new interaction"**
+
 ```
 Expected: newInteraction created
 Actual:   Error: User not authenticated
@@ -79,6 +84,7 @@ Root:     userStore.user returned null (mock state not initialized)
 ## Solution Strategy
 
 **Option A: Fix Per-Test Mock Setup (RECOMMENDED)**
+
 - Create fresh mock query instance per test
 - Clear mock history before each test
 - Ensure `from()` returns chainable object
@@ -87,6 +93,7 @@ Root:     userStore.user returned null (mock state not initialized)
 - **Cons:** Still relies on vi.mock() closure behavior
 
 **Option B: Extract Mock Factory (BEST PRACTICE)**
+
 - Create `createMockSupabase()` factory function
 - Call in beforeEach to get fresh instance
 - Use `vi.resetAllMocks()` between tests
@@ -94,6 +101,7 @@ Root:     userStore.user returned null (mock state not initialized)
 - **Cons:** Slightly more refactoring
 
 **Option C: Use Test Utilities (ENHANCED)**
+
 - Create mock helper functions in `tests/utils/`
 - Provide typed mock builders
 - Handle complex chaining patterns
@@ -158,6 +166,7 @@ let mockUser = createMockUser();
 ```
 
 **Why this works:**
+
 - `createMockSupabase()` returns fresh mock with proper chaining
 - `from: vi.fn().mockReturnValue(mockQuery)` initializes return value correctly
 - All chain methods return mockQuery, so `from().select().eq()` works
@@ -170,16 +179,20 @@ let mockUser = createMockUser();
 **File:** `tests/unit/composables/useInteractions.extended.spec.ts`
 
 **Current beforeEach (problematic):**
+
 ```typescript
 beforeEach(() => {
   setActivePinia(createPinia());
-  mockQuery = { /* ... */ };  // New instance each time
-  mockSupabase.from.mockClear();  // Clear history
-  mockSupabase.from.mockReturnValue(mockQuery);  // Set return
+  mockQuery = {
+    /* ... */
+  }; // New instance each time
+  mockSupabase.from.mockClear(); // Clear history
+  mockSupabase.from.mockReturnValue(mockQuery); // Set return
 });
 ```
 
 **Updated beforeEach (fixed):**
+
 ```typescript
 beforeEach(() => {
   // Reset Pinia store
@@ -195,6 +208,7 @@ beforeEach(() => {
 ```
 
 **Why this works:**
+
 - Fresh `mockSupabase` created each test
 - Fresh `mockUser` created each test
 - Module-level variables are overwritten (not referenced in closure)
@@ -216,7 +230,7 @@ beforeEach(() => {
 
   // Override the vi.mock() with fresh instances
   // Force re-import to get new mock
-  vi.resetModules();  // Clear all cached modules
+  vi.resetModules(); // Clear all cached modules
 });
 ```
 
@@ -316,6 +330,7 @@ describe("useInteractions", () => {
 ```
 
 **Key improvements:**
+
 - `createMockSupabase()` factory ensures fresh instances
 - `beforeEach` creates new mocks before each test
 - `vi.doMock()` registers per-test mocks (not module-level)
@@ -391,6 +406,7 @@ it("should create new interaction", async () => {
 **After:** 0 failures in suite, 0 failures individually
 
 **Key metrics:**
+
 - All tests pass when run individually ✓
 - All tests pass when run in suite ✓
 - No test pollution or shared state ✓
@@ -412,11 +428,13 @@ it("should create new interaction", async () => {
 ## Risk Assessment
 
 **Low Risk:**
+
 - Changes are test-only, no production code modified
 - Mock behavior becomes more predictable, not less
 - If tests fail after this, it's likely a real bug (good signal)
 
 **Potential Issues:**
+
 - Unmocking might affect other tests if they depend on shared mocks
   - Mitigation: Run full test suite after changes, fix any cross-test dependencies
 - Per-test mocking might be slower than module-level

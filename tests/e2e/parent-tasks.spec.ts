@@ -12,7 +12,9 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
 
   test("parent can view athlete task list", async ({ page }) => {
     // Navigate to tasks page with parent viewing context
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Verify parent context banner is displayed
     const banner = page.locator("text=Viewing");
@@ -21,7 +23,9 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
   });
 
   test("parent sees progress summary", async ({ page }) => {
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Wait for tasks to load
     await page.waitForSelector("[data-testid='task-item']");
@@ -35,30 +39,42 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
     await expect(progressBar).toBeVisible();
   });
 
-  test("parent sees deadline badges with correct urgency colors", async ({ page }) => {
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+  test("parent sees deadline badges with correct urgency colors", async ({
+    page,
+  }) => {
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Wait for deadline badges to load
     await page.waitForSelector("[data-testid='deadline-badge']");
 
     // Check for critical deadline badge (red)
-    const criticalBadge = page.locator("[data-testid='deadline-badge'].bg-red-100");
+    const criticalBadge = page.locator(
+      "[data-testid='deadline-badge'].bg-red-100",
+    );
     const criticalCount = await criticalBadge.count();
     expect(criticalCount).toBeGreaterThanOrEqual(0);
 
     // Check for urgent deadline badge (orange)
-    const urgentBadge = page.locator("[data-testid='deadline-badge'].bg-orange-100");
+    const urgentBadge = page.locator(
+      "[data-testid='deadline-badge'].bg-orange-100",
+    );
     const urgentCount = await urgentBadge.count();
     expect(urgentCount).toBeGreaterThanOrEqual(0);
 
     // Check for upcoming deadline badge (yellow)
-    const upcomingBadge = page.locator("[data-testid='deadline-badge'].bg-yellow-100");
+    const upcomingBadge = page.locator(
+      "[data-testid='deadline-badge'].bg-yellow-100",
+    );
     const upcomingCount = await upcomingBadge.count();
     expect(upcomingCount).toBeGreaterThanOrEqual(0);
   });
 
   test("parent can filter tasks by status", async ({ page }) => {
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Wait for filter select to be available
     const statusFilter = page.locator("[data-testid='status-filter']");
@@ -75,7 +91,9 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
   });
 
   test("parent can filter tasks by urgency", async ({ page }) => {
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Wait for filter select to be available
     const urgencyFilter = page.locator("[data-testid='urgency-filter']");
@@ -91,7 +109,9 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
   });
 
   test("parent sees filter controls", async ({ page }) => {
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Verify status filter is visible
     const statusFilter = page.locator("[data-testid='status-filter']");
@@ -110,7 +130,9 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
   });
 
   test("parent cannot toggle task checkboxes", async ({ page }) => {
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Wait for task checkboxes to load
     await page.waitForSelector("[data-testid*='task-checkbox-']");
@@ -123,8 +145,8 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
     expect(isDisabled).toBe(true);
 
     // Verify disabled state styling (opacity-50)
-    const hasOpacity = await checkbox.evaluate((el: HTMLInputElement) =>
-      window.getComputedStyle(el).opacity
+    const hasOpacity = await checkbox.evaluate(
+      (el: HTMLInputElement) => window.getComputedStyle(el).opacity,
     );
     expect(parseFloat(hasOpacity as string)).toBeLessThan(1);
 
@@ -138,7 +160,9 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
   });
 
   test("parent sees read-only tooltip on checkboxes", async ({ page }) => {
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Wait for checkbox to load
     await page.waitForSelector("[data-testid*='task-checkbox-']");
@@ -147,11 +171,17 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
 
     // Check title attribute for tooltip
     const title = await checkbox.getAttribute("title");
-    expect(title).toContain("Parents can view tasks but cannot mark them complete");
+    expect(title).toContain(
+      "Parents can view tasks but cannot mark them complete",
+    );
   });
 
-  test("parent sees athlete switcher with multiple athletes", async ({ page }) => {
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+  test("parent sees athlete switcher with multiple athletes", async ({
+    page,
+  }) => {
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Wait for athlete switcher to load
     const athleteSwitcher = page.locator("[data-testid='athlete-select']");
@@ -164,7 +194,9 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
   });
 
   test("parent can switch between athletes", async ({ page }) => {
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Wait for athlete switcher
     const athleteSwitcher = page.locator("[data-testid='athlete-select']");
@@ -180,7 +212,9 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
 
     // Wait for URL to update
     await page.waitForFunction((id) => {
-      return new URL(window.location.href).searchParams.get("athlete_id") !== id;
+      return (
+        new URL(window.location.href).searchParams.get("athlete_id") !== id
+      );
     }, initialAthleteId);
 
     // Verify URL param changed
@@ -190,7 +224,9 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
   });
 
   test("parent sees tasks sorted by deadline urgency", async ({ page }) => {
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Wait for tasks to load
     await page.waitForSelector("[data-testid='task-item']");
@@ -216,21 +252,25 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
         };
 
         const currentUrgency = Object.keys(urgencyOrder).find((key) =>
-          currentClass?.includes(key)
+          currentClass?.includes(key),
         );
         const nextUrgency = Object.keys(urgencyOrder).find((key) =>
-          nextClass?.includes(key)
+          nextClass?.includes(key),
         );
 
         if (currentUrgency && nextUrgency) {
-          expect(urgencyOrder[currentUrgency]).toBeLessThanOrEqual(urgencyOrder[nextUrgency]);
+          expect(urgencyOrder[currentUrgency]).toBeLessThanOrEqual(
+            urgencyOrder[nextUrgency],
+          );
         }
       }
     }
   });
 
   test("parent can expand task details", async ({ page }) => {
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Wait for task to load
     const taskItem = page.locator("[data-testid='task-item']").first();
@@ -247,8 +287,12 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
     }
   });
 
-  test("parent does not see success message on task toggle", async ({ page }) => {
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+  test("parent does not see success message on task toggle", async ({
+    page,
+  }) => {
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Wait for tasks to load
     await page.waitForSelector("[data-testid='task-item']");
@@ -259,7 +303,9 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
   });
 
   test("parent task page header reflects viewing context", async ({ page }) => {
-    await page.goto("http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123");
+    await page.goto(
+      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+    );
 
     // Wait for header to load
     await page.waitForSelector("h1");

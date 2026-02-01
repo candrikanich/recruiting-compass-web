@@ -38,7 +38,9 @@ describe("useFileAttachments", () => {
   describe("Core Functionality - Upload", () => {
     it("should upload files successfully", async () => {
       const { uploadAttachments } = useFileAttachments();
-      const files = [new File(["content"], "test.pdf", { type: "application/pdf" })];
+      const files = [
+        new File(["content"], "test.pdf", { type: "application/pdf" }),
+      ];
 
       const urls = await uploadAttachments("interaction-123", files);
 
@@ -60,7 +62,9 @@ describe("useFileAttachments", () => {
 
     it("should set uploading state during upload", async () => {
       const { uploadAttachments, uploading } = useFileAttachments();
-      const files = [new File(["content"], "test.pdf", { type: "application/pdf" })];
+      const files = [
+        new File(["content"], "test.pdf", { type: "application/pdf" }),
+      ];
 
       const uploadPromise = uploadAttachments("interaction-123", files);
       // While uploading, state should be true or update
@@ -99,19 +103,22 @@ describe("useFileAttachments", () => {
       // Mock document methods
       const linkElement = document.createElement("a");
       vi.spyOn(document, "createElement").mockReturnValue(linkElement);
-      vi.spyOn(document.body, "appendChild").mockImplementation(() => linkElement);
-      vi.spyOn(document.body, "removeChild").mockImplementation(() => linkElement);
+      vi.spyOn(document.body, "appendChild").mockImplementation(
+        () => linkElement,
+      );
+      vi.spyOn(document.body, "removeChild").mockImplementation(
+        () => linkElement,
+      );
       vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:url");
       vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
       await downloadAttachment(
         "interaction-attachments/user-123/interaction-123/file.pdf",
-        "file.pdf"
+        "file.pdf",
       );
 
       expect(document.createElement).toHaveBeenCalledWith("a");
     });
-
   });
 
   describe("Core Functionality - Delete", () => {
@@ -119,7 +126,7 @@ describe("useFileAttachments", () => {
       const { deleteAttachment } = useFileAttachments();
 
       const result = await deleteAttachment(
-        "https://example.com/interaction-attachments/user-123/interaction-123/file.pdf"
+        "https://example.com/interaction-attachments/user-123/interaction-123/file.pdf",
       );
 
       expect(result).toBe(true);
@@ -129,7 +136,9 @@ describe("useFileAttachments", () => {
       const mockSupabaseWithError = {
         storage: {
           from: vi.fn(() => ({
-            remove: vi.fn().mockResolvedValue({ error: new Error("Delete failed") }),
+            remove: vi
+              .fn()
+              .mockResolvedValue({ error: new Error("Delete failed") }),
           })),
         },
       };
@@ -146,7 +155,9 @@ describe("useFileAttachments", () => {
 
     it("should handle invalid file URLs", async () => {
       const { deleteAttachment } = useFileAttachments();
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
 
       const result = await deleteAttachment("invalid-url");
 
@@ -159,9 +170,13 @@ describe("useFileAttachments", () => {
   describe("Validation", () => {
     it("should reject invalid file types", async () => {
       const { uploadAttachments } = useFileAttachments();
-      const files = [new File(["content"], "test.exe", { type: "application/x-msdownload" })];
+      const files = [
+        new File(["content"], "test.exe", { type: "application/x-msdownload" }),
+      ];
 
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
       await uploadAttachments("interaction-123", files);
 
       expect(consoleSpy).toHaveBeenCalled();
@@ -174,7 +189,7 @@ describe("useFileAttachments", () => {
       const largeFile = new File(
         [new ArrayBuffer(51 * 1024 * 1024)],
         "large.pdf",
-        { type: "application/pdf" }
+        { type: "application/pdf" },
       );
 
       const result = isValidFile(largeFile);
@@ -231,7 +246,7 @@ describe("useFileAttachments", () => {
     it("should extract human-readable filename from URL", () => {
       const { getFileName } = useFileAttachments();
       const filename = getFileName(
-        "https://example.com/interaction-attachments/user-123/interaction-123/1234567-abc123.pdf"
+        "https://example.com/interaction-attachments/user-123/interaction-123/1234567-abc123.pdf",
       );
 
       expect(filename).not.toContain("1234567");
@@ -241,7 +256,7 @@ describe("useFileAttachments", () => {
     it("should handle encoded filenames", () => {
       const { getFileName } = useFileAttachments();
       const filename = getFileName(
-        "https://example.com/interaction-attachments/user-123/interaction-123/1234567-abc123.My%20Document.pdf"
+        "https://example.com/interaction-attachments/user-123/interaction-123/1234567-abc123.My%20Document.pdf",
       );
 
       expect(filename).toBeDefined();

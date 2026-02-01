@@ -218,9 +218,7 @@
 import { ref, reactive, onMounted } from "vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import {
-  getDefaultNotificationSettings,
-} from "~/utils/preferenceValidation";
+import { getDefaultNotificationSettings } from "~/utils/preferenceValidation";
 import type { NotificationSettings } from "~/types/models";
 
 definePageMeta({ middleware: "auth" });
@@ -229,7 +227,7 @@ const { isLoading, error, getNotificationSettings, setNotificationSettings } =
   usePreferenceManager();
 
 const localSettings = reactive<NotificationSettings>(
-  getDefaultNotificationSettings()
+  getDefaultNotificationSettings(),
 );
 
 const saving = ref(false);

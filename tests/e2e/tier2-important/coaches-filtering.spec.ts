@@ -106,9 +106,7 @@ test.describe("Coach Search and Filtering", () => {
       await expect(page.locator(`text=John`)).toBeVisible();
     });
 
-    test("should show no results message when no matches", async ({
-      page,
-    }) => {
+    test("should show no results message when no matches", async ({ page }) => {
       await coachHelpers.navigateToCoaches(page, schoolId);
       await coachesPage.searchCoaches("NonExistentCoachName");
 
@@ -120,7 +118,7 @@ test.describe("Coach Search and Filtering", () => {
 
       if (noResultsVisible) {
         await expect(
-          page.locator("text=No coaches found, text=No results")
+          page.locator("text=No coaches found, text=No results"),
         ).toBeVisible();
       } else {
         // Or no coaches should be displayed

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { calculateDeadlineInfo, formatDeadlineDate } from "~/utils/deadlineHelpers";
+import {
+  calculateDeadlineInfo,
+  formatDeadlineDate,
+} from "~/utils/deadlineHelpers";
 import type { DeadlineInfo } from "~/types/timeline";
 
 interface Props {
@@ -22,7 +25,11 @@ const formattedDate = computed<string>(() => {
 });
 
 const shouldRender = computed<boolean>(() => {
-  return !props.isCompleted && props.deadlineDate !== null && deadlineInfo.value.urgency !== "none";
+  return (
+    !props.isCompleted &&
+    props.deadlineDate !== null &&
+    deadlineInfo.value.urgency !== "none"
+  );
 });
 
 const badgeClasses = computed<string>(() => {

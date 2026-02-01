@@ -202,7 +202,9 @@ export const authFixture = {
       await expect(page).toHaveURL(/\/dashboard|\/$/);
       return account;
     } catch (error) {
-      console.error(`Fast login failed for ${accountType}, falling back to UI login...`);
+      console.error(
+        `Fast login failed for ${accountType}, falling back to UI login...`,
+      );
 
       // Fallback to standard login via UI
       return await authFixture.loginOrSignup(

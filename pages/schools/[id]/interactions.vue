@@ -278,7 +278,10 @@
               :disabled="loading"
             />
             <p class="text-xs text-slate-500 mt-1">
-              {{ newInteraction.subject.length }}/{{ MAX_SUBJECT_LENGTH }} characters
+              {{ newInteraction.subject.length }}/{{
+                MAX_SUBJECT_LENGTH
+              }}
+              characters
             </p>
           </div>
 
@@ -308,7 +311,10 @@
                   : 'text-slate-500',
               ]"
             >
-              {{ newInteraction.content.length }}/{{ MAX_CONTENT_LENGTH }} characters
+              {{ newInteraction.content.length }}/{{
+                MAX_CONTENT_LENGTH
+              }}
+              characters
             </p>
           </div>
 
@@ -348,8 +354,12 @@
                 <div class="flex items-center gap-2 min-w-0">
                   <span class="text-lg flex-shrink-0">📎</span>
                   <div class="min-w-0">
-                    <p class="text-sm text-slate-700 truncate">{{ file.name }}</p>
-                    <p class="text-xs text-slate-500">{{ formatFileSize(file.size) }}</p>
+                    <p class="text-sm text-slate-700 truncate">
+                      {{ file.name }}
+                    </p>
+                    <p class="text-xs text-slate-500">
+                      {{ formatFileSize(file.size) }}
+                    </p>
                   </div>
                 </div>
                 <button
@@ -413,12 +423,18 @@
                 class="w-4 h-4 border border-slate-300 rounded text-blue-600 focus:ring-2 focus:ring-blue-500"
                 :disabled="loading"
               />
-              <label for="reminder-enabled" class="text-sm font-medium text-slate-700">
+              <label
+                for="reminder-enabled"
+                class="text-sm font-medium text-slate-700"
+              >
                 Set Follow-up Reminder
               </label>
             </div>
 
-            <div v-if="reminderEnabled" class="space-y-4 ml-6 bg-slate-50 p-4 rounded-lg">
+            <div
+              v-if="reminderEnabled"
+              class="space-y-4 ml-6 bg-slate-50 p-4 rounded-lg"
+            >
               <!-- Reminder Date -->
               <div>
                 <label
@@ -518,7 +534,11 @@
 
       <!-- Empty State (No Matching Filters) -->
       <div
-        v-if="!loading && interactions.length > 0 && filteredInteractions.length === 0"
+        v-if="
+          !loading &&
+          interactions.length > 0 &&
+          filteredInteractions.length === 0
+        "
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
       >
         <ChatBubbleLeftRightIcon
@@ -723,7 +743,7 @@ const filteredInteractions = computed(() => {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
     filtered = filtered.filter(
-      (i) => new Date(i.occurred_at || "") > cutoffDate
+      (i) => new Date(i.occurred_at || "") > cutoffDate,
     );
   }
 
@@ -731,18 +751,20 @@ const filteredInteractions = computed(() => {
   return filtered.sort(
     (a, b) =>
       new Date(b.occurred_at || "").getTime() -
-      new Date(a.occurred_at || "").getTime()
+      new Date(a.occurred_at || "").getTime(),
   );
 });
 
 // Computed: Outbound count
 const outboundCount = computed(
-  () => filteredInteractions.value.filter((i) => i.direction === "outbound").length
+  () =>
+    filteredInteractions.value.filter((i) => i.direction === "outbound").length,
 );
 
 // Computed: Inbound count
 const inboundCount = computed(
-  () => filteredInteractions.value.filter((i) => i.direction === "inbound").length
+  () =>
+    filteredInteractions.value.filter((i) => i.direction === "inbound").length,
 );
 
 // Computed: Last contact time (human-readable)
@@ -948,12 +970,13 @@ const handleAddInteraction = async () => {
         direction: newInteraction.direction as "outbound" | "inbound",
         subject: newInteraction.subject || null,
         content: newInteraction.content,
-        sentiment: (newInteraction.sentiment || null) as Interaction["sentiment"],
+        sentiment: (newInteraction.sentiment ||
+          null) as Interaction["sentiment"],
         occurred_at: isoDatetime,
         logged_by: "", // Server will set this from auth
         attachments: [],
       },
-      selectedFiles.value.length > 0 ? selectedFiles.value : undefined
+      selectedFiles.value.length > 0 ? selectedFiles.value : undefined,
     );
 
     // Create reminder if enabled
@@ -969,7 +992,7 @@ const handleAddInteraction = async () => {
           newInteraction.content,
           id,
           newInteraction.coach_id ? newInteraction.coach_id : undefined,
-          createdInteraction.id
+          createdInteraction.id,
         );
       } catch (reminderErr) {
         console.error("Failed to create reminder:", reminderErr);
@@ -989,7 +1012,9 @@ const handleAddInteraction = async () => {
     reminderDate.value = "";
     reminderType.value = "email";
     selectedFiles.value = [];
-    const fileInput = document.getElementById("attachments") as HTMLInputElement;
+    const fileInput = document.getElementById(
+      "attachments",
+    ) as HTMLInputElement;
     if (fileInput) {
       fileInput.value = "";
     }

@@ -1,4 +1,5 @@
 # Phase 1-2 Completion Status
+
 **Date:** 2026-01-26
 **Status:** ✅ COMPLETE
 **Branch:** `feature/phase1-security-hardening`
@@ -18,6 +19,7 @@ Phase 1-2 (4 weeks planned, completed in this session) successfully addressed cr
 **Status:** COMPLETE
 
 **Deliverables:**
+
 - `types/routes.ts` - Route protection matrix (public vs protected routes)
 - `middleware/auth.ts` - Updated with auth enforcement logic
 - `nuxt.config.ts` - Added feature flags for gradual rollout
@@ -25,6 +27,7 @@ Phase 1-2 (4 weeks planned, completed in this session) successfully addressed cr
 - `tests/e2e/tier1-critical/auth-enforcement.spec.ts` - E2E tests
 
 **Features:**
+
 - ✅ 6 public routes defined (/, /login, /signup, /forgot-password, /reset-password, /verify-email)
 - ✅ 10+ protected route prefixes enforced
 - ✅ Unauthenticated users redirected to /login with URL preservation
@@ -32,6 +35,7 @@ Phase 1-2 (4 weeks planned, completed in this session) successfully addressed cr
 - ✅ Type-safe route protection logic
 
 **Validation:**
+
 - Type-check: 0 errors ✅
 - Lint: 0 errors ✅
 - Unit tests: 20 passing ✅
@@ -42,17 +46,20 @@ Phase 1-2 (4 weeks planned, completed in this session) successfully addressed cr
 **Status:** COMPLETE
 
 **Deliverables:**
+
 - Migrated `pages/dashboard.vue` (useDocuments → useDocumentsConsolidated)
 - Migrated `pages/schools/[id]/index.vue` (useDocuments → useDocumentsConsolidated)
 - Migrated `components/Dashboard/RecentDocuments.vue` (useDocuments → useDocumentsConsolidated)
 
 **Impact:**
+
 - ✅ Zero usages of deprecated composables in production code
 - ✅ Deprecated composable still available for backwards compatibility
 - ✅ Feature flag: `NUXT_PUBLIC_USE_CONSOLIDATED_COMPOSABLES` for rollback
 - ✅ No breaking changes
 
 **Validation:**
+
 - Type-check: 0 errors ✅
 - Lint: 0 errors ✅
 - Unit tests: 2755 passing (8 pre-existing failures unrelated) ✅
@@ -67,9 +74,11 @@ Phase 1-2 (4 weeks planned, completed in this session) successfully addressed cr
 **Status:** COMPLETE
 
 **Deliverables:**
+
 - `server/migrations/016_create_user_preferences_table.sql`
 
 **Features:**
+
 - ✅ `user_preferences` table with JSONB data storage
 - ✅ RLS policies enforce user data isolation
 - ✅ Auto-update trigger for `updated_at` timestamps
@@ -80,17 +89,20 @@ Phase 1-2 (4 weeks planned, completed in this session) successfully addressed cr
 **Status:** COMPLETE
 
 **Deliverables:**
+
 - `server/api/user/preferences/[category].get.ts` - Fetch with offline fallback
 - `server/api/user/preferences/[category].post.ts` - Save/update with caching
 - `server/api/user/preferences/[category].delete.ts` - Delete preferences
 - `server/utils/supabase.ts` - Added `useSupabaseAdmin()` helper
 
 **Endpoints:**
+
 - ✅ GET /api/user/preferences/[category] - Returns `{ category, data, exists, updatedAt }`
 - ✅ POST /api/user/preferences/[category] - Saves and returns updated preferences
 - ✅ DELETE /api/user/preferences/[category] - Deletes and returns success
 
 **Features:**
+
 - ✅ Zod validation on POST requests
 - ✅ 401 auth enforcement on all endpoints
 - ✅ localStorage fallback when offline
@@ -101,9 +113,11 @@ Phase 1-2 (4 weeks planned, completed in this session) successfully addressed cr
 **Status:** COMPLETE
 
 **Deliverables:**
+
 - `composables/useUserPreferencesV2.ts` - Server-side preference management
 
 **Features:**
+
 - ✅ Load preferences from server (with localStorage fallback)
 - ✅ Save preferences with auto-caching to localStorage
 - ✅ Delete preferences from server
@@ -113,20 +127,21 @@ Phase 1-2 (4 weeks planned, completed in this session) successfully addressed cr
 - ✅ Category-based organization: "session", "filters", "display"
 
 **API:**
+
 ```typescript
 const {
-  preferences,        // Reactive preference object
+  preferences, // Reactive preference object
   isLoading,
   isSaving,
   error,
   hasChanges,
-  loadPreferences,    // Load from server
-  savePreferences,    // Save to server
+  loadPreferences, // Load from server
+  savePreferences, // Save to server
   deletePreferences,
   updatePreference,
   updatePreferences,
-  setupAutoSave       // Optional: auto-save on change
-} = useUserPreferencesV2('category')
+  setupAutoSave, // Optional: auto-save on change
+} = useUserPreferencesV2("category");
 ```
 
 ### Task 2.4: Testing
@@ -134,9 +149,11 @@ const {
 **Status:** COMPLETE
 
 **Deliverables:**
+
 - `tests/e2e/tier2-important/user-preferences.spec.ts` - 7 tests (4 passing, 3 skipped)
 
 **Coverage:**
+
 - ✅ Smoke tests for all 3 endpoints
 - ✅ Auth enforcement validation
 - ✅ Preference structure documentation
@@ -146,13 +163,13 @@ const {
 
 ## Validation Summary
 
-| Check | Result | Status |
-|-------|--------|--------|
-| **Type Checking** | 0 errors | ✅ |
-| **Linting** | 0 errors | ✅ |
-| **Unit Tests** | 2755 passing (8 pre-existing) | ✅ |
-| **Production Build** | Success (2031 modules, 9.07s) | ✅ |
-| **Preferences API Tests** | 4 passing, 3 skipped | ✅ |
+| Check                     | Result                        | Status |
+| ------------------------- | ----------------------------- | ------ |
+| **Type Checking**         | 0 errors                      | ✅     |
+| **Linting**               | 0 errors                      | ✅     |
+| **Unit Tests**            | 2755 passing (8 pre-existing) | ✅     |
+| **Production Build**      | Success (2031 modules, 9.07s) | ✅     |
+| **Preferences API Tests** | 4 passing, 3 skipped          | ✅     |
 
 ---
 
@@ -181,6 +198,7 @@ Set to `false` to instantly rollback changes without code modification.
 ## What's Not Included (Deferred)
 
 The following Phase 1-2 tasks were documented but deferred:
+
 - Migration of existing localStorage preferences → server (one-time, manual)
 - Full integration tests with authenticated users (blocked on Supabase setup)
 - Update all existing composables to use useUserPreferencesV2 (gradual migration)
@@ -194,23 +212,27 @@ These are ready for Phase 3-4 when full integration testing infrastructure is av
 When approved, execute remaining phases:
 
 ### Phase 3: Composable Consolidation (2 weeks)
+
 - Reduce from 74 → ~50 composables
 - Deprecate duplicate search/document wrappers
 - Update documentation with canonical composables list
 
 ### Phase 4: Performance & Stability (2 weeks)
+
 - Fix memory leaks in useToast, useSessionTimeout
 - Implement rate limiting (20 emails/day, persistent)
-- Optimize queries (replace select("*"))
+- Optimize queries (replace select("\*"))
 - Concurrent request deduplication
 
 ### Phase 5: Code Quality & Testing (2 weeks)
+
 - Increase coverage: 72% → 85%+
 - Enable strict TypeScript mode
 - Add input validation with Zod to 5+ API endpoints
 - Fix direct state mutations in Pinia stores
 
 ### Phase 6: Architectural Improvements (2 weeks)
+
 - Migrate NCAA database to Supabase (annual script-based updates)
 - Remove deprecated composables after full migration
 - Generate ADRs and architecture documentation
@@ -220,6 +242,7 @@ When approved, execute remaining phases:
 ## Critical Success Factors
 
 ✅ **Completed:**
+
 - Auth enforcement works correctly with feature flag
 - No breaking changes to existing functionality
 - All sensitive data now has RLS policies
@@ -227,6 +250,7 @@ When approved, execute remaining phases:
 - Type safety maintained throughout
 
 ✅ **Ready for Rollout:**
+
 - Feature flags enable instant disable/rollback
 - No dependencies on external services
 - Backwards compatible with existing code
@@ -245,6 +269,7 @@ When approved, execute remaining phases:
 ## Files Changed
 
 **Created:**
+
 - `types/routes.ts`
 - `middleware/auth.ts` (updated)
 - `composables/useUserPreferencesV2.ts`
@@ -255,6 +280,7 @@ When approved, execute remaining phases:
 - `tests/e2e/tier2-important/user-preferences.spec.ts`
 
 **Modified:**
+
 - `nuxt.config.ts` (added feature flags)
 - `server/utils/supabase.ts` (added useSupabaseAdmin alias)
 - `pages/dashboard.vue` (deprecated composable migration)
@@ -280,6 +306,7 @@ export NUXT_PUBLIC_USE_CONSOLIDATED_COMPOSABLES=false
 ```
 
 Or revert the entire branch:
+
 ```bash
 git revert cbcfd82..ea95cbd  # Revert all 3 commits
 ```

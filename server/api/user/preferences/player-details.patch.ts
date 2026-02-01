@@ -146,10 +146,7 @@ export default defineEventHandler(async (event) => {
         description: "Failed to update player details",
       });
 
-      console.error(
-        "Supabase error updating player details:",
-        updateError,
-      );
+      console.error("Supabase error updating player details:", updateError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to update player details",
@@ -175,14 +172,21 @@ export default defineEventHandler(async (event) => {
         await triggerSuggestionUpdate(supabase, user.id, "profile_change");
       } catch (triggerError) {
         // Log error but don't fail the request - suggestions are non-critical
-        console.error("Failed to trigger suggestion update after profile change:", triggerError);
+        console.error(
+          "Failed to trigger suggestion update after profile change:",
+          triggerError,
+        );
         await logError(event, {
           userId: user.id,
           action: "UPDATE",
           resourceType: "suggestions",
           resourceId: user.id,
-          errorMessage: triggerError instanceof Error ? triggerError.message : "Unknown error",
-          description: "Failed to trigger suggestion re-evaluation after player details update",
+          errorMessage:
+            triggerError instanceof Error
+              ? triggerError.message
+              : "Unknown error",
+          description:
+            "Failed to trigger suggestion re-evaluation after player details update",
         });
       }
     }
@@ -212,10 +216,7 @@ export default defineEventHandler(async (event) => {
       throw err;
     }
 
-    console.error(
-      "Error in PATCH /api/user/preferences/player-details:",
-      err,
-    );
+    console.error("Error in PATCH /api/user/preferences/player-details:", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to update player details",

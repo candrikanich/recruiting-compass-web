@@ -2,12 +2,10 @@
   <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-semibold text-slate-900">Status History</h3>
-      <button
-        v-if="loading"
-        disabled
-        class="text-sm text-slate-400"
-      >
-        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+      <button v-if="loading" disabled class="text-sm text-slate-400">
+        <div
+          class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"
+        ></div>
       </button>
     </div>
 
@@ -55,10 +53,7 @@
               {{ formatDate(entry.changed_at) }}
             </p>
           </div>
-          <p
-            v-if="entry.notes"
-            class="text-sm text-slate-500 mt-1"
-          >
+          <p v-if="entry.notes" class="text-sm text-slate-500 mt-1">
             {{ entry.notes }}
           </p>
         </div>

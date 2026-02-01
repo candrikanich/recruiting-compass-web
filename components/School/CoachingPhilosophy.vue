@@ -1,5 +1,8 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6" data-testid="coaching-philosophy-section">
+  <div
+    class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
+    data-testid="coaching-philosophy-section"
+  >
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-lg font-semibold text-slate-900">Coaching Philosophy</h2>
       <div class="flex items-center gap-2">
@@ -101,21 +104,34 @@
         </p>
       </div>
 
-      <div v-if="school?.recruiting_approach" class="pb-4 border-b border-slate-200">
-        <h3 class="text-sm font-medium text-slate-700 mb-1">Recruiting Approach</h3>
+      <div
+        v-if="school?.recruiting_approach"
+        class="pb-4 border-b border-slate-200"
+      >
+        <h3 class="text-sm font-medium text-slate-700 mb-1">
+          Recruiting Approach
+        </h3>
         <p class="text-slate-700 text-sm whitespace-pre-wrap">
           {{ school.recruiting_approach }}
         </p>
       </div>
 
-      <div v-if="school?.communication_style" class="pb-4 border-b border-slate-200">
-        <h3 class="text-sm font-medium text-slate-700 mb-1">Communication Style</h3>
+      <div
+        v-if="school?.communication_style"
+        class="pb-4 border-b border-slate-200"
+      >
+        <h3 class="text-sm font-medium text-slate-700 mb-1">
+          Communication Style
+        </h3>
         <p class="text-slate-700 text-sm whitespace-pre-wrap">
           {{ school.communication_style }}
         </p>
       </div>
 
-      <div v-if="school?.success_metrics" class="pb-4 border-b border-slate-200">
+      <div
+        v-if="school?.success_metrics"
+        class="pb-4 border-b border-slate-200"
+      >
         <h3 class="text-sm font-medium text-slate-700 mb-1">Success Metrics</h3>
         <p class="text-slate-700 text-sm whitespace-pre-wrap">
           {{ school.success_metrics }}
@@ -123,16 +139,15 @@
       </div>
 
       <div v-if="school?.coaching_philosophy">
-        <h3 class="text-sm font-medium text-slate-700 mb-1">Overall Philosophy</h3>
+        <h3 class="text-sm font-medium text-slate-700 mb-1">
+          Overall Philosophy
+        </h3>
         <p class="text-slate-700 text-sm whitespace-pre-wrap">
           {{ school.coaching_philosophy }}
         </p>
       </div>
 
-      <div
-        v-if="!hasAnyCoachingInfo"
-        class="text-center py-6 text-slate-500"
-      >
+      <div v-if="!hasAnyCoachingInfo" class="text-center py-6 text-slate-500">
         <p class="text-sm">No coaching philosophy information added yet.</p>
       </div>
     </div>
@@ -202,13 +217,17 @@ const savePhilosophy = async () => {
 };
 
 // Update local state when school prop changes
-watch(() => props.school, (newSchool) => {
-  editedCoachingData.value = {
-    coaching_philosophy: newSchool.coaching_philosophy || "",
-    coaching_style: newSchool.coaching_style || "",
-    recruiting_approach: newSchool.recruiting_approach || "",
-    communication_style: newSchool.communication_style || "",
-    success_metrics: newSchool.success_metrics || "",
-  };
-}, { deep: true });
+watch(
+  () => props.school,
+  (newSchool) => {
+    editedCoachingData.value = {
+      coaching_philosophy: newSchool.coaching_philosophy || "",
+      coaching_style: newSchool.coaching_style || "",
+      recruiting_approach: newSchool.recruiting_approach || "",
+      communication_style: newSchool.communication_style || "",
+      success_metrics: newSchool.success_metrics || "",
+    };
+  },
+  { deep: true },
+);
 </script>

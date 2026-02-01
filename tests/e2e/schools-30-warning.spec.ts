@@ -12,7 +12,7 @@ test.describe("30+ Schools Warning", () => {
     // Check if warning is visible
     // Note: This test assumes the user has 30+ schools in their account
     const warning = page.locator(
-      'text="You have 30 schools on your list" >> visible=true'
+      'text="You have 30 schools on your list" >> visible=true',
     );
 
     // If warning exists, verify its content
@@ -22,7 +22,7 @@ test.describe("30+ Schools Warning", () => {
 
       // Verify the message includes the priority tier suggestion
       const suggestion = page.locator(
-        'text="Consider organizing your schools with priority tiers"'
+        'text="Consider organizing your schools with priority tiers"',
       );
       await expect(suggestion).toBeVisible();
     }
@@ -52,9 +52,7 @@ test.describe("30+ Schools Warning", () => {
     const warningBanner = page.locator(".bg-amber-50 >> visible=true");
 
     // Check if warning contains tier suggestion
-    const suggestion = warningBanner.locator(
-      "text=/A, B, C|priority tiers/i"
-    );
+    const suggestion = warningBanner.locator("text=/A, B, C|priority tiers/i");
 
     // If warning exists, verify it has tier suggestion
     const bannerVisible = await warningBanner.isVisible().catch(() => false);

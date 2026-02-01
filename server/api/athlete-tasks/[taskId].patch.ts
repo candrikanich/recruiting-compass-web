@@ -105,7 +105,7 @@ export default defineEventHandler(async (event) => {
           if (athleteTaskError) {
             console.error(
               "Error checking prerequisite status:",
-              athleteTaskError
+              athleteTaskError,
             );
           }
 

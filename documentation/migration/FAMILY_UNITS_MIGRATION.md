@@ -9,6 +9,7 @@
 ## Overview
 
 This migration introduces the **Family Unit System**, enabling:
+
 - Family-based data ownership (1 student + N parents per family)
 - Parent access to all student data (read/write schools, coaches, notes)
 - Student-only interaction creation (enforced via RLS)
@@ -19,9 +20,11 @@ This migration introduces the **Family Unit System**, enabling:
 ## Migrations to Apply
 
 ### Migration 021: Create Family Units Schema
+
 **File:** `server/migrations/021_create_family_units.sql`
 **Duration:** ~2-3 minutes
 **Actions:**
+
 1. Creates `family_units` table (1 student + N parents)
 2. Creates `family_members` table (user → family mapping)
 3. Creates `user_notes` table (private per-user notes)
@@ -34,9 +37,11 @@ This migration introduces the **Family Unit System**, enabling:
 6. Creates family-based RLS policies for all data tables
 
 ### Migration 022: Backfill Family Data
+
 **File:** `server/migrations/022_backfill_family_data.sql`
 **Duration:** ~1-2 minutes
 **Actions:**
+
 1. Creates backup tables (pre-migration safety)
 2. Creates family unit for each student
 3. Adds students to family_members
@@ -164,6 +169,7 @@ ORDER BY tablename;
 ```
 
 **Expected:** All tables should have policies:
+
 - family_units: 1
 - family_members: 1
 - user_notes: 4
@@ -264,6 +270,7 @@ WHERE family_unit_id IN (SELECT * FROM get_user_family_ids());
 ### Step 3: Create Composables
 
 After verification, implement Phase 4 composables:
+
 - `useActiveFamily()` - Family context provider
 - `useUserNotes()` - Private notes CRUD
 - Update `useSchools()`, `useCoaches()`, `useInteractions()` for family queries
@@ -346,6 +353,7 @@ CREATE TABLE coaches AS SELECT * FROM coaches_backup_pre_family;
 
 **Cause:** Migration 021 didn't complete successfully
 **Fix:**
+
 1. Check Supabase SQL Editor for error messages
 2. Re-run migration 021 from beginning
 3. Verify helper function section executed
@@ -354,6 +362,7 @@ CREATE TABLE coaches AS SELECT * FROM coaches_backup_pre_family;
 
 **Cause:** Migration 021 schema creation failed
 **Fix:**
+
 1. Run migration 021 SQL again
 2. Check for syntax errors in output
 3. Try smaller sections if query is too large
@@ -362,6 +371,7 @@ CREATE TABLE coaches AS SELECT * FROM coaches_backup_pre_family;
 
 **Cause:** A student somehow exists in multiple families (data corruption before migration)
 **Fix:**
+
 1. Check for duplicate family_members:
    ```sql
    SELECT user_id, COUNT(*) FROM family_members
@@ -375,6 +385,7 @@ CREATE TABLE coaches AS SELECT * FROM coaches_backup_pre_family;
 
 **Cause:** `get_user_family_ids()` function has permission issue
 **Fix:**
+
 1. Drop and recreate function with SECURITY DEFINER:
    ```sql
    DROP FUNCTION IF EXISTS get_user_family_ids();

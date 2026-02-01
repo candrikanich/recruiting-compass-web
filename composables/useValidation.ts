@@ -39,7 +39,6 @@ export function useValidation<T>(
 ): UseValidationReturn<T> {
   // Deprecation warning: prefer useFormValidation()
   if (process.env.NODE_ENV !== "test") {
-     
     console.warn(
       "[DEPRECATED] `useValidation()` is deprecated. Please migrate to `useFormValidation()` from `~/composables/useFormValidation`.",
     );

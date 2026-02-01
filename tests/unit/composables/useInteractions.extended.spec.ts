@@ -31,7 +31,10 @@ const createMockQuery = () => {
 
   // Make mockQuery thenable with a proper .then() method
   Object.defineProperty(mockQuery, "then", {
-    value: (onFulfilled: (value: any) => any, onRejected?: (reason: any) => any) => {
+    value: (
+      onFulfilled: (value: any) => any,
+      onRejected?: (reason: any) => any,
+    ) => {
       return Promise.resolve(testResponse).then(onFulfilled, onRejected);
     },
   });

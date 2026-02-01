@@ -32,7 +32,7 @@ watch(
       document.removeEventListener("keydown", handleKeydown);
       document.body.style.overflow = "auto";
     }
-  }
+  },
 );
 </script>
 
@@ -49,8 +49,12 @@ watch(
           class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-96 overflow-y-auto"
         >
           <!-- Header -->
-          <div class="sticky top-0 bg-blue-50 border-b border-blue-200 px-6 py-4 flex items-start justify-between">
-            <h2 class="text-xl font-bold text-slate-900">{{ helpDefinition.title }}</h2>
+          <div
+            class="sticky top-0 bg-blue-50 border-b border-blue-200 px-6 py-4 flex items-start justify-between"
+          >
+            <h2 class="text-xl font-bold text-slate-900">
+              {{ helpDefinition.title }}
+            </h2>
             <button
               type="button"
               class="text-slate-500 hover:text-slate-700 text-2xl leading-none"
@@ -62,12 +66,21 @@ watch(
 
           <!-- Content -->
           <div class="px-6 py-4">
-            <p class="text-slate-700 mb-3">{{ helpDefinition.shortDescription }}</p>
-            <p class="text-slate-600 text-sm leading-relaxed mb-4">{{ helpDefinition.fullDescription }}</p>
+            <p class="text-slate-700 mb-3">
+              {{ helpDefinition.shortDescription }}
+            </p>
+            <p class="text-slate-600 text-sm leading-relaxed mb-4">
+              {{ helpDefinition.fullDescription }}
+            </p>
 
             <!-- Related links -->
-            <div v-if="helpDefinition.relatedLinks?.length" class="mt-4 pt-4 border-t border-slate-200">
-              <p class="text-sm font-semibold text-slate-700 mb-2">Learn More:</p>
+            <div
+              v-if="helpDefinition.relatedLinks?.length"
+              class="mt-4 pt-4 border-t border-slate-200"
+            >
+              <p class="text-sm font-semibold text-slate-700 mb-2">
+                Learn More:
+              </p>
               <ul class="space-y-1">
                 <li v-for="link in helpDefinition.relatedLinks" :key="link.url">
                   <a
@@ -82,7 +95,9 @@ watch(
           </div>
 
           <!-- Footer -->
-          <div class="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-3 flex justify-end">
+          <div
+            class="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-3 flex justify-end"
+          >
             <button
               type="button"
               class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-medium"

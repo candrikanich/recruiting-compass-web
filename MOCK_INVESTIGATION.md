@@ -32,12 +32,13 @@
 Files like `useInteractions.spec.ts` do it correctly:
 
 ```typescript
-const mockSupabase = {  // ✅ INITIALIZED
+const mockSupabase = {
+  // ✅ INITIALIZED
   from: vi.fn(),
 };
 
 vi.mock("~/composables/useSupabase", () => ({
-  useSupabase: () => mockSupabase,  // ✅ References initialized object
+  useSupabase: () => mockSupabase, // ✅ References initialized object
 }));
 ```
 
@@ -52,15 +53,17 @@ This works because `mockSupabase` exists before `vi.mock()` hoists.
 **File**: `/tests/unit/composables/useAuth-rememberMe.spec.ts`
 
 **Lines 7-11**:
+
 ```typescript
-let mockSupabaseGlobal: any;  // ❌ Uninitialized
+let mockSupabaseGlobal: any; // ❌ Uninitialized
 
 vi.mock("~/composables/useSupabase", () => ({
-  useSupabase: () => mockSupabaseGlobal,  // ❌ Returns undefined
+  useSupabase: () => mockSupabaseGlobal, // ❌ Returns undefined
 }));
 ```
 
 **Lines 69-71 (too late)**:
+
 ```typescript
 mockSupabaseGlobal = {
   auth: mockAuth,
@@ -68,6 +71,7 @@ mockSupabaseGlobal = {
 ```
 
 **Failure Chain**:
+
 1. Test calls `useAuth().login(...)`
 2. `login()` calls `const supabase = useSupabase()`
 3. `supabase` is `undefined`
@@ -75,6 +79,7 @@ mockSupabaseGlobal = {
 5. **TypeError**: Cannot destructure property 'data' of '(intermediate value)' as it is undefined
 
 **Failing Tests** (6 tests in this file):
+
 - `should store session preferences with 30-day expiry when rememberMe is true`
 - `should store session preferences with 1-day expiry when rememberMe is false`
 - `should default to rememberMe false when not provided`
@@ -91,12 +96,14 @@ mockSupabaseGlobal = {
 **Issue**: Mock is defined globally in `setup.ts`, but when running full test suite, `useAuth-rememberMe.spec.ts` loads first (alphabetically), corrupting the module cache.
 
 **Test Line 97**:
+
 ```typescript
 expect(mockSupabase.auth.getSession).toHaveBeenCalledTimes(1);
 // ❌ AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
 ```
 
 **Why Mock Isn't Called**:
+
 - `useAuth.spec.ts` imports `mockSupabase` from setup.ts (correct)
 - But by then, another test file's bad mock has poisoned the module cache
 - Or the composable never executes far enough to call the mock (due to earlier error)
@@ -108,13 +115,15 @@ expect(mockSupabase.auth.getSession).toHaveBeenCalledTimes(1);
 **File**: `/tests/unit/composables/useInteractions.spec.ts`
 
 **Line 114**:
+
 ```typescript
-expect(query.eq).toHaveBeenCalledWith('logged_by', 'athlete-123');
+expect(query.eq).toHaveBeenCalledWith("logged_by", "athlete-123");
 // ❌ AssertionError: expected "vi.fn()" to be called with arguments: [ 'logged_by', 'athlete-123' ]
 // Number of calls: 0
 ```
 
 **Root Cause**:
+
 - Same module cache poisoning from earlier test files
 - Query chain never completes because composable errors on useSupabase call
 - Mock functions never get invoked
@@ -141,20 +150,25 @@ expect(query.eq).toHaveBeenCalledWith('logged_by', 'athlete-123');
 ### Why useAuth-rememberMe.spec.ts is Different
 
 **Lines 7-11** (Problem Setup):
+
 ```typescript
-let mockSupabaseGlobal: any;  // Declared, not initialized
+let mockSupabaseGlobal: any; // Declared, not initialized
 
 vi.mock("~/composables/useSupabase", () => ({
-  useSupabase: () => mockSupabaseGlobal,  // Captures undefined reference
+  useSupabase: () => mockSupabaseGlobal, // Captures undefined reference
 }));
 ```
 
 **Lines 36-72** (Late Initialization):
+
 ```typescript
 beforeEach(() => {
   // ...
-  mockAuth = { /* ... */ };
-  mockSupabaseGlobal = {  // ⚠️ Set here, too late for module cache
+  mockAuth = {
+    /* ... */
+  };
+  mockSupabaseGlobal = {
+    // ⚠️ Set here, too late for module cache
     auth: mockAuth,
   };
 });
@@ -167,6 +181,7 @@ beforeEach(() => {
 ## Hidden Connections
 
 ### 1. Module Cache Poisoning
+
 When test files load, Vitest caches module resolutions. Once `useAuth-rememberMe.spec.ts` creates a bad mock, subsequent tests may reference the corrupted cache:
 
 ```
@@ -181,6 +196,7 @@ Test Load Order (Alphabetical):
 ```
 
 ### 2. Vitest Mock Hoisting
+
 All `vi.mock()` calls are hoisted to the top of the module, before any variable declarations execute:
 
 ```typescript
@@ -194,6 +210,7 @@ let mockSupabaseGlobal: any;        // Executed second (too late)
 ```
 
 ### 3. Test Isolation Breaking
+
 Using a file-local mock factory breaks the global mock for that file's entire test execution:
 
 ```
@@ -208,6 +225,7 @@ File-Local Mock (useAuth-rememberMe.spec.ts):
 ```
 
 ### 4. Why Tests Pass When Run Individually
+
 When running a single test file that has correct mock setup:
 
 ```bash
@@ -220,6 +238,7 @@ npm run test -- useAuth.spec.ts
 - Tests pass ✅
 
 When running full suite:
+
 ```bash
 npm run test
 ```
@@ -233,14 +252,14 @@ npm run test
 
 ## Root Cause Summary
 
-| Aspect | Issue |
-|--------|-------|
-| **Primary Cause** | `useAuth-rememberMe.spec.ts` declares mock variable without initializing it before `vi.mock()` hoisting |
-| **Trigger** | Variable reference at module scope before assignment in `beforeEach()` |
-| **Manifestation** | `useSupabase()` returns `undefined` instead of mock object |
-| **Effect** | All method calls destructure `undefined`, causing immediate errors |
-| **Test Failures** | 30+ tests across multiple files |
-| **Call Count Issue** | Mocks never invoked because composable errors before reaching mock calls |
+| Aspect               | Issue                                                                                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Primary Cause**    | `useAuth-rememberMe.spec.ts` declares mock variable without initializing it before `vi.mock()` hoisting |
+| **Trigger**          | Variable reference at module scope before assignment in `beforeEach()`                                  |
+| **Manifestation**    | `useSupabase()` returns `undefined` instead of mock object                                              |
+| **Effect**           | All method calls destructure `undefined`, causing immediate errors                                      |
+| **Test Failures**    | 30+ tests across multiple files                                                                         |
+| **Call Count Issue** | Mocks never invoked because composable errors before reaching mock calls                                |
 
 ---
 
@@ -354,9 +373,11 @@ vi.mock("~/composables/useSupabase", () => ({
 ## Files Requiring Fixes
 
 ### Primary Culprit:
+
 - `/tests/unit/composables/useAuth-rememberMe.spec.ts` (Lines 7-11, 69-71)
 
 ### Secondary (24 files with vi.mock):
+
 1. errorScenarios.spec.ts
 2. useAccountLinks.spec.ts
 3. useActivityFeed.spec.ts

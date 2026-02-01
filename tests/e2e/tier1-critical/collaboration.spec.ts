@@ -163,7 +163,9 @@ test.describe("Tier 1: Family Collaboration - Critical Flows", () => {
 
     // Try to invite 6th user - should fail
     await collaborationPage.inviteCollaborator("user6@test.com");
-    await collaborationPage.expectInvitationError("maximum of 5 linked accounts");
+    await collaborationPage.expectInvitationError(
+      "maximum of 5 linked accounts",
+    );
   });
 
   test("should prevent secondary user from editing interactions", async ({

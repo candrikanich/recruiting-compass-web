@@ -48,9 +48,7 @@ export default defineEventHandler(
         .single();
 
       if (!userData?.is_admin) {
-        logger.warn(
-          `Non-admin user ${user.id} attempted to delete a user`,
-        );
+        logger.warn(`Non-admin user ${user.id} attempted to delete a user`);
         throw createError({
           statusCode: 403,
           statusMessage: "Only administrators can delete users",
@@ -104,8 +102,10 @@ export default defineEventHandler(
         // If not in public.users, try to find in auth system
         // This handles cases where user was deleted from public.users but auth record remains
         try {
-          const { data: { users }, error: authSearchError } =
-            await supabaseAdmin.auth.admin.listUsers();
+          const {
+            data: { users },
+            error: authSearchError,
+          } = await supabaseAdmin.auth.admin.listUsers();
 
           if (authSearchError) {
             throw authSearchError;
@@ -116,7 +116,9 @@ export default defineEventHandler(
           );
 
           if (!authUser?.id) {
-            logger.warn(`Delete user attempt for non-existent email: ${targetEmail}`);
+            logger.warn(
+              `Delete user attempt for non-existent email: ${targetEmail}`,
+            );
             throw createError({
               statusCode: 404,
               statusMessage: "User not found in database or auth system",
@@ -131,7 +133,9 @@ export default defineEventHandler(
           if (error instanceof Error && "statusCode" in error) {
             throw error;
           }
-          logger.warn(`Delete user attempt for non-existent email: ${targetEmail}`);
+          logger.warn(
+            `Delete user attempt for non-existent email: ${targetEmail}`,
+          );
           throw createError({
             statusCode: 404,
             statusMessage: "User not found",
@@ -170,11 +174,17 @@ export default defineEventHandler(
 
             if (deleteError && deleteError.code !== "42P01") {
               // 42P01 = relation does not exist (table doesn't exist, which is fine)
-              logger.warn(`Failed to delete from ${table}.${column}:`, deleteError);
+              logger.warn(
+                `Failed to delete from ${table}.${column}:`,
+                deleteError,
+              );
             }
           }
         } catch (error) {
-          logger.warn(`Error deleting from ${table} for user ${targetUserId}:`, error);
+          logger.warn(
+            `Error deleting from ${table} for user ${targetUserId}:`,
+            error,
+          );
         }
       }
 

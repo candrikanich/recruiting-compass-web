@@ -54,13 +54,11 @@ export default defineEventHandler(async (event) => {
   }
 
   // Add student to family_members
-  const { error: memberError } = await supabase
-    .from("family_members")
-    .insert({
-      family_unit_id: newFamily.id,
-      user_id: user.id,
-      role: "student",
-    });
+  const { error: memberError } = await supabase.from("family_members").insert({
+    family_unit_id: newFamily.id,
+    user_id: user.id,
+    role: "student",
+  });
 
   if (memberError) {
     throw createError({

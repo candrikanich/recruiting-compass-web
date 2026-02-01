@@ -30,6 +30,7 @@ Content-Type: application/json
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "user": {
@@ -46,6 +47,7 @@ Content-Type: application/json
 ```
 
 **Error (401 Unauthorized):**
+
 ```json
 {
   "error": "Invalid credentials"
@@ -64,6 +66,7 @@ Authorization: Bearer <token>
 ```
 
 **Query Parameters:**
+
 - `division_level` (optional): Filter by D1, D2, D3, JUCO, NAIA
 - `priority_tier` (optional): Filter by reach, target, safety
 - `sort_by` (optional): fit_score (default), name, added_date
@@ -71,6 +74,7 @@ Authorization: Bearer <token>
 - `offset` (optional): Pagination offset (default 0)
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -104,6 +108,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
@@ -138,6 +143,7 @@ Authorization: Bearer <token>
 ```
 
 **Error (404 Not Found):**
+
 ```json
 {
   "error": "School not found"
@@ -163,6 +169,7 @@ Content-Type: application/json
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "uuid",
@@ -176,6 +183,7 @@ Content-Type: application/json
 ```
 
 **Error (400 Bad Request):**
+
 ```json
 {
   "error": "Missing required field: school_name"
@@ -198,6 +206,7 @@ Content-Type: application/json
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
@@ -234,6 +243,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -264,6 +274,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
@@ -308,6 +319,7 @@ Content-Type: application/json
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "uuid",
@@ -336,6 +348,7 @@ Content-Type: application/json
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
@@ -368,10 +381,12 @@ Authorization: Bearer <token>
 ```
 
 **Query Parameters:**
+
 - `limit` (optional): Max results (default 50)
 - `offset` (optional): Pagination offset
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -414,6 +429,7 @@ Content-Type: application/json
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "uuid",
@@ -442,6 +458,7 @@ Content-Type: application/json
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
@@ -474,6 +491,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -507,6 +525,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -540,6 +559,7 @@ Content-Type: application/json
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
@@ -563,6 +583,7 @@ Content-Type: application/json
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
@@ -586,6 +607,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "school_id": "uuid",
@@ -612,10 +634,12 @@ Authorization: Bearer <token>
 ```
 
 **Query Parameters:**
+
 - `min_score` (optional): Minimum fit score (1-10)
 - `sort_by` (optional): score (default), school_name
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -647,10 +671,12 @@ Authorization: Bearer <token>
 ```
 
 **Query Parameters:**
+
 - `limit` (optional): Max results (default 10)
 - `priority` (optional): high, medium, low
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -684,6 +710,7 @@ Content-Type: application/json
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
@@ -704,10 +731,12 @@ Authorization: Bearer <token>
 ```
 
 **Query Parameters:**
+
 - `metric_type` (optional): Filter by dash_60, exit_velocity, etc.
 - `sort_by` (optional): date (default), value
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -742,6 +771,7 @@ Content-Type: application/json
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "uuid",
@@ -765,10 +795,12 @@ Authorization: Bearer <token>
 ```
 
 **Query Parameters:**
+
 - `document_type` (optional): highlights, transcripts, stats, recruiting_survey, other
 - `limit` (optional): Max results (default 50)
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -805,6 +837,7 @@ Content-Type: multipart/form-data
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "uuid",
@@ -825,6 +858,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "document_id": "uuid",
@@ -857,10 +891,12 @@ Authorization: Bearer <token>
 ```
 
 **Query Parameters:**
+
 - `event_type` (optional): showcase, tournament, camp, coach_visit, campus_visit, recruiting_expo
 - `upcoming` (optional): true (only future events), false (all)
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -898,6 +934,7 @@ Content-Type: application/json
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "uuid",
@@ -919,6 +956,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
@@ -955,11 +993,12 @@ Content-Type: application/json
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
   "profile": {
-    "unweighted_gpa": 3.90,
+    "unweighted_gpa": 3.9,
     "sat_score": 1450,
     "target_divisions": ["D1"]
   },
@@ -985,6 +1024,7 @@ Content-Type: application/json
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "invitation_id": "uuid",
@@ -1004,6 +1044,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -1035,6 +1076,7 @@ Authorization: Bearer <token>
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "Validation error",
@@ -1045,6 +1087,7 @@ Authorization: Bearer <token>
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "Invalid or missing authentication token"
@@ -1052,6 +1095,7 @@ Authorization: Bearer <token>
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "You don't have permission to access this resource"
@@ -1059,6 +1103,7 @@ Authorization: Bearer <token>
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "Resource not found"
@@ -1066,6 +1111,7 @@ Authorization: Bearer <token>
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "Rate limit exceeded. Try again in 60 seconds."
@@ -1073,6 +1119,7 @@ Authorization: Bearer <token>
 ```
 
 ### 500 Server Error
+
 ```json
 {
   "error": "Internal server error. Please try again later."
@@ -1088,6 +1135,7 @@ Authorization: Bearer <token>
 - **File Uploads**: 10 requests/minute
 
 Rate limit headers:
+
 - `X-RateLimit-Limit`: Total requests allowed
 - `X-RateLimit-Remaining`: Requests remaining
 - `X-RateLimit-Reset`: Unix timestamp when limit resets
@@ -1103,6 +1151,7 @@ Endpoints that return lists support pagination:
 ```
 
 Response includes:
+
 ```json
 {
   "data": [...],

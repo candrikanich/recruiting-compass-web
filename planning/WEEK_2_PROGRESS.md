@@ -159,6 +159,7 @@
 ## Quality Metrics
 
 ### User Manual (✅ Complete)
+
 - [x] Covers all 8 core features
 - [x] Step-by-step instructions with examples
 - [x] Troubleshooting section
@@ -166,6 +167,7 @@
 - [x] Clear, beginner-friendly language
 
 ### FAQ (✅ Complete)
+
 - [x] Organized by topic (8 sections)
 - [x] 40+ commonly asked questions
 - [x] Detailed, specific answers
@@ -173,6 +175,7 @@
 - [x] Links to support
 
 ### Email Templates (✅ Complete)
+
 - [x] 12 distinct templates for user journey
 - [x] Clear onboarding sequence (Days 0, 2, 4, 7, 14)
 - [x] Engagement and retention emails
@@ -180,6 +183,7 @@
 - [x] A/B testing framework
 
 ### Feature Highlights (✅ Complete)
+
 - [x] Each feature has dedicated marketing page
 - [x] Benefits-focused, not feature-heavy
 - [x] Real-world examples and scenarios
@@ -187,6 +191,7 @@
 - [x] Clear CTAs
 
 ### Database Schema (✅ Complete)
+
 - [x] All 14 tables documented
 - [x] ERD (Entity-Relationship Diagram)
 - [x] Field descriptions and types
@@ -199,17 +204,20 @@
 ## Remaining Week 2 Tasks
 
 ### 1. API Reference (`/documentation/technical/API_REFERENCE.md`)
+
 - Endpoints: `/api/schools`, `/api/coaches`, `/api/interactions`, `/api/timeline/tasks`, etc.
 - For each endpoint: URL, method, description, request/response schemas, examples, error codes
 - **Estimated time:** 4-5 hours
 
 ### 2. User Journey Maps (3 Mermaid diagrams)
+
 - New athlete onboarding journey
 - Parent account linking flow
 - School research to offer journey
 - **Estimated time:** 2-3 hours
 
 ### 3. Screenshot Captures (20-30 more)
+
 - Dashboard (athlete + parent)
 - Schools/coaches pages
 - Timeline and tasks
@@ -222,6 +230,7 @@
 ## Week 2 vs. Plan
 
 **Completed:**
+
 - ✅ User Manual (planned)
 - ✅ FAQ Document (planned)
 - ✅ Email Templates (planned)
@@ -229,6 +238,7 @@
 - ✅ Database Schema Documentation (planned)
 
 **On Track:**
+
 - ⏳ API Reference (in progress)
 - ⏳ User Journey Maps (pending)
 - ⏳ Screenshots (pending—your task)
@@ -266,6 +276,7 @@
 ## Week 3 Preview
 
 ### Week 3 Deliverables (Starting Soon)
+
 1. **API Reference** (complete from Week 2)
 2. **User Journey Maps** (3 diagrams)
 3. **Video Tutorials** (8-10 Loom videos)
@@ -283,12 +294,14 @@
 ### For You (Chris)
 
 **Action Items:**
+
 1. Review Week 2 documents for accuracy/feedback
 2. Continue capturing screenshots (20-30 more)
 3. Design one-pager in Canva
 4. Create pitch deck from outline
 
 **Questions to Consider:**
+
 1. Should API Reference be before or after User Journey Maps?
 2. Any specific feedback on email templates (tone, timing, content)?
 3. Are feature highlights hitting the right marketing angle?
@@ -296,6 +309,7 @@
 ### For Claude
 
 **Next Phase:**
+
 1. Complete API Reference documentation
 2. Create 3 user journey map diagrams
 3. Begin Week 3 video tutorials (or create script)

@@ -557,7 +557,11 @@
 
             <!-- API error from password reset -->
             <div
-              v-if="passwordReset.error?.value?.trim() && !passwordUpdated && !invalidToken"
+              v-if="
+                passwordReset.error?.value?.trim() &&
+                !passwordUpdated &&
+                !invalidToken
+              "
               class="p-4 bg-red-50 border border-red-200 rounded-lg"
             >
               <p class="text-red-800 text-sm font-medium">
@@ -666,9 +670,7 @@
                   </svg>
                   <span
                     :class="
-                      password.length >= 8
-                        ? 'text-slate-900'
-                        : 'text-slate-500'
+                      password.length >= 8 ? 'text-slate-900' : 'text-slate-500'
                     "
                   >
                     At least 8 characters
@@ -843,18 +845,13 @@ const invalidToken = ref(false);
 const isValidating = ref(false);
 
 const passwordReset = usePasswordReset();
-const {
-  errors,
-  fieldErrors,
-  validate,
-  validateField,
-  clearErrors,
-  hasErrors,
-} = useFormValidation();
+const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } =
+  useFormValidation();
 
 // Computed property for form validity
 const isFormValid = computed(() => {
-  const passwordValid = password.value.length >= 8 &&
+  const passwordValid =
+    password.value.length >= 8 &&
     /[A-Z]/.test(password.value) &&
     /[a-z]/.test(password.value) &&
     /[0-9]/.test(password.value);

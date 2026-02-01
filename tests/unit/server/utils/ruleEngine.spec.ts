@@ -159,7 +159,9 @@ describe("RuleEngine", () => {
         evaluate: vi.fn().mockRejectedValue(mockError),
       };
 
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
 
       engine.addRule(rule);
       const result = await engine.evaluateAll(mockContext);
@@ -244,7 +246,7 @@ describe("RuleEngine", () => {
       const now = new Date();
       const dismissedDays = Math.floor(
         (now.getTime() - new Date(dismissedSuggestion.dismissed_at).getTime()) /
-          (1000 * 60 * 60 * 24)
+          (1000 * 60 * 60 * 24),
       );
       expect(dismissedDays).toBeGreaterThanOrEqual(14);
     });
@@ -286,11 +288,14 @@ describe("RuleEngine", () => {
 
       // Verify rule can be called with dismissedSuggestion
       if (rule.shouldReEvaluate) {
-        const result = await rule.shouldReEvaluate(dismissedSuggestion, mockContext);
+        const result = await rule.shouldReEvaluate(
+          dismissedSuggestion,
+          mockContext,
+        );
         expect(result).toBe(true);
         expect(shouldReEvaluateMock).toHaveBeenCalledWith(
           dismissedSuggestion,
-          mockContext
+          mockContext,
         );
       }
     });
@@ -351,7 +356,7 @@ describe("RuleEngine", () => {
       const now = new Date();
       const dismissedDays = Math.floor(
         (now.getTime() - new Date(dismissedSuggestion.dismissed_at).getTime()) /
-          (1000 * 60 * 60 * 24)
+          (1000 * 60 * 60 * 24),
       );
       expect(dismissedDays).toBeLessThan(14);
     });

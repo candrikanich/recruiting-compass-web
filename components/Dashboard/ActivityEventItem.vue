@@ -20,7 +20,7 @@
           {{ event.description }}
         </div>
         <div class="text-slate-400 text-xs mt-1">
-          {{ event.metadata?.relativeTime || 'Recently' }}
+          {{ event.metadata?.relativeTime || "Recently" }}
         </div>
       </div>
     </div>
@@ -28,8 +28,8 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from '#app';
-import type { ActivityEvent } from '~/composables/useActivityFeed';
+import { useRouter } from "#app";
+import type { ActivityEvent } from "~/composables/useActivityFeed";
 
 interface Props {
   event: ActivityEvent;

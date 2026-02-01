@@ -1,17 +1,13 @@
 <template>
   <div class="border border-blue-200 bg-blue-50 rounded-lg p-4">
-    <h3 class="text-lg font-semibold text-blue-900 mb-2">
-      Your Family Code
-    </h3>
+    <h3 class="text-lg font-semibold text-blue-900 mb-2">Your Family Code</h3>
     <p class="text-sm text-blue-700 mb-4">
       Share this code with your parents so they can access your recruiting data.
     </p>
 
     <div class="bg-white border border-blue-300 rounded-lg p-4 mb-4">
       <div class="flex items-center justify-between">
-        <div
-          class="font-mono text-3xl font-bold text-blue-900 tracking-wider"
-        >
+        <div class="font-mono text-3xl font-bold text-blue-900 tracking-wider">
           {{ familyCode }}
         </div>
         <button

@@ -46,12 +46,14 @@ graph TD
 ### Journey Stages & Details
 
 **Stage 1: Discovery** (Entry Point)
+
 - Athlete hears about Recruiting Compass
 - Sources: Product Hunt, Google, social media, friend referral
 - Barrier: Skepticism ("Do I really need this?")
 - Solution: Clear value prop + free access
 
 **Stage 2: Account Creation** (Registration)
+
 - Email signup (quick, 2 min)
 - Password creation
 - Email verification
@@ -59,6 +61,7 @@ graph TD
 - Solution: SSO option (Google/Apple) in future
 
 **Stage 3: Basic Profile** (Setup)
+
 - High school, graduation year, position
 - GPA, test scores (optional initially)
 - Target divisions, regions
@@ -66,6 +69,7 @@ graph TD
 - Solution: Can update anytime
 
 **Stage 4: School Discovery** (Core Action)
+
 - Search for 10-15 target schools
 - Mix of reach, target, safety
 - Set priority tiers
@@ -73,30 +77,35 @@ graph TD
 - Solution: Fit scores guide recommendations
 
 **Stage 5: Coach Management** (Data Entry)
+
 - Find coaches at each school
 - Enter contact info
 - Barrier: Time-consuming data entry
 - Solution: Search feature, coach database pre-populated
 
 **Stage 6: First Interaction** (Building History)
+
 - Log past email or inquiry
 - Sets baseline timeline
 - Barrier: Wasn't tracking before
 - Solution: Can log past events anytime
 
 **Stage 7: Timeline Review** (Context)
+
 - Understand current phase
 - See phase-appropriate tasks
 - Barrier: Doesn't know recruiting timeline
 - Solution: Template timeline guides them
 
 **Stage 8: Parent Invitation** (Optional Collaboration)
+
 - Send invite to parent/guardian
 - Parent creates account and links
 - Barrier: Requires parent engagement
 - Solution: Easy invite flow, parents see value
 
 **Stage 9: Ongoing Usage** (Habit Formation)
+
 - Regular interaction logging
 - Weekly timeline reviews
 - Monthly progress checks
@@ -105,16 +114,16 @@ graph TD
 
 ### Timeline
 
-| Stage | Duration | Task |
-|-------|----------|------|
-| Discovery → Account | 5 min | Sign up, verify email |
-| Profile Setup | 5 min | Enter basic info |
-| School Search | 20 min | Add 10-15 schools |
-| Coach Entry | 30 min | Add coaches from schools |
-| First Interaction | 10 min | Log past or current |
-| Timeline Review | 5 min | Understand phases |
-| Parent Invite | 2 min | Send invite link |
-| **Total Onboarding** | **80 min** | Complete setup |
+| Stage                | Duration   | Task                     |
+| -------------------- | ---------- | ------------------------ |
+| Discovery → Account  | 5 min      | Sign up, verify email    |
+| Profile Setup        | 5 min      | Enter basic info         |
+| School Search        | 20 min     | Add 10-15 schools        |
+| Coach Entry          | 30 min     | Add coaches from schools |
+| First Interaction    | 10 min     | Log past or current      |
+| Timeline Review      | 5 min      | Understand phases        |
+| Parent Invite        | 2 min      | Send invite link         |
+| **Total Onboarding** | **80 min** | Complete setup           |
 
 ### Success Metrics
 
@@ -182,6 +191,7 @@ graph TD
 ### Journey Stages & Details
 
 **Stage 1: Athlete Invitation** (Initiation)
+
 - Athlete goes to Settings > Account & Collaboration
 - Enters parent email
 - Sends invite
@@ -189,18 +199,21 @@ graph TD
 - Solution: Follow-up reminders, clear CTA in email
 
 **Stage 2: Email Receipt** (Awareness)
+
 - Parent receives email with invite link
 - May ignore if email goes to spam
 - Barrier: Email overload, distrust (unfamiliar sender)
 - Solution: Clear subject line, from trusted domain
 
 **Stage 3: Interest Decision** (Consideration)
+
 - Parent decides whether to accept
 - Considers: Privacy (what will they see?), time commitment (how long?), value (is it useful?)
 - Barrier: Concerns about tracking athlete
 - Solution: Email explains parent view is read-only, athlete stays in control
 
 **Stage 4: Link Click & Account Creation** (Conversion)
+
 - Parent clicks invite link
 - If no account: quick signup (email + password)
 - If account exists: just accept invite
@@ -208,18 +221,21 @@ graph TD
 - Solution: SSO (Google/Apple) for frictionless creation
 
 **Stage 5: Linking & Authorization** (Connection)
+
 - Accept invite and link to athlete
 - Parent sees: "You now have access to [Athlete Name]'s recruiting profile"
 - Barrier: Understanding what access means
 - Solution: Clear explanation of what parent can see
 
 **Stage 6: Dashboard Exploration** (Orientation)
+
 - Parent views athlete's main dashboard
 - Sees: Schools, coaches, interactions, timeline progress
 - Barrier: Overwhelmed by data
 - Solution: Guided tour or help tooltips
 
 **Stage 7: Feature Discovery** (Engagement)
+
 - Explore schools and coaches (see all targets)
 - Check timeline progress (understand phase)
 - Review interactions (see communication history)
@@ -227,6 +243,7 @@ graph TD
 - Solution: Help section, email tips, in-app guide
 
 **Stage 8: Notification Setup** (Ongoing)
+
 - Parent configures notifications
 - Types: New interactions, timeline updates, milestones, offers
 - Frequency: Real-time, daily digest, or weekly summary
@@ -234,6 +251,7 @@ graph TD
 - Solution: Preference center for custom settings
 
 **Stage 9: Ongoing Monitoring** (Habit Formation)
+
 - Parent checks app weekly
 - Gets notifications on important updates
 - Discusses progress with athlete
@@ -242,16 +260,16 @@ graph TD
 
 ### Timeline
 
-| Stage | Duration | Task |
-|-------|----------|------|
-| Invitation | 1 min | Athlete sends invite |
-| Email Delivery | Async | Parent receives email |
-| Decision | 1-7 days | Parent decides to join |
-| Link Click & Signup | 5 min | Create account (if new) |
-| Accept Invite | 1 min | Link to athlete |
-| Dashboard Exploration | 10 min | View all data |
-| Setup Notifications | 3 min | Configure preferences |
-| **Total Parent Onboarding** | **20-30 min** | Complete setup |
+| Stage                       | Duration      | Task                    |
+| --------------------------- | ------------- | ----------------------- |
+| Invitation                  | 1 min         | Athlete sends invite    |
+| Email Delivery              | Async         | Parent receives email   |
+| Decision                    | 1-7 days      | Parent decides to join  |
+| Link Click & Signup         | 5 min         | Create account (if new) |
+| Accept Invite               | 1 min         | Link to athlete         |
+| Dashboard Exploration       | 10 min        | View all data           |
+| Setup Notifications         | 3 min         | Configure preferences   |
+| **Total Parent Onboarding** | **20-30 min** | Complete setup          |
 
 ### Success Metrics
 
@@ -327,14 +345,14 @@ graph TD
 
 **Phase 1: FRESHMAN - Research (Ages 14-15)**
 
-| Activity | Timeline | Recruiting Compass Action |
-|----------|----------|---------------------------|
-| Discover recruiting process | Sept-Oct | Read guides, watch tutorials |
-| Build target school list | Oct-Nov | Add 10-20 schools by tier |
-| Research coaches | Nov-Dec | Add coaches, note positions they recruit |
-| Attend local showcases | Spring | Log showcase attendance |
-| Improve athletic skills | Year-round | Update performance metrics |
-| Check fit scores | Spring | Review fit score breakdown |
+| Activity                    | Timeline   | Recruiting Compass Action                |
+| --------------------------- | ---------- | ---------------------------------------- |
+| Discover recruiting process | Sept-Oct   | Read guides, watch tutorials             |
+| Build target school list    | Oct-Nov    | Add 10-20 schools by tier                |
+| Research coaches            | Nov-Dec    | Add coaches, note positions they recruit |
+| Attend local showcases      | Spring     | Log showcase attendance                  |
+| Improve athletic skills     | Year-round | Update performance metrics               |
+| Check fit scores            | Spring     | Review fit score breakdown               |
 
 **Goal:** Get on coaches' radars, develop athletically
 **Recruiting Compass Focus:** Organization, fit score understanding, timeline context
@@ -343,14 +361,14 @@ graph TD
 
 **Phase 2: SOPHOMORE - Active Outreach (Ages 15-16)**
 
-| Activity | Timeline | Recruiting Compass Action |
-|----------|----------|---------------------------|
-| Attend 2-3 summer showcases | June-July | Log interactions with coaches |
-| Send intro emails to coaches | Summer | Log email_sent interactions |
-| Update athletic profile | Fall | Update stats, test scores |
-| Respond to coach inquiries | Ongoing | Log emails_received |
-| Keep school list updated | Fall-Spring | Add/remove schools as needed |
-| Monitor coach responsiveness | Ongoing | Track response times |
+| Activity                     | Timeline    | Recruiting Compass Action     |
+| ---------------------------- | ----------- | ----------------------------- |
+| Attend 2-3 summer showcases  | June-July   | Log interactions with coaches |
+| Send intro emails to coaches | Summer      | Log email_sent interactions   |
+| Update athletic profile      | Fall        | Update stats, test scores     |
+| Respond to coach inquiries   | Ongoing     | Log emails_received           |
+| Keep school list updated     | Fall-Spring | Add/remove schools as needed  |
+| Monitor coach responsiveness | Ongoing     | Track response times          |
 
 **Goal:** Build initial relationships, get invited to official visits
 **Recruiting Compass Focus:** Interaction tracking, responsiveness monitoring, follow-up reminders
@@ -359,16 +377,16 @@ graph TD
 
 **Phase 3: JUNIOR - Peak Recruiting (Ages 16-17)**
 
-| Activity | Timeline | Recruiting Compass Action |
-|----------|----------|---------------------------|
-| Campus visits to top 10 | Fall-Spring | Log campus_visit interactions |
-| Build relationships with coaches | Ongoing | Regular interaction logging |
-| Attend recruiting events/camps | Winter | Log event attendance |
-| Receive recruiting surveys | Winter-Spring | Store documents, note deadlines |
-| **First offers arrive** | Spring | Log offers, review terms |
-| More official visits (D1/D2) | Spring | Log official visit interactions |
-| Update fit scores based on visits | Spring | Review fit scores post-visit |
-| Consider additional schools | Spring | Add newly interested schools |
+| Activity                          | Timeline      | Recruiting Compass Action       |
+| --------------------------------- | ------------- | ------------------------------- |
+| Campus visits to top 10           | Fall-Spring   | Log campus_visit interactions   |
+| Build relationships with coaches  | Ongoing       | Regular interaction logging     |
+| Attend recruiting events/camps    | Winter        | Log event attendance            |
+| Receive recruiting surveys        | Winter-Spring | Store documents, note deadlines |
+| **First offers arrive**           | Spring        | Log offers, review terms        |
+| More official visits (D1/D2)      | Spring        | Log official visit interactions |
+| Update fit scores based on visits | Spring        | Review fit scores post-visit    |
+| Consider additional schools       | Spring        | Add newly interested schools    |
 
 **Goal:** Determine top 10-15 schools, get multiple offers, start narrowing list
 **Recruiting Compass Focus:** Offer tracking, campus visit logging, coach relationship building, timeline progress
@@ -377,15 +395,15 @@ graph TD
 
 **Phase 4: SENIOR - Decision (Ages 17-18)**
 
-| Activity | Timeline | Recruiting Compass Action |
-|----------|----------|---------------------------|
-| Narrow list to top 3-5 | Sept-Oct | Focus on top-tier schools |
-| Official visits to finalists | Oct-Nov | Log official visit interactions |
-| Family meetings & discussion | Oct-Dec | Share fit scores, pros/cons |
-| Make final decision | Dec-Jan | Document decision factors |
-| Commit verbally to school | Dec-Jan | Log commitment |
-| Sign Letter of Intent (LOI) | Feb (signing day) | Log signed LOI, celebrate! |
-| Transition planning | Feb-Summer | College planning (next chapter) |
+| Activity                     | Timeline          | Recruiting Compass Action       |
+| ---------------------------- | ----------------- | ------------------------------- |
+| Narrow list to top 3-5       | Sept-Oct          | Focus on top-tier schools       |
+| Official visits to finalists | Oct-Nov           | Log official visit interactions |
+| Family meetings & discussion | Oct-Dec           | Share fit scores, pros/cons     |
+| Make final decision          | Dec-Jan           | Document decision factors       |
+| Commit verbally to school    | Dec-Jan           | Log commitment                  |
+| Sign Letter of Intent (LOI)  | Feb (signing day) | Log signed LOI, celebrate!      |
+| Transition planning          | Feb-Summer        | College planning (next chapter) |
 
 **Goal:** Commit to college and sign LOI
 **Recruiting Compass Focus:** Offer comparison, family decision-making, commitment tracking
@@ -395,21 +413,25 @@ graph TD
 ### Key Milestones & Triggers
 
 **Freshman Year Milestones:**
+
 - [ ] First showcase attended
 - [ ] 10+ schools added
 - [ ] First interaction logged
 
 **Sophomore Year Milestones:**
+
 - [ ] First intro email sent
 - [ ] Coach responds (positive interaction)
 - [ ] 20+ interactions logged
 
 **Junior Year Milestones:**
+
 - [ ] First campus visit
 - [ ] First offer received
 - [ ] 50+ interactions logged
 
 **Senior Year Milestones:**
+
 - [ ] Narrowed to top 5 schools
 - [ ] Official visits to finalists
 - [ ] Committed to school
@@ -445,34 +467,38 @@ Senior Year:
 
 ### Common Challenges & Solutions
 
-| Challenge | Why It Happens | Recruiting Compass Solution |
-|-----------|----------------|------|
-| Silent coaches | Low interest or busy | Recovery plan suggests re-engagement |
-| Too many schools | Indecision or lack of focus | Fit scores help narrow list |
-| Missed deadlines | Disorganization | Timeline tasks + notifications |
-| Family disagreement | Different priorities | Shared parent access enables discussion |
-| Pressure from coaches | Multiple offers competing | Offer tracking + comparison tool |
+| Challenge             | Why It Happens              | Recruiting Compass Solution             |
+| --------------------- | --------------------------- | --------------------------------------- |
+| Silent coaches        | Low interest or busy        | Recovery plan suggests re-engagement    |
+| Too many schools      | Indecision or lack of focus | Fit scores help narrow list             |
+| Missed deadlines      | Disorganization             | Timeline tasks + notifications          |
+| Family disagreement   | Different priorities        | Shared parent access enables discussion |
+| Pressure from coaches | Multiple offers competing   | Offer tracking + comparison tool        |
 
 ---
 
 ## Using These Journeys
 
 ### For Developers
+
 - Understand user workflows before implementation
 - Design features to support key journey moments
 - Identify bottlenecks or pain points
 
 ### For Designers
+
 - Create flows that guide users through journeys
 - Design for each phase's specific needs
 - Test with actual athletes/parents following these journeys
 
 ### For Marketing
+
 - Use journeys in testimonial videos
 - Highlight how Recruiting Compass solves pain points
 - Create messaging tailored to each phase
 
 ### For Product
+
 - Prioritize features that address key journey moments
 - Measure success by journey completion rates
 - Iterate based on user feedback at each stage

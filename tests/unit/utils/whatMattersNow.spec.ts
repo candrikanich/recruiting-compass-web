@@ -3,7 +3,9 @@ import { getWhatMattersNow, getPriorityLabel } from "~/utils/whatMattersNow";
 import type { TaskWithStatus } from "~/types/timeline";
 
 // Mock task data
-const createMockTask = (overrides?: Partial<TaskWithStatus>): TaskWithStatus => ({
+const createMockTask = (
+  overrides?: Partial<TaskWithStatus>,
+): TaskWithStatus => ({
   id: "task-1",
   title: "Test Task",
   description: "Test description",
@@ -61,7 +63,9 @@ describe("whatMattersNow", () => {
       });
 
       // Should only include grade 9 tasks
-      expect(result.every((item) => item.taskId === "task-1" || true)).toBe(true);
+      expect(result.every((item) => item.taskId === "task-1" || true)).toBe(
+        true,
+      );
     });
 
     it("should only include required tasks with why_it_matters", () => {

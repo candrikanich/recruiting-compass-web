@@ -430,11 +430,15 @@
                 />
                 <span class="text-slate-700 text-sm">
                   I agree to the
-                  <NuxtLink to="/legal/terms" class="text-blue-600 hover:text-blue-700"
+                  <NuxtLink
+                    to="/legal/terms"
+                    class="text-blue-600 hover:text-blue-700"
                     >Terms and Conditions</NuxtLink
                   >
                   and
-                  <NuxtLink to="/legal/privacy" class="text-blue-600 hover:text-blue-700"
+                  <NuxtLink
+                    to="/legal/privacy"
+                    class="text-blue-600 hover:text-blue-700"
                     >Privacy Policy</NuxtLink
                   >
                 </span>
@@ -626,7 +630,9 @@ const handleSignup = async () => {
         } = await supabase.auth.getSession();
 
         if (session?.user?.id) {
-          console.log("Session exists for user, proceeding with profile creation");
+          console.log(
+            "Session exists for user, proceeding with profile creation",
+          );
           userId = session.user.id;
         } else {
           // No active session - this is a real error
@@ -663,7 +669,10 @@ const handleSignup = async () => {
 
     // Check if there's a redirect URL (e.g., from accept-invitation page)
     const encodedRedirectUrl = route.query.redirect as string;
-    console.log("Checking redirect:", { encodedRedirectUrl, routeQuery: route.query });
+    console.log("Checking redirect:", {
+      encodedRedirectUrl,
+      routeQuery: route.query,
+    });
 
     if (encodedRedirectUrl) {
       // Decode the redirect URL (it was encoded to preserve query params)

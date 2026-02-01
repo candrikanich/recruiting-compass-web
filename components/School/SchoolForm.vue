@@ -377,30 +377,38 @@ const autoFilledFields = reactive({
 // Watch for changes to initialData from parent (college selection)
 const { initialData, initialAutoFilledFields } = toRefs(props);
 
-watch(initialData, (newData) => {
-  if (newData) {
-    Object.assign(formData, {
-      name: newData.name ?? formData.name,
-      location: newData.location ?? formData.location,
-      division: newData.division ?? formData.division,
-      conference: newData.conference ?? formData.conference,
-      website: newData.website ?? formData.website,
-    });
-  }
-}, { deep: true });
+watch(
+  initialData,
+  (newData) => {
+    if (newData) {
+      Object.assign(formData, {
+        name: newData.name ?? formData.name,
+        location: newData.location ?? formData.location,
+        division: newData.division ?? formData.division,
+        conference: newData.conference ?? formData.conference,
+        website: newData.website ?? formData.website,
+      });
+    }
+  },
+  { deep: true },
+);
 
 // Watch for changes to autoFilledFields from parent
-watch(initialAutoFilledFields, (newFields) => {
-  if (newFields) {
-    Object.assign(autoFilledFields, {
-      name: newFields.name ?? autoFilledFields.name,
-      location: newFields.location ?? autoFilledFields.location,
-      website: newFields.website ?? autoFilledFields.website,
-      division: newFields.division ?? autoFilledFields.division,
-      conference: newFields.conference ?? autoFilledFields.conference,
-    });
-  }
-}, { deep: true });
+watch(
+  initialAutoFilledFields,
+  (newFields) => {
+    if (newFields) {
+      Object.assign(autoFilledFields, {
+        name: newFields.name ?? autoFilledFields.name,
+        location: newFields.location ?? autoFilledFields.location,
+        website: newFields.website ?? autoFilledFields.website,
+        division: newFields.division ?? autoFilledFields.division,
+        conference: newFields.conference ?? autoFilledFields.conference,
+      });
+    }
+  },
+  { deep: true },
+);
 
 // Field validators
 const validators = {

@@ -11,6 +11,7 @@ Detailed checklist and implementation guide for optimizing `pages/index.vue` for
 **Goal:** Immediate value proposition in first 3 seconds
 
 **Content:**
+
 ```
 Headline: "Organize Your College Recruiting"
 Subheading: "Track schools, manage coaches, follow your timeline—all in one free platform"
@@ -19,15 +20,19 @@ Hero Image: Screenshot or illustration showing dashboard
 ```
 
 **Vue Component Example:**
+
 ```vue
 <script setup lang="ts">
 const heroTitle = "Organize Your College Recruiting";
-const heroSubtitle = "Track schools, manage coaches, follow your timeline—all in one free platform";
+const heroSubtitle =
+  "Track schools, manage coaches, follow your timeline—all in one free platform";
 const ctaButtonText = "Sign Up Free";
 </script>
 
 <template>
-  <section class="hero bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
+  <section
+    class="hero bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20"
+  >
     <div class="container mx-auto px-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
         <!-- Text -->
@@ -62,6 +67,7 @@ const ctaButtonText = "Sign Up Free";
 **Goal:** Validate the problem (60% read further if problem resonates)
 
 **Content:**
+
 ```
 Headline: "College Recruiting is Chaotic"
 Problem Points:
@@ -73,6 +79,7 @@ Problem Points:
 ```
 
 **Vue Component:**
+
 ```vue
 <template>
   <section class="py-16 bg-gray-50">
@@ -118,6 +125,7 @@ Problem Points:
 **Goal:** Show that there's a solution (transition to product)
 
 **Content:**
+
 ```
 Headline: "Meet Recruiting Compass"
 Subheading: "Everything you need in one free platform"
@@ -131,11 +139,14 @@ Key Benefits:
 ```
 
 **Vue Component:**
+
 ```vue
 <template>
   <section class="py-16">
     <div class="container mx-auto px-4">
-      <h2 class="text-4xl font-bold text-center mb-4">Meet Recruiting Compass</h2>
+      <h2 class="text-4xl font-bold text-center mb-4">
+        Meet Recruiting Compass
+      </h2>
       <p class="text-xl text-center text-gray-600 mb-12">
         Everything you need to manage your recruiting journey—free.
       </p>
@@ -181,6 +192,7 @@ Key Benefits:
 **Content:**
 
 **Feature 1: School Management**
+
 ```
 Screenshot: School list with tiers
 Title: "Organize Your Schools"
@@ -189,6 +201,7 @@ and see instant fit scores showing how well you match."
 ```
 
 **Feature 2: Interaction Tracking**
+
 ```
 Screenshot: Interaction log
 Title: "Track Coach Interactions"
@@ -197,6 +210,7 @@ See responsiveness scores and never miss an opportunity."
 ```
 
 **Feature 3: Timeline**
+
 ```
 Screenshot: Timeline phases
 Title: "Follow Your Timeline"
@@ -205,6 +219,7 @@ clear tasks and milestones for each year."
 ```
 
 **Feature 4: Parent Collaboration**
+
 ```
 Screenshot: Parent view
 Title: "Keep Your Family Informed"
@@ -219,6 +234,7 @@ giving them control. Stay aligned and supported."
 **Goal:** Build credibility with testimonials and social proof
 
 **Content:**
+
 ```
 Section Headline: "Trusted by Student-Athletes"
 
@@ -237,6 +253,7 @@ Recruiting Compass"
 ```
 
 **Vue Component:**
+
 ```vue
 <template>
   <section class="py-16 bg-blue-50">
@@ -265,7 +282,9 @@ Recruiting Compass"
       </div>
 
       <div class="text-center mt-12">
-        <p class="text-2xl font-bold">Join 100+ student-athletes organizing their recruiting</p>
+        <p class="text-2xl font-bold">
+          Join 100+ student-athletes organizing their recruiting
+        </p>
       </div>
     </div>
   </section>
@@ -306,11 +325,14 @@ A: Sign up free, add your schools, and start logging interactions.
 You'll be organized in 5 minutes.
 
 **Vue Component:**
+
 ```vue
 <template>
   <section class="py-16">
     <div class="container mx-auto px-4">
-      <h2 class="text-4xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+      <h2 class="text-4xl font-bold text-center mb-12">
+        Frequently Asked Questions
+      </h2>
 
       <div class="max-w-3xl mx-auto">
         <Disclosure v-for="faq in faqs" :key="faq.id">
@@ -331,7 +353,7 @@ const faqs = [
   {
     id: 1,
     question: "Is it really free?",
-    answer: "Yes, 100% free. No credit card required."
+    answer: "Yes, 100% free. No credit card required.",
   },
   // ... more FAQs
 ];
@@ -345,6 +367,7 @@ const faqs = [
 **Goal:** Build email list for post-launch marketing
 
 **Content:**
+
 ```
 Headline: "Get Recruiting Tips & Updates"
 Subheading: "Join our mailing list for recruiting advice, feature updates,
@@ -357,6 +380,7 @@ Form Fields:
 ```
 
 **Vue Component:**
+
 ```vue
 <template>
   <section class="py-16 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
@@ -399,15 +423,15 @@ Form Fields:
 
 <script setup>
 const form = reactive({
-  firstName: '',
-  email: ''
+  firstName: "",
+  email: "",
 });
 
 const subscribeNewsletter = async () => {
   // Call API to save email
-  await $fetch('/api/newsletter/subscribe', {
-    method: 'POST',
-    body: form
+  await $fetch("/api/newsletter/subscribe", {
+    method: "POST",
+    body: form,
   });
   // Show success
 };
@@ -421,6 +445,7 @@ const subscribeNewsletter = async () => {
 **Goal:** Last chance to convert before they leave
 
 **Content:**
+
 ```
 Primary CTA: "Start Organizing Your Recruiting" button
 Secondary CTA: "Read our guides" link
@@ -430,14 +455,15 @@ All three should be visible and accessible
 ```
 
 **Vue Component:**
+
 ```vue
 <template>
   <section class="py-20 bg-gray-50">
     <div class="container mx-auto px-4 text-center">
       <h2 class="text-4xl font-bold mb-6">Ready to Get Organized?</h2>
       <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-        Join hundreds of student-athletes managing their recruiting
-        with Recruiting Compass.
+        Join hundreds of student-athletes managing their recruiting with
+        Recruiting Compass.
       </p>
 
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -456,7 +482,10 @@ All three should be visible and accessible
       </div>
 
       <p class="text-gray-600 mt-6">
-        Questions? <NuxtLink to="/contact" class="text-blue-600 hover:underline">Contact us</NuxtLink>
+        Questions?
+        <NuxtLink to="/contact" class="text-blue-600 hover:underline"
+          >Contact us</NuxtLink
+        >
       </p>
     </div>
   </section>
@@ -473,35 +502,37 @@ All three should be visible and accessible
 export default defineNuxtConfig({
   app: {
     head: {
-      title: 'Recruiting Compass - Organize Your College Recruiting',
+      title: "Recruiting Compass - Organize Your College Recruiting",
       meta: [
         {
-          name: 'description',
-          content: 'Free platform to organize your entire college recruiting journey. Track schools, manage coach interactions, follow your timeline—all in one place.'
+          name: "description",
+          content:
+            "Free platform to organize your entire college recruiting journey. Track schools, manage coach interactions, follow your timeline—all in one place.",
         },
         {
-          name: 'keywords',
-          content: 'college recruiting, recruiting platform, baseball recruiting, student athlete'
+          name: "keywords",
+          content:
+            "college recruiting, recruiting platform, baseball recruiting, student athlete",
         },
         {
-          property: 'og:title',
-          content: 'Recruiting Compass - Organize Your College Recruiting'
+          property: "og:title",
+          content: "Recruiting Compass - Organize Your College Recruiting",
         },
         {
-          property: 'og:description',
-          content: 'Free platform to manage your entire recruiting journey.'
+          property: "og:description",
+          content: "Free platform to manage your entire recruiting journey.",
         },
         {
-          property: 'og:image',
-          content: '/og-image.png'
+          property: "og:image",
+          content: "/og-image.png",
         },
         {
-          name: 'twitter:card',
-          content: 'summary_large_image'
-        }
-      ]
-    }
-  }
+          name: "twitter:card",
+          content: "summary_large_image",
+        },
+      ],
+    },
+  },
 });
 ```
 
@@ -519,6 +550,7 @@ export default defineNuxtConfig({
 - [ ] **Touch friendly:** All interactive elements 48px+
 
 **Test Performance:**
+
 ```bash
 # Build for production
 npm run build
@@ -535,11 +567,13 @@ Target: >90 desktop, >85 mobile
 ## Conversion Optimization
 
 ### Above-the-Fold CTA
+
 - Primary button visible without scrolling
 - Clear value proposition
 - Color contrasts with background
 
 ### Path to Signup
+
 ```
 Hero CTA → Signup flow → Dashboard → Start organizing
          ↓
@@ -551,6 +585,7 @@ Hero CTA → Signup flow → Dashboard → Start organizing
 ```
 
 ### Trust Signals
+
 - Testimonials from real users
 - User count ("100+ users")
 - Free badge (prominently featured)
@@ -558,6 +593,7 @@ Hero CTA → Signup flow → Dashboard → Start organizing
 - Contact/support email visible
 
 ### Mobile Optimization
+
 - Single column layout
 - Buttons full-width for easy tapping
 - Text readable without zoom
@@ -574,21 +610,21 @@ Hero CTA → Signup flow → Dashboard → Start organizing
 useRouter().afterEach((to, from) => {
   gtag.pageview({
     page_path: to.path,
-    page_title: to.name
+    page_title: to.name,
   });
 });
 
 // Track button clicks
 const trackSignupClick = () => {
-  gtag.event('sign_up_click', {
-    button_location: 'hero'
+  gtag.event("sign_up_click", {
+    button_location: "hero",
   });
 };
 
 // Track form submission
 const trackEmailSignup = () => {
-  gtag.event('newsletter_signup', {
-    email: form.email
+  gtag.event("newsletter_signup", {
+    email: form.email,
   });
 };
 ```
@@ -629,4 +665,3 @@ Track conversion rate for each variation.
 **Status:** Ready to implement
 **Estimated time:** 2-3 hours
 **Deadline:** Thursday before launch
-

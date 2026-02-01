@@ -138,7 +138,7 @@ describe("useSchoolStore", () => {
       const dataWithCoaching = {
         ...schoolData,
         coaching_philosophy: '<script>alert("xss")</script>Development',
-        coaching_style: '<b>High-intensity</b> approach',
+        coaching_style: "<b>High-intensity</b> approach",
       } as any;
 
       await schoolStore.createSchool(dataWithCoaching);
@@ -147,8 +147,8 @@ describe("useSchoolStore", () => {
       const insertCall = mockQuery.insert.mock.calls[0][0][0];
       expect(insertCall).toBeDefined();
       // Verify sanitization removed HTML tags
-      expect(insertCall.coaching_philosophy).not.toContain('<script>');
-      expect(insertCall.coaching_style).not.toContain('<b>');
+      expect(insertCall.coaching_philosophy).not.toContain("<script>");
+      expect(insertCall.coaching_style).not.toContain("<b>");
     });
 
     it("should handle empty/null pros and cons arrays", async () => {
@@ -275,9 +275,9 @@ describe("useSchoolStore", () => {
     it("should sanitize HTML in coaching philosophy fields", async () => {
       const updates = {
         coaching_philosophy: '<script>alert("xss")</script>Player development',
-        coaching_style: '<b>High-intensity</b> training',
-        recruiting_approach: 'Early recruiting<img src=x onerror=alert(1)>',
-        communication_style: '<i>Regular</i> emails',
+        coaching_style: "<b>High-intensity</b> training",
+        recruiting_approach: "Early recruiting<img src=x onerror=alert(1)>",
+        communication_style: "<i>Regular</i> emails",
         success_metrics: 'MLB placement<script>alert("xss")</script>',
       };
 
@@ -292,11 +292,11 @@ describe("useSchoolStore", () => {
       const updateCall = mockQuery.update.mock.calls[0][0];
       expect(updateCall).toBeDefined();
       // Verify sanitization removed HTML tags
-      expect(updateCall.coaching_philosophy).not.toContain('<script>');
-      expect(updateCall.coaching_style).not.toContain('<b>');
-      expect(updateCall.recruiting_approach).not.toContain('<img');
-      expect(updateCall.communication_style).not.toContain('<i>');
-      expect(updateCall.success_metrics).not.toContain('<script>');
+      expect(updateCall.coaching_philosophy).not.toContain("<script>");
+      expect(updateCall.coaching_style).not.toContain("<b>");
+      expect(updateCall.recruiting_approach).not.toContain("<img");
+      expect(updateCall.communication_style).not.toContain("<i>");
+      expect(updateCall.success_metrics).not.toContain("<script>");
     });
 
     it("should handle null coaching philosophy fields", async () => {
@@ -329,7 +329,7 @@ describe("useSchoolStore", () => {
     it("should update coaching philosophy independently from other fields", async () => {
       const updates = {
         coaching_philosophy: 'Updated philosophy<script>alert("xss")</script>',
-        notes: 'Unchanged notes',
+        notes: "Unchanged notes",
       };
 
       mockQuery.single.mockResolvedValue({
@@ -342,7 +342,7 @@ describe("useSchoolStore", () => {
       expect(mockQuery.update).toHaveBeenCalledWith(
         expect.objectContaining({
           coaching_philosophy: 'Updated philosophyalert("xss")',
-          notes: 'Unchanged notes',
+          notes: "Unchanged notes",
         }),
       );
     });

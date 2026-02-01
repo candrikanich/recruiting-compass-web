@@ -126,7 +126,7 @@ describe("statusScoreCalculation", () => {
     it("should calculate completion percentage correctly", () => {
       const result = calculateTaskCompletionRate(
         ["task1", "task2", "task3"],
-        ["task1", "task2", "task3", "task4", "task5"]
+        ["task1", "task2", "task3", "task4", "task5"],
       );
 
       expect(result).toBe(60); // 3/5 = 0.6 = 60%
@@ -135,7 +135,7 @@ describe("statusScoreCalculation", () => {
     it("should return 0% when no tasks completed", () => {
       const result = calculateTaskCompletionRate(
         [],
-        ["task1", "task2", "task3"]
+        ["task1", "task2", "task3"],
       );
 
       expect(result).toBe(0);
@@ -144,17 +144,14 @@ describe("statusScoreCalculation", () => {
     it("should return 100% when all tasks completed", () => {
       const result = calculateTaskCompletionRate(
         ["task1", "task2", "task3"],
-        ["task1", "task2", "task3"]
+        ["task1", "task2", "task3"],
       );
 
       expect(result).toBe(100);
     });
 
     it("should return 0 when required tasks list is empty", () => {
-      const result = calculateTaskCompletionRate(
-        ["task1", "task2"],
-        []
-      );
+      const result = calculateTaskCompletionRate(["task1", "task2"], []);
 
       expect(result).toBe(0);
     });
@@ -162,7 +159,7 @@ describe("statusScoreCalculation", () => {
     it("should ignore extra completed tasks not in required list", () => {
       const result = calculateTaskCompletionRate(
         ["task1", "task2", "extra1", "extra2"],
-        ["task1", "task2"]
+        ["task1", "task2"],
       );
 
       expect(result).toBe(100);
@@ -171,71 +168,43 @@ describe("statusScoreCalculation", () => {
 
   describe("calculateInteractionFrequencyScore", () => {
     it("should return 100 for interaction within 7 days", () => {
-      const result = calculateInteractionFrequencyScore(
-        "2024-01-20",
-        5,
-        5
-      );
+      const result = calculateInteractionFrequencyScore("2024-01-20", 5, 5);
 
       expect(result).toBe(100);
     });
 
     it("should return 80 for interaction 7-14 days ago", () => {
-      const result = calculateInteractionFrequencyScore(
-        "2024-01-20",
-        10,
-        5
-      );
+      const result = calculateInteractionFrequencyScore("2024-01-20", 10, 5);
 
       expect(result).toBe(80);
     });
 
     it("should return 60 for interaction 14-21 days ago", () => {
-      const result = calculateInteractionFrequencyScore(
-        "2024-01-20",
-        18,
-        5
-      );
+      const result = calculateInteractionFrequencyScore("2024-01-20", 18, 5);
 
       expect(result).toBe(60);
     });
 
     it("should return 40 for interaction 21-30 days ago", () => {
-      const result = calculateInteractionFrequencyScore(
-        "2024-01-20",
-        25,
-        5
-      );
+      const result = calculateInteractionFrequencyScore("2024-01-20", 25, 5);
 
       expect(result).toBe(40);
     });
 
     it("should return 0 for interaction > 30 days ago", () => {
-      const result = calculateInteractionFrequencyScore(
-        "2024-01-20",
-        35,
-        5
-      );
+      const result = calculateInteractionFrequencyScore("2024-01-20", 35, 5);
 
       expect(result).toBe(0);
     });
 
     it("should return 0 when lastInteractionDate is null", () => {
-      const result = calculateInteractionFrequencyScore(
-        null,
-        10,
-        5
-      );
+      const result = calculateInteractionFrequencyScore(null, 10, 5);
 
       expect(result).toBe(0);
     });
 
     it("should return 0 when targetSchools is 0", () => {
-      const result = calculateInteractionFrequencyScore(
-        "2024-01-20",
-        5,
-        0
-      );
+      const result = calculateInteractionFrequencyScore("2024-01-20", 5, 0);
 
       expect(result).toBe(0);
     });
@@ -254,10 +223,7 @@ describe("statusScoreCalculation", () => {
 
   describe("calculateCoachInterestScore", () => {
     it("should calculate score for all high interest", () => {
-      const result = calculateCoachInterestScore(
-        ["high", "high", "high"],
-        0
-      );
+      const result = calculateCoachInterestScore(["high", "high", "high"], 0);
 
       expect(result).toBe(100);
     });
@@ -265,51 +231,36 @@ describe("statusScoreCalculation", () => {
     it("should calculate score for all medium interest", () => {
       const result = calculateCoachInterestScore(
         ["medium", "medium", "medium"],
-        0
+        0,
       );
 
       expect(result).toBe(60);
     });
 
     it("should calculate score for all low interest", () => {
-      const result = calculateCoachInterestScore(
-        ["low", "low", "low"],
-        0
-      );
+      const result = calculateCoachInterestScore(["low", "low", "low"], 0);
 
       expect(result).toBe(20);
     });
 
     it("should calculate weighted score for mixed interest levels", () => {
-      const result = calculateCoachInterestScore(
-        ["high", "medium", "low"],
-        0
-      );
+      const result = calculateCoachInterestScore(["high", "medium", "low"], 0);
 
       // (100 + 60 + 20) / 3 = 60
       expect(result).toBe(60);
     });
 
     it("should apply priority school bonus", () => {
-      const baseScore = calculateCoachInterestScore(
-        ["medium"],
-        0
-      );
+      const baseScore = calculateCoachInterestScore(["medium"], 0);
 
-      const withBonus = calculateCoachInterestScore(
-        ["medium"],
-        2
-      );
+      const withBonus = calculateCoachInterestScore(["medium"], 2);
 
       // 2 priority schools * 5 = 10 bonus points
       expect(withBonus).toBe(baseScore + 10);
     });
 
     it("should cap priority bonus at 10 points", () => {
-      const result = calculateCoachInterestScore(
-        ["low"],
-        3
-      );
+      const result = calculateCoachInterestScore(["low"], 3);
 
       // 3 * 5 = 15, but capped at 10 total
       // So: 20 + 10 = 30, but should be capped at 100
@@ -317,19 +268,13 @@ describe("statusScoreCalculation", () => {
     });
 
     it("should cap total score at 100", () => {
-      const result = calculateCoachInterestScore(
-        ["high", "high", "high"],
-        3
-      );
+      const result = calculateCoachInterestScore(["high", "high", "high"], 3);
 
       expect(result).toBe(100);
     });
 
     it("should return 0 for empty interest levels", () => {
-      const result = calculateCoachInterestScore(
-        [],
-        0
-      );
+      const result = calculateCoachInterestScore([], 0);
 
       expect(result).toBe(0);
     });
@@ -341,7 +286,7 @@ describe("statusScoreCalculation", () => {
         3.5,
         null,
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(40);
@@ -352,7 +297,7 @@ describe("statusScoreCalculation", () => {
         3.2,
         null,
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(30);
@@ -363,7 +308,7 @@ describe("statusScoreCalculation", () => {
         2.7,
         null,
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(20);
@@ -374,7 +319,7 @@ describe("statusScoreCalculation", () => {
         2.1,
         null,
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(10);
@@ -385,7 +330,7 @@ describe("statusScoreCalculation", () => {
         1.8,
         null,
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(0);
@@ -396,7 +341,7 @@ describe("statusScoreCalculation", () => {
         null,
         { sat: 1250 },
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(30);
@@ -407,7 +352,7 @@ describe("statusScoreCalculation", () => {
         null,
         { sat: 1100 },
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(20);
@@ -418,7 +363,7 @@ describe("statusScoreCalculation", () => {
         null,
         { sat: 950 },
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(10);
@@ -429,7 +374,7 @@ describe("statusScoreCalculation", () => {
         null,
         { sat: 800 },
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(0);
@@ -440,7 +385,7 @@ describe("statusScoreCalculation", () => {
         null,
         { act: 30 },
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(30);
@@ -451,7 +396,7 @@ describe("statusScoreCalculation", () => {
         null,
         { act: 25 },
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(20);
@@ -462,7 +407,7 @@ describe("statusScoreCalculation", () => {
         null,
         { act: 22 },
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(10);
@@ -473,7 +418,7 @@ describe("statusScoreCalculation", () => {
         null,
         { act: 18 },
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(0);
@@ -484,19 +429,14 @@ describe("statusScoreCalculation", () => {
         null,
         null,
         "registered",
-        []
+        [],
       );
 
       expect(result).toBe(30);
     });
 
     it("should score eligibility status pending", () => {
-      const result = calculateAcademicStandingScore(
-        null,
-        null,
-        "pending",
-        []
-      );
+      const result = calculateAcademicStandingScore(null, null, "pending", []);
 
       expect(result).toBe(15);
     });
@@ -506,7 +446,7 @@ describe("statusScoreCalculation", () => {
         null,
         null,
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(0);
@@ -517,7 +457,7 @@ describe("statusScoreCalculation", () => {
         3.5,
         { sat: 1200 },
         "registered",
-        []
+        [],
       );
 
       // 40 (GPA) + 30 (SAT) + 30 (eligible) = 100
@@ -529,7 +469,7 @@ describe("statusScoreCalculation", () => {
         3.9,
         { sat: 1500, act: 36 },
         "registered",
-        []
+        [],
       );
 
       expect(result).toBe(100);
@@ -540,7 +480,7 @@ describe("statusScoreCalculation", () => {
         3.5,
         null,
         "not_started",
-        []
+        [],
       );
 
       expect(result).toBe(40);
@@ -580,7 +520,7 @@ describe("statusScoreCalculation", () => {
 
       expect(actions).toHaveLength(2);
       expect(actions.some((a) => a.toLowerCase().includes("highlight"))).toBe(
-        true
+        true,
       );
     });
 
@@ -589,12 +529,18 @@ describe("statusScoreCalculation", () => {
 
       expect(actions).toHaveLength(2);
       expect(actions.some((a) => a.toLowerCase().includes("recovery"))).toBe(
-        true
+        true,
       );
     });
 
     it("should return actions for all phase combinations", () => {
-      const phases = ["freshman", "sophomore", "junior", "senior", "committed"] as const;
+      const phases = [
+        "freshman",
+        "sophomore",
+        "junior",
+        "senior",
+        "committed",
+      ] as const;
       const statuses = ["on_track", "slightly_behind", "at_risk"] as const;
 
       phases.forEach((phase) => {
@@ -610,7 +556,7 @@ describe("statusScoreCalculation", () => {
     it("should return empty array for invalid combinations", () => {
       const actions = getNextActionsForStatus(
         "on_track",
-        "invalid_phase" as any
+        "invalid_phase" as any,
       );
 
       expect(Array.isArray(actions)).toBe(true);

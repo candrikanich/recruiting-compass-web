@@ -95,7 +95,7 @@ describe("pages/coaches/[id].vue - Coach Detail Page", () => {
   describe("Coach Information Display", () => {
     it("should display coach name", () => {
       expect(`${mockCoachData.first_name} ${mockCoachData.last_name}`).toBe(
-        "John Smith"
+        "John Smith",
       );
     });
 

@@ -500,7 +500,9 @@ export type Database = {
           logged_by: string;
           occurred_at: string;
           school_id: string;
-          sentiment: Database["public"]["Enums"]["interaction_sentiment"] | null;
+          sentiment:
+            | Database["public"]["Enums"]["interaction_sentiment"]
+            | null;
           subject: string | null;
           type: Database["public"]["Enums"]["interaction_type"];
           updated_by: string | null;
@@ -1021,7 +1023,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      expire_old_invitations: { Args: Record<string, never>; Returns: undefined };
+      expire_old_invitations: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
       get_linked_user_ids: {
         Args: Record<string, never>;
         Returns: {

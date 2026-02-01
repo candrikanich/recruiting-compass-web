@@ -240,7 +240,7 @@ const handleUpload = async () => {
       selectedFile.value,
       form.type,
       form.title,
-      form.description || undefined
+      form.description || undefined,
     );
 
     if (result.success && result.data) {

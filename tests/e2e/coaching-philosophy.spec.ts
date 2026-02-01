@@ -33,13 +33,17 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
     }
   };
 
-  test("Coaching Philosophy section should be present on school detail page", async ({ page }) => {
+  test("Coaching Philosophy section should be present on school detail page", async ({
+    page,
+  }) => {
     const navigated = await navigateToSchool(page);
 
     if (navigated) {
       // Look for the Coaching Philosophy heading
       const heading = page.locator("h2:has-text('Coaching Philosophy')");
-      const isPresent = await heading.isVisible({ timeout: 5000 }).catch(() => false);
+      const isPresent = await heading
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
       expect(isPresent).toBe(true);
     } else {
       // Skip test if unable to navigate
@@ -52,12 +56,18 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
 
     if (navigated) {
       // Find Edit button near Coaching Philosophy
-      const philosophySection = page.locator("h2:has-text('Coaching Philosophy')");
-      const isSectionVisible = await philosophySection.isVisible({ timeout: 5000 }).catch(() => false);
+      const philosophySection = page.locator(
+        "h2:has-text('Coaching Philosophy')",
+      );
+      const isSectionVisible = await philosophySection
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
 
       if (isSectionVisible) {
         const editButton = page.locator("button:has-text('Edit')").first();
-        const isEditVisible = await editButton.isVisible({ timeout: 5000 }).catch(() => false);
+        const isEditVisible = await editButton
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
         expect(isEditVisible).toBe(true);
       }
     } else {
@@ -69,12 +79,18 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
     const navigated = await navigateToSchool(page);
 
     if (navigated) {
-      const philosophySection = page.locator("h2:has-text('Coaching Philosophy')");
-      const isSectionVisible = await philosophySection.isVisible({ timeout: 5000 }).catch(() => false);
+      const philosophySection = page.locator(
+        "h2:has-text('Coaching Philosophy')",
+      );
+      const isSectionVisible = await philosophySection
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
 
       if (isSectionVisible) {
         const editButton = page.locator("button:has-text('Edit')").first();
-        const isEditVisible = await editButton.isVisible({ timeout: 5000 }).catch(() => false);
+        const isEditVisible = await editButton
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
 
         if (isEditVisible) {
           // Click Edit
@@ -96,12 +112,18 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
     const navigated = await navigateToSchool(page);
 
     if (navigated) {
-      const philosophySection = page.locator("h2:has-text('Coaching Philosophy')");
-      const isSectionVisible = await philosophySection.isVisible({ timeout: 5000 }).catch(() => false);
+      const philosophySection = page.locator(
+        "h2:has-text('Coaching Philosophy')",
+      );
+      const isSectionVisible = await philosophySection
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
 
       if (isSectionVisible) {
         const editButton = page.locator("button:has-text('Edit')").first();
-        const isEditVisible = await editButton.isVisible({ timeout: 5000 }).catch(() => false);
+        const isEditVisible = await editButton
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
 
         if (isEditVisible) {
           // Click Edit
@@ -112,8 +134,12 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
           const saveButton = page.locator("button:has-text('Save Philosophy')");
           const cancelButton = page.locator("button:has-text('Cancel')");
 
-          const hasSaveButton = await saveButton.isVisible({ timeout: 5000 }).catch(() => false);
-          const hasCancelButton = await cancelButton.isVisible({ timeout: 5000 }).catch(() => false);
+          const hasSaveButton = await saveButton
+            .isVisible({ timeout: 5000 })
+            .catch(() => false);
+          const hasCancelButton = await cancelButton
+            .isVisible({ timeout: 5000 })
+            .catch(() => false);
 
           expect(hasSaveButton).toBe(true);
           expect(hasCancelButton).toBe(true);
@@ -128,12 +154,18 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
     const navigated = await navigateToSchool(page);
 
     if (navigated) {
-      const philosophySection = page.locator("h2:has-text('Coaching Philosophy')");
-      const isSectionVisible = await philosophySection.isVisible({ timeout: 5000 }).catch(() => false);
+      const philosophySection = page.locator(
+        "h2:has-text('Coaching Philosophy')",
+      );
+      const isSectionVisible = await philosophySection
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
 
       if (isSectionVisible) {
         const editButton = page.locator("button:has-text('Edit')").first();
-        const isEditVisible = await editButton.isVisible({ timeout: 5000 }).catch(() => false);
+        const isEditVisible = await editButton
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
 
         if (isEditVisible) {
           // Click Edit
@@ -142,15 +174,21 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
 
           // Click Cancel
           const cancelButton = page.locator("button:has-text('Cancel')");
-          const hasCancelButton = await cancelButton.isVisible({ timeout: 5000 }).catch(() => false);
+          const hasCancelButton = await cancelButton
+            .isVisible({ timeout: 5000 })
+            .catch(() => false);
 
           if (hasCancelButton) {
             await cancelButton.click();
             await page.waitForTimeout(300);
 
             // Should see Edit button again (not Cancel)
-            const editButtonAgain = page.locator("button:has-text('Edit')").first();
-            const isEditAgain = await editButtonAgain.isVisible({ timeout: 5000 }).catch(() => false);
+            const editButtonAgain = page
+              .locator("button:has-text('Edit')")
+              .first();
+            const isEditAgain = await editButtonAgain
+              .isVisible({ timeout: 5000 })
+              .catch(() => false);
             expect(isEditAgain).toBe(true);
           }
         }
@@ -160,16 +198,24 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
     }
   });
 
-  test("Should accept text input in coaching philosophy fields", async ({ page }) => {
+  test("Should accept text input in coaching philosophy fields", async ({
+    page,
+  }) => {
     const navigated = await navigateToSchool(page);
 
     if (navigated) {
-      const philosophySection = page.locator("h2:has-text('Coaching Philosophy')");
-      const isSectionVisible = await philosophySection.isVisible({ timeout: 5000 }).catch(() => false);
+      const philosophySection = page.locator(
+        "h2:has-text('Coaching Philosophy')",
+      );
+      const isSectionVisible = await philosophySection
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
 
       if (isSectionVisible) {
         const editButton = page.locator("button:has-text('Edit')").first();
-        const isEditVisible = await editButton.isVisible({ timeout: 5000 }).catch(() => false);
+        const isEditVisible = await editButton
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
 
         if (isEditVisible) {
           // Click Edit
@@ -178,11 +224,15 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
 
           // Get first textarea and enter text
           const firstTextarea = page.locator("textarea").first();
-          const isTextareaVisible = await firstTextarea.isVisible({ timeout: 5000 }).catch(() => false);
+          const isTextareaVisible = await firstTextarea
+            .isVisible({ timeout: 5000 })
+            .catch(() => false);
 
           if (isTextareaVisible) {
             // Clear and fill with test text
-            await firstTextarea.fill("High-intensity, player development focused");
+            await firstTextarea.fill(
+              "High-intensity, player development focused",
+            );
 
             // Verify text was entered
             const value = await firstTextarea.inputValue();
@@ -195,16 +245,24 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
     }
   });
 
-  test("Should support special characters in coaching philosophy fields", async ({ page }) => {
+  test("Should support special characters in coaching philosophy fields", async ({
+    page,
+  }) => {
     const navigated = await navigateToSchool(page);
 
     if (navigated) {
-      const philosophySection = page.locator("h2:has-text('Coaching Philosophy')");
-      const isSectionVisible = await philosophySection.isVisible({ timeout: 5000 }).catch(() => false);
+      const philosophySection = page.locator(
+        "h2:has-text('Coaching Philosophy')",
+      );
+      const isSectionVisible = await philosophySection
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
 
       if (isSectionVisible) {
         const editButton = page.locator("button:has-text('Edit')").first();
-        const isEditVisible = await editButton.isVisible({ timeout: 5000 }).catch(() => false);
+        const isEditVisible = await editButton
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
 
         if (isEditVisible) {
           // Click Edit
@@ -213,11 +271,14 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
 
           // Get first textarea
           const firstTextarea = page.locator("textarea").first();
-          const isTextareaVisible = await firstTextarea.isVisible({ timeout: 5000 }).catch(() => false);
+          const isTextareaVisible = await firstTextarea
+            .isVisible({ timeout: 5000 })
+            .catch(() => false);
 
           if (isTextareaVisible) {
             // Enter special characters
-            const specialText = 'High-intensity (80%), "player first" approach - 2024!';
+            const specialText =
+              'High-intensity (80%), "player first" approach - 2024!';
             await firstTextarea.fill(specialText);
 
             // Verify special characters preserved
@@ -233,16 +294,24 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
     }
   });
 
-  test("Should support multiline text in coaching philosophy fields", async ({ page }) => {
+  test("Should support multiline text in coaching philosophy fields", async ({
+    page,
+  }) => {
     const navigated = await navigateToSchool(page);
 
     if (navigated) {
-      const philosophySection = page.locator("h2:has-text('Coaching Philosophy')");
-      const isSectionVisible = await philosophySection.isVisible({ timeout: 5000 }).catch(() => false);
+      const philosophySection = page.locator(
+        "h2:has-text('Coaching Philosophy')",
+      );
+      const isSectionVisible = await philosophySection
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
 
       if (isSectionVisible) {
         const editButton = page.locator("button:has-text('Edit')").first();
-        const isEditVisible = await editButton.isVisible({ timeout: 5000 }).catch(() => false);
+        const isEditVisible = await editButton
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
 
         if (isEditVisible) {
           // Click Edit
@@ -251,7 +320,9 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
 
           // Get first textarea
           const firstTextarea = page.locator("textarea").first();
-          const isTextareaVisible = await firstTextarea.isVisible({ timeout: 5000 }).catch(() => false);
+          const isTextareaVisible = await firstTextarea
+            .isVisible({ timeout: 5000 })
+            .catch(() => false);
 
           if (isTextareaVisible) {
             // Enter multiline text
@@ -273,21 +344,31 @@ Line 3: Development`;
     }
   });
 
-  test("Should position Coaching Philosophy section correctly on page", async ({ page }) => {
+  test("Should position Coaching Philosophy section correctly on page", async ({
+    page,
+  }) => {
     const navigated = await navigateToSchool(page);
 
     if (navigated) {
       // Check for all three sections
       const prosHeading = page.locator("h2:has-text('Pros')");
-      const philosophyHeading = page.locator("h2:has-text('Coaching Philosophy')");
+      const philosophyHeading = page.locator(
+        "h2:has-text('Coaching Philosophy')",
+      );
       const documentsHeading = page.locator("h2:has-text('Shared Documents')");
 
-      const hasPhilosophy = await philosophyHeading.isVisible({ timeout: 5000 }).catch(() => false);
+      const hasPhilosophy = await philosophyHeading
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
 
       if (hasPhilosophy) {
         // If all three sections exist, verify ordering
-        const hasPros = await prosHeading.isVisible({ timeout: 5000 }).catch(() => false);
-        const hasDocuments = await documentsHeading.isVisible({ timeout: 5000 }).catch(() => false);
+        const hasPros = await prosHeading
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
+        const hasDocuments = await documentsHeading
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
 
         if (hasPros && hasDocuments) {
           const prosBound = await prosHeading.boundingBox();
@@ -306,16 +387,24 @@ Line 3: Development`;
     }
   });
 
-  test("Should display coaching philosophy fields with labels", async ({ page }) => {
+  test("Should display coaching philosophy fields with labels", async ({
+    page,
+  }) => {
     const navigated = await navigateToSchool(page);
 
     if (navigated) {
-      const philosophySection = page.locator("h2:has-text('Coaching Philosophy')");
-      const isSectionVisible = await philosophySection.isVisible({ timeout: 5000 }).catch(() => false);
+      const philosophySection = page.locator(
+        "h2:has-text('Coaching Philosophy')",
+      );
+      const isSectionVisible = await philosophySection
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
 
       if (isSectionVisible) {
         const editButton = page.locator("button:has-text('Edit')").first();
-        const isEditVisible = await editButton.isVisible({ timeout: 5000 }).catch(() => false);
+        const isEditVisible = await editButton
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
 
         if (isEditVisible) {
           // Click Edit to show form
@@ -333,7 +422,9 @@ Line 3: Development`;
 
           for (const label of expectedLabels) {
             const labelElement = page.locator(`label:has-text('${label}')`);
-            const isVisible = await labelElement.isVisible({ timeout: 2000 }).catch(() => false);
+            const isVisible = await labelElement
+              .isVisible({ timeout: 2000 })
+              .catch(() => false);
             expect(isVisible).toBe(true);
           }
         }

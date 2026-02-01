@@ -192,7 +192,9 @@ export class CoachesPage extends BasePage {
   async getCoachCount(): Promise<number> {
     // Look for coach cards or list items
     const cards = await this.page
-      .locator('[data-testid="coach-card"], .coach-card, [data-testid="coach-item"], .coach-item')
+      .locator(
+        '[data-testid="coach-card"], .coach-card, [data-testid="coach-item"], .coach-item',
+      )
       .count();
     return cards;
   }
@@ -200,7 +202,9 @@ export class CoachesPage extends BasePage {
   async expectFilteredResults(expectedCount: number) {
     const actualCount = await this.getCoachCount();
     if (expectedCount === 0) {
-      await this.expectVisible('text=No coaches found, text=No results, text=Empty');
+      await this.expectVisible(
+        "text=No coaches found, text=No results, text=Empty",
+      );
     } else {
       expect(actualCount).toBeGreaterThan(0);
     }
@@ -232,7 +236,9 @@ export class CoachesPage extends BasePage {
   // Quick Actions
   async clickEmailAction() {
     const emailButton = await this.page
-      .locator('button[aria-label*="email"], button:has-text("Email"), a[href^="mailto:"]')
+      .locator(
+        'button[aria-label*="email"], button:has-text("Email"), a[href^="mailto:"]',
+      )
       .first();
     await emailButton.click();
     await this.page.waitForTimeout(500);
@@ -240,7 +246,9 @@ export class CoachesPage extends BasePage {
 
   async clickTextAction() {
     const textButton = await this.page
-      .locator('button[aria-label*="text"], button:has-text("Text"), a[href^="sms:"]')
+      .locator(
+        'button[aria-label*="text"], button:has-text("Text"), a[href^="sms:"]',
+      )
       .first();
     await textButton.click();
     await this.page.waitForTimeout(500);

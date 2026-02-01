@@ -101,7 +101,8 @@ describe("usePhaseCalculation Composable", () => {
         message: "Advanced successfully",
       };
 
-      const mockFetchAuth = vi.fn()
+      const mockFetchAuth = vi
+        .fn()
         .mockResolvedValueOnce(mockResponse) // For advancePhase call
         .mockResolvedValueOnce({
           // For refreshPhase call

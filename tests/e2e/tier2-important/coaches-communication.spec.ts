@@ -121,7 +121,9 @@ test.describe("Coach Communication History", () => {
       await coachesPage.viewCoachDetails("Comm");
 
       const emailButton = await page
-        .locator('button[aria-label*="email"], button:has-text("Email"), a[href^="mailto:"]')
+        .locator(
+          'button[aria-label*="email"], button:has-text("Email"), a[href^="mailto:"]',
+        )
         .first();
 
       if (await emailButton.isVisible()) {
@@ -129,7 +131,9 @@ test.describe("Coach Communication History", () => {
 
         // If it's a mailto link, verify it's properly formatted
         if (href && href.startsWith("mailto:")) {
-          expect(href).toMatch(/^mailto:[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/);
+          expect(href).toMatch(
+            /^mailto:[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+          );
         }
       }
     });
@@ -139,7 +143,9 @@ test.describe("Coach Communication History", () => {
       await coachesPage.viewCoachDetails("Comm");
 
       const textButton = await page
-        .locator('button[aria-label*="text"], button:has-text("Text"), a[href^="sms:"]')
+        .locator(
+          'button[aria-label*="text"], button:has-text("Text"), a[href^="sms:"]',
+        )
         .first();
 
       if (await textButton.isVisible()) {
@@ -152,7 +158,10 @@ test.describe("Coach Communication History", () => {
       }
     });
 
-    test("should open Twitter profile in new tab", async ({ page, context }) => {
+    test("should open Twitter profile in new tab", async ({
+      page,
+      context,
+    }) => {
       // Create coach with Twitter handle
       const coachName = generateUniqueCoachName("Twitter", "Coach");
       const coachData = createCoachData({

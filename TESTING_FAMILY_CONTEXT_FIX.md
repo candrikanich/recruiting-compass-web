@@ -15,6 +15,7 @@ Fixed a singleton instance mismatch that caused parents to see stale data when s
 Open browser DevTools → Console tab and look for these logs:
 
 **Expected logs when switching athletes:**
+
 ```
 [useActiveFamily] Athlete switched: <old-id> → <new-id>, instance: abc1234, family: xyz9876
 [Schools] Family changed: familyId=xyz9876, re-fetching schools
@@ -22,6 +23,7 @@ Open browser DevTools → Console tab and look for these logs:
 ```
 
 **Warning logs (indicate a problem):**
+
 ```
 [useFamilyContext] Creating singleton - injection should be preferred!
 [useSchools] activeFamily injection failed, using singleton fallback.
@@ -32,11 +34,13 @@ Open browser DevTools → Console tab and look for these logs:
 ### 2. **Test Case: Parent Switching Between Athletes**
 
 **Setup:**
+
 - Create a test family with 2 athletes (Parent A, Player 1, Player 2)
 - Player 1: Follow 3 schools
 - Player 2: Follow 1 school
 
 **Steps:**
+
 1. Parent logs in
 2. Parent checks Schools list → Should see 3 schools (Player 1's list)
 3. Parent switches to Player 2 via dropdown selector
@@ -45,6 +49,7 @@ Open browser DevTools → Console tab and look for these logs:
 6. **Verify:** Schools list updates back to 3 schools
 
 **Success Criteria:**
+
 - ✅ Data updates when switching
 - ✅ No duplicate schools from old athlete
 - ✅ No warning logs in console about injection failures
@@ -54,10 +59,12 @@ Open browser DevTools → Console tab and look for these logs:
 ### 3. **Test Case: Parent Adding Data for Different Athletes**
 
 **Setup:**
+
 - Parent A linked to Player 1 and Player 2
 - Player 1 has 2 schools already
 
 **Steps:**
+
 1. Parent logs in, views Player 1 schools
 2. Parent adds a new school to Player 1 → School appears immediately
 3. Parent switches to Player 2
@@ -65,6 +72,7 @@ Open browser DevTools → Console tab and look for these logs:
 5. **Verify:** The new school is still there
 
 **Success Criteria:**
+
 - ✅ New data persists
 - ✅ Switching away and back re-fetches correctly
 - ✅ No stale data shown
@@ -76,12 +84,14 @@ Open browser DevTools → Console tab and look for these logs:
 Open DevTools → Network tab and monitor API calls:
 
 **Expected when parent switches athletes:**
+
 ```
 GET /api/schools?family_unit_id=<new-family-id>  ✅ Correct query
 GET /api/interactions?family_unit_id=<new-family-id>  ✅ Correct query
 ```
 
 **Problem signs:**
+
 ```
 GET /api/schools?family_unit_id=<old-family-id>  ❌ Using stale ID
 GET /api/schools?user_id=<wrong-user>  ❌ Wrong query type
@@ -92,9 +102,12 @@ GET /api/schools?user_id=<wrong-user>  ❌ Wrong query type
 ## What the Fix Does
 
 ### **Step 1: Singleton Warning (useFamilyContext.ts)**
+
 ```typescript
 if (!familyContextInstance) {
-  console.warn("[useFamilyContext] Creating singleton - injection should be preferred!");
+  console.warn(
+    "[useFamilyContext] Creating singleton - injection should be preferred!",
+  );
   familyContextInstance = useActiveFamily();
 }
 ```
@@ -103,12 +116,16 @@ if (!familyContextInstance) {
 - Helps identify injection failures
 
 ### **Step 2: Composable Injection Debugging (useSchools, useInteractions, etc.)**
+
 ```typescript
-const injectedFamily = inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+const injectedFamily =
+  inject<ReturnType<typeof useActiveFamily>>("activeFamily");
 const activeFamily = injectedFamily || useFamilyContext();
 
 if (!injectedFamily) {
-  console.warn("[useSchools] activeFamily injection failed, using singleton fallback.");
+  console.warn(
+    "[useSchools] activeFamily injection failed, using singleton fallback.",
+  );
 }
 ```
 
@@ -117,16 +134,17 @@ if (!injectedFamily) {
 - Makes the problem visible in console
 
 ### **Step 3: Instance ID Tracking (useActiveFamily.ts)**
+
 ```typescript
 const _debugInstanceId = Math.random().toString(36).slice(2, 9);
 
 const switchAthlete = async (athleteId: string) => {
   console.debug(
     `[useActiveFamily] Athlete switched: ${previousAthleteId} → ${athleteId}, ` +
-    `instance: ${_debugInstanceId}, family: ${activeFamilyId.value}`
+      `instance: ${_debugInstanceId}, family: ${activeFamilyId.value}`,
   );
   // ...
-}
+};
 ```
 
 - Adds unique instance ID to each family context
@@ -140,17 +158,20 @@ const switchAthlete = async (athleteId: string) => {
 ### **Symptom: Parent sees stale data when switching athletes**
 
 **Check 1: Look for injection failure warnings**
+
 ```javascript
 // In browser console, search for:
-"activeFamily injection failed"
+"activeFamily injection failed";
 ```
 
 If you see this message:
+
 - Injection is failing somewhere
 - Composable is using singleton fallback
 - Need to verify app.vue is providing activeFamily
 
 **Check 2: Verify instance IDs match**
+
 ```javascript
 // In browser console when athlete switches, look for:
 // Page instance ID
@@ -161,17 +182,19 @@ If you see this message:
 ```
 
 **Check 3: Verify family context is provided in app.vue**
+
 ```typescript
 // app.vue should have:
 import { useActiveFamily } from "~/composables/useActiveFamily";
 
 onBeforeMount(() => {
   const activeFamily = useActiveFamily();
-  provide("activeFamily", activeFamily);  // ← This MUST exist
+  provide("activeFamily", activeFamily); // ← This MUST exist
 });
 ```
 
 **Check 4: Verify pages are using injection**
+
 ```typescript
 // pages/schools/index.vue should have:
 const activeFamily = inject("activeFamily") || useFamilyContext();
@@ -191,6 +214,7 @@ const activeFamily = inject("activeFamily") || useFamilyContext();
 ## Rollback Plan
 
 If issues arise, the fix can be safely rolled back by:
+
 1. Removing the warning logs (composables will still work)
 2. Reverting to previous instance ID system (or removing entirely)
 3. The core fix (explicit injection tracking) is just defensive
@@ -210,6 +234,7 @@ If instance mismatch issues persist after this fix:
 5. **Consider cache** - Check if browser caching old responses (clear cache)
 
 If you still see warnings in console, file an issue with:
+
 - Screenshot of console warnings
 - Network tab showing what queries are being made
 - Current athlete and parent IDs being used

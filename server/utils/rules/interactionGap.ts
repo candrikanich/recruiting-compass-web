@@ -2,14 +2,14 @@ import type { Rule, RuleContext } from "./index";
 import type { SuggestionData, Suggestion } from "~/types/timeline";
 
 function calculateUrgency(daysSinceContact: number): "low" | "medium" | "high" {
-  if (daysSinceContact >= 30) return "high";    // 30+ days = RED
-  if (daysSinceContact >= 21) return "medium";  // 21-29 days = YELLOW/ORANGE
+  if (daysSinceContact >= 30) return "high"; // 30+ days = RED
+  if (daysSinceContact >= 21) return "medium"; // 21-29 days = YELLOW/ORANGE
   return "low";
 }
 
 function calculateDaysSinceContact(
   schoolId: string,
-  interactions: unknown[]
+  interactions: unknown[],
 ): number {
   const lastInteraction = (interactions as unknown[])
     .filter((i: unknown) => {
@@ -41,7 +41,9 @@ export const interactionGapRule: Rule = {
   id: "interaction-gap",
   name: "Interaction Gap Detected",
   description: "Priority school has not been contacted in 21+ days",
-  async evaluate(context: RuleContext): Promise<SuggestionData | SuggestionData[] | null> {
+  async evaluate(
+    context: RuleContext,
+  ): Promise<SuggestionData | SuggestionData[] | null> {
     const prioritySchools = context.schools.filter((s: unknown) => {
       const school = s as Record<string, unknown>;
       return (
@@ -56,7 +58,7 @@ export const interactionGapRule: Rule = {
       const schoolRecord = school as Record<string, unknown>;
       const daysSinceContact = calculateDaysSinceContact(
         schoolRecord.id as string,
-        context.interactions
+        context.interactions,
       );
 
       if (daysSinceContact >= 21) {
@@ -85,7 +87,7 @@ export const interactionGapRule: Rule = {
 
     const daysSinceContact = calculateDaysSinceContact(
       relatedSchoolId,
-      context.interactions
+      context.interactions,
     );
 
     return {
@@ -97,15 +99,18 @@ export const interactionGapRule: Rule = {
 
   async shouldReEvaluate(
     dismissedSuggestion: Suggestion,
-    context: RuleContext
+    context: RuleContext,
   ): Promise<boolean> {
-    if (!dismissedSuggestion.related_school_id || !dismissedSuggestion.condition_snapshot) {
+    if (
+      !dismissedSuggestion.related_school_id ||
+      !dismissedSuggestion.condition_snapshot
+    ) {
       return false;
     }
 
     const currentSnapshot = interactionGapRule.createConditionSnapshot?.(
       context,
-      dismissedSuggestion.related_school_id
+      dismissedSuggestion.related_school_id,
     );
 
     if (!currentSnapshot) {

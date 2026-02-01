@@ -209,9 +209,9 @@ describe("SuggestionCard", () => {
         props: { suggestion: mockSuggestion },
       });
 
-      const dismissButton = wrapper.findAll("button").find((b) =>
-        b.text().includes("Dismiss"),
-      );
+      const dismissButton = wrapper
+        .findAll("button")
+        .find((b) => b.text().includes("Dismiss"));
       await dismissButton?.trigger("click");
 
       expect(wrapper.emitted("dismiss")).toBeTruthy();
@@ -223,9 +223,9 @@ describe("SuggestionCard", () => {
         props: { suggestion: mockSuggestion },
       });
 
-      const learnMoreButton = wrapper.findAll("button").find((b) =>
-        b.text().includes("Learn More"),
-      );
+      const learnMoreButton = wrapper
+        .findAll("button")
+        .find((b) => b.text().includes("Learn More"));
       await learnMoreButton?.trigger("click");
 
       // Check that modal component is open (check internal state)
@@ -238,9 +238,9 @@ describe("SuggestionCard", () => {
       });
 
       // Open modal first
-      const learnMoreButton = wrapper.findAll("button").find((b) =>
-        b.text().includes("Learn More"),
-      );
+      const learnMoreButton = wrapper
+        .findAll("button")
+        .find((b) => b.text().includes("Learn More"));
       await learnMoreButton?.trigger("click");
       expect(wrapper.vm.showHelpModal).toBe(true);
 

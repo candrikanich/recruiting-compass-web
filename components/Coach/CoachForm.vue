@@ -235,20 +235,24 @@ const formData = reactive({
 // Watch for changes to initialData from parent
 const { initialData } = toRefs(props);
 
-watch(initialData, (newData) => {
-  if (newData) {
-    Object.assign(formData, {
-      role: newData.role ?? formData.role,
-      first_name: newData.first_name ?? formData.first_name,
-      last_name: newData.last_name ?? formData.last_name,
-      email: newData.email ?? formData.email,
-      phone: newData.phone ?? formData.phone,
-      twitter_handle: newData.twitter_handle ?? formData.twitter_handle,
-      instagram_handle: newData.instagram_handle ?? formData.instagram_handle,
-      notes: newData.notes ?? formData.notes,
-    });
-  }
-}, { deep: true });
+watch(
+  initialData,
+  (newData) => {
+    if (newData) {
+      Object.assign(formData, {
+        role: newData.role ?? formData.role,
+        first_name: newData.first_name ?? formData.first_name,
+        last_name: newData.last_name ?? formData.last_name,
+        email: newData.email ?? formData.email,
+        phone: newData.phone ?? formData.phone,
+        twitter_handle: newData.twitter_handle ?? formData.twitter_handle,
+        instagram_handle: newData.instagram_handle ?? formData.instagram_handle,
+        notes: newData.notes ?? formData.notes,
+      });
+    }
+  },
+  { deep: true },
+);
 
 // Field validators
 const validators = {

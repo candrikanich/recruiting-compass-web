@@ -2,7 +2,9 @@
   <div class="min-h-screen bg-slate-50">
     <!-- Header -->
     <div class="bg-white border-b border-slate-200 sticky top-0 z-10">
-      <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div
+        class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between"
+      >
         <NuxtLink
           to="/"
           class="text-slate-600 hover:text-slate-900 flex items-center gap-2 transition-colors"
@@ -11,13 +13,16 @@
           Back
         </NuxtLink>
         <h1 class="text-2xl font-bold text-slate-900">Terms and Conditions</h1>
-        <div class="w-10" /> <!-- spacer for alignment -->
+        <div class="w-10" />
+        <!-- spacer for alignment -->
       </div>
     </div>
 
     <!-- Content -->
     <div class="max-w-4xl mx-auto px-6 py-12">
-      <div class="bg-white rounded-lg shadow-sm p-8 prose prose-slate max-w-none">
+      <div
+        class="bg-white rounded-lg shadow-sm p-8 prose prose-slate max-w-none"
+      >
         <p class="text-slate-600 mb-8">
           <strong>Last Updated:</strong> {{ lastUpdated }}
         </p>
@@ -27,8 +32,8 @@
           <p>
             By accessing and using the Recruiting Compass website and services
             (the "Service"), you agree to be bound by these Terms and
-            Conditions. If you do not agree to abide by the above, please do
-            not use this service.
+            Conditions. If you do not agree to abide by the above, please do not
+            use this service.
           </p>
         </section>
 
@@ -94,7 +99,8 @@
             technical, typographical, or photographic errors. Recruiting Compass
             does not warrant that any of the materials on the website are
             accurate, complete, or current. Recruiting Compass may make changes
-            to the materials contained on its website at any time without notice.
+            to the materials contained on its website at any time without
+            notice.
           </p>
         </section>
 
@@ -129,9 +135,7 @@
 
         <section class="mb-8">
           <h2>9. User Accounts</h2>
-          <p>
-            When you create an account on Recruiting Compass, you agree to:
-          </p>
+          <p>When you create an account on Recruiting Compass, you agree to:</p>
           <ul>
             <li>Provide accurate and complete information</li>
             <li>Maintain the confidentiality of your password</li>
@@ -152,9 +156,7 @@
               Infringing upon intellectual property rights of Recruiting Compass
               or others
             </li>
-            <li>
-              Harassing, threatening, or defaming any person or entity
-            </li>
+            <li>Harassing, threatening, or defaming any person or entity</li>
             <li>
               Attempting to gain unauthorized access to the Service or its
               systems
@@ -181,11 +183,13 @@ definePageMeta({ layout: "public" });
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { ref } from "vue";
 
-const lastUpdated = ref(new Date().toLocaleDateString("en-US", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-}));
+const lastUpdated = ref(
+  new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }),
+);
 </script>
 
 <style scoped>

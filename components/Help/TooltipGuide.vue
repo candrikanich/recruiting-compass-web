@@ -24,9 +24,11 @@ const positionClasses = {
 
 const arrowClasses = {
   top: "top-full border-t-slate-700 border-l-transparent border-r-transparent border-b-transparent",
-  bottom: "bottom-full border-b-slate-700 border-l-transparent border-r-transparent border-t-transparent",
+  bottom:
+    "bottom-full border-b-slate-700 border-l-transparent border-r-transparent border-t-transparent",
   left: "left-full border-l-slate-700 border-t-transparent border-b-transparent border-r-transparent",
-  right: "right-full border-r-slate-700 border-t-transparent border-b-transparent border-l-transparent",
+  right:
+    "right-full border-r-slate-700 border-t-transparent border-b-transparent border-l-transparent",
 };
 </script>
 
@@ -49,17 +51,14 @@ const arrowClasses = {
       <div class="font-semibold mb-1">{{ helpDefinition.title }}</div>
       <div>{{ helpDefinition.shortDescription }}</div>
 
-      <div
-        :class="arrowClasses[position]"
-        class="absolute w-2 h-2 border-2"
-      />
+      <div :class="arrowClasses[position]" class="absolute w-2 h-2 border-2" />
     </div>
   </div>
 </template>
 
 <style scoped>
 /* Smooth fade in/out */
-div:has(+ div[class*='absolute']) {
+div:has(+ div[class*="absolute"]) {
   transition: opacity 0.2s ease-in-out;
 }
 </style>

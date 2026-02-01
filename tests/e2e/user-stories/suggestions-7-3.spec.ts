@@ -34,10 +34,12 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     await page.waitForURL(`${BASE_URL}/settings`, { timeout: 5000 });
 
     // Go to player details section
-    await page.click("button:has-text(\"Player Details\")");
+    await page.click('button:has-text("Player Details")');
 
     // Record current GPA value
-    const gpaInput = page.locator('input[placeholder*="GPA"], input[data-testid*="gpa"]');
+    const gpaInput = page.locator(
+      'input[placeholder*="GPA"], input[data-testid*="gpa"]',
+    );
     const oldGpa = await gpaInput.inputValue();
     expect(oldGpa).toBe("3.0");
 
@@ -49,9 +51,11 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     await page.click('button:has-text("Save")');
 
     // Wait for save confirmation
-    await expect(page.locator("text=Profile updated successfully")).toBeVisible({
-      timeout: 5000,
-    });
+    await expect(page.locator("text=Profile updated successfully")).toBeVisible(
+      {
+        timeout: 5000,
+      },
+    );
 
     // Navigate back to dashboard
     await page.goto(`${BASE_URL}/dashboard`);
@@ -62,7 +66,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     // Verify suggestions have been refreshed
     // Should see new suggestion: "ASU is now in your realistic range"
     const newSuggestion = page.locator(
-      'text=now in your realistic range, ASU is now in your realistic range'
+      "text=now in your realistic range, ASU is now in your realistic range",
     );
 
     // Give it time to load
@@ -82,7 +86,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
 
     // Verify suggestion exists: "You haven't contacted Coach A in 21 days"
     const suggestion = page.locator(
-      'text=You haven\'t contacted Coach A in 21 days'
+      "text=You haven't contacted Coach A in 21 days",
     );
     await expect(suggestion).toBeVisible();
 
@@ -101,7 +105,10 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     await page.click('button:has-text("Log Interaction")');
 
     // Fill interaction form
-    await page.fill('textarea[placeholder*="interaction"]', "Had a great call with coach");
+    await page.fill(
+      'textarea[placeholder*="interaction"]',
+      "Had a great call with coach",
+    );
     await page.click('button:has-text("Save Interaction")');
 
     // Wait for save confirmation
@@ -117,7 +124,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
 
     // Verify suggestion is no longer visible
     const removedSuggestion = page.locator(
-      'text=You haven\'t contacted Coach A in 21 days'
+      "text=You haven't contacted Coach A in 21 days",
     );
     await expect(removedSuggestion).not.toBeVisible({ timeout: 5000 });
   });
@@ -141,7 +148,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
 
     // Manually trigger suggestion update via profile change
     await page.click('a[href*="/settings"]');
-    await page.click("button:has-text(\"Player Details\")");
+    await page.click('button:has-text("Player Details")');
 
     const gpaInput = page.locator('input[placeholder*="GPA"]');
     await gpaInput.fill("3.6");
@@ -153,7 +160,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
 
     // Check for toast notification
     const toastNotification = page.locator(
-      'text=/new suggestion\\(s\\) available/i'
+      "text=/new suggestion\\(s\\) available/i",
     );
     await expect(toastNotification).toBeVisible({ timeout: 5000 });
   });
@@ -171,7 +178,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
 
     // Update profile to trigger suggestion generation
     await page.click('a[href*="/settings"]');
-    await page.click("button:has-text(\"Player Details\")");
+    await page.click('button:has-text("Player Details")');
 
     // Update multiple fields to generate suggestions
     const satInput = page.locator('input[placeholder*="SAT"]');
@@ -181,7 +188,9 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     await gpaInput.fill("3.5");
 
     await page.click('button:has-text("Save")');
-    await expect(page.locator("text=Profile updated successfully")).toBeVisible();
+    await expect(
+      page.locator("text=Profile updated successfully"),
+    ).toBeVisible();
 
     // Go back to dashboard
     await page.goto(`${BASE_URL}/dashboard`);
@@ -208,7 +217,9 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     await page.waitForURL(`${BASE_URL}/dashboard`, { timeout: 10000 });
 
     // Find first suggestion
-    const firstSuggestion = page.locator("[data-testid='suggestion-card']").first();
+    const firstSuggestion = page
+      .locator("[data-testid='suggestion-card']")
+      .first();
     const suggestionText = await firstSuggestion.textContent();
 
     // Click dismiss button
@@ -267,7 +278,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
         headers: {
           "x-cron-secret": cronSecret,
         },
-      }
+      },
     );
 
     // Should return 200 if secret is correct or 401 if not

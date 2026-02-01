@@ -12,6 +12,7 @@
 Implement email verification for user accounts to satisfy Story 1.1 acceptance criteria. Current implementation allows account creation but lacks email verification workflow. This plan adds a complete email verification flow using Supabase's built-in email confirmation feature.
 
 **Key Decisions:**
+
 - ✅ Use Supabase's native email confirmation (automatic token handling, cleaner integration)
 - ✅ Full app access for unverified users (email verification is optional/reminder)
 - ✅ Resend option on verify email page + account settings
@@ -21,14 +22,14 @@ Implement email verification for user accounts to satisfy Story 1.1 acceptance c
 
 ## User Story Acceptance Criteria Mapping
 
-| Acceptance Criteria | Implementation Component |
-|---|---|
-| Signup flow completes in under 2 minutes | Verify email page with async email sending |
+| Acceptance Criteria                        | Implementation Component                       |
+| ------------------------------------------ | ---------------------------------------------- |
+| Signup flow completes in under 2 minutes   | Verify email page with async email sending     |
 | Verification email arrives within 1 minute | Supabase email service (configured in backend) |
-| Password must be at least 8 characters | ✅ Already implemented |
-| Email must be valid format | ✅ Already implemented |
-| Cannot use duplicate email addresses | ✅ Already implemented |
-| Passwords are securely hashed | ✅ Already implemented |
+| Password must be at least 8 characters     | ✅ Already implemented                         |
+| Email must be valid format                 | ✅ Already implemented                         |
+| Cannot use duplicate email addresses       | ✅ Already implemented                         |
+| Passwords are securely hashed              | ✅ Already implemented                         |
 
 ---
 
@@ -59,10 +60,12 @@ New verification email sent
 ### Key Components
 
 **1. Signup Page Updates** (`pages/signup.vue`)
+
 - After successful signup, redirect to `/verify-email` instead of `/dashboard`
 - Pass email as route param or get from userStore
 
 **2. Verify Email Page** (`pages/verify-email.vue`)
+
 - Display verification status
 - Show email address being verified
 - "Resend verification email" button
@@ -71,20 +74,24 @@ New verification email sent
 - Error handling for expired/invalid tokens
 
 **3. Verify Email Composable** (`composables/useEmailVerification.ts`)
+
 - `verifyEmailToken(token)` - Verify token from email link
 - `resendVerificationEmail(email)` - Request new verification email
 - `checkEmailVerificationStatus(userId)` - Check if user is verified
 - Loading and error states
 
 **4. Auth Composable Updates** (`composables/useAuth.ts`)
+
 - Trigger email verification on signup (Supabase native)
 - No major changes needed; Supabase handles automatically
 
 **5. User Store Updates** (`stores/user.ts`)
+
 - Add `isEmailVerified` getter to check verification status
 - Update user initialization to include verification status
 
 **6. Account Settings Component** (existing or new)
+
 - Add "Verify email" section showing current status
 - "Resend verification email" button if not verified
 
@@ -93,30 +100,36 @@ New verification email sent
 ## Implementation Phases
 
 ### Phase 1: Setup & Configuration
+
 **Objective:** Prepare Supabase for email verification
 
 **Tasks:**
+
 1. Verify Supabase email confirmation is enabled in project settings
 2. Check email templates in Supabase (confirmation email template)
 3. Test email sending in development environment
 4. Document verification token format and expiry
 
 **Files to Check/Modify:**
+
 - Supabase project settings (UI, not code files)
 - None in codebase (configuration only)
 
 **Acceptance Criteria:**
+
 - [ ] Verification emails send successfully in dev environment
 - [ ] Email contains clickable verification link with token
 
 ---
 
 ### Phase 2: Create Email Verification Composable
+
 **Objective:** Implement email verification logic layer
 
 **New File:** `composables/useEmailVerification.ts`
 
 **Functions:**
+
 ```typescript
 export const useEmailVerification = () => {
   const loading = ref(false);
@@ -133,7 +146,9 @@ export const useEmailVerification = () => {
   };
 
   // Check if user email is verified
-  const checkEmailVerificationStatus = async (userId: string): Promise<boolean> => {
+  const checkEmailVerificationStatus = async (
+    userId: string,
+  ): Promise<boolean> => {
     // Fetch user from auth and check email_confirmed_at
   };
 
@@ -148,17 +163,20 @@ export const useEmailVerification = () => {
 ```
 
 **API Endpoints Needed:**
+
 - `POST /api/auth/verify-email` - Verify token from email link
 - `POST /api/auth/resend-verification` - Resend verification email
 
 ---
 
 ### Phase 3: Create API Endpoints
+
 **Objective:** Handle email verification on backend
 
 **New Files:**
 
 #### `server/api/auth/verify-email.post.ts`
+
 ```
 POST /api/auth/verify-email
 Body: { token: string }
@@ -172,6 +190,7 @@ Logic:
 ```
 
 #### `server/api/auth/resend-verification.post.ts`
+
 ```
 POST /api/auth/resend-verification
 Body: { email: string }
@@ -185,17 +204,20 @@ Logic:
 ```
 
 **Dependencies:**
+
 - Supabase admin client (already available in server context)
 - Error handling utilities
 
 ---
 
 ### Phase 4: Create Verify Email Page
+
 **Objective:** User interface for email verification
 
 **New File:** `pages/verify-email.vue`
 
 **Features:**
+
 - Display email being verified (from store or route param)
 - Show verification status
   - "Waiting for verification..." (pending)
@@ -210,6 +232,7 @@ Logic:
 - Error messages with retry options
 
 **Layout:**
+
 - Centered card (similar to signup/login pages)
 - Email confirmation icon/checkmark
 - Clear CTA buttons
@@ -218,26 +241,31 @@ Logic:
 ---
 
 ### Phase 5: Update Signup Flow
+
 **Objective:** Integrate email verification into existing signup
 
 **Changes to:** `pages/signup.vue`
 
 **Modifications:**
+
 - Line 631-632: Change redirect from `/dashboard` to `/verify-email`
 - Pass email as route param: `navigateTo('/verify-email?email=' + validated.email)`
 - Update success message to mention email verification
 
 **Changes to:** `composables/useAuth.ts`
+
 - No changes (Supabase handles verification email automatically on signup)
 
 ---
 
 ### Phase 6: Update User Store & Composables
+
 **Objective:** Add email verification status tracking
 
 **Changes to:** `stores/user.ts`
 
 **Add:**
+
 ```typescript
 // In state
 isEmailVerified: boolean;
@@ -245,26 +273,29 @@ isEmailVerified: boolean;
 // In getter
 isEmailVerified: (state) => {
   return state.user?.email_confirmed_at !== null;
-}
+};
 
 // In action
 refreshVerificationStatus: async (userId: string) => {
   // Fetch latest user to check email_confirmed_at
-}
+};
 ```
 
 **Changes to:** `composables/useAuth.ts`
+
 - No major changes required
 - Supabase handles email confirmation automatically
 
 ---
 
 ### Phase 7: Add Account Settings Section (Optional, Phase 2)
+
 **Objective:** Allow users to resend verification from settings
 
 **File:** `pages/account-settings.vue` (or add to existing settings)
 
 **Component:**
+
 - Show email verification status
 - Display verified date if confirmed
 - "Resend verification email" button if not verified
@@ -277,9 +308,11 @@ refreshVerificationStatus: async (userId: string) => {
 ## Testing Strategy
 
 ### Unit Tests
+
 **New File:** `tests/unit/composables/useEmailVerification.spec.ts`
 
 **Test Cases:**
+
 - [ ] `verifyEmailToken()` succeeds with valid token
 - [ ] `verifyEmailToken()` fails with invalid token
 - [ ] `verifyEmailToken()` fails with expired token
@@ -294,15 +327,18 @@ refreshVerificationStatus: async (userId: string) => {
 **New File:** `tests/unit/stores/user.spec.ts` (add to existing)
 
 **Additional Test Cases:**
+
 - [ ] `isEmailVerified` getter returns correct status
 - [ ] `refreshVerificationStatus()` updates store
 
 ---
 
 ### E2E Tests
+
 **New File:** `tests/e2e/tier1-critical/email-verification.spec.ts`
 
 **Test Cases:**
+
 - [ ] User signup redirects to verify email page
 - [ ] Verify email page displays user's email
 - [ ] Resend button sends new verification email
@@ -313,15 +349,18 @@ refreshVerificationStatus: async (userId: string) => {
 - [ ] Verification status updates after email confirmation
 
 **Existing Test to Update:** `tests/e2e/tier1-critical/auth.spec.ts`
+
 - [ ] Update signup test to verify redirect to `/verify-email`
 - [ ] May need to handle email verification in fixtures for other tests
 
 ---
 
 ### Integration Tests
+
 **New File:** `tests/integration/email-verification.integration.spec.ts`
 
 **Test Scenarios:**
+
 - [ ] Full signup → verify email → access dashboard flow
 - [ ] Resend verification email in middle of flow
 - [ ] User store updates after email verification
@@ -385,16 +424,19 @@ refreshVerificationStatus: async (userId: string) => {
 ### Supabase Email Confirmation
 
 **How it works:**
+
 1. On signup, Supabase Auth automatically sends verification email if `Double confirm users` is enabled
 2. Email contains link with token: `YOUR_REDIRECT_URL?token_hash=XXX&type=email_confirmation`
 3. Frontend extracts token and calls Supabase auth API to confirm
 4. Supabase sets `email_confirmed_at` on user record
 
 **Configuration:**
+
 - Check Supabase project settings → Authentication → Email Templates
 - Verify "Confirm signup" email is enabled and customized as needed
 
 **User Metadata:**
+
 - `email_confirmed_at` - ISO timestamp when email was verified (null if unverified)
 - Available via `useSupabase().auth.getUser()`
 
@@ -417,6 +459,7 @@ Expiry: Typically 24-48 hours (configurable in Supabase)
 ## Error Handling
 
 **User-Facing Errors:**
+
 - Invalid token → "Verification link is invalid or expired. Please request a new one."
 - Expired token → "Verification link has expired. Please request a new one."
 - Already verified → "Your email is already verified. Welcome!"
@@ -425,6 +468,7 @@ Expiry: Typically 24-48 hours (configurable in Supabase)
 - Email send failed → "Unable to send verification email. Please try again."
 
 **Developer Logging:**
+
 - Log all token verification attempts (success/failure)
 - Log email send requests and failures
 - Monitor for rate limit abuse patterns
@@ -434,6 +478,7 @@ Expiry: Typically 24-48 hours (configurable in Supabase)
 ## Assumptions & Risks
 
 **Assumptions:**
+
 - Supabase email service is configured and working (test in Phase 1)
 - Email templates are customized with appropriate branding
 - Verification tokens are secure and time-bound

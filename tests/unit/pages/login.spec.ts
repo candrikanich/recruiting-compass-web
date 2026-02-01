@@ -266,7 +266,7 @@ describe("login.vue", () => {
       await wrapper.find("form").trigger("submit.prevent");
       // Wait for async operations to complete
       await wrapper.vm.$nextTick();
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockValidation.validate).toHaveBeenCalledWith(
         {
@@ -396,7 +396,7 @@ describe("login.vue", () => {
       await wrapper.find("form").trigger("submit.prevent");
       // Wait for async operations
       await wrapper.vm.$nextTick();
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
     });

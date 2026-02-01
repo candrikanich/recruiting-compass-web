@@ -1,8 +1,6 @@
 <template>
   <div class="border border-gray-200 bg-gray-50 rounded-lg p-4">
-    <h3 class="text-lg font-semibold text-gray-900 mb-2">
-      Join a Family
-    </h3>
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">Join a Family</h3>
     <p class="text-sm text-gray-700 mb-4">
       Enter the family code provided by the student to join their recruiting
       family.
@@ -41,7 +39,10 @@
 </template>
 
 <script setup lang="ts">
-import { validateFamilyCodeInput, formatFamilyCodeInput } from "~/utils/familyCodeValidation";
+import {
+  validateFamilyCodeInput,
+  formatFamilyCodeInput,
+} from "~/utils/familyCodeValidation";
 
 defineProps<{
   loading?: boolean;

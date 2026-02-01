@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     console.error(
       `[Preferences History GET] Error fetching history for ${category}:`,
-      err
+      err,
     );
 
     throw createError({

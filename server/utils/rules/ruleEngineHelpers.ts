@@ -12,7 +12,9 @@ import type { Suggestion, Urgency } from "~/types/timeline";
  * @param suggestion The suggestion to check
  * @returns true if the suggestion should be re-evaluated, false otherwise
  */
-export function shouldReEvaluateDismissedSuggestion(suggestion: Suggestion): boolean {
+export function shouldReEvaluateDismissedSuggestion(
+  suggestion: Suggestion,
+): boolean {
   // Must be dismissed
   if (!suggestion.dismissed) {
     return false;
@@ -37,7 +39,7 @@ export function shouldReEvaluateDismissedSuggestion(suggestion: Suggestion): boo
   const dismissedDate = new Date(suggestion.dismissed_at);
   const now = new Date();
   const daysSinceDismissal = Math.floor(
-    (now.getTime() - dismissedDate.getTime()) / (1000 * 60 * 60 * 24)
+    (now.getTime() - dismissedDate.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   return daysSinceDismissal >= 14;

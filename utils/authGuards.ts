@@ -7,7 +7,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * requireAuth(userId);
  * // TypeScript now knows userId is string, not string | null
  */
-export const requireAuth = (userId: string | null): asserts userId is string => {
+export const requireAuth = (
+  userId: string | null,
+): asserts userId is string => {
   if (!userId) {
     throw new Error("User is not authenticated");
   }

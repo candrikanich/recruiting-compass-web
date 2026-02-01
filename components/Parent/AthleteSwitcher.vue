@@ -23,7 +23,9 @@ const shouldShow = computed<boolean>(() => {
 });
 
 const currentAthleteName = computed<string>(() => {
-  const current = props.linkedAthletes.find((a) => a.id === props.currentAthleteId);
+  const current = props.linkedAthletes.find(
+    (a) => a.id === props.currentAthleteId,
+  );
   return current?.name || "Select Athlete";
 });
 
@@ -43,7 +45,10 @@ const handleAthleteChange = (athleteId: string) => {
 
 <template>
   <div v-if="shouldShow" class="mb-4">
-    <label for="athlete-select" class="block text-sm font-medium text-gray-700 mb-2">
+    <label
+      for="athlete-select"
+      class="block text-sm font-medium text-gray-700 mb-2"
+    >
       Viewing:
     </label>
     <select
@@ -53,7 +58,11 @@ const handleAthleteChange = (athleteId: string) => {
       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
       data-testid="athlete-select"
     >
-      <option v-for="athlete in linkedAthletes" :key="athlete.id" :value="athlete.id">
+      <option
+        v-for="athlete in linkedAthletes"
+        :key="athlete.id"
+        :value="athlete.id"
+      >
         {{ athlete.name }}
       </option>
     </select>

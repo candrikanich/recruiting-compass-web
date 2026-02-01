@@ -1,16 +1,19 @@
-import { createClient } from '@supabase/supabase-js';
-import { TEST_ACCOUNTS } from '../../config/test-accounts';
+import { createClient } from "@supabase/supabase-js";
+import { TEST_ACCOUNTS } from "../../config/test-accounts";
 
 export const getSupabaseAdmin = () => {
-  const url = process.env.TEST_SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL;
+  const url =
+    process.env.TEST_SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url) {
-    throw new Error('NUXT_PUBLIC_SUPABASE_URL or TEST_SUPABASE_URL required for test seeding');
+    throw new Error(
+      "NUXT_PUBLIC_SUPABASE_URL or TEST_SUPABASE_URL required for test seeding",
+    );
   }
 
   if (!key) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY required for test seeding');
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY required for test seeding");
   }
 
   return createClient(url, key, {
@@ -25,7 +28,9 @@ export async function createTestAccounts() {
     try {
       // Try to delete existing user first
       const { data: existingUsers } = await supabase.auth.admin.listUsers();
-      const existingUser = existingUsers?.users?.find((u) => u.email === account.email);
+      const existingUser = existingUsers?.users?.find(
+        (u) => u.email === account.email,
+      );
 
       if (existingUser) {
         console.log(`⏭️  Test account already exists: ${account.email}`);
@@ -49,7 +54,10 @@ export async function createTestAccounts() {
 
       console.log(`✅ Created test account: ${account.email}`);
     } catch (error) {
-      console.error(`❌ Failed to create test account ${account.email}:`, error);
+      console.error(
+        `❌ Failed to create test account ${account.email}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -68,7 +76,10 @@ export async function deleteTestAccounts() {
         console.log(`✅ Deleted test account: ${account.email}`);
       }
     } catch (error) {
-      console.error(`❌ Failed to delete test account ${account.email}:`, error);
+      console.error(
+        `❌ Failed to delete test account ${account.email}:`,
+        error,
+      );
     }
   }
 }

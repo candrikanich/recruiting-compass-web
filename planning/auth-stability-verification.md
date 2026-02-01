@@ -11,11 +11,13 @@ Document the fix for session fragmentation issue and provide tools to verify use
 **Problem**: 31 different user_ids were created in the database for a single Supabase auth account (chris@andrikanich.com)
 
 **Root Cause**:
+
 - `initializeUser()` called multiple times from different components (middleware, pages, etc.)
 - Profile creation not idempotent - errors were swallowed silently
 - No unique constraints to prevent duplicates
 
 **Solution Implemented**:
+
 1. **Migration 012**: Added UNIQUE constraint on `users.email`
 2. **Enhanced profile creation**: Added idempotence checks and better error handling
 3. **Centralized initialization**: Single point of initialization in app.vue
@@ -29,6 +31,7 @@ Document the fix for session fragmentation issue and provide tools to verify use
 Run these in Supabase SQL editor to verify the fix:
 
 ### 1. Check for duplicate emails in users table
+
 ```sql
 SELECT email, COUNT(*) as count, STRING_AGG(id::text, ', ') as user_ids
 FROM public.users
@@ -40,6 +43,7 @@ ORDER BY count DESC;
 **Expected Result**: Empty (no duplicates)
 
 ### 2. Check schools ownership distribution
+
 ```sql
 SELECT user_id, COUNT(*) as school_count
 FROM public.schools
@@ -50,6 +54,7 @@ ORDER BY school_count DESC;
 **Expected Result**: Most schools owned by chris@andrikanich.com's user_id
 
 ### 3. Check for orphaned user profiles
+
 ```sql
 SELECT u.id, u.email, COUNT(s.id) as school_count
 FROM public.users u
@@ -63,6 +68,7 @@ LIMIT 10;
 **Expected Result**: Few or no orphaned profiles
 
 ### 4. Verify unique constraint is in place
+
 ```sql
 SELECT constraint_name, constraint_type
 FROM information_schema.table_constraints
@@ -143,11 +149,13 @@ If `logAuthState()` shows inconsistencies:
 The following debug logs are now in place:
 
 **In `app.vue`**:
+
 - `[App] Starting user initialization`
 - `[App] User initialization complete`
 - `[App] Failed to initialize user: [error]`
 
 **In `stores/user.ts` - initializeUser()**:
+
 - `[initializeUser] User authenticated: [email]`
 - `[initializeUser] Existing profile loaded`
 - `[initializeUser] No profile found, attempting creation`
@@ -156,6 +164,7 @@ The following debug logs are now in place:
 - `[initializeUser] Unexpected error: [error]`
 
 **In `stores/user.ts` - createUserProfile()**:
+
 - `[createUserProfile] Attempting to create profile for: [email]`
 - `[createUserProfile] Profile already exists, skipping`
 - `[createUserProfile] Check failed: [error]`
@@ -164,6 +173,7 @@ The following debug logs are now in place:
 - `[createUserProfile] Failed: [error]`
 
 **In `composables/useAuth.ts` - restoreSession()**:
+
 - `[useAuth] Session already initialized, returning cached session`
 - `[useAuth] Session initialization in progress, waiting...`
 - `[useAuth] Session restored successfully for user: [email]`
@@ -200,8 +210,9 @@ All debug logs use `[ClassName]` prefix for easy filtering in browser console:
 Future developers should add these tests to prevent regression:
 
 1. **Unit Test**: Profile creation idempotence
+
    ```typescript
-   it('should not create duplicate profiles when called multiple times', async () => {
+   it("should not create duplicate profiles when called multiple times", async () => {
      await store.createUserProfile(userId, email, fullName);
      const result = await store.createUserProfile(userId, email, fullName);
      expect(result).toBe(true); // Should return success, not fail
@@ -209,8 +220,9 @@ Future developers should add these tests to prevent regression:
    ```
 
 2. **Unit Test**: Single user_id per auth account
+
    ```typescript
-   it('should maintain same user_id across multiple initializations', async () => {
+   it("should maintain same user_id across multiple initializations", async () => {
      const id1 = (await store.initializeUser()).user?.id;
      const id2 = (await store.initializeUser()).user?.id;
      expect(id1).toBe(id2);
@@ -218,8 +230,9 @@ Future developers should add these tests to prevent regression:
    ```
 
 3. **E2E Test**: User_id stability through login flow
+
    ```typescript
-   it('should not fragment user_id through login/logout/login', async () => {
+   it("should not fragment user_id through login/logout/login", async () => {
      // Login, get user_id
      // Logout
      // Login again
@@ -229,7 +242,7 @@ Future developers should add these tests to prevent regression:
 
 4. **E2E Test**: User_id stability through password change
    ```typescript
-   it('should not fragment user_id when password is changed', async () => {
+   it("should not fragment user_id when password is changed", async () => {
      // Get initial user_id
      // Change password
      // Verify same user_id
@@ -266,6 +279,7 @@ After deploying to production:
    - No errors expected
 
 2. **Week 1**: Run audit queries in production
+
    ```sql
    -- Check for duplicates
    SELECT COUNT(*) FROM (

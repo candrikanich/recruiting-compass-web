@@ -129,8 +129,12 @@ describe("useDivisionRecommendations", () => {
       const mixedCase = getRecommendedDivisions("D1", 42);
 
       expect(lowercase.shouldConsiderOtherDivisions).toBe(true);
-      expect(lowercase.recommendedDivisions).toEqual(uppercase.recommendedDivisions);
-      expect(uppercase.recommendedDivisions).toEqual(mixedCase.recommendedDivisions);
+      expect(lowercase.recommendedDivisions).toEqual(
+        uppercase.recommendedDivisions,
+      );
+      expect(uppercase.recommendedDivisions).toEqual(
+        mixedCase.recommendedDivisions,
+      );
     });
   });
 

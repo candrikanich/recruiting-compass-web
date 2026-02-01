@@ -82,7 +82,9 @@ export default defineEventHandler(
         await supabaseAdmin.auth.admin.getUserByEmail(targetEmail);
 
       if (getUserError || !targetUserData.user) {
-        logger.warn(`Delete user attempt for non-existent email: ${targetEmail}`);
+        logger.warn(
+          `Delete user attempt for non-existent email: ${targetEmail}`,
+        );
         throw createError({
           statusCode: 404,
           statusMessage: "User not found",

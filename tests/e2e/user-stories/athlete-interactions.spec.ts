@@ -28,7 +28,9 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
 
       // Verify help text is visible
       await expect(
-        page.locator("text=Your recruiting interactions are visible to your linked parent")
+        page.locator(
+          "text=Your recruiting interactions are visible to your linked parent",
+        ),
       ).toBeVisible();
     });
 
@@ -55,7 +57,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
       await page.fill('input[id="subject"]', "Recruiting Inquiry");
       await page.fill(
         'textarea[id="content"]',
-        "Sent inquiry about scholarship opportunities"
+        "Sent inquiry about scholarship opportunities",
       );
 
       // Submit form
@@ -151,7 +153,9 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
 
         // Verify it shows recent athlete interactions
         await expect(
-          page.locator("text=Recent interactions logged by your linked athlete")
+          page.locator(
+            "text=Recent interactions logged by your linked athlete",
+          ),
         ).toBeVisible();
       }
     });
@@ -174,7 +178,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
       await page.goto("/interactions");
 
       // Get the Logged By dropdown
-      const loggedBySelect = page.locator('select').filter({
+      const loggedBySelect = page.locator("select").filter({
         has: page.locator('label:has-text("Logged By")').locator(".."),
       });
 
@@ -201,7 +205,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
       await page.goto("/interactions");
 
       // Select "Me (Parent)" option
-      const loggedBySelect = page.locator('select').filter({
+      const loggedBySelect = page.locator("select").filter({
         has: page.locator('label:has-text("Logged By")').locator(".."),
       });
 
@@ -247,9 +251,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
         await expect(page.locator("h1")).toBeVisible();
 
         // Verify "Logged By" field is visible
-        await expect(
-          page.locator("h3:has-text('Logged By')")
-        ).toBeVisible();
+        await expect(page.locator("h3:has-text('Logged By')")).toBeVisible();
       }
     });
   });
@@ -282,8 +284,12 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
       await page.waitForURL("**/interactions");
 
       // Logout athlete
-      await page.click('button[aria-label="User menu"]', { timeout: 5000 }).catch(() => null);
-      await page.click('button:has-text("Logout")', { timeout: 5000 }).catch(() => null);
+      await page
+        .click('button[aria-label="User menu"]', { timeout: 5000 })
+        .catch(() => null);
+      await page
+        .click('button:has-text("Logout")', { timeout: 5000 })
+        .catch(() => null);
 
       // Now login as parent
       await page.goto("/");
@@ -296,9 +302,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
       await page.goto("/interactions");
 
       // Verify athlete's interaction is visible
-      await expect(
-        page.locator("text=Test Athlete Interaction")
-      ).toBeVisible();
+      await expect(page.locator("text=Test Athlete Interaction")).toBeVisible();
 
       // Verify it shows student/athlete badge
       const badge = page.locator(':has-text("You")').first();
@@ -306,7 +310,9 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
 
       // Either should show "You" if it's the athlete's own interaction,
       // or show the athlete's name
-      expect(badgeVisible || (await page.locator("text").count()) > 0).toBeTruthy();
+      expect(
+        badgeVisible || (await page.locator("text").count()) > 0,
+      ).toBeTruthy();
     });
   });
 });

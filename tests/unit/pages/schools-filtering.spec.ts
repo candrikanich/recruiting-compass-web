@@ -81,7 +81,10 @@ function mockDistanceCache(
     if (coords?.latitude && coords?.longitude) {
       const distance = calculateDistance(
         { latitude: homeLocation.latitude, longitude: homeLocation.longitude },
-        { latitude: coords.latitude as number, longitude: coords.longitude as number },
+        {
+          latitude: coords.latitude as number,
+          longitude: coords.longitude as number,
+        },
       );
       cache.set(school.id, distance);
     }
@@ -103,7 +106,10 @@ describe("School Filtering - User Story 3.3", () => {
 
   describe("Fit Score Range Filter", () => {
     it("should filter schools within fit score range (70-100)", () => {
-      const filterFn = (school: School, range: { min?: number; max?: number }) => {
+      const filterFn = (
+        school: School,
+        range: { min?: number; max?: number },
+      ) => {
         const score = school.fit_score;
         if (score === null || score === undefined) return false;
         const min = range?.min ?? 0;
@@ -111,7 +117,9 @@ describe("School Filtering - User Story 3.3", () => {
         return score >= min && score <= max;
       };
 
-      const filtered = schools.filter((s) => filterFn(s, { min: 70, max: 100 }));
+      const filtered = schools.filter((s) =>
+        filterFn(s, { min: 70, max: 100 }),
+      );
       expect(filtered.length).toBeGreaterThan(0);
       filtered.forEach((school) => {
         if (school.fit_score !== null && school.fit_score !== undefined) {
@@ -122,7 +130,10 @@ describe("School Filtering - User Story 3.3", () => {
     });
 
     it("should exclude schools below minimum fit score", () => {
-      const filterFn = (school: School, range: { min?: number; max?: number }) => {
+      const filterFn = (
+        school: School,
+        range: { min?: number; max?: number },
+      ) => {
         const score = school.fit_score;
         if (score === null || score === undefined) return false;
         const min = range?.min ?? 0;
@@ -130,14 +141,19 @@ describe("School Filtering - User Story 3.3", () => {
         return score >= min && score <= max;
       };
 
-      const filtered = schools.filter((s) => filterFn(s, { min: 75, max: 100 }));
+      const filtered = schools.filter((s) =>
+        filterFn(s, { min: 75, max: 100 }),
+      );
       filtered.forEach((school) => {
         expect(school.fit_score).toBeGreaterThanOrEqual(75);
       });
     });
 
     it("should exclude schools above maximum fit score", () => {
-      const filterFn = (school: School, range: { min?: number; max?: number }) => {
+      const filterFn = (
+        school: School,
+        range: { min?: number; max?: number },
+      ) => {
         const score = school.fit_score;
         if (score === null || score === undefined) return false;
         const min = range?.min ?? 0;
@@ -157,7 +173,10 @@ describe("School Filtering - User Story 3.3", () => {
         fit_score: null,
       };
 
-      const filterFn = (school: School, range: { min?: number; max?: number }) => {
+      const filterFn = (
+        school: School,
+        range: { min?: number; max?: number },
+      ) => {
         const score = school.fit_score;
         if (score === null || score === undefined) return false;
         const min = range?.min ?? 0;
@@ -169,7 +188,10 @@ describe("School Filtering - User Story 3.3", () => {
     });
 
     it("should handle partial range input (min only)", () => {
-      const filterFn = (school: School, range: { min?: number; max?: number }) => {
+      const filterFn = (
+        school: School,
+        range: { min?: number; max?: number },
+      ) => {
         const score = school.fit_score;
         if (score === null || score === undefined) return false;
         const min = range?.min ?? 0;
@@ -185,7 +207,10 @@ describe("School Filtering - User Story 3.3", () => {
     });
 
     it("should handle partial range input (max only)", () => {
-      const filterFn = (school: School, range: { min?: number; max?: number }) => {
+      const filterFn = (
+        school: School,
+        range: { min?: number; max?: number },
+      ) => {
         const score = school.fit_score;
         if (score === null || score === undefined) return false;
         const min = range?.min ?? 0;
@@ -230,7 +255,11 @@ describe("School Filtering - User Story 3.3", () => {
     });
 
     it("should show all schools when no home location is set", () => {
-      const filterFn = (school: School, range: { max?: number }, hasLocation: boolean) => {
+      const filterFn = (
+        school: School,
+        range: { max?: number },
+        hasLocation: boolean,
+      ) => {
         if (!hasLocation) return true; // Show all if no home location
         return true; // Otherwise apply distance filter
       };
@@ -356,7 +385,10 @@ describe("School Filtering - User Story 3.3", () => {
 
   describe("Combined Filters (AND Logic)", () => {
     it("should apply multiple filters together", () => {
-      const fitScoreFilter = (school: School, range: { min?: number; max?: number }) => {
+      const fitScoreFilter = (
+        school: School,
+        range: { min?: number; max?: number },
+      ) => {
         const score = school.fit_score;
         if (score === null || score === undefined) return false;
         const min = range?.min ?? 0;
@@ -369,7 +401,8 @@ describe("School Filtering - User Story 3.3", () => {
       };
 
       const filtered = schools.filter(
-        (s) => fitScoreFilter(s, { min: 70, max: 100 }) && divisionFilter(s, "D2"),
+        (s) =>
+          fitScoreFilter(s, { min: 70, max: 100 }) && divisionFilter(s, "D2"),
       );
 
       filtered.forEach((school) => {
@@ -382,7 +415,10 @@ describe("School Filtering - User Story 3.3", () => {
     });
 
     it("should return no results when filters exclude all schools", () => {
-      const fitScoreFilter = (school: School, range: { min?: number; max?: number }) => {
+      const fitScoreFilter = (
+        school: School,
+        range: { min?: number; max?: number },
+      ) => {
         const score = school.fit_score;
         if (score === null || score === undefined) return false;
         const min = range?.min ?? 0;
@@ -391,7 +427,9 @@ describe("School Filtering - User Story 3.3", () => {
       };
 
       // Fit score 0-10 is very unlikely in test data (50-100 range)
-      const filtered = schools.filter((s) => fitScoreFilter(s, { min: 0, max: 10 }));
+      const filtered = schools.filter((s) =>
+        fitScoreFilter(s, { min: 0, max: 10 }),
+      );
       expect(filtered.length).toBe(0);
     });
   });
@@ -406,7 +444,10 @@ describe("School Filtering - User Story 3.3", () => {
       const homeLocation = { latitude: 37.7749, longitude: -122.4194 };
       const cache = mockDistanceCache(testSchools, homeLocation);
 
-      const fitScoreFilter = (school: School, range: { min?: number; max?: number }) => {
+      const fitScoreFilter = (
+        school: School,
+        range: { min?: number; max?: number },
+      ) => {
         const score = school.fit_score;
         if (score === null || score === undefined) return false;
         const min = range?.min ?? 0;
@@ -498,7 +539,10 @@ describe("School Filtering - User Story 3.3", () => {
     it("should handle schools with all null/undefined fit scores", () => {
       const schoolsNoScores = schools.map((s) => ({ ...s, fit_score: null }));
 
-      const fitScoreFilter = (school: School, range: { min?: number; max?: number }) => {
+      const fitScoreFilter = (
+        school: School,
+        range: { min?: number; max?: number },
+      ) => {
         const score = school.fit_score;
         if (score === null || score === undefined) return false;
         const min = range?.min ?? 0;
@@ -506,12 +550,17 @@ describe("School Filtering - User Story 3.3", () => {
         return score >= min && score <= max;
       };
 
-      const filtered = schoolsNoScores.filter((s) => fitScoreFilter(s, { min: 0, max: 100 }));
+      const filtered = schoolsNoScores.filter((s) =>
+        fitScoreFilter(s, { min: 0, max: 100 }),
+      );
       expect(filtered.length).toBe(0);
     });
 
     it("should handle min > max for fit score gracefully", () => {
-      const filterFn = (school: School, range: { min?: number; max?: number }) => {
+      const filterFn = (
+        school: School,
+        range: { min?: number; max?: number },
+      ) => {
         const score = school.fit_score;
         if (score === null || score === undefined) return false;
         const min = range?.min ?? 0;
@@ -521,7 +570,9 @@ describe("School Filtering - User Story 3.3", () => {
       };
 
       // min=100, max=50 will result in no schools matching
-      const filtered = schools.filter((s) => filterFn(s, { min: 100, max: 50 }));
+      const filtered = schools.filter((s) =>
+        filterFn(s, { min: 100, max: 50 }),
+      );
       expect(filtered.length).toBe(0);
     });
   });

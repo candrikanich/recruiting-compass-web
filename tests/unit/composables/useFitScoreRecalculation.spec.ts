@@ -16,7 +16,7 @@ vi.stubGlobal(
       }
     }
     throw new Error("Not mocked");
-  })
+  }),
 );
 
 describe("useFitScoreRecalculation", () => {
@@ -38,7 +38,7 @@ describe("useFitScoreRecalculation", () => {
 
     expect(fetchSpy).toHaveBeenCalledWith(
       "/api/athlete/fit-scores/recalculate-all",
-      { method: "POST" }
+      { method: "POST" },
     );
   });
 

@@ -1,7 +1,9 @@
 # Navigation UI Updates: Plan & Implementation Guide
 
 ## Overview
+
 Addressing three interconnected navigation issues:
+
 1. **Bug Fix**: Performance and Analytics links in "More" dropdown not navigating
 2. **Feature**: Move Search icon to header (next to Notifications)
 3. **Enhancement**: Add icons to main navigation items with hover tooltips
@@ -11,18 +13,22 @@ Addressing three interconnected navigation issues:
 ## Issue Analysis
 
 ### Issue 1: Performance & Analytics Navigation Broken ❌
+
 **Status**: Root cause identified
+
 - Both pages exist and are properly routed
 - Links are in `HeaderNavMore.vue` moreItems array
 - **Root Cause**: Likely a timing issue where dropdown closes before navigation completes, or the routes aren't being recognized properly
 - **Impact**: Users can't access Performance or Analytics pages from the More dropdown
 
 ### Issue 2: Search Icon in Wrong Location
+
 **Current**: Search is hidden in "More" dropdown
 **Desired**: Icon button next to NotificationCenter in header
 **Benefit**: Search is a primary feature; should be easily discoverable in header
 
 ### Issue 3: Main Nav Items Lack Icons
+
 **Current**: Text-only labels (Dashboard, Schools, Coaches, Interactions, Events, Timeline)
 **Desired**: Icon-only buttons with hover tooltips, matching the More dropdown style
 **Benefit**: More visual hierarchy, matches modern UI patterns, icons already exist in navItems array
@@ -32,6 +38,7 @@ Addressing three interconnected navigation issues:
 ## Solution Architecture
 
 ### Navigation Structure After Changes
+
 ```
 Header.vue
 ├── navItems (12 items with icons)
@@ -46,6 +53,7 @@ Header.vue
 ```
 
 ### Icon Styling Pattern
+
 - **Library**: Heroicons v24 outline (already in use)
 - **Size**: w-5 h-5 (header), w-4 h-4 (dropdown)
 - **Active State**: `bg-brand-blue-100 text-brand-blue-700`
@@ -63,6 +71,7 @@ Header.vue
 **Issue**: The dropdown closes before navigation fires, or navigation is blocked
 
 **Solution**:
+
 - Ensure `@click="isOpen = false"` executes after navigation
 - Add `prevent` modifier if needed: `@click.prevent.stop="..."`
 - Verify route paths are exactly `/performance` and `/analytics`
@@ -80,6 +89,7 @@ Header.vue
 **Location**: Between NotificationCenter (line 35) and HeaderProfile (line 36)
 
 **Changes**:
+
 ```vue
 <!-- Add after NotificationCenter component -->
 <NuxtLink
@@ -103,11 +113,13 @@ Header.vue
 **File**: `/components/Header/HeaderNavMore.vue`
 
 **Changes**:
+
 - Remove line 92: `{ to: "/search", label: "Search", icon: MagnifyingGlassIcon },`
 - Update `moreItems` to have 5 items instead of 6
 - `isAnyChildActive` computed will still work correctly
 
 **Result**: moreItems contains:
+
 1. Performance
 2. Offers
 3. Documents
@@ -123,7 +135,9 @@ Header.vue
 **Approach**: Define icons locally in the component
 
 **Changes**:
+
 1. Import Heroicons at the top:
+
 ```typescript
 import {
   HomeIcon,
@@ -136,6 +150,7 @@ import {
 ```
 
 2. Create navItems array in component:
+
 ```typescript
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: HomeIcon },
@@ -148,6 +163,7 @@ const navItems = [
 ```
 
 3. Update template to render icons with text:
+
 ```vue
 <NuxtLink
   v-for="item in navItems"
@@ -175,6 +191,7 @@ const navItems = [
 **File**: `/components/Common/Tooltip.vue` (new)
 
 Simple tooltip component for hover labels:
+
 ```vue
 <template>
   <div class="relative inline-block">
@@ -197,6 +214,7 @@ const showTooltip = ref(false);
 ```
 
 **Usage in HeaderNav**:
+
 ```vue
 <Tooltip :text="item.label">
   <NuxtLink ...>
@@ -210,12 +228,14 @@ const showTooltip = ref(false);
 ## Testing Plan
 
 ### Unit Tests
+
 - [ ] Test `isActive()` function with various routes
 - [ ] Test navigation to `/performance` and `/analytics`
 - [ ] Test icon rendering with correct Heroicons components
 - [ ] Test tooltip display on hover
 
 ### E2E Tests
+
 - [ ] Navigate through all main nav items
 - [ ] Click More dropdown and verify all items
 - [ ] Click Search icon, verify `/search` route
@@ -223,6 +243,7 @@ const showTooltip = ref(false);
 - [ ] Test mobile view shows all nav items with icons
 
 ### Manual Testing
+
 - [ ] Desktop: Hover over main nav icons, verify tooltips
 - [ ] Click Performance → verify page loads
 - [ ] Click Analytics → verify page loads
@@ -234,31 +255,32 @@ const showTooltip = ref(false);
 
 ## Files to Modify
 
-| File | Changes | Priority |
-|------|---------|----------|
-| `/components/Header.vue` | Add Search icon button to right side | HIGH |
-| `/components/Header/HeaderNav.vue` | Add icons to 6 main nav items | HIGH |
-| `/components/Header/HeaderNavMore.vue` | Remove Search item (5 items now) | HIGH |
-| `/components/Common/Tooltip.vue` | Create new tooltip component | MEDIUM |
+| File                                   | Changes                              | Priority |
+| -------------------------------------- | ------------------------------------ | -------- |
+| `/components/Header.vue`               | Add Search icon button to right side | HIGH     |
+| `/components/Header/HeaderNav.vue`     | Add icons to 6 main nav items        | HIGH     |
+| `/components/Header/HeaderNavMore.vue` | Remove Search item (5 items now)     | HIGH     |
+| `/components/Common/Tooltip.vue`       | Create new tooltip component         | MEDIUM   |
 
 ---
 
 ## Potential Issues & Mitigations
 
-| Issue | Mitigation |
-|-------|-----------|
-| Navigation doesn't work | Verify routes exist, check browser console for errors |
-| Icons don't render | Verify Heroicons imports, use `<component :is>` syntax |
-| Dropdown closes too fast | Check event handling, ensure click fires before dropdown closes |
-| Mobile layout breaks | Test responsive design, ensure flex wrapping works |
-| Active state incorrect | Verify `isActive()` logic handles all route patterns |
-| Tooltip positioning off-screen | Use CSS position calculations or library like Popper.js |
+| Issue                          | Mitigation                                                      |
+| ------------------------------ | --------------------------------------------------------------- |
+| Navigation doesn't work        | Verify routes exist, check browser console for errors           |
+| Icons don't render             | Verify Heroicons imports, use `<component :is>` syntax          |
+| Dropdown closes too fast       | Check event handling, ensure click fires before dropdown closes |
+| Mobile layout breaks           | Test responsive design, ensure flex wrapping works              |
+| Active state incorrect         | Verify `isActive()` logic handles all route patterns            |
+| Tooltip positioning off-screen | Use CSS position calculations or library like Popper.js         |
 
 ---
 
 ## Unresolved Questions
 
 None at this time - clarifications received from user:
+
 1. Performance/Analytics: "Nothing happens" = navigation is broken, not just page loading
 2. Search placement: "Only in header" = remove from More menu
 3. Icon display: "Icons only with hover tooltip" = icon-only design with text on hover

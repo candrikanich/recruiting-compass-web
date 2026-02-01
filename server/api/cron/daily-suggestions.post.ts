@@ -55,11 +55,7 @@ export default defineEventHandler(async (event) => {
     // Process each athlete sequentially to avoid overload
     for (const athlete of athletes) {
       try {
-        await triggerSuggestionUpdate(
-          supabase,
-          athlete.id,
-          "daily_refresh",
-        );
+        await triggerSuggestionUpdate(supabase, athlete.id, "daily_refresh");
         result.updated++;
       } catch (error) {
         result.failed++;
@@ -67,7 +63,10 @@ export default defineEventHandler(async (event) => {
           athleteId: athlete.id,
           error: error instanceof Error ? error.message : "Unknown error",
         });
-        console.error(`Failed to update suggestions for athlete ${athlete.id}:`, error);
+        console.error(
+          `Failed to update suggestions for athlete ${athlete.id}:`,
+          error,
+        );
       }
     }
 
@@ -80,7 +79,9 @@ export default defineEventHandler(async (event) => {
     throw createError({
       statusCode: 500,
       message:
-        error instanceof Error ? error.message : "Failed to run daily suggestions cron job",
+        error instanceof Error
+          ? error.message
+          : "Failed to run daily suggestions cron job",
     });
   }
 });

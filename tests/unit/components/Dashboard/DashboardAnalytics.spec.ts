@@ -29,7 +29,9 @@ const createMockTask = (overrides = {}) => ({
   ...overrides,
 });
 
-const createMockInteraction = (overrides: Partial<Interaction> = {}): Interaction => ({
+const createMockInteraction = (
+  overrides: Partial<Interaction> = {},
+): Interaction => ({
   id: `int-1`,
   school_id: "school-1",
   type: "email",
@@ -191,7 +193,9 @@ describe("DashboardAnalytics", () => {
       },
     });
 
-    const contactFreqSection = wrapper.find('[data-testid="contact-frequency-widget"]');
+    const contactFreqSection = wrapper.find(
+      '[data-testid="contact-frequency-widget"]',
+    );
     expect(contactFreqSection.exists()).toBe(true);
   });
 
@@ -260,7 +264,9 @@ describe("DashboardAnalytics", () => {
       props: { upcomingEvents: events },
     });
 
-    const eventItems = wrapper.findAll(".p-3").filter((el) => el.text().includes("Camp"));
+    const eventItems = wrapper
+      .findAll(".p-3")
+      .filter((el) => el.text().includes("Camp"));
     expect(eventItems.length).toBeLessThanOrEqual(3);
   });
 
@@ -270,7 +276,9 @@ describe("DashboardAnalytics", () => {
     });
 
     const links = wrapper.findAll("a");
-    const viewAllLink = links.find((el) => el.text().includes("View All Events"));
+    const viewAllLink = links.find((el) =>
+      el.text().includes("View All Events"),
+    );
     expect(viewAllLink?.exists()).toBe(true);
   });
 
@@ -280,7 +288,9 @@ describe("DashboardAnalytics", () => {
     });
 
     const links = wrapper.findAll("a");
-    const viewAllLink = links.find((el) => el.text().includes("View All Notifications"));
+    const viewAllLink = links.find((el) =>
+      el.text().includes("View All Notifications"),
+    );
     expect(viewAllLink?.exists()).toBe(true);
   });
 
@@ -328,7 +338,9 @@ describe("DashboardAnalytics", () => {
       },
     });
 
-    const contactFreqWidget = wrapper.findComponent({ name: "ContactFrequencyWidget" });
+    const contactFreqWidget = wrapper.findComponent({
+      name: "ContactFrequencyWidget",
+    });
     expect(contactFreqWidget.exists()).toBe(true);
   });
 
@@ -337,7 +349,9 @@ describe("DashboardAnalytics", () => {
       props: { showTasks: true },
     });
 
-    const addTaskButton = wrapper.findAll("button").find((el) => el.text().includes("Add Task"));
+    const addTaskButton = wrapper
+      .findAll("button")
+      .find((el) => el.text().includes("Add Task"));
     expect(addTaskButton?.exists()).toBe(true);
   });
 
@@ -346,7 +360,9 @@ describe("DashboardAnalytics", () => {
       props: { showTasks: true },
     });
 
-    const addTaskButton = wrapper.findAll("button").find((el) => el.text().includes("Add Task"));
+    const addTaskButton = wrapper
+      .findAll("button")
+      .find((el) => el.text().includes("Add Task"));
     expect(addTaskButton?.exists()).toBe(true);
   });
 });

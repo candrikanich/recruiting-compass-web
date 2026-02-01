@@ -23,17 +23,16 @@
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold text-gray-900">Profile Edit History</h2>
-          <button
-            @click="closeModal"
-            class="text-gray-400 hover:text-gray-600"
-          >
+          <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
             <XIcon class="h-6 w-6" />
           </button>
         </div>
 
         <!-- Loading State -->
         <div v-if="loading" class="flex justify-center py-8">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+          ></div>
         </div>
 
         <!-- Error State -->
@@ -42,7 +41,10 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="history.length === 0" class="text-center py-8 text-gray-500">
+        <div
+          v-else-if="history.length === 0"
+          class="text-center py-8 text-gray-500"
+        >
           No edit history available
         </div>
 
@@ -54,7 +56,9 @@
             class="relative"
           >
             <!-- Timeline dot and line -->
-            <div class="absolute left-0 top-0 bottom-0 flex flex-col items-center">
+            <div
+              class="absolute left-0 top-0 bottom-0 flex flex-col items-center"
+            >
               <div
                 class="w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow"
               ></div>

@@ -8,10 +8,10 @@ The `tests/unit/composables/useInteractions.extended.spec.ts` file had failing t
 
 ```typescript
 // WRONG: mockSupabase is undefined when vi.mock() closure is evaluated
-let mockSupabase: any;  // ← Uninitialized
+let mockSupabase: any; // ← Uninitialized
 
 vi.mock("~/composables/useSupabase", () => ({
-  useSupabase: () => mockSupabase,  // ← Returns undefined
+  useSupabase: () => mockSupabase, // ← Returns undefined
 }));
 
 describe("useInteractions - Extended", () => {
@@ -31,11 +31,11 @@ Initialize `mockSupabase` with a concrete object BEFORE the `vi.mock()` declarat
 ```typescript
 // CORRECT: mockSupabase is initialized before vi.mock()
 const mockSupabase = {
-  from: vi.fn(),  // ← Can be reconfigured per test via mockClear()
+  from: vi.fn(), // ← Can be reconfigured per test via mockClear()
 };
 
 vi.mock("~/composables/useSupabase", () => ({
-  useSupabase: () => mockSupabase,  // ← Returns initialized object
+  useSupabase: () => mockSupabase, // ← Returns initialized object
 }));
 
 describe("useInteractions - Extended", () => {
@@ -52,6 +52,7 @@ describe("useInteractions - Extended", () => {
 ### File: `/tests/unit/composables/useInteractions.extended.spec.ts`
 
 **Change 1: Initialize mockSupabase before vi.mock()**
+
 ```diff
 -let mockSupabase: any;
 -
@@ -72,6 +73,7 @@ describe("useInteractions - Extended", () => {
 ```
 
 **Change 2: Reset mock instead of reassigning**
+
 ```diff
 -    // Create fresh mockSupabase for each test
 -    mockSupabase = {
@@ -87,6 +89,7 @@ describe("useInteractions - Extended", () => {
 ## Verification
 
 ### Before Fix
+
 ```
 Tests:   9 failed | 0 passed (9)
 Failures:
@@ -97,6 +100,7 @@ Failures:
 ```
 
 ### After Fix
+
 ```
 Tests:   9 passed | 0 failed (9)
 File:    tests/unit/composables/useInteractions.extended.spec.ts ✓

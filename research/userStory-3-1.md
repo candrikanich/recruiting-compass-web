@@ -1,6 +1,7 @@
 ## FEATURE 3: SCHOOL TRACKER (CRM-LITE)
 
 ### Story 3.1: Parent Adds Schools to Track List
+
 **As a** parent  
 **I want to** add schools my athlete is interested in  
 **So that** I can track them all in one place
@@ -57,6 +58,7 @@ Feature: Add Schools to Tracking List
 ---
 
 ### Story 3.2: Parent Views School List with Fit Scores
+
 **As a** parent  
 **I want to** see a fit score for each school  
 **So that** I know where my athlete has the best realistic chance
@@ -108,6 +110,7 @@ Feature: School Fit Scoring
 ---
 
 ### Story 3.3: Parent Filters and Sorts Schools
+
 **As a** parent  
 **I want to** filter schools by priority and status  
 **So that** I can focus on the most important ones
@@ -165,6 +168,7 @@ Feature: School Filtering and Sorting
 ---
 
 ### Story 3.4: Parent Sets School Priority and Status
+
 **As a** parent  
 **I want to** mark schools as priority tiers and track their status  
 **So that** I can focus on the most important schools
@@ -217,6 +221,7 @@ Feature: School Priority and Status Tracking
 ---
 
 ### Story 3.5: Parent Views and Adds School Notes
+
 **As a** parent  
 **I want to** add and view notes about each school  
 **So that** I remember key details about why we're interested

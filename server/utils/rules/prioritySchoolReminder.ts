@@ -5,7 +5,9 @@ export const prioritySchoolReminderRule: Rule = {
   id: "priority-school-reminder",
   name: "Priority School Check-In",
   description: "Top priority school needs attention",
-  async evaluate(context: RuleContext): Promise<SuggestionData | SuggestionData[] | null> {
+  async evaluate(
+    context: RuleContext,
+  ): Promise<SuggestionData | SuggestionData[] | null> {
     const priorityASchools = context.schools.filter((s: unknown) => {
       const school = s as Record<string, unknown>;
       return school.priority === "A";

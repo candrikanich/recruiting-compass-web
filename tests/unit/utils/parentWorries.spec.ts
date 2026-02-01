@@ -71,7 +71,12 @@ describe("parentWorries", () => {
     it("should return worries with valid category", () => {
       const worries = getWorrysByCategory("junior", "recruiting");
       worries.forEach((worry) => {
-        expect(["recruiting", "academics", "mental_health", "timeline"]).toContain(worry.category);
+        expect([
+          "recruiting",
+          "academics",
+          "mental_health",
+          "timeline",
+        ]).toContain(worry.category);
       });
     });
   });

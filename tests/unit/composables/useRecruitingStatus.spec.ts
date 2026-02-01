@@ -23,13 +23,8 @@ describe("useRecruitingStatus", () => {
 
   describe("Initialization", () => {
     it("should initialize with default state", () => {
-      const {
-        statusScore,
-        statusLabel,
-        currentPhase,
-        loading,
-        error,
-      } = useRecruitingStatus();
+      const { statusScore, statusLabel, currentPhase, loading, error } =
+        useRecruitingStatus();
 
       expect(statusScore.value).toBe(0);
       expect(statusLabel.value).toBe("on_track");

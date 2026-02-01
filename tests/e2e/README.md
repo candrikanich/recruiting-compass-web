@@ -19,6 +19,7 @@ nano .env.test
 ```
 
 Required environment variables:
+
 - `NUXT_PUBLIC_SUPABASE_URL` - Test Supabase project URL
 - `NUXT_PUBLIC_SUPABASE_ANON_KEY` - Test Supabase anon key
 - `SUPABASE_SERVICE_ROLE_KEY` - Test Supabase service role key (for seeding)
@@ -92,27 +93,27 @@ tests/e2e/
 
 Pre-seeded test accounts (created during database seeding):
 
-| Role   | Email              | Password       | Use Case                    |
-| ------ | ------------------ | -------------- | --------------------------- |
-| Player | `player@test.com`  | `TestPass123!` | Athlete/player workflows    |
-| Parent | `parent@test.com`  | `TestPass123!` | Parent account linking      |
-| Admin  | `admin@test.com`   | `TestPass123!` | Admin operations (if needed) |
+| Role   | Email             | Password       | Use Case                     |
+| ------ | ----------------- | -------------- | ---------------------------- |
+| Player | `player@test.com` | `TestPass123!` | Athlete/player workflows     |
+| Parent | `parent@test.com` | `TestPass123!` | Parent account linking       |
+| Admin  | `admin@test.com`  | `TestPass123!` | Admin operations (if needed) |
 
 ### Using Pre-Seeded Accounts
 
 ```typescript
-import { authFixture } from '../fixtures/auth.fixture';
+import { authFixture } from "../fixtures/auth.fixture";
 
-test('player workflow', async ({ page }) => {
+test("player workflow", async ({ page }) => {
   // Fast login with pre-seeded account (< 1 second)
-  await authFixture.loginFast(page, 'player');
+  await authFixture.loginFast(page, "player");
 
   // Test logic...
 });
 
-test('parent workflow', async ({ page }) => {
+test("parent workflow", async ({ page }) => {
   // Login as parent
-  await authFixture.loginFast(page, 'parent');
+  await authFixture.loginFast(page, "parent");
 
   // Test logic...
 });
@@ -123,11 +124,12 @@ test('parent workflow', async ({ page }) => {
 For tests that need unique users per run:
 
 ```typescript
-import { authFixture } from '../fixtures/auth.fixture';
+import { authFixture } from "../fixtures/auth.fixture";
 
-test('unique user workflow', async ({ page }) => {
+test("unique user workflow", async ({ page }) => {
   // Creates fresh user with timestamp-based email
-  const { email, password, displayName } = await authFixture.signupNewUser(page);
+  const { email, password, displayName } =
+    await authFixture.signupNewUser(page);
 
   // Test logic...
 });
@@ -147,6 +149,7 @@ When `npm run db:seed:test` runs, it:
 ### Initial Data
 
 **Schools (5 total):**
+
 - Duke University (D1, ACC, researching)
 - Boston College (D1, ACC, interested)
 - University of Florida (D1, SEC, researching)
@@ -154,6 +157,7 @@ When `npm run db:seed:test` runs, it:
 - University of Arizona (D1, Pac-12, interested)
 
 **Coaches (5 total):**
+
 - Distributed across schools
 - Various roles: Head Coach, Assistant Coach, Recruiting Coordinator
 
@@ -183,6 +187,7 @@ When `npm run db:seed:test` runs, it:
 ### Tier 1: Critical (22 files)
 
 Core functionality that must work:
+
 - Authentication (login, signup, logout)
 - CRUD operations (coaches, schools, interactions)
 - Critical user workflows
@@ -190,6 +195,7 @@ Core functionality that must work:
 - Communication templates
 
 **Examples:**
+
 - `auth.spec.ts` - Login/signup flows
 - `coaches-crud.spec.ts` - Create, read, update, delete coaches
 - `schools-crud.spec.ts` - Create, read, update, delete schools
@@ -197,12 +203,14 @@ Core functionality that must work:
 ### Tier 2: Important (6 files)
 
 Important features with good coverage:
+
 - Filtering and search
 - Analytics and performance
 - Communication workflows
 - User preferences
 
 **Examples:**
+
 - `search-and-filters.spec.ts`
 - `analytics.spec.ts`
 - `coaches-communication.spec.ts`
@@ -210,11 +218,13 @@ Important features with good coverage:
 ### Tier 3: Nice-to-Have (2 files)
 
 Enhancement features:
+
 - Error recovery
 - Edge cases
 - Performance optimization
 
 **Examples:**
+
 - `error-recovery.spec.ts`
 - `documents-events.spec.ts`
 
@@ -223,9 +233,9 @@ Enhancement features:
 Tests use the Page Object Model pattern for maintainability:
 
 ```typescript
-import { DashboardPage } from '../pages/DashboardPage';
+import { DashboardPage } from "../pages/DashboardPage";
 
-test('dashboard displays stats', async ({ page }) => {
+test("dashboard displays stats", async ({ page }) => {
   const dashboard = new DashboardPage(page);
 
   await dashboard.goto();
@@ -236,6 +246,7 @@ test('dashboard displays stats', async ({ page }) => {
 ```
 
 **Page classes provide:**
+
 - Consistent selectors (data-testid prioritized)
 - Common element interactions
 - URL validation
@@ -268,15 +279,18 @@ await page.click('button:has-text("Create School")');
 Phase 1 completed - data-testid attributes added to:
 
 ✅ **Task Management** (`pages/tasks/index.vue`)
+
 - `data-testid="task-item"` - Task list item container
 - `data-testid="task-checkbox-{id}"` - Task completion checkbox
 - `data-testid="task-title-{id}"` - Task title button
 
 ✅ **Player Details** (`pages/settings/player-details.vue`)
+
 - `data-testid="gpa-input"` - GPA input field
 - `data-testid="save-player-details-button"` - Save button
 
 ✅ **Coaching Philosophy** (`components/School/CoachingPhilosophy.vue`)
+
 - `data-testid="coaching-philosophy-section"` - Section container
 - `data-testid="coaching-philosophy-edit-btn"` - Edit button
 - `data-testid="coaching-style-textarea"` - Coaching style textarea
@@ -294,10 +308,10 @@ Tests run automatically on every commit to `main` or merge request:
 
 ```yaml
 stages:
-  - install      # Install dependencies and browsers
-  - lint         # ESLint and type checking
-  - test         # Unit tests and E2E tests
-  - build        # Production build
+  - install # Install dependencies and browsers
+  - lint # ESLint and type checking
+  - test # Unit tests and E2E tests
+  - build # Production build
 ```
 
 **Required GitLab CI/CD Variables:**
@@ -504,6 +518,7 @@ When adding new tests:
 ## Contact
 
 For questions about E2E test infrastructure:
+
 - Check this README
 - Review existing tests for patterns
 - Ask in team chat or GitHub issues

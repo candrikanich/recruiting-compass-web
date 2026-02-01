@@ -21,9 +21,7 @@ describe("officialVisitRule", () => {
   describe("grade level filtering", () => {
     it("should NOT apply to sophomores (grade 10)", async () => {
       mockContext.athlete = { grade_level: 10 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
 
       const result = await officialVisitRule.evaluate(mockContext);
       expect(result).toBeNull();
@@ -31,9 +29,7 @@ describe("officialVisitRule", () => {
 
     it("should apply to juniors (grade 11)", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await officialVisitRule.evaluate(mockContext);
@@ -42,9 +38,7 @@ describe("officialVisitRule", () => {
 
     it("should apply to seniors (grade 12)", async () => {
       mockContext.athlete = { grade_level: 12 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await officialVisitRule.evaluate(mockContext);
@@ -66,9 +60,7 @@ describe("officialVisitRule", () => {
 
     it("should evaluate when priority A schools exist", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await officialVisitRule.evaluate(mockContext);
@@ -77,9 +69,7 @@ describe("officialVisitRule", () => {
 
     it("should evaluate when priority B schools exist", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "B" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "B" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await officialVisitRule.evaluate(mockContext);
@@ -90,9 +80,7 @@ describe("officialVisitRule", () => {
   describe("official visit tracking", () => {
     it("should return suggestion when 0 visits logged", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await officialVisitRule.evaluate(mockContext);
@@ -101,9 +89,7 @@ describe("officialVisitRule", () => {
 
     it("should return suggestion when 1 visit logged", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [
         {
           id: "int-1",
@@ -117,9 +103,7 @@ describe("officialVisitRule", () => {
 
     it("should NOT return suggestion when 2+ visits logged", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [
         { id: "int-1", interaction_type: "official_visit" },
         { id: "int-2", interaction_type: "official_visit" },
@@ -131,9 +115,7 @@ describe("officialVisitRule", () => {
 
     it("should match visit-related interaction types (case insensitive)", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [
         { id: "int-1", interaction_type: "Campus Visit" },
         { id: "int-2", interaction_type: "OFFICIAL" },
@@ -145,9 +127,7 @@ describe("officialVisitRule", () => {
 
     it("should distinguish official visits from regular interactions", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [
         { id: "int-1", interaction_type: "email" },
         { id: "int-2", interaction_type: "phone_call" },
@@ -162,9 +142,7 @@ describe("officialVisitRule", () => {
   describe("urgency differentiation", () => {
     it("should be medium urgency for juniors", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await officialVisitRule.evaluate(mockContext);
@@ -174,9 +152,7 @@ describe("officialVisitRule", () => {
 
     it("should be high urgency for seniors", async () => {
       mockContext.athlete = { grade_level: 12 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await officialVisitRule.evaluate(mockContext);
@@ -188,9 +164,7 @@ describe("officialVisitRule", () => {
   describe("action type", () => {
     it("should return log_interaction action", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await officialVisitRule.evaluate(mockContext);
@@ -202,9 +176,7 @@ describe("officialVisitRule", () => {
   describe("edge cases", () => {
     it("should handle missing grade_level", async () => {
       mockContext.athlete = {};
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
 
       const result = await officialVisitRule.evaluate(mockContext);
       expect(result).toBeNull();
@@ -220,9 +192,7 @@ describe("officialVisitRule", () => {
 
     it("should handle interactions with missing interaction_type", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [
         { id: "int-1" }, // No interaction_type
       ] as unknown[];

@@ -228,7 +228,6 @@ const autoFilledFields = reactive({
   conference: false,
 });
 
-
 const handleCollegeSelect = async (college: CollegeSearchResult) => {
   selectedCollege.value = college;
 

@@ -19,7 +19,9 @@ export const eventFollowUpRule: Rule = {
   id: "event-follow-up",
   name: "Event Follow-Up Needed",
   description: "Attended event but no follow-up interaction logged",
-  async evaluate(context: RuleContext): Promise<SuggestionData | SuggestionData[] | null> {
+  async evaluate(
+    context: RuleContext,
+  ): Promise<SuggestionData | SuggestionData[] | null> {
     const recentEvents = context.events.filter((e) => {
       const event = e as Event;
       const eventDate = new Date(event.event_date);

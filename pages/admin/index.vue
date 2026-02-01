@@ -3,7 +3,10 @@
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
-        <NuxtLink to="/" class="text-blue-600 hover:text-blue-700 mb-4 inline-block">
+        <NuxtLink
+          to="/"
+          class="text-blue-600 hover:text-blue-700 mb-4 inline-block"
+        >
           ← Back to App
         </NuxtLink>
         <h1 class="text-4xl font-bold text-slate-900 mb-2">Admin Dashboard</h1>
@@ -18,7 +21,7 @@
             'px-4 py-2 font-medium rounded-lg transition',
             activeTab === 'users'
               ? 'bg-blue-600 text-white'
-              : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+              : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50',
           ]"
         >
           Users ({{ users.length }})
@@ -26,12 +29,18 @@
       </div>
 
       <!-- Users Section -->
-      <div v-if="activeTab === 'users'" class="bg-white rounded-lg shadow-md p-6">
+      <div
+        v-if="activeTab === 'users'"
+        class="bg-white rounded-lg shadow-md p-6"
+      >
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-bold text-slate-900">Users</h2>
 
           <!-- Action Toolbar (moved to top) -->
-          <div v-if="!loading && users.length > 0" class="flex items-center gap-4">
+          <div
+            v-if="!loading && users.length > 0"
+            class="flex items-center gap-4"
+          >
             <!-- Select mode toggle -->
             <button
               @click="toggleSelectMode"
@@ -39,7 +48,7 @@
                 'px-4 py-2 rounded-lg font-medium transition',
                 isSelectMode
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                  : 'bg-slate-200 text-slate-700 hover:bg-slate-300',
               ]"
               data-testid="select-mode-toggle"
             >
@@ -59,7 +68,10 @@
 
             <!-- Selected count -->
             <span v-if="selectedCount > 0" class="text-slate-700 font-medium">
-              {{ selectedCount }} user{{ selectedCount !== 1 ? "s" : "" }} selected
+              {{ selectedCount }} user{{
+                selectedCount !== 1 ? "s" : ""
+              }}
+              selected
             </span>
           </div>
         </div>
@@ -70,7 +82,10 @@
         </div>
 
         <!-- Error State -->
-        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div
+          v-else-if="error"
+          class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+        >
           <p class="text-red-800">{{ error }}</p>
         </div>
 
@@ -88,11 +103,21 @@
                     class="rounded"
                   />
                 </th>
-                <th class="text-left py-3 px-4 font-semibold text-slate-900">Email</th>
-                <th class="text-left py-3 px-4 font-semibold text-slate-900">Name</th>
-                <th class="text-left py-3 px-4 font-semibold text-slate-900">Role</th>
-                <th class="text-left py-3 px-4 font-semibold text-slate-900">Admin</th>
-                <th class="text-left py-3 px-4 font-semibold text-slate-900">Actions</th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">
+                  Email
+                </th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">
+                  Name
+                </th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">
+                  Role
+                </th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">
+                  Admin
+                </th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -101,7 +126,7 @@
                 :key="user.id"
                 :class="[
                   'border-b border-slate-100 hover:bg-slate-50',
-                  selectedUserEmails.has(user.email) ? 'bg-blue-50' : ''
+                  selectedUserEmails.has(user.email) ? 'bg-blue-50' : '',
                 ]"
               >
                 <td v-if="isSelectMode" class="py-3 px-4">
@@ -113,12 +138,18 @@
                     data-testid="user-checkbox"
                     class="rounded"
                   />
-                  <span v-else class="text-slate-400 text-xs font-medium">Current</span>
+                  <span v-else class="text-slate-400 text-xs font-medium"
+                    >Current</span
+                  >
                 </td>
                 <td class="py-3 px-4">
-                  <code class="text-sm bg-slate-100 px-2 py-1 rounded">{{ user.email }}</code>
+                  <code class="text-sm bg-slate-100 px-2 py-1 rounded">{{
+                    user.email
+                  }}</code>
                 </td>
-                <td class="py-3 px-4 text-slate-700">{{ user.full_name || "—" }}</td>
+                <td class="py-3 px-4 text-slate-700">
+                  {{ user.full_name || "—" }}
+                </td>
                 <td class="py-3 px-4 text-slate-700">{{ user.role }}</td>
                 <td class="py-3 px-4">
                   <span
@@ -132,7 +163,10 @@
                 <td class="py-3 px-4">
                   <button
                     @click="deleteUser(user.email)"
-                    :disabled="user.email === currentUserEmailComputed || deleting === user.email"
+                    :disabled="
+                      user.email === currentUserEmailComputed ||
+                      deleting === user.email
+                    "
                     class="text-red-600 hover:text-red-800 disabled:text-slate-400 disabled:cursor-not-allowed font-medium transition"
                   >
                     {{ deleting === user.email ? "Deleting..." : "Delete" }}
@@ -142,12 +176,14 @@
             </tbody>
           </table>
 
-          <div v-if="users.length === 0" class="text-center py-12 text-slate-500">
+          <div
+            v-if="users.length === 0"
+            class="text-center py-12 text-slate-500"
+          >
             No users found
           </div>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -195,7 +231,6 @@ const bulkDeleting = ref(false);
 const showBulkDeleteModal = ref(false);
 const currentUserEmail = ref<string>("");
 
-
 const currentUserEmailComputed = computed(() => {
   const sessionValue = session.value;
   const email = sessionValue?.user?.email || currentUserEmail.value;
@@ -211,11 +246,11 @@ const selectableUsers = computed(() =>
 
 const selectedCount = computed(() => selectedUserEmails.value.size);
 
-const allSelected = computed(() =>
-  selectableUsers.value.length > 0 &&
-  selectedUserEmails.value.size === selectableUsers.value.length,
+const allSelected = computed(
+  () =>
+    selectableUsers.value.length > 0 &&
+    selectedUserEmails.value.size === selectableUsers.value.length,
 );
-
 
 const loadUsers = async () => {
   loading.value = true;
@@ -249,7 +284,10 @@ const loadUsers = async () => {
       (u) => u.email !== currentUserEmail.value,
     );
 
-    console.log("[Admin] Filtered users (excluding current):", filteredUsers.length);
+    console.log(
+      "[Admin] Filtered users (excluding current):",
+      filteredUsers.length,
+    );
 
     users.value = filteredUsers;
   } catch (err) {
@@ -293,7 +331,11 @@ const deleteUser = async (email: string) => {
     return;
   }
 
-  if (!confirm(`Are you sure you want to delete ${email}? This action cannot be undone.`)) {
+  if (
+    !confirm(
+      `Are you sure you want to delete ${email}? This action cannot be undone.`,
+    )
+  ) {
     return;
   }
 
@@ -320,7 +362,8 @@ const deleteUser = async (email: string) => {
       showToast(`User ${email} deleted successfully`, "success");
     }
   } catch (err) {
-    const errMessage = err instanceof Error ? err.message : "Failed to delete user";
+    const errMessage =
+      err instanceof Error ? err.message : "Failed to delete user";
     error.value = errMessage;
     showToast(errMessage, "error");
     console.error(errMessage, err);
@@ -373,7 +416,8 @@ const bulkDeleteUsers = async () => {
       error.value = `Failed to delete:\n${errorDetails}`;
     }
   } catch (err) {
-    const errMessage = err instanceof Error ? err.message : "Failed to bulk delete users";
+    const errMessage =
+      err instanceof Error ? err.message : "Failed to bulk delete users";
     error.value = errMessage;
     showToast(errMessage, "error");
     console.error(errMessage, err);

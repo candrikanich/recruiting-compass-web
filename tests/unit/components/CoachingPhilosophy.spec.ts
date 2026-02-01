@@ -94,7 +94,9 @@ describe("CoachingPhilosophy Component", () => {
       schoolId: "test-school-1",
     });
 
-    expect(wrapper.text()).toContain("No coaching philosophy information added yet");
+    expect(wrapper.text()).toContain(
+      "No coaching philosophy information added yet",
+    );
   });
 
   it("toggles edit mode on button click", async () => {
@@ -124,7 +126,9 @@ describe("CoachingPhilosophy Component", () => {
 
     const textareas = wrapper.findAll("textarea");
     expect(textareas[0].element.value).toBe("High-intensity training");
-    expect(textareas[1].element.value).toBe("Early recruiting, all-around athletes");
+    expect(textareas[1].element.value).toBe(
+      "Early recruiting, all-around athletes",
+    );
     expect(textareas[2].element.value).toBe("Regular emails and phone calls");
     expect(textareas[3].element.value).toBe("High MLB draft placement");
     expect(textareas[4].element.value).toBe("Player development focused");
@@ -270,9 +274,13 @@ describe("CoachingPhilosophy Component", () => {
 
     const textareas = wrapper.findAll("textarea");
     expect(textareas[0].attributes("placeholder")).toContain("High-intensity");
-    expect(textareas[1].attributes("placeholder")).toContain("Early recruiting");
+    expect(textareas[1].attributes("placeholder")).toContain(
+      "Early recruiting",
+    );
     expect(textareas[2].attributes("placeholder")).toContain("Regular emails");
-    expect(textareas[3].attributes("placeholder")).toContain("Success with similar athletes");
+    expect(textareas[3].attributes("placeholder")).toContain(
+      "Success with similar athletes",
+    );
   });
 
   it("displays labels for each field in edit mode", async () => {

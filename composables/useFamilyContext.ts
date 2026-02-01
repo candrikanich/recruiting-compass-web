@@ -18,7 +18,7 @@ export const useFamilyContext = () => {
   if (!familyContextInstance) {
     console.warn(
       "[useFamilyContext] Creating singleton - injection should be preferred! " +
-      "Check that activeFamily is being provided at app.vue level."
+        "Check that activeFamily is being provided at app.vue level.",
     );
     familyContextInstance = useActiveFamily();
   }

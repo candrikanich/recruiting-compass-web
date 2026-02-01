@@ -45,6 +45,7 @@ Migration 022 had problematic SELECT statements that don't work in Supabase migr
 After migration 022 succeeds, run these validation queries:
 
 **Query 1: Check for missing family_unit_id**
+
 ```sql
 -- Should return all zeros (no rows missing family_unit_id)
 SELECT
@@ -69,6 +70,7 @@ SELECT 'performance_metrics', COUNT(*) FROM performance_metrics WHERE family_uni
 ---
 
 **Query 2: Verify family structure (1:1 student:family)**
+
 ```sql
 -- Each student should have exactly 1 family
 SELECT
@@ -83,6 +85,7 @@ FROM family_units;
 ---
 
 **Query 3: Check for data integrity issues**
+
 ```sql
 -- Should return 0 rows if all families are valid
 -- Returns any families that don't have exactly 1 student
@@ -101,6 +104,7 @@ HAVING COUNT(*) < 1 OR SUM(CASE WHEN role = 'student' THEN 1 ELSE 0 END) != 1;
 ---
 
 **Query 4: Summary (shows what was created)**
+
 ```sql
 -- Overview of migration success
 SELECT
@@ -143,15 +147,18 @@ npm run lint
 ## Troubleshooting
 
 ### Error: "column does not exist"
+
 - **Cause:** Migration 021 didn't apply successfully
 - **Fix:** Run migration 021 again, check for error messages
 - **Verify:** Run Query 2 (family_units) - if it fails, 021 didn't complete
 
 ### Error: "relation does not exist"
+
 - **Cause:** One of the migrations failed
 - **Fix:** Check migration execution order (021 must run before 022)
 
 ### Validation queries return unexpected results
+
 - **Cause:** Data migration didn't complete properly
 - **Fix:**
   1. Check Supabase Activity Log for errors
@@ -159,6 +166,7 @@ npm run lint
   3. Run migration 022 again
 
 ### Too many rows still missing family_unit_id
+
 - **Cause:** Backfill didn't complete or had permission errors
 - **Fix:**
   1. Verify current user has adequate permissions
@@ -172,6 +180,7 @@ npm run lint
 ### Option A: Rollback & Retry
 
 1. Drop new tables:
+
    ```sql
    DROP TABLE IF EXISTS user_notes CASCADE;
    DROP TABLE IF EXISTS family_members CASCADE;
@@ -179,6 +188,7 @@ npm run lint
    ```
 
 2. Remove family_unit_id columns:
+
    ```sql
    ALTER TABLE schools DROP COLUMN IF EXISTS family_unit_id;
    ALTER TABLE coaches DROP COLUMN IF EXISTS family_unit_id;
@@ -186,6 +196,7 @@ npm run lint
    ```
 
 3. Drop helper functions:
+
    ```sql
    DROP FUNCTION IF EXISTS get_user_family_ids();
    DROP FUNCTION IF EXISTS get_primary_family_id();

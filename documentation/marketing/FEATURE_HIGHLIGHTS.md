@@ -7,12 +7,15 @@ Marketing-focused deep dives into key features.
 ## Feature 1: Your 4-Year Recruiting Timeline
 
 ### Headline
+
 **Never Miss a Step: Your Personal 4-Year Recruiting Roadmap**
 
 ### One-Line Description
+
 Follow a proven recruiting timeline from freshman year to commitment, with phase-appropriate tasks and milestone tracking.
 
 ### Feature Overview (2-3 Sentences)
+
 The recruiting process spans four years and can feel overwhelming without a plan. Recruiting Compass breaks down your journey into four phases (Freshman, Sophomore, Junior, Senior), each with recommended tasks and milestones. Know exactly what to focus on at each stage—no guessing, no rushing.
 
 ### Key Benefits
@@ -26,21 +29,25 @@ The recruiting process spans four years and can feel overwhelming without a plan
 ### How It Works (Step-by-Step)
 
 **Phase 1: Freshman Year**
+
 - Focus: Build skills, get on coaches' radars
 - Tasks: Skill development, attend local showcases, start researching schools
 - Milestones: First showcase attended, initial coach contacts
 
 **Phase 2: Sophomore Year**
+
 - Focus: Active outreach, tournament attendance, building relationships
 - Tasks: Send introduction emails, attend summer showcases, add more schools to your list
 - Milestones: 10+ schools identified, first interactions logged
 
 **Phase 3: Junior Year**
+
 - Focus: Peak recruiting period, campus visits, offers incoming
 - Tasks: Schedule campus visits, build relationships with top coaches, understand fit scores
 - Milestones: First offer received, top choices narrowed to 10 schools
 
 **Phase 4: Senior Year**
+
 - Focus: Make your decision, commit to a school
 - Tasks: Official visits to finalists, narrow to top 3-5, commit
 - Milestones: Committed to a school, LOI signed
@@ -49,25 +56,29 @@ The recruiting process spans four years and can feel overwhelming without a plan
 
 **Sarah's Timeline Journey (Freshman to Senior)**
 
-*Freshman (Age 14)*
+_Freshman (Age 14)_
+
 - Started with 12 target schools
 - Attended 2 summer showcases
 - Logged first interactions with coaches
 - Goal: Get on coaches' radars
 
-*Sophomore (Age 15)*
+_Sophomore (Age 15)_
+
 - Added 5 more schools based on fit scores
 - Sent introduction emails to 10 coaches
 - Attended 3 showcases and tournaments
 - Goal: Build coach relationships
 
-*Junior (Age 16)*
+_Junior (Age 16)_
+
 - Visited 3 top-choice campuses
 - Logged 20+ coach interactions
 - Received 2 offers (turned both down)
 - Focused on top 5 schools
 
-*Senior (Age 17)*
+_Senior (Age 17)_
+
 - Official visit to top 3 schools
 - Committed to dream school in November
 - Signed LOI in February
@@ -77,7 +88,7 @@ The recruiting process spans four years and can feel overwhelming without a plan
 
 ### Testimonial
 
-> *"I would have been lost without the timeline. Freshman year I didn't know if I should be emailing coaches. The timeline told me to focus on skill development and showcases. By senior year, I knew exactly what stage I was in and what came next."* — Sarah, Student-Athlete, Class of 2025
+> _"I would have been lost without the timeline. Freshman year I didn't know if I should be emailing coaches. The timeline told me to focus on skill development and showcases. By senior year, I knew exactly what stage I was in and what came next."_ — Sarah, Student-Athlete, Class of 2025
 
 ### Why This Feature Matters
 
@@ -94,12 +105,15 @@ The timeline solves this. It provides structure, clarity, and confidence. Athlet
 ## Feature 2: Data-Driven Fit Scores
 
 ### Headline
+
 **Stop Guessing. Understand School Fit with AI-Powered Matching**
 
 ### One-Line Description
+
 Get a fit score (1-10 scale) for every school based on your academic, athletic, and personal profile.
 
 ### Feature Overview (2-3 Sentences)
+
 With 1,000+ colleges offering baseball, how do you know which ones are actually a good fit? Recruiting Compass analyzes your academics, athleticism, location preferences, and goals to give each school a fit score. No more guessing—understand exactly why a school is (or isn't) right for you.
 
 ### Key Benefits
@@ -115,26 +129,31 @@ With 1,000+ colleges offering baseball, how do you know which ones are actually 
 Fit scores (1-10 scale) consider five factors:
 
 **1. Academic Fit (30%)**
+
 - Your GPA vs. the school's typical student GPA
 - Your test scores vs. admitted students
 - Your major vs. available programs
 
 **2. Athletic Fit (30%)**
+
 - Your stats vs. the team's roster
 - Your position vs. team needs
 - Your improvement trajectory vs. program standards
 
 **3. Location Fit (15%)**
+
 - Distance from home
 - Your stated geographic preferences
 - Regional competitiveness
 
 **4. Program Fit (15%)**
+
 - Team performance and reputation
 - Coaching philosophy (where available)
 - Conference competitiveness
 
 **5. Financial Fit (10%)**
+
 - School's scholarship availability
 - Financial aid offerings
 - Your financial needs
@@ -143,16 +162,17 @@ Fit scores (1-10 scale) consider five factors:
 
 **Comparing Three Schools**
 
-| Metric | Stanford | Arizona State | Cal State Monterey |
-|--------|----------|---------------|--------------------|
-| **Academic** | 9 (excellent) | 7 (good) | 6 (moderate) |
-| **Athletic** | 8 (strong match) | 9 (excellent) | 7 (good) |
-| **Location** | 4 (far) | 8 (preferred region) | 9 (ideal) |
-| **Program** | 9 (top tier) | 8 (strong) | 6 (emerging) |
-| **Financial** | 5 (expensive) | 8 (scholarships) | 8 (affordable) |
-| **Overall Fit** | **7/10 Good Fit** | **8/10 Great Fit** | **7/10 Good Fit** |
+| Metric          | Stanford          | Arizona State        | Cal State Monterey |
+| --------------- | ----------------- | -------------------- | ------------------ |
+| **Academic**    | 9 (excellent)     | 7 (good)             | 6 (moderate)       |
+| **Athletic**    | 8 (strong match)  | 9 (excellent)        | 7 (good)           |
+| **Location**    | 4 (far)           | 8 (preferred region) | 9 (ideal)          |
+| **Program**     | 9 (top tier)      | 8 (strong)           | 6 (emerging)       |
+| **Financial**   | 5 (expensive)     | 8 (scholarships)     | 8 (affordable)     |
+| **Overall Fit** | **7/10 Good Fit** | **8/10 Great Fit**   | **7/10 Good Fit**  |
 
 **What this tells you:**
+
 - Stanford is prestigious but expensive and far—not ideal unless willing to sacrifice location
 - Arizona State is a great all-around fit with good scholarship money and preferred location
 - Cal State Monterey is ideal for location and affordability, but program is less established
@@ -176,7 +196,7 @@ Fit scores (1-10 scale) consider five factors:
 
 ### Testimonial
 
-> *"Fit scores completely changed how I thought about schools. I was fixated on D1 schools, but the algorithm showed me a D2 that was a way better fit. I visited it, loved it, and committed. Best decision I could have made."* — Michael, Student-Athlete, Class of 2024
+> _"Fit scores completely changed how I thought about schools. I was fixated on D1 schools, but the algorithm showed me a D2 that was a way better fit. I visited it, loved it, and committed. Best decision I could have made."_ — Michael, Student-Athlete, Class of 2024
 
 ### Why This Feature Matters
 
@@ -193,12 +213,15 @@ Fit scores level the playing field. Athletes can now make data-driven decisions 
 ## Feature 3: Parent Collaboration & Family Transparency
 
 ### Headline
+
 **Keep Your Family in the Loop: Secure Parent Access to Your Recruiting Progress**
 
 ### One-Line Description
+
 Invite parents to see your schools, coaches, interactions, and timeline in real-time—while you stay in control.
 
 ### Feature Overview (2-3 Sentences)
+
 Recruiting is a family decision, but most families operate in silos—athlete texting coaches, parents hearing about opportunities days later. Recruiting Compass lets you invite parents to see everything in real-time. They get visibility and peace of mind. You stay in control. No more miscommunication.
 
 ### Key Benefits
@@ -212,6 +235,7 @@ Recruiting is a family decision, but most families operate in silos—athlete te
 ### How Parent Accounts Work
 
 **What Parents Can See:**
+
 - ✅ All target schools and coaches
 - ✅ All interactions (emails, calls, visits)
 - ✅ Complete interaction history and timeline
@@ -221,6 +245,7 @@ Recruiting is a family decision, but most families operate in silos—athlete te
 - ✅ Notifications of important milestones
 
 **What Parents Cannot Do:**
+
 - ❌ Edit your information
 - ❌ Add or remove schools/coaches
 - ❌ Log interactions on your behalf
@@ -262,7 +287,7 @@ Friday: Family makes decision together with full information
 
 ### Testimonial
 
-> *"My husband and I were so confused about my daughter's recruiting. With Recruiting Compass, we can see everything happening. We know which coaches are engaged, what offers are on the table, and when deadlines are coming. As a family, we're finally on the same page."* — Maria, Parent, California
+> _"My husband and I were so confused about my daughter's recruiting. With Recruiting Compass, we can see everything happening. We know which coaches are engaged, what offers are on the table, and when deadlines are coming. As a family, we're finally on the same page."_ — Maria, Parent, California
 
 ### Why This Feature Matters
 
@@ -279,12 +304,15 @@ Parent collaboration changes this dynamic. It creates transparency, reduces stre
 ## Feature 4: AI-Powered Suggestions
 
 ### Headline
+
 **Let AI Guide Your Recruiting: Smart Suggestions for Your Next Move**
 
 ### One-Line Description
+
 Get personalized AI recommendations for who to follow up with, which schools to add, and what to focus on next.
 
 ### Feature Overview (2-3 Sentences)
+
 Recruiting generates endless "what-ifs": Should I follow up now or wait? Am I missing schools that fit my profile? What should I focus on this month? Recruiting Compass AI analyzes your profile, interactions, and the recruiting calendar to suggest smart next steps. It's like having a personal recruiting coach.
 
 ### Key Benefits
@@ -298,21 +326,25 @@ Recruiting generates endless "what-ifs": Should I follow up now or wait? Am I mi
 ### Types of Suggestions
 
 **Follow-Up Suggestions**
+
 - "Follow up with Coach Smith (last contact 45 days ago)"
 - Recommended timing: "Good time to reach out this week"
 - Suggested angle: "Mention your recent performance improvement"
 
 **School Suggestions**
+
 - "Consider adding University of Texas—85% fit match"
 - "These 3 D2 schools match your athletic profile"
 - "Expand to JUCO options for better fit"
 
 **Activity Suggestions**
+
 - "Schedule campus visits at your top 3 schools this spring"
 - "Attend 2+ summer showcases to get more exposure"
 - "Update your highlight film (current one is from March)"
 
 **Phase Suggestions**
+
 - "You've completed most Sophomore tasks—ready to advance?"
 - "Focus on campus visits during your Junior phase"
 - "Time to narrow your list to top 10 schools"
@@ -321,22 +353,26 @@ Recruiting generates endless "what-ifs": Should I follow up now or wait? Am I mi
 
 **How AI Suggestions Helped Alex**
 
-*Month 1 (Sophomore Phase):*
+_Month 1 (Sophomore Phase):_
+
 - AI suggests: "Send intro email to Coach Davis at Target School 1"
 - Alex does it
 - Coach responds
 
-*Month 2:*
+_Month 2:_
+
 - AI suggests: "Follow up with Coach Davis (30 days since first contact)"
 - Alex sends update on athletic performance
 - Coach invites Alex to campus visit
 
-*Month 3:*
+_Month 3:_
+
 - AI suggests: "Add these 2 D2 schools (92% fit) to your list"
 - Alex researches them
 - Decides to add 1 school
 
-*Month 4:*
+_Month 4:_
+
 - AI suggests: "Schedule campus visits before Coach Smith gets busy (recruiting window ends May 31)"
 - Alex schedules 3 visits
 - All go great
@@ -346,6 +382,7 @@ Recruiting generates endless "what-ifs": Should I follow up now or wait? Am I mi
 ### How AI Gets Smarter
 
 The AI improves by learning:
+
 - Your interaction patterns (which coaches you engage with most)
 - Your preferences (which divisions/regions you're interested in)
 - Your response to suggestions (which ones you act on)
@@ -356,7 +393,7 @@ The longer you use Recruiting Compass, the better suggestions become.
 
 ### Testimonial
 
-> *"I had no idea I was supposed to follow up with coaches. The app told me Coach Johnson hadn't heard from me in 45 days and suggested I reach out. I did, and it turned into a full conversation. AI suggestions were like having a recruiting coach."* — James, Student-Athlete, Class of 2025
+> _"I had no idea I was supposed to follow up with coaches. The app told me Coach Johnson hadn't heard from me in 45 days and suggested I reach out. I did, and it turned into a full conversation. AI suggestions were like having a recruiting coach."_ — James, Student-Athlete, Class of 2025
 
 ### Why This Feature Matters
 

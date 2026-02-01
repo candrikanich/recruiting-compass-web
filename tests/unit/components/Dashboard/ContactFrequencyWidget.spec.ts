@@ -3,7 +3,9 @@ import { mount } from "@vue/test-utils";
 import ContactFrequencyWidget from "~/components/Dashboard/ContactFrequencyWidget.vue";
 import type { Interaction, School } from "~/types/models";
 
-const createMockInteraction = (overrides: Partial<Interaction> = {}): Interaction => ({
+const createMockInteraction = (
+  overrides: Partial<Interaction> = {},
+): Interaction => ({
   id: `int-${Math.random()}`,
   school_id: "school-1",
   type: "email",
@@ -47,7 +49,9 @@ describe("ContactFrequencyWidget", () => {
       props: { interactions, schools },
     });
 
-    expect(wrapper.find('[data-testid="contact-frequency-count"]').exists()).toBe(true);
+    expect(
+      wrapper.find('[data-testid="contact-frequency-count"]').exists(),
+    ).toBe(true);
     expect(wrapper.text()).toContain("1");
   });
 
@@ -94,9 +98,18 @@ describe("ContactFrequencyWidget", () => {
   it("counts unique schools correctly", () => {
     const now = new Date();
     const interactions = [
-      createMockInteraction({ school_id: "school-1", occurred_at: now.toISOString() }),
-      createMockInteraction({ school_id: "school-1", occurred_at: now.toISOString() }),
-      createMockInteraction({ school_id: "school-2", occurred_at: now.toISOString() }),
+      createMockInteraction({
+        school_id: "school-1",
+        occurred_at: now.toISOString(),
+      }),
+      createMockInteraction({
+        school_id: "school-1",
+        occurred_at: now.toISOString(),
+      }),
+      createMockInteraction({
+        school_id: "school-2",
+        occurred_at: now.toISOString(),
+      }),
     ];
 
     const schools = [
@@ -115,9 +128,18 @@ describe("ContactFrequencyWidget", () => {
   it("displays individual contact counts per school", () => {
     const now = new Date();
     const interactions = [
-      createMockInteraction({ school_id: "school-1", occurred_at: now.toISOString() }),
-      createMockInteraction({ school_id: "school-1", occurred_at: now.toISOString() }),
-      createMockInteraction({ school_id: "school-2", occurred_at: now.toISOString() }),
+      createMockInteraction({
+        school_id: "school-1",
+        occurred_at: now.toISOString(),
+      }),
+      createMockInteraction({
+        school_id: "school-1",
+        occurred_at: now.toISOString(),
+      }),
+      createMockInteraction({
+        school_id: "school-2",
+        occurred_at: now.toISOString(),
+      }),
     ];
 
     const schools = [
@@ -184,7 +206,9 @@ describe("ContactFrequencyWidget", () => {
     });
 
     // Should only show the valid school
-    expect(wrapper.find('[data-testid="contact-frequency-count"]').text()).toBe("1");
+    expect(wrapper.find('[data-testid="contact-frequency-count"]').text()).toBe(
+      "1",
+    );
   });
 
   it("limits display to top 5 schools", () => {
@@ -207,7 +231,9 @@ describe("ContactFrequencyWidget", () => {
       props: { interactions, schools },
     });
 
-    const schoolElements = wrapper.findAll('[data-testid^="contacted-school-"]');
+    const schoolElements = wrapper.findAll(
+      '[data-testid^="contacted-school-"]',
+    );
     expect(schoolElements.length).toBeLessThanOrEqual(5);
   });
 
@@ -268,9 +294,15 @@ describe("ContactFrequencyWidget", () => {
       props: { interactions, schools },
     });
 
-    expect(wrapper.find('[data-testid="contact-frequency-widget"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="contact-frequency-count"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="contacted-school-school-1"]').exists()).toBe(true);
+    expect(
+      wrapper.find('[data-testid="contact-frequency-widget"]').exists(),
+    ).toBe(true);
+    expect(
+      wrapper.find('[data-testid="contact-frequency-count"]').exists(),
+    ).toBe(true);
+    expect(
+      wrapper.find('[data-testid="contacted-school-school-1"]').exists(),
+    ).toBe(true);
   });
 
   // Summary Metrics Tests
@@ -285,14 +317,22 @@ describe("ContactFrequencyWidget", () => {
       props: { schools, interactions: [] },
     });
 
-    expect(wrapper.find('[data-testid="metric-total-schools"]').text()).toContain("3");
+    expect(
+      wrapper.find('[data-testid="metric-total-schools"]').text(),
+    ).toContain("3");
   });
 
   it("displays schools contacted in last 7 days count", () => {
     const now = new Date();
     const interactions = [
-      createMockInteraction({ school_id: "school-1", occurred_at: now.toISOString() }),
-      createMockInteraction({ school_id: "school-2", occurred_at: now.toISOString() }),
+      createMockInteraction({
+        school_id: "school-1",
+        occurred_at: now.toISOString(),
+      }),
+      createMockInteraction({
+        school_id: "school-2",
+        occurred_at: now.toISOString(),
+      }),
     ];
 
     const schools = [
@@ -305,7 +345,9 @@ describe("ContactFrequencyWidget", () => {
       props: { interactions, schools },
     });
 
-    expect(wrapper.find('[data-testid="metric-contacted-7days"]').text()).toContain("2");
+    expect(
+      wrapper.find('[data-testid="metric-contacted-7days"]').text(),
+    ).toContain("2");
   });
 
   it("calculates average contact frequency per school per month", () => {
@@ -347,7 +389,9 @@ describe("ContactFrequencyWidget", () => {
       props: { interactions, schools },
     });
 
-    expect(wrapper.find('[data-testid="metric-need-attention"]').text()).toContain("2");
+    expect(
+      wrapper.find('[data-testid="metric-need-attention"]').text(),
+    ).toContain("2");
   });
 
   it("handles empty schools array gracefully", () => {
@@ -428,7 +472,9 @@ describe("ContactFrequencyWidget", () => {
 
     // Note: Schools contacted 45 days ago won't appear in the 7-day contact list
     // This test verifies the color coding logic for old interactions
-    expect(wrapper.find('[data-testid="contacted-school-school-1"]').exists()).toBe(false);
+    expect(
+      wrapper.find('[data-testid="contacted-school-school-1"]').exists(),
+    ).toBe(false);
   });
 
   it("calculates contact recency correctly for each school", () => {
@@ -484,7 +530,9 @@ describe("ContactFrequencyWidget", () => {
       },
     });
 
-    const schoolLink = wrapper.find('[data-testid="contacted-school-school-1"]');
+    const schoolLink = wrapper.find(
+      '[data-testid="contacted-school-school-1"]',
+    );
     if (schoolLink.exists()) {
       expect(schoolLink.element.tagName.toLowerCase()).toBe("a");
       const href = schoolLink.attributes("href");
@@ -523,8 +571,12 @@ describe("ContactFrequencyWidget", () => {
       props: { interactions: [], schools },
     });
 
-    expect(wrapper.find('[data-testid="metric-total-schools"]').text()).toContain("2");
-    expect(wrapper.find('[data-testid="metric-need-attention"]').text()).toContain("2");
+    expect(
+      wrapper.find('[data-testid="metric-total-schools"]').text(),
+    ).toContain("2");
+    expect(
+      wrapper.find('[data-testid="metric-need-attention"]').text(),
+    ).toContain("2");
   });
 
   it("calculates correct metrics with single school", () => {
@@ -546,9 +598,15 @@ describe("ContactFrequencyWidget", () => {
       props: { interactions, schools },
     });
 
-    expect(wrapper.find('[data-testid="metric-total-schools"]').text()).toContain("1");
-    expect(wrapper.find('[data-testid="metric-contacted-7days"]').text()).toContain("1");
-    expect(wrapper.find('[data-testid="metric-avg-frequency"]').text()).toContain("2.0");
+    expect(
+      wrapper.find('[data-testid="metric-total-schools"]').text(),
+    ).toContain("1");
+    expect(
+      wrapper.find('[data-testid="metric-contacted-7days"]').text(),
+    ).toContain("1");
+    expect(
+      wrapper.find('[data-testid="metric-avg-frequency"]').text(),
+    ).toContain("2.0");
   });
 
   it("updates metrics reactively when props change", async () => {
@@ -561,7 +619,9 @@ describe("ContactFrequencyWidget", () => {
       props: { schools, interactions: [] },
     });
 
-    expect(wrapper.find('[data-testid="metric-total-schools"]').text()).toContain("2");
+    expect(
+      wrapper.find('[data-testid="metric-total-schools"]').text(),
+    ).toContain("2");
 
     const now = new Date();
     const newSchools = [
@@ -572,6 +632,8 @@ describe("ContactFrequencyWidget", () => {
 
     await wrapper.setProps({ schools: newSchools });
 
-    expect(wrapper.find('[data-testid="metric-total-schools"]').text()).toContain("3");
+    expect(
+      wrapper.find('[data-testid="metric-total-schools"]').text(),
+    ).toContain("3");
   });
 });

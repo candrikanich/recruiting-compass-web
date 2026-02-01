@@ -67,7 +67,7 @@ describe("usePerformanceConsolidated", () => {
     user_id: "user-123",
     event_id: null,
     metric_type: "batting_average",
-    value: 0.350,
+    value: 0.35,
     recorded_date: "2024-01-01T12:00:00Z",
     created_at: "2024-01-01T12:00:00Z",
     updated_at: "2024-01-01T12:00:00Z",
@@ -118,7 +118,7 @@ describe("usePerformanceConsolidated", () => {
         user_id: "user-123",
         event_id: null,
         metric_type: "batting_average",
-        value: 0.350,
+        value: 0.35,
         recorded_date: "2024-01-01T12:00:00Z",
       });
 
@@ -127,16 +127,16 @@ describe("usePerformanceConsolidated", () => {
     });
 
     it("should update existing metric", async () => {
-      const original = createMockMetric({ value: 0.300 });
-      const updated = createMockMetric({ value: 0.350 });
+      const original = createMockMetric({ value: 0.3 });
+      const updated = createMockMetric({ value: 0.35 });
       mockQuery.__setTestData(updated);
 
       const { updateMetric, metrics } = usePerformanceConsolidated();
       metrics.value = [original];
 
-      const result = await updateMetric("metric-123", { value: 0.350 });
+      const result = await updateMetric("metric-123", { value: 0.35 });
 
-      expect(result.value).toBe(0.350);
+      expect(result.value).toBe(0.35);
     });
 
     it("should delete metric", async () => {

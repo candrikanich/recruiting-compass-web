@@ -10,9 +10,7 @@ import { describe, it, expect } from "vitest";
 
 describe("Bulk Delete Users API Endpoint", () => {
   it("should be a valid endpoint module", async () => {
-    const handler = await import(
-      "~/server/api/admin/bulk-delete-users.post"
-    );
+    const handler = await import("~/server/api/admin/bulk-delete-users.post");
     expect(handler).toBeDefined();
     expect(handler.default).toBeDefined();
     expect(typeof handler.default).toBe("function");

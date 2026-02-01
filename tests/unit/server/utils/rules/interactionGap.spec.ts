@@ -124,7 +124,12 @@ describe("interactionGapRule", () => {
       twentyTwoDaysAgo.setDate(twentyTwoDaysAgo.getDate() - 22);
 
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "School 1",
+        },
       ] as unknown[];
 
       mockContext.interactions = [
@@ -145,7 +150,12 @@ describe("interactionGapRule", () => {
       twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);
 
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "School 1",
+        },
       ] as unknown[];
 
       mockContext.interactions = [
@@ -162,7 +172,12 @@ describe("interactionGapRule", () => {
 
     it("should return suggestion when no interactions exist", async () => {
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "School 1",
+        },
       ] as unknown[];
 
       mockContext.interactions = []; // No interactions
@@ -179,8 +194,18 @@ describe("interactionGapRule", () => {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
-        { id: "school-2", priority: "B", status: "contacted", name: "School 2" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "School 1",
+        },
+        {
+          id: "school-2",
+          priority: "B",
+          status: "contacted",
+          name: "School 2",
+        },
         { id: "school-3", priority: "A", status: "visited", name: "School 3" },
       ] as unknown[];
 
@@ -212,7 +237,12 @@ describe("interactionGapRule", () => {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "School 1",
+        },
       ] as unknown[];
 
       mockContext.interactions = [
@@ -234,7 +264,12 @@ describe("interactionGapRule", () => {
       twentyFiveDaysAgo.setDate(twentyFiveDaysAgo.getDate() - 25);
 
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "School 1",
+        },
       ] as unknown[];
 
       mockContext.interactions = [
@@ -256,7 +291,12 @@ describe("interactionGapRule", () => {
       thirtyfiveDaysAgo.setDate(thirtyfiveDaysAgo.getDate() - 35);
 
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "School 1",
+        },
       ] as unknown[];
 
       mockContext.interactions = [
@@ -280,7 +320,12 @@ describe("interactionGapRule", () => {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "Harvard" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "Harvard",
+        },
       ] as unknown[];
 
       mockContext.interactions = [
@@ -302,7 +347,12 @@ describe("interactionGapRule", () => {
       thirtyfiveDaysAgo.setDate(thirtyfiveDaysAgo.getDate() - 35);
 
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "School 1",
+        },
       ] as unknown[];
 
       mockContext.interactions = [
@@ -326,7 +376,12 @@ describe("interactionGapRule", () => {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "School 1",
+        },
       ] as unknown[];
 
       mockContext.interactions = [
@@ -339,7 +394,7 @@ describe("interactionGapRule", () => {
 
       const snapshot = interactionGapRule.createConditionSnapshot?.(
         mockContext,
-        "school-1"
+        "school-1",
       );
 
       expect(snapshot).toBeDefined();
@@ -353,7 +408,12 @@ describe("interactionGapRule", () => {
       twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);
 
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "School 1",
+        },
       ] as unknown[];
 
       mockContext.interactions = [
@@ -366,7 +426,7 @@ describe("interactionGapRule", () => {
 
       const snapshot = interactionGapRule.createConditionSnapshot?.(
         mockContext,
-        "school-1"
+        "school-1",
       ) as Record<string, unknown>;
 
       expect(snapshot.days_since_contact).toBe(20);
@@ -377,7 +437,12 @@ describe("interactionGapRule", () => {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       mockContext.schools = [
-        { id: "school-1", priority_tier: "A", status: "interested", name: "School 1" },
+        {
+          id: "school-1",
+          priority_tier: "A",
+          status: "interested",
+          name: "School 1",
+        },
       ] as unknown[];
 
       mockContext.interactions = [
@@ -390,7 +455,7 @@ describe("interactionGapRule", () => {
 
       const snapshot = interactionGapRule.createConditionSnapshot?.(
         mockContext,
-        "school-1"
+        "school-1",
       ) as Record<string, unknown>;
 
       expect(snapshot.school_priority).toBe("A");
@@ -405,7 +470,12 @@ describe("interactionGapRule", () => {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "School 1",
+        },
       ] as unknown[];
 
       mockContext.interactions = [
@@ -440,7 +510,7 @@ describe("interactionGapRule", () => {
 
       const result = await interactionGapRule.shouldReEvaluate?.(
         dismissedSuggestion,
-        mockContext
+        mockContext,
       );
 
       expect(result).toBe(false);
@@ -453,7 +523,12 @@ describe("interactionGapRule", () => {
       thirtyfiveDaysAgo.setDate(thirtyfiveDaysAgo.getDate() - 35); // Now 35 days gap
 
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "School 1",
+        },
       ] as unknown[];
 
       mockContext.interactions = [
@@ -488,7 +563,7 @@ describe("interactionGapRule", () => {
 
       const result = await interactionGapRule.shouldReEvaluate?.(
         dismissedSuggestion,
-        mockContext
+        mockContext,
       );
 
       expect(result).toBe(true);
@@ -501,7 +576,12 @@ describe("interactionGapRule", () => {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       mockContext.schools = [
-        { id: "school-1", priority: "B", status: "interested", name: "School 1" }, // Changed to B
+        {
+          id: "school-1",
+          priority: "B",
+          status: "interested",
+          name: "School 1",
+        }, // Changed to B
       ] as unknown[];
 
       mockContext.interactions = [
@@ -536,7 +616,7 @@ describe("interactionGapRule", () => {
 
       const result = await interactionGapRule.shouldReEvaluate?.(
         dismissedSuggestion,
-        mockContext
+        mockContext,
       );
 
       expect(result).toBe(true);
@@ -549,7 +629,12 @@ describe("interactionGapRule", () => {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30); // Only 30 days, was 21
 
       mockContext.schools = [
-        { id: "school-1", priority: "A", status: "interested", name: "School 1" },
+        {
+          id: "school-1",
+          priority: "A",
+          status: "interested",
+          name: "School 1",
+        },
       ] as unknown[];
 
       mockContext.interactions = [
@@ -584,7 +669,7 @@ describe("interactionGapRule", () => {
 
       const result = await interactionGapRule.shouldReEvaluate?.(
         dismissedSuggestion,
-        mockContext
+        mockContext,
       );
 
       expect(result).toBe(false);

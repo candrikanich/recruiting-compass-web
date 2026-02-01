@@ -19,8 +19,7 @@ const PARENT_WORRIES: ParentWorry[] = [
   },
   {
     id: "freshman-not-recruited",
-    question:
-      "Should my athlete be getting recruited already as a freshman?",
+    question: "Should my athlete be getting recruited already as a freshman?",
     answer:
       "Very few athletes get recruited as freshmen. Coaches are looking ahead, but most don't make serious contact until junior year. If your athlete has gotten interest, that's great—but lack of interest this early is completely normal and doesn't indicate anything about their future.",
     phases: ["freshman"],
@@ -54,7 +53,8 @@ const PARENT_WORRIES: ParentWorry[] = [
   },
   {
     id: "junior-too-late",
-    question: "Is it too late to start recruiting if we're just starting junior year?",
+    question:
+      "Is it too late to start recruiting if we're just starting junior year?",
     answer:
       "Junior year is when serious recruiting typically begins. Starting now is actually right on time for most programs. Coaches evaluate the entire junior year, so there's no disadvantage to starting early or mid-year. Many athletes don't get offers until late junior or senior year.",
     phases: ["junior"],
@@ -80,7 +80,8 @@ const PARENT_WORRIES: ParentWorry[] = [
   },
   {
     id: "all-div-pressure",
-    question: "My athlete feels pressure to go to a big name D1 school. How do I help?",
+    question:
+      "My athlete feels pressure to go to a big name D1 school. How do I help?",
     answer:
       "Help them focus on fit: academics, team chemistry, coaching staff, and playing time potential. Many athletes are happier at smaller programs where they'll play. The 'best' school is the one that's best for their goals, not what sounds impressive.",
     phases: ["freshman", "sophomore", "junior", "senior"],
@@ -133,7 +134,8 @@ const PARENT_WORRIES: ParentWorry[] = [
   },
   {
     id: "all-silent-coaches",
-    question: "Why are coaches sometimes silent for months, then suddenly contact us?",
+    question:
+      "Why are coaches sometimes silent for months, then suddenly contact us?",
     answer:
       "Coaches evaluate during specific periods and balance many recruiting tasks. Silence doesn't mean lack of interest. They may be focused on other classes or waiting for more evaluation. Stay in touch but don't read too much into quiet periods.",
     phases: ["freshman", "sophomore", "junior", "senior"],

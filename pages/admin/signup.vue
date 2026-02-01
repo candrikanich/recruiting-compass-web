@@ -68,13 +68,15 @@
           <!-- Admin Warning -->
           <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <div class="flex gap-3">
-              <ExclamationCircleIcon class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <ExclamationCircleIcon
+                class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
+              />
               <div class="text-sm text-red-800">
                 <p class="font-medium mb-1">Administrator Account</p>
                 <p>
-                  This account will have full access to system administration features
-                  including user management and system settings. Keep your credentials
-                  secure.
+                  This account will have full access to system administration
+                  features including user management and system settings. Keep
+                  your credentials secure.
                 </p>
               </div>
             </div>
@@ -245,11 +247,15 @@
                 />
                 <span class="text-slate-700 text-sm">
                   I agree to the
-                  <NuxtLink to="/legal/terms" class="text-blue-600 hover:text-blue-700"
+                  <NuxtLink
+                    to="/legal/terms"
+                    class="text-blue-600 hover:text-blue-700"
                     >Terms and Conditions</NuxtLink
                   >
                   and
-                  <NuxtLink to="/legal/privacy" class="text-blue-600 hover:text-blue-700"
+                  <NuxtLink
+                    to="/legal/privacy"
+                    class="text-blue-600 hover:text-blue-700"
                     >Privacy Policy</NuxtLink
                   >
                 </span>
@@ -263,7 +269,9 @@
               :disabled="loading || hasErrors"
               class="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-lg hover:from-red-600 hover:to-red-700 transition disabled:opacity-50 shadow-lg"
             >
-              {{ loading ? "Creating admin account..." : "Create Admin Account" }}
+              {{
+                loading ? "Creating admin account..." : "Create Admin Account"
+              }}
             </button>
           </form>
 
@@ -473,7 +481,9 @@ const handleSignup = async () => {
         } = await supabase.auth.getSession();
 
         if (session?.user?.id) {
-          console.log("Session exists for user, proceeding with profile creation");
+          console.log(
+            "Session exists for user, proceeding with profile creation",
+          );
           userId = session.user.id;
         } else {
           // No active session - this is a real error
@@ -496,14 +506,16 @@ const handleSignup = async () => {
       },
     }).catch((err) => {
       throw new Error(
-        err.data?.statusMessage || "Failed to create admin profile"
+        err.data?.statusMessage || "Failed to create admin profile",
       );
     });
 
     console.log("Admin profile created successfully");
 
     // Redirect to email verification page
-    await navigateTo(`/verify-email?email=${encodeURIComponent(validated.email)}`);
+    await navigateTo(
+      `/verify-email?email=${encodeURIComponent(validated.email)}`,
+    );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Signup failed";
     // Set form-level error

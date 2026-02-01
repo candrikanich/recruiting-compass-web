@@ -7,8 +7,8 @@ export const ncaaRegistrationRule: Rule = {
   description:
     "Junior athletes pursuing DI/DII must register with NCAA Eligibility Center",
   async evaluate(context: RuleContext): Promise<SuggestionData | null> {
-    const gradeLevel = (context.athlete as Record<string, unknown>)
-      ?.grade_level || 9;
+    const gradeLevel =
+      (context.athlete as Record<string, unknown>)?.grade_level || 9;
 
     // Only apply to juniors (11)
     if (gradeLevel !== 11) return null;

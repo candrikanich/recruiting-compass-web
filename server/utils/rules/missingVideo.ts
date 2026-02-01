@@ -5,7 +5,9 @@ export const missingVideoRule: Rule = {
   id: "missing-video",
   name: "Missing Highlight Video",
   description: "Athlete is sophomore or beyond without highlight video",
-  async evaluate(context: RuleContext): Promise<SuggestionData | SuggestionData[] | null> {
+  async evaluate(
+    context: RuleContext,
+  ): Promise<SuggestionData | SuggestionData[] | null> {
     const gradeLevel = context.athlete.grade_level || 9;
     const hasVideos = context.videos.length > 0;
 

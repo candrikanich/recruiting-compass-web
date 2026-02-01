@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
       `
       family_unit_id,
       family_units!inner(id, family_code, family_name, code_generated_at)
-    `
+    `,
     )
     .eq("user_id", user.id)
     .eq("role", "parent");

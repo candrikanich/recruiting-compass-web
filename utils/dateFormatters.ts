@@ -5,16 +5,10 @@
  */
 
 // Cache for DateTimeFormat instances (max ~20 unique locale+options combos)
-const formatterCache = new Map<
-  string,
-  Intl.DateTimeFormat
->();
+const formatterCache = new Map<string, Intl.DateTimeFormat>();
 
 // Cache for memoized date formatting results
-const formatCache = new Map<
-  string,
-  { timestamp: number; result: string }
->();
+const formatCache = new Map<string, { timestamp: number; result: string }>();
 const FORMAT_CACHE_TTL = 60000; // 1 minute
 
 /**

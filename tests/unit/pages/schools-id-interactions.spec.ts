@@ -463,7 +463,7 @@ describe("Interaction Logging & Saving - Composable Integration", () => {
         interaction.content,
         "school-123",
         null,
-        interaction.id
+        interaction.id,
       );
 
       expect(mockCreateReminder).toHaveBeenCalledWith(
@@ -474,7 +474,7 @@ describe("Interaction Logging & Saving - Composable Integration", () => {
         expect.any(String),
         "school-123",
         null,
-        interaction.id
+        interaction.id,
       );
       expect(reminder).toBeDefined();
     });
@@ -509,14 +509,14 @@ describe("Interaction Logging & Saving - Composable Integration", () => {
           "Test reminder",
           "2024-02-15T00:00:00Z",
           reminderType as any,
-          "medium"
+          "medium",
         );
 
         expect(mockCreateReminder).toHaveBeenCalledWith(
           "Test reminder",
           "2024-02-15T00:00:00Z",
           reminderType,
-          "medium"
+          "medium",
         );
       }
     });
@@ -533,7 +533,7 @@ describe("Interaction Logging & Saving - Composable Integration", () => {
           attachments: [
             "https://example.com/files/interactions/school-123/test.pdf",
           ],
-        })
+        }),
       );
 
       const result = await mockCreateInteraction({
@@ -559,7 +559,7 @@ describe("Interaction Logging & Saving - Composable Integration", () => {
             "https://example.com/files/interactions/school-123/document.pdf",
             "https://example.com/files/interactions/school-123/image.jpg",
           ],
-        })
+        }),
       );
 
       const result = await mockCreateInteraction({
@@ -598,7 +598,7 @@ describe("Interaction Logging & Saving - Composable Integration", () => {
   describe("New Interaction Types UI", () => {
     it("should support game interaction type", async () => {
       mockCreateInteraction.mockResolvedValue(
-        createMockInteraction({ type: "game" })
+        createMockInteraction({ type: "game" }),
       );
 
       const result = await mockCreateInteraction({
@@ -614,7 +614,7 @@ describe("Interaction Logging & Saving - Composable Integration", () => {
 
     it("should support unofficial_visit interaction type", async () => {
       mockCreateInteraction.mockResolvedValue(
-        createMockInteraction({ type: "unofficial_visit" })
+        createMockInteraction({ type: "unofficial_visit" }),
       );
 
       const result = await mockCreateInteraction({
@@ -630,7 +630,7 @@ describe("Interaction Logging & Saving - Composable Integration", () => {
 
     it("should support official_visit interaction type", async () => {
       mockCreateInteraction.mockResolvedValue(
-        createMockInteraction({ type: "official_visit" })
+        createMockInteraction({ type: "official_visit" }),
       );
 
       const result = await mockCreateInteraction({
@@ -646,7 +646,7 @@ describe("Interaction Logging & Saving - Composable Integration", () => {
 
     it("should support other interaction type", async () => {
       mockCreateInteraction.mockResolvedValue(
-        createMockInteraction({ type: "other" })
+        createMockInteraction({ type: "other" }),
       );
 
       const result = await mockCreateInteraction({

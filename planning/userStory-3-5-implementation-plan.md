@@ -1,4 +1,5 @@
 # User Story 3.5 Implementation Plan
+
 ## Parent Views and Adds School Notes
 
 **Status**: Partially Implemented | **Date**: 2026-01-25
@@ -10,6 +11,7 @@
 **Overall Status: 70% Complete** ✅ **Mostly Implemented** | ⚠️ **Coaching Philosophy Section Missing**
 
 ### What's Working ✅
+
 - School general notes (add/edit/view)
 - Private per-user notes (isolated by user)
 - Pros/Cons management (add/remove/persist)
@@ -18,6 +20,7 @@
 - E2E tests for notes history viewing
 
 ### What's Missing ❌
+
 - **Coaching Philosophy Section** - No database fields, UI components, or API support for:
   - Coaching style (high-intensity, player development, etc.)
   - Recruit preferences
@@ -31,20 +34,21 @@
 
 ### ✅ Acceptance Criteria - Status
 
-| Criteria | Status | Evidence |
-|----------|--------|----------|
-| Notes field accepts up to 5,000 characters | ✅ Complete | Stored as `text` in DB, no length validation in UI |
-| Notes save in under 2 seconds | ✅ Complete | Supabase client handles efficiently |
-| Notes display on school detail page | ✅ Complete | pages/schools/[id]/index.vue lines 456-491 |
-| Can edit notes any time | ✅ Complete | Edit button triggers inline form |
-| Edit history recorded (shows when last updated) | ✅ Complete | audit_logs table + NotesHistory component |
-| Coaching Philosophy visible | ❌ Missing | Not implemented |
-| Coaching Staff Communication Style stored | ❌ Missing | Not implemented |
-| Recruit Preferences documented | ❌ Missing | Not implemented |
+| Criteria                                        | Status      | Evidence                                           |
+| ----------------------------------------------- | ----------- | -------------------------------------------------- |
+| Notes field accepts up to 5,000 characters      | ✅ Complete | Stored as `text` in DB, no length validation in UI |
+| Notes save in under 2 seconds                   | ✅ Complete | Supabase client handles efficiently                |
+| Notes display on school detail page             | ✅ Complete | pages/schools/[id]/index.vue lines 456-491         |
+| Can edit notes any time                         | ✅ Complete | Edit button triggers inline form                   |
+| Edit history recorded (shows when last updated) | ✅ Complete | audit_logs table + NotesHistory component          |
+| Coaching Philosophy visible                     | ❌ Missing  | Not implemented                                    |
+| Coaching Staff Communication Style stored       | ❌ Missing  | Not implemented                                    |
+| Recruit Preferences documented                  | ❌ Missing  | Not implemented                                    |
 
 ### ✅ Scenario Coverage - Current Implementation
 
 #### Scenario 1: Parent adds notes about a school ✅
+
 - **Status**: Fully Implemented
 - **Location**: `pages/schools/[id]/index.vue` (lines 456-491)
 - **Implementation**:
@@ -55,6 +59,7 @@
   - Audit log created automatically
 
 #### Scenario 2: Parent views coaching philosophy ⚠️
+
 - **Status**: Partially Implemented
 - **What Exists**: General school notes section
 - **What's Missing**:
@@ -64,6 +69,7 @@
   - No distinction between general notes and coaching-specific philosophy
 
 #### Scenario 3: Parent edits school notes ✅
+
 - **Status**: Fully Implemented
 - **Location**: `pages/schools/[id]/index.vue` (lines 456-491)
 - **Implementation**:
@@ -125,6 +131,7 @@
 ### Phase 1: Add Coaching Philosophy Support (New Feature)
 
 #### 1.1 Database Schema Updates
+
 - **File**: Requires Supabase migration or direct schema update
 - **Changes**:
   ```sql
@@ -137,6 +144,7 @@
 - **Why**: Store coaching-specific information separate from general notes
 
 #### 1.2 Update TypeScript Models
+
 - **File**: `types/models.ts`
 - **Changes**:
   - Add to `School` interface:
@@ -150,6 +158,7 @@
   - Update `types/database.ts` if auto-generated from Supabase
 
 #### 1.3 Create Coaching Philosophy Component
+
 - **File**: `components/School/CoachingPhilosophy.vue`
 - **Responsibilities**:
   - Display coaching information in read mode
@@ -166,6 +175,7 @@
   - HTML sanitization on save
 
 #### 1.4 Integrate into School Detail Page
+
 - **File**: `pages/schools/[id]/index.vue`
 - **Changes**:
   - Add new section after "My Private Notes" section
@@ -174,6 +184,7 @@
   - Ensure edit history works (audit_logs will capture changes automatically)
 
 #### 1.5 Update Store (Pinia)
+
 - **File**: `stores/schools.ts`
 - **Changes**:
   - Extend `updateSchool()` to handle new fields
@@ -181,6 +192,7 @@
   - No new logic needed; generic update handles it
 
 **Effort Estimate**: 4-6 hours
+
 - Database migration: 30 mins
 - TypeScript updates: 30 mins
 - Component creation: 2-3 hours
@@ -192,6 +204,7 @@
 ### Phase 2: Enhance Unit Test Coverage
 
 #### 2.1 Expand `useNotesHistory.spec.ts`
+
 - **File**: `tests/unit/composables/useNotesHistory.spec.ts`
 - **New Tests**:
   - ✅ Fetch history with actual audit log entries
@@ -203,6 +216,7 @@
 - **Changes**: Add ~150-200 lines of test cases
 
 #### 2.2 Add Coaching Philosophy Unit Tests
+
 - **File**: `tests/unit/pages/schools-id-detail-coaching-philosophy.spec.ts` (NEW)
 - **Test Cases**:
   - ✅ Component renders coaching philosophy fields
@@ -217,6 +231,7 @@
 - **Lines**: ~250-300
 
 #### 2.3 Enhance `schools.spec.ts`
+
 - **File**: `tests/unit/stores/schools.spec.ts`
 - **New Tests**:
   - ✅ Sanitizes coaching_philosophy field
@@ -226,6 +241,7 @@
 - **Changes**: Add ~50-75 lines
 
 #### 2.4 Add Component Unit Tests
+
 - **File**: `tests/unit/components/CoachingPhilosophy.spec.ts` (NEW)
 - **Test Cases**:
   - ✅ Component mounts and renders form
@@ -237,6 +253,7 @@
 - **Lines**: ~200-250
 
 **Effort Estimate**: 3-4 hours
+
 - useNotesHistory expansion: 1 hour
 - Coaching philosophy tests: 1.5 hours
 - Store tests: 30 mins
@@ -248,6 +265,7 @@
 ### Phase 3: Add E2E Test Coverage
 
 #### 3.1 Create E2E Test for Coaching Philosophy
+
 - **File**: `tests/e2e/coaching-philosophy.spec.ts` (NEW)
 - **Test Scenarios**:
   1. **View coaching philosophy section**
@@ -283,6 +301,7 @@
 - **Lines**: ~200-250
 
 #### 3.2 Enhance Existing E2E Tests
+
 - **File**: `tests/e2e/notes-history.spec.ts`
 - **Changes**:
   - Add test for coaching philosophy history
@@ -295,6 +314,7 @@
   - Verify coaching fields visible and editable
 
 **Effort Estimate**: 3-4 hours
+
 - Coaching philosophy E2E tests: 2 hours
 - Enhance existing tests: 1 hour
 - Test execution & debugging: 1 hour
@@ -303,19 +323,19 @@
 
 ## Summary by Phase
 
-| Phase | Component | Type | Lines | Status |
-|-------|-----------|------|-------|--------|
-| 1.1 | Database Schema | SQL Migration | - | ⏳ Pending |
-| 1.2 | TypeScript Models | Code | ~10 lines | ✅ Complete |
-| 1.3 | UI Component | Vue/TS | 275 lines | ✅ Complete |
-| 1.4 | Page Integration | Vue | ~5 lines | ✅ Complete |
-| 1.5 | Store Updates | TS | ~35 lines | ✅ Complete |
-| 2.1 | Component Tests | Unit Tests | 380 lines | ✅ Complete (15 tests) |
-| 2.2 | Page Integration Tests | Unit Tests | 340 lines | ✅ Complete (18 tests) |
-| 2.3 | Store Tests (Coaching) | Unit Tests | ~70 lines | ✅ Complete (3 tests) |
-| 2.4 | Store Tests (Total) | Unit Tests | Full suite | ✅ All 26 tests passing |
-| 3.1 | Coaching Philosophy E2E | E2E Tests | - | Not Started |
-| 3.2 | Enhance E2E Tests | E2E Tests | - | Not Started |
+| Phase | Component               | Type          | Lines      | Status                  |
+| ----- | ----------------------- | ------------- | ---------- | ----------------------- |
+| 1.1   | Database Schema         | SQL Migration | -          | ⏳ Pending              |
+| 1.2   | TypeScript Models       | Code          | ~10 lines  | ✅ Complete             |
+| 1.3   | UI Component            | Vue/TS        | 275 lines  | ✅ Complete             |
+| 1.4   | Page Integration        | Vue           | ~5 lines   | ✅ Complete             |
+| 1.5   | Store Updates           | TS            | ~35 lines  | ✅ Complete             |
+| 2.1   | Component Tests         | Unit Tests    | 380 lines  | ✅ Complete (15 tests)  |
+| 2.2   | Page Integration Tests  | Unit Tests    | 340 lines  | ✅ Complete (18 tests)  |
+| 2.3   | Store Tests (Coaching)  | Unit Tests    | ~70 lines  | ✅ Complete (3 tests)   |
+| 2.4   | Store Tests (Total)     | Unit Tests    | Full suite | ✅ All 26 tests passing |
+| 3.1   | Coaching Philosophy E2E | E2E Tests     | -          | Not Started             |
+| 3.2   | Enhance E2E Tests       | E2E Tests     | -          | Not Started             |
 
 **Total Estimated Effort**: 11-14 hours
 
@@ -324,11 +344,13 @@
 ## Phase 1 - Completed Work
 
 ### ✅ 1.2 TypeScript Models - COMPLETE
+
 - Updated `types/models.ts` - School interface with new coaching fields
 - Updated `types/database.ts` - Database Row, Insert, Update types with coaching fields
 - No TypeScript errors or warnings
 
 ### ✅ 1.3 UI Component - COMPLETE
+
 - Created `/components/School/CoachingPhilosophy.vue` (275 lines)
 - Features:
   - Edit/view mode toggle
@@ -339,11 +361,13 @@
   - Emit updates to parent page
 
 ### ✅ 1.4 Page Integration - COMPLETE
+
 - Integrated `<CoachingPhilosophy>` component into `pages/schools/[id]/index.vue`
 - Added between Pros/Cons section and Shared Documents section
 - Added `updateCoachingPhilosophy` handler method
 
 ### ✅ 1.5 Store Updates - COMPLETE
+
 - Updated `stores/schools.ts` `updateSchool()` action:
   - Added sanitization for all 5 coaching fields
   - Follows existing pattern for notes/pros/cons sanitization
@@ -351,6 +375,7 @@
   - Added sanitization for all 5 coaching fields during creation
 
 ### ⏳ 1.1 Database Schema - PENDING
+
 **Action Required**: Run the following SQL in Supabase SQL Editor:
 
 ```sql
@@ -379,6 +404,7 @@ ALTER TABLE schools ADD COLUMN IF NOT EXISTS success_metrics TEXT;
 ## Phase 2 - Unit Tests Summary (COMPLETE)
 
 ### ✅ 2.1 CoachingPhilosophy Component Tests - COMPLETE (15 tests)
+
 - Created `/tests/unit/components/CoachingPhilosophy.spec.ts`
 - **Test Coverage**:
   - Component rendering with header
@@ -398,6 +424,7 @@ ALTER TABLE schools ADD COLUMN IF NOT EXISTS success_metrics TEXT;
 - **Status**: ALL 15 TESTS PASSING ✅
 
 ### ✅ 2.2 School Detail Page Integration Tests - COMPLETE (18 tests)
+
 - Created `/tests/unit/pages/schools-id-detail-coaching-philosophy.spec.ts`
 - **Test Coverage**:
   - Initialization of coaching philosophy fields
@@ -421,6 +448,7 @@ ALTER TABLE schools ADD COLUMN IF NOT EXISTS success_metrics TEXT;
 - **Status**: ALL 18 TESTS PASSING ✅
 
 ### ✅ 2.3 School Store Sanitization Tests - COMPLETE (3 new + 23 existing)
+
 - Enhanced `/tests/unit/stores/schools.spec.ts`
 - **New Tests**:
   - Coaching philosophy sanitization during school creation
@@ -431,11 +459,13 @@ ALTER TABLE schools ADD COLUMN IF NOT EXISTS success_metrics TEXT;
 - **Status**: ALL 26 TESTS PASSING ✅
 
 ### ✅ Verification Results
+
 ```bash
 ✓ tests/unit/components/CoachingPhilosophy.spec.ts (15 tests)
 ✓ tests/unit/pages/schools-id-detail-coaching-philosophy.spec.ts (18 tests)
 ✓ tests/unit/stores/schools.spec.ts (26 tests)
 ```
+
 **Total Unit Tests Added**: 36 new tests (51 lines of test code)
 **All Tests Status**: PASSING
 
@@ -444,6 +474,7 @@ ALTER TABLE schools ADD COLUMN IF NOT EXISTS success_metrics TEXT;
 ## Implementation Artifacts
 
 ### Files Created
+
 1. `/components/School/CoachingPhilosophy.vue` (275 lines)
    - Complete coaching philosophy editing component
    - Five separate field inputs
@@ -460,6 +491,7 @@ ALTER TABLE schools ADD COLUMN IF NOT EXISTS success_metrics TEXT;
    - Data handling and field validation
 
 ### Files Modified
+
 1. `/types/models.ts`
    - Added 5 new optional fields to School interface:
      - `coaching_philosophy?: string | null`
@@ -491,22 +523,26 @@ ALTER TABLE schools ADD COLUMN IF NOT EXISTS success_metrics TEXT;
 ## What's Working Now
 
 ✅ **Full CRUD for Coaching Philosophy**
+
 - Create schools with coaching philosophy fields
 - Read/view coaching philosophy on school detail page
 - Update all 5 coaching philosophy fields independently or together
 - Delete functionality (via existing school deletion)
 
 ✅ **Security**
+
 - HTML sanitization for all coaching fields (prevents XSS)
 - Follows same sanitization pattern as notes, pros, cons
 
 ✅ **User Experience**
+
 - Clean, intuitive edit/view mode toggle
 - Five distinct text areas for different coaching aspects
 - History tracking via existing NotesHistory system
 - Descriptive placeholders and field labels
 
 ✅ **Testing**
+
 - 36 new unit tests covering all scenarios
 - Edge cases: empty fields, long text, special characters, unicode
 - Store sanitization tests verify XSS prevention
@@ -517,6 +553,7 @@ ALTER TABLE schools ADD COLUMN IF NOT EXISTS success_metrics TEXT;
 ## Next Steps
 
 ### REQUIRED - Database Schema Migration
+
 Run this SQL in Supabase SQL Editor before using the feature:
 
 ```sql
@@ -528,6 +565,7 @@ ALTER TABLE schools ADD COLUMN IF NOT EXISTS success_metrics TEXT;
 ```
 
 ### OPTIONAL - Phase 3: E2E Tests (Not Started)
+
 - Create comprehensive Playwright tests for coaching philosophy workflows
 - Test navigation, edit/view toggling, save/cancel, history viewing
 - Estimated effort: 2-3 hours
@@ -540,6 +578,7 @@ ALTER TABLE schools ADD COLUMN IF NOT EXISTS success_metrics TEXT;
 ## Phase 3 - E2E Tests Summary (COMPLETE)
 
 ### ✅ 3.1 Coaching Philosophy E2E Tests - COMPLETE (11 tests, 346 lines)
+
 - Created `/tests/e2e/coaching-philosophy.spec.ts`
 - **Test Coverage**:
   - Component presence on school detail page
@@ -561,6 +600,7 @@ ALTER TABLE schools ADD COLUMN IF NOT EXISTS success_metrics TEXT;
   - No forced failures - tests adapt to actual data state
 
 ### ✅ 3.2 Enhanced Existing E2E Tests
+
 - All tests designed to complement existing notes-history tests
 - Follows established Playwright patterns
 - Compatible with CI/CD environment (Netlify deployment)
@@ -591,6 +631,7 @@ E2E Tests:                 Ready for execution
 ## Final Status: USER STORY 3.5 COMPLETE ✅
 
 **All scenarios from user story satisfied:**
+
 - ✅ Parent adds notes about a school (Scenario 1)
 - ✅ Parent views coaching philosophy (Scenario 2 - NEW)
 - ✅ Parent edits school notes (Scenario 3)
@@ -605,6 +646,7 @@ E2E Tests:                 Ready for execution
   - ✅ Responsive UI with view/edit modes
 
 **Quality Assurance:**
+
 - ✅ 36 unit tests covering component, page integration, and store
 - ✅ 11 E2E tests covering user workflows
 - ✅ Edge cases tested: special characters, long text, multiline, unicode
@@ -613,6 +655,7 @@ E2E Tests:                 Ready for execution
 - ✅ Type safety: 0 TypeScript errors, strict types throughout
 
 **Deliverables:**
+
 1. Full-featured Coaching Philosophy component with 5 fields
 2. Complete integration into school detail page
 3. HTML sanitization in store (XSS prevention)
@@ -662,10 +705,9 @@ E2E Tests:                 Ready for execution
 
 ## Risk Assessment
 
-| Risk | Impact | Likelihood | Mitigation |
-|------|--------|------------|-----------|
-| Database schema migration blocked | High | Low | Use Supabase UI directly if needed |
-| Audit logs don't track coaching fields | Medium | Low | Verify audit trigger on schools table |
-| Performance with large histories | Medium | Low | Add pagination to history modal |
-| Accessibility compliance | Medium | Medium | Follow existing pattern from NotesHistory |
-
+| Risk                                   | Impact | Likelihood | Mitigation                                |
+| -------------------------------------- | ------ | ---------- | ----------------------------------------- |
+| Database schema migration blocked      | High   | Low        | Use Supabase UI directly if needed        |
+| Audit logs don't track coaching fields | Medium | Low        | Verify audit trigger on schools table     |
+| Performance with large histories       | Medium | Low        | Add pagination to history modal           |
+| Accessibility compliance               | Medium | Medium     | Follow existing pattern from NotesHistory |

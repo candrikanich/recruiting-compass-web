@@ -47,13 +47,20 @@ export const useUserStore = defineStore("user", {
           } = await supabase.auth.getSession();
 
           if (sessionError) {
-            console.error(`[initializeUser] Attempt ${attemptNum}: Error getting session:`, sessionError);
+            console.error(
+              `[initializeUser] Attempt ${attemptNum}: Error getting session:`,
+              sessionError,
+            );
           } else if (currentSession) {
-            console.debug(`[initializeUser] Attempt ${attemptNum}: Session found!`);
+            console.debug(
+              `[initializeUser] Attempt ${attemptNum}: Session found!`,
+            );
             session = currentSession;
             break;
           } else {
-            console.debug(`[initializeUser] Attempt ${attemptNum}: No session yet`);
+            console.debug(
+              `[initializeUser] Attempt ${attemptNum}: No session yet`,
+            );
           }
 
           if (!session && attempts < maxAttempts - 1) {
@@ -105,7 +112,9 @@ export const useUserStore = defineStore("user", {
             console.debug("[initializeUser] Existing profile loaded");
           } else {
             // Profile doesn't exist, try to create it
-            console.debug("[initializeUser] No profile found, attempting creation");
+            console.debug(
+              "[initializeUser] No profile found, attempting creation",
+            );
             const created = await this.createUserProfile(
               session.user.id,
               session.user.email || "",
@@ -142,7 +151,10 @@ export const useUserStore = defineStore("user", {
       const supabase = useSupabase();
 
       try {
-        console.debug("[createUserProfile] Attempting to create profile for:", email);
+        console.debug(
+          "[createUserProfile] Attempting to create profile for:",
+          email,
+        );
 
         // First, check if profile already exists
         const { data: existing, error: checkError } = await supabase
@@ -199,8 +211,7 @@ export const useUserStore = defineStore("user", {
 
         return true; // Success
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Unknown error";
+        const message = err instanceof Error ? err.message : "Unknown error";
         console.error("[createUserProfile] Failed:", message);
         return false; // Failure
       }

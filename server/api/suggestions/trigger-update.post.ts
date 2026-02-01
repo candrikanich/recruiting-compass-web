@@ -25,22 +25,22 @@ export default defineEventHandler(async (event) => {
 
     const { reason, interactionSchoolId, interactionCoachId } = body;
 
-    if (!reason || !["profile_change", "interaction_logged", "daily_refresh"].includes(reason)) {
+    if (
+      !reason ||
+      !["profile_change", "interaction_logged", "daily_refresh"].includes(
+        reason,
+      )
+    ) {
       throw createError({
         statusCode: 400,
         message: "Invalid trigger reason",
       });
     }
 
-    const result = await triggerSuggestionUpdate(
-      supabase,
-      user.id,
-      reason,
-      {
-        interactionSchoolId,
-        interactionCoachId,
-      },
-    );
+    const result = await triggerSuggestionUpdate(supabase, user.id, reason, {
+      interactionSchoolId,
+      interactionCoachId,
+    });
 
     return result;
   } catch (error: unknown) {
@@ -51,7 +51,9 @@ export default defineEventHandler(async (event) => {
     throw createError({
       statusCode: 500,
       message:
-        error instanceof Error ? error.message : "Failed to trigger suggestion update",
+        error instanceof Error
+          ? error.message
+          : "Failed to trigger suggestion update",
     });
   }
 });

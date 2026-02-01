@@ -168,7 +168,11 @@ export const useTasks = (): {
    */
   const isTaskLocked = (taskId: string): boolean => {
     const task = tasksWithStatus.value.find((t) => t.id === taskId);
-    if (!task || !task.dependency_task_ids || task.dependency_task_ids.length === 0) {
+    if (
+      !task ||
+      !task.dependency_task_ids ||
+      task.dependency_task_ids.length === 0
+    ) {
       return false;
     }
 
@@ -203,9 +207,12 @@ export const useTasks = (): {
           })
           .filter((title) => {
             const depId = task?.dependency_task_ids.find(
-              (id) => tasksWithStatus.value.find((t) => t.id === id)?.title === title,
+              (id) =>
+                tasksWithStatus.value.find((t) => t.id === id)?.title === title,
             );
-            const depAthleteTask = athleteTasks.value.find((at) => at.task_id === depId);
+            const depAthleteTask = athleteTasks.value.find(
+              (at) => at.task_id === depId,
+            );
             return !depAthleteTask || depAthleteTask.status !== "completed";
           });
 

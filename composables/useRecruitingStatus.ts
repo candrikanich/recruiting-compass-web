@@ -190,9 +190,8 @@ export const useRecruitingStatus = (): {
     error.value = null;
 
     try {
-      const response = await fetchAuth<AthleteAPI.GetPhaseResponse>(
-        "/api/athlete/phase",
-      );
+      const response =
+        await fetchAuth<AthleteAPI.GetPhaseResponse>("/api/athlete/phase");
 
       currentPhase.value = response.phase;
       milestoneProgress.value = response.milestoneProgress;

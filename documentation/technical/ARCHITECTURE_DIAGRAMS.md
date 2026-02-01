@@ -371,4 +371,3 @@ graph LR
 - **Hosting:** Netlify CDN hosts static files globally
 - **API Requests:** Browser makes requests to Supabase API
 - **Database:** Supabase PostgreSQL (hosted on AWS/GCP)
-

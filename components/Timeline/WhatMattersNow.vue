@@ -32,14 +32,18 @@
             {{ index + 1 }}
           </div>
           <div class="flex-1 min-w-0">
-            <div class="font-medium text-slate-900 group-hover:text-blue-700 transition">
+            <div
+              class="font-medium text-slate-900 group-hover:text-blue-700 transition"
+            >
               {{ item.title }}
             </div>
             <div class="text-xs text-slate-600 mt-1 line-clamp-2">
               {{ item.whyItMatters }}
             </div>
           </div>
-          <div class="flex-shrink-0 text-slate-400 group-hover:text-blue-500 transition">
+          <div
+            class="flex-shrink-0 text-slate-400 group-hover:text-blue-500 transition"
+          >
             →
           </div>
         </div>

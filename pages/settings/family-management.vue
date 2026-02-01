@@ -12,9 +12,7 @@
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
         </NuxtLink>
-        <h1 class="text-2xl font-semibold text-slate-900">
-          Family Management
-        </h1>
+        <h1 class="text-2xl font-semibold text-slate-900">Family Management</h1>
         <p class="text-slate-600">
           Manage your family and share recruiting data with family members
         </p>
@@ -31,16 +29,25 @@
       </div>
 
       <!-- Success Messages -->
-      <div v-if="familyCodeSuccess" class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+      <div
+        v-if="familyCodeSuccess"
+        class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4"
+      >
         <p class="text-sm text-green-700">{{ familyCodeSuccess }}</p>
       </div>
 
-      <div v-if="familyCodeError" class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+      <div
+        v-if="familyCodeError"
+        class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4"
+      >
         <p class="text-sm text-red-700">{{ familyCodeError }}</p>
       </div>
 
       <!-- Family Code Section for Students -->
-      <section v-if="isStudent && myFamilyCode" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+      <section
+        v-if="isStudent && myFamilyCode"
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+      >
         <FamilyCodeDisplay
           :family-code="myFamilyCode"
           :code-generated-at="codeGeneratedAt"
@@ -55,7 +62,10 @@
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
       >
         <h2 class="text-xl font-bold text-gray-900 mb-4">
-          Family Members <span class="text-sm text-gray-600">({{ familyMembers.length }})</span>
+          Family Members
+          <span class="text-sm text-gray-600"
+            >({{ familyMembers.length }})</span
+          >
         </h2>
 
         <div v-if="loadingMembers" class="text-center py-4">
@@ -74,11 +84,14 @@
       </section>
 
       <!-- Create Family Section for Students -->
-      <section v-if="isStudent && !myFamilyCode" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+      <section
+        v-if="isStudent && !myFamilyCode"
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+      >
         <h2 class="text-xl font-bold text-gray-900 mb-4">Create Your Family</h2>
         <p class="text-sm text-gray-700 mb-4">
-          Create a family to share your recruiting data with parents and guardians.
-          You'll receive a code to share with them.
+          Create a family to share your recruiting data with parents and
+          guardians. You'll receive a code to share with them.
         </p>
         <button
           @click="handleCreateFamily"
@@ -90,7 +103,10 @@
       </section>
 
       <!-- Join Family Section for Parents -->
-      <section v-if="isParent" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+      <section
+        v-if="isParent"
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+      >
         <FamilyCodeInput
           :loading="familyCodeLoading"
           @submit="handleJoinFamily"
@@ -98,9 +114,15 @@
       </section>
 
       <!-- Joined Families for Parents -->
-      <section v-if="isParent && parentFamilies.length > 0" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+      <section
+        v-if="isParent && parentFamilies.length > 0"
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+      >
         <h2 class="text-xl font-bold text-gray-900 mb-4">
-          My Families <span class="text-sm text-gray-600">({{ parentFamilies.length }})</span>
+          My Families
+          <span class="text-sm text-gray-600"
+            >({{ parentFamilies.length }})</span
+          >
         </h2>
         <div class="space-y-3">
           <div
@@ -110,10 +132,16 @@
           >
             <div class="flex items-center justify-between">
               <div>
-                <h3 class="font-semibold text-green-900">{{ family.familyName }}</h3>
-                <p class="text-sm text-green-700 font-mono">{{ family.familyCode }}</p>
+                <h3 class="font-semibold text-green-900">
+                  {{ family.familyName }}
+                </h3>
+                <p class="text-sm text-green-700 font-mono">
+                  {{ family.familyCode }}
+                </p>
               </div>
-              <span class="px-2 py-1 bg-green-200 text-green-800 rounded text-xs">
+              <span
+                class="px-2 py-1 bg-green-200 text-green-800 rounded text-xs"
+              >
                 ✓ Joined
               </span>
             </div>
@@ -123,9 +151,7 @@
 
       <!-- Empty state if nothing present -->
       <div
-        v-if="
-          isParent && parentFamilies.length === 0 && !familyCodeLoading
-        "
+        v-if="isParent && parentFamilies.length === 0 && !familyCodeLoading"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
       >
         <p class="text-gray-500 mb-2">No families joined yet</p>
@@ -198,7 +224,7 @@ const fetchFamilyMembers = async () => {
   try {
     const { $fetchAuth } = useAuthFetch();
     const response = (await $fetchAuth(
-      `/api/family/members?familyId=${myFamilyId.value}`
+      `/api/family/members?familyId=${myFamilyId.value}`,
     )) as {
       success: boolean;
       members: FamilyMember[];
@@ -236,7 +262,7 @@ const handleCopyCode = async (code: string) => {
 
 const handleRegenerateCode = async () => {
   const confirmed = confirm(
-    "Are you sure you want to regenerate your family code? The old code will no longer work."
+    "Are you sure you want to regenerate your family code? The old code will no longer work.",
   );
   if (confirmed) {
     await regenerateCode();
@@ -245,10 +271,11 @@ const handleRegenerateCode = async () => {
 
 const handleRemoveMember = async (memberId: string) => {
   const member = familyMembers.value.find((m) => m.id === memberId);
-  const memberName = member?.users?.full_name || member?.users?.email || "this member";
+  const memberName =
+    member?.users?.full_name || member?.users?.email || "this member";
 
   const confirmed = confirm(
-    `Are you sure you want to remove ${memberName}? They will lose access to your recruiting data.`
+    `Are you sure you want to remove ${memberName}? They will lose access to your recruiting data.`,
   );
   if (!confirmed) return;
 

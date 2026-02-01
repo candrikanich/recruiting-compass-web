@@ -21,8 +21,8 @@ export const showcaseAttendanceRule: Rule = {
   name: "Attend Summer Showcases",
   description: "Sophomore athletes should attend showcases for exposure",
   async evaluate(context: RuleContext): Promise<SuggestionData | null> {
-    const gradeLevel = (context.athlete as Record<string, unknown>)
-      ?.grade_level || 9;
+    const gradeLevel =
+      (context.athlete as Record<string, unknown>)?.grade_level || 9;
 
     // Only apply to sophomores (10)
     if (gradeLevel !== 10) return null;

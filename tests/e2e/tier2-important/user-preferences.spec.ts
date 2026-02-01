@@ -24,7 +24,7 @@ test.describe("User Preferences API - Phase 2", () => {
           headers: {
             authorization: "Bearer invalid-token",
           },
-        }
+        },
       );
 
       // Should be 401 Unauthorized (not 404 Not Found)
@@ -45,7 +45,7 @@ test.describe("User Preferences API - Phase 2", () => {
         headers: {
           authorization: "Bearer invalid-token",
         },
-      }
+      },
     );
 
     // Status can be 401 or 403 depending on auth validation
@@ -59,13 +59,12 @@ test.describe("User Preferences API - Phase 2", () => {
         headers: {
           authorization: "Bearer invalid-token",
         },
-      }
+      },
     );
 
     // Status can be 401 or 403 depending on auth validation
     expect([401, 403]).toContain(response.status());
   });
-
 });
 
 test.describe("User Preferences - Migration Plan", () => {
@@ -109,9 +108,7 @@ test.describe("User Preferences - Migration Plan", () => {
     // to localStorage when server is unavailable
   });
 
-  test.skip("should provide offline changes on reconnect", async ({
-    page,
-  }) => {
+  test.skip("should provide offline changes on reconnect", async ({ page }) => {
     // This test skipped until migration is complete
     // Will test that changes made offline are synced when reconnected
   });

@@ -208,7 +208,11 @@ const settingsItems = [
     label: "Templates",
     icon: DocumentTextIcon,
   },
-  { to: "/settings/family-management", label: "Family Management", icon: AdjustmentsHorizontalIcon },
+  {
+    to: "/settings/family-management",
+    label: "Family Management",
+    icon: AdjustmentsHorizontalIcon,
+  },
 ];
 
 const userInitials = computed(() => {

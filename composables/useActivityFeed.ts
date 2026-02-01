@@ -1,13 +1,13 @@
-import { ref, readonly, onUnmounted } from 'vue';
-import { useSupabase } from '~/composables/useSupabase';
-import { useAuth } from '~/composables/useAuth';
-import type { Interaction, School } from '~/types/models';
-import type { RealtimeChannel } from '@supabase/supabase-js';
+import { ref, readonly, onUnmounted } from "vue";
+import { useSupabase } from "~/composables/useSupabase";
+import { useAuth } from "~/composables/useAuth";
+import type { Interaction, School } from "~/types/models";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface InteractionPayload {
   id: string;
   school_id: string;
-  type: Interaction['type'];
+  type: Interaction["type"];
   content?: string | null;
   subject?: string | null;
   occurred_at?: string | null;
@@ -30,13 +30,13 @@ interface DocumentPayload {
 }
 
 export type ActivityEventType =
-  | 'interaction'
-  | 'school_status_change'
-  | 'document_upload'
-  | 'offer_change'
-  | 'suggestion_action'
-  | 'school_added'
-  | 'notification';
+  | "interaction"
+  | "school_status_change"
+  | "document_upload"
+  | "offer_change"
+  | "suggestion_action"
+  | "school_added"
+  | "notification";
 
 export interface ActivityEvent {
   id: string;
@@ -45,7 +45,7 @@ export interface ActivityEvent {
   title: string;
   description: string;
   icon: string;
-  entityType?: 'school' | 'coach' | 'document' | 'task' | 'interaction';
+  entityType?: "school" | "coach" | "document" | "task" | "interaction";
   entityId?: string;
   entityName?: string;
   metadata?: Record<string, unknown>;
@@ -63,35 +63,44 @@ export const useActivityFeed = () => {
   const limit = ref(10);
   const offset = ref(0);
 
-  const getInteractionIcon = (type: Interaction['type']): string => {
-    const iconMap: Record<Interaction['type'], string> = {
-      email: '📧',
-      phone_call: '☎️',
-      text: '💬',
-      in_person_visit: '🤝',
-      virtual_meeting: '💻',
-      camp: '⛺',
-      showcase: '🎬',
-      tweet: '🐦',
-      dm: '📱',
+  const getInteractionIcon = (type: Interaction["type"]): string => {
+    const iconMap: Record<Interaction["type"], string> = {
+      email: "📧",
+      phone_call: "☎️",
+      text: "💬",
+      in_person_visit: "🤝",
+      virtual_meeting: "💻",
+      camp: "⛺",
+      showcase: "🎬",
+      tweet: "🐦",
+      dm: "📱",
     };
-    return iconMap[type] || '📝';
+    return iconMap[type] || "📝";
   };
 
-  const getInteractionTitle = (interaction: Interaction, school?: School): string => {
-    const schoolName = school?.name || 'Unknown School';
-    const typeLabel = interaction.type.replace(/_/g, ' ');
+  const getInteractionTitle = (
+    interaction: Interaction,
+    school?: School,
+  ): string => {
+    const schoolName = school?.name || "Unknown School";
+    const typeLabel = interaction.type.replace(/_/g, " ");
     return `${typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1)} with ${schoolName}`;
   };
 
   const getInteractionDescription = (interaction: Interaction): string => {
     if (interaction.content) {
-      return interaction.content.substring(0, 50) + (interaction.content.length > 50 ? '...' : '');
+      return (
+        interaction.content.substring(0, 50) +
+        (interaction.content.length > 50 ? "..." : "")
+      );
     }
     if (interaction.subject) {
-      return interaction.subject.substring(0, 50) + (interaction.subject.length > 50 ? '...' : '');
+      return (
+        interaction.subject.substring(0, 50) +
+        (interaction.subject.length > 50 ? "..." : "")
+      );
     }
-    return 'No additional details';
+    return "No additional details";
   };
 
   const formatRelativeTime = (dateString: string): string => {
@@ -102,18 +111,21 @@ export const useActivityFeed = () => {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'just now';
+    if (diffMins < 1) return "just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
 
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
     });
   };
 
-  const fetchActivities = async (options?: { limit?: number; offset?: number }): Promise<void> => {
+  const fetchActivities = async (options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<void> => {
     if (!session.value?.user?.id) return;
 
     loading.value = true;
@@ -127,19 +139,23 @@ export const useActivityFeed = () => {
 
       // Fetch interactions
       const { data: interactions } = await supabase
-        .from('interactions')
-        .select('id, school_id, type, content, subject, occurred_at, created_at')
-        .eq('logged_by', session.value!.user!.id)
-        .order('created_at', { ascending: false })
+        .from("interactions")
+        .select(
+          "id, school_id, type, content, subject, occurred_at, created_at",
+        )
+        .eq("logged_by", session.value!.user!.id)
+        .order("created_at", { ascending: false })
         .limit(50);
 
       if (interactions && interactions.length > 0) {
         // Get school details for interactions
-        const schoolIds = [...new Set(interactions.map((i) => i.school_id).filter(Boolean))];
+        const schoolIds = [
+          ...new Set(interactions.map((i) => i.school_id).filter(Boolean)),
+        ];
         const { data: schools } = await supabase
-          .from('schools')
-          .select('id, name')
-          .in('id', schoolIds);
+          .from("schools")
+          .select("id, name")
+          .in("id", schoolIds);
 
         const schoolMap = new Map(schools?.map((s) => [s.id, s]) || []);
 
@@ -147,12 +163,15 @@ export const useActivityFeed = () => {
           const school = schoolMap.get(interaction.school_id);
           events.push({
             id: `interaction-${interaction.id}`,
-            type: 'interaction',
-            timestamp: interaction.occurred_at || interaction.created_at || new Date().toISOString(),
+            type: "interaction",
+            timestamp:
+              interaction.occurred_at ||
+              interaction.created_at ||
+              new Date().toISOString(),
             title: getInteractionTitle(interaction as Interaction, school),
             description: getInteractionDescription(interaction as Interaction),
-            icon: getInteractionIcon(interaction.type as Interaction['type']),
-            entityType: 'interaction',
+            icon: getInteractionIcon(interaction.type as Interaction["type"]),
+            entityType: "interaction",
             entityId: interaction.id,
             entityName: school?.name,
             clickable: true,
@@ -163,33 +182,37 @@ export const useActivityFeed = () => {
 
       // Fetch school status changes
       const { data: statusChanges } = await supabase
-        .from('school_status_history')
-        .select('id, school_id, new_status, notes, changed_at')
-        .eq('changed_by', session.value!.user!.id)
-        .order('changed_at', { ascending: false })
+        .from("school_status_history")
+        .select("id, school_id, new_status, notes, changed_at")
+        .eq("changed_by", session.value!.user!.id)
+        .order("changed_at", { ascending: false })
         .limit(50);
 
       if (statusChanges && statusChanges.length > 0) {
         // Get school details for status changes
-        const statusSchoolIds = [...new Set(statusChanges.map((s) => s.school_id).filter(Boolean))];
+        const statusSchoolIds = [
+          ...new Set(statusChanges.map((s) => s.school_id).filter(Boolean)),
+        ];
         const { data: statusSchools } = await supabase
-          .from('schools')
-          .select('id, name')
-          .in('id', statusSchoolIds);
+          .from("schools")
+          .select("id, name")
+          .in("id", statusSchoolIds);
 
-        const statusSchoolMap = new Map(statusSchools?.map((s) => [s.id, s]) || []);
+        const statusSchoolMap = new Map(
+          statusSchools?.map((s) => [s.id, s]) || [],
+        );
 
         statusChanges.forEach((change) => {
           const school = statusSchoolMap.get(change.school_id);
-          const statusLabel = change.new_status.replace(/_/g, ' ');
+          const statusLabel = change.new_status.replace(/_/g, " ");
           events.push({
             id: `status-${change.id}`,
-            type: 'school_status_change',
+            type: "school_status_change",
             timestamp: change.changed_at,
             title: `${school?.name} status changed to ${statusLabel}`,
-            description: change.notes || 'No additional notes',
-            icon: '📍',
-            entityType: 'school',
+            description: change.notes || "No additional notes",
+            icon: "📍",
+            entityType: "school",
             entityId: change.school_id,
             entityName: school?.name,
             clickable: true,
@@ -200,23 +223,23 @@ export const useActivityFeed = () => {
 
       // Fetch documents
       const { data: documents } = await supabase
-        .from('documents')
-        .select('id, title, type, created_at')
-        .eq('user_id', session.value!.user!.id)
-        .order('created_at', { ascending: false })
+        .from("documents")
+        .select("id, title, type, created_at")
+        .eq("user_id", session.value!.user!.id)
+        .order("created_at", { ascending: false })
         .limit(50);
 
       if (documents && documents.length > 0) {
         documents.forEach((doc) => {
-          const typeLabel = doc.type.replace(/_/g, ' ');
+          const typeLabel = doc.type.replace(/_/g, " ");
           events.push({
             id: `doc-${doc.id}`,
-            type: 'document_upload',
+            type: "document_upload",
             timestamp: doc.created_at,
             title: `Uploaded ${typeLabel}`,
             description: doc.title,
-            icon: '📄',
-            entityType: 'document',
+            icon: "📄",
+            entityType: "document",
             entityId: doc.id,
             entityName: doc.title,
             clickable: false,
@@ -232,7 +255,10 @@ export const useActivityFeed = () => {
       });
 
       // Apply limit and offset
-      const paginatedEvents = events.slice(fetchOffset, fetchOffset + fetchLimit);
+      const paginatedEvents = events.slice(
+        fetchOffset,
+        fetchOffset + fetchLimit,
+      );
 
       // Format relative time for display
       paginatedEvents.forEach((event) => {
@@ -243,8 +269,9 @@ export const useActivityFeed = () => {
 
       activities.value = paginatedEvents;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch activities';
-      console.error('Error fetching activities:', err);
+      error.value =
+        err instanceof Error ? err.message : "Failed to fetch activities";
+      console.error("Error fetching activities:", err);
       activities.value = [];
     } finally {
       loading.value = false;
@@ -257,73 +284,81 @@ export const useActivityFeed = () => {
     let channel: RealtimeChannel | null = null;
 
     try {
-      channel = supabase.channel('activity-feed');
+      channel = supabase.channel("activity-feed");
 
       // Subscribe to new interactions
       channel.on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'interactions',
+          event: "INSERT",
+          schema: "public",
+          table: "interactions",
           filter: `logged_by=eq.${session.value!.user!.id}`,
         },
         async (payload) => {
           const interaction = payload.new as unknown as InteractionPayload;
           const { data: school } = await supabase
-            .from('schools')
-            .select('id, name')
-            .eq('id', interaction.school_id)
+            .from("schools")
+            .select("id, name")
+            .eq("id", interaction.school_id)
             .single();
 
           const newEvent: ActivityEvent = {
             id: `interaction-${interaction.id}`,
-            type: 'interaction',
-            timestamp: interaction.occurred_at || interaction.created_at || new Date().toISOString(),
+            type: "interaction",
+            timestamp:
+              interaction.occurred_at ||
+              interaction.created_at ||
+              new Date().toISOString(),
             title: getInteractionTitle(interaction, school),
             description: getInteractionDescription(interaction),
             icon: getInteractionIcon(interaction.type),
-            entityType: 'interaction',
+            entityType: "interaction",
             entityId: interaction.id,
             entityName: school?.name,
             clickable: true,
             clickUrl: `/interactions?id=${interaction.id}`,
             metadata: {
-              relativeTime: formatRelativeTime(interaction.occurred_at || interaction.created_at),
+              relativeTime: formatRelativeTime(
+                interaction.occurred_at || interaction.created_at,
+              ),
             },
           };
 
           // Prepend to feed
-          activities.value = [newEvent, ...activities.value.slice(0, limit.value - 1)];
-        }
+          activities.value = [
+            newEvent,
+            ...activities.value.slice(0, limit.value - 1),
+          ];
+        },
       );
 
       // Subscribe to school status changes
       channel.on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'school_status_history',
+          event: "INSERT",
+          schema: "public",
+          table: "school_status_history",
           filter: `changed_by=eq.${session.value!.user!.id}`,
         },
         async (payload) => {
           const change = payload.new as unknown as SchoolStatusPayload;
           const { data: school } = await supabase
-            .from('schools')
-            .select('id, name')
-            .eq('id', change.school_id)
+            .from("schools")
+            .select("id, name")
+            .eq("id", change.school_id)
             .single();
 
-          const statusLabel = change.new_status.replace(/_/g, ' ');
+          const statusLabel = change.new_status.replace(/_/g, " ");
           const newEvent: ActivityEvent = {
             id: `status-${change.id}`,
-            type: 'school_status_change',
+            type: "school_status_change",
             timestamp: change.changed_at,
             title: `${school?.name} status changed to ${statusLabel}`,
-            description: change.notes || 'No additional notes',
-            icon: '📍',
-            entityType: 'school',
+            description: change.notes || "No additional notes",
+            icon: "📍",
+            entityType: "school",
             entityId: change.school_id,
             entityName: school?.name,
             clickable: true,
@@ -333,30 +368,33 @@ export const useActivityFeed = () => {
             },
           };
 
-          activities.value = [newEvent, ...activities.value.slice(0, limit.value - 1)];
-        }
+          activities.value = [
+            newEvent,
+            ...activities.value.slice(0, limit.value - 1),
+          ];
+        },
       );
 
       // Subscribe to document uploads
       channel.on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'documents',
+          event: "INSERT",
+          schema: "public",
+          table: "documents",
           filter: `user_id=eq.${session.value!.user!.id}`,
         },
         (payload) => {
           const doc = payload.new as unknown as DocumentPayload;
-          const typeLabel = doc.type.replace(/_/g, ' ');
+          const typeLabel = doc.type.replace(/_/g, " ");
           const newEvent: ActivityEvent = {
             id: `doc-${doc.id}`,
-            type: 'document_upload',
+            type: "document_upload",
             timestamp: doc.created_at,
             title: `Uploaded ${typeLabel}`,
             description: doc.title,
-            icon: '📄',
-            entityType: 'document',
+            icon: "📄",
+            entityType: "document",
             entityId: doc.id,
             entityName: doc.title,
             clickable: false,
@@ -365,13 +403,16 @@ export const useActivityFeed = () => {
             },
           };
 
-          activities.value = [newEvent, ...activities.value.slice(0, limit.value - 1)];
-        }
+          activities.value = [
+            newEvent,
+            ...activities.value.slice(0, limit.value - 1),
+          ];
+        },
       );
 
       channel.subscribe();
     } catch (err) {
-      console.error('Error subscribing to activity updates:', err);
+      console.error("Error subscribing to activity updates:", err);
     }
 
     onUnmounted(() => {

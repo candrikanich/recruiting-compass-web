@@ -124,13 +124,13 @@ graph TD
 
 ### Fit Score Components & Weighting
 
-| Component | Weight | Calculation |
-|-----------|--------|-------------|
-| **Academic Fit** | 30% | `(userGPA/schoolGPA) * 10` capped at 10, adjusted for test scores |
-| **Athletic Fit** | 30% | Compare user stats percentile vs. school recruit averages |
-| **Location Fit** | 15% | Distance score + region preference match (1-10) |
-| **Program Fit** | 15% | School reputation rank + coaching style alignment |
-| **Financial Fit** | 10% | Scholarship availability for position + program budget |
+| Component         | Weight | Calculation                                                       |
+| ----------------- | ------ | ----------------------------------------------------------------- |
+| **Academic Fit**  | 30%    | `(userGPA/schoolGPA) * 10` capped at 10, adjusted for test scores |
+| **Athletic Fit**  | 30%    | Compare user stats percentile vs. school recruit averages         |
+| **Location Fit**  | 15%    | Distance score + region preference match (1-10)                   |
+| **Program Fit**   | 15%    | School reputation rank + coaching style alignment                 |
+| **Financial Fit** | 10%    | Scholarship availability for position + program budget            |
 
 ### Calculation Formula
 
@@ -142,17 +142,20 @@ Fit Score = (0.30 × Academic) + (0.30 × Athletic)
 ### Example Calculation
 
 **User Profile:**
+
 - GPA: 3.2 | Test Score: 1050 (SAT)
 - Stats: 2.50 ERA, 92 mph fastball
 - Location: Midwest preference
 - Position: RHP (Right Handed Pitcher)
 
 **School Profile (Duke):**
+
 - Average GPA: 3.8 | Average SAT: 1520
 - Typical pitcher ERA: 3.0 | Velocity: 94 mph
 - Location: North Carolina (Southeast)
 
 **Calculations:**
+
 - Academic: (3.2/3.8) × 10 = 8.4 → Adjusted for test score = 7.8
 - Athletic: (2.5/3.0) × 10 = 8.3 (ERA good relative to school)
 - Location: 4 (far from Midwest preference)
@@ -165,6 +168,7 @@ Fit Score = (0.30 × Academic) + (0.30 × Athletic)
 ### Trigger Events
 
 Fit scores are recalculated when:
+
 - User updates profile (GPA, stats, location preference)
 - New school added to list
 - Performance metrics updated
@@ -186,8 +190,11 @@ const calculateFitScore = async (userId, schoolId) => {
   const financial = calculateFinancialFit(user, school);
 
   const fitScore = Math.round(
-    (0.30 * academic) + (0.30 * athletic) + (0.15 * location) +
-    (0.15 * program) + (0.10 * financial)
+    0.3 * academic +
+      0.3 * athletic +
+      0.15 * location +
+      0.15 * program +
+      0.1 * financial,
   );
 
   return Math.min(10, Math.max(1, fitScore));
@@ -257,6 +264,7 @@ graph TD
 ### Suggestion Types & Triggers
 
 #### Follow-up Suggestions
+
 **Trigger:** Coach contact is 45+ days old with no response from user
 
 ```
@@ -267,6 +275,7 @@ RANK: Medium-High (depends on coach responsiveness score)
 ```
 
 #### Fit Match Suggestions
+
 **Trigger:** New school added that matches profile well
 
 ```
@@ -278,6 +287,7 @@ RANK: Medium (depends on user tier distribution)
 ```
 
 #### Activity Suggestions
+
 **Trigger:** User's phase has recommended activities not completed
 
 ```
@@ -289,6 +299,7 @@ RANK: High (time-sensitive, phase-specific)
 ```
 
 #### Milestone Suggestions
+
 **Trigger:** User has completed all phase tasks
 
 ```
@@ -345,9 +356,9 @@ const generateSuggestions = async (userId) => {
   // Follow-up suggestions
   for (const coach of getCoachesBySilenceThreshold(interactions, 45)) {
     suggestions.push({
-      type: 'follow-up',
+      type: "follow-up",
       coach_id: coach.id,
-      priority: getPriority(coach)
+      priority: getPriority(coach),
     });
   }
 
@@ -355,9 +366,9 @@ const generateSuggestions = async (userId) => {
   for (const school of getCandidateSchools(user, schools)) {
     if (school.fit_score >= 8.5) {
       suggestions.push({
-        type: 'fit-match',
+        type: "fit-match",
         school_id: school.id,
-        priority: 5
+        priority: 5,
       });
     }
   }
@@ -425,28 +436,31 @@ graph TD
 
 ### Survey Questions & Scoring
 
-| Question | Scale | Scoring |
-|----------|-------|---------|
-| How interested are you in [School]? | 1-10 | Direct score |
-| Would you visit campus if invited? | Yes/No | Yes=+2, No=-2 |
-| Good academic fit? | Yes/No/Unsure | Yes=+2, Unsure=0, No=-2 |
-| Good athletic fit? | Yes/No/Unsure | Yes=+2, Unsure=0, No=-2 |
-| Good location fit? | Yes/No/Unsure | Yes=+1, Unsure=0, No=-1 |
-| Next action? | [Reach out/Wait/Follow-up/None] | Reach out=+1 |
+| Question                            | Scale                           | Scoring                 |
+| ----------------------------------- | ------------------------------- | ----------------------- |
+| How interested are you in [School]? | 1-10                            | Direct score            |
+| Would you visit campus if invited?  | Yes/No                          | Yes=+2, No=-2           |
+| Good academic fit?                  | Yes/No/Unsure                   | Yes=+2, Unsure=0, No=-2 |
+| Good athletic fit?                  | Yes/No/Unsure                   | Yes=+2, Unsure=0, No=-2 |
+| Good location fit?                  | Yes/No/Unsure                   | Yes=+1, Unsure=0, No=-1 |
+| Next action?                        | [Reach out/Wait/Follow-up/None] | Reach out=+1            |
 
 ### Interest Classification
 
 **High Interest (Score 8+):** User genuinely interested
+
 - Suggestion: Schedule campus visit
 - Suggestion: Send follow-up email
 - Add to priority outreach list
 
 **Medium Interest (Score 4-7):** Interested but uncertain
+
 - Suggestion: Log more interactions
 - Suggestion: Attend camp if school hosts
 - Monitor responsiveness
 
 **Low Interest (Score <4):** Not interested or poor fit
+
 - Suggestion: Consider removing from list
 - Suggestion: Or focus on other schools
 - Keep in list for reference but don't prioritize
@@ -545,6 +559,7 @@ FOR EACH coach in user_coach_list:
 #### Recovery Plan Generation
 
 **New Angle Suggestion:**
+
 - Analyze coach's recruiting needs (position, profile)
 - Look at past successful interactions
 - Suggest new topic: "Mention your recent stats improvement"
@@ -552,12 +567,14 @@ FOR EACH coach in user_coach_list:
 - Or different approach: "Email instead of phone"
 
 **Optimal Timing Suggestion:**
+
 - Check coach's recruiting calendar
 - Look at past response patterns
 - Suggest: "Reach out on Tuesday evening (their typical response time)"
 - Avoid: "Don't email Friday night (never respond until Monday)"
 
 **Sample Message:**
+
 - Pull from email template library
 - Personalize with coach name, school, recent stats
 - Provide ready-to-send message: "Hi Coach [Name], just wanted to check in..."
@@ -577,7 +594,7 @@ const generateRecoveryPlan = async (userId, coachId) => {
 
   const lastOutreach = getLastUserOutreach(interactions);
   if (lastOutreach && lastOutreach.days < 7) {
-    return { status: 'waiting' };
+    return { status: "waiting" };
   }
 
   const newAngle = suggestNewAngle(coach, interactions);
@@ -585,11 +602,11 @@ const generateRecoveryPlan = async (userId, coachId) => {
   const sampleMessage = generateSampleMessage(coach, interactions);
 
   return {
-    status: 'silent',
+    status: "silent",
     newAngle,
     optimalTiming,
     sampleMessage,
-    daysSilent
+    daysSilent,
   };
 };
 ```
@@ -606,13 +623,14 @@ const generateRecoveryPlan = async (userId, coachId) => {
 ## Feature Implementation Order
 
 **Priority 1 (MVP):**
+
 - Timeline Phase Advancement
 - Fit Score Calculation
 - Interest Calibration
 
 **Priority 2:**
+
 - AI Suggestion Engine
 - Recovery Plan Trigger
 
 All features should include comprehensive error handling, logging, and monitoring.
-

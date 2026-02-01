@@ -7,7 +7,9 @@
       class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-all"
     >
       <!-- Avatar -->
-      <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center">
+      <div
+        class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center"
+      >
         <img
           v-if="profilePhotoUrl"
           :src="profilePhotoUrl"
@@ -15,10 +17,7 @@
           class="w-full h-full object-cover"
           @error="handleImageError"
         />
-        <span
-          v-else
-          class="text-white text-sm font-semibold"
-        >
+        <span v-else class="text-white text-sm font-semibold">
           {{ userInitials }}
         </span>
       </div>

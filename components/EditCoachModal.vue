@@ -213,20 +213,24 @@ const form = reactive({
 // Watch for changes to coach prop and update form
 const { coach } = toRefs(props);
 
-watch(coach, (newCoach) => {
-  if (newCoach) {
-    Object.assign(form, {
-      first_name: newCoach.first_name,
-      last_name: newCoach.last_name,
-      email: newCoach.email || "",
-      phone: newCoach.phone || "",
-      twitter_handle: newCoach.twitter_handle || "",
-      instagram_handle: newCoach.instagram_handle || "",
-      role: newCoach.role,
-      notes: newCoach.notes || "",
-    });
-  }
-}, { deep: true });
+watch(
+  coach,
+  (newCoach) => {
+    if (newCoach) {
+      Object.assign(form, {
+        first_name: newCoach.first_name,
+        last_name: newCoach.last_name,
+        email: newCoach.email || "",
+        phone: newCoach.phone || "",
+        twitter_handle: newCoach.twitter_handle || "",
+        instagram_handle: newCoach.instagram_handle || "",
+        role: newCoach.role,
+        notes: newCoach.notes || "",
+      });
+    }
+  },
+  { deep: true },
+);
 
 const handleSubmit = async () => {
   loading.value = true;

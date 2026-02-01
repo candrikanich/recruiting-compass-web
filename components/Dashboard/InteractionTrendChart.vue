@@ -21,10 +21,15 @@
       <canvas ref="chartCanvas"></canvas>
     </div>
 
-    <div v-else class="h-64 flex flex-col items-center justify-center rounded-lg bg-slate-50 text-slate-600">
+    <div
+      v-else
+      class="h-64 flex flex-col items-center justify-center rounded-lg bg-slate-50 text-slate-600"
+    >
       <ChatBubbleLeftRightIcon class="w-12 h-12 mb-3 text-slate-400" />
       <p class="text-sm font-medium">No interactions in the last 30 days</p>
-      <p class="text-xs text-slate-500 mt-1">Log your first interaction to see trends here</p>
+      <p class="text-xs text-slate-500 mt-1">
+        Log your first interaction to see trends here
+      </p>
       <NuxtLink
         to="/interactions/new"
         class="mt-4 px-4 py-2 bg-brand-blue-500 text-white text-sm rounded-lg hover:bg-brand-blue-600 transition-colors"
@@ -199,7 +204,7 @@ const initializeChart = () => {
       },
     });
   } catch (error) {
-    console.error('[InteractionTrendChart] Error:', error);
+    console.error("[InteractionTrendChart] Error:", error);
   }
 };
 

@@ -32,36 +32,36 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue"
+import { computed } from "vue";
 
 interface Props {
-  modelValue: "A" | "B" | "C" | null
+  modelValue: "A" | "B" | "C" | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: null,
-})
+});
 
 const emit = defineEmits<{
-  "update:modelValue": ["A" | "B" | "C" | null]
-}>()
+  "update:modelValue": ["A" | "B" | "C" | null];
+}>();
 
-const tiers: Array<"A" | "B" | "C"> = ["A", "B", "C"]
+const tiers: Array<"A" | "B" | "C"> = ["A", "B", "C"];
 
 const tierLabel = computed(() => {
   const labels: Record<"A" | "B" | "C", string> = {
     A: "Top Choice",
     B: "Strong Interest",
     C: "Fallback",
-  }
-  return labels[props.modelValue as "A" | "B" | "C"]
-})
+  };
+  return labels[props.modelValue as "A" | "B" | "C"];
+});
 
 const selectTier = (tier: "A" | "B" | "C") => {
-  emit("update:modelValue", props.modelValue === tier ? null : tier)
-}
+  emit("update:modelValue", props.modelValue === tier ? null : tier);
+};
 
 const clearTier = () => {
-  emit("update:modelValue", null)
-}
+  emit("update:modelValue", null);
+};
 </script>

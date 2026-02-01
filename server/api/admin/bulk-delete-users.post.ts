@@ -64,9 +64,7 @@ export default defineEventHandler(
         .single();
 
       if (!userData?.is_admin) {
-        logger.warn(
-          `Non-admin user ${user.id} attempted bulk delete of users`,
-        );
+        logger.warn(`Non-admin user ${user.id} attempted bulk delete of users`);
         throw createError({
           statusCode: 403,
           statusMessage: "Only administrators can delete users",
@@ -140,7 +138,10 @@ export default defineEventHandler(
 
           // Delete all user data from database tables in order of dependencies
           const tableDeleteAttempts = [
-            { table: "parent_view_log", columns: ["parent_user_id", "athlete_id"] },
+            {
+              table: "parent_view_log",
+              columns: ["parent_user_id", "athlete_id"],
+            },
             { table: "user_preferences", columns: ["user_id"] },
             { table: "preference_history", columns: ["user_id"] },
             { table: "athlete_task", columns: ["athlete_id"] },
@@ -166,11 +167,17 @@ export default defineEventHandler(
                   .eq(column, targetUserId);
 
                 if (deleteError && deleteError.code !== "42P01") {
-                  logger.warn(`Failed to delete from ${table}.${column}:`, deleteError);
+                  logger.warn(
+                    `Failed to delete from ${table}.${column}:`,
+                    deleteError,
+                  );
                 }
               }
             } catch (error) {
-              logger.warn(`Error deleting from ${table} for user ${targetUserId}:`, error);
+              logger.warn(
+                `Error deleting from ${table} for user ${targetUserId}:`,
+                error,
+              );
             }
           }
 
@@ -237,7 +244,9 @@ export default defineEventHandler(
       throw createError({
         statusCode: 500,
         statusMessage:
-          error instanceof Error ? error.message : "Failed to bulk delete users",
+          error instanceof Error
+            ? error.message
+            : "Failed to bulk delete users",
       });
     }
   },

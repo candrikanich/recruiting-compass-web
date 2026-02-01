@@ -11,7 +11,7 @@ vi.mock("~/composables/useSupabase", () => ({
       from: vi.fn((table: string) => {
         if (table === "schools") {
           return {
-            update: vi.fn(function(data: any) {
+            update: vi.fn(function (data: any) {
               lastStatus = data.status || lastStatus;
               return this;
             }),

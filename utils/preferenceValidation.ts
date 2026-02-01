@@ -18,7 +18,7 @@ import type {
  * Provides sensible defaults for missing fields
  */
 export function validateNotificationSettings(
-  data: unknown
+  data: unknown,
 ): NotificationSettings | null {
   if (!data || typeof data !== "object") return null;
 
@@ -31,7 +31,7 @@ export function validateNotificationSettings(
     enableDailyDigest: toBoolean(obj.enableDailyDigest, true),
     enableInboundInteractionAlerts: toBoolean(
       obj.enableInboundInteractionAlerts,
-      true
+      true,
     ),
     enableEmailNotifications: toBoolean(obj.enableEmailNotifications, true),
     emailOnlyHighPriority: toBoolean(obj.emailOnlyHighPriority, false),
@@ -122,7 +122,7 @@ export function validatePlayerDetails(data: unknown): PlayerDetails | null {
  * Returns null if empty/missing
  */
 export function validateSchoolPreferences(
-  data: unknown
+  data: unknown,
 ): SchoolPreferences | null {
   if (!data || typeof data !== "object") return null;
 
@@ -136,12 +136,9 @@ export function validateSchoolPreferences(
       const p = pref as Record<string, unknown>;
       return {
         id: toString(p.id) || "",
-        category: toOption(p.category, [
-          "location",
-          "academic",
-          "program",
-          "custom",
-        ]) || ("custom" as const),
+        category:
+          toOption(p.category, ["location", "academic", "program", "custom"]) ||
+          ("custom" as const),
         type: toString(p.type) || "",
         value: p.value,
         priority: toNumber(p.priority, 0),
@@ -158,7 +155,7 @@ export function validateSchoolPreferences(
  * Returns null if empty/missing
  */
 export function validateDashboardLayout(
-  data: unknown
+  data: unknown,
 ): DashboardWidgetVisibility | null {
   if (!data || typeof data !== "object") return null;
 
@@ -237,7 +234,7 @@ function toArray(value: unknown): unknown[] {
 
 function toOption<T extends string>(
   value: unknown,
-  validOptions: T[]
+  validOptions: T[],
 ): T | undefined {
   const str = String(value).trim();
   if (!str) return undefined;

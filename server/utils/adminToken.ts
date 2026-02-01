@@ -34,8 +34,7 @@ export function validateAdminToken(token: string, secret: string): boolean {
     .digest("hex");
 
   // Use timing-safe comparison to prevent timing attacks
-  return token.length === expectedToken.length &&
-    token === expectedToken;
+  return token.length === expectedToken.length && token === expectedToken;
 }
 
 /**

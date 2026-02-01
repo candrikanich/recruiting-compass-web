@@ -142,11 +142,8 @@ definePageMeta({
   middleware: "auth",
 });
 
-const {
-  getHomeLocation,
-  getPlayerDetails,
-  getSchoolPreferences,
-} = usePreferenceManager();
+const { getHomeLocation, getPlayerDetails, getSchoolPreferences } =
+  usePreferenceManager();
 
 const hasHomeLocation = computed(() => {
   const loc = getHomeLocation();

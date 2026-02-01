@@ -61,7 +61,7 @@ export const useRecruitingPacket = () => {
         `
         *,
         athletes:athlete_profiles(*)
-      `
+      `,
       )
       .eq("user_id", userStore.user.id)
       .single();
@@ -94,7 +94,9 @@ export const useRecruitingPacket = () => {
   /**
    * Group schools by priority tier
    */
-  const groupSchoolsByTier = (schoolList: School[]): SchoolGroupedByPriority => {
+  const groupSchoolsByTier = (
+    schoolList: School[],
+  ): SchoolGroupedByPriority => {
     const grouped: SchoolGroupedByPriority = {
       tier_a: [],
       tier_b: [],
@@ -151,16 +153,19 @@ export const useRecruitingPacket = () => {
       emails: interactions.value.filter((i) => i.type === "email").length,
       calls: interactions.value.filter((i) => i.type === "phone_call").length,
       camps: interactions.value.filter(
-        (i) => i.type === "camp" || i.type === "showcase"
+        (i) => i.type === "camp" || i.type === "showcase",
       ).length,
-      visits: interactions.value.filter((i) =>
-        i.type.includes("visit")
-      ).length,
+      visits: interactions.value.filter((i) => i.type.includes("visit")).length,
       other: interactions.value.filter(
         (i) =>
-          !["email", "phone_call", "camp", "showcase", "in_person_visit", "virtual_meeting"].includes(
-            i.type
-          )
+          ![
+            "email",
+            "phone_call",
+            "camp",
+            "showcase",
+            "in_person_visit",
+            "virtual_meeting",
+          ].includes(i.type),
       ).length,
     };
 
@@ -170,7 +175,7 @@ export const useRecruitingPacket = () => {
       const sorted = [...interactions.value].sort(
         (a, b) =>
           new Date(b.occurred_at || 0).getTime() -
-          new Date(a.occurred_at || 0).getTime()
+          new Date(a.occurred_at || 0).getTime(),
       );
       recentContact = new Date(sorted[0].occurred_at || new Date());
     }
@@ -218,7 +223,7 @@ export const useRecruitingPacket = () => {
 
       // Generate filename
       const filename = generatePacketFilename(
-        packetData.athlete.full_name || "athlete"
+        packetData.athlete.full_name || "athlete",
       );
 
       return {
@@ -323,7 +328,7 @@ export const useRecruitingPacket = () => {
       // Convert to base64 for transmission
       const pdfBase64 = await getPacketAsBase64();
       const filename = generatePacketFilename(
-        generatedData.value!.athlete.full_name || "athlete"
+        generatedData.value!.athlete.full_name || "athlete",
       );
 
       // Call API endpoint
@@ -365,7 +370,8 @@ export const useRecruitingPacket = () => {
    */
   const getDefaultEmailBody = (): string => {
     const athleteName = generatedData.value?.athlete.full_name || "Athlete";
-    const graduationYear = generatedData.value?.athlete.graduation_year || "N/A";
+    const graduationYear =
+      generatedData.value?.athlete.graduation_year || "N/A";
     const position = generatedData.value?.athlete.position || "Baseball Player";
 
     return `Dear Coach,

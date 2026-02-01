@@ -65,7 +65,9 @@
         <div class="flex flex-col lg:flex-row lg:items-center gap-4">
           <!-- Search (left) -->
           <div class="flex-1">
-            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+            <label
+              class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3"
+            >
               Find Schools
             </label>
             <div class="relative group">
@@ -90,13 +92,13 @@
           <!-- Fit Score Slider (equal width) -->
           <div class="w-full lg:w-1/4">
             <div class="flex items-center justify-between mb-2">
-              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              <label
+                class="block text-xs font-semibold text-slate-500 uppercase tracking-wide"
+              >
                 Fit Score
               </label>
               <span class="text-sm font-semibold text-blue-600">
-                {{
-                  (filterValues.value as any)?.fit_score?.min ?? 0
-                }}–{{
+                {{ (filterValues.value as any)?.fit_score?.min ?? 0 }}–{{
                   (filterValues.value as any)?.fit_score?.max ?? 100
                 }}
               </span>
@@ -107,14 +109,11 @@
                 min="0"
                 max="100"
                 step="5"
-                :value="
-                  (filterValues.value as any)?.fit_score?.min ?? 0
-                "
+                :value="(filterValues.value as any)?.fit_score?.min ?? 0"
                 @input="
                   handleFilterUpdate('fit_score', {
                     min: parseInt(($event.target as HTMLInputElement).value),
-                    max:
-                      (filterValues.value as any)?.fit_score?.max ?? 100,
+                    max: (filterValues.value as any)?.fit_score?.max ?? 100,
                   })
                 "
                 class="flex-1 h-2.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 transition-opacity"
@@ -124,13 +123,10 @@
                 min="0"
                 max="100"
                 step="5"
-                :value="
-                  (filterValues.value as any)?.fit_score?.max ?? 100
-                "
+                :value="(filterValues.value as any)?.fit_score?.max ?? 100"
                 @input="
                   handleFilterUpdate('fit_score', {
-                    min:
-                      (filterValues.value as any)?.fit_score?.min ?? 0,
+                    min: (filterValues.value as any)?.fit_score?.min ?? 0,
                     max: parseInt(($event.target as HTMLInputElement).value),
                   })
                 "
@@ -142,14 +138,13 @@
           <!-- Distance Slider (equal width) -->
           <div class="w-full lg:w-1/4">
             <div class="flex items-center justify-between mb-2">
-              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              <label
+                class="block text-xs font-semibold text-slate-500 uppercase tracking-wide"
+              >
                 Distance
               </label>
               <span class="text-sm font-semibold text-blue-600">
-                {{
-                  (filterValues.value as any)?.distance?.max ??
-                  3000
-                }}
+                {{ (filterValues.value as any)?.distance?.max ?? 3000 }}
                 <span class="text-xs text-slate-500">mi</span>
               </span>
             </div>
@@ -158,9 +153,7 @@
               min="0"
               max="3000"
               step="50"
-              :value="
-                (filterValues.value as any)?.distance?.max ?? 3000
-              "
+              :value="(filterValues.value as any)?.distance?.max ?? 3000"
               @input="
                 handleFilterUpdate('distance', {
                   max: parseInt(($event.target as HTMLInputElement).value),
@@ -181,10 +174,14 @@
         <!-- Filter Sections Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           <!-- Select Filters Row -->
-          <div class="lg:col-span-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+          <div
+            class="lg:col-span-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4"
+          >
             <!-- Division -->
             <div class="group">
-              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              <label
+                class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2"
+              >
                 Division
               </label>
               <select
@@ -196,7 +193,13 @@
                   )
                 "
                 class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
-                style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2rem;"
+                style="
+                  background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E&quot;);
+                  background-position: right 0.5rem center;
+                  background-repeat: no-repeat;
+                  background-size: 1.5em 1.5em;
+                  padding-right: 2rem;
+                "
               >
                 <option value="">All</option>
                 <option value="D1">D1</option>
@@ -209,7 +212,9 @@
 
             <!-- Status -->
             <div class="group">
-              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              <label
+                class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2"
+              >
                 Status
               </label>
               <select
@@ -221,7 +226,13 @@
                   )
                 "
                 class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
-                style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2rem;"
+                style="
+                  background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E&quot;);
+                  background-position: right 0.5rem center;
+                  background-repeat: no-repeat;
+                  background-size: 1.5em 1.5em;
+                  padding-right: 2rem;
+                "
               >
                 <option value="">All</option>
                 <option value="researching">Researching</option>
@@ -234,7 +245,9 @@
 
             <!-- State -->
             <div class="group">
-              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              <label
+                class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2"
+              >
                 State
               </label>
               <select
@@ -246,7 +259,13 @@
                   )
                 "
                 class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
-                style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2rem;"
+                style="
+                  background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E&quot;);
+                  background-position: right 0.5rem center;
+                  background-repeat: no-repeat;
+                  background-size: 1.5em 1.5em;
+                  padding-right: 2rem;
+                "
               >
                 <option value="">All</option>
                 <option
@@ -261,7 +280,9 @@
 
             <!-- Favorites -->
             <div class="group">
-              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              <label
+                class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2"
+              >
                 Favorites
               </label>
               <select
@@ -269,11 +290,18 @@
                 @change="
                   handleFilterUpdate(
                     'is_favorite',
-                    ($event.target as HTMLSelectElement).value === 'true' || null,
+                    ($event.target as HTMLSelectElement).value === 'true' ||
+                      null,
                   )
                 "
                 class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
-                style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2rem;"
+                style="
+                  background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E&quot;);
+                  background-position: right 0.5rem center;
+                  background-repeat: no-repeat;
+                  background-size: 1.5em 1.5em;
+                  padding-right: 2rem;
+                "
               >
                 <option value="">All</option>
                 <option value="true">⭐ Starred</option>
@@ -282,7 +310,9 @@
 
             <!-- Priority Tier Filter -->
             <div class="group">
-              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              <label
+                class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2"
+              >
                 Tier
               </label>
               <select
@@ -294,12 +324,23 @@
                 @change="
                   updatePriorityTierFilter(
                     ($event.target as HTMLSelectElement).value
-                      ? [($event.target as HTMLSelectElement).value as 'A' | 'B' | 'C']
+                      ? [
+                          ($event.target as HTMLSelectElement).value as
+                            | 'A'
+                            | 'B'
+                            | 'C',
+                        ]
                       : null,
                   )
                 "
                 class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
-                style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2rem;"
+                style="
+                  background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E&quot;);
+                  background-position: right 0.5rem center;
+                  background-repeat: no-repeat;
+                  background-size: 1.5em 1.5em;
+                  padding-right: 2rem;
+                "
               >
                 <option value="">All</option>
                 <option value="A">A - Top Choice</option>
@@ -310,14 +351,22 @@
 
             <!-- Sort Selector -->
             <div class="group">
-              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              <label
+                class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2"
+              >
                 Sort
               </label>
               <select
                 :value="sortBy"
                 @change="sortBy = ($event.target as HTMLSelectElement).value"
                 class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
-                style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2rem;"
+                style="
+                  background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3E%3Cpath stroke=%22%236b7280%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3E%3C/svg%3E&quot;);
+                  background-position: right 0.5rem center;
+                  background-repeat: no-repeat;
+                  background-size: 1.5em 1.5em;
+                  padding-right: 2rem;
+                "
               >
                 <option value="a-z">A-Z</option>
                 <option value="fit-score">Fit Score</option>
@@ -326,7 +375,6 @@
               </select>
             </div>
           </div>
-
         </div>
 
         <!-- Active Filters Chips -->
@@ -334,7 +382,9 @@
           v-if="hasActiveFilters"
           class="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100"
         >
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+          <span
+            class="text-xs font-semibold text-slate-500 uppercase tracking-wide"
+          >
             Filters:
           </span>
           <div class="flex flex-wrap gap-2">
@@ -365,7 +415,9 @@
       <!-- Results Intro -->
       <div v-if="!loading" class="mb-6">
         <p class="text-sm text-slate-600">
-          <span class="font-semibold text-slate-900">{{ filteredSchools.length }}</span>
+          <span class="font-semibold text-slate-900">{{
+            filteredSchools.length
+          }}</span>
           result{{ filteredSchools.length !== 1 ? "s" : "" }} found
         </p>
       </div>
@@ -508,7 +560,9 @@
                 {{ formatStatus(school.status) }}
               </span>
               <span
-                v-if="school.fit_score !== null && school.fit_score !== undefined"
+                v-if="
+                  school.fit_score !== null && school.fit_score !== undefined
+                "
                 :class="getFitScoreBadgeClass(school.fit_score)"
                 class="px-2 py-0.5 text-xs font-medium rounded-full"
               >
@@ -553,12 +607,19 @@
             <p v-if="school.conference" class="text-slate-600 text-sm mb-2">
               {{ school.conference }}
             </p>
-            <p v-if="school.notes" class="text-slate-600 text-sm line-clamp-2 mb-4">
+            <p
+              v-if="school.notes"
+              class="text-slate-600 text-sm line-clamp-2 mb-4"
+            >
               {{ school.notes }}
             </p>
 
             <!-- Private Notes Card -->
-            <PrivateNotesCard entity-type="school" :entity-id="school.id" class="mb-4" />
+            <PrivateNotesCard
+              entity-type="school"
+              :entity-id="school.id"
+              class="mb-4"
+            />
           </div>
 
           <!-- Actions -->
@@ -629,8 +690,7 @@ const { schools, loading, error, fetchSchools, toggleFavorite, deleteSchool } =
   useSchools();
 const { fetchMultipleLogos } = useSchoolLogos();
 const { calculateMatchScore } = useSchoolMatching();
-const { getSchoolPreferences, getHomeLocation } =
-  usePreferenceManager();
+const { getSchoolPreferences, getHomeLocation } = usePreferenceManager();
 const { offers, fetchOffers } = useOffers();
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { coaches: coachesData, fetchAllCoaches } = useCoaches();
@@ -654,7 +714,9 @@ watch(
     if (newUserId && schools.value.length === 0) {
       console.debug("[Schools] User initialized, re-fetching schools");
       await fetchSchools();
-      console.debug(`[Schools] Re-fetch complete: ${schools.value.length} schools`);
+      console.debug(
+        `[Schools] Re-fetch complete: ${schools.value.length} schools`,
+      );
     }
   },
 );
@@ -668,7 +730,9 @@ watch(
         `[Schools] Family changed: familyId=${newFamilyId}, re-fetching schools`,
       );
       // Pass the family context to the fetch to ensure it has access to it
-      console.debug(`[Schools] Current activeFamily ID for fetch: ${activeFamily.activeFamilyId.value}`);
+      console.debug(
+        `[Schools] Current activeFamily ID for fetch: ${activeFamily.activeFamilyId.value}`,
+      );
       await fetchSchools();
     }
   },
@@ -1078,15 +1142,13 @@ onMounted(async () => {
   console.debug("[Schools] Page mounted, fetching data");
   // Don't fetch schools here - the watchers will handle it when family context is ready
   // Just fetch other data that doesn't depend on family context
-  await Promise.all([
-    fetchOffers(),
-    fetchAllCoaches(),
-    fetchInteractions({}),
-  ]);
+  await Promise.all([fetchOffers(), fetchAllCoaches(), fetchInteractions({})]);
   allInteractions.value = interactionsData.value;
   allCoaches.value = coachesData.value;
 
-  console.debug(`[Schools] onMounted complete: ${schools.value.length} schools loaded`);
+  console.debug(
+    `[Schools] onMounted complete: ${schools.value.length} schools loaded`,
+  );
   if (schools.value.length > 0) {
     fetchMultipleLogos(schools.value).catch((err) => {
       console.warn("Failed to fetch logos:", err);

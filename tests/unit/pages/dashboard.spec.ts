@@ -143,8 +143,12 @@ describe("Dashboard Page Logic", () => {
       const currentYear = now.getUTCFullYear();
 
       // Use UTC to avoid timezone conversion ambiguity
-      const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
-      const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0));
+      const startOfMonth = new Date(
+        Date.UTC(currentYear, currentMonth, 1, 0, 0, 0),
+      );
+      const endOfMonth = new Date(
+        Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0),
+      );
 
       const interactions: Interaction[] = [
         {
@@ -152,7 +156,9 @@ describe("Dashboard Page Logic", () => {
           school_id: "school-1",
           type: "email",
           direction: "outbound",
-          occurred_at: new Date(Date.UTC(currentYear, currentMonth, 15, 12, 0, 0)).toISOString(),
+          occurred_at: new Date(
+            Date.UTC(currentYear, currentMonth, 15, 12, 0, 0),
+          ).toISOString(),
           logged_by: "user-1",
           created_at: new Date().toISOString(),
         },
@@ -161,7 +167,9 @@ describe("Dashboard Page Logic", () => {
           school_id: "school-2",
           type: "email",
           direction: "outbound",
-          occurred_at: new Date(Date.UTC(currentYear, currentMonth, 20, 14, 30, 0)).toISOString(),
+          occurred_at: new Date(
+            Date.UTC(currentYear, currentMonth, 20, 14, 30, 0),
+          ).toISOString(),
           logged_by: "user-1",
           created_at: new Date().toISOString(),
         },
@@ -182,8 +190,12 @@ describe("Dashboard Page Logic", () => {
       const currentYear = now.getUTCFullYear();
 
       // Use UTC to avoid timezone conversion ambiguity
-      const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
-      const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0));
+      const startOfMonth = new Date(
+        Date.UTC(currentYear, currentMonth, 1, 0, 0, 0),
+      );
+      const endOfMonth = new Date(
+        Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0),
+      );
       const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
       const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
@@ -193,7 +205,9 @@ describe("Dashboard Page Logic", () => {
           school_id: "school-1",
           type: "email",
           direction: "outbound",
-          occurred_at: new Date(Date.UTC(previousYear, previousMonth, 28, 12, 0, 0)).toISOString(),
+          occurred_at: new Date(
+            Date.UTC(previousYear, previousMonth, 28, 12, 0, 0),
+          ).toISOString(),
           logged_by: "user-1",
           created_at: new Date().toISOString(),
         },
@@ -202,7 +216,9 @@ describe("Dashboard Page Logic", () => {
           school_id: "school-2",
           type: "email",
           direction: "outbound",
-          occurred_at: new Date(Date.UTC(currentYear, currentMonth, 15, 12, 0, 0)).toISOString(),
+          occurred_at: new Date(
+            Date.UTC(currentYear, currentMonth, 15, 12, 0, 0),
+          ).toISOString(),
           logged_by: "user-1",
           created_at: new Date().toISOString(),
         },
@@ -222,8 +238,12 @@ describe("Dashboard Page Logic", () => {
       const currentYear = now.getUTCFullYear();
 
       // Use UTC to avoid timezone conversion ambiguity
-      const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
-      const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0));
+      const startOfMonth = new Date(
+        Date.UTC(currentYear, currentMonth, 1, 0, 0, 0),
+      );
+      const endOfMonth = new Date(
+        Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0),
+      );
       const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
       const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
 
@@ -233,7 +253,9 @@ describe("Dashboard Page Logic", () => {
           school_id: "school-1",
           type: "email",
           direction: "outbound",
-          occurred_at: new Date(Date.UTC(nextYear, nextMonth, 15, 12, 0, 0)).toISOString(),
+          occurred_at: new Date(
+            Date.UTC(nextYear, nextMonth, 15, 12, 0, 0),
+          ).toISOString(),
           logged_by: "user-1",
           created_at: new Date().toISOString(),
         },
@@ -242,7 +264,9 @@ describe("Dashboard Page Logic", () => {
           school_id: "school-2",
           type: "email",
           direction: "outbound",
-          occurred_at: new Date(Date.UTC(currentYear, currentMonth, 15, 12, 0, 0)).toISOString(),
+          occurred_at: new Date(
+            Date.UTC(currentYear, currentMonth, 15, 12, 0, 0),
+          ).toISOString(),
           logged_by: "user-1",
           created_at: new Date().toISOString(),
         },
@@ -262,8 +286,12 @@ describe("Dashboard Page Logic", () => {
       const currentYear = now.getUTCFullYear();
 
       // Use UTC to avoid timezone conversion ambiguity
-      const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
-      const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0));
+      const startOfMonth = new Date(
+        Date.UTC(currentYear, currentMonth, 1, 0, 0, 0),
+      );
+      const endOfMonth = new Date(
+        Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0),
+      );
       const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
       const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
@@ -273,7 +301,9 @@ describe("Dashboard Page Logic", () => {
           school_id: "school-1",
           type: "email",
           direction: "outbound",
-          occurred_at: new Date(Date.UTC(previousYear, previousMonth, 28, 12, 0, 0)).toISOString(),
+          occurred_at: new Date(
+            Date.UTC(previousYear, previousMonth, 28, 12, 0, 0),
+          ).toISOString(),
           logged_by: "user-1",
           created_at: new Date().toISOString(),
         },
@@ -293,8 +323,12 @@ describe("Dashboard Page Logic", () => {
       const currentYear = now.getUTCFullYear();
 
       // Use UTC to avoid timezone conversion ambiguity
-      const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
-      const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0));
+      const startOfMonth = new Date(
+        Date.UTC(currentYear, currentMonth, 1, 0, 0, 0),
+      );
+      const endOfMonth = new Date(
+        Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0),
+      );
 
       const interactions: Interaction[] = [
         {
@@ -303,7 +337,9 @@ describe("Dashboard Page Logic", () => {
           type: "email",
           direction: "outbound",
           occurred_at: undefined,
-          created_at: new Date(Date.UTC(currentYear, currentMonth, 15, 12, 0, 0)).toISOString(),
+          created_at: new Date(
+            Date.UTC(currentYear, currentMonth, 15, 12, 0, 0),
+          ).toISOString(),
           logged_by: "user-1",
         },
       ];
@@ -322,9 +358,15 @@ describe("Dashboard Page Logic", () => {
       const currentYear = now.getUTCFullYear();
 
       // Use UTC to avoid timezone conversion ambiguity
-      const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
-      const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0));
-      const sameDayISO = new Date(Date.UTC(currentYear, currentMonth, 15, 12, 0, 0)).toISOString();
+      const startOfMonth = new Date(
+        Date.UTC(currentYear, currentMonth, 1, 0, 0, 0),
+      );
+      const endOfMonth = new Date(
+        Date.UTC(currentYear, currentMonth + 1, 1, 0, 0, 0),
+      );
+      const sameDayISO = new Date(
+        Date.UTC(currentYear, currentMonth, 15, 12, 0, 0),
+      ).toISOString();
 
       const interactions: Interaction[] = [
         {
@@ -371,7 +413,8 @@ describe("Dashboard Page Logic", () => {
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      const isInMonth = firstDayOfMonth >= startOfMonth && firstDayOfMonth <= now;
+      const isInMonth =
+        firstDayOfMonth >= startOfMonth && firstDayOfMonth <= now;
       expect(isInMonth).toBe(true);
     });
 
@@ -394,7 +437,15 @@ describe("Dashboard Page Logic", () => {
 
     it("excludes first moment of next month", () => {
       const now = new Date();
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      const endOfMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999,
+      );
       const firstMomentOfNextMonth = new Date(endOfMonth.getTime() + 1);
 
       const isInMonth = firstMomentOfNextMonth <= now;

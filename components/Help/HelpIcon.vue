@@ -35,10 +35,7 @@ const variantClasses = {
 
 <template>
   <div :class="variantClasses[variant]">
-    <TooltipGuide
-      v-if="showTooltip && helpDef"
-      :help-definition="helpDef"
-    >
+    <TooltipGuide v-if="showTooltip && helpDef" :help-definition="helpDef">
       <button
         class="rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
         :class="sizeClasses[size]"

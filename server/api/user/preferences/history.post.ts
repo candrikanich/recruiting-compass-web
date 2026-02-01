@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     console.error(
       `[Preferences History POST] Error recording history for user ${user.id}:`,
-      err
+      err,
     );
 
     if (err instanceof z.ZodError) {

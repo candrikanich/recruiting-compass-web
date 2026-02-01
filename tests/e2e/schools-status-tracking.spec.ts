@@ -50,9 +50,7 @@ test.describe("Story 3.4: School Status Tracking", () => {
     expect(optionTexts).toContain("Not Pursuing");
   });
 
-  test("should change school status and record timestamp", async ({
-    page,
-  }) => {
+  test("should change school status and record timestamp", async ({ page }) => {
     // Navigate to school detail
     const firstSchoolLink = page.locator('[data-testid="school-card"]').first();
     await firstSchoolLink.click();
@@ -115,11 +113,12 @@ test.describe("Story 3.4: School Status Tracking", () => {
     await page.waitForURL(/\/schools\/[^/]+$/);
 
     // Set priority tier to A
-    const priorityButtons = page.locator(
-      '[data-testid*="priority-selector"]',
-    );
+    const priorityButtons = page.locator('[data-testid*="priority-selector"]');
     if ((await priorityButtons.count()) > 0) {
-      const tierAButton = page.locator('button').filter({ hasText: "A" }).first();
+      const tierAButton = page
+        .locator("button")
+        .filter({ hasText: "A" })
+        .first();
       await tierAButton.click();
       await page.waitForTimeout(500);
     }
@@ -147,12 +146,7 @@ test.describe("Story 3.4: School Status Tracking", () => {
     const statusSelect = page.locator('select[class*="status"]').first();
     await statusSelect.waitFor({ state: "visible" });
 
-    const statuses = [
-      "interested",
-      "contacted",
-      "camp_invite",
-      "recruited",
-    ];
+    const statuses = ["interested", "contacted", "camp_invite", "recruited"];
 
     for (const status of statuses) {
       await statusSelect.selectOption(status);

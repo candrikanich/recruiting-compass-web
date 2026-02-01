@@ -111,7 +111,9 @@ describe("DeadlineBadge.vue", () => {
 
     const badge = wrapper.find("[data-testid='deadline-badge']");
     // Check that the element has a title or aria-label
-    expect(badge.attributes("title") || badge.attributes("aria-label")).toBeTruthy();
+    expect(
+      badge.attributes("title") || badge.attributes("aria-label"),
+    ).toBeTruthy();
   });
 
   it("updates when deadline changes", async () => {

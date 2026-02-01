@@ -15,6 +15,7 @@
 ### Step 1: Fix useAuth-rememberMe.spec.ts
 
 #### Current Code (Broken - Lines 1-72)
+
 ```typescript
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useAuth } from "~/composables/useAuth";
@@ -60,6 +61,7 @@ describe("useAuth - Remember Me Functionality", () => {
 ```
 
 #### Fixed Code
+
 ```typescript
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useAuth } from "~/composables/useAuth";
@@ -107,6 +109,7 @@ describe("useAuth - Remember Me Functionality", () => {
 ```
 
 **Changes Required**:
+
 1. Delete lines 7-11 (the `let mockSupabaseGlobal: any;` and `vi.mock()` definition)
 2. Replace line 3 import: `import { useSupabase } from "~/composables/useSupabase";` → `import { mockSupabase } from "~/tests/setup";`
 3. Line 69: Change `mockSupabaseGlobal = { auth: mockAuth };` → `mockSupabase.auth = mockAuth;`
@@ -116,6 +119,7 @@ describe("useAuth - Remember Me Functionality", () => {
 ### Step 2: Verify No Other Files Have Same Pattern
 
 #### Scan for Uninitialized Mock Variables
+
 ```bash
 # Check for pattern: "let mockSomething: any;" followed by "vi.mock()"
 for file in tests/unit/composables/*.spec.ts; do
@@ -129,6 +133,7 @@ done
 **Expected Output**: Mostly clean files (they initialize mocks before vi.mock)
 
 #### Check All Files with vi.mock()
+
 ```bash
 # List all files with local vi.mock definitions
 grep -l "^vi\.mock.*useSupabase" tests/unit/composables/*.spec.ts
@@ -141,6 +146,7 @@ grep -l "^vi\.mock.*useSupabase" tests/unit/composables/*.spec.ts
 ### Step 3: Test the Fix
 
 #### Test Single File
+
 ```bash
 npm run test -- tests/unit/composables/useAuth-rememberMe.spec.ts
 ```
@@ -148,6 +154,7 @@ npm run test -- tests/unit/composables/useAuth-rememberMe.spec.ts
 **Expected Output**: All tests pass (6 tests for Remember Me functionality)
 
 #### Test Related Composables
+
 ```bash
 npm run test -- tests/unit/composables/useAuth.spec.ts
 npm run test -- tests/unit/composables/useInteractions.spec.ts
@@ -157,6 +164,7 @@ npm run test -- tests/unit/composables/useInteractions-athlete.spec.ts
 **Expected Output**: All tests pass
 
 #### Run Full Test Suite
+
 ```bash
 npm run test
 ```
@@ -202,6 +210,7 @@ Even after fixing useAuth-rememberMe.spec.ts, review if other files need fixes:
 ## Expected Improvements
 
 ### Before Fix
+
 ```
 FAIL tests/unit/composables/useAuth-rememberMe.spec.ts [x]
   useAuth - Remember Me Functionality
@@ -222,6 +231,7 @@ Tests: 30+ failed, remaining passed
 ```
 
 ### After Fix
+
 ```
 PASS tests/unit/composables/useAuth-rememberMe.spec.ts ✓
   useAuth - Remember Me Functionality
@@ -248,11 +258,13 @@ Tests: all passed ✓
 ## Rollback Plan (if needed)
 
 If the fix causes issues, revert with:
+
 ```bash
 git checkout -- tests/unit/composables/useAuth-rememberMe.spec.ts
 ```
 
 This is a low-risk change since we're:
+
 1. Using the exact same mock object (from setup.ts)
 2. Configuring it the same way (in beforeEach)
 3. Just changing where it's imported from and when it's initialized

@@ -53,6 +53,7 @@ Currently, you cannot change your login email. If you need to switch emails, you
 ### Can I link my parent's account to mine?
 
 Yes. Invite your parent via:
+
 1. Go to Settings > Account & Collaboration
 2. Click "Invite Parent"
 3. Enter their email
@@ -64,6 +65,7 @@ Parents can view your schools, coaches, interactions, and timeline, but cannot e
 ### What information should I put in my profile?
 
 As much as you're comfortable sharing:
+
 - **Academic**: GPA, test scores, preferred major
 - **Athletic**: Position, height, weight, your best stats (speed, exit velo, etc.)
 - **Preferences**: College divisions you prefer, geographic regions, school size
@@ -73,6 +75,7 @@ The more complete your profile, the better our fit scores and AI suggestions wil
 ### How often should I update my profile?
 
 Update your profile when:
+
 - Your GPA improves
 - You get new test scores
 - Your athletic stats improve (faster, stronger, better times)
@@ -99,6 +102,7 @@ All your data is permanently deleted. You cannot undo this action. Contact suppo
 ### How many schools should I track?
 
 Most athletes track 10-20 schools across all tiers:
+
 - **Reach Schools**: 2-3 (dream schools, competitive, less likely)
 - **Target Schools**: 4-6 (realistic matches, good fit)
 - **Safety Schools**: 2-3 (likely accepts, strong fit)
@@ -108,6 +112,7 @@ Start with 10-15 and adjust as you narrow your list or expand your search.
 ### I can't find my school in the database. What should I do?
 
 Try different variations of the name:
+
 - Full name: "University of Texas"
 - Nickname: "Texas" or "UT"
 - Include state: "Florida State"
@@ -117,6 +122,7 @@ If you still can't find it, email support@recruitingcompass.com with the school 
 ### What does my fit score mean?
 
 **Fit Score (1-10 scale):**
+
 - **9-10**: Perfect fit (strong academic/athletic match, location preference, etc.)
 - **7-8**: Good fit (strong match in most areas)
 - **5-6**: Moderate fit (good in some areas, not others)
@@ -128,11 +134,13 @@ Fit scores are based on your academic/athletic stats, location preferences, and 
 ### My fit score seems too low. How do I improve it?
 
 Fit scores depend on:
+
 - Your profile completeness (all academic/athletic fields filled in)
 - Accuracy of your info (make sure your GPA/stats are correct)
 - School's standards (some schools have higher academic requirements)
 
 To improve your fit score:
+
 1. Complete all profile fields
 2. Update your athletic stats (record improvements)
 3. Make sure academic info is accurate
@@ -144,6 +152,7 @@ Absolutely. Fit scores are a tool, not a rule. If you're genuinely interested in
 ### How do I know if a school is a good fit?
 
 Beyond fit scores, consider:
+
 - **Coaching Philosophy**: Do they develop players like you?
 - **Program Fit**: Winning tradition? Feeding professional prospects?
 - **Campus Life**: Does the school culture match yours?
@@ -169,6 +178,7 @@ Most schools' coaching staffs are available online on their athletic department 
 ### What's the best way to contact a coach?
 
 **Email is safest** (unless they give you their personal phone):
+
 1. Keep it professional and brief (3-5 sentences)
 2. Introduce yourself specifically (name, position, school)
 3. Explain why you're interested in their program
@@ -176,6 +186,7 @@ Most schools' coaching staffs are available online on their athletic department 
 5. Sign off professionally
 
 Example:
+
 ```
 Hi Coach Smith,
 
@@ -205,6 +216,7 @@ Don't spam coaches with multiple emails. Quality over quantity.
 ### Is it okay to text a coach?
 
 Only if:
+
 - They give you their personal phone number
 - They've already responded to emails
 
@@ -242,31 +254,35 @@ Most coaching staffs change annually, so contact info may be outdated. Update it
 
 ### What are the timeline phases?
 
-| Phase | Grade | Focus |
-|-------|-------|-------|
-| **Freshman** | 9th | Build skills, get on coaches' radars |
-| **Sophomore** | 10th | Active outreach, showcases, tournaments |
-| **Junior** | 11th | Peak recruiting, campus visits, offers |
-| **Senior** | 12th | Narrow choices, finalize commitment |
+| Phase         | Grade | Focus                                   |
+| ------------- | ----- | --------------------------------------- |
+| **Freshman**  | 9th   | Build skills, get on coaches' radars    |
+| **Sophomore** | 10th  | Active outreach, showcases, tournaments |
+| **Junior**    | 11th  | Peak recruiting, campus visits, offers  |
+| **Senior**    | 12th  | Narrow choices, finalize commitment     |
 
 ### What's the difference between each phase?
 
 **Freshman Phase:**
+
 - Build athletic and academic foundation
 - Start attending showcases
 - Get on coaches' early radar
 
 **Sophomore Phase:**
+
 - Attend more showcases and tournaments
 - Send intro emails to coaches
 - Build relationships gradually
 
 **Junior Phase:**
+
 - Peak recruiting activity
 - Campus visits and official visits (D1/D2)
 - Offers start coming in
 
 **Senior Phase:**
+
 - Narrow down to top 3-5 choices
 - Official visits to finalists
 - Make commitment decision
@@ -274,6 +290,7 @@ Most coaching staffs change annually, so contact info may be outdated. Update it
 ### When should I advance to the next phase?
 
 You can advance anytime, but phases are designed to align with high school grades:
+
 - Freshman year → Sophomore phase (in spring)
 - Sophomore year → Junior phase (in spring)
 - Junior year → Senior phase (in fall)
@@ -283,6 +300,7 @@ You can advance early or delay advancement based on your recruiting schedule.
 ### What if I'm behind on timeline tasks?
 
 Timeline tasks are guides, not rules. If you're behind:
+
 1. Catch up at your own pace (no penalties)
 2. Focus on the most important tasks first
 3. Skip tasks that don't apply to you
@@ -312,11 +330,13 @@ Yes. When logging an interaction, click the date field and select a date in the 
 ### What details should I include in my interaction notes?
 
 Keep notes brief but specific:
+
 - ✅ "Introduced myself via email with highlight video link"
 - ✅ "Coach called to ask about my academics and athletic background"
 - ✅ "Met Coach Smith at showcase, discussed my fit for program"
 
 Don't include:
+
 - ❌ Entire email text (summarize instead)
 - ❌ Personal drama or negativity
 - ❌ Information shared in confidence
@@ -349,6 +369,7 @@ This distinction helps you track who's driving the conversation.
 ### How are fit scores calculated?
 
 Fit scores consider:
+
 1. **Academic Fit** (30%): Your GPA/test scores vs. school's standards
 2. **Athletic Fit** (30%): Your stats vs. team roster
 3. **Location Fit** (15%): Distance from home, your preferences
@@ -364,12 +385,14 @@ Consider fit scores a starting point, not absolute truth. Trust your gut about s
 ### What should I do with my fit score?
 
 **Use it to:**
+
 - Identify schools you might not have considered
 - Understand why a school is a good/bad match
 - Compare schools objectively
 - Get suggestions for improvement
 
 **Don't use it to:**
+
 - Eliminate schools you're genuinely interested in
 - Make final decisions (use it as one factor among many)
 - Rush your decision
@@ -377,6 +400,7 @@ Consider fit scores a starting point, not absolute truth. Trust your gut about s
 ### My profile is complete but my fit score is still low. Why?
 
 Possible reasons:
+
 - **Academic mismatch**: Your GPA is below the school's typical student
 - **Athletic mismatch**: Your stats don't align with the team's recruitment focus
 - **Location mismatch**: School is far from your stated preferences
@@ -387,6 +411,7 @@ A lower fit score doesn't mean the school is bad—just that it may be more comp
 ### How do AI suggestions work?
 
 AI suggests actions based on:
+
 - Your profile and preferences
 - Your interaction patterns with coaches
 - Industry-standard recruiting timelines
@@ -412,6 +437,7 @@ Absolutely. Suggestions are guidance, not requirements. Follow the ones that mak
 ### Why should I invite my parent?
 
 Benefits:
+
 - Parents can see all your schools, coaches, and interactions
 - Parents get notified about important milestones
 - Shared visibility reduces miscommunication
@@ -429,12 +455,14 @@ Benefits:
 ### What can parents see and do?
 
 **Parents can:**
+
 - View your schools, coaches, and interactions
 - See your timeline progress
 - View performance metrics and fit scores
 - Get notifications about updates
 
 **Parents cannot:**
+
 - Edit your information
 - Add/remove schools or coaches
 - Log interactions (optional in future versions)
@@ -469,11 +497,13 @@ Yes. We use industry-standard encryption and security practices. Your data is st
 No. Coaches don't know you're tracking them. You stay in control of what information you share.
 
 **You can choose to share:**
+
 - Your performance stats (via shareable link)
 - Your highlight film (via shareable link)
 - Your contact information (via email)
 
 **They cannot see:**
+
 - Your internal notes
 - Your interactions with other coaches
 - Your fit scores or rankings
@@ -481,6 +511,7 @@ No. Coaches don't know you're tracking them. You stay in control of what informa
 ### What information does Recruiting Compass collect about me?
 
 We collect:
+
 - Account info (email, password)
 - Profile info (academic, athletic, preferences)
 - Interaction data (who you contacted, when)
@@ -488,6 +519,7 @@ We collect:
 - Usage data (anonymous analytics)
 
 **We don't collect:**
+
 - Your browsing history
 - Your social media accounts
 - Your phone contacts
@@ -521,6 +553,7 @@ In summary: Your data is yours. We protect it, don't sell it, and don't share it
 ### The app isn't working on my phone. Is it mobile-friendly?
 
 Yes, Recruiting Compass is responsive and works on mobile browsers. Try:
+
 1. Refresh the page
 2. Use a different browser (Chrome, Safari)
 3. Clear your browser cache
@@ -557,6 +590,7 @@ Go to Coaches (main navigation) to see all coaches across all schools. You can s
 ### What's an official visit?
 
 An **official visit** is when a school pays for your travel, housing, and meals to visit campus. Features:
+
 - Only available for D1/D2 prospects (rarely D3)
 - Usually happens junior or senior year
 - Coaches coordinate all details
@@ -566,6 +600,7 @@ An **official visit** is when a school pays for your travel, housing, and meals 
 ### What's an unofficial visit?
 
 An **unofficial visit** is when you visit campus on your own dime. Features:
+
 - Anytime, any year
 - You pay for travel and housing
 - Coaches can meet with you (restrictions vary by division)
@@ -575,6 +610,7 @@ An **unofficial visit** is when you visit campus on your own dime. Features:
 ### What's a recruiting survey?
 
 A questionnaire coaches send asking about:
+
 - Your academic info
 - Your athletic background
 - Your goals and interests
@@ -585,6 +621,7 @@ Complete them thoroughly and return promptly. Coaches use responses to evaluate 
 ### When should I start looking at colleges?
 
 Many athletes start:
+
 - **Freshman year**: Research and attend showcases
 - **Sophomore year**: More active outreach to coaches
 - **Junior year**: Peak recruiting activity
@@ -595,6 +632,7 @@ Many athletes start:
 ### When should I commit to a school?
 
 Timing is personal, but generally:
+
 - **Freshman/Sophomore**: Too early for most
 - **Junior year**: Some committed athletes (especially if they love the school)
 - **Senior year (Fall/Early Winter)**: Most athletes commit by fall
@@ -605,6 +643,7 @@ There's no "best time"—commit when you're confident in your choice.
 ### What if I'm not getting recruited?
 
 Possible reasons and solutions:
+
 1. **It's early** (freshman/sophomore year is normal to have little contact)
    - Solution: Attend showcases, improve stats, be patient
 2. **Coaches don't know about you yet**
@@ -619,6 +658,7 @@ Possible reasons and solutions:
 ### What do colleges look for?
 
 Colleges evaluate:
+
 - **Academic Performance**: GPA, test scores, transcript
 - **Athletic Ability**: Stats, measurables (speed, exit velo), position
 - **Effort & Athleticism**: How hard you work, improvement trajectory
@@ -628,6 +668,7 @@ Colleges evaluate:
 ### How do I know if I'm good enough for a specific division level?
 
 Use:
+
 1. **Fit Scores**: See if you match academically/athletically
 2. **Coach Response**: Are coaches at that level recruiting you?
 3. **Comparable Athletes**: Research where similar athletes went
@@ -657,6 +698,7 @@ Absolutely! We'd love more families using the app. Share your invite link or tel
 ### What's the roadmap for future features?
 
 **Coming Soon (v1.1):**
+
 - Email templates
 - Document management
 - Event calendar
@@ -664,6 +706,7 @@ Absolutely! We'd love more families using the app. Share your invite link or tel
 - School comparison tool
 
 **Future (v2.0+):**
+
 - Offer tracking
 - Advanced analytics
 - Mobile apps (iOS/Android)
@@ -677,6 +720,7 @@ We want to help as many families as possible navigate recruiting. Recruiting is 
 ### Can I donate to support Recruiting Compass?
 
 Not yet, but we appreciate the support! The best way to support us is to:
+
 - Use the app and give feedback
 - Refer friends and family
 - Share on social media

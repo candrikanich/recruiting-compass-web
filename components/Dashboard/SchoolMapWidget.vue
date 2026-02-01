@@ -22,7 +22,9 @@
     >
       <MapPinIcon class="w-12 h-12 mb-3 text-slate-400" />
       <p class="text-sm font-medium">No school locations to display</p>
-      <p class="text-xs text-slate-500 mt-1">Schools will appear on the map once you add them</p>
+      <p class="text-xs text-slate-500 mt-1">
+        Schools will appear on the map once you add them
+      </p>
       <NuxtLink
         to="/schools/new"
         class="mt-4 px-4 py-2 bg-brand-blue-500 text-white text-sm rounded-lg hover:bg-brand-blue-600 transition-colors"
@@ -131,7 +133,7 @@ const initializeMap = () => {
 
     // Clear the container
     if (mapContainer.value) {
-      mapContainer.value.innerHTML = '';
+      mapContainer.value.innerHTML = "";
     }
 
     const center = getMapCenter();
@@ -147,7 +149,10 @@ const initializeMap = () => {
     }).addTo(mapInstance);
 
     // Add home location marker if no schools
-    if (props.schools.length === 0 && (center[0] !== 39.8283 || center[1] !== -98.5795)) {
+    if (
+      props.schools.length === 0 &&
+      (center[0] !== 39.8283 || center[1] !== -98.5795)
+    ) {
       const homeMarker = L.marker(center, {
         icon: L.divIcon({
           html: '<div class="w-8 h-8 rounded-full bg-green-500 border-2 border-white shadow-lg flex items-center justify-center"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg></div>',
@@ -167,7 +172,8 @@ const initializeMap = () => {
 
     // Add school markers if schools exist
     if (props.schools.length > 0) {
-      const schoolsWithCoords: Array<School & { lat: number; lng: number }> = [];
+      const schoolsWithCoords: Array<School & { lat: number; lng: number }> =
+        [];
 
       props.schools.forEach((school) => {
         // Use actual coordinates from academic_info if available
@@ -191,7 +197,8 @@ const initializeMap = () => {
 
         const city = school.academic_info?.city || school.city || "";
         const state = school.academic_info?.state || school.state || "";
-        const location = [city, state].filter(Boolean).join(", ") || "Location TBD";
+        const location =
+          [city, state].filter(Boolean).join(", ") || "Location TBD";
 
         marker.bindPopup(`
           <div style="font-size: 12px; min-width: 280px;">
@@ -218,7 +225,7 @@ const initializeMap = () => {
 
     isInitializing = false;
   } catch (error) {
-    console.error('[SchoolMapWidget] Error initializing map:', error);
+    console.error("[SchoolMapWidget] Error initializing map:", error);
     isInitializing = false;
   }
 };
@@ -227,9 +234,12 @@ onMounted(() => {
   initializeMap();
 });
 
-watch(() => props.schools, () => {
-  initializeMap();
-});
+watch(
+  () => props.schools,
+  () => {
+    initializeMap();
+  },
+);
 </script>
 
 <style scoped>

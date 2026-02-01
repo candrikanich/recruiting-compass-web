@@ -37,6 +37,7 @@ Recruiting Compass is designed to help you manage the college baseball recruitin
 ### What You'll Learn
 
 This manual covers:
+
 - How to set up your account and profile
 - How to use each feature effectively
 - Best practices for recruiting success
@@ -85,6 +86,7 @@ You can update all of this later, so don't worry about perfection now.
 #### Step 3: Choose Your Account Type
 
 Select your role:
+
 - **I'm a Student-Athlete**: You're the primary user (recommended)
 - **I'm a Parent/Guardian**: You're supporting a student-athlete
 
@@ -102,6 +104,7 @@ Your profile is your recruiting foundation. The more complete it is, the better 
 #### Profile Sections
 
 **ACADEMIC INFORMATION**
+
 - **Unweighted GPA**: Your cumulative GPA (e.g., 3.8)
 - **Weighted GPA**: If your school calculates it
 - **SAT Score**: Total score (optional)
@@ -111,6 +114,7 @@ Your profile is your recruiting foundation. The more complete it is, the better 
 - **Preferred Major**: Field of study or major (e.g., Business, Engineering, Pre-Med)
 
 **ATHLETIC INFORMATION**
+
 - **Primary Position**: Your main position (Pitcher, Catcher, Infield, Outfield, etc.)
 - **Secondary Position**: If you can play multiple positions
 - **Dominant Hand**: Right or left
@@ -121,6 +125,7 @@ Your profile is your recruiting foundation. The more complete it is, the better 
 - **Current Team**: Name of your team
 
 **RECRUITING PREFERENCES**
+
 - **Target Division(s)**: Check all that apply (D1, D2, D3, JUCO, NAIA)
 - **Geographic Regions**: States or regions you prefer
 - **Distance from Home**: How far you're willing to go
@@ -128,12 +133,14 @@ Your profile is your recruiting foundation. The more complete it is, the better 
 - **Scholarship Priority**: Important, nice to have, not important
 
 **CONTACT INFORMATION**
+
 - **Phone Number**: Best phone to reach you
 - **Email Address**: Primary contact email (can't change; used for login)
 - **Preferred Contact Method**: Phone, email, or text
 - **Best Times to Contact**: Morning, afternoon, evening
 
 **ATHLETIC STATS** (optional—update as you improve)
+
 - **60-Yard Dash**: Your sprint time (e.g., 6.8 seconds)
 - **Vertical Jump**: Height in inches
 - **Exit Velocity**: Highest recorded exit velo (mph)
@@ -198,6 +205,7 @@ Your schools dashboard is where you track all your target colleges.
 5. **Click "Add School"**
 
 The school will appear in your dashboard with:
+
 - School logo and colors
 - Location and state
 - Division level (D1, D2, D3, JUCO, NAIA)
@@ -209,6 +217,7 @@ The school will appear in your dashboard with:
 Click on a school to see detailed information:
 
 **SCHOOL INFORMATION**
+
 - Founded year and student population
 - Coaching staff (head coach, assistants)
 - Recent program performance
@@ -216,17 +225,20 @@ Click on a school to see detailed information:
 - Recruiting focus areas
 
 **COACHES AT THIS SCHOOL**
+
 - All coaches listed with contact info
 - Interaction history with each coach
 - Responsiveness score
 - "Add Coach" button
 
 **YOUR FIT SCORE**
+
 - Overall fit (1-10 scale)
 - Breakdown by category (academic, athletic, location, etc.)
 - How to improve your fit score
 
 **RECENT INTERACTIONS**
+
 - Latest emails, calls, texts, visits
 - Timeline of your relationship with this program
 
@@ -249,20 +261,24 @@ Click on a school to see detailed information:
 #### School Organization
 
 **By Priority Tier**
+
 - View schools grouped by Reach, Target, Safety
 - See how many schools in each category
 - Typical balanced list: 2-3 reach, 4-6 target, 2-3 safety
 
 **By Fit Score**
+
 - Sort schools by highest to lowest fit
 - Identify best-matched schools
 - Focus recruiting on top-fit programs
 
 **By Location**
+
 - Filter schools by state or region
 - See geographic distribution of targets
 
 **By Division Level**
+
 - Filter by D1, D2, D3, JUCO, NAIA
 - Compare opportunities across divisions
 
@@ -281,6 +297,7 @@ Click on a school to see detailed information:
 4. **Click "Add Coach"**
 
 The coach appears in the school's coach list with:
+
 - Contact information
 - Responsiveness score (builds as you interact)
 - Interaction history (empty initially)
@@ -291,24 +308,28 @@ The coach appears in the school's coach list with:
 Click on a coach's card to see:
 
 **COACH PROFILE**
+
 - Name, position, school
 - Contact information
 - Years at program
 - Background/coaching history
 
 **INTERACTION HISTORY**
+
 - Complete timeline of all communications
 - Types: Email, phone, text, in-person, showcase, campus visit
 - Dates and notes for each interaction
 - Your response to their interest level
 
 **RESPONSIVENESS SCORE**
+
 - How quickly coach typically responds
 - Last contact date
 - Trend (getting more/less responsive)
 - Suggested follow-up timing
 
 **RECOVERY PLAN** (if silent for 30+ days)
+
 - Suggested action to re-engage coach
 - Recommended timing and angle
 - Template message to use
@@ -363,6 +384,7 @@ An interaction is any communication or meeting with a coach. Logging interaction
 #### Viewing Interaction History
 
 The interaction timeline shows:
+
 - Chronological list of all communications
 - Most recent at the top
 - Type icon (email, phone, etc.)
@@ -395,12 +417,12 @@ Your timeline is a recruiting roadmap organized by phase (freshman through senio
 
 #### Understanding Timeline Phases
 
-| Phase | Grade | Focus | Duration |
-|-------|-------|-------|----------|
-| **Freshman** | 9th | Build skills, get on coaches' radars | 1 year |
-| **Sophomore** | 10th | Active outreach, showcases, camps | 1 year |
-| **Junior** | 11th | Peak recruiting, campus visits, offers | 1 year |
-| **Senior** | 12th | Narrow choices, finalize commitment | 1 year |
+| Phase         | Grade | Focus                                  | Duration |
+| ------------- | ----- | -------------------------------------- | -------- |
+| **Freshman**  | 9th   | Build skills, get on coaches' radars   | 1 year   |
+| **Sophomore** | 10th  | Active outreach, showcases, camps      | 1 year   |
+| **Junior**    | 11th  | Peak recruiting, campus visits, offers | 1 year   |
+| **Senior**    | 12th  | Narrow choices, finalize commitment    | 1 year   |
 
 #### Viewing Your Timeline
 
@@ -414,11 +436,13 @@ Your timeline is a recruiting roadmap organized by phase (freshman through senio
 Your current phase shows tasks and milestones:
 
 **PHASE-APPROPRIATE TASKS**
+
 - Recommended activities for this phase
 - Examples (Freshman): "Skill development," "Get on coaches' radars," "Attend local showcases"
 - Examples (Senior): "Narrow your choices to top 5," "Schedule official visits," "Prepare for commitment"
 
 **TASK STATUS**
+
 - Not Started: (blank checkbox)
 - In Progress: (check icon)
 - Completed: (green check)
@@ -514,6 +538,7 @@ Track recruiting-related events you attend or plan to attend.
 #### Event Calendar
 
 Your events appear on a calendar view:
+
 - See upcoming events
 - Color-coded by type
 - Click on an event to see details
@@ -544,13 +569,13 @@ Store recruiting-related documents in one place.
 
 #### Document Types
 
-| Type | Size Limit | Format | Purpose |
-|------|-----------|--------|---------|
-| Highlights | 500 MB | MP4, MOV, etc. | Share on recruiting profiles |
-| Transcripts | 25 MB | PDF | Show academic achievement |
-| Stats | 25 MB | PDF, Excel | Document performance metrics |
-| Recruiting Surveys | 25 MB | PDF | Response to coach questionnaires |
-| Other | 100 MB | Any | Additional materials |
+| Type               | Size Limit | Format         | Purpose                          |
+| ------------------ | ---------- | -------------- | -------------------------------- |
+| Highlights         | 500 MB     | MP4, MOV, etc. | Share on recruiting profiles     |
+| Transcripts        | 25 MB      | PDF            | Show academic achievement        |
+| Stats              | 25 MB      | PDF, Excel     | Document performance metrics     |
+| Recruiting Surveys | 25 MB      | PDF            | Response to coach questionnaires |
+| Other              | 100 MB     | Any            | Additional materials             |
 
 #### Sharing Documents with Coaches
 
@@ -591,6 +616,7 @@ Fit scores help you understand how well each school matches your profile.
 #### Understanding Fit Scores
 
 **Scale: 1-10**
+
 - **9-10**: Perfect fit (strong match across all areas)
 - **7-8**: Good fit (strong academic/athletic match)
 - **5-6**: Moderate fit (some areas align well)
@@ -645,21 +671,25 @@ AI-powered recommendations guide your recruiting efforts.
 #### Types of Suggestions
 
 **FOLLOW-UP SUGGESTIONS**
+
 - "Follow up with Coach Smith (last contact 45 days ago)"
 - "Reach out to Coach Johnson—they've been quiet for 30 days"
 - Recommended timing and approach
 
 **SCHOOL SUGGESTIONS**
+
 - "Consider adding University of Texas—88% fit match"
 - "Explore these D2 schools matching your profile"
 - Based on your stats and preferences
 
 **ACTIVITY SUGGESTIONS**
+
 - "Schedule campus visit at top-fit schools this spring"
 - "Attend 2+ showcases this summer"
 - "Update your highlight film"
 
 **NEXT-STEP SUGGESTIONS**
+
 - "You're ready to advance to the Junior phase"
 - "Time to narrow your list to top 10 schools"
 - "Prepare for official visits"
@@ -674,6 +704,7 @@ AI-powered recommendations guide your recruiting efforts.
 #### How AI Learns from You
 
 The AI improves by:
+
 - Learning your interaction patterns (which coaches you engage with)
 - Tracking your fit score changes
 - Watching which suggestions you act on
@@ -713,16 +744,19 @@ View your recruiting progress and activity over time.
 #### Metrics Displayed
 
 **ACTIVITY METRICS**
+
 - Total interactions logged this month
 - Interactions by type (email, phone, in-person)
 - Response rate from coaches
 
 **ENGAGEMENT METRICS**
+
 - Coaches with high responsiveness
 - Schools with most recent activity
 - Timeline phase progress
 
 **COMPARISON METRICS**
+
 - Your stats vs. college standards
 - Your fit scores vs. target tier averages
 - Progress over time (graphs and trends)
@@ -742,23 +776,27 @@ View your recruiting progress and activity over time.
 ### Weekly Recruiting Routine
 
 #### Monday: Plan Your Week
+
 - Review your timeline for phase-appropriate tasks
 - Check AI suggestions for this week
 - Identify 3-5 coaches to focus on
 
 #### Tuesday-Thursday: Active Engagement
+
 - Log interactions (emails, calls, texts received)
 - Follow up with coaches who went silent
 - Attend showcases or tournaments if scheduled
 - Update stats if you competed
 
 #### Friday: Review & Reflect
+
 - Review all interactions from the week
 - Update fit scores if your stats changed
 - Plan next week's priorities
 - Check upcoming events
 
 #### Weekend: Admin Tasks
+
 - Update your profile with new information
 - Organize documents
 - Plan for next week's priorities
@@ -776,6 +814,7 @@ View your recruiting progress and activity over time.
 ### Yearly Timeline Checkpoints
 
 **FRESHMAN YEAR (September-May)**
+
 - [ ] Profile complete (academic, athletic, preferences)
 - [ ] 10+ target schools added
 - [ ] Coaches identified and contacted
@@ -784,6 +823,7 @@ View your recruiting progress and activity over time.
 - [ ] Grade improvement plan in place
 
 **SOPHOMORE YEAR (September-May)**
+
 - [ ] 15-20 target schools in your list
 - [ ] 30+ total interactions logged
 - [ ] 2+ campus visits completed
@@ -792,6 +832,7 @@ View your recruiting progress and activity over time.
 - [ ] Phase advancement planned for junior year
 
 **JUNIOR YEAR (September-May)**
+
 - [ ] 10-15 core schools identified
 - [ ] 50+ total interactions logged
 - [ ] 2+ official visits completed
@@ -800,6 +841,7 @@ View your recruiting progress and activity over time.
 - [ ] Top 5 choices narrowed down
 
 **SENIOR YEAR (September-May)**
+
 - [ ] 3-5 finalists selected
 - [ ] 75+ total interactions logged
 - [ ] Official visit to all top choices
@@ -809,6 +851,7 @@ View your recruiting progress and activity over time.
 ### Communication Best Practices
 
 **DO**
+
 - Keep emails brief and professional (3-5 sentences)
 - Include specific details about why you're interested in that school
 - Respond to coaches quickly (within 24 hours if possible)
@@ -817,6 +860,7 @@ View your recruiting progress and activity over time.
 - Use proper grammar and spelling
 
 **DON'T**
+
 - Send generic emails to all coaches (personalize each)
 - Email the same coach multiple times per week
 - Make promises you can't keep ("I'll definitely visit")
@@ -827,6 +871,7 @@ View your recruiting progress and activity over time.
 ### School Visit Preparation
 
 Before a campus visit:
+
 1. Research the program (coaching staff, recent performance)
 2. Prepare 3-5 questions to ask coaches
 3. Document your stats and academics (bring transcripts if available)
@@ -834,6 +879,7 @@ Before a campus visit:
 5. Take notes during the visit
 
 After a campus visit:
+
 1. Send thank you email to coaches within 24 hours
 2. Log a campus visit interaction
 3. Update your fit score for that school
@@ -846,6 +892,7 @@ After a campus visit:
 ### Account Issues
 
 **Q: I forgot my password. How do I reset it?**
+
 1. Go to login page
 2. Click "Forgot Password?"
 3. Enter your email
@@ -853,6 +900,7 @@ After a campus visit:
 5. Click link and create new password
 
 **Q: I'm trying to log in but get an error. What should I do?**
+
 - Clear your browser cache and cookies
 - Try a different browser
 - Make sure you're using the email you signed up with
@@ -864,18 +912,21 @@ Currently, you cannot change your login email. You would need to create a new ac
 ### Schools & Coaches
 
 **Q: I can't find my school in the database. What do I do?**
+
 - Try variations of the name (e.g., "Texas" vs "University of Texas")
 - Try shorthand (e.g., "UT" or "UTA")
 - Email support@recruitingcompass.com with the school name and we'll add it
 
 **Q: I added a coach by mistake. Can I remove them?**
+
 1. Click on the coach
 2. Click the three-dot menu
 3. Select "Remove Coach"
 4. Confirm
-This will delete all interactions with that coach, so be careful.
+   This will delete all interactions with that coach, so be careful.
 
 **Q: The coach's contact information is wrong. How do I fix it?**
+
 1. Click on the coach
 2. Click the pencil/edit icon
 3. Update the information
@@ -887,11 +938,13 @@ This will delete all interactions with that coach, so be careful.
 Yes. When logging an interaction, click the date field and select a past date. This is useful if you're catching up on past communications.
 
 **Q: I accidentally logged the wrong interaction. Can I delete it?**
+
 1. Click on the interaction in the timeline
 2. Click the trash/delete icon
 3. Confirm deletion
 
 **Q: How do I log a text conversation or phone call without exact details?**
+
 - Summarize the main points: "Coach called to discuss my academic record and athletic performance. Positive conversation."
 - You don't need exact quotes, just the gist
 - If you don't remember specific details, just put "General conversation with Coach Smith"
@@ -900,17 +953,20 @@ Yes. When logging an interaction, click the date field and select a past date. T
 
 **Q: My fit score seems too low. Why?**
 Fit scores are based on:
+
 - Your profile completeness (GPA, test scores, stats)
 - The school's academic/athletic standards
 - Your stated preferences
 
 To improve your fit score:
+
 - Complete all profile fields
 - Update your athletic stats
 - Ensure your academic info is accurate
 
 **Q: The AI suggestions don't match my goals. Why?**
 The AI learns from your profile and activity. If suggestions seem off:
+
 - Make sure your profile is complete and accurate
 - Check your stated preferences (division level, geographic area, etc.)
 - Give the AI time to learn from your interactions (first week or two)
@@ -932,12 +988,14 @@ All your data is permanently deleted. You cannot undo this action.
 ### Performance & Technical
 
 **Q: The app is running slowly. What can I do?**
+
 - Refresh the page (Cmd+R on Mac, Ctrl+R on Windows)
 - Clear your browser cache
 - Try a different browser
 - Restart your device
 
 **Q: I'm not receiving notifications. How do I fix this?**
+
 1. Go to Settings > Notifications
 2. Make sure notifications are turned ON for the types you want
 3. Check your email spam folder (notifications might be going there)
@@ -945,10 +1003,11 @@ All your data is permanently deleted. You cannot undo this action.
 
 **Q: The app isn't working on my phone. Is it supposed to be mobile-friendly?**
 Yes, Recruiting Compass is responsive and works on mobile browsers. Try:
+
 - Refreshing the page
 - Using a different browser
 - Clearing your browser cache
-If issues persist, email support@recruitingcompass.com
+  If issues persist, email support@recruitingcompass.com
 
 ---
 
@@ -957,6 +1016,7 @@ If issues persist, email support@recruitingcompass.com
 ### Getting Started
 
 **Q: What do I need to get started?**
+
 - An email address
 - Basic info (high school, position, graduation year)
 - Your GPA and/or test scores (optional; can add later)
@@ -974,6 +1034,7 @@ Yes. You create the main account, then invite your parents. They get read-only a
 
 **Q: How many schools should I track?**
 Most athletes track 10-20 schools across all tiers:
+
 - 2-3 reach schools (dream schools, long shot)
 - 4-6 target schools (realistic matches)
 - 2-3 safety schools (likely accepts)
@@ -985,6 +1046,7 @@ Many athletes start as freshmen (age 14), but it's never too late. If you're a j
 
 **Q: How often should I update my profile?**
 Update your profile when:
+
 - Your GPA improves
 - You get new test scores
 - Your athletic stats improve
@@ -993,6 +1055,7 @@ Update your profile when:
 Quarterly reviews recommended.
 
 **Q: How do I log an interaction with a coach who contacted me?**
+
 1. Click the coach
 2. Click "Log Interaction"
 3. Select "Coach Email" as the type
@@ -1011,6 +1074,7 @@ Absolutely. Fit scores are algorithms, not absolute truth. If you're interested 
 
 **Q: How do AI suggestions work?**
 AI suggests actions based on:
+
 - Your interaction patterns
 - Your profile and preferences
 - Industry-standard recruiting timelines
@@ -1021,18 +1085,21 @@ The AI learns from your behavior, so suggestions improve over time.
 ### Coach Communication
 
 **Q: What if a coach doesn't respond to me?**
+
 - Wait 1-2 weeks before following up
 - Send a follow-up email with a specific question or update
 - If still no response after 30 days, the AI will suggest a recovery plan
 - Not all coaches are heavily recruiting—some are less responsive
 
 **Q: Is it okay to text coaches?**
+
 - Only if they give you their personal number
 - Keep texts brief and professional
 - Avoid texting late at night or early morning
 - Email is usually the safer choice
 
 **Q: How many times should I contact a coach?**
+
 - Initial introduction email (1x)
 - Follow-up if they don't respond (after 2 weeks)
 - Follow-ups after events or meetings (1-2x per season)
@@ -1045,6 +1112,7 @@ No. Coaches don't know you're using Recruiting Compass. You stay in control of y
 
 **Q: What information can I share with coaches?**
 Only what you choose to share:
+
 - You can share your performance stats (they're private by default)
 - You can share your highlight film link
 - You can share your performance trends
@@ -1061,6 +1129,7 @@ Your data stays in your account. You can come back anytime and everything will s
 ### Recruiting Process
 
 **Q: What's the difference between an official visit and an unofficial visit?**
+
 - **Unofficial Visit**: You visit campus on your own (anytime). Coaches can't pay for it.
 - **Official Visit**: School pays for your travel and housing (allowed only for D1/D2 prospects, usually junior/senior year). Coaches coordinate it.
 
@@ -1071,12 +1140,14 @@ A form coaches send asking about your academics, athletics, and interests. They 
 
 **Q: When should I commit to a school?**
 This is a personal decision, but generally:
+
 - Freshman/Sophomore: Don't commit yet (too early)
 - Junior: Some athletes commit (especially if they love the school)
 - Senior: Most athletes commit by fall/winter
 - Signing Day: National Signing Day (February for baseball)
 
 **Q: What if I'm not getting recruited?**
+
 - You might be early in your recruiting journey (freshman/sophomore year is common)
 - Coaches might not know about you yet (showcase tournaments help)
 - Your stats might not match schools' recruiting criteria
@@ -1093,14 +1164,14 @@ See the [Glossary](./GLOSSARY.md) for definitions of recruiting terms (Fit Score
 
 ### Keyboard Shortcuts
 
-| Action | Keyboard Shortcut |
-|--------|-------------------|
-| Search | Cmd+K (Mac) or Ctrl+K (Windows) |
-| Go to Dashboard | Cmd+1 or Ctrl+1 |
-| Go to Schools | Cmd+2 or Ctrl+2 |
-| Go to Timeline | Cmd+3 or Ctrl+3 |
-| Add School | Cmd+N or Ctrl+N |
-| Settings | Cmd+, or Ctrl+, |
+| Action          | Keyboard Shortcut               |
+| --------------- | ------------------------------- |
+| Search          | Cmd+K (Mac) or Ctrl+K (Windows) |
+| Go to Dashboard | Cmd+1 or Ctrl+1                 |
+| Go to Schools   | Cmd+2 or Ctrl+2                 |
+| Go to Timeline  | Cmd+3 or Ctrl+3                 |
+| Add School      | Cmd+N or Ctrl+N                 |
+| Settings        | Cmd+, or Ctrl+,                 |
 
 ### Additional Resources
 

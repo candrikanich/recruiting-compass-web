@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
-  >
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
     <div class="flex items-center gap-2 mb-4">
       <span class="text-2xl">📅</span>
       <h3 class="text-lg font-bold text-slate-900">Upcoming Milestones</h3>
@@ -37,14 +35,14 @@
           <div class="text-xs text-slate-500 mt-0.5">
             {{ formatDate(milestone.date) }}
           </div>
-          <div
-            v-if="milestone.description"
-            class="text-xs text-slate-600 mt-1"
-          >
+          <div v-if="milestone.description" class="text-xs text-slate-600 mt-1">
             {{ milestone.description }}
           </div>
         </div>
-        <div v-if="milestone.url" class="flex-shrink-0 text-slate-400 group-hover:text-slate-600 transition">
+        <div
+          v-if="milestone.url"
+          class="flex-shrink-0 text-slate-400 group-hover:text-slate-600 transition"
+        >
           ↗
         </div>
       </a>

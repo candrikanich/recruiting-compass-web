@@ -21,9 +21,7 @@ describe("formalOutreachRule", () => {
   describe("grade level filtering", () => {
     it("should NOT apply to sophomores (grade 10)", async () => {
       mockContext.athlete = { grade_level: 10 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
 
       const result = await formalOutreachRule.evaluate(mockContext);
       expect(result).toBeNull();
@@ -31,9 +29,7 @@ describe("formalOutreachRule", () => {
 
     it("should apply to juniors (grade 11)", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await formalOutreachRule.evaluate(mockContext);
@@ -42,9 +38,7 @@ describe("formalOutreachRule", () => {
 
     it("should apply to seniors (grade 12)", async () => {
       mockContext.athlete = { grade_level: 12 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await formalOutreachRule.evaluate(mockContext);
@@ -81,9 +75,7 @@ describe("formalOutreachRule", () => {
   describe("interaction frequency", () => {
     it("should return suggestion when no interactions > 30 days", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await formalOutreachRule.evaluate(mockContext);
@@ -114,9 +106,7 @@ describe("formalOutreachRule", () => {
 
     it("should NOT return suggestion when avg gap < 30 days", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
 
       const twentyDaysAgo = new Date();
       twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);
@@ -164,9 +154,7 @@ describe("formalOutreachRule", () => {
   describe("urgency differentiation", () => {
     it("should be medium urgency for juniors", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await formalOutreachRule.evaluate(mockContext);
@@ -176,9 +164,7 @@ describe("formalOutreachRule", () => {
 
     it("should be high urgency for seniors", async () => {
       mockContext.athlete = { grade_level: 12 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await formalOutreachRule.evaluate(mockContext);
@@ -190,9 +176,7 @@ describe("formalOutreachRule", () => {
   describe("action type", () => {
     it("should return log_interaction action", async () => {
       mockContext.athlete = { grade_level: 11 };
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
       mockContext.interactions = [];
 
       const result = await formalOutreachRule.evaluate(mockContext);
@@ -238,9 +222,7 @@ describe("formalOutreachRule", () => {
   describe("edge cases", () => {
     it("should handle missing grade_level", async () => {
       mockContext.athlete = {};
-      mockContext.schools = [
-        { id: "school-1", priority: "A" },
-      ] as unknown[];
+      mockContext.schools = [{ id: "school-1", priority: "A" }] as unknown[];
 
       const result = await formalOutreachRule.evaluate(mockContext);
       expect(result).toBeNull();

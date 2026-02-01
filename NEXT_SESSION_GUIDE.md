@@ -23,10 +23,12 @@
 ### Phase 5: UI Components (6-8 hours)
 
 **Files to Create:**
+
 1. `components/AthleteSelector.vue` - Parent athlete switching dropdown
 2. `components/PrivateNotesCard.vue` - User private notes display
 
 **Files to Modify:**
+
 1. `pages/schools/index.vue` - Add AthleteSelector
 2. `components/SchoolCard.vue` - Add PrivateNotesCard
 3. `pages/settings/account-linking.vue` - Show family context
@@ -36,10 +38,12 @@
 ### Phase 6: API Endpoints (4-5 hours)
 
 **Endpoints to Create:**
+
 1. `POST /api/family/create.post.ts` - Manual family creation
 2. `GET /api/family/members.get.ts` - Fetch family members
 
 **Endpoints to Modify:**
+
 1. `POST /api/account-links/confirm.post.ts` - Add family creation logic (already in composable, mirror to API if needed)
 
 **Code examples available in:** `PHASE_4_NEXT_STEPS.md`
@@ -47,6 +51,7 @@
 ### Phase 7: Testing (6-8 hours)
 
 **Tests to Create:**
+
 1. `tests/unit/composables/useActiveFamily.spec.ts` - Family context logic
 2. `tests/unit/composables/useUserNotes.spec.ts` - Private notes CRUD
 3. E2E tests for parent switching and student interaction creation
@@ -56,6 +61,7 @@
 ## 🚀 Quick Start for Next Session
 
 ### Step 1: Apply Migrations (if not already done)
+
 ```bash
 # In Supabase SQL Editor:
 # 1. Copy entire migration 021_create_family_units.sql → Run
@@ -65,15 +71,18 @@ npx supabase gen types typescript --local > types/database.ts
 ```
 
 ### Step 2: Start with UI Components
+
 - Begin with `AthleteSelector.vue` (simplest)
 - Then `PrivateNotesCard.vue`
 - Then integrate into existing pages
 
 ### Step 3: Create API Endpoints
+
 - Mirror family creation logic from composable to API if needed
 - Create member lookup endpoint
 
 ### Step 4: Write Tests
+
 - Start with unit tests for new composables
 - Then E2E tests for user workflows
 
@@ -82,6 +91,7 @@ npx supabase gen types typescript --local > types/database.ts
 ## 📁 Key Files to Know
 
 **Composables (Already Updated):**
+
 - `composables/useActiveFamily.ts` - Family context provider (NEW)
 - `composables/useUserNotes.ts` - Private notes (NEW)
 - `composables/useSchools.ts` - Updated for family_unit_id
@@ -90,10 +100,12 @@ npx supabase gen types typescript --local > types/database.ts
 - `composables/useAccountLinks.ts` - Updated with automatic family creation
 
 **Migrations (Created, Not Yet Applied):**
+
 - `server/migrations/021_create_family_units.sql`
 - `server/migrations/022_backfill_family_data.sql`
 
 **Test Data:**
+
 - Family 1 ID: `983b2163-5d1b-4a46-997f-a60e6b42a7bd`
   - Student: test.player2028@ (d026ead8...)
   - Parents: test.parent@, test.parent2@
@@ -104,6 +116,7 @@ npx supabase gen types typescript --local > types/database.ts
   - Data: Empty (ready for testing)
 
 **Documentation:**
+
 - `FAMILY_UNITS_IMPLEMENTATION_STATUS.md` - Full status tracker
 - `FAMILY_UNITS_MIGRATION.md` - Migration application guide
 - `PHASE_4_NEXT_STEPS.md` - Detailed next steps with code examples
@@ -138,6 +151,7 @@ npx supabase gen types typescript --local > types/database.ts
 ## 🧪 Testing Checklist
 
 Before finishing, verify:
+
 - [ ] Migrations applied and backfill verified (100% coverage)
 - [ ] `npm run type-check` → 0 errors
 - [ ] `npm run lint` → 0 errors
@@ -166,8 +180,8 @@ Before finishing, verify:
 3. **Private notes pattern:**
    ```typescript
    const userNotes = useUserNotes();
-   const note = await userNotes.getNote('school', schoolId);
-   await userNotes.saveNote('school', schoolId, 'My private notes');
+   const note = await userNotes.getNote("school", schoolId);
+   await userNotes.saveNote("school", schoolId, "My private notes");
    ```
 
 ---
@@ -175,6 +189,7 @@ Before finishing, verify:
 ## 📞 Questions?
 
 Refer to:
+
 - `PHASE_4_NEXT_STEPS.md` - Detailed code examples for UI/API
 - `FAMILY_UNITS_IMPLEMENTATION_STATUS.md` - Full reference
 - `MIGRATION_VALIDATION_GUIDE.md` - Migration help

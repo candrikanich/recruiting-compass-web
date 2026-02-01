@@ -15,6 +15,7 @@
 **Data Migration:** All 299 user preference records converted from V1 → V2 format
 
 **Results:**
+
 - ✅ New `user_preferences` table with category-based structure created
 - ✅ All V1 data migrated to V2 format:
   - 299 notification preferences
@@ -52,15 +53,26 @@ CREATE INDEX idx_preference_history_created_at ON preference_history(created_at)
 
 ```typescript
 // Type guards for each preference category
-export function validateNotificationSettings(data: unknown): NotificationSettings
-export function validateHomeLocation(data: unknown): HomeLocation
-export function validatePlayerDetails(data: unknown): PlayerDetails
-export function validateSchoolPreferences(data: unknown): SchoolPreferences
-export function validateDashboardLayout(data: unknown): DashboardWidgetVisibility
+export function validateNotificationSettings(
+  data: unknown,
+): NotificationSettings;
+export function validateHomeLocation(data: unknown): HomeLocation;
+export function validatePlayerDetails(data: unknown): PlayerDetails;
+export function validateSchoolPreferences(data: unknown): SchoolPreferences;
+export function validateDashboardLayout(
+  data: unknown,
+): DashboardWidgetVisibility;
 
 // History tracking helpers
-export function trackHistoryChange<T>(oldValue: T, newValue: T, category: string): HistoryEntry[]
-export function createHistoryEntry(category: string, changes: FieldChange[]): PreferenceHistoryEntry
+export function trackHistoryChange<T>(
+  oldValue: T,
+  newValue: T,
+  category: string,
+): HistoryEntry[];
+export function createHistoryEntry(
+  category: string,
+  changes: FieldChange[],
+): PreferenceHistoryEntry;
 ```
 
 ### 1.3 API Endpoints for History
@@ -72,7 +84,7 @@ export function createHistoryEntry(category: string, changes: FieldChange[]): Pr
 export default defineEventHandler(async (event) => {
   // GET /api/user/preferences/{category}/history
   // Returns list of preference_history entries for category
-})
+});
 ```
 
 ---
@@ -86,23 +98,37 @@ This wrapper coordinates multiple V2 instances and handles history:
 
 ```typescript
 export function usePreferenceManager() {
-  const notificationPrefs = useUserPreferencesV2('notifications');
-  const locationPrefs = useUserPreferencesV2('location');
-  const playerPrefs = useUserPreferencesV2('player');
-  const schoolPrefs = useUserPreferencesV2('school');
-  const dashboardPrefs = useUserPreferencesV2('dashboard');
+  const notificationPrefs = useUserPreferencesV2("notifications");
+  const locationPrefs = useUserPreferencesV2("location");
+  const playerPrefs = useUserPreferencesV2("player");
+  const schoolPrefs = useUserPreferencesV2("school");
+  const dashboardPrefs = useUserPreferencesV2("dashboard");
 
   // Coordinated operations
-  const loadAllPreferences = async () => { /* load all categories */ }
-  const saveAllPreferences = async () => { /* save all categories */ }
+  const loadAllPreferences = async () => {
+    /* load all categories */
+  };
+  const saveAllPreferences = async () => {
+    /* save all categories */
+  };
 
   // Typed accessors with validation
-  const getNotificationSettings = (): NotificationSettings => { /* validate & return */ }
-  const setNotificationSettings = async (settings: Partial<NotificationSettings>) => { /* validate, track, save */ }
+  const getNotificationSettings = (): NotificationSettings => {
+    /* validate & return */
+  };
+  const setNotificationSettings = async (
+    settings: Partial<NotificationSettings>,
+  ) => {
+    /* validate, track, save */
+  };
 
   // History operations
-  const getPreferenceHistory = async (category: PreferenceCategory) => { /* fetch from API */ }
-  const trackChange = async (category, oldValue, newValue) => { /* record change */ }
+  const getPreferenceHistory = async (category: PreferenceCategory) => {
+    /* fetch from API */
+  };
+  const trackChange = async (category, oldValue, newValue) => {
+    /* record change */
+  };
 
   return {
     notificationPrefs,
@@ -127,8 +153,10 @@ export function usePreferenceManager() {
 ### Migration Pattern for Each Page
 
 **Before (V1):**
+
 ```typescript
-const { notificationSettings, updateNotificationSettings, loading, error } = useUserPreferences();
+const { notificationSettings, updateNotificationSettings, loading, error } =
+  useUserPreferences();
 
 watch(notificationSettings, (settings) => {
   if (settings) Object.assign(localSettings, settings);
@@ -140,16 +168,18 @@ const handleSave = async () => {
 ```
 
 **After (V2):**
+
 ```typescript
-const { getNotificationSettings, setNotificationSettings, isLoading, error } = usePreferenceManager();
+const { getNotificationSettings, setNotificationSettings, isLoading, error } =
+  usePreferenceManager();
 
 const localSettings = reactive<NotificationSettings>(
-  getNotificationSettings() || getDefaultNotificationSettings()
+  getNotificationSettings() || getDefaultNotificationSettings(),
 );
 
 onMounted(async () => {
   // Load preferences from API
-  const prefs = await useUserPreferencesV2('notifications').loadPreferences();
+  const prefs = await useUserPreferencesV2("notifications").loadPreferences();
   Object.assign(localSettings, validateNotificationSettings(prefs?.data));
 });
 
@@ -317,6 +347,7 @@ export const useSchoolMatching = () => {
 ### Type Safety
 
 V2 returns generic `Record<string, unknown>`. **Must** validate:
+
 ```typescript
 // NEVER do this
 const settings = prefs.value as NotificationSettings;
@@ -328,15 +359,17 @@ const settings = validateNotificationSettings(prefs.value);
 ### History Tracking
 
 History must be **explicitly** tracked on save:
+
 ```typescript
 const oldValue = getNotificationSettings();
 await setNotificationSettings(localSettings);
-await trackChange('notifications', oldValue, localSettings);
+await trackChange("notifications", oldValue, localSettings);
 ```
 
 ### Async Coordination
 
 When multiple preferences needed (useSchoolMatching):
+
 ```typescript
 // WRONG - race condition
 const schoolScore = calculateScore(); // loads schoolPrefs async
@@ -349,9 +382,10 @@ const schoolScore = calculateScore(); // now safe
 ### Default Values
 
 V1 auto-created defaults. V2 doesn't. Must provide defaults:
+
 ```typescript
 const localSettings = reactive<NotificationSettings>(
-  getNotificationSettings() ?? getDefaultNotificationSettings()
+  getNotificationSettings() ?? getDefaultNotificationSettings(),
 );
 ```
 
@@ -377,6 +411,7 @@ If critical issues emerge:
 4. **Re-approach** with Option 2 (adapter layer) instead
 
 Easy rollback because:
+
 - V1 composable still exists unchanged
 - No schema breaking changes yet (audit table is additive)
 - No data loss (V2 doesn't delete V1 data)

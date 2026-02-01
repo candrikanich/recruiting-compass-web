@@ -123,7 +123,13 @@ describe("ncaaRecruitingCalendar", () => {
         expect(milestone.title).toBeTruthy();
         expect(milestone.type).toBeTruthy();
         expect(
-          ["test", "deadline", "ncaa-period", "application", "signing"].includes(milestone.type),
+          [
+            "test",
+            "deadline",
+            "ncaa-period",
+            "application",
+            "signing",
+          ].includes(milestone.type),
         ).toBe(true);
       });
     });
@@ -131,10 +137,7 @@ describe("ncaaRecruitingCalendar", () => {
 
   describe("getMilestonesByDateRange", () => {
     it("should return milestones within date range", () => {
-      const result = getMilestonesByDateRange(
-        "2026-01-01",
-        "2026-12-31",
-      );
+      const result = getMilestonesByDateRange("2026-01-01", "2026-12-31");
 
       expect(result.length).toBeGreaterThan(0);
       result.forEach((milestone) => {
@@ -144,19 +147,13 @@ describe("ncaaRecruitingCalendar", () => {
     });
 
     it("should return empty array for date range with no milestones", () => {
-      const result = getMilestonesByDateRange(
-        "2020-01-01",
-        "2020-12-31",
-      );
+      const result = getMilestonesByDateRange("2020-01-01", "2020-12-31");
 
       expect(result.length).toBe(0);
     });
 
     it("should return milestones sorted by date", () => {
-      const result = getMilestonesByDateRange(
-        "2026-01-01",
-        "2027-12-31",
-      );
+      const result = getMilestonesByDateRange("2026-01-01", "2027-12-31");
 
       for (let i = 0; i < result.length - 1; i++) {
         expect(result[i].date <= result[i + 1].date).toBe(true);
@@ -192,10 +189,7 @@ describe("ncaaRecruitingCalendar", () => {
 
   describe("milestone data quality", () => {
     it("all milestones should have valid ISO dates", () => {
-      const result = getMilestonesByDateRange(
-        "2026-01-01",
-        "2027-12-31",
-      );
+      const result = getMilestonesByDateRange("2026-01-01", "2027-12-31");
 
       result.forEach((milestone) => {
         const date = new Date(milestone.date + "T00:00:00Z");

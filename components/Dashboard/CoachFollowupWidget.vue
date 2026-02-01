@@ -104,7 +104,9 @@ const userStore = useUserStore();
 const communicationComposable = useCommunication();
 
 const showPanel = computed(() => communicationComposable.showPanel.value);
-const selectedCoach = computed(() => communicationComposable.selectedCoach.value);
+const selectedCoach = computed(
+  () => communicationComposable.selectedCoach.value,
+);
 const communicationType = computed(
   () => communicationComposable.communicationType.value,
 );

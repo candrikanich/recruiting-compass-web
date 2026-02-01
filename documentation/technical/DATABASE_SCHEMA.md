@@ -9,6 +9,7 @@ Complete database schema for Recruiting Compass, including table definitions, re
 Recruiting Compass uses PostgreSQL (via Supabase) with Row-Level Security (RLS) to ensure data privacy and security. Each user can only access their own data and data shared with them (e.g., parents viewing athlete's data).
 
 **Database Principles:**
+
 - User-scoped data: All data belongs to a user and is protected by RLS
 - Parent-scoped data: Parents can view athlete data when invited
 - No direct coach access: Coaches never see internal data
@@ -59,6 +60,7 @@ CREATE TABLE users (
 ```
 
 **Key Fields:**
+
 - `id`: UUID from Supabase Auth
 - `email`: Login email
 - `role`: User type (athlete is primary, parent is secondary)
@@ -66,10 +68,12 @@ CREATE TABLE users (
 - `primary_position`: Baseball position (e.g., "Shortstop")
 
 **Indexes:**
+
 - `idx_users_email` (unique)
 - `idx_users_deleted_at` (for soft delete queries)
 
 **RLS Policy:**
+
 - Users can view their own profile
 - Parents can view linked athlete profile (via `account_links`)
 
@@ -109,15 +113,18 @@ CREATE TABLE user_profiles (
 ```
 
 **Key Fields:**
+
 - `unweighted_gpa`: GPA (e.g., 3.85)
 - `sat_score`, `act_score`: Standardized test scores
 - `target_divisions`: Array of division levels user is targeting
 - `target_regions`: Array of states/regions
 
 **Indexes:**
+
 - `idx_user_profiles_user_id`
 
 **RLS Policy:**
+
 - Users can only update their own profile
 - Parents can view linked athlete profile (read-only)
 
@@ -148,17 +155,20 @@ CREATE TABLE schools (
 ```
 
 **Key Fields:**
+
 - `user_id`: Athlete who added this school
 - `priority_tier`: Reach, Target, or Safety
 - `division_level`: D1, D2, D3, JUCO, NAIA
 - `is_active`: Soft delete flag
 
 **Indexes:**
+
 - `idx_schools_user_id`
 - `idx_schools_is_active`
 - `idx_schools_division_level`
 
 **RLS Policy:**
+
 - Users can only see/edit their own schools
 - Parents can view linked athlete schools
 
@@ -188,17 +198,20 @@ CREATE TABLE coaches (
 ```
 
 **Key Fields:**
+
 - `school_id`: School where coach works
 - `user_id`: Athlete tracking this coach
 - `position_title`: Role at school (e.g., "Head Coach", "Pitching Coach")
 - `position_focus`: Positions they recruit (e.g., "Shortstop, 2B")
 
 **Indexes:**
+
 - `idx_coaches_user_id`
 - `idx_coaches_school_id`
 - `idx_coaches_email`
 
 **RLS Policy:**
+
 - Users can only see coaches they added
 - Parents can view linked athlete coaches
 
@@ -238,17 +251,20 @@ CREATE TABLE interactions (
 ```
 
 **Key Fields:**
+
 - `interaction_type`: Type of communication
 - `interaction_date`: When it happened (not necessarily today)
 - `outcome`: How it went (positive/neutral/no response)
 - `response_time_hours`: How long coach took to respond
 
 **Indexes:**
+
 - `idx_interactions_user_id`
 - `idx_interactions_coach_id`
 - `idx_interactions_interaction_date`
 
 **RLS Policy:**
+
 - Users can only view their own interactions
 - Parents can view linked athlete interactions
 
@@ -273,16 +289,19 @@ CREATE TABLE timeline_phases (
 ```
 
 **Key Fields:**
+
 - `phase_name`: Freshman, Sophomore, Junior, Senior
 - `current_phase`: Which phase is user in now
 - `started_at`: When they started this phase
 - `completed_at`: When they advanced to next phase
 
 **Indexes:**
+
 - `idx_timeline_phases_user_id`
 - `idx_timeline_phases_current_phase`
 
 **RLS Policy:**
+
 - Users can only view/edit their own phases
 
 ---
@@ -309,16 +328,19 @@ CREATE TABLE timeline_tasks (
 ```
 
 **Key Fields:**
+
 - `phase_id`: Which phase this task belongs to
 - `is_complete`: Task completion status
 - `depends_on_task_id`: Task dependencies (lock until dependency completes)
 - `task_order`: Display order within phase
 
 **Indexes:**
+
 - `idx_timeline_tasks_user_id`
 - `idx_timeline_tasks_phase_id`
 
 **RLS Policy:**
+
 - Users can only view/edit their own tasks
 
 ---
@@ -346,15 +368,18 @@ CREATE TABLE fit_scores (
 ```
 
 **Key Fields:**
+
 - `overall_score`: 1-10 scale
 - `academic_score`, `athletic_score`, etc.: Breakdown by category
 - `calculation_details`: JSON storing the calculation (weights, factors)
 
 **Indexes:**
+
 - `idx_fit_scores_user_id`
 - `idx_fit_scores_school_id`
 
 **RLS Policy:**
+
 - Users can only view their own fit scores
 
 ---
@@ -382,15 +407,18 @@ CREATE TABLE events (
 ```
 
 **Key Fields:**
+
 - `event_type`: Type of event
 - `coaches_attending`: Array of coach IDs expected there
 - `attended`: Whether user attended
 
 **Indexes:**
+
 - `idx_events_user_id`
 - `idx_events_event_date`
 
 **RLS Policy:**
+
 - Users can only view/edit their own events
 
 ---
@@ -417,15 +445,18 @@ CREATE TABLE documents (
 ```
 
 **Key Fields:**
+
 - `file_url`: URL to stored document (S3 or Supabase Storage)
 - `is_shareable`: Can be shared with coaches
 - `share_token`: Unique token for shareable link
 
 **Indexes:**
+
 - `idx_documents_user_id`
 - `idx_documents_share_token`
 
 **RLS Policy:**
+
 - Users can only view/manage their own documents
 - Anyone with share token can view document (via public policy)
 
@@ -450,15 +481,18 @@ CREATE TABLE performance_metrics (
 ```
 
 **Key Fields:**
+
 - `metric_type`: Type of measurement
 - `metric_value`: The value (e.g., 6.8 for 60-yard dash)
 - `measurement_date`: When measurement was taken
 
 **Indexes:**
+
 - `idx_performance_metrics_user_id`
 - `idx_performance_metrics_measurement_date`
 
 **RLS Policy:**
+
 - Users can only view/edit their own metrics
 - Parents can view linked athlete metrics
 
@@ -486,16 +520,19 @@ CREATE TABLE suggestions (
 ```
 
 **Key Fields:**
+
 - `suggestion_type`: Type of suggestion (follow-up, school, activity)
 - `related_coach_id`: Which coach if applicable
 - `priority`: High, medium, low
 - `is_acted_on`: Whether user acted on suggestion
 
 **Indexes:**
+
 - `idx_suggestions_user_id`
 - `idx_suggestions_created_at`
 
 **RLS Policy:**
+
 - Users can only view their own suggestions
 
 ---
@@ -522,15 +559,18 @@ CREATE TABLE offers (
 ```
 
 **Key Fields:**
+
 - `scholarship_amount`: Dollar amount of scholarship
 - `deadline_to_respond`: When athlete needs to decide
 - `status`: Current status of offer
 
 **Indexes:**
+
 - `idx_offers_user_id`
 - `idx_offers_school_id`
 
 **RLS Policy:**
+
 - Users can only view their own offers
 
 ---
@@ -554,16 +594,19 @@ CREATE TABLE account_links (
 ```
 
 **Key Fields:**
+
 - `athlete_user_id`: The primary athlete
 - `parent_user_id`: The parent/guardian
 - `access_level`: What parent can do
 - `approved_at`: When athlete approved the link
 
 **Indexes:**
+
 - `idx_account_links_athlete_user_id`
 - `idx_account_links_parent_user_id`
 
 **RLS Policy:**
+
 - Athletes can see links to them and manage them
 - Parents can see links to athletes they have access to
 
@@ -663,16 +706,19 @@ CREATE INDEX idx_account_links_athlete_parent ON account_links(athlete_user_id, 
 ### Query Patterns
 
 **Get athlete's schools:**
+
 ```sql
 SELECT * FROM schools WHERE user_id = $1 AND is_active = TRUE;
 ```
 
 **Get coaches for a school:**
+
 ```sql
 SELECT * FROM coaches WHERE school_id = $1 AND is_active = TRUE;
 ```
 
 **Get interaction history:**
+
 ```sql
 SELECT * FROM interactions
 WHERE coach_id = $1
@@ -680,6 +726,7 @@ ORDER BY interaction_date DESC;
 ```
 
 **Get responsiveness score for coach:**
+
 ```sql
 SELECT
   COUNT(*) as total_interactions,
@@ -694,16 +741,19 @@ WHERE coach_id = $1;
 ## Data Constraints & Validations
 
 ### Foreign Key Constraints
+
 - All user_id references include `ON DELETE CASCADE`
 - All coach_id references include `ON DELETE CASCADE`
 - No orphaned records
 
 ### Unique Constraints
+
 - `users(email)` - Email is unique identifier
 - `documents(share_token)` - Share tokens are unique
 - `account_links(athlete_user_id, parent_user_id)` - One link per pair
 
 ### Check Constraints
+
 - `fit_scores` - Scores between 1-10
 - `interactions.duration_minutes` - Must be positive
 - `offers.scholarship_amount` - Must be positive

@@ -23,9 +23,7 @@
         :key="event.id"
         class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
       >
-        <div
-          :class="['w-2 h-2 rounded-full mt-2', getEventDotColor(index)]"
-        />
+        <div :class="['w-2 h-2 rounded-full mt-2', getEventDotColor(index)]" />
         <div class="flex-1 min-w-0">
           <div class="text-slate-900 font-medium truncate">
             {{ event.name }}

@@ -42,9 +42,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
 
     if (!isAuthenticated) {
       // Redirect to login with return URL
-      return navigateTo(
-        `/login?redirect=${encodeURIComponent(to.fullPath)}`
-      );
+      return navigateTo(`/login?redirect=${encodeURIComponent(to.fullPath)}`);
     }
   }
 });

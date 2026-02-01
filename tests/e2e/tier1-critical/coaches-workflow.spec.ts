@@ -58,26 +58,27 @@ test.describe("Complete Coach Workflow", () => {
     await coachesPage.createCoach(coachData);
 
     // Verify coach was created
-    await coachesPage.expectCoachInList(coachData.firstName, coachData.lastName);
+    await coachesPage.expectCoachInList(
+      coachData.firstName,
+      coachData.lastName,
+    );
     console.log(
-      `✓ Created coach: ${coachData.firstName} ${coachData.lastName}`
+      `✓ Created coach: ${coachData.firstName} ${coachData.lastName}`,
     );
 
     // ===== PHASE 4: VIEW COACH DETAILS =====
     await coachesPage.viewCoachDetails(
-      `${coachData.firstName} ${coachData.lastName}`
+      `${coachData.firstName} ${coachData.lastName}`,
     );
 
     // Verify coach detail page loaded with info
-    await expect(
-      page.locator(`text=${coachData.firstName}`)
-    ).toBeVisible();
+    await expect(page.locator(`text=${coachData.firstName}`)).toBeVisible();
     console.log(`✓ Viewed coach details page`);
 
     // ===== PHASE 5: LOG INTERACTION =====
     const logButton = await page
       .locator(
-        'button:has-text("Log Interaction"), [data-testid="log-interaction"]'
+        'button:has-text("Log Interaction"), [data-testid="log-interaction"]',
       )
       .first();
 
@@ -94,11 +95,13 @@ test.describe("Complete Coach Workflow", () => {
       }
 
       const notesInput = await page
-        .locator('textarea[placeholder*="notes"], textarea[placeholder*="Notes"]')
+        .locator(
+          'textarea[placeholder*="notes"], textarea[placeholder*="Notes"]',
+        )
         .first();
       if (await notesInput.isVisible()) {
         await notesInput.fill(
-          "Discussed recruiting timeline and interest in our athlete"
+          "Discussed recruiting timeline and interest in our athlete",
         );
       }
 
@@ -116,7 +119,7 @@ test.describe("Complete Coach Workflow", () => {
     // ===== PHASE 6: VIEW COMMUNICATION HISTORY =====
     const commButton = await page
       .locator(
-        'button:has-text("Messages"), a[href*="/communications"], button:has-text("Communications")'
+        'button:has-text("Messages"), a[href*="/communications"], button:has-text("Communications")',
       )
       .first();
 
@@ -128,7 +131,7 @@ test.describe("Complete Coach Workflow", () => {
       // Verify communications page loaded
       const timelineVisible = await page
         .locator(
-          '[data-testid="interaction-list"], .timeline, .interactions, text=Initial contact'
+          '[data-testid="interaction-list"], .timeline, .interactions, text=Initial contact',
         )
         .first()
         .isVisible();
@@ -140,7 +143,7 @@ test.describe("Complete Coach Workflow", () => {
     // ===== PHASE 7: VERIFY METRICS UPDATED =====
     const interactionCount = await page
       .locator(
-        '[data-testid="total-interactions"], [data-testid="interaction-count"]'
+        '[data-testid="total-interactions"], [data-testid="interaction-count"]',
       )
       .first();
 
@@ -156,7 +159,7 @@ test.describe("Complete Coach Workflow", () => {
     // Should find our coach
     await coachesPage.expectCoachInList(
       coachData.firstName,
-      coachData.lastName
+      coachData.lastName,
     );
     console.log(`✓ Searched and found coach`);
 
@@ -171,7 +174,7 @@ test.describe("Complete Coach Workflow", () => {
 
     // ===== PHASE 10: UPDATE COACH INFORMATION =====
     await coachesPage.viewCoachDetails(
-      `${coachData.firstName} ${coachData.lastName}`
+      `${coachData.firstName} ${coachData.lastName}`,
     );
 
     const updatedPhone = "555-9999";
@@ -185,7 +188,8 @@ test.describe("Complete Coach Workflow", () => {
 
     const phoneText = await page.locator(`text=${updatedPhone}`).first();
     const isPhoneVisible =
-      (await phoneText.isVisible()) || (await phoneText.isVisible().catch(() => false));
+      (await phoneText.isVisible()) ||
+      (await phoneText.isVisible().catch(() => false));
 
     if (isPhoneVisible) {
       console.log(`✓ Updated coach phone number`);
@@ -258,7 +262,10 @@ test.describe("Complete Coach Workflow", () => {
       await coachesPage.createCoach(coachData);
 
       // Verify coach created
-      await coachesPage.expectCoachInList(coachData.firstName, coachData.lastName);
+      await coachesPage.expectCoachInList(
+        coachData.firstName,
+        coachData.lastName,
+      );
       console.log(`✓ Created ${coach.role} coach`);
     }
 
@@ -313,7 +320,9 @@ test.describe("Complete Coach Workflow", () => {
 
     // Test quick actions
     const emailButton = await page
-      .locator('button[aria-label*="email"], button:has-text("Email"), a[href^="mailto:"]')
+      .locator(
+        'button[aria-label*="email"], button:has-text("Email"), a[href^="mailto:"]',
+      )
       .first();
 
     if (await emailButton.isVisible()) {
@@ -323,7 +332,9 @@ test.describe("Complete Coach Workflow", () => {
     }
 
     const textButton = await page
-      .locator('button[aria-label*="text"], button:has-text("Text"), a[href^="sms:"]')
+      .locator(
+        'button[aria-label*="text"], button:has-text("Text"), a[href^="sms:"]',
+      )
       .first();
 
     if (await textButton.isVisible()) {
@@ -332,9 +343,7 @@ test.describe("Complete Coach Workflow", () => {
       console.log(`✓ Text action available`);
     }
 
-    const twitterLink = await page
-      .locator('a[href*="twitter.com"]')
-      .first();
+    const twitterLink = await page.locator('a[href*="twitter.com"]').first();
 
     if (await twitterLink.isVisible()) {
       const href = await twitterLink.getAttribute("href");

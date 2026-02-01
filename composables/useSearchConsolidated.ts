@@ -632,7 +632,9 @@ export const useSearchConsolidated = () => {
    * Merged from useCollegeAutocomplete for unified search interface
    * Requires minimum 3 characters to avoid excessive API calls
    */
-  const getCollegeSuggestions = async (query: string): Promise<
+  const getCollegeSuggestions = async (
+    query: string,
+  ): Promise<
     Array<{
       id: string;
       name: string;

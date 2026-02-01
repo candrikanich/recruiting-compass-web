@@ -23,7 +23,9 @@
                 />
               </svg>
               <h2 class="text-lg font-semibold text-gray-900">
-                Delete {{ emails.length }} User{{ emails.length !== 1 ? "s" : "" }}?
+                Delete {{ emails.length }} User{{
+                  emails.length !== 1 ? "s" : ""
+                }}?
               </h2>
             </div>
             <button
@@ -63,7 +65,11 @@
             <div
               class="border border-gray-200 rounded-lg bg-gray-50 max-h-40 overflow-y-auto"
             >
-              <div v-for="(email, index) in displayedEmails" :key="email" class="px-3 py-2 border-b border-gray-100 last:border-b-0 text-sm text-gray-700">
+              <div
+                v-for="(email, index) in displayedEmails"
+                :key="email"
+                class="px-3 py-2 border-b border-gray-100 last:border-b-0 text-sm text-gray-700"
+              >
                 {{ index + 1 }}. {{ email }}
               </div>
               <div
@@ -91,7 +97,9 @@
               class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition"
               data-testid="confirm-bulk-delete"
             >
-              Delete {{ emails.length }} User{{ emails.length !== 1 ? "s" : "" }}
+              Delete {{ emails.length }} User{{
+                emails.length !== 1 ? "s" : ""
+              }}
             </button>
           </div>
         </div>

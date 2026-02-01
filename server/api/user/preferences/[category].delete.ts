@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     console.error(
       `[Preferences DELETE] Error deleting ${category} for user ${user.id}:`,
-      err
+      err,
     );
 
     throw createError({

@@ -79,16 +79,19 @@ Makes Informed Decisions (fit scores, coach responsiveness, program fit)
 ### Three-Layer Architecture
 
 **Layer 1: Client (Vue 3 + Nuxt)**
+
 - Responsive web app (desktop, tablet, mobile)
 - Real-time updates
 - Offline support (PWA)
 
 **Layer 2: API (Nitro)**
+
 - REST endpoints for schools, coaches, interactions, timeline
 - AI suggestion engine (LLM-powered)
 - Fit score calculation algorithm
 
 **Layer 3: Backend (Supabase PostgreSQL)**
+
 - User accounts (auth + RLS)
 - Schools, coaches, interactions data
 - Timeline tasks, events, documents
@@ -100,26 +103,28 @@ Makes Informed Decisions (fit scores, coach responsiveness, program fit)
 
 ### MVP (8 Core Features)
 
-| Feature | Benefit | User Type |
-|---------|---------|-----------|
-| **Schools Dashboard** | Track all target colleges in one place | Both |
-| **Coach Management** | Organize contact info, responsiveness, history | Both |
-| **Interaction Logging** | Record all communication with coaches | Athlete |
-| **Timeline (4-Year Roadmap)** | Phase-appropriate tasks and milestones | Both |
-| **Fit Score** | Data-driven school matching (1-10 scale) | Both |
-| **AI Suggestions** | Smart next steps and recommendations | Athlete |
-| **Parent Collaboration** | Link parent account, shared visibility | Both |
-| **Performance Tracking** | Stats, metrics, analytics dashboard | Athlete |
+| Feature                       | Benefit                                        | User Type |
+| ----------------------------- | ---------------------------------------------- | --------- |
+| **Schools Dashboard**         | Track all target colleges in one place         | Both      |
+| **Coach Management**          | Organize contact info, responsiveness, history | Both      |
+| **Interaction Logging**       | Record all communication with coaches          | Athlete   |
+| **Timeline (4-Year Roadmap)** | Phase-appropriate tasks and milestones         | Both      |
+| **Fit Score**                 | Data-driven school matching (1-10 scale)       | Both      |
+| **AI Suggestions**            | Smart next steps and recommendations           | Athlete   |
+| **Parent Collaboration**      | Link parent account, shared visibility         | Both      |
+| **Performance Tracking**      | Stats, metrics, analytics dashboard            | Athlete   |
 
 ### Future Releases (Post-MVP)
 
 **Phase 2:**
+
 - Email templates (pre-written recruiting emails)
 - Document management (film, transcripts, recruiting surveys)
 - Event calendar (showcases, tournaments, visits)
 - Email integration (auto-log received emails from coaches)
 
 **Phase 3:**
+
 - Offer tracking (scholarship offers, terms, comparison)
 - Video tutorials (in-app guides)
 - School comparison tool (side-by-side evaluation)
@@ -172,14 +177,14 @@ Makes Informed Decisions (fit scores, coach responsiveness, program fit)
 
 ### Why This Stack Works
 
-| Component | Choice | Reason |
-|-----------|--------|--------|
-| **Frontend** | Vue 3 + Nuxt | Type-safe, fast, ideal for real-time apps |
-| **Backend API** | Nitro | Lightweight, auto-routed, built for Nuxt |
-| **Database** | Supabase PostgreSQL | Managed, RLS for security, real-time updates |
-| **Auth** | Supabase Auth | JWT-based, secure, integrated with RLS |
-| **AI/LLM** | OpenAI API | Suggestions, fit score explanations, templates |
-| **Deployment** | Netlify (frontend), Supabase (backend) | Fast, free tier, automatic deploys |
+| Component       | Choice                                 | Reason                                         |
+| --------------- | -------------------------------------- | ---------------------------------------------- |
+| **Frontend**    | Vue 3 + Nuxt                           | Type-safe, fast, ideal for real-time apps      |
+| **Backend API** | Nitro                                  | Lightweight, auto-routed, built for Nuxt       |
+| **Database**    | Supabase PostgreSQL                    | Managed, RLS for security, real-time updates   |
+| **Auth**        | Supabase Auth                          | JWT-based, secure, integrated with RLS         |
+| **AI/LLM**      | OpenAI API                             | Suggestions, fit score explanations, templates |
+| **Deployment**  | Netlify (frontend), Supabase (backend) | Fast, free tier, automatic deploys             |
 
 ### Security & Privacy
 
@@ -194,12 +199,14 @@ Makes Informed Decisions (fit scores, coach responsiveness, program fit)
 ## Roadmap & Vision
 
 ### MVP (Q1/Q2 2026)
+
 - 8 core features
 - Free tier
 - 1,000+ users (organic + early marketing)
 - Mobile-responsive web app
 
 ### Version 1.1 (Q3 2026)
+
 - Email templates
 - Document management
 - Event calendar
@@ -207,6 +214,7 @@ Makes Informed Decisions (fit scores, coach responsiveness, program fit)
 - 5,000+ users
 
 ### Version 2.0 (Q4 2026 - Q1 2027)
+
 - Offer tracking
 - Advanced analytics
 - School comparison tool
@@ -214,6 +222,7 @@ Makes Informed Decisions (fit scores, coach responsiveness, program fit)
 - 50,000+ users (target)
 
 ### Vision (Year 2+)
+
 - Mobile apps (iOS/Android)
 - Integration with Hudl, Nike SPARQ (athletic data sources)
 - Coach outreach automation (optional: let athletes/families control messaging)
@@ -225,21 +234,25 @@ Makes Informed Decisions (fit scores, coach responsiveness, program fit)
 ## Success Metrics
 
 ### User Acquisition
+
 - Week 1: 100 signups (friends, family, launch network)
 - Month 1: 1,000 signups (Product Hunt, social, referral)
 - Month 3: 5,000 signups (organic + paid ads)
 
 ### Engagement
+
 - 60%+ onboarding completion rate (athletes add 5+ schools, log interactions)
 - 40%+ weekly active users (return to app at least once/week)
 - 70%+ parent invitation rate (athletes invite parent)
 
 ### Revenue (Post-MVP)
+
 - Freemium conversion: 5-10% of free users → paid tier
 - $2,000/month MRR by end of year 1
 - $20,000/month MRR by end of year 2
 
 ### Retention
+
 - Month 1 retention: 40% (most users onboard then pause)
 - Month 3 retention: 25% (active cohort for rest of season)
 - Month 6 retention: 80% (seasonal pattern—busy in spring/summer)
@@ -249,11 +262,13 @@ Makes Informed Decisions (fit scores, coach responsiveness, program fit)
 ## Business Model
 
 ### MVP (Free)
+
 - 100% free access to all 8 core features
 - Revenue: None (focus on user growth)
 - Goal: 5,000-10,000 users by end of 2026
 
 ### Freemium (v1.1+)
+
 - **Free Tier**: Schools, coaches, interactions, timeline, basic suggestions
 - **Premium Tier** ($5-10/month):
   - Advanced AI suggestions
@@ -266,6 +281,7 @@ Makes Informed Decisions (fit scores, coach responsiveness, program fit)
 - **Family Plan** ($12-15/month): Unlimited parent/guardian accounts linked
 
 ### Potential B2B Opportunities
+
 - **Schools/Coaches**: Recruiting intelligence dashboard (future)
 - **Club Programs**: Bulk accounts for teams
 - **Advisors/Consultants**: Co-branded white-label version
@@ -275,6 +291,7 @@ Makes Informed Decisions (fit scores, coach responsiveness, program fit)
 ## Go-to-Market Strategy (MVP)
 
 ### Phase 1: Organic Launch (Week 1-2)
+
 - Product Hunt launch
 - Social media (Twitter, Instagram, TikTok)
 - Reddit communities (r/baseball, r/recruiting)
@@ -282,17 +299,20 @@ Makes Informed Decisions (fit scores, coach responsiveness, program fit)
 - Influencer outreach (YouTube baseball trainers)
 
 ### Phase 2: Referral & Community (Week 3-8)
+
 - Athlete referral rewards (e.g., "Refer a friend, unlock premium feature")
 - High school partnerships (coaches recommend to athletes)
 - Showcase/tournament presence (booths at AAU events)
 - Email drip campaign to signups
 
 ### Phase 3: Paid Acquisition (Month 2-3)
+
 - Google Ads (keywords: "college recruiting tracker," "recruit tracker app")
 - Facebook/Instagram ads (targeting parents of baseball players)
 - YouTube ads (sports/recruiting content)
 
 ### Phase 4: B2B Partnerships (Month 3+)
+
 - High school baseball programs (bulk signup for teams)
 - Club organizations (AABC, PG, 2one8, etc.)
 - Showcase organizers (team rosters, recruiting info)
@@ -303,12 +323,12 @@ Makes Informed Decisions (fit scores, coach responsiveness, program fit)
 
 ### Current Competitors
 
-| Competitor | Type | Strengths | Weaknesses |
-|-----------|------|-----------|-----------|
-| **Spreadsheet** | DIY | Free, flexible | Fragmented, hard to share |
-| **ClassPlus** | Team platform | Coach tools, team rosters | Expensive, not family-first |
-| **Hudl** | Sports platform | Film hosting, analytics | Expensive, not recruiting-focused |
-| **Google Sheets** | Docs | Accessible, free | No intelligence, hard to maintain |
+| Competitor        | Type            | Strengths                 | Weaknesses                        |
+| ----------------- | --------------- | ------------------------- | --------------------------------- |
+| **Spreadsheet**   | DIY             | Free, flexible            | Fragmented, hard to share         |
+| **ClassPlus**     | Team platform   | Coach tools, team rosters | Expensive, not family-first       |
+| **Hudl**          | Sports platform | Film hosting, analytics   | Expensive, not recruiting-focused |
+| **Google Sheets** | Docs            | Accessible, free          | No intelligence, hard to maintain |
 
 ### Why Recruiting Compass Wins
 
@@ -325,16 +345,19 @@ Makes Informed Decisions (fit scores, coach responsiveness, program fit)
 We're seeking support in three areas:
 
 ### 1. Investment/Funding
+
 - Seed round: $50-100K for year 1 operations
 - Use: Engineering (1 hire), marketing ($1-2K/month), server costs, tools
 - Return: Growth to 50,000+ users, freemium conversion to $20K MRR
 
 ### 2. Strategic Partnerships
+
 - **High School Partnerships**: Coaches recommend to student-athletes
 - **Showcase Organizers**: Integrate with tournament rosters
 - **Recruiting Influencers**: Testimonials, social endorsements
 
 ### 3. Expertise & Mentorship
+
 - College recruiting domain knowledge
 - B2B SaaS go-to-market strategy
 - Athlete/parent feedback on feature roadmap
@@ -357,6 +380,7 @@ We're seeking support in three areas:
 ### A. User Personas
 
 **Persona 1: Sarah (14-Year-Old Athlete)**
+
 - High school freshman, competitive baseball (travel team)
 - GPA: 3.7, athletic ability: 85/100
 - Tech-savvy, comfortable with apps
@@ -364,12 +388,14 @@ We're seeking support in three areas:
 - Pain: Overwhelmed by options; loses track of coach emails
 
 **Persona 2: Maria (Parent of Athlete)**
+
 - College-educated, works full-time
 - Not tech-savvy; prefers phone calls/emails
 - Goal: Support daughter in recruiting; ensure she doesn't miss opportunities
 - Pain: Unclear timeline; can't keep up with recruiting process
 
 **Persona 3: Coach Dave (College Coach)**
+
 - Recruits 15-20 athletes annually
 - Uses various tools (email, spreadsheets, CRM)
 - Goal: Find good fits for his program
@@ -378,17 +404,20 @@ We're seeking support in three areas:
 ### B. Key Product Decisions
 
 **Why Free MVP?**
+
 - Lower barrier to entry (more signups faster)
 - Viral growth potential (athletes refer friends)
 - Build user trust early
 - Gather data for freemium conversion
 
 **Why Freemium (not SaaS)?**
+
 - College recruiting is seasonal (busy spring/summer, quiet fall/winter)
 - Freemium captures seasonal users + converts engaged ones
 - Lower churn risk than pure subscription
 
 **Why Web (not Mobile First)?**
+
 - MVP ships faster (Nuxt handles web + mobile-responsive)
 - Desktop UX better for data entry and comparison
 - Mobile app later (Phase 2) if demand justifies

@@ -13,11 +13,11 @@ const emailPacketSchema = z.object({
     .array(z.string().email("Invalid email address"))
     .min(1, "At least one recipient is required")
     .max(10, "Maximum 10 recipients per send"),
-  subject: z.string().min(1, "Subject is required").max(200, "Subject too long"),
-  body: z
+  subject: z
     .string()
-    .min(1, "Body is required")
-    .max(2000, "Body too long"),
+    .min(1, "Subject is required")
+    .max(200, "Subject too long"),
+  body: z.string().min(1, "Body is required").max(2000, "Body too long"),
   htmlContent: z.string().optional(),
   pdfBase64: z.string().optional(),
   athleteName: z.string().optional(),
@@ -30,7 +30,10 @@ type EmailPacketRequest = z.infer<typeof emailPacketSchema>;
  * Rate limiting store (in-memory, resets on server restart)
  * In production, use Redis or database for persistence
  */
-const emailRateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const emailRateLimitStore = new Map<
+  string,
+  { count: number; resetTime: number }
+>();
 
 /**
  * Check if user has exceeded daily email limit
@@ -61,7 +64,7 @@ const checkRateLimit = (userId: string, maxEmails: number = 20): boolean => {
  */
 const formatEmailHtml = (
   body: string,
-  athleteName: string | undefined
+  athleteName: string | undefined,
 ): string => {
   return `
     <!DOCTYPE html>
@@ -149,7 +152,8 @@ export default defineEventHandler(async (event) => {
         resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || "recruiting@resend.dev",
           to: recipient,
-          replyTo: process.env.ATHLETE_REPLY_EMAIL || "noreply@recruitingcompass.app",
+          replyTo:
+            process.env.ATHLETE_REPLY_EMAIL || "noreply@recruitingcompass.app",
           subject: body.subject,
           html: htmlContent,
           attachments: body.filename
@@ -160,8 +164,8 @@ export default defineEventHandler(async (event) => {
                 },
               ]
             : undefined,
-        })
-      )
+        }),
+      ),
     );
 
     // Check for failures
@@ -172,7 +176,9 @@ export default defineEventHandler(async (event) => {
     }
 
     // Audit log (in production, save to database)
-    console.info(`[RECRUITING_PACKET_EMAIL] User: ${userId}, Recipients: ${body.recipients.length}, Subject: ${body.subject}`);
+    console.info(
+      `[RECRUITING_PACKET_EMAIL] User: ${userId}, Recipients: ${body.recipients.length}, Subject: ${body.subject}`,
+    );
 
     return {
       success: true,

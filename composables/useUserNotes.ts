@@ -39,7 +39,7 @@ export const useUserNotes = () => {
    */
   const getNote = async (
     entityType: EntityType,
-    entityId: string
+    entityId: string,
   ): Promise<string | null> => {
     if (!userStore.user) return null;
 
@@ -79,7 +79,7 @@ export const useUserNotes = () => {
    * Get all notes for entity type
    */
   const getNotesByType = async (
-    entityType: EntityType
+    entityType: EntityType,
   ): Promise<Record<string, string>> => {
     if (!userStore.user) return {};
 
@@ -113,7 +113,7 @@ export const useUserNotes = () => {
   const saveNote = async (
     entityType: EntityType,
     entityId: string,
-    noteContent: string
+    noteContent: string,
   ): Promise<boolean> => {
     if (!userStore.user) {
       error.value = "No authenticated user";
@@ -126,20 +126,18 @@ export const useUserNotes = () => {
     try {
       // Try to upsert: delete first (to handle empty content), then insert if not empty
       if (noteContent.trim()) {
-        const { error: upsertError } = await supabase
-          .from("user_notes")
-          .upsert(
-            {
-              user_id: userStore.user.id,
-              entity_type: entityType,
-              entity_id: entityId,
-              note_content: noteContent,
-              updated_at: new Date().toISOString(),
-            },
-            {
-              onConflict: "user_id,entity_type,entity_id",
-            }
-          );
+        const { error: upsertError } = await supabase.from("user_notes").upsert(
+          {
+            user_id: userStore.user.id,
+            entity_type: entityType,
+            entity_id: entityId,
+            note_content: noteContent,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: "user_id,entity_type,entity_id",
+          },
+        );
 
         if (upsertError) throw upsertError;
 
@@ -183,7 +181,7 @@ export const useUserNotes = () => {
    */
   const deleteNote = async (
     entityType: EntityType,
-    entityId: string
+    entityId: string,
   ): Promise<boolean> => {
     if (!userStore.user) return false;
 

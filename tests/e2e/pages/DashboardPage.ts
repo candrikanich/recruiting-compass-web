@@ -20,7 +20,9 @@ export class DashboardPage extends BasePage {
   }
 
   async getStatValue(label: string): Promise<string> {
-    const statCard = this.page.locator(`text="${label}"`).locator("ancestor::a");
+    const statCard = this.page
+      .locator(`text="${label}"`)
+      .locator("ancestor::a");
     const value = await statCard.locator("div").first().textContent();
     return value || "0";
   }
@@ -50,7 +52,9 @@ export class DashboardPage extends BasePage {
   }
 
   async getMonthlyContactsCount(): Promise<number> {
-    const element = this.page.locator('[data-testid="stat-card-monthly-contacts"]');
+    const element = this.page.locator(
+      '[data-testid="stat-card-monthly-contacts"]',
+    );
     const text = await element.locator("div").nth(2).textContent();
     return text ? parseInt(text) : 0;
   }
@@ -133,7 +137,9 @@ export class DashboardPage extends BasePage {
       quickStats: await this.isVisible(".grid.grid-cols-1"),
       suggestions: await this.isVisible("text=Action Items"),
       timeline: await this.isVisible("text=Recruiting Calendar"),
-      contactFrequency: await this.isVisible('[data-testid="contact-frequency-widget"]'),
+      contactFrequency: await this.isVisible(
+        '[data-testid="contact-frequency-widget"]',
+      ),
       recentActivity: await this.isVisible("text=Recent Activity"),
       quickActions: await this.isVisible("text=Quick Actions"),
     };
@@ -145,7 +151,9 @@ export class DashboardPage extends BasePage {
   }
 
   async getPageScrollHeight(): Promise<number> {
-    return await this.page.evaluate(() => document.documentElement.scrollHeight);
+    return await this.page.evaluate(
+      () => document.documentElement.scrollHeight,
+    );
   }
 
   async getViewportHeight(): Promise<number> {
@@ -189,7 +197,9 @@ export class DashboardPage extends BasePage {
 
   async getContactedSchools(): Promise<string[]> {
     const schools: string[] = [];
-    const elements = await this.page.locator('[data-testid^="contacted-school-"]').all();
+    const elements = await this.page
+      .locator('[data-testid^="contacted-school-"]')
+      .all();
 
     for (const element of elements) {
       const text = await element.textContent();
@@ -202,7 +212,9 @@ export class DashboardPage extends BasePage {
   }
 
   async expectWidgetCountMatches(widgetTestId: string, expectedCount: number) {
-    const countText = await this.getText(`${widgetTestId} [data-testid*="count"]`);
+    const countText = await this.getText(
+      `${widgetTestId} [data-testid*="count"]`,
+    );
     const match = countText.match(/\d+/);
     const count = match ? parseInt(match[0]) : 0;
     expect(count).toBe(expectedCount);
@@ -224,10 +236,18 @@ export class DashboardPage extends BasePage {
 
   // User Story 8.2 - Contact Frequency Summary Methods
   async getContactFrequencySummaryMetrics() {
-    const totalSchools = await this.getText('[data-testid="metric-total-schools"]');
-    const contacted7Days = await this.getText('[data-testid="metric-contacted-7days"]');
-    const avgFrequency = await this.getText('[data-testid="metric-avg-frequency"]');
-    const needAttention = await this.getText('[data-testid="metric-need-attention"]');
+    const totalSchools = await this.getText(
+      '[data-testid="metric-total-schools"]',
+    );
+    const contacted7Days = await this.getText(
+      '[data-testid="metric-contacted-7days"]',
+    );
+    const avgFrequency = await this.getText(
+      '[data-testid="metric-avg-frequency"]',
+    );
+    const needAttention = await this.getText(
+      '[data-testid="metric-need-attention"]',
+    );
 
     return {
       totalSchools: totalSchools.match(/\d+/)?.[0] || "0",
@@ -238,13 +258,20 @@ export class DashboardPage extends BasePage {
   }
 
   async clickContactSchool(schoolId: string) {
-    const schoolLink = this.page.locator(`[data-testid="contacted-school-${schoolId}"]`);
+    const schoolLink = this.page.locator(
+      `[data-testid="contacted-school-${schoolId}"]`,
+    );
     await schoolLink.click();
     await this.page.waitForURL((url) => url.pathname.includes("/schools/"));
   }
 
-  async expectColorCoding(schoolId: string, expectedColor: "green" | "yellow" | "red") {
-    const schoolRow = this.page.locator(`[data-testid="contacted-school-${schoolId}"]`);
+  async expectColorCoding(
+    schoolId: string,
+    expectedColor: "green" | "yellow" | "red",
+  ) {
+    const schoolRow = this.page.locator(
+      `[data-testid="contacted-school-${schoolId}"]`,
+    );
     const classes = await schoolRow.getAttribute("class");
     expect(classes).toContain(`border-${expectedColor}-500`);
   }

@@ -13,18 +13,27 @@
 **File:** `tests/unit/pages/dashboard.spec.ts`
 
 **Failing test (line 168):**
+
 ```typescript
 it("counts interactions occurring this month", () => {
   const now = new Date();
   const interactions: Interaction[] = [
     {
       id: "1",
-      occurred_at: new Date(now.getFullYear(), now.getMonth(), 15).toISOString(),
+      occurred_at: new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        15,
+      ).toISOString(),
       logged_by: "user-1",
     },
     {
       id: "2",
-      occurred_at: new Date(now.getFullYear(), now.getMonth(), 20).toISOString(),
+      occurred_at: new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        20,
+      ).toISOString(),
       logged_by: "user-1",
     },
   ];
@@ -43,18 +52,19 @@ it("counts interactions occurring this month", () => {
 **Issue 1: Local Time vs UTC Conversion**
 
 ```typescript
-new Date(2026, 0, 20)  // Creates local midnight: 2026-01-20 00:00:00
-.toISOString()         // Converts to UTC (shifts by timezone!)
+new Date(2026, 0, 20) // Creates local midnight: 2026-01-20 00:00:00
+  .toISOString(); // Converts to UTC (shifts by timezone!)
 ```
 
 **Example timeline by timezone:**
 
-| Timezone | Local Time | UTC Conversion | Result |
-|----------|-----------|-----------------|--------|
-| GMT-8 (Pacific) | 2026-01-20 00:00:00 | 2026-01-20 08:00:00 UTC | ✓ Same day |
+| Timezone         | Local Time          | UTC Conversion          | Result          |
+| ---------------- | ------------------- | ----------------------- | --------------- |
+| GMT-8 (Pacific)  | 2026-01-20 00:00:00 | 2026-01-20 08:00:00 UTC | ✓ Same day      |
 | GMT+5:30 (India) | 2026-01-20 00:00:00 | 2026-01-19 18:30:00 UTC | ✗ Previous day! |
 
 **In GMT+5:30 timezone:**
+
 - Test creates `new Date(2026, 0, 20)` → local midnight
 - ISO conversion moves it to UTC → becomes `2026-01-19 18:30:00`
 - This is the **previous day** in UTC
@@ -66,6 +76,7 @@ new Date(2026, 0, 20)  // Creates local midnight: 2026-01-20 00:00:00
 **Issue 2: Missing `created_at` Fallback**
 
 The filter uses `i.occurred_at || i.created_at || ""`:
+
 - Test data only provides `occurred_at`
 - If `occurred_at` is missing, falls back to empty string
 - `new Date("")` results in `Invalid Date` (NaN)
@@ -86,6 +97,7 @@ return interactionDate >= startOfMonth && interactionDate <= now;
 ## Solution Strategy
 
 **Option A: Use Explicit UTC Timestamps (RECOMMENDED)**
+
 - Create dates with explicit UTC times
 - Avoid timezone conversion ambiguity
 - Test logic in predictable UTC context
@@ -93,6 +105,7 @@ return interactionDate >= startOfMonth && interactionDate <= now;
 - **Cons:** Test doesn't match "real" local datetime behavior
 
 **Option B: Mock System Timezone**
+
 - Set test to specific timezone
 - Make date creation predictable
 - Verify logic works in multiple timezones
@@ -100,6 +113,7 @@ return interactionDate >= startOfMonth && interactionDate <= now;
 - **Cons:** Complex, requires Node.js time mocking
 
 **Option C: Use Timestamp Numbers**
+
 - Create dates from millisecond timestamps
 - No timezone interpretation
 - Most explicit and clear
@@ -115,6 +129,7 @@ return interactionDate >= startOfMonth && interactionDate <= now;
 **File:** `tests/unit/pages/dashboard.spec.ts`
 
 **Current (problematic):**
+
 ```typescript
 const now = new Date();
 const interactions: Interaction[] = [
@@ -130,6 +145,7 @@ const interactions: Interaction[] = [
 ```
 
 **Updated (fixed):**
+
 ```typescript
 // Use explicit UTC timestamps to avoid timezone ambiguity
 const now = new Date(); // Current moment
@@ -140,13 +156,17 @@ const currentYear = now.getUTCFullYear();
 const interactions: Interaction[] = [
   {
     id: "1",
-    occurred_at: new Date(Date.UTC(currentYear, currentMonth, 15, 12, 0, 0)).toISOString(),
+    occurred_at: new Date(
+      Date.UTC(currentYear, currentMonth, 15, 12, 0, 0),
+    ).toISOString(),
     logged_by: "user-1",
     created_at: new Date().toISOString(), // Add for fallback
   },
   {
     id: "2",
-    occurred_at: new Date(Date.UTC(currentYear, currentMonth, 20, 14, 30, 0)).toISOString(),
+    occurred_at: new Date(
+      Date.UTC(currentYear, currentMonth, 20, 14, 30, 0),
+    ).toISOString(),
     logged_by: "user-1",
     created_at: new Date().toISOString(), // Add for fallback
   },
@@ -154,6 +174,7 @@ const interactions: Interaction[] = [
 ```
 
 **Why this works:**
+
 - `Date.UTC()` explicitly creates UTC time, no conversion
 - `getUTCMonth()` and `getUTCFullYear()` use UTC, not local
 - Includes time component (12:00, 14:30) to avoid midnight edge cases
@@ -169,6 +190,7 @@ const interactions: Interaction[] = [
 **Location:** Find where `contactCount` is calculated (likely in store or page component)
 
 **Current filter (from test):**
+
 ```typescript
 const contactCount = interactions.filter((i) => {
   const interactionDate = new Date(i.occurred_at || i.created_at || "");
@@ -177,18 +199,23 @@ const contactCount = interactions.filter((i) => {
 ```
 
 **Verify in production:**
+
 1. Does it use `occurred_at` or `created_at`?
 2. How is `startOfMonth` calculated?
 3. Is the boundary inclusive (`<=`) or exclusive (`<`)?
 4. Does it handle timezones or assume UTC?
 
 **Expected production logic:**
+
 ```typescript
 // From composable/store/component
 const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 const contactCount = interactions.filter((i) => {
   const interactionDate = new Date(i.occurred_at || i.created_at);
-  return interactionDate >= startOfMonth && interactionDate < new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  return (
+    interactionDate >= startOfMonth &&
+    interactionDate < new Date(now.getFullYear(), now.getMonth() + 1, 1)
+  );
 }).length;
 ```
 
@@ -208,19 +235,25 @@ it("counts interactions occurring this month", () => {
   const currentYear = now.getUTCFullYear();
 
   // Create start-of-month boundary
-  const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+  const startOfMonth = new Date(
+    Date.UTC(currentYear, currentMonth, 1, 0, 0, 0),
+  );
 
   // Create test interactions on specific days of current month
   const interactions: Interaction[] = [
     {
       id: "1",
-      occurred_at: new Date(Date.UTC(currentYear, currentMonth, 15, 12, 0, 0)).toISOString(),
+      occurred_at: new Date(
+        Date.UTC(currentYear, currentMonth, 15, 12, 0, 0),
+      ).toISOString(),
       logged_by: "user-1",
       created_at: new Date().toISOString(),
     },
     {
       id: "2",
-      occurred_at: new Date(Date.UTC(currentYear, currentMonth, 20, 14, 30, 0)).toISOString(),
+      occurred_at: new Date(
+        Date.UTC(currentYear, currentMonth, 20, 14, 30, 0),
+      ).toISOString(),
       logged_by: "user-1",
       created_at: new Date().toISOString(),
     },
@@ -238,6 +271,7 @@ it("counts interactions occurring this month", () => {
 ```
 
 **Why this works:**
+
 - Uses `Date.UTC()` to avoid timezone conversion
 - Boundary dates are explicit and predictable
 - Includes time component to avoid midnight edge cases
@@ -257,14 +291,16 @@ it("excludes interactions from previous month", () => {
   const now = new Date();
   const currentMonth = now.getUTCMonth();
   const currentYear = now.getUTCFullYear();
-  const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+  const startOfMonth = new Date(
+    Date.UTC(currentYear, currentMonth, 1, 0, 0, 0),
+  );
 
   const interactions: Interaction[] = [
     {
       id: "1",
       // Previous month (should be excluded)
       occurred_at: new Date(
-        Date.UTC(currentYear, currentMonth - 1, 28, 12, 0, 0)
+        Date.UTC(currentYear, currentMonth - 1, 28, 12, 0, 0),
       ).toISOString(),
       logged_by: "user-1",
       created_at: new Date().toISOString(),
@@ -283,14 +319,16 @@ it("excludes interactions from next month", () => {
   const now = new Date();
   const currentMonth = now.getUTCMonth();
   const currentYear = now.getUTCFullYear();
-  const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+  const startOfMonth = new Date(
+    Date.UTC(currentYear, currentMonth, 1, 0, 0, 0),
+  );
 
   const interactions: Interaction[] = [
     {
       id: "1",
       // Next month (should be excluded)
       occurred_at: new Date(
-        Date.UTC(currentYear, currentMonth + 1, 2, 12, 0, 0)
+        Date.UTC(currentYear, currentMonth + 1, 2, 12, 0, 0),
       ).toISOString(),
       logged_by: "user-1",
       created_at: new Date().toISOString(),
@@ -309,14 +347,16 @@ it("handles boundary dates at month start", () => {
   const now = new Date();
   const currentMonth = now.getUTCMonth();
   const currentYear = now.getUTCFullYear();
-  const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+  const startOfMonth = new Date(
+    Date.UTC(currentYear, currentMonth, 1, 0, 0, 0),
+  );
 
   const interactions: Interaction[] = [
     {
       id: "1",
       // Exactly at month start
       occurred_at: new Date(
-        Date.UTC(currentYear, currentMonth, 1, 0, 0, 1)
+        Date.UTC(currentYear, currentMonth, 1, 0, 0, 1),
       ).toISOString(), // 1 second after midnight
       logged_by: "user-1",
       created_at: new Date().toISOString(),
@@ -335,7 +375,9 @@ it("falls back to created_at when occurred_at missing", () => {
   const now = new Date();
   const currentMonth = now.getUTCMonth();
   const currentYear = now.getUTCFullYear();
-  const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+  const startOfMonth = new Date(
+    Date.UTC(currentYear, currentMonth, 1, 0, 0, 0),
+  );
 
   const interactions: Interaction[] = [
     {
@@ -344,7 +386,7 @@ it("falls back to created_at when occurred_at missing", () => {
       logged_by: "user-1",
       // Fallback to this
       created_at: new Date(
-        Date.UTC(currentYear, currentMonth, 15, 12, 0, 0)
+        Date.UTC(currentYear, currentMonth, 15, 12, 0, 0),
       ).toISOString(),
     },
   ];
@@ -378,6 +420,7 @@ it("falls back to created_at when occurred_at missing", () => {
 **After:** 1 pass (stable, timezone-independent)
 
 **Additional outcomes:**
+
 - Test is now deterministic (same result every run)
 - Edge cases covered
 - Future developers understand date boundary logic
@@ -413,7 +456,14 @@ const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 const interactions = [
   {
     id: "1",
-    occurred_at: new Date(now.getFullYear(), now.getMonth(), 15, 12, 0, 0).toISOString(),
+    occurred_at: new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      15,
+      12,
+      0,
+      0,
+    ).toISOString(),
   },
 ];
 
@@ -443,12 +493,14 @@ expect(contactCount).toBe(1);
 ## Risk Assessment
 
 **Low Risk:**
+
 - Single test file affected
 - Change makes test more deterministic, not less
 - UTC timestamps are standard practice
 - Doesn't modify production code
 
 **Potential Issues:**
+
 - If production uses local time intentionally, test won't catch regressions
   - Mitigation: Verify production code first (required)
 - Other timezone-dependent tests might exist

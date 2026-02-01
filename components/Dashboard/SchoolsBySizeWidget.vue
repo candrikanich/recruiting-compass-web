@@ -11,13 +11,7 @@
     </div>
     <div class="space-y-3">
       <div
-        v-for="size in [
-          'Very Small',
-          'Small',
-          'Medium',
-          'Large',
-          'Very Large',
-        ]"
+        v-for="size in ['Very Small', 'Small', 'Medium', 'Large', 'Very Large']"
         :key="size"
       >
         <div v-if="breakdown[size] > 0">

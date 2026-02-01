@@ -35,7 +35,7 @@ test.describe("User Story 5.1: Parent Logs Interactions", () => {
     await page.click('button:has-text("Log Interaction")');
 
     // Verify form appears
-    await expect(page.locator('form')).toBeVisible();
+    await expect(page.locator("form")).toBeVisible();
 
     // Select type: Email
     await page.selectOption('select[id="type"]', "email");
@@ -46,7 +46,7 @@ test.describe("User Story 5.1: Parent Logs Interactions", () => {
     // Fill content
     await page.fill(
       'textarea[id="content"]',
-      "Sent highlight video and expressed interest in the program"
+      "Sent highlight video and expressed interest in the program",
     );
 
     // Set date/time
@@ -61,8 +61,8 @@ test.describe("User Story 5.1: Parent Logs Interactions", () => {
     await expect(page.locator("text=Outbound")).toBeVisible();
     await expect(
       page.locator(
-        "text=Sent highlight video and expressed interest in the program"
-      )
+        "text=Sent highlight video and expressed interest in the program",
+      ),
     ).toBeVisible();
   });
 
@@ -79,7 +79,7 @@ test.describe("User Story 5.1: Parent Logs Interactions", () => {
     // Fill content
     await page.fill(
       'textarea[id="content"]',
-      "Coach called to discuss scholarship opportunities and academic requirements"
+      "Coach called to discuss scholarship opportunities and academic requirements",
     );
 
     // Set date
@@ -111,7 +111,7 @@ test.describe("User Story 5.1: Parent Logs Interactions", () => {
     // Fill content
     await page.fill(
       'textarea[id="content"]',
-      "Great coaching at camp. Athlete received individual instruction from head coach. Positive feedback on mechanics."
+      "Great coaching at camp. Athlete received individual instruction from head coach. Positive feedback on mechanics.",
     );
 
     // Set date
@@ -134,7 +134,10 @@ test.describe("User Story 5.1: Parent Logs Interactions", () => {
     // Fill basic interaction
     await page.selectOption('select[id="type"]', "email");
     await page.selectOption('select[id="direction"]', "outbound");
-    await page.fill('textarea[id="content"]', "Sent additional highlights video");
+    await page.fill(
+      'textarea[id="content"]',
+      "Sent additional highlights video",
+    );
 
     const today = new Date().toISOString().split("T")[0];
     await page.fill('input[id="occurred_at"]', `${today}T15:00`);
@@ -176,7 +179,7 @@ test.describe("User Story 5.1: Parent Logs Interactions", () => {
 
     // Click "Mark as Attended" button
     const markAttendedBtn = page.locator(
-      'button:has-text("Mark Attended"), button:has-text("✓ Mark Attended")'
+      'button:has-text("Mark Attended"), button:has-text("✓ Mark Attended")',
     );
     await markAttendedBtn.click();
 
@@ -185,10 +188,10 @@ test.describe("User Story 5.1: Parent Logs Interactions", () => {
     await expect(modal).toBeVisible();
 
     // Fill quick form
-    await page.selectOption('select', "in_person_visit", { force: true });
+    await page.selectOption("select", "in_person_visit", { force: true });
     await page.fill(
       'textarea[placeholder*="discussed"]',
-      "Great conversation about my stats and recruiting timeline"
+      "Great conversation about my stats and recruiting timeline",
     );
 
     // Submit quick log
@@ -254,8 +257,12 @@ test.describe("User Story 5.1: Parent Logs Interactions", () => {
     const directionSelect = page.locator('select[id="direction"]');
 
     // Check both options available
-    await expect(directionSelect.locator('option:has-text("Outbound")')).toBeVisible();
-    await expect(directionSelect.locator('option:has-text("Inbound")')).toBeVisible();
+    await expect(
+      directionSelect.locator('option:has-text("Outbound")'),
+    ).toBeVisible();
+    await expect(
+      directionSelect.locator('option:has-text("Inbound")'),
+    ).toBeVisible();
 
     // Test switching between directions
     await page.selectOption('select[id="direction"]', "outbound");
@@ -314,7 +321,7 @@ test.describe("User Story 5.1: Parent Logs Interactions", () => {
 
     // Verify helper text about file types
     await expect(
-      page.locator("text=/PDF|images|documents|10MB/")
+      page.locator("text=/PDF|images|documents|10MB/"),
     ).toBeVisible();
   });
 
@@ -369,12 +376,16 @@ test.describe("User Story 5.1: Parent Logs Interactions", () => {
     await page.fill('input[id="occurred_at"]', `${today}T12:00`);
 
     // Submit
-    const submitBtn = page.locator('button[type="submit"]:has-text("Log Interaction")');
+    const submitBtn = page.locator(
+      'button[type="submit"]:has-text("Log Interaction")',
+    );
     await submitBtn.click();
 
     // Verify loading state appears
     // Button text should change to "Logging..."
-    await expect(page.locator('button[type="submit"]:has-text("Logging")')).toBeVisible({
+    await expect(
+      page.locator('button[type="submit"]:has-text("Logging")'),
+    ).toBeVisible({
       timeout: 1000,
     });
   });

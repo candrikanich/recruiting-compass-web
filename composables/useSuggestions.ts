@@ -81,7 +81,9 @@ export function useSuggestions() {
   const highUrgencySuggestions = computed(() =>
     suggestions.value.filter((s) => s.urgency === "high"),
   );
-  const moreCount = computed(() => Math.max(0, pendingCount.value - suggestions.value.length));
+  const moreCount = computed(() =>
+    Math.max(0, pendingCount.value - suggestions.value.length),
+  );
 
   return {
     suggestions,

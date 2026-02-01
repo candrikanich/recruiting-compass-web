@@ -26,11 +26,14 @@ test.describe("Password Reset Flow", () => {
 
       // Should be on forgot password page
       await expect(page).toHaveURL("/forgot-password");
-      await expect(page.getByRole("heading", { name: /reset your password/i }))
-        .toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: /reset your password/i }),
+      ).toBeVisible();
     });
 
-    test("should display form elements on forgot password page", async ({ page }) => {
+    test("should display form elements on forgot password page", async ({
+      page,
+    }) => {
       await page.goto("/forgot-password");
 
       // Check form elements are visible
@@ -38,8 +41,9 @@ test.describe("Password Reset Flow", () => {
       await expect(
         page.getByRole("button", { name: /send reset link/i }),
       ).toBeVisible();
-      await expect(page.getByRole("link", { name: /back to login/i }))
-        .toBeVisible();
+      await expect(
+        page.getByRole("link", { name: /back to login/i }),
+      ).toBeVisible();
     });
 
     test("should validate email on blur", async ({ page }) => {
@@ -57,10 +61,14 @@ test.describe("Password Reset Flow", () => {
       });
     });
 
-    test("should disable submit button with invalid email", async ({ page }) => {
+    test("should disable submit button with invalid email", async ({
+      page,
+    }) => {
       await page.goto("/forgot-password");
 
-      const submitButton = page.getByRole("button", { name: /send reset link/i });
+      const submitButton = page.getByRole("button", {
+        name: /send reset link/i,
+      });
       const emailInput = page.getByLabel(/email/i);
 
       // Initially disabled (empty)
@@ -77,7 +85,9 @@ test.describe("Password Reset Flow", () => {
     test("should enable submit button with valid email", async ({ page }) => {
       await page.goto("/forgot-password");
 
-      const submitButton = page.getByRole("button", { name: /send reset link/i });
+      const submitButton = page.getByRole("button", {
+        name: /send reset link/i,
+      });
       const emailInput = page.getByLabel(/email/i);
 
       // Enter valid email
@@ -87,32 +97,37 @@ test.describe("Password Reset Flow", () => {
       await expect(submitButton).toBeEnabled();
     });
 
-    test("should show success message after sending reset email", async ({ page }) => {
+    test("should show success message after sending reset email", async ({
+      page,
+    }) => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", { name: /send reset link/i });
+      const submitButton = page.getByRole("button", {
+        name: /send reset link/i,
+      });
 
       // Fill form and submit
       await emailInput.fill("test@example.com");
       await submitButton.click();
 
       // Should show success state
-      await expect(page.getByRole("heading", { name: /check your email/i }))
-        .toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: /check your email/i }),
+      ).toBeVisible();
       await expect(
         page.getByText(/we've sent you a password reset link/i),
       ).toBeVisible();
-      await expect(
-        page.getByText(/test@example.com/),
-      ).toBeVisible();
+      await expect(page.getByText(/test@example.com/)).toBeVisible();
     });
 
     test("should show resend button after success", async ({ page }) => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", { name: /send reset link/i });
+      const submitButton = page.getByRole("button", {
+        name: /send reset link/i,
+      });
 
       // Submit form
       await emailInput.fill("test@example.com");
@@ -128,13 +143,17 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", { name: /send reset link/i });
+      const submitButton = page.getByRole("button", {
+        name: /send reset link/i,
+      });
 
       // Submit form
       await emailInput.fill("test@example.com");
       await submitButton.click();
 
-      const resendButton = page.getByRole("button", { name: /resend reset link/i });
+      const resendButton = page.getByRole("button", {
+        name: /resend reset link/i,
+      });
 
       // Click resend
       await resendButton.click();
@@ -165,9 +184,7 @@ test.describe("Password Reset Flow", () => {
       await expect(
         page.getByRole("heading", { name: /invalid link/i }),
       ).toBeVisible();
-      await expect(
-        page.getByText(/no reset link provided/i),
-      ).toBeVisible();
+      await expect(page.getByText(/no reset link provided/i)).toBeVisible();
     });
 
     test("should display form elements when token exists", async ({ page }) => {
@@ -186,18 +203,10 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/reset-password?token=mock-token");
 
       // Check all requirements are visible
-      await expect(
-        page.getByText(/at least 8 characters/i),
-      ).toBeVisible();
-      await expect(
-        page.getByText(/one uppercase letter/i),
-      ).toBeVisible();
-      await expect(
-        page.getByText(/one lowercase letter/i),
-      ).toBeVisible();
-      await expect(
-        page.getByText(/one number/i),
-      ).toBeVisible();
+      await expect(page.getByText(/at least 8 characters/i)).toBeVisible();
+      await expect(page.getByText(/one uppercase letter/i)).toBeVisible();
+      await expect(page.getByText(/one lowercase letter/i)).toBeVisible();
+      await expect(page.getByText(/one number/i)).toBeVisible();
     });
 
     test("should toggle password visibility", async ({ page }) => {
@@ -222,7 +231,9 @@ test.describe("Password Reset Flow", () => {
       await expect(passwordInput).toHaveAttribute("type", "password");
     });
 
-    test("should validate password requirements in real-time", async ({ page }) => {
+    test("should validate password requirements in real-time", async ({
+      page,
+    }) => {
       await page.goto("/reset-password?token=mock-token");
 
       const passwordInput = page.getByLabel(/new password/i);
@@ -235,9 +246,7 @@ test.describe("Password Reset Flow", () => {
 
       // Check requirements list updates
       // (Should show some requirements as not met)
-      await expect(
-        page.getByText(/at least 8 characters/i),
-      ).toBeVisible();
+      await expect(page.getByText(/at least 8 characters/i)).toBeVisible();
 
       // Type full valid password
       await passwordInput.fill("ValidPassword123");
@@ -246,12 +255,16 @@ test.describe("Password Reset Flow", () => {
       // This is indicated by emerald color for checks
     });
 
-    test("should disable submit when passwords don't match", async ({ page }) => {
+    test("should disable submit when passwords don't match", async ({
+      page,
+    }) => {
       await page.goto("/reset-password?token=mock-token");
 
       const passwordInput = page.getByLabel(/new password/i);
       const confirmInput = page.getByLabel(/confirm password/i);
-      const submitButton = page.getByRole("button", { name: /reset password/i });
+      const submitButton = page.getByRole("button", {
+        name: /reset password/i,
+      });
 
       // Enter different passwords
       await passwordInput.fill("ValidPassword123");
@@ -261,12 +274,16 @@ test.describe("Password Reset Flow", () => {
       await expect(submitButton).toBeDisabled();
     });
 
-    test("should enable submit when passwords match and valid", async ({ page }) => {
+    test("should enable submit when passwords match and valid", async ({
+      page,
+    }) => {
       await page.goto("/reset-password?token=mock-token");
 
       const passwordInput = page.getByLabel(/new password/i);
       const confirmInput = page.getByLabel(/confirm password/i);
-      const submitButton = page.getByRole("button", { name: /reset password/i });
+      const submitButton = page.getByRole("button", {
+        name: /reset password/i,
+      });
 
       // Enter matching valid passwords
       await passwordInput.fill("ValidPassword123");
@@ -322,21 +339,19 @@ test.describe("Password Reset Flow", () => {
 
       // Should show invalid token state (implementation-dependent)
       // At minimum should show heading and no form
-      await expect(
-        page.getByRole("heading"),
-      ).toBeVisible();
+      await expect(page.getByRole("heading")).toBeVisible();
     });
 
     test("should show error for expired token", async ({ page }) => {
       await page.goto("/reset-password?token=expired");
 
       // Should show invalid/expired error
-      await expect(
-        page.getByRole("heading"),
-      ).toBeVisible();
+      await expect(page.getByRole("heading")).toBeVisible();
     });
 
-    test("should allow requesting new link when token invalid", async ({ page }) => {
+    test("should allow requesting new link when token invalid", async ({
+      page,
+    }) => {
       await page.goto("/reset-password");
 
       // Click "Request New Reset Link" button if visible
@@ -358,16 +373,16 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       // Check help text mentions 24-hour expiration
-      await expect(
-        page.getByText(/link will expire/i),
-      ).toBeVisible();
+      await expect(page.getByText(/link will expire/i)).toBeVisible();
     });
 
     test("should not reveal if email exists in system", async ({ page }) => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", { name: /send reset link/i });
+      const submitButton = page.getByRole("button", {
+        name: /send reset link/i,
+      });
 
       // Submit with non-existent email
       await emailInput.fill("nonexistent@example.com");
@@ -383,7 +398,9 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", { name: /send reset link/i });
+      const submitButton = page.getByRole("button", {
+        name: /send reset link/i,
+      });
 
       // Submit multiple times
       for (let i = 0; i < 3; i++) {
@@ -416,11 +433,15 @@ test.describe("Password Reset Flow", () => {
   });
 
   test.describe("Password Reset Form Validation", () => {
-    test("should prevent submission with invalid password", async ({ page }) => {
+    test("should prevent submission with invalid password", async ({
+      page,
+    }) => {
       await page.goto("/reset-password?token=valid");
 
       const passwordInput = page.getByLabel(/new password/i);
-      const submitButton = page.getByRole("button", { name: /reset password/i });
+      const submitButton = page.getByRole("button", {
+        name: /reset password/i,
+      });
 
       // Try various invalid passwords
       const invalidPasswords = [
@@ -440,7 +461,9 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", { name: /send reset link/i });
+      const submitButton = page.getByRole("button", {
+        name: /send reset link/i,
+      });
 
       // Enter email with whitespace
       await emailInput.fill("  test@example.com  ");
@@ -453,7 +476,9 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", { name: /send reset link/i });
+      const submitButton = page.getByRole("button", {
+        name: /send reset link/i,
+      });
 
       // Enter email with special characters
       await emailInput.fill("test+tag@example.co.uk");
@@ -477,26 +502,28 @@ test.describe("Password Reset Flow", () => {
     test("should provide help text", async ({ page }) => {
       // Help text on forgot password page
       await page.goto("/forgot-password");
-      await expect(
-        page.getByText(/spam.*folder/i),
-      ).toBeVisible();
+      await expect(page.getByText(/spam.*folder/i)).toBeVisible();
 
       // Help text on reset password page
       await page.goto("/reset-password?token=valid");
-      await expect(
-        page.getByText(/password must contain/i),
-      ).toBeVisible();
+      await expect(page.getByText(/password must contain/i)).toBeVisible();
     });
 
-    test("should display appropriate icons based on state", async ({ page }) => {
+    test("should display appropriate icons based on state", async ({
+      page,
+    }) => {
       // Forgot password initial state should show email icon
       await page.goto("/forgot-password");
-      const emailIcons = page.locator("svg").filter({ has: page.getByRole("img", { hidden: true }) });
+      const emailIcons = page
+        .locator("svg")
+        .filter({ has: page.getByRole("img", { hidden: true }) });
       await expect(emailIcons.first()).toBeVisible();
 
       // Reset password form should show password icon
       await page.goto("/reset-password?token=valid");
-      const passwordIcons = page.locator("svg").filter({ has: page.getByRole("img", { hidden: true }) });
+      const passwordIcons = page
+        .locator("svg")
+        .filter({ has: page.getByRole("img", { hidden: true }) });
       await expect(passwordIcons.first()).toBeVisible();
     });
   });

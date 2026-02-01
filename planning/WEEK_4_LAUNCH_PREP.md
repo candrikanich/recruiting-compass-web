@@ -12,6 +12,7 @@
 This is launch week. Everything comes together. You've built the app, documented it, created content. Now we optimize, integrate, and prepare for public launch.
 
 **Focus Areas:**
+
 1. **SEO Optimization** - Make docs/blog discoverable
 2. **Press Kit** - Professional marketing package
 3. **Product Directory Submissions** - Get listed on discovery platforms
@@ -28,6 +29,7 @@ This is launch week. Everything comes together. You've built the app, documented
 **Location:** `/documentation/technical/SEO_OPTIMIZATION.md`
 
 **What's included:**
+
 - Keyword research and strategy (for docs, blog, landing page)
 - Meta descriptions for all major pages
 - Internal linking strategy
@@ -38,6 +40,7 @@ This is launch week. Everything comes together. You've built the app, documented
 - Long-tail keyword targets
 
 **Process:**
+
 - [ ] Create SEO_OPTIMIZATION.md with strategy
 - [ ] Add meta descriptions to blog posts
 - [ ] Optimize documentation titles
@@ -53,6 +56,7 @@ This is launch week. Everything comes together. You've built the app, documented
 **Location:** `/documentation/marketing/PRESS_KIT.md`
 
 **What's included:**
+
 - Company overview and mission statement
 - Product description (elevator pitch, features, benefits)
 - Founding story and vision
@@ -66,6 +70,7 @@ This is launch week. Everything comes together. You've built the app, documented
 - Press release templates
 
 **Process:**
+
 - [ ] Create PRESS_KIT.md structure
 - [ ] Write company overview
 - [ ] Write product description
@@ -80,6 +85,7 @@ This is launch week. Everything comes together. You've built the app, documented
 **Location:** `/planning/PRODUCT_DIRECTORY_TARGETS.md`
 
 **High-priority directories:**
+
 - Product Hunt (tech-focused, high traffic)
 - Indie Hackers (builder community)
 - BetaList (early adopter community)
@@ -89,6 +95,7 @@ This is launch week. Everything comes together. You've built the app, documented
 - TechCrunch if newsworthy
 
 **What needs to be ready:**
+
 - [ ] Product Hunt account & listing
 - [ ] Indie Hackers profile
 - [ ] BetaList submission
@@ -98,6 +105,7 @@ This is launch week. Everything comes together. You've built the app, documented
 - [ ] Submission strategy/timing
 
 **Submission timeline:**
+
 - Day 1: Product Hunt (biggest driver)
 - Day 1-2: Indie Hackers, BetaList
 - Day 2-3: AngelList, other directories
@@ -110,6 +118,7 @@ This is launch week. Everything comes together. You've built the app, documented
 **Location:** `pages/index.vue` (your landing page)
 
 **Optimization checklist:**
+
 - [ ] Clear value proposition (above fold)
 - [ ] Benefits list with icons
 - [ ] Feature highlights with screenshots
@@ -129,6 +138,7 @@ This is launch week. Everything comes together. You've built the app, documented
 **Location:** `/planning/LAUNCH_CHECKLIST.md`
 
 **Technical:**
+
 - [ ] All tests passing (unit, integration, E2E)
 - [ ] No console errors or warnings
 - [ ] No TypeScript errors
@@ -142,6 +152,7 @@ This is launch week. Everything comes together. You've built the app, documented
 - [ ] Performance metrics baseline
 
 **Content:**
+
 - [ ] All blog posts published
 - [ ] Documentation complete and linked
 - [ ] Video scripts finalized
@@ -152,6 +163,7 @@ This is launch week. Everything comes together. You've built the app, documented
 - [ ] Help system integrated
 
 **Launch Day:**
+
 - [ ] Social media posts scheduled
 - [ ] Email announcement ready
 - [ ] Product Hunt listing live
@@ -167,6 +179,7 @@ This is launch week. Everything comes together. You've built the app, documented
 **Location:** YouTube (unlisted initially, public Day 1)
 
 **Process:**
+
 - [ ] Record 10 Loom videos using scripts
   - Screen + webcam in corner
   - Natural, conversational delivery
@@ -180,6 +193,7 @@ This is launch week. Everything comes together. You've built the app, documented
 - [ ] Share links in help system
 
 **Timeline:**
+
 - Days 1-2: Record all 10 videos
 - Day 3: Edit and upload
 - Day 4: Verify links work
@@ -192,6 +206,7 @@ This is launch week. Everything comes together. You've built the app, documented
 ### Task A: 20-30 Core Screenshots
 
 **Why it's critical:** Screenshots are needed for:
+
 - Blog posts (each article needs 3-5 screenshots)
 - Press kit (5-10 high-res)
 - Product directories (3-5 per listing)
@@ -199,6 +214,7 @@ This is launch week. Everything comes together. You've built the app, documented
 - Landing page
 
 **What to capture:**
+
 1. **Dashboard** - Overview with metrics
 2. **School List** - Multiple schools with tiers
 3. **School Detail** - Single school with fit score
@@ -216,17 +232,20 @@ This is launch week. Everything comes together. You've built the app, documented
 15. **Mobile views** - 5-8 key screens on mobile
 
 **Tools:**
+
 - Use app's native screenshot (Cmd+Shift+4 on Mac)
 - Or use Loom for annotated screenshots
 - Use tool like Figma to add annotations if needed
 
 **Format:**
+
 - PNG or JPG (PNG preferred)
 - 1920x1080 or 1440x900 for desktop
 - 375x667 for mobile
 - High quality (no pixelation)
 
 **Location:**
+
 - Save to: `/documentation/user/screenshots/`
 - Organize by feature: dashboard/, schools/, interactions/, timeline/, etc.
 - Name clearly: `01-dashboard-overview.png`, `02-school-list-with-tiers.png`, etc.
@@ -242,6 +261,7 @@ This is launch week. Everything comes together. You've built the app, documented
 **Format:** Landscape (8.5" × 11" or 16:9 aspect ratio)
 
 **Sections to include:**
+
 1. **Header** - Logo, tagline, problem statement
 2. **Problem** - "The recruiting chaos"
 3. **Solution** - "Meet Recruiting Compass"
@@ -252,11 +272,13 @@ This is launch week. Everything comes together. You've built the app, documented
 8. **Brand colors** - Use your brand palette
 
 **Tools:**
+
 - Canva (canva.com) - drag and drop, templates available
 - Figma (figma.com) - more advanced
 - Adobe Express - another option
 
 **Design tips:**
+
 - Keep it clean and uncluttered
 - Use one or two screenshots
 - Focus on benefits, not features
@@ -264,6 +286,7 @@ This is launch week. Everything comes together. You've built the app, documented
 - Mobile-friendly font sizes
 
 **Uses:**
+
 - Print for recruiting events
 - PDF for email signature
 - Share on social media
@@ -301,6 +324,7 @@ This is launch week. Everything comes together. You've built the app, documented
 20. **Contact** - Email, website, social
 
 **Design approach:**
+
 - Clean, professional
 - Consistent brand colors
 - 1-2 screenshots per slide
@@ -308,6 +332,7 @@ This is launch week. Everything comes together. You've built the app, documented
 - High-quality visuals
 
 **Uses:**
+
 - Investor presentations
 - Partnership pitches
 - Recruiting events
@@ -322,49 +347,58 @@ This is launch week. Everything comes together. You've built the app, documented
 ### Monday (Day 1)
 
 **Morning:**
+
 - [ ] Start SEO optimization document
 - [ ] Begin press kit writeup
 - [ ] Create PRODUCT_DIRECTORY_TARGETS.md
 
 **Afternoon:**
+
 - [ ] Setup Product Hunt account & listing
 - [ ] Create press kit structure
 - [ ] Start collecting/organizing screenshots you'll capture
 
 **Evening:**
+
 - [ ] Begin video recording (2-3 videos)
 
 ### Tuesday (Day 2)
 
 **Morning:**
+
 - [ ] Continue video recording (3-4 videos)
 - [ ] Finalize press kit content
 - [ ] Prepare Product Hunt description/images
 
 **Afternoon:**
+
 - [ ] Submit to Indie Hackers, BetaList
 - [ ] Create LAUNCH_CHECKLIST.md
 - [ ] Start technical QA testing
 
 **Evening:**
+
 - [ ] Complete video recording (remaining 3-4 videos)
 - [ ] Upload videos to YouTube (unlisted)
 
 ### Wednesday (Day 3)
 
 **Morning:**
+
 - [ ] Technical testing: Run full test suite
 - [ ] Fix any failing tests
 - [ ] Check mobile responsiveness
 - [ ] Verify all links work (documentation, blog, etc.)
 
 **Afternoon:**
+
 - [ ] Video editing/polishing
 - [ ] Verify YouTube videos are accessible
 - [ ] Help system integration check
 - [ ] SEO meta tags review
 
 **Evening:**
+
 - [ ] Directory submissions: AngelList, others
 - [ ] Screenshot organization final review
 - [ ] Blog post final checks
@@ -372,33 +406,39 @@ This is launch week. Everything comes together. You've built the app, documented
 ### Thursday (Day 4)
 
 **Morning:**
+
 - [ ] Landing page optimization
 - [ ] Email sequences final review
 - [ ] Social media scheduling (Hootsuite, Buffer, etc.)
 
 **Afternoon:**
+
 - [ ] Press kit distribution (email to contacts)
 - [ ] Final content review
 - [ ] Analytics setup verification
 
 **Evening:**
+
 - [ ] Dry run: Test full user journey end-to-end
 - [ ] Fix any last-minute issues
 
 ### Friday (Day 5)
 
 **Morning:**
+
 - [ ] Final checklist review
 - [ ] Product Hunt launch
 - [ ] Social media Day 1 posts
 - [ ] Email announcement send
 
 **Afternoon:**
+
 - [ ] Monitor Product Hunt engagement
 - [ ] Respond to comments/questions
 - [ ] Track early signups
 
 **Evening:**
+
 - [ ] Week recap
 - [ ] Plan post-launch follow-up
 
@@ -442,22 +482,22 @@ This is launch week. Everything comes together. You've built the app, documented
 
 ## Week 4 Estimated Effort
 
-| Task | Hours | Status |
-|------|-------|--------|
-| SEO Optimization | 3 | ⏳ To do |
-| Press Kit | 2 | ⏳ To do |
-| Product Directory Prep | 2 | ⏳ To do |
-| Video Recording/Upload | 4 | ⏳ To do |
-| Testing & QA | 3 | ⏳ To do |
-| Help System Integration | 2 | ⏳ To do |
-| Landing Page Polish | 2 | ⏳ To do |
-| Email Sequences | 1 | ⏳ To do |
-| Social Media Setup | 2 | ⏳ To do |
-| **Your parallel tasks:** | | |
-| Screenshots (20-30) | 3-4 | ⏳ You |
-| One-Pager Design | 1-2 | ⏳ You |
-| Pitch Deck (20 slides) | 2-3 | ⏳ You |
-| **Total** | **25-27 hours** | |
+| Task                     | Hours           | Status   |
+| ------------------------ | --------------- | -------- |
+| SEO Optimization         | 3               | ⏳ To do |
+| Press Kit                | 2               | ⏳ To do |
+| Product Directory Prep   | 2               | ⏳ To do |
+| Video Recording/Upload   | 4               | ⏳ To do |
+| Testing & QA             | 3               | ⏳ To do |
+| Help System Integration  | 2               | ⏳ To do |
+| Landing Page Polish      | 2               | ⏳ To do |
+| Email Sequences          | 1               | ⏳ To do |
+| Social Media Setup       | 2               | ⏳ To do |
+| **Your parallel tasks:** |                 |          |
+| Screenshots (20-30)      | 3-4             | ⏳ You   |
+| One-Pager Design         | 1-2             | ⏳ You   |
+| Pitch Deck (20 slides)   | 2-3             | ⏳ You   |
+| **Total**                | **25-27 hours** |          |
 
 ---
 
@@ -504,18 +544,21 @@ This is launch week. Everything comes together. You've built the app, documented
 ## Post-Launch (Week 4 Evening/Friday)
 
 **Immediate (Friday evening):**
+
 - [ ] Total signups count
 - [ ] Product Hunt rank/votes
 - [ ] Social media metrics
 - [ ] Technical issues encountered
 
 **Saturday-Sunday (if applicable):**
+
 - [ ] Continue social media posts
 - [ ] Monitor Product Hunt
 - [ ] Respond to feedback
 - [ ] Plan improvements
 
 **Next week:**
+
 - [ ] Iterate based on feedback
 - [ ] Fix bugs/issues
 - [ ] Plan Week 5 features
@@ -541,25 +584,31 @@ This is launch week. Everything comes together. You've built the app, documented
 ## Risk Mitigation
 
 **Risk: Something breaks on launch day**
-- *Mitigation:* Thorough testing, rollback plan, error monitoring
+
+- _Mitigation:_ Thorough testing, rollback plan, error monitoring
 
 **Risk: Low signups**
-- *Mitigation:* Strong social media push, Product Hunt focus, email outreach
+
+- _Mitigation:_ Strong social media push, Product Hunt focus, email outreach
 
 **Risk: Poor video quality**
-- *Mitigation:* Re-record if needed, focus on clarity over production value
+
+- _Mitigation:_ Re-record if needed, focus on clarity over production value
 
 **Risk: Missing screenshots**
-- *Mitigation:* Have clear requirements, backup plan for placeholders
+
+- _Mitigation:_ Have clear requirements, backup plan for placeholders
 
 **Risk: SEO not working**
-- *Mitigation:* Not critical for launch, can improve post-launch
+
+- _Mitigation:_ Not critical for launch, can improve post-launch
 
 ---
 
 ## Next Steps After Launch
 
 **Week 5+:**
+
 - Analyze user feedback
 - Plan improvements
 - Iterate features
@@ -572,4 +621,3 @@ This is launch week. Everything comes together. You've built the app, documented
 **Week 4 is GO LIVE week. Everything before this was prep. Now we show the world Recruiting Compass.**
 
 **Let's make it count! 🚀**
-

@@ -78,7 +78,9 @@ describe("EmailRecruitingPacketModal", () => {
 
     it("should display available coaches", () => {
       mockCoaches.forEach((coach) => {
-        expect(wrapper.text()).toContain(`${coach.first_name} ${coach.last_name}`);
+        expect(wrapper.text()).toContain(
+          `${coach.first_name} ${coach.last_name}`,
+        );
         expect(wrapper.text()).toContain(coach.email);
       });
     });
@@ -119,7 +121,9 @@ describe("EmailRecruitingPacketModal", () => {
 
   describe("Manual Email Entry", () => {
     it("should allow entering manual emails", async () => {
-      const textarea = wrapper.find('textarea[placeholder*="coach1@example.com"]');
+      const textarea = wrapper.find(
+        'textarea[placeholder*="coach1@example.com"]',
+      );
       await textarea.setValue("manual@example.com");
 
       await wrapper.vm.$nextTick();
@@ -128,7 +132,9 @@ describe("EmailRecruitingPacketModal", () => {
     });
 
     it("should parse comma-separated emails", async () => {
-      const textarea = wrapper.find('textarea[placeholder*="coach1@example.com"]');
+      const textarea = wrapper.find(
+        'textarea[placeholder*="coach1@example.com"]',
+      );
       await textarea.setValue("email1@example.com, email2@example.com");
 
       await wrapper.vm.$nextTick();
@@ -138,7 +144,9 @@ describe("EmailRecruitingPacketModal", () => {
     });
 
     it("should validate email format", async () => {
-      const textarea = wrapper.find('textarea[placeholder*="coach1@example.com"]');
+      const textarea = wrapper.find(
+        'textarea[placeholder*="coach1@example.com"]',
+      );
       await textarea.setValue("invalid-email, valid@example.com");
 
       await wrapper.vm.$nextTick();
@@ -148,7 +156,9 @@ describe("EmailRecruitingPacketModal", () => {
     });
 
     it("should handle whitespace in emails", async () => {
-      const textarea = wrapper.find('textarea[placeholder*="coach1@example.com"]');
+      const textarea = wrapper.find(
+        'textarea[placeholder*="coach1@example.com"]',
+      );
       await textarea.setValue("  email@example.com  ,  another@example.com  ");
 
       await wrapper.vm.$nextTick();
@@ -186,19 +196,27 @@ describe("EmailRecruitingPacketModal", () => {
 
   describe("Email Body", () => {
     it("should use default body", () => {
-      const textarea = wrapper.find('textarea[placeholder="Write your message here..."]');
-      expect(textarea.element.value).toBe("Here is my recruiting packet for your review.");
+      const textarea = wrapper.find(
+        'textarea[placeholder="Write your message here..."]',
+      );
+      expect(textarea.element.value).toBe(
+        "Here is my recruiting packet for your review.",
+      );
     });
 
     it("should update body", async () => {
-      const textarea = wrapper.find('textarea[placeholder="Write your message here..."]');
+      const textarea = wrapper.find(
+        'textarea[placeholder="Write your message here..."]',
+      );
       await textarea.setValue("Custom message");
 
       expect(wrapper.vm.form.body).toBe("Custom message");
     });
 
     it("should limit body to 2000 characters", async () => {
-      const textarea = wrapper.find('textarea[placeholder="Write your message here..."]');
+      const textarea = wrapper.find(
+        'textarea[placeholder="Write your message here..."]',
+      );
       const longBody = "a".repeat(2500);
       await textarea.setValue(longBody);
 
@@ -214,7 +232,9 @@ describe("EmailRecruitingPacketModal", () => {
     it("should require at least one recipient", async () => {
       expect(wrapper.vm.canSend).toBe(false);
 
-      const textarea = wrapper.find('textarea[placeholder*="coach1@example.com"]');
+      const textarea = wrapper.find(
+        'textarea[placeholder*="coach1@example.com"]',
+      );
       await textarea.setValue("coach@example.com");
       await wrapper.vm.$nextTick();
 
@@ -222,20 +242,28 @@ describe("EmailRecruitingPacketModal", () => {
     });
 
     it("should require subject", async () => {
-      const textarea = wrapper.find('textarea[placeholder*="coach1@example.com"]');
+      const textarea = wrapper.find(
+        'textarea[placeholder*="coach1@example.com"]',
+      );
       await textarea.setValue("coach@example.com");
 
-      const subjectInput = wrapper.find('input[placeholder="Enter subject line"]');
+      const subjectInput = wrapper.find(
+        'input[placeholder="Enter subject line"]',
+      );
       await subjectInput.setValue("");
 
       expect(wrapper.vm.canSend).toBe(false);
     });
 
     it("should require body", async () => {
-      const textarea = wrapper.find('textarea[placeholder*="coach1@example.com"]');
+      const textarea = wrapper.find(
+        'textarea[placeholder*="coach1@example.com"]',
+      );
       await textarea.setValue("coach@example.com");
 
-      const bodyInput = wrapper.find('textarea[placeholder="Write your message here..."]');
+      const bodyInput = wrapper.find(
+        'textarea[placeholder="Write your message here..."]',
+      );
       await bodyInput.setValue("");
 
       expect(wrapper.vm.canSend).toBe(false);
@@ -260,7 +288,9 @@ describe("EmailRecruitingPacketModal", () => {
     });
 
     it("should enable send button when form is valid", async () => {
-      const textarea = wrapper.find('textarea[placeholder*="coach1@example.com"]');
+      const textarea = wrapper.find(
+        'textarea[placeholder*="coach1@example.com"]',
+      );
       await textarea.setValue("coach@example.com");
       await wrapper.vm.$nextTick();
 
@@ -268,13 +298,15 @@ describe("EmailRecruitingPacketModal", () => {
     });
 
     it("should emit send event with correct data", async () => {
-      const textarea = wrapper.find('textarea[placeholder*="coach1@example.com"]');
+      const textarea = wrapper.find(
+        'textarea[placeholder*="coach1@example.com"]',
+      );
       await textarea.setValue("coach@example.com");
       await wrapper.vm.$nextTick();
 
-      const sendButton = wrapper.findAll("button").find(
-        (b) => b.text().includes("Send")
-      );
+      const sendButton = wrapper
+        .findAll("button")
+        .find((b) => b.text().includes("Send"));
       await sendButton?.trigger("click");
 
       expect(wrapper.emitted().send).toBeTruthy();
@@ -319,9 +351,7 @@ describe("EmailRecruitingPacketModal", () => {
       await wrapper.vm.$nextTick();
 
       const removeButtons = wrapper.findAll("button");
-      const closeButton = removeButtons.find(
-        (b) => b.text().includes("×")
-      );
+      const closeButton = removeButtons.find((b) => b.text().includes("×"));
 
       if (closeButton) {
         await closeButton.trigger("click");

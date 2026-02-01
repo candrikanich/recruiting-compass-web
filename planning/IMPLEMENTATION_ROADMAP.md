@@ -10,23 +10,25 @@
 
 Three distinct test failure issues have been diagnosed and documented. Each has a detailed fix plan with implementation steps. This roadmap provides the execution sequence and approval checklist.
 
-| Priority | Category | Failures | Complexity | Est. Risk | Plan |
-|----------|----------|----------|-----------|-----------|------|
-| 1 | Mock Chain Init | 9 | HIGH | LOW | `FIX_PLAN_MOCK_CHAIN.md` |
-| 2 | Teleport Rendering | 28 | HIGH | LOW | `FIX_PLAN_EMAIL_MODAL.md` |
-| 3 | Date Boundaries | 1 | LOW | LOW | `FIX_PLAN_DATE_BOUNDARY.md` |
+| Priority | Category           | Failures | Complexity | Est. Risk | Plan                        |
+| -------- | ------------------ | -------- | ---------- | --------- | --------------------------- |
+| 1        | Mock Chain Init    | 9        | HIGH       | LOW       | `FIX_PLAN_MOCK_CHAIN.md`    |
+| 2        | Teleport Rendering | 28       | HIGH       | LOW       | `FIX_PLAN_EMAIL_MODAL.md`   |
+| 3        | Date Boundaries    | 1        | LOW        | LOW       | `FIX_PLAN_DATE_BOUNDARY.md` |
 
 ---
 
 ## Implementation Sequence
 
 ### Phase 1: Fix Mock Chain Initialization (FIRST)
+
 **Why first:** Fixes 9 failures that cascade into other test suites
 **Time:** ~1-2 hours implementation + testing
 **Files affected:** `tests/unit/composables/useInteractions.extended.spec.ts`
 **Production impact:** None (test-only change)
 
 **Steps:**
+
 1. Read and approve `FIX_PLAN_MOCK_CHAIN.md`
 2. Create mock factory functions
 3. Update beforeEach/afterEach hooks
@@ -37,6 +39,7 @@ Three distinct test failure issues have been diagnosed and documented. Each has 
 8. Commit
 
 **Success criteria:**
+
 - ✓ All 9 tests in `useInteractions.extended.spec.ts` pass
 - ✓ No failures in other test files
 - ✓ Tests pass in both isolated and suite contexts
@@ -44,12 +47,14 @@ Three distinct test failure issues have been diagnosed and documented. Each has 
 ---
 
 ### Phase 2: Fix Email Modal Teleport (SECOND)
+
 **Why second:** Largest failure category; independent from mock chain
 **Time:** ~30-45 minutes implementation + testing
 **Files affected:** `tests/unit/components/EmailRecruitingPacketModal.spec.ts`
 **Production impact:** None (test-only change)
 
 **Steps:**
+
 1. Read and approve `FIX_PLAN_EMAIL_MODAL.md`
 2. Add Teleport mock to test file
 3. Verify existing assertions work with mocked Teleport
@@ -60,6 +65,7 @@ Three distinct test failure issues have been diagnosed and documented. Each has 
 8. Commit
 
 **Success criteria:**
+
 - ✓ All 30 tests pass
 - ✓ Component file unchanged
 - ✓ Teleport still works in production
@@ -67,12 +73,14 @@ Three distinct test failure issues have been diagnosed and documented. Each has 
 ---
 
 ### Phase 3: Fix Date Boundary Logic (THIRD)
+
 **Why third:** Single test, lowest impact; can be done last
 **Time:** ~20-30 minutes implementation + testing
 **Files affected:** `tests/unit/pages/dashboard.spec.ts`
 **Production impact:** Verify production code (see plan for details)
 
 **Steps:**
+
 1. Read and approve `FIX_PLAN_DATE_BOUNDARY.md`
 2. **REQUIRED:** Inspect production dashboard code to verify timezone handling
 3. Update test to use explicit UTC timestamps
@@ -82,6 +90,7 @@ Three distinct test failure issues have been diagnosed and documented. Each has 
 7. Commit
 
 **Success criteria:**
+
 - ✓ Test passes consistently (multiple runs, same result)
 - ✓ Behavior matches production code
 - ✓ Edge cases covered
@@ -91,6 +100,7 @@ Three distinct test failure issues have been diagnosed and documented. Each has 
 ## Parallel Work Possible
 
 **After Phase 1 completes**, you can optionally:
+
 - Run Phases 2 and 3 in parallel if working on different machines/branches
 - But single developer: sequential is simpler (Phases 1 → 2 → 3)
 
@@ -116,18 +126,21 @@ Before starting implementation, verify:
 **After completing each phase:**
 
 1. **Run individual test file:**
+
    ```bash
    npm run test -- tests/unit/composables/useInteractions.extended.spec.ts
    # Expected: All tests pass
    ```
 
 2. **Run full test suite:**
+
    ```bash
    npm run test
    # Expected: No new failures; fixed category should pass
    ```
 
 3. **Check for regressions:**
+
    ```bash
    npm run test:e2e
    # Expected: E2E tests unaffected
@@ -174,6 +187,7 @@ npm run format
 ### Summary After All Fixes
 
 **Before:**
+
 ```
 Tests:     47 failures across 3 categories
   - EmailRecruitingPacketModal: 28 failures
@@ -182,6 +196,7 @@ Tests:     47 failures across 3 categories
 ```
 
 **After:**
+
 ```
 Tests:     ✓ All tests pass
   - Total: 0 failures
@@ -193,7 +208,9 @@ Tests:     ✓ All tests pass
 ## Common Implementation Questions
 
 ### Q1: Should I create a branch?
+
 **A:** Yes. `git checkout -b fix/test-failures` then create feature branch for each phase:
+
 - `fix/mock-chain-initialization`
 - `fix/email-modal-teleport`
 - `fix/date-boundary-logic`
@@ -201,14 +218,18 @@ Tests:     ✓ All tests pass
 Or combine all three in one branch if working in isolated session.
 
 ### Q2: Can I fix all three at once?
+
 **A:** Technically yes, but not recommended. Sequential approach lets you:
+
 - Verify each fix works independently
 - Isolate failures if one fix doesn't work
 - Review/commit each fix separately
 - Catch regressions earlier
 
 ### Q3: What if a test still fails after fix?
+
 **A:** Stop and investigate:
+
 1. Run test in isolation: `npm run test -- path/to/test.spec.ts`
 2. Check error message - what's actually failing?
 3. Compare with fix plan - did you implement all steps?
@@ -216,7 +237,9 @@ Or combine all three in one branch if working in isolated session.
 5. Ask for help with error-detective agent
 
 ### Q4: What if other tests break?
+
 **A:** Likely cross-test mock pollution:
+
 1. Run full test suite with isolation enabled:
    - Edit `vitest.config.ts`: `isolate: true` (all environments)
    - Run: `npm run test`
@@ -224,7 +247,9 @@ Or combine all three in one branch if working in isolated session.
 3. Document which tests have pollution issues for future fix
 
 ### Q5: Do I need to update the component files?
+
 **A:** NO. These are test-only fixes. Component files don't change:
+
 - `components/EmailRecruitingPacketModal.vue` - unchanged
 - `composables/useInteractions.ts` - unchanged
 - `pages/dashboard.vue` - unchanged (verify, but shouldn't change)
@@ -236,18 +261,21 @@ Or combine all three in one branch if working in isolated session.
 ### If Something Goes Wrong
 
 **If mock fix breaks other tests:**
+
 1. Revert changes: `git checkout -- tests/unit/composables/useInteractions.extended.spec.ts`
 2. Check if those tests use similar mock patterns
 3. May need to fix them too using same approach
 4. Review cross-test dependencies
 
 **If Teleport mock breaks component:**
+
 1. Verify: Does component work in browser?
 2. If yes: Mock is test-only, doesn't affect production ✓
 3. If no: Mock shouldn't affect that (different code path)
 4. Check if component has other issues unrelated to test
 
 **If date test still flakes:**
+
 1. Check test environment timezone: `console.log(new Date().getTimezoneOffset())`
 2. Verify production code uses same timezone handling
 3. May need UTC offset adjustment in test
@@ -291,6 +319,7 @@ Or combine all three in one branch if working in isolated session.
 ## Git Commit Message Template
 
 **Phase 1 (Mock chain):**
+
 ```
 fix(tests): fix mock chain initialization in useInteractions.extended.spec.ts
 
@@ -301,6 +330,7 @@ fix(tests): fix mock chain initialization in useInteractions.extended.spec.ts
 ```
 
 **Phase 2 (Teleport):**
+
 ```
 fix(tests): mock Teleport for EmailRecruitingPacketModal component tests
 
@@ -311,6 +341,7 @@ fix(tests): mock Teleport for EmailRecruitingPacketModal component tests
 ```
 
 **Phase 3 (Date):**
+
 ```
 fix(tests): use UTC timestamps for timezone-safe date boundary tests
 
@@ -323,13 +354,13 @@ fix(tests): use UTC timestamps for timezone-safe date boundary tests
 
 ## Success Metrics
 
-| Metric | Before | After | Target |
-|--------|--------|-------|--------|
-| Total test failures | 47 | 0 | 0 |
-| Suite stability | Failing | Passing | 100% |
-| Type errors | 0 | 0 | 0 |
-| Lint errors | 0 | 0 | 0 |
-| Build success | ✓ | ✓ | ✓ |
+| Metric              | Before  | After   | Target |
+| ------------------- | ------- | ------- | ------ |
+| Total test failures | 47      | 0       | 0      |
+| Suite stability     | Failing | Passing | 100%   |
+| Type errors         | 0       | 0       | 0      |
+| Lint errors         | 0       | 0       | 0      |
+| Build success       | ✓       | ✓       | ✓      |
 
 ---
 

@@ -1,4 +1,11 @@
-import { ref, computed, readonly, shallowRef, inject, type ComputedRef } from "vue";
+import {
+  ref,
+  computed,
+  readonly,
+  shallowRef,
+  inject,
+  type ComputedRef,
+} from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
@@ -9,8 +16,14 @@ import type { Database } from "~/types/database";
 import type { AuditLog } from "~/types/database-helpers";
 import { interactionSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
-import { exportInteractionsToCSV, downloadInteractionsCSV } from "~/utils/interactions/exportCSV";
-import { validateAttachmentFile, uploadInteractionAttachments } from "~/utils/interactions/attachments";
+import {
+  exportInteractionsToCSV,
+  downloadInteractionsCSV,
+} from "~/utils/interactions/exportCSV";
+import {
+  validateAttachmentFile,
+  uploadInteractionAttachments,
+} from "~/utils/interactions/attachments";
 import { createInboundInteractionAlert } from "~/utils/interactions/inboundAlerts";
 
 // Type aliases for Supabase casting
@@ -81,7 +94,9 @@ export const useInteractions = (): {
   ) => Promise<string[]>;
   exportToCSV: () => string;
   downloadCSV: () => void;
-  fetchMyInteractions: (filters?: Omit<InteractionFilters, "loggedBy">) => Promise<void>;
+  fetchMyInteractions: (
+    filters?: Omit<InteractionFilters, "loggedBy">,
+  ) => Promise<void>;
   fetchAthleteInteractions: (
     athleteUserId: string,
     filters?: Omit<InteractionFilters, "loggedBy">,
@@ -89,7 +104,11 @@ export const useInteractions = (): {
   noteHistory: ComputedRef<NoteHistoryEntry[]>;
   noteHistoryLoading: ComputedRef<boolean>;
   noteHistoryError: ComputedRef<string | null>;
-  formattedNoteHistory: ComputedRef<Array<NoteHistoryEntry & { formattedTime: string; isCurrentVersion: boolean }>>;
+  formattedNoteHistory: ComputedRef<
+    Array<
+      NoteHistoryEntry & { formattedTime: string; isCurrentVersion: boolean }
+    >
+  >;
   fetchNoteHistory: (schoolId: string) => Promise<void>;
   reminders: ComputedRef<FollowUpReminder[]>;
   remindersLoading: ComputedRef<boolean>;
@@ -125,14 +144,15 @@ export const useInteractions = (): {
   const supabase = useSupabase();
   const userStore = useUserStore();
   // Try to get the provided family context (from page), fall back to singleton
-  const injectedFamily = inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+  const injectedFamily =
+    inject<ReturnType<typeof useActiveFamily>>("activeFamily");
   const activeFamily = injectedFamily || useFamilyContext();
   const toast = useToast();
 
   if (!injectedFamily) {
     console.warn(
       "[useInteractions] activeFamily injection failed, using singleton fallback. " +
-      "This may cause data sync issues when parent switches athletes."
+        "This may cause data sync issues when parent switches athletes.",
     );
   }
 

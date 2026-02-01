@@ -282,21 +282,25 @@ func testHandles409ConflictGracefully() async throws {
 ## 📱 Implementation Timeline
 
 ### Phase 1: Handle Conflicts (Week 1)
+
 - [ ] Add 409 Conflict error handling to profile creation
 - [ ] Add logging for conflict detection
 - [ ] Test on staging
 
 ### Phase 2: Idempotent Pattern (Week 2)
+
 - [ ] Implement check-before-create pattern
 - [ ] Add unit tests for idempotence
 - [ ] Remove any redundant profile creation calls
 
 ### Phase 3: Centralize Init (Week 2-3)
+
 - [ ] Move user initialization to AppDelegate/SceneDelegate
 - [ ] Remove initialization from view controllers
 - [ ] Verify single initialization point in logs
 
 ### Phase 4: Testing & Validation (Week 3)
+
 - [ ] Run full manual test suite
 - [ ] Monitor Supabase for duplicate emails in production
 - [ ] Set up alerts for 409 errors
@@ -345,13 +349,13 @@ Expected result: Empty (no duplicates)
 
 ## ⚠️ Error Codes Reference
 
-| Error Code | Meaning | Handling |
-|-----------|---------|----------|
-| **23505** | Unique constraint violation (duplicate email) | Treat as success (profile already exists) |
-| **PGRST116** | No rows found | Expected when checking if profile exists |
-| **400** | Bad request | Validation error, propagate to user |
-| **401** | Unauthorized | Auth failed, redirect to login |
-| **500** | Server error | Retry with exponential backoff |
+| Error Code   | Meaning                                       | Handling                                  |
+| ------------ | --------------------------------------------- | ----------------------------------------- |
+| **23505**    | Unique constraint violation (duplicate email) | Treat as success (profile already exists) |
+| **PGRST116** | No rows found                                 | Expected when checking if profile exists  |
+| **400**      | Bad request                                   | Validation error, propagate to user       |
+| **401**      | Unauthorized                                  | Auth failed, redirect to login            |
+| **500**      | Server error                                  | Retry with exponential backoff            |
 
 ---
 

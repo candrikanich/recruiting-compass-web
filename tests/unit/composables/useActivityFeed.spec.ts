@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ref } from 'vue';
-import { useActivityFeed } from '~/composables/useActivityFeed';
-import { useSupabase } from '~/composables/useSupabase';
-import { useAuth } from '~/composables/useAuth';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { ref } from "vue";
+import { useActivityFeed } from "~/composables/useActivityFeed";
+import { useSupabase } from "~/composables/useSupabase";
+import { useAuth } from "~/composables/useAuth";
 
 // Mock composables
-vi.mock('~/composables/useSupabase', () => ({
+vi.mock("~/composables/useSupabase", () => ({
   useSupabase: () => ({
     from: vi.fn((table: string) => ({
       select: vi.fn().mockReturnThis(),
@@ -22,20 +22,20 @@ vi.mock('~/composables/useSupabase', () => ({
   }),
 }));
 
-vi.mock('~/composables/useAuth', () => ({
+vi.mock("~/composables/useAuth", () => ({
   useAuth: () => ({
     session: ref({
-      user: { id: 'test-user-123' },
+      user: { id: "test-user-123" },
     }),
   }),
 }));
 
-describe('useActivityFeed', () => {
+describe("useActivityFeed", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('initializes with empty activities', () => {
+  it("initializes with empty activities", () => {
     const { activities, loading, error } = useActivityFeed();
 
     expect(activities.value).toEqual([]);
@@ -43,7 +43,7 @@ describe('useActivityFeed', () => {
     expect(error.value).toBeNull();
   });
 
-  it('fetches activities from all sources', async () => {
+  it("fetches activities from all sources", async () => {
     const { activities, fetchActivities } = useActivityFeed();
 
     // Verify the composable initializes correctly
@@ -51,7 +51,7 @@ describe('useActivityFeed', () => {
     expect(Array.isArray(activities.value)).toBe(true);
   });
 
-  it('sorts activities by timestamp descending', async () => {
+  it("sorts activities by timestamp descending", async () => {
     const { activities } = useActivityFeed();
 
     // Manually set activities for testing
@@ -78,7 +78,7 @@ describe('useActivityFeed', () => {
     expect(sorted[2].order).toBe(1); // Oldest
   });
 
-  it('applies limit correctly', () => {
+  it("applies limit correctly", () => {
     const { limit, fetchActivities } = useActivityFeed();
 
     expect(limit.value).toBe(10);
@@ -88,7 +88,7 @@ describe('useActivityFeed', () => {
     expect(limit.value).toBe(5);
   });
 
-  it('handles errors gracefully', async () => {
+  it("handles errors gracefully", async () => {
     const { error, loading, activities } = useActivityFeed();
 
     // Verify initial state
@@ -97,29 +97,29 @@ describe('useActivityFeed', () => {
     expect(activities.value).toEqual([]);
   });
 
-  it('formats relative time correctly', () => {
+  it("formats relative time correctly", () => {
     const { formatRelativeTime } = useActivityFeed();
 
     const now = new Date();
 
     // Test "just now"
     const justNow = new Date(now.getTime() - 30 * 1000);
-    expect(formatRelativeTime(justNow.toISOString())).toBe('just now');
+    expect(formatRelativeTime(justNow.toISOString())).toBe("just now");
 
     // Test minutes
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
-    expect(formatRelativeTime(fiveMinutesAgo.toISOString())).toBe('5m ago');
+    expect(formatRelativeTime(fiveMinutesAgo.toISOString())).toBe("5m ago");
 
     // Test hours
     const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-    expect(formatRelativeTime(threeHoursAgo.toISOString())).toBe('3h ago');
+    expect(formatRelativeTime(threeHoursAgo.toISOString())).toBe("3h ago");
 
     // Test days
     const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
-    expect(formatRelativeTime(twoDaysAgo.toISOString())).toContain('d ago');
+    expect(formatRelativeTime(twoDaysAgo.toISOString())).toContain("d ago");
   });
 
-  it('returns readonly activities', () => {
+  it("returns readonly activities", () => {
     const { activities } = useActivityFeed();
 
     // Verify activities is a readonly ref by checking it's defined
@@ -127,17 +127,17 @@ describe('useActivityFeed', () => {
     expect(Array.isArray(activities.value)).toBe(true);
   });
 
-  it('returns readonly loading state', () => {
+  it("returns readonly loading state", () => {
     const { loading } = useActivityFeed();
 
     expect(loading).toBeDefined();
-    expect(typeof loading.value).toBe('boolean');
+    expect(typeof loading.value).toBe("boolean");
   });
 
-  it('returns readonly error state', () => {
+  it("returns readonly error state", () => {
     const { error } = useActivityFeed();
 
     expect(error).toBeDefined();
-    expect(error.value === null || typeof error.value === 'string').toBe(true);
+    expect(error.value === null || typeof error.value === "string").toBe(true);
   });
 });

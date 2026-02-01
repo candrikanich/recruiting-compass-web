@@ -61,7 +61,8 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 500,
-      statusMessage: err instanceof Error ? err.message : "Profile creation failed",
+      statusMessage:
+        err instanceof Error ? err.message : "Profile creation failed",
     });
   }
 });

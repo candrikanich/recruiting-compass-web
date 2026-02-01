@@ -8,6 +8,7 @@
 ## 🎯 What's Been Completed This Session
 
 ### Database Layer (100% Complete)
+
 1. ✅ **Migration 021** - Family unit schema
    - 3 new tables (family_units, family_members, user_notes)
    - 7 columns added (family_unit_id on data tables)
@@ -25,6 +26,7 @@
    - This file - Next steps guide
 
 ### Composable Layer (65% Complete)
+
 1. ✅ **useActiveFamily()** - NEW
    - Central family context provider
    - Handles student/parent switching
@@ -41,6 +43,7 @@
    - Student creation scoped to family
 
 ### Code Quality
+
 - ✅ **Type Checking:** Zero errors
 - ✅ **Linting:** Zero errors
 - ✅ **All composables follow project patterns**
@@ -50,6 +53,7 @@
 ## 📋 Immediate Next Steps (After This Session)
 
 ### 1. Apply Database Migrations (DO THIS FIRST)
+
 ```bash
 # Option A: Supabase Web Console (simplest)
 # 1. Go to SQL Editor
@@ -71,6 +75,7 @@ npx supabase gen types typescript --local > types/database.ts
 ### 2. Update Remaining Composables (3-4 hours)
 
 #### 2a. Update useCoaches.ts
+
 Same pattern as useSchools - this is copy-paste + search-replace:
 
 ```typescript
@@ -86,6 +91,7 @@ Same pattern as useSchools - this is copy-paste + search-replace:
 ```
 
 Affected methods:
+
 - fetchCoaches()
 - getCoach()
 - createCoach()
@@ -93,9 +99,11 @@ Affected methods:
 - deleteCoach()
 
 **Files to modify:**
+
 - `composables/useCoaches.ts`
 
 #### 2b. Update useInteractions.ts
+
 Additional consideration: Add student-only creation check
 
 ```typescript
@@ -112,15 +120,18 @@ if (!isStudent) {
 ```
 
 Affected methods:
+
 - fetchInteractions()
 - createInteraction() - add student check
 - updateInteraction()
 - deleteInteraction()
 
 **Files to modify:**
+
 - `composables/useInteractions.ts`
 
 #### 2c. Update useAccountLinks.ts
+
 **CRITICAL:** Add family creation on link confirmation
 
 When `confirmLinkAsInitiator()` succeeds, create family structure:
@@ -146,7 +157,9 @@ if (!family) {
     .from("family_units")
     .insert({
       student_user_id: linkData.player_user_id,
-      family_name: student?.full_name ? `${student.full_name}'s Family` : "Family",
+      family_name: student?.full_name
+        ? `${student.full_name}'s Family`
+        : "Family",
     })
     .select()
     .single();
@@ -160,14 +173,19 @@ if (!family) {
 }
 
 // Add confirming parent to family
-await supabase.from("family_members").insert({
-  family_unit_id: family.id,
-  user_id: userStore.user.id,
-  role: "parent",
-}).onConflict("family_unit_id,user_id").ignore();
+await supabase
+  .from("family_members")
+  .insert({
+    family_unit_id: family.id,
+    user_id: userStore.user.id,
+    role: "parent",
+  })
+  .onConflict("family_unit_id,user_id")
+  .ignore();
 ```
 
 **Files to modify:**
+
 - `composables/useAccountLinks.ts`
 
 ---
@@ -188,7 +206,11 @@ await supabase.from("family_members").insert({
       @change="handleSwitch"
       class="px-3 py-2 border rounded"
     >
-      <option v-for="athlete in accessibleAthletes" :key="athlete.athleteId" :value="athlete.athleteId">
+      <option
+        v-for="athlete in accessibleAthletes"
+        :key="athlete.athleteId"
+        :value="athlete.athleteId"
+      >
         {{ athlete.familyName }} - {{ athlete.athleteName }}
       </option>
     </select>
@@ -228,7 +250,10 @@ onMounted(() => {
 
 ```vue
 <template>
-  <div v-if="showCard" class="border-l-4 border-blue-500 bg-blue-50 p-4 rounded">
+  <div
+    v-if="showCard"
+    class="border-l-4 border-blue-500 bg-blue-50 p-4 rounded"
+  >
     <div class="flex items-center justify-between">
       <h3 class="text-sm font-semibold text-blue-900">Your Private Notes</h3>
       <button
@@ -308,7 +333,7 @@ const saveNote = async () => {
   const success = await userNotes.saveNote(
     props.entityType,
     props.entityId,
-    editedContent.value
+    editedContent.value,
   );
 
   if (success) {
@@ -327,6 +352,7 @@ onMounted(async () => {
 ```
 
 **Usage:**
+
 ```vue
 <PrivateNotesCard entity-type="school" :entity-id="schoolId" />
 ```
@@ -368,11 +394,13 @@ const isParent = useUserStore().user?.role === "parent";
 ### 4. Create API Endpoints (4-5 hours)
 
 #### 4a. POST /api/account-links/confirm.post.ts
+
 **MODIFY EXISTING** - Add family creation logic
 
 Already has family creation in plan above (useAccountLinks section).
 
 #### 4b. POST /api/family/create.post.ts
+
 **NEW** - Backup family creation (shouldn't be needed normally, but useful for testing)
 
 ```typescript
@@ -424,6 +452,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 #### 4c. GET /api/family/members.get.ts
+
 **NEW** - Fetch family members
 
 ```typescript
@@ -465,15 +494,18 @@ export default defineEventHandler(async (event) => {
 ### 5. Testing Strategy (6-8 hours)
 
 #### Unit Tests - High Priority
+
 - `tests/unit/composables/useActiveFamily.spec.ts`
 - `tests/unit/composables/useUserNotes.spec.ts`
 
 #### Integration Tests - Medium Priority
+
 - Family creation via account linking
 - Parent viewing student data
 - Student creating schools in family
 
 #### E2E Tests - High Priority (User Workflows)
+
 - Parent logs in → switches between kids → views schools
 - Student creates school → parent sees it → parents add private notes
 - Student can create interactions → parent cannot
@@ -511,15 +543,15 @@ export default defineEventHandler(async (event) => {
 
 ## 📊 Remaining Effort Estimates
 
-| Task | Hours | Priority | Blocker |
-|------|-------|----------|---------|
-| Apply migrations + regenerate types | 0.5 | CRITICAL | None |
-| Update 3 composables (Coach/Interaction/Links) | 3 | HIGH | Migrations |
-| Build 3 UI components | 7 | HIGH | Composables |
-| Create 3 API endpoints | 4 | MEDIUM | Composables |
-| Write & run tests | 8 | MEDIUM | All above |
-| **Total Remaining** | **22.5** | — | — |
-| **Grand Total Session** | **~30** | — | — |
+| Task                                           | Hours    | Priority | Blocker     |
+| ---------------------------------------------- | -------- | -------- | ----------- |
+| Apply migrations + regenerate types            | 0.5      | CRITICAL | None        |
+| Update 3 composables (Coach/Interaction/Links) | 3        | HIGH     | Migrations  |
+| Build 3 UI components                          | 7        | HIGH     | Composables |
+| Create 3 API endpoints                         | 4        | MEDIUM   | Composables |
+| Write & run tests                              | 8        | MEDIUM   | All above   |
+| **Total Remaining**                            | **22.5** | —        | —           |
+| **Grand Total Session**                        | **~30**  | —        | —           |
 
 ---
 
@@ -542,6 +574,7 @@ export default defineEventHandler(async (event) => {
 ## 🎯 Success Criteria (End State)
 
 **When this is complete:**
+
 - ✓ Parents can switch between kids in UI
 - ✓ Parents see all schools/coaches of each kid
 - ✓ Students can't see family selection UI
@@ -552,4 +585,3 @@ export default defineEventHandler(async (event) => {
 - ✓ Zero type errors
 - ✓ Zero lint warnings
 - ✓ Query performance < 200ms
-

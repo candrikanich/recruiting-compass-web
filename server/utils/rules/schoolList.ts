@@ -6,8 +6,8 @@ export const schoolListRule: Rule = {
   name: "Build Target School List",
   description: "Athlete should build comprehensive school list (20-30 targets)",
   async evaluate(context: RuleContext): Promise<SuggestionData | null> {
-    const gradeLevel = (context.athlete as Record<string, unknown>)
-      ?.grade_level || 9;
+    const gradeLevel =
+      (context.athlete as Record<string, unknown>)?.grade_level || 9;
     const schoolCount = context.schools.length;
 
     // Only apply to sophomores (10) and juniors (11)

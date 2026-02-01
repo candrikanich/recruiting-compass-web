@@ -185,7 +185,7 @@ export function generateUniqueCoachEmail(prefix = "coach") {
  */
 export function generateUniqueCoachName(
   firstNamePrefix = "Test",
-  lastNamePrefix = "Coach"
+  lastNamePrefix = "Coach",
 ) {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 5).toUpperCase();
@@ -203,24 +203,30 @@ export const coachSelectors = {
   addCoachButton: 'button:has-text("Add Coach"), a[href*="/coaches/new"]',
   editCoachButton: 'button:has-text("Edit")',
   deleteCoachButton: 'button:has-text("Delete Coach")',
-  saveCoachButton: 'button:has-text("Save Coach"), [data-testid="add-coach-button"]',
+  saveCoachButton:
+    'button:has-text("Save Coach"), [data-testid="add-coach-button"]',
   confirmDeleteButton: 'button:has-text("Confirm")',
   cancelButton: 'button:has-text("Cancel")',
 
   // Form fields
-  firstNameInput: '#firstName, input[name="firstName"], input[placeholder*="First"]',
-  lastNameInput: '#lastName, input[name="lastName"], input[placeholder*="Last"]',
+  firstNameInput:
+    '#firstName, input[name="firstName"], input[placeholder*="First"]',
+  lastNameInput:
+    '#lastName, input[name="lastName"], input[placeholder*="Last"]',
   roleSelect: '#role, select[name="role"]',
   emailInput: '#email, input[name="email"], input[type="email"]',
   phoneInput: '#phone, input[name="phone"], input[type="tel"]',
-  twitterInput: '#twitter_handle, input[name="twitter_handle"], input[placeholder*="Twitter"]',
-  instagramInput: '#instagram_handle, input[name="instagram_handle"], input[placeholder*="Instagram"]',
-  notesTextarea: '#notes, textarea[name="notes"], textarea[placeholder*="Notes"]',
+  twitterInput:
+    '#twitter_handle, input[name="twitter_handle"], input[placeholder*="Twitter"]',
+  instagramInput:
+    '#instagram_handle, input[name="instagram_handle"], input[placeholder*="Instagram"]',
+  notesTextarea:
+    '#notes, textarea[name="notes"], textarea[placeholder*="Notes"]',
   availabilitySelect: '#availability, select[name="availability"]',
 
   // Coach list/cards
   coachCard: '[data-testid="coach-card"], .coach-card',
-  coachName: 'h2, h3, .coach-name',
+  coachName: "h2, h3, .coach-name",
   coachRole: '.coach-role, [data-testid="coach-role"]',
   coachEmail: '.coach-email, [data-testid="coach-email"]',
   coachPhone: '.coach-phone, [data-testid="coach-phone"]',
@@ -289,13 +295,19 @@ export const coachHelpers = {
       await page.fill(coachSelectors.twitterInput, coachData.twitter_handle);
     }
     if (coachData.instagram_handle) {
-      await page.fill(coachSelectors.instagramInput, coachData.instagram_handle);
+      await page.fill(
+        coachSelectors.instagramInput,
+        coachData.instagram_handle,
+      );
     }
     if (coachData.notes) {
       await page.fill(coachSelectors.notesTextarea, coachData.notes);
     }
     if (coachData.availability) {
-      await page.selectOption(coachSelectors.availabilitySelect, coachData.availability);
+      await page.selectOption(
+        coachSelectors.availabilitySelect,
+        coachData.availability,
+      );
     }
   },
 
@@ -416,16 +428,27 @@ export const coachHelpers = {
     await page.waitForLoadState("networkidle");
 
     if (interactionData.subject) {
-      await page.fill('input[placeholder*="subject"], #subject', interactionData.subject);
+      await page.fill(
+        'input[placeholder*="subject"], #subject',
+        interactionData.subject,
+      );
     }
     if (interactionData.notes) {
-      await page.fill('textarea[placeholder*="notes"], #notes', interactionData.notes);
+      await page.fill(
+        'textarea[placeholder*="notes"], #notes',
+        interactionData.notes,
+      );
     }
     if (interactionData.type) {
-      await page.selectOption('select[name="type"], #type', interactionData.type);
+      await page.selectOption(
+        'select[name="type"], #type',
+        interactionData.type,
+      );
     }
 
-    await page.click('button:has-text("Save"), [data-testid="save-interaction"]');
+    await page.click(
+      'button:has-text("Save"), [data-testid="save-interaction"]',
+    );
     await page.waitForLoadState("networkidle");
   },
 };

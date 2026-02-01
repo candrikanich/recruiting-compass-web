@@ -97,211 +97,217 @@
 
         <!-- Main Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left Column: Phase Cards -->
-        <div class="lg:col-span-2 space-y-6">
-          <!-- Freshman Phase Card -->
-          <PhaseCardInline
-            phase="freshman"
-            title="Freshman Year"
-            theme="Foundation & Awareness"
-            :tasks="tasksByGrade[9]"
-            :milestone-progress="
-              currentPhase === 'freshman' ? milestoneProgress : undefined
-            "
-            :is-current-phase="currentPhase === 'freshman'"
-            :expanded="freshmanExpanded"
-            @toggle="freshmanExpanded = !freshmanExpanded"
-            @task-toggle="handleTaskToggle"
-          />
+          <!-- Left Column: Phase Cards -->
+          <div class="lg:col-span-2 space-y-6">
+            <!-- Freshman Phase Card -->
+            <PhaseCardInline
+              phase="freshman"
+              title="Freshman Year"
+              theme="Foundation & Awareness"
+              :tasks="tasksByGrade[9]"
+              :milestone-progress="
+                currentPhase === 'freshman' ? milestoneProgress : undefined
+              "
+              :is-current-phase="currentPhase === 'freshman'"
+              :expanded="freshmanExpanded"
+              @toggle="freshmanExpanded = !freshmanExpanded"
+              @task-toggle="handleTaskToggle"
+            />
 
-          <!-- Sophomore Phase Card -->
-          <PhaseCardInline
-            phase="sophomore"
-            title="Sophomore Year"
-            theme="Building Your Profile"
-            :tasks="tasksByGrade[10]"
-            :milestone-progress="
-              currentPhase === 'sophomore' ? milestoneProgress : undefined
-            "
-            :is-current-phase="currentPhase === 'sophomore'"
-            :expanded="sophomoreExpanded"
-            @toggle="sophomoreExpanded = !sophomoreExpanded"
-            @task-toggle="handleTaskToggle"
-          />
+            <!-- Sophomore Phase Card -->
+            <PhaseCardInline
+              phase="sophomore"
+              title="Sophomore Year"
+              theme="Building Your Profile"
+              :tasks="tasksByGrade[10]"
+              :milestone-progress="
+                currentPhase === 'sophomore' ? milestoneProgress : undefined
+              "
+              :is-current-phase="currentPhase === 'sophomore'"
+              :expanded="sophomoreExpanded"
+              @toggle="sophomoreExpanded = !sophomoreExpanded"
+              @task-toggle="handleTaskToggle"
+            />
 
-          <!-- Junior Phase Card -->
-          <PhaseCardInline
-            phase="junior"
-            title="Junior Year"
-            theme="Active Recruiting"
-            :tasks="tasksByGrade[11]"
-            :milestone-progress="
-              currentPhase === 'junior' ? milestoneProgress : undefined
-            "
-            :is-current-phase="currentPhase === 'junior'"
-            :expanded="juniorExpanded"
-            @toggle="juniorExpanded = !juniorExpanded"
-            @task-toggle="handleTaskToggle"
-          />
+            <!-- Junior Phase Card -->
+            <PhaseCardInline
+              phase="junior"
+              title="Junior Year"
+              theme="Active Recruiting"
+              :tasks="tasksByGrade[11]"
+              :milestone-progress="
+                currentPhase === 'junior' ? milestoneProgress : undefined
+              "
+              :is-current-phase="currentPhase === 'junior'"
+              :expanded="juniorExpanded"
+              @toggle="juniorExpanded = !juniorExpanded"
+              @task-toggle="handleTaskToggle"
+            />
 
-          <!-- Senior Phase Card -->
-          <PhaseCardInline
-            phase="senior"
-            title="Senior Year"
-            theme="Decision & Commitment"
-            :tasks="tasksByGrade[12]"
-            :milestone-progress="
-              currentPhase === 'senior' ? milestoneProgress : undefined
-            "
-            :is-current-phase="currentPhase === 'senior'"
-            :expanded="seniorExpanded"
-            @toggle="seniorExpanded = !seniorExpanded"
-            @task-toggle="handleTaskToggle"
-          />
-        </div>
-
-        <!-- Right Column: Sidebar -->
-        <div class="space-y-6">
-          <!-- Portfolio Health -->
-          <PortfolioHealth />
-
-          <!-- Overall Status Card -->
-          <OverallStatusCard />
-
-          <!-- Status Breakdown (if available) -->
-          <div
-            v-if="!statusLoading && scoreBreakdown"
-            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
-          >
-            <h3 class="text-slate-900 font-semibold mb-4">Status Breakdown</h3>
-
-            <div class="space-y-3">
-              <!-- Task Completion -->
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-slate-600">Task Completion</span>
-                <span class="text-sm font-medium text-slate-900"
-                  >{{ (scoreBreakdown.taskCompletionRate * 100) | 0 }}%</span
-                >
-              </div>
-              <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-blue-500"
-                  :style="{
-                    width: `${scoreBreakdown.taskCompletionRate * 100}%`,
-                  }"
-                />
-              </div>
-
-              <!-- Interaction Frequency -->
-              <div class="flex items-center justify-between pt-2">
-                <span class="text-sm text-slate-600"
-                  >Interaction Frequency</span
-                >
-                <span class="text-sm font-medium text-slate-900"
-                  >{{
-                    (scoreBreakdown.interactionFrequencyScore * 100) | 0
-                  }}%</span
-                >
-              </div>
-              <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-purple-500"
-                  :style="{
-                    width: `${scoreBreakdown.interactionFrequencyScore * 100}%`,
-                  }"
-                />
-              </div>
-
-              <!-- Coach Interest -->
-              <div class="flex items-center justify-between pt-2">
-                <span class="text-sm text-slate-600">Coach Interest</span>
-                <span class="text-sm font-medium text-slate-900"
-                  >{{ (scoreBreakdown.coachInterestScore * 100) | 0 }}%</span
-                >
-              </div>
-              <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-emerald-500"
-                  :style="{
-                    width: `${scoreBreakdown.coachInterestScore * 100}%`,
-                  }"
-                />
-              </div>
-
-              <!-- Academic Standing -->
-              <div class="flex items-center justify-between pt-2">
-                <span class="text-sm text-slate-600">Academic Standing</span>
-                <span class="text-sm font-medium text-slate-900"
-                  >{{ (scoreBreakdown.academicStandingScore * 100) | 0 }}%</span
-                >
-              </div>
-              <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-orange-500"
-                  :style="{
-                    width: `${scoreBreakdown.academicStandingScore * 100}%`,
-                  }"
-                />
-              </div>
-            </div>
+            <!-- Senior Phase Card -->
+            <PhaseCardInline
+              phase="senior"
+              title="Senior Year"
+              theme="Decision & Commitment"
+              :tasks="tasksByGrade[12]"
+              :milestone-progress="
+                currentPhase === 'senior' ? milestoneProgress : undefined
+              "
+              :is-current-phase="currentPhase === 'senior'"
+              :expanded="seniorExpanded"
+              @toggle="seniorExpanded = !seniorExpanded"
+              @task-toggle="handleTaskToggle"
+            />
           </div>
 
-          <!-- Milestone Progress (if current phase) -->
-          <div
-            v-if="
-              !phaseLoading && currentPhase !== 'committed' && milestoneProgress
-            "
-            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
-          >
-            <h3 class="text-slate-900 font-semibold mb-4">
-              Milestone Progress
-            </h3>
+          <!-- Right Column: Sidebar -->
+          <div class="space-y-6">
+            <!-- Portfolio Health -->
+            <PortfolioHealth />
 
-            <div class="mb-4">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-sm text-slate-600"
-                  >Progress to Next Phase</span
-                >
-                <span class="text-sm font-medium text-slate-900"
-                  >{{ milestoneProgress?.percentComplete ?? 0 }}%</span
-                >
-              </div>
-              <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-gradient-to-r from-blue-500 to-emerald-500"
-                  :style="{
-                    width: `${milestoneProgress?.percentComplete ?? 0}%`,
-                  }"
-                />
-              </div>
-            </div>
+            <!-- Overall Status Card -->
+            <OverallStatusCard />
 
-            <div class="text-xs text-slate-600 space-y-1">
-              <p>
-                {{ milestoneProgress?.completed?.length ?? 0 }} of
-                {{ milestoneProgress?.required?.length ?? 0 }} milestones
-                complete
-              </p>
-              <p v-if="canAdvance" class="text-emerald-600 font-medium">
-                ✓ Ready to advance!
-              </p>
-              <p v-else class="text-slate-500">
-                {{ milestoneProgress?.remaining?.length ?? 0 }} milestone{{
-                  (milestoneProgress?.remaining?.length ?? 0) !== 1 ? "s" : ""
-                }}
-                remaining
-              </p>
-            </div>
-
-            <button
-              v-if="canAdvance"
-              @click="advancePhase"
-              class="mt-4 w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium text-sm"
+            <!-- Status Breakdown (if available) -->
+            <div
+              v-if="!statusLoading && scoreBreakdown"
+              class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
             >
-              Advance to Next Phase
-            </button>
+              <h3 class="text-slate-900 font-semibold mb-4">
+                Status Breakdown
+              </h3>
+
+              <div class="space-y-3">
+                <!-- Task Completion -->
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-slate-600">Task Completion</span>
+                  <span class="text-sm font-medium text-slate-900"
+                    >{{ (scoreBreakdown.taskCompletionRate * 100) | 0 }}%</span
+                  >
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    class="h-full bg-blue-500"
+                    :style="{
+                      width: `${scoreBreakdown.taskCompletionRate * 100}%`,
+                    }"
+                  />
+                </div>
+
+                <!-- Interaction Frequency -->
+                <div class="flex items-center justify-between pt-2">
+                  <span class="text-sm text-slate-600"
+                    >Interaction Frequency</span
+                  >
+                  <span class="text-sm font-medium text-slate-900"
+                    >{{
+                      (scoreBreakdown.interactionFrequencyScore * 100) | 0
+                    }}%</span
+                  >
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    class="h-full bg-purple-500"
+                    :style="{
+                      width: `${scoreBreakdown.interactionFrequencyScore * 100}%`,
+                    }"
+                  />
+                </div>
+
+                <!-- Coach Interest -->
+                <div class="flex items-center justify-between pt-2">
+                  <span class="text-sm text-slate-600">Coach Interest</span>
+                  <span class="text-sm font-medium text-slate-900"
+                    >{{ (scoreBreakdown.coachInterestScore * 100) | 0 }}%</span
+                  >
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    class="h-full bg-emerald-500"
+                    :style="{
+                      width: `${scoreBreakdown.coachInterestScore * 100}%`,
+                    }"
+                  />
+                </div>
+
+                <!-- Academic Standing -->
+                <div class="flex items-center justify-between pt-2">
+                  <span class="text-sm text-slate-600">Academic Standing</span>
+                  <span class="text-sm font-medium text-slate-900"
+                    >{{
+                      (scoreBreakdown.academicStandingScore * 100) | 0
+                    }}%</span
+                  >
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    class="h-full bg-orange-500"
+                    :style="{
+                      width: `${scoreBreakdown.academicStandingScore * 100}%`,
+                    }"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Milestone Progress (if current phase) -->
+            <div
+              v-if="
+                !phaseLoading &&
+                currentPhase !== 'committed' &&
+                milestoneProgress
+              "
+              class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
+            >
+              <h3 class="text-slate-900 font-semibold mb-4">
+                Milestone Progress
+              </h3>
+
+              <div class="mb-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm text-slate-600"
+                    >Progress to Next Phase</span
+                  >
+                  <span class="text-sm font-medium text-slate-900"
+                    >{{ milestoneProgress?.percentComplete ?? 0 }}%</span
+                  >
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    class="h-full bg-gradient-to-r from-blue-500 to-emerald-500"
+                    :style="{
+                      width: `${milestoneProgress?.percentComplete ?? 0}%`,
+                    }"
+                  />
+                </div>
+              </div>
+
+              <div class="text-xs text-slate-600 space-y-1">
+                <p>
+                  {{ milestoneProgress?.completed?.length ?? 0 }} of
+                  {{ milestoneProgress?.required?.length ?? 0 }} milestones
+                  complete
+                </p>
+                <p v-if="canAdvance" class="text-emerald-600 font-medium">
+                  ✓ Ready to advance!
+                </p>
+                <p v-else class="text-slate-500">
+                  {{ milestoneProgress?.remaining?.length ?? 0 }} milestone{{
+                    (milestoneProgress?.remaining?.length ?? 0) !== 1 ? "s" : ""
+                  }}
+                  remaining
+                </p>
+              </div>
+
+              <button
+                v-if="canAdvance"
+                @click="advancePhase"
+                class="mt-4 w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium text-sm"
+              >
+                Advance to Next Phase
+              </button>
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </main>
@@ -401,9 +407,7 @@ const whatMattersNow = computed(() =>
   }),
 );
 
-const commonWorries = computed(() =>
-  getCommonWorries(currentPhase.value),
-);
+const commonWorries = computed(() => getCommonWorries(currentPhase.value));
 
 const reassuranceMessages = computed(() =>
   getReassuranceMessages(currentPhase.value),

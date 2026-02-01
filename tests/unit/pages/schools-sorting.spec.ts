@@ -112,9 +112,7 @@ describe("School Sorting Utilities", () => {
         { ...mockSchools[2], name: "BASEBALL STATE" },
       ];
 
-      const sorted = [...schools].sort((a, b) =>
-        a.name.localeCompare(b.name),
-      );
+      const sorted = [...schools].sort((a, b) => a.name.localeCompare(b.name));
 
       expect(sorted[0].name).toBe("alabama");
       expect(sorted[1].name).toBe("BASEBALL STATE");
@@ -172,7 +170,10 @@ describe("School Sorting Utilities", () => {
         if (!lat || !lng) return Infinity;
 
         return calculateDistance(
-          { latitude: homeLocation.latitude, longitude: homeLocation.longitude },
+          {
+            latitude: homeLocation.latitude,
+            longitude: homeLocation.longitude,
+          },
           { latitude: lat, longitude: lng },
         );
       };
@@ -199,7 +200,10 @@ describe("School Sorting Utilities", () => {
         if (!lat || !lng) return Infinity;
 
         return calculateDistance(
-          { latitude: homeLocation.latitude, longitude: homeLocation.longitude },
+          {
+            latitude: homeLocation.latitude,
+            longitude: homeLocation.longitude,
+          },
           { latitude: lat, longitude: lng },
         );
       };
@@ -230,7 +234,10 @@ describe("School Sorting Utilities", () => {
         if (!lat || !lng) return Infinity;
 
         return calculateDistance(
-          { latitude: homeLocation.latitude, longitude: homeLocation.longitude },
+          {
+            latitude: homeLocation.latitude,
+            longitude: homeLocation.longitude,
+          },
           { latitude: lat, longitude: lng },
         );
       };
@@ -280,9 +287,7 @@ describe("School Sorting Utilities", () => {
 
   describe("Sort order toggling", () => {
     it("should reverse sort when order changes from asc to desc", () => {
-      const asc = [...mockSchools].sort((a, b) =>
-        a.name.localeCompare(b.name),
-      );
+      const asc = [...mockSchools].sort((a, b) => a.name.localeCompare(b.name));
       const desc = [...asc].reverse();
 
       expect(asc[0].name).toBe("Alabama");
@@ -323,9 +328,7 @@ describe("School Sorting Utilities", () => {
         { ...mockSchools[2], name: "Same", id: "c" },
       ];
 
-      const sorted = [...schools].sort((a, b) =>
-        a.name.localeCompare(b.name),
-      );
+      const sorted = [...schools].sort((a, b) => a.name.localeCompare(b.name));
 
       expect(sorted.every((s) => s.name === "Same")).toBe(true);
     });

@@ -82,7 +82,11 @@
               <span class="text-sm text-gray-700">Offers</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
-              <input v-model="showStatusChanges" type="checkbox" class="rounded" />
+              <input
+                v-model="showStatusChanges"
+                type="checkbox"
+                class="rounded"
+              />
               <span class="text-sm text-gray-700">Status Changes</span>
             </label>
           </div>

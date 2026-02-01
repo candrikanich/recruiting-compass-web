@@ -13,9 +13,11 @@ User Story 3.4 "Parent Sets School Priority and Status" is substantially impleme
 ## Phase-by-Phase Completion
 
 ### Phase 1: Database Schema ✅
+
 **Status**: Ready to apply to Supabase
 
 **Files Created:**
+
 - `server/migrations/009_add_status_tracking_to_schools.sql`
   - Adds `status_changed_at` timestamp to schools table
   - Creates `school_status_history` table with indexes
@@ -30,9 +32,11 @@ User Story 3.4 "Parent Sets School Priority and Status" is substantially impleme
 ---
 
 ### Phase 2: TypeScript Types ✅
+
 **Status**: Complete and type-safe
 
 **Files Modified:**
+
 - `types/database.ts`
   - Added `status_changed_at: string | null` to schools
   - Added `school_status_history` table definition
@@ -44,6 +48,7 @@ User Story 3.4 "Parent Sets School Priority and Status" is substantially impleme
   - Created `SchoolStatusHistory` interface
 
 **9 Status Values Supported:**
+
 1. interested
 2. contacted
 3. camp_invite
@@ -57,14 +62,17 @@ User Story 3.4 "Parent Sets School Priority and Status" is substantially impleme
 ---
 
 ### Phase 3: Pinia Store ✅
+
 **Status**: Complete and tested
 
 **File Modified**: `stores/schools.ts`
 
 **New State:**
+
 - `statusHistory: Map<string, SchoolStatusHistory[]>` - Caches history per school
 
 **New Actions:**
+
 1. **updateStatus(schoolId, newStatus, notes?)**
    - Updates school status in database
    - Sets `status_changed_at` timestamp
@@ -79,17 +87,20 @@ User Story 3.4 "Parent Sets School Priority and Status" is substantially impleme
    - Handles errors gracefully
 
 **New Getter:**
+
 - **statusHistoryFor(schoolId)**
   - Returns cached history for quick access
 
 ---
 
 ### Phase 4: Composable ✅
+
 **Status**: Complete
 
 **File Modified**: `composables/useSchools.ts`
 
 **New Method:**
+
 - **updateStatus(schoolId, newStatus, notes?)**
   - Wraps store action with error handling
   - Exported from composable return object
@@ -100,12 +111,15 @@ User Story 3.4 "Parent Sets School Priority and Status" is substantially impleme
 ---
 
 ### Phase 5: UI Components ✅
+
 **Status**: Complete with two components
 
 #### 5a: School Status History Component
+
 **File Created**: `components/School/SchoolStatusHistory.vue`
 
 **Features:**
+
 - Displays status change history chronologically
 - Shows status transition: from → to
 - Displays user who made change
@@ -120,9 +134,11 @@ User Story 3.4 "Parent Sets School Priority and Status" is substantially impleme
 **Integration**: Auto-imported by Nuxt
 
 #### 5b: School Detail Page Update
+
 **File Modified**: `pages/schools/[id]/index.vue`
 
 **Changes:**
+
 - Updated status dropdown with 9 new values
 - Updated `updateStatus()` handler to use new composable method
 - Updated `statusBadgeColor()` function with proper colors for all 9 values:
@@ -140,11 +156,13 @@ User Story 3.4 "Parent Sets School Priority and Status" is substantially impleme
 ---
 
 ### Phase 6: Timeline Integration ✅
+
 **Status**: Complete
 
 **File Modified**: `pages/reports/timeline.vue`
 
 **Changes:**
+
 1. **Added Status Changes Checkbox**
    - New filter option in timeline controls
    - Defaults to enabled (`showStatusChanges` ref)
@@ -176,12 +194,15 @@ User Story 3.4 "Parent Sets School Priority and Status" is substantially impleme
 ---
 
 ### Phase 7: Unit Tests ✅
+
 **Status**: All tests passing (19/19)
 
 **Files Created:**
 
 #### 7a: Store Tests
+
 **File**: `tests/unit/stores/schools-status-history.spec.ts`
+
 - **10 tests passing**
 - Tests status history initialization
 - Tests `updateStatus()` action
@@ -192,7 +213,9 @@ User Story 3.4 "Parent Sets School Priority and Status" is substantially impleme
 - Tests error handling
 
 #### 7b: Composable Tests
+
 **File**: `tests/unit/composables/useSchools-status-history.spec.ts`
+
 - **9 tests passing**
 - Tests method availability
 - Tests type system validation
@@ -204,11 +227,13 @@ User Story 3.4 "Parent Sets School Priority and Status" is substantially impleme
 ---
 
 ### Phase 8: E2E Tests ✅
+
 **Status**: Complete and ready to run
 
 **File Created**: `tests/e2e/schools-status-tracking.spec.ts`
 
 **8 Test Scenarios:**
+
 1. Display all 9 status options in dropdown
 2. Change school status with timestamp recording
 3. Show status change timestamp
@@ -219,6 +244,7 @@ User Story 3.4 "Parent Sets School Priority and Status" is substantially impleme
 8. Handle errors gracefully
 
 **How to Run:**
+
 ```bash
 npm run dev  # Start dev server on :3003
 npm run test:e2e -- tests/e2e/schools-status-tracking.spec.ts
@@ -228,21 +254,22 @@ npm run test:e2e -- tests/e2e/schools-status-tracking.spec.ts
 
 ## Story Acceptance Criteria Coverage
 
-| Criteria | Status | Implementation |
-|----------|--------|-----------------|
-| Can set priority tier independently | ✅ COMPLETE | Existing, maintained & preserved |
-| Priority tiers A/B/C | ✅ COMPLETE | Existing, fully supported |
-| Status values predefined | ✅ COMPLETE | 9 values: interested, contacted, camp_invite, recruited, official_visit_invited, official_visit_scheduled, offer_received, committed, not_pursuing |
-| Status changes timestamped | ✅ COMPLETE | `status_changed_at` field + history table |
-| Can view status history | ✅ COMPLETE | SchoolStatusHistory component displays full history |
-| Status changes in timeline | ✅ COMPLETE | Timeline report integrates status changes with interactions |
-| Interaction timeline updates | ✅ COMPLETE | Status changes appear chronologically in timeline |
+| Criteria                            | Status      | Implementation                                                                                                                                     |
+| ----------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Can set priority tier independently | ✅ COMPLETE | Existing, maintained & preserved                                                                                                                   |
+| Priority tiers A/B/C                | ✅ COMPLETE | Existing, fully supported                                                                                                                          |
+| Status values predefined            | ✅ COMPLETE | 9 values: interested, contacted, camp_invite, recruited, official_visit_invited, official_visit_scheduled, offer_received, committed, not_pursuing |
+| Status changes timestamped          | ✅ COMPLETE | `status_changed_at` field + history table                                                                                                          |
+| Can view status history             | ✅ COMPLETE | SchoolStatusHistory component displays full history                                                                                                |
+| Status changes in timeline          | ✅ COMPLETE | Timeline report integrates status changes with interactions                                                                                        |
+| Interaction timeline updates        | ✅ COMPLETE | Status changes appear chronologically in timeline                                                                                                  |
 
 ---
 
 ## What's Ready Now
 
 ### For Developers
+
 - All code compiles without errors ✓
 - Type checking passes ✓
 - Unit tests pass (19/19) ✓
@@ -250,12 +277,14 @@ npm run test:e2e -- tests/e2e/schools-status-tracking.spec.ts
 - Components auto-import correctly ✓
 
 ### For QA/Testing
+
 - E2E test suite ready (`tests/e2e/schools-status-tracking.spec.ts`)
 - Status history component ready for testing
 - Timeline integration ready for testing
 - All 9 status values testable
 
 ### For DevOps/Database
+
 - Two migration files ready to apply
 - Migrations are safe and reversible
 - Indexes included for performance
@@ -266,6 +295,7 @@ npm run test:e2e -- tests/e2e/schools-status-tracking.spec.ts
 ## What Needs to Happen Next
 
 ### Step 1: Apply Database Migrations
+
 ```sql
 -- Apply in order:
 -- 1. server/migrations/009_add_status_tracking_to_schools.sql
@@ -278,12 +308,14 @@ npm run test:e2e -- tests/e2e/schools-status-tracking.spec.ts
 ```
 
 ### Step 2: Verify No Lint/Type Errors
+
 ```bash
 npm run type-check    # Should pass
 npm run lint -- --fix # Fix any auto-fixable issues
 ```
 
 ### Step 3: Run Tests
+
 ```bash
 # Unit tests
 npm run test -- tests/unit/stores/schools-status-history.spec.ts
@@ -295,6 +327,7 @@ npm run test:e2e     # Terminal 2
 ```
 
 ### Step 4: Manual Testing
+
 1. Navigate to school detail page
 2. Change status from dropdown
 3. Verify status change is recorded
@@ -308,6 +341,7 @@ npm run test:e2e     # Terminal 2
 ## Files Modified/Created Summary
 
 ### New Files (7)
+
 - `server/migrations/009_add_status_tracking_to_schools.sql`
 - `server/migrations/010_expand_school_status_enum.sql`
 - `components/School/SchoolStatusHistory.vue`
@@ -317,6 +351,7 @@ npm run test:e2e     # Terminal 2
 - `planning/implementation-complete.md` (this file)
 
 ### Modified Files (6)
+
 - `types/database.ts` - New schema types
 - `types/models.ts` - New interfaces & status values
 - `stores/schools.ts` - New actions & getter
@@ -437,4 +472,3 @@ Display with filters
 - [x] All acceptance criteria covered
 
 **Status**: Ready for deployment to staging/production
-

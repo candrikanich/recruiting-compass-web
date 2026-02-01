@@ -85,7 +85,7 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     console.error(
       `[Preferences POST] Error saving ${category} for user ${user.id}:`,
-      err
+      err,
     );
 
     if (err instanceof z.ZodError) {

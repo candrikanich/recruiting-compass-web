@@ -85,7 +85,10 @@ export class RuleEngine {
       .eq("athlete_id", athleteId)
       .eq("dismissed", true)
       .eq("reappeared", false)
-      .lte("dismissed_at", new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString());
+      .lte(
+        "dismissed_at",
+        new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+      );
 
     if (fetchError || !dismissedSuggestions) {
       console.error("Failed to fetch dismissed suggestions:", fetchError);
@@ -133,7 +136,10 @@ export class RuleEngine {
               // Find the corresponding suggestion for the dismissed school
               const relatedSuggestion = currentSuggestions.find((s) => {
                 if (dismissedSuggestion.related_school_id) {
-                  return s.related_school_id === dismissedSuggestion.related_school_id;
+                  return (
+                    s.related_school_id ===
+                    dismissedSuggestion.related_school_id
+                  );
                 }
                 return s.rule_type === dismissedSuggestion.rule_type;
               });
@@ -142,7 +148,9 @@ export class RuleEngine {
                 // Escalate urgency and mark as reappeared
                 reappearingSuggestions.push({
                   ...relatedSuggestion,
-                  urgency: escalateUrgency(relatedSuggestion.urgency as Urgency),
+                  urgency: escalateUrgency(
+                    relatedSuggestion.urgency as Urgency,
+                  ),
                   reappeared: true,
                   previous_suggestion_id: dismissedSuggestion.id,
                   condition_snapshot:

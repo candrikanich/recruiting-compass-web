@@ -53,7 +53,10 @@ export default defineEventHandler(async (event) => {
       updatedAt: data?.updated_at,
     };
   } catch (err) {
-    console.error(`[Preferences GET] Error fetching ${category} for user ${user.id}:`, err);
+    console.error(
+      `[Preferences GET] Error fetching ${category} for user ${user.id}:`,
+      err,
+    );
 
     throw createError({
       statusCode: 500,

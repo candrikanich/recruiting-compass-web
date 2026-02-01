@@ -14,9 +14,13 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     await page.waitForLoadState("networkidle");
   });
 
-  test("Scenario 1: Parent views school-specific timeline", async ({ page }) => {
+  test("Scenario 1: Parent views school-specific timeline", async ({
+    page,
+  }) => {
     // Navigate to a school with interactions
-    await page.goto(`http://localhost:3003/schools/${testSchoolId}/interactions`);
+    await page.goto(
+      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+    );
 
     // Wait for the interactions to load
     await page.waitForSelector(".space-y-4", { timeout: 5000 });
@@ -32,11 +36,13 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     const firstInteraction = page.locator(".space-y-4 > div").first();
 
     // Should have type icon
-    await expect(firstInteraction.locator("[class*='rounded-lg']").first()).toBeVisible();
+    await expect(
+      firstInteraction.locator("[class*='rounded-lg']").first(),
+    ).toBeVisible();
 
     // Should have direction badge (Outbound or Inbound)
     const directionBadge = firstInteraction.locator(
-      "span:has-text('Outbound'), span:has-text('Inbound')"
+      "span:has-text('Outbound'), span:has-text('Inbound')",
     );
     await expect(directionBadge).toBeVisible();
 
@@ -50,7 +56,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
   test("Scenario 2: Parent views coach-specific timeline", async ({ page }) => {
     // Navigate to coach communications page
     await page.goto(
-      `http://localhost:3003/coaches/${testCoachId}/communications`
+      `http://localhost:3003/coaches/${testCoachId}/communications`,
     );
 
     // Wait for page to load
@@ -61,9 +67,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     await expect(headerText).toContainText("Communication Log");
 
     // Verify interactions are filtered to this coach
-    const messages = page.locator(
-      ".bg-white.rounded-lg.shadow.p-6.border-l-4"
-    );
+    const messages = page.locator(".bg-white.rounded-lg.shadow.p-6.border-l-4");
 
     // Should have at least one message for this coach
     const messageCount = await messages.count();
@@ -81,16 +85,16 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to school interactions page
-    await page.goto(`http://localhost:3003/schools/${testSchoolId}/interactions`);
+    await page.goto(
+      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+    );
 
     // Wait for metrics to load
-    await page.waitForSelector(
-      ".grid.grid-cols-2.sm\\:grid-cols-4.gap-4.mb-6"
-    );
+    await page.waitForSelector(".grid.grid-cols-2.sm\\:grid-cols-4.gap-4.mb-6");
 
     // Verify metrics panel exists
     const metricsGrid = page.locator(
-      ".grid.grid-cols-2.sm\\:grid-cols-4.gap-4.mb-6"
+      ".grid.grid-cols-2.sm\\:grid-cols-4.gap-4.mb-6",
     );
     await expect(metricsGrid).toBeVisible();
 
@@ -102,7 +106,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     // Verify "Total Interactions" metric
     const totalInteractionsCard = metricCards.nth(0);
     await expect(
-      totalInteractionsCard.locator("text=Total Interactions")
+      totalInteractionsCard.locator("text=Total Interactions"),
     ).toBeVisible();
     const totalCount = await totalInteractionsCard.locator(".text-2xl").first();
     await expect(totalCount).toBeTruthy();
@@ -116,7 +120,9 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     // Verify "Received" metric
     const receivedCard = metricCards.nth(2);
     await expect(receivedCard.locator("text=Received")).toBeVisible();
-    const receivedCount = await receivedCard.locator(".text-emerald-600").first();
+    const receivedCount = await receivedCard
+      .locator(".text-emerald-600")
+      .first();
     await expect(receivedCount).toBeTruthy();
 
     // Verify "Last Contact" metric
@@ -132,7 +138,9 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to school interactions page
-    await page.goto(`http://localhost:3003/schools/${testSchoolId}/interactions`);
+    await page.goto(
+      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+    );
 
     // Wait for filters to be visible
     await page.waitForSelector("#type-filter");
@@ -176,7 +184,9 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to school interactions page
-    await page.goto(`http://localhost:3003/schools/${testSchoolId}/interactions`);
+    await page.goto(
+      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+    );
 
     // Wait for filters
     await page.waitForSelector("#date-filter");
@@ -204,7 +214,9 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to school interactions page
-    await page.goto(`http://localhost:3003/schools/${testSchoolId}/interactions`);
+    await page.goto(
+      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+    );
 
     // Wait for interactions
     await page.waitForSelector(".space-y-4");
@@ -213,7 +225,9 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     const firstInteraction = page.locator(".space-y-4 > div").first();
 
     // Should have subject line (if present in data)
-    const subjectElement = firstInteraction.locator("p.font-semibold, p.text-slate-700");
+    const subjectElement = firstInteraction.locator(
+      "p.font-semibold, p.text-slate-700",
+    );
     await expect(subjectElement).toBeTruthy();
 
     // Should have content/notes preview
@@ -234,7 +248,9 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     const startTime = Date.now();
 
     // Navigate to school interactions page
-    await page.goto(`http://localhost:3003/schools/${testSchoolId}/interactions`);
+    await page.goto(
+      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+    );
 
     // Wait for the timeline section to be visible
     await page.waitForSelector(".space-y-4, [class*='No interactions']", {
@@ -251,7 +267,9 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to school interactions page
-    await page.goto(`http://localhost:3003/schools/${testSchoolId}/interactions`);
+    await page.goto(
+      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+    );
 
     // Wait for filters
     await page.waitForSelector("#type-filter");
@@ -266,11 +284,13 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
 
     // Verify filters are applied
     expect(await page.locator("#type-filter").inputValue()).toBe("email");
-    expect(await page.locator("#direction-filter").inputValue()).toBe("outbound");
+    expect(await page.locator("#direction-filter").inputValue()).toBe(
+      "outbound",
+    );
     expect(await page.locator("#date-filter").inputValue()).toBe("30");
-    expect(
-      await page.locator("#sentiment-filter").inputValue()
-    ).toBe("positive");
+    expect(await page.locator("#sentiment-filter").inputValue()).toBe(
+      "positive",
+    );
 
     // Click Clear Filters button
     await page.locator("button:has-text('Clear Filters')").click();
@@ -289,14 +309,14 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
   }) => {
     // Navigate to coach communications page
     await page.goto(
-      `http://localhost:3003/coaches/${testCoachId}/communications`
+      `http://localhost:3003/coaches/${testCoachId}/communications`,
     );
 
     await page.waitForLoadState("networkidle");
 
     // Look for summary stats grid
     const statsGrid = page.locator(
-      ".grid.grid-cols-2.md\\:grid-cols-4.gap-4.mb-6"
+      ".grid.grid-cols-2.md\\:grid-cols-4.gap-4.mb-6",
     );
     await expect(statsGrid).toBeVisible();
 
@@ -307,7 +327,9 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
 
     // Verify "Total Messages" stat
     const totalMessagesCard = statCards.nth(0);
-    await expect(totalMessagesCard.locator("text=Total Messages")).toBeVisible();
+    await expect(
+      totalMessagesCard.locator("text=Total Messages"),
+    ).toBeVisible();
 
     // Verify "Sent" stat
     const sentCard = statCards.nth(1);
@@ -320,7 +342,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     // Verify "Avg Response Time" stat
     const responseTimeCard = statCards.nth(3);
     await expect(
-      responseTimeCard.locator("text=Avg Response Time")
+      responseTimeCard.locator("text=Avg Response Time"),
     ).toBeVisible();
   });
 
@@ -328,7 +350,9 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to school interactions page
-    await page.goto(`http://localhost:3003/schools/${testSchoolId}/interactions`);
+    await page.goto(
+      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+    );
 
     // Wait for filters
     await page.waitForSelector("#type-filter");

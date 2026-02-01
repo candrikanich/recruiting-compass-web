@@ -76,7 +76,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.expectStatsCardVisible("Coaches");
   });
 
-  test("AC3c: Desktop responsive design (1024px viewport)", async ({ page }) => {
+  test("AC3c: Desktop responsive design (1024px viewport)", async ({
+    page,
+  }) => {
     dashboardPage = new DashboardPage(page);
     await dashboardPage.testDesktopLayout();
 
@@ -87,7 +89,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.expectStatsCardVisible("A-tier");
   });
 
-  test("AC3d: Large screen responsive design (1280px viewport)", async ({ page }) => {
+  test("AC3d: Large screen responsive design (1280px viewport)", async ({
+    page,
+  }) => {
     dashboardPage = new DashboardPage(page);
     await dashboardPage.testLargeLayout();
 
@@ -97,7 +101,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.expectNoHorizontalScroll();
   });
 
-  test("AC4: All sections visible without excessive scrolling", async ({ page }) => {
+  test("AC4: All sections visible without excessive scrolling", async ({
+    page,
+  }) => {
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
@@ -109,7 +115,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     expect(scrollHeight).toBeLessThan(viewportHeight * 3);
   });
 
-  test("AC5: Quick action buttons are prominent and functional", async ({ page }) => {
+  test("AC5: Quick action buttons are prominent and functional", async ({
+    page,
+  }) => {
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
@@ -149,7 +157,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.expectContactFrequencyWidget();
 
     // Widget should have proper structure
-    await dashboardPage.expectVisible('[data-testid="contact-frequency-widget"] text=Contact Frequency');
+    await dashboardPage.expectVisible(
+      '[data-testid="contact-frequency-widget"] text=Contact Frequency',
+    );
   });
 
   test("A-tier schools card displays count", async ({ page }) => {
@@ -170,7 +180,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
 
-    const contactsCard = page.locator('[data-testid="stat-card-monthly-contacts"]');
+    const contactsCard = page.locator(
+      '[data-testid="stat-card-monthly-contacts"]',
+    );
     await expect(contactsCard).toBeVisible();
 
     // Should show proper labels
@@ -178,7 +190,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await expect(contactsCard).toContainText("This month");
   });
 
-  test("Dashboard grid layout adjusts based on screen size", async ({ page }) => {
+  test("Dashboard grid layout adjusts based on screen size", async ({
+    page,
+  }) => {
     dashboardPage = new DashboardPage(page);
 
     // Test mobile: should have 1 column
@@ -235,7 +249,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await expect(aTierCard).toHaveAttribute("href", "/schools?tier=A");
 
     // Monthly contacts card should link to /interactions
-    const contactsCard = page.locator('[data-testid="stat-card-monthly-contacts"]');
+    const contactsCard = page.locator(
+      '[data-testid="stat-card-monthly-contacts"]',
+    );
     await expect(contactsCard).toHaveAttribute("href", "/interactions");
   });
 
@@ -261,7 +277,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.waitForDashboardLoad();
 
     // Contact frequency widget should show empty state or data
-    const contactFreqWidget = page.locator('[data-testid="contact-frequency-widget"]');
+    const contactFreqWidget = page.locator(
+      '[data-testid="contact-frequency-widget"]',
+    );
     await expect(contactFreqWidget).toBeVisible();
   });
 
@@ -278,7 +296,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     expect(url).toContain("/schools?tier=A");
   });
 
-  test("Dashboard loads with network throttling (slow 3G)", async ({ page }) => {
+  test("Dashboard loads with network throttling (slow 3G)", async ({
+    page,
+  }) => {
     dashboardPage = new DashboardPage(page);
 
     // Simulate slow 3G
@@ -295,7 +315,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.expectContactFrequencyWidget();
   });
 
-  test("Dashboard survives page refresh without losing state", async ({ page }) => {
+  test("Dashboard survives page refresh without losing state", async ({
+    page,
+  }) => {
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
@@ -319,7 +341,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
 
     // Test tab navigation
     await page.keyboard.press("Tab");
-    let focusedElement = await page.evaluate(() => document.activeElement?.tagName);
+    let focusedElement = await page.evaluate(
+      () => document.activeElement?.tagName,
+    );
     expect(focusedElement).toBeTruthy();
 
     // Test keyboard interaction
@@ -347,7 +371,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
 
-    const contactFreqWidget = page.locator('[data-testid="contact-frequency-widget"]');
+    const contactFreqWidget = page.locator(
+      '[data-testid="contact-frequency-widget"]',
+    );
     await expect(contactFreqWidget).toBeVisible();
 
     // Widget should have title

@@ -65,7 +65,9 @@ test.describe("Family Member Removal", () => {
     if (count > 0) {
       // Verify button structure
       const firstButton = removeButtons.first();
-      const isButton = await firstButton.evaluate((el) => el.tagName === "BUTTON");
+      const isButton = await firstButton.evaluate(
+        (el) => el.tagName === "BUTTON",
+      );
       expect(isButton).toBeTruthy();
 
       // Check for title attribute (accessibility)
@@ -129,7 +131,7 @@ test.describe("Family Member Removal", () => {
             `${BASE_URL}/api/family/members/invalid-id`,
             {
               method: "DELETE",
-            }
+            },
           );
           return {
             status: response.status,

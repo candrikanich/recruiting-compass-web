@@ -59,7 +59,9 @@ export const useAuth = () => {
   const restoreSession = async (): Promise<Session | null> => {
     // Guard: already initialized, return current session
     if (isInitialized.value) {
-      console.debug("[useAuth] Session already initialized, returning cached session");
+      console.debug(
+        "[useAuth] Session already initialized, returning cached session",
+      );
       return session.value;
     }
 
@@ -141,7 +143,10 @@ export const useAuth = () => {
       // Store initialization is handled by caller
       if (data.session?.user) {
         session.value = data.session;
-        console.debug("[useAuth] Login successful for user:", data.session.user.email);
+        console.debug(
+          "[useAuth] Login successful for user:",
+          data.session.user.email,
+        );
 
         // Store session preferences in localStorage
         if (typeof window !== "undefined") {
@@ -316,8 +321,12 @@ export const useAuth = () => {
     const { useUserStore } = await import("~/stores/user");
     const userStore = useUserStore();
 
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    const { data: { session: authSession } } = await supabase.auth.getSession();
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
+    const {
+      data: { session: authSession },
+    } = await supabase.auth.getSession();
 
     const state: AuthDebugState = {
       authUserId: authUser?.id || null,
@@ -333,21 +342,33 @@ export const useAuth = () => {
     };
 
     // Check for inconsistencies
-    if (state.authUserId && state.storeUserId && state.authUserId !== state.storeUserId) {
+    if (
+      state.authUserId &&
+      state.storeUserId &&
+      state.authUserId !== state.storeUserId
+    ) {
       state.issues.push(
         `Auth user ID (${state.authUserId}) doesn't match store user ID (${state.storeUserId})`,
       );
       state.isConsistent = false;
     }
 
-    if (state.authEmail && state.storeEmail && state.authEmail !== state.storeEmail) {
+    if (
+      state.authEmail &&
+      state.storeEmail &&
+      state.authEmail !== state.storeEmail
+    ) {
       state.issues.push(
         `Auth email (${state.authEmail}) doesn't match store email (${state.storeEmail})`,
       );
       state.isConsistent = false;
     }
 
-    if (state.sessionUserId && state.storeUserId && state.sessionUserId !== state.storeUserId) {
+    if (
+      state.sessionUserId &&
+      state.storeUserId &&
+      state.sessionUserId !== state.storeUserId
+    ) {
       state.issues.push(
         `Session user ID (${state.sessionUserId}) doesn't match store user ID (${state.storeUserId})`,
       );
@@ -387,7 +408,10 @@ export const useAuth = () => {
     });
 
     if (state.issues.length > 0) {
-      console.group("%c⚠️ Issues Detected", "color: orange; font-weight: bold;");
+      console.group(
+        "%c⚠️ Issues Detected",
+        "color: orange; font-weight: bold;",
+      );
       state.issues.forEach((issue) => {
         console.warn(`• ${issue}`);
       });
@@ -403,27 +427,45 @@ export const useAuth = () => {
     state1: AuthDebugState,
     state2: AuthDebugState,
   ) => {
-    const changes: Record<string, { before: string | null; after: string | null }> = {};
+    const changes: Record<
+      string,
+      { before: string | null; after: string | null }
+    > = {};
 
     if (state1.authUserId !== state2.authUserId) {
-      changes.authUserId = { before: state1.authUserId, after: state2.authUserId };
+      changes.authUserId = {
+        before: state1.authUserId,
+        after: state2.authUserId,
+      };
     }
     if (state1.authEmail !== state2.authEmail) {
       changes.authEmail = { before: state1.authEmail, after: state2.authEmail };
     }
     if (state1.storeUserId !== state2.storeUserId) {
-      changes.storeUserId = { before: state1.storeUserId, after: state2.storeUserId };
+      changes.storeUserId = {
+        before: state1.storeUserId,
+        after: state2.storeUserId,
+      };
     }
     if (state1.storeEmail !== state2.storeEmail) {
-      changes.storeEmail = { before: state1.storeEmail, after: state2.storeEmail };
+      changes.storeEmail = {
+        before: state1.storeEmail,
+        after: state2.storeEmail,
+      };
     }
 
     if (Object.keys(changes).length === 0) {
-      console.log("%c✅ No auth state changes detected", "color: green; font-weight: bold;");
+      console.log(
+        "%c✅ No auth state changes detected",
+        "color: green; font-weight: bold;",
+      );
       return;
     }
 
-    console.group("%c⚠️ Auth State Changes Detected", "color: orange; font-weight: bold;");
+    console.group(
+      "%c⚠️ Auth State Changes Detected",
+      "color: orange; font-weight: bold;",
+    );
     console.table(changes);
     console.groupEnd();
 

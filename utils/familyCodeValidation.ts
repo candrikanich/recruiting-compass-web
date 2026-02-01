@@ -1,7 +1,9 @@
 /**
  * Client-side validation for family code input
  */
-export const validateFamilyCodeInput = (code: string): {
+export const validateFamilyCodeInput = (
+  code: string,
+): {
   isValid: boolean;
   error?: string;
 } => {

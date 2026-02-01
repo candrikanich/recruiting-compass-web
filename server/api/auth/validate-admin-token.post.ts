@@ -31,7 +31,9 @@ export default defineEventHandler(
       const { token } = body;
 
       if (!token || typeof token !== "string") {
-        logger.warn("Admin token validation attempt with missing/invalid token");
+        logger.warn(
+          "Admin token validation attempt with missing/invalid token",
+        );
         throw createError({
           statusCode: 400,
           statusMessage: "Token is required",

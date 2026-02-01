@@ -19,14 +19,28 @@
         class="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-96 flex flex-col"
       >
         <!-- Header -->
-        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-slate-900">Notes Edit History</h3>
+        <div
+          class="px-6 py-4 border-b border-slate-200 flex items-center justify-between"
+        >
+          <h3 class="text-lg font-semibold text-slate-900">
+            Notes Edit History
+          </h3>
           <button
             @click="isOpen = false"
             class="text-slate-400 hover:text-slate-600"
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -35,7 +49,9 @@
         <div class="flex-1 overflow-y-auto px-6 py-4">
           <!-- Loading State -->
           <div v-if="loading" class="text-center py-8">
-            <div class="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+            <div
+              class="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"
+            ></div>
             <p class="text-slate-600 text-sm">Loading history...</p>
           </div>
 
@@ -91,9 +107,16 @@
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
-                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    <path
+                      fill-rule="evenodd"
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      clip-rule="evenodd"
+                    />
                   </svg>
-                  {{ expandedIds.includes(entry.id) ? "Hide" : "Show" }} previous version
+                  {{
+                    expandedIds.includes(entry.id) ? "Hide" : "Show"
+                  }}
+                  previous version
                 </button>
 
                 <!-- Expanded Content -->
@@ -101,8 +124,12 @@
                   v-if="expandedIds.includes(entry.id) && entry.previousContent"
                   class="mt-2 p-3 bg-slate-50 rounded border border-slate-200 max-h-40 overflow-y-auto"
                 >
-                  <p class="text-xs font-medium text-slate-700 mb-1">Previous content:</p>
-                  <p class="text-sm text-slate-600 whitespace-pre-wrap break-words">
+                  <p class="text-xs font-medium text-slate-700 mb-1">
+                    Previous content:
+                  </p>
+                  <p
+                    class="text-sm text-slate-600 whitespace-pre-wrap break-words"
+                  >
                     {{ entry.previousContent }}
                   </p>
                 </div>
@@ -113,8 +140,12 @@
                 v-if="entry.currentContent && index === 0"
                 class="mt-2 p-3 bg-blue-50 rounded border border-blue-200 max-h-40 overflow-y-auto"
               >
-                <p class="text-xs font-medium text-blue-700 mb-1">Current content:</p>
-                <p class="text-sm text-slate-700 whitespace-pre-wrap break-words">
+                <p class="text-xs font-medium text-blue-700 mb-1">
+                  Current content:
+                </p>
+                <p
+                  class="text-sm text-slate-700 whitespace-pre-wrap break-words"
+                >
                   {{ truncateText(entry.currentContent, 200) }}
                 </p>
               </div>
@@ -144,8 +175,13 @@ const props = defineProps<{
   schoolId: string;
 }>();
 
-const { noteHistory: history, formattedNoteHistory: formattedHistory, noteHistoryLoading: loading, noteHistoryError: error, fetchNoteHistory } =
-  useInteractions();
+const {
+  noteHistory: history,
+  formattedNoteHistory: formattedHistory,
+  noteHistoryLoading: loading,
+  noteHistoryError: error,
+  fetchNoteHistory,
+} = useInteractions();
 
 const isOpen = ref(false);
 const expandedIds = ref<string[]>([]);

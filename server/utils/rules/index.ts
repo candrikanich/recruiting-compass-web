@@ -17,7 +17,9 @@ export interface Rule {
   id: string;
   name: string;
   description: string;
-  evaluate: (context: RuleContext) => Promise<SuggestionData | SuggestionData[] | null>;
+  evaluate: (
+    context: RuleContext,
+  ) => Promise<SuggestionData | SuggestionData[] | null>;
 
   /**
    * Optional: Determines if a dismissed suggestion should be re-evaluated.
@@ -27,7 +29,10 @@ export interface Rule {
    * @param context The current rule evaluation context
    * @returns true if the suggestion should be re-evaluated (recreated), false otherwise
    */
-  shouldReEvaluate?: (dismissedSuggestion: Suggestion, context: RuleContext) => Promise<boolean>;
+  shouldReEvaluate?: (
+    dismissedSuggestion: Suggestion,
+    context: RuleContext,
+  ) => Promise<boolean>;
 
   /**
    * Optional: Creates a snapshot of the rule condition state at the time the suggestion was created.
@@ -39,7 +44,7 @@ export interface Rule {
    */
   createConditionSnapshot?: (
     context: RuleContext,
-    relatedSchoolId?: string
+    relatedSchoolId?: string,
   ) => Record<string, unknown>;
 }
 
