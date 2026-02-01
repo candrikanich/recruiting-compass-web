@@ -31,15 +31,15 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     if (userStore.user?.role !== "parent") return;
 
     const { logParentView } = useViewLogging();
-    const { activeFamily } = useActiveFamily();
+    const { familyMembers } = useActiveFamily();
 
     // Only log for parents
     if (userStore.user?.role !== "parent") return;
 
     // Get family members from active family
-    if (!activeFamily.value) return;
+    if (!familyMembers.value || !Array.isArray(familyMembers.value)) return;
 
-    const studentMember = activeFamily.value.family_members?.find(
+    const studentMember = familyMembers.value.find(
       (member) => member.role === "student",
     );
     if (!studentMember) return;
