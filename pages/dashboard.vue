@@ -271,7 +271,7 @@ const showWidget = (
 };
 
 const recentNotifications = computed(() => {
-  return notificationsComposable?.notifications.value.slice(0, 5) || [];
+  return notificationsComposable?.notifications?.value?.slice(0, 5) || [];
 });
 
 // Upcoming events (sorted by date)

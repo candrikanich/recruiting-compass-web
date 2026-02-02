@@ -148,9 +148,18 @@ export const useActiveFamily = () => {
             data: { session },
           } = await supabase.auth.getSession();
 
+          // Skip API call if no valid session (e.g., during logout)
+          if (!session?.access_token) {
+            console.debug(
+              "[useActiveFamily] No valid session, skipping API call",
+            );
+            parentAccessibleFamilies.value = [];
+            return;
+          }
+
           const response = await $fetch("/api/family/accessible", {
             headers: {
-              Authorization: `Bearer ${session?.access_token}`,
+              Authorization: `Bearer ${session.access_token}`,
             },
           });
 
@@ -201,7 +210,7 @@ export const useActiveFamily = () => {
           // If API call fails, log the error for debugging
           const errMsg =
             err instanceof Error ? err.message : JSON.stringify(err);
-          console.error("[useActiveFamily] API call failed:", errMsg);
+          console.debug("[useActiveFamily] API call failed:", errMsg);
           parentAccessibleFamilies.value = [];
         }
       }
@@ -323,7 +332,10 @@ export const useActiveFamily = () => {
   };
 
   // Debug instance ID for verifying singleton usage
-  const _debugInstanceId = Math.random().toString(36).slice(2, 9);
+  const _debugInstanceId = (() => {
+    const str = Math.random().toString(36);
+    return str ? str.slice(2, 9) : "unknown";
+  })();
 
   return {
     // State

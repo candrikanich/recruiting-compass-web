@@ -9,10 +9,10 @@ interface UserDetails {
 }
 
 export default defineEventHandler(async (event) => {
-  try {
-    const user = await requireAuth(event);
-    console.log("[/api/family/accessible] User authenticated:", user.id);
+  const user = await requireAuth(event);
+  console.log("[/api/family/accessible] User authenticated:", user.id);
 
+  try {
     const supabase = useSupabaseAdmin();
 
     // For non-parents, return empty families list
