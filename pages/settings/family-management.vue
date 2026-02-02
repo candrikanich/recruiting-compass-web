@@ -219,17 +219,33 @@ const familyMembers = ref<FamilyMember[]>([]);
 const loadingMembers = ref(false);
 
 const fetchFamilyMembers = async () => {
-  if (!myFamilyId.value) return;
+  console.log(
+    "[family-management] fetchFamilyMembers called, myFamilyId:",
+    myFamilyId.value,
+  );
+  if (!myFamilyId.value) {
+    console.log("[family-management] No family ID, returning early");
+    return;
+  }
   loadingMembers.value = true;
   try {
     const { $fetchAuth } = useAuthFetch();
+    console.log(
+      "[family-management] Fetching members for family:",
+      myFamilyId.value,
+    );
     const response = (await $fetchAuth(
       `/api/family/members?familyId=${myFamilyId.value}`,
     )) as {
       success: boolean;
       members: FamilyMember[];
     };
+    console.log("[family-management] API response:", response);
     familyMembers.value = response.members || [];
+    console.log(
+      "[family-management] Set familyMembers to:",
+      familyMembers.value,
+    );
   } catch (err) {
     error.value = "Failed to load family members";
     console.error("fetchFamilyMembers error:", err);
@@ -239,9 +255,29 @@ const fetchFamilyMembers = async () => {
 };
 
 onMounted(async () => {
+  console.log(
+    "[family-management] onMounted, isStudent:",
+    isStudent.value,
+    "myFamilyId:",
+    myFamilyId.value,
+  );
   await fetchMyCode();
+  console.log(
+    "[family-management] After fetchMyCode, isStudent:",
+    isStudent.value,
+    "myFamilyId:",
+    myFamilyId.value,
+  );
   if (isStudent.value && myFamilyId.value) {
+    console.log("[family-management] Calling fetchFamilyMembers");
     await fetchFamilyMembers();
+  } else {
+    console.log(
+      "[family-management] Not fetching members - isStudent:",
+      isStudent.value,
+      "myFamilyId:",
+      myFamilyId.value,
+    );
   }
 });
 

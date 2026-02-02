@@ -65,6 +65,9 @@ export default defineEventHandler(async (event) => {
 
   // Fetch user details separately to ensure they're retrieved with admin privileges
   if (!members || members.length === 0) {
+    console.log(
+      `[family/members] No family members found for family ${familyId}`,
+    );
     return {
       success: true,
       familyId,
@@ -73,18 +76,29 @@ export default defineEventHandler(async (event) => {
     };
   }
 
+  console.log(
+    `[family/members] Found ${members.length} family members for family ${familyId}`,
+  );
+
   const userIds = (members as FamilyMemberRow[]).map((m) => m.user_id);
+  console.log(`[family/members] Fetching user details for IDs:`, userIds);
+
   const { data: users, error: usersError } = await supabase
     .from("users")
     .select("id, email, full_name, role")
     .in("id", userIds);
 
   if (usersError) {
+    console.error(`[family/members] Error fetching users:`, usersError);
     throw createError({
       statusCode: 500,
-      message: "Failed to fetch user details",
+      message: `Failed to fetch user details: ${usersError.message}`,
     });
   }
+
+  console.log(
+    `[family/members] Successfully fetched ${users?.length || 0} users`,
+  );
 
   // Map user details to family members
   const usersMap = new Map(users?.map((u: User) => [u.id, u]) || []);
@@ -99,6 +113,10 @@ export default defineEventHandler(async (event) => {
       role: "",
     },
   }));
+
+  console.log(
+    `[family/members] Returning ${membersWithUsers.length} members with user details`,
+  );
 
   return {
     success: true,
