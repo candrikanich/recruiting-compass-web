@@ -147,38 +147,36 @@ export const useCollegeData = () => {
     const state = String(school["school.state"] || "");
     const address = [city, state].filter(Boolean).join(", ") || null;
 
+    // Type-safe conversion functions for school record fields
+    const getStringField = (value: unknown): string =>
+      typeof value === "string" ? value : "";
+
+    const getNumberField = (value: unknown): number | null =>
+      isValidNumber(value) ? (value as number) : null;
+
+    const getStringOrNull = (value: unknown): string | null =>
+      typeof value === "string" ? value : null;
+
     return {
       id: String(school.id),
-      name: school["school.name"],
-      website: formatWebsite(school["school.school_url"]),
+      name: getStringField(school["school.name"]),
+      website: formatWebsite(getStringOrNull(school["school.school_url"])),
       address,
       city: city || null,
       state: state || null,
-      studentSize: isValidNumber(school["latest.student.size"])
-        ? school["latest.student.size"]
-        : null,
+      studentSize: getNumberField(school["latest.student.size"]),
       carnegieSize: null, // Not available in standard API
       enrollmentAll: null, // Not available in standard API
-      admissionRate: isValidNumber(
+      admissionRate: getNumberField(
         school["latest.admissions.admission_rate.overall"],
-      )
-        ? school["latest.admissions.admission_rate.overall"]
-        : null,
+      ),
       studentFacultyRatio: null, // Not available in standard API
-      tuitionInState: isValidNumber(school["latest.cost.tuition.in_state"])
-        ? school["latest.cost.tuition.in_state"]
-        : null,
-      tuitionOutOfState: isValidNumber(
+      tuitionInState: getNumberField(school["latest.cost.tuition.in_state"]),
+      tuitionOutOfState: getNumberField(
         school["latest.cost.tuition.out_of_state"],
-      )
-        ? school["latest.cost.tuition.out_of_state"]
-        : null,
-      latitude: isValidNumber(school["location.lat"])
-        ? school["location.lat"]
-        : null,
-      longitude: isValidNumber(school["location.lon"])
-        ? school["location.lon"]
-        : null,
+      ),
+      latitude: getNumberField(school["location.lat"]),
+      longitude: getNumberField(school["location.lon"]),
     };
   };
 
@@ -249,7 +247,9 @@ export const useCollegeData = () => {
         return null;
       }
 
-      const result = transformData(apiData.results[0]);
+      const result = transformData(
+        apiData.results[0] as unknown as Record<string, unknown>,
+      );
       data.value = result;
       // Cache the result
       setCached(normalizedName, result);
@@ -323,7 +323,9 @@ export const useCollegeData = () => {
         return null;
       }
 
-      const result = transformData(apiData.results[0]);
+      const result = transformData(
+        apiData.results[0] as unknown as Record<string, unknown>,
+      );
       data.value = result;
       // Cache the result
       setCached(cacheKey, result);

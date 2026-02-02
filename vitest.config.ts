@@ -17,7 +17,6 @@ export default defineConfig({
     // Local: use 4 workers with isolation for test stability
     // CI: use 2 workers with isolation for stable memory
     maxWorkers: process.env.CI ? 2 : 4,
-    minWorkers: 1,
     isolate: true,
     testTimeout: 10000,
     teardownTimeout: 5000,

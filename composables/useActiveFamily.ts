@@ -125,11 +125,16 @@ export const useActiveFamily = () => {
     try {
       if (isStudent.value) {
         // For students, fetch their family unit
-        const { data, error: fetchError } = await supabase
+        const response = await supabase
           .from("family_units")
           .select("id, family_name")
           .eq("student_user_id", userStore.user.id)
           .maybeSingle();
+
+        const { data, error: fetchError } = response as {
+          data: { id: string; family_name: string | null } | null;
+          error: any;
+        };
 
         if (fetchError) {
           console.error(

@@ -75,11 +75,16 @@ export const useCollaboration = () => {
         expires_at: expiresAt,
       };
 
-      const { data, error: err } = await supabase
+      const insertResponse = await (supabase as any)
         .from("shared_records")
         .insert([newShare])
         .select()
         .single();
+
+      const { data, error: err } = insertResponse as {
+        data: SharedRecord;
+        error: any;
+      };
 
       if (err) throw err;
 
@@ -126,11 +131,16 @@ export const useCollaboration = () => {
     error.value = null;
 
     try {
-      const { error: err } = await supabase
+      const updateResponse = await (supabase as any)
         .from("shared_records")
         .update({ access_level: accessLevel })
         .eq("id", id)
         .eq("owner_user_id", userStore.user.id);
+
+      const { error: err } = updateResponse as {
+        data: any;
+        error: any;
+      };
 
       if (err) throw err;
 
@@ -195,11 +205,16 @@ export const useCollaboration = () => {
         created_at: new Date().toISOString(),
       };
 
-      const { data, error: err } = await supabase
+      const insertResponse = await (supabase as any)
         .from("record_comments")
         .insert([newComment])
         .select()
         .single();
+
+      const { data, error: err } = insertResponse as {
+        data: RecordComment;
+        error: any;
+      };
 
       if (err) throw err;
 
@@ -219,11 +234,16 @@ export const useCollaboration = () => {
     error.value = null;
 
     try {
-      const { error: err } = await supabase
+      const updateResponse = await (supabase as any)
         .from("record_comments")
         .update({ deleted_at: new Date().toISOString() })
         .eq("id", id)
         .eq("user_id", userStore.user.id);
+
+      const { error: err } = updateResponse as {
+        data: any;
+        error: any;
+      };
 
       if (err) throw err;
 

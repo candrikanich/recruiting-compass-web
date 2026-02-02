@@ -73,7 +73,11 @@ export async function querySelect<T>(
     // Apply filters
     if (options?.filters) {
       for (const [key, value] of Object.entries(options.filters)) {
-        query = query.eq(key, value);
+        if (value === null) {
+          query = query.is(key, null);
+        } else {
+          query = query.eq(key, value as string | number | boolean);
+        }
       }
     }
 
@@ -137,7 +141,11 @@ export async function querySingle<T>(
 
     // Apply filters
     for (const [key, value] of Object.entries(filters)) {
-      query = query.eq(key, value);
+      if (value === null) {
+        query = query.is(key, null);
+      } else {
+        query = query.eq(key, value as string | number | boolean);
+      }
     }
 
     const { data, error } = await query.single();
@@ -236,11 +244,17 @@ export async function queryUpdate<T>(
 ): Promise<QueryResult<T[]>> {
   try {
     const supabase = useSupabase();
-    let query = supabase.from(table).update(updates);
+    let query = supabase
+      .from(table)
+      .update(updates as unknown as Record<string, unknown>);
 
     // Apply filters
     for (const [key, value] of Object.entries(filters)) {
-      query = query.eq(key, value);
+      if (value === null) {
+        query = query.is(key, null);
+      } else {
+        query = query.eq(key, value as string | number | boolean);
+      }
     }
 
     const { data, error } = await query.select();
@@ -290,7 +304,11 @@ export async function queryDelete(
 
     // Apply filters
     for (const [key, value] of Object.entries(filters)) {
-      query = query.eq(key, value);
+      if (value === null) {
+        query = query.is(key, null);
+      } else {
+        query = query.eq(key, value as string | number | boolean);
+      }
     }
 
     const { error } = await query;

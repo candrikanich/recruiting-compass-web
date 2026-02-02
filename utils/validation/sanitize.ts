@@ -90,24 +90,27 @@ export const sanitizeObject = <T extends Record<string, unknown>>(
 ): T => {
   if (!obj || typeof obj !== "object") return obj;
 
-  const sanitized = { ...obj };
+  const sanitized: Record<string, unknown> = { ...obj };
 
   fieldsToSanitize.forEach((field) => {
-    const value = sanitized[field];
+    const value = sanitized[field as string];
 
     if (typeof value === "string") {
-      sanitized[field] = sanitizeHtml(value) as T[keyof T];
+      sanitized[field as string] = sanitizeHtml(value);
     } else if (Array.isArray(value)) {
-      sanitized[field] = value.map((item: unknown) =>
+      sanitized[field as string] = value.map((item: unknown) =>
         typeof item === "string" ? sanitizeHtml(item) : item,
-      ) as T[keyof T];
+      );
     } else if (typeof value === "object" && value !== null) {
       // Recursively sanitize nested objects
-      sanitized[field] = sanitizeObject(value, fieldsToSanitize) as T[keyof T];
+      sanitized[field as string] = sanitizeObject(
+        value as Record<string, unknown>,
+        [],
+      );
     }
   });
 
-  return sanitized;
+  return sanitized as T;
 };
 
 /**
