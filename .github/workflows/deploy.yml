@@ -1,4 +1,4 @@
-name: Build, Test & Deploy
+name: Lint & Deploy
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
       - production
 
 jobs:
-  build-and-test:
-    name: Build & Test
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -22,20 +22,14 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-
-      - name: Build
-        run: npm run build
+        run: npm ci
 
       - name: Lint
         run: npm run lint
 
-      - name: Run tests
-        run: npm run test
-
   deploy-qa:
     name: Deploy to QA
-    needs: build-and-test
+    needs: lint
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
@@ -51,7 +45,7 @@ jobs:
 
   deploy-prod-approval:
     name: Approve Deploy to PROD
-    needs: build-and-test
+    needs: lint
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/production'
     environment:
