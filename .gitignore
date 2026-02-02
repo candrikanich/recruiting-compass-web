@@ -9,6 +9,7 @@ dist/
 .nuxt/
 .vite/
 .next/
+.vercel/
 
 # IDE
 .vscode/
@@ -37,6 +38,7 @@ Thumbs.db
 coverage/
 playwright-report/
 test-results/
+.playwright-mcp/
 
 # Temp files
 *.tmp
