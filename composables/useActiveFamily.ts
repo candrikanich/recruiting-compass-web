@@ -27,6 +27,7 @@ interface FamilyContext {
  * Students: activeFamilyId returns their family, activeAthleteId returns their ID
  * Parents: activeFamilyId returns family of athlete in route.query.athlete_id or first family
  */
+
 export const useActiveFamily = () => {
   const supabase = useSupabase();
   const userStore = useUserStore();
@@ -363,3 +364,5 @@ export const useActiveFamily = () => {
     _debugInstanceId,
   };
 };
+
+export type UseActiveFamilyReturn = ReturnType<typeof useActiveFamily>;

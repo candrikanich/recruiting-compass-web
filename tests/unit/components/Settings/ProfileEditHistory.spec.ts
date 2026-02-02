@@ -27,8 +27,8 @@ vi.mock("~/composables/useProfileEditHistory", () => ({
 
 // Mock Heroicons
 vi.mock("@heroicons/vue/24/outline", () => ({
-  HistoryIcon: { name: "HistoryIcon" },
-  XIcon: { name: "XIcon" },
+  ClockIcon: { name: "ClockIcon" },
+  XMarkIcon: { name: "XMarkIcon" },
 }));
 
 describe("ProfileEditHistory Component", () => {
@@ -43,8 +43,8 @@ describe("ProfileEditHistory Component", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
         stubs: {
-          HistoryIcon: true,
-          XIcon: true,
+          ClockIcon: true,
+          XMarkIcon: true,
         },
       },
     });
@@ -73,8 +73,8 @@ describe("ProfileEditHistory Component", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
         stubs: {
-          HistoryIcon: true,
-          XIcon: true,
+          ClockIcon: true,
+          XMarkIcon: true,
         },
       },
     });
@@ -90,8 +90,8 @@ describe("ProfileEditHistory Component", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
         stubs: {
-          HistoryIcon: true,
-          XIcon: true,
+          ClockIcon: true,
+          XMarkIcon: true,
         },
       },
     });
@@ -109,8 +109,8 @@ describe("ProfileEditHistory Component", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
         stubs: {
-          HistoryIcon: true,
-          XIcon: true,
+          ClockIcon: true,
+          XMarkIcon: true,
         },
       },
     });
@@ -130,8 +130,8 @@ describe("ProfileEditHistory Component", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
         stubs: {
-          HistoryIcon: true,
-          XIcon: true,
+          ClockIcon: true,
+          XMarkIcon: true,
         },
       },
     });
@@ -151,8 +151,8 @@ describe("ProfileEditHistory Component", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
         stubs: {
-          HistoryIcon: true,
-          XIcon: true,
+          ClockIcon: true,
+          XMarkIcon: true,
         },
       },
     });
@@ -185,8 +185,8 @@ describe("ProfileEditHistory Component", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
         stubs: {
-          HistoryIcon: true,
-          XIcon: true,
+          ClockIcon: true,
+          XMarkIcon: true,
         },
       },
     });
@@ -221,8 +221,8 @@ describe("ProfileEditHistory Component", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
         stubs: {
-          HistoryIcon: true,
-          XIcon: true,
+          ClockIcon: true,
+          XMarkIcon: true,
         },
       },
     });
@@ -255,8 +255,8 @@ describe("ProfileEditHistory Component", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
         stubs: {
-          HistoryIcon: true,
-          XIcon: true,
+          ClockIcon: true,
+          XMarkIcon: true,
         },
       },
     });
@@ -297,8 +297,8 @@ describe("ProfileEditHistory Component", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
         stubs: {
-          HistoryIcon: true,
-          XIcon: true,
+          ClockIcon: true,
+          XMarkIcon: true,
         },
       },
     });
@@ -336,8 +336,8 @@ describe("ProfileEditHistory Component", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
         stubs: {
-          HistoryIcon: true,
-          XIcon: true,
+          ClockIcon: true,
+          XMarkIcon: true,
         },
       },
     });
@@ -357,8 +357,8 @@ describe("ProfileEditHistory Component", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
         stubs: {
-          HistoryIcon: true,
-          XIcon: true,
+          ClockIcon: true,
+          XMarkIcon: true,
         },
       },
     });
@@ -414,8 +414,8 @@ describe("ProfileEditHistory Component", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
         stubs: {
-          HistoryIcon: true,
-          XIcon: true,
+          ClockIcon: true,
+          XMarkIcon: true,
         },
       },
     });

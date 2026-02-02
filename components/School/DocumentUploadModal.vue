@@ -244,12 +244,8 @@ const handleUpload = async () => {
     );
 
     if (result.success && result.data) {
-      // Share document with school by adding school ID to shared_with_schools
-      const updatedSharedSchools = [
-        ...(result.data.shared_with_schools || []),
-        props.schoolId,
-      ];
-      await shareDocument(result.data.id, updatedSharedSchools);
+      // Share document with school
+      await shareDocument(result.data.id, props.schoolId, "view");
 
       // Reset form
       form.type = "";

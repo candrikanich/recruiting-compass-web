@@ -67,6 +67,7 @@ import { ref, onMounted, watch } from "vue";
 import L from "leaflet";
 import { MapPinIcon } from "@heroicons/vue/24/outline";
 import { useUserStore } from "~/stores/user";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import type { School } from "~/types/models";
 
 interface Props {
@@ -76,13 +77,14 @@ interface Props {
 const props = defineProps<Props>();
 const mapContainer = ref<HTMLDivElement | null>(null);
 const userStore = useUserStore();
+const preferenceManager = usePreferenceManager();
 let mapInstance: L.Map | null = null;
 let isInitializing = false;
 
 const getMapCenter = (): [number, number] => {
-  const user = userStore.user;
-  if (user?.home_location?.latitude && user?.home_location?.longitude) {
-    return [user.home_location.latitude, user.home_location.longitude];
+  const locationPref = preferenceManager.getHomeLocation();
+  if (locationPref?.latitude && locationPref?.longitude) {
+    return [locationPref.latitude, locationPref.longitude];
   }
   return [39.8283, -98.5795];
 };

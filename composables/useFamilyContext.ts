@@ -8,7 +8,9 @@
  */
 import { useActiveFamily } from "./useActiveFamily";
 
-let familyContextInstance: ReturnType<typeof useActiveFamily> | null = null;
+export type UseActiveFamilyReturn = ReturnType<typeof useActiveFamily>;
+
+let familyContextInstance: UseActiveFamilyReturn | null = null;
 
 /**
  * Get or create the shared family context instance
