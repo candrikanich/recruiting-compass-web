@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
   compatibilityDate: "2024-04-03",
   devtools: { enabled: false },
-  ssr: false,
+  ssr: true,
 
   devServer: {
     port: 3003,
@@ -38,16 +38,9 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    preset: "node_server",
+    preset: "vercel",
     prerender: {
       crawlLinks: false,
-      routes: ["/sitemap.xml"],
-    },
-    hooks: {
-      close: async () => {
-        // Force process exit after build completes to prevent timeout in CI/CD
-        process.exit(0);
-      },
     },
   },
 

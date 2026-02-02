@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "nuxi dev",
-    "build": "nuxi generate",
+    "build": "nuxi build",
     "preview": "nuxi preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
