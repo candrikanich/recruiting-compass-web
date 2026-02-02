@@ -1,5 +1,4 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": ".output",
-  "framework": "nuxt3"
+  "outputDirectory": ".output"
 }
