@@ -347,3 +347,4 @@ npm run lint:fix
 **App Version:** 1.0 (Nuxt 3)
 **Deployment:** Vercel
 **Repository:** GitHub (https://github.com/candrikanich/recruiting-compass-web)
+# Test
