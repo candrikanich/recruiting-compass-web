@@ -2,6 +2,55 @@
 
 Project-specific history, completed work, and future notes. Not loaded in main sessions but useful for context during reviews.
 
+## Platform Migration: GitLab → GitHub & Netlify → Vercel ✅
+
+**Completed February 1, 2026**
+
+### Repository Migration
+
+- Source: GitLab (candrikanich/recruiting-compass) → GitHub (candrikanich/recruiting-compass-web)
+- History preserved, all commits intact
+- Branch: `main` (default)
+
+### Deployment Migration
+
+- Source: Netlify → **Vercel** (production)
+- Live URL: https://recruiting-compass-web-a9wx.vercel.app
+- Status: All API routes functional, family management verified working
+
+### Key Deployment Fixes
+
+1. **Build Command Fix** (4f2093a)
+   - Changed: `nuxi generate` → `nuxi build`
+   - Enables Nitro `vercel` preset (serverless functions)
+   - API routes now deploy as Lambda functions
+
+2. **Dependency Exclusion** (2e0576d)
+   - Excluded: `isomorphic-dompurify` (jsdom - client-only)
+   - Bundle size: 11.6 MB → 4.27 MB
+   - Prevents ESM/CommonJS conflicts in serverless runtime
+
+3. **Security Header Fix** (c376ccb)
+   - Added: `'unsafe-inline'` to production CSP for scripts
+   - Nuxt 3 SPA mode requires inline script execution
+   - Page now initializes without errors
+
+### Cleanup Done
+
+- Deleted: `.gitlab-ci.yml`, `netlify.toml`, `.netlify/` directory
+- Deleted: `/documentation/build/` (outdated planning docs)
+- Updated: README.md with Vercel deployment info
+- Updated: CLAUDE.local.md with migration summary
+
+### Verification
+
+- ✅ CSRF token endpoint: 200 OK
+- ✅ Family members endpoint: 401 Unauthorized (expected, auth required)
+- ✅ Family Management page: Renders and loads data correctly
+- ✅ Parent appears in family members list (migration verified)
+
+---
+
 ## Phase 4: User Preferences Migration ✅
 
 Complete migration from monolithic V1 preferences to category-based V2 (January 27, 2026).

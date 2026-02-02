@@ -128,7 +128,6 @@ web/
 │       └── transitions.css
 │
 ├── public/                 # Static files (served at root)
-│   └── _redirects          # Netlify redirect rules
 │
 ├── .nuxt/                  # Generated (dev only)
 ├── dist/                   # Build output
@@ -260,20 +259,26 @@ See `CLAUDE.md` for full development standards.
 
 ## Deployment
 
-### Netlify (Production)
+### Vercel (Production)
 
 ```bash
 # Build is automatic on push to main branch
-# Built from: /web directory
+# Repository: https://github.com/candrikanich/recruiting-compass-web
 # Build command: npm run build
-# Publish directory: .nuxt/dist
+# Framework: Nuxt 3 (auto-detected)
+# Nitro preset: vercel (serverless functions)
 ```
 
-1. **Automatic Deploy:** Push to `main` → Netlify builds and deploys
-2. **Environment Variables:** Set in Netlify UI (Settings → Build & Deploy → Environment)
-3. **Preview Deploys:** Push to feature branch → Netlify creates preview URL
+1. **Automatic Deploy:** Push to `main` → Vercel builds and deploys
+2. **Environment Variables:** Set in Vercel project dashboard (Settings → Environment Variables)
+3. **Preview Deploys:** Push to feature branch → Vercel creates preview URL
+4. **Live URL:** https://recruiting-compass-web-a9wx.vercel.app
 
-See `/documentation/deployment/` for detailed deployment guides.
+**Key Configuration:**
+
+- Nitro preset: `vercel` (generates serverless functions for `/api/**` routes)
+- Build output: `.vercel/output/` (contains static assets and serverless functions)
+- Runtime: Node.js (server-side API routes)
 
 ## Testing
 
@@ -338,5 +343,7 @@ npm run lint:fix
 
 ---
 
-**Last Updated:** 2026-01-08
+**Last Updated:** 2026-02-01
 **App Version:** 1.0 (Nuxt 3)
+**Deployment:** Vercel
+**Repository:** GitHub (https://github.com/candrikanich/recruiting-compass-web)
