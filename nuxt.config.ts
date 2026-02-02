@@ -38,6 +38,7 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    preset: "node_server",
     prerender: {
       crawlLinks: false,
       routes: ["/sitemap.xml"],
