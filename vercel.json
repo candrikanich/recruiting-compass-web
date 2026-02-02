@@ -1,7 +1,9 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": ".output/public",
-  "serverless": {
-    "maxDuration": 60
+  "outputDirectory": ".nuxt/dist",
+  "functions": {
+    "api/**": {
+      "maxDuration": 60
+    }
   }
 }
