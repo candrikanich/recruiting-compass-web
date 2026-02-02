@@ -2,6 +2,25 @@ import { defineEventHandler, createError, getQuery } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 
+interface FamilyMemberRow {
+  id: string;
+  family_unit_id: string;
+  user_id: string;
+  role: string;
+  added_at: string;
+}
+
+interface User {
+  id: string;
+  email: string;
+  full_name: string | null;
+  role: string;
+}
+
+interface FamilyMemberWithUser extends FamilyMemberRow {
+  users: User;
+}
+
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
   const supabase = useSupabaseAdmin();
@@ -30,19 +49,10 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Fetch all family members with user details
+  // Fetch all family members (without relationship to avoid RLS issues)
   const { data: members, error: membersError } = await supabase
     .from("family_members")
-    .select(
-      `
-      id,
-      family_unit_id,
-      user_id,
-      role,
-      added_at,
-      users(id, email, full_name, role)
-    `,
-    )
+    .select("id, family_unit_id, user_id, role, added_at")
     .eq("family_unit_id", familyId)
     .order("added_at", { ascending: true });
 
@@ -53,10 +63,47 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  // Fetch user details separately to ensure they're retrieved with admin privileges
+  if (!members || members.length === 0) {
+    return {
+      success: true,
+      familyId,
+      members: [],
+      count: 0,
+    };
+  }
+
+  const userIds = (members as FamilyMemberRow[]).map((m) => m.user_id);
+  const { data: users, error: usersError } = await supabase
+    .from("users")
+    .select("id, email, full_name, role")
+    .in("id", userIds);
+
+  if (usersError) {
+    throw createError({
+      statusCode: 500,
+      message: "Failed to fetch user details",
+    });
+  }
+
+  // Map user details to family members
+  const usersMap = new Map(users?.map((u: User) => [u.id, u]) || []);
+  const membersWithUsers: FamilyMemberWithUser[] = (
+    members as FamilyMemberRow[]
+  ).map((m) => ({
+    ...m,
+    users: usersMap.get(m.user_id) || {
+      id: m.user_id,
+      email: "",
+      full_name: null,
+      role: "",
+    },
+  }));
+
   return {
     success: true,
     familyId,
-    members: members || [],
-    count: members?.length || 0,
+    members: membersWithUsers,
+    count: membersWithUsers.length,
   };
 });
