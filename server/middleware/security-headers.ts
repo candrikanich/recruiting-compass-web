@@ -35,13 +35,10 @@ export default defineEventHandler((event) => {
   );
 
   // Content-Security-Policy: Prevent XSS and injection attacks
-  // Strict but allows:
-  // - Self-hosted scripts and styles
-  // - Supabase API endpoint
-  // - Chart.js from CDN (used for analytics)
-  // - Google Fonts for typography
+  // Nuxt 3 with SSR disabled requires inline scripts for initialization
+  // Note: script-src includes 'unsafe-inline' for both environments to support Nuxt's runtime
   const cspHeader = isProduction
-    ? "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://xpxzhqghxecsjhvklsqg.supabase.co; frame-ancestors 'none'"
+    ? "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://xpxzhqghxecsjhvklsqg.supabase.co; frame-ancestors 'none'"
     : "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https: http://localhost:*; frame-ancestors 'self'";
 
   setHeader(event, "Content-Security-Policy", cspHeader);
