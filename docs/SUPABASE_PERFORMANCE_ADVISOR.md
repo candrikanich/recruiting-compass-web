@@ -38,6 +38,26 @@ Run the Performance Advisor in the [Supabase Dashboard](https://supabase.com/das
 
 Re-run the Performance Advisor after applying migrations to confirm findings are resolved.
 
+## Query-level optimizations (application code)
+
+### Suggestions evaluate (`POST /api/suggestions/evaluate`)
+
+- **Before:** Fetched full rows for profiles, schools, interactions, task (entire table), athlete_task, videos, events.
+- **After:**
+  - **Profiles:** `id, grade_level` only (rules only use grade level).
+  - **Schools:** `id, name, division, status, priority, priority_tier, fit_score` (only fields used by rules).
+  - **Interactions:** `id, school_id, interaction_date, related_event_id`.
+  - **Task table:** Removed. No rule uses `context.tasks`; passing `[]` avoids scanning the whole `task` table.
+  - **Athlete tasks:** `task_id, status` only (used by ncaaRegistration rule).
+  - **Videos:** `id, health_status, title`.
+  - **Events:** `id, name, event_date, school_id, attended`.
+- **Impact:** Less data transferred, no full-table scan on `task`, smaller memory footprint per request.
+
+### Optional follow-ups
+
+- **List endpoints:** `useInteractions` and `useSchools` load all rows for the family (no `.limit()`). If lists grow large, consider pagination or a default cap (e.g. 500) and document expected max size.
+- **Indexes:** Migration 027 added FK indexes. If `pg_stat_statements` or the Performance Advisor later show slow filters (e.g. on `interactions.occurred_at`, `schools.family_unit_id`), add targeted indexes.
+
 ## References
 
 - [Database Linter (Performance Advisor)](https://supabase.com/docs/guides/database/database-linter)
