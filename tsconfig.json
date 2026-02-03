@@ -4,5 +4,12 @@
     "noEmit": true,
     "skipLibCheck": true
   },
-  "exclude": ["tests/**/*", "__tests__/**/*", "**/*.spec.ts", "**/*.test.ts"]
+  "exclude": [
+    "tests/**/*",
+    "__tests__/**/*",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "vitest.config.ts",
+    "playwright.config.ts"
+  ]
 }
