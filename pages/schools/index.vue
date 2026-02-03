@@ -682,7 +682,9 @@ import type { FilterConfig } from "~/types/filters";
 definePageMeta({});
 
 // Inject family context provided at app.vue level (with singleton fallback)
-const activeFamily = inject("activeFamily") || useFamilyContext();
+const activeFamily =
+  inject<ReturnType<typeof useActiveFamily>>("activeFamily") ||
+  useFamilyContext();
 const { activeFamilyId } = activeFamily;
 
 // Call composables that depend on the family context

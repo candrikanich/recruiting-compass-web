@@ -104,7 +104,7 @@ export default defineEventHandler(
       }
 
       // 4. Prevent self-deletion
-      if (normalizedEmails.includes(user.email)) {
+      if (user.email && normalizedEmails.includes(user.email)) {
         throw createError({
           statusCode: 400,
           statusMessage:
@@ -161,8 +161,9 @@ export default defineEventHandler(
           for (const { table, columns } of tableDeleteAttempts) {
             try {
               for (const column of columns) {
-                const { error: deleteError } = await supabaseAdmin
-                  .from(table)
+                const { error: deleteError } = await (
+                  supabaseAdmin.from(table) as any
+                )
                   .delete()
                   .eq(column, targetUserId);
 

@@ -79,7 +79,7 @@ export default defineEventHandler(
       }
 
       const { data: targetUserData, error: getUserError } =
-        await supabaseAdmin.auth.admin.getUserByEmail(targetEmail);
+        await supabaseAdmin.auth.admin.listUsersByEmail(targetEmail);
 
       if (getUserError || !targetUserData.user) {
         logger.warn(

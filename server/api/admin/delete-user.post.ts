@@ -167,8 +167,9 @@ export default defineEventHandler(
         try {
           // Delete records where any of the user columns match
           for (const column of columns) {
-            const { error: deleteError } = await supabaseAdmin
-              .from(table)
+            const { error: deleteError } = await (
+              supabaseAdmin.from(table) as any
+            )
               .delete()
               .eq(column, targetUserId);
 

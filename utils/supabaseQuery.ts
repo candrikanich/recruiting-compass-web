@@ -196,7 +196,10 @@ export async function queryInsert<T>(
     const supabase = useSupabase();
     const payload = Array.isArray(records) ? records : [records];
 
-    const { data, error } = await supabase.from(table).insert(payload).select();
+    const { data, error } = await supabase
+      .from(table)
+      .insert(payload as unknown as Record<string, unknown>[])
+      .select();
 
     if (error) {
       throw new Error(`[${table}] ${error.message}`);
@@ -244,9 +247,7 @@ export async function queryUpdate<T>(
 ): Promise<QueryResult<T[]>> {
   try {
     const supabase = useSupabase();
-    let query = supabase
-      .from(table)
-      .update(updates as unknown as Record<string, unknown>);
+    let query = supabase.from(table).update(updates as unknown);
 
     // Apply filters
     for (const [key, value] of Object.entries(filters)) {

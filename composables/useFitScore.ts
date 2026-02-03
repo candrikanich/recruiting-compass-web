@@ -355,7 +355,6 @@ export const useFitScore = (): {
     // Methods
     calculateSchoolFitScore,
     recalculateAllFitScores,
-    recalculateAllFitScores: recalculateAllFitScores, // Was recalculateAllFitScoresViaServer
     getPortfolioHealth,
     getFitScore,
     clearCache,
