@@ -424,17 +424,21 @@
 import { ref, computed, onMounted } from "vue";
 import { useSchools } from "~/composables/useSchools";
 import { useUserStore } from "~/stores/user";
+import type { Database } from "~/types/database";
 
 definePageMeta({
   middleware: "auth",
 });
+
+type RecommendationLetter =
+  Database["public"]["Tables"]["recommendation_letters"]["Row"];
 
 const userStore = useUserStore();
 const { schools: composableSchools, fetchSchools } = useSchools();
 const supabase = useSupabase();
 
 // Data
-const letters = ref<any[]>([]);
+const letters = ref<RecommendationLetter[]>([]);
 const schools = ref<any[]>([]);
 const loading = ref(false);
 const showAddForm = ref(false);
@@ -442,14 +446,15 @@ const editingId = ref<string | null>(null);
 
 // Form
 const formData = ref({
-  school_id: "",
-  requested_from: "",
-  status: "",
+  writer_name: "",
+  writer_email: "",
+  writer_title: "",
+  status: "" as any,
   requested_date: new Date().toISOString().split("T")[0],
-  deadline_date: "",
+  due_date: "",
   received_date: "",
-  contact_email: "",
-  contact_phone: "",
+  relationship: "",
+  schools_submitted_to: [] as string[],
   notes: "",
 });
 
@@ -552,14 +557,15 @@ const editLetter = (letter: any) => {
 const cancelEdit = () => {
   editingId.value = null;
   formData.value = {
-    school_id: "",
-    requested_from: "",
-    status: "",
+    writer_name: "",
+    writer_email: "",
+    writer_title: "",
+    status: "" as any,
     requested_date: new Date().toISOString().split("T")[0],
-    deadline_date: "",
+    due_date: "",
     received_date: "",
-    contact_email: "",
-    contact_phone: "",
+    relationship: "",
+    schools_submitted_to: [],
     notes: "",
   };
   showAddForm.value = false;

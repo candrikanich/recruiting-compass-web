@@ -3,7 +3,7 @@
  * Update athlete's task status
  */
 
-import { defineEventHandler, readBody } from "h3";
+import { defineEventHandler, readBody, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { logCRUD, logError } from "~/server/utils/auditLog";

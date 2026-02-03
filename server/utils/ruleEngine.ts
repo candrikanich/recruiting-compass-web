@@ -38,8 +38,11 @@ export class RuleEngine {
           const schoolsInDeadPeriod = (context.schools as unknown[]).filter(
             (s: unknown) => {
               const school = s as Record<string, unknown>;
-              const division = (school.division as string | null) || "D1";
-              return isDeadPeriod(now, division as "D1" | "D2" | "D3");
+              const division = ((school.division as string | null) || "D1") as
+                | "D1"
+                | "D2"
+                | "D3";
+              return isDeadPeriod(now, division);
             },
           );
 

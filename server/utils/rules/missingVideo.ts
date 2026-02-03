@@ -8,7 +8,9 @@ export const missingVideoRule: Rule = {
   async evaluate(
     context: RuleContext,
   ): Promise<SuggestionData | SuggestionData[] | null> {
-    const gradeLevel = context.athlete.grade_level || 9;
+    const gradeLevel =
+      ((context.athlete as Record<string, unknown>)?.grade_level as number) ??
+      9;
     const hasVideos = context.videos.length > 0;
 
     if (gradeLevel >= 10 && !hasVideos) {

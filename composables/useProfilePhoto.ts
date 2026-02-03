@@ -147,8 +147,7 @@ export const useProfilePhoto = (): {
       }
 
       // Clear from database
-      const deleteUpdateResponse = (await supabase
-        .from("users")
+      const deleteUpdateResponse = (await (supabase.from("users") as any)
         .update({ profile_photo_url: null })
         .eq("id", userId)
         .select()

@@ -161,7 +161,7 @@ export default defineEventHandler(
           for (const { table, columns } of tableDeleteAttempts) {
             try {
               for (const column of columns) {
-                const response = await (supabaseAdmin.from(table) as any)
+                const response = await (supabaseAdmin.from(table as any) as any)
                   .delete()
                   .eq(column, targetUserId);
                 const { error: deleteError } = response as { error: any };

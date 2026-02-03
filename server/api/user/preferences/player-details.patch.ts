@@ -132,15 +132,15 @@ export default defineEventHandler(async (event) => {
       .update({
         data:
           historyEntry !== null
-            ? {
+            ? ({
                 ...validatedDetails,
                 _history: [
                   ...((currentPrefs?.data as any)?._history || []),
                 ].slice(-49),
-              }
-            : validatedDetails,
+              } as any)
+            : (validatedDetails as any),
         updated_at: new Date().toISOString(),
-      })
+      } as any)
       .eq("user_id", user.id)
       .eq("category", "player_details")
       .select()

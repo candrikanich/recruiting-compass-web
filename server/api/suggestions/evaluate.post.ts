@@ -40,7 +40,11 @@ export default defineEventHandler(async (event) => {
       videos,
       events,
     ] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", athleteId).single() as any,
+      supabase
+        .from("profiles" as any)
+        .select("*")
+        .eq("id", athleteId)
+        .single() as any,
       supabase.from("schools").select("*").eq("athlete_id", athleteId) as any,
       supabase
         .from("interactions")
@@ -51,7 +55,10 @@ export default defineEventHandler(async (event) => {
         .from("athlete_task")
         .select("*")
         .eq("athlete_id", athleteId) as any,
-      supabase.from("videos").select("*").eq("athlete_id", athleteId) as any,
+      supabase
+        .from("videos" as any)
+        .select("*")
+        .eq("athlete_id", athleteId) as any,
       supabase.from("events").select("*").eq("athlete_id", athleteId) as any,
     ]);
 

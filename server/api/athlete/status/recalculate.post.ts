@@ -194,10 +194,8 @@ export default defineEventHandler(async (event) => {
     });
 
     // Persist to database
-    // Supabase type generation doesn't include custom columns - need to bypass type check
-    const updateResult = await supabase
-      .from("users")
-      // @ts-expect-error - custom columns (status_score, status_label) not in Supabase types
+    // Supabase type generation doesn't include custom columns - bypass type check
+    const updateResult = await (supabase.from("users") as any)
       .update({
         status_score: result.score,
         status_label: result.label,

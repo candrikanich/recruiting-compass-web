@@ -118,13 +118,11 @@ export default defineEventHandler(
       }
 
       // Batch update schools table
-      const updateResult = await supabase
+      const { data: updateResult, error: updateError } = await supabase
         .from("schools")
         // @ts-expect-error - custom columns (fit_score, fit_score_data) not in Supabase types
         .upsert(updates, { onConflict: "id" })
         .select();
-
-      const { error: updateError } = updateResult;
 
       if (updateError) {
         throw updateError;

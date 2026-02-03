@@ -315,7 +315,7 @@ const saveCoach = async () => {
       .update({
         email: editedCoach.value.email,
         phone: editedCoach.value.phone,
-        role: editedCoach.value.role,
+        role: editedCoach.value.role as "head" | "assistant" | "recruiting",
       })
       .eq("id", coachId)
       .select()
@@ -341,7 +341,9 @@ const saveNotes = async () => {
   try {
     const response = await supabase
       .from("coaches")
-      .update({ notes: editedNotes.value })
+      .update({
+        notes: editedNotes.value,
+      } as Record<string, any>)
       .eq("id", coachId)
       .select()
       .single();

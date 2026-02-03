@@ -39,7 +39,7 @@ export async function gatherUserData(userId: string): Promise<ExportData> {
       auditRes,
     ] = await Promise.all([
       supabase
-        .from("profiles")
+        .from("profiles" as any)
         .select("*")
         .eq("user_id", userId)
         .single() as any,

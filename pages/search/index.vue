@@ -280,6 +280,7 @@ const {
   isSearching,
   searchError,
   filters,
+  isFiltering,
   schoolResults,
   coachResults,
   interactionResults,
@@ -288,7 +289,7 @@ const {
   hasResults,
   performSearch,
   clearFilters: clearSearchFilters,
-  applyFilters,
+  applyFilter: applyFilters,
   getSchoolSuggestions,
   getCoachSuggestions,
 } = useSearchConsolidated();
