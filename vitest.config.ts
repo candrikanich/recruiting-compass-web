@@ -21,6 +21,26 @@ export default defineConfig({
     testTimeout: 10000,
     teardownTimeout: 5000,
     logHeapUsage: process.env.CI ? true : false,
+
+    // Coverage configuration (balanced testing: 75% threshold)
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json", "html", "lcov"],
+      lines: 75,
+      functions: 75,
+      branches: 70,
+      statements: 75,
+      exclude: [
+        "node_modules/",
+        "dist/",
+        ".nuxt/",
+        "tests/",
+        "**/*.d.ts",
+        "**/index.ts",
+        "**/*.config.ts",
+        ".vercel/",
+      ],
+    },
   },
   resolve: {
     alias: {

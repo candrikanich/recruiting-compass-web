@@ -1,0 +1,47 @@
+repos:
+  # Detect secrets in code
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: [--baseline, .secrets.baseline]
+
+  # Prettier: Code formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.1
+    hooks:
+      - id: prettier
+        files: \.(js|jsx|ts|tsx|vue|css|md|json)$
+        exclude: |
+          (?x)^(
+            package-lock\.json|
+            pnpm-lock\.yaml
+          )$
+
+  # Basic file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  # Type checking and linting via npm scripts
+  - repo: local
+    hooks:
+      - id: npm-type-check
+        name: TypeScript Type Check
+        entry: npm run type-check
+        language: system
+        files: \.(ts|tsx|vue)$
+        pass_filenames: false
+        stages: [commit]
+      - id: npm-lint
+        name: ESLint
+        entry: npm run lint:fix
+        language: system
+        files: \.(ts|tsx|js|jsx|vue)$
+        pass_filenames: false
+        stages: [commit]
