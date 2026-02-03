@@ -118,11 +118,10 @@ export const useSchoolStore = defineStore("schools", {
      * Fetch all schools for the current user
      * Guards against redundant fetches with isFetched flag
      */
-     
+
     async fetchSchools() {
       // Guard: don't refetch if already loaded
       if (this.isFetched && this.schools.length > 0) return;
-       
 
       this.loading = true;
       this.error = null;
@@ -163,11 +162,10 @@ export const useSchoolStore = defineStore("schools", {
     async getSchool(id: string): Promise<School | null> {
       const { useSupabase } = await import("~/composables/useSupabase");
       const { useUserStore } = await import("./user");
-       
+
       const userStore = useUserStore();
       const supabase = useSupabase();
 
-       
       this.loading = true;
       this.error = null;
 
@@ -192,11 +190,9 @@ export const useSchoolStore = defineStore("schools", {
         return null;
       } finally {
         this.loading = false;
-         
       }
     },
 
-     
     /**
      * Create a new school
      */
@@ -213,11 +209,9 @@ export const useSchoolStore = defineStore("schools", {
       this.error = null;
 
       try {
-         
         if (!userStore.user) {
           throw new Error("User not authenticated");
         }
-         
 
         // Sanitize text fields to prevent XSS
         const sanitized = { ...schoolData };
@@ -246,11 +240,9 @@ export const useSchoolStore = defineStore("schools", {
           sanitized.recruiting_approach = sanitizeHtml(
             sanitized.recruiting_approach,
           );
-           
         }
         if (sanitized.communication_style) {
           sanitized.communication_style = sanitizeHtml(
-             
             sanitized.communication_style,
           );
         }

@@ -89,7 +89,6 @@ export const useUserStore = defineStore("user", {
           console.debug(
             "[initializeUser] User authenticated:",
             session.user.email,
-             
           );
 
           // Try to fetch full profile from users table (includes is_admin)

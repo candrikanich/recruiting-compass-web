@@ -76,7 +76,7 @@ export default defineEventHandler(async (event) => {
         .from("user_preferences")
         .update({
           data: data as Database["public"]["Tables"]["user_preferences"]["Update"]["data"],
-           
+
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", user.id)

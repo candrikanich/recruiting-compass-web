@@ -56,7 +56,6 @@ export default defineEventHandler(
           statusCode: 400,
           statusMessage:
             "Player details not found. Add athlete profile data first.",
-           
         });
       }
 

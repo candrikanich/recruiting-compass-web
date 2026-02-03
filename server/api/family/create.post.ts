@@ -78,7 +78,6 @@ export default defineEventHandler(async (event) => {
   const { error: memberError } = memberResponse as { error: any };
 
   if (memberError) {
-     
     throw createError({
       statusCode: 500,
       message: "Failed to add student to family",

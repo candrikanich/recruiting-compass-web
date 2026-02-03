@@ -128,7 +128,7 @@ export default defineEventHandler(async (event) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (logPromise as any)
-     
+
     .then(() => {
       // Success - do nothing
     })
@@ -152,7 +152,6 @@ export default defineEventHandler(async (event) => {
     })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .catch((err: any) => console.warn("Notification creation failed:", err));
-   
 
   return successResponse;
 });

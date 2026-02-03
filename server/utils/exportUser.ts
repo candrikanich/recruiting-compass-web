@@ -113,7 +113,6 @@ async function fetchDocumentContent(
 ): Promise<Array<{ metadata: Record<string, unknown>; content?: Buffer }>> {
   const result: Array<{ metadata: Record<string, unknown>; content?: Buffer }> =
     [];
-   
 
   for (const doc of documents) {
     try {
@@ -124,7 +123,7 @@ async function fetchDocumentContent(
         type: doc.type,
         created_at: doc.created_at,
         updated_at: doc.updated_at,
-         
+
         school_id: doc.school_id,
       };
 
@@ -154,7 +153,7 @@ async function fetchDocumentContent(
     } catch (error) {
       logger.warn("Failed to fetch document content", {
         documentId: doc.id,
-         
+
         error: error instanceof Error ? error.message : "Unknown error",
       });
       // Continue with next document
@@ -162,7 +161,6 @@ async function fetchDocumentContent(
   }
 
   return result;
-   
 }
 
 /**
@@ -173,7 +171,6 @@ export async function generateUserExportZip(userId: string): Promise<Buffer> {
     const data = await gatherUserData(userId);
     const zip = new JSZip();
 
-     
     // Add README with data dictionary
     zip.file("README.txt", generateReadme(userId));
 
@@ -182,7 +179,6 @@ export async function generateUserExportZip(userId: string): Promise<Buffer> {
       zip.file("profile.json", JSON.stringify(data.profile, null, 2));
     }
 
-     
     // Add each data type as CSV for easy import
     if (data.schools.length > 0) {
       zip.file("schools.csv", jsonToCSV(data.schools));
@@ -195,7 +191,6 @@ export async function generateUserExportZip(userId: string): Promise<Buffer> {
     if (data.interactions.length > 0) {
       zip.file("interactions.csv", jsonToCSV(data.interactions));
     }
-     
 
     if (data.events.length > 0) {
       zip.file("events.csv", jsonToCSV(data.events));
@@ -208,7 +203,6 @@ export async function generateUserExportZip(userId: string): Promise<Buffer> {
     if (data.offers.length > 0) {
       zip.file("offers.csv", jsonToCSV(data.offers));
     }
-     
 
     // Add audit logs
     if (data.auditLogs.length > 0) {
@@ -223,7 +217,7 @@ export async function generateUserExportZip(userId: string): Promise<Buffer> {
           const fileName = `${doc.metadata.name || `document_${index}`}`;
           docsFolder.file(
             `${fileName}.json`,
-             
+
             JSON.stringify(doc.metadata, null, 2),
           );
 
@@ -232,7 +226,6 @@ export async function generateUserExportZip(userId: string): Promise<Buffer> {
           }
         });
       }
-       
     }
 
     // Generate ZIP buffer

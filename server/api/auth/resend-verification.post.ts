@@ -50,7 +50,7 @@ export default defineEventHandler(
         console.error("Missing Supabase configuration");
         throw createError({
           statusCode: 500,
-           
+
           statusMessage: "Server configuration error",
         });
       }

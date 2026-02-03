@@ -58,11 +58,9 @@ export default defineEventHandler(
       // 2. Parse and validate request body
       const body = await readBody<DeleteUserRequest>(event);
       const { email } = body;
-       
 
       if (!email || typeof email !== "string") {
         throw createError({
-           
           statusCode: 400,
           statusMessage: "Email address is required",
         });

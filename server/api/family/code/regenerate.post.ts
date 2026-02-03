@@ -57,7 +57,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Log regeneration
-   
+
   const logPromise = supabase.from("family_code_usage_log").insert({
     family_unit_id: familyId,
     user_id: user.id,

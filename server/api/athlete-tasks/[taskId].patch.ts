@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
     if (!validStatuses.includes(body.status)) {
       throw createError({
         statusCode: 400,
-         
+
         statusMessage: "Invalid status value",
       });
     }

@@ -98,7 +98,6 @@ export default defineEventHandler(async (event) => {
       prioritySchoolReminderRule,
     ]);
 
-     
     const result = await engine.generateSuggestions(
       supabase,
       athleteId,

@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-       
+
       created: totalCreated,
       breakdown: {
         offers: results[0].count,

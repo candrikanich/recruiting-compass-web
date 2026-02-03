@@ -190,11 +190,10 @@ export const useCommunicationTemplates = (): {
         body,
       };
 
-       
       const insertResponse =
         (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase.from("communication_templates") as any)
-           
+
           .insert([newTemplate])
           .select()
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -227,7 +226,6 @@ export const useCommunicationTemplates = (): {
     if (!userStore.user) return false;
 
     error.value = null;
-     
 
     try {
       const updateResponse =
@@ -371,7 +369,7 @@ export const useCommunicationTemplates = (): {
 
           const prefsResponse = await supabase
             .from("user_preferences")
-             
+
             .select("player_details")
             .eq("user_id", userStore.user.id)
             .single();
@@ -404,7 +402,7 @@ export const useCommunicationTemplates = (): {
           const docsResponse = await supabase
             .from("documents")
             .select("id")
-             
+
             .eq("user_id", userStore.user.id)
             .eq("type", condition.documentType)
             .eq("is_current", true)

@@ -278,7 +278,6 @@ const useInteractionsInternal = (): {
 
       const response = await query;
       const { data, error: fetchError } = response as {
-         
         data: Interaction[];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
@@ -317,7 +316,6 @@ const useInteractionsInternal = (): {
         .eq("id", id)
         .single();
 
-       
       const { data, error: fetchError } = response as {
         data: Interaction;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -381,7 +379,6 @@ const useInteractionsInternal = (): {
       if (files && files.length > 0) {
         for (const file of files) {
           validateAttachmentFile(file);
-           
         }
       }
 
@@ -395,7 +392,7 @@ const useInteractionsInternal = (): {
           },
         ])
         .select()
-         
+
         .single();
 
       const { data, error: insertError } = insertResponse as {
@@ -406,7 +403,6 @@ const useInteractionsInternal = (): {
 
       if (insertError) throw insertError;
 
-       
       // Upload attachments if provided
       if (files && files.length > 0) {
         const uploadedPaths = await uploadAttachments(files, data.id);
@@ -456,7 +452,6 @@ const useInteractionsInternal = (): {
       const sanitizedUpdates = { ...updates };
 
       if (sanitizedUpdates.subject) {
-         
         sanitizedUpdates.subject = sanitizeHtml(sanitizedUpdates.subject);
       }
       if (sanitizedUpdates.content) {
@@ -466,7 +461,7 @@ const useInteractionsInternal = (): {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateResponse = await (supabase.from("interactions") as any)
         .update(sanitizedUpdates)
-         
+
         .eq("id", id)
         .eq("logged_by", userStore.user.id)
         .select()
@@ -570,9 +565,9 @@ const useInteractionsInternal = (): {
       // Query audit logs for note updates on this school
       const auditResponse = await supabase
         .from("audit_logs")
-         
+
         .select("*")
-         
+
         .eq("user_id", userStore.user.id)
         .eq("resource_type", "school")
         .eq("resource_id", schoolId)
@@ -587,9 +582,7 @@ const useInteractionsInternal = (): {
       };
 
       if (fetchError) throw fetchError;
-       
 
-       
       // Filter logs that contain note changes
       const noteEntries: NoteHistoryEntry[] = [];
 
@@ -597,9 +590,8 @@ const useInteractionsInternal = (): {
         for (const log of data) {
           const auditLog = log as unknown as AuditLog;
 
-           
           // Check if this log entry includes a notes field change
-           
+
           if (
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (auditLog?.new_values as any)?.notes !== undefined ||
@@ -641,7 +633,6 @@ const useInteractionsInternal = (): {
 
   // Follow-up reminder CRUD methods (migrated from useFollowUpReminders)
   const loadReminders = async () => {
-     
     if (!userStore.user) return;
 
     remindersLoadingRef.value = true;
@@ -685,7 +676,6 @@ const useInteractionsInternal = (): {
   ): Promise<FollowUpReminder | null> => {
     if (!userStore.user) return null;
 
-     
     remindersErrorRef.value = null;
 
     try {
@@ -694,7 +684,7 @@ const useInteractionsInternal = (): {
         notes: description,
         reminder_date: dueDate,
         reminder_type: reminderType as "email" | "sms" | "phone_call" | null,
-         
+
         school_id: schoolId,
         coach_id: coachId,
         interaction_id: interactionId,
@@ -718,7 +708,6 @@ const useInteractionsInternal = (): {
 
       reminders.value = [data, ...reminders.value];
       return data;
-       
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to create reminder";
@@ -728,7 +717,6 @@ const useInteractionsInternal = (): {
       return null;
     }
   };
-   
 
   const completeReminder = async (id: string): Promise<boolean> => {
     if (!userStore.user) return false;
@@ -761,7 +749,7 @@ const useInteractionsInternal = (): {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to complete reminder";
-       
+
       remindersErrorRef.value = message;
       console.error("Complete reminder error:", err);
       toast.showToast("Failed to complete reminder. Please try again.");
@@ -788,14 +776,13 @@ const useInteractionsInternal = (): {
 
       reminders.value = reminders.value.filter((r) => r.id !== id);
       return true;
-       
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to delete reminder";
       remindersErrorRef.value = message;
       console.error("Delete reminder error:", err);
       toast.showToast("Failed to delete reminder. Please try again.");
-       
+
       return false;
     }
   };

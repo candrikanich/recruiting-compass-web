@@ -30,7 +30,6 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-     
     const supabase = createServerSupabaseClient();
 
     // Fetch all active athletes (users with role='student')

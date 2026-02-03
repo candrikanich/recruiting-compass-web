@@ -52,7 +52,6 @@ const checkRateLimit = (userId: string, maxEmails: number = 20): boolean => {
   }
 
   if (entry.count < maxEmails) {
-     
     entry.count++;
     return true;
   }

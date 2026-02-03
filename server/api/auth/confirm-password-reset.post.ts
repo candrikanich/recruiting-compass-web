@@ -46,7 +46,7 @@ export default defineEventHandler(
 
       // Parse request body
       const body = await readBody<ConfirmPasswordResetRequest>(event);
-       
+
       const { password } = body;
 
       // Validate password with Zod schema

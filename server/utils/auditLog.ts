@@ -73,7 +73,6 @@ export async function auditLog(
       status: params.status || "success",
       error_message: params.errorMessage || null,
       metadata: params.metadata || undefined,
-       
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,7 +81,6 @@ export async function auditLog(
       .insert(auditEntry);
 
     if (error) {
-       
       logger.error("Failed to create audit log", {
         error: error.message,
         params,

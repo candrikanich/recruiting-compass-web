@@ -113,7 +113,6 @@ export const useInteractionStore = defineStore("interactions", {
      */
     inboundInteractions: (state) =>
       state.interactions.filter((i) => i.direction === "inbound"),
-     
 
     /**
      * Get outbound interactions only
@@ -144,7 +143,6 @@ export const useInteractionStore = defineStore("interactions", {
           .slice(0, limit),
   },
 
-   
   actions: {
     /**
      * Fetch interactions with optional filters
@@ -175,11 +173,9 @@ export const useInteractionStore = defineStore("interactions", {
         }
 
         if (filters?.type) {
-           
           query = query.eq("type", filters.type);
         }
 
-         
         if (filters?.direction) {
           query = query.eq("direction", filters.direction);
         }
@@ -210,11 +206,10 @@ export const useInteractionStore = defineStore("interactions", {
         this.interactions = data || [];
         this.isFetched = true;
       } catch (err: unknown) {
-         
         const message =
           err instanceof Error ? err.message : "Failed to fetch interactions";
         this.error = message;
-         
+
         console.error(message);
       } finally {
         this.loading = false;
@@ -242,11 +237,9 @@ export const useInteractionStore = defineStore("interactions", {
         return data;
       } catch (err: unknown) {
         const message =
-           
           err instanceof Error ? err.message : "Failed to fetch interaction";
         this.error = message;
         return null;
-         
       } finally {
         this.loading = false;
       }

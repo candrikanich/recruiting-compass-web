@@ -115,7 +115,7 @@ export default defineEventHandler(async (event) => {
     // Compare old and new details to create history entry
     const changes = compareFields(
       currentPrefs?.data as PlayerDetails | undefined,
-       
+
       validatedDetails,
     );
 
@@ -125,7 +125,7 @@ export default defineEventHandler(async (event) => {
         ? {
             timestamp: new Date().toISOString(),
             changed_by: user.id,
-             
+
             changes,
           }
         : null;
@@ -155,7 +155,6 @@ export default defineEventHandler(async (event) => {
       .single();
 
     const { data: updatedPrefs, error: updateError } = updateResponse as {
-       
       data: { data: unknown } | null;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any;
@@ -165,7 +164,7 @@ export default defineEventHandler(async (event) => {
       await logError(event, {
         userId: user.id,
         action: "UPDATE",
-         
+
         resourceType: "user_preferences",
         resourceId: user.id,
         errorMessage: updateError.message,
@@ -180,12 +179,12 @@ export default defineEventHandler(async (event) => {
     }
 
     // Log successful update with changes
-     
+
     await logCRUD(event, {
       userId: user.id,
       action: "UPDATE",
       resourceType: "user_preferences",
-       
+
       resourceId: user.id,
       newValues: {
         player_details: validatedDetails,

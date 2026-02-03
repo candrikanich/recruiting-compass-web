@@ -40,7 +40,6 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-     
     const userRecord = userData as { current_phase?: Phase };
     const phase = userRecord?.current_phase || "freshman";
     const gradeMap: Record<Phase, number> = {

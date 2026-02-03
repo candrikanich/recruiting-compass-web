@@ -41,7 +41,6 @@ export default defineEventHandler(async (event) => {
           priority: body.priority || "medium",
           action_url: body.action_url || null,
           scheduled_for: new Date().toISOString(),
-           
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ])) as any;

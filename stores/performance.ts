@@ -59,11 +59,10 @@ export const usePerformanceStore = defineStore("performance", {
       return grouped;
     },
 
-     
     /**
      * Get latest value for each metric type
      */
-     
+
     latestMetrics: (state) => {
       const latest: Record<string, PerformanceMetric> = {};
       const sorted = [...state.metrics].sort(
@@ -78,7 +77,6 @@ export const usePerformanceStore = defineStore("performance", {
       });
       return latest;
     },
-     
 
     /**
      * Get metrics for a specific event

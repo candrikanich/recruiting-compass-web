@@ -83,7 +83,6 @@ export const useCollaboration = () => {
         .single();
 
       const { data, error: err } = insertResponse as {
-         
         data: SharedRecord;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
@@ -132,7 +131,6 @@ export const useCollaboration = () => {
     if (!userStore.user) return false;
 
     error.value = null;
-     
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -140,9 +138,8 @@ export const useCollaboration = () => {
         .from("shared_records")
         .update({ access_level: accessLevel })
         .eq("id", id)
-         
+
         .eq("owner_user_id", userStore.user.id);
-       
 
       const { error: err } = updateResponse as {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -209,7 +206,7 @@ export const useCollaboration = () => {
         user_id: userStore.user.id,
         entity_type: entityType,
         entity_id: entityId,
-         
+
         content,
         mentions,
         created_at: new Date().toISOString(),
@@ -218,7 +215,7 @@ export const useCollaboration = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const insertResponse = await (supabase as any)
         .from("record_comments")
-         
+
         .insert([newComment])
         .select()
         .single();
@@ -240,7 +237,6 @@ export const useCollaboration = () => {
       return null;
     }
   };
-   
 
   const deleteComment = async (id: string): Promise<boolean> => {
     if (!userStore.user) return false;

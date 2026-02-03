@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       hasFamily: !!family,
-       
+
       familyId: family?.id || null,
       familyCode: family?.family_code || null,
       familyName: family?.family_name || null,
