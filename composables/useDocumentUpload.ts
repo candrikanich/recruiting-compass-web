@@ -159,8 +159,7 @@ export const useDocumentUpload = () => {
 
       uploadProgress.value = 90;
 
-      const response = (await supabase
-        .from("documents")
+      const response = (await (supabase.from("documents") as any)
         .insert([
           {
             ...documentData,
@@ -220,8 +219,7 @@ export const useDocumentUpload = () => {
       if (!uploadData) throw new Error("Upload failed");
 
       const newVersion = (currentDoc.version || 1) + 1;
-      const versionResponse = (await supabase
-        .from("documents")
+      const versionResponse = (await (supabase.from("documents") as any)
         .insert([
           {
             ...currentDoc,

@@ -5,6 +5,7 @@
  */
 
 import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { requireAuth } from "~/server/utils/auth";
 
 export default defineEventHandler(async (event) => {
   try {

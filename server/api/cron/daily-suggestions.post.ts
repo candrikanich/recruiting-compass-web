@@ -33,10 +33,14 @@ export default defineEventHandler(async (event) => {
     const supabase = createServerSupabaseClient();
 
     // Fetch all active athletes (users with role='athlete')
-    const { data: athletes, error: fetchError } = await supabase
+    const response = await supabase
       .from("users")
       .select("id")
       .eq("role", "athlete");
+    const { data: athletes, error: fetchError } = response as {
+      data: Array<{ id: string }> | null;
+      error: any;
+    };
 
     if (fetchError || !athletes) {
       throw createError({

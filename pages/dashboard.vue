@@ -27,7 +27,8 @@
             <strong
               >{{
                 activeFamily.parentAccessibleFamilies.value.find(
-                  (f) => f.athleteId === activeFamily.activeAthleteId.value,
+                  (f: { athleteId: string }) =>
+                    f.athleteId === activeFamily.activeAthleteId.value,
                 )?.athleteName || "this athlete"
               }}'s</strong
             >
@@ -53,7 +54,8 @@
         :is-viewing-as-parent="activeFamily.isViewingAsParent.value || false"
         :athlete-name="
           activeFamily.parentAccessibleFamilies.value.find(
-            (f) => f.athleteId === activeFamily.activeAthleteId.value,
+            (f: { athleteId: string }) =>
+              f.athleteId === activeFamily.activeAthleteId.value,
           )?.athleteName
         "
         @dismiss="handleSuggestionDismiss"
@@ -201,6 +203,7 @@ import type {
   Notification,
   PerformanceMetric,
 } from "~/types/models";
+import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 definePageMeta({
   middleware: ["auth", "onboarding"],
@@ -218,7 +221,8 @@ const documentsComposable = useDocumentsConsolidated();
 const userTasksComposable = useUserTasks();
 const suggestionsComposable = useSuggestions();
 // Inject family context provided at app.vue level (with singleton fallback)
-const activeFamily = inject("activeFamily") || useFamilyContext();
+const activeFamily =
+  inject<UseActiveFamilyReturn>("activeFamily") || useFamilyContext();
 const viewLoggingComposable = useViewLogging();
 const recruitingPacketComposable = useRecruitingPacket();
 

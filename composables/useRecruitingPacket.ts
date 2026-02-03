@@ -79,7 +79,7 @@ export const useRecruitingPacket = () => {
       email: userStore.user.email,
       full_name: userStore.user.full_name || "Athlete",
       profile_photo_url: userStore.user.profile_photo_url,
-      height: profile ? (profile.height as string) : undefined,
+      height: profile ? (profile.height as string | undefined) : undefined,
       weight: profile ? (profile.weight as number) : undefined,
       position: profile ? (profile.position as string) : undefined,
       high_school: profile ? (profile.high_school as string) : undefined,
@@ -89,8 +89,15 @@ export const useRecruitingPacket = () => {
       gpa: profile ? (profile.gpa as number) : undefined,
       sat_score: profile ? (profile.sat_score as number) : undefined,
       act_score: profile ? (profile.act_score as number) : undefined,
-      video_links: (profile?.video_links as string[]) || [],
-      social_media: (profile?.social_media as Record<string, string>[]) || [],
+      video_links: ((profile?.video_links as unknown[]) || []).map((v) => ({
+        url: String(v),
+      })),
+      social_media: (
+        (profile?.social_media as Record<string, unknown>[]) || []
+      ).map((m) => ({
+        platform: String(Object.keys(m)[0]),
+        handle: String(Object.values(m)[0]),
+      })),
       core_courses: (profile?.core_courses as string[]) || [],
     };
 

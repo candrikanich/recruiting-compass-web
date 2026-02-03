@@ -189,8 +189,9 @@ export const useCommunicationTemplates = (): {
         body,
       };
 
-      const insertResponse = (await supabase
-        .from("communication_templates")
+      const insertResponse = (await (
+        supabase.from("communication_templates") as any
+      )
         .insert([newTemplate])
         .select()
         .single()) as { data: CommunicationTemplate; error: any };

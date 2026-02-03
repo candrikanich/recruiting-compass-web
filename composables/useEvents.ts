@@ -161,8 +161,9 @@ export const useEvents = (): {
     error.value = null;
 
     try {
-      const { data, error: insertError } = (await supabase
-        .from("events")
+      const { data, error: insertError } = (await (
+        supabase.from("events") as any
+      )
         .insert([
           {
             ...eventData,

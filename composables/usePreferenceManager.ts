@@ -176,7 +176,7 @@ export function usePreferenceManager() {
   const setHomeLocation = async (location: HomeLocation) => {
     const oldValue = validateHomeLocation(locationPrefs.preferences.value);
 
-    locationPrefs.updatePreferences(location);
+    locationPrefs.updatePreferences(location as Record<string, unknown>);
     await locationPrefs.savePreferences();
 
     if (oldValue && location) {
@@ -197,7 +197,7 @@ export function usePreferenceManager() {
   const setPlayerDetails = async (details: PlayerDetails) => {
     const oldValue = validatePlayerDetails(playerPrefs.preferences.value);
 
-    playerPrefs.updatePreferences(details);
+    playerPrefs.updatePreferences(details as Record<string, unknown>);
     await playerPrefs.savePreferences();
 
     // Track in history (player details are tracked separately for audit)
@@ -248,7 +248,7 @@ export function usePreferenceManager() {
   const setDashboardLayout = async (layout: DashboardWidgetVisibility) => {
     const oldValue = validateDashboardLayout(dashboardPrefs.preferences.value);
 
-    dashboardPrefs.updatePreferences(layout);
+    dashboardPrefs.updatePreferences(layout as Record<string, unknown>);
     await dashboardPrefs.savePreferences();
 
     if (oldValue) {
