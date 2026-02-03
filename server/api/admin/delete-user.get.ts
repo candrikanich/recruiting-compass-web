@@ -76,12 +76,12 @@ export default defineEventHandler(
           statusMessage:
             "Cannot delete your own account via this endpoint. Use account settings instead.",
         });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response = await (supabaseAdmin.auth.admin as any).listUsers();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const {
         data: { users },
         error: listError,

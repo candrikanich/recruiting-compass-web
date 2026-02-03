@@ -115,7 +115,7 @@ export default defineEventHandler(async (event) => {
     // Compare old and new details to create history entry
     const changes = compareFields(
       currentPrefs?.data as PlayerDetails | undefined,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       validatedDetails,
     );
 
@@ -125,7 +125,7 @@ export default defineEventHandler(async (event) => {
         ? {
             timestamp: new Date().toISOString(),
             changed_by: user.id,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             changes,
           }
         : null;
@@ -155,7 +155,7 @@ export default defineEventHandler(async (event) => {
       .single();
 
     const { data: updatedPrefs, error: updateError } = updateResponse as {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       data: { data: unknown } | null;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any;
@@ -165,7 +165,7 @@ export default defineEventHandler(async (event) => {
       await logError(event, {
         userId: user.id,
         action: "UPDATE",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         resourceType: "user_preferences",
         resourceId: user.id,
         errorMessage: updateError.message,
@@ -180,12 +180,12 @@ export default defineEventHandler(async (event) => {
     }
 
     // Log successful update with changes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await logCRUD(event, {
       userId: user.id,
       action: "UPDATE",
       resourceType: "user_preferences",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       resourceId: user.id,
       newValues: {
         player_details: validatedDetails,

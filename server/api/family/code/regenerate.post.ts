@@ -57,7 +57,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Log regeneration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const logPromise = supabase.from("family_code_usage_log").insert({
     family_unit_id: familyId,
     user_id: user.id,
@@ -67,8 +67,8 @@ export default defineEventHandler(async (event) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (logPromise as any).catch(
-    (err: any) => console.warn("Failed to log regeneration:", err),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (err: any) => console.warn("Failed to log regeneration:", err),
   );
 
   return {

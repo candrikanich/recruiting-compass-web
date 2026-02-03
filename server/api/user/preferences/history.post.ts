@@ -76,7 +76,7 @@ export default defineEventHandler(async (event) => {
     }
 
     throw createError({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       statusCode: 500,
       statusMessage: "Failed to record preference history",
     });

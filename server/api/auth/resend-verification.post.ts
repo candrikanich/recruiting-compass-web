@@ -50,7 +50,7 @@ export default defineEventHandler(
         console.error("Missing Supabase configuration");
         throw createError({
           statusCode: 500,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           statusMessage: "Server configuration error",
         });
       }

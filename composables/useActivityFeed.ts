@@ -172,7 +172,7 @@ export const useActivityFeed = () => {
           .in("id", schoolIds);
 
         const { data: schools } = schoolsResponse as {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           data: Array<{ id: string; name: string }> | null;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           error: any;
@@ -189,7 +189,7 @@ export const useActivityFeed = () => {
               interaction.occurred_at ||
               interaction.created_at ||
               new Date().toISOString(),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             title: getInteractionTitle(
               interaction as Interaction,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -219,7 +219,7 @@ export const useActivityFeed = () => {
           id: string;
           school_id: string;
           new_status: string;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           notes: string | null;
           changed_at: string;
         }> | null;
@@ -235,7 +235,7 @@ export const useActivityFeed = () => {
         const statusSchoolsResponse = await supabase
           .from("schools")
           .select("id, name")
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           .in("id", statusSchoolIds);
 
         const { data: statusSchools } = statusSchoolsResponse as {
@@ -277,7 +277,7 @@ export const useActivityFeed = () => {
 
       const { data: documents } = documentsResponse as {
         data: Array<{
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           id: string;
           title: string;
           type: string;
@@ -357,7 +357,7 @@ export const useActivityFeed = () => {
           const interaction = payload.new as unknown as InteractionPayload;
           const schoolResponse = await supabase
             .from("schools")
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             .select("id, name")
             .eq("id", interaction.school_id)
             .single();
@@ -368,9 +368,9 @@ export const useActivityFeed = () => {
             error: any;
           };
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           const newEvent: ActivityEvent = {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             id: `interaction-${interaction.id}`,
             type: "interaction",
             timestamp:
@@ -412,7 +412,7 @@ export const useActivityFeed = () => {
           filter: `changed_by=eq.${session.value!.user!.id}`,
         },
         async (payload) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           const change = payload.new as unknown as SchoolStatusPayload;
           const schoolResponse = await supabase
             .from("schools")

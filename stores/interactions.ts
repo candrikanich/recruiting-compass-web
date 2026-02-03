@@ -113,7 +113,7 @@ export const useInteractionStore = defineStore("interactions", {
      */
     inboundInteractions: (state) =>
       state.interactions.filter((i) => i.direction === "inbound"),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
 
     /**
      * Get outbound interactions only
@@ -144,7 +144,7 @@ export const useInteractionStore = defineStore("interactions", {
           .slice(0, limit),
   },
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   actions: {
     /**
      * Fetch interactions with optional filters
@@ -175,11 +175,11 @@ export const useInteractionStore = defineStore("interactions", {
         }
 
         if (filters?.type) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           query = query.eq("type", filters.type);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         if (filters?.direction) {
           query = query.eq("direction", filters.direction);
         }
@@ -210,11 +210,11 @@ export const useInteractionStore = defineStore("interactions", {
         this.interactions = data || [];
         this.isFetched = true;
       } catch (err: unknown) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const message =
           err instanceof Error ? err.message : "Failed to fetch interactions";
         this.error = message;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         console.error(message);
       } finally {
         this.loading = false;
@@ -242,11 +242,11 @@ export const useInteractionStore = defineStore("interactions", {
         return data;
       } catch (err: unknown) {
         const message =
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           err instanceof Error ? err.message : "Failed to fetch interaction";
         this.error = message;
         return null;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
       } finally {
         this.loading = false;
       }

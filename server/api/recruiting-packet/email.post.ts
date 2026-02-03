@@ -52,7 +52,7 @@ const checkRateLimit = (userId: string, maxEmails: number = 20): boolean => {
   }
 
   if (entry.count < maxEmails) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     entry.count++;
     return true;
   }

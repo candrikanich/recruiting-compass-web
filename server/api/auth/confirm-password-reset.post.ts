@@ -46,7 +46,7 @@ export default defineEventHandler(
 
       // Parse request body
       const body = await readBody<ConfirmPasswordResetRequest>(event);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { password } = body;
 
       // Validate password with Zod schema

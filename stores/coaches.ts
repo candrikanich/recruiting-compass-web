@@ -77,7 +77,7 @@ export const useCoachStore = defineStore("coaches", {
      */
     coachesByResponsiveness: (state) =>
       [...state.coaches].sort((a, b) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const scoreA = a.responsiveness_score || 0;
         const scoreB = b.responsiveness_score || 0;
         return scoreB - scoreA;
@@ -102,7 +102,7 @@ export const useCoachStore = defineStore("coaches", {
      * Get coaches by role
      */
     coachesByRole: (state) => (role: Coach["role"]) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       state.coaches.filter((c) => c.role === role),
 
     /**

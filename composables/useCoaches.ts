@@ -259,7 +259,7 @@ export const useCoaches = (): {
         .single();
 
       const { data, error: insertError } = insertResponse as {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         data: CoachesRow;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
@@ -333,7 +333,7 @@ export const useCoaches = (): {
       }
       if (sanitizedUpdates.instagram_handle !== undefined) {
         updateData.instagram_handle = sanitizedUpdates.instagram_handle;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -344,7 +344,7 @@ export const useCoaches = (): {
         .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .select()
         .single();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
 
       const { data, error: updateError } = updateResponse as {
         data: CoachesRow;

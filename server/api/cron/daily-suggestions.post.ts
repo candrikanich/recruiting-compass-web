@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const supabase = createServerSupabaseClient();
 
     // Fetch all active athletes (users with role='student')

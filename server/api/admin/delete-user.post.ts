@@ -58,11 +58,11 @@ export default defineEventHandler(
       // 2. Parse and validate request body
       const body = await readBody<DeleteUserRequest>(event);
       const { email } = body;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
 
       if (!email || typeof email !== "string") {
         throw createError({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           statusCode: 400,
           statusMessage: "Email address is required",
         });

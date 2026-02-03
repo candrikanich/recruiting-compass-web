@@ -56,7 +56,7 @@ export default defineEventHandler(
           statusCode: 400,
           statusMessage:
             "Player details not found. Add athlete profile data first.",
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
         });
       }
 

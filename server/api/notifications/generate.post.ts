@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       created: totalCreated,
       breakdown: {
         offers: results[0].count,

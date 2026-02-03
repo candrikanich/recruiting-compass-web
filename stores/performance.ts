@@ -59,11 +59,11 @@ export const usePerformanceStore = defineStore("performance", {
       return grouped;
     },
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     /**
      * Get latest value for each metric type
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     latestMetrics: (state) => {
       const latest: Record<string, PerformanceMetric> = {};
       const sorted = [...state.metrics].sort(
@@ -78,7 +78,7 @@ export const usePerformanceStore = defineStore("performance", {
       });
       return latest;
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
 
     /**
      * Get metrics for a specific event

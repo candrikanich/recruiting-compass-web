@@ -30,7 +30,7 @@ export interface QueryContext {
   /** Name of the composable or context making the query */
   context?: string;
   /** Additional metadata for debugging */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   metadata?: Record<string, unknown>;
   /** Whether to log the query */
   silent?: boolean;
@@ -42,7 +42,7 @@ export interface QueryContext {
 export type SupabaseQueryBuilder = ReturnType<
   ReturnType<typeof useSupabase>["from"]
 >;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 
 /**
  * Generic select query with flexible filtering

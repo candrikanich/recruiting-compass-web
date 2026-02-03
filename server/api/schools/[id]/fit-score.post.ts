@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
 
   if (
     body.opportunityFit !== undefined &&
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (typeof body.opportunityFit !== "number" ||
       body.opportunityFit < 0 ||
       body.opportunityFit > 20)
@@ -79,7 +79,7 @@ export default defineEventHandler(async (event) => {
       statusMessage: "opportunityFit must be a number between 0 and 20",
     });
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
 
   if (
     body.personalFit !== undefined &&
@@ -89,7 +89,7 @@ export default defineEventHandler(async (event) => {
   ) {
     throw createError({
       statusCode: 400,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       statusMessage: "personalFit must be a number between 0 and 15",
     });
   }
@@ -98,7 +98,7 @@ export default defineEventHandler(async (event) => {
     // Verify school ownership
     const { data: school, error: schoolError } = await supabase
       .from("schools")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       .select("id, user_id")
       .eq("id", schoolId)
       .eq("user_id", user.id)

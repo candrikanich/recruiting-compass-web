@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const userRecord = userData as { current_phase?: Phase };
     const phase = userRecord?.current_phase || "freshman";
     const gradeMap: Record<Phase, number> = {
