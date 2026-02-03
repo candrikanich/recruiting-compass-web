@@ -678,7 +678,7 @@ const handleUpload = async () => {
         description: newDoc.description || undefined,
         school_id: newDoc.schoolId || undefined,
         version: newDoc.version || 1,
-      },
+      } as unknown as string,
     );
 
     if (result.success) {
