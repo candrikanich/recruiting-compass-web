@@ -532,20 +532,20 @@ const handleSave = async () => {
     loading.value = true;
 
     if (editingId.value) {
-      const { error } = await supabase
-        .from("recommendation_letters")
-        .update(formData.value as any)
+      const updateResponse = await (
+        supabase.from("recommendation_letters") as any
+      )
+        .update(formData.value)
         .eq("id", editingId.value);
+      const { error } = updateResponse as { data: any; error: any };
 
       if (error) throw error;
     } else {
-      const response = (await supabase
-        .from("recommendation_letters")
-        .insert([
-          { ...formData.value, user_id: userStore.user?.id },
-        ])) as unknown as { data: any; error: any };
+      const insertResponse = await (
+        supabase.from("recommendation_letters") as any
+      ).insert([{ ...formData.value, user_id: userStore.user?.id }]);
+      const { error } = insertResponse as { data: any; error: any };
 
-      const { error } = response;
       if (error) throw error;
     }
 

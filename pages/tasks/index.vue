@@ -9,8 +9,21 @@ import AthleteSwitcher from "~/components/Parent/AthleteSwitcher.vue";
 import type { TaskWithStatus } from "~/types/timeline";
 
 const { session } = useAuth();
-const { linkedAthletes, isViewingAsParent, currentAthleteId } =
-  useParentContext();
+const {
+  linkedAthletes: linkedAccountsList,
+  isViewingAsParent,
+  currentAthleteId,
+} = useParentContext();
+
+// Map LinkedAccount to LinkedAthlete format for AthleteSwitcher
+const linkedAthletes = computed(() =>
+  linkedAccountsList.value.map(
+    (account: (typeof linkedAccountsList.value)[0]) => ({
+      id: account.user_id,
+      name: account.full_name || account.email,
+    }),
+  ),
+);
 const {
   tasksWithStatus,
   loading,

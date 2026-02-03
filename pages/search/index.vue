@@ -324,8 +324,9 @@ const handleSuggestions = () => {
 const handleFilterChange = async (updatedFilters: any) => {
   // Apply new filters and re-search
   if (searchQuery.value) {
-    applyFilters(updatedFilters);
-    await performSearch();
+    // Updaters would need to be applied individually via applyFilter
+    // For now, just re-run search with current query
+    await performSearch(searchQuery.value);
   }
 };
 

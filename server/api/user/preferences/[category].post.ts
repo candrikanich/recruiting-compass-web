@@ -14,7 +14,7 @@ import type { Database } from "~/types/database";
 
 // Validation schema for preference data
 const preferencesSchema = z.object({
-  data: z.record(z.unknown()),
+  data: z.record(z.string(), z.unknown()),
 });
 
 export default defineEventHandler(async (event) => {
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Validate request body
-    const body = await readBody(event);
+    const body = await readBody<{ data: Record<string, unknown> }>(event);
     const { data } = preferencesSchema.parse(body);
 
     const supabase = useSupabaseAdmin();

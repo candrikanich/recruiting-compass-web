@@ -333,8 +333,7 @@ const saveSettings = async () => {
 
   saving.value = true;
   try {
-    const response = await supabase
-      .from("user_preferences")
+    const response = await (supabase.from("user_preferences") as any)
       .update({
         social_sync_settings: {
           autoSyncEnabled: autoSyncEnabled.value,
@@ -342,7 +341,7 @@ const saveSettings = async () => {
           notifyOnMentions: notifyOnMentions.value,
           lastSyncTime: lastSyncTime.value,
         },
-      } as any)
+      })
       .eq("user_id", userStore.user.id);
     const { error } = response as { error: any };
 

@@ -29,11 +29,15 @@ export default defineEventHandler(
 
     try {
       // Fetch user's player details from user_preferences
-      const { data: preferences, error: prefError } = await supabase
-        .from("user_preferences")
+      const prefResponse = await (supabase.from("user_preferences") as any)
         .select("player_details")
         .eq("user_id", user.id)
         .single();
+
+      const { data: preferences, error: prefError } = prefResponse as {
+        data: { player_details: PlayerDetails } | null;
+        error: any;
+      };
 
       if (prefError) {
         throw createError({
@@ -43,7 +47,7 @@ export default defineEventHandler(
         });
       }
 
-      const playerDetails = preferences?.player_details as PlayerDetails | null;
+      const playerDetails = preferences?.player_details || null;
 
       if (!playerDetails) {
         throw createError({

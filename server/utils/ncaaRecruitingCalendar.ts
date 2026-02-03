@@ -18,7 +18,7 @@ export interface Milestone {
   date: string; // ISO date string
   title: string;
   type: "test" | "deadline" | "ncaa-period" | "application" | "signing";
-  division?: Division | "ALL";
+  division?: Division | "D1" | "D2" | "D3";
   url?: string;
   description?: string;
 }

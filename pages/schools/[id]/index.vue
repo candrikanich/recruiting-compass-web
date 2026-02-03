@@ -705,12 +705,10 @@
             v-if="showEmailModal"
             :is-open="showEmailModal"
             :recipient-email="
-              schoolCoaches.length > 0 ? (schoolCoaches[0].email ?? x27x27) : x27x27
+              schoolCoaches.length > 0 ? (schoolCoaches[0].email ?? '') : ''
             "
-            :subject="`Contact from ${school?.name || x27Recruiting Compassx27}`"
-            :body="`Hello,\n\nI am reaching out regarding recruitment opportunities at ${school?.name || x27your schoolx27}.\n\nBest regards`"
-            @close="showEmailModal = false"
-          />
+            :subject="`Contact from ${school?.name || 'Recruiting Compass'}`"
+            :body="`Hello,\n\nI am reaching out regarding recruitment opportunities at ${school?.name || 'your school'}.\n\nBest regards`"
             @close="showEmailModal = false"
           />
         </div>
@@ -1180,8 +1178,11 @@ const loadFitScore = async () => {
     } else {
       // Calculate fit score with minimal data (school only)
       // Full fit score calculation requires athlete data
+      const studentSize = school.value.academic_info?.student_size;
+      const numericSize =
+        typeof studentSize === "number" ? studentSize : undefined;
       fitScore.value = await calculateSchoolFitScore(id, undefined, {
-        campusSize: school.value.academic_info?.student_size ?? undefined,
+        campusSize: numericSize,
         avgGpa: school.value.academic_info?.gpa_requirement ?? undefined,
         offeredMajors: [],
       });

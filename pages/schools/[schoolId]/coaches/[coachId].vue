@@ -272,10 +272,14 @@ const loading = ref(false);
 const editingContact = ref(false);
 const editingNotes = ref(false);
 const editedNotes = ref("");
-const editedCoach = ref({
+const editedCoach = ref<{
+  email: string;
+  phone: string;
+  role: "head" | "assistant" | "recruiting";
+}>({
   email: "",
   phone: "",
-  role: "assistant" as const,
+  role: "assistant",
 });
 
 const schoolName = ref("");
@@ -310,8 +314,7 @@ const saveCoach = async () => {
   if (!coach.value) return;
   loading.value = true;
   try {
-    const response = await supabase
-      .from("coaches")
+    const response = await (supabase.from("coaches") as any)
       .update({
         email: editedCoach.value.email,
         phone: editedCoach.value.phone,
@@ -339,11 +342,10 @@ const saveNotes = async () => {
   if (!coach.value) return;
   loading.value = true;
   try {
-    const response = await supabase
-      .from("coaches")
+    const response = await (supabase.from("coaches") as any)
       .update({
         notes: editedNotes.value,
-      } as Record<string, any>)
+      })
       .eq("id", coachId)
       .select()
       .single();

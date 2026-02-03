@@ -159,8 +159,8 @@ export class RuleEngine {
                   condition_snapshot:
                     rule.createConditionSnapshot?.(
                       context,
-                      dismissedSuggestion.related_school_id,
-                    ) || null,
+                      dismissedSuggestion.related_school_id ?? undefined,
+                    ) ?? undefined,
                 });
               }
             }

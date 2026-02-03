@@ -645,7 +645,7 @@ const handleSignup = async () => {
     }
 
     // Create user profile in public.users table using the returned user ID
-    const { error: insertError } = await supabase.from("users").insert([
+    const insertResponse = await (supabase.from("users") as any).insert([
       {
         id: userId,
         email: validated.email,
@@ -653,6 +653,7 @@ const handleSignup = async () => {
         role: validated.role,
       },
     ]);
+    const { error: insertError } = insertResponse as { error: any };
 
     if (insertError) {
       console.error("Error inserting user profile:", insertError);
