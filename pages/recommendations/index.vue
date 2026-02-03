@@ -303,10 +303,10 @@
                 <span
                   :class="[
                     'inline-block px-3 py-1 text-xs font-semibold rounded-full',
-                    getStatusColor(letter.status),
+                    getStatusColor(letter.status ?? ''),
                   ]"
                 >
-                  {{ getStatusLabel(letter.status) }}
+                  {{ getStatusLabel(letter.status ?? "") }}
                 </span>
                 <span
                   v-if="isDeadlineUrgent(letter)"
@@ -539,10 +539,11 @@ const handleSave = async () => {
 
       if (error) throw error;
     } else {
-      const { error } = await supabase
+      const response = await supabase
         .from("recommendation_letters")
         .insert([{ ...formData.value, user_id: userStore.user?.id } as any]);
 
+      const { error } = response as { data: any; error: any };
       if (error) throw error;
     }
 
@@ -573,12 +574,16 @@ const deleteLetter = async (id: string) => {
 const loadLetters = async () => {
   try {
     loading.value = true;
-    const { data, error } = await supabase
+    const response = await supabase
       .from("recommendation_letters")
       .select("*")
-      .eq("user_id", userStore.user?.id)
+      .eq("user_id", userStore.user?.id ?? "")
       .order("requested_date", { ascending: false });
 
+    const { data, error } = response as {
+      data: RecommendationLetter[];
+      error: any;
+    };
     if (error) throw error;
     letters.value = data || [];
   } catch (err) {

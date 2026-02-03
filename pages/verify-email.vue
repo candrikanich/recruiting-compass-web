@@ -556,8 +556,7 @@
               v-if="!isVerified"
               @click="handleResendEmail"
               :disabled="
-                (emailVerification.loading as unknown as Booleanish) ||
-                resendCooldown > 0
+                Boolean(emailVerification.loading) || resendCooldown > 0
               "
               class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
             >

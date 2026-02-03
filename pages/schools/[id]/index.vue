@@ -70,7 +70,7 @@
                   </select>
                   <div class="py-1">
                     <SchoolPrioritySelector
-                      :model-value="school.priority_tier"
+                      :model-value="school.priority_tier ?? null"
                       @update:model-value="updatePriorityTier"
                       :data-testid="`priority-selector-${id}`"
                     />
@@ -706,7 +706,7 @@
             v-if="showEmailModal"
             :is-open="showEmailModal"
             :recipient-email="
-              schoolCoaches.length > 0 ? schoolCoaches[0].email : ''
+              schoolCoaches.length > 0 ? (schoolCoaches[0].email ?? '') : ''
             "
             :recipient-name="school?.name || ''"
             @close="showEmailModal = false"
@@ -1179,8 +1179,8 @@ const loadFitScore = async () => {
       // Calculate fit score with minimal data (school only)
       // Full fit score calculation requires athlete data
       fitScore.value = await calculateSchoolFitScore(id, undefined, {
-        campusSize: school.value.academic_info?.student_size,
-        avgGpa: school.value.academic_info?.gpa_requirement,
+        campusSize: school.value.academic_info?.student_size ?? undefined,
+        avgGpa: school.value.academic_info?.gpa_requirement ?? undefined,
         offeredMajors: [],
       });
     }
