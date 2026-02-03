@@ -1,7 +1,7 @@
 ### Story 1.3: Parent Invites Secondary User
 
-**As a** parent  
-**I want to** invite my spouse to view my family's account  
+**As a** parent
+**I want to** invite my spouse to view my family's account
 **So that** we can both stay informed about my athlete's recruiting
 
 ```gherkin

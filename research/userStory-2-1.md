@@ -1,7 +1,7 @@
 ### Story 2.1: Parent Creates Athlete Profile
 
-**As a** parent  
-**I want to** set up my athlete's profile with basic information  
+**As a** parent
+**I want to** set up my athlete's profile with basic information
 **So that** the app can generate personalized timeline and suggestions
 
 ```gherkin

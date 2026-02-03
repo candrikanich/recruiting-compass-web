@@ -1,7 +1,7 @@
 ### Story 7.1: Parent Receives Actionable Suggestions
 
-**As a** parent  
-**I want to** receive suggestions about what to do next  
+**As a** parent
+**I want to** receive suggestions about what to do next
 **So that** I don't have to figure out the recruiting process on my own
 
 ```gherkin

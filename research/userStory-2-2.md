@@ -1,7 +1,7 @@
 ### Story 2.2: Parent and Athlete Update Profile
 
-**As a** parent or athlete  
-**I want to** update profile information as stats and academics change  
+**As a** parent or athlete
+**I want to** update profile information as stats and academics change
 **So that** the app always has current information
 
 ```gherkin

@@ -1,7 +1,7 @@
 ### Story 6.2: Parent Sees Current Status Indicator
 
-**As a** parent  
-**I want to** see if my athlete is "on track" for their stage  
+**As a** parent
+**I want to** see if my athlete is "on track" for their stage
 **So that** I can course-correct if needed
 
 ```gherkin

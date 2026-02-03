@@ -1,7 +1,7 @@
 ### Story 1.1: Parent Creates Account
 
-**As a** parent  
-**I want to** create an account with my email and password  
+**As a** parent
+**I want to** create an account with my email and password
 **So that** I can start organizing my athlete's recruiting
 
 ```gherkin

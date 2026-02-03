@@ -1,7 +1,7 @@
 ### Story 8.3: Parent Views Recent Activity Feed
 
-**As a** parent  
-**I want to** see recent interactions and changes  
+**As a** parent
+**I want to** see recent interactions and changes
 **So that** I stay updated on what's happening
 
 ```gherkin

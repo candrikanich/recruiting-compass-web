@@ -1,7 +1,7 @@
 ### Story 9.2: Parent Sees Athlete's Task Progress
 
-**As a** parent  
-**I want to** see what tasks my athlete should focus on  
+**As a** parent
+**I want to** see what tasks my athlete should focus on
 **So that** I can support and encourage them
 
 ```gherkin

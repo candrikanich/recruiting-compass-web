@@ -1,7 +1,7 @@
 ### Story 6.1: Parent Views Recruiting Stage Guidance
 
-**As a** parent  
-**I want to** see what stage my athlete is in  
+**As a** parent
+**I want to** see what stage my athlete is in
 **So that** I know what to focus on right now and what not to worry about yet
 
 ```gherkin

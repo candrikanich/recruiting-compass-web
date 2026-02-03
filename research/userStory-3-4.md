@@ -1,7 +1,7 @@
 ### Story 3.4: Parent Sets School Priority and Status
 
-**As a** parent  
-**I want to** mark schools as priority tiers and track their status  
+**As a** parent
+**I want to** mark schools as priority tiers and track their status
 **So that** I can focus on the most important schools
 
 ```gherkin

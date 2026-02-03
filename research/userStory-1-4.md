@@ -1,7 +1,7 @@
 ### Story 1.4: Parent Resets Forgotten Password
 
-**As a** parent  
-**I want to** reset my password if I forget it  
+**As a** parent
+**I want to** reset my password if I forget it
 **So that** I can regain access to my account
 
 ```gherkin

@@ -1,7 +1,7 @@
 ### Story 10.2: Parent Downloads or Emails Recruiting Packet
 
-**As a** parent  
-**I want to** download or email the recruiting packet  
+**As a** parent
+**I want to** download or email the recruiting packet
 **So that** I can archive it or share with coaches
 
 ```gherkin

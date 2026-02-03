@@ -1,7 +1,7 @@
 ### Story 9.3: Tasks Unlock Based on Completion
 
-**As a** system  
-**I want to** unlock dependent tasks only when prerequisites are complete  
+**As a** system
+**I want to** unlock dependent tasks only when prerequisites are complete
 **So that** the athlete focuses on the right order
 
 ```gherkin

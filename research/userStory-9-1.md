@@ -1,7 +1,7 @@
 ### Story 9.1: Athlete Views Their Task List
 
-**As an** athlete  
-**I want to** see what I should be doing right now  
+**As an** athlete
+**I want to** see what I should be doing right now
 **So that** I can plan my efforts and feel progress
 
 ```gherkin

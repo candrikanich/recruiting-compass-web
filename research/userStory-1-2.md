@@ -1,7 +1,7 @@
 ### Story 1.2: Parent Logs In Securely
 
-**As a** parent  
-**I want to** log in with my email and password  
+**As a** parent
+**I want to** log in with my email and password
 **So that** I can access my family's recruiting information securely
 
 ```gherkin

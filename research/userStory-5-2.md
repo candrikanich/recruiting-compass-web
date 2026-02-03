@@ -1,7 +1,7 @@
 ### Story 5.2: Parent Views Interaction Timeline
 
-**As a** parent  
-**I want to** see a timeline of all interactions with a school or coach  
+**As a** parent
+**I want to** see a timeline of all interactions with a school or coach
 **So that** I can see how often we're in contact and what was discussed
 
 ```gherkin

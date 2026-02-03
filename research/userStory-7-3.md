@@ -1,7 +1,7 @@
 ### Story 7.3: Suggestions Update Based on New Data
 
-**As a** parent  
-**I want to** have suggestions automatically update  
+**As a** parent
+**I want to** have suggestions automatically update
 **So that** I always get relevant guidance
 
 ```gherkin

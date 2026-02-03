@@ -1,7 +1,7 @@
 ### Story 3.5: Parent Views and Adds School Notes
 
-**As a** parent  
-**I want to** add and view notes about each school  
+**As a** parent
+**I want to** add and view notes about each school
 **So that** I remember key details about why we're interested
 
 ```gherkin

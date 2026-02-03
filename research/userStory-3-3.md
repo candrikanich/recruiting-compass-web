@@ -1,7 +1,7 @@
 ### Story 3.3: Parent Filters and Sorts Schools
 
-**As a** parent  
-**I want to** filter schools by priority and status  
+**As a** parent
+**I want to** filter schools by priority and status
 **So that** I can focus on the most important ones
 
 ```gherkin

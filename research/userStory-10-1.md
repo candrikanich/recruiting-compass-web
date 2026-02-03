@@ -1,7 +1,7 @@
 ### Story 10.1: Athlete Generates Recruiting Packet
 
-**As an** athlete  
-**I want to** generate a recruiting packet  
+**As an** athlete
+**I want to** generate a recruiting packet
 **So that** I can send my info to coaches
 
 ```gherkin

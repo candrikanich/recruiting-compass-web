@@ -1,7 +1,7 @@
 ### Story 4.2: Parent Receives Follow-Up Reminders
 
-**As a** parent  
-**I want to** be reminded when it's been too long since contacting a coach  
+**As a** parent
+**I want to** be reminded when it's been too long since contacting a coach
 **So that** I don't let momentum die and we stay on their radar
 
 ```gherkin

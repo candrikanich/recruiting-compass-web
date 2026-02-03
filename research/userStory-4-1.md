@@ -1,7 +1,7 @@
 ### Story 4.1: Parent Views Coaching Staff Information
 
-**As a** parent  
-**I want to** see all the coaches at each school  
+**As a** parent
+**I want to** see all the coaches at each school
 **So that** I know who to contact and their communication preferences
 
 ```gherkin

@@ -1,7 +1,7 @@
 ### Story 8.1: Parent Views Dashboard Overview
 
-**As a** parent  
-**I want to** see the current state at a glance  
+**As a** parent
+**I want to** see the current state at a glance
 **So that** I don't have to dig around to see what matters now
 
 ```gherkin

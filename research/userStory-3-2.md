@@ -1,7 +1,7 @@
 ### Story 3.2: Parent Views School List with Fit Scores
 
-**As a** parent  
-**I want to** see a fit score for each school  
+**As a** parent
+**I want to** see a fit score for each school
 **So that** I know where my athlete has the best realistic chance
 
 ```gherkin

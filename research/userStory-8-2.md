@@ -1,7 +1,7 @@
 ### Story 8.2: Parent Sees Contact Frequency Summary
 
-**As a** parent  
-**I want to** see contact frequency with schools  
+**As a** parent
+**I want to** see contact frequency with schools
 **So that** I know which schools need more attention
 
 ```gherkin

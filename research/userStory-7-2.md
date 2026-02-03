@@ -1,7 +1,7 @@
 ### Story 7.2: Parent Can Dismiss and Complete Suggestions
 
-**As a** parent  
-**I want to** dismiss suggestions I don't need and mark them complete  
+**As a** parent
+**I want to** dismiss suggestions I don't need and mark them complete
 **So that** my suggestion list stays relevant
 
 ```gherkin

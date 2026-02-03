@@ -1,7 +1,7 @@
 ### Story 5.1: Parent Logs Interactions with Coaches
 
-**As a** parent  
-**I want to** log every interaction with coaches  
+**As a** parent
+**I want to** log every interaction with coaches
 **So that** I have a complete record of what's been discussed
 
 ```gherkin

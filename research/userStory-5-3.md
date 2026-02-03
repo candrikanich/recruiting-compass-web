@@ -1,7 +1,7 @@
 ### Story 5.3: Athlete Logs Own Interactions
 
-**As an** athlete  
-**I want to** log my own calls and emails with coaches  
+**As an** athlete
+**I want to** log my own calls and emails with coaches
 **So that** my parent knows what I'm doing and communication stays organized
 
 ```gherkin
