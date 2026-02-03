@@ -161,6 +161,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from "vue";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
+import { useDocumentSharing } from "~/composables/useDocumentSharing";
 import { useFormValidation } from "~/composables/useFormValidation";
 
 interface Props {
@@ -178,8 +179,8 @@ const {
   uploadProgress,
   uploadError: docUploadError,
   isUploading,
-  shareDocument,
 } = useDocumentsConsolidated();
+const { shareDocument } = useDocumentSharing();
 const { validateFile } = useFormValidation();
 
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -244,8 +245,12 @@ const handleUpload = async () => {
     );
 
     if (result.success && result.data) {
-      // Share document with school
-      await shareDocument(result.data.id, props.schoolId, "view");
+      // Share document with school (append to shared_with_schools on document)
+      const updatedSharedSchools = [
+        ...(result.data.shared_with_schools || []),
+        props.schoolId,
+      ];
+      await shareDocument(result.data.id, updatedSharedSchools);
 
       // Reset form
       form.type = "";
