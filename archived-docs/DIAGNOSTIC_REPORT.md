@@ -1,7 +1,7 @@
 # Test Failure Diagnostic Report
 
 **Generated:** 2026-01-26
-**Project:** Baseball Recruiting Tracker
+**Project:** The Recruiting Compass
 **Test Suite:** Vitest + Vue Test Utils + Pinia
 
 ---

@@ -167,11 +167,10 @@ export default defineEventHandler(
         try {
           // Delete records where any of the user columns match
           for (const column of columns) {
-            const { error: deleteError } = (await (
-              supabaseAdmin.from(table) as any
-            )
+            const response = await (supabaseAdmin.from(table) as any)
               .delete()
-              .eq(column, targetUserId)) as any;
+              .eq(column, targetUserId);
+            const { error: deleteError } = response as { error: any };
 
             if (deleteError && deleteError.code !== "42P01") {
               // 42P01 = relation does not exist (table doesn't exist, which is fine)

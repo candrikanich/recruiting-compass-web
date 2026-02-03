@@ -651,7 +651,7 @@ const getPreferenceValue = (pref: SchoolPreference) => {
   }
   if (pref.type === "min_academic_rating") {
     const ratings = ["", "Basic", "Good", "Very Good", "Excellent", "Elite"];
-    return ratings[pref.value] || pref.value;
+    return ratings[pref.value as number] || pref.value;
   }
   return String(pref.value);
 };

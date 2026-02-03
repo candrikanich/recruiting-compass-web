@@ -416,7 +416,7 @@ const fetchCounts = async () => {
     } = await supabase
       .from("interactions")
       .select("*", { count: "exact" })
-      .eq("logged_by", targetUserId.value);
+      .eq("logged_by", targetUserId.value || "");
 
     if (!interactionsError && interactionsData) {
       allInteractions.value = interactionsData;

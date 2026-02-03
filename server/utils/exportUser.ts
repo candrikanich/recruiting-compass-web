@@ -261,14 +261,14 @@ function jsonToCSV(data: Record<string, unknown>[]): string {
  * Generate README with data dictionary
  */
 function generateReadme(userId: string): string {
-  return `# College Baseball Recruiting Tracker - Data Export
+  return `# The Recruiting Compass - Data Export
 
 Generated: ${new Date().toISOString()}
 User ID: ${userId}
 
 ## Contents
 
-This archive contains a complete export of your data from the College Baseball Recruiting Tracker.
+This archive contains a complete export of your data from The Recruiting Compass.
 
 ### Files Included
 
@@ -350,7 +350,7 @@ export async function sendExportViaEmail(
 ): Promise<void> {
   try {
     const zipBuffer = await generateUserExportZip(userId);
-    const fileName = `baseball-recruiting-tracker-export-${new Date().toISOString().split("T")[0]}.zip`;
+    const fileName = `recruiting-compass-export-${new Date().toISOString().split("T")[0]}.zip`;
 
     // Convert buffer to base64 for email
     const _base64Content = zipBuffer.toString("base64");
@@ -366,7 +366,7 @@ export async function sendExportViaEmail(
     // Actual implementation would call email service:
     // await sendEmailWithAttachment({
     //   to: userEmail,
-    //   subject: 'Your Baseball Recruiting Tracker Data Export',
+    //   subject: 'Your Recruiting Compass Data Export',
     //   html: getExportEmailTemplate(fileName),
     //   attachments: [{
     //     filename: fileName,

@@ -1,7 +1,7 @@
 {
-  "name": "baseball-recruiting-tracker",
+  "name": "recruiting-compass",
   "version": "1.0.0",
-  "description": "College baseball recruiting tracker for parents and students",
+  "description": "High school athlete recruiting guide for parents and students",
   "private": true,
   "type": "module",
   "scripts": {

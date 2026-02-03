@@ -310,7 +310,7 @@ const saveCoach = async () => {
   if (!coach.value) return;
   loading.value = true;
   try {
-    const { data, error } = await supabase
+    const response = await supabase
       .from("coaches")
       .update({
         email: editedCoach.value.email,
@@ -320,6 +320,8 @@ const saveCoach = async () => {
       .eq("id", coachId)
       .select()
       .single();
+
+    const { data, error } = response as { data: Coach; error: any };
 
     if (error) throw error;
     if (data) {
@@ -337,12 +339,14 @@ const saveNotes = async () => {
   if (!coach.value) return;
   loading.value = true;
   try {
-    const { data, error } = await supabase
+    const response = await supabase
       .from("coaches")
       .update({ notes: editedNotes.value })
       .eq("id", coachId)
       .select()
       .single();
+
+    const { data, error } = response as { data: Coach; error: any };
 
     if (error) throw error;
     if (data) {
@@ -383,11 +387,13 @@ onMounted(async () => {
     if (school) schoolName.value = school.name;
 
     // Fetch coach
-    const { data, error } = await supabase
+    const response = await supabase
       .from("coaches")
       .select("*")
       .eq("id", coachId)
       .single();
+
+    const { data, error } = response as { data: Coach; error: any };
 
     if (error) throw error;
     if (data) {

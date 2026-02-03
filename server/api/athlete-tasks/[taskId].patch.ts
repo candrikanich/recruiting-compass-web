@@ -162,7 +162,7 @@ export default defineEventHandler(async (event) => {
       // Update existing record
       const { data, error } = await supabase
         .from("athlete_task")
-        .update(updateData)
+        .update(updateData as any)
         .eq("id", existingData.id)
         .eq("athlete_id", user.id)
         .select()

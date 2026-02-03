@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-**Baseball Recruiting Tracker** — Nuxt 3 web app (Vue 3, TypeScript, Supabase)
+**The Recruiting Compass** — Nuxt 3 web app (Vue 3, TypeScript, Supabase)
 
 ## Workflow
 
@@ -183,10 +183,11 @@ Before marking code complete:
 
 ## Deployment
 
-- **Host**: Netlify (from `main` branch)
+- **Host**: Vercel (from `main` branch)
 - **Build**: `npm run build`
-- **Publish**: `.nuxt/dist`
-- **Env vars**: Set in Netlify UI
+- **Publish**: `.vercel/output/`
+- **Env vars**: Set in Vercel project dashboard
+- **Runtime**: Node.js (serverless functions for API routes)
 
 ## Learnings
 

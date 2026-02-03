@@ -1,6 +1,6 @@
 # Test Failure Investigation - Complete Index
 
-This index guides you through the comprehensive test failure investigation for the Baseball Recruiting Tracker project.
+This index guides you through the comprehensive test failure investigation for The Recruiting Compass project.
 
 ## Quick Start
 
@@ -21,7 +21,7 @@ This index guides you through the comprehensive test failure investigation for t
 ## Executive Summary
 
 **Date:** 2026-01-26
-**Project:** Baseball Recruiting Tracker (Nuxt 3 + Vue 3 + Vitest)
+**Project:** The Recruiting Compass (Nuxt 3 + Vue 3 + Vitest)
 **Total Tests:** 2,743 | Passed: 2,696 (98.3%) | Failed: 47 (1.7%)
 
 ### The 47 Failures Fall Into 3 Categories

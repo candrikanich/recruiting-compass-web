@@ -1,6 +1,6 @@
-# Web Application - Baseball Recruiting Tracker
+# The Recruiting Compass - Web Application
 
-The web application for managing college baseball recruiting interactions, built with **Nuxt 3**, **Vue 3**, **TypeScript**, **TailwindCSS**, and **Supabase**.
+The web application for managing high school athlete recruiting interactions, built with **Nuxt 3**, **Vue 3**, **TypeScript**, **TailwindCSS**, and **Supabase**.
 
 ## Quick Start
 

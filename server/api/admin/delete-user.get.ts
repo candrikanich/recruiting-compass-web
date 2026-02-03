@@ -78,20 +78,31 @@ export default defineEventHandler(
         });
       }
 
-      const { data: targetUserData, error: getUserError } =
-        await supabaseAdmin.auth.admin.listUsersByEmail(targetEmail);
+      const response = await (supabaseAdmin.auth.admin as any).listUsers();
+      const {
+        data: { users },
+        error: listError,
+      } = response as { data: { users: any[] }; error: any };
 
-      if (getUserError || !targetUserData.user) {
-        logger.warn(
-          `Delete user attempt for non-existent email: ${targetEmail}`,
-        );
+      if (listError || !users) {
+        throw createError({
+          statusCode: 500,
+          statusMessage: "Failed to list users",
+        });
+      }
+
+      const targetUser = users.find(
+        (u: any) => u.email?.toLowerCase() === targetEmail.toLowerCase(),
+      );
+
+      if (!targetUser?.id) {
         throw createError({
           statusCode: 404,
           statusMessage: "User not found",
         });
       }
 
-      const targetUserId = targetUserData.user.id;
+      const targetUserId = targetUser.id;
 
       const { error: deleteError } =
         await supabaseAdmin.auth.admin.deleteUser(targetUserId);
