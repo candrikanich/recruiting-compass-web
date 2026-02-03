@@ -27,6 +27,9 @@ jobs:
       - name: Prepare Nuxt
         run: npx nuxi prepare
 
+      - name: Type check
+        run: npm run type-check
+
       - name: Lint
         run: npm run lint
 
