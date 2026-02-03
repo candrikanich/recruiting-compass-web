@@ -490,7 +490,7 @@ export const useCommunicationTemplates = (): {
 
       // For AND conditions, all must be met. For OR, any one must be met
       const unlocked =
-        conditionGroup.type === "AND"
+        conditionGroup?.type === "AND"
           ? missingConditions.length === 0
           : results.some((r) => r.met);
 

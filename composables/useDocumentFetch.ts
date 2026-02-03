@@ -111,7 +111,7 @@ export const useDocumentFetch = () => {
       const response = await supabase
         .from("documents")
         .select("*")
-        .eq("user_id", getUserStore().user.id)
+        .eq("user_id", store.user!.id)
         .eq("title", documentTitle)
         .order("version", { ascending: false });
       const { data, error: fetchError } = response as {

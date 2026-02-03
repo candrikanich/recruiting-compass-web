@@ -8,8 +8,8 @@ import { calculateDeadlineInfo } from "~/utils/deadlineHelpers";
 import AthleteSwitcher from "~/components/Parent/AthleteSwitcher.vue";
 import type { TaskWithStatus } from "~/types/timeline";
 
-const { user } = useAuth();
-const { linkedAthletes, isViewingAsParent, viewingAthleteId } =
+const { session } = useAuth();
+const { linkedAthletes, isViewingAsParent, currentAthleteId } =
   useParentContext();
 const {
   tasksWithStatus,
@@ -39,7 +39,7 @@ const urgencyFilter = ref<"all" | "critical" | "urgent" | "upcoming">("all");
 
 // Load filters from localStorage
 const loadFilters = () => {
-  const athleteId = viewingAthleteId.value || user.value?.id;
+  const athleteId = currentAthleteId.value || session.value?.user?.id;
   if (!athleteId) return;
 
   const storageKey = `parent-task-filters-${athleteId}`;
@@ -57,7 +57,7 @@ const loadFilters = () => {
 
 // Save filters to localStorage
 const saveFilters = () => {
-  const athleteId = viewingAthleteId.value || user.value?.id;
+  const athleteId = currentAthleteId.value || session.value?.user?.id;
   if (!athleteId) return;
 
   const storageKey = `parent-task-filters-${athleteId}`;
@@ -207,7 +207,7 @@ onMounted(async () => {
   await fetchTasksWithStatus(currentGradeLevel.value);
 
   // Load seen locked tasks from localStorage
-  const athleteId = viewingAthleteId.value || user.value?.id;
+  const athleteId = currentAthleteId.value || session.value?.user?.id;
   if (athleteId) {
     const storageKey = `seen-locked-tasks-${athleteId}`;
     const stored = localStorage.getItem(storageKey);
@@ -229,7 +229,7 @@ onMounted(async () => {
     seenLockedTasks.value.add(firstUnseenLockedTask);
 
     // Save to localStorage
-    const athleteId = viewingAthleteId.value || user.value?.id;
+    const athleteId = currentAthleteId.value || session.value?.user?.id;
     if (athleteId) {
       const storageKey = `seen-locked-tasks-${athleteId}`;
       localStorage.setItem(
@@ -255,10 +255,7 @@ const onUrgencyFilterChange = () => {
     class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Parent Context Banner -->
-    <div
-      v-if="isViewingAsParent.value"
-      class="bg-blue-50 border-b-2 border-blue-200"
-    >
+    <div v-if="isViewingAsParent" class="bg-blue-50 border-b-2 border-blue-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3">
         <p class="text-sm text-blue-700 font-medium">
           👁 Viewing {{ athleteProfile?.full_name }}'s Tasks (Read-Only)

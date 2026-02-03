@@ -103,8 +103,9 @@ export const useNotifications = (): {
     error.value = null;
 
     try {
-      const { data, error: insertError } = (await supabase
-        .from("notifications")
+      const { data, error: insertError } = (await (
+        supabase.from("notifications") as any
+      )
         .insert([
           {
             ...notificationData,

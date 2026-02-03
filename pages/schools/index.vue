@@ -814,12 +814,13 @@ const filterConfigs: FilterConfig[] = [
     field: "name",
     label: "Search",
     placeholder: "School name or location...",
-    filterFn: (item: School, filterValue: string) => {
+    filterFn: (item: Record<string, unknown>, filterValue: any) => {
       if (!filterValue) return true;
+      const school = item as School;
       const query = String(filterValue).toLowerCase();
       return (
-        item.name.toLowerCase().includes(query) ||
-        item.location?.toLowerCase().includes(query)
+        school.name.toLowerCase().includes(query) ||
+        school.location?.toLowerCase().includes(query)
       );
     },
   },
@@ -852,13 +853,14 @@ const filterConfigs: FilterConfig[] = [
     type: "select",
     field: "state",
     label: "State",
-    options: stateOptions,
-    filterFn: (item: School, filterValue: string) => {
+    options: stateOptions.value,
+    filterFn: (item: Record<string, unknown>, filterValue: any) => {
+      const school = item as School;
       let schoolState =
-        item.academic_info?.state || (item.state as string | undefined);
+        school.academic_info?.state || (school.state as string | undefined);
       // Fallback: extract state from location
-      if (!schoolState && item.location) {
-        schoolState = extractStateFromLocation(item.location) || undefined;
+      if (!schoolState && school.location) {
+        schoolState = extractStateFromLocation(school.location) || undefined;
       }
       return schoolState === filterValue;
     },
@@ -870,9 +872,10 @@ const filterConfigs: FilterConfig[] = [
     min: 0,
     max: 100,
     step: 5,
-    defaultValue: { min: 0, max: 100 },
-    filterFn: (item: School, filterValue: { min?: number; max?: number }) => {
-      const score = item.fit_score;
+    defaultValue: { min: 0, max: 100 } as any,
+    filterFn: (item: Record<string, unknown>, filterValue: any) => {
+      const school = item as School;
+      const score = school.fit_score;
       if (score === null || score === undefined) return true;
       const min = filterValue?.min ?? 0;
       const max = filterValue?.max ?? 100;
@@ -886,13 +889,14 @@ const filterConfigs: FilterConfig[] = [
     min: 0,
     max: 3000,
     step: 50,
-    defaultValue: { max: 3000 },
-    filterFn: (item: School, filterValue: { max?: number }) => {
+    defaultValue: { max: 3000 } as any,
+    filterFn: (item: Record<string, unknown>, filterValue: any) => {
+      const school = item as School;
       const homeLoc = getHomeLocation();
       if (!homeLoc?.latitude || !homeLoc?.longitude) {
         return true;
       }
-      const distance = distanceCache.value.get(item.id);
+      const distance = distanceCache.value.get(school.id);
       if (distance === undefined) return true;
       const maxDistance = filterValue?.max ?? 3000;
       return distance <= maxDistance;
@@ -987,7 +991,10 @@ const filteredSchools = computed(() => {
         break;
       }
       case "distance": {
-        if (!homeLocation.value?.latitude || !homeLocation.value?.longitude) {
+        if (
+          !userHomeLocation.value?.latitude ||
+          !userHomeLocation.value?.longitude
+        ) {
           // Fall back to A-Z if home location not set
           comparison = a.name.localeCompare(b.name);
           break;
@@ -1100,8 +1107,8 @@ const getExportData = (): SchoolComparisonData[] => {
 
     let distance: number | null = null;
     if (
-      homeLocation.value?.latitude &&
-      homeLocation.value?.longitude &&
+      userHomeLocation.value?.latitude &&
+      userHomeLocation.value?.longitude &&
       school.academic_info
     ) {
       const lat = school.academic_info["latitude"] as number | undefined;
@@ -1109,8 +1116,8 @@ const getExportData = (): SchoolComparisonData[] => {
       if (lat && lng) {
         distance = calculateDistance(
           {
-            latitude: homeLocation.value.latitude,
-            longitude: homeLocation.value.longitude,
+            latitude: userHomeLocation.value.latitude,
+            longitude: userHomeLocation.value.longitude,
           },
           { latitude: lat, longitude: lng },
         );

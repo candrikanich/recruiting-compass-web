@@ -113,8 +113,9 @@ export const useSocialMedia = () => {
       }
       validated.post_url = sanitizedUrl;
 
-      const { data, error: insertError } = (await supabase
-        .from("social_media_posts")
+      const { data, error: insertError } = (await (
+        supabase.from("social_media_posts") as any
+      )
         .insert([validated])
         .select()
         .single()) as { data: SocialPost; error: any };

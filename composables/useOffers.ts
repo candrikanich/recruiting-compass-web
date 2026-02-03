@@ -100,8 +100,9 @@ export const useOffers = (): {
     error.value = null;
 
     try {
-      const { data, error: insertError } = (await supabase
-        .from("offers")
+      const { data, error: insertError } = (await (
+        supabase.from("offers") as any
+      )
         .insert([
           {
             ...offerData,

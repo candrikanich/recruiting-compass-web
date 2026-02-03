@@ -104,8 +104,9 @@ export const usePerformance = (): {
     error.value = null;
 
     try {
-      const { data, error: insertError } = (await supabase
-        .from("performance_metrics")
+      const { data, error: insertError } = (await (
+        supabase.from("performance_metrics") as any
+      )
         .insert([
           {
             ...metricData,
