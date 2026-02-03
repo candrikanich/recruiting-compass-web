@@ -1,18 +1,26 @@
 import { defineEventHandler } from "h3";
-import { requireAuth } from "~/server/utils/auth";
+import { requireAuth, getUserRole } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import type { Database } from "~/types/database";
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
   const supabase = useSupabaseAdmin();
 
+  const userRole = await getUserRole(user.id, supabase);
+
   // Students: Get their family code
-  if (user.role === "student") {
-    const { data: family } = await supabase
+  if (userRole === "student") {
+    const familyResponse = await supabase
       .from("family_units")
       .select("id, family_code, family_name, code_generated_at")
       .eq("student_user_id", user.id)
       .single();
+
+    const { data: family } = familyResponse as {
+      data: Database["public"]["Tables"]["family_units"]["Row"] | null;
+      error: any;
+    };
 
     return {
       success: true,
@@ -25,7 +33,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Parents: Get codes for families they belong to
-  const { data: memberships } = await supabase
+  const membershipsResponse = await supabase
     .from("family_members")
     .select(
       `
@@ -36,19 +44,22 @@ export default defineEventHandler(async (event) => {
     .eq("user_id", user.id)
     .eq("role", "parent");
 
-  type MembershipRow = {
-    family_units: {
-      id: string;
-      family_code: string | null;
-      family_name: string | null;
-      code_generated_at: string | null;
-    };
+  const { data: memberships } = membershipsResponse as {
+    data: Array<{
+      family_units: {
+        id: string;
+        family_code: string | null;
+        family_name: string | null;
+        code_generated_at: string | null;
+      };
+    }> | null;
+    error: any;
   };
 
   return {
     success: true,
     families:
-      memberships?.map((m: MembershipRow) => ({
+      memberships?.map((m) => ({
         familyId: m.family_units.id,
         familyCode: m.family_units.family_code,
         familyName: m.family_units.family_name,

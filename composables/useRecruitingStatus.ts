@@ -105,7 +105,11 @@ export const useRecruitingStatus = (): {
     error.value = null;
 
     try {
-      const response = await fetchAuth("/api/athlete/status");
+      const response = (await fetchAuth("/api/athlete/status")) as {
+        score?: number;
+        label?: StatusLabel;
+        breakdown?: StatusScoreInputs;
+      };
 
       statusScore.value = response?.score ?? 0;
       statusLabel.value = response?.label ?? "on_track";
@@ -190,13 +194,15 @@ export const useRecruitingStatus = (): {
     error.value = null;
 
     try {
-      const response =
-        await fetchAuth<AthleteAPI.GetPhaseResponse>("/api/athlete/phase");
+      const response = (await fetchAuth("/api/athlete/phase")) as {
+        phase: Phase;
+        milestoneProgress: MilestoneProgress | null;
+      };
 
-      currentPhase.value = response.phase;
-      milestoneProgress.value = response.milestoneProgress;
+      currentPhase.value = response?.phase || "freshman";
+      milestoneProgress.value = response?.milestoneProgress || null;
 
-      return response;
+      return response as AthleteAPI.GetPhaseResponse;
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to fetch phase";
@@ -212,19 +218,19 @@ export const useRecruitingStatus = (): {
     error.value = null;
 
     try {
-      const response = await fetchAuth<AthleteAPI.AdvancePhaseResponse>(
-        "/api/athlete/phase/advance",
-        {
-          method: "POST",
-        },
-      );
+      const response = (await fetchAuth("/api/athlete/phase/advance", {
+        method: "POST",
+      })) as {
+        success: boolean;
+        phase: Phase;
+      };
 
-      if (response.success) {
-        currentPhase.value = response.phase;
+      if (response?.success) {
+        currentPhase.value = response?.phase || "freshman";
         await refreshPhase();
       }
 
-      return response;
+      return response as AthleteAPI.AdvancePhaseResponse;
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to advance phase";

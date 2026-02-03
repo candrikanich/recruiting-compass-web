@@ -355,9 +355,10 @@ export const useDocumentsConsolidated = () => {
       uploadProgress.value = 50;
 
       // 2. Get public URL
-      const { data: urlData } = supabase.storage
+      const urlResponse = supabase.storage
         .from("documents")
         .getPublicUrl(fileName);
+      const { data: urlData } = urlResponse as { data: { publicUrl: string } };
 
       // 3. Create DB record
       const { data: docData, error: insertErr } = await queryInsert<Document>(

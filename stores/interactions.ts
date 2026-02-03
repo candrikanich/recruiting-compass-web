@@ -272,16 +272,23 @@ export const useInteractionStore = defineStore("interactions", {
           sanitized.content = sanitizeHtml(sanitized.content);
         }
 
-        const { data, error: insertError } = await supabase
+        const insertData = [
+          {
+            ...sanitized,
+            logged_by: userStore.user.id,
+          },
+        ];
+
+        const response = (await supabase
           .from("interactions")
-          .insert([
-            {
-              ...sanitized,
-              logged_by: userStore.user.id,
-            },
-          ])
+          .insert(insertData as any)
           .select()
-          .single();
+          .single()) as {
+          data: Interaction;
+          error: any;
+        };
+
+        const { data, error: insertError } = response;
 
         if (insertError) throw insertError;
 
@@ -289,8 +296,9 @@ export const useInteractionStore = defineStore("interactions", {
         if (files && files.length > 0) {
           const uploadedPaths = await this.uploadAttachments(files, data.id);
           if (uploadedPaths.length > 0) {
-            const { error: updateError } = await supabase
-              .from("interactions")
+            const { error: updateError } = await (
+              supabase.from("interactions") as any
+            )
               .update({ attachments: uploadedPaths })
               .eq("id", data.id);
             if (updateError)
@@ -301,27 +309,37 @@ export const useInteractionStore = defineStore("interactions", {
         // Create inbound interaction alert if enabled
         if (data.direction === "inbound" && userStore.user) {
           try {
-            const { data: prefs } = await supabase
+            const response = await supabase
               .from("user_preferences")
               .select("notification_settings")
               .eq("user_id", userStore.user.id)
               .single();
 
+            const { data: prefs } = response as {
+              data: { notification_settings: any } | null;
+              error: any;
+            };
+
             if (prefs?.notification_settings?.enableInboundInteractionAlerts) {
               let coachName = "A coach";
               if (data.coach_id) {
-                const { data: coach } = await supabase
+                const response = await supabase
                   .from("coaches")
                   .select("first_name, last_name")
                   .eq("id", data.coach_id)
                   .single();
+
+                const { data: coach } = response as {
+                  data: { first_name: string; last_name: string } | null;
+                  error: any;
+                };
 
                 if (coach) {
                   coachName = `${coach.first_name} ${coach.last_name}`.trim();
                 }
               }
 
-              await supabase.from("notifications").insert([
+              const notifData = [
                 {
                   user_id: userStore.user.id,
                   type: "inbound_interaction",
@@ -332,7 +350,13 @@ export const useInteractionStore = defineStore("interactions", {
                   related_entity_id: data.id,
                   scheduled_for: new Date().toISOString(),
                 },
-              ]);
+              ];
+
+              const notifResponse = (await supabase
+                .from("notifications")
+                .insert(notifData as any)) as {
+                error: any;
+              };
             }
           } catch (err) {
             console.error("Failed to create inbound interaction alert:", err);
@@ -398,13 +422,17 @@ export const useInteractionStore = defineStore("interactions", {
           sanitized.content = sanitizeHtml(sanitized.content);
         }
 
-        const { data, error: updateError } = await supabase
-          .from("interactions")
+        const response = (await (supabase.from("interactions") as any)
           .update(sanitized)
           .eq("id", id)
           .eq("logged_by", userStore.user.id)
           .select()
-          .single();
+          .single()) as {
+          data: Interaction;
+          error: any;
+        };
+
+        const { data, error: updateError } = response;
 
         if (updateError) throw updateError;
 

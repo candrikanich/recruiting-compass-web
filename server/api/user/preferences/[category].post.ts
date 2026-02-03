@@ -6,14 +6,15 @@
  * Accepts JSON data to store
  */
 
-import { defineEventHandler, readBody } from "h3";
+import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import type { Database } from "~/types/database";
 
 // Validation schema for preference data
 const preferencesSchema = z.object({
-  data: z.record(z.unknown()).default({}),
+  data: z.record(z.unknown()),
 });
 
 export default defineEventHandler(async (event) => {
@@ -36,40 +37,54 @@ export default defineEventHandler(async (event) => {
     const supabase = useSupabaseAdmin();
 
     // Try to update existing preferences
-    const { error: fetchError } = await supabase
+    const fetchResponse = await supabase
       .from("user_preferences")
       .select("id")
       .eq("user_id", user.id)
       .eq("category", category)
       .single();
 
+    const { error: fetchError } = fetchResponse as {
+      error: any;
+    };
+
     let result;
 
     if (fetchError && fetchError.code === "PGRST116") {
       // No existing preferences - insert new
-      result = await supabase
+      const insertResponse = await supabase
         .from("user_preferences")
         .insert({
           user_id: user.id,
           category,
-          data,
+          data: data as Database["public"]["Tables"]["user_preferences"]["Insert"]["data"],
         })
         .select()
         .single();
+
+      result = insertResponse as {
+        data: Database["public"]["Tables"]["user_preferences"]["Row"] | null;
+        error: any;
+      };
     } else if (fetchError) {
       throw fetchError;
     } else {
       // Update existing preferences
-      result = await supabase
+      const updateResponse = await supabase
         .from("user_preferences")
         .update({
-          data,
+          data: data as Database["public"]["Tables"]["user_preferences"]["Update"]["data"],
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", user.id)
         .eq("category", category)
         .select()
         .single();
+
+      result = updateResponse as {
+        data: Database["public"]["Tables"]["user_preferences"]["Row"] | null;
+        error: any;
+      };
     }
 
     if (result.error) {
@@ -89,9 +104,10 @@ export default defineEventHandler(async (event) => {
     );
 
     if (err instanceof z.ZodError) {
+      const errors = (err as any).errors as Array<{ message: string }>;
       throw createError({
         statusCode: 400,
-        statusMessage: "Invalid preference data: " + err.errors[0].message,
+        statusMessage: "Invalid preference data: " + errors[0]?.message,
       });
     }
 

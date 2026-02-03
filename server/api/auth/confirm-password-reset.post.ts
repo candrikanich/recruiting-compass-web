@@ -56,7 +56,9 @@ export default defineEventHandler(
 
       if (!validationResult.success) {
         // Extract first validation error for user feedback
-        const errors = validationResult.error.errors;
+        const errors = (validationResult.error as any).errors as Array<{
+          message: string;
+        }>;
         const message =
           errors[0]?.message || "Password does not meet requirements";
 

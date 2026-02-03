@@ -6,10 +6,11 @@
  * for audit trail and change tracking purposes
  */
 
-import { defineEventHandler, readBody } from "h3";
+import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import type { Database } from "~/types/database";
 
 const historySchema = z.object({
   category: z.string(),
@@ -31,7 +32,7 @@ export default defineEventHandler(async (event) => {
     const supabase = useSupabaseAdmin();
 
     // Insert history record
-    const { data, error } = await supabase
+    const response = await supabase
       .from("preference_history")
       .insert({
         user_id: user.id,
@@ -40,9 +41,14 @@ export default defineEventHandler(async (event) => {
         new_value,
         changed_fields,
         changed_by: user.id,
-      })
+      } as Database["public"]["Tables"]["preference_history"]["Insert"])
       .select()
       .single();
+
+    const { data, error } = response as {
+      data: Database["public"]["Tables"]["preference_history"]["Row"] | null;
+      error: any;
+    };
 
     if (error) {
       throw error;
@@ -60,9 +66,10 @@ export default defineEventHandler(async (event) => {
     );
 
     if (err instanceof z.ZodError) {
+      const errors = (err as any).errors as Array<{ message: string }>;
       throw createError({
         statusCode: 400,
-        statusMessage: "Invalid history data: " + err.errors[0].message,
+        statusMessage: "Invalid history data: " + errors[0]?.message,
       });
     }
 

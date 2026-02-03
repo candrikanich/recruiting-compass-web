@@ -177,17 +177,24 @@ export const useUserStore = defineStore("user", {
         }
 
         // Profile doesn't exist, create it
-        const { error, data: _data } = await supabase
+        const userData = [
+          {
+            id: userId,
+            email,
+            full_name: fullName || email.split("@")[0],
+            role: "student",
+          },
+        ];
+
+        const response = (await supabase
           .from("users")
-          .insert([
-            {
-              id: userId,
-              email,
-              full_name: fullName || email.split("@")[0],
-              role: "student",
-            },
-          ])
-          .select();
+          .insert(userData as any)
+          .select()) as {
+          data: User[] | null;
+          error: any;
+        };
+
+        const { error, data: _data } = response;
 
         if (error) {
           // Check if it's a duplicate key error (email or id already exists)

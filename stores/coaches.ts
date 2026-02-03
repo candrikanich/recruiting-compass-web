@@ -308,19 +308,26 @@ export const useCoachStore = defineStore("coaches", {
           sanitized.notes = sanitizeHtml(sanitized.notes);
         }
 
-        const { data, error: insertError } = await supabase
+        const insertData = [
+          {
+            ...sanitized,
+            school_id: schoolId,
+            user_id: userStore.user.id,
+            created_by: userStore.user.id,
+            updated_by: userStore.user.id,
+          },
+        ];
+
+        const response = (await supabase
           .from("coaches")
-          .insert([
-            {
-              ...sanitized,
-              school_id: schoolId,
-              user_id: userStore.user.id,
-              created_by: userStore.user.id,
-              updated_by: userStore.user.id,
-            },
-          ])
+          .insert(insertData as any)
           .select()
-          .single();
+          .single()) as {
+          data: Coach;
+          error: any;
+        };
+
+        const { data, error: insertError } = response;
 
         if (insertError) throw insertError;
 
@@ -360,16 +367,22 @@ export const useCoachStore = defineStore("coaches", {
           sanitized.notes = sanitizeHtml(sanitized.notes);
         }
 
-        const { data, error: updateError } = await supabase
-          .from("coaches")
-          .update({
-            ...sanitized,
-            updated_by: userStore.user.id,
-            updated_at: new Date().toISOString(),
-          })
+        const updateData = {
+          ...sanitized,
+          updated_by: userStore.user.id,
+          updated_at: new Date().toISOString(),
+        };
+
+        const response = (await (supabase.from("coaches") as any)
+          .update(updateData)
           .eq("id", id)
           .select()
-          .single();
+          .single()) as {
+          data: Coach;
+          error: any;
+        };
+
+        const { data, error: updateError } = response;
 
         if (updateError) throw updateError;
 

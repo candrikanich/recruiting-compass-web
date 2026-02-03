@@ -55,7 +55,7 @@ export const useRecruitingPacket = () => {
     }
 
     // Fetch extended athlete profile
-    const { data: profile, error: profileError } = await supabase
+    const profileResponse = await supabase
       .from("user_profiles")
       .select(
         `
@@ -65,6 +65,10 @@ export const useRecruitingPacket = () => {
       )
       .eq("user_id", userStore.user.id)
       .single();
+    const { data: profile, error: profileError } = profileResponse as {
+      data: Record<string, unknown> | null;
+      error: any;
+    };
 
     if (profileError) {
       console.warn("Profile not found, using basic user data");
@@ -75,17 +79,19 @@ export const useRecruitingPacket = () => {
       email: userStore.user.email,
       full_name: userStore.user.full_name || "Athlete",
       profile_photo_url: userStore.user.profile_photo_url,
-      height: profile?.height,
-      weight: profile?.weight,
-      position: profile?.position,
-      high_school: profile?.high_school,
-      graduation_year: profile?.graduation_year,
-      gpa: profile?.gpa,
-      sat_score: profile?.sat_score,
-      act_score: profile?.act_score,
-      video_links: profile?.video_links || [],
-      social_media: profile?.social_media || [],
-      core_courses: profile?.core_courses || [],
+      height: profile ? (profile.height as string) : undefined,
+      weight: profile ? (profile.weight as number) : undefined,
+      position: profile ? (profile.position as string) : undefined,
+      high_school: profile ? (profile.high_school as string) : undefined,
+      graduation_year: profile
+        ? (profile.graduation_year as number)
+        : undefined,
+      gpa: profile ? (profile.gpa as number) : undefined,
+      sat_score: profile ? (profile.sat_score as number) : undefined,
+      act_score: profile ? (profile.act_score as number) : undefined,
+      video_links: (profile?.video_links as string[]) || [],
+      social_media: (profile?.social_media as Record<string, string>[]) || [],
+      core_courses: (profile?.core_courses as string[]) || [],
     };
 
     return athleteData;

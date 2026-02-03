@@ -80,12 +80,15 @@ export const useProfilePhoto = (): {
 
       // Update database
       uploadProgress.value = 90;
-      const { error: updateError } = await supabase
+      const updateResponse = await supabase
         .from("users")
         .update({ profile_photo_url: publicUrl })
         .eq("id", userId)
         .select()
         .single();
+      const { error: updateError } = updateResponse as {
+        error: any;
+      };
 
       if (updateError) {
         throw updateError;
@@ -147,12 +150,15 @@ export const useProfilePhoto = (): {
       }
 
       // Clear from database
-      const { error: updateError } = await supabase
+      const deleteUpdateResponse = await supabase
         .from("users")
         .update({ profile_photo_url: null })
         .eq("id", userId)
         .select()
         .single();
+      const { error: updateError } = deleteUpdateResponse as {
+        error: any;
+      };
 
       if (updateError) {
         throw updateError;

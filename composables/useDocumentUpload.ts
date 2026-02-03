@@ -159,7 +159,7 @@ export const useDocumentUpload = () => {
 
       uploadProgress.value = 90;
 
-      const { data, error: insertError } = await supabase
+      const response = (await supabase
         .from("documents")
         .insert([
           {
@@ -169,9 +169,10 @@ export const useDocumentUpload = () => {
             uploaded_by: store.user.id,
             file_type: file?.type,
           },
-        ] as DocumentInsert[])
+        ])
         .select()
-        .single();
+        .single()) as { data: Document; error: any };
+      const { data, error: insertError } = response;
 
       if (insertError) throw insertError;
 
@@ -206,16 +207,20 @@ export const useDocumentUpload = () => {
         throw new Error(validation.error || "File validation failed");
       }
 
-      const fileName = `${userStore.user.id}/${Date.now()}-${file.name}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const fileName = `${store.user.id}/${Date.now()}-${file.name}`;
+      const uploadResponse = await supabase.storage
         .from("documents")
         .upload(fileName, file);
+      const { data: uploadData, error: uploadError } = uploadResponse as {
+        data: { path: string } | null;
+        error: any;
+      };
 
       if (uploadError) throw uploadError;
       if (!uploadData) throw new Error("Upload failed");
 
       const newVersion = (currentDoc.version || 1) + 1;
-      const { data, error: insertError } = await supabase
+      const versionResponse = (await supabase
         .from("documents")
         .insert([
           {
@@ -228,9 +233,10 @@ export const useDocumentUpload = () => {
             updated_at: new Date().toISOString(),
             ...metadata,
           },
-        ] as DocumentInsert[])
+        ])
         .select()
-        .single();
+        .single()) as { data: Document; error: any };
+      const { data, error: insertError } = versionResponse;
 
       if (insertError) throw insertError;
 

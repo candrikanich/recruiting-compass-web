@@ -131,17 +131,21 @@ export const useCommunicationTemplates = (): {
 
     try {
       // Fetch user templates AND predefined templates
-      const { data, error: err } = await supabase
+      const response = await supabase
         .from("communication_templates")
         .select("*")
         .or(`user_id.eq.${userStore.user.id},is_predefined.eq.true`)
         .order("updated_at", { ascending: false });
+      const { data, error: err } = response as {
+        data: CommunicationTemplate[] | null;
+        error: any;
+      };
 
       if (err) {
         // Handle table not found gracefully (feature not yet implemented)
         if (
-          err.code === "PGRST205" ||
-          err.message?.includes("communication_templates")
+          err?.code === "PGRST205" ||
+          err?.message?.includes("communication_templates")
         ) {
           templates.value = [];
           return;
@@ -180,18 +184,17 @@ export const useCommunicationTemplates = (): {
       const newTemplate: CommunicationTemplateInsert = {
         user_id: userStore.user.id,
         name,
-        template_type: type,
+        type,
         subject: type === "email" ? subject : undefined,
         body,
-        variables: uniqueVariables,
-        is_default: false,
       };
 
-      const { data, error: err } = await supabase
+      const insertResponse = (await supabase
         .from("communication_templates")
-        .insert([newTemplate] as CommunicationTemplateInsert[])
+        .insert([newTemplate])
         .select()
-        .single();
+        .single()) as { data: CommunicationTemplate; error: any };
+      const { data, error: err } = insertResponse;
 
       if (err) throw err;
 
@@ -215,11 +218,12 @@ export const useCommunicationTemplates = (): {
     error.value = null;
 
     try {
-      const { error: err } = await supabase
+      const updateResponse = (await supabase
         .from("communication_templates")
-        .update(updates as CommunicationTemplateUpdate)
+        .update(updates)
         .eq("id", id)
-        .eq("user_id", userStore.user.id);
+        .eq("user_id", userStore.user.id)) as { error: any };
+      const { error: err } = updateResponse;
 
       if (err) throw err;
 
@@ -351,11 +355,15 @@ export const useCommunicationTemplates = (): {
         case "profile_field": {
           if (!condition.field) return false;
 
-          const { data: prefs } = await supabase
+          const prefsResponse = await supabase
             .from("user_preferences")
             .select("player_details")
             .eq("user_id", userStore.user.id)
             .single();
+          const { data: prefs } = prefsResponse as {
+            data: { player_details: Record<string, unknown> } | null;
+            error: any;
+          };
 
           if (!prefs?.player_details) return false;
 
@@ -377,13 +385,17 @@ export const useCommunicationTemplates = (): {
         case "document_exists": {
           if (!condition.documentType) return false;
 
-          const { data } = await supabase
+          const docsResponse = await supabase
             .from("documents")
             .select("id")
             .eq("user_id", userStore.user.id)
             .eq("type", condition.documentType)
             .eq("is_current", true)
             .limit(1);
+          const { data } = docsResponse as {
+            data: { id: string }[] | null;
+            error: any;
+          };
 
           return (data?.length || 0) > 0;
         }
@@ -391,12 +403,12 @@ export const useCommunicationTemplates = (): {
         case "task_completed": {
           if (!condition.taskId) return false;
 
-          const { data } = await supabase
+          const { data } = (await supabase
             .from("athlete_task")
             .select("status")
             .eq("athlete_id", userStore.user.id)
             .eq("task_id", condition.taskId)
-            .single();
+            .single()) as { data: { status: string } | null };
 
           return data?.status === "completed";
         }
@@ -440,8 +452,10 @@ export const useCommunicationTemplates = (): {
     }
 
     try {
-      const conditionGroup = template.unlock_conditions as UnlockConditionGroup;
-      const conditions = conditionGroup.conditions || [];
+      const conditionGroup = template.unlock_conditions as unknown as
+        | UnlockConditionGroup
+        | undefined;
+      const conditions = conditionGroup?.conditions || [];
 
       if (conditions.length === 0) {
         return {

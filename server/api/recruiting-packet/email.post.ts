@@ -120,9 +120,10 @@ export default defineEventHandler(async (event) => {
     body = emailPacketSchema.parse(rawBody);
   } catch (err) {
     if (err instanceof z.ZodError) {
+      const errors = (err as any).errors as Array<{ message: string }>;
       throw createError({
         statusCode: 400,
-        statusMessage: `Validation error: ${err.errors[0].message}`,
+        statusMessage: `Validation error: ${errors[0]?.message}`,
       });
     }
     throw createError({

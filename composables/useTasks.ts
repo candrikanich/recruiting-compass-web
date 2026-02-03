@@ -68,12 +68,13 @@ export const useTasks = (): {
       if (params?.category) queryParams.append("category", params.category);
       if (params?.division) queryParams.append("division", params.division);
 
-      const response = await $fetchAuth<Task[]>("/api/tasks", {
+      const response = await $fetchAuth("/api/tasks", {
         query: Object.fromEntries(queryParams),
       });
 
-      tasks.value = response;
-      return response;
+      const typedResponse = response as Task[];
+      tasks.value = typedResponse;
+      return typedResponse;
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to fetch tasks";
@@ -93,9 +94,10 @@ export const useTasks = (): {
 
     try {
       const { $fetchAuth } = useAuthFetch();
-      const response = await $fetchAuth<AthleteTask[]>("/api/athlete-tasks");
-      athleteTasks.value = response;
-      return response;
+      const response = await $fetchAuth("/api/athlete-tasks");
+      const typedResponse = response as AthleteTask[];
+      athleteTasks.value = typedResponse;
+      return typedResponse;
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to fetch athlete tasks";
@@ -221,31 +223,30 @@ export const useTasks = (): {
       }
 
       const { $fetchAuth } = useAuthFetch();
-      const response = await $fetchAuth<AthleteTask>(
-        `/api/athlete-tasks/${taskId}`,
-        {
-          method: "PATCH",
-          body: { status },
-        },
-      );
+      const response = await $fetchAuth(`/api/athlete-tasks/${taskId}`, {
+        method: "PATCH",
+        body: { status },
+      });
+
+      const typedResponse = response as AthleteTask;
 
       // Update local state
       const athleteTaskIndex = athleteTasks.value.findIndex(
         (at) => at.task_id === taskId,
       );
       if (athleteTaskIndex >= 0) {
-        athleteTasks.value[athleteTaskIndex] = response;
+        athleteTasks.value[athleteTaskIndex] = typedResponse;
       } else {
-        athleteTasks.value.push(response);
+        athleteTasks.value.push(typedResponse);
       }
 
       // Update merged list if it exists
       const taskIndex = tasksWithStatus.value.findIndex((t) => t.id === taskId);
       if (taskIndex >= 0) {
-        tasksWithStatus.value[taskIndex].athlete_task = response;
+        tasksWithStatus.value[taskIndex].athlete_task = typedResponse;
       }
 
-      return response;
+      return typedResponse;
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to update task status";
@@ -386,6 +387,7 @@ export const useTasks = (): {
       return {
         task,
         canProceed: true, // Soft warning - always allow to proceed
+        isLocked: !complete,
         warning,
       };
     } catch (err) {
@@ -394,6 +396,7 @@ export const useTasks = (): {
       return {
         task: task || ({} as Task),
         canProceed: true,
+        isLocked: false,
         warning: null,
       };
     }

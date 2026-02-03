@@ -103,16 +103,16 @@ export const useNotifications = (): {
     error.value = null;
 
     try {
-      const { data, error: insertError } = await supabase
+      const { data, error: insertError } = (await supabase
         .from("notifications")
         .insert([
           {
             ...notificationData,
             user_id: store.user.id,
           },
-        ] as NotificationInsert[])
+        ])
         .select()
-        .single();
+        .single()) as { data: Notification; error: any };
 
       if (insertError) throw insertError;
 
@@ -136,12 +136,12 @@ export const useNotifications = (): {
     error.value = null;
 
     try {
-      const { data, error: updateError } = await supabase
+      const { data, error: updateError } = (await supabase
         .from("notifications")
-        .update({ read_at: new Date().toISOString() } as NotificationUpdate)
+        .update({ read_at: new Date().toISOString() })
         .eq("id", id)
         .select()
-        .single();
+        .single()) as { data: Notification; error: any };
 
       if (updateError) throw updateError;
 
@@ -175,10 +175,10 @@ export const useNotifications = (): {
 
       if (unreadIds.length === 0) return;
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = (await supabase
         .from("notifications")
-        .update({ read_at: new Date().toISOString() } as NotificationUpdate)
-        .in("id", unreadIds);
+        .update({ read_at: new Date().toISOString() })
+        .in("id", unreadIds)) as { error: any };
 
       if (updateError) throw updateError;
 

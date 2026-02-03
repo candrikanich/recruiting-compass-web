@@ -1,7 +1,14 @@
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useUserStore } from "~/stores/user";
-import type { LinkedAccount } from "~/types/models";
+
+// Type for linked accounts (simplified from database structure)
+interface LinkedAccount {
+  user_id: string;
+  full_name?: string;
+  email: string;
+  relationship: string;
+}
 
 /**
  * Composable to determine if current user is a parent viewing athlete data
@@ -15,13 +22,10 @@ import type { LinkedAccount } from "~/types/models";
 export const useParentContext = () => {
   const route = useRoute();
   const router = useRouter();
-  // Lazily initialize store on first access
-  let userStore: ReturnType<typeof useUserStore> | undefined;
+  const userStore = useUserStore();
 
+  // Lazily initialize store on first access (keep for backwards compat)
   const getUserStore = () => {
-    if (!userStore) {
-      userStore = useUserStore();
-    }
     return userStore;
   };
 
@@ -52,9 +56,10 @@ export const useParentContext = () => {
     }
 
     // Get linked athletes for this parent
-    const linkedAccounts = store.user?.linked_accounts || [];
+    const linkedAccounts =
+      ((store.user as any)?.linked_accounts as LinkedAccount[]) || [];
     linkedAthletes.value = linkedAccounts.filter(
-      (account) => account.relationship === "student",
+      (account: LinkedAccount) => account.relationship === "student",
     );
 
     // Determine which athlete is being viewed
@@ -63,7 +68,9 @@ export const useParentContext = () => {
 
     if (
       athleteIdFromRoute &&
-      linkedAthletes.value.some((a) => a.user_id === athleteIdFromRoute)
+      linkedAthletes.value.some(
+        (a: LinkedAccount) => a.user_id === athleteIdFromRoute,
+      )
     ) {
       // Query param takes precedence
       currentAthleteId.value = athleteIdFromRoute;
@@ -72,7 +79,9 @@ export const useParentContext = () => {
       const lastViewed = localStorage.getItem("parent_last_viewed_athlete");
       if (
         lastViewed &&
-        linkedAthletes.value.some((a) => a.user_id === lastViewed)
+        linkedAthletes.value.some(
+          (a: LinkedAccount) => a.user_id === lastViewed,
+        )
       ) {
         currentAthleteId.value = lastViewed;
       } else if (linkedAthletes.value.length > 0) {
@@ -90,7 +99,9 @@ export const useParentContext = () => {
    */
   const canViewAthlete = (athleteId: string): boolean => {
     if (!isParent.value) return false;
-    return linkedAthletes.value.some((a) => a.user_id === athleteId);
+    return linkedAthletes.value.some(
+      (a: LinkedAccount) => a.user_id === athleteId,
+    );
   };
 
   /**
@@ -119,7 +130,7 @@ export const useParentContext = () => {
   const getCurrentAthlete = () => {
     if (!isViewingAsParent.value) return null;
     return linkedAthletes.value.find(
-      (a) => a.user_id === currentAthleteId.value,
+      (a: LinkedAccount) => a.user_id === currentAthleteId.value,
     );
   };
 

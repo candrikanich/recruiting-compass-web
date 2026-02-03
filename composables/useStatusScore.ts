@@ -56,7 +56,11 @@ export const useStatusScore = (): {
 
     try {
       const { $fetchAuth } = useAuthFetch();
-      const response = await $fetchAuth("/api/athlete/status");
+      const response = (await $fetchAuth("/api/athlete/status")) as {
+        score?: number;
+        label?: StatusLabel;
+        breakdown?: StatusScoreInputs;
+      };
 
       statusScore.value = response?.score ?? 0;
       statusLabel.value = response?.label ?? "on_track";

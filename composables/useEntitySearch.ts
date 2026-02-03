@@ -110,17 +110,33 @@ export const useEntitySearch = () => {
         .ilike("name", `%${searchQuery}%`)
         .limit(20);
 
-      if (filters.schools?.division) {
-        queryBuilder = queryBuilder.eq("division", filters.schools.division);
+      const schoolFilters = filters.schools as
+        | Record<string, unknown>
+        | undefined;
+      if (schoolFilters?.division) {
+        queryBuilder = queryBuilder.eq(
+          "division",
+          schoolFilters.division as string,
+        );
       }
-      if (filters.schools?.state) {
-        queryBuilder = queryBuilder.eq("state", filters.schools.state);
+      if (schoolFilters?.state) {
+        queryBuilder = queryBuilder.eq("state", schoolFilters.state as string);
       }
-      if (filters.schools?.verified !== null) {
-        queryBuilder = queryBuilder.eq("verified", filters.schools.verified);
+      if (
+        schoolFilters?.verified !== null &&
+        schoolFilters?.verified !== undefined
+      ) {
+        queryBuilder = queryBuilder.eq(
+          "verified",
+          schoolFilters.verified as boolean,
+        );
       }
 
-      const { data, error } = await queryBuilder;
+      const schoolResponse = await queryBuilder;
+      const { data, error } = schoolResponse as {
+        data: School[] | null;
+        error: any;
+      };
 
       if (error) throw error;
       schoolResults.value = applyFuzzySearch(data || [], searchQuery, [
@@ -152,20 +168,36 @@ export const useEntitySearch = () => {
         .or(`name.ilike.%${searchQuery}%,school.ilike.%${searchQuery}%`)
         .limit(20);
 
-      if (filters.coaches?.sport) {
-        queryBuilder = queryBuilder.eq("sport", filters.coaches.sport);
+      const coachFilters = filters.coaches as
+        | Record<string, unknown>
+        | undefined;
+      if (coachFilters?.sport) {
+        queryBuilder = queryBuilder.eq("sport", coachFilters.sport as string);
       }
-      if (filters.coaches?.responseRate > 0) {
+      if (
+        coachFilters?.responseRate &&
+        (coachFilters.responseRate as number) > 0
+      ) {
         queryBuilder = queryBuilder.gte(
           "response_rate",
-          filters.coaches.responseRate / 100,
+          (coachFilters.responseRate as number) / 100,
         );
       }
-      if (filters.coaches?.verified !== null) {
-        queryBuilder = queryBuilder.eq("verified", filters.coaches.verified);
+      if (
+        coachFilters?.verified !== null &&
+        coachFilters?.verified !== undefined
+      ) {
+        queryBuilder = queryBuilder.eq(
+          "verified",
+          coachFilters.verified as boolean,
+        );
       }
 
-      const { data, error } = await queryBuilder;
+      const coachResponse = await queryBuilder;
+      const { data, error } = coachResponse as {
+        data: Coach[] | null;
+        error: any;
+      };
 
       if (error) throw error;
       coachResults.value = applyFuzzySearch(data || [], searchQuery, [
@@ -198,32 +230,39 @@ export const useEntitySearch = () => {
         .order("recorded_date", { ascending: false })
         .limit(20);
 
-      if (filters.interactions?.sentiment) {
+      const interactionFilters = filters.interactions as
+        | Record<string, unknown>
+        | undefined;
+      if (interactionFilters?.sentiment) {
         queryBuilder = queryBuilder.eq(
           "sentiment_label",
-          filters.interactions.sentiment,
+          interactionFilters.sentiment as string,
         );
       }
-      if (filters.interactions?.direction) {
+      if (interactionFilters?.direction) {
         queryBuilder = queryBuilder.eq(
           "direction",
-          filters.interactions.direction,
+          interactionFilters.direction as string,
         );
       }
-      if (filters.interactions?.dateFrom) {
+      if (interactionFilters?.dateFrom) {
         queryBuilder = queryBuilder.gte(
           "recorded_date",
-          filters.interactions.dateFrom,
+          interactionFilters.dateFrom as string,
         );
       }
-      if (filters.interactions?.dateTo) {
+      if (interactionFilters?.dateTo) {
         queryBuilder = queryBuilder.lte(
           "recorded_date",
-          filters.interactions.dateTo,
+          interactionFilters.dateTo as string,
         );
       }
 
-      const { data, error } = await queryBuilder;
+      const interactionResponse = await queryBuilder;
+      const { data, error } = interactionResponse as {
+        data: Interaction[] | null;
+        error: any;
+      };
 
       if (error) throw error;
       interactionResults.value = data || [];
@@ -250,20 +289,33 @@ export const useEntitySearch = () => {
         .order("recorded_date", { ascending: false })
         .limit(20);
 
-      if (filters.metrics?.metricType) {
+      const metricFilters = filters.metrics as
+        | Record<string, unknown>
+        | undefined;
+      if (metricFilters?.metricType) {
         queryBuilder = queryBuilder.eq(
           "metric_type",
-          filters.metrics.metricType,
+          metricFilters.metricType as string,
         );
       }
-      if (filters.metrics?.minValue > 0) {
-        queryBuilder = queryBuilder.gte("value", filters.metrics.minValue);
+      if (metricFilters?.minValue && (metricFilters.minValue as number) > 0) {
+        queryBuilder = queryBuilder.gte(
+          "value",
+          metricFilters.minValue as number,
+        );
       }
-      if (filters.metrics?.maxValue < 100) {
-        queryBuilder = queryBuilder.lte("value", filters.metrics.maxValue);
+      if (metricFilters?.maxValue && (metricFilters.maxValue as number) < 100) {
+        queryBuilder = queryBuilder.lte(
+          "value",
+          metricFilters.maxValue as number,
+        );
       }
 
-      const { data, error } = await queryBuilder;
+      const metricsResponse = await queryBuilder;
+      const { data, error } = metricsResponse as {
+        data: PerformanceMetric[] | null;
+        error: any;
+      };
 
       if (error) throw error;
       metricsResults.value = (data || []).filter(

@@ -161,16 +161,16 @@ export const useEvents = (): {
     error.value = null;
 
     try {
-      const { data, error: insertError } = await supabase
+      const { data, error: insertError } = (await supabase
         .from("events")
         .insert([
           {
             ...eventData,
             user_id: activeFamily.getDataOwnerUserId(),
           },
-        ] as EventInsert[])
+        ])
         .select()
-        .single();
+        .single()) as { data: Event; error: any };
 
       if (insertError) throw insertError;
 
@@ -193,16 +193,16 @@ export const useEvents = (): {
     error.value = null;
 
     try {
-      const { data, error: updateError } = await supabase
+      const { data, error: updateError } = (await supabase
         .from("events")
         .update({
           ...updates,
           updated_by: userStore.user.id,
           updated_at: new Date().toISOString(),
-        } as EventUpdate)
+        })
         .eq("id", id)
         .select()
-        .single();
+        .single()) as { data: Event; error: any };
 
       if (updateError) throw updateError;
 

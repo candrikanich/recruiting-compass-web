@@ -4,13 +4,10 @@ import { useUserStore } from "~/stores/user";
 import type { SavedSearch, SearchHistory } from "~/types/models";
 import type { Database } from "~/types/database";
 
-// Type aliases for Supabase casting
-type SavedSearchInsert =
-  Database["public"]["Tables"]["saved_searches"]["Insert"];
-type SavedSearchUpdate =
-  Database["public"]["Tables"]["saved_searches"]["Update"];
-type SearchHistoryInsert =
-  Database["public"]["Tables"]["search_history"]["Insert"];
+// Type aliases for Supabase casting (tables not yet in database.ts)
+type SavedSearchInsert = any;
+type SavedSearchUpdate = any;
+type SearchHistoryInsert = any;
 
 /**
  * useSavedSearches composable
@@ -50,11 +47,16 @@ export const useSavedSearches = () => {
     error.value = null;
 
     try {
-      const { data, error: err } = await supabase
+      const savedSearchResponse = await supabase
         .from("saved_searches")
         .select("*")
         .eq("user_id", userStore.user.id)
         .order("updated_at", { ascending: false });
+
+      const { data, error: err } = savedSearchResponse as {
+        data: SavedSearch[];
+        error: any;
+      };
 
       if (err) throw err;
       savedSearches.value = data || [];
@@ -75,12 +77,17 @@ export const useSavedSearches = () => {
     error.value = null;
 
     try {
-      const { data, error: err } = await supabase
+      const historyResponse = await supabase
         .from("search_history")
         .select("*")
         .eq("user_id", userStore.user.id)
         .order("searched_at", { ascending: false })
         .limit(50);
+
+      const { data, error: err } = historyResponse as {
+        data: SearchHistory[];
+        error: any;
+      };
 
       if (err) throw err;
       searchHistory.value = data || [];
@@ -116,11 +123,15 @@ export const useSavedSearches = () => {
         is_default: false,
       };
 
-      const { data, error: err } = await supabase
-        .from("saved_searches")
-        .insert([newSearch] as SavedSearchInsert[])
+      const saveResponse = await (supabase.from("saved_searches") as any)
+        .insert([newSearch])
         .select()
         .single();
+
+      const { data, error: err } = saveResponse as {
+        data: SavedSearch;
+        error: any;
+      };
 
       if (err) throw err;
 
@@ -141,11 +152,12 @@ export const useSavedSearches = () => {
     error.value = null;
 
     try {
-      const { error: err } = await supabase
-        .from("saved_searches")
+      const deleteResponse = await (supabase.from("saved_searches") as any)
         .delete()
         .eq("id", id)
         .eq("user_id", userStore.user.id);
+
+      const { error: err } = deleteResponse as { error: any };
 
       if (err) throw err;
 
@@ -167,10 +179,11 @@ export const useSavedSearches = () => {
     error.value = null;
 
     try {
-      const { error: err } = await supabase
-        .from("saved_searches")
-        .update({ is_favorite: !search.is_favorite } as SavedSearchUpdate)
+      const favResponse = await (supabase.from("saved_searches") as any)
+        .update({ is_favorite: !search.is_favorite })
         .eq("id", id);
+
+      const { error: err } = favResponse as { error: any };
 
       if (err) throw err;
 
@@ -194,7 +207,9 @@ export const useSavedSearches = () => {
     if (!userStore.user) return;
 
     try {
-      const { error: err } = await supabase.from("search_history").insert([
+      const recordResponse = await (
+        supabase.from("search_history") as any
+      ).insert([
         {
           user_id: userStore.user.id,
           search_term: query,
@@ -202,7 +217,9 @@ export const useSavedSearches = () => {
           filters: filtersApplied,
           searched_at: new Date().toISOString(),
         },
-      ] as SearchHistoryInsert[]);
+      ]);
+
+      const { error: err } = recordResponse as { error: any };
 
       if (err) throw err;
 
@@ -219,10 +236,11 @@ export const useSavedSearches = () => {
     if (!search) return;
 
     try {
-      const { error: err } = await supabase
-        .from("saved_searches")
-        .update({ use_count: search.use_count + 1 } as SavedSearchUpdate)
+      const countResponse = await (supabase.from("saved_searches") as any)
+        .update({ use_count: search.use_count + 1 })
         .eq("id", id);
+
+      const { error: err } = countResponse as { error: any };
 
       if (err) throw err;
 
@@ -239,10 +257,11 @@ export const useSavedSearches = () => {
     error.value = null;
 
     try {
-      const { error: err } = await supabase
-        .from("search_history")
+      const clearResponse = await (supabase.from("search_history") as any)
         .delete()
         .eq("user_id", userStore.user.id);
+
+      const { error: err } = clearResponse as { error: any };
 
       if (err) throw err;
 

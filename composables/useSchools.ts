@@ -34,7 +34,11 @@ import { sanitizeHtml } from "~/utils/validation/sanitize";
  * - Store social media handles for monitoring
  * - Academic and athletic requirements tracking
  */
-export const useSchools = (): {
+export const useSchools = () => {
+  return useSchoolsInternal();
+};
+
+const useSchoolsInternal = (): {
   schools: ComputedRef<School[]>;
   favoriteSchools: ComputedRef<School[]>;
   loading: ComputedRef<boolean>;
@@ -79,8 +83,11 @@ export const useSchools = (): {
   }
 
   const schools = shallowRef<School[]>([]);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
+  const loadingRef = ref(false);
+  const errorRef = ref<string | null>(null);
+
+  const loading = computed(() => loadingRef.value);
+  const error = computed(() => errorRef.value);
 
   const favoriteSchools = computed(() =>
     schools.value.filter((s) => s.is_favorite),
@@ -107,15 +114,20 @@ export const useSchools = (): {
     console.debug(
       `[useSchools] Fetching for family: ${activeFamily.activeFamilyId.value}`,
     );
-    loading.value = true;
-    error.value = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
-      const { data, error: fetchError } = await supabase
+      const schoolsResponse = await supabase
         .from("schools")
         .select("*")
         .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .order("ranking", { ascending: true, nullsFirst: false });
+
+      const { data, error: fetchError } = schoolsResponse as {
+        data: School[];
+        error: any;
+      };
 
       if (fetchError) throw fetchError;
 
@@ -124,36 +136,41 @@ export const useSchools = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch schools";
-      error.value = message;
+      errorRef.value = message;
       console.error("[useSchools] Error:", message);
     } finally {
-      loading.value = false;
+      loadingRef.value = false;
     }
   };
 
   const getSchool = async (id: string): Promise<School | null> => {
     if (!userStore.user || !activeFamily.activeFamilyId.value) return null;
 
-    loading.value = true;
-    error.value = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
-      const { data, error: fetchError } = await supabase
+      const schoolResponse = await supabase
         .from("schools")
         .select("*")
         .eq("id", id)
         .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .single();
 
+      const { data, error: fetchError } = schoolResponse as {
+        data: School;
+        error: any;
+      };
+
       if (fetchError) throw fetchError;
       return data;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch school";
-      error.value = message;
+      errorRef.value = message;
       return null;
     } finally {
-      loading.value = false;
+      loadingRef.value = false;
     }
   };
 
@@ -172,8 +189,8 @@ export const useSchools = (): {
       throw new Error("Athlete context not set");
     }
 
-    loading.value = true;
-    error.value = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
       // Validate school data with Zod schema
@@ -194,8 +211,7 @@ export const useSchools = (): {
         );
       }
 
-      const { data, error: insertError } = await supabase
-        .from("schools")
+      const insertResponse = await (supabase.from("schools") as any)
         .insert([
           {
             ...validated,
@@ -207,6 +223,11 @@ export const useSchools = (): {
         ])
         .select()
         .single();
+
+      const { data, error: insertError } = insertResponse as {
+        data: School;
+        error: any;
+      };
 
       if (insertError) throw insertError;
 
@@ -230,10 +251,10 @@ export const useSchools = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to create school";
-      error.value = message;
+      errorRef.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingRef.value = false;
     }
   };
 
@@ -242,8 +263,8 @@ export const useSchools = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loading.value = true;
-    error.value = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
       // Sanitize text fields to prevent XSS
@@ -263,8 +284,7 @@ export const useSchools = (): {
           .map((c) => sanitizeHtml(c));
       }
 
-      const { data, error: updateError } = await supabase
-        .from("schools")
+      const updateResponse = await (supabase.from("schools") as any)
         .update({
           ...sanitizedUpdates,
           updated_by: userStore.user.id,
@@ -274,6 +294,11 @@ export const useSchools = (): {
         .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .select()
         .single();
+
+      const { data, error: updateError } = updateResponse as {
+        data: School;
+        error: any;
+      };
 
       if (updateError) throw updateError;
 
@@ -287,10 +312,10 @@ export const useSchools = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to update school";
-      error.value = message;
+      errorRef.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingRef.value = false;
     }
   };
 
@@ -299,16 +324,18 @@ export const useSchools = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loading.value = true;
-    error.value = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
-      const { error: deleteError } = await supabase
+      const deleteResponse = await supabase
         .from("schools")
         .delete()
         .eq("id", id)
         .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .eq("user_id", userStore.user.id);
+
+      const { error: deleteError } = deleteResponse as { error: any };
 
       if (deleteError) throw deleteError;
 
@@ -317,10 +344,10 @@ export const useSchools = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to delete school";
-      error.value = message;
+      errorRef.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingRef.value = false;
     }
   };
 
@@ -331,8 +358,8 @@ export const useSchools = (): {
   const updateRanking = async (schools_: School[]) => {
     if (!userStore.user) throw new Error("User not authenticated");
 
-    loading.value = true;
-    error.value = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
       // Batch update all rankings in a single operation (28x faster than loop)
@@ -343,9 +370,12 @@ export const useSchools = (): {
         updated_at: new Date().toISOString(),
       }));
 
-      const { error: batchError } = await supabase
-        .from("schools")
-        .upsert(updates, { onConflict: "id" });
+      const upsertResponse = await (supabase.from("schools") as any).upsert(
+        updates,
+        { onConflict: "id" },
+      );
+
+      const { error: batchError } = upsertResponse as { error: any };
 
       if (batchError) throw batchError;
 
@@ -353,9 +383,9 @@ export const useSchools = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to update ranking";
-      error.value = message;
+      errorRef.value = message;
     } finally {
-      loading.value = false;
+      loadingRef.value = false;
     }
   };
 
@@ -428,7 +458,9 @@ export const useSchools = (): {
     matchType: "name" | "domain" | "ncaa_id" | null;
   } => {
     // Check name first (most reliable)
-    const nameDuplicate = isNameDuplicate(schoolData.name);
+    const nameDuplicate = isNameDuplicate(
+      schoolData.name === null ? undefined : schoolData.name,
+    );
     if (nameDuplicate) {
       return { duplicate: nameDuplicate, matchType: "name" };
     }
@@ -468,8 +500,8 @@ export const useSchools = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loading.value = true;
-    error.value = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
       // Find current school to get previous status (from local cache or fetch from DB)
@@ -477,25 +509,29 @@ export const useSchools = (): {
 
       if (!school) {
         // If not in local cache, fetch from database (e.g., viewing detail page)
-        const { data: fetchedSchool, error: fetchError } = await supabase
+        const fetchResponse = await supabase
           .from("schools")
           .select("*")
           .eq("id", schoolId)
           .eq("family_unit_id", activeFamily.activeFamilyId.value)
           .single();
 
+        const { data: fetchedSchool, error: fetchError } = fetchResponse as {
+          data: School;
+          error: any;
+        };
+
         if (fetchError || !fetchedSchool) {
           throw new Error("School not found");
         }
-        school = fetchedSchool as School;
+        school = fetchedSchool;
       }
 
       const previousStatus = school.status;
       const now = new Date().toISOString();
 
       // Update school status and status_changed_at timestamp
-      const { data: updatedSchool, error: schoolError } = await supabase
-        .from("schools")
+      const updateStatusResponse = await (supabase.from("schools") as any)
         .update({
           status: newStatus,
           status_changed_at: now,
@@ -507,21 +543,29 @@ export const useSchools = (): {
         .select()
         .single();
 
+      const { data: updatedSchool, error: schoolError } =
+        updateStatusResponse as {
+          data: School;
+          error: any;
+        };
+
       if (schoolError) throw schoolError;
 
       // Create status history entry
-      const { error: historyError } = await supabase
-        .from("school_status_history")
-        .insert([
-          {
-            school_id: schoolId,
-            previous_status: previousStatus,
-            new_status: newStatus,
-            changed_by: userStore.user.id,
-            changed_at: now,
-            notes: notes || null,
-          },
-        ]);
+      const historyResponse = await (
+        supabase.from("school_status_history") as any
+      ).insert([
+        {
+          school_id: schoolId,
+          previous_status: previousStatus,
+          new_status: newStatus,
+          changed_by: userStore.user.id,
+          changed_at: now,
+          notes: notes || null,
+        },
+      ]);
+
+      const { error: historyError } = historyResponse as { error: any };
 
       if (historyError) throw historyError;
 
@@ -535,18 +579,18 @@ export const useSchools = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to update school status";
-      error.value = message;
+      errorRef.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingRef.value = false;
     }
   };
 
   return {
-    schools: readonly(schools),
+    schools: computed(() => schools.value),
     favoriteSchools,
-    loading: readonly(loading),
-    error: readonly(error),
+    loading,
+    error,
     fetchSchools,
     getSchool,
     createSchool,

@@ -62,12 +62,16 @@ export const useDocumentSharing = () => {
     error.value = null;
 
     try {
-      const { data, error: updateError } = await supabase
+      const response = await supabase
         .from("documents")
         .update({ shared_with_schools: schoolIds })
         .eq("id", documentId)
         .select()
         .single();
+      const { data, error: updateError } = response as {
+        data: Document;
+        error: any;
+      };
 
       if (updateError) throw updateError;
 
@@ -96,11 +100,15 @@ export const useDocumentSharing = () => {
     error.value = null;
 
     try {
-      const { data: doc, error: fetchError } = await supabase
+      const response = await supabase
         .from("documents")
         .select("shared_with_schools")
         .eq("id", documentId)
         .single();
+      const { data: doc, error: fetchError } = response as {
+        data: { shared_with_schools: string[] | null } | null;
+        error: any;
+      };
 
       if (fetchError) throw fetchError;
       if (!doc) throw new Error("Document not found");
@@ -109,12 +117,16 @@ export const useDocumentSharing = () => {
         (id: string) => id !== schoolIdToRemove,
       );
 
-      const { data, error: updateError } = await supabase
+      const updateResponse = await supabase
         .from("documents")
         .update({ shared_with_schools: updatedSchools })
         .eq("id", documentId)
         .select()
         .single();
+      const { data, error: updateError } = updateResponse as {
+        data: Document;
+        error: any;
+      };
 
       if (updateError) throw updateError;
 

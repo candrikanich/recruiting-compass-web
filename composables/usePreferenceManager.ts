@@ -158,7 +158,7 @@ export function usePreferenceManager() {
     await notificationPrefs.savePreferences();
 
     // Track in history
-    if (oldValue) {
+    if (oldValue && updated) {
       await trackPreferenceChange("notifications", oldValue, updated);
     }
   };
@@ -179,7 +179,7 @@ export function usePreferenceManager() {
     locationPrefs.updatePreferences(location);
     await locationPrefs.savePreferences();
 
-    if (oldValue) {
+    if (oldValue && location) {
       await trackPreferenceChange("location", oldValue, location);
     }
   };
@@ -201,7 +201,7 @@ export function usePreferenceManager() {
     await playerPrefs.savePreferences();
 
     // Track in history (player details are tracked separately for audit)
-    if (oldValue) {
+    if (oldValue && details) {
       await trackPreferenceChange("player", oldValue, details);
     }
   };

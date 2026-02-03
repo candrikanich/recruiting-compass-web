@@ -10,6 +10,7 @@ import { requireAuth, assertNotParent } from "~/server/utils/auth";
 import { calculateFitScore } from "~/utils/fitScoreCalculation";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { FitScoreInputs } from "~/types/timeline";
+import type { Database } from "~/types/database";
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
@@ -112,17 +113,19 @@ export default defineEventHandler(async (event) => {
 
     // Update school with fit score data
     // Supabase type generation doesn't include custom columns - need to bypass type check
-    const updateResult = await supabase
+    const updateResult = (await supabase
       .from("schools")
-      // @ts-expect-error - custom columns (fit_score, fit_score_data) not in Supabase types
       .update({
         fit_score: fitScoreResult.score,
-        fit_score_data: fitScoreResult.breakdown,
+        fit_score_data: fitScoreResult.breakdown as any,
         updated_at: new Date().toISOString(),
-      })
+      } as any)
       .eq("id", schoolId)
       .select()
-      .single();
+      .single()) as {
+      data: any;
+      error: any;
+    };
 
     const { data: updated, error: updateError } = updateResult;
 
@@ -130,7 +133,8 @@ export default defineEventHandler(async (event) => {
       throw updateError;
     }
 
-    const updatedRecord = updated as unknown as {
+    const updatedRecord = updated as {
+      id: string;
       fit_score: number;
       fit_score_data: unknown;
       updated_at: string;
@@ -152,7 +156,7 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       data: {
-        schoolId: updatedRecord?.id,
+        schoolId: updatedRecord.id,
         fitScore: fitScoreResult,
         school: updated,
       },

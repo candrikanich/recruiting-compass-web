@@ -185,12 +185,15 @@ export const useProfile = (): {
 
       // Update database
       uploadProgress.value = 90;
-      const { error: updateError } = await supabase
+      const updateResponse = await supabase
         .from("users")
         .update({ profile_photo_url: publicUrl })
         .eq("id", userId)
         .select()
         .single();
+      const { error: updateError } = updateResponse as {
+        error: any;
+      };
 
       if (updateError) {
         throw updateError;
@@ -251,12 +254,15 @@ export const useProfile = (): {
       }
 
       // Clear from database
-      const { error: updateError } = await supabase
+      const updateResponse = await supabase
         .from("users")
         .update({ profile_photo_url: null })
         .eq("id", userId)
         .select()
         .single();
+      const { error: updateError } = updateResponse as {
+        error: any;
+      };
 
       if (updateError) {
         throw updateError;
@@ -291,14 +297,18 @@ export const useProfile = (): {
         return;
       }
 
-      const { data, error: fetchError } = await supabase
+      const fetchResponse = await supabase
         .from("user_preferences")
         .select("preference_history")
         .eq("user_id", userStore.user.id)
         .single();
+      const { data, error: fetchError } = fetchResponse as {
+        data: { preference_history: PreferenceHistoryEntry[] } | null;
+        error: any;
+      };
 
       if (fetchError) {
-        if (fetchError.code === "PGRST116") {
+        if (fetchError?.code === "PGRST116") {
           // No preferences found
           editHistory.value = [];
           return;

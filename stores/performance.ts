@@ -201,16 +201,23 @@ export const usePerformanceStore = defineStore("performance", {
           throw new Error("User not authenticated");
         }
 
-        const { data, error: insertError } = await supabase
+        const insertData = [
+          {
+            ...metricData,
+            user_id: userStore.user.id,
+          },
+        ];
+
+        const response = (await supabase
           .from("performance_metrics")
-          .insert([
-            {
-              ...metricData,
-              user_id: userStore.user.id,
-            },
-          ])
+          .insert(insertData as any)
           .select()
-          .single();
+          .single()) as {
+          data: PerformanceMetric;
+          error: any;
+        };
+
+        const { data, error: insertError } = response;
 
         if (insertError) throw insertError;
 
@@ -237,12 +244,16 @@ export const usePerformanceStore = defineStore("performance", {
       this.error = null;
 
       try {
-        const { data, error: updateError } = await supabase
-          .from("performance_metrics")
+        const response = (await (supabase.from("performance_metrics") as any)
           .update(updates)
           .eq("id", id)
           .select()
-          .single();
+          .single()) as {
+          data: PerformanceMetric;
+          error: any;
+        };
+
+        const { data, error: updateError } = response;
 
         if (updateError) throw updateError;
 

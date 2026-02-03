@@ -77,9 +77,13 @@ export const useDocumentFetch = () => {
         query = query.eq("school_id", filters.schoolId);
       }
 
-      const { data, error: fetchError } = await query.order("created_at", {
+      const response = await query.order("created_at", {
         ascending: false,
       });
+      const { data, error: fetchError } = response as {
+        data: Document[] | null;
+        error: any;
+      };
 
       if (fetchError) throw fetchError;
 
@@ -104,12 +108,16 @@ export const useDocumentFetch = () => {
     try {
       // Find all documents with same title and user (naive grouping)
       // Future: add parent_document_id FK for proper version linking
-      const { data, error: fetchError } = await supabase
+      const response = await supabase
         .from("documents")
         .select("*")
         .eq("user_id", getUserStore().user.id)
         .eq("title", documentTitle)
         .order("version", { ascending: false });
+      const { data, error: fetchError } = response as {
+        data: Document[] | null;
+        error: any;
+      };
 
       if (fetchError) throw fetchError;
 
@@ -131,12 +139,13 @@ export const useDocumentFetch = () => {
     error.value = null;
 
     try {
-      const { data, error: updateError } = await supabase
+      const response = (await supabase
         .from("documents")
         .update(updates)
         .eq("id", id)
         .select()
-        .single();
+        .single()) as { data: Document; error: any };
+      const { data, error: updateError } = response;
 
       if (updateError) throw updateError;
 
@@ -168,11 +177,15 @@ export const useDocumentFetch = () => {
 
     try {
       // 1. Get document to retrieve file_url before deletion
-      const { data: doc, error: fetchError } = await supabase
+      const response = await supabase
         .from("documents")
         .select("file_url")
         .eq("id", id)
         .single();
+      const { data: doc, error: fetchError } = response as {
+        data: { file_url: string | null } | null;
+        error: any;
+      };
 
       if (fetchError) throw fetchError;
 

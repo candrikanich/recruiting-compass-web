@@ -248,18 +248,25 @@ export const useSchoolStore = defineStore("schools", {
           sanitized.success_metrics = sanitizeHtml(sanitized.success_metrics);
         }
 
-        const { data, error: insertError } = await supabase
+        const insertData = [
+          {
+            ...sanitized,
+            user_id: userStore.user.id,
+            created_by: userStore.user.id,
+            updated_by: userStore.user.id,
+          },
+        ];
+
+        const response = (await supabase
           .from("schools")
-          .insert([
-            {
-              ...sanitized,
-              user_id: userStore.user.id,
-              created_by: userStore.user.id,
-              updated_by: userStore.user.id,
-            },
-          ])
+          .insert(insertData as any)
           .select()
-          .single();
+          .single()) as {
+          data: School;
+          error: any;
+        };
+
+        const { data, error: insertError } = response;
 
         if (insertError) throw insertError;
 
@@ -330,17 +337,23 @@ export const useSchoolStore = defineStore("schools", {
           sanitized.success_metrics = sanitizeHtml(sanitized.success_metrics);
         }
 
-        const { data, error: updateError } = await supabase
-          .from("schools")
-          .update({
-            ...sanitized,
-            updated_by: userStore.user.id,
-            updated_at: new Date().toISOString(),
-          })
+        const updateData = {
+          ...sanitized,
+          updated_by: userStore.user.id,
+          updated_at: new Date().toISOString(),
+        };
+
+        const response = (await (supabase.from("schools") as any)
+          .update(updateData)
           .eq("id", id)
           .eq("user_id", userStore.user.id)
           .select()
-          .single();
+          .single()) as {
+          data: School;
+          error: any;
+        };
+
+        const { data, error: updateError } = response;
 
         if (updateError) throw updateError;
 
@@ -434,9 +447,13 @@ export const useSchoolStore = defineStore("schools", {
           updated_at: new Date().toISOString(),
         }));
 
-        const { error: batchError } = await supabase
+        const response = (await supabase
           .from("schools")
-          .upsert(updates, { onConflict: "id" });
+          .upsert(updates as any, { onConflict: "id" })) as {
+          error: any;
+        };
+
+        const { error: batchError } = response;
 
         if (batchError) throw batchError;
 
@@ -482,34 +499,46 @@ export const useSchoolStore = defineStore("schools", {
         const now = new Date().toISOString();
 
         // Update school status and status_changed_at timestamp
-        const { data: updatedSchool, error: schoolError } = await supabase
-          .from("schools")
-          .update({
-            status: newStatus,
-            status_changed_at: now,
-            updated_by: userStore.user.id,
-            updated_at: now,
-          })
+        const schoolUpdateData = {
+          status: newStatus,
+          status_changed_at: now,
+          updated_by: userStore.user.id,
+          updated_at: now,
+        };
+
+        const response = (await (supabase.from("schools") as any)
+          .update(schoolUpdateData)
           .eq("id", schoolId)
           .eq("user_id", userStore.user.id)
           .select()
-          .single();
+          .single()) as {
+          data: School;
+          error: any;
+        };
+
+        const { data: updatedSchool, error: schoolError } = response;
 
         if (schoolError) throw schoolError;
 
         // Create status history entry
-        const { error: historyError } = await supabase
+        const historyData = [
+          {
+            school_id: schoolId,
+            previous_status: previousStatus,
+            new_status: newStatus,
+            changed_by: userStore.user.id,
+            changed_at: now,
+            notes: notes || null,
+          },
+        ];
+
+        const historyResponse = (await supabase
           .from("school_status_history")
-          .insert([
-            {
-              school_id: schoolId,
-              previous_status: previousStatus,
-              new_status: newStatus,
-              changed_by: userStore.user.id,
-              changed_at: now,
-              notes: notes || null,
-            },
-          ]);
+          .insert(historyData as any)) as {
+          error: any;
+        };
+
+        const { error: historyError } = historyResponse;
 
         if (historyError) throw historyError;
 

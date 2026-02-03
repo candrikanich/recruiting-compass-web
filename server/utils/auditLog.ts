@@ -75,7 +75,9 @@ export async function auditLog(
       metadata: params.metadata || undefined,
     };
 
-    const { error } = await supabaseAny.from("audit_logs").insert(auditEntry);
+    const { error } = await (supabaseAny as any)
+      .from("audit_logs")
+      .insert(auditEntry);
 
     if (error) {
       logger.error("Failed to create audit log", {
@@ -125,7 +127,9 @@ export async function auditLogBatch(
       metadata: p.metadata || {},
     })) as AuditLogInsert[];
 
-    const { error } = await supabaseAny.from("audit_logs").insert(entries);
+    const { error } = await (supabaseAny as any)
+      .from("audit_logs")
+      .insert(entries);
 
     if (error) {
       logger.error("Failed to batch create audit logs", {
