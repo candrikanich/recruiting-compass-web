@@ -700,15 +700,17 @@
             @close="showUploadModal = false"
             @success="handleDocumentUploadSuccess"
           />
-
           <!-- Email Send Modal -->
           <EmailSendModal
             v-if="showEmailModal"
             :is-open="showEmailModal"
             :recipient-email="
-              schoolCoaches.length > 0 ? (schoolCoaches[0].email ?? '') : ''
+              schoolCoaches.length > 0 ? (schoolCoaches[0].email ?? x27x27) : x27x27
             "
-            :recipient-name="school?.name || ''"
+            :subject="`Contact from ${school?.name || x27Recruiting Compassx27}`"
+            :body="`Hello,\n\nI am reaching out regarding recruitment opportunities at ${school?.name || x27your schoolx27}.\n\nBest regards`"
+            @close="showEmailModal = false"
+          />
             @close="showEmailModal = false"
           />
         </div>

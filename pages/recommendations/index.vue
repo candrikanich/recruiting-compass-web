@@ -539,11 +539,13 @@ const handleSave = async () => {
 
       if (error) throw error;
     } else {
-      const response = await supabase
+      const response = (await supabase
         .from("recommendation_letters")
-        .insert([{ ...formData.value, user_id: userStore.user?.id } as any]);
+        .insert([
+          { ...formData.value, user_id: userStore.user?.id },
+        ])) as unknown as { data: any; error: any };
 
-      const { error } = response as { data: any; error: any };
+      const { error } = response;
       if (error) throw error;
     }
 

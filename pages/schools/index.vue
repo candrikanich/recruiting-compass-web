@@ -794,8 +794,8 @@ const distanceCache = computed(() => {
     ) {
       const distance = calculateDistance(
         {
-          latitude: homeLocation.latitude,
-          longitude: homeLocation.longitude,
+          latitude: homeLocation.latitude ?? 0,
+          longitude: homeLocation.longitude ?? 0,
         },
         {
           latitude: coordLat,
