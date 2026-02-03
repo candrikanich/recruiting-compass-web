@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ref } from "vue";
 import { mount } from "@vue/test-utils";
 import ProfileEditHistory from "~/components/Settings/ProfileEditHistory.vue";
-import type { FormattedHistoryEntry } from "~/composables/useProfileEditHistory";
+import type { FormattedHistoryEntry } from "~/composables/useProfile";
 
 // Mock state - will be reset in beforeEach
 let mockHistory: any;

@@ -450,10 +450,8 @@ import { ref, computed, onMounted, watch, inject } from "vue";
 import { navigateTo } from "#app";
 import { useSupabase } from "~/composables/useSupabase";
 import { useCommunication } from "~/composables/useCommunication";
-import {
-  useFamilyContext,
-  type UseActiveFamilyReturn,
-} from "~/composables/useFamilyContext";
+import { useFamilyContext } from "~/composables/useFamilyContext";
+import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 import Header from "~/components/Header.vue";
 import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";

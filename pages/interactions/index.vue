@@ -521,10 +521,8 @@ import { ref, computed, onMounted, watch, inject, type Component } from "vue";
 import { useInteractions } from "~/composables/useInteractions";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
-import {
-  useFamilyContext,
-  type UseActiveFamilyReturn,
-} from "~/composables/useFamilyContext";
+import { useFamilyContext } from "~/composables/useFamilyContext";
+import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
 import Header from "~/components/Header.vue";

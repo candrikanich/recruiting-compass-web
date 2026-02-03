@@ -23,10 +23,8 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, watch, inject } from "vue";
-import {
-  useFamilyContext,
-  type UseActiveFamilyReturn,
-} from "~/composables/useFamilyContext";
+import { useFamilyContext } from "~/composables/useFamilyContext";
+import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 
 const activeFamily =

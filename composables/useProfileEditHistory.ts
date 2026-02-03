@@ -2,15 +2,7 @@ import { ref, type Ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { PreferenceHistoryEntry } from "~/types/models";
-
-export interface FormattedHistoryEntry extends PreferenceHistoryEntry {
-  changes: Array<{
-    field: string;
-    fieldLabel: string;
-    old_value: unknown;
-    new_value: unknown;
-  }>;
-}
+import type { FormattedHistoryEntry } from "./useProfile";
 
 /**
  * Map database field names to human-readable labels

@@ -28,10 +28,8 @@
 <script setup lang="ts">
 import { computed, ref, watch, inject } from "vue";
 import { UserCircleIcon } from "@heroicons/vue/24/outline";
-import {
-  useFamilyContext,
-  type UseActiveFamilyReturn,
-} from "~/composables/useFamilyContext";
+import { useFamilyContext } from "~/composables/useFamilyContext";
+import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 const injected = inject<UseActiveFamilyReturn>("activeFamily");
 console.debug("[AthleteSwitcher] Injection result:", { injected: !!injected });

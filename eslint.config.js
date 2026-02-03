@@ -11,6 +11,8 @@ export default [
       "dist",
       "node_modules",
       ".output",
+      ".vercel",
+      ".vercel/**/*",
       "coverage",
       "*.cjs",
       ".gitlab-ci.yml",
