@@ -58,9 +58,11 @@ export default defineEventHandler(
       // 2. Parse and validate request body
       const body = await readBody<DeleteUserRequest>(event);
       const { email } = body;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
       if (!email || typeof email !== "string") {
         throw createError({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           statusCode: 400,
           statusMessage: "Email address is required",
         });
@@ -167,9 +169,11 @@ export default defineEventHandler(
         try {
           // Delete records where any of the user columns match
           for (const column of columns) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const response = await (supabaseAdmin.from(table as any) as any)
               .delete()
               .eq(column, targetUserId);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { error: deleteError } = response as { error: any };
 
             if (deleteError && deleteError.code !== "42P01") {

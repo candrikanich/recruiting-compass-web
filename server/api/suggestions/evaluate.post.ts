@@ -41,24 +41,33 @@ export default defineEventHandler(async (event) => {
       events,
     ] = await Promise.all([
       supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from("profiles" as any)
         .select("*")
         .eq("id", athleteId)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .single() as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       supabase.from("schools").select("*").eq("athlete_id", athleteId) as any,
       supabase
         .from("interactions")
         .select("*")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .eq("athlete_id", athleteId) as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       supabase.from("task").select("*") as any,
       supabase
         .from("athlete_task")
         .select("*")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .eq("athlete_id", athleteId) as any,
       supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from("videos" as any)
         .select("*")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .eq("athlete_id", athleteId) as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       supabase.from("events").select("*").eq("athlete_id", athleteId) as any,
     ]);
 
@@ -89,6 +98,7 @@ export default defineEventHandler(async (event) => {
       prioritySchoolReminderRule,
     ]);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await engine.generateSuggestions(
       supabase,
       athleteId,

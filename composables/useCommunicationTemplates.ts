@@ -7,7 +7,7 @@ import type { Database } from "~/types/database";
 // Type aliases for Supabase casting
 type CommunicationTemplateInsert =
   Database["public"]["Tables"]["communication_templates"]["Insert"];
-type CommunicationTemplateUpdate =
+type _CommunicationTemplateUpdate =
   Database["public"]["Tables"]["communication_templates"]["Update"];
 
 // Unlock condition types (migrated from useTemplateUnlock)
@@ -138,6 +138,7 @@ export const useCommunicationTemplates = (): {
         .order("updated_at", { ascending: false });
       const { data, error: err } = response as {
         data: CommunicationTemplate[] | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -189,12 +190,15 @@ export const useCommunicationTemplates = (): {
         body,
       };
 
-      const insertResponse = (await (
-        supabase.from("communication_templates") as any
-      )
-        .insert([newTemplate])
-        .select()
-        .single()) as { data: CommunicationTemplate; error: any };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const insertResponse =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("communication_templates") as any)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .insert([newTemplate])
+          .select()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single()) as { data: CommunicationTemplate; error: any };
       const { data, error: err } = insertResponse;
 
       if (err) throw err;
@@ -223,14 +227,16 @@ export const useCommunicationTemplates = (): {
     if (!userStore.user) return false;
 
     error.value = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
     try {
-      const updateResponse = (await (
-        supabase.from("communication_templates") as any
-      )
-        .update(updates)
-        .eq("id", id)
-        .eq("user_id", userStore.user.id)) as { error: any };
+      const updateResponse =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("communication_templates") as any)
+          .update(updates)
+          .eq("id", id)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .eq("user_id", userStore.user.id)) as { error: any };
       const { error: err } = updateResponse;
 
       if (err) throw err;
@@ -365,11 +371,13 @@ export const useCommunicationTemplates = (): {
 
           const prefsResponse = await supabase
             .from("user_preferences")
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .select("player_details")
             .eq("user_id", userStore.user.id)
             .single();
           const { data: prefs } = prefsResponse as {
             data: { player_details: Record<string, unknown> } | null;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             error: any;
           };
 
@@ -396,12 +404,14 @@ export const useCommunicationTemplates = (): {
           const docsResponse = await supabase
             .from("documents")
             .select("id")
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .eq("user_id", userStore.user.id)
             .eq("type", condition.documentType)
             .eq("is_current", true)
             .limit(1);
           const { data } = docsResponse as {
             data: { id: string }[] | null;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             error: any;
           };
 

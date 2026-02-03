@@ -185,10 +185,12 @@ export const useProfile = (): {
 
       // Update database
       uploadProgress.value = 90;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateResponse = (await (supabase.from("users") as any)
         .update({ profile_photo_url: publicUrl })
         .eq("id", userId)
         .select()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .single()) as { error: any };
       const { error: updateError } = updateResponse;
 
@@ -251,10 +253,12 @@ export const useProfile = (): {
       }
 
       // Clear from database
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateResponse = (await (supabase.from("users") as any)
         .update({ profile_photo_url: null })
         .eq("id", userId)
         .select()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .single()) as { error: any };
       const { error: updateError } = updateResponse;
 
@@ -298,6 +302,7 @@ export const useProfile = (): {
         .single();
       const { data, error: fetchError } = fetchResponse as {
         data: { preference_history: PreferenceHistoryEntry[] } | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 

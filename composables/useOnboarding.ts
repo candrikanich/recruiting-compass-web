@@ -121,6 +121,7 @@ export const useOnboarding = () => {
       }
 
       // Update user phase and mark onboarding complete
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: updateError } = (await (supabase.from("users") as any)
         .update({
           current_phase: startingPhase,
@@ -130,6 +131,7 @@ export const useOnboarding = () => {
             assessment_responses: assessment,
           },
         })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .eq("id", userId)) as { error: any };
 
       if (updateError) {
@@ -175,6 +177,7 @@ export const useOnboarding = () => {
         data: {
           phase_milestone_data?: { onboarding_complete?: boolean };
         } | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 

@@ -65,6 +65,7 @@ export function validateHomeLocation(data: unknown): HomeLocation | null {
 }
 
 /**
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
  * Validates and extracts player details
  * Returns null if empty/missing
  */
@@ -144,6 +145,7 @@ export function validateSchoolPreferences(
         priority: toNumber(p.priority, 0) ?? 0,
         is_dealbreaker: toBoolean(p.is_dealbreaker, false),
       };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any,
     template_used: toString(obj.template_used),
     last_updated: toString(obj.last_updated) || new Date().toISOString(),

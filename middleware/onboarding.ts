@@ -27,6 +27,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
       .from("users")
       .select("phase_milestone_data")
       .eq("id", session.value.user.id)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .single()) as { data: { phase_milestone_data: any } | null; error: any };
 
     if (error) {

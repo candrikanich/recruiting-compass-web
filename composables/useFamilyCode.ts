@@ -51,6 +51,7 @@ export const useFamilyCode = () => {
             family_name: string | null;
             code_generated_at: string | null;
           } | null;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           error: any;
         };
 
@@ -76,7 +77,9 @@ export const useFamilyCode = () => {
           .eq("role", "parent");
         const { data: memberships, error: fetchError } =
           membershipsResponse as {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data: any[] | null;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             error: any;
           };
 

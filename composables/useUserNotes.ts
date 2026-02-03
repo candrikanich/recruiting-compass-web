@@ -94,6 +94,7 @@ export const useUserNotes = () => {
           note_content: string | null;
           [key: string]: unknown;
         }> | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -102,6 +103,7 @@ export const useUserNotes = () => {
       const result: Record<string, string> = {};
       if (data) {
         for (const note of data) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           notes.value.set(getKey(entityType, note.entity_id), note as any);
           result[note.entity_id] = note.note_content || "";
         }
@@ -133,20 +135,21 @@ export const useUserNotes = () => {
     try {
       // Try to upsert: delete first (to handle empty content), then insert if not empty
       if (noteContent.trim()) {
-        const upsertResponse = (await (
-          supabase.from("user_notes") as any
-        ).upsert(
-          {
-            user_id: userStore.user.id,
-            entity_type: entityType,
-            entity_id: entityId,
-            note_content: noteContent,
-            updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: "user_id,entity_type,entity_id",
-          },
-        )) as { error: any };
+        const upsertResponse =
+          (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabase.from("user_notes") as any).upsert(
+            {
+              user_id: userStore.user.id,
+              entity_type: entityType,
+              entity_id: entityId,
+              note_content: noteContent,
+              updated_at: new Date().toISOString(),
+            },
+            {
+              onConflict: "user_id,entity_type,entity_id",
+            },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          )) as { error: any };
         const { error: upsertError } = upsertResponse;
 
         if (upsertError) throw upsertError;

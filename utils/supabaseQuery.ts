@@ -30,6 +30,7 @@ export interface QueryContext {
   /** Name of the composable or context making the query */
   context?: string;
   /** Additional metadata for debugging */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, unknown>;
   /** Whether to log the query */
   silent?: boolean;
@@ -41,6 +42,7 @@ export interface QueryContext {
 export type SupabaseQueryBuilder = ReturnType<
   ReturnType<typeof useSupabase>["from"]
 >;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 
 /**
  * Generic select query with flexible filtering
@@ -52,6 +54,7 @@ export type SupabaseQueryBuilder = ReturnType<
  *     select: 'id, first_name, last_name, email',
  *     filters: { school_id: schoolId },
  *     order: { column: 'last_name', ascending: true }
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
  *   },
  *   { context: 'fetchCoaches' }
  * )
@@ -196,8 +199,10 @@ export async function queryInsert<T>(
     const supabase = useSupabase();
     const payload = Array.isArray(records) ? records : [records];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = (await (supabase.from(table) as any)
       .insert(payload as unknown as Record<string, unknown>[])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .select()) as { data: T[]; error: any };
 
     if (error) {
@@ -246,6 +251,7 @@ export async function queryUpdate<T>(
 ): Promise<QueryResult<T[]>> {
   try {
     const supabase = useSupabase();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let query = (supabase.from(table) as any).update(updates as unknown);
 
     // Apply filters

@@ -19,12 +19,14 @@ export default defineEventHandler(async (event) => {
 
     const { data: family } = familyResponse as {
       data: Database["public"]["Tables"]["family_units"]["Row"] | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any;
     };
 
     return {
       success: true,
       hasFamily: !!family,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       familyId: family?.id || null,
       familyCode: family?.family_code || null,
       familyName: family?.family_name || null,
@@ -53,6 +55,7 @@ export default defineEventHandler(async (event) => {
         code_generated_at: string | null;
       };
     }> | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     error: any;
   };
 

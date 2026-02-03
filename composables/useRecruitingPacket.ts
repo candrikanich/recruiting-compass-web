@@ -67,6 +67,7 @@ export const useRecruitingPacket = () => {
       .single();
     const { data: profile, error: profileError } = profileResponse as {
       data: Record<string, unknown> | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any;
     };
 

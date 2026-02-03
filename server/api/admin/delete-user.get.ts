@@ -76,12 +76,16 @@ export default defineEventHandler(
           statusMessage:
             "Cannot delete your own account via this endpoint. Use account settings instead.",
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response = await (supabaseAdmin.auth.admin as any).listUsers();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const {
         data: { users },
         error: listError,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } = response as { data: { users: any[] }; error: any };
 
       if (listError || !users) {
@@ -92,6 +96,7 @@ export default defineEventHandler(
       }
 
       const targetUser = users.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (u: any) => u.email?.toLowerCase() === targetEmail.toLowerCase(),
       );
 

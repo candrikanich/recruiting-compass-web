@@ -5,9 +5,9 @@ import type { PerformanceMetric, Performance } from "~/types/models";
 import type { Database } from "~/types/database";
 
 // Type aliases for Supabase casting
-type PerformanceMetricInsert =
+type _PerformanceMetricInsert =
   Database["public"]["Tables"]["performance_metrics"]["Insert"];
-type PerformanceMetricUpdate =
+type _PerformanceMetricUpdate =
   Database["public"]["Tables"]["performance_metrics"]["Update"];
 
 /**
@@ -183,17 +183,18 @@ export const usePerformanceConsolidated = (): {
     error.value = null;
 
     try {
-      const { data, error: insertError } = (await (
-        supabase.from("performance_metrics") as any
-      )
-        .insert([
-          {
-            ...metricData,
-            user_id: userStore.user.id,
-          },
-        ])
-        .select()
-        .single()) as { data: PerformanceMetric; error: any };
+      const { data, error: insertError } =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("performance_metrics") as any)
+          .insert([
+            {
+              ...metricData,
+              user_id: userStore.user.id,
+            },
+          ])
+          .select()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single()) as { data: PerformanceMetric; error: any };
 
       if (insertError) throw insertError;
 
@@ -219,13 +220,14 @@ export const usePerformanceConsolidated = (): {
     error.value = null;
 
     try {
-      const { data, error: updateError } = (await (
-        supabase.from("performance_metrics") as any
-      )
-        .update(updates)
-        .eq("id", id)
-        .select()
-        .single()) as { data: PerformanceMetric; error: any };
+      const { data, error: updateError } =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("performance_metrics") as any)
+          .update(updates)
+          .eq("id", id)
+          .select()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single()) as { data: PerformanceMetric; error: any };
 
       if (updateError) throw updateError;
 

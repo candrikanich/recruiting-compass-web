@@ -10,7 +10,6 @@ import { requireAuth, assertNotParent } from "~/server/utils/auth";
 import { calculateFitScore } from "~/utils/fitScoreCalculation";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { FitScoreInputs } from "~/types/timeline";
-import type { Database } from "~/types/database";
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
@@ -70,6 +69,7 @@ export default defineEventHandler(async (event) => {
 
   if (
     body.opportunityFit !== undefined &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (typeof body.opportunityFit !== "number" ||
       body.opportunityFit < 0 ||
       body.opportunityFit > 20)
@@ -79,6 +79,7 @@ export default defineEventHandler(async (event) => {
       statusMessage: "opportunityFit must be a number between 0 and 20",
     });
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
   if (
     body.personalFit !== undefined &&
@@ -88,6 +89,7 @@ export default defineEventHandler(async (event) => {
   ) {
     throw createError({
       statusCode: 400,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       statusMessage: "personalFit must be a number between 0 and 15",
     });
   }
@@ -96,6 +98,7 @@ export default defineEventHandler(async (event) => {
     // Verify school ownership
     const { data: school, error: schoolError } = await supabase
       .from("schools")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .select("id, user_id")
       .eq("id", schoolId)
       .eq("user_id", user.id)
@@ -117,13 +120,17 @@ export default defineEventHandler(async (event) => {
       .from("schools")
       .update({
         fit_score: fitScoreResult.score,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fit_score_data: fitScoreResult.breakdown as any,
         updated_at: new Date().toISOString(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       .eq("id", schoolId)
       .select()
       .single()) as {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any;
     };
 

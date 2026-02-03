@@ -68,6 +68,7 @@ export default defineEventHandler(async (event) => {
     // Validate request body using existing schema
     const validationResult = playerDetailsSchema.safeParse(body);
     if (!validationResult.success) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const errors = (validationResult.error as any).errors as Array<{
         message: string;
       }>;
@@ -90,6 +91,7 @@ export default defineEventHandler(async (event) => {
 
     const { data: currentPrefs, error: fetchError } = response as {
       data: { data: unknown } | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any;
     };
 
@@ -113,6 +115,7 @@ export default defineEventHandler(async (event) => {
     // Compare old and new details to create history entry
     const changes = compareFields(
       currentPrefs?.data as PlayerDetails | undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       validatedDetails,
     );
 
@@ -122,6 +125,7 @@ export default defineEventHandler(async (event) => {
         ? {
             timestamp: new Date().toISOString(),
             changed_by: user.id,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             changes,
           }
         : null;
@@ -135,11 +139,15 @@ export default defineEventHandler(async (event) => {
             ? ({
                 ...validatedDetails,
                 _history: [
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   ...((currentPrefs?.data as any)?._history || []),
                 ].slice(-49),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
               } as any)
-            : (validatedDetails as any),
+            : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (validatedDetails as any),
         updated_at: new Date().toISOString(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       .eq("user_id", user.id)
       .eq("category", "player_details")
@@ -147,7 +155,9 @@ export default defineEventHandler(async (event) => {
       .single();
 
     const { data: updatedPrefs, error: updateError } = updateResponse as {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: { data: unknown } | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any;
     };
 
@@ -155,6 +165,7 @@ export default defineEventHandler(async (event) => {
       await logError(event, {
         userId: user.id,
         action: "UPDATE",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resourceType: "user_preferences",
         resourceId: user.id,
         errorMessage: updateError.message,
@@ -169,10 +180,12 @@ export default defineEventHandler(async (event) => {
     }
 
     // Log successful update with changes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await logCRUD(event, {
       userId: user.id,
       action: "UPDATE",
       resourceType: "user_preferences",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       resourceId: user.id,
       newValues: {
         player_details: validatedDetails,

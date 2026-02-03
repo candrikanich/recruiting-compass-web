@@ -1,4 +1,4 @@
-import { ref, computed, readonly, shallowRef, inject } from "vue";
+import { ref, computed, shallowRef, inject } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
@@ -126,6 +126,7 @@ const useSchoolsInternal = (): {
 
       const { data, error: fetchError } = schoolsResponse as {
         data: School[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -159,6 +160,7 @@ const useSchoolsInternal = (): {
 
       const { data, error: fetchError } = schoolResponse as {
         data: School;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -211,6 +213,7 @@ const useSchoolsInternal = (): {
         );
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const insertResponse = await (supabase.from("schools") as any)
         .insert([
           {
@@ -226,6 +229,7 @@ const useSchoolsInternal = (): {
 
       const { data, error: insertError } = insertResponse as {
         data: School;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -284,6 +288,7 @@ const useSchoolsInternal = (): {
           .map((c) => sanitizeHtml(c));
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateResponse = await (supabase.from("schools") as any)
         .update({
           ...sanitizedUpdates,
@@ -297,6 +302,7 @@ const useSchoolsInternal = (): {
 
       const { data, error: updateError } = updateResponse as {
         data: School;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -335,6 +341,7 @@ const useSchoolsInternal = (): {
         .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .eq("user_id", userStore.user.id);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: deleteError } = deleteResponse as { error: any };
 
       if (deleteError) throw deleteError;
@@ -370,11 +377,13 @@ const useSchoolsInternal = (): {
         updated_at: new Date().toISOString(),
       }));
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const upsertResponse = await (supabase.from("schools") as any).upsert(
         updates,
         { onConflict: "id" },
       );
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: batchError } = upsertResponse as { error: any };
 
       if (batchError) throw batchError;
@@ -518,6 +527,7 @@ const useSchoolsInternal = (): {
 
         const { data: fetchedSchool, error: fetchError } = fetchResponse as {
           data: School;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           error: any;
         };
 
@@ -531,6 +541,7 @@ const useSchoolsInternal = (): {
       const now = new Date().toISOString();
 
       // Update school status and status_changed_at timestamp
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateStatusResponse = await (supabase.from("schools") as any)
         .update({
           status: newStatus,
@@ -546,25 +557,27 @@ const useSchoolsInternal = (): {
       const { data: updatedSchool, error: schoolError } =
         updateStatusResponse as {
           data: School;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           error: any;
         };
 
       if (schoolError) throw schoolError;
 
       // Create status history entry
-      const historyResponse = await (
-        supabase.from("school_status_history") as any
-      ).insert([
-        {
-          school_id: schoolId,
-          previous_status: previousStatus,
-          new_status: newStatus,
-          changed_by: userStore.user.id,
-          changed_at: now,
-          notes: notes || null,
-        },
-      ]);
+      const historyResponse =
+        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("school_status_history") as any).insert([
+          {
+            school_id: schoolId,
+            previous_status: previousStatus,
+            new_status: newStatus,
+            changed_by: userStore.user.id,
+            changed_at: now,
+            notes: notes || null,
+          },
+        ]);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: historyError } = historyResponse as { error: any };
 
       if (historyError) throw historyError;

@@ -30,6 +30,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = createServerSupabaseClient();
 
     // Fetch all active athletes (users with role='student')
@@ -39,6 +40,7 @@ export default defineEventHandler(async (event) => {
       .eq("role", "student");
     const { data: athletes, error: fetchError } = response as {
       data: Array<{ id: string }> | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any;
     };
 

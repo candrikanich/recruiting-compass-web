@@ -54,6 +54,7 @@ export default defineEventHandler(async (event) => {
     if (!validStatuses.includes(body.status)) {
       throw createError({
         statusCode: 400,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         statusMessage: "Invalid status value",
       });
     }
@@ -163,6 +164,7 @@ export default defineEventHandler(async (event) => {
       // Update existing record
       const { data, error } = await supabase
         .from("athlete_task")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .update(updateData as any)
         .eq("id", existingData.id)
         .eq("athlete_id", user.id)

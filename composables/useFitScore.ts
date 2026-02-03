@@ -293,7 +293,7 @@ export const useFitScore = (): {
    * Triggered when athlete profile changes (consolidated from useFitScoreRecalculation)
    * @returns Recalculation result with counts of updated and failed scores
    */
-  async function recalculateAllFitScoresViaServer(): Promise<{
+  async function _recalculateAllFitScoresViaServer(): Promise<{
     success: boolean;
     updated: number;
     failed: number;

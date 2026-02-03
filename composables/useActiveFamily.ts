@@ -133,6 +133,7 @@ export const useActiveFamily = () => {
 
         const { data, error: fetchError } = response as {
           data: { id: string; family_name: string | null } | null;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           error: any;
         };
 

@@ -50,6 +50,7 @@ export default defineEventHandler(
         console.error("Missing Supabase configuration");
         throw createError({
           statusCode: 500,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           statusMessage: "Server configuration error",
         });
       }
@@ -62,11 +63,11 @@ export default defineEventHandler(
 
       // Resend verification email via admin API
       // Using Magic Link approach instead of email_change_current
-      const { data: userData, error: userError } = await (
-        supabaseAdmin.auth.admin as any
-      ).listUsersByFilter({
-        filter: `email=${email}`,
-      });
+      const { data: userData, error: userError } =
+        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabaseAdmin.auth.admin as any).listUsersByFilter({
+          filter: `email=${email}`,
+        });
 
       if (userError || !userData.users || userData.users.length === 0) {
         // For security, don't reveal if email exists
@@ -89,12 +90,12 @@ export default defineEventHandler(
       }
 
       // Resend confirmation email via admin API using generateLink with correct params
-      const { error: resendError } = await (
-        supabaseAdmin.auth.admin as any
-      ).generateLink({
-        type: "magiclink",
-        email: email,
-      });
+      const { error: resendError } =
+        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabaseAdmin.auth.admin as any).generateLink({
+          type: "magiclink",
+          email: email,
+        });
 
       if (resendError) {
         console.error("Error resending verification email:", resendError);

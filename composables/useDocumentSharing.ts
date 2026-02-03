@@ -62,10 +62,12 @@ export const useDocumentSharing = () => {
     error.value = null;
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response = (await (supabase.from("documents") as any)
         .update({ shared_with_schools: schoolIds })
         .eq("id", documentId)
         .select()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .single()) as { data: Document; error: any };
       const { data, error: updateError } = response;
 
@@ -103,6 +105,7 @@ export const useDocumentSharing = () => {
         .single();
       const { data: doc, error: fetchError } = response as {
         data: { shared_with_schools: string[] | null } | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -113,10 +116,12 @@ export const useDocumentSharing = () => {
         (id: string) => id !== schoolIdToRemove,
       );
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateResponse = (await (supabase.from("documents") as any)
         .update({ shared_with_schools: updatedSchools })
         .eq("id", documentId)
         .select()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .single()) as { data: Document; error: any };
       const { data, error: updateError } = updateResponse;
 

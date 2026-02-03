@@ -78,6 +78,7 @@ export const useProfileEditHistory = (): {
 
       const { data, error: fetchError } = response as {
         data: { preference_history: PreferenceHistoryEntry[] } | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 

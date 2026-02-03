@@ -47,6 +47,7 @@ export default defineEventHandler(async (event) => {
 
     const { data, error } = response as {
       data: Database["public"]["Tables"]["preference_history"]["Row"] | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any;
     };
 
@@ -66,6 +67,7 @@ export default defineEventHandler(async (event) => {
     );
 
     if (err instanceof z.ZodError) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const errors = (err as any).errors as Array<{ message: string }>;
       throw createError({
         statusCode: 400,
@@ -74,6 +76,7 @@ export default defineEventHandler(async (event) => {
     }
 
     throw createError({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       statusCode: 500,
       statusMessage: "Failed to record preference history",
     });

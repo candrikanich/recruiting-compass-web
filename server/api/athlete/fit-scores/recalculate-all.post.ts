@@ -29,6 +29,7 @@ export default defineEventHandler(
 
     try {
       // Fetch user's player details from user_preferences
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const prefResponse = await (supabase.from("user_preferences") as any)
         .select("player_details")
         .eq("user_id", user.id)
@@ -36,6 +37,7 @@ export default defineEventHandler(
 
       const { data: preferences, error: prefError } = prefResponse as {
         data: { player_details: PlayerDetails } | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -54,6 +56,7 @@ export default defineEventHandler(
           statusCode: 400,
           statusMessage:
             "Player details not found. Add athlete profile data first.",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         });
       }
 
@@ -122,7 +125,7 @@ export default defineEventHandler(
       }
 
       // Batch update schools table
-      const { data: updateResult, error: updateError } = await supabase
+      const { data: _updateResult, error: updateError } = await supabase
         .from("schools")
         // @ts-expect-error - custom columns (fit_score, fit_score_data) not in Supabase types
         .upsert(updates, { onConflict: "id" })

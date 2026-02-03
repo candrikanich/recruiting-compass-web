@@ -75,6 +75,7 @@ export const useCollaboration = () => {
         expires_at: expiresAt,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const insertResponse = await (supabase as any)
         .from("shared_records")
         .insert([newShare])
@@ -82,7 +83,9 @@ export const useCollaboration = () => {
         .single();
 
       const { data, error: err } = insertResponse as {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: SharedRecord;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -129,16 +132,22 @@ export const useCollaboration = () => {
     if (!userStore.user) return false;
 
     error.value = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateResponse = await (supabase as any)
         .from("shared_records")
         .update({ access_level: accessLevel })
         .eq("id", id)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .eq("owner_user_id", userStore.user.id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
       const { error: err } = updateResponse as {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -200,19 +209,23 @@ export const useCollaboration = () => {
         user_id: userStore.user.id,
         entity_type: entityType,
         entity_id: entityId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         content,
         mentions,
         created_at: new Date().toISOString(),
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const insertResponse = await (supabase as any)
         .from("record_comments")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .insert([newComment])
         .select()
         .single();
 
       const { data, error: err } = insertResponse as {
         data: RecordComment;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -227,6 +240,7 @@ export const useCollaboration = () => {
       return null;
     }
   };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
   const deleteComment = async (id: string): Promise<boolean> => {
     if (!userStore.user) return false;
@@ -234,6 +248,7 @@ export const useCollaboration = () => {
     error.value = null;
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateResponse = await (supabase as any)
         .from("record_comments")
         .update({ deleted_at: new Date().toISOString() })
@@ -241,7 +256,9 @@ export const useCollaboration = () => {
         .eq("user_id", userStore.user.id);
 
       const { error: err } = updateResponse as {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 

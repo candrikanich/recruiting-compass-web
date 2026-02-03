@@ -26,6 +26,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: existingFamily } = fetchResponse as {
     data: Database["public"]["Tables"]["family_units"]["Row"] | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     error: any;
   };
 
@@ -55,6 +56,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: newFamily, error: familyError } = insertResponse as {
     data: Database["public"]["Tables"]["family_units"]["Row"] | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     error: any;
   };
 
@@ -72,9 +74,11 @@ export default defineEventHandler(async (event) => {
     role: "student",
   } as Database["public"]["Tables"]["family_members"]["Insert"]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error: memberError } = memberResponse as { error: any };
 
   if (memberError) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     throw createError({
       statusCode: 500,
       message: "Failed to add student to family",
@@ -89,6 +93,7 @@ export default defineEventHandler(async (event) => {
     action: "generated",
   } as Database["public"]["Tables"]["family_code_usage_log"]["Insert"]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (logResponse as any).catch((err: any) =>
     console.warn("Failed to log code generation:", err),
   );

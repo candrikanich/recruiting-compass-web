@@ -82,6 +82,7 @@ export const useDocumentFetch = () => {
       });
       const { data, error: fetchError } = response as {
         data: Document[] | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -116,6 +117,7 @@ export const useDocumentFetch = () => {
         .order("version", { ascending: false });
       const { data, error: fetchError } = response as {
         data: Document[] | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -139,10 +141,12 @@ export const useDocumentFetch = () => {
     error.value = null;
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response = (await (supabase.from("documents") as any)
         .update(updates)
         .eq("id", id)
         .select()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .single()) as { data: Document; error: any };
       const { data, error: updateError } = response;
 
@@ -183,6 +187,7 @@ export const useDocumentFetch = () => {
         .single();
       const { data: doc, error: fetchError } = response as {
         data: { file_url: string | null } | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 

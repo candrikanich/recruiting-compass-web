@@ -30,19 +30,21 @@ export default defineEventHandler(async (event) => {
     const supabase = createServerSupabaseClient();
 
     // Create notification
-    const { data, error } = (await (
-      supabase.from("notifications") as any
-    ).insert([
-      {
-        user_id: body.user_id,
-        type: body.type,
-        title: body.title,
-        message: body.message || null,
-        priority: body.priority || "medium",
-        action_url: body.action_url || null,
-        scheduled_for: new Date().toISOString(),
-      },
-    ])) as any;
+    const { data, error } =
+      (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase.from("notifications") as any).insert([
+        {
+          user_id: body.user_id,
+          type: body.type,
+          title: body.title,
+          message: body.message || null,
+          priority: body.priority || "medium",
+          action_url: body.action_url || null,
+          scheduled_for: new Date().toISOString(),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ])) as any;
 
     if (error) {
       throw createError({

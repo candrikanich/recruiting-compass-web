@@ -80,10 +80,12 @@ export const useProfilePhoto = (): {
 
       // Update database
       uploadProgress.value = 90;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateResponse = (await (supabase.from("users") as any)
         .update({ profile_photo_url: publicUrl })
         .eq("id", userId)
         .select()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .single()) as { error: any };
       const { error: updateError } = updateResponse;
 
@@ -147,10 +149,12 @@ export const useProfilePhoto = (): {
       }
 
       // Clear from database
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const deleteUpdateResponse = (await (supabase.from("users") as any)
         .update({ profile_photo_url: null })
         .eq("id", userId)
         .select()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .single()) as { error: any };
       const { error: updateError } = deleteUpdateResponse;
 

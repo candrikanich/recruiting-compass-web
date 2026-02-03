@@ -45,6 +45,7 @@ export default defineEventHandler(async (event) => {
       .single();
 
     const { error: fetchError } = fetchResponse as {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any;
     };
 
@@ -64,6 +65,7 @@ export default defineEventHandler(async (event) => {
 
       result = insertResponse as {
         data: Database["public"]["Tables"]["user_preferences"]["Row"] | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
     } else if (fetchError) {
@@ -74,6 +76,7 @@ export default defineEventHandler(async (event) => {
         .from("user_preferences")
         .update({
           data: data as Database["public"]["Tables"]["user_preferences"]["Update"]["data"],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", user.id)
@@ -83,6 +86,7 @@ export default defineEventHandler(async (event) => {
 
       result = updateResponse as {
         data: Database["public"]["Tables"]["user_preferences"]["Row"] | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
     }
@@ -104,6 +108,7 @@ export default defineEventHandler(async (event) => {
     );
 
     if (err instanceof z.ZodError) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const errors = (err as any).errors as Array<{ message: string }>;
       throw createError({
         statusCode: 400,

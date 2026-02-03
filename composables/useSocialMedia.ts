@@ -113,12 +113,13 @@ export const useSocialMedia = () => {
       }
       validated.post_url = sanitizedUrl;
 
-      const { data, error: insertError } = (await (
-        supabase.from("social_media_posts") as any
-      )
-        .insert([validated])
-        .select()
-        .single()) as { data: SocialPost; error: any };
+      const { data, error: insertError } =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("social_media_posts") as any)
+          .insert([validated])
+          .select()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single()) as { data: SocialPost; error: any };
 
       if (insertError) throw insertError;
 
@@ -161,13 +162,14 @@ export const useSocialMedia = () => {
         sanitizedUpdates.notes = sanitizeHtml(sanitizedUpdates.notes);
       }
 
-      const { data, error: updateError } = (await (
-        supabase.from("social_media_posts") as any
-      )
-        .update(sanitizedUpdates)
-        .eq("id", id)
-        .select()
-        .single()) as { data: SocialPost; error: any };
+      const { data, error: updateError } =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("social_media_posts") as any)
+          .update(sanitizedUpdates)
+          .eq("id", id)
+          .select()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single()) as { data: SocialPost; error: any };
 
       if (updateError) throw updateError;
 

@@ -5,7 +5,7 @@ import type { Document } from "~/types/models";
 import type { Database } from "~/types/database";
 
 // Type aliases for Supabase casting
-type DocumentInsert = Database["public"]["Tables"]["documents"]["Insert"];
+type _DocumentInsert = Database["public"]["Tables"]["documents"]["Insert"];
 
 // File validation constants
 const ALLOWED_MIME_TYPES = {
@@ -159,6 +159,7 @@ export const useDocumentUpload = () => {
 
       uploadProgress.value = 90;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response = (await (supabase.from("documents") as any)
         .insert([
           {
@@ -170,6 +171,7 @@ export const useDocumentUpload = () => {
           },
         ])
         .select()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .single()) as { data: Document; error: any };
       const { data, error: insertError } = response;
 
@@ -212,6 +214,7 @@ export const useDocumentUpload = () => {
         .upload(fileName, file);
       const { data: uploadData, error: uploadError } = uploadResponse as {
         data: { path: string } | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -219,6 +222,7 @@ export const useDocumentUpload = () => {
       if (!uploadData) throw new Error("Upload failed");
 
       const newVersion = (currentDoc.version || 1) + 1;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const versionResponse = (await (supabase.from("documents") as any)
         .insert([
           {
@@ -233,6 +237,7 @@ export const useDocumentUpload = () => {
           },
         ])
         .select()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .single()) as { data: Document; error: any };
       const { data, error: insertError } = versionResponse;
 

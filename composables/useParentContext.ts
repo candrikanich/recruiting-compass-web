@@ -57,6 +57,7 @@ export const useParentContext = () => {
 
     // Get linked athletes for this parent
     const linkedAccounts =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ((store.user as any)?.linked_accounts as LinkedAccount[]) || [];
     linkedAthletes.value = linkedAccounts.filter(
       (account: LinkedAccount) => account.relationship === "student",

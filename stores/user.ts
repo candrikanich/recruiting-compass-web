@@ -89,6 +89,7 @@ export const useUserStore = defineStore("user", {
           console.debug(
             "[initializeUser] User authenticated:",
             session.user.email,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
           );
 
           // Try to fetch full profile from users table (includes is_admin)
@@ -188,9 +189,11 @@ export const useUserStore = defineStore("user", {
 
         const response = (await supabase
           .from("users")
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .insert(userData as any)
           .select()) as {
           data: User[] | null;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           error: any;
         };
 

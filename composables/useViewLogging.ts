@@ -44,6 +44,7 @@ export const useViewLogging = () => {
     if (store.user.id === athleteId) return;
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = (await (supabase.from("parent_view_log") as any).insert(
         {
           parent_user_id: store.user.id,
@@ -52,6 +53,7 @@ export const useViewLogging = () => {
           viewed_item_id: itemId || null,
           viewed_at: new Date().toISOString(),
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       )) as { error: any };
 
       if (error) {

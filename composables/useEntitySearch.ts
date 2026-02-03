@@ -135,6 +135,7 @@ export const useEntitySearch = () => {
       const schoolResponse = await queryBuilder;
       const { data, error } = schoolResponse as {
         data: School[] | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -196,6 +197,7 @@ export const useEntitySearch = () => {
       const coachResponse = await queryBuilder;
       const { data, error } = coachResponse as {
         data: Coach[] | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -261,6 +263,7 @@ export const useEntitySearch = () => {
       const interactionResponse = await queryBuilder;
       const { data, error } = interactionResponse as {
         data: Interaction[] | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 
@@ -314,6 +317,7 @@ export const useEntitySearch = () => {
       const metricsResponse = await queryBuilder;
       const { data, error } = metricsResponse as {
         data: PerformanceMetric[] | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: any;
       };
 

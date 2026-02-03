@@ -23,6 +23,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: family } = familyResponse as {
     data: Database["public"]["Tables"]["family_units"]["Row"] | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     error: any;
   };
 
@@ -45,6 +46,7 @@ export default defineEventHandler(async (event) => {
     } as Database["public"]["Tables"]["family_units"]["Update"])
     .eq("id", familyId);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = updateResponse as { error: any };
 
   if (error) {
@@ -55,6 +57,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Log regeneration
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const logPromise = supabase.from("family_code_usage_log").insert({
     family_unit_id: familyId,
     user_id: user.id,
@@ -62,8 +65,10 @@ export default defineEventHandler(async (event) => {
     action: "regenerated",
   } as Database["public"]["Tables"]["family_code_usage_log"]["Insert"]);
 
-  (logPromise as any).catch((err: any) =>
-    console.warn("Failed to log regeneration:", err),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (logPromise as any).catch(
+    (err: any) => console.warn("Failed to log regeneration:", err),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   );
 
   return {

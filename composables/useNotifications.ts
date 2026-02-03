@@ -5,9 +5,9 @@ import type { Notification } from "~/types/models";
 import type { Database } from "~/types/database";
 
 // Type aliases for Supabase casting
-type NotificationInsert =
+type _NotificationInsert =
   Database["public"]["Tables"]["notifications"]["Insert"];
-type NotificationUpdate =
+type _NotificationUpdate =
   Database["public"]["Tables"]["notifications"]["Update"];
 
 export const useNotifications = (): {
@@ -103,17 +103,18 @@ export const useNotifications = (): {
     error.value = null;
 
     try {
-      const { data, error: insertError } = (await (
-        supabase.from("notifications") as any
-      )
-        .insert([
-          {
-            ...notificationData,
-            user_id: store.user.id,
-          },
-        ])
-        .select()
-        .single()) as { data: Notification; error: any };
+      const { data, error: insertError } =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("notifications") as any)
+          .insert([
+            {
+              ...notificationData,
+              user_id: store.user.id,
+            },
+          ])
+          .select()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single()) as { data: Notification; error: any };
 
       if (insertError) throw insertError;
 
@@ -137,13 +138,14 @@ export const useNotifications = (): {
     error.value = null;
 
     try {
-      const { data, error: updateError } = (await (
-        supabase.from("notifications") as any
-      )
-        .update({ read_at: new Date().toISOString() })
-        .eq("id", id)
-        .select()
-        .single()) as { data: Notification; error: any };
+      const { data, error: updateError } =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("notifications") as any)
+          .update({ read_at: new Date().toISOString() })
+          .eq("id", id)
+          .select()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single()) as { data: Notification; error: any };
 
       if (updateError) throw updateError;
 
@@ -177,11 +179,12 @@ export const useNotifications = (): {
 
       if (unreadIds.length === 0) return;
 
-      const { error: updateError } = (await (
-        supabase.from("notifications") as any
-      )
-        .update({ read_at: new Date().toISOString() })
-        .in("id", unreadIds)) as { error: any };
+      const { error: updateError } =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("notifications") as any)
+          .update({ read_at: new Date().toISOString() })
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .in("id", unreadIds)) as { error: any };
 
       if (updateError) throw updateError;
 

@@ -161,9 +161,11 @@ export default defineEventHandler(
           for (const { table, columns } of tableDeleteAttempts) {
             try {
               for (const column of columns) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const response = await (supabaseAdmin.from(table as any) as any)
                   .delete()
                   .eq(column, targetUserId);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const { error: deleteError } = response as { error: any };
 
                 if (deleteError && deleteError.code !== "42P01") {
