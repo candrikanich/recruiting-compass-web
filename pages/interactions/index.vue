@@ -438,7 +438,7 @@
                       {{ formatDirection(interaction.direction) }}
                     </span>
                     <LoggedByBadge
-                      v-if="userStore.user"
+                      v-if="userStore.user && interaction.logged_by"
                       :loggedByUserId="interaction.logged_by"
                       :currentUserId="userStore.user.id"
                     />
@@ -843,10 +843,13 @@ onMounted(async () => {
 
     // Load linked athletes if parent
     if (userStore.isParent) {
-      const { data: accountLinks, error: linksError } = await supabase
+      const { data: accountLinks, error: linksError } = (await supabase
         .from("account_links")
         .select("player_user_id")
-        .eq("parent_user_id", userStore.user.id);
+        .eq("parent_user_id", userStore.user.id)) as {
+        data: Array<{ player_user_id: string | null }> | null;
+        error: any;
+      };
 
       if (!linksError && accountLinks && accountLinks.length > 0) {
         const athleteIds = accountLinks
