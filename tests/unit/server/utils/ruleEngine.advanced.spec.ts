@@ -786,7 +786,7 @@ describe("RuleEngine - Coverage for Dead Period Console Log", () => {
     // To trigger the console.log at line 54-57, we need:
     // 1. A contact rule (interaction-gap, priority-school-reminder, or event-follow-up)
     // 2. All schools to be in dead period (isDeadPeriod returns true for all)
-    
+
     const contactRule: Rule = {
       id: "interaction-gap",
       name: "Interaction Gap",
@@ -822,9 +822,9 @@ describe("RuleEngine - Coverage for Dead Period Console Log", () => {
     // Note: In practice, this would require mocking isDeadPeriod at module level
     // which is complex in this test setup. The dead period logic is tested
     // by the existing integration with real NCAA calendar functions.
-    
+
     const result = await engine.evaluateAll(mockContext);
-    
+
     // Verify rule was evaluated (wasn't skipped in this case)
     expect(contactRule.evaluate).toHaveBeenCalled();
 
