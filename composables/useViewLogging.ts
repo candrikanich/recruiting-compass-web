@@ -44,13 +44,15 @@ export const useViewLogging = () => {
     if (store.user.id === athleteId) return;
 
     try {
-      const { error } = (await supabase.from("parent_view_log").insert({
-        parent_user_id: store.user.id,
-        athlete_id: athleteId,
-        viewed_item_type: itemType,
-        viewed_item_id: itemId || null,
-        viewed_at: new Date().toISOString(),
-      })) as { error: any };
+      const { error } = (await (supabase.from("parent_view_log") as any).insert(
+        {
+          parent_user_id: store.user.id,
+          athlete_id: athleteId,
+          viewed_item_type: itemType,
+          viewed_item_id: itemId || null,
+          viewed_at: new Date().toISOString(),
+        },
+      )) as { error: any };
 
       if (error) {
         console.debug("View logging error:", error.message);

@@ -809,10 +809,10 @@
 
         <!-- Error Message -->
         <div
-          v-if="error"
+          v-if="errors.length > 0"
           class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700"
         >
-          {{ error }}
+          {{ errors[0]?.message || "Validation error" }}
         </div>
 
         <!-- Save Button -->

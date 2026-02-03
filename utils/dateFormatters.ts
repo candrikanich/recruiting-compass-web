@@ -180,7 +180,7 @@ export const formatDateTime = (date: Date | string): string => {
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
-    meridiem: "short",
+    hour12: true,
   });
 };
 
@@ -193,7 +193,7 @@ export const formatTimeOnly = (date: Date | string): string => {
   return formatDate(date, {
     hour: "numeric",
     minute: "2-digit",
-    meridiem: "short",
+    hour12: true,
   });
 };
 

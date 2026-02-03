@@ -11,11 +11,12 @@ export const videoLinkHealthRule: Rule = {
     const suggestions: SuggestionData[] = [];
 
     for (const video of context.videos) {
-      if (video.health_status === "broken") {
+      const videoRecord = video as Record<string, unknown>;
+      if (videoRecord.health_status === "broken") {
         suggestions.push({
           rule_type: "video-link-health",
           urgency: "high",
-          message: `Your video "${video.title}" link is broken. Update it immediately.`,
+          message: `Your video "${videoRecord.title}" link is broken. Update it immediately.`,
           action_type: "update_video",
         });
       }

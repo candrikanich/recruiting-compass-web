@@ -25,7 +25,7 @@ export function validateNotificationSettings(
   const obj = data as Record<string, unknown>;
 
   return {
-    followUpReminderDays: toNumber(obj.followUpReminderDays, 7),
+    followUpReminderDays: toNumber(obj.followUpReminderDays, 7) ?? 7,
     enableFollowUpReminders: toBoolean(obj.enableFollowUpReminders, true),
     enableDeadlineAlerts: toBoolean(obj.enableDeadlineAlerts, true),
     enableDailyDigest: toBoolean(obj.enableDailyDigest, true),
@@ -141,10 +141,10 @@ export function validateSchoolPreferences(
           ("custom" as const),
         type: toString(p.type) || "",
         value: p.value,
-        priority: toNumber(p.priority, 0),
+        priority: toNumber(p.priority, 0) ?? 0,
         is_dealbreaker: toBoolean(p.is_dealbreaker, false),
       };
-    }),
+    }) as any,
     template_used: toString(obj.template_used),
     last_updated: toString(obj.last_updated) || new Date().toISOString(),
   };

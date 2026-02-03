@@ -133,14 +133,16 @@ export const useUserNotes = () => {
     try {
       // Try to upsert: delete first (to handle empty content), then insert if not empty
       if (noteContent.trim()) {
-        const upsertResponse = (await supabase.from("user_notes").upsert(
+        const upsertResponse = (await (
+          supabase.from("user_notes") as any
+        ).upsert(
           {
             user_id: userStore.user.id,
             entity_type: entityType,
             entity_id: entityId,
             note_content: noteContent,
             updated_at: new Date().toISOString(),
-          } as unknown,
+          },
           {
             onConflict: "user_id,entity_type,entity_id",
           },
