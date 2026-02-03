@@ -80,7 +80,7 @@ export const useRecruitingPacket = () => {
       full_name: userStore.user.full_name || "Athlete",
       profile_photo_url: userStore.user.profile_photo_url,
       height: profile ? (profile.height as string | undefined) : undefined,
-      weight: profile ? (profile.weight as number) : undefined,
+      weight: profile ? (profile.weight as string | undefined) : undefined,
       position: profile ? (profile.position as string) : undefined,
       high_school: profile ? (profile.high_school as string) : undefined,
       graduation_year: profile
@@ -89,14 +89,23 @@ export const useRecruitingPacket = () => {
       gpa: profile ? (profile.gpa as number) : undefined,
       sat_score: profile ? (profile.sat_score as number) : undefined,
       act_score: profile ? (profile.act_score as number) : undefined,
-      video_links: ((profile?.video_links as unknown[]) || []).map((v) => ({
-        url: String(v),
+      video_links: (
+        (profile?.video_links as Array<{ platform?: string; url?: string }>) ||
+        []
+      ).map((v) => ({
+        platform: (v.platform as "hudl" | "youtube" | "vimeo") || "youtube",
+        url: String(v.url || ""),
+        title: v.title as string | undefined,
       })),
       social_media: (
-        (profile?.social_media as Record<string, unknown>[]) || []
+        (profile?.social_media as Array<{
+          platform?: string;
+          handle?: string;
+        }>) || []
       ).map((m) => ({
-        platform: String(Object.keys(m)[0]),
-        handle: String(Object.values(m)[0]),
+        platform:
+          (m.platform as "instagram" | "twitter" | "tiktok") || "instagram",
+        handle: String(m.handle || ""),
       })),
       core_courses: (profile?.core_courses as string[]) || [],
     };

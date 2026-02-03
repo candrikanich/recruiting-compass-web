@@ -858,7 +858,6 @@ import { useToast } from "~/composables/useToast";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFitScoreRecalculation } from "~/composables/useFitScoreRecalculation";
 import { useUserStore } from "~/stores/user";
-import { playerDetailsSchema } from "~/utils/validation/schemas";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import type { PlayerDetails } from "~/types/models";
 
@@ -872,8 +871,7 @@ const { isLoading, getPlayerDetails, setPlayerDetails } =
 const { showToast } = useToast();
 const { recalculateAllFitScores, loading: recalculating } =
   useFitScoreRecalculation();
-const { errors, fieldErrors, clearErrors, hasErrors } =
-  useValidation(playerDetailsSchema);
+const { errors, fieldErrors, clearErrors, hasErrors } = useFormValidation();
 
 const isParentRole = computed(() => userStore.user?.role === "parent");
 

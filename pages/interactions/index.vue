@@ -521,7 +521,10 @@ import { ref, computed, onMounted, watch, inject, type Component } from "vue";
 import { useInteractions } from "~/composables/useInteractions";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
-import { useFamilyContext } from "~/composables/useFamilyContext";
+import {
+  useFamilyContext,
+  type UseActiveFamilyReturn,
+} from "~/composables/useFamilyContext";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
 import Header from "~/components/Header.vue";
@@ -558,7 +561,8 @@ definePageMeta({
 const userStore = useUserStore();
 const supabase = useSupabase();
 // Inject family context provided at app.vue level (with singleton fallback)
-const activeFamily = inject("activeFamily") || useFamilyContext();
+const activeFamily = (inject<UseActiveFamilyReturn>("activeFamily") ||
+  useFamilyContext()) as UseActiveFamilyReturn;
 const { activeFamilyId } = activeFamily;
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { schools: schoolsData, fetchSchools } = useSchools();

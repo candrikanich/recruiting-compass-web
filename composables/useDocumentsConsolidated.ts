@@ -323,7 +323,14 @@ export const useDocumentsConsolidated = () => {
     try {
       validateFile(
         file,
-        type as "transcript" | "test_score" | "video" | "resume" | "other",
+        type as
+          | "highlight_video"
+          | "transcript"
+          | "resume"
+          | "rec_letter"
+          | "questionnaire"
+          | "stats_sheet"
+          | "attachment",
       );
     } catch (err) {
       const fileError = err instanceof Error ? err.message : "Invalid file";
@@ -653,6 +660,7 @@ export const useDocumentsConsolidated = () => {
     // Fetch methods
     fetchDocuments,
     fetchDocumentVersions,
+    fetchVersions: fetchDocumentVersions, // Alias for backwards compatibility
     getDocument,
 
     // Update methods

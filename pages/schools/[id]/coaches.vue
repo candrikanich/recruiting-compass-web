@@ -258,7 +258,7 @@ const school = computed((): School | undefined => {
     favicon_url: null,
     twitter_handle: null,
     instagram_handle: null,
-    status: "researching",
+    status: "interested",
     notes: null,
     pros: [],
     cons: [],

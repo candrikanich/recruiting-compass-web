@@ -228,6 +228,7 @@ const selectedUserEmails = ref<Set<string>>(new Set());
 const bulkDeleting = ref(false);
 const showBulkDeleteModal = ref(false);
 const currentUserEmail = ref<string>("");
+const activeTab = ref("users");
 
 const currentUserEmailComputed = computed(() => {
   const sessionValue = session.value;

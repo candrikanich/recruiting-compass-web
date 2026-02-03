@@ -248,7 +248,9 @@ export function usePreferenceManager() {
   const setDashboardLayout = async (layout: DashboardWidgetVisibility) => {
     const oldValue = validateDashboardLayout(dashboardPrefs.preferences.value);
 
-    dashboardPrefs.updatePreferences(layout as Record<string, unknown>);
+    dashboardPrefs.updatePreferences(
+      layout as unknown as Record<string, unknown>,
+    );
     await dashboardPrefs.savePreferences();
 
     if (oldValue) {
