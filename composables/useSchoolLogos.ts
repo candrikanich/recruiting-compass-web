@@ -115,10 +115,9 @@ export const useSchoolLogos = () => {
       // 3. Save to database for persistence
       if (faviconUrl) {
         try {
-          await supabase
-            .from("schools")
+          (await (supabase.from("schools") as any)
             .update({ favicon_url: faviconUrl })
-            .eq("id", schoolId);
+            .eq("id", schoolId)) as { error?: any };
         } catch (dbError) {
           console.warn(
             `Failed to save favicon to database for ${schoolId}:`,

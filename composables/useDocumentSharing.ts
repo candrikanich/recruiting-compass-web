@@ -62,16 +62,12 @@ export const useDocumentSharing = () => {
     error.value = null;
 
     try {
-      const response = await supabase
-        .from("documents")
+      const response = (await (supabase.from("documents") as any)
         .update({ shared_with_schools: schoolIds })
         .eq("id", documentId)
         .select()
-        .single();
-      const { data, error: updateError } = response as {
-        data: Document;
-        error: any;
-      };
+        .single()) as { data: Document; error: any };
+      const { data, error: updateError } = response;
 
       if (updateError) throw updateError;
 
@@ -117,16 +113,12 @@ export const useDocumentSharing = () => {
         (id: string) => id !== schoolIdToRemove,
       );
 
-      const updateResponse = await supabase
-        .from("documents")
+      const updateResponse = (await (supabase.from("documents") as any)
         .update({ shared_with_schools: updatedSchools })
         .eq("id", documentId)
         .select()
-        .single();
-      const { data, error: updateError } = updateResponse as {
-        data: Document;
-        error: any;
-      };
+        .single()) as { data: Document; error: any };
+      const { data, error: updateError } = updateResponse;
 
       if (updateError) throw updateError;
 

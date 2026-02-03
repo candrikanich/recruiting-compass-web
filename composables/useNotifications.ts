@@ -136,8 +136,9 @@ export const useNotifications = (): {
     error.value = null;
 
     try {
-      const { data, error: updateError } = (await supabase
-        .from("notifications")
+      const { data, error: updateError } = (await (
+        supabase.from("notifications") as any
+      )
         .update({ read_at: new Date().toISOString() })
         .eq("id", id)
         .select()
@@ -175,8 +176,9 @@ export const useNotifications = (): {
 
       if (unreadIds.length === 0) return;
 
-      const { error: updateError } = (await supabase
-        .from("notifications")
+      const { error: updateError } = (await (
+        supabase.from("notifications") as any
+      )
         .update({ read_at: new Date().toISOString() })
         .in("id", unreadIds)) as { error: any };
 

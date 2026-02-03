@@ -1,4 +1,5 @@
 import { ref, computed } from "vue";
+import { useFamilyContext } from "~/composables/useFamilyContext";
 
 export interface FamilyCodeData {
   familyId: string;
@@ -179,6 +180,10 @@ export const useFamilyCode = () => {
 
       // Refresh parent's families list
       await fetchMyCode();
+
+      // Refetch activeFamily context so dropdown updates
+      const activeFamily = useFamilyContext();
+      await activeFamily.refetchFamilies();
 
       return true;
     } catch (err) {

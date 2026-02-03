@@ -113,11 +113,11 @@ export const useSocialMedia = () => {
       }
       validated.post_url = sanitizedUrl;
 
-      const { data, error: insertError } = await supabase
+      const { data, error: insertError } = (await supabase
         .from("social_media_posts")
         .insert([validated])
         .select()
-        .single();
+        .single()) as { data: SocialPost; error: any };
 
       if (insertError) throw insertError;
 
@@ -160,12 +160,13 @@ export const useSocialMedia = () => {
         sanitizedUpdates.notes = sanitizeHtml(sanitizedUpdates.notes);
       }
 
-      const { data, error: updateError } = await supabase
-        .from("social_media_posts")
+      const { data, error: updateError } = (await (
+        supabase.from("social_media_posts") as any
+      )
         .update(sanitizedUpdates)
         .eq("id", id)
         .select()
-        .single();
+        .single()) as { data: SocialPost; error: any };
 
       if (updateError) throw updateError;
 

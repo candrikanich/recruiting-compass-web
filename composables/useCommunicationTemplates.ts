@@ -198,8 +198,14 @@ export const useCommunicationTemplates = (): {
 
       if (err) throw err;
 
-      templates.value = [data, ...templates.value];
-      return data;
+      // Add computed variables to the returned template
+      const templateWithVariables: CommunicationTemplate = {
+        ...data,
+        variables: uniqueVariables,
+      };
+
+      templates.value = [templateWithVariables, ...templates.value];
+      return templateWithVariables;
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to create template";
@@ -218,8 +224,9 @@ export const useCommunicationTemplates = (): {
     error.value = null;
 
     try {
-      const updateResponse = (await supabase
-        .from("communication_templates")
+      const updateResponse = (await (
+        supabase.from("communication_templates") as any
+      )
         .update(updates)
         .eq("id", id)
         .eq("user_id", userStore.user.id)) as { error: any };

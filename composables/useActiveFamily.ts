@@ -343,6 +343,13 @@ export const useActiveFamily = () => {
     return str ? str.slice(2, 9) : "unknown";
   })();
 
+  // Refetch families (useful when families change, e.g., after joining via code)
+  const refetchFamilies = async () => {
+    if (!isParent.value) return;
+    await initializeFamily();
+    await fetchFamilyMembers();
+  };
+
   return {
     // State
     loading,
@@ -364,6 +371,7 @@ export const useActiveFamily = () => {
     getAccessibleAthletes,
     getDisplayContext,
     getDataOwnerUserId,
+    refetchFamilies,
 
     // Debug
     _debugInstanceId,

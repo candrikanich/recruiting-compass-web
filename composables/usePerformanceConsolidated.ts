@@ -183,16 +183,16 @@ export const usePerformanceConsolidated = (): {
     error.value = null;
 
     try {
-      const { data, error: insertError } = await supabase
+      const { data, error: insertError } = (await supabase
         .from("performance_metrics")
         .insert([
           {
             ...metricData,
             user_id: userStore.user.id,
           },
-        ] as PerformanceMetricInsert[])
+        ])
         .select()
-        .single();
+        .single()) as { data: PerformanceMetric; error: any };
 
       if (insertError) throw insertError;
 
@@ -218,12 +218,13 @@ export const usePerformanceConsolidated = (): {
     error.value = null;
 
     try {
-      const { data, error: updateError } = await supabase
-        .from("performance_metrics")
-        .update(updates as PerformanceMetricUpdate)
+      const { data, error: updateError } = (await (
+        supabase.from("performance_metrics") as any
+      )
+        .update(updates)
         .eq("id", id)
         .select()
-        .single();
+        .single()) as { data: PerformanceMetric; error: any };
 
       if (updateError) throw updateError;
 

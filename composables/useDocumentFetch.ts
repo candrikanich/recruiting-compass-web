@@ -139,8 +139,7 @@ export const useDocumentFetch = () => {
     error.value = null;
 
     try {
-      const response = (await supabase
-        .from("documents")
+      const response = (await (supabase.from("documents") as any)
         .update(updates)
         .eq("id", id)
         .select()

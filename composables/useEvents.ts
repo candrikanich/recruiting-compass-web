@@ -193,8 +193,9 @@ export const useEvents = (): {
     error.value = null;
 
     try {
-      const { data, error: updateError } = (await supabase
-        .from("events")
+      const { data, error: updateError } = (await (
+        supabase.from("events") as any
+      )
         .update({
           ...updates,
           updated_by: userStore.user.id,

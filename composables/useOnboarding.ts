@@ -121,8 +121,7 @@ export const useOnboarding = () => {
       }
 
       // Update user phase and mark onboarding complete
-      const { error: updateError } = await supabase
-        .from("users")
+      const { error: updateError } = (await (supabase.from("users") as any)
         .update({
           current_phase: startingPhase,
           phase_milestone_data: {
@@ -131,7 +130,7 @@ export const useOnboarding = () => {
             assessment_responses: assessment,
           },
         })
-        .eq("id", userId);
+        .eq("id", userId)) as { error: any };
 
       if (updateError) {
         throw updateError;
@@ -168,11 +167,16 @@ export const useOnboarding = () => {
         return false;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from("users")
         .select("phase_milestone_data")
         .eq("id", id)
-        .single();
+        .single()) as {
+        data: {
+          phase_milestone_data?: { onboarding_complete?: boolean };
+        } | null;
+        error: any;
+      };
 
       if (error) {
         console.error("Failed to check onboarding status:", error);

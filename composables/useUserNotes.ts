@@ -84,18 +84,25 @@ export const useUserNotes = () => {
     if (!userStore.user) return {};
 
     try {
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = (await supabase
         .from("user_notes")
         .select("*")
         .eq("user_id", userStore.user.id)
-        .eq("entity_type", entityType);
+        .eq("entity_type", entityType)) as {
+        data: Array<{
+          entity_id: string;
+          note_content: string | null;
+          [key: string]: unknown;
+        }> | null;
+        error: any;
+      };
 
       if (fetchError) throw fetchError;
 
       const result: Record<string, string> = {};
       if (data) {
         for (const note of data) {
-          notes.value.set(getKey(entityType, note.entity_id), note);
+          notes.value.set(getKey(entityType, note.entity_id), note as any);
           result[note.entity_id] = note.note_content || "";
         }
       }
@@ -126,18 +133,20 @@ export const useUserNotes = () => {
     try {
       // Try to upsert: delete first (to handle empty content), then insert if not empty
       if (noteContent.trim()) {
-        const { error: upsertError } = await supabase.from("user_notes").upsert(
-          {
-            user_id: userStore.user.id,
-            entity_type: entityType,
-            entity_id: entityId,
-            note_content: noteContent,
-            updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: "user_id,entity_type,entity_id",
-          },
-        );
+        const { error: upsertError } = (await supabase
+          .from("user_notes")
+          .upsert(
+            {
+              user_id: userStore.user.id,
+              entity_type: entityType,
+              entity_id: entityId,
+              note_content: noteContent,
+              updated_at: new Date().toISOString(),
+            },
+            {
+              onConflict: "user_id,entity_type,entity_id",
+            },
+          )) as { error: any };
 
         if (upsertError) throw upsertError;
 

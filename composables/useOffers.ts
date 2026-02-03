@@ -100,7 +100,7 @@ export const useOffers = (): {
     error.value = null;
 
     try {
-      const { data, error: insertError } = await supabase
+      const { data, error: insertError } = (await supabase
         .from("offers")
         .insert([
           {
@@ -109,7 +109,7 @@ export const useOffers = (): {
           },
         ])
         .select()
-        .single();
+        .single()) as { data: Offer; error: any };
 
       if (insertError) throw insertError;
 
@@ -132,12 +132,13 @@ export const useOffers = (): {
     error.value = null;
 
     try {
-      const { data, error: updateError } = await supabase
-        .from("offers")
+      const { data, error: updateError } = (await (
+        supabase.from("offers") as any
+      )
         .update(updates)
         .eq("id", id)
         .select()
-        .single();
+        .single()) as { data: Offer; error: any };
 
       if (updateError) throw updateError;
 
