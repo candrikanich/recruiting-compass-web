@@ -280,7 +280,7 @@ const loadUsers = async () => {
     console.log("[Admin] Current user email:", currentUserEmail.value);
 
     const filteredUsers = (response?.users || []).filter(
-      (u) => u.email !== currentUserEmail.value,
+      (u: any) => u.email !== currentUserEmail.value,
     );
 
     console.log(
@@ -410,7 +410,7 @@ const bulkDeleteUsers = async () => {
     if (response.failed > 0 && response.errors.length > 0) {
       console.error("Bulk delete errors:", response.errors);
       const errorDetails = response.errors
-        .map((e) => `${e.email}: ${e.reason}`)
+        .map((e: any) => `${e.email}: ${e.reason}`)
         .join("\n");
       error.value = `Failed to delete:\n${errorDetails}`;
     }

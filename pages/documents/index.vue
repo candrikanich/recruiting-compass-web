@@ -702,11 +702,9 @@ const handleUpload = async () => {
 const handleDeleteDocument = async (docId: string) => {
   if (confirm("Delete this document?")) {
     try {
-      const { success, error: deleteError } = await deleteDocumentAPI(docId);
+      const success = await deleteDocumentAPI(docId);
       if (!success) {
-        const message = getErrorMessage(
-          new Error(deleteError || "Failed to delete document"),
-        );
+        const message = getErrorMessage(new Error("Failed to delete document"));
         error.value = message;
       }
     } catch (err) {

@@ -428,7 +428,7 @@ const fetchCounts = async () => {
       const { data: offersData, error: offersError } = await supabase
         .from("offers")
         .select("*")
-        .eq("user_id", targetUserId.value);
+        .eq("user_id", targetUserId.value || "");
 
       if (!offersError && offersData) {
         allOffers.value = offersData;
@@ -442,7 +442,7 @@ const fetchCounts = async () => {
       const { data: eventsData, error: eventsError } = await supabase
         .from("events")
         .select("*")
-        .eq("user_id", targetUserId.value);
+        .eq("user_id", targetUserId.value || "");
 
       if (!eventsError && eventsData) {
         allEvents.value = eventsData;
@@ -456,7 +456,7 @@ const fetchCounts = async () => {
       const { data: metricsData, error: metricsError } = await supabase
         .from("performance_metrics")
         .select("*")
-        .eq("user_id", targetUserId.value);
+        .eq("user_id", targetUserId.value || "");
 
       if (!metricsError && metricsData) {
         allMetrics.value = metricsData;
