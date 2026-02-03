@@ -161,11 +161,11 @@ export default defineEventHandler(
           for (const { table, columns } of tableDeleteAttempts) {
             try {
               for (const column of columns) {
-                const { error: deleteError } = await (
+                const { error: deleteError } = (await (
                   supabaseAdmin.from(table) as any
                 )
                   .delete()
-                  .eq(column, targetUserId);
+                  .eq(column, targetUserId)) as any;
 
                 if (deleteError && deleteError.code !== "42P01") {
                   logger.warn(

@@ -40,13 +40,19 @@ export default defineEventHandler(async (event) => {
       videos,
       events,
     ] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", athleteId).single(),
-      supabase.from("schools").select("*").eq("athlete_id", athleteId),
-      supabase.from("interactions").select("*").eq("athlete_id", athleteId),
-      supabase.from("task").select("*"),
-      supabase.from("athlete_task").select("*").eq("athlete_id", athleteId),
-      supabase.from("videos").select("*").eq("athlete_id", athleteId),
-      supabase.from("events").select("*").eq("athlete_id", athleteId),
+      supabase.from("profiles").select("*").eq("id", athleteId).single() as any,
+      supabase.from("schools").select("*").eq("athlete_id", athleteId) as any,
+      supabase
+        .from("interactions")
+        .select("*")
+        .eq("athlete_id", athleteId) as any,
+      supabase.from("task").select("*") as any,
+      supabase
+        .from("athlete_task")
+        .select("*")
+        .eq("athlete_id", athleteId) as any,
+      supabase.from("videos").select("*").eq("athlete_id", athleteId) as any,
+      supabase.from("events").select("*").eq("athlete_id", athleteId) as any,
     ]);
 
     const context: RuleContext = {

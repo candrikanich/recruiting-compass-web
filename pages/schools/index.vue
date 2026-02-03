@@ -757,12 +757,12 @@ const stateOptions = computed(() => {
   const states = new Set<string>();
   schools.value.forEach((school) => {
     // Try dedicated state field first
-    let state =
+    let state: string | undefined =
       school.academic_info?.state || (school.state as string | undefined);
 
     // Fallback: extract state from location (e.g., "Berea, OH" → "OH")
     if (!state && school.location) {
-      state = extractStateFromLocation(school.location);
+      state = extractStateFromLocation(school.location) || undefined;
     }
 
     if (state && typeof state === "string") {
@@ -784,11 +784,13 @@ const distanceCache = computed(() => {
 
   schools.value.forEach((school) => {
     const coords = school.academic_info;
+    const coordLat = coords?.latitude;
+    const coordLng = coords?.longitude;
     if (
-      coords?.latitude &&
-      coords?.longitude &&
-      typeof coords.latitude === "number" &&
-      typeof coords.longitude === "number"
+      coordLat &&
+      coordLng &&
+      typeof coordLat === "number" &&
+      typeof coordLng === "number"
     ) {
       const distance = calculateDistance(
         {
@@ -796,8 +798,8 @@ const distanceCache = computed(() => {
           longitude: homeLocation.longitude,
         },
         {
-          latitude: coords.latitude,
-          longitude: coords.longitude,
+          latitude: coordLat,
+          longitude: coordLng,
         },
       );
       cache.set(school.id, distance);
@@ -814,13 +816,14 @@ const filterConfigs: FilterConfig[] = [
     field: "name",
     label: "Search",
     placeholder: "School name or location...",
-    filterFn: (item: Record<string, unknown>, filterValue: any) => {
+    filterFn: (item: Record<string, unknown>, filterValue: any): boolean => {
       if (!filterValue) return true;
-      const school = item as School;
+      const school = item as unknown as School;
       const query = String(filterValue).toLowerCase();
       return (
         school.name.toLowerCase().includes(query) ||
-        school.location?.toLowerCase().includes(query)
+        school.location?.toLowerCase().includes(query) ||
+        false
       );
     },
   },
@@ -854,9 +857,9 @@ const filterConfigs: FilterConfig[] = [
     field: "state",
     label: "State",
     options: stateOptions.value,
-    filterFn: (item: Record<string, unknown>, filterValue: any) => {
-      const school = item as School;
-      let schoolState =
+    filterFn: (item: Record<string, unknown>, filterValue: any): boolean => {
+      const school = item as unknown as School;
+      let schoolState: string | undefined =
         school.academic_info?.state || (school.state as string | undefined);
       // Fallback: extract state from location
       if (!schoolState && school.location) {
@@ -873,8 +876,8 @@ const filterConfigs: FilterConfig[] = [
     max: 100,
     step: 5,
     defaultValue: { min: 0, max: 100 } as any,
-    filterFn: (item: Record<string, unknown>, filterValue: any) => {
-      const school = item as School;
+    filterFn: (item: Record<string, unknown>, filterValue: any): boolean => {
+      const school = item as unknown as School;
       const score = school.fit_score;
       if (score === null || score === undefined) return true;
       const min = filterValue?.min ?? 0;
@@ -890,8 +893,8 @@ const filterConfigs: FilterConfig[] = [
     max: 3000,
     step: 50,
     defaultValue: { max: 3000 } as any,
-    filterFn: (item: Record<string, unknown>, filterValue: any) => {
-      const school = item as School;
+    filterFn: (item: Record<string, unknown>, filterValue: any): boolean => {
+      const school = item as unknown as School;
       const homeLoc = getHomeLocation();
       if (!homeLoc?.latitude || !homeLoc?.longitude) {
         return true;

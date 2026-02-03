@@ -30,7 +30,9 @@ export default defineEventHandler(async (event) => {
     const supabase = createServerSupabaseClient();
 
     // Create notification
-    const { data, error } = await supabase.from("notifications").insert([
+    const { data, error } = (await (
+      supabase.from("notifications") as any
+    ).insert([
       {
         user_id: body.user_id,
         type: body.type,
@@ -40,7 +42,7 @@ export default defineEventHandler(async (event) => {
         action_url: body.action_url || null,
         scheduled_for: new Date().toISOString(),
       },
-    ]);
+    ])) as any;
 
     if (error) {
       throw createError({

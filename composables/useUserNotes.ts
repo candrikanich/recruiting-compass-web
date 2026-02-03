@@ -64,8 +64,8 @@ export const useUserNotes = () => {
       }
 
       if (data) {
-        notes.value.set(key, data as { note_content: string | null });
-        return (data as { note_content: string | null }).note_content;
+        notes.value.set(key, data as UserNote);
+        return (data as UserNote).note_content;
       }
 
       return null;
@@ -133,7 +133,7 @@ export const useUserNotes = () => {
     try {
       // Try to upsert: delete first (to handle empty content), then insert if not empty
       if (noteContent.trim()) {
-        const upsertResponse = await supabase.from("user_notes").upsert(
+        const upsertResponse = (await supabase.from("user_notes").upsert(
           {
             user_id: userStore.user.id,
             entity_type: entityType,
@@ -144,8 +144,8 @@ export const useUserNotes = () => {
           {
             onConflict: "user_id,entity_type,entity_id",
           },
-        );
-        const { error: upsertError } = upsertResponse as { error: any };
+        )) as { error: any };
+        const { error: upsertError } = upsertResponse;
 
         if (upsertError) throw upsertError;
 

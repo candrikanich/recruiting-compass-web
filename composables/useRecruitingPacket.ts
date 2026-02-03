@@ -90,9 +90,12 @@ export const useRecruitingPacket = () => {
       sat_score: profile ? (profile.sat_score as number) : undefined,
       act_score: profile ? (profile.act_score as number) : undefined,
       video_links: (
-        (profile?.video_links as Array<{ platform?: string; url?: string }>) ||
-        []
-      ).map((v) => ({
+        (profile?.video_links as Array<{
+          platform?: string;
+          url?: string;
+          title?: string;
+        }>) || []
+      ).map((v: { platform?: string; url?: string; title?: string }) => ({
         platform: (v.platform as "hudl" | "youtube" | "vimeo") || "youtube",
         url: String(v.url || ""),
         title: v.title as string | undefined,

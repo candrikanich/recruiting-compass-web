@@ -38,20 +38,27 @@ export async function gatherUserData(userId: string): Promise<ExportData> {
       offersRes,
       auditRes,
     ] = await Promise.all([
-      supabase.from("profiles").select("*").eq("user_id", userId).single(),
-      supabase.from("schools").select("*").eq("user_id", userId),
-      supabase.from("coaches").select("*").eq("user_id", userId),
-      supabase.from("interactions").select("*").eq("user_id", userId),
-      supabase.from("events").select("*").eq("user_id", userId),
-      supabase.from("documents").select("*").eq("user_id", userId),
-      supabase.from("performance_metrics").select("*").eq("user_id", userId),
-      supabase.from("offers").select("*").eq("user_id", userId),
+      supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .single() as any,
+      supabase.from("schools").select("*").eq("user_id", userId) as any,
+      supabase.from("coaches").select("*").eq("user_id", userId) as any,
+      supabase.from("interactions").select("*").eq("user_id", userId) as any,
+      supabase.from("events").select("*").eq("user_id", userId) as any,
+      supabase.from("documents").select("*").eq("user_id", userId) as any,
+      supabase
+        .from("performance_metrics")
+        .select("*")
+        .eq("user_id", userId) as any,
+      supabase.from("offers").select("*").eq("user_id", userId) as any,
       supabase
         .from("audit_logs")
         .select("*")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
-        .limit(1000), // Limit audit logs to 1000 recent entries
+        .limit(1000) as any, // Limit audit logs to 1000 recent entries
     ]);
 
     return {

@@ -147,13 +147,16 @@ export const useProfilePhoto = (): {
       }
 
       // Clear from database
-      const deleteUpdateResponse = await supabase
+      const deleteUpdateResponse = (await supabase
         .from("users")
-        .update({ profile_photo_url: null } as unknown)
+        .update({ profile_photo_url: null } as unknown as Record<
+          string,
+          unknown
+        >)
         .eq("id", userId)
         .select()
-        .single();
-      const { error: updateError } = deleteUpdateResponse as { error: any };
+        .single()) as { error: any };
+      const { error: updateError } = deleteUpdateResponse;
 
       if (updateError) {
         throw updateError;

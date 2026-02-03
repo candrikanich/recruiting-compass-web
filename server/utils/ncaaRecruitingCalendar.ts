@@ -261,7 +261,7 @@ export const NCAA_DEADLINES_2026: Milestone[] = [
     date: "2026-04-01",
     title: "NCAA Eligibility Center Registration - Juniors",
     type: "deadline",
-    division: "D1",
+    division: "DI" as const,
     url: "https://www.eligibilitycenter.org/",
     description: "Register with NCAA to begin eligibility evaluation",
   },
@@ -269,7 +269,7 @@ export const NCAA_DEADLINES_2026: Milestone[] = [
     date: "2026-06-15",
     title: "D1 Contact Period Begins",
     type: "ncaa-period",
-    division: "D1",
+    division: "DI" as const,
     description: "NCAA allows recruiting contact to begin for juniors",
   },
 ];
