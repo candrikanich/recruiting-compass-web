@@ -6,18 +6,6 @@ repos:
       - id: detect-secrets
         args: [--baseline, .secrets.baseline]
 
-  # Prettier: Code formatting
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.1.1
-    hooks:
-      - id: prettier
-        files: \.(js|jsx|ts|tsx|vue|css|md|json)$
-        exclude: |
-          (?x)^(
-            package-lock\.json|
-            pnpm-lock\.yaml
-          )$
-
   # Basic file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -28,7 +16,7 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
 
-  # Type checking and linting via npm scripts
+  # Linting, formatting, and type checking via npm scripts
   - repo: local
     hooks:
       - id: npm-type-check
@@ -37,11 +25,15 @@ repos:
         language: system
         files: \.(ts|tsx|vue)$
         pass_filenames: false
-        stages: [commit]
       - id: npm-lint
         name: ESLint
         entry: npm run lint:fix
         language: system
         files: \.(ts|tsx|js|jsx|vue)$
         pass_filenames: false
-        stages: [commit]
+      - id: npm-format
+        name: Prettier Format
+        entry: npm run format
+        language: system
+        files: \.(ts|tsx|js|jsx|vue|css|md|json)$
+        pass_filenames: false
