@@ -226,7 +226,7 @@
                       ? 'bg-blue-600 text-white'
                       : 'text-slate-700 hover:bg-slate-100',
                   ]"
-                  @click="currentPage = p"
+                  @click="currentPage = p as number"
                 >
                   {{ p }}
                 </button>
