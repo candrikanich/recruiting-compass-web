@@ -63,7 +63,6 @@ const POSITION_MAPPING: Record<string, PositionValue> = {
   "2nd Base": "2B",
   "3rd Base": "3B",
   "Short Stop": "SS",
-  SS: "SS",
   Leftfield: "LF",
   Centerfield: "CF",
   Rightfield: "RF",
