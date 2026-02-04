@@ -939,7 +939,7 @@ const {
   clearFilters,
   getFilterDisplayValue,
 } = useUniversalFilter(
-  schools.value as unknown as Record<string, unknown>[],
+  computed(() => schools.value as unknown as Record<string, unknown>[]),
   filterConfigs,
   {
     storageKey: "schools-filters",

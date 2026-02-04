@@ -55,6 +55,11 @@ const displayText = computed(() => {
   return `Parent viewed • ${viewedAt.toLocaleDateString()}`;
 });
 
+type ParentViewLog = {
+  viewed_at: string;
+  parent?: { id: string; full_name: string; email: string };
+};
+
 /**
  * Load view status on mount
  */
@@ -65,7 +70,7 @@ const loadViewStatus = async () => {
     const lastView = await viewLogging.getLastParentView();
     if (lastView && typeof lastView === "object" && "viewed_at" in lastView) {
       hasParentViewed.value = true;
-      lastViewTime.value = (lastView as { viewed_at: string }).viewed_at;
+      lastViewTime.value = (lastView as ParentViewLog).viewed_at;
     }
   } catch (err) {
     console.debug("Failed to load view status:", err);
