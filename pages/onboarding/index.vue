@@ -41,15 +41,63 @@
           </div>
         </div>
 
-        <!-- Screen 2: Basic Info (placeholder) -->
+        <!-- Screen 2: Basic Info -->
         <div v-if="currentStep === 2" class="space-y-6">
           <h2 class="text-2xl font-bold text-slate-900 mb-4">
             Basic Information
           </h2>
-          <p class="text-slate-600">
-            Graduation year, primary sport, and position selection will be
-            configured here.
-          </p>
+
+          <!-- Graduation Year -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Expected Graduation Year *
+            </label>
+            <select
+              v-model="onboardingData.graduation_year"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            >
+              <option value="">Select graduation year</option>
+              <option v-for="year in graduationYears" :key="year" :value="year">
+                {{ year }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Primary Sport -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Primary Sport *
+            </label>
+            <select
+              v-model="onboardingData.primary_sport"
+              @change="onSportChange"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            >
+              <option value="">Select your sport</option>
+              <option v-for="sport in commonSports" :key="sport" :value="sport">
+                {{ sport }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Position -->
+          <div v-if="onboardingData.primary_sport">
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Primary Position *
+            </label>
+            <select
+              v-model="onboardingData.primary_position"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            >
+              <option value="">Select position</option>
+              <option v-for="pos in positions" :key="pos" :value="pos">
+                {{ pos }}
+              </option>
+            </select>
+          </div>
         </div>
 
         <!-- Screen 3: Location (placeholder) -->
@@ -159,9 +207,108 @@ const error = ref<string | null>(null);
 
 const totalSteps = 5;
 
+// Common high school sports and their positions
+const commonSports = [
+  "Baseball",
+  "Basketball",
+  "Football",
+  "Soccer",
+  "Volleyball",
+  "Softball",
+  "Track & Field",
+  "Swimming",
+  "Cross Country",
+  "Tennis",
+  "Golf",
+  "Lacrosse",
+  "Field Hockey",
+  "Ice Hockey",
+  "Wrestling",
+  "Rowing",
+  "Water Polo",
+];
+
+const sportPositions: Record<string, string[]> = {
+  Baseball: [
+    "Pitcher",
+    "Catcher",
+    "Infielder",
+    "Outfielder",
+    "Designated Hitter",
+  ],
+  Basketball: [
+    "Point Guard",
+    "Shooting Guard",
+    "Small Forward",
+    "Power Forward",
+    "Center",
+  ],
+  Football: [
+    "Quarterback",
+    "Running Back",
+    "Wide Receiver",
+    "Tight End",
+    "Offensive Line",
+    "Linebacker",
+    "Defensive Back",
+    "Defensive Line",
+  ],
+  Soccer: ["Goalkeeper", "Defender", "Midfielder", "Forward"],
+  Volleyball: [
+    "Outside Hitter",
+    "Middle Blocker",
+    "Setter",
+    "Libero",
+    "Opposite Hitter",
+  ],
+  Softball: [
+    "Pitcher",
+    "Catcher",
+    "Infielder",
+    "Outfielder",
+    "Designated Hitter",
+  ],
+  "Track & Field": ["Sprinter", "Distance Runner", "Jumper", "Thrower"],
+  Swimming: [
+    "Freestyle",
+    "Backstroke",
+    "Breaststroke",
+    "Butterfly",
+    "Individual Medley",
+  ],
+  "Cross Country": ["Runner"],
+  Tennis: ["Singles", "Doubles"],
+  Golf: ["Golfer"],
+  Lacrosse: ["Attackman", "Midfielder", "Defenseman", "Goalie"],
+  "Field Hockey": ["Forward", "Midfielder", "Defender", "Goalkeeper"],
+  "Ice Hockey": ["Forward", "Defenseman", "Goalie"],
+  Wrestling: ["Wrestler"],
+  Rowing: ["Rower"],
+  "Water Polo": ["Field Player", "Goalkeeper"],
+};
+
+const positions = computed(() => {
+  const sport = onboardingData.value.primary_sport as string;
+  return sport && sportPositions[sport] ? sportPositions[sport] : [];
+});
+
+const graduationYears = computed(() => {
+  const years = [];
+  const currentYear = new Date().getFullYear();
+  for (let i = 0; i < 12; i++) {
+    years.push(currentYear + i);
+  }
+  return years;
+});
+
 const progressPercentage = computed(() => {
   return (currentStep.value / totalSteps) * 100;
 });
+
+const onSportChange = () => {
+  // Reset position when sport changes
+  onboardingData.value.primary_position = "";
+};
 
 const clearError = () => {
   error.value = null;
