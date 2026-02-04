@@ -12,6 +12,7 @@ import type {
   SchoolPreferences,
   DashboardWidgetVisibility,
 } from "~/types/models";
+import { normalizePositions } from "./positions";
 
 /**
  * Validates and extracts notification settings
@@ -90,7 +91,7 @@ export function validatePlayerDetails(data: unknown): PlayerDetails | null {
     primary_position: toString(obj.primary_position),
     high_school: toString(obj.high_school),
     club_team: toString(obj.club_team),
-    positions: toStringArray(obj.positions),
+    positions: normalizePositions(toStringArray(obj.positions)),
     bats: toOption<"L" | "R" | "S">(obj.bats, ["L", "R", "S"]),
     throws: toOption<"L" | "R">(obj.throws, ["L", "R"]),
     height_inches: toNumber(obj.height_inches),
