@@ -425,33 +425,11 @@
         >
           <!-- Header -->
           <div class="text-center mb-8">
-            <div
-              class="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg"
-            >
-              <svg
-                class="w-11 h-11 text-emerald-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
-                />
-                <polygon fill="currentColor" points="12,5 13,9 12,8 11,9" />
-                <polygon fill="currentColor" points="12,19 11,15 12,16 13,15" />
-                <polygon fill="currentColor" points="5,12 9,11 8,12 9,13" />
-                <polygon fill="currentColor" points="19,12 15,13 16,12 15,11" />
-              </svg>
-            </div>
-            <h1 class="text-slate-900 text-3xl font-bold mb-2">
-              Recruiting Compass
-            </h1>
-            <p class="text-slate-600">
-              Navigate your college recruiting journey
-            </p>
+            <img
+              src="~/assets/logos/recruiting-compass-stacked.svg"
+              alt="The Recruiting Compass - Find your path, make your move"
+              class="w-64 mx-auto"
+            />
           </div>
 
           <!-- Timeout Message -->
