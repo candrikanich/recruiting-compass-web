@@ -703,20 +703,24 @@ const handleSignup = async () => {
       }
     }
 
-    // Create user profile in public.users table using the returned user ID
-    const insertResponse = await (supabase.from("users") as any).insert([
-      {
-        id: userId,
-        email: validated.email,
-        full_name: validated.fullName,
-        role: validated.role,
-      },
-    ]);
-    const { error: insertError } = insertResponse as { error: any };
+    // Create or update user profile in public.users table
+    // Use upsert to handle idempotent signup (retry safety)
+    const upsertResponse = await (supabase.from("users") as any).upsert(
+      [
+        {
+          id: userId,
+          email: validated.email,
+          full_name: validated.fullName,
+          role: validated.role,
+        },
+      ],
+      { onConflict: "id" },
+    );
+    const { error: upsertError } = upsertResponse as { error: any };
 
-    if (insertError) {
-      console.error("Error inserting user profile:", insertError);
-      throw insertError;
+    if (upsertError) {
+      console.error("Error upserting user profile:", upsertError);
+      throw upsertError;
     }
 
     console.log("User profile created successfully");
