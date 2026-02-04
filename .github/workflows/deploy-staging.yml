@@ -29,3 +29,41 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
           vercel-args: "--prod"
+
+      - name: Notify Slack - Staging Deployed
+        if: success()
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "✅ Staging Deployment Successful",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*✅ Staging Deployed Successfully*\n*Repository:* ${{ github.repository }}\n*Branch:* develop\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}|${{ github.event.workflow_run.head_sha }}>\n*URL:* https://recruiting-compass-web.vercel.app"
+                  }
+                }
+              ]
+            }
+
+      - name: Notify Slack - Staging Deployment Failed
+        if: failure()
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "❌ Staging Deployment Failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*❌ Staging Deployment Failed*\n*Repository:* ${{ github.repository }}\n*Branch:* develop\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}|${{ github.event.workflow_run.head_sha }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                  }
+                }
+              ]
+            }

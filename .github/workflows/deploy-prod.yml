@@ -38,3 +38,41 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_PROD }}
           vercel-args: "--prod"
+
+      - name: Notify Slack - Production Deployed
+        if: success()
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "🚀 Production Deployment Successful",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*🚀 Production Deployed Successfully*\n*Repository:* ${{ github.repository }}\n*Branch:* main\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}|${{ github.event.workflow_run.head_sha }}>\n*URL:* https://recruiting-compass-web.vercel.app"
+                  }
+                }
+              ]
+            }
+
+      - name: Notify Slack - Production Deployment Failed
+        if: failure()
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "🚨 Production Deployment Failed - URGENT",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*🚨 Production Deployment Failed (URGENT)*\n*Repository:* ${{ github.repository }}\n*Branch:* main\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}|${{ github.event.workflow_run.head_sha }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                  }
+                }
+              ]
+            }
