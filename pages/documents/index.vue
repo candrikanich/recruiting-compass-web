@@ -379,6 +379,9 @@ import UniversalFilter from "~/components/Common/UniversalFilter.vue";
 import { useUserStore } from "~/stores/user";
 import type { Document } from "~/types/models";
 import type { FilterConfig } from "~/types/filters";
+import type { Database } from "~/types/database";
+
+type DocumentType = Database["public"]["Enums"]["document_type"];
 
 definePageMeta({
   middleware: "auth",
@@ -652,7 +655,7 @@ const handleFileSelect = (event: Event) => {
 
     // Validate file
     try {
-      validateFile(file, newDoc.type as any);
+      validateFile(file, newDoc.type as DocumentType);
       selectedFile.value = file;
       selectedFileName.value = file.name;
     } catch (err) {
@@ -672,7 +675,7 @@ const handleUpload = async () => {
   try {
     const result = await uploadDocument(
       selectedFile.value,
-      newDoc.type as any,
+      newDoc.type as DocumentType,
       newDoc.title,
       {
         description: newDoc.description || undefined,
