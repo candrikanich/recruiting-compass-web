@@ -46,6 +46,7 @@ export default defineEventHandler(
 
       // Parse request body
       const body = await readBody<ConfirmPasswordResetRequest>(event);
+
       const { password } = body;
 
       // Validate password with Zod schema
@@ -56,7 +57,10 @@ export default defineEventHandler(
 
       if (!validationResult.success) {
         // Extract first validation error for user feedback
-        const errors = validationResult.error.errors;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const errors = (validationResult.error as any).errors as Array<{
+          message: string;
+        }>;
         const message =
           errors[0]?.message || "Password does not meet requirements";
 

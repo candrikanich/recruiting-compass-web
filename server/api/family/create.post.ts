@@ -1,14 +1,16 @@
 import { defineEventHandler, createError } from "h3";
-import { requireAuth } from "~/server/utils/auth";
+import { requireAuth, getUserRole } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { generateFamilyCode } from "~/server/utils/familyCode";
+import type { Database } from "~/types/database";
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
   const supabase = useSupabaseAdmin();
 
   // Only students can create families
-  if (user.role !== "student") {
+  const userRole = await getUserRole(user.id, supabase);
+  if (userRole !== "student") {
     throw createError({
       statusCode: 403,
       message: "Only students can create families",
@@ -16,11 +18,17 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check if student already has a family
-  const { data: existingFamily } = await supabase
+  const fetchResponse = await supabase
     .from("family_units")
     .select("id, family_code")
     .eq("student_user_id", user.id)
-    .single();
+    .maybeSingle();
+
+  const { data: existingFamily } = fetchResponse as {
+    data: Database["public"]["Tables"]["family_units"]["Row"] | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    error: any;
+  };
 
   if (existingFamily) {
     return {
@@ -35,16 +43,22 @@ export default defineEventHandler(async (event) => {
   const familyCode = await generateFamilyCode(supabase);
 
   // Create family unit
-  const { data: newFamily, error: familyError } = await supabase
+  const insertResponse = await supabase
     .from("family_units")
     .insert({
       student_user_id: user.id,
-      family_name: user.full_name ? `${user.full_name}'s Family` : "My Family",
+      family_name: "My Family",
       family_code: familyCode,
       code_generated_at: new Date().toISOString(),
-    })
+    } as Database["public"]["Tables"]["family_units"]["Insert"])
     .select()
     .single();
+
+  const { data: newFamily, error: familyError } = insertResponse as {
+    data: Database["public"]["Tables"]["family_units"]["Row"] | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    error: any;
+  };
 
   if (familyError || !newFamily) {
     throw createError({
@@ -54,11 +68,14 @@ export default defineEventHandler(async (event) => {
   }
 
   // Add student to family_members
-  const { error: memberError } = await supabase.from("family_members").insert({
+  const memberResponse = await supabase.from("family_members").insert({
     family_unit_id: newFamily.id,
     user_id: user.id,
     role: "student",
-  });
+  } as Database["public"]["Tables"]["family_members"]["Insert"]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error: memberError } = memberResponse as { error: any };
 
   if (memberError) {
     throw createError({
@@ -68,15 +85,17 @@ export default defineEventHandler(async (event) => {
   }
 
   // Log code generation
-  await supabase
-    .from("family_code_usage_log")
-    .insert({
-      family_unit_id: newFamily.id,
-      user_id: user.id,
-      code_used: familyCode,
-      action: "generated",
-    })
-    .catch((err) => console.warn("Failed to log code generation:", err));
+  const logResponse = await supabase.from("family_code_usage_log").insert({
+    family_unit_id: newFamily.id,
+    user_id: user.id,
+    code_used: familyCode,
+    action: "generated",
+  } as Database["public"]["Tables"]["family_code_usage_log"]["Insert"]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (logResponse as any).catch((err: any) =>
+    console.warn("Failed to log code generation:", err),
+  );
 
   return {
     success: true,

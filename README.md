@@ -1,6 +1,6 @@
-# Web Application - Baseball Recruiting Tracker
+# The Recruiting Compass - Web Application
 
-The web application for managing college baseball recruiting interactions, built with **Nuxt 3**, **Vue 3**, **TypeScript**, **TailwindCSS**, and **Supabase**.
+The web application for managing high school athlete recruiting interactions, built with **Nuxt 3**, **Vue 3**, **TypeScript**, **TailwindCSS**, and **Supabase**.
 
 ## Quick Start
 
@@ -259,25 +259,32 @@ See `CLAUDE.md` for full development standards.
 
 ## Deployment
 
-### Vercel (Production)
+Deploys are driven by **GitHub Actions** only after the **Test & Verify** workflow passes (type-check, lint, tests). No deploy runs if any of those steps fail.
 
-```bash
-# Build is automatic on push to main branch
-# Repository: https://github.com/candrikanich/recruiting-compass-web
-# Build command: npm run build
-# Framework: Nuxt 3 (auto-detected)
-# Nitro preset: vercel (serverless functions)
-```
+### CI/CD flow
 
-1. **Automatic Deploy:** Push to `main` → Vercel builds and deploys
-2. **Environment Variables:** Set in Vercel project dashboard (Settings → Environment Variables)
-3. **Preview Deploys:** Push to feature branch → Vercel creates preview URL
-4. **Live URL:** https://recruiting-compass-web-a9wx.vercel.app
+- **develop:** Push → Test & Verify runs → if all steps pass, Deploy to Staging runs (Vercel staging).
+- **main:** Push → Test & Verify runs → if all steps pass, Deploy to Production runs after manual approval (Vercel production).
 
-**Key Configuration:**
+### Disable Vercel auto-deploy (recommended)
 
-- Nitro preset: `vercel` (generates serverless functions for `/api/**` routes)
-- Build output: `.vercel/output/` (contains static assets and serverless functions)
+So that only the above workflows deploy (and broken code never gets built by Vercel on push):
+
+1. **Vercel Dashboard** → your project → **Settings** → **Git**
+2. Either **disconnect** the Git integration and deploy only via GitHub Actions (Vercel CLI/API), or
+3. **Turn off “Production Deployments”** and **“Preview Deployments”** so Vercel does not build on push.
+
+Then staging and production deploy only when Test & Verify has succeeded.
+
+### Vercel configuration
+
+- **Environment Variables:** Vercel project → Settings → Environment Variables
+- **Live URL:** https://recruiting-compass-web-a9wx.vercel.app
+
+**Build:**
+
+- Nitro preset: `vercel` (serverless functions for `/api/**` routes)
+- Build output: `.vercel/output/`
 - Runtime: Node.js (server-side API routes)
 
 ## Testing

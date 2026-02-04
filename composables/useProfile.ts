@@ -185,12 +185,14 @@ export const useProfile = (): {
 
       // Update database
       uploadProgress.value = 90;
-      const { error: updateError } = await supabase
-        .from("users")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateResponse = (await (supabase.from("users") as any)
         .update({ profile_photo_url: publicUrl })
         .eq("id", userId)
         .select()
-        .single();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .single()) as { error: any };
+      const { error: updateError } = updateResponse;
 
       if (updateError) {
         throw updateError;
@@ -251,12 +253,14 @@ export const useProfile = (): {
       }
 
       // Clear from database
-      const { error: updateError } = await supabase
-        .from("users")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateResponse = (await (supabase.from("users") as any)
         .update({ profile_photo_url: null })
         .eq("id", userId)
         .select()
-        .single();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .single()) as { error: any };
+      const { error: updateError } = updateResponse;
 
       if (updateError) {
         throw updateError;
@@ -291,14 +295,19 @@ export const useProfile = (): {
         return;
       }
 
-      const { data, error: fetchError } = await supabase
+      const fetchResponse = await supabase
         .from("user_preferences")
         .select("preference_history")
         .eq("user_id", userStore.user.id)
         .single();
+      const { data, error: fetchError } = fetchResponse as {
+        data: { preference_history: PreferenceHistoryEntry[] } | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (fetchError) {
-        if (fetchError.code === "PGRST116") {
+        if (fetchError?.code === "PGRST116") {
           // No preferences found
           editHistory.value = [];
           return;

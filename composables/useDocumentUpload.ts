@@ -5,7 +5,7 @@ import type { Document } from "~/types/models";
 import type { Database } from "~/types/database";
 
 // Type aliases for Supabase casting
-type DocumentInsert = Database["public"]["Tables"]["documents"]["Insert"];
+type _DocumentInsert = Database["public"]["Tables"]["documents"]["Insert"];
 
 // File validation constants
 const ALLOWED_MIME_TYPES = {
@@ -159,8 +159,8 @@ export const useDocumentUpload = () => {
 
       uploadProgress.value = 90;
 
-      const { data, error: insertError } = await supabase
-        .from("documents")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = (await (supabase.from("documents") as any)
         .insert([
           {
             ...documentData,
@@ -169,9 +169,11 @@ export const useDocumentUpload = () => {
             uploaded_by: store.user.id,
             file_type: file?.type,
           },
-        ] as DocumentInsert[])
+        ])
         .select()
-        .single();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .single()) as { data: Document; error: any };
+      const { data, error: insertError } = response;
 
       if (insertError) throw insertError;
 
@@ -206,17 +208,22 @@ export const useDocumentUpload = () => {
         throw new Error(validation.error || "File validation failed");
       }
 
-      const fileName = `${userStore.user.id}/${Date.now()}-${file.name}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const fileName = `${store.user.id}/${Date.now()}-${file.name}`;
+      const uploadResponse = await supabase.storage
         .from("documents")
         .upload(fileName, file);
+      const { data: uploadData, error: uploadError } = uploadResponse as {
+        data: { path: string } | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (uploadError) throw uploadError;
       if (!uploadData) throw new Error("Upload failed");
 
       const newVersion = (currentDoc.version || 1) + 1;
-      const { data, error: insertError } = await supabase
-        .from("documents")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const versionResponse = (await (supabase.from("documents") as any)
         .insert([
           {
             ...currentDoc,
@@ -228,9 +235,11 @@ export const useDocumentUpload = () => {
             updated_at: new Date().toISOString(),
             ...metadata,
           },
-        ] as DocumentInsert[])
+        ])
         .select()
-        .single();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .single()) as { data: Document; error: any };
+      const { data, error: insertError } = versionResponse;
 
       if (insertError) throw insertError;
 

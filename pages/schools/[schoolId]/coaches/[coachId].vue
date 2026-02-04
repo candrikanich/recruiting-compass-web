@@ -272,10 +272,14 @@ const loading = ref(false);
 const editingContact = ref(false);
 const editingNotes = ref(false);
 const editedNotes = ref("");
-const editedCoach = ref({
+const editedCoach = ref<{
+  email: string;
+  phone: string;
+  role: "head" | "assistant" | "recruiting";
+}>({
   email: "",
   phone: "",
-  role: "assistant" as const,
+  role: "assistant",
 });
 
 const schoolName = ref("");
@@ -310,16 +314,17 @@ const saveCoach = async () => {
   if (!coach.value) return;
   loading.value = true;
   try {
-    const { data, error } = await supabase
-      .from("coaches")
+    const response = await (supabase.from("coaches") as any)
       .update({
         email: editedCoach.value.email,
         phone: editedCoach.value.phone,
-        role: editedCoach.value.role,
+        role: editedCoach.value.role as "head" | "assistant" | "recruiting",
       })
       .eq("id", coachId)
       .select()
       .single();
+
+    const { data, error } = response as { data: Coach; error: any };
 
     if (error) throw error;
     if (data) {
@@ -337,12 +342,15 @@ const saveNotes = async () => {
   if (!coach.value) return;
   loading.value = true;
   try {
-    const { data, error } = await supabase
-      .from("coaches")
-      .update({ notes: editedNotes.value })
+    const response = await (supabase.from("coaches") as any)
+      .update({
+        notes: editedNotes.value,
+      })
       .eq("id", coachId)
       .select()
       .single();
+
+    const { data, error } = response as { data: Coach; error: any };
 
     if (error) throw error;
     if (data) {
@@ -383,11 +391,13 @@ onMounted(async () => {
     if (school) schoolName.value = school.name;
 
     // Fetch coach
-    const { data, error } = await supabase
+    const response = await supabase
       .from("coaches")
       .select("*")
       .eq("id", coachId)
       .single();
+
+    const { data, error } = response as { data: Coach; error: any };
 
     if (error) throw error;
     if (data) {

@@ -8,7 +8,7 @@ import {
 vi.mock("~/composables/useSupabase", () => ({
   useSupabase: vi.fn(() => ({
     auth: {
-      getSession: vi.fn(),
+      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
     },
     from: vi.fn(),
   })),
@@ -273,6 +273,146 @@ describe("useOnboarding", () => {
       const { checkOnboardingStatus } = useOnboarding();
       const result = await checkOnboardingStatus();
       expect(result).toBe(false);
+    });
+  });
+
+  describe("saveOnboardingStep", () => {
+    it("should save onboarding step data", async () => {
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const mockSupabase = {
+        from: vi.fn(() => ({
+          upsert: vi.fn().mockResolvedValue({ error: null }),
+        })),
+        auth: {
+          getSession: vi.fn().mockResolvedValue({
+            data: { session: { user: { id: "test-user" } } },
+          }),
+        },
+      };
+      vi.mocked(useSupabase).mockReturnValue(mockSupabase);
+
+      const { saveOnboardingStep } = useOnboarding();
+      const stepData = {
+        graduation_year: 2026,
+        primary_sport: "soccer",
+      };
+
+      await saveOnboardingStep(2, stepData);
+
+      expect(mockSupabase.from).toHaveBeenCalledWith("onboarding_progress");
+    });
+
+    it("should handle step save errors", async () => {
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const mockSupabase = {
+        from: vi.fn(() => ({
+          upsert: vi.fn().mockResolvedValue({
+            error: new Error("Database error"),
+          }),
+        })),
+        auth: {
+          getSession: vi.fn().mockResolvedValue({
+            data: { session: { user: { id: "test-user" } } },
+          }),
+        },
+      };
+      vi.mocked(useSupabase).mockReturnValue(mockSupabase);
+
+      const { saveOnboardingStep } = useOnboarding();
+
+      await expect(saveOnboardingStep(1, { field: "value" })).rejects.toThrow();
+    });
+  });
+
+  describe("getOnboardingProgress", () => {
+    it("should return onboarding progress percentage", async () => {
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const mockSupabase = {
+        from: vi.fn(() => ({
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              single: vi.fn().mockResolvedValue({
+                data: {
+                  completed_steps: [1, 2, 3],
+                },
+                error: null,
+              }),
+            })),
+          })),
+        })),
+        auth: {
+          getSession: vi.fn().mockResolvedValue({
+            data: { session: { user: { id: "test-user" } } },
+          }),
+        },
+      };
+      vi.mocked(useSupabase).mockReturnValue(mockSupabase);
+
+      const { getOnboardingProgress } = useOnboarding();
+      const progress = await getOnboardingProgress();
+
+      expect(typeof progress).toBe("number");
+      expect(progress).toBeGreaterThanOrEqual(0);
+      expect(progress).toBeLessThanOrEqual(100);
+    });
+
+    it("should return 0 for no steps completed", async () => {
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const mockSupabase = {
+        from: vi.fn(() => ({
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              single: vi.fn().mockResolvedValue({
+                data: null,
+                error: null,
+              }),
+            })),
+          })),
+        })),
+        auth: {
+          getSession: vi.fn().mockResolvedValue({
+            data: { session: { user: { id: "test-user" } } },
+          }),
+        },
+      };
+      vi.mocked(useSupabase).mockReturnValue(mockSupabase);
+
+      const { getOnboardingProgress } = useOnboarding();
+      const progress = await getOnboardingProgress();
+
+      expect(progress).toBe(0);
+    });
+  });
+
+  describe("completeOnboarding with graduation_year", () => {
+    it("should calculate starting phase based on graduation year", async () => {
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const mockSupabase = {
+        from: vi.fn(() => ({
+          update: vi.fn(() => ({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          })),
+        })),
+        auth: {
+          getSession: vi.fn().mockResolvedValue({
+            data: { session: { user: { id: "test-user" } } },
+          }),
+        },
+      };
+      vi.mocked(useSupabase).mockReturnValue(mockSupabase);
+
+      const { completeOnboarding } = useOnboarding();
+      const assessment: OnboardingAssessment = {
+        hasHighlightVideo: false,
+        hasContactedCoaches: false,
+        hasTargetSchools: false,
+        hasRegisteredEligibility: false,
+        hasTakenTestScores: false,
+      };
+
+      const result = await completeOnboarding(assessment);
+      expect(result.phase).toBeDefined();
+      expect(["freshman", "sophomore", "junior"]).toContain(result.phase);
     });
   });
 });

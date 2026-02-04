@@ -74,7 +74,7 @@ export const useSchoolMatching = () => {
   ): boolean => {
     switch (pref.type) {
       case "max_distance_miles":
-        return evaluateDistance(school, pref.value);
+        return evaluateDistance(school, pref.value as number);
 
       case "division":
         if (!school.division) return false;
@@ -93,7 +93,7 @@ export const useSchoolMatching = () => {
       }
 
       case "school_size": {
-        const schoolSize = pref.value;
+        const schoolSize = pref.value as string;
         return evaluateSchoolSize(school, schoolSize);
       }
 

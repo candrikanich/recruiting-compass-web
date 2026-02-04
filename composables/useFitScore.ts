@@ -293,7 +293,7 @@ export const useFitScore = (): {
    * Triggered when athlete profile changes (consolidated from useFitScoreRecalculation)
    * @returns Recalculation result with counts of updated and failed scores
    */
-  async function recalculateAllFitScoresViaServer(): Promise<{
+  async function _recalculateAllFitScoresViaServer(): Promise<{
     success: boolean;
     updated: number;
     failed: number;
@@ -303,17 +303,20 @@ export const useFitScore = (): {
     state.value.error = null;
 
     try {
-      const response = await $fetch<{
+      const response = (await $fetch(
+        "/api/athlete/fit-scores/recalculate-all",
+        {
+          method: "POST",
+        },
+      )) as {
         success: boolean;
         updated: number;
         failed: number;
         message: string;
-      }>("/api/athlete/fit-scores/recalculate-all", {
-        method: "POST",
-      });
+      };
 
-      if (!response.success) {
-        throw new Error(response.message || "Recalculation failed");
+      if (!response?.success) {
+        throw new Error(response?.message || "Recalculation failed");
       }
 
       return response;
@@ -352,7 +355,6 @@ export const useFitScore = (): {
     // Methods
     calculateSchoolFitScore,
     recalculateAllFitScores,
-    recalculateAllFitScoresViaServer, // Inlined from useFitScoreRecalculation
     getPortfolioHealth,
     getFitScore,
     clearCache,

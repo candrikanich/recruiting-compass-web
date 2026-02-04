@@ -23,11 +23,12 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     const supabase = useSupabase();
 
     // Get user's onboarding status
-    const { data, error } = await supabase
+    const { data, error } = (await supabase
       .from("users")
       .select("phase_milestone_data")
       .eq("id", session.value.user.id)
-      .single();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .single()) as { data: { phase_milestone_data: any } | null; error: any };
 
     if (error) {
       console.error("Failed to check onboarding status:", error);

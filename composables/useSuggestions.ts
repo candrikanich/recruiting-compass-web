@@ -22,9 +22,12 @@ export function useSuggestions() {
       const params = new URLSearchParams({ location });
       if (schoolId) params.append("schoolId", schoolId);
 
-      const response = await $fetchAuth(`/api/suggestions?${params}`);
-      suggestions.value = response.suggestions;
-      pendingCount.value = response.pendingCount || 0;
+      const response = (await $fetchAuth(`/api/suggestions?${params}`)) as {
+        suggestions: Suggestion[];
+        pendingCount?: number;
+      };
+      suggestions.value = response?.suggestions || [];
+      pendingCount.value = response?.pendingCount || 0;
 
       // Notify if new suggestions were added
       const newCount = suggestions.value.length - previousCount;

@@ -1,8 +1,8 @@
-# Baseball Recruiting Tracker MVP Documentation Plan
+# The Recruiting Compass MVP Documentation Plan
 
 ## Overview
 
-Create comprehensive documentation for the Baseball Recruiting Tracker MVP to support:
+Create comprehensive documentation for The Recruiting Compass MVP to support:
 
 - **Users** (families with student-athletes): Non-technical user guides and tutorials
 - **Stakeholders** (investors, partners): Pitch materials and business case
@@ -10,7 +10,7 @@ Create comprehensive documentation for the Baseball Recruiting Tracker MVP to su
 - **Marketing** (user acquisition): Landing page copy, social content, promotional materials
 
 **Timeline:** 4 weeks aligned with 1-2 month MVP launch
-**Target:** Free MVP to validate market with families navigating college baseball recruiting
+**Target:** Free MVP to validate market with families navigating high school athlete recruiting
 
 ---
 

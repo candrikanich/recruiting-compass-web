@@ -511,13 +511,11 @@ const handleDeleteDocument = async () => {
     )
   ) {
     try {
-      const { success, error: deleteError } = await deleteDocumentAPI(
-        documentId.value,
-      );
+      const success = await deleteDocumentAPI(documentId.value);
       if (success) {
         await router.push("/documents");
       } else {
-        logError(new Error(deleteError || "Failed to delete document"));
+        logError(new Error("Failed to delete document"));
       }
     } catch (err) {
       logError(err);
@@ -583,14 +581,11 @@ const toggleSchoolSelection = (schoolId: string) => {
 const removeShare = async (schoolId: string) => {
   if (!document.value) return;
   try {
-    const { success, error: revokeError } = await removeSchoolAccess(
-      document.value.id,
-      schoolId,
-    );
+    const success = await removeSchoolAccess(document.value.id, schoolId);
     if (success) {
       await fetchDocuments();
     } else {
-      logError(new Error(revokeError || "Failed to remove school access"));
+      logError(new Error("Failed to remove school access"));
     }
   } catch (err) {
     logError(err);

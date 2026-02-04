@@ -50,6 +50,7 @@ export default defineEventHandler(
         console.error("Missing Supabase configuration");
         throw createError({
           statusCode: 500,
+
           statusMessage: "Server configuration error",
         });
       }
@@ -60,11 +61,15 @@ export default defineEventHandler(
       // Use service role key to access admin auth API for resending
       const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-      // Get user by email to verify they exist
+      // Resend verification email via admin API
+      // Using Magic Link approach instead of email_change_current
       const { data: userData, error: userError } =
-        await supabaseAdmin.auth.admin.getUserByEmail(email);
+        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabaseAdmin.auth.admin as any).listUsersByFilter({
+          filter: `email=${email}`,
+        });
 
-      if (userError || !userData.user) {
+      if (userError || !userData.users || userData.users.length === 0) {
         // For security, don't reveal if email exists
         // Just indicate that if user exists, email will be sent
         return {
@@ -74,18 +79,21 @@ export default defineEventHandler(
         };
       }
 
+      const user = userData.users[0];
+
       // Check if email is already verified
-      if (userData.user.email_confirmed_at) {
+      if (user.email_confirmed_at) {
         return {
           success: true,
           message: "Your email is already verified.",
         };
       }
 
-      // Resend confirmation email via admin API
+      // Resend confirmation email via admin API using generateLink with correct params
       const { error: resendError } =
-        await supabaseAdmin.auth.admin.generateLink({
-          type: "email_change_current",
+        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabaseAdmin.auth.admin as any).generateLink({
+          type: "magiclink",
           email: email,
         });
 

@@ -25,7 +25,7 @@ export function validateNotificationSettings(
   const obj = data as Record<string, unknown>;
 
   return {
-    followUpReminderDays: toNumber(obj.followUpReminderDays, 7),
+    followUpReminderDays: toNumber(obj.followUpReminderDays, 7) ?? 7,
     enableFollowUpReminders: toBoolean(obj.enableFollowUpReminders, true),
     enableDeadlineAlerts: toBoolean(obj.enableDeadlineAlerts, true),
     enableDailyDigest: toBoolean(obj.enableDailyDigest, true),
@@ -49,8 +49,15 @@ export function validateHomeLocation(data: unknown): HomeLocation | null {
 
   const obj = data as Record<string, unknown>;
 
-  // Check if location has any meaningful data
-  if (!obj.address && !obj.city && !obj.state && !obj.latitude) {
+  // Check if location has any meaningful data (zip-only is valid e.g. from onboarding)
+  if (
+    !obj.address &&
+    !obj.city &&
+    !obj.state &&
+    !obj.latitude &&
+    !obj.longitude &&
+    !obj.zip
+  ) {
     return null;
   }
 
@@ -65,6 +72,7 @@ export function validateHomeLocation(data: unknown): HomeLocation | null {
 }
 
 /**
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
  * Validates and extracts player details
  * Returns null if empty/missing
  */
@@ -78,6 +86,8 @@ export function validatePlayerDetails(data: unknown): PlayerDetails | null {
 
   return {
     graduation_year: toNumber(obj.graduation_year),
+    primary_sport: toString(obj.primary_sport),
+    primary_position: toString(obj.primary_position),
     high_school: toString(obj.high_school),
     club_team: toString(obj.club_team),
     positions: toStringArray(obj.positions),
@@ -141,10 +151,11 @@ export function validateSchoolPreferences(
           ("custom" as const),
         type: toString(p.type) || "",
         value: p.value,
-        priority: toNumber(p.priority, 0),
+        priority: toNumber(p.priority, 0) ?? 0,
         is_dealbreaker: toBoolean(p.is_dealbreaker, false),
       };
-    }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }) as any,
     template_used: toString(obj.template_used),
     last_updated: toString(obj.last_updated) || new Date().toISOString(),
   };

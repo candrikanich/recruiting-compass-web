@@ -269,8 +269,44 @@
             class="mb-6"
           />
 
+          <!-- User Type Selection -->
+          <div v-if="!userType" class="space-y-4 mb-8">
+            <p class="text-slate-600 text-sm font-medium">I'm a:</p>
+            <div class="grid grid-cols-2 gap-3">
+              <button
+                data-testid="user-type-player"
+                type="button"
+                @click="selectUserType('player')"
+                :disabled="loading"
+                :class="[
+                  'px-4 py-3 rounded-lg border-2 transition-all font-medium',
+                  'border-slate-200 hover:border-blue-500 text-slate-700',
+                ]"
+              >
+                I'm a Player
+              </button>
+              <button
+                data-testid="user-type-parent"
+                type="button"
+                @click="selectUserType('parent')"
+                :disabled="loading"
+                :class="[
+                  'px-4 py-3 rounded-lg border-2 transition-all font-medium',
+                  'border-slate-200 hover:border-blue-500 text-slate-700',
+                ]"
+              >
+                I'm a Parent
+              </button>
+            </div>
+          </div>
+
           <!-- Form -->
-          <form @submit.prevent="handleSignup" class="space-y-6">
+          <form
+            v-if="userType"
+            @submit.prevent="handleSignup"
+            :data-testid="`signup-form-${userType}`"
+            class="space-y-6"
+          >
             <!-- Name Fields -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -345,26 +381,27 @@
               <FieldError :error="fieldErrors.email" />
             </div>
 
-            <!-- Role -->
-            <div>
+            <!-- Family Code (Parents only) -->
+            <div v-if="userType === 'parent'">
               <label
-                for="role"
+                for="familyCode"
                 class="block text-sm font-medium text-slate-700 mb-2"
               >
-                I am a:
+                Family Code <span class="text-slate-500">(optional)</span>
               </label>
-              <select
-                id="role"
-                v-model="role"
-                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              <input
+                id="familyCode"
+                v-model="familyCode"
+                type="text"
+                placeholder="FAM-XXXXXXXX"
+                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
                 :disabled="loading"
-                @blur="validateRole"
-              >
-                <option value="">Select your role</option>
-                <option value="parent">Parent</option>
-                <option value="student">Student Athlete</option>
-              </select>
-              <FieldError :error="fieldErrors.role" />
+                @blur="validateFamilyCode"
+              />
+              <p class="text-xs text-slate-500 mt-1">
+                Enter your player's family code to link accounts
+              </p>
+              <FieldError :error="fieldErrors.familyCode" />
             </div>
 
             <!-- Password Fields -->
@@ -511,6 +548,8 @@ const email = ref("");
 const password = ref("");
 const confirmPassword = ref("");
 const role = ref("");
+const familyCode = ref("");
+const userType = ref<"player" | "parent" | null>(null);
 const agreeToTerms = ref(false);
 const loading = ref(false);
 
@@ -527,6 +566,12 @@ const {
   hasErrors,
   setErrors,
 } = useFormValidation();
+
+const selectUserType = (type: "player" | "parent") => {
+  userType.value = type;
+  role.value = type === "player" ? "student" : "parent";
+  clearErrors();
+};
 
 // Field-level validators
 const emailSchema = z.object({ email: signupSchema.shape.email });
@@ -562,6 +607,13 @@ watch(agreeToTerms, (isChecked) => {
   }
 });
 
+const validateFamilyCode = async () => {
+  // Optional field, only validate if provided
+  if (familyCode.value) {
+    // Could add schema validation here if needed
+  }
+};
+
 const handleSignup = async () => {
   // Check passwords match
   if (password.value !== confirmPassword.value) {
@@ -587,6 +639,7 @@ const handleSignup = async () => {
       password: password.value,
       confirmPassword: confirmPassword.value,
       role: role.value,
+      familyCode: familyCode.value,
     },
     signupSchema,
   );
@@ -602,11 +655,17 @@ const handleSignup = async () => {
 
     try {
       // Sign up with Supabase Auth (including role in metadata)
+      const signupOptions = {};
+      if (validated.role === "parent" && validated.familyCode) {
+        Object.assign(signupOptions, { familyCode: validated.familyCode });
+      }
+
       const authData = await signup(
         validated.email,
         validated.password,
         validated.fullName as string,
         validated.role,
+        signupOptions,
       );
       console.log("Auth signup returned:", authData);
 
@@ -644,47 +703,51 @@ const handleSignup = async () => {
       }
     }
 
-    // Create user profile in public.users table using the returned user ID
-    const { error: insertError } = await supabase.from("users").insert([
-      {
-        id: userId,
-        email: validated.email,
-        full_name: validated.fullName,
-        role: validated.role,
-      },
-    ]);
+    // Create or update user profile in public.users table
+    // Use upsert to handle idempotent signup (retry safety)
+    const upsertResponse = await (supabase.from("users") as any).upsert(
+      [
+        {
+          id: userId,
+          email: validated.email,
+          full_name: validated.fullName,
+          role: validated.role,
+        },
+      ],
+      { onConflict: "id" },
+    );
+    const { error: upsertError } = upsertResponse as { error: any };
 
-    if (insertError) {
-      console.error("Error inserting user profile:", insertError);
-      throw insertError;
+    if (upsertError) {
+      console.error("Error upserting user profile:", upsertError);
+      throw upsertError;
     }
 
     console.log("User profile created successfully");
 
-    // User preferences are created on-demand when the user first accesses settings
-    // No need to create them during signup
+    // Determine redirect based on user type
+    let redirectUrl = "";
 
-    // User store will be initialized by app.vue, no need to call here
-    // Session is automatically updated in Supabase auth
-
-    // Check if there's a redirect URL (e.g., from accept-invitation page)
-    const encodedRedirectUrl = route.query.redirect as string;
-    console.log("Checking redirect:", {
-      encodedRedirectUrl,
-      routeQuery: route.query,
-    });
-
-    if (encodedRedirectUrl) {
-      // Decode the redirect URL (it was encoded to preserve query params)
-      const redirectUrl = decodeURIComponent(encodedRedirectUrl);
-      console.log("Redirecting to:", redirectUrl);
-      await navigateTo(redirectUrl);
+    if (validated.role === "student") {
+      // Students (players) go to onboarding
+      redirectUrl = "/onboarding";
+    } else if (validated.role === "parent") {
+      // Parents go to family code entry or dashboard
+      if (validated.familyCode) {
+        // Parent has family code - go to dashboard (already linked)
+        redirectUrl = "/dashboard";
+      } else {
+        // Parent without code - go to family code entry screen
+        redirectUrl = "/family-code-entry";
+      }
     } else {
-      // Default: redirect to email verification page
-      const verifyUrl = `/verify-email?email=${encodeURIComponent(validated.email)}`;
-      console.log("Redirecting to verify-email:", verifyUrl);
-      await navigateTo(verifyUrl);
+      // Fallback for other roles
+      redirectUrl =
+        "/verify-email?email=" + encodeURIComponent(validated.email);
     }
+
+    console.log("Redirecting to:", redirectUrl);
+    await navigateTo(redirectUrl);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Signup failed";
     // Set form-level error
@@ -694,3 +757,13 @@ const handleSignup = async () => {
   }
 };
 </script>
+
+<style scoped>
+button[data-testid^="user-type-"]:not(:disabled).selected {
+  @apply bg-blue-50 border-blue-500 text-blue-700;
+}
+
+button[data-testid^="user-type-"]:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+</style>

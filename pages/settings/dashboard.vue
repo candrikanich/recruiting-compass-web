@@ -481,7 +481,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { CheckIcon, XMarkIcon, BellIcon } from "@heroicons/vue/24/solid";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
@@ -489,13 +489,14 @@ import { getDefaultDashboardLayout } from "~/utils/preferenceValidation";
 import type { DashboardWidgetVisibility } from "~/types/models";
 import Header from "~/components/Header.vue";
 
-const { isLoading, getDashboardLayout, setDashboardLayout } =
+const { isSaving, getDashboardLayout, setDashboardLayout } =
   usePreferenceManager();
 
 const localLayout = ref<DashboardWidgetVisibility>(getDefaultDashboardLayout());
 
 const successMessage = ref<string | null>(null);
 const errorMessage = ref<string | null>(null);
+const loading = computed(() => isSaving.value);
 
 onMounted(async () => {
   const layout = getDashboardLayout();

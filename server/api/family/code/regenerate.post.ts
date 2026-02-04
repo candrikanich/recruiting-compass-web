@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { generateFamilyCode } from "~/server/utils/familyCode";
+import type { Database } from "~/types/database";
 
 interface RegenerateCodeBody {
   familyId: string;
@@ -14,11 +15,17 @@ export default defineEventHandler(async (event) => {
   const supabase = useSupabaseAdmin();
 
   // Verify user is student owner of this family
-  const { data: family } = await supabase
+  const familyResponse = await supabase
     .from("family_units")
     .select("id, student_user_id")
     .eq("id", familyId)
     .single();
+
+  const { data: family } = familyResponse as {
+    data: Database["public"]["Tables"]["family_units"]["Row"] | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    error: any;
+  };
 
   if (!family || family.student_user_id !== user.id) {
     throw createError({
@@ -31,13 +38,16 @@ export default defineEventHandler(async (event) => {
   const newCode = await generateFamilyCode(supabase);
 
   // Update family
-  const { error } = await supabase
+  const updateResponse = await supabase
     .from("family_units")
     .update({
       family_code: newCode,
       code_generated_at: new Date().toISOString(),
-    })
+    } as Database["public"]["Tables"]["family_units"]["Update"])
     .eq("id", familyId);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = updateResponse as { error: any };
 
   if (error) {
     throw createError({
@@ -47,15 +57,19 @@ export default defineEventHandler(async (event) => {
   }
 
   // Log regeneration
-  await supabase
-    .from("family_code_usage_log")
-    .insert({
-      family_unit_id: familyId,
-      user_id: user.id,
-      code_used: newCode,
-      action: "regenerated",
-    })
-    .catch((err) => console.warn("Failed to log regeneration:", err));
+
+  const logPromise = supabase.from("family_code_usage_log").insert({
+    family_unit_id: familyId,
+    user_id: user.id,
+    code_used: newCode,
+    action: "regenerated",
+  } as Database["public"]["Tables"]["family_code_usage_log"]["Insert"]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (logPromise as any).catch(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (err: any) => console.warn("Failed to log regeneration:", err),
+  );
 
   return {
     success: true,

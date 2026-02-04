@@ -9,6 +9,7 @@
 
 import { computed } from "vue";
 import { useUserPreferencesV2 } from "./useUserPreferencesV2";
+import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type {
   NotificationSettings,
@@ -29,6 +30,7 @@ import {
 
 export function usePreferenceManager() {
   const userStore = useUserStore();
+  const supabase = useSupabase();
 
   // Initialize V2 preference instances for each category
   // These handle loading/saving to the API
@@ -158,7 +160,7 @@ export function usePreferenceManager() {
     await notificationPrefs.savePreferences();
 
     // Track in history
-    if (oldValue) {
+    if (oldValue && updated) {
       await trackPreferenceChange("notifications", oldValue, updated);
     }
   };
@@ -171,16 +173,21 @@ export function usePreferenceManager() {
   };
 
   /**
-   * Set home location and save
+   * Set home location and save (merges with current so partial updates from onboarding work)
    */
-  const setHomeLocation = async (location: HomeLocation) => {
+  const setHomeLocation = async (location: Partial<HomeLocation>) => {
     const oldValue = validateHomeLocation(locationPrefs.preferences.value);
+    const current = oldValue ?? {};
+    const merged: HomeLocation = {
+      ...current,
+      ...location,
+    };
 
-    locationPrefs.updatePreferences(location);
+    locationPrefs.updatePreferences(merged as Record<string, unknown>);
     await locationPrefs.savePreferences();
 
-    if (oldValue) {
-      await trackPreferenceChange("location", oldValue, location);
+    if (oldValue && merged) {
+      await trackPreferenceChange("location", oldValue, merged);
     }
   };
 
@@ -192,17 +199,22 @@ export function usePreferenceManager() {
   };
 
   /**
-   * Set player details and save with history tracking
+   * Set player details and save with history tracking (merges with current so partial updates from onboarding work)
    */
-  const setPlayerDetails = async (details: PlayerDetails) => {
+  const setPlayerDetails = async (details: Partial<PlayerDetails>) => {
     const oldValue = validatePlayerDetails(playerPrefs.preferences.value);
+    const current = oldValue ?? {};
+    const merged: PlayerDetails = {
+      ...current,
+      ...details,
+    };
 
-    playerPrefs.updatePreferences(details);
+    playerPrefs.updatePreferences(merged as Record<string, unknown>);
     await playerPrefs.savePreferences();
 
     // Track in history (player details are tracked separately for audit)
-    if (oldValue) {
-      await trackPreferenceChange("player", oldValue, details);
+    if (oldValue && merged) {
+      await trackPreferenceChange("player", oldValue, merged);
     }
   };
 
@@ -248,7 +260,9 @@ export function usePreferenceManager() {
   const setDashboardLayout = async (layout: DashboardWidgetVisibility) => {
     const oldValue = validateDashboardLayout(dashboardPrefs.preferences.value);
 
-    dashboardPrefs.updatePreferences(layout);
+    dashboardPrefs.updatePreferences(
+      layout as unknown as Record<string, unknown>,
+    );
     await dashboardPrefs.savePreferences();
 
     if (oldValue) {
@@ -291,9 +305,22 @@ export function usePreferenceManager() {
 
       if (changedFields.length === 0) return; // No changes to track
 
+      // Get auth token
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        throw new Error("No authentication token available");
+      }
+
       // Call history API to record the change
       await $fetch("/api/user/preferences/history", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: {
           category,
           old_value: oldValue,
@@ -315,10 +342,23 @@ export function usePreferenceManager() {
    */
   const getPreferenceHistory = async (category: string, limit = 50) => {
     try {
+      // Get auth token
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        throw new Error("No authentication token available");
+      }
+
       const response = await $fetch(
         `/api/user/preferences/${category}/history`,
         {
           method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           query: { limit },
         },
       );

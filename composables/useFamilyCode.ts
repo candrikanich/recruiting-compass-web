@@ -1,4 +1,5 @@
 import { ref, computed } from "vue";
+import { useFamilyContext } from "~/composables/useFamilyContext";
 
 export interface FamilyCodeData {
   familyId: string;
@@ -8,6 +9,9 @@ export interface FamilyCodeData {
 }
 
 export const useFamilyCode = () => {
+  const userStore = useUserStore();
+  const supabase = useSupabase();
+
   const myFamilyCode = ref<string | null>(null);
   const myFamilyId = ref<string | null>(null);
   const myFamilyName = ref<string | null>(null);
@@ -16,10 +20,9 @@ export const useFamilyCode = () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
   const successMessage = ref<string | null>(null);
-
-  const userStore = useUserStore();
-  const supabase = useSupabase();
-  const currentUserRole = computed(() => userStore.user?.role || "parent");
+  const currentUserRole = computed(
+    () => (userStore.user?.role as string) || "parent",
+  );
 
   /**
    * Fetches family code for current user using Supabase
@@ -29,16 +32,31 @@ export const useFamilyCode = () => {
     error.value = null;
 
     try {
+      if (!userStore.user?.id) {
+        error.value = "User not authenticated";
+        return;
+      }
+
       if (currentUserRole.value === "student") {
         // Students: Get their family code
-        const { data: family, error: fetchError } = await supabase
+        const familyResponse = await supabase
           .from("family_units")
           .select("id, family_code, family_name, code_generated_at")
-          .eq("student_user_id", userStore.user?.id)
-          .single();
+          .eq("student_user_id", userStore.user.id)
+          .maybeSingle();
+        const { data: family, error: fetchError } = familyResponse as {
+          data: {
+            id: string;
+            family_code: string | null;
+            family_name: string | null;
+            code_generated_at: string | null;
+          } | null;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          error: any;
+        };
 
         if (fetchError) {
-          error.value = fetchError.message;
+          error.value = fetchError?.message || "Failed to fetch family";
           return;
         }
 
@@ -47,7 +65,7 @@ export const useFamilyCode = () => {
         myFamilyName.value = family?.family_name || null;
       } else {
         // Parents: Get codes for families they belong to
-        const { data: memberships, error: fetchError } = await supabase
+        const membershipsResponse = await supabase
           .from("family_members")
           .select(
             `
@@ -55,11 +73,18 @@ export const useFamilyCode = () => {
             family_units!inner(id, family_code, family_name, code_generated_at)
           `,
           )
-          .eq("user_id", userStore.user?.id)
+          .eq("user_id", userStore.user.id)
           .eq("role", "parent");
+        const { data: memberships, error: fetchError } =
+          membershipsResponse as {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            data: any[] | null;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            error: any;
+          };
 
         if (fetchError) {
-          error.value = fetchError.message;
+          error.value = fetchError?.message || "Failed to fetch families";
           return;
         }
 
@@ -121,10 +146,11 @@ export const useFamilyCode = () => {
 
       return true;
     } catch (err) {
+      const errorData = err as Record<string, unknown>;
       const errorMessage =
-        (err as Record<string, unknown>)?.data?.message ||
+        (errorData?.data as Record<string, unknown> | undefined)?.message ||
         (err instanceof Error ? err.message : "Failed to create family");
-      error.value = errorMessage as string;
+      error.value = String(errorMessage);
       console.error("createFamily error:", err);
       return false;
     } finally {
@@ -148,15 +174,19 @@ export const useFamilyCode = () => {
     try {
       const { $fetchAuth } = useAuthFetch();
 
-      const response = await $fetchAuth("/api/family/code/join", {
+      const response = (await $fetchAuth("/api/family/code/join", {
         method: "POST",
         body: { familyCode: familyCode.trim().toUpperCase() },
-      });
+      })) as { message: string };
 
-      successMessage.value = response.message;
+      successMessage.value = response?.message || "Successfully joined family";
 
       // Refresh parent's families list
       await fetchMyCode();
+
+      // Refetch activeFamily context so dropdown updates
+      const activeFamily = useFamilyContext();
+      await activeFamily.refetchFamilies();
 
       return true;
     } catch (err) {
@@ -197,12 +227,12 @@ export const useFamilyCode = () => {
     try {
       const { $fetchAuth } = useAuthFetch();
 
-      const response = await $fetchAuth("/api/family/code/regenerate", {
+      const response = (await $fetchAuth("/api/family/code/regenerate", {
         method: "POST",
         body: { familyId: myFamilyId.value },
-      });
+      })) as { familyCode: string };
 
-      myFamilyCode.value = response.familyCode;
+      myFamilyCode.value = response?.familyCode || "";
       successMessage.value = "New code generated successfully!";
 
       return true;

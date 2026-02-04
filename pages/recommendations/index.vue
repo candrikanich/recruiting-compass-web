@@ -18,7 +18,7 @@
 
       <!-- Filters Section -->
       <div class="bg-white rounded-lg shadow p-6 mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <!-- Status Filter -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2"
@@ -29,30 +29,10 @@
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Statuses</option>
+              <option value="not_requested">Not Requested</option>
               <option value="requested">Requested</option>
-              <option value="submitted">Submitted</option>
               <option value="received">Received</option>
-              <option value="pending">Pending</option>
-            </select>
-          </div>
-
-          <!-- School Filter -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >School</label
-            >
-            <select
-              v-model="filters.schoolId"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Schools</option>
-              <option
-                v-for="school in schools"
-                :key="school.id"
-                :value="school.id"
-              >
-                {{ school.name }}
-              </option>
+              <option value="submitted">Submitted</option>
             </select>
           </div>
 
@@ -103,45 +83,37 @@
         </h2>
         <form @submit.prevent="handleSave" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- School -->
+            <!-- Writer Name -->
             <div>
               <label
-                for="school"
+                for="writerName"
                 class="block text-sm font-medium text-gray-700 mb-1"
               >
-                School <span class="text-red-600">*</span>
-              </label>
-              <select
-                id="school"
-                v-model="formData.school_id"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select School</option>
-                <option
-                  v-for="school in schools"
-                  :key="school.id"
-                  :value="school.id"
-                >
-                  {{ school.name }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Coach Name -->
-            <div>
-              <label
-                for="coach"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Requested From <span class="text-red-600">*</span>
+                Writer Name <span class="text-red-600">*</span>
               </label>
               <input
-                id="coach"
-                v-model="formData.requested_from"
+                id="writerName"
+                v-model="formData.writer_name"
                 type="text"
                 required
                 placeholder="e.g., Coach Smith, Mr. Johnson"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <!-- Writer Title -->
+            <div>
+              <label
+                for="writerTitle"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Writer Title
+              </label>
+              <input
+                id="writerTitle"
+                v-model="formData.writer_title"
+                type="text"
+                placeholder="e.g., Head Coach, Teacher"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -161,10 +133,10 @@
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select Status</option>
+                <option value="not_requested">Not Requested</option>
                 <option value="requested">Requested</option>
-                <option value="submitted">Submitted</option>
                 <option value="received">Received</option>
-                <option value="pending">Pending</option>
+                <option value="submitted">Submitted</option>
               </select>
             </div>
 
@@ -174,28 +146,27 @@
                 for="requestedDate"
                 class="block text-sm font-medium text-gray-700 mb-1"
               >
-                Requested Date <span class="text-red-600">*</span>
+                Requested Date
               </label>
               <input
                 id="requestedDate"
                 v-model="formData.requested_date"
                 type="date"
-                required
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            <!-- Deadline Date -->
+            <!-- Due Date -->
             <div>
               <label
-                for="deadline"
+                for="dueDate"
                 class="block text-sm font-medium text-gray-700 mb-1"
               >
-                Deadline Date
+                Due Date
               </label>
               <input
-                id="deadline"
-                v-model="formData.deadline_date"
+                id="dueDate"
+                v-model="formData.due_date"
                 type="date"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
@@ -216,11 +187,8 @@
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
-          </div>
 
-          <!-- Contact Info -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Email -->
+            <!-- Writer Email -->
             <div>
               <label
                 for="email"
@@ -230,26 +198,26 @@
               </label>
               <input
                 id="email"
-                v-model="formData.contact_email"
+                v-model="formData.writer_email"
                 type="email"
-                placeholder="coach@school.edu"
+                placeholder="writer@school.edu"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            <!-- Phone -->
+            <!-- Relationship -->
             <div>
               <label
-                for="phone"
+                for="relationship"
                 class="block text-sm font-medium text-gray-700 mb-1"
               >
-                Phone Number
+                Relationship
               </label>
               <input
-                id="phone"
-                v-model="formData.contact_phone"
-                type="tel"
-                placeholder="(555) 123-4567"
+                id="relationship"
+                v-model="formData.relationship"
+                type="text"
+                placeholder="e.g., Coach, Teacher, Mentor"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -276,13 +244,7 @@
           <div class="flex gap-4">
             <button
               type="submit"
-              :disabled="
-                loading ||
-                !formData.school_id ||
-                !formData.requested_from ||
-                !formData.status ||
-                !formData.requested_date
-              "
+              :disabled="loading || !formData.writer_name || !formData.status"
               class="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
             >
               {{ loading ? "Saving..." : "Save Letter" }}
@@ -336,15 +298,15 @@
             <div class="flex-1">
               <div class="flex items-center gap-3 mb-2">
                 <h3 class="text-lg font-bold text-gray-900">
-                  {{ letter.requested_from }}
+                  {{ letter.writer_name }}
                 </h3>
                 <span
                   :class="[
                     'inline-block px-3 py-1 text-xs font-semibold rounded-full',
-                    getStatusColor(letter.status),
+                    getStatusColor(letter.status ?? ''),
                   ]"
                 >
-                  {{ getStatusLabel(letter.status) }}
+                  {{ getStatusLabel(letter.status ?? "") }}
                 </span>
                 <span
                   v-if="isDeadlineUrgent(letter)"
@@ -353,8 +315,8 @@
                   ⚠️ {{ getDeadlineStatus(letter) }}
                 </span>
               </div>
-              <p class="text-sm text-gray-600">
-                📍 {{ getSchoolName(letter.school_id) }}
+              <p v-if="letter.writer_title" class="text-sm text-gray-600">
+                {{ letter.writer_title }}
               </p>
             </div>
             <div class="flex gap-2">
@@ -375,16 +337,16 @@
 
           <!-- Details -->
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
+            <div v-if="letter.requested_date">
               <p class="text-gray-600">Requested</p>
               <p class="font-semibold text-gray-900">
                 {{ formatDate(letter.requested_date) }}
               </p>
             </div>
-            <div v-if="letter.deadline_date">
-              <p class="text-gray-600">Deadline</p>
+            <div v-if="letter.due_date">
+              <p class="text-gray-600">Due</p>
               <p class="font-semibold text-gray-900">
-                {{ formatDate(letter.deadline_date) }}
+                {{ formatDate(letter.due_date) }}
               </p>
             </div>
             <div v-if="letter.received_date">
@@ -393,19 +355,11 @@
                 {{ formatDate(letter.received_date) }}
               </p>
             </div>
-            <div v-if="letter.contact_email || letter.contact_phone">
-              <p class="text-gray-600">Contact</p>
-              <div class="space-y-1">
-                <p
-                  v-if="letter.contact_email"
-                  class="text-xs text-blue-600 hover:underline cursor-pointer"
-                >
-                  {{ letter.contact_email }}
-                </p>
-                <p v-if="letter.contact_phone" class="text-xs text-gray-900">
-                  {{ letter.contact_phone }}
-                </p>
-              </div>
+            <div v-if="letter.writer_email">
+              <p class="text-gray-600">Email</p>
+              <p class="text-xs text-blue-600 hover:underline cursor-pointer">
+                {{ letter.writer_email }}
+              </p>
             </div>
           </div>
 
@@ -424,39 +378,41 @@
 import { ref, computed, onMounted } from "vue";
 import { useSchools } from "~/composables/useSchools";
 import { useUserStore } from "~/stores/user";
+import type { Database } from "~/types/database";
 
 definePageMeta({
   middleware: "auth",
 });
 
+type RecommendationLetter =
+  Database["public"]["Tables"]["recommendation_letters"]["Row"];
+
 const userStore = useUserStore();
-const { schools: composableSchools, fetchSchools } = useSchools();
 const supabase = useSupabase();
 
 // Data
-const letters = ref<any[]>([]);
-const schools = ref<any[]>([]);
+const letters = ref<RecommendationLetter[]>([]);
 const loading = ref(false);
 const showAddForm = ref(false);
 const editingId = ref<string | null>(null);
 
 // Form
 const formData = ref({
-  school_id: "",
-  requested_from: "",
+  writer_name: "",
+  writer_email: "",
+  writer_title: "",
   status: "",
-  requested_date: new Date().toISOString().split("T")[0],
-  deadline_date: "",
+  requested_date: "",
+  due_date: "",
   received_date: "",
-  contact_email: "",
-  contact_phone: "",
+  relationship: "",
+  schools_submitted_to: [] as string[],
   notes: "",
 });
 
 // Filters
 const filters = ref({
   status: "",
-  schoolId: "",
   deadlineStatus: "",
 });
 
@@ -464,8 +420,6 @@ const filters = ref({
 const filteredLetters = computed(() => {
   return letters.value.filter((letter) => {
     if (filters.value.status && letter.status !== filters.value.status)
-      return false;
-    if (filters.value.schoolId && letter.school_id !== filters.value.schoolId)
       return false;
 
     if (filters.value.deadlineStatus) {
@@ -487,7 +441,7 @@ const filteredLetters = computed(() => {
 
 // Helper functions
 const clearFilters = () => {
-  filters.value = { status: "", schoolId: "", deadlineStatus: "" };
+  filters.value = { status: "", deadlineStatus: "" };
 };
 
 const getStatusColor = (status: string): string => {
@@ -502,17 +456,17 @@ const getStatusColor = (status: string): string => {
 
 const getStatusLabel = (status: string): string => {
   const labels: Record<string, string> = {
+    not_requested: "📋 Not Requested",
     requested: "📬 Requested",
-    submitted: "📤 Submitted",
     received: "✅ Received",
-    pending: "⏳ Pending",
+    submitted: "📤 Submitted",
   };
   return labels[status] || status;
 };
 
-const getDeadlineStatus = (letter: any): string => {
-  if (!letter.deadline_date) return "No Deadline";
-  const deadline = new Date(letter.deadline_date);
+const getDeadlineStatus = (letter: RecommendationLetter): string => {
+  if (!letter.due_date) return "No Deadline";
+  const deadline = new Date(letter.due_date);
   const today = new Date();
   const daysUntil = Math.ceil(
     (deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
@@ -523,14 +477,10 @@ const getDeadlineStatus = (letter: any): string => {
   return "OK";
 };
 
-const isDeadlineUrgent = (letter: any): boolean => {
-  if (!letter.deadline_date) return false;
+const isDeadlineUrgent = (letter: RecommendationLetter): boolean => {
+  if (!letter.due_date) return false;
   const status = getDeadlineStatus(letter);
   return status === "Overdue" || status === "Due Soon";
-};
-
-const getSchoolName = (schoolId: string): string => {
-  return schools.value.find((s) => s.id === schoolId)?.name || "Unknown";
 };
 
 const formatDate = (dateStr: string): string => {
@@ -543,23 +493,35 @@ const formatDate = (dateStr: string): string => {
   });
 };
 
-const editLetter = (letter: any) => {
+const editLetter = (letter: RecommendationLetter) => {
   editingId.value = letter.id;
-  formData.value = { ...letter };
+  formData.value = {
+    writer_name: letter.writer_name,
+    writer_email: letter.writer_email ?? "",
+    writer_title: letter.writer_title ?? "",
+    status: letter.status ?? "",
+    requested_date: letter.requested_date ?? "",
+    due_date: letter.due_date ?? "",
+    received_date: letter.received_date ?? "",
+    relationship: letter.relationship ?? "",
+    schools_submitted_to: letter.schools_submitted_to ?? [],
+    notes: letter.notes ?? "",
+  };
   showAddForm.value = true;
 };
 
 const cancelEdit = () => {
   editingId.value = null;
   formData.value = {
-    school_id: "",
-    requested_from: "",
+    writer_name: "",
+    writer_email: "",
+    writer_title: "",
     status: "",
-    requested_date: new Date().toISOString().split("T")[0],
-    deadline_date: "",
+    requested_date: "",
+    due_date: "",
     received_date: "",
-    contact_email: "",
-    contact_phone: "",
+    relationship: "",
+    schools_submitted_to: [],
     notes: "",
   };
   showAddForm.value = false;
@@ -570,18 +532,19 @@ const handleSave = async () => {
     loading.value = true;
 
     if (editingId.value) {
-      // Update
-      const { error } = await supabase
-        .from("recommendation_letters")
+      const updateResponse = await (
+        supabase.from("recommendation_letters") as any
+      )
         .update(formData.value)
         .eq("id", editingId.value);
+      const { error } = updateResponse as { data: any; error: any };
 
       if (error) throw error;
     } else {
-      // Create
-      const { error } = await supabase
-        .from("recommendation_letters")
-        .insert([{ ...formData.value, user_id: userStore.user?.id }]);
+      const insertResponse = await (
+        supabase.from("recommendation_letters") as any
+      ).insert([{ ...formData.value, user_id: userStore.user?.id }]);
+      const { error } = insertResponse as { data: any; error: any };
 
       if (error) throw error;
     }
@@ -613,12 +576,16 @@ const deleteLetter = async (id: string) => {
 const loadLetters = async () => {
   try {
     loading.value = true;
-    const { data, error } = await supabase
+    const response = await supabase
       .from("recommendation_letters")
       .select("*")
-      .eq("user_id", userStore.user?.id)
+      .eq("user_id", userStore.user?.id ?? "")
       .order("requested_date", { ascending: false });
 
+    const { data, error } = response as {
+      data: RecommendationLetter[];
+      error: any;
+    };
     if (error) throw error;
     letters.value = data || [];
   } catch (err) {
@@ -631,8 +598,6 @@ const loadLetters = async () => {
 onMounted(async () => {
   if (!userStore.user) return;
   try {
-    await fetchSchools();
-    schools.value = composableSchools.value;
     await loadLetters();
   } catch (err) {
     console.error("Error loading data:", err);

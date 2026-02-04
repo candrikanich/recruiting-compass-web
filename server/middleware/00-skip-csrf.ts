@@ -15,4 +15,9 @@ export default defineEventHandler((event) => {
   if (url.startsWith("/api/family/")) {
     event.context._skipCsrfValidation = true;
   }
+
+  // Disable CSRF for user preference endpoints (protected by requireAuth)
+  if (url.startsWith("/api/user/preferences/")) {
+    event.context._skipCsrfValidation = true;
+  }
 });

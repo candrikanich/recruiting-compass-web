@@ -29,11 +29,17 @@ export default defineEventHandler(
 
     try {
       // Fetch user's player details from user_preferences
-      const { data: preferences, error: prefError } = await supabase
-        .from("user_preferences")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const prefResponse = await (supabase.from("user_preferences") as any)
         .select("player_details")
         .eq("user_id", user.id)
         .single();
+
+      const { data: preferences, error: prefError } = prefResponse as {
+        data: { player_details: PlayerDetails } | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (prefError) {
         throw createError({
@@ -43,7 +49,7 @@ export default defineEventHandler(
         });
       }
 
-      const playerDetails = preferences?.player_details as PlayerDetails | null;
+      const playerDetails = preferences?.player_details || null;
 
       if (!playerDetails) {
         throw createError({
@@ -118,13 +124,11 @@ export default defineEventHandler(
       }
 
       // Batch update schools table
-      const updateResult = await supabase
+      const { data: _updateResult, error: updateError } = await supabase
         .from("schools")
         // @ts-expect-error - custom columns (fit_score, fit_score_data) not in Supabase types
         .upsert(updates, { onConflict: "id" })
         .select();
-
-      const { error: updateError } = updateResult;
 
       if (updateError) {
         throw updateError;

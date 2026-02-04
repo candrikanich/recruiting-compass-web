@@ -451,6 +451,7 @@ import { navigateTo } from "#app";
 import { useSupabase } from "~/composables/useSupabase";
 import { useCommunication } from "~/composables/useCommunication";
 import { useFamilyContext } from "~/composables/useFamilyContext";
+import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 import Header from "~/components/Header.vue";
 import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
@@ -473,7 +474,8 @@ definePageMeta({
 const supabase = useSupabase();
 const userStore = useUserStore();
 // Inject family context provided at app.vue level (with singleton fallback)
-const activeFamily = inject("activeFamily") || useFamilyContext();
+const activeFamily = (inject<UseActiveFamilyReturn>("activeFamily") ||
+  useFamilyContext()) as UseActiveFamilyReturn;
 const { activeFamilyId } = activeFamily;
 const {
   showPanel,

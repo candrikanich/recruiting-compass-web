@@ -8,7 +8,7 @@ declare class JsPDF {
   setFontSize(size: number): void;
   setFont(name: string, weight: string): void;
   text(
-    text: string,
+    text: string | string[],
     x: number,
     y: number,
     options?: Record<string, unknown>,
@@ -20,7 +20,22 @@ declare class JsPDF {
       height: number;
     };
   };
+  output(type: "blob"): Blob;
+  output(type: "datauristring" | string): string;
+  addPage(): JsPDF;
+  splitTextToSize(text: string, maxWidth: number): string[];
+  addImage(
+    imageData: string,
+    format: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ): JsPDF;
 }
+
+// Declare autoTable plugin
+declare function autoTable(doc: JsPDF, options: Record<string, unknown>): void;
 
 interface JsPDFWithAutoTable extends JsPDF {
   lastAutoTable: {
@@ -46,7 +61,7 @@ export const initializePDF = async (
  * Add header with title and subtitle
  */
 export const addHeader = (
-  doc: jsPDF,
+  doc: JsPDF,
   title: string,
   subtitle?: string,
 ): void => {
@@ -70,7 +85,7 @@ export const addHeader = (
 /**
  * Add footer with page number and date
  */
-export const addFooter = (doc: jsPDF, pageNumber: number): void => {
+export const addFooter = (doc: JsPDF, pageNumber: number): void => {
   const pageHeight = doc.internal.pageSize.height;
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
@@ -87,7 +102,7 @@ export const addFooter = (doc: jsPDF, pageNumber: number): void => {
  * Add metrics table to PDF
  */
 export const addMetricsTable = (
-  doc: jsPDF,
+  doc: JsPDF,
   metrics: PerformanceMetric[],
   yPosition: number,
 ): number => {
@@ -115,7 +130,7 @@ export const addMetricsTable = (
  * Add chart image to PDF
  */
 export const addChartImage = (
-  doc: jsPDF,
+  doc: JsPDF,
   base64Image: string,
   title: string,
   yPosition: number,

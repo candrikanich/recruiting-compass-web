@@ -11,7 +11,7 @@ interface Emits {
   (e: "close"): void;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 defineEmits<Emits>();
 
 const modalRef = ref<HTMLDivElement | null>(null);
@@ -21,9 +21,8 @@ const handleKeydown = (e: KeyboardEvent) => {
     // Emit close event
   }
 };
-
 watch(
-  (props) => props.isOpen,
+  () => props.isOpen,
   (isOpen) => {
     if (isOpen) {
       document.addEventListener("keydown", handleKeydown);

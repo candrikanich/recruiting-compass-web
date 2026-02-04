@@ -70,7 +70,7 @@
                   </select>
                   <div class="py-1">
                     <SchoolPrioritySelector
-                      :model-value="school.priority_tier"
+                      :model-value="school.priority_tier ?? null"
                       @update:model-value="updatePriorityTier"
                       :data-testid="`priority-selector-${id}`"
                     />
@@ -700,15 +700,15 @@
             @close="showUploadModal = false"
             @success="handleDocumentUploadSuccess"
           />
-
           <!-- Email Send Modal -->
           <EmailSendModal
             v-if="showEmailModal"
             :is-open="showEmailModal"
             :recipient-email="
-              schoolCoaches.length > 0 ? schoolCoaches[0].email : ''
+              schoolCoaches.length > 0 ? (schoolCoaches[0].email ?? '') : ''
             "
-            :recipient-name="school?.name || ''"
+            :subject="`Contact from ${school?.name || 'Recruiting Compass'}`"
+            :body="`Hello,\n\nI am reaching out regarding recruitment opportunities at ${school?.name || 'your school'}.\n\nBest regards`"
             @close="showEmailModal = false"
           />
         </div>
@@ -1178,9 +1178,12 @@ const loadFitScore = async () => {
     } else {
       // Calculate fit score with minimal data (school only)
       // Full fit score calculation requires athlete data
+      const studentSize = school.value.academic_info?.student_size;
+      const numericSize =
+        typeof studentSize === "number" ? studentSize : undefined;
       fitScore.value = await calculateSchoolFitScore(id, undefined, {
-        campusSize: school.value.academic_info?.student_size,
-        avgGpa: school.value.academic_info?.gpa_requirement,
+        campusSize: numericSize,
+        avgGpa: school.value.academic_info?.gpa_requirement ?? undefined,
         offeredMajors: [],
       });
     }

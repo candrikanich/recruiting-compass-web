@@ -419,6 +419,7 @@ describe("useAuth", () => {
           data: {
             full_name: "John Doe",
             role: "parent",
+            user_type: "parent",
           },
         },
       });
@@ -650,6 +651,112 @@ describe("useAuth", () => {
 
       expect(mockSubscription1.unsubscribe).toHaveBeenCalled();
       expect(mockSubscription2.unsubscribe).toHaveBeenCalled();
+    });
+  });
+
+  describe("signup with user_type (onboarding)", () => {
+    it("should generate family_code for player signup", async () => {
+      const { mockSupabase, mockAuth } = getMockSupabase();
+
+      const signupData = { user: mockUser, session: mockSession };
+      mockAuth.signUp.mockResolvedValue({ data: signupData, error: null });
+
+      const auth = useAuth();
+      const result = await auth.signup(
+        "player@example.com",
+        "password123",
+        "Jane Player",
+        "player",
+      );
+
+      expect(mockAuth.signUp).toHaveBeenCalledWith({
+        email: "player@example.com",
+        password: "password123",
+        options: {
+          data: {
+            full_name: "Jane Player",
+            role: "player",
+            family_code: expect.stringMatching(/^[A-Z0-9\-]+$/),
+            user_type: "player",
+            onboarding_completed: false,
+          },
+        },
+      });
+      expect(result).toEqual(signupData);
+    });
+
+    it("should accept family_code for parent signup", async () => {
+      const { mockSupabase, mockAuth } = getMockSupabase();
+
+      const signupData = { user: mockUser, session: mockSession };
+      mockAuth.signUp.mockResolvedValue({ data: signupData, error: null });
+
+      const auth = useAuth();
+      const result = await auth.signup(
+        "parent@example.com",
+        "password123",
+        "John Parent",
+        "parent",
+        { familyCode: "FAM-ABC123" },
+      );
+
+      expect(mockAuth.signUp).toHaveBeenCalledWith({
+        email: "parent@example.com",
+        password: "password123",
+        options: {
+          data: {
+            full_name: "John Parent",
+            role: "parent",
+            user_type: "parent",
+            family_code: "FAM-ABC123",
+          },
+        },
+      });
+      expect(result).toEqual(signupData);
+    });
+
+    it("should handle parent signup without family_code", async () => {
+      const { mockSupabase, mockAuth } = getMockSupabase();
+
+      const signupData = { user: mockUser, session: mockSession };
+      mockAuth.signUp.mockResolvedValue({ data: signupData, error: null });
+
+      const auth = useAuth();
+      const result = await auth.signup(
+        "parent@example.com",
+        "password123",
+        "John Parent",
+        "parent",
+      );
+
+      expect(mockAuth.signUp).toHaveBeenCalledWith({
+        email: "parent@example.com",
+        password: "password123",
+        options: {
+          data: {
+            full_name: "John Parent",
+            role: "parent",
+            user_type: "parent",
+          },
+        },
+      });
+      expect(result).toEqual(signupData);
+    });
+
+    it("should handle invalid family_code for parent signup", async () => {
+      const { mockSupabase, mockAuth } = getMockSupabase();
+
+      const auth = useAuth();
+
+      await expect(
+        auth.signup(
+          "parent@example.com",
+          "password123",
+          "John Parent",
+          "parent",
+          { familyCode: "INVALID" },
+        ),
+      ).rejects.toThrow("Invalid family code format");
     });
   });
 });

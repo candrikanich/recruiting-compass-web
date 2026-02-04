@@ -5,6 +5,7 @@ import {
   isValidFamilyCodeFormat,
   checkRateLimit,
 } from "~/server/utils/familyCode";
+import type { Database } from "~/types/database";
 
 interface JoinByCodeBody {
   familyCode: string;
@@ -43,11 +44,17 @@ export default defineEventHandler(async (event) => {
   }
 
   // Find family by code
-  const { data: family, error: familyError } = await supabase
+  const familyResponse = await supabase
     .from("family_units")
     .select("id, family_name, student_user_id")
     .eq("family_code", familyCode)
     .single();
+
+  const { data: family, error: familyError } = familyResponse as {
+    data: Database["public"]["Tables"]["family_units"]["Row"] | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    error: any;
+  };
 
   if (familyError || !family) {
     throw createError({
@@ -65,12 +72,18 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check if already a member
-  const { data: existingMember } = await supabase
+  const existingResponse = await supabase
     .from("family_members")
     .select("id")
     .eq("family_unit_id", family.id)
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
+
+  const { data: existingMember } = existingResponse as {
+    data: Database["public"]["Tables"]["family_members"]["Row"] | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    error: any;
+  };
 
   if (existingMember) {
     return {
@@ -81,11 +94,14 @@ export default defineEventHandler(async (event) => {
   }
 
   // Add parent to family_members
-  const { error: memberError } = await supabase.from("family_members").insert({
+  const memberResponse = await supabase.from("family_members").insert({
     family_unit_id: family.id,
     user_id: user.id,
     role: "parent",
-  });
+  } as Database["public"]["Tables"]["family_members"]["Insert"]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error: memberError } = memberResponse as { error: any };
 
   if (memberError) {
     throw createError({
@@ -103,33 +119,39 @@ export default defineEventHandler(async (event) => {
   };
 
   // Log usage (non-blocking, fire-and-forget)
-  supabase
-    .from("family_code_usage_log")
-    .insert({
-      family_unit_id: family.id,
-      user_id: user.id,
-      code_used: familyCode,
-      action: "joined",
-    })
+  const logPromise = supabase.from("family_code_usage_log").insert({
+    family_unit_id: family.id,
+    user_id: user.id,
+    code_used: familyCode,
+    action: "joined",
+  } as Database["public"]["Tables"]["family_code_usage_log"]["Insert"]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (logPromise as any)
+
     .then(() => {
       // Success - do nothing
     })
-    .catch((err) => console.warn("Failed to log join action:", err));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .catch((err: any) => console.warn("Failed to log join action:", err));
 
   // Create notification for student (non-blocking, fire-and-forget)
-  supabase
-    .from("notifications")
-    .insert({
-      user_id: family.student_user_id,
-      type: "family_member_joined",
-      title: "New family member joined",
-      message: `${user.full_name || user.email} joined your family`,
-      priority: "medium",
-    })
+  const notifPromise = supabase.from("notifications").insert({
+    user_id: family.student_user_id,
+    type: "family_member_joined",
+    title: "New family member joined",
+    message: `${user.email || "A user"} joined your family`,
+    priority: "medium",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (notifPromise as any)
     .then(() => {
       // Success - do nothing
     })
-    .catch((err) => console.warn("Notification creation failed:", err));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .catch((err: any) => console.warn("Notification creation failed:", err));
 
   return successResponse;
 });

@@ -323,7 +323,14 @@ export const useDocumentsConsolidated = () => {
     try {
       validateFile(
         file,
-        type as "transcript" | "test_score" | "video" | "resume" | "other",
+        type as
+          | "highlight_video"
+          | "transcript"
+          | "resume"
+          | "rec_letter"
+          | "questionnaire"
+          | "stats_sheet"
+          | "attachment",
       );
     } catch (err) {
       const fileError = err instanceof Error ? err.message : "Invalid file";
@@ -355,9 +362,10 @@ export const useDocumentsConsolidated = () => {
       uploadProgress.value = 50;
 
       // 2. Get public URL
-      const { data: urlData } = supabase.storage
+      const urlResponse = supabase.storage
         .from("documents")
         .getPublicUrl(fileName);
+      const { data: urlData } = urlResponse as { data: { publicUrl: string } };
 
       // 3. Create DB record
       const { data: docData, error: insertErr } = await queryInsert<Document>(
@@ -652,6 +660,7 @@ export const useDocumentsConsolidated = () => {
     // Fetch methods
     fetchDocuments,
     fetchDocumentVersions,
+    fetchVersions: fetchDocumentVersions, // Alias for backwards compatibility
     getDocument,
 
     // Update methods

@@ -38,20 +38,37 @@ export async function gatherUserData(userId: string): Promise<ExportData> {
       offersRes,
       auditRes,
     ] = await Promise.all([
-      supabase.from("profiles").select("*").eq("user_id", userId).single(),
-      supabase.from("schools").select("*").eq("user_id", userId),
-      supabase.from("coaches").select("*").eq("user_id", userId),
-      supabase.from("interactions").select("*").eq("user_id", userId),
-      supabase.from("events").select("*").eq("user_id", userId),
-      supabase.from("documents").select("*").eq("user_id", userId),
-      supabase.from("performance_metrics").select("*").eq("user_id", userId),
-      supabase.from("offers").select("*").eq("user_id", userId),
+      supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .from("profiles" as any)
+        .select("*")
+        .eq("user_id", userId)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .single() as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase.from("schools").select("*").eq("user_id", userId) as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase.from("coaches").select("*").eq("user_id", userId) as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase.from("interactions").select("*").eq("user_id", userId) as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase.from("events").select("*").eq("user_id", userId) as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase.from("documents").select("*").eq("user_id", userId) as any,
+      supabase
+        .from("performance_metrics")
+        .select("*")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .eq("user_id", userId) as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      supabase.from("offers").select("*").eq("user_id", userId) as any,
       supabase
         .from("audit_logs")
         .select("*")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
-        .limit(1000), // Limit audit logs to 1000 recent entries
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .limit(1000) as any, // Limit audit logs to 1000 recent entries
     ]);
 
     return {
@@ -106,6 +123,7 @@ async function fetchDocumentContent(
         type: doc.type,
         created_at: doc.created_at,
         updated_at: doc.updated_at,
+
         school_id: doc.school_id,
       };
 
@@ -135,6 +153,7 @@ async function fetchDocumentContent(
     } catch (error) {
       logger.warn("Failed to fetch document content", {
         documentId: doc.id,
+
         error: error instanceof Error ? error.message : "Unknown error",
       });
       // Continue with next document
@@ -198,6 +217,7 @@ export async function generateUserExportZip(userId: string): Promise<Buffer> {
           const fileName = `${doc.metadata.name || `document_${index}`}`;
           docsFolder.file(
             `${fileName}.json`,
+
             JSON.stringify(doc.metadata, null, 2),
           );
 
@@ -254,14 +274,14 @@ function jsonToCSV(data: Record<string, unknown>[]): string {
  * Generate README with data dictionary
  */
 function generateReadme(userId: string): string {
-  return `# College Baseball Recruiting Tracker - Data Export
+  return `# The Recruiting Compass - Data Export
 
 Generated: ${new Date().toISOString()}
 User ID: ${userId}
 
 ## Contents
 
-This archive contains a complete export of your data from the College Baseball Recruiting Tracker.
+This archive contains a complete export of your data from The Recruiting Compass.
 
 ### Files Included
 
@@ -343,7 +363,7 @@ export async function sendExportViaEmail(
 ): Promise<void> {
   try {
     const zipBuffer = await generateUserExportZip(userId);
-    const fileName = `baseball-recruiting-tracker-export-${new Date().toISOString().split("T")[0]}.zip`;
+    const fileName = `recruiting-compass-export-${new Date().toISOString().split("T")[0]}.zip`;
 
     // Convert buffer to base64 for email
     const _base64Content = zipBuffer.toString("base64");
@@ -359,7 +379,7 @@ export async function sendExportViaEmail(
     // Actual implementation would call email service:
     // await sendEmailWithAttachment({
     //   to: userEmail,
-    //   subject: 'Your Baseball Recruiting Tracker Data Export',
+    //   subject: 'Your Recruiting Compass Data Export',
     //   html: getExportEmailTemplate(fileName),
     //   attachments: [{
     //     filename: fileName,

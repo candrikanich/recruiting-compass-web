@@ -24,6 +24,7 @@ export const useUserStore = defineStore("user", {
     emailVerified: (state) => state.isEmailVerified,
     isAthlete: (state) => state.user?.role === "student",
     isParent: (state) => state.user?.role === "parent",
+    isAdmin: (state) => state.user?.role === "admin",
   },
 
   actions: {
@@ -176,17 +177,26 @@ export const useUserStore = defineStore("user", {
         }
 
         // Profile doesn't exist, create it
-        const { error, data: _data } = await supabase
+        const userData = [
+          {
+            id: userId,
+            email,
+            full_name: fullName || email.split("@")[0],
+            role: "student",
+          },
+        ];
+
+        const response = (await supabase
           .from("users")
-          .insert([
-            {
-              id: userId,
-              email,
-              full_name: fullName || email.split("@")[0],
-              role: "student",
-            },
-          ])
-          .select();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .insert(userData as any)
+          .select()) as {
+          data: User[] | null;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          error: any;
+        };
+
+        const { error, data: _data } = response;
 
         if (error) {
           // Check if it's a duplicate key error (email or id already exists)

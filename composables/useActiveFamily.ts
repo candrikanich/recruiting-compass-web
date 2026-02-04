@@ -27,6 +27,7 @@ interface FamilyContext {
  * Students: activeFamilyId returns their family, activeAthleteId returns their ID
  * Parents: activeFamilyId returns family of athlete in route.query.athlete_id or first family
  */
+
 export const useActiveFamily = () => {
   const supabase = useSupabase();
   const userStore = useUserStore();
@@ -124,11 +125,17 @@ export const useActiveFamily = () => {
     try {
       if (isStudent.value) {
         // For students, fetch their family unit
-        const { data, error: fetchError } = await supabase
+        const response = await supabase
           .from("family_units")
           .select("id, family_name")
           .eq("student_user_id", userStore.user.id)
           .maybeSingle();
+
+        const { data, error: fetchError } = response as {
+          data: { id: string; family_name: string | null } | null;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          error: any;
+        };
 
         if (fetchError) {
           console.error(
@@ -337,6 +344,13 @@ export const useActiveFamily = () => {
     return str ? str.slice(2, 9) : "unknown";
   })();
 
+  // Refetch families (useful when families change, e.g., after joining via code)
+  const refetchFamilies = async () => {
+    if (!isParent.value) return;
+    await initializeFamily();
+    await fetchFamilyMembers();
+  };
+
   return {
     // State
     loading,
@@ -358,8 +372,11 @@ export const useActiveFamily = () => {
     getAccessibleAthletes,
     getDisplayContext,
     getDataOwnerUserId,
+    refetchFamilies,
 
     // Debug
     _debugInstanceId,
   };
 };
+
+export type UseActiveFamilyReturn = ReturnType<typeof useActiveFamily>;

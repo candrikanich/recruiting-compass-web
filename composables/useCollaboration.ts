@@ -75,11 +75,18 @@ export const useCollaboration = () => {
         expires_at: expiresAt,
       };
 
-      const { data, error: err } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const insertResponse = await (supabase as any)
         .from("shared_records")
         .insert([newShare])
         .select()
         .single();
+
+      const { data, error: err } = insertResponse as {
+        data: SharedRecord;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (err) throw err;
 
@@ -126,11 +133,20 @@ export const useCollaboration = () => {
     error.value = null;
 
     try {
-      const { error: err } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateResponse = await (supabase as any)
         .from("shared_records")
         .update({ access_level: accessLevel })
         .eq("id", id)
+
         .eq("owner_user_id", userStore.user.id);
+
+      const { error: err } = updateResponse as {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (err) throw err;
 
@@ -190,16 +206,25 @@ export const useCollaboration = () => {
         user_id: userStore.user.id,
         entity_type: entityType,
         entity_id: entityId,
+
         content,
         mentions,
         created_at: new Date().toISOString(),
       };
 
-      const { data, error: err } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const insertResponse = await (supabase as any)
         .from("record_comments")
+
         .insert([newComment])
         .select()
         .single();
+
+      const { data, error: err } = insertResponse as {
+        data: RecordComment;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (err) throw err;
 
@@ -219,11 +244,19 @@ export const useCollaboration = () => {
     error.value = null;
 
     try {
-      const { error: err } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateResponse = await (supabase as any)
         .from("record_comments")
         .update({ deleted_at: new Date().toISOString() })
         .eq("id", id)
         .eq("user_id", userStore.user.id);
+
+      const { error: err } = updateResponse as {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (err) throw err;
 

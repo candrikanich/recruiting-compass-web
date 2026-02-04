@@ -36,6 +36,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
+
       created: totalCreated,
       breakdown: {
         offers: results[0].count,
@@ -45,7 +46,8 @@ export default defineEventHandler(async (event) => {
       },
       timestamp: new Date().toISOString(),
     };
-  } catch (err: { statusCode?: number; statusMessage?: string }) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
     console.error("Error generating notifications:", err);
     throw createError({
       statusCode: err.statusCode || 500,

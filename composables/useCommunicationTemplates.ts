@@ -7,7 +7,7 @@ import type { Database } from "~/types/database";
 // Type aliases for Supabase casting
 type CommunicationTemplateInsert =
   Database["public"]["Tables"]["communication_templates"]["Insert"];
-type CommunicationTemplateUpdate =
+type _CommunicationTemplateUpdate =
   Database["public"]["Tables"]["communication_templates"]["Update"];
 
 // Unlock condition types (migrated from useTemplateUnlock)
@@ -131,17 +131,22 @@ export const useCommunicationTemplates = (): {
 
     try {
       // Fetch user templates AND predefined templates
-      const { data, error: err } = await supabase
+      const response = await supabase
         .from("communication_templates")
         .select("*")
         .or(`user_id.eq.${userStore.user.id},is_predefined.eq.true`)
         .order("updated_at", { ascending: false });
+      const { data, error: err } = response as {
+        data: CommunicationTemplate[] | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (err) {
         // Handle table not found gracefully (feature not yet implemented)
         if (
-          err.code === "PGRST205" ||
-          err.message?.includes("communication_templates")
+          err?.code === "PGRST205" ||
+          err?.message?.includes("communication_templates")
         ) {
           templates.value = [];
           return;
@@ -180,23 +185,31 @@ export const useCommunicationTemplates = (): {
       const newTemplate: CommunicationTemplateInsert = {
         user_id: userStore.user.id,
         name,
-        template_type: type,
+        type,
         subject: type === "email" ? subject : undefined,
         body,
-        variables: uniqueVariables,
-        is_default: false,
       };
 
-      const { data, error: err } = await supabase
-        .from("communication_templates")
-        .insert([newTemplate] as CommunicationTemplateInsert[])
-        .select()
-        .single();
+      const insertResponse =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("communication_templates") as any)
+
+          .insert([newTemplate])
+          .select()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single()) as { data: CommunicationTemplate; error: any };
+      const { data, error: err } = insertResponse;
 
       if (err) throw err;
 
-      templates.value = [data, ...templates.value];
-      return data;
+      // Add computed variables to the returned template
+      const templateWithVariables: CommunicationTemplate = {
+        ...data,
+        variables: uniqueVariables,
+      };
+
+      templates.value = [templateWithVariables, ...templates.value];
+      return templateWithVariables;
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to create template";
@@ -215,11 +228,14 @@ export const useCommunicationTemplates = (): {
     error.value = null;
 
     try {
-      const { error: err } = await supabase
-        .from("communication_templates")
-        .update(updates as CommunicationTemplateUpdate)
-        .eq("id", id)
-        .eq("user_id", userStore.user.id);
+      const updateResponse =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("communication_templates") as any)
+          .update(updates)
+          .eq("id", id)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .eq("user_id", userStore.user.id)) as { error: any };
+      const { error: err } = updateResponse;
 
       if (err) throw err;
 
@@ -351,11 +367,17 @@ export const useCommunicationTemplates = (): {
         case "profile_field": {
           if (!condition.field) return false;
 
-          const { data: prefs } = await supabase
+          const prefsResponse = await supabase
             .from("user_preferences")
+
             .select("player_details")
             .eq("user_id", userStore.user.id)
             .single();
+          const { data: prefs } = prefsResponse as {
+            data: { player_details: Record<string, unknown> } | null;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            error: any;
+          };
 
           if (!prefs?.player_details) return false;
 
@@ -377,13 +399,19 @@ export const useCommunicationTemplates = (): {
         case "document_exists": {
           if (!condition.documentType) return false;
 
-          const { data } = await supabase
+          const docsResponse = await supabase
             .from("documents")
             .select("id")
+
             .eq("user_id", userStore.user.id)
             .eq("type", condition.documentType)
             .eq("is_current", true)
             .limit(1);
+          const { data } = docsResponse as {
+            data: { id: string }[] | null;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            error: any;
+          };
 
           return (data?.length || 0) > 0;
         }
@@ -391,12 +419,12 @@ export const useCommunicationTemplates = (): {
         case "task_completed": {
           if (!condition.taskId) return false;
 
-          const { data } = await supabase
+          const { data } = (await supabase
             .from("athlete_task")
             .select("status")
             .eq("athlete_id", userStore.user.id)
             .eq("task_id", condition.taskId)
-            .single();
+            .single()) as { data: { status: string } | null };
 
           return data?.status === "completed";
         }
@@ -440,8 +468,10 @@ export const useCommunicationTemplates = (): {
     }
 
     try {
-      const conditionGroup = template.unlock_conditions as UnlockConditionGroup;
-      const conditions = conditionGroup.conditions || [];
+      const conditionGroup = template.unlock_conditions as unknown as
+        | UnlockConditionGroup
+        | undefined;
+      const conditions = conditionGroup?.conditions || [];
 
       if (conditions.length === 0) {
         return {
@@ -468,7 +498,7 @@ export const useCommunicationTemplates = (): {
 
       // For AND conditions, all must be met. For OR, any one must be met
       const unlocked =
-        conditionGroup.type === "AND"
+        conditionGroup?.type === "AND"
           ? missingConditions.length === 0
           : results.some((r) => r.met);
 

@@ -8,8 +8,9 @@ import type { Database } from "~/types/database";
 import { coachSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
 
-type _CoachesInsert = Database["public"]["Tables"]["coaches"]["Insert"];
+type CoachesInsert = Database["public"]["Tables"]["coaches"]["Insert"];
 type CoachesUpdate = Database["public"]["Tables"]["coaches"]["Update"];
+type CoachesRow = Database["public"]["Tables"]["coaches"]["Row"];
 
 /**
  * useCoaches composable
@@ -233,23 +234,35 @@ export const useCoaches = (): {
       }
 
       // Convert empty strings to null for optional fields
+      const ownerId = activeFamily.getDataOwnerUserId();
+      if (!ownerId) {
+        throw new Error("No data owner ID available");
+      }
+
       const dataToInsert = {
         ...validated,
         school_id: schoolId,
-        user_id: activeFamily.getDataOwnerUserId(),
+        user_id: ownerId,
         family_unit_id: activeFamily.activeFamilyId.value,
         email: validated.email || null,
         phone: validated.phone || null,
         twitter_handle: validated.twitter_handle || null,
         instagram_handle: validated.instagram_handle || null,
         notes: validated.notes || null,
-      };
+      } as CoachesInsert;
 
-      const { data, error: insertError } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const insertResponse = await (supabase as any)
         .from("coaches")
         .insert([dataToInsert])
         .select()
         .single();
+
+      const { data, error: insertError } = insertResponse as {
+        data: CoachesRow;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (insertError) {
         console.error("Supabase insert error details:", {
@@ -262,8 +275,8 @@ export const useCoaches = (): {
         throw insertError;
       }
 
-      coaches.value.push(data);
-      return data;
+      coaches.value.push(data as Coach);
+      return data as Coach;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to create coach";
@@ -290,27 +303,61 @@ export const useCoaches = (): {
         sanitizedUpdates.notes = sanitizeHtml(sanitizedUpdates.notes);
       }
 
-      const { data, error: updateError } = await supabase
+      const updateData: CoachesUpdate = {
+        updated_by: userStore.user.id,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Add only the fields that are being updated
+      if (sanitizedUpdates.first_name !== undefined) {
+        updateData.first_name = sanitizedUpdates.first_name;
+      }
+      if (sanitizedUpdates.last_name !== undefined) {
+        updateData.last_name = sanitizedUpdates.last_name;
+      }
+      if (sanitizedUpdates.email !== undefined) {
+        updateData.email = sanitizedUpdates.email;
+      }
+      if (sanitizedUpdates.phone !== undefined) {
+        updateData.phone = sanitizedUpdates.phone;
+      }
+      if (sanitizedUpdates.role !== undefined) {
+        updateData.role = sanitizedUpdates.role;
+      }
+      if (sanitizedUpdates.notes !== undefined) {
+        updateData.notes = sanitizedUpdates.notes;
+      }
+      if (sanitizedUpdates.twitter_handle !== undefined) {
+        updateData.twitter_handle = sanitizedUpdates.twitter_handle;
+      }
+      if (sanitizedUpdates.instagram_handle !== undefined) {
+        updateData.instagram_handle = sanitizedUpdates.instagram_handle;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateResponse = await (supabase as any)
         .from("coaches")
-        .update({
-          ...sanitizedUpdates,
-          updated_by: userStore.user.id,
-          updated_at: new Date().toISOString(),
-        } as CoachesUpdate)
+        .update(updateData)
         .eq("id", id)
         .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .select()
         .single();
+
+      const { data, error: updateError } = updateResponse as {
+        data: CoachesRow;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (updateError) throw updateError;
 
       // Update local state
       const index = coaches.value.findIndex((c) => c.id === id);
       if (index !== -1) {
-        coaches.value[index] = data;
+        coaches.value[index] = data as Coach;
       }
 
-      return data;
+      return data as Coach;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to update coach";

@@ -223,16 +223,19 @@ const schoolsWithNoRecentContact = computed(() => {
       const lastInteraction = props.interactions
         ?.filter((i) => i.school_id === school.id)
         ?.sort((a, b) => {
-          const dateA = new Date(a.occurred_at || a.created_at).getTime();
-          const dateB = new Date(b.occurred_at || b.created_at).getTime();
+          const dateAStr = a.occurred_at || a.created_at;
+          const dateBStr = b.occurred_at || b.created_at;
+          if (!dateAStr || !dateBStr) return 0;
+          const dateA = new Date(dateAStr).getTime();
+          const dateB = new Date(dateBStr).getTime();
           return dateB - dateA;
         })[0];
 
       if (!lastInteraction) return true;
-      return (
-        new Date(lastInteraction.occurred_at || lastInteraction.created_at) <
-        thirtyDaysAgo
-      );
+      const lastDate =
+        lastInteraction.occurred_at || lastInteraction.created_at;
+      if (!lastDate) return true;
+      return new Date(lastDate) < thirtyDaysAgo;
     }).length || 0
   );
 });

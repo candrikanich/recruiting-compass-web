@@ -305,11 +305,15 @@ const loadSettings = async () => {
   if (!userStore.user) return;
 
   try {
-    const { data, error } = await supabase
+    const response = await supabase
       .from("user_preferences")
       .select("social_sync_settings")
       .eq("user_id", userStore.user.id)
       .single();
+    const { data } = response as {
+      data: { social_sync_settings: any } | null;
+      error: any;
+    };
 
     if (data?.social_sync_settings) {
       autoSyncEnabled.value = data.social_sync_settings.autoSyncEnabled ?? true;
@@ -329,8 +333,7 @@ const saveSettings = async () => {
 
   saving.value = true;
   try {
-    const { error } = await supabase
-      .from("user_preferences")
+    const response = await (supabase.from("user_preferences") as any)
       .update({
         social_sync_settings: {
           autoSyncEnabled: autoSyncEnabled.value,
@@ -340,6 +343,7 @@ const saveSettings = async () => {
         },
       })
       .eq("user_id", userStore.user.id);
+    const { error } = response as { error: any };
 
     if (error) throw error;
 

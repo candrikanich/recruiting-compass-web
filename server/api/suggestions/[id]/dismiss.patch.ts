@@ -6,6 +6,7 @@ import { logCRUD, logError } from "~/server/utils/auditLog";
 interface DismissUpdateData {
   dismissed: boolean;
   dismissed_at: string;
+  [key: string]: unknown;
 }
 
 export default defineEventHandler(async (event) => {

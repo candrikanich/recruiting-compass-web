@@ -62,12 +62,14 @@ export const useDocumentSharing = () => {
     error.value = null;
 
     try {
-      const { data, error: updateError } = await supabase
-        .from("documents")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = (await (supabase.from("documents") as any)
         .update({ shared_with_schools: schoolIds })
         .eq("id", documentId)
         .select()
-        .single();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .single()) as { data: Document; error: any };
+      const { data, error: updateError } = response;
 
       if (updateError) throw updateError;
 
@@ -96,11 +98,16 @@ export const useDocumentSharing = () => {
     error.value = null;
 
     try {
-      const { data: doc, error: fetchError } = await supabase
+      const response = await supabase
         .from("documents")
         .select("shared_with_schools")
         .eq("id", documentId)
         .single();
+      const { data: doc, error: fetchError } = response as {
+        data: { shared_with_schools: string[] | null } | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (fetchError) throw fetchError;
       if (!doc) throw new Error("Document not found");
@@ -109,12 +116,14 @@ export const useDocumentSharing = () => {
         (id: string) => id !== schoolIdToRemove,
       );
 
-      const { data, error: updateError } = await supabase
-        .from("documents")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateResponse = (await (supabase.from("documents") as any)
         .update({ shared_with_schools: updatedSchools })
         .eq("id", documentId)
         .select()
-        .single();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .single()) as { data: Document; error: any };
+      const { data, error: updateError } = updateResponse;
 
       if (updateError) throw updateError;
 
