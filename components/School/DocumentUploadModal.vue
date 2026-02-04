@@ -163,6 +163,9 @@ import { ref, reactive, computed } from "vue";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import { useDocumentSharing } from "~/composables/useDocumentSharing";
 import { useFormValidation } from "~/composables/useFormValidation";
+import type { Database } from "~/types/database";
+
+type DocumentType = Database["public"]["Enums"]["document_type"];
 
 interface Props {
   schoolId: string;
@@ -221,7 +224,7 @@ const handleFileSelect = (event: Event) => {
     const file = target.files[0];
 
     try {
-      validateFile(file, form.type as any);
+      validateFile(file, form.type as DocumentType);
       selectedFile.value = file;
       selectedFileName.value = file.name;
     } catch (err) {

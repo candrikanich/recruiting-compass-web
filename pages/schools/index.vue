@@ -76,7 +76,7 @@
               />
               <input
                 type="text"
-                :value="String((filterValues as any)?.name ?? '')"
+                :value="String(typedFilterValues.name ?? '')"
                 @input="
                   handleFilterUpdate(
                     'name',
@@ -98,8 +98,8 @@
                 Fit Score
               </label>
               <span class="text-sm font-semibold text-blue-600">
-                {{ (filterValues.value as any)?.fit_score?.min ?? 0 }}–{{
-                  (filterValues.value as any)?.fit_score?.max ?? 100
+                {{ typedFilterValues.fit_score?.min ?? 0 }}–{{
+                  typedFilterValues.fit_score?.max ?? 100
                 }}
               </span>
             </div>
@@ -109,11 +109,11 @@
                 min="0"
                 max="100"
                 step="5"
-                :value="(filterValues.value as any)?.fit_score?.min ?? 0"
+                :value="typedFilterValues.fit_score?.min ?? 0"
                 @input="
                   handleFilterUpdate('fit_score', {
                     min: parseInt(($event.target as HTMLInputElement).value),
-                    max: (filterValues.value as any)?.fit_score?.max ?? 100,
+                    max: typedFilterValues.fit_score?.max ?? 100,
                   })
                 "
                 class="flex-1 h-2.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 transition-opacity"
@@ -123,10 +123,10 @@
                 min="0"
                 max="100"
                 step="5"
-                :value="(filterValues.value as any)?.fit_score?.max ?? 100"
+                :value="typedFilterValues.fit_score?.max ?? 100"
                 @input="
                   handleFilterUpdate('fit_score', {
-                    min: (filterValues.value as any)?.fit_score?.min ?? 0,
+                    min: typedFilterValues.fit_score?.min ?? 0,
                     max: parseInt(($event.target as HTMLInputElement).value),
                   })
                 "
@@ -144,7 +144,7 @@
                 Distance
               </label>
               <span class="text-sm font-semibold text-blue-600">
-                {{ (filterValues.value as any)?.distance?.max ?? 3000 }}
+                {{ typedFilterValues.distance?.max ?? 3000 }}
                 <span class="text-xs text-slate-500">mi</span>
               </span>
             </div>
@@ -153,7 +153,7 @@
               min="0"
               max="3000"
               step="50"
-              :value="(filterValues.value as any)?.distance?.max ?? 3000"
+              :value="typedFilterValues.distance?.max ?? 3000"
               @input="
                 handleFilterUpdate('distance', {
                   max: parseInt(($event.target as HTMLInputElement).value),
@@ -185,7 +185,7 @@
                 Division
               </label>
               <select
-                :value="String((filterValues.value as any)?.division ?? '')"
+                :value="String(typedFilterValues.division ?? '')"
                 @change="
                   handleFilterUpdate(
                     'division',
@@ -218,7 +218,7 @@
                 Status
               </label>
               <select
-                :value="String((filterValues.value as any)?.status ?? '')"
+                :value="String(typedFilterValues.status ?? '')"
                 @change="
                   handleFilterUpdate(
                     'status',
@@ -251,7 +251,7 @@
                 State
               </label>
               <select
-                :value="String((filterValues.value as any)?.state ?? '')"
+                :value="String(typedFilterValues.state ?? '')"
                 @change="
                   handleFilterUpdate(
                     'state',
@@ -286,7 +286,7 @@
                 Favorites
               </label>
               <select
-                :value="(filterValues.value as any)?.is_favorite ? 'true' : ''"
+                :value="typedFilterValues.is_favorite ? 'true' : ''"
                 @change="
                   handleFilterUpdate(
                     'is_favorite',
@@ -677,7 +677,19 @@ import {
 import { getCarnegieSize } from "~/utils/schoolSize";
 import { calculateDistance } from "~/utils/distance";
 import { extractStateFromLocation } from "~/utils/locationParser";
-import type { FilterConfig } from "~/types/filters";
+import type { FilterConfig, FilterValue } from "~/types/filters";
+
+// School-specific filter values interface
+interface SchoolFilterValues {
+  name?: string;
+  division?: string;
+  status?: string;
+  state?: string;
+  is_favorite?: boolean;
+  fit_score?: { min: number; max: number };
+  distance?: { max: number };
+  show_matches?: boolean;
+}
 
 definePageMeta({});
 
@@ -857,7 +869,7 @@ const filterConfigs: FilterConfig[] = [
     field: "state",
     label: "State",
     options: stateOptions.value,
-    filterFn: (item: Record<string, unknown>, filterValue: any): boolean => {
+    filterFn: (item: Record<string, unknown>, filterValue: FilterValue): boolean => {
       const school = item as unknown as School;
       let schoolState: string | undefined =
         school.academic_info?.state || (school.state as string | undefined);
@@ -875,13 +887,14 @@ const filterConfigs: FilterConfig[] = [
     min: 0,
     max: 100,
     step: 5,
-    defaultValue: { min: 0, max: 100 } as any,
-    filterFn: (item: Record<string, unknown>, filterValue: any): boolean => {
+    defaultValue: { min: 0, max: 100 },
+    filterFn: (item: Record<string, unknown>, filterValue: FilterValue): boolean => {
       const school = item as unknown as School;
       const score = school.fit_score;
       if (score === null || score === undefined) return true;
-      const min = filterValue?.min ?? 0;
-      const max = filterValue?.max ?? 100;
+      const rangeValue = filterValue as { min?: number; max?: number } | null;
+      const min = rangeValue?.min ?? 0;
+      const max = rangeValue?.max ?? 100;
       return score >= min && score <= max;
     },
   },
@@ -892,8 +905,8 @@ const filterConfigs: FilterConfig[] = [
     min: 0,
     max: 3000,
     step: 50,
-    defaultValue: { max: 3000 } as any,
-    filterFn: (item: Record<string, unknown>, filterValue: any): boolean => {
+    defaultValue: { max: 3000 },
+    filterFn: (item: Record<string, unknown>, filterValue: FilterValue): boolean => {
       const school = item as unknown as School;
       const homeLoc = getHomeLocation();
       if (!homeLoc?.latitude || !homeLoc?.longitude) {
@@ -901,7 +914,8 @@ const filterConfigs: FilterConfig[] = [
       }
       const distance = distanceCache.value.get(school.id);
       if (distance === undefined) return true;
-      const maxDistance = filterValue?.max ?? 3000;
+      const rangeValue = filterValue as { max?: number } | null;
+      const maxDistance = rangeValue?.max ?? 3000;
       return distance <= maxDistance;
     },
   },
@@ -915,32 +929,37 @@ const {
   setFilterValue,
   clearFilters,
   getFilterDisplayValue,
-} = useUniversalFilter(schools as any, filterConfigs, {
+} = useUniversalFilter(schools as School[], filterConfigs, {
   storageKey: "schools-filters",
   persistState: false, // Don't persist filters to prevent stale state on login/logout
 });
 
+// Typed helpers for accessing filter values
+const typedFilterValues = computed(() => filterValues.value as SchoolFilterValues);
+
 // Computed for active filters display
 const activeFiltersDisplay = computed(() => {
   const display: Record<string, string> = {};
-  Object.entries(filterValues.value).forEach(([key, value]: [string, any]) => {
+  Object.entries(filterValues.value).forEach(([key, value]: [string, FilterValue]) => {
     if (value) {
       if (key === "is_favorite") {
         display[key] = "Favorites";
       } else if (key === "name") {
         display[key] = `"${value}"`;
       } else if (key === "fit_score") {
-        if (typeof value === "object" && value !== null) {
-          const min = value.min ?? 0;
-          const max = value.max ?? 100;
+        if (typeof value === "object" && value !== null && "min" in value) {
+          const rangeValue = value as { min?: number; max?: number };
+          const min = rangeValue.min ?? 0;
+          const max = rangeValue.max ?? 100;
           if (min === 0 && max === 100) {
             return; // Default range, don't display
           }
           display[key] = `${min} - ${max}`;
         }
       } else if (key === "distance") {
-        if (typeof value === "object" && value !== null) {
-          const max = value.max ?? 3000;
+        if (typeof value === "object" && value !== null && "max" in value) {
+          const rangeValue = value as { max?: number };
+          const max = rangeValue.max ?? 3000;
           if (max === 3000) {
             return; // Default max, don't display
           }
@@ -974,7 +993,7 @@ const filteredSchools = computed(() => {
   }
 
   // Apply match filter if enabled
-  const showMatches = filterValues.value.show_matches;
+  const showMatches = typedFilterValues.value.show_matches;
   if (showMatches && hasPreferences.value) {
     filtered = filtered.filter((s: School) => {
       const match = calculateMatchScore(s);
