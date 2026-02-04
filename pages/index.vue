@@ -423,47 +423,14 @@
     >
       <!-- Hero Section -->
       <div class="text-center max-w-4xl mx-auto mb-12">
-        <!-- Compass Icon/Logo -->
+        <!-- Logo -->
         <div class="mb-8 flex justify-center">
-          <div
-            class="w-24 h-24 bg-white rounded-full shadow-2xl flex items-center justify-center transform hover:scale-110 hover:rotate-12 transition-all duration-300"
-          >
-            <svg
-              class="w-14 h-14 text-emerald-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.41 0-8-3.59-8-8-3.59 0-8 3.59 0 8 8s3.59 8 8 8z"
-              />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M14.5 9.5L9.5 14.5M9.5 9.5l5 5"
-              />
-              <polygon fill="currentColor" points="12,5 13,9 12,8 11,9" />
-              <polygon fill="currentColor" points="12,19 11,15 12,16 13,15" />
-              <polygon fill="currentColor" points="5,12 9,11 8,12 9,13" />
-              <polygon fill="currentColor" points="19,12 15,11 16,12 15,13" />
-            </svg>
-          </div>
+          <img
+            src="/assets/logos/recruiting-compass-stacked.svg"
+            alt="Recruiting Compass Logo"
+            class="h-48 w-auto drop-shadow-2xl"
+          />
         </div>
-
-        <!-- Title -->
-        <h1
-          class="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-lg"
-        >
-          Recruiting Compass
-        </h1>
-
-        <!-- Subtitle -->
-        <p class="text-xl md:text-2xl text-white/90 mb-12 drop-shadow">
-          Navigate your college recruiting journey
-        </p>
 
         <!-- CTA Buttons -->
         <div
