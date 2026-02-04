@@ -127,13 +127,62 @@
           </div>
         </div>
 
-        <!-- Screen 4: Academic Info (placeholder) -->
+        <!-- Screen 4: Academic Info -->
         <div v-if="currentStep === 4" class="space-y-6">
           <h2 class="text-2xl font-bold text-slate-900 mb-4">Academic Info</h2>
-          <p class="text-slate-600">
+          <p class="text-slate-600 mb-4">
             Share your GPA and test scores (optional) for better
             recommendations.
           </p>
+
+          <!-- GPA -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              GPA (Optional)
+            </label>
+            <input
+              v-model.number="onboardingData.gpa"
+              type="number"
+              step="0.01"
+              min="0"
+              max="4.0"
+              placeholder="e.g., 3.8"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p class="text-slate-500 text-xs mt-1">Scale of 0.0 - 4.0</p>
+          </div>
+
+          <!-- SAT Score -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              SAT Score (Optional)
+            </label>
+            <input
+              v-model.number="onboardingData.sat_score"
+              type="number"
+              min="400"
+              max="1600"
+              placeholder="e.g., 1500"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p class="text-slate-500 text-xs mt-1">Score between 400-1600</p>
+          </div>
+
+          <!-- ACT Score -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              ACT Score (Optional)
+            </label>
+            <input
+              v-model.number="onboardingData.act_score"
+              type="number"
+              min="1"
+              max="36"
+              placeholder="e.g., 35"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p class="text-slate-500 text-xs mt-1">Score between 1-36</p>
+          </div>
         </div>
 
         <!-- Screen 5: Complete (placeholder) -->
