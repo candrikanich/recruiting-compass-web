@@ -205,8 +205,13 @@ import type { HomeLocation } from "~/types/models";
 
 definePageMeta({ middleware: "auth" });
 
-const { isLoading, error, getHomeLocation, setHomeLocation } =
-  usePreferenceManager();
+const {
+  isLoading,
+  error,
+  getHomeLocation,
+  setHomeLocation,
+  loadAllPreferences,
+} = usePreferenceManager();
 const {
   geocodeAddress,
   loading: geocoding,
@@ -284,9 +289,7 @@ const handleClear = () => {
 };
 
 onMounted(async () => {
-  // Load preferences from API first
-  await usePreferenceManager().loadAllPreferences();
-
+  await loadAllPreferences();
   const location = getHomeLocation();
   if (location) {
     Object.assign(localLocation, location);

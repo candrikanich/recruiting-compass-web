@@ -173,16 +173,21 @@ export function usePreferenceManager() {
   };
 
   /**
-   * Set home location and save
+   * Set home location and save (merges with current so partial updates from onboarding work)
    */
-  const setHomeLocation = async (location: HomeLocation) => {
+  const setHomeLocation = async (location: Partial<HomeLocation>) => {
     const oldValue = validateHomeLocation(locationPrefs.preferences.value);
+    const current = oldValue ?? {};
+    const merged: HomeLocation = {
+      ...current,
+      ...location,
+    };
 
-    locationPrefs.updatePreferences(location as Record<string, unknown>);
+    locationPrefs.updatePreferences(merged as Record<string, unknown>);
     await locationPrefs.savePreferences();
 
-    if (oldValue && location) {
-      await trackPreferenceChange("location", oldValue, location);
+    if (oldValue && merged) {
+      await trackPreferenceChange("location", oldValue, merged);
     }
   };
 
@@ -194,17 +199,22 @@ export function usePreferenceManager() {
   };
 
   /**
-   * Set player details and save with history tracking
+   * Set player details and save with history tracking (merges with current so partial updates from onboarding work)
    */
-  const setPlayerDetails = async (details: PlayerDetails) => {
+  const setPlayerDetails = async (details: Partial<PlayerDetails>) => {
     const oldValue = validatePlayerDetails(playerPrefs.preferences.value);
+    const current = oldValue ?? {};
+    const merged: PlayerDetails = {
+      ...current,
+      ...details,
+    };
 
-    playerPrefs.updatePreferences(details as Record<string, unknown>);
+    playerPrefs.updatePreferences(merged as Record<string, unknown>);
     await playerPrefs.savePreferences();
 
     // Track in history (player details are tracked separately for audit)
-    if (oldValue && details) {
-      await trackPreferenceChange("player", oldValue, details);
+    if (oldValue && merged) {
+      await trackPreferenceChange("player", oldValue, merged);
     }
   };
 

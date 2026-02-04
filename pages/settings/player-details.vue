@@ -942,8 +942,12 @@ definePageMeta({
 });
 
 const userStore = useUserStore();
-const { isLoading, getPlayerDetails, setPlayerDetails } =
-  usePreferenceManager();
+const {
+  isLoading,
+  getPlayerDetails,
+  setPlayerDetails,
+  loadAllPreferences,
+} = usePreferenceManager();
 const { showToast } = useToast();
 const { recalculateAllFitScores, loading: recalculating } =
   useFitScoreRecalculation();
@@ -1129,9 +1133,7 @@ const handleSave = async () => {
 };
 
 onMounted(async () => {
-  // Load preferences from API first
-  await usePreferenceManager().loadAllPreferences();
-
+  await loadAllPreferences();
   const playerDetails = getPlayerDetails();
   if (playerDetails) {
     form.value = { ...form.value, ...playerDetails };

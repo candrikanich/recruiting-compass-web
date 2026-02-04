@@ -268,7 +268,8 @@ definePageMeta({ layout: "default" });
 
 const { saveOnboardingStep, completeOnboarding, getOnboardingProgress } =
   useOnboarding();
-const { setHomeLocation, setPlayerDetails } = usePreferenceManager();
+const { setHomeLocation, setPlayerDetails, loadAllPreferences } =
+  usePreferenceManager();
 
 const currentStep = ref(1);
 const onboardingData = ref<Record<string, unknown>>({});
@@ -447,23 +448,23 @@ const nextScreen = async () => {
           graduation_year: onboardingData.value.graduation_year as number,
           primary_sport: onboardingData.value.primary_sport as string,
           primary_position: onboardingData.value.primary_position as string,
-        } as any);
+        });
       }
 
       // Step 3: Save zip code as home location
       if (currentStep.value === 3 && onboardingData.value.zip_code) {
         await setHomeLocation({
           zip: onboardingData.value.zip_code as string,
-        } as any);
+        });
       }
 
-      // Step 4: Save academics to player details
+      // Step 4: Save academics to player details (merges with step 2 data)
       if (currentStep.value === 4) {
         await setPlayerDetails({
           gpa: onboardingData.value.gpa as number,
           sat_score: onboardingData.value.sat_score as number,
           act_score: onboardingData.value.act_score as number,
-        } as any);
+        });
       }
 
       await saveOnboardingStep(currentStep.value, onboardingData.value);
@@ -497,10 +498,10 @@ const skipStep = async () => {
 };
 
 onMounted(async () => {
-  // Restore progress if available
   try {
+    // Load preferences so partial saves (e.g. step 2 then step 4) merge correctly
+    await loadAllPreferences();
     const progress = await getOnboardingProgress();
-    // Progress is a percentage, convert to step
     const step = Math.ceil((progress / 100) * totalSteps) || 1;
     currentStep.value = Math.min(step, totalSteps);
   } catch (err) {

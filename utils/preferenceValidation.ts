@@ -49,8 +49,15 @@ export function validateHomeLocation(data: unknown): HomeLocation | null {
 
   const obj = data as Record<string, unknown>;
 
-  // Check if location has any meaningful data
-  if (!obj.address && !obj.city && !obj.state && !obj.latitude) {
+  // Check if location has any meaningful data (zip-only is valid e.g. from onboarding)
+  if (
+    !obj.address &&
+    !obj.city &&
+    !obj.state &&
+    !obj.latitude &&
+    !obj.longitude &&
+    !obj.zip
+  ) {
     return null;
   }
 
@@ -79,6 +86,8 @@ export function validatePlayerDetails(data: unknown): PlayerDetails | null {
 
   return {
     graduation_year: toNumber(obj.graduation_year),
+    primary_sport: toString(obj.primary_sport),
+    primary_position: toString(obj.primary_position),
     high_school: toString(obj.high_school),
     club_team: toString(obj.club_team),
     positions: toStringArray(obj.positions),
