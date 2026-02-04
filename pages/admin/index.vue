@@ -14,18 +14,52 @@
       </div>
 
       <!-- Tab Navigation -->
-      <div class="flex gap-4 mb-8">
+      <div class="flex flex-wrap gap-2 mb-8">
         <button
-          @click="activeTab = 'users'"
+          v-for="tab in tabs"
+          :key="tab.id"
+          @click="selectTab(tab.id)"
           :class="[
             'px-4 py-2 font-medium rounded-lg transition',
-            activeTab === 'users'
+            activeTab === tab.id
               ? 'bg-blue-600 text-white'
               : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50',
           ]"
         >
-          Users ({{ users.length }})
+          {{ tab.label }}
         </button>
+      </div>
+
+      <!-- Overview Section -->
+      <div
+        v-if="activeTab === 'overview'"
+        class="bg-white rounded-lg shadow-md p-6"
+      >
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Overview</h2>
+        <div v-if="statsLoading" class="text-center py-12 text-slate-600">
+          Loading stats...
+        </div>
+        <div
+          v-else-if="statsError"
+          class="bg-red-50 border border-red-200 rounded-lg p-4"
+        >
+          <p class="text-red-800">{{ statsError }}</p>
+        </div>
+        <div
+          v-else
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
+        >
+          <div
+            v-for="stat in statsCards"
+            :key="stat.key"
+            class="rounded-lg border border-slate-200 bg-slate-50/50 p-4"
+          >
+            <p class="text-sm font-medium text-slate-500">{{ stat.label }}</p>
+            <p class="mt-1 text-2xl font-bold text-slate-900">
+              {{ stat.value }}
+            </p>
+          </div>
+        </div>
       </div>
 
       <!-- Users Section -->
@@ -250,6 +284,153 @@
           </div>
         </div>
       </div>
+
+      <!-- Pending Invitations Section -->
+      <div
+        v-if="activeTab === 'pending'"
+        class="bg-white rounded-lg shadow-md p-6"
+      >
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">
+          Pending Invitations
+        </h2>
+        <p class="text-sm text-slate-600 mb-4">
+          Account link invitations awaiting acceptance. Cancel to revoke.
+        </p>
+        <div v-if="invitationsLoading" class="text-center py-12 text-slate-600">
+          Loading...
+        </div>
+        <div
+          v-else-if="invitationsError"
+          class="bg-amber-50 border border-amber-200 rounded-lg p-4"
+        >
+          <p class="text-amber-800">{{ invitationsError }}</p>
+        </div>
+        <div
+          v-else-if="pendingInvitations.length === 0"
+          class="py-12 text-slate-500 text-center"
+        >
+          No pending invitations
+        </div>
+        <div v-else class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-slate-200">
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">
+                  Invited email
+                </th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">
+                  Initiator role
+                </th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">
+                  Created
+                </th>
+                <th class="text-left py-3 px-4 font-semibold text-slate-900">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="inv in pendingInvitations"
+                :key="inv.id"
+                class="border-b border-slate-100 hover:bg-slate-50"
+              >
+                <td class="py-3 px-4">
+                  <code class="text-sm bg-slate-100 px-2 py-1 rounded">{{
+                    inv.invited_email
+                  }}</code>
+                </td>
+                <td class="py-3 px-4 text-slate-700">
+                  {{ inv.initiator_role }}
+                </td>
+                <td class="py-3 px-4 text-slate-700">
+                  {{ inv.created_at ? formatDate(inv.created_at) : "—" }}
+                </td>
+                <td class="py-3 px-4">
+                  <button
+                    type="button"
+                    :disabled="deletingInvitationId === inv.id"
+                    class="text-red-600 hover:text-red-800 disabled:opacity-50 font-medium text-sm"
+                    @click="cancelInvitation(inv.id)"
+                  >
+                    {{
+                      deletingInvitationId === inv.id
+                        ? "Cancelling..."
+                        : "Cancel"
+                    }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Health Section -->
+      <div
+        v-if="activeTab === 'health'"
+        class="bg-white rounded-lg shadow-md p-6"
+      >
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">System Health</h2>
+        <div v-if="healthLoading" class="text-center py-12 text-slate-600">
+          Checking...
+        </div>
+        <div
+          v-else-if="healthError"
+          class="bg-red-50 border border-red-200 rounded-lg p-4"
+        >
+          <p class="text-red-800">{{ healthError }}</p>
+        </div>
+        <div v-else class="space-y-3">
+          <div
+            v-for="check in healthChecks"
+            :key="check.name"
+            class="flex items-center gap-3 rounded-lg border border-slate-200 p-3"
+            :class="
+              check.status === 'ok'
+                ? 'bg-green-50/50 border-green-200'
+                : 'bg-red-50/50 border-red-200'
+            "
+          >
+            <span
+              class="inline-block w-3 h-3 rounded-full shrink-0"
+              :class="check.status === 'ok' ? 'bg-green-500' : 'bg-red-500'"
+              aria-hidden="true"
+            />
+            <span class="font-medium text-slate-900">{{ check.name }}</span>
+            <span v-if="check.message" class="text-slate-600 text-sm">
+              {{ check.message }}
+            </span>
+          </div>
+          <p class="mt-4 text-sm text-slate-500">
+            Overall:
+            {{ healthOk ? "All critical checks passed" : "Some checks failed" }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Tools Section -->
+      <div
+        v-if="activeTab === 'tools'"
+        class="bg-white rounded-lg shadow-md p-6"
+      >
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Tools</h2>
+        <p class="text-slate-600 mb-6">Quick links to admin utilities.</p>
+        <div class="flex flex-wrap gap-4">
+          <NuxtLink
+            to="/admin/signup"
+            class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 font-medium text-slate-700 hover:bg-slate-50 transition"
+          >
+            Invite admin user
+          </NuxtLink>
+          <NuxtLink
+            to="/admin/batch-fetch-logos"
+            class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 font-medium text-slate-700 hover:bg-slate-50 transition"
+          >
+            Batch fetch school logos
+          </NuxtLink>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -296,7 +477,48 @@ const selectedUserEmails = ref<Set<string>>(new Set());
 const bulkDeleting = ref(false);
 const showBulkDeleteModal = ref(false);
 const currentUserEmail = ref<string>("");
-const activeTab = ref("users");
+const activeTab = ref("overview");
+
+// Overview / stats
+const stats = ref<{
+  users: number;
+  schools: number;
+  coaches: number;
+  interactions: number;
+  family_units: number;
+} | null>(null);
+const statsLoading = ref(false);
+const statsError = ref<string | null>(null);
+
+// Health
+const health = ref<{
+  ok: boolean;
+  checks: { name: string; status: string; message?: string }[];
+} | null>(null);
+const healthLoading = ref(false);
+const healthError = ref<string | null>(null);
+
+// Pending invitations
+const pendingInvitations = ref<
+  {
+    id: string;
+    invited_email: string;
+    status: string;
+    initiator_role: string;
+    created_at: string | null;
+  }[]
+>([]);
+const invitationsLoading = ref(false);
+const invitationsError = ref<string | null>(null);
+const deletingInvitationId = ref<string | null>(null);
+
+const tabs = computed(() => [
+  { id: "overview", label: "Overview" },
+  { id: "users", label: `Users (${users.value.length})` },
+  { id: "pending", label: "Pending invitations" },
+  { id: "health", label: "Health" },
+  { id: "tools", label: "Tools" },
+]);
 
 // Pagination
 const pageSizeOptions = [10, 25, 50, 100];
@@ -350,6 +572,120 @@ const allSelected = computed(
     selectableUsers.value.length > 0 &&
     selectedUserEmails.value.size === selectableUsers.value.length,
 );
+
+const statsCards = computed(() => {
+  const s = stats.value;
+  if (!s) return [];
+  return [
+    { key: "users", label: "Users", value: s.users },
+    { key: "schools", label: "Schools", value: s.schools },
+    { key: "coaches", label: "Coaches", value: s.coaches },
+    { key: "interactions", label: "Interactions", value: s.interactions },
+    { key: "family_units", label: "Family units", value: s.family_units },
+  ];
+});
+
+const healthChecks = computed(() => health.value?.checks ?? []);
+const healthOk = computed(() => health.value?.ok ?? false);
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) throw new Error("Not authenticated");
+  return { Authorization: `Bearer ${token}` };
+}
+
+const loadStats = async () => {
+  statsLoading.value = true;
+  statsError.value = null;
+  try {
+    const headers = await getAuthHeaders();
+    stats.value = await $fetch("/api/admin/stats", { headers });
+  } catch (err) {
+    statsError.value =
+      err instanceof Error ? err.message : "Failed to load stats";
+  } finally {
+    statsLoading.value = false;
+  }
+};
+
+const loadHealth = async () => {
+  healthLoading.value = true;
+  healthError.value = null;
+  try {
+    const headers = await getAuthHeaders();
+    health.value = await $fetch("/api/admin/health", { headers });
+  } catch (err) {
+    healthError.value =
+      err instanceof Error ? err.message : "Failed to load health";
+  } finally {
+    healthLoading.value = false;
+  }
+};
+
+const loadInvitations = async () => {
+  invitationsLoading.value = true;
+  invitationsError.value = null;
+  try {
+    const headers = await getAuthHeaders();
+    const res = (await $fetch("/api/admin/pending-invitations", {
+      headers,
+    })) as {
+      invitations: {
+        id: string;
+        invited_email: string;
+        status: string;
+        initiator_role: string;
+        created_at: string | null;
+      }[];
+      error?: string;
+    };
+    pendingInvitations.value = res.invitations ?? [];
+    if (res.error) invitationsError.value = res.error;
+  } catch (err) {
+    invitationsError.value =
+      err instanceof Error ? err.message : "Failed to load invitations";
+  } finally {
+    invitationsLoading.value = false;
+  }
+};
+
+function selectTab(tabId: string) {
+  activeTab.value = tabId;
+  if (tabId === "overview") loadStats();
+  else if (tabId === "health") loadHealth();
+  else if (tabId === "pending") loadInvitations();
+}
+
+function formatDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleString();
+  } catch {
+    return iso;
+  }
+}
+
+const cancelInvitation = async (id: string) => {
+  deletingInvitationId.value = id;
+  try {
+    const headers = await getAuthHeaders();
+    await $fetch(`/api/admin/pending-invitations/${id}`, {
+      method: "DELETE",
+      headers,
+    });
+    pendingInvitations.value = pendingInvitations.value.filter(
+      (inv) => inv.id !== id,
+    );
+    showToast("Invitation cancelled", "success");
+  } catch (err) {
+    showToast(
+      err instanceof Error ? err.message : "Failed to cancel invitation",
+      "error",
+    );
+  } finally {
+    deletingInvitationId.value = null;
+  }
+};
 
 const loadUsers = async () => {
   loading.value = true;
@@ -521,5 +857,6 @@ watch(totalPages, (total) => {
 
 onMounted(async () => {
   await loadUsers();
+  if (activeTab.value === "overview") await loadStats();
 });
 </script>
