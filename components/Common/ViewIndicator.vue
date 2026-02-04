@@ -65,7 +65,7 @@ const loadViewStatus = async () => {
     const lastView = await viewLogging.getLastParentView();
     if (lastView && typeof lastView === "object" && "viewed_at" in lastView) {
       hasParentViewed.value = true;
-      lastViewTime.value = lastView.viewed_at as string;
+      lastViewTime.value = (lastView as { viewed_at: string }).viewed_at;
     }
   } catch (err) {
     console.debug("Failed to load view status:", err);

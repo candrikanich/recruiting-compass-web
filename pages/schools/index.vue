@@ -890,7 +890,7 @@ const filterConfigs: FilterConfig[] = [
     min: 0,
     max: 100,
     step: 5,
-    defaultValue: { min: 0, max: 100 },
+    defaultValue: [0, 100] as [number, number],
     filterFn: (
       item: Record<string, unknown>,
       filterValue: FilterValue,
@@ -911,7 +911,7 @@ const filterConfigs: FilterConfig[] = [
     min: 0,
     max: 3000,
     step: 50,
-    defaultValue: { max: 3000 },
+    defaultValue: [0, 3000] as [number, number],
     filterFn: (
       item: Record<string, unknown>,
       filterValue: FilterValue,
@@ -938,10 +938,14 @@ const {
   setFilterValue,
   clearFilters,
   getFilterDisplayValue,
-} = useUniversalFilter(schools as School[], filterConfigs, {
-  storageKey: "schools-filters",
-  persistState: false, // Don't persist filters to prevent stale state on login/logout
-});
+} = useUniversalFilter(
+  schools.value as unknown as Record<string, unknown>[],
+  filterConfigs,
+  {
+    storageKey: "schools-filters",
+    persistState: false, // Don't persist filters to prevent stale state on login/logout
+  },
+);
 
 // Typed helpers for accessing filter values
 const typedFilterValues = computed(
