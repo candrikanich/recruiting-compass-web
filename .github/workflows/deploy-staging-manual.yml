@@ -2,7 +2,6 @@ name: Deploy Staging Manual
 
 on:
   workflow_dispatch:
-    branches: [develop]
 
 jobs:
   deploy:
