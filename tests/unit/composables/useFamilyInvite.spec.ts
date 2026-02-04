@@ -5,7 +5,7 @@ import { useFamilyInvite } from "~/composables/useFamilyInvite";
 vi.mock("~/composables/useSupabase", () => ({
   useSupabase: vi.fn(() => ({
     auth: {
-      getSession: vi.fn(),
+      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
     },
     from: vi.fn(),
     functions: {
@@ -62,7 +62,16 @@ describe("useFamilyInvite", () => {
               })),
             };
           }
+          // For "users" table
           return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn().mockResolvedValue({
+                  data: { id: "player-user", email: "player@example.com" },
+                  error: null,
+                }),
+              })),
+            })),
             insert: vi.fn().mockResolvedValue({ error: null }),
           };
         }),
@@ -139,7 +148,16 @@ describe("useFamilyInvite", () => {
               })),
             };
           }
+          // For "users" table
           return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn().mockResolvedValue({
+                  data: { id: "player-user", email: "player@example.com" },
+                  error: null,
+                }),
+              })),
+            })),
             insert: vi.fn().mockResolvedValue({ error: null }),
           };
         }),
@@ -185,7 +203,16 @@ describe("useFamilyInvite", () => {
               })),
             };
           }
+          // For "users" table
           return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn().mockResolvedValue({
+                  data: { id: "player-user", email: "player@example.com" },
+                  error: null,
+                }),
+              })),
+            })),
             insert: vi.fn().mockResolvedValue({ error: null }),
           };
         }),

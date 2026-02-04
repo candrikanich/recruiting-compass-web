@@ -378,6 +378,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
           data: {
             full_name: "Test User",
             role: "student",
+            user_type: "student",
           },
         },
       });

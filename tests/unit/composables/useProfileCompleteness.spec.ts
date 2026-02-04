@@ -5,7 +5,7 @@ import { useProfileCompleteness } from "~/composables/useProfileCompleteness";
 vi.mock("~/composables/useSupabase", () => ({
   useSupabase: vi.fn(() => ({
     auth: {
-      getSession: vi.fn(),
+      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
     },
     from: vi.fn(),
   })),

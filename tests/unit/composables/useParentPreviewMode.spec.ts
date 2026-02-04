@@ -5,7 +5,7 @@ import { useParentPreviewMode } from "~/composables/useParentPreviewMode";
 vi.mock("~/composables/useSupabase", () => ({
   useSupabase: vi.fn(() => ({
     auth: {
-      getSession: vi.fn(),
+      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
     },
     from: vi.fn(),
   })),

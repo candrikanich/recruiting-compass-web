@@ -1,6 +1,58 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { createPinia } from "pinia";
+
+// Mock Supabase at module level
+vi.mock("~/composables/useSupabase", () => ({
+  useSupabase: vi.fn(() => ({
+    auth: {
+      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
+    },
+    from: vi.fn(),
+  })),
+}));
+
+// Mock useAuthFetch to avoid Supabase dependency
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: vi.fn(() => ({
+    $fetchAuth: vi.fn().mockResolvedValue({}),
+  })),
+}));
+
+// Mock useTasks at module level
+vi.mock("~/composables/useTasks", () => ({
+  useTasks: vi.fn(() => ({
+    tasksWithStatus: { value: [] },
+    loading: { value: false },
+    error: { value: null },
+    fetchTasksWithStatus: vi.fn().mockResolvedValue([]),
+    updateTaskStatus: vi.fn(),
+    getCompletionStats: vi.fn(() => ({
+      completed: 0,
+      total: 0,
+      percentComplete: 0,
+    })),
+    isTaskLocked: vi.fn(() => false),
+    lockedTaskIds: { value: [] },
+  })),
+}));
+
+// Mock useAuth at module level
+vi.mock("~/composables/useAuth", () => ({
+  useAuth: vi.fn(() => ({
+    session: { value: { user: { id: "user-1" } } },
+  })),
+}));
+
+// Mock useParentContext at module level
+vi.mock("~/composables/useParentContext", () => ({
+  useParentContext: vi.fn(() => ({
+    linkedAthletes: { value: [] },
+    isViewingAsParent: { value: false },
+    currentAthleteId: { value: null },
+  })),
+}));
+
 import TasksPage from "~/pages/tasks/index.vue";
 
 describe("Tasks Page - Advanced Coverage", () => {
@@ -11,47 +63,12 @@ describe("Tasks Page - Advanced Coverage", () => {
     pinia = createPinia();
     vi.clearAllMocks();
     localStorage.clear();
-
-    // Mock composables at the test level
-    vi.doMock("~/composables/useTasks", () => ({
-      useTasks: vi.fn(() => ({
-        tasksWithStatus: { value: [] },
-        loading: { value: false },
-        error: { value: null },
-        fetchTasksWithStatus: vi.fn(),
-        updateTaskStatus: vi.fn(),
-        getCompletionStats: vi.fn(() => ({
-          completed: 0,
-          total: 0,
-          percentComplete: 0,
-        })),
-        isTaskLocked: vi.fn(() => false),
-        lockedTaskIds: { value: [] },
-      })),
-    }));
-
-    vi.doMock("~/composables/useAuth", () => ({
-      useAuth: vi.fn(() => ({
-        session: { value: { user: { id: "user-1" } } },
-      })),
-    }));
-
-    vi.doMock("~/composables/useParentContext", () => ({
-      useParentContext: vi.fn(() => ({
-        linkedAthletes: { value: [] },
-        isViewingAsParent: { value: false },
-        currentAthleteId: { value: null },
-      })),
-    }));
   });
 
   afterEach(() => {
     if (wrapper) {
       wrapper.unmount();
     }
-    vi.unmock("~/composables/useTasks");
-    vi.unmock("~/composables/useAuth");
-    vi.unmock("~/composables/useParentContext");
   });
 
   describe("Page Layout and Rendering", () => {

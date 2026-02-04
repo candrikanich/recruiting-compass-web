@@ -33,7 +33,7 @@ describe("familyCodeValidation utilities", () => {
     });
 
     it("should reject invalid formats", () => {
-      const result = validateFamilyCodeInput("ABC123");
+      const result = validateFamilyCodeInput("AB12");
       expect(result.isValid).toBe(false);
       expect(result.error).toContain("Invalid format");
     });
