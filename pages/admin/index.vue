@@ -92,13 +92,13 @@
           <table class="w-full">
             <thead>
               <tr class="border-b border-slate-200">
-                <th v-if="isSelectMode" class="py-3 px-4 w-12">
+                <th v-if="isSelectMode" class="py-3 px-4 w-14">
                   <input
                     type="checkbox"
                     :checked="allSelected"
                     @change="toggleSelectAll"
                     data-testid="select-all-checkbox"
-                    class="rounded"
+                    class="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                   />
                 </th>
                 <th class="text-left py-3 px-4 font-semibold text-slate-900">
@@ -120,7 +120,7 @@
             </thead>
             <tbody>
               <tr
-                v-for="user in users"
+                v-for="user in paginatedUsers"
                 :key="user.id"
                 :class="[
                   'border-b border-slate-100 hover:bg-slate-50',
@@ -134,7 +134,7 @@
                     :checked="selectedUserEmails.has(user.email)"
                     @change="toggleUserSelection(user.email)"
                     data-testid="user-checkbox"
-                    class="rounded"
+                    class="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                   />
                   <span v-else class="text-slate-400 text-xs font-medium"
                     >Current</span
@@ -180,6 +180,74 @@
           >
             No users found
           </div>
+
+          <!-- Pagination -->
+          <div
+            v-if="users.length > 0"
+            class="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 pt-4"
+          >
+            <p class="text-sm text-slate-600">
+              Showing
+              {{ paginationStart }}–{{ paginationEnd }} of
+              {{ users.length }} user{{ users.length !== 1 ? "s" : "" }}
+            </p>
+            <div class="flex items-center gap-2">
+              <label class="text-sm text-slate-600">Per page</label>
+              <select
+                v-model.number="pageSize"
+                class="rounded border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                @change="currentPage = 1"
+              >
+                <option
+                  v-for="size in pageSizeOptions"
+                  :key="size"
+                  :value="size"
+                >
+                  {{ size }}
+                </option>
+              </select>
+            </div>
+            <div class="flex items-center gap-1">
+              <button
+                type="button"
+                :disabled="currentPage <= 1"
+                class="rounded px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                @click="currentPage = currentPage - 1"
+              >
+                Previous
+              </button>
+              <template v-for="p in visiblePageNumbers" :key="p">
+                <button
+                  v-if="p !== 'ellipsis'"
+                  type="button"
+                  :class="[
+                    'min-w-[2.25rem] rounded px-2 py-1.5 text-sm font-medium',
+                    p === currentPage
+                      ? 'bg-blue-600 text-white'
+                      : 'text-slate-700 hover:bg-slate-100',
+                  ]"
+                  @click="currentPage = p"
+                >
+                  {{ p }}
+                </button>
+                <span
+                  v-else
+                  class="px-1 py-1.5 text-slate-400"
+                  aria-hidden="true"
+                >
+                  …
+                </span>
+              </template>
+              <button
+                type="button"
+                :disabled="currentPage >= totalPages"
+                class="rounded px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                @click="currentPage = currentPage + 1"
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -195,7 +263,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useSupabase } from "~/composables/useSupabase";
 import { useToast } from "~/composables/useToast";
@@ -229,6 +297,38 @@ const bulkDeleting = ref(false);
 const showBulkDeleteModal = ref(false);
 const currentUserEmail = ref<string>("");
 const activeTab = ref("users");
+
+// Pagination
+const pageSizeOptions = [10, 25, 50, 100];
+const pageSize = ref(25);
+const currentPage = ref(1);
+
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(users.value.length / pageSize.value)),
+);
+
+const paginatedUsers = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return users.value.slice(start, start + pageSize.value);
+});
+
+const paginationStart = computed(() =>
+  users.value.length === 0 ? 0 : (currentPage.value - 1) * pageSize.value + 1,
+);
+
+const paginationEnd = computed(() =>
+  Math.min(currentPage.value * pageSize.value, users.value.length),
+);
+
+const visiblePageNumbers = computed(() => {
+  const total = totalPages.value;
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const p = currentPage.value;
+  if (p <= 4) return [1, 2, 3, 4, 5, "ellipsis", total];
+  if (p >= total - 3)
+    return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
+  return [1, "ellipsis", p - 1, p, p + 1, "ellipsis", total];
+});
 
 const currentUserEmailComputed = computed(() => {
   const sessionValue = session.value;
@@ -275,20 +375,8 @@ const loadUsers = async () => {
       },
     });
 
-    console.log("[Admin] API Response:", response);
-    console.log("[Admin] Total users from API:", response?.users?.length);
-    console.log("[Admin] Current user email:", currentUserEmail.value);
-
-    const filteredUsers = (response?.users || []).filter(
-      (u: any) => u.email !== currentUserEmail.value,
-    );
-
-    console.log(
-      "[Admin] Filtered users (excluding current):",
-      filteredUsers.length,
-    );
-
-    users.value = filteredUsers;
+    // Show all users in the list; current user is non-deletable/non-selectable in the UI
+    users.value = (response?.users || []) as User[];
   } catch (err) {
     error.value = err instanceof Error ? err.message : "Failed to load users";
     console.error("[Admin] Error loading users:", error.value, err);
@@ -424,6 +512,12 @@ const bulkDeleteUsers = async () => {
     bulkDeleting.value = false;
   }
 };
+
+watch(totalPages, (total) => {
+  if (currentPage.value > total) {
+    currentPage.value = total;
+  }
+});
 
 onMounted(async () => {
   await loadUsers();

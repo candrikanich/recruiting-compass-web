@@ -569,7 +569,7 @@ const {
 
 const selectUserType = (type: "player" | "parent") => {
   userType.value = type;
-  role.value = type === "player" ? "player" : "parent";
+  role.value = type === "player" ? "student" : "parent";
   clearErrors();
 };
 
@@ -728,8 +728,8 @@ const handleSignup = async () => {
     // Determine redirect based on user type
     let redirectUrl = "";
 
-    if (validated.role === "player") {
-      // Players go to onboarding
+    if (validated.role === "student") {
+      // Students (players) go to onboarding
       redirectUrl = "/onboarding";
     } else if (validated.role === "parent") {
       // Parents go to family code entry or dashboard
