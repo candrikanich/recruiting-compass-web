@@ -179,41 +179,6 @@ describe("useProfileCompleteness", () => {
     it("should return null when all prompts dismissed", async () => {
       const { useSupabase } = await import("~/composables/useSupabase");
       const mockSupabase = {
-        from: vi.fn((table) => {
-          if (table === "player_profiles") {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  single: vi.fn().mockResolvedValue({
-                    data: {
-                      gpa: 3.8,
-                      sat_score: 1500,
-                      act_score: 35,
-                      highlight_video_url: "http://example.com/video.mp4",
-                    },
-                    error: null,
-                  }),
-                })),
-              })),
-            };
-          }
-          return {
-            select: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                single: vi.fn().mockResolvedValue({
-                  data: {
-                    dismissed_prompts: [
-                      "gpa",
-                      "test_scores",
-                      "highlight_video",
-                    ],
-                  },
-                  error: null,
-                }),
-              })),
-            })),
-          };
-        }),
         auth: {
           getSession: vi.fn().mockResolvedValue({
             data: { session: { user: { id: "test-user" } } },
@@ -221,6 +186,19 @@ describe("useProfileCompleteness", () => {
         },
       };
       vi.mocked(useSupabase).mockReturnValue(mockSupabase);
+
+      // Mock all prompts as dismissed with future expiry date
+      const futureDate = new Date(
+        Date.now() + 7 * 24 * 60 * 60 * 1000,
+      ).toISOString();
+      const allDismissed = [
+        { id: "gpa", dismissed_until: futureDate },
+        { id: "test_scores", dismissed_until: futureDate },
+        { id: "highlight_video", dismissed_until: futureDate },
+      ];
+      localStorage.getItem = vi
+        .fn()
+        .mockReturnValue(JSON.stringify(allDismissed));
 
       const completeness = useProfileCompleteness();
       const prompt = await completeness.getNextPrompt();
