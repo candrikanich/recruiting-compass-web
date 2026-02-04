@@ -1,4 +1,5 @@
 # The Recruiting Compass - Onboarding & Family Linking User Stories
+
 ## BDD-Style Gherkin Format
 
 **Document Version:** 1.0  
@@ -27,6 +28,7 @@
 ## FEATURE 1: USER TYPE SELECTION
 
 ### Story 1.1: New User Selects Account Type
+
 **As a** new user  
 **I want to** identify whether I am a player or parent during signup  
 **So that** the app can provide the appropriate onboarding experience
@@ -65,6 +67,7 @@ Feature: User Type Selection
 ## FEATURE 2: PLAYER ACCOUNT CREATION
 
 ### Story 2.1: Player Creates Account with Email
+
 **As a** player  
 **I want to** create an account with my email and password  
 **So that** I can start tracking my recruiting journey
@@ -108,6 +111,7 @@ Feature: Player Account Creation
 ## FEATURE 3: PLAYER PROFILE ONBOARDING
 
 ### Story 3.1: Player Sees Welcome Screen
+
 **As a** new player  
 **I want to** understand the purpose of onboarding  
 **So that** I know why I'm providing this information
@@ -135,6 +139,7 @@ Feature: Onboarding Welcome Screen
 ---
 
 ### Story 3.2: Player Enters Basic Info (Required)
+
 **As a** player  
 **I want to** enter my graduation year, sport, and position  
 **So that** the app can personalize my recruiting timeline
@@ -194,6 +199,7 @@ Feature: Basic Info Collection
 ---
 
 ### Story 3.3: Player Enters Location (Required)
+
 **As a** player  
 **I want to** enter my zip code  
 **So that** the app can calculate distances to schools
@@ -228,6 +234,7 @@ Feature: Location Collection
 ---
 
 ### Story 3.4: Player Enters Academic Info (Optional)
+
 **As a** player  
 **I want to** optionally enter my GPA and test scores  
 **So that** the app can provide more accurate school fit scores
@@ -276,6 +283,7 @@ Feature: Academic Info Collection
 ---
 
 ### Story 3.5: Player Completes Onboarding
+
 **As a** player  
 **I want to** see confirmation that my profile is set up  
 **So that** I know I can start using the app
@@ -314,6 +322,7 @@ Feature: Onboarding Completion
 ## FEATURE 4: PROFILE COMPLETENESS SYSTEM
 
 ### Story 4.1: Player Sees Profile Completeness Score
+
 **As a** player  
 **I want to** see how complete my profile is  
 **So that** I'm motivated to add more information
@@ -341,6 +350,7 @@ Feature: Profile Completeness Display
 ---
 
 ### Story 4.2: Profile Completeness Calculation
+
 **As the** system  
 **I want to** calculate profile completeness using weighted fields  
 **So that** more important fields carry more weight
@@ -372,6 +382,7 @@ Feature: Completeness Calculation
 ---
 
 ### Story 4.3: Contextual Completeness Prompts
+
 **As a** player  
 **I want to** receive prompts to complete my profile when relevant  
 **So that** I understand why additional information helps
@@ -407,6 +418,7 @@ Feature: Contextual Prompts
 ## FEATURE 5: FAMILY CODE SYSTEM
 
 ### Story 5.1: Family Code Generation
+
 **As the** system  
 **I want to** generate a unique Family Code for each player  
 **So that** parents can link to the correct player profile
@@ -435,6 +447,7 @@ Feature: Family Code Generation
 ---
 
 ### Story 5.2: Player Views Family Code
+
 **As a** player  
 **I want to** view my Family Code in settings  
 **So that** I can share it with my parents
@@ -462,6 +475,7 @@ Feature: Family Code Display
 ---
 
 ### Story 5.3: Player Regenerates Family Code
+
 **As a** player  
 **I want to** regenerate my Family Code  
 **So that** I can invalidate codes shared with the wrong person
@@ -505,6 +519,7 @@ Feature: Family Code Regeneration
 ## FEATURE 6: PARENT ACCOUNT CREATION
 
 ### Story 6.1: Parent Enters Family Code During Signup
+
 **As a** parent with a Family Code  
 **I want to** enter my child's code during signup  
 **So that** I can immediately link to their profile
@@ -553,6 +568,7 @@ Feature: Parent Signup with Code
 ---
 
 ### Story 6.2: Parent Without Code Invites Player
+
 **As a** parent without a Family Code  
 **I want to** invite my player to join the app  
 **So that** I can eventually link to their profile
@@ -588,6 +604,7 @@ Feature: Parent Invites Player
 ---
 
 ### Story 6.3: Parent Links to Player They're Already Connected To
+
 **As a** parent  
 **I want to** see a helpful message if I try to link to a player I'm already connected to  
 **So that** I don't get confused
@@ -612,6 +629,7 @@ Feature: Duplicate Link Prevention
 ## FEATURE 7: FAMILY INVITE FLOW
 
 ### Story 7.1: Player Invites Parent via Email
+
 **As a** player  
 **I want to** invite my parent by email  
 **So that** they can track my recruiting with me
@@ -643,6 +661,7 @@ Feature: Player Sends Parent Invite
 ---
 
 ### Story 7.2: Parent Receives Invitation Email
+
 **As a** parent who received an invite  
 **I want to** understand what the app does and how to join  
 **So that** I can decide to sign up
@@ -675,6 +694,7 @@ Feature: Parent Invitation Email
 ## FEATURE 8: PARENT PREVIEW MODE
 
 ### Story 8.1: Parent Enters Preview Mode
+
 **As a** parent who skipped entering a Family Code  
 **I want to** explore the app with demo data  
 **So that** I can understand the value before my player joins
@@ -705,6 +725,7 @@ Feature: Preview Mode Entry
 ---
 
 ### Story 8.2: Parent Explores Demo Data
+
 **As a** parent in Preview Mode  
 **I want to** see realistic sample data  
 **So that** I understand how the app works
@@ -755,6 +776,7 @@ Feature: Demo Data Display
 ---
 
 ### Story 8.3: Parent Exits Preview Mode
+
 **As a** parent in Preview Mode  
 **I want to** connect to my real player's profile  
 **So that** I can see their actual recruiting data
@@ -799,6 +821,7 @@ Feature: Exit Preview Mode
 ---
 
 ### Story 8.4: Preview Mode Persists Across Sessions
+
 **As a** parent in Preview Mode  
 **I want** Preview Mode to persist if I close the app  
 **So that** I don't lose my exploration state
@@ -824,6 +847,7 @@ Feature: Preview Mode Persistence
 ## FEATURE 9: FAMILY MANAGEMENT SETTINGS
 
 ### Story 9.1: Player Views Linked Parents
+
 **As a** player  
 **I want to** see which parents are linked to my profile  
 **So that** I know who has access to my recruiting data
@@ -853,6 +877,7 @@ Feature: View Linked Parents
 ---
 
 ### Story 9.2: Player Removes Parent Link
+
 **As a** player  
 **I want to** remove a parent's access to my profile  
 **So that** I can control who sees my recruiting data
@@ -881,6 +906,7 @@ Feature: Remove Parent Link
 ---
 
 ### Story 9.3: Parent Views Linked Players
+
 **As a** parent  
 **I want to** see which players I'm linked to  
 **So that** I can switch between multiple children's profiles
@@ -911,6 +937,7 @@ Feature: Parent Views Linked Players
 ## FEATURE 10: AGE VERIFICATION
 
 ### Story 10.1: System Validates Player Age
+
 **As the** system  
 **I want to** prevent users under 14 from creating accounts  
 **So that** we comply with child safety requirements
@@ -945,21 +972,25 @@ Feature: Age Verification Gate
 ## NON-FUNCTIONAL REQUIREMENTS
 
 ### Performance
+
 - Onboarding flow completes in under 3 minutes total
 - Each screen transition < 300ms
 - Family Code validation < 2 seconds
 
 ### Accessibility
+
 - All screens meet WCAG 2.1 AA standards
 - Proper keyboard navigation
 - Screen reader compatible labels
 
 ### Platform Parity
+
 - Identical flows on Web (Nuxt3) and iOS
 - Shared backend handles all business logic
 - Consistent data model across platforms
 
 ### Security
+
 - Passwords hashed before storage
 - Family Codes are cryptographically random
 - Rate limiting on code validation (prevent brute force)
@@ -969,18 +1000,19 @@ Feature: Age Verification Gate
 
 ## SUCCESS METRICS
 
-| Metric | Target | Notes |
-|--------|--------|-------|
-| Onboarding completion rate | >80% | Players who start and finish onboarding |
-| Family link rate (7 days) | >40% | Players with 1+ parent linked within a week |
-| Profile completeness (30 days) | >60% avg | Average score across all players |
-| Preview mode conversion | >50% | Preview parents who link to real player |
-| Time to first school follow | <5 min | From onboarding to first tracked school |
+| Metric                         | Target   | Notes                                       |
+| ------------------------------ | -------- | ------------------------------------------- |
+| Onboarding completion rate     | >80%     | Players who start and finish onboarding     |
+| Family link rate (7 days)      | >40%     | Players with 1+ parent linked within a week |
+| Profile completeness (30 days) | >60% avg | Average score across all players            |
+| Preview mode conversion        | >50%     | Preview parents who link to real player     |
+| Time to first school follow    | <5 min   | From onboarding to first tracked school     |
 
 ---
 
 **Document End**  
 **Related Documents:**
+
 - Player Profile Onboarding & Family Linking PRD v1.0
 - The Recruiting Compass PRD v1.0
 - Original User Stories Document v1.0

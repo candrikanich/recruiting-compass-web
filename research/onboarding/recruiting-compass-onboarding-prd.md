@@ -18,6 +18,7 @@ This PRD defines the account creation, player profile onboarding, and family lin
 The Recruiting Compass helps high school athletes (ages 14+) and their parents navigate the college recruiting process. The app provides school tracking, coach relationship management, interaction logging, and a guidance system that adapts to the player's recruiting timeline.
 
 Two user types exist:
+
 - **Players:** Own their profile data, can use the app fully autonomously
 - **Parents:** Link to one or more player profiles for transparency and to assist in the recruiting process
 
@@ -31,12 +32,12 @@ Two user types exist:
 
 ### 2.1 Entities
 
-| Entity | Description |
-|--------|-------------|
-| **Player Profile** | Central data entity containing all recruiting-related information for one athlete. One profile per human athlete. |
-| **Player Account** | User account that owns exactly one Player Profile. Has full read/write access. |
+| Entity             | Description                                                                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Player Profile** | Central data entity containing all recruiting-related information for one athlete. One profile per human athlete.                    |
+| **Player Account** | User account that owns exactly one Player Profile. Has full read/write access.                                                       |
 | **Parent Account** | User account linked to one or more Player Profiles. Has read access and limited write access (can add coaches, interactions, notes). |
-| **Family Link** | The relationship between a Parent Account and a Player Profile. Created via Family Code. |
+| **Family Link**    | The relationship between a Parent Account and a Player Profile. Created via Family Code.                                             |
 
 ### 2.2 Relationships
 
@@ -61,7 +62,7 @@ Player Profile (1) ----has many----> Parent Accounts linked
 ### 3.1 Flow A: Player Creates Account (Primary Path)
 
 ```
-[App Launch] 
+[App Launch]
     → [Sign Up Screen]
     → [User Type Selection: "I'm a Player" / "I'm a Parent"]
     → Player selects "I'm a Player"
@@ -81,12 +82,12 @@ Player Profile (1) ----has many----> Parent Accounts linked
     → [Family Code Entry Screen]
         - Input field: "Enter your player's Family Code"
         - Link: "Don't have a code? Invite your player to join"
-    
+
     IF code entered:
         → [Account Creation: email, password OR OAuth]
         → [Family Link established]
         → [Main App - Player's Dashboard]
-    
+
     IF "Invite your player" tapped:
         → [Invite Screen: Enter player's email]
         → [Email sent to player with app download/signup link]
@@ -117,11 +118,13 @@ Player Profile (1) ----has many----> Parent Accounts linked
 ### 4.2 Onboarding Screens
 
 #### Screen 1: Welcome
+
 - Headline: "Let's set up your recruiting profile"
 - Subtext: "This helps us personalize your recruiting journey"
 - CTA: "Get Started"
 
 #### Screen 2: Basic Info (Required)
+
 - **Graduation Year** (dropdown: current year + 4 years forward)
 - **Primary Sport** (dropdown, searchable)
 - **Primary Position** (conditional display):
@@ -130,28 +133,31 @@ Player Profile (1) ----has many----> Parent Accounts linked
 - **Secondary Position** (optional, same conditional logic as primary)
 
 #### Screen 3: Location (Required)
+
 - **Zip Code** (5-digit input with validation)
 - Helper text: "Used to calculate distance to schools"
 
 #### Screen 4: Academic Snapshot (Optional but Encouraged)
+
 - **GPA** (numeric input, 0.0-5.0 scale)
 - **SAT Score** (numeric input, optional)
 - **ACT Score** (numeric input, optional)
 - Skip link available: "I'll add this later"
 
 #### Screen 5: Profile Complete
+
 - Headline: "You're all set!"
 - Show: Profile completeness indicator (e.g., "Profile 60% complete")
 - CTA: "Invite a Parent" (primary) / "Skip for now" (secondary)
 
 ### 4.3 Minimum Viable Profile (Required Fields)
 
-| Field | Purpose | Validation |
-|-------|---------|------------|
-| Graduation Year | Timeline/guidance system | Must be current year or future, max +4 years |
-| Primary Sport | Sport-specific features, position filtering | Must select from list |
-| Primary Position | Coach outreach, profile display | Must select from sport-filtered list |
-| Zip Code | Distance calculations to schools | 5 digits, valid US zip |
+| Field            | Purpose                                     | Validation                                   |
+| ---------------- | ------------------------------------------- | -------------------------------------------- |
+| Graduation Year  | Timeline/guidance system                    | Must be current year or future, max +4 years |
+| Primary Sport    | Sport-specific features, position filtering | Must select from list                        |
+| Primary Position | Coach outreach, profile display             | Must select from sport-filtered list         |
+| Zip Code         | Distance calculations to schools            | 5 digits, valid US zip                       |
 
 ### 4.4 Extended Profile Fields (Collected Later)
 
@@ -173,19 +179,20 @@ These fields enhance features but are not required for onboarding:
 
 **Calculation:** Weight fields by importance to recruiting process
 
-| Field | Weight |
-|-------|--------|
-| Graduation Year | 10% |
-| Primary Sport | 10% |
-| Primary Position | 10% |
-| Zip Code | 10% |
-| GPA | 15% |
-| Test Scores (SAT or ACT) | 10% |
-| Highlight Video | 15% |
-| Athletic Stats | 10% |
-| Contact Info Complete | 10% |
+| Field                    | Weight |
+| ------------------------ | ------ |
+| Graduation Year          | 10%    |
+| Primary Sport            | 10%    |
+| Primary Position         | 10%    |
+| Zip Code                 | 10%    |
+| GPA                      | 15%    |
+| Test Scores (SAT or ACT) | 10%    |
+| Highlight Video          | 15%    |
+| Athletic Stats           | 10%    |
+| Contact Info Complete    | 10%    |
 
 **Prompts:** Contextual prompts when user engages with features that would benefit from more data:
+
 - "Your school fit scores will be more accurate if you add your GPA"
 - "Coaches often filter by test scores — add yours to improve visibility"
 
@@ -198,6 +205,7 @@ These fields enhance features but are not required for onboarding:
 After completing onboarding, player sees:
 
 **Screen: Invite Your Parents**
+
 - Headline: "Keep your parents in the loop"
 - Subtext: "They can help track coaches, research schools, and stay updated on your progress"
 - Input: "Parent's email address"
@@ -205,6 +213,7 @@ After completing onboarding, player sees:
 - Secondary: "I'll do this later"
 
 If player enters email:
+
 - System sends email to parent containing:
   - Brief app explanation
   - Player's Family Code
@@ -216,6 +225,7 @@ If player enters email:
 Location: Settings > Family Management
 
 **Elements:**
+
 - Current Family Code (displayed, tap to copy)
 - "Regenerate Code" button (with confirmation: "This will invalidate your current code")
 - "Invite Parent" button → opens email input modal
@@ -232,7 +242,7 @@ Hi,
 
 As a parent on The Recruiting Compass, you can:
 • See which schools they're tracking
-• Help research coaches and log interactions  
+• Help research coaches and log interactions
 • Stay aligned on their recruiting priorities
 • Access guidance tailored to their timeline
 
@@ -266,6 +276,7 @@ Allow parents to explore app features before their player has created an account
 Seed preview mode with static, realistic sample data. Data is baked into the app (no backend fetch required).
 
 **Demo Player Profile:**
+
 - Name: "Alex Demo"
 - Graduation Year: Current year + 1 (Junior)
 - Sport: Soccer (or most common sport in your initial rollout)
@@ -276,32 +287,33 @@ Seed preview mode with static, realistic sample data. Data is baked into the app
 
 **Sample Schools (4):**
 
-| School | Division | Distance | Status |
-|--------|----------|----------|--------|
-| Ohio State University | D1 | 140 mi | Following |
-| John Carroll University | D3 | 18 mi | Researching |
-| University of Akron | D1 | 32 mi | Following |
-| Oberlin College | D3 | 25 mi | Contacted |
+| School                  | Division | Distance | Status      |
+| ----------------------- | -------- | -------- | ----------- |
+| Ohio State University   | D1       | 140 mi   | Following   |
+| John Carroll University | D3       | 18 mi    | Researching |
+| University of Akron     | D1       | 32 mi    | Following   |
+| Oberlin College         | D3       | 25 mi    | Contacted   |
 
 **Sample Coaches (3):**
 
-| Name | School | Title | Email | Phone |
-|------|--------|-------|-------|-------|
-| Coach Jamie Smith | Ohio State | Head Coach | demo@example.com | (555) 123-4567 |
-| Coach Taylor Johnson | John Carroll | Assistant Coach | demo@example.com | (555) 234-5678 |
-| Coach Morgan Davis | Oberlin | Recruiting Coord | demo@example.com | (555) 345-6789 |
+| Name                 | School       | Title            | Email            | Phone          |
+| -------------------- | ------------ | ---------------- | ---------------- | -------------- |
+| Coach Jamie Smith    | Ohio State   | Head Coach       | demo@example.com | (555) 123-4567 |
+| Coach Taylor Johnson | John Carroll | Assistant Coach  | demo@example.com | (555) 234-5678 |
+| Coach Morgan Davis   | Oberlin      | Recruiting Coord | demo@example.com | (555) 345-6789 |
 
 **Sample Interactions (5):**
 
-| Date | Type | School | Coach | Notes |
-|------|------|--------|-------|-------|
-| 2 weeks ago | Email Sent | Ohio State | Coach Smith | Sent intro email with highlight video |
-| 10 days ago | Email Received | Ohio State | Coach Smith | Coach requested academic info |
-| 1 week ago | Camp Registered | John Carroll | — | Summer ID camp, June 15-17 |
-| 5 days ago | Call Scheduled | Oberlin | Coach Davis | Phone call set for next Tuesday |
-| 3 days ago | Campus Visit | University of Akron | — | Unofficial visit, toured facilities |
+| Date        | Type            | School              | Coach       | Notes                                 |
+| ----------- | --------------- | ------------------- | ----------- | ------------------------------------- |
+| 2 weeks ago | Email Sent      | Ohio State          | Coach Smith | Sent intro email with highlight video |
+| 10 days ago | Email Received  | Ohio State          | Coach Smith | Coach requested academic info         |
+| 1 week ago  | Camp Registered | John Carroll        | —           | Summer ID camp, June 15-17            |
+| 5 days ago  | Call Scheduled  | Oberlin             | Coach Davis | Phone call set for next Tuesday       |
+| 3 days ago  | Campus Visit    | University of Akron | —           | Unofficial visit, toured facilities   |
 
 **Sample Guidance Items (Junior Timeline):**
+
 - "Create your target school list" — Completed
 - "Film highlight video (2-3 min)" — In Progress
 - "Email 10 coaches this month" — High Priority, Due Soon
@@ -314,6 +326,7 @@ This demo data demonstrates the core value props: school tracking, coach relatio
 ### 6.4 Exiting Preview Mode
 
 When parent enters valid Family Code:
+
 1. Confirm: "This will replace preview data with [Player Name]'s real recruiting profile. Continue?"
 2. If confirmed: Clear all preview data, establish Family Link, load player's actual data
 3. If cancelled: Return to preview mode
@@ -324,26 +337,26 @@ When parent enters valid Family Code:
 
 ### 7.1 Existing Infrastructure
 
-| Component | Status |
-|-----------|--------|
-| User Authentication | ✅ Complete |
-| Profile Settings (Web) | ✅ Complete |
-| Profile Settings (iOS) | 🔨 In Progress |
-| Family Code System | ✅ Complete |
-| School Tracking | ✅ Complete (College Scorecard API) |
-| Guidance System | ⚠️ Created, untested |
+| Component              | Status                              |
+| ---------------------- | ----------------------------------- |
+| User Authentication    | ✅ Complete                         |
+| Profile Settings (Web) | ✅ Complete                         |
+| Profile Settings (iOS) | 🔨 In Progress                      |
+| Family Code System     | ✅ Complete                         |
+| School Tracking        | ✅ Complete (College Scorecard API) |
+| Guidance System        | ⚠️ Created, untested                |
 
 ### 7.2 New Components Required
 
-| Component | Priority | Notes |
-|-----------|----------|-------|
-| User Type Selection (signup flow) | P0 | Gate to determine player vs parent flow |
-| Player Profile Onboarding (multi-screen) | P0 | 5 screens as specified |
-| Family Code Entry Screen | P0 | For parent signup flow |
-| Parent Invite Email System | P1 | Transactional email with code |
-| Preview Mode Infrastructure | P1 | Demo data seeding, banner, data isolation |
-| Profile Completeness Calculator | P2 | Weighted calculation, UI indicator |
-| Position-by-Sport Data Set | P0 | Required for onboarding dropdown |
+| Component                                | Priority | Notes                                     |
+| ---------------------------------------- | -------- | ----------------------------------------- |
+| User Type Selection (signup flow)        | P0       | Gate to determine player vs parent flow   |
+| Player Profile Onboarding (multi-screen) | P0       | 5 screens as specified                    |
+| Family Code Entry Screen                 | P0       | For parent signup flow                    |
+| Parent Invite Email System               | P1       | Transactional email with code             |
+| Preview Mode Infrastructure              | P1       | Demo data seeding, banner, data isolation |
+| Profile Completeness Calculator          | P2       | Weighted calculation, UI indicator        |
+| Position-by-Sport Data Set               | P0       | Required for onboarding dropdown          |
 
 ### 7.3 Data Schema Additions
 
@@ -398,6 +411,7 @@ Implementation note: Abstract email sending behind a service interface to allow 
 ### 7.4 Platform Parity
 
 Both Web (Nuxt3) and iOS must implement:
+
 - User type selection at signup
 - Player onboarding flow
 - Parent family code entry
@@ -406,6 +420,7 @@ Both Web (Nuxt3) and iOS must implement:
 - Profile completeness indicator
 
 Shared backend handles:
+
 - Family code generation/validation
 - Family link creation
 - Profile completeness calculation
@@ -413,29 +428,29 @@ Shared backend handles:
 
 ### 7.5 Edge Cases
 
-| Scenario | Handling |
-|----------|----------|
-| Player tries to sign up with email already used by parent account | Error: "This email is already registered. Please sign in or use a different email." |
-| Parent enters invalid family code | Error: "That code doesn't match any player. Check with your player and try again." |
-| Parent enters code for player they're already linked to | Message: "You're already connected to [Player Name]'s profile." |
-| Player regenerates code while parent is mid-signup | Parent's code entry fails; they must request new code |
-| Parent in preview mode force-closes app | Preview state persists; banner shows on next launch |
-| Player skips family invite, parent can't find code | Code always visible in Settings > Family Management |
-| Player selects graduation year implying age under 14 | Block account creation. Message: "The Recruiting Compass is designed for athletes 14 and older. If you believe this is an error, please contact support." Calculate by: if (graduation_year - current_year) > 4, likely under 14. More precise: assume June graduation, 18 years old at graduation, work backward. |
-| Player selects sport without defined position list | Show free-text input: "Enter your primary position" instead of dropdown. Store as custom_position field. |
-| Parent enters family code without "FAM-" prefix | Accept code, auto-prepend "FAM-" for validation. UI should be forgiving. |
+| Scenario                                                          | Handling                                                                                                                                                                                                                                                                                                           |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Player tries to sign up with email already used by parent account | Error: "This email is already registered. Please sign in or use a different email."                                                                                                                                                                                                                                |
+| Parent enters invalid family code                                 | Error: "That code doesn't match any player. Check with your player and try again."                                                                                                                                                                                                                                 |
+| Parent enters code for player they're already linked to           | Message: "You're already connected to [Player Name]'s profile."                                                                                                                                                                                                                                                    |
+| Player regenerates code while parent is mid-signup                | Parent's code entry fails; they must request new code                                                                                                                                                                                                                                                              |
+| Parent in preview mode force-closes app                           | Preview state persists; banner shows on next launch                                                                                                                                                                                                                                                                |
+| Player skips family invite, parent can't find code                | Code always visible in Settings > Family Management                                                                                                                                                                                                                                                                |
+| Player selects graduation year implying age under 14              | Block account creation. Message: "The Recruiting Compass is designed for athletes 14 and older. If you believe this is an error, please contact support." Calculate by: if (graduation_year - current_year) > 4, likely under 14. More precise: assume June graduation, 18 years old at graduation, work backward. |
+| Player selects sport without defined position list                | Show free-text input: "Enter your primary position" instead of dropdown. Store as custom_position field.                                                                                                                                                                                                           |
+| Parent enters family code without "FAM-" prefix                   | Accept code, auto-prepend "FAM-" for validation. UI should be forgiving.                                                                                                                                                                                                                                           |
 
 ---
 
 ## 8. Success Metrics
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Onboarding completion rate | >80% | Players who start onboarding and complete all required fields |
-| Family link rate | >40% | Players who have at least one parent linked within 7 days |
-| Profile completeness (avg) | >60% | Average completeness score across all players at 30 days |
-| Preview mode conversion | >50% | Parents in preview mode who eventually link to a player |
-| Time to first school follow | <5 min | From onboarding completion to first school tracked |
+| Metric                      | Target | Measurement                                                   |
+| --------------------------- | ------ | ------------------------------------------------------------- |
+| Onboarding completion rate  | >80%   | Players who start onboarding and complete all required fields |
+| Family link rate            | >40%   | Players who have at least one parent linked within 7 days     |
+| Profile completeness (avg)  | >60%   | Average completeness score across all players at 30 days      |
+| Preview mode conversion     | >50%   | Parents in preview mode who eventually link to a player       |
+| Time to first school follow | <5 min | From onboarding completion to first school tracked            |
 
 ---
 
@@ -540,18 +555,21 @@ PARENT SIGNUP FLOW
 ### B. Screen Mockup Notes
 
 **Onboarding Screen 2 (Sport/Position):**
+
 - Sport dropdown should be searchable for long list
 - Position dropdown filters dynamically based on sport selection
 - Secondary position only appears after primary is selected
 - Consider sport icons for visual recognition
 
 **Family Code Entry:**
+
 - Large, clear input field
 - Auto-format to uppercase
 - Show validation state (checking... / valid ✓ / invalid ✗)
 - "Invite your player" link below input
 
 **Preview Mode Banner:**
+
 - Full-width, fixed to top
 - Background: Red (#DC2626 or similar warning color)
 - Text: White, concise message
@@ -560,10 +578,11 @@ PARENT SIGNUP FLOW
 ### C. Notification Triggers (Future)
 
 For future push notification implementation:
+
 - Parent linked: Notify player "Your parent [name] joined your recruiting team"
 - Profile incomplete reminder: "Complete your profile to unlock better school matches" (7 days after signup if <60%)
 - Family code expiring: If implementing code expiration
 
 ---
 
-*End of Document*
+_End of Document_

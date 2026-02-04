@@ -10,3 +10,13 @@ export type School = SchoolModel;
 // Export other common types for convenience
 export type { Schools } from "./database-helpers";
 export type { Database } from "./database";
+export type {
+  PlayerProfile,
+  Sport,
+  Position,
+  AgeValidationResult,
+  FamilyCodeValidationResult,
+  OnboardingStep,
+  OnboardingProgress,
+  ContextualPrompt,
+} from "./onboarding";

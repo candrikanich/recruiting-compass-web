@@ -17,6 +17,10 @@ import type { SessionPreferences } from "~/types/session";
  *
  * @returns Object with auth actions and readonly state
  */
+interface SignupOptions {
+  familyCode?: string;
+}
+
 interface _AuthActions {
   restoreSession: () => Promise<Session | null>;
   login: (
@@ -33,11 +37,33 @@ interface _AuthActions {
     password: string,
     fullName?: string,
     role?: string,
+    options?: SignupOptions,
   ) => Promise<{
     data: { user: User | null; session: Session | null } | null;
     error: { message: string; status?: number } | null;
   }>;
   setupAuthListener: (callback: (user: User | null) => void) => () => void;
+}
+
+/**
+ * Generate a random family code for player signups
+ * Format: FAM-XXXXXXXX (uppercase alphanumeric)
+ */
+function generateFamilyCode(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let code = "";
+  for (let i = 0; i < 8; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `FAM-${code}`;
+}
+
+/**
+ * Validate family code format
+ * Must be FAM-XXXXXXXX or similar pattern
+ */
+function validateFamilyCodeFormat(code: string): boolean {
+  return /^FAM-[A-Z0-9]+$/.test(code.toUpperCase());
 }
 
 export const useAuth = () => {
@@ -210,13 +236,16 @@ export const useAuth = () => {
   };
 
   /**
-   * Sign up new user with optional full name and role
+   * Sign up new user with optional full name, role, and onboarding options
+   * For players: Generates family_code, sets onboarding_completed=false
+   * For parents: Accepts optional familyCode, validates format
    */
   const signup = async (
     email: string,
     password: string,
     fullName?: string,
     role?: string,
+    options?: SignupOptions,
   ) => {
     loading.value = true;
     error.value = null;
@@ -228,23 +257,43 @@ export const useAuth = () => {
         email: string;
         password: string;
         options?: {
-          data: {
-            full_name?: string;
-            role?: string;
-          };
+          data: Record<string, string | boolean>;
         };
       } = {
         email: trimmedEmail,
         password,
       };
 
-      // Add full name and role to user metadata
-      if (fullName || role) {
+      // Build user metadata
+      const metadata: Record<string, string | boolean> = {};
+
+      if (fullName) {
+        metadata.full_name = fullName;
+      }
+
+      if (role) {
+        metadata.role = role;
+        metadata.user_type = role;
+
+        // For player signup: generate family code and set onboarding flag
+        if (role === "player") {
+          metadata.family_code = generateFamilyCode();
+          metadata.onboarding_completed = false;
+        }
+        // For parent signup: use provided family code if given
+        else if (role === "parent" && options?.familyCode) {
+          // Validate family code format
+          if (!validateFamilyCodeFormat(options.familyCode)) {
+            throw new Error("Invalid family code format");
+          }
+          metadata.family_code = options.familyCode.toUpperCase();
+        }
+      }
+
+      // Add metadata if any values present
+      if (Object.keys(metadata).length > 0) {
         signUpParams.options = {
-          data: {
-            ...(fullName && { full_name: fullName }),
-            ...(role && { role }),
-          },
+          data: metadata,
         };
       }
 
