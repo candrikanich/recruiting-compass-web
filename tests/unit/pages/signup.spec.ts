@@ -419,21 +419,30 @@ describe("signup.vue", () => {
   });
 
   describe("Component Rendering", () => {
-    it("should render signup card", () => {
+    it("should render signup card with user type selection", () => {
       const wrapper = createWrapper();
-      expect(wrapper.find("h1").text()).toBe("Recruiting Compass");
+      expect(wrapper.find('[data-testid="user-type-player"]').exists()).toBe(
+        true,
+      );
+      expect(wrapper.find('[data-testid="user-type-parent"]').exists()).toBe(
+        true,
+      );
     });
 
     it("should render back link", () => {
       const wrapper = createWrapper();
-      const backLink = wrapper.find('[data-to="/"]');
-      expect(backLink.exists()).toBe(true);
+      const backLink = wrapper
+        .findAll("a")
+        .find((el) => el.text().includes("Back to Welcome"));
+      expect(backLink).toBeDefined();
     });
 
     it("should render sign in link", () => {
       const wrapper = createWrapper();
-      const signInLink = wrapper.find('[data-to="/login"]');
-      expect(signInLink.exists()).toBe(true);
+      const signInLink = wrapper
+        .findAll("a")
+        .find((el) => el.text().includes("Sign in"));
+      expect(signInLink).toBeDefined();
     });
   });
 });
