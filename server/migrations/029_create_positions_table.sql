@@ -34,117 +34,140 @@ COMMENT ON COLUMN positions.display_order IS 'Order for display in UI dropdowns 
 
 -- Baseball positions
 INSERT INTO positions (sport_id, name, display_order)
-SELECT id, position, row_number OVER (ORDER BY row_number) as display_order
+SELECT (SELECT id FROM sports WHERE name = 'Baseball'), position, row_num
 FROM (
-  SELECT (SELECT id FROM sports WHERE name = 'Baseball') as id, unnest(ARRAY[
-    'Pitcher', 'Catcher', 'First Base', 'Second Base', 'Third Base',
-    'Shortstop', 'Left Field', 'Center Field', 'Right Field', 'Designated Hitter'
-  ]) as position, row_number
+  SELECT 'Pitcher' as position, 1 as row_num UNION ALL
+  SELECT 'Catcher', 2 UNION ALL
+  SELECT 'First Base', 3 UNION ALL
+  SELECT 'Second Base', 4 UNION ALL
+  SELECT 'Third Base', 5 UNION ALL
+  SELECT 'Shortstop', 6 UNION ALL
+  SELECT 'Left Field', 7 UNION ALL
+  SELECT 'Center Field', 8 UNION ALL
+  SELECT 'Right Field', 9 UNION ALL
+  SELECT 'Designated Hitter', 10
 ) positions_data
-ORDER BY row_number
 ON CONFLICT (sport_id, name) DO NOTHING;
 
 -- Basketball positions
 INSERT INTO positions (sport_id, name, display_order)
-SELECT id, position, row_number OVER (ORDER BY row_number) as display_order
+SELECT (SELECT id FROM sports WHERE name = 'Basketball'), position, row_num
 FROM (
-  SELECT (SELECT id FROM sports WHERE name = 'Basketball') as id, unnest(ARRAY[
-    'Point Guard', 'Shooting Guard', 'Small Forward', 'Power Forward', 'Center'
-  ]) as position, row_number
+  SELECT 'Point Guard' as position, 1 as row_num UNION ALL
+  SELECT 'Shooting Guard', 2 UNION ALL
+  SELECT 'Small Forward', 3 UNION ALL
+  SELECT 'Power Forward', 4 UNION ALL
+  SELECT 'Center', 5
 ) positions_data
-ORDER BY row_number
 ON CONFLICT (sport_id, name) DO NOTHING;
 
 -- Field Hockey positions
 INSERT INTO positions (sport_id, name, display_order)
-SELECT id, position, row_number OVER (ORDER BY row_number) as display_order
+SELECT (SELECT id FROM sports WHERE name = 'Field Hockey'), position, row_num
 FROM (
-  SELECT (SELECT id FROM sports WHERE name = 'Field Hockey') as id, unnest(ARRAY[
-    'Goalkeeper', 'Forward', 'Midfielder', 'Defender'
-  ]) as position, row_number
+  SELECT 'Goalkeeper' as position, 1 as row_num UNION ALL
+  SELECT 'Forward', 2 UNION ALL
+  SELECT 'Midfielder', 3 UNION ALL
+  SELECT 'Defender', 4
 ) positions_data
-ORDER BY row_number
 ON CONFLICT (sport_id, name) DO NOTHING;
 
 -- Football positions
 INSERT INTO positions (sport_id, name, display_order)
-SELECT id, position, row_number OVER (ORDER BY row_number) as display_order
+SELECT (SELECT id FROM sports WHERE name = 'Football'), position, row_num
 FROM (
-  SELECT (SELECT id FROM sports WHERE name = 'Football') as id, unnest(ARRAY[
-    'Quarterback', 'Running Back', 'Wide Receiver', 'Tight End', 'Left Tackle',
-    'Left Guard', 'Center', 'Right Guard', 'Right Tackle', 'Left End',
-    'Defensive End', 'Tackle', 'Middle Linebacker', 'Outside Linebacker',
-    'Cornerback', 'Safety', 'Kicker', 'Punter', 'Long Snapper'
-  ]) as position, row_number
+  SELECT 'Quarterback' as position, 1 as row_num UNION ALL
+  SELECT 'Running Back', 2 UNION ALL
+  SELECT 'Wide Receiver', 3 UNION ALL
+  SELECT 'Tight End', 4 UNION ALL
+  SELECT 'Left Tackle', 5 UNION ALL
+  SELECT 'Left Guard', 6 UNION ALL
+  SELECT 'Center', 7 UNION ALL
+  SELECT 'Right Guard', 8 UNION ALL
+  SELECT 'Right Tackle', 9 UNION ALL
+  SELECT 'Left End', 10 UNION ALL
+  SELECT 'Defensive End', 11 UNION ALL
+  SELECT 'Tackle', 12 UNION ALL
+  SELECT 'Middle Linebacker', 13 UNION ALL
+  SELECT 'Outside Linebacker', 14 UNION ALL
+  SELECT 'Cornerback', 15 UNION ALL
+  SELECT 'Safety', 16 UNION ALL
+  SELECT 'Kicker', 17 UNION ALL
+  SELECT 'Punter', 18 UNION ALL
+  SELECT 'Long Snapper', 19
 ) positions_data
-ORDER BY row_number
 ON CONFLICT (sport_id, name) DO NOTHING;
 
 -- Hockey positions
 INSERT INTO positions (sport_id, name, display_order)
-SELECT id, position, row_number OVER (ORDER BY row_number) as display_order
+SELECT (SELECT id FROM sports WHERE name = 'Hockey'), position, row_num
 FROM (
-  SELECT (SELECT id FROM sports WHERE name = 'Hockey') as id, unnest(ARRAY[
-    'Goaltender', 'Left Wing', 'Center', 'Right Wing', 'Defenseman'
-  ]) as position, row_number
+  SELECT 'Goaltender' as position, 1 as row_num UNION ALL
+  SELECT 'Left Wing', 2 UNION ALL
+  SELECT 'Center', 3 UNION ALL
+  SELECT 'Right Wing', 4 UNION ALL
+  SELECT 'Defenseman', 5
 ) positions_data
-ORDER BY row_number
 ON CONFLICT (sport_id, name) DO NOTHING;
 
 -- Lacrosse positions
 INSERT INTO positions (sport_id, name, display_order)
-SELECT id, position, row_number OVER (ORDER BY row_number) as display_order
+SELECT (SELECT id FROM sports WHERE name = 'Lacrosse'), position, row_num
 FROM (
-  SELECT (SELECT id FROM sports WHERE name = 'Lacrosse') as id, unnest(ARRAY[
-    'Attack', 'Midfield', 'Defense', 'Goalkeeper'
-  ]) as position, row_number
+  SELECT 'Attack' as position, 1 as row_num UNION ALL
+  SELECT 'Midfield', 2 UNION ALL
+  SELECT 'Defense', 3 UNION ALL
+  SELECT 'Goalkeeper', 4
 ) positions_data
-ORDER BY row_number
 ON CONFLICT (sport_id, name) DO NOTHING;
 
 -- Soccer positions
 INSERT INTO positions (sport_id, name, display_order)
-SELECT id, position, row_number OVER (ORDER BY row_number) as display_order
+SELECT (SELECT id FROM sports WHERE name = 'Soccer'), position, row_num
 FROM (
-  SELECT (SELECT id FROM sports WHERE name = 'Soccer') as id, unnest(ARRAY[
-    'Goalkeeper', 'Left Back', 'Center Back', 'Right Back', 'Left Midfielder',
-    'Center Midfielder', 'Right Midfielder', 'Left Winger', 'Right Winger', 'Forward'
-  ]) as position, row_number
+  SELECT 'Goalkeeper' as position, 1 as row_num UNION ALL
+  SELECT 'Left Back', 2 UNION ALL
+  SELECT 'Center Back', 3 UNION ALL
+  SELECT 'Right Back', 4 UNION ALL
+  SELECT 'Left Midfielder', 5 UNION ALL
+  SELECT 'Center Midfielder', 6 UNION ALL
+  SELECT 'Right Midfielder', 7 UNION ALL
+  SELECT 'Left Winger', 8 UNION ALL
+  SELECT 'Right Winger', 9 UNION ALL
+  SELECT 'Forward', 10
 ) positions_data
-ORDER BY row_number
 ON CONFLICT (sport_id, name) DO NOTHING;
 
 -- Tennis positions
 INSERT INTO positions (sport_id, name, display_order)
-SELECT id, position, row_number OVER (ORDER BY row_number) as display_order
+SELECT (SELECT id FROM sports WHERE name = 'Tennis'), position, row_num
 FROM (
-  SELECT (SELECT id FROM sports WHERE name = 'Tennis') as id, unnest(ARRAY[
-    'Singles', 'Doubles'
-  ]) as position, row_number
+  SELECT 'Singles' as position, 1 as row_num UNION ALL
+  SELECT 'Doubles', 2
 ) positions_data
-ORDER BY row_number
 ON CONFLICT (sport_id, name) DO NOTHING;
 
 -- Volleyball positions
 INSERT INTO positions (sport_id, name, display_order)
-SELECT id, position, row_number OVER (ORDER BY row_number) as display_order
+SELECT (SELECT id FROM sports WHERE name = 'Volleyball'), position, row_num
 FROM (
-  SELECT (SELECT id FROM sports WHERE name = 'Volleyball') as id, unnest(ARRAY[
-    'Outside Hitter', 'Middle Blocker', 'Opposite Hitter', 'Setter', 'Libero'
-  ]) as position, row_number
+  SELECT 'Outside Hitter' as position, 1 as row_num UNION ALL
+  SELECT 'Middle Blocker', 2 UNION ALL
+  SELECT 'Opposite Hitter', 3 UNION ALL
+  SELECT 'Setter', 4 UNION ALL
+  SELECT 'Libero', 5
 ) positions_data
-ORDER BY row_number
 ON CONFLICT (sport_id, name) DO NOTHING;
 
 -- Water Polo positions
 INSERT INTO positions (sport_id, name, display_order)
-SELECT id, position, row_number OVER (ORDER BY row_number) as display_order
+SELECT (SELECT id FROM sports WHERE name = 'Water Polo'), position, row_num
 FROM (
-  SELECT (SELECT id FROM sports WHERE name = 'Water Polo') as id, unnest(ARRAY[
-    'Goalkeeper', 'Utility', 'Driver', 'Hole Set'
-  ]) as position, row_number
+  SELECT 'Goalkeeper' as position, 1 as row_num UNION ALL
+  SELECT 'Utility', 2 UNION ALL
+  SELECT 'Driver', 3 UNION ALL
+  SELECT 'Hole Set', 4
 ) positions_data
-ORDER BY row_number
 ON CONFLICT (sport_id, name) DO NOTHING;
 
 -- Enable RLS (no policies needed - public read, admin write)
