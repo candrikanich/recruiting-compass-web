@@ -3,13 +3,6 @@
     "supabase": {
       "type": "http",
       "url": "https://mcp.supabase.com/mcp?project_ref=xpxzhqghxecsjhvklsqg"
-    },
-    "vercel": {
-        "command": "npx",
-        "args": ["@vercel/mcp"],
-        "env": {
-          "VERCEL_API_TOKEN": "k69Zj1PFkJ4yUhlA5RjBk6NH"
-        }
-      }
+    }
   }
 }
