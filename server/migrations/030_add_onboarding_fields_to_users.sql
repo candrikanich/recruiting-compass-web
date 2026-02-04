@@ -47,9 +47,8 @@ CREATE INDEX IF NOT EXISTS idx_users_onboarding_completed ON users(onboarding_co
 COMMENT ON COLUMN users.onboarding_completed IS 'True when player has completed all 5 onboarding screens; false until all screens completed';
 
 -- ============================================================================
--- 4. ADD CONSTRAINT: Players must complete onboarding before certain actions
+-- 4. NOTES
 -- ============================================================================
--- This is enforced at application level, but documented here for reference
+-- Players must complete onboarding before certain actions
+-- This is enforced at application level via middleware
 -- Logic: Redirect to onboarding if user_type='player' AND onboarding_completed=false
-
-COMMENT ON CONSTRAINT users_user_type_check IS 'Ensures user_type is valid enum value (player or parent)';
