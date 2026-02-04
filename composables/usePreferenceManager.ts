@@ -9,6 +9,7 @@
 
 import { computed } from "vue";
 import { useUserPreferencesV2 } from "./useUserPreferencesV2";
+import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type {
   NotificationSettings,
@@ -29,6 +30,7 @@ import {
 
 export function usePreferenceManager() {
   const userStore = useUserStore();
+  const supabase = useSupabase();
 
   // Initialize V2 preference instances for each category
   // These handle loading/saving to the API
@@ -293,9 +295,22 @@ export function usePreferenceManager() {
 
       if (changedFields.length === 0) return; // No changes to track
 
+      // Get auth token
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        throw new Error("No authentication token available");
+      }
+
       // Call history API to record the change
       await $fetch("/api/user/preferences/history", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: {
           category,
           old_value: oldValue,
@@ -317,10 +332,23 @@ export function usePreferenceManager() {
    */
   const getPreferenceHistory = async (category: string, limit = 50) => {
     try {
+      // Get auth token
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        throw new Error("No authentication token available");
+      }
+
       const response = await $fetch(
         `/api/user/preferences/${category}/history`,
         {
           method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           query: { limit },
         },
       );
