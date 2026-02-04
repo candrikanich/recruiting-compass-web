@@ -1,6 +1,10 @@
 name: Manual Deploy to Staging
 
 on:
+  push:
+    branches: [develop]
+    paths:
+      - ".github/workflows/manual-deploy.yml"
   workflow_dispatch:
 
 jobs:
