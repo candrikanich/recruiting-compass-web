@@ -100,12 +100,31 @@
           </div>
         </div>
 
-        <!-- Screen 3: Location (placeholder) -->
+        <!-- Screen 3: Location -->
         <div v-if="currentStep === 3" class="space-y-6">
           <h2 class="text-2xl font-bold text-slate-900 mb-4">Your Location</h2>
-          <p class="text-slate-600">
+          <p class="text-slate-600 mb-4">
             Tell us your zip code so we can find nearby schools.
           </p>
+
+          <!-- Zip Code -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Zip Code *
+            </label>
+            <input
+              v-model="onboardingData.zip_code"
+              type="text"
+              placeholder="Enter your 5-digit zip code"
+              maxlength="5"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              @keypress="restrictToNumbers"
+              required
+            />
+            <p v-if="zipCodeError" class="text-red-600 text-sm mt-1">
+              {{ zipCodeError }}
+            </p>
+          </div>
         </div>
 
         <!-- Screen 4: Academic Info (placeholder) -->
@@ -204,6 +223,7 @@ const currentStep = ref(1);
 const onboardingData = ref<Record<string, unknown>>({});
 const loading = ref(false);
 const error = ref<string | null>(null);
+const zipCodeError = ref<string | null>(null);
 
 const totalSteps = 5;
 
@@ -310,11 +330,41 @@ const onSportChange = () => {
   onboardingData.value.primary_position = "";
 };
 
+const restrictToNumbers = (event: KeyboardEvent) => {
+  if (!/[0-9]/.test(event.key)) {
+    event.preventDefault();
+  }
+};
+
+const validateStep = (): boolean => {
+  zipCodeError.value = null;
+
+  // Validate step 3 (location)
+  if (currentStep.value === 3) {
+    const zipCode = onboardingData.value.zip_code as string;
+    if (!zipCode) {
+      zipCodeError.value = "Zip code is required";
+      return false;
+    }
+    if (!/^\d{5}$/.test(zipCode)) {
+      zipCodeError.value = "Please enter a valid 5-digit zip code";
+      return false;
+    }
+  }
+
+  return true;
+};
+
 const clearError = () => {
   error.value = null;
 };
 
 const nextScreen = async () => {
+  // Validate current step before proceeding
+  if (!validateStep()) {
+    return;
+  }
+
   if (currentStep.value === totalSteps) {
     // Complete onboarding
     loading.value = true;
