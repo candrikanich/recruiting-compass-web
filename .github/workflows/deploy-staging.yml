@@ -1,6 +1,4 @@
-# Deploys only after "Test & Verify" workflow succeeds on develop.
-# Disable Vercel auto-deploy for this project so GitHub Actions is the only deploy path:
-# Vercel Dashboard → Project → Settings → Git → set "Production Branch" and disable "Automatic Deployments" for previews, or disconnect Git and deploy only via CLI/API.
+# Deploy to Staging - Triggered after Test & Verify succeeds on develop
 name: Deploy to Staging
 
 on:
@@ -17,7 +15,7 @@ jobs:
     environment: staging
 
     steps:
-      - name: Checkout code (commit that passed checks)
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
@@ -27,16 +25,18 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Deploy to Vercel (Staging)
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel
         run: |
-          npm install -g vercel
           vercel deploy --prod \
-            --token=${{ secrets.VERCEL_TOKEN }} \
-            --scope=${{ secrets.VERCEL_ORG_ID }}
+            --token="${{ secrets.VERCEL_TOKEN }}" \
+            --scope="${{ secrets.VERCEL_ORG_ID }}"
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
 
-      - name: Notify Slack - Staging Deployed
+      - name: Slack Notification - Success
         if: success()
         uses: slackapi/slack-github-action@v2
         with:
@@ -44,19 +44,17 @@ jobs:
           webhook-type: incoming-webhook
           payload: |
             {
-              "text": "✅ Staging Deployment Successful",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*✅ Staging Deployed Successfully*\n*Repository:* ${{ github.repository }}\n*Branch:* develop\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}|${{ github.event.workflow_run.head_sha }}>\n*URL:* https://recruiting-compass-web.vercel.app"
-                  }
+              "text": "✅ Staging Deployed",
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*✅ Staging Deployed Successfully*\n*Repo:* ${{ github.repository }}\n*Branch:* develop\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}|${{ github.event.workflow_run.head_sha }}>\n*URL:* https://recruiting-compass-web.vercel.app"
                 }
-              ]
+              }]
             }
 
-      - name: Notify Slack - Staging Deployment Failed
+      - name: Slack Notification - Failure
         if: failure()
         uses: slackapi/slack-github-action@v2
         with:
@@ -65,13 +63,11 @@ jobs:
           payload: |
             {
               "text": "❌ Staging Deployment Failed",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*❌ Staging Deployment Failed*\n*Repository:* ${{ github.repository }}\n*Branch:* develop\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}|${{ github.event.workflow_run.head_sha }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
-                  }
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*❌ Staging Deployment Failed*\n*Repo:* ${{ github.repository }}\n*Branch:* develop\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}|${{ github.event.workflow_run.head_sha }}>\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
                 }
-              ]
+              }]
             }

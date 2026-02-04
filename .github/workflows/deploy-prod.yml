@@ -1,5 +1,4 @@
-# Deploys only after "Test & Verify" workflow succeeds on main, then after manual approval.
-# Disable Vercel auto-deploy for this project so GitHub Actions is the only deploy path.
+# Deploy to Production - Requires manual approval after Test & Verify succeeds on main
 name: Deploy to Production
 
 on:
@@ -16,17 +15,16 @@ jobs:
     environment: production
 
     steps:
-      - name: Production deployment approved
-        run: echo "✅ Production deployment approved. Proceeding with deployment."
+      - name: Approved - Proceed with deployment
+        run: echo "✅ Production deployment approved"
 
   deploy:
     name: Deploy to Production
     needs: approval
-    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code (commit that passed checks)
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
@@ -36,16 +34,18 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Deploy to Vercel (Production)
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel
         run: |
-          npm install -g vercel
           vercel deploy --prod \
-            --token=${{ secrets.VERCEL_TOKEN }} \
-            --scope=${{ secrets.VERCEL_ORG_ID }}
+            --token="${{ secrets.VERCEL_TOKEN }}" \
+            --scope="${{ secrets.VERCEL_ORG_ID }}"
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PROD }}
 
-      - name: Notify Slack - Production Deployed
+      - name: Slack Notification - Success
         if: success()
         uses: slackapi/slack-github-action@v2
         with:
@@ -53,19 +53,17 @@ jobs:
           webhook-type: incoming-webhook
           payload: |
             {
-              "text": "🚀 Production Deployment Successful",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*🚀 Production Deployed Successfully*\n*Repository:* ${{ github.repository }}\n*Branch:* main\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}|${{ github.event.workflow_run.head_sha }}>\n*URL:* https://recruiting-compass-web.vercel.app"
-                  }
+              "text": "🚀 Production Deployed",
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*🚀 Production Deployed Successfully*\n*Repo:* ${{ github.repository }}\n*Branch:* main\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}|${{ github.event.workflow_run.head_sha }}>\n*URL:* https://recruiting-compass-web.vercel.app"
                 }
-              ]
+              }]
             }
 
-      - name: Notify Slack - Production Deployment Failed
+      - name: Slack Notification - Failure
         if: failure()
         uses: slackapi/slack-github-action@v2
         with:
@@ -74,13 +72,11 @@ jobs:
           payload: |
             {
               "text": "🚨 Production Deployment Failed - URGENT",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*🚨 Production Deployment Failed (URGENT)*\n*Repository:* ${{ github.repository }}\n*Branch:* main\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}|${{ github.event.workflow_run.head_sha }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
-                  }
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*🚨 Production Deployment Failed (URGENT)*\n*Repo:* ${{ github.repository }}\n*Branch:* main\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}|${{ github.event.workflow_run.head_sha }}>\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
                 }
-              ]
+              }]
             }
