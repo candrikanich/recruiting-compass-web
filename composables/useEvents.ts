@@ -7,8 +7,8 @@ import type { Event } from "~/types/models";
 import type { Database } from "~/types/database";
 
 // Type aliases for Supabase casting
-type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
-type EventUpdate = Database["public"]["Tables"]["events"]["Update"];
+type _EventInsert = Database["public"]["Tables"]["events"]["Insert"];
+type _EventUpdate = Database["public"]["Tables"]["events"]["Update"];
 
 /**
  * useEvents composable
@@ -161,16 +161,18 @@ export const useEvents = (): {
     error.value = null;
 
     try {
-      const { data, error: insertError } = await supabase
-        .from("events")
-        .insert([
-          {
-            ...eventData,
-            user_id: activeFamily.getDataOwnerUserId(),
-          },
-        ] as EventInsert[])
-        .select()
-        .single();
+      const { data, error: insertError } =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("events") as any)
+          .insert([
+            {
+              ...eventData,
+              user_id: activeFamily.getDataOwnerUserId(),
+            },
+          ])
+          .select()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single()) as { data: Event; error: any };
 
       if (insertError) throw insertError;
 
@@ -193,16 +195,18 @@ export const useEvents = (): {
     error.value = null;
 
     try {
-      const { data, error: updateError } = await supabase
-        .from("events")
-        .update({
-          ...updates,
-          updated_by: userStore.user.id,
-          updated_at: new Date().toISOString(),
-        } as EventUpdate)
-        .eq("id", id)
-        .select()
-        .single();
+      const { data, error: updateError } =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("events") as any)
+          .update({
+            ...updates,
+            updated_by: userStore.user.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", id)
+          .select()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single()) as { data: Event; error: any };
 
       if (updateError) throw updateError;
 

@@ -97,6 +97,7 @@
               <select
                 v-model="form.graduation_year"
                 :disabled="isParentRole"
+                @blur="triggerSave"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               >
                 <option :value="undefined">Select Year</option>
@@ -119,6 +120,7 @@
                 :disabled="isParentRole"
                 type="text"
                 placeholder="e.g., Lincoln High School"
+                @blur="triggerSave"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
@@ -132,42 +134,111 @@
                 :disabled="isParentRole"
                 type="text"
                 placeholder="e.g., East Coast Sox"
+                @blur="triggerSave"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
           </div>
         </div>
 
-        <!-- Positions -->
+        <!-- Primary Sport & Position -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-6">Positions</h2>
-          <p class="text-sm text-gray-600 mb-4">
-            Select all positions you play (primary position first)
-          </p>
+          <h2 class="text-lg font-semibold text-slate-900 mb-4">
+            Athletic Profile
+          </h2>
 
-          <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-            <button
-              v-for="pos in POSITIONS"
-              :key="pos.value"
-              type="button"
-              :disabled="isParentRole"
-              @click="togglePosition(pos.value)"
-              :class="[
-                'px-4 py-3 rounded-lg font-medium text-sm transition border-2 disabled:opacity-50 disabled:cursor-not-allowed',
-                isPositionSelected(pos.value)
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400',
-              ]"
-            >
-              {{ pos.label }}
-            </button>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Primary Sport -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Primary Sport
+              </label>
+              <select
+                v-model="form.primary_sport"
+                :disabled="isParentRole"
+                @blur="triggerSave"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                <option :value="undefined">Select Sport</option>
+                <option
+                  v-for="sport in commonSports"
+                  :key="sport"
+                  :value="sport"
+                >
+                  {{ sport }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Primary Position -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Primary Position
+              </label>
+              <select
+                v-if="availablePositions.length > 0"
+                v-model="form.primary_position"
+                :disabled="isParentRole"
+                @blur="triggerSave"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                <option :value="undefined">Select Position</option>
+                <option
+                  v-for="pos in availablePositions"
+                  :key="pos"
+                  :value="pos"
+                >
+                  {{ pos }}
+                </option>
+              </select>
+              <select
+                v-else
+                disabled
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
+              >
+                <option>Select sport first</option>
+              </select>
+            </div>
           </div>
 
-          <div v-if="form.positions && form.positions.length > 0" class="mt-4">
-            <p class="text-sm text-gray-600">
-              Selected:
-              <span class="font-medium">{{ form.positions.join(", ") }}</span>
+          <!-- Additional Positions -->
+          <div>
+            <h3 class="text-sm font-medium text-gray-700 mb-3">
+              All Positions You Play
+            </h3>
+            <p class="text-xs text-gray-600 mb-4">
+              Select additional positions you play (primary position above is
+              pre-selected)
             </p>
+
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+              <button
+                v-for="pos in availablePositions"
+                :key="pos"
+                type="button"
+                :disabled="isParentRole"
+                @click="togglePosition(pos)"
+                @blur="triggerSave"
+                :class="[
+                  'px-4 py-3 rounded-lg font-medium text-sm transition border-2 disabled:opacity-50 disabled:cursor-not-allowed',
+                  isPositionSelected(pos)
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400',
+                ]"
+              >
+                {{ pos }}
+              </button>
+            </div>
+
+            <div
+              v-if="form.positions && form.positions.length > 0"
+              class="mt-4"
+            >
+              <p class="text-sm text-gray-600">
+                Selected:
+                <span class="font-medium">{{ form.positions.join(", ") }}</span>
+              </p>
+            </div>
           </div>
         </div>
 
@@ -301,6 +372,7 @@
                 min="0"
                 max="5"
                 placeholder="e.g., 3.75"
+                @blur="triggerSave"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
@@ -316,6 +388,7 @@
                 min="400"
                 max="1600"
                 placeholder="e.g., 1200"
+                @blur="triggerSave"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
@@ -331,6 +404,7 @@
                 min="1"
                 max="36"
                 placeholder="e.g., 28"
+                @blur="triggerSave"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
@@ -809,10 +883,10 @@
 
         <!-- Error Message -->
         <div
-          v-if="error"
+          v-if="errors.length > 0"
           class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700"
         >
-          {{ error }}
+          {{ errors[0]?.message || "Validation error" }}
         </div>
 
         <!-- Save Button -->
@@ -857,6 +931,8 @@ import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useToast } from "~/composables/useToast";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFitScoreRecalculation } from "~/composables/useFitScoreRecalculation";
+import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
+import { useAutoSave } from "~/composables/useAutoSave";
 import { useUserStore } from "~/stores/user";
 import { playerDetailsSchema } from "~/utils/validation/schemas";
 import { BASEBALL_POSITIONS, normalizePositions } from "~/utils/positions";
@@ -868,13 +944,12 @@ definePageMeta({
 });
 
 const userStore = useUserStore();
-const { isLoading, getPlayerDetails, setPlayerDetails } =
+const { isLoading, getPlayerDetails, setPlayerDetails, loadAllPreferences } =
   usePreferenceManager();
 const { showToast } = useToast();
 const { recalculateAllFitScores, loading: recalculating } =
   useFitScoreRecalculation();
-const { errors, fieldErrors, clearErrors, hasErrors } =
-  useValidation(playerDetailsSchema);
+const { errors, fieldErrors, clearErrors, hasErrors } = useFormValidation();
 
 const isParentRole = computed(() => userStore.user?.role === "parent");
 
@@ -939,6 +1014,37 @@ const form = ref<PlayerDetails>({
   travel_team_name: "",
   travel_team_coach: "",
 });
+
+// Sport/Position Management
+const { commonSports, getPositionsBySport } = useSportsPositionLookup();
+const availablePositions = ref<string[]>([]);
+
+// Auto-save configuration
+const { isSaving, triggerSave } = useAutoSave({
+  debounceMs: 500,
+  onSave: async () => {
+    await setPlayerDetails(form.value);
+  },
+});
+
+// Watch for sport changes to update available positions
+watch(
+  () => form.value.primary_sport,
+  (sport) => {
+    if (sport) {
+      availablePositions.value = getPositionsBySport(sport);
+      // If selected position is not in new sport's positions, clear it
+      if (
+        !availablePositions.value.includes(form.value.primary_position || "")
+      ) {
+        form.value.primary_position = undefined;
+      }
+    } else {
+      availablePositions.value = [];
+      form.value.primary_position = undefined;
+    }
+  },
+);
 
 const graduationYears = computed(() => {
   const currentYear = new Date().getFullYear();
@@ -1019,6 +1125,7 @@ const handleSave = async () => {
 };
 
 onMounted(async () => {
+  await loadAllPreferences();
   const playerDetails = getPlayerDetails();
   if (playerDetails) {
     // Normalize positions to ensure consistency

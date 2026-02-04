@@ -1,0 +1,48 @@
+name: Auto Deploy to Staging
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  test:
+    name: Test & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  deploy:
+    name: Deploy to Staging
+    needs: test
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install -g vercel
+      - run: vercel deploy --prod --token="${{ secrets.VERCEL_TOKEN }}"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
+      - uses: slackapi/slack-github-action@v2
+        if: success()
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {"text":"✅ Staging auto-deployed","blocks":[{"type":"section","text":{"type":"mrkdwn","text":"*✅ Auto Deploy to Staging Success*\n*Commit:* ${{ github.sha }}"}}]}
+      - uses: slackapi/slack-github-action@v2
+        if: failure()
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {"text":"❌ Staging auto-deploy failed","blocks":[{"type":"section","text":{"type":"mrkdwn","text":"*❌ Auto Deploy to Staging Failed*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"}}]}

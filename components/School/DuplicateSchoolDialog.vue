@@ -27,7 +27,7 @@
               </h2>
             </div>
             <button
-              @click="emit('cancel')"
+              @click="$emit('cancel')"
               class="text-gray-400 hover:text-gray-600"
             >
               <svg
@@ -130,14 +130,14 @@
           <div class="flex gap-3 justify-end pt-4 border-t">
             <button
               type="button"
-              @click="emit('cancel')"
+              @click="$emit('cancel')"
               class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition"
             >
               Cancel
             </button>
             <button
               type="button"
-              @click="emit('confirm')"
+              @click="$emit('confirm')"
               class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-medium transition"
             >
               Proceed Anyway

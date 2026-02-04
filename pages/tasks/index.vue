@@ -8,9 +8,22 @@ import { calculateDeadlineInfo } from "~/utils/deadlineHelpers";
 import AthleteSwitcher from "~/components/Parent/AthleteSwitcher.vue";
 import type { TaskWithStatus } from "~/types/timeline";
 
-const { user } = useAuth();
-const { linkedAthletes, isViewingAsParent, viewingAthleteId } =
-  useParentContext();
+const { session } = useAuth();
+const {
+  linkedAthletes: linkedAccountsList,
+  isViewingAsParent,
+  currentAthleteId,
+} = useParentContext();
+
+// Map LinkedAccount to LinkedAthlete format for AthleteSwitcher
+const linkedAthletes = computed(() =>
+  linkedAccountsList.value.map(
+    (account: (typeof linkedAccountsList.value)[0]) => ({
+      id: account.user_id,
+      name: account.full_name || account.email,
+    }),
+  ),
+);
 const {
   tasksWithStatus,
   loading,
@@ -39,7 +52,7 @@ const urgencyFilter = ref<"all" | "critical" | "urgent" | "upcoming">("all");
 
 // Load filters from localStorage
 const loadFilters = () => {
-  const athleteId = viewingAthleteId.value || user.value?.id;
+  const athleteId = currentAthleteId.value || session.value?.user?.id;
   if (!athleteId) return;
 
   const storageKey = `parent-task-filters-${athleteId}`;
@@ -57,7 +70,7 @@ const loadFilters = () => {
 
 // Save filters to localStorage
 const saveFilters = () => {
-  const athleteId = viewingAthleteId.value || user.value?.id;
+  const athleteId = currentAthleteId.value || session.value?.user?.id;
   if (!athleteId) return;
 
   const storageKey = `parent-task-filters-${athleteId}`;
@@ -207,7 +220,7 @@ onMounted(async () => {
   await fetchTasksWithStatus(currentGradeLevel.value);
 
   // Load seen locked tasks from localStorage
-  const athleteId = viewingAthleteId.value || user.value?.id;
+  const athleteId = currentAthleteId.value || session.value?.user?.id;
   if (athleteId) {
     const storageKey = `seen-locked-tasks-${athleteId}`;
     const stored = localStorage.getItem(storageKey);
@@ -229,7 +242,7 @@ onMounted(async () => {
     seenLockedTasks.value.add(firstUnseenLockedTask);
 
     // Save to localStorage
-    const athleteId = viewingAthleteId.value || user.value?.id;
+    const athleteId = currentAthleteId.value || session.value?.user?.id;
     if (athleteId) {
       const storageKey = `seen-locked-tasks-${athleteId}`;
       localStorage.setItem(
@@ -255,10 +268,7 @@ const onUrgencyFilterChange = () => {
     class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Parent Context Banner -->
-    <div
-      v-if="isViewingAsParent.value"
-      class="bg-blue-50 border-b-2 border-blue-200"
-    >
+    <div v-if="isViewingAsParent" class="bg-blue-50 border-b-2 border-blue-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3">
         <p class="text-sm text-blue-700 font-medium">
           👁 Viewing {{ athleteProfile?.full_name }}'s Tasks (Read-Only)
@@ -273,14 +283,14 @@ const onUrgencyFilterChange = () => {
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         <h1 class="text-3xl font-bold text-slate-900 mb-2">
           {{
-            isViewingAsParent.value
+            isViewingAsParent
               ? `${athleteProfile?.full_name}'s Tasks`
               : "My Tasks"
           }}
         </h1>
         <p class="text-slate-600">
           {{
-            isViewingAsParent.value
+            isViewingAsParent
               ? "Monitor task progress and upcoming deadlines"
               : "Track your recruiting tasks and progress"
           }}
@@ -290,12 +300,12 @@ const onUrgencyFilterChange = () => {
 
     <!-- Athlete Switcher (Parent view only) -->
     <div
-      v-if="isViewingAsParent.value && linkedAthletes.length > 0"
+      v-if="isViewingAsParent && linkedAthletes.length > 0"
       class="max-w-4xl mx-auto px-4 sm:px-6 pt-6"
     >
       <AthleteSwitcher
         :linked-athletes="linkedAthletes"
-        :current-athlete-id="viewingAthleteId || user?.id || ''"
+        :current-athlete-id="currentAthleteId || session?.user?.id || ''"
         @athlete-changed="handleAthleteChange"
       />
     </div>
@@ -307,9 +317,7 @@ const onUrgencyFilterChange = () => {
       >
         <div class="text-lg font-semibold text-slate-900 mb-3">
           {{
-            isViewingAsParent.value
-              ? `${athleteProfile?.full_name} has`
-              : `You've`
+            isViewingAsParent ? `${athleteProfile?.full_name} has` : `You've`
           }}
           completed {{ stats.completed }} of {{ stats.total }} tasks ({{
             Math.round(stats.percentComplete)
@@ -375,7 +383,7 @@ const onUrgencyFilterChange = () => {
 
       <!-- Success Message (Athlete only) -->
       <Transition
-        v-if="!isViewingAsParent.value"
+        v-if="!isViewingAsParent"
         enter-active-class="transition duration-300 ease-out"
         enter-from-class="transform opacity-0 translate-y-2"
         enter-to-class="transform opacity-100 translate-y-0"
@@ -437,7 +445,7 @@ const onUrgencyFilterChange = () => {
                 :data-testid="`task-checkbox-${task.id}`"
                 class="task-checkbox"
                 :checked="task.athlete_task?.status === 'completed'"
-                :disabled="isViewingAsParent.value || isTaskLocked(task.id)"
+                :disabled="isViewingAsParent || isTaskLocked(task.id)"
                 @change="
                   handleToggleTask(
                     task.id,
@@ -446,12 +454,12 @@ const onUrgencyFilterChange = () => {
                 "
                 :class="[
                   'mt-1 w-5 h-5 text-blue-600 rounded flex-shrink-0',
-                  isViewingAsParent.value || isTaskLocked(task.id)
+                  isViewingAsParent || isTaskLocked(task.id)
                     ? 'opacity-50 cursor-not-allowed'
                     : 'cursor-pointer',
                 ]"
                 :title="
-                  isViewingAsParent.value
+                  isViewingAsParent
                     ? 'Parents can view tasks but cannot mark them complete'
                     : isTaskLocked(task.id)
                       ? 'Complete prerequisites to unlock this task'

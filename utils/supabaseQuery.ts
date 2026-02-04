@@ -30,6 +30,7 @@ export interface QueryContext {
   /** Name of the composable or context making the query */
   context?: string;
   /** Additional metadata for debugging */
+
   metadata?: Record<string, unknown>;
   /** Whether to log the query */
   silent?: boolean;
@@ -52,6 +53,7 @@ export type SupabaseQueryBuilder = ReturnType<
  *     select: 'id, first_name, last_name, email',
  *     filters: { school_id: schoolId },
  *     order: { column: 'last_name', ascending: true }
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
  *   },
  *   { context: 'fetchCoaches' }
  * )
@@ -73,7 +75,11 @@ export async function querySelect<T>(
     // Apply filters
     if (options?.filters) {
       for (const [key, value] of Object.entries(options.filters)) {
-        query = query.eq(key, value);
+        if (value === null) {
+          query = query.is(key, null);
+        } else {
+          query = query.eq(key, value as string | number | boolean);
+        }
       }
     }
 
@@ -137,7 +143,11 @@ export async function querySingle<T>(
 
     // Apply filters
     for (const [key, value] of Object.entries(filters)) {
-      query = query.eq(key, value);
+      if (value === null) {
+        query = query.is(key, null);
+      } else {
+        query = query.eq(key, value as string | number | boolean);
+      }
     }
 
     const { data, error } = await query.single();
@@ -188,7 +198,11 @@ export async function queryInsert<T>(
     const supabase = useSupabase();
     const payload = Array.isArray(records) ? records : [records];
 
-    const { data, error } = await supabase.from(table).insert(payload).select();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = (await (supabase.from(table) as any)
+      .insert(payload as unknown as Record<string, unknown>[])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .select()) as { data: T[]; error: any };
 
     if (error) {
       throw new Error(`[${table}] ${error.message}`);
@@ -236,11 +250,16 @@ export async function queryUpdate<T>(
 ): Promise<QueryResult<T[]>> {
   try {
     const supabase = useSupabase();
-    let query = supabase.from(table).update(updates);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query = (supabase.from(table) as any).update(updates as unknown);
 
     // Apply filters
     for (const [key, value] of Object.entries(filters)) {
-      query = query.eq(key, value);
+      if (value === null) {
+        query = query.is(key, null);
+      } else {
+        query = query.eq(key, value as string | number | boolean);
+      }
     }
 
     const { data, error } = await query.select();
@@ -290,7 +309,11 @@ export async function queryDelete(
 
     // Apply filters
     for (const [key, value] of Object.entries(filters)) {
-      query = query.eq(key, value);
+      if (value === null) {
+        query = query.is(key, null);
+      } else {
+        query = query.eq(key, value as string | number | boolean);
+      }
     }
 
     const { error } = await query;

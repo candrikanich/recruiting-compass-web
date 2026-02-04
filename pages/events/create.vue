@@ -649,7 +649,7 @@ const saveNewSchool = async () => {
       twitter_handle: null,
       instagram_handle: null,
       notes: null,
-      status: "researching",
+      status: "interested",
       is_favorite: false,
       pros: [],
       cons: [],

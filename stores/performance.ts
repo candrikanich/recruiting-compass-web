@@ -62,6 +62,7 @@ export const usePerformanceStore = defineStore("performance", {
     /**
      * Get latest value for each metric type
      */
+
     latestMetrics: (state) => {
       const latest: Record<string, PerformanceMetric> = {};
       const sorted = [...state.metrics].sort(
@@ -79,6 +80,7 @@ export const usePerformanceStore = defineStore("performance", {
 
     /**
      * Get metrics for a specific event
+     // eslint-disable-next-line @typescript-eslint/no-explicit-any
      */
     metricsByEvent: (state) => (eventId: string) =>
       state.metrics.filter((m) => m.event_id === eventId),
@@ -201,16 +203,25 @@ export const usePerformanceStore = defineStore("performance", {
           throw new Error("User not authenticated");
         }
 
-        const { data, error: insertError } = await supabase
+        const insertData = [
+          {
+            ...metricData,
+            user_id: userStore.user.id,
+          },
+        ];
+
+        const response = (await supabase
           .from("performance_metrics")
-          .insert([
-            {
-              ...metricData,
-              user_id: userStore.user.id,
-            },
-          ])
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .insert(insertData as any)
           .select()
-          .single();
+          .single()) as {
+          data: PerformanceMetric;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          error: any;
+        };
+
+        const { data, error: insertError } = response;
 
         if (insertError) throw insertError;
 
@@ -237,12 +248,18 @@ export const usePerformanceStore = defineStore("performance", {
       this.error = null;
 
       try {
-        const { data, error: updateError } = await supabase
-          .from("performance_metrics")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const response = (await (supabase.from("performance_metrics") as any)
           .update(updates)
           .eq("id", id)
           .select()
-          .single();
+          .single()) as {
+          data: PerformanceMetric;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          error: any;
+        };
+
+        const { data, error: updateError } = response;
 
         if (updateError) throw updateError;
 

@@ -5,7 +5,7 @@
       @click="openModal"
       class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
     >
-      <HistoryIcon class="h-4 w-4" />
+      <ClockIcon class="h-4 w-4" />
       View Edit History
       <span v-if="!loading && history.length > 0" class="text-gray-500">
         ({{ history.length }})
@@ -24,7 +24,7 @@
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold text-gray-900">Profile Edit History</h2>
           <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
-            <XIcon class="h-6 w-6" />
+            <XMarkIcon class="h-6 w-6" />
           </button>
         </div>
 
@@ -122,7 +122,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { HistoryIcon, XIcon } from "@heroicons/vue/24/outline";
+import { ClockIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { useProfileEditHistory } from "~/composables/useProfileEditHistory";
 
 const { history, loading, error, fetchHistory } = useProfileEditHistory();

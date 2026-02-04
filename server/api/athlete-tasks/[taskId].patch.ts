@@ -3,7 +3,7 @@
  * Update athlete's task status
  */
 
-import { defineEventHandler, readBody } from "h3";
+import { defineEventHandler, readBody, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { logCRUD, logError } from "~/server/utils/auditLog";
@@ -19,6 +19,7 @@ interface UpdateTaskData {
   status: TaskStatus;
   updated_at: string;
   completed_at?: string;
+  [key: string]: unknown;
 }
 
 export default defineEventHandler(async (event) => {
@@ -53,6 +54,7 @@ export default defineEventHandler(async (event) => {
     if (!validStatuses.includes(body.status)) {
       throw createError({
         statusCode: 400,
+
         statusMessage: "Invalid status value",
       });
     }
@@ -162,7 +164,8 @@ export default defineEventHandler(async (event) => {
       // Update existing record
       const { data, error } = await supabase
         .from("athlete_task")
-        .update(updateData)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .update(updateData as any)
         .eq("id", existingData.id)
         .eq("athlete_id", user.id)
         .select()

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides a quick reference for implementing comprehensive unit and integration tests for school functionality in the Baseball Recruiting Tracker application.
+This document provides a quick reference for implementing comprehensive unit and integration tests for school functionality in The Recruiting Compass application.
 
 **Target Coverage:** 80% overall with 90%+ on critical paths
 **Status:** Phase 1 Complete - Ready for implementation

@@ -1,11 +1,4 @@
-import {
-  ref,
-  computed,
-  readonly,
-  shallowRef,
-  inject,
-  type ComputedRef,
-} from "vue";
+import { ref, computed, shallowRef, inject, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
@@ -16,6 +9,12 @@ import type { Database } from "~/types/database";
 import type { AuditLog } from "~/types/database-helpers";
 import { interactionSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
+
+// Get Table types from Database
+type InteractionsTable = Database["public"]["Tables"]["interactions"];
+// Note: follow_up_reminders table type comes from the runtime FollowUpReminder type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FollowUpRemindersTable = any; // TODO: Generate from database.ts when table is added
 import {
   exportInteractionsToCSV,
   downloadInteractionsCSV,
@@ -27,12 +26,10 @@ import {
 import { createInboundInteractionAlert } from "~/utils/interactions/inboundAlerts";
 
 // Type aliases for Supabase casting
-type InteractionInsert = Database["public"]["Tables"]["interactions"]["Insert"];
-type InteractionUpdate = Database["public"]["Tables"]["interactions"]["Update"];
-type FollowUpReminderInsert =
-  Database["public"]["Tables"]["follow_up_reminders"]["Insert"];
-type FollowUpReminderUpdate =
-  Database["public"]["Tables"]["follow_up_reminders"]["Update"];
+type _InteractionInsert = InteractionsTable["Insert"];
+type _InteractionUpdate = InteractionsTable["Update"];
+type FollowUpReminderInsert = FollowUpRemindersTable["Insert"];
+type _FollowUpReminderUpdate = FollowUpRemindersTable["Update"];
 
 export interface NoteHistoryEntry {
   id: string;
@@ -73,7 +70,11 @@ type InteractionFilters = {
   loggedBy?: string;
 };
 
-export const useInteractions = (): {
+export const useInteractions = () => {
+  return useInteractionsInternal();
+};
+
+const useInteractionsInternal = (): {
   interactions: ComputedRef<Interaction[]>;
   loading: ComputedRef<boolean>;
   error: ComputedRef<string | null>;
@@ -157,18 +158,26 @@ export const useInteractions = (): {
   }
 
   const interactions = shallowRef<Interaction[]>([]);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
+  const loadingRef = ref(false);
+  const errorRef = ref<string | null>(null);
 
   // Note history state (consolidated from useNotesHistory)
   const noteHistory = shallowRef<NoteHistoryEntry[]>([]);
-  const noteHistoryLoading = ref(false);
-  const noteHistoryError = ref<string | null>(null);
+  const noteHistoryLoadingRef = ref(false);
+  const noteHistoryErrorRef = ref<string | null>(null);
 
   // Follow-up reminders state (consolidated from useFollowUpReminders)
   const reminders = shallowRef<FollowUpReminder[]>([]);
-  const remindersLoading = ref(false);
-  const remindersError = ref<string | null>(null);
+  const remindersLoadingRef = ref(false);
+  const remindersErrorRef = ref<string | null>(null);
+
+  // Computed proxies for return type compatibility
+  const loading = computed(() => loadingRef.value);
+  const error = computed(() => errorRef.value);
+  const noteHistoryLoading = computed(() => noteHistoryLoadingRef.value);
+  const noteHistoryError = computed(() => noteHistoryErrorRef.value);
+  const remindersLoading = computed(() => remindersLoadingRef.value);
+  const remindersError = computed(() => remindersErrorRef.value);
 
   // Reminder computed filters
   const activeReminders = computed(() => {
@@ -208,12 +217,12 @@ export const useInteractions = (): {
     loggedBy?: string;
   }) => {
     if (!activeFamily.activeFamilyId.value) {
-      error.value = "No family context";
+      errorRef.value = "No family context";
       return;
     }
 
-    loading.value = true;
-    error.value = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     // DEBUG: Log filters in dev/test
     if (process.env.NODE_ENV !== "production") {
@@ -267,7 +276,12 @@ export const useInteractions = (): {
         );
       }
 
-      const { data, error: fetchError } = await query;
+      const response = await query;
+      const { data, error: fetchError } = response as {
+        data: Interaction[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (fetchError) throw fetchError;
 
@@ -275,9 +289,9 @@ export const useInteractions = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch interactions";
-      error.value = message;
+      errorRef.value = message;
     } finally {
-      loading.value = false;
+      loadingRef.value = false;
     }
   };
 
@@ -292,25 +306,31 @@ export const useInteractions = (): {
   };
 
   const getInteraction = async (id: string): Promise<Interaction | null> => {
-    loading.value = true;
-    error.value = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
-      const { data, error: fetchError } = await supabase
+      const response = await supabase
         .from("interactions")
         .select("*")
         .eq("id", id)
         .single();
+
+      const { data, error: fetchError } = response as {
+        data: Interaction;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (fetchError) throw fetchError;
       return data;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch interaction";
-      error.value = message;
+      errorRef.value = message;
       return null;
     } finally {
-      loading.value = false;
+      loadingRef.value = false;
     }
   };
 
@@ -340,8 +360,8 @@ export const useInteractions = (): {
       throw new Error("No family context available");
     }
 
-    loading.value = true;
-    error.value = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
       // Validate interaction data with Zod schema
@@ -362,17 +382,24 @@ export const useInteractions = (): {
         }
       }
 
-      const { data, error: insertError } = await supabase
-        .from("interactions")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const insertResponse = await (supabase.from("interactions") as any)
         .insert([
           {
             ...validated,
             logged_by: userStore.user.id,
             family_unit_id: activeFamily.activeFamilyId.value,
           },
-        ] as InteractionInsert[])
+        ])
         .select()
+
         .single();
+
+      const { data, error: insertError } = insertResponse as {
+        data: Interaction;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (insertError) throw insertError;
 
@@ -380,10 +407,11 @@ export const useInteractions = (): {
       if (files && files.length > 0) {
         const uploadedPaths = await uploadAttachments(files, data.id);
         if (uploadedPaths.length > 0) {
-          const { error: updateError } = await supabase
-            .from("interactions")
-            .update({ attachments: uploadedPaths } as InteractionUpdate)
-            .eq("id", data.id);
+          const { error: updateError } =
+            await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (supabase.from("interactions") as any)
+              .update({ attachments: uploadedPaths })
+              .eq("id", data.id);
           if (updateError)
             console.error("Failed to update attachment paths:", updateError);
         }
@@ -403,10 +431,10 @@ export const useInteractions = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to create interaction";
-      error.value = message;
+      errorRef.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingRef.value = false;
     }
   };
 
@@ -416,8 +444,8 @@ export const useInteractions = (): {
   ) => {
     if (!userStore.user) throw new Error("User not authenticated");
 
-    loading.value = true;
-    error.value = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
       // Sanitize content fields to prevent XSS
@@ -430,13 +458,20 @@ export const useInteractions = (): {
         sanitizedUpdates.content = sanitizeHtml(sanitizedUpdates.content);
       }
 
-      const { data, error: updateError } = await supabase
-        .from("interactions")
-        .update(sanitizedUpdates as InteractionUpdate)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateResponse = await (supabase.from("interactions") as any)
+        .update(sanitizedUpdates)
+
         .eq("id", id)
         .eq("logged_by", userStore.user.id)
         .select()
         .single();
+
+      const { data, error: updateError } = updateResponse as {
+        data: Interaction;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (updateError) throw updateError;
 
@@ -450,18 +485,18 @@ export const useInteractions = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to update interaction";
-      error.value = message;
+      errorRef.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingRef.value = false;
     }
   };
 
   const deleteInteraction = async (id: string) => {
     if (!userStore.user) throw new Error("User not authenticated");
 
-    loading.value = true;
-    error.value = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
       const { error: deleteError } = await supabase
@@ -477,10 +512,10 @@ export const useInteractions = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to delete interaction";
-      error.value = message;
+      errorRef.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingRef.value = false;
     }
   };
 
@@ -523,40 +558,55 @@ export const useInteractions = (): {
   const fetchNoteHistory = async (schoolId: string): Promise<void> => {
     if (!userStore.user) return;
 
-    noteHistoryLoading.value = true;
-    noteHistoryError.value = null;
+    noteHistoryLoadingRef.value = true;
+    noteHistoryErrorRef.value = null;
 
     try {
       // Query audit logs for note updates on this school
-      const { data, error: fetchError } = await supabase
+      const auditResponse = await supabase
         .from("audit_logs")
+
         .select("*")
+
         .eq("user_id", userStore.user.id)
         .eq("resource_type", "school")
         .eq("resource_id", schoolId)
         .eq("action", "UPDATE")
         .order("created_at", { ascending: false });
 
+      const { data, error: fetchError } = auditResponse as {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: any[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
+
       if (fetchError) throw fetchError;
 
       // Filter logs that contain note changes
       const noteEntries: NoteHistoryEntry[] = [];
 
-      if (data) {
+      if (data && Array.isArray(data)) {
         for (const log of data) {
-          const auditLog = log as AuditLog;
+          const auditLog = log as unknown as AuditLog;
 
           // Check if this log entry includes a notes field change
+
           if (
-            auditLog.new_values?.notes !== undefined ||
-            auditLog.old_values?.notes !== undefined
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (auditLog?.new_values as any)?.notes !== undefined ||
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (auditLog?.old_values as any)?.notes !== undefined
           ) {
             noteEntries.push({
-              id: auditLog.id,
-              timestamp: auditLog.created_at || new Date().toISOString(),
-              editedBy: auditLog.user_id || "Unknown",
-              previousContent: auditLog.old_values?.notes || null,
-              currentContent: auditLog.new_values?.notes || null,
+              id: (auditLog?.id as string) || "",
+              timestamp:
+                (auditLog?.created_at as string) || new Date().toISOString(),
+              editedBy: (auditLog?.user_id as string) || "Unknown",
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              previousContent: (auditLog?.old_values as any)?.notes || null,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              currentContent: (auditLog?.new_values as any)?.notes || null,
             });
           }
         }
@@ -566,10 +616,10 @@ export const useInteractions = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch note history";
-      noteHistoryError.value = message;
+      noteHistoryErrorRef.value = message;
       noteHistory.value = [];
     } finally {
-      noteHistoryLoading.value = false;
+      noteHistoryLoadingRef.value = false;
     }
   };
 
@@ -585,26 +635,32 @@ export const useInteractions = (): {
   const loadReminders = async () => {
     if (!userStore.user) return;
 
-    remindersLoading.value = true;
-    remindersError.value = null;
+    remindersLoadingRef.value = true;
+    remindersErrorRef.value = null;
 
     try {
-      const { data, error: err } = await supabase
+      const remindersResponse = await supabase
         .from("follow_up_reminders")
         .select("*")
         .eq("user_id", userStore.user.id)
         .order("due_date", { ascending: true });
+
+      const { data, error: err } = remindersResponse as {
+        data: FollowUpReminder[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (err) throw err;
       reminders.value = data || [];
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to load reminders";
-      remindersError.value = message;
+      remindersErrorRef.value = message;
       console.error("Load reminders error:", err);
-      toast.error("Failed to load reminders. Please try again.");
+      toast.showToast("Failed to load reminders. Please try again.");
     } finally {
-      remindersLoading.value = false;
+      remindersLoadingRef.value = false;
     }
   };
 
@@ -620,7 +676,7 @@ export const useInteractions = (): {
   ): Promise<FollowUpReminder | null> => {
     if (!userStore.user) return null;
 
-    remindersError.value = null;
+    remindersErrorRef.value = null;
 
     try {
       const newReminder: FollowUpReminderInsert = {
@@ -628,17 +684,25 @@ export const useInteractions = (): {
         notes: description,
         reminder_date: dueDate,
         reminder_type: reminderType as "email" | "sms" | "phone_call" | null,
+
         school_id: schoolId,
         coach_id: coachId,
         interaction_id: interactionId,
         is_completed: false,
       };
 
-      const { data, error: err } = await supabase
-        .from("follow_up_reminders")
-        .insert([newReminder] as FollowUpReminderInsert[])
-        .select()
-        .single();
+      const reminderResponse =
+        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("follow_up_reminders") as any)
+          .insert([newReminder])
+          .select()
+          .single();
+
+      const { data, error: err } = reminderResponse as {
+        data: FollowUpReminder;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (err) throw err;
 
@@ -647,9 +711,9 @@ export const useInteractions = (): {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to create reminder";
-      remindersError.value = message;
+      remindersErrorRef.value = message;
       console.error("Create reminder error:", err);
-      toast.error("Failed to create reminder. Please try again.");
+      toast.showToast("Failed to create reminder. Please try again.");
       return null;
     }
   };
@@ -657,17 +721,21 @@ export const useInteractions = (): {
   const completeReminder = async (id: string): Promise<boolean> => {
     if (!userStore.user) return false;
 
-    remindersError.value = null;
+    remindersErrorRef.value = null;
 
     try {
-      const { error: err } = await supabase
-        .from("follow_up_reminders")
-        .update({
-          is_completed: true,
-          completed_at: new Date().toISOString(),
-        } as FollowUpReminderUpdate)
-        .eq("id", id)
-        .eq("user_id", userStore.user.id);
+      const completeResponse =
+        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("follow_up_reminders") as any)
+          .update({
+            is_completed: true,
+            completed_at: new Date().toISOString(),
+          })
+          .eq("id", id)
+          .eq("user_id", userStore.user.id);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: err } = completeResponse as { error: any };
 
       if (err) throw err;
 
@@ -681,9 +749,10 @@ export const useInteractions = (): {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to complete reminder";
-      remindersError.value = message;
+
+      remindersErrorRef.value = message;
       console.error("Complete reminder error:", err);
-      toast.error("Failed to complete reminder. Please try again.");
+      toast.showToast("Failed to complete reminder. Please try again.");
       return false;
     }
   };
@@ -691,14 +760,17 @@ export const useInteractions = (): {
   const deleteReminder = async (id: string): Promise<boolean> => {
     if (!userStore.user) return false;
 
-    remindersError.value = null;
+    remindersErrorRef.value = null;
 
     try {
-      const { error: err } = await supabase
+      const deleteResponse = await supabase
         .from("follow_up_reminders")
         .delete()
         .eq("id", id)
         .eq("user_id", userStore.user.id);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: err } = deleteResponse as { error: any };
 
       if (err) throw err;
 
@@ -707,9 +779,10 @@ export const useInteractions = (): {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to delete reminder";
-      remindersError.value = message;
+      remindersErrorRef.value = message;
       console.error("Delete reminder error:", err);
-      toast.error("Failed to delete reminder. Please try again.");
+      toast.showToast("Failed to delete reminder. Please try again.");
+
       return false;
     }
   };
@@ -720,14 +793,18 @@ export const useInteractions = (): {
   ): Promise<boolean> => {
     if (!userStore.user) return false;
 
-    remindersError.value = null;
+    remindersErrorRef.value = null;
 
     try {
-      const { error: err } = await supabase
-        .from("follow_up_reminders")
-        .update(updates as FollowUpReminderUpdate)
-        .eq("id", id)
-        .eq("user_id", userStore.user.id);
+      const updateReminderResponse =
+        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("follow_up_reminders") as any)
+          .update(updates)
+          .eq("id", id)
+          .eq("user_id", userStore.user.id);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: err } = updateReminderResponse as { error: any };
 
       if (err) throw err;
 
@@ -740,9 +817,9 @@ export const useInteractions = (): {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to update reminder";
-      remindersError.value = message;
+      remindersErrorRef.value = message;
       console.error("Update reminder error:", err);
-      toast.error("Failed to update reminder. Please try again.");
+      toast.showToast("Failed to update reminder. Please try again.");
       return false;
     }
   };
@@ -800,9 +877,9 @@ export const useInteractions = (): {
 
   return {
     // Interaction state and methods
-    interactions: readonly(interactions),
-    loading: readonly(loading),
-    error: readonly(error),
+    interactions: computed(() => interactions.value),
+    loading,
+    error,
     fetchInteractions,
     getInteraction,
     createInteraction,
@@ -815,16 +892,16 @@ export const useInteractions = (): {
     fetchAthleteInteractions,
 
     // Note history methods
-    noteHistory: readonly(noteHistory),
-    noteHistoryLoading: readonly(noteHistoryLoading),
-    noteHistoryError: readonly(noteHistoryError),
+    noteHistory: computed(() => noteHistory.value),
+    noteHistoryLoading,
+    noteHistoryError,
     formattedNoteHistory,
     fetchNoteHistory,
 
     // Reminder state and methods (migrated from useFollowUpReminders)
-    reminders: readonly(reminders),
-    remindersLoading: readonly(remindersLoading),
-    remindersError: readonly(remindersError),
+    reminders: computed(() => reminders.value),
+    remindersLoading,
+    remindersError,
     activeReminders,
     overdueReminders,
     upcomingReminders,

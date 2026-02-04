@@ -3,9 +3,10 @@
  * POST /api/recruiting-packet/email
  */
 
-import { defineEventHandler, readBody, getHeader } from "h3";
+import { defineEventHandler, readBody } from "h3";
 import { z } from "zod";
 import { Resend } from "resend";
+import { requireAuth } from "~/server/utils/auth";
 
 // Email validation schema
 const emailPacketSchema = z.object({
@@ -104,14 +105,9 @@ const formatEmailHtml = (
 };
 
 export default defineEventHandler(async (event) => {
-  // Get user ID from auth header
-  const userId = getHeader(event, "x-user-id") || "";
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: "Unauthorized",
-    });
-  }
+  // Authenticate user and get verified user ID
+  const user = await requireAuth(event);
+  const userId = user.id;
 
   // Parse and validate request body
   let body: EmailPacketRequest;
@@ -120,9 +116,11 @@ export default defineEventHandler(async (event) => {
     body = emailPacketSchema.parse(rawBody);
   } catch (err) {
     if (err instanceof z.ZodError) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errors = (err as any).errors as Array<{ message: string }>;
       throw createError({
         statusCode: 400,
-        statusMessage: `Validation error: ${err.errors[0].message}`,
+        statusMessage: `Validation error: ${errors[0]?.message}`,
       });
     }
     throw createError({

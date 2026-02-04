@@ -438,7 +438,7 @@
                       {{ formatDirection(interaction.direction) }}
                     </span>
                     <LoggedByBadge
-                      v-if="userStore.user"
+                      v-if="userStore.user && interaction.logged_by"
                       :loggedByUserId="interaction.logged_by"
                       :currentUserId="userStore.user.id"
                     />
@@ -522,6 +522,7 @@ import { useInteractions } from "~/composables/useInteractions";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useFamilyContext } from "~/composables/useFamilyContext";
+import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
 import Header from "~/components/Header.vue";
@@ -558,7 +559,8 @@ definePageMeta({
 const userStore = useUserStore();
 const supabase = useSupabase();
 // Inject family context provided at app.vue level (with singleton fallback)
-const activeFamily = inject("activeFamily") || useFamilyContext();
+const activeFamily = (inject<UseActiveFamilyReturn>("activeFamily") ||
+  useFamilyContext()) as UseActiveFamilyReturn;
 const { activeFamilyId } = activeFamily;
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { schools: schoolsData, fetchSchools } = useSchools();
@@ -839,10 +841,13 @@ onMounted(async () => {
 
     // Load linked athletes if parent
     if (userStore.isParent) {
-      const { data: accountLinks, error: linksError } = await supabase
+      const { data: accountLinks, error: linksError } = (await supabase
         .from("account_links")
         .select("player_user_id")
-        .eq("parent_user_id", userStore.user.id);
+        .eq("parent_user_id", userStore.user.id)) as {
+        data: Array<{ player_user_id: string | null }> | null;
+        error: any;
+      };
 
       if (!linksError && accountLinks && accountLinks.length > 0) {
         const athleteIds = accountLinks

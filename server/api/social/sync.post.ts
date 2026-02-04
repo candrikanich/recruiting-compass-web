@@ -170,7 +170,10 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
               post.author_handle,
             );
             const coach = findEntityByHandle(
-              coaches as Array<{ id: string; twitter_handle?: string }>,
+              (coaches as unknown as Array<{
+                id: string;
+                twitter_handle?: string;
+              }>) || [],
               "twitter_handle",
               post.author_handle,
             );
@@ -232,7 +235,10 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
               post.author_handle,
             );
             const coach = findEntityByHandle(
-              coaches as Array<{ id: string; instagram_handle?: string }>,
+              (coaches as unknown as Array<{
+                id: string;
+                instagram_handle?: string;
+              }>) || [],
               "instagram_handle",
               post.author_handle,
             );

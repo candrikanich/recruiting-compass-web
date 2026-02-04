@@ -41,7 +41,7 @@ export const useSearch = () => {
    * Override performSearch to integrate filters
    */
   const performSearch = async (searchQuery: string) => {
-    await entitySearch.performSearch(searchQuery, filterMgmt.filters);
+    await entitySearch.performSearch(searchQuery, filterMgmt.filters.value);
   };
 
   /**
@@ -60,7 +60,7 @@ export const useSearch = () => {
   const applyFilter = async (
     category: string,
     filterName: string,
-    value: unknown,
+    value: string | number | boolean | null,
   ) => {
     filterMgmt.applyFilter(category, filterName, value);
     if (entitySearch.query.value) {

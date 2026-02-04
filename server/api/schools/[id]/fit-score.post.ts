@@ -87,6 +87,7 @@ export default defineEventHandler(async (event) => {
   ) {
     throw createError({
       statusCode: 400,
+
       statusMessage: "personalFit must be a number between 0 and 15",
     });
   }
@@ -95,6 +96,7 @@ export default defineEventHandler(async (event) => {
     // Verify school ownership
     const { data: school, error: schoolError } = await supabase
       .from("schools")
+
       .select("id, user_id")
       .eq("id", schoolId)
       .eq("user_id", user.id)
@@ -112,17 +114,23 @@ export default defineEventHandler(async (event) => {
 
     // Update school with fit score data
     // Supabase type generation doesn't include custom columns - need to bypass type check
-    const updateResult = await supabase
+    const updateResult = (await supabase
       .from("schools")
-      // @ts-expect-error - custom columns (fit_score, fit_score_data) not in Supabase types
       .update({
         fit_score: fitScoreResult.score,
-        fit_score_data: fitScoreResult.breakdown,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        fit_score_data: fitScoreResult.breakdown as any,
         updated_at: new Date().toISOString(),
-      })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any)
       .eq("id", schoolId)
       .select()
-      .single();
+      .single()) as {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any;
+    };
 
     const { data: updated, error: updateError } = updateResult;
 
@@ -130,7 +138,8 @@ export default defineEventHandler(async (event) => {
       throw updateError;
     }
 
-    const updatedRecord = updated as unknown as {
+    const updatedRecord = updated as {
+      id: string;
       fit_score: number;
       fit_score_data: unknown;
       updated_at: string;
@@ -152,7 +161,7 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       data: {
-        schoolId: updatedRecord?.id,
+        schoolId: updatedRecord.id,
         fitScore: fitScoreResult,
         school: updated,
       },

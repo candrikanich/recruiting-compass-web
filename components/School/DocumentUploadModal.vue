@@ -161,7 +161,11 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from "vue";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
+import { useDocumentSharing } from "~/composables/useDocumentSharing";
 import { useFormValidation } from "~/composables/useFormValidation";
+import type { Database } from "~/types/database";
+
+type DocumentType = Database["public"]["Enums"]["document_type"];
 
 interface Props {
   schoolId: string;
@@ -178,8 +182,8 @@ const {
   uploadProgress,
   uploadError: docUploadError,
   isUploading,
-  shareDocument,
 } = useDocumentsConsolidated();
+const { shareDocument } = useDocumentSharing();
 const { validateFile } = useFormValidation();
 
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -220,7 +224,7 @@ const handleFileSelect = (event: Event) => {
     const file = target.files[0];
 
     try {
-      validateFile(file, form.type as any);
+      validateFile(file, form.type as DocumentType);
       selectedFile.value = file;
       selectedFileName.value = file.name;
     } catch (err) {
@@ -244,7 +248,7 @@ const handleUpload = async () => {
     );
 
     if (result.success && result.data) {
-      // Share document with school by adding school ID to shared_with_schools
+      // Share document with school (append to shared_with_schools on document)
       const updatedSharedSchools = [
         ...(result.data.shared_with_schools || []),
         props.schoolId,

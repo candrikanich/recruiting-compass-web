@@ -111,7 +111,10 @@ const communicationType = computed(
   () => communicationComposable.communicationType.value,
 );
 
-const openCommunication = (coach: Coach, type: string) => {
+const openCommunication = (
+  coach: Coach,
+  type: "email" | "text" | "twitter",
+) => {
   communicationComposable.openCommunication(coach, type);
 };
 

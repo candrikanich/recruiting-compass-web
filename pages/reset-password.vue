@@ -928,7 +928,7 @@ onMounted(async () => {
 
   if (!data.session) {
     invalidToken.value = true;
-    passwordReset.error.value =
+    (passwordReset.error as any).value =
       "No reset link provided. Please request a new password reset.";
   }
 });

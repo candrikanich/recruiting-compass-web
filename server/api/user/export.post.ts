@@ -1,3 +1,5 @@
+import { defineEventHandler, createError, type H3Event } from "h3";
+import { requireAuth } from "~/server/utils/auth";
 import { createExportDownloadUrl } from "~/server/utils/exportUser";
 import { auditLog, logError } from "~/server/utils/auditLog";
 import { logger } from "~/server/utils/logger";
@@ -165,9 +167,7 @@ async function setExportCache(
   }, ttl * 1000);
 }
 
-async function tryGetUserId(event: {
-  context?: { user?: { id: string } };
-}): Promise<string | null> {
+async function tryGetUserId(event: H3Event): Promise<string | null> {
   try {
     const user = await requireAuth(event);
     return user.id;

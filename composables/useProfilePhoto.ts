@@ -80,12 +80,14 @@ export const useProfilePhoto = (): {
 
       // Update database
       uploadProgress.value = 90;
-      const { error: updateError } = await supabase
-        .from("users")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateResponse = (await (supabase.from("users") as any)
         .update({ profile_photo_url: publicUrl })
         .eq("id", userId)
         .select()
-        .single();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .single()) as { error: any };
+      const { error: updateError } = updateResponse;
 
       if (updateError) {
         throw updateError;
@@ -147,12 +149,14 @@ export const useProfilePhoto = (): {
       }
 
       // Clear from database
-      const { error: updateError } = await supabase
-        .from("users")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const deleteUpdateResponse = (await (supabase.from("users") as any)
         .update({ profile_photo_url: null })
         .eq("id", userId)
         .select()
-        .single();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .single()) as { error: any };
+      const { error: updateError } = deleteUpdateResponse;
 
       if (updateError) {
         throw updateError;

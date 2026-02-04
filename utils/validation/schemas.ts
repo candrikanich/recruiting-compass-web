@@ -41,7 +41,8 @@ export const signupSchema = z
     email: emailSchema,
     password: strongPasswordSchema,
     confirmPassword: z.string(),
-    role: z.enum(["parent", "student"]),
+    role: z.enum(["parent", "student", "player"]),
+    familyCode: z.string().optional().default(""),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",

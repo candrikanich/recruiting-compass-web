@@ -31,30 +31,59 @@ export default defineEventHandler(async (event) => {
   const athleteId = user.id;
 
   try {
-    const [
-      athlete,
-      schools,
-      interactions,
-      tasks,
-      athleteTasks,
-      videos,
-      events,
-    ] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", athleteId).single(),
-      supabase.from("schools").select("*").eq("athlete_id", athleteId),
-      supabase.from("interactions").select("*").eq("athlete_id", athleteId),
-      supabase.from("task").select("*"),
-      supabase.from("athlete_task").select("*").eq("athlete_id", athleteId),
-      supabase.from("videos").select("*").eq("athlete_id", athleteId),
-      supabase.from("events").select("*").eq("athlete_id", athleteId),
-    ]);
+    // Minimal column selects for rule context (no rule uses context.tasks)
+    const profilesSelect = "id, grade_level";
+    const schoolsSelect =
+      "id, name, division, status, priority, priority_tier, fit_score";
+    const interactionsSelect =
+      "id, school_id, interaction_date, related_event_id";
+    const athleteTasksSelect = "task_id, status";
+    const videosSelect = "id, health_status, title";
+    const eventsSelect = "id, name, event_date, school_id, attended";
+
+    const [athlete, schools, interactions, athleteTasks, videos, events] =
+      await Promise.all([
+        supabase
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .from("profiles" as any)
+          .select(profilesSelect)
+          .eq("id", athleteId)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single() as any,
+        supabase
+          .from("schools")
+          .select(schoolsSelect)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .eq("athlete_id", athleteId) as any,
+        supabase
+          .from("interactions")
+          .select(interactionsSelect)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .eq("athlete_id", athleteId) as any,
+        supabase
+          .from("athlete_task")
+          .select(athleteTasksSelect)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .eq("athlete_id", athleteId) as any,
+        supabase
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .from("videos" as any)
+          .select(videosSelect)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .eq("athlete_id", athleteId) as any,
+        supabase
+          .from("events")
+          .select(eventsSelect)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .eq("athlete_id", athleteId) as any,
+      ]);
 
     const context: RuleContext = {
       athleteId,
       athlete: athlete.data,
       schools: schools.data || [],
       interactions: interactions.data || [],
-      tasks: tasks.data || [],
+      tasks: [], // No rule uses context.tasks; avoid fetching entire task table
       athleteTasks: athleteTasks.data || [],
       videos: videos.data || [],
       events: events.data || [],

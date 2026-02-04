@@ -6,9 +6,9 @@
  * The app.vue provider should always take precedence.
  * If this is being created, it indicates an injection issue that should be debugged.
  */
-import { useActiveFamily } from "./useActiveFamily";
+import { useActiveFamily, type UseActiveFamilyReturn } from "./useActiveFamily";
 
-let familyContextInstance: ReturnType<typeof useActiveFamily> | null = null;
+let familyContextInstance: UseActiveFamilyReturn | null = null;
 
 /**
  * Get or create the shared family context instance

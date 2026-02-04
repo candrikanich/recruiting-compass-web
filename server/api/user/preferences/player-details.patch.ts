@@ -68,21 +68,32 @@ export default defineEventHandler(async (event) => {
     // Validate request body using existing schema
     const validationResult = playerDetailsSchema.safeParse(body);
     if (!validationResult.success) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errors = (validationResult.error as any).errors as Array<{
+        message: string;
+      }>;
       throw createError({
         statusCode: 400,
         statusMessage: "Invalid player details",
-        data: validationResult.error.errors,
+        data: errors,
       });
     }
 
     const validatedDetails = validationResult.data as PlayerDetails;
 
     // Fetch current preferences
-    const { data: currentPrefs, error: fetchError } = await supabase
+    const response = await supabase
       .from("user_preferences")
-      .select("player_details, preference_history")
+      .select("data")
       .eq("user_id", user.id)
+      .eq("category", "player_details")
       .single();
+
+    const { data: currentPrefs, error: fetchError } = response as {
+      data: { data: unknown } | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any;
+    };
 
     if (fetchError && fetchError.code !== "PGRST116") {
       // PGRST116 means no rows found, which is acceptable
@@ -103,7 +114,8 @@ export default defineEventHandler(async (event) => {
 
     // Compare old and new details to create history entry
     const changes = compareFields(
-      currentPrefs?.player_details,
+      currentPrefs?.data as PlayerDetails | undefined,
+
       validatedDetails,
     );
 
@@ -113,33 +125,46 @@ export default defineEventHandler(async (event) => {
         ? {
             timestamp: new Date().toISOString(),
             changed_by: user.id,
+
             changes,
           }
         : null;
 
-    // Update history - keep last 50 entries
-    const currentHistory = currentPrefs?.preference_history || [];
-    const newHistory =
-      historyEntry !== null
-        ? [...currentHistory.slice(-49), historyEntry]
-        : currentHistory;
-
     // Update preferences with player details and history
-    const { data: updatedPrefs, error: updateError } = await supabase
+    const updateResponse = await supabase
       .from("user_preferences")
       .update({
-        player_details: validatedDetails,
-        preference_history: newHistory,
+        data:
+          historyEntry !== null
+            ? ({
+                ...validatedDetails,
+                _history: [
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  ...((currentPrefs?.data as any)?._history || []),
+                ].slice(-49),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              } as any)
+            : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (validatedDetails as any),
         updated_at: new Date().toISOString(),
-      })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any)
       .eq("user_id", user.id)
+      .eq("category", "player_details")
       .select()
       .single();
+
+    const { data: updatedPrefs, error: updateError } = updateResponse as {
+      data: { data: unknown } | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any;
+    };
 
     if (updateError) {
       await logError(event, {
         userId: user.id,
         action: "UPDATE",
+
         resourceType: "user_preferences",
         resourceId: user.id,
         errorMessage: updateError.message,
@@ -154,10 +179,12 @@ export default defineEventHandler(async (event) => {
     }
 
     // Log successful update with changes
+
     await logCRUD(event, {
       userId: user.id,
       action: "UPDATE",
       resourceType: "user_preferences",
+
       resourceId: user.id,
       newValues: {
         player_details: validatedDetails,
@@ -192,7 +219,7 @@ export default defineEventHandler(async (event) => {
     }
 
     return {
-      player_details: updatedPrefs.player_details,
+      player_details: updatedPrefs?.data,
       changes_made: changes.length,
       timestamp: new Date().toISOString(),
     };

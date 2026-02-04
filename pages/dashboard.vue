@@ -27,7 +27,8 @@
             <strong
               >{{
                 activeFamily.parentAccessibleFamilies.value.find(
-                  (f) => f.athleteId === activeFamily.activeAthleteId.value,
+                  (f: { athleteId: string }) =>
+                    f.athleteId === activeFamily.activeAthleteId.value,
                 )?.athleteName || "this athlete"
               }}'s</strong
             >
@@ -53,7 +54,8 @@
         :is-viewing-as-parent="activeFamily.isViewingAsParent.value || false"
         :athlete-name="
           activeFamily.parentAccessibleFamilies.value.find(
-            (f) => f.athleteId === activeFamily.activeAthleteId.value,
+            (f: { athleteId: string }) =>
+              f.athleteId === activeFamily.activeAthleteId.value,
           )?.athleteName
         "
         @dismiss="handleSuggestionDismiss"
@@ -201,6 +203,7 @@ import type {
   Notification,
   PerformanceMetric,
 } from "~/types/models";
+import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 definePageMeta({
   middleware: ["auth", "onboarding"],
@@ -218,7 +221,8 @@ const documentsComposable = useDocumentsConsolidated();
 const userTasksComposable = useUserTasks();
 const suggestionsComposable = useSuggestions();
 // Inject family context provided at app.vue level (with singleton fallback)
-const activeFamily = inject("activeFamily") || useFamilyContext();
+const activeFamily =
+  inject<UseActiveFamilyReturn>("activeFamily") || useFamilyContext();
 const viewLoggingComposable = useViewLogging();
 const recruitingPacketComposable = useRecruitingPacket();
 
@@ -412,7 +416,7 @@ const fetchCounts = async () => {
     } = await supabase
       .from("interactions")
       .select("*", { count: "exact" })
-      .eq("logged_by", targetUserId.value);
+      .eq("logged_by", targetUserId.value || "");
 
     if (!interactionsError && interactionsData) {
       allInteractions.value = interactionsData;
@@ -424,7 +428,7 @@ const fetchCounts = async () => {
       const { data: offersData, error: offersError } = await supabase
         .from("offers")
         .select("*")
-        .eq("user_id", targetUserId.value);
+        .eq("user_id", targetUserId.value || "");
 
       if (!offersError && offersData) {
         allOffers.value = offersData;
@@ -438,7 +442,7 @@ const fetchCounts = async () => {
       const { data: eventsData, error: eventsError } = await supabase
         .from("events")
         .select("*")
-        .eq("user_id", targetUserId.value);
+        .eq("user_id", targetUserId.value || "");
 
       if (!eventsError && eventsData) {
         allEvents.value = eventsData;
@@ -452,7 +456,7 @@ const fetchCounts = async () => {
       const { data: metricsData, error: metricsError } = await supabase
         .from("performance_metrics")
         .select("*")
-        .eq("user_id", targetUserId.value);
+        .eq("user_id", targetUserId.value || "");
 
       if (!metricsError && metricsData) {
         allMetrics.value = metricsData;

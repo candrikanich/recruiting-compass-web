@@ -42,8 +42,12 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Initialize services
-    const twitterService = new TwitterService(config.twitterBearerToken);
-    const instagramService = new InstagramService(config.instagramAccessToken);
+    const twitterService = new TwitterService(
+      config.twitterBearerToken as string,
+    );
+    const instagramService = new InstagramService(
+      config.instagramAccessToken as string,
+    );
 
     // Get all users
     const { data: users, error: usersError } = await supabase

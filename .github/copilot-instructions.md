@@ -1,6 +1,6 @@
 # Copilot Instructions for Recruiting Compass
 
-**Project**: Baseball Recruiting Tracker | Nuxt 3 + Vue 3 + Supabase + TypeScript
+**Project**: The Recruiting Compass | Nuxt 3 + Vue 3 + Supabase + TypeScript
 
 ## Quick Start Commands
 
@@ -765,10 +765,11 @@ NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY=your_key
 
 ## Deployment
 
-- **Target**: Netlify (from `main` branch)
-- **Build**: `npm run build` (SSG to `.nuxt/dist`)
-- **Post-build**: `scripts/create-index.js` generates file index
-- **Environment**: Set secrets in Netlify UI (not `.env.local`)
+- **Target**: Vercel (from `main` branch)
+- **Build**: `npm run build`
+- **Framework**: Nuxt 3 (auto-detected)
+- **Nitro preset**: vercel (serverless functions for API routes)
+- **Environment**: Set secrets in Vercel project dashboard
 
 ## Large Codebase Notes
 

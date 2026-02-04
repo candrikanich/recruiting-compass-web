@@ -18,6 +18,7 @@ export type FilterValue =
   | Date
   | [number, number]
   | [Date, Date]
+  | { min?: number; max?: number }
   | (string | number | boolean)[]
   | null
   | undefined;

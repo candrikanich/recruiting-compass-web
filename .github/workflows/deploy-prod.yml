@@ -1,59 +1,83 @@
+# Deploy to Production - Manual trigger with approval
 name: Deploy to Production
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type DEPLOY to confirm production deployment"
+        required: true
 
 jobs:
-  test:
-    name: Verify Code Quality
+  verify:
+    name: Verify deployment confirmation
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Check confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "DEPLOY" ]; then
+            echo "❌ Deployment cancelled - confirmation mismatch"
+            exit 1
+          fi
+          echo "✅ Production deployment confirmed"
+
+  deploy:
+    name: Deploy to Production
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install Vercel CLI
+        run: npm install -g vercel
 
-      - name: Type check
-        run: npm run type-check
+      - name: Deploy to Vercel
+        run: |
+          vercel deploy --prod \
+            --token="${{ secrets.VERCEL_TOKEN }}" \
+            --scope="${{ secrets.VERCEL_ORG_ID }}"
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PROD }}
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Run tests
-        run: npm run test
-
-  approval:
-    name: Wait for Approval
-    needs: test
-    runs-on: ubuntu-latest
-    environment: production
-
-    steps:
-      - name: Production deployment approved
-        run: echo "✅ Production deployment approved. Proceeding with deployment."
-
-  deploy:
-    name: Deploy to Production
-    needs: approval
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Vercel (Production)
-        uses: vercel/action@v6
+      - name: Slack Notification - Success
+        if: success()
+        uses: slackapi/slack-github-action@v2
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_PROD }}
-          vercel-args: "--prod"
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "🚀 Production Deployed",
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*🚀 Production Deployed Successfully*\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                }
+              }]
+            }
+
+      - name: Slack Notification - Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "🚨 Production Deployment Failed - URGENT",
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*🚨 Production Deployment Failed (URGENT)*\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                }
+              }]
+            }

@@ -745,6 +745,10 @@ import { CheckIcon, XMarkIcon } from "@heroicons/vue/24/solid";
 import ExportButton from "~/components/Performance/ExportButton.vue";
 import ExportModal from "~/components/Performance/ExportModal.vue";
 import type { Event, PerformanceMetric, Coach } from "~/types/models";
+import type { Database } from "~/types/database";
+
+type InteractionType = Database["public"]["Enums"]["interaction_type"];
+type SentimentType = Database["public"]["Enums"]["interaction_sentiment"];
 
 definePageMeta({
   middleware: "auth",
@@ -781,7 +785,12 @@ const selectedCoachId = ref("");
 const schoolCoaches = ref<Coach[]>([]);
 const coachesAtEvent = ref<Coach[]>([]);
 const showQuickLogModal = ref(false);
-const quickLogData = reactive({
+const quickLogData = reactive<{
+  type: InteractionType;
+  direction: "inbound" | "outbound";
+  content: string;
+  sentiment: SentimentType;
+}>({
   type: "in_person_visit",
   direction: "inbound",
   content: "",
@@ -973,11 +982,11 @@ const handleQuickLogInteraction = async () => {
       school_id: event.value.school_id,
       coach_id: null,
       event_id: eventId,
-      type: quickLogData.type as any,
+      type: quickLogData.type as InteractionType,
       direction: quickLogData.direction as "outbound" | "inbound",
       subject: `Interaction at ${event.value.name}`,
       content: quickLogData.content,
-      sentiment: quickLogData.sentiment as any,
+      sentiment: quickLogData.sentiment as SentimentType,
       occurred_at: occurredAt,
       logged_by: "", // Server will set from auth
       attachments: [],

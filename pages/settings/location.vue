@@ -82,6 +82,7 @@
                   type="text"
                   placeholder="60601"
                   maxlength="10"
+                  @blur="triggerSave"
                   class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -193,6 +194,7 @@
 import { ref, reactive, computed, onMounted } from "vue";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useGeocoding } from "~/composables/useGeocoding";
+import { useAutoSave } from "~/composables/useAutoSave";
 import Header from "~/components/Header.vue";
 import {
   ArrowLeftIcon,
@@ -203,8 +205,13 @@ import type { HomeLocation } from "~/types/models";
 
 definePageMeta({ middleware: "auth" });
 
-const { isLoading, error, getHomeLocation, setHomeLocation } =
-  usePreferenceManager();
+const {
+  isLoading,
+  error,
+  getHomeLocation,
+  setHomeLocation,
+  loadAllPreferences,
+} = usePreferenceManager();
 const {
   geocodeAddress,
   loading: geocoding,
@@ -222,6 +229,14 @@ const localLocation = reactive<HomeLocation>({
 
 const saving = ref(false);
 const saveSuccess = ref(false);
+
+// Auto-save configuration for zip code
+const { triggerSave } = useAutoSave({
+  debounceMs: 500,
+  onSave: async () => {
+    await setHomeLocation(localLocation);
+  },
+});
 
 const hasAddress = computed(() => {
   return localLocation.address || localLocation.city || localLocation.zip;
@@ -273,7 +288,8 @@ const handleClear = () => {
   });
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await loadAllPreferences();
   const location = getHomeLocation();
   if (location) {
     Object.assign(localLocation, location);

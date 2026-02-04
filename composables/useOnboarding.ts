@@ -37,6 +37,8 @@ export const useOnboarding = () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
   const isOnboardingComplete = ref(false);
+  const currentStep = ref(0);
+  const onboardingData = ref<Record<string, unknown>>({});
 
   /**
    * Determine appropriate starting phase based on assessment
@@ -121,8 +123,8 @@ export const useOnboarding = () => {
       }
 
       // Update user phase and mark onboarding complete
-      const { error: updateError } = await supabase
-        .from("users")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: updateError } = (await (supabase.from("users") as any)
         .update({
           current_phase: startingPhase,
           phase_milestone_data: {
@@ -131,7 +133,8 @@ export const useOnboarding = () => {
             assessment_responses: assessment,
           },
         })
-        .eq("id", userId);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .eq("id", userId)) as { error: any };
 
       if (updateError) {
         throw updateError;
@@ -168,11 +171,17 @@ export const useOnboarding = () => {
         return false;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from("users")
         .select("phase_milestone_data")
         .eq("id", id)
-        .single();
+        .single()) as {
+        data: {
+          phase_milestone_data?: { onboarding_complete?: boolean };
+        } | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (error) {
         console.error("Failed to check onboarding status:", error);
@@ -189,13 +198,104 @@ export const useOnboarding = () => {
     }
   };
 
+  /**
+   * Save onboarding step data
+   * Persists step data to local state and localStorage for recovery if interrupted
+   */
+  const saveOnboardingStep = async (
+    step: number,
+    data: Record<string, unknown>,
+  ): Promise<void> => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user?.id) {
+        throw new Error("Not authenticated");
+      }
+
+      // Update local tracking
+      currentStep.value = step;
+      onboardingData.value = { ...onboardingData.value, ...data };
+
+      // Persist to localStorage for recovery
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          `onboarding_progress_${session.user.id}`,
+          JSON.stringify({
+            current_step: step,
+            step_data: onboardingData.value,
+            updated_at: new Date().toISOString(),
+          }),
+        );
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to save onboarding step";
+      error.value = message;
+      console.error("Onboarding step save error:", err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  /**
+   * Get onboarding progress as percentage (0-100)
+   * Based on completed steps tracked in state
+   */
+  const getOnboardingProgress = async (): Promise<number> => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user?.id) {
+        return 0;
+      }
+
+      // Try to restore from localStorage
+      let currentStep = 0;
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem(
+          `onboarding_progress_${session.user.id}`,
+        );
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            currentStep = parsed.current_step || 0;
+          } catch (e) {
+            console.error("Failed to parse stored onboarding progress:", e);
+          }
+        }
+      }
+
+      // 5 total onboarding screens (1-5)
+      const totalSteps = 5;
+      const progress = Math.min(
+        100,
+        Math.round((currentStep / totalSteps) * 100),
+      );
+      return progress;
+    } catch (err) {
+      console.error("Error getting onboarding progress:", err);
+      return 0;
+    }
+  };
+
   return {
     loading,
     error,
     isOnboardingComplete,
+    currentStep,
+    onboardingData,
     completeOnboarding,
     checkOnboardingStatus,
     calculateStartingPhase,
     getTasksToComplete,
+    saveOnboardingStep,
+    getOnboardingProgress,
   };
 };

@@ -6,6 +6,7 @@ import { logCRUD, logError } from "~/server/utils/auditLog";
 interface CompleteUpdateData {
   completed: boolean;
   completed_at: string;
+  [key: string]: unknown;
 }
 
 export default defineEventHandler(async (event) => {

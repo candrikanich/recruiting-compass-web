@@ -1,0 +1,80 @@
+-- Migration: Demo Profile Setup (Manual Step)
+-- Purpose: Document demo profile creation for preview mode
+-- Date: 2026-02-03
+-- Dependencies: All onboarding migrations (028-031)
+
+-- ============================================================================
+-- DEMO PROFILE SETUP - MANUAL STEPS
+-- ============================================================================
+--
+-- The demo profile (Alex Demo) requires the user to be created in Supabase Auth first.
+-- This cannot be done via migration due to foreign key constraints.
+--
+-- To create a demo profile for testing parent preview mode:
+--
+-- 1. Create demo user in Supabase Auth:
+--    - Email: demo-player@recruiting-compass.app
+--    - Password: (any value, won't be used)
+--    - Note the generated auth.users.id
+--
+-- 2. Insert user profile via SQL or application:
+--    INSERT INTO users (
+--      id,                          -- Use auth.users.id from step 1
+--      email,
+--      full_name,
+--      user_type,
+--      onboarding_completed,
+--      is_preview_mode,
+--      role,
+--      current_phase,
+--      graduation_year,
+--      primary_sport_id,
+--      primary_position_id,
+--      zip_code,
+--      gpa,
+--      profile_completeness,
+--      created_at,
+--      updated_at
+--    )
+--    VALUES (
+--      '<auth_user_id>',                    -- Replace with actual auth.users.id
+--      'demo-player@recruiting-compass.app',
+--      'Alex Demo',
+--      'player',
+--      true,
+--      false,
+--      'student',
+--      'junior',
+--      EXTRACT(YEAR FROM NOW())::INTEGER + 1,
+--      (SELECT id FROM sports WHERE name = 'Soccer'),
+--      (SELECT id FROM positions WHERE sport_id = (SELECT id FROM sports WHERE name = 'Soccer') AND name = 'Midfielder'),
+--      '44138',
+--      3.5,
+--      65,
+--      NOW(),
+--      NOW()
+--    );
+--
+-- 3. Optionally create demo family unit, schools, coaches, and interactions
+--    See commented-out SQL below for reference
+--
+-- ============================================================================
+-- ALTERNATIVELY: Create demo profile via application API
+-- ============================================================================
+--
+-- 1. Sign up as demo user through signup flow: demo-player@recruiting-compass.app
+-- 2. Complete onboarding with demo data
+-- 3. Demo profile will be available for parent preview mode testing
+--
+
+-- Verify sports and positions were created (should have 17 sports + 60 positions)
+SELECT COUNT(*) as sports_count FROM sports;
+SELECT COUNT(*) as positions_count FROM positions;
+
+-- Sample data available for demo profile:
+-- Sports: Baseball, Basketball, Field Hockey, Football, Hockey, Lacrosse, Soccer, Tennis, Volleyball, Water Polo, etc.
+-- Demo data per PRD section 6.3:
+--   - Player: Alex Demo (Soccer, Midfielder)
+--   - Schools: Ohio State, John Carroll, Akron, Oberlin
+--   - Coaches: 3 sample coaches
+--   - Interactions: 5 sample interactions

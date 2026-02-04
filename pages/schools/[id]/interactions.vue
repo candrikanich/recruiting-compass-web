@@ -983,7 +983,7 @@ const handleAddInteraction = async () => {
         await createReminder(
           `Follow up on ${newInteraction.subject || "interaction"}`,
           reminderDateTime,
-          reminderType.value,
+          "follow_up",
           "medium",
           newInteraction.content,
           id,

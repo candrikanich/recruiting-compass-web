@@ -100,16 +100,18 @@ export const useOffers = (): {
     error.value = null;
 
     try {
-      const { data, error: insertError } = await supabase
-        .from("offers")
-        .insert([
-          {
-            ...offerData,
-            user_id: userStore.user.id,
-          },
-        ])
-        .select()
-        .single();
+      const { data, error: insertError } =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("offers") as any)
+          .insert([
+            {
+              ...offerData,
+              user_id: userStore.user.id,
+            },
+          ])
+          .select()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single()) as { data: Offer; error: any };
 
       if (insertError) throw insertError;
 
@@ -132,12 +134,14 @@ export const useOffers = (): {
     error.value = null;
 
     try {
-      const { data, error: updateError } = await supabase
-        .from("offers")
-        .update(updates)
-        .eq("id", id)
-        .select()
-        .single();
+      const { data, error: updateError } =
+        (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("offers") as any)
+          .update(updates)
+          .eq("id", id)
+          .select()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single()) as { data: Offer; error: any };
 
       if (updateError) throw updateError;
 

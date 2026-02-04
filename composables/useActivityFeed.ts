@@ -138,7 +138,7 @@ export const useActivityFeed = () => {
       const events: ActivityEvent[] = [];
 
       // Fetch interactions
-      const { data: interactions } = await supabase
+      const interactionsResponse = await supabase
         .from("interactions")
         .select(
           "id, school_id, type, content, subject, occurred_at, created_at",
@@ -147,15 +147,35 @@ export const useActivityFeed = () => {
         .order("created_at", { ascending: false })
         .limit(50);
 
+      const { data: interactions } = interactionsResponse as {
+        data: Array<{
+          id: string;
+          school_id: string;
+          type: string;
+          content: string | null;
+          subject: string | null;
+          occurred_at: string | null;
+          created_at: string;
+        }> | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
+
       if (interactions && interactions.length > 0) {
         // Get school details for interactions
         const schoolIds = [
           ...new Set(interactions.map((i) => i.school_id).filter(Boolean)),
         ];
-        const { data: schools } = await supabase
+        const schoolsResponse = await supabase
           .from("schools")
           .select("id, name")
           .in("id", schoolIds);
+
+        const { data: schools } = schoolsResponse as {
+          data: Array<{ id: string; name: string }> | null;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          error: any;
+        };
 
         const schoolMap = new Map(schools?.map((s) => [s.id, s]) || []);
 
@@ -168,7 +188,12 @@ export const useActivityFeed = () => {
               interaction.occurred_at ||
               interaction.created_at ||
               new Date().toISOString(),
-            title: getInteractionTitle(interaction as Interaction, school),
+
+            title: getInteractionTitle(
+              interaction as Interaction,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              school as any,
+            ),
             description: getInteractionDescription(interaction as Interaction),
             icon: getInteractionIcon(interaction.type as Interaction["type"]),
             entityType: "interaction",
@@ -181,22 +206,42 @@ export const useActivityFeed = () => {
       }
 
       // Fetch school status changes
-      const { data: statusChanges } = await supabase
+      const statusChangesResponse = await supabase
         .from("school_status_history")
         .select("id, school_id, new_status, notes, changed_at")
         .eq("changed_by", session.value!.user!.id)
         .order("changed_at", { ascending: false })
         .limit(50);
 
+      const { data: statusChanges } = statusChangesResponse as {
+        data: Array<{
+          id: string;
+          school_id: string;
+          new_status: string;
+
+          notes: string | null;
+          changed_at: string;
+        }> | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
+
       if (statusChanges && statusChanges.length > 0) {
         // Get school details for status changes
         const statusSchoolIds = [
           ...new Set(statusChanges.map((s) => s.school_id).filter(Boolean)),
         ];
-        const { data: statusSchools } = await supabase
+        const statusSchoolsResponse = await supabase
           .from("schools")
           .select("id, name")
+
           .in("id", statusSchoolIds);
+
+        const { data: statusSchools } = statusSchoolsResponse as {
+          data: Array<{ id: string; name: string }> | null;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          error: any;
+        };
 
         const statusSchoolMap = new Map(
           statusSchools?.map((s) => [s.id, s]) || [],
@@ -222,12 +267,23 @@ export const useActivityFeed = () => {
       }
 
       // Fetch documents
-      const { data: documents } = await supabase
+      const documentsResponse = await supabase
         .from("documents")
         .select("id, title, type, created_at")
         .eq("user_id", session.value!.user!.id)
         .order("created_at", { ascending: false })
         .limit(50);
+
+      const { data: documents } = documentsResponse as {
+        data: Array<{
+          id: string;
+          title: string;
+          type: string;
+          created_at: string;
+        }> | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (documents && documents.length > 0) {
         documents.forEach((doc) => {
@@ -297,11 +353,18 @@ export const useActivityFeed = () => {
         },
         async (payload) => {
           const interaction = payload.new as unknown as InteractionPayload;
-          const { data: school } = await supabase
+          const schoolResponse = await supabase
             .from("schools")
+
             .select("id, name")
             .eq("id", interaction.school_id)
             .single();
+
+          const { data: school } = schoolResponse as {
+            data: { id: string; name: string } | null;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            error: any;
+          };
 
           const newEvent: ActivityEvent = {
             id: `interaction-${interaction.id}`,
@@ -310,8 +373,10 @@ export const useActivityFeed = () => {
               interaction.occurred_at ||
               interaction.created_at ||
               new Date().toISOString(),
-            title: getInteractionTitle(interaction, school),
-            description: getInteractionDescription(interaction),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            title: getInteractionTitle(interaction as any, school as any),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            description: getInteractionDescription(interaction as any),
             icon: getInteractionIcon(interaction.type),
             entityType: "interaction",
             entityId: interaction.id,
@@ -344,11 +409,17 @@ export const useActivityFeed = () => {
         },
         async (payload) => {
           const change = payload.new as unknown as SchoolStatusPayload;
-          const { data: school } = await supabase
+          const schoolResponse = await supabase
             .from("schools")
             .select("id, name")
             .eq("id", change.school_id)
             .single();
+
+          const { data: school } = schoolResponse as {
+            data: { id: string; name: string } | null;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            error: any;
+          };
 
           const statusLabel = change.new_status.replace(/_/g, " ");
           const newEvent: ActivityEvent = {

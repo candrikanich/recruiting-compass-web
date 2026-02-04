@@ -95,12 +95,11 @@ export default defineEventHandler(async (event) => {
     // Supabase type generation doesn't include custom columns - need to bypass type check
     const updateResult = await supabase
       .from("users")
-      // @ts-expect-error - custom columns (current_phase, phase_milestone_data) not in Supabase types
       .update({
         current_phase: nextPhase,
-        phase_milestone_data: phaseMilestoneData,
+        phase_milestone_data: phaseMilestoneData as unknown,
         updated_at: new Date().toISOString(),
-      })
+      } as Record<string, unknown>)
       .eq("id", user.id);
 
     const { error: updateError } = updateResult;

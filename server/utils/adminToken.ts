@@ -8,7 +8,7 @@
  * Tokens use a simple HMAC-based validation scheme.
  */
 
-import { createHmac } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 
 /**
  * Validates an admin registration token
@@ -34,7 +34,10 @@ export function validateAdminToken(token: string, secret: string): boolean {
     .digest("hex");
 
   // Use timing-safe comparison to prevent timing attacks
-  return token.length === expectedToken.length && token === expectedToken;
+  if (token.length !== expectedToken.length) {
+    return false;
+  }
+  return timingSafeEqual(Buffer.from(token), Buffer.from(expectedToken));
 }
 
 /**

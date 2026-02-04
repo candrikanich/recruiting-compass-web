@@ -1,6 +1,7 @@
 import { ref, type Ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import type { PreferenceHistoryEntry } from "~/types/models";
 import type { FormattedHistoryEntry } from "./useProfile";
 
 /**
@@ -69,11 +70,17 @@ export const useProfileEditHistory = (): {
         return;
       }
 
-      const { data, error: fetchError } = await supabase
+      const response = await supabase
         .from("user_preferences")
         .select("preference_history")
         .eq("user_id", userStore.user.id)
         .single();
+
+      const { data, error: fetchError } = response as {
+        data: { preference_history: PreferenceHistoryEntry[] } | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
       if (fetchError) {
         if (fetchError.code === "PGRST116") {
@@ -90,13 +97,19 @@ export const useProfileEditHistory = (): {
       }
 
       // Map history entries with formatted labels, newest first
-      history.value = (data.preference_history as PreferenceHistoryEntry[])
-        .map((entry) => ({
+      history.value = data.preference_history
+        .map((entry: PreferenceHistoryEntry) => ({
           ...entry,
-          changes: entry.changes.map((change) => ({
-            ...change,
-            fieldLabel: FIELD_LABELS[change.field] || change.field,
-          })),
+          changes: entry.changes.map(
+            (change: {
+              field: string;
+              old_value: unknown;
+              new_value: unknown;
+            }) => ({
+              ...change,
+              fieldLabel: FIELD_LABELS[change.field] || change.field,
+            }),
+          ),
         }))
         .reverse();
     } catch (err) {

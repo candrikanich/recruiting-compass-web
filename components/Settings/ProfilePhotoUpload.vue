@@ -4,7 +4,7 @@
     <div class="flex items-center gap-4">
       <div class="flex-shrink-0">
         <div
-          v-if="hasProfilePhoto"
+          v-if="hasProfilePhoto && profilePhotoUrl"
           class="relative w-24 h-24 rounded-full overflow-hidden bg-slate-200"
         >
           <img

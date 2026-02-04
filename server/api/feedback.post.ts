@@ -8,6 +8,7 @@ import {
 } from "~/server/utils/errorHandler";
 import { auditLog } from "~/server/utils/auditLog";
 import { requireAuth } from "~/server/utils/auth";
+import type { H3Event } from "h3";
 
 const logger = createLogger("feedback");
 
@@ -135,9 +136,7 @@ export default defineEventHandler(async (event) => {
   }
 });
 
-async function tryGetUserId(event: {
-  context?: { user?: { id: string } };
-}): Promise<string | null> {
+async function tryGetUserId(event: H3Event): Promise<string | null> {
   try {
     const user = await requireAuth(event);
     return user.id;
