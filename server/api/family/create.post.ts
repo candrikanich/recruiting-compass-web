@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     .from("family_units")
     .select("id, family_code")
     .eq("student_user_id", user.id)
-    .single();
+    .maybeSingle();
 
   const { data: existingFamily } = fetchResponse as {
     data: Database["public"]["Tables"]["family_units"]["Row"] | null;

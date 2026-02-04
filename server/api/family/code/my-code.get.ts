@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
       .from("family_units")
       .select("id, family_code, family_name, code_generated_at")
       .eq("student_user_id", user.id)
-      .single();
+      .maybeSingle();
 
     const { data: family } = familyResponse as {
       data: Database["public"]["Tables"]["family_units"]["Row"] | null;

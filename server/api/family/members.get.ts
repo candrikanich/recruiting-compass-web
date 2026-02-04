@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
     .select("id")
     .eq("family_unit_id", familyId)
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (accessError || !access) {
     throw createError({

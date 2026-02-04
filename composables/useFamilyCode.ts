@@ -43,7 +43,7 @@ export const useFamilyCode = () => {
           .from("family_units")
           .select("id, family_code, family_name, code_generated_at")
           .eq("student_user_id", userStore.user.id)
-          .single();
+          .maybeSingle();
         const { data: family, error: fetchError } = familyResponse as {
           data: {
             id: string;

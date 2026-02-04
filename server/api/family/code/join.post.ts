@@ -77,7 +77,7 @@ export default defineEventHandler(async (event) => {
     .select("id")
     .eq("family_unit_id", family.id)
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   const { data: existingMember } = existingResponse as {
     data: Database["public"]["Tables"]["family_members"]["Row"] | null;
