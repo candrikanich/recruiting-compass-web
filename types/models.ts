@@ -353,6 +353,8 @@ export interface HomeLocation {
 
 export interface PlayerDetails {
   graduation_year?: number;
+  primary_sport?: string;
+  primary_position?: string;
   high_school?: string;
   club_team?: string;
   positions?: string[];
