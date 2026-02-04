@@ -859,6 +859,7 @@ import { useFormValidation } from "~/composables/useFormValidation";
 import { useFitScoreRecalculation } from "~/composables/useFitScoreRecalculation";
 import { useUserStore } from "~/stores/user";
 import { playerDetailsSchema } from "~/utils/validation/schemas";
+import { BASEBALL_POSITIONS, normalizePositions } from "~/utils/positions";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import type { PlayerDetails } from "~/types/models";
 
@@ -877,19 +878,7 @@ const { errors, fieldErrors, clearErrors, hasErrors } =
 
 const isParentRole = computed(() => userStore.user?.role === "parent");
 
-const POSITIONS = [
-  { value: "P", label: "P" },
-  { value: "C", label: "C" },
-  { value: "1B", label: "1B" },
-  { value: "2B", label: "2B" },
-  { value: "3B", label: "3B" },
-  { value: "SS", label: "SS" },
-  { value: "LF", label: "LF" },
-  { value: "CF", label: "CF" },
-  { value: "RF", label: "RF" },
-  { value: "DH", label: "DH" },
-  { value: "UTIL", label: "Utility" },
-];
+const POSITIONS = BASEBALL_POSITIONS;
 
 const BATS_OPTIONS = [
   { value: "R", label: "Right" },
@@ -998,8 +987,14 @@ const togglePosition = (pos: string) => {
 const handleSave = async () => {
   saving.value = true;
   try {
+    // Normalize positions before saving to ensure canonical format
+    const detailsToSave = {
+      ...form.value,
+      positions: normalizePositions(form.value.positions),
+    };
+
     // Save player details
-    await setPlayerDetails(form.value);
+    await setPlayerDetails(detailsToSave);
 
     // Trigger fit score recalculation (blocking)
     try {
@@ -1026,7 +1021,12 @@ const handleSave = async () => {
 onMounted(async () => {
   const playerDetails = getPlayerDetails();
   if (playerDetails) {
-    form.value = { ...form.value, ...playerDetails };
+    // Normalize positions to ensure consistency
+    const normalizedDetails = {
+      ...playerDetails,
+      positions: normalizePositions(playerDetails.positions),
+    };
+    form.value = { ...form.value, ...normalizedDetails };
     initializeHeight(playerDetails.height_inches);
   }
 });
