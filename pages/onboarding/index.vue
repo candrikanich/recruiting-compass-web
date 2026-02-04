@@ -295,7 +295,7 @@ const positions = computed(() => {
 const graduationYears = computed(() => {
   const years = [];
   const currentYear = new Date().getFullYear();
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 5; i++) {
     years.push(currentYear + i);
   }
   return years;
