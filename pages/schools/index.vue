@@ -869,7 +869,10 @@ const filterConfigs: FilterConfig[] = [
     field: "state",
     label: "State",
     options: stateOptions.value,
-    filterFn: (item: Record<string, unknown>, filterValue: FilterValue): boolean => {
+    filterFn: (
+      item: Record<string, unknown>,
+      filterValue: FilterValue,
+    ): boolean => {
       const school = item as unknown as School;
       let schoolState: string | undefined =
         school.academic_info?.state || (school.state as string | undefined);
@@ -888,7 +891,10 @@ const filterConfigs: FilterConfig[] = [
     max: 100,
     step: 5,
     defaultValue: { min: 0, max: 100 },
-    filterFn: (item: Record<string, unknown>, filterValue: FilterValue): boolean => {
+    filterFn: (
+      item: Record<string, unknown>,
+      filterValue: FilterValue,
+    ): boolean => {
       const school = item as unknown as School;
       const score = school.fit_score;
       if (score === null || score === undefined) return true;
@@ -906,7 +912,10 @@ const filterConfigs: FilterConfig[] = [
     max: 3000,
     step: 50,
     defaultValue: { max: 3000 },
-    filterFn: (item: Record<string, unknown>, filterValue: FilterValue): boolean => {
+    filterFn: (
+      item: Record<string, unknown>,
+      filterValue: FilterValue,
+    ): boolean => {
       const school = item as unknown as School;
       const homeLoc = getHomeLocation();
       if (!homeLoc?.latitude || !homeLoc?.longitude) {
@@ -935,41 +944,45 @@ const {
 });
 
 // Typed helpers for accessing filter values
-const typedFilterValues = computed(() => filterValues.value as SchoolFilterValues);
+const typedFilterValues = computed(
+  () => filterValues.value as SchoolFilterValues,
+);
 
 // Computed for active filters display
 const activeFiltersDisplay = computed(() => {
   const display: Record<string, string> = {};
-  Object.entries(filterValues.value).forEach(([key, value]: [string, FilterValue]) => {
-    if (value) {
-      if (key === "is_favorite") {
-        display[key] = "Favorites";
-      } else if (key === "name") {
-        display[key] = `"${value}"`;
-      } else if (key === "fit_score") {
-        if (typeof value === "object" && value !== null && "min" in value) {
-          const rangeValue = value as { min?: number; max?: number };
-          const min = rangeValue.min ?? 0;
-          const max = rangeValue.max ?? 100;
-          if (min === 0 && max === 100) {
-            return; // Default range, don't display
+  Object.entries(filterValues.value).forEach(
+    ([key, value]: [string, FilterValue]) => {
+      if (value) {
+        if (key === "is_favorite") {
+          display[key] = "Favorites";
+        } else if (key === "name") {
+          display[key] = `"${value}"`;
+        } else if (key === "fit_score") {
+          if (typeof value === "object" && value !== null && "min" in value) {
+            const rangeValue = value as { min?: number; max?: number };
+            const min = rangeValue.min ?? 0;
+            const max = rangeValue.max ?? 100;
+            if (min === 0 && max === 100) {
+              return; // Default range, don't display
+            }
+            display[key] = `${min} - ${max}`;
           }
-          display[key] = `${min} - ${max}`;
-        }
-      } else if (key === "distance") {
-        if (typeof value === "object" && value !== null && "max" in value) {
-          const rangeValue = value as { max?: number };
-          const max = rangeValue.max ?? 3000;
-          if (max === 3000) {
-            return; // Default max, don't display
+        } else if (key === "distance") {
+          if (typeof value === "object" && value !== null && "max" in value) {
+            const rangeValue = value as { max?: number };
+            const max = rangeValue.max ?? 3000;
+            if (max === 3000) {
+              return; // Default max, don't display
+            }
+            display[key] = `Within ${max} miles`;
           }
-          display[key] = `Within ${max} miles`;
+        } else {
+          display[key] = String(value);
         }
-      } else {
-        display[key] = String(value);
       }
-    }
-  });
+    },
+  );
 
   // Add priority tier filter if selected
   if (priorityTierFilter.value && priorityTierFilter.value.length > 0) {

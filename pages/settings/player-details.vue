@@ -942,12 +942,8 @@ definePageMeta({
 });
 
 const userStore = useUserStore();
-const {
-  isLoading,
-  getPlayerDetails,
-  setPlayerDetails,
-  loadAllPreferences,
-} = usePreferenceManager();
+const { isLoading, getPlayerDetails, setPlayerDetails, loadAllPreferences } =
+  usePreferenceManager();
 const { showToast } = useToast();
 const { recalculateAllFitScores, loading: recalculating } =
   useFitScoreRecalculation();

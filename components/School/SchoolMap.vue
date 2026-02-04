@@ -45,7 +45,9 @@ const initMap = async () => {
   await import("leaflet/dist/leaflet.css");
 
   // Fix for default marker icons in bundled apps
-  const iconProto = L.Icon.Default.prototype as L.Icon.Default & { _getIconUrl?: unknown };
+  const iconProto = L.Icon.Default.prototype as L.Icon.Default & {
+    _getIconUrl?: unknown;
+  };
   delete iconProto._getIconUrl;
   L.Icon.Default.mergeOptions({
     iconRetinaUrl:
