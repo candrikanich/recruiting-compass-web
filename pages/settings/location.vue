@@ -283,7 +283,10 @@ const handleClear = () => {
   });
 };
 
-onMounted(() => {
+onMounted(async () => {
+  // Load preferences from API first
+  await usePreferenceManager().loadAllPreferences();
+
   const location = getHomeLocation();
   if (location) {
     Object.assign(localLocation, location);

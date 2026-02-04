@@ -1129,6 +1129,9 @@ const handleSave = async () => {
 };
 
 onMounted(async () => {
+  // Load preferences from API first
+  await usePreferenceManager().loadAllPreferences();
+
   const playerDetails = getPlayerDetails();
   if (playerDetails) {
     form.value = { ...form.value, ...playerDetails };
