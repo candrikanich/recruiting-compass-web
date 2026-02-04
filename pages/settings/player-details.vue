@@ -372,6 +372,7 @@
                 min="0"
                 max="5"
                 placeholder="e.g., 3.75"
+                @blur="triggerSave"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
@@ -387,6 +388,7 @@
                 min="400"
                 max="1600"
                 placeholder="e.g., 1200"
+                @blur="triggerSave"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
@@ -402,6 +404,7 @@
                 min="1"
                 max="36"
                 placeholder="e.g., 28"
+                @blur="triggerSave"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
