@@ -43,7 +43,7 @@ VALUES (
   'player',
   true,
   false,
-  'athlete',
+  'student',
   'junior',
   EXTRACT(YEAR FROM NOW())::INTEGER + 1, -- Current year + 1 (junior)
   (SELECT id FROM sports WHERE name = 'Soccer'),
