@@ -379,6 +379,8 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
             full_name: "Test User",
             role: "student",
             user_type: "student",
+            family_code: expect.stringMatching(/^FAM-[A-Z0-9]+$/),
+            onboarding_completed: false,
           },
         },
       });

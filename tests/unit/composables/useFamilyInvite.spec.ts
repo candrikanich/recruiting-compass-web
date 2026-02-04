@@ -248,7 +248,7 @@ describe("useFamilyInvite", () => {
       const { useSupabase } = await import("~/composables/useSupabase");
       const mockSupabase = {
         from: vi.fn((table) => {
-          if (table === "player_profiles") {
+          if (table === "users") {
             return {
               select: vi.fn(() => ({
                 eq: vi.fn(() => ({
@@ -321,7 +321,7 @@ describe("useFamilyInvite", () => {
       const { useSupabase } = await import("~/composables/useSupabase");
       const mockSupabase = {
         from: vi.fn((table) => {
-          if (table === "player_profiles") {
+          if (table === "users") {
             return {
               select: vi.fn(() => ({
                 eq: vi.fn(() => ({
@@ -381,7 +381,7 @@ describe("useFamilyInvite", () => {
       const { useSupabase } = await import("~/composables/useSupabase");
       const mockSupabase = {
         from: vi.fn((table) => {
-          if (table === "player_profiles") {
+          if (table === "users") {
             return {
               select: vi.fn(() => ({
                 eq: vi.fn(() => ({

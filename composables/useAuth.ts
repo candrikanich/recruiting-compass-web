@@ -276,7 +276,7 @@ export const useAuth = () => {
         metadata.user_type = role;
 
         // For student (player) signup: generate family code and set onboarding flag
-        if (role === "student") {
+        if (role === "student" || role === "player") {
           metadata.family_code = generateFamilyCode();
           metadata.onboarding_completed = false;
         }

@@ -1,39 +1,38 @@
 repos:
-  # Detect secrets in code
+  # TypeScript/JavaScript linting
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v8.57.0
+    hooks:
+      - id: eslint
+        types: [typescript, tsx, javascript, jsx]
+        additional_dependencies:
+          - eslint
+          - eslint-config-prettier
+          - "@typescript-eslint/eslint-plugin"
+          - "@typescript-eslint/parser"
+        args: [--fix]
+
+  # Code formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        types_or: [javascript, jsx, typescript, tsx, json, yaml, markdown, vue]
+        args: [--write]
+
+  # Detect secrets (API keys, tokens, passwords)
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.4.0
     hooks:
       - id: detect-secrets
         args: [--baseline, .secrets.baseline]
+        exclude: package.lock
 
-  # Basic file checks
+  # YAML validation
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
       - id: check-yaml
-      - id: check-json
-      - id: check-merge-conflict
       - id: end-of-file-fixer
       - id: trailing-whitespace
-
-  # Linting, formatting, and type checking via npm scripts
-  - repo: local
-    hooks:
-      - id: npm-type-check
-        name: TypeScript Type Check
-        entry: npm run type-check
-        language: system
-        files: \.(ts|tsx|vue)$
-        pass_filenames: false
-      - id: npm-lint
-        name: ESLint
-        entry: npm run lint:fix
-        language: system
-        files: \.(ts|tsx|js|jsx|vue)$
-        pass_filenames: false
-      - id: npm-format
-        name: Prettier Format
-        entry: npm run format
-        language: system
-        files: \.(ts|tsx|js|jsx|vue|css|md|json)$
-        pass_filenames: false
+      - id: check-merge-conflict

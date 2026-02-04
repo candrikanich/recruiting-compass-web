@@ -748,7 +748,7 @@ import type { Event, PerformanceMetric, Coach } from "~/types/models";
 import type { Database } from "~/types/database";
 
 type InteractionType = Database["public"]["Enums"]["interaction_type"];
-type SentimentType = Database["public"]["Enums"]["sentiment"];
+type SentimentType = Database["public"]["Enums"]["interaction_sentiment"];
 
 definePageMeta({
   middleware: "auth",
@@ -785,7 +785,12 @@ const selectedCoachId = ref("");
 const schoolCoaches = ref<Coach[]>([]);
 const coachesAtEvent = ref<Coach[]>([]);
 const showQuickLogModal = ref(false);
-const quickLogData = reactive({
+const quickLogData = reactive<{
+  type: InteractionType;
+  direction: "inbound" | "outbound";
+  content: string;
+  sentiment: SentimentType;
+}>({
   type: "in_person_visit",
   direction: "inbound",
   content: "",

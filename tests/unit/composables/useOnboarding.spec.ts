@@ -280,9 +280,6 @@ describe("useOnboarding", () => {
     it("should save onboarding step data", async () => {
       const { useSupabase } = await import("~/composables/useSupabase");
       const mockSupabase = {
-        from: vi.fn(() => ({
-          upsert: vi.fn().mockResolvedValue({ error: null }),
-        })),
         auth: {
           getSession: vi.fn().mockResolvedValue({
             data: { session: { user: { id: "test-user" } } },
@@ -290,6 +287,8 @@ describe("useOnboarding", () => {
         },
       };
       vi.mocked(useSupabase).mockReturnValue(mockSupabase);
+
+      localStorage.clear();
 
       const { saveOnboardingStep } = useOnboarding();
       const stepData = {
@@ -299,21 +298,19 @@ describe("useOnboarding", () => {
 
       await saveOnboardingStep(2, stepData);
 
-      expect(mockSupabase.from).toHaveBeenCalledWith("onboarding_progress");
+      // Verify localStorage was updated with step data
+      const stored = localStorage.getItem("onboarding_progress_test-user");
+      expect(stored).not.toBeNull();
+      const parsed = JSON.parse(stored!);
+      expect(parsed.current_step).toBe(2);
+      expect(parsed.step_data.graduation_year).toBe(2026);
     });
 
     it("should handle step save errors", async () => {
       const { useSupabase } = await import("~/composables/useSupabase");
       const mockSupabase = {
-        from: vi.fn(() => ({
-          upsert: vi.fn().mockResolvedValue({
-            error: new Error("Database error"),
-          }),
-        })),
         auth: {
-          getSession: vi.fn().mockResolvedValue({
-            data: { session: { user: { id: "test-user" } } },
-          }),
+          getSession: vi.fn().mockRejectedValue(new Error("Database error")),
         },
       };
       vi.mocked(useSupabase).mockReturnValue(mockSupabase);
@@ -359,23 +356,16 @@ describe("useOnboarding", () => {
     it("should return 0 for no steps completed", async () => {
       const { useSupabase } = await import("~/composables/useSupabase");
       const mockSupabase = {
-        from: vi.fn(() => ({
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
-                data: null,
-                error: null,
-              }),
-            })),
-          })),
-        })),
         auth: {
           getSession: vi.fn().mockResolvedValue({
-            data: { session: { user: { id: "test-user" } } },
+            data: { session: { user: { id: "test-user-2" } } },
           }),
         },
       };
       vi.mocked(useSupabase).mockReturnValue(mockSupabase);
+
+      // Ensure localStorage has no data for this user
+      localStorage.removeItem("onboarding_progress_test-user-2");
 
       const { getOnboardingProgress } = useOnboarding();
       const progress = await getOnboardingProgress();
