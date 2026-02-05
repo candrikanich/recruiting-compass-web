@@ -57,6 +57,7 @@ export const useCoaches = (): {
   ) => Promise<Coach>;
   updateCoach: (id: string, updates: Partial<Coach>) => Promise<Coach>;
   deleteCoach: (id: string) => Promise<void>;
+  smartDelete: (id: string) => Promise<{ cascadeUsed: boolean }>;
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
@@ -403,6 +404,36 @@ export const useCoaches = (): {
     }
   };
 
+  const smartDelete = async (id: string): Promise<{ cascadeUsed: boolean }> => {
+    try {
+      await deleteCoach(id);
+      return { cascadeUsed: false };
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete coach";
+
+      // Check if this is a FK constraint error
+      if (
+        message.includes("Cannot delete") ||
+        message.includes("violates foreign key constraint") ||
+        message.includes("still referenced")
+      ) {
+        // Try cascade delete via API endpoint
+        const response = await $fetch(`/api/coaches/${id}/cascade-delete`, {
+          method: "POST",
+          body: { confirmDelete: true },
+        });
+
+        if ((response as any).success) {
+          coaches.value = coaches.value.filter((c) => c.id !== id);
+          return { cascadeUsed: true };
+        }
+        throw new Error((response as any).message || "Cascade delete failed");
+      }
+      throw err;
+    }
+  };
+
   return {
     coaches: computed(() => coaches.value),
     loading: computed(() => loading.value),
@@ -414,5 +445,6 @@ export const useCoaches = (): {
     createCoach,
     updateCoach,
     deleteCoach,
+    smartDelete,
   };
 };

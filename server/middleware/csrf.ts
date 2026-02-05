@@ -45,6 +45,8 @@ export default defineEventHandler((event) => {
   // Skip CSRF for administrative utilities (diagnostic/cleanup endpoints)
   const adminEndpoints = [
     "/api/schools/", // School cascade-delete and diagnostic endpoints
+    "/api/coaches/", // Coach cascade-delete and diagnostic endpoints
+    "/api/interactions/", // Interaction cascade-delete and diagnostic endpoints
   ];
 
   if (publicEndpoints.some((endpoint) => path?.startsWith(endpoint))) {

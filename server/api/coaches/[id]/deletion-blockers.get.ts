@@ -1,0 +1,82 @@
+import { defineEventHandler, getRouterParam, createError } from "h3";
+import { createServerSupabaseClient } from "~/server/utils/supabase";
+
+interface BlockerInfo {
+  table: string;
+  count: number;
+  column: string;
+}
+
+/**
+ * Diagnose what records are preventing coach deletion
+ * GET /api/coaches/[id]/deletion-blockers
+ *
+ * Returns:
+ * - blockers: Array of tables with records referencing this coach
+ * - canDelete: boolean indicating if coach can be deleted
+ * - message: User-friendly message explaining what's blocking deletion
+ */
+export default defineEventHandler(async (event) => {
+  const coachId = getRouterParam(event, "id");
+
+  if (!coachId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Coach ID is required",
+    });
+  }
+
+  const client = createServerSupabaseClient();
+
+  const blockers: BlockerInfo[] = [];
+
+  // Check interactions
+  const { count: interactionCount } = await client
+    .from("interactions")
+    .select("*", { count: "exact", head: true })
+    .eq("coach_id", coachId);
+  if (interactionCount && interactionCount > 0) {
+    blockers.push({
+      table: "interactions",
+      count: interactionCount,
+      column: "coach_id",
+    });
+  }
+
+  // Check offers
+  const { count: offerCount } = await client
+    .from("offers")
+    .select("*", { count: "exact", head: true })
+    .eq("coach_id", coachId);
+  if (offerCount && offerCount > 0) {
+    blockers.push({ table: "offers", count: offerCount, column: "coach_id" });
+  }
+
+  // Check social_media_posts
+  const { count: postCount } = await client
+    .from("social_media_posts")
+    .select("*", { count: "exact", head: true })
+    .eq("coach_id", coachId);
+  if (postCount && postCount > 0) {
+    blockers.push({
+      table: "social_media_posts",
+      count: postCount,
+      column: "coach_id",
+    });
+  }
+
+  const canDelete = blockers.length === 0;
+
+  let message = "Coach can be deleted successfully.";
+  if (!canDelete) {
+    const blockerList = blockers.map((b) => `${b.count} ${b.table}`).join(", ");
+    message = `Cannot delete this coach. It has: ${blockerList}. Remove these records first.`;
+  }
+
+  return {
+    coachId,
+    canDelete,
+    blockers,
+    message,
+  };
+});

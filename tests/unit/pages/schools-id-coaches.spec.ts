@@ -11,6 +11,7 @@ import type { School } from "~/types/models";
 const mockFetchCoaches = vi.fn();
 const mockCreateCoach = vi.fn();
 const mockDeleteCoach = vi.fn();
+const mockSmartDelete = vi.fn();
 const mockGetSchool = vi.fn();
 
 vi.mock("~/composables/useCoaches", () => ({
@@ -21,6 +22,7 @@ vi.mock("~/composables/useCoaches", () => ({
     fetchCoaches: mockFetchCoaches,
     createCoach: mockCreateCoach,
     deleteCoach: mockDeleteCoach,
+    smartDelete: mockSmartDelete,
   }),
 }));
 
@@ -696,12 +698,12 @@ describe("pages/schools/[id]/coaches.vue", () => {
       await deleteButton.trigger("click");
 
       expect(window.confirm).toHaveBeenCalledWith(
-        "Are you sure you want to delete this coach?",
+        "Are you sure you want to delete this coach? This will also remove related interactions, offers, and social media posts.",
       );
     });
 
     it("should delete coach when confirmed", async () => {
-      mockDeleteCoach.mockResolvedValue(undefined);
+      mockSmartDelete.mockResolvedValue({ cascadeUsed: false });
       (window.confirm as any).mockReturnValue(true);
 
       const wrapper = mount(SchoolCoachesPage);
@@ -710,7 +712,7 @@ describe("pages/schools/[id]/coaches.vue", () => {
       await deleteButton.trigger("click");
       await flushPromises();
 
-      expect(mockDeleteCoach).toHaveBeenCalled();
+      expect(mockSmartDelete).toHaveBeenCalled();
     });
 
     it("should not delete coach when cancelled", async () => {
@@ -722,11 +724,11 @@ describe("pages/schools/[id]/coaches.vue", () => {
       await deleteButton.trigger("click");
       await flushPromises();
 
-      expect(mockDeleteCoach).not.toHaveBeenCalled();
+      expect(mockSmartDelete).not.toHaveBeenCalled();
     });
 
     it("should handle delete error", async () => {
-      mockDeleteCoach.mockRejectedValue(new Error("Delete failed"));
+      mockSmartDelete.mockRejectedValue(new Error("Delete failed"));
       (window.confirm as any).mockReturnValue(true);
 
       const wrapper = mount(SchoolCoachesPage);
@@ -737,7 +739,7 @@ describe("pages/schools/[id]/coaches.vue", () => {
 
       expect(console.error).toHaveBeenCalledWith(
         "Failed to delete coach:",
-        expect.any(Error),
+        "Delete failed",
       );
     });
   });
