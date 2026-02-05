@@ -653,7 +653,7 @@ const useSchoolsInternal = (): {
         message.includes("still referenced")
       ) {
         // Use cascade delete API
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const response = (await $fetch(`/api/schools/${id}/cascade-delete`, {
           method: "POST",
           body: { confirmDelete: true },

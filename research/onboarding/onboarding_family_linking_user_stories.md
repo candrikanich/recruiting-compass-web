@@ -2,10 +2,10 @@
 
 ## BDD-Style Gherkin Format
 
-**Document Version:** 1.0  
-**Status:** MVP Feature Specification  
-**Last Updated:** February 3, 2026  
-**Format:** Behavior-Driven Development (BDD) - Gherkin Style  
+**Document Version:** 1.0
+**Status:** MVP Feature Specification
+**Last Updated:** February 3, 2026
+**Format:** Behavior-Driven Development (BDD) - Gherkin Style
 **Related PRD:** Player Profile Onboarding & Family Linking PRD v1.0
 
 ---
@@ -29,8 +29,8 @@
 
 ### Story 1.1: New User Selects Account Type
 
-**As a** new user  
-**I want to** identify whether I am a player or parent during signup  
+**As a** new user
+**I want to** identify whether I am a player or parent during signup
 **So that** the app can provide the appropriate onboarding experience
 
 ```gherkin
@@ -68,8 +68,8 @@ Feature: User Type Selection
 
 ### Story 2.1: Player Creates Account with Email
 
-**As a** player  
-**I want to** create an account with my email and password  
+**As a** player
+**I want to** create an account with my email and password
 **So that** I can start tracking my recruiting journey
 
 ```gherkin
@@ -112,8 +112,8 @@ Feature: Player Account Creation
 
 ### Story 3.1: Player Sees Welcome Screen
 
-**As a** new player  
-**I want to** understand the purpose of onboarding  
+**As a** new player
+**I want to** understand the purpose of onboarding
 **So that** I know why I'm providing this information
 
 ```gherkin
@@ -140,8 +140,8 @@ Feature: Onboarding Welcome Screen
 
 ### Story 3.2: Player Enters Basic Info (Required)
 
-**As a** player  
-**I want to** enter my graduation year, sport, and position  
+**As a** player
+**I want to** enter my graduation year, sport, and position
 **So that** the app can personalize my recruiting timeline
 
 ```gherkin
@@ -200,8 +200,8 @@ Feature: Basic Info Collection
 
 ### Story 3.3: Player Enters Location (Required)
 
-**As a** player  
-**I want to** enter my zip code  
+**As a** player
+**I want to** enter my zip code
 **So that** the app can calculate distances to schools
 
 ```gherkin
@@ -235,8 +235,8 @@ Feature: Location Collection
 
 ### Story 3.4: Player Enters Academic Info (Optional)
 
-**As a** player  
-**I want to** optionally enter my GPA and test scores  
+**As a** player
+**I want to** optionally enter my GPA and test scores
 **So that** the app can provide more accurate school fit scores
 
 ```gherkin
@@ -284,8 +284,8 @@ Feature: Academic Info Collection
 
 ### Story 3.5: Player Completes Onboarding
 
-**As a** player  
-**I want to** see confirmation that my profile is set up  
+**As a** player
+**I want to** see confirmation that my profile is set up
 **So that** I know I can start using the app
 
 ```gherkin
@@ -323,8 +323,8 @@ Feature: Onboarding Completion
 
 ### Story 4.1: Player Sees Profile Completeness Score
 
-**As a** player  
-**I want to** see how complete my profile is  
+**As a** player
+**I want to** see how complete my profile is
 **So that** I'm motivated to add more information
 
 ```gherkin
@@ -351,8 +351,8 @@ Feature: Profile Completeness Display
 
 ### Story 4.2: Profile Completeness Calculation
 
-**As the** system  
-**I want to** calculate profile completeness using weighted fields  
+**As the** system
+**I want to** calculate profile completeness using weighted fields
 **So that** more important fields carry more weight
 
 ```gherkin
@@ -383,8 +383,8 @@ Feature: Completeness Calculation
 
 ### Story 4.3: Contextual Completeness Prompts
 
-**As a** player  
-**I want to** receive prompts to complete my profile when relevant  
+**As a** player
+**I want to** receive prompts to complete my profile when relevant
 **So that** I understand why additional information helps
 
 ```gherkin
@@ -419,8 +419,8 @@ Feature: Contextual Prompts
 
 ### Story 5.1: Family Code Generation
 
-**As the** system  
-**I want to** generate a unique Family Code for each player  
+**As the** system
+**I want to** generate a unique Family Code for each player
 **So that** parents can link to the correct player profile
 
 ```gherkin
@@ -448,8 +448,8 @@ Feature: Family Code Generation
 
 ### Story 5.2: Player Views Family Code
 
-**As a** player  
-**I want to** view my Family Code in settings  
+**As a** player
+**I want to** view my Family Code in settings
 **So that** I can share it with my parents
 
 ```gherkin
@@ -476,8 +476,8 @@ Feature: Family Code Display
 
 ### Story 5.3: Player Regenerates Family Code
 
-**As a** player  
-**I want to** regenerate my Family Code  
+**As a** player
+**I want to** regenerate my Family Code
 **So that** I can invalidate codes shared with the wrong person
 
 ```gherkin
@@ -520,8 +520,8 @@ Feature: Family Code Regeneration
 
 ### Story 6.1: Parent Enters Family Code During Signup
 
-**As a** parent with a Family Code  
-**I want to** enter my child's code during signup  
+**As a** parent with a Family Code
+**I want to** enter my child's code during signup
 **So that** I can immediately link to their profile
 
 ```gherkin
@@ -569,8 +569,8 @@ Feature: Parent Signup with Code
 
 ### Story 6.2: Parent Without Code Invites Player
 
-**As a** parent without a Family Code  
-**I want to** invite my player to join the app  
+**As a** parent without a Family Code
+**I want to** invite my player to join the app
 **So that** I can eventually link to their profile
 
 ```gherkin
@@ -605,8 +605,8 @@ Feature: Parent Invites Player
 
 ### Story 6.3: Parent Links to Player They're Already Connected To
 
-**As a** parent  
-**I want to** see a helpful message if I try to link to a player I'm already connected to  
+**As a** parent
+**I want to** see a helpful message if I try to link to a player I'm already connected to
 **So that** I don't get confused
 
 ```gherkin
@@ -630,8 +630,8 @@ Feature: Duplicate Link Prevention
 
 ### Story 7.1: Player Invites Parent via Email
 
-**As a** player  
-**I want to** invite my parent by email  
+**As a** player
+**I want to** invite my parent by email
 **So that** they can track my recruiting with me
 
 ```gherkin
@@ -662,8 +662,8 @@ Feature: Player Sends Parent Invite
 
 ### Story 7.2: Parent Receives Invitation Email
 
-**As a** parent who received an invite  
-**I want to** understand what the app does and how to join  
+**As a** parent who received an invite
+**I want to** understand what the app does and how to join
 **So that** I can decide to sign up
 
 ```gherkin
@@ -695,8 +695,8 @@ Feature: Parent Invitation Email
 
 ### Story 8.1: Parent Enters Preview Mode
 
-**As a** parent who skipped entering a Family Code  
-**I want to** explore the app with demo data  
+**As a** parent who skipped entering a Family Code
+**I want to** explore the app with demo data
 **So that** I can understand the value before my player joins
 
 ```gherkin
@@ -726,8 +726,8 @@ Feature: Preview Mode Entry
 
 ### Story 8.2: Parent Explores Demo Data
 
-**As a** parent in Preview Mode  
-**I want to** see realistic sample data  
+**As a** parent in Preview Mode
+**I want to** see realistic sample data
 **So that** I understand how the app works
 
 ```gherkin
@@ -777,8 +777,8 @@ Feature: Demo Data Display
 
 ### Story 8.3: Parent Exits Preview Mode
 
-**As a** parent in Preview Mode  
-**I want to** connect to my real player's profile  
+**As a** parent in Preview Mode
+**I want to** connect to my real player's profile
 **So that** I can see their actual recruiting data
 
 ```gherkin
@@ -822,8 +822,8 @@ Feature: Exit Preview Mode
 
 ### Story 8.4: Preview Mode Persists Across Sessions
 
-**As a** parent in Preview Mode  
-**I want** Preview Mode to persist if I close the app  
+**As a** parent in Preview Mode
+**I want** Preview Mode to persist if I close the app
 **So that** I don't lose my exploration state
 
 ```gherkin
@@ -848,8 +848,8 @@ Feature: Preview Mode Persistence
 
 ### Story 9.1: Player Views Linked Parents
 
-**As a** player  
-**I want to** see which parents are linked to my profile  
+**As a** player
+**I want to** see which parents are linked to my profile
 **So that** I know who has access to my recruiting data
 
 ```gherkin
@@ -878,8 +878,8 @@ Feature: View Linked Parents
 
 ### Story 9.2: Player Removes Parent Link
 
-**As a** player  
-**I want to** remove a parent's access to my profile  
+**As a** player
+**I want to** remove a parent's access to my profile
 **So that** I can control who sees my recruiting data
 
 ```gherkin
@@ -907,8 +907,8 @@ Feature: Remove Parent Link
 
 ### Story 9.3: Parent Views Linked Players
 
-**As a** parent  
-**I want to** see which players I'm linked to  
+**As a** parent
+**I want to** see which players I'm linked to
 **So that** I can switch between multiple children's profiles
 
 ```gherkin
@@ -938,8 +938,8 @@ Feature: Parent Views Linked Players
 
 ### Story 10.1: System Validates Player Age
 
-**As the** system  
-**I want to** prevent users under 14 from creating accounts  
+**As the** system
+**I want to** prevent users under 14 from creating accounts
 **So that** we comply with child safety requirements
 
 ```gherkin
@@ -1010,7 +1010,7 @@ Feature: Age Verification Gate
 
 ---
 
-**Document End**  
+**Document End**
 **Related Documents:**
 
 - Player Profile Onboarding & Family Linking PRD v1.0
