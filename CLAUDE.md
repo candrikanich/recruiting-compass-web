@@ -158,6 +158,62 @@ const { data } = await supabase
 - **Component auto-import**: No import needed for `/components/**`
 - **Supabase connection**: Verify `.env.local`, check project isn't paused
 
+### Cascade-Delete Pattern
+
+For entities with foreign key dependencies (coaches, interactions, schools):
+
+1. **Try Simple Delete** (fast path)
+   - Direct Supabase delete on primary record
+   - Throws if FK constraint exists
+
+2. **Catch FK Errors**
+   - Detect: "Cannot delete", "violates foreign key constraint", "still referenced"
+   - Other errors pass through
+
+3. **Fall Back to Cascade Endpoint**
+   - API call to `/api/[entity]/[id]/cascade-delete`
+   - Deletes children first (by FK dependency order), then parent
+   - Requires explicit `confirmDelete: true` in body
+
+4. **Return UX Metadata**
+   - `{ cascadeUsed: boolean }` - Tells UI which path was taken
+   - Show appropriate message: "Deleted coach" vs "Deleted coach and 3 interactions"
+
+5. **CSRF Bypass**
+   - Cascade and diagnostic endpoints bypass CSRF
+   - Check `/server/middleware/csrf.ts` for approved paths
+
+**Example Implementation:**
+
+```typescript
+const smartDelete = async (id: string): Promise<{ cascadeUsed: boolean }> => {
+  try {
+    await deleteEntity(id);  // Simple delete
+    return { cascadeUsed: false };
+  } catch (err) {
+    if (isFK Constraint error) {
+      const response = await $fetch(`/api/entity/${id}/cascade-delete`, {
+        method: "POST",
+        body: { confirmDelete: true },
+      });
+      if (response.success) {
+        state.value = state.value.filter((i) => i.id !== id);
+        return { cascadeUsed: true };
+      }
+    }
+    throw err;
+  }
+};
+```
+
+**Security Note**: Use `family_unit_id` (not `user_id`) for access control. Family context is the boundary for multi-family apps.
+
+**Entities Implemented:**
+
+- Schools: `/server/api/schools/[id]/cascade-delete.post.ts`
+- Coaches: `/server/api/coaches/[id]/cascade-delete.post.ts`
+- Interactions: `/server/api/interactions/[id]/cascade-delete.post.ts`
+
 ## Commands
 
 ```bash
