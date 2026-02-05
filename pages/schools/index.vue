@@ -613,13 +613,6 @@
             >
               {{ school.notes }}
             </p>
-
-            <!-- Private Notes Card -->
-            <PrivateNotesCard
-              entity-type="school"
-              :entity-id="school.id"
-              class="mb-4"
-            />
           </div>
 
           <!-- Actions -->
