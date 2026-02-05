@@ -912,7 +912,7 @@ const route = useRoute();
 const {
   getSchool,
   updateSchool,
-  deleteSchool: deleteSchoolAPI,
+  smartDelete,
   updateStatus: updateSchoolStatus,
   loading,
   error: deleteError,
@@ -1155,7 +1155,12 @@ const getRoleLabel = (role: string): string => {
 const confirmDelete = async () => {
   if (confirm("Are you sure you want to delete this school?")) {
     try {
-      await deleteSchoolAPI(id);
+      const result = await smartDelete(id);
+      if (result.cascadeUsed) {
+        alert(
+          "School deleted successfully.\n\nNote: This also removed associated coaches, interactions, and other related records.",
+        );
+      }
       await navigateTo("/schools");
     } catch (err) {
       const errorMessage =

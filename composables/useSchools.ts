@@ -50,6 +50,7 @@ const useSchoolsInternal = (): {
   ) => Promise<School>;
   updateSchool: (id: string, updates: Partial<School>) => Promise<School>;
   deleteSchool: (id: string) => Promise<void>;
+  smartDelete: (id: string) => Promise<{ cascadeUsed: boolean }>;
   toggleFavorite: (id: string, isFavorite: boolean) => Promise<School>;
   updateRanking: (schools_: School[]) => Promise<void>;
   updateStatus: (
@@ -632,6 +633,45 @@ const useSchoolsInternal = (): {
     }
   };
 
+  /**
+   * Smart delete: tries simple delete first, falls back to cascade-delete
+   * if there are related records blocking deletion
+   */
+  const smartDelete = async (id: string): Promise<{ cascadeUsed: boolean }> => {
+    try {
+      // Try simple delete first
+      await deleteSchool(id);
+      return { cascadeUsed: false };
+    } catch (err) {
+      // If simple delete fails, try cascade delete
+      const message =
+        err instanceof Error ? err.message : "Failed to delete school";
+
+      if (
+        message.includes("Cannot delete this school") ||
+        message.includes("violates foreign key constraint") ||
+        message.includes("still referenced")
+      ) {
+        // Use cascade delete API
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const response = (await $fetch(`/api/schools/${id}/cascade-delete`, {
+          method: "POST",
+          body: { confirmDelete: true },
+        })) as any;
+
+        if (response.success) {
+          // Update local state
+          schools.value = schools.value.filter((s) => s.id !== id);
+          return { cascadeUsed: true };
+        }
+        throw new Error(response.message || "Cascade delete failed");
+      }
+
+      // Re-throw if it's a different error
+      throw err;
+    }
+  };
+
   return {
     schools: computed(() => schools.value),
     favoriteSchools,
@@ -642,6 +682,7 @@ const useSchoolsInternal = (): {
     createSchool,
     updateSchool,
     deleteSchool,
+    smartDelete,
     toggleFavorite,
     updateRanking,
     updateStatus,
