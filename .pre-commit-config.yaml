@@ -26,12 +26,19 @@ repos:
             tsconfig\.build\.json
           )$
 
-  # Local npm-based type checking (catches TypeScript errors before commit)
+  # Local npm-based type checking (catches TypeScript errors before commit and push)
   - repo: local
     hooks:
-      - id: type-check
-        name: TypeScript Type Check
+      - id: type-check-commit
+        name: TypeScript Type Check (Pre-Commit)
         entry: npm run type-check
         language: system
         pass_filenames: false
         stages: [commit]
+
+      - id: type-check-push
+        name: TypeScript Type Check (Pre-Push)
+        entry: npm run type-check
+        language: system
+        pass_filenames: false
+        stages: [push]
