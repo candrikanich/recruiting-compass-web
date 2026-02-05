@@ -894,15 +894,15 @@ const useInteractionsInternal = (): {
         message.includes("still referenced")
       ) {
         // Try cascade delete via API endpoint
-        const response = await $fetch(
-          `/api/interactions/${id}/cascade-delete`,
-          {
-            method: "POST",
-            body: { confirmDelete: true },
-          },
-        );
-
-        const cascadeResponse = response as Record<string, unknown>;
+        const result = await fetch(`/api/interactions/${id}/cascade-delete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirmDelete: true }),
+        });
+        const cascadeResponse = (await result.json()) as Record<
+          string,
+          unknown
+        >;
         if (cascadeResponse.success) {
           interactions.value = interactions.value.filter((i) => i.id !== id);
           return { cascadeUsed: true };

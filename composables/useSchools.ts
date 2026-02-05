@@ -653,10 +653,12 @@ const useSchoolsInternal = (): {
         message.includes("still referenced")
       ) {
         // Use cascade delete API
-        const response = (await $fetch(`/api/schools/${id}/cascade-delete`, {
+        const result = await fetch(`/api/schools/${id}/cascade-delete`, {
           method: "POST",
-          body: { confirmDelete: true },
-        })) as Record<string, unknown>;
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirmDelete: true }),
+        });
+        const response = (await result.json()) as Record<string, unknown>;
 
         if (response.success) {
           // Update local state

@@ -419,12 +419,15 @@ export const useCoaches = (): {
         message.includes("still referenced")
       ) {
         // Try cascade delete via API endpoint
-        const response = await $fetch(`/api/coaches/${id}/cascade-delete`, {
+        const result = await fetch(`/api/coaches/${id}/cascade-delete`, {
           method: "POST",
-          body: { confirmDelete: true },
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirmDelete: true }),
         });
-
-        const cascadeResponse = response as Record<string, unknown>;
+        const cascadeResponse = (await result.json()) as Record<
+          string,
+          unknown
+        >;
         if (cascadeResponse.success) {
           coaches.value = coaches.value.filter((c) => c.id !== id);
           return { cascadeUsed: true };
