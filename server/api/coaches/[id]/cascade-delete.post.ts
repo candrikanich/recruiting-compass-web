@@ -1,5 +1,13 @@
-import { defineEventHandler, getRouterParam, createError, readBody } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import {
+  defineEventHandler,
+  getRouterParam,
+  createError,
+  readBody,
+  getHeader,
+  getCookie,
+} from "h3";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { requireAuth } from "~/server/utils/auth";
 
 /**
  * Cascade delete a coach and all related records
@@ -46,7 +54,24 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const client = createServerSupabaseClient();
+  // Verify user is authenticated and get token
+  await requireAuth(event);
+
+  // Get user's access token for RLS-respecting client
+  const authHeader = getHeader(event, "authorization");
+  const token: string | null = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : getCookie(event, "sb-access-token") || null;
+
+  if (!token) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Unauthorized - no authentication token",
+    });
+  }
+
+  // Use authenticated client to respect RLS policies
+  const client = createServerSupabaseUserClient(token);
   const deleted: Record<string, number> = {};
 
   try {
