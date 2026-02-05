@@ -2,11 +2,13 @@ name: Auto Deploy to Staging
 
 # Trigger: After test.yml succeeds on develop branch
 # This ensures staging only deploys when all tests pass
+# Also allows manual triggering if workflow_run fails
 on:
   workflow_run:
     workflows: ["Test & Verify"]
     types: [completed]
     branches: [develop]
+  workflow_dispatch:
 
 jobs:
   deploy:
