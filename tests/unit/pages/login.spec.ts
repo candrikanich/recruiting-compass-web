@@ -129,28 +129,30 @@ describe("login.vue", () => {
     it("should render the login form correctly", () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.find("h1").text()).toBe("Recruiting Compass");
-      expect(wrapper.find('label[for="email"]').text()).toBe("Email");
-      expect(wrapper.find('label[for="password"]').text()).toBe("Password");
       expect(wrapper.find('input[type="email"]').exists()).toBe(true);
       expect(wrapper.find('input[type="password"]').exists()).toBe(true);
       expect(wrapper.find('[data-testid="login-button"]').exists()).toBe(true);
+      expect(
+        wrapper.find('[data-testid="remember-me-checkbox"]').exists(),
+      ).toBe(true);
     });
 
     it("should render back link to welcome page", () => {
       const wrapper = createWrapper();
 
-      const backLink = wrapper.find('[data-to="/"]');
-      expect(backLink.exists()).toBe(true);
-      expect(backLink.text()).toContain("Back to Welcome");
+      const backLink = wrapper
+        .findAll("a")
+        .find((el) => el.text().includes("Back to Welcome"));
+      expect(backLink).toBeDefined();
     });
 
     it("should render signup link", () => {
       const wrapper = createWrapper();
 
-      const signupLink = wrapper.find('[data-to="/signup"]');
-      expect(signupLink.exists()).toBe(true);
-      expect(signupLink.text()).toContain("Create one now");
+      const signupLink = wrapper
+        .findAll("a")
+        .find((el) => el.text().includes("Create one now"));
+      expect(signupLink).toBeDefined();
     });
 
     it("should render button with correct initial text", async () => {

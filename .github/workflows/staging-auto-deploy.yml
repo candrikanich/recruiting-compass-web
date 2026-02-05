@@ -1,14 +1,25 @@
-name: Manual Deploy to Staging
+name: Auto Deploy to Staging
 
 on:
   push:
     branches: [develop]
-    paths:
-      - ".github/workflows/manual-deploy.yml"
-  workflow_dispatch:
 
 jobs:
+  test:
+    name: Test & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
   deploy:
+    name: Deploy to Staging
+    needs: test
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -26,10 +37,12 @@ jobs:
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
-          payload: '{"text":"✅ Staging deployed"}'
+          payload: |
+            {"text":"✅ Staging auto-deployed","blocks":[{"type":"section","text":{"type":"mrkdwn","text":"*✅ Auto Deploy to Staging Success*\n*Commit:* ${{ github.sha }}"}}]}
       - uses: slackapi/slack-github-action@v2
         if: failure()
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
-          payload: '{"text":"❌ Staging deploy failed"}'
+          payload: |
+            {"text":"❌ Staging auto-deploy failed","blocks":[{"type":"section","text":{"type":"mrkdwn","text":"*❌ Auto Deploy to Staging Failed*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"}}]}

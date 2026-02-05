@@ -2,8 +2,23 @@ import { defineConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
 import { fileURLToPath } from "node:url";
 
+// Plugin to mock SVG and image imports in tests
+const mockAssetsPlugin = {
+  name: "mock-assets",
+  resolveId(id) {
+    if (/\.(svg|png|jpg|jpeg|gif)$/.test(id)) {
+      return id;
+    }
+  },
+  load(id) {
+    if (/\.(svg|png|jpg|jpeg|gif)$/.test(id)) {
+      return `export default "test-asset-stub"`;
+    }
+  },
+};
+
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), mockAssetsPlugin],
   test: {
     globals: true,
     environment: "happy-dom",
