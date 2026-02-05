@@ -657,7 +657,7 @@ const useSchoolsInternal = (): {
         const response = (await $fetch(`/api/schools/${id}/cascade-delete`, {
           method: "POST",
           body: { confirmDelete: true },
-        })) as any;
+        })) as { success: boolean; message?: string };
 
         if (response.success) {
           // Update local state

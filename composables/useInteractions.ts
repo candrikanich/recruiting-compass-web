@@ -902,11 +902,15 @@ const useInteractionsInternal = (): {
           },
         );
 
-        if ((response as any).success) {
+        const cascadeResponse = response as {
+          success: boolean;
+          message?: string;
+        };
+        if (cascadeResponse.success) {
           interactions.value = interactions.value.filter((i) => i.id !== id);
           return { cascadeUsed: true };
         }
-        throw new Error((response as any).message || "Cascade delete failed");
+        throw new Error(cascadeResponse.message || "Cascade delete failed");
       }
       throw err;
     }

@@ -1,5 +1,4 @@
 import { defineEventHandler, getRouterParam, createError } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
 
 interface BlockerInfo {
   table: string;
@@ -25,8 +24,6 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Interaction ID is required",
     });
   }
-
-  const client = createServerSupabaseClient();
 
   const blockers: BlockerInfo[] = [];
 
