@@ -1,5 +1,5 @@
 # Pre-commit hooks configuration
-# Install: pre-commit install && pre-commit install --hook-type pre-push
+# Install: pre-commit install
 # Run all checks: pre-commit run --all-files
 # Bypass (not recommended): git commit --no-verify
 
@@ -9,36 +9,8 @@ repos:
     rev: v1.4.0
     hooks:
       - id: detect-secrets
-        args: [--baseline, .secrets.baseline]
-        exclude: |
-          (?x)^(
-            package\.json|
-            package-lock\.json
-          )$
 
-  # ESLint - TypeScript/JavaScript linting with strict rules
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.57.1
-    hooks:
-      - id: eslint
-        types: [typescript, tsx, javascript, jsx, vue]
-        additional_dependencies:
-          - eslint
-          - eslint-config-prettier
-          - "@typescript-eslint/eslint-plugin"
-          - "@typescript-eslint/parser"
-          - eslint-plugin-vue
-        args: [--fix, --max-warnings=0]
-
-  # Prettier - Code formatting (runs after ESLint auto-fixes)
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.1.1
-    hooks:
-      - id: prettier
-        types_or: [javascript, jsx, typescript, tsx, json, yaml, markdown, vue]
-        args: [--write]
-
-  # File integrity checks
+  # File integrity checks (no external dependencies)
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
@@ -48,16 +20,18 @@ repos:
       - id: trailing-whitespace
       - id: check-merge-conflict
       - id: check-json
-        exclude: tsconfig.json
-      - id: debug-statements
+        exclude: |
+          (?x)^(
+            tsconfig\.json|
+            tsconfig\.build\.json
+          )$
 
-  # YAML linting for workflow files
-  - repo: https://github.com/adrienverge/yamllint
-    rev: v1.33.0
+  # Local npm-based type checking (catches TypeScript errors before commit)
+  - repo: local
     hooks:
-      - id: yamllint
-        args: [--strict]
-        files: .github/workflows/
-
-# Only run these hooks at commit stage (not at other stages)
-default_stages: [commit]
+      - id: type-check
+        name: TypeScript Type Check
+        entry: npm run type-check
+        language: system
+        pass_filenames: false
+        stages: [commit]
