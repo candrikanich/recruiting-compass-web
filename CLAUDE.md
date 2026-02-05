@@ -181,6 +181,32 @@ Before marking code complete:
 - [ ] Browser test: Changes work as expected in UI
 - [ ] `git push` succeeds (pre-commit hooks pass)
 
+## Bug-Driven TDD
+
+When a bug is discovered:
+
+1. **Write a failing test** that reproduces the bug
+   - Test should fail with the current code
+   - Include comments explaining what the bug was
+   - Place test in the appropriate `*.spec.ts` file
+
+2. **Fix the code** to make the test pass
+   - Minimal fix for root cause only
+   - Don't refactor or add extra features
+
+3. **Verify the test passes** and doesn't break other tests
+   - Run full test suite: `npm run test`
+   - Ensure coverage doesn't decrease
+
+**Benefits:**
+
+- Prevents regression (bug won't come back)
+- Increases test coverage incrementally
+- Documents the bug for future developers
+- Proves the fix actually works
+
+**Example:** School deletion failing due to missing `family_unit_id` filter in `fetchCoaches` → Added test for `family_unit_id` filter → Fixed `fetchCoaches` → Test passes
+
 ## Deployment
 
 - **Host**: Vercel (from `main` branch)
