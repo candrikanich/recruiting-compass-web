@@ -85,7 +85,7 @@ describe("useCoaches", () => {
   });
 
   describe("fetchCoaches", () => {
-    it("should fetch coaches for a specific school", async () => {
+    it("should fetch coaches for a specific school within family context", async () => {
       const mockCoaches = [
         createMockCoach(),
         createMockCoach({
@@ -101,11 +101,32 @@ describe("useCoaches", () => {
 
       expect(mockSupabase.from).toHaveBeenCalledWith("coaches");
       expect(mockQuery.select).toHaveBeenCalledWith("*");
-      expect(mockQuery.eq).toHaveBeenCalledWith("school_id", "school-123");
+      // Verify both school_id AND family_unit_id filters are applied
+      const eqCalls = mockQuery.eq.mock.calls;
+      expect(eqCalls).toContainEqual(["school_id", "school-123"]);
+      expect(eqCalls).toContainEqual(["family_unit_id", "family-123"]);
       expect(mockQuery.order).toHaveBeenCalledWith("created_at", {
         ascending: false,
       });
       expect(coaches.value).toEqual(mockCoaches);
+    });
+
+    it("should filter by both school_id AND family_unit_id for proper access control", async () => {
+      // This test ensures coaches from other families don't prevent deletion
+      // and maintains family-based access control
+      const mockCoaches = [createMockCoach()];
+      mockQuery.order.mockResolvedValue({ data: mockCoaches, error: null });
+
+      const { fetchCoaches } = useCoaches();
+      await fetchCoaches("school-123");
+
+      // Verify both filters are applied in the correct order
+      const eqCalls = mockQuery.eq.mock.calls;
+      expect(eqCalls.length).toBeGreaterThanOrEqual(2);
+      // school_id filter first
+      expect(eqCalls[0]).toEqual(["school_id", "school-123"]);
+      // family_unit_id filter second (for access control)
+      expect(eqCalls[1]).toEqual(["family_unit_id", "family-123"]);
     });
 
     it("should handle fetch error", async () => {
