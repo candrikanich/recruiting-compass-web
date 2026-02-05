@@ -428,7 +428,7 @@
             <img
               src="~/assets/logos/recruiting-compass-stacked.svg"
               alt="The Recruiting Compass - Find your path, make your move"
-              class="w-64 mx-auto"
+              class="w-96 mx-auto"
             />
           </div>
 
