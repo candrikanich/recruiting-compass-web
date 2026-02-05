@@ -76,16 +76,16 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
         throw new Error("No authentication token available");
       }
 
-      const response = (await $fetch(`/api/user/preferences/${category}`, {
+      const response: {
+        data?: Record<string, unknown>;
+        category?: string;
+        exists?: boolean;
+      } = (await $fetch(`/api/user/preferences/${category as string}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })) as {
-        data?: Record<string, unknown>;
-        category?: string;
-        exists?: boolean;
-      };
+      })) as never;
 
       if (response?.data) {
         preferences.value = response.data;
