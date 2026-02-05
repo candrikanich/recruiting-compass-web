@@ -653,18 +653,19 @@ const useSchoolsInternal = (): {
         message.includes("still referenced")
       ) {
         // Use cascade delete API
-
         const response = (await $fetch(`/api/schools/${id}/cascade-delete`, {
           method: "POST",
           body: { confirmDelete: true },
-        })) as { success: boolean; message?: string };
+        })) as Record<string, unknown>;
 
         if (response.success) {
           // Update local state
           schools.value = schools.value.filter((s) => s.id !== id);
           return { cascadeUsed: true };
         }
-        throw new Error(response.message || "Cascade delete failed");
+        throw new Error(
+          (response.message as string | undefined) || "Cascade delete failed",
+        );
       }
 
       // Re-throw if it's a different error
