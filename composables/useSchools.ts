@@ -132,7 +132,20 @@ const useSchoolsInternal = (): {
 
       if (fetchError) throw fetchError;
 
-      schools.value = data || [];
+      // Deduplicate by ID (keep first occurrence)
+      const seen = new Set<string>();
+      const deduplicated = (data || []).filter((school) => {
+        if (seen.has(school.id)) {
+          console.warn(
+            `[useSchools] Duplicate school detected: ${school.name} (ID: ${school.id})`,
+          );
+          return false;
+        }
+        seen.add(school.id);
+        return true;
+      });
+
+      schools.value = deduplicated;
       console.debug(`[useSchools] Loaded ${schools.value.length} schools`);
     } catch (err: unknown) {
       const message =
@@ -338,8 +351,7 @@ const useSchoolsInternal = (): {
         .from("schools")
         .delete()
         .eq("id", id)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
-        .eq("user_id", userStore.user.id);
+        .eq("family_unit_id", activeFamily.activeFamilyId.value);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: deleteError } = deleteResponse as { error: any };
