@@ -10,6 +10,10 @@ concurrency:
   group: test-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  COVERAGE_THRESHOLD: 75
+  NODE_VERSION: "20"
+
 jobs:
   # Step 1: Lint and type-check
   quality:
@@ -23,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
       - name: Install dependencies
@@ -48,7 +52,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
       - name: Install dependencies
@@ -62,15 +66,14 @@ jobs:
 
       - name: Check coverage thresholds
         run: |
-          # Balanced testing level: 75% coverage required
           # Extracts coverage percentages from lcov.info
           COVERAGE=$(grep -A 2 'BRH' coverage/lcov.info | tail -1 | grep -oP '\d+(?=,)' | head -1)
           echo "Coverage: $COVERAGE%"
-          if [ "$COVERAGE" -lt 75 ]; then
-            echo "❌ Coverage below 75% threshold (got $COVERAGE%)"
+          if [ "$COVERAGE" -lt ${{ env.COVERAGE_THRESHOLD }} ]; then
+            echo "❌ Coverage below ${{ env.COVERAGE_THRESHOLD }}% threshold (got $COVERAGE%)"
             exit 1
           fi
-          echo "✅ Coverage meets 75% threshold"
+          echo "✅ Coverage meets ${{ env.COVERAGE_THRESHOLD }}% threshold"
 
   # Step 3: Deploy to Staging (only on develop branch)
   deploy-staging:
@@ -84,21 +87,45 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ env.NODE_VERSION }}
 
       - run: npm install -g vercel
 
       - name: Deploy to Vercel Staging
-        run: vercel deploy --token="${{ secrets.VERCEL_TOKEN }}"
+        id: deploy
+        run: |
+          OUTPUT=$(vercel deploy --token="${{ secrets.VERCEL_TOKEN }}" 2>&1)
+          echo "$OUTPUT"
+          if [ $? -ne 0 ]; then
+            echo "❌ Vercel deployment failed"
+            exit 1
+          fi
+          if echo "$OUTPUT" | grep -q "ERROR"; then
+            echo "❌ Deployment contains errors"
+            exit 1
+          fi
+          # Extract deployment URL from output
+          URL=$(echo "$OUTPUT" | grep -oP '(?<=https://)[^ ]+' | head -1)
+          echo "deployment-url=https://$URL" >> $GITHUB_OUTPUT
+          echo "✅ Successfully deployed to: https://$URL"
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
+
+      - name: Verify deployment
+        run: |
+          URL="${{ steps.deploy.outputs.deployment-url }}"
+          if [ -z "$URL" ]; then
+            echo "❌ No deployment URL found"
+            exit 1
+          fi
+          echo "✅ Deployment verified: $URL"
 
   # Step 4: Notify on failure
   notify-failure:
     name: Notify Slack on Failure
     runs-on: ubuntu-latest
-    if: failure()
+    if: always() && (needs.quality.result == 'failure' || needs.test.result == 'failure' || (github.event_name == 'push' && needs.deploy-staging.result == 'failure'))
     needs: [quality, test, deploy-staging]
 
     steps:
@@ -132,7 +159,7 @@ jobs:
   notify-success:
     name: Notify Slack on Success
     runs-on: ubuntu-latest
-    if: success()
+    if: always() && needs.quality.result == 'success' && needs.test.result == 'success' && (github.event_name == 'pull_request' || needs.deploy-staging.result == 'success')
     needs: [quality, test, deploy-staging]
 
     steps:
@@ -143,13 +170,13 @@ jobs:
           webhook-type: incoming-webhook
           payload: |
             {
-              "text": "✅ Pipeline Passed - Deployed to Staging",
+              "text": "✅ Pipeline Passed${{ github.event_name == 'push' && ' - Deployed to Staging' || '' }}",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*✅ Pipeline Passed & Deployed to Staging*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}"
+                    "text": "*✅ Pipeline Passed${{ github.event_name == 'push' && ' - Deployed to Staging' || '' }}*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}"
                   }
                 }
               ]
