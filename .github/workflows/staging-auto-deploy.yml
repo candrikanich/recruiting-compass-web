@@ -2,25 +2,23 @@ name: Auto Deploy to Staging
 
 # Trigger: After test.yml succeeds on develop branch
 # This ensures staging only deploys when all tests pass
-# Also allows manual triggering if workflow_run fails
 on:
   workflow_run:
     workflows: ["Test & Verify"]
     types: [completed]
     branches: [develop]
-  workflow_dispatch:
 
 jobs:
   deploy:
     name: Deploy to Staging
-    # Deploy if: (1) test workflow succeeded, or (2) manually triggered
-    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
+    # Only deploy if test workflow succeeded
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment: staging
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_commit || github.ref }}
+          ref: ${{ github.event.workflow_run.head_commit }}
 
       - uses: actions/setup-node@v4
         with:
