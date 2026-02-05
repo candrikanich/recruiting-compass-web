@@ -240,6 +240,16 @@
               <PencilIcon class="w-4 h-4" />
               Edit
             </button>
+            <button
+              @click="openDeleteModal"
+              data-test="coach-detail-delete-btn"
+              class="inline-flex items-center gap-2 px-4 py-2 border border-red-300 text-red-700 text-sm font-semibold rounded-lg hover:bg-red-50 transition ml-auto"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Delete Coach
+            </button>
           </div>
         </div>
 
@@ -492,12 +502,22 @@
       @close="showEditModal = false"
       @updated="handleCoachUpdated"
     />
+
+    <!-- Delete Confirmation Modal -->
+    <DeleteConfirmationModal
+      :is-open="deleteModalOpen"
+      :item-name="coach ? `${coach.first_name} ${coach.last_name}` : ''"
+      item-type="coach"
+      :is-loading="isDeleting"
+      @cancel="closeDeleteModal"
+      @confirm="deleteCoach"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import type { School } from "~/types/models";
@@ -517,6 +537,7 @@ import {
   XMarkIcon,
 } from "@heroicons/vue/24/outline";
 import ResponsivenessBadge from "~/components/ResponsivenessBadge.vue";
+import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
 import type { Coach, Interaction } from "~/types/models";
 
 definePageMeta({
@@ -524,9 +545,10 @@ definePageMeta({
 });
 
 const route = useRoute();
+const router = useRouter();
 const coachId = route.params.id as string;
 
-const { getCoach, updateCoach } = useCoaches();
+const { getCoach, updateCoach, smartDelete } = useCoaches();
 const { getSchool } = useSchools();
 const { interactions, fetchInteractions } = useInteractions();
 const {
@@ -749,6 +771,36 @@ const editCoach = () => {
 const handleCoachUpdated = async (updated: Coach) => {
   coach.value = updated;
   editedNotes.value = updated.notes || "";
+};
+
+// Delete modal state
+const deleteModalOpen = ref(false);
+const isDeleting = ref(false);
+
+const openDeleteModal = () => {
+  deleteModalOpen.value = true;
+};
+
+const closeDeleteModal = () => {
+  deleteModalOpen.value = false;
+};
+
+const deleteCoach = async () => {
+  if (!coach.value?.id) return;
+
+  isDeleting.value = true;
+  try {
+    await smartDelete(coach.value.id);
+    closeDeleteModal();
+    router.push("/coaches");
+  } catch (err: unknown) {
+    const message =
+      err instanceof Error ? err.message : "Failed to delete coach";
+    error.value = message;
+    console.error("Failed to delete coach:", err);
+  } finally {
+    isDeleting.value = false;
+  }
 };
 
 const cancelEditNotes = () => {
