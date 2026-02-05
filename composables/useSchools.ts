@@ -356,7 +356,24 @@ const useSchoolsInternal = (): {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: deleteError } = deleteResponse as { error: any };
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        // Parse database errors for better user messaging
+        const message = deleteError.message || "Failed to delete school";
+
+        // Check for foreign key constraint errors
+        if (
+          message.includes("violates foreign key constraint") ||
+          message.includes("still referenced")
+        ) {
+          const betterMessage =
+            "Cannot delete this school because it has associated coaches, documents, or interactions. Please remove these first.";
+          errorRef.value = betterMessage;
+          throw new Error(betterMessage);
+        }
+
+        errorRef.value = message;
+        throw deleteError;
+      }
 
       // Update local state
       schools.value = schools.value.filter((s) => s.id !== id);
@@ -364,6 +381,10 @@ const useSchoolsInternal = (): {
       const message =
         err instanceof Error ? err.message : "Failed to delete school";
       errorRef.value = message;
+      console.error("[useSchools] Delete error:", {
+        schoolId: id,
+        error: message,
+      });
       throw err;
     } finally {
       loadingRef.value = false;

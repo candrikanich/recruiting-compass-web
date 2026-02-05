@@ -915,6 +915,7 @@ const {
   deleteSchool: deleteSchoolAPI,
   updateStatus: updateSchoolStatus,
   loading,
+  error: deleteError,
 } = useSchools();
 const { fetchSchoolLogo } = useSchoolLogos();
 const { coaches: allCoaches, fetchCoaches } = useCoaches();
@@ -1157,6 +1158,11 @@ const confirmDelete = async () => {
       await deleteSchoolAPI(id);
       await navigateTo("/schools");
     } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to delete school. Please try again.";
+      alert(errorMessage);
       console.error("Failed to delete school:", err);
     }
   }
