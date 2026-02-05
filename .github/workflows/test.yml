@@ -6,10 +6,40 @@ on:
   pull_request:
     branches: [develop, main]
 
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  verify:
-    name: Verify Code Quality
+  # Step 1: Lint and type-check
+  quality:
+    name: Code Quality (Lint & Types)
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint
+
+  # Step 2: Unit and integration tests with coverage
+  test:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    needs: quality
 
     steps:
       - name: Checkout code
@@ -27,20 +57,27 @@ jobs:
       - name: Prepare Nuxt
         run: npx nuxi prepare
 
-      - name: Type check
-        run: npm run type-check
-
-      - name: Lint
-        run: npm run lint
-
       - name: Run tests with coverage
         run: npm run test:coverage
 
-  notify-slack-on-failure:
+      - name: Check coverage thresholds
+        run: |
+          # Balanced testing level: 75% coverage required
+          # Extracts coverage percentages from lcov.info
+          COVERAGE=$(grep -A 2 'BRH' coverage/lcov.info | tail -1 | grep -oP '\d+(?=,)' | head -1)
+          echo "Coverage: $COVERAGE%"
+          if [ "$COVERAGE" -lt 75 ]; then
+            echo "❌ Coverage below 75% threshold (got $COVERAGE%)"
+            exit 1
+          fi
+          echo "✅ Coverage meets 75% threshold"
+
+  # Step 3: Notify on failure
+  notify-failure:
     name: Notify Slack on Failure
     runs-on: ubuntu-latest
     if: failure()
-    needs: verify
+    needs: [quality, test]
 
     steps:
       - name: Send Slack notification
@@ -56,7 +93,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*CI/CD Pipeline Failed*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}"
+                    "text": "*❌ CI/CD Pipeline Failed*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}"
                   }
                 },
                 {
@@ -64,6 +101,33 @@ jobs:
                   "text": {
                     "type": "mrkdwn",
                     "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Full Details>"
+                  }
+                }
+              ]
+            }
+
+  # Step 4: Notify on success (for visibility)
+  notify-success:
+    name: Notify Slack on Success
+    runs-on: ubuntu-latest
+    if: success()
+    needs: [quality, test]
+
+    steps:
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "✅ CI/CD Pipeline Passed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*✅ CI/CD Pipeline Passed*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
                   }
                 }
               ]

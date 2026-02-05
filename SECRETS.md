@@ -53,6 +53,29 @@ This document lists all secrets required for CI/CD pipelines. Configure them at:
 
 ---
 
+**`SLACK_WEBHOOK_URL`**
+
+- **Purpose:** Send CI/CD notifications to Slack (test results, deployments, failures)
+- **How to get:**
+  1. Go to your Slack workspace
+  2. Create a new app: https://api.slack.com/apps
+  3. Click "Create New App" → "From scratch"
+  4. Name: "Recruiting Compass CI/CD"
+  5. Select your workspace
+  6. Go to "Incoming Webhooks" and activate it
+  7. Click "Add New Webhook to Workspace"
+  8. Select the channel (e.g., #deployments or #dev)
+  9. Copy the Webhook URL
+- **Scope:** Send messages to selected Slack channel
+- **Used in:** All CI/CD workflows for notifications
+- **Notifications include:**
+  - ✅ Test suite passes
+  - ❌ Test suite fails
+  - 🚀 Production deployments
+  - 🔧 Code quality issues
+
+---
+
 ## Optional Secrets (for future external integrations)
 
 If you plan to use these services, add them as secrets:
