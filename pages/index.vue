@@ -428,7 +428,7 @@
           <img
             src="/assets/logos/recruiting-compass-stacked.svg"
             alt="Recruiting Compass Logo"
-            class="h-48 w-auto drop-shadow-2xl"
+            class="h-96 w-auto drop-shadow-2xl"
           />
         </div>
 

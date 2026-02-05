@@ -1,6 +1,11 @@
-# CI/CD Setup Complete
+# Robust CI/CD Pipeline Setup
 
-Your Recruiting Compass project now has a professional CI/CD pipeline with automated testing, staged deployments, and Slack notifications.
+Your Recruiting Compass project now has a professional, multi-layered CI/CD pipeline with:
+
+- ✅ Local pre-commit hooks (prevent bad code from being committed)
+- ✅ GitHub Actions testing (type-check, lint, tests with 75% coverage requirement)
+- ✅ Controlled production deployments (approval + tests required)
+- ✅ Slack notifications (visibility into all pipeline events)
 
 ## 🏗️ Pipeline Architecture
 

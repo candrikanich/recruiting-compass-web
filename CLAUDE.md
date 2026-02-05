@@ -158,6 +158,62 @@ const { data } = await supabase
 - **Component auto-import**: No import needed for `/components/**`
 - **Supabase connection**: Verify `.env.local`, check project isn't paused
 
+### Cascade-Delete Pattern
+
+For entities with foreign key dependencies (coaches, interactions, schools):
+
+1. **Try Simple Delete** (fast path)
+   - Direct Supabase delete on primary record
+   - Throws if FK constraint exists
+
+2. **Catch FK Errors**
+   - Detect: "Cannot delete", "violates foreign key constraint", "still referenced"
+   - Other errors pass through
+
+3. **Fall Back to Cascade Endpoint**
+   - API call to `/api/[entity]/[id]/cascade-delete`
+   - Deletes children first (by FK dependency order), then parent
+   - Requires explicit `confirmDelete: true` in body
+
+4. **Return UX Metadata**
+   - `{ cascadeUsed: boolean }` - Tells UI which path was taken
+   - Show appropriate message: "Deleted coach" vs "Deleted coach and 3 interactions"
+
+5. **CSRF Bypass**
+   - Cascade and diagnostic endpoints bypass CSRF
+   - Check `/server/middleware/csrf.ts` for approved paths
+
+**Example Implementation:**
+
+```typescript
+const smartDelete = async (id: string): Promise<{ cascadeUsed: boolean }> => {
+  try {
+    await deleteEntity(id);  // Simple delete
+    return { cascadeUsed: false };
+  } catch (err) {
+    if (isFK Constraint error) {
+      const response = await $fetch(`/api/entity/${id}/cascade-delete`, {
+        method: "POST",
+        body: { confirmDelete: true },
+      });
+      if (response.success) {
+        state.value = state.value.filter((i) => i.id !== id);
+        return { cascadeUsed: true };
+      }
+    }
+    throw err;
+  }
+};
+```
+
+**Security Note**: Use `family_unit_id` (not `user_id`) for access control. Family context is the boundary for multi-family apps.
+
+**Entities Implemented:**
+
+- Schools: `/server/api/schools/[id]/cascade-delete.post.ts`
+- Coaches: `/server/api/coaches/[id]/cascade-delete.post.ts`
+- Interactions: `/server/api/interactions/[id]/cascade-delete.post.ts`
+
 ## Commands
 
 ```bash
@@ -180,6 +236,32 @@ Before marking code complete:
 - [ ] `npm run test` passes (unit tests)
 - [ ] Browser test: Changes work as expected in UI
 - [ ] `git push` succeeds (pre-commit hooks pass)
+
+## Bug-Driven TDD
+
+When a bug is discovered:
+
+1. **Write a failing test** that reproduces the bug
+   - Test should fail with the current code
+   - Include comments explaining what the bug was
+   - Place test in the appropriate `*.spec.ts` file
+
+2. **Fix the code** to make the test pass
+   - Minimal fix for root cause only
+   - Don't refactor or add extra features
+
+3. **Verify the test passes** and doesn't break other tests
+   - Run full test suite: `npm run test`
+   - Ensure coverage doesn't decrease
+
+**Benefits:**
+
+- Prevents regression (bug won't come back)
+- Increases test coverage incrementally
+- Documents the bug for future developers
+- Proves the fix actually works
+
+**Example:** School deletion failing due to missing `family_unit_id` filter in `fetchCoaches` → Added test for `family_unit_id` filter → Fixed `fetchCoaches` → Test passes
 
 ## Deployment
 

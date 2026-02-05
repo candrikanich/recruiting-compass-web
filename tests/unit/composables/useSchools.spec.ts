@@ -45,6 +45,7 @@ describe("useSchools", () => {
     mockQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({ data: null, error: null }),
       insert: vi.fn().mockReturnThis(),
       update: vi.fn().mockReturnThis(),
@@ -73,6 +74,72 @@ describe("useSchools", () => {
       expect(mockSupabase.from).toHaveBeenCalledWith("schools");
       expect(mockQuery.insert).toHaveBeenCalled();
       expect(result).toEqual({ id: "school-1", name: "Test School" });
+    });
+  });
+
+  describe("deleteSchool", () => {
+    it("should delete a school without user_id check", async () => {
+      mockQuery.delete.mockReturnThis();
+      mockQuery.eq.mockReturnThis();
+
+      const { deleteSchool, schools } = useSchools();
+
+      // Manually set schools state for this test
+      schools.value = [{ id: "school-1", name: "Baldwin Wallace" }] as any;
+
+      await deleteSchool("school-1");
+
+      // Verify delete was called with only id and family_unit_id, not user_id
+      const deleteCalls = mockSupabase.from.mock.calls;
+      const deleteCall = deleteCalls.find(
+        (call: any[]) => call[0] === "schools",
+      );
+      expect(deleteCall).toBeDefined();
+
+      // The critical check: delete should NOT have eq("user_id", ...) call
+      const eqCalls = mockQuery.eq.mock.calls;
+      const userIdCheck = eqCalls.some((call: any[]) => call[0] === "user_id");
+      expect(userIdCheck).toBe(false);
+
+      // Verify schools array was updated
+      expect(schools.value).toHaveLength(0);
+    });
+  });
+
+  describe("fetchSchools - deduplication", () => {
+    it("should not display duplicate schools in list", async () => {
+      // Simulate database returning duplicate schools
+      mockQuery.order.mockReturnThis();
+      mockSupabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            order: vi.fn().mockResolvedValue({
+              data: [
+                {
+                  id: "school-1",
+                  name: "Baldwin Wallace",
+                  family_unit_id: "family-123",
+                },
+                {
+                  id: "school-1",
+                  name: "Baldwin Wallace",
+                  family_unit_id: "family-123",
+                },
+              ],
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      const { fetchSchools, schools } = useSchools();
+      await fetchSchools();
+
+      // Should only have one Baldwin Wallace after deduplication
+      const baldwinWallaces = schools.value.filter(
+        (s) => s.name === "Baldwin Wallace",
+      );
+      expect(baldwinWallaces).toHaveLength(1);
     });
   });
 });

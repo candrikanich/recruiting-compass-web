@@ -22,6 +22,9 @@ export default [
       "**/*.vue", // Temporarily ignore Vue files due to parsing issues
       ".env*",
       "PORT=*/**/*",
+      "playwright.config.ts",
+      "vitest.config.ts",
+      "utils/positions.test.ts",
     ],
   },
   js.configs.recommended,

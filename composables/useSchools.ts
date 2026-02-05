@@ -50,6 +50,7 @@ const useSchoolsInternal = (): {
   ) => Promise<School>;
   updateSchool: (id: string, updates: Partial<School>) => Promise<School>;
   deleteSchool: (id: string) => Promise<void>;
+  smartDelete: (id: string) => Promise<{ cascadeUsed: boolean }>;
   toggleFavorite: (id: string, isFavorite: boolean) => Promise<School>;
   updateRanking: (schools_: School[]) => Promise<void>;
   updateStatus: (
@@ -132,7 +133,20 @@ const useSchoolsInternal = (): {
 
       if (fetchError) throw fetchError;
 
-      schools.value = data || [];
+      // Deduplicate by ID (keep first occurrence)
+      const seen = new Set<string>();
+      const deduplicated = (data || []).filter((school) => {
+        if (seen.has(school.id)) {
+          console.warn(
+            `[useSchools] Duplicate school detected: ${school.name} (ID: ${school.id})`,
+          );
+          return false;
+        }
+        seen.add(school.id);
+        return true;
+      });
+
+      schools.value = deduplicated;
       console.debug(`[useSchools] Loaded ${schools.value.length} schools`);
     } catch (err: unknown) {
       const message =
@@ -338,13 +352,29 @@ const useSchoolsInternal = (): {
         .from("schools")
         .delete()
         .eq("id", id)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
-        .eq("user_id", userStore.user.id);
+        .eq("family_unit_id", activeFamily.activeFamilyId.value);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: deleteError } = deleteResponse as { error: any };
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        // Parse database errors for better user messaging
+        const message = deleteError.message || "Failed to delete school";
+
+        // Check for foreign key constraint errors
+        if (
+          message.includes("violates foreign key constraint") ||
+          message.includes("still referenced")
+        ) {
+          const betterMessage =
+            "Cannot delete this school because it has associated coaches, documents, or interactions. Please remove these first.";
+          errorRef.value = betterMessage;
+          throw new Error(betterMessage);
+        }
+
+        errorRef.value = message;
+        throw deleteError;
+      }
 
       // Update local state
       schools.value = schools.value.filter((s) => s.id !== id);
@@ -352,6 +382,10 @@ const useSchoolsInternal = (): {
       const message =
         err instanceof Error ? err.message : "Failed to delete school";
       errorRef.value = message;
+      console.error("[useSchools] Delete error:", {
+        schoolId: id,
+        error: message,
+      });
       throw err;
     } finally {
       loadingRef.value = false;
@@ -599,6 +633,48 @@ const useSchoolsInternal = (): {
     }
   };
 
+  /**
+   * Smart delete: tries simple delete first, falls back to cascade-delete
+   * if there are related records blocking deletion
+   */
+  const smartDelete = async (id: string): Promise<{ cascadeUsed: boolean }> => {
+    try {
+      // Try simple delete first
+      await deleteSchool(id);
+      return { cascadeUsed: false };
+    } catch (err) {
+      // If simple delete fails, try cascade delete
+      const message =
+        err instanceof Error ? err.message : "Failed to delete school";
+
+      if (
+        message.includes("Cannot delete this school") ||
+        message.includes("violates foreign key constraint") ||
+        message.includes("still referenced")
+      ) {
+        // Use cascade delete API
+        const result = await fetch(`/api/schools/${id}/cascade-delete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirmDelete: true }),
+        });
+        const response = (await result.json()) as Record<string, unknown>;
+
+        if (response.success) {
+          // Update local state
+          schools.value = schools.value.filter((s) => s.id !== id);
+          return { cascadeUsed: true };
+        }
+        throw new Error(
+          (response.message as string | undefined) || "Cascade delete failed",
+        );
+      }
+
+      // Re-throw if it's a different error
+      throw err;
+    }
+  };
+
   return {
     schools: computed(() => schools.value),
     favoriteSchools,
@@ -609,6 +685,7 @@ const useSchoolsInternal = (): {
     createSchool,
     updateSchool,
     deleteSchool,
+    smartDelete,
     toggleFavorite,
     updateRanking,
     updateStatus,

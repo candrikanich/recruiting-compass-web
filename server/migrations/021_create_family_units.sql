@@ -47,30 +47,7 @@ COMMENT ON TABLE family_members IS 'Maps users to family units';
 COMMENT ON COLUMN family_members.role IS 'Role in family: student (1 per family) or parent (N per family)';
 
 -- ============================================================================
--- 3. CREATE user_notes TABLE
--- ============================================================================
--- Stores private notes per user for each entity (school, coach, interaction)
--- Enables parent1 and parent2 to maintain separate private notes on same school
-
-CREATE TABLE IF NOT EXISTS user_notes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  entity_type VARCHAR(20) NOT NULL CHECK (entity_type IN ('school', 'coach', 'interaction')),
-  entity_id UUID NOT NULL,
-  note_content TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(user_id, entity_type, entity_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_user_notes_user_id ON user_notes(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_notes_entity ON user_notes(entity_type, entity_id);
-
-COMMENT ON TABLE user_notes IS 'Private notes per user for schools, coaches, interactions';
-COMMENT ON COLUMN user_notes.entity_type IS 'Type of entity being noted: school, coach, interaction';
-
--- ============================================================================
--- 4. ADD family_unit_id COLUMNS TO DATA TABLES
+-- 3. ADD family_unit_id COLUMNS TO DATA TABLES
 -- ============================================================================
 
 -- Add to schools
@@ -215,7 +192,6 @@ DROP POLICY IF EXISTS "Users can delete own coaches" ON coaches;
 -- Enable RLS on family_units and family_members
 ALTER TABLE family_units ENABLE ROW LEVEL SECURITY;
 ALTER TABLE family_members ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_notes ENABLE ROW LEVEL SECURITY;
 
 -- family_units RLS: Users can view units they belong to
 CREATE POLICY "Users can view their family units" ON family_units
@@ -230,23 +206,6 @@ CREATE POLICY "Users can view family members" ON family_members
   USING (
     family_unit_id IN (SELECT family_unit_id FROM family_members WHERE user_id = auth.uid())
   );
-
--- user_notes RLS: Users can only access their own notes
-CREATE POLICY "Users can view own notes" ON user_notes
-  FOR SELECT
-  USING (user_id = auth.uid());
-
-CREATE POLICY "Users can insert own notes" ON user_notes
-  FOR INSERT
-  WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "Users can update own notes" ON user_notes
-  FOR UPDATE
-  USING (user_id = auth.uid());
-
-CREATE POLICY "Users can delete own notes" ON user_notes
-  FOR DELETE
-  USING (user_id = auth.uid());
 
 -- ============================================================================
 -- 7. NEW RLS POLICIES FOR DATA TABLES (FAMILY-BASED)

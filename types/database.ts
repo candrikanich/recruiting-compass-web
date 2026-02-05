@@ -2023,44 +2023,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      user_notes: {
-        Row: {
-          created_at: string | null;
-          entity_id: string;
-          entity_type: string;
-          id: string;
-          note_content: string | null;
-          updated_at: string | null;
-          user_id: string;
-        };
-        Insert: {
-          created_at?: string | null;
-          entity_id: string;
-          entity_type: string;
-          id?: string;
-          note_content?: string | null;
-          updated_at?: string | null;
-          user_id: string;
-        };
-        Update: {
-          created_at?: string | null;
-          entity_id?: string;
-          entity_type?: string;
-          id?: string;
-          note_content?: string | null;
-          updated_at?: string | null;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "user_notes_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       user_preferences: {
         Row: {
           category: string;

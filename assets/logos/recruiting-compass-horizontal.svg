@@ -4,13 +4,13 @@
       @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&amp;family=Source+Sans+3:wght@400&amp;display=swap');
     </style>
   </defs>
-  
+
   <!-- Logo Mark -->
   <g transform="translate(40, 40)">
     <g transform="rotate(10, 0, 0)">
       <!-- Golden circle behind diamond -->
       <circle cx="0" cy="0" r="30" fill="none" stroke="#C4A46B" stroke-width="2.5" />
-      
+
       <!-- Green diamond shape rotated -->
       <g transform="rotate(45)">
         <rect x="-25" y="-25" width="50" height="50" fill="#2D5A27" rx="3" />
@@ -21,24 +21,24 @@
         <rect x="-22" y="-3" width="6" height="6" fill="#F5F5F0" rx="1" />
         <rect x="-3" y="-22" width="6" height="6" fill="#F5F5F0" rx="1" />
       </g>
-      
+
       <!-- Horizontal line across middle -->
       <line x1="-35" y1="0" x2="35" y2="0" stroke="#F5F5F0" stroke-width="1.5" />
-      
+
       <!-- Hash marks -->
       <line x1="-3" y1="10" x2="3" y2="10" stroke="#F5F5F0" stroke-width="1.5" />
       <line x1="-3" y1="16" x2="3" y2="16" stroke="#F5F5F0" stroke-width="1.5" />
       <line x1="-3" y1="22" x2="3" y2="22" stroke="#F5F5F0" stroke-width="1.5" />
       <line x1="-3" y1="28" x2="3" y2="28" stroke="#F5F5F0" stroke-width="1.5" />
-      
+
       <!-- Compass needle -->
       <polygon points="0,-25 -5,-17 0,-20 5,-17" fill="#C4A46B" />
-      
+
       <!-- Center pivot point -->
       <circle cx="0" cy="0" r="5" fill="#8B6914" stroke="#F5F5F0" stroke-width="1.5" />
     </g>
   </g>
-  
+
   <!-- Text -->
   <text x="90" y="38" font-family="Poppins, sans-serif" font-weight="600" font-size="24" fill="#2D5A27">the recruiting compass</text>
   <text x="90" y="56" font-family="Source Sans 3, sans-serif" font-weight="400" font-size="13" fill="#6B4423" letter-spacing="0.12em">find your path • make your move</text>

@@ -93,6 +93,11 @@ vi.mock("~/composables/useSupabase", () => ({
   useSupabase: () => mockSupabase,
 }));
 
+// Mock SVG imports
+vi.mock("~/assets/logos/recruiting-compass-stacked.svg", () => ({
+  default: "test-svg-stub",
+}));
+
 // Mock Nuxt composables
 vi.mock("#app", () => ({
   useRuntimeConfig: () => ({

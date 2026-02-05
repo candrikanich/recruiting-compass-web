@@ -42,30 +42,45 @@ beforeEach(() => {
   setActivePinia(createPinia());
   vi.clearAllMocks();
   mockFetch.mockImplementation((url: string) => {
-    if (url.includes("/api/admin/users")) return Promise.resolve({ users: [] });
+    if (url.includes("/api/admin/users"))
+      return Promise.resolve(
+        new Response(JSON.stringify({ users: [] }), { status: 200 }),
+      );
     if (url.includes("/api/admin/stats"))
-      return Promise.resolve({
-        users: 5,
-        schools: 10,
-        coaches: 20,
-        interactions: 50,
-        family_units: 2,
-      });
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            users: 5,
+            schools: 10,
+            coaches: 20,
+            interactions: 50,
+            family_units: 2,
+          }),
+          { status: 200 },
+        ),
+      );
     if (url.includes("/api/admin/health"))
-      return Promise.resolve({
-        ok: true,
-        db: "ok",
-        resend: "ok",
-        checks: [
-          { name: "Database", status: "ok" },
-          { name: "Resend (email)", status: "ok" },
-        ],
-      });
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            ok: true,
+            db: "ok",
+            resend: "ok",
+            checks: [
+              { name: "Database", status: "ok" },
+              { name: "Resend (email)", status: "ok" },
+            ],
+          }),
+          { status: 200 },
+        ),
+      );
     if (url.includes("/api/admin/pending-invitations"))
-      return Promise.resolve({ invitations: [] });
-    return Promise.resolve({});
+      return Promise.resolve(
+        new Response(JSON.stringify({ invitations: [] }), { status: 200 }),
+      );
+    return Promise.resolve(new Response(JSON.stringify({}), { status: 200 }));
   });
-  (globalThis as any).$fetch = mockFetch;
+  (globalThis as any).fetch = mockFetch;
 });
 
 describe("Admin Dashboard (index.vue)", () => {

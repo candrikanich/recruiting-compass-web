@@ -141,6 +141,7 @@ const useInteractionsInternal = (): {
     entityId: string,
   ) => FollowUpReminder[];
   formatDueDate: (dueDate: string) => string;
+  smartDelete: (id: string) => Promise<{ cascadeUsed: boolean }>;
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
@@ -494,6 +495,8 @@ const useInteractionsInternal = (): {
 
   const deleteInteraction = async (id: string) => {
     if (!userStore.user) throw new Error("User not authenticated");
+    if (!activeFamily.activeFamilyId.value)
+      throw new Error("Family context not loaded");
 
     loadingRef.value = true;
     errorRef.value = null;
@@ -503,6 +506,7 @@ const useInteractionsInternal = (): {
         .from("interactions")
         .delete()
         .eq("id", id)
+        .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .eq("logged_by", userStore.user.id);
 
       if (deleteError) throw deleteError;
@@ -875,6 +879,43 @@ const useInteractionsInternal = (): {
     return date.toLocaleDateString();
   };
 
+  const smartDelete = async (id: string): Promise<{ cascadeUsed: boolean }> => {
+    try {
+      await deleteInteraction(id);
+      return { cascadeUsed: false };
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete interaction";
+
+      // Check if this is a FK constraint error
+      if (
+        message.includes("Cannot delete") ||
+        message.includes("violates foreign key constraint") ||
+        message.includes("still referenced")
+      ) {
+        // Try cascade delete via API endpoint
+        const result = await fetch(`/api/interactions/${id}/cascade-delete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirmDelete: true }),
+        });
+        const cascadeResponse = (await result.json()) as Record<
+          string,
+          unknown
+        >;
+        if (cascadeResponse.success) {
+          interactions.value = interactions.value.filter((i) => i.id !== id);
+          return { cascadeUsed: true };
+        }
+        throw new Error(
+          (cascadeResponse.message as string | undefined) ||
+            "Cascade delete failed",
+        );
+      }
+      throw err;
+    }
+  };
+
   return {
     // Interaction state and methods
     interactions: computed(() => interactions.value),
@@ -885,6 +926,7 @@ const useInteractionsInternal = (): {
     createInteraction,
     updateInteraction,
     deleteInteraction,
+    smartDelete,
     uploadAttachments,
     exportToCSV,
     downloadCSV,

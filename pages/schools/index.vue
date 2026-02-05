@@ -613,13 +613,6 @@
             >
               {{ school.notes }}
             </p>
-
-            <!-- Private Notes Card -->
-            <PrivateNotesCard
-              entity-type="school"
-              :entity-id="school.id"
-              class="mb-4"
-            />
           </div>
 
           <!-- Actions -->
@@ -632,7 +625,7 @@
               View
             </NuxtLink>
             <button
-              @click.stop="deleteSchool(school.id)"
+              @click.stop="handleDeleteSchool(school.id)"
               class="px-3 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition"
             >
               <TrashIcon class="w-4 h-4" />
@@ -700,7 +693,7 @@ const activeFamily =
 const { activeFamilyId } = activeFamily;
 
 // Call composables that depend on the family context
-const { schools, loading, error, fetchSchools, toggleFavorite, deleteSchool } =
+const { schools, loading, error, fetchSchools, toggleFavorite, smartDelete } =
   useSchools();
 const { fetchMultipleLogos } = useSchoolLogos();
 const { calculateMatchScore } = useSchoolMatching();
@@ -1093,6 +1086,23 @@ const handleRemoveFilter = (field: string) => {
 
 const updatePriorityTierFilter = (tiers: ("A" | "B" | "C")[] | null) => {
   priorityTierFilter.value = tiers;
+};
+
+// Handle school deletion with smart cascade support
+const handleDeleteSchool = async (schoolId: string) => {
+  if (confirm("Are you sure you want to delete this school?")) {
+    try {
+      const result = await smartDelete(schoolId);
+      if (result.cascadeUsed) {
+        console.info("School deleted with cascade (removed related records)");
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete school";
+      alert(message);
+      console.error("Delete failed:", err);
+    }
+  }
 };
 
 // Badge helpers

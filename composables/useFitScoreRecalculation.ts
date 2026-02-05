@@ -26,12 +26,15 @@ export const useFitScoreRecalculation = () => {
     error.value = null;
 
     try {
-      const response = (await $fetch(
-        "/api/athlete/fit-scores/recalculate-all",
-        {
-          method: "POST",
-        },
-      )) as RecalculationResponse;
+      const res = await fetch("/api/athlete/fit-scores/recalculate-all", {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to recalculate fit scores: ${res.status}`);
+      }
+
+      const response = (await res.json()) as RecalculationResponse;
 
       if (!response?.success) {
         throw new Error(response?.message || "Recalculation failed");

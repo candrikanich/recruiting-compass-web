@@ -6,9 +6,18 @@ on:
   pull_request:
     branches: [develop, main]
 
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COVERAGE_THRESHOLD: 75
+  NODE_VERSION: "20"
+
 jobs:
-  verify:
-    name: Verify Code Quality
+  # Step 1: Lint and type-check
+  quality:
+    name: Code Quality (Lint & Types)
     runs-on: ubuntu-latest
 
     steps:
@@ -18,7 +27,32 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint
+
+  # Step 2: Unit and integration tests with coverage
+  test:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
       - name: Install dependencies
@@ -27,20 +61,72 @@ jobs:
       - name: Prepare Nuxt
         run: npx nuxi prepare
 
-      - name: Type check
-        run: npm run type-check
-
-      - name: Lint
-        run: npm run lint
-
       - name: Run tests with coverage
         run: npm run test:coverage
 
-  notify-slack-on-failure:
+      - name: Check coverage thresholds
+        run: |
+          # Extracts coverage percentages from lcov.info
+          COVERAGE=$(grep -A 2 'BRH' coverage/lcov.info | tail -1 | grep -oP '\d+(?=,)' | head -1)
+          echo "Coverage: $COVERAGE%"
+          if [ "$COVERAGE" -lt ${{ env.COVERAGE_THRESHOLD }} ]; then
+            echo "❌ Coverage below ${{ env.COVERAGE_THRESHOLD }}% threshold (got $COVERAGE%)"
+            exit 1
+          fi
+          echo "✅ Coverage meets ${{ env.COVERAGE_THRESHOLD }}% threshold"
+
+  # Step 3: Deploy to Staging (only on develop branch)
+  deploy-staging:
+    name: Deploy to Staging
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - run: npm install -g vercel
+
+      - name: Deploy to Vercel Staging
+        id: deploy
+        run: |
+          OUTPUT=$(vercel deploy --token="${{ secrets.VERCEL_TOKEN }}" 2>&1)
+          echo "$OUTPUT"
+          if [ $? -ne 0 ]; then
+            echo "❌ Vercel deployment failed"
+            exit 1
+          fi
+          if echo "$OUTPUT" | grep -q "ERROR"; then
+            echo "❌ Deployment contains errors"
+            exit 1
+          fi
+          # Extract deployment URL from output
+          URL=$(echo "$OUTPUT" | grep -oP '(?<=https://)[^ ]+' | head -1)
+          echo "deployment-url=https://$URL" >> $GITHUB_OUTPUT
+          echo "✅ Successfully deployed to: https://$URL"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
+
+      - name: Verify deployment
+        run: |
+          URL="${{ steps.deploy.outputs.deployment-url }}"
+          if [ -z "$URL" ]; then
+            echo "❌ No deployment URL found"
+            exit 1
+          fi
+          echo "✅ Deployment verified: $URL"
+
+  # Step 4: Notify on failure
+  notify-failure:
     name: Notify Slack on Failure
     runs-on: ubuntu-latest
-    if: failure()
-    needs: verify
+    if: always() && (needs.quality.result == 'failure' || needs.test.result == 'failure' || (github.event_name == 'push' && needs.deploy-staging.result == 'failure'))
+    needs: [quality, test, deploy-staging]
 
     steps:
       - name: Send Slack notification
@@ -50,13 +136,13 @@ jobs:
           webhook-type: incoming-webhook
           payload: |
             {
-              "text": "❌ CI/CD Pipeline Failed",
+              "text": "❌ Pipeline Failed",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*CI/CD Pipeline Failed*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}"
+                    "text": "*❌ Pipeline Failed*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}"
                   }
                 },
                 {
@@ -64,6 +150,33 @@ jobs:
                   "text": {
                     "type": "mrkdwn",
                     "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Full Details>"
+                  }
+                }
+              ]
+            }
+
+  # Step 5: Notify on success
+  notify-success:
+    name: Notify Slack on Success
+    runs-on: ubuntu-latest
+    if: always() && needs.quality.result == 'success' && needs.test.result == 'success' && (github.event_name == 'pull_request' || needs.deploy-staging.result == 'success')
+    needs: [quality, test, deploy-staging]
+
+    steps:
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "✅ Pipeline Passed${{ github.event_name == 'push' && ' - Deployed to Staging' || '' }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*✅ Pipeline Passed${{ github.event_name == 'push' && ' - Deployed to Staging' || '' }}*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}"
                   }
                 }
               ]

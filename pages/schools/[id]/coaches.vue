@@ -224,6 +224,7 @@ const {
   fetchCoaches,
   createCoach,
   deleteCoach: deleteCoachAPI,
+  smartDelete,
   getCoach,
 } = useCoaches();
 const { getSchool } = useSchools();
@@ -345,11 +346,25 @@ const handleCoachFormSubmit = async (formData: any) => {
 };
 
 const deleteCoach = async (coachId: string) => {
-  if (window.confirm("Are you sure you want to delete this coach?")) {
+  if (
+    window.confirm(
+      "Are you sure you want to delete this coach? This will also remove related interactions, offers, and social media posts.",
+    )
+  ) {
     try {
-      await deleteCoachAPI(coachId);
+      const result = await smartDelete(coachId);
+
+      if (result.cascadeUsed) {
+        console.log("Coach and related records deleted successfully");
+      } else {
+        console.log("Coach deleted successfully");
+      }
+
+      await fetchCoaches(route.params.id as string);
     } catch (err) {
-      console.error("Failed to delete coach:", err);
+      const message =
+        err instanceof Error ? err.message : "Failed to delete coach";
+      console.error("Failed to delete coach:", message);
     }
   }
 };

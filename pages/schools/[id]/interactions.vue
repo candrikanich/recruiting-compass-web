@@ -688,6 +688,7 @@ const {
   fetchInteractions,
   createInteraction,
   deleteInteraction: deleteInteractionAPI,
+  smartDelete,
   createReminder,
 } = useInteractions();
 const { coaches, fetchCoaches } = useCoaches();
@@ -1029,9 +1030,21 @@ const handleAddInteraction = async () => {
 const deleteInteraction = async (interactionId: string) => {
   if (confirm("Are you sure you want to delete this interaction?")) {
     try {
-      await deleteInteractionAPI(interactionId);
+      const result = await smartDelete(interactionId);
+
+      if (result.cascadeUsed) {
+        console.log("Interaction and related records deleted successfully");
+      } else {
+        console.log("Interaction deleted successfully");
+      }
+
+      await fetchInteractions({
+        schoolId: route.params.id as string,
+      });
     } catch (err) {
-      console.error("Failed to delete interaction:", err);
+      const message =
+        err instanceof Error ? err.message : "Failed to delete interaction";
+      console.error("Failed to delete interaction:", message);
     }
   }
 };

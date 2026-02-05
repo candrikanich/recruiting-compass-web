@@ -600,7 +600,9 @@ const loadStats = async () => {
   statsError.value = null;
   try {
     const headers = await getAuthHeaders();
-    stats.value = await $fetch("/api/admin/stats", { headers });
+    const res = await fetch("/api/admin/stats", { headers });
+    if (!res.ok) throw new Error(`Failed to load stats: ${res.status}`);
+    stats.value = await res.json();
   } catch (err) {
     statsError.value =
       err instanceof Error ? err.message : "Failed to load stats";
@@ -614,7 +616,9 @@ const loadHealth = async () => {
   healthError.value = null;
   try {
     const headers = await getAuthHeaders();
-    health.value = await $fetch("/api/admin/health", { headers });
+    const res = await fetch("/api/admin/health", { headers });
+    if (!res.ok) throw new Error(`Failed to load health: ${res.status}`);
+    health.value = await res.json();
   } catch (err) {
     healthError.value =
       err instanceof Error ? err.message : "Failed to load health";
@@ -628,9 +632,12 @@ const loadInvitations = async () => {
   invitationsError.value = null;
   try {
     const headers = await getAuthHeaders();
-    const res = (await $fetch("/api/admin/pending-invitations", {
+    const httpRes = await fetch("/api/admin/pending-invitations", {
       headers,
-    })) as {
+    });
+    if (!httpRes.ok)
+      throw new Error(`Failed to load invitations: ${httpRes.status}`);
+    const res = (await httpRes.json()) as {
       invitations: {
         id: string;
         invited_email: string;
@@ -669,10 +676,11 @@ const cancelInvitation = async (id: string) => {
   deletingInvitationId.value = id;
   try {
     const headers = await getAuthHeaders();
-    await $fetch(`/api/admin/pending-invitations/${id}`, {
+    const res = await fetch(`/api/admin/pending-invitations/${id}`, {
       method: "DELETE",
       headers,
     });
+    if (!res.ok) throw new Error(`Failed to cancel invitation: ${res.status}`);
     pendingInvitations.value = pendingInvitations.value.filter(
       (inv) => inv.id !== id,
     );
@@ -704,12 +712,15 @@ const loadUsers = async () => {
       currentUserEmail.value = userEmail;
     }
 
-    const response = await $fetch("/api/admin/users", {
+    const httpRes = await fetch("/api/admin/users", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+
+    if (!httpRes.ok) throw new Error(`Failed to load users: ${httpRes.status}`);
+    const response = await httpRes.json();
 
     // Show all users in the list; current user is non-deletable/non-selectable in the UI
     users.value = (response?.users || []) as User[];
@@ -772,13 +783,18 @@ const deleteUser = async (email: string) => {
       throw new Error("Not authenticated");
     }
 
-    const response = await $fetch("/api/admin/delete-user", {
+    const httpRes = await fetch("/api/admin/delete-user", {
       method: "POST",
-      body: { email },
+      body: JSON.stringify({ email }),
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
+
+    if (!httpRes.ok)
+      throw new Error(`Failed to delete user: ${httpRes.status}`);
+    const response = await httpRes.json();
 
     if (response.success) {
       users.value = users.value.filter((u) => u.email !== email);
@@ -806,11 +822,18 @@ const bulkDeleteUsers = async () => {
 
     if (!token) throw new Error("Not authenticated");
 
-    const response = await $fetch("/api/admin/bulk-delete-users", {
+    const httpRes = await fetch("/api/admin/bulk-delete-users", {
       method: "POST",
-      body: { emails: Array.from(selectedUserEmails.value) },
-      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ emails: Array.from(selectedUserEmails.value) }),
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
     });
+
+    if (!httpRes.ok)
+      throw new Error(`Failed to bulk delete users: ${httpRes.status}`);
+    const response = await httpRes.json();
 
     // Remove deleted users from table
     users.value = users.value.filter(

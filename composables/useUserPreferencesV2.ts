@@ -76,12 +76,18 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
         throw new Error("No authentication token available");
       }
 
-      const response = (await $fetch(`/api/user/preferences/${category}`, {
+      const res = await fetch(`/api/user/preferences/${category}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })) as {
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to load preferences: ${res.status}`);
+      }
+
+      const response = (await res.json()) as {
         data?: Record<string, unknown>;
         category?: string;
         exists?: boolean;
@@ -138,15 +144,22 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
         throw new Error("No authentication token available");
       }
 
-      const response = await $fetch(`/api/user/preferences/${category}`, {
+      const res = await fetch(`/api/user/preferences/${category}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: {
+        body: JSON.stringify({
           data: preferences.value,
-        },
+        }),
       });
+
+      if (!res.ok) {
+        throw new Error(`Failed to save preferences: ${res.status}`);
+      }
+
+      const response = await res.json();
 
       state.value.lastSavedAt = new Date();
       state.value.isDirty = false;
@@ -201,12 +214,16 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
         throw new Error("No authentication token available");
       }
 
-      await $fetch(`/api/user/preferences/${category}`, {
+      const res = await fetch(`/api/user/preferences/${category}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      if (!res.ok) {
+        throw new Error(`Failed to delete preferences: ${res.status}`);
+      }
 
       preferences.value = {};
       state.value.isDirty = false;
