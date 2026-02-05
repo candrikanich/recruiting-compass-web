@@ -115,17 +115,24 @@ export default defineEventHandler(async (event) => {
       .eq("id", schoolId);
 
     if (deleteError) throw deleteError;
-    if (!schoolCount) {
-      throw new Error("School not found or already deleted");
+
+    if (schoolCount && schoolCount > 0) {
+      deleted.schools = schoolCount;
     }
 
-    deleted.schools = schoolCount;
-
+    // Success even if school was already deleted - we still cleaned up the related records
+    const totalDeleted = Object.values(deleted).reduce(
+      (a: number, b: number) => a + b,
+      0,
+    );
     return {
       success: true,
       schoolId,
       deleted,
-      message: `Successfully deleted school and ${Object.values(deleted).reduce((a, b) => a + b, 0) - 1} related records`,
+      message:
+        totalDeleted > 0
+          ? `Successfully deleted ${totalDeleted} related records${schoolCount ? " and the school itself" : ""}`
+          : "No records to delete",
     };
   } catch (err) {
     const message =
