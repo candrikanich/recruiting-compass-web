@@ -77,6 +77,11 @@ export const useCoaches = (): {
   const error = ref<string | null>(null);
 
   const fetchCoaches = async (schoolId: string) => {
+    if (!activeFamily.activeFamilyId.value) {
+      error.value = "No family context";
+      return;
+    }
+
     loading.value = true;
     error.value = null;
 
@@ -85,6 +90,7 @@ export const useCoaches = (): {
         .from("coaches")
         .select("*")
         .eq("school_id", schoolId)
+        .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .order("created_at", { ascending: false });
 
       if (fetchError) {
