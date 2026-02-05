@@ -494,6 +494,8 @@ const useInteractionsInternal = (): {
 
   const deleteInteraction = async (id: string) => {
     if (!userStore.user) throw new Error("User not authenticated");
+    if (!activeFamily.activeFamilyId.value)
+      throw new Error("Family context not loaded");
 
     loadingRef.value = true;
     errorRef.value = null;
@@ -503,6 +505,7 @@ const useInteractionsInternal = (): {
         .from("interactions")
         .delete()
         .eq("id", id)
+        .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .eq("logged_by", userStore.user.id);
 
       if (deleteError) throw deleteError;

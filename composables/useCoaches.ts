@@ -387,8 +387,7 @@ export const useCoaches = (): {
         .from("coaches")
         .delete()
         .eq("id", id)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
-        .eq("user_id", userStore.user.id);
+        .eq("family_unit_id", activeFamily.activeFamilyId.value);
 
       if (deleteError) throw deleteError;
 
