@@ -13,14 +13,14 @@ on:
 jobs:
   deploy:
     name: Deploy to Staging
-    # Only deploy if test workflow succeeded
-    if: github.event.workflow_run.conclusion == 'success'
+    # Deploy if: (1) test workflow succeeded, or (2) manually triggered
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: staging
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_commit }}
+          ref: ${{ github.event.workflow_run.head_commit || github.ref }}
 
       - uses: actions/setup-node@v4
         with:
