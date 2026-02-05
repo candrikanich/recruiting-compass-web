@@ -5,26 +5,13 @@
         <!-- Logo -->
         <NuxtLink
           to="/dashboard"
-          class="flex items-center gap-2 text-xl font-bold text-blue-600 hover:text-blue-700 transition"
+          class="flex items-center hover:opacity-80 transition-opacity"
         >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
-            />
-            <polygon fill="currentColor" points="12,5 13,9 12,8 11,9" />
-            <polygon fill="currentColor" points="12,19 11,15 12,16 13,15" />
-            <polygon fill="currentColor" points="5,12 9,11 8,12 9,13" />
-            <polygon fill="currentColor" points="19,12 15,13 16,12 15,11" />
-          </svg>
-          <span class="hidden sm:inline">Recruiting Compass</span>
+          <img
+            src="@/assets/logos/recruiting-compass-horizontal.svg"
+            alt="Recruiting Compass"
+            class="h-32 w-auto"
+          />
         </NuxtLink>
 
         <!-- Desktop Navigation -->
