@@ -1,5 +1,13 @@
 <template>
   <div class="min-h-screen relative overflow-hidden bg-emerald-600">
+    <!-- Skip link -->
+    <a
+      href="#login-form"
+      class="absolute top-0 left-0 bg-blue-600 text-white px-4 py-2 m-2 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white -translate-y-full focus:translate-y-0 transition-transform"
+    >
+      Skip to login form
+    </a>
+
     <!-- Multi-Sport Field Background -->
     <div class="absolute inset-0">
       <!-- Grass texture with gradient -->
@@ -13,6 +21,8 @@
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 1200 800"
         preserveAspectRatio="xMidYMid slice"
+        aria-hidden="true"
+        role="presentation"
       >
         <!-- Baseball: Infield dirt circle -->
         <circle
@@ -412,9 +422,9 @@
         <div class="mb-6">
           <NuxtLink
             to="/"
-            class="text-white hover:text-white/80 transition-colors flex items-center gap-2"
+            class="text-white hover:text-white/80 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white rounded px-2 py-1"
           >
-            <ArrowLeftIcon class="w-4 h-4" />
+            <ArrowLeftIcon class="w-4 h-4" aria-hidden="true" />
             Back to Welcome
           </NuxtLink>
         </div>
@@ -425,6 +435,7 @@
         >
           <!-- Header -->
           <div class="text-center mb-8">
+            <h1 class="sr-only">Sign in to The Recruiting Compass</h1>
             <img
               src="~/assets/logos/recruiting-compass-stacked.svg"
               alt="The Recruiting Compass - Find your path, make your move"
@@ -435,6 +446,10 @@
           <!-- Timeout Message -->
           <div
             v-if="timeoutMessage"
+            id="timeout-message"
+            role="alert"
+            aria-live="polite"
+            aria-atomic="true"
             class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"
           >
             <p class="text-sm text-yellow-800">{{ timeoutMessage }}</p>
@@ -449,7 +464,12 @@
           />
 
           <!-- Form -->
-          <form @submit.prevent="handleLogin" class="space-y-6">
+          <form
+            id="login-form"
+            @submit.prevent="handleLogin"
+            class="space-y-6"
+            :aria-describedby="hasErrors ? 'form-error-summary' : undefined"
+          >
             <!-- Email -->
             <div>
               <label
@@ -457,24 +477,30 @@
                 class="block text-sm font-medium text-slate-700 mb-2"
               >
                 Email
+                <span aria-label="required" class="text-red-600 ml-1">*</span>
               </label>
               <div class="relative">
                 <EnvelopeIcon
                   class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  aria-hidden="true"
                 />
                 <input
                   id="email"
                   v-model="email"
                   type="email"
                   required
+                  aria-required="true"
                   autocomplete="email"
-                  class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 focus:border-transparent transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
                   placeholder="your.email@example.com"
                   :disabled="loading || validating"
+                  :aria-describedby="
+                    fieldErrors.email ? 'email-error' : undefined
+                  "
                   @blur="validateEmail"
                 />
               </div>
-              <FieldError :error="fieldErrors.email" />
+              <FieldError id="email-error" :error="fieldErrors.email" />
             </div>
 
             <!-- Password -->
@@ -484,24 +510,30 @@
                 class="block text-sm font-medium text-slate-700 mb-2"
               >
                 Password
+                <span aria-label="required" class="text-red-600 ml-1">*</span>
               </label>
               <div class="relative">
                 <LockClosedIcon
                   class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  aria-hidden="true"
                 />
                 <input
                   id="password"
                   v-model="password"
                   type="password"
                   required
+                  aria-required="true"
                   autocomplete="current-password"
-                  class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 focus:border-transparent transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
                   placeholder="Enter your password"
                   :disabled="loading || validating"
+                  :aria-describedby="
+                    fieldErrors.password ? 'password-error' : undefined
+                  "
                   @blur="validatePassword"
                 />
               </div>
-              <FieldError :error="fieldErrors.password" />
+              <FieldError id="password-error" :error="fieldErrors.password" />
             </div>
 
             <!-- Remember Me & Forgot Password -->
@@ -515,7 +547,7 @@
                   v-model="rememberMe"
                   data-testid="remember-me-checkbox"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600 transition-all cursor-pointer"
                 />
                 <span class="text-sm text-slate-600 group-hover:text-slate-700">
                   Remember me
@@ -523,7 +555,7 @@
               </label>
               <NuxtLink
                 to="/forgot-password"
-                class="text-sm text-slate-600 hover:text-blue-600 transition-colors"
+                class="text-sm text-slate-700 hover:text-blue-600 font-medium underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded px-2 py-1 transition-colors"
               >
                 Forgot password?
               </NuxtLink>
@@ -534,7 +566,15 @@
               data-testid="login-button"
               type="submit"
               :disabled="!isFormValid || loading || validating"
-              class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg"
+              :aria-busy="loading || validating"
+              :aria-label="
+                loading
+                  ? 'Signing in, please wait'
+                  : validating
+                    ? 'Validating your information'
+                    : 'Sign in to your account'
+              "
+              class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
             >
               {{
                 loading
@@ -547,7 +587,7 @@
           </form>
 
           <!-- Divider -->
-          <div class="relative my-6">
+          <div class="relative my-6" aria-hidden="true">
             <div class="absolute inset-0 flex items-center">
               <div class="w-full border-t border-slate-200"></div>
             </div>
@@ -564,7 +604,7 @@
               Don't have an account?
               <NuxtLink
                 to="/signup"
-                class="text-blue-600 hover:text-blue-700 font-medium"
+                class="text-blue-600 hover:text-blue-700 font-medium underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded px-1 transition-colors"
               >
                 Create one now
               </NuxtLink>
@@ -579,7 +619,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: "public" });
 
-import { ref, computed } from "vue";
+import { ref, computed, nextTick } from "vue";
 import { useRoute } from "vue-router";
 import { useAuth } from "~/composables/useAuth";
 import { useFormValidation } from "~/composables/useFormValidation";
@@ -663,6 +703,13 @@ const handleLogin = async () => {
   );
 
   if (!validated) {
+    // Focus error summary for screen reader users
+    await nextTick();
+    const errorSummary = document.getElementById("form-error-summary");
+    if (errorSummary) {
+      errorSummary.focus();
+      errorSummary.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
     return;
   }
 
@@ -683,6 +730,14 @@ const handleLogin = async () => {
     const message = err instanceof Error ? err.message : "Login failed";
     // Set auth error at form level
     setErrors([{ field: "form", message }]);
+
+    // Focus error summary on authentication error
+    await nextTick();
+    const errorSummary = document.getElementById("form-error-summary");
+    if (errorSummary) {
+      errorSummary.focus();
+      errorSummary.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   } finally {
     loading.value = false;
   }
