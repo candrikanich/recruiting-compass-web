@@ -436,11 +436,17 @@
           <!-- Header -->
           <div class="text-center mb-8">
             <h1 class="sr-only">Sign in to The Recruiting Compass</h1>
-            <img
-              src="~/assets/logos/recruiting-compass-stacked.svg"
-              alt="The Recruiting Compass - Find your path, make your move"
-              class="w-96 mx-auto"
-            />
+            <NuxtLink
+              to="/"
+              class="inline-block focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded transition-all hover:opacity-90"
+              aria-label="The Recruiting Compass - Find your path, make your move (home)"
+            >
+              <img
+                src="~/assets/logos/recruiting-compass-stacked.svg"
+                alt=""
+                class="w-96 mx-auto"
+              />
+            </NuxtLink>
           </div>
 
           <!-- Timeout Message -->
@@ -492,7 +498,7 @@
                   aria-required="true"
                   autocomplete="email"
                   class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 focus:border-transparent transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
-                  placeholder="your.email@example.com"
+                  placeholder="Example: coach@school.edu"
                   :disabled="loading || validating"
                   :aria-describedby="
                     fieldErrors.email ? 'email-error' : undefined
@@ -525,7 +531,7 @@
                   aria-required="true"
                   autocomplete="current-password"
                   class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 focus:border-transparent transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
-                  placeholder="Enter your password"
+                  placeholder="At least 8 characters"
                   :disabled="loading || validating"
                   :aria-describedby="
                     fieldErrors.password ? 'password-error' : undefined
