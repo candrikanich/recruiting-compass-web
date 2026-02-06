@@ -128,7 +128,9 @@ describe("Coach Deletion Integration", () => {
         delete: vi.fn().mockReturnThis(),
         single: vi.fn().mockReturnThis(),
         then: vi.fn(function (onFulfilled: any) {
-          return Promise.resolve({ error: new Error("Delete failed") }).then(onFulfilled);
+          return Promise.resolve({ error: new Error("Delete failed") }).then(
+            onFulfilled,
+          );
         }),
       };
 
