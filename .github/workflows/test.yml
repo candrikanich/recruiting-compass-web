@@ -100,25 +100,39 @@ jobs:
       - name: Build for testing
         run: npm run build
 
-      - name: Start development server
-        run: npm run preview &
-        timeout-minutes: 2
-
-      - name: Wait for server
+      - name: Start preview server and run accessibility tests
         run: |
-          for i in {1..30}; do
-            if curl -s http://localhost:3000 > /dev/null; then
-              echo "✅ Server is ready"
-              exit 0
-            fi
-            echo "⏳ Waiting for server... ($i/30)"
-            sleep 2
-          done
-          echo "❌ Server failed to start"
-          exit 1
+          # Start the preview server in background and capture PID
+          npm run preview > /tmp/server.log 2>&1 &
+          SERVER_PID=$!
+          echo "Server started with PID: $SERVER_PID"
 
-      - name: Run accessibility tests
-        run: npm run test:a11y
+          # Wait for server to be ready
+          echo "⏳ Waiting for server to start..."
+          for i in {1..60}; do
+            if curl -s http://localhost:3000 > /dev/null 2>&1; then
+              echo "✅ Server is ready"
+              break
+            fi
+            if [ $i -eq 60 ]; then
+              echo "❌ Server failed to start after 60 attempts"
+              cat /tmp/server.log
+              kill $SERVER_PID 2>/dev/null || true
+              exit 1
+            fi
+            echo "⏳ Waiting for server... ($i/60)"
+            sleep 1
+          done
+
+          # Run accessibility tests
+          npm run test:a11y
+          TEST_RESULT=$?
+
+          # Clean up: Kill the server
+          kill $SERVER_PID 2>/dev/null || true
+          wait $SERVER_PID 2>/dev/null || true
+
+          exit $TEST_RESULT
 
       - name: Upload accessibility report
         if: always()
