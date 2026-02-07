@@ -13,6 +13,7 @@
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 1200 800"
         preserveAspectRatio="xMidYMid slice"
+        aria-hidden="true"
       >
         <!-- Baseball: Infield dirt circle -->
         <circle
@@ -210,6 +211,14 @@
       ></div>
     </div>
 
+    <!-- Skip link for keyboard navigation -->
+    <a
+      href="#signup-form"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-0 focus:top-0 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-br-lg"
+    >
+      Skip to signup form
+    </a>
+
     <!-- Content -->
     <div
       class="relative z-10 min-h-screen flex items-center justify-center px-6 py-12"
@@ -219,9 +228,9 @@
         <div class="mb-6">
           <NuxtLink
             to="/"
-            class="text-white hover:text-white/80 transition-colors flex items-center gap-2"
+            class="text-white hover:text-white/80 transition-colors flex items-center gap-2 rounded px-2 py-1 focus:outline-2 focus:outline-offset-2 focus:outline-white"
           >
-            <ArrowLeftIcon class="w-4 h-4" />
+            <ArrowLeftIcon class="w-4 h-4" aria-hidden="true" />
             Back to Welcome
           </NuxtLink>
         </div>
@@ -230,6 +239,9 @@
         <div
           class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20"
         >
+          <!-- Heading (hidden but available for screen readers) -->
+          <h1 class="sr-only">Sign Up</h1>
+
           <!-- Header -->
           <div class="text-center mb-8">
             <img
@@ -248,43 +260,60 @@
           />
 
           <!-- User Type Selection -->
-          <div v-if="!userType" class="space-y-4 mb-8">
-            <p class="text-slate-600 text-sm font-medium">I'm a:</p>
+          <fieldset v-if="!userType" class="space-y-4 mb-8">
+            <legend class="text-slate-600 text-sm font-medium">I'm a:</legend>
             <div class="grid grid-cols-2 gap-3">
               <button
+                id="user-type-player"
                 data-testid="user-type-player"
                 type="button"
                 @click="selectUserType('player')"
                 :disabled="loading"
+                :aria-pressed="userType === 'player'"
                 :class="[
-                  'px-4 py-3 rounded-lg border-2 transition-all font-medium',
-                  'border-slate-200 hover:border-blue-500 text-slate-700',
+                  'px-4 py-3 rounded-lg border-2 transition-all font-medium focus:ring-2 focus:ring-offset-2',
+                  userType === 'player'
+                    ? 'bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-500 ring-offset-2'
+                    : 'border-slate-200 hover:border-blue-500 text-slate-700 focus:ring-blue-500',
                 ]"
               >
                 I'm a Player
               </button>
               <button
+                id="user-type-parent"
                 data-testid="user-type-parent"
                 type="button"
                 @click="selectUserType('parent')"
                 :disabled="loading"
+                :aria-pressed="userType === 'parent'"
                 :class="[
-                  'px-4 py-3 rounded-lg border-2 transition-all font-medium',
-                  'border-slate-200 hover:border-blue-500 text-slate-700',
+                  'px-4 py-3 rounded-lg border-2 transition-all font-medium focus:ring-2 focus:ring-offset-2',
+                  userType === 'parent'
+                    ? 'bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-500 ring-offset-2'
+                    : 'border-slate-200 hover:border-blue-500 text-slate-700 focus:ring-blue-500',
                 ]"
               >
                 I'm a Parent
               </button>
             </div>
-          </div>
+          </fieldset>
 
           <!-- Form -->
           <form
             v-if="userType"
+            id="signup-form"
             @submit.prevent="handleSignup"
             :data-testid="`signup-form-${userType}`"
             class="space-y-6"
           >
+            <h2 class="sr-only">
+              {{ userType === "player" ? "Player" : "Parent" }} Information
+            </h2>
+            <!-- Required field indicator -->
+            <p class="text-sm text-slate-600 mb-6">
+              <span class="text-red-600">*</span> Indicates a required field
+            </p>
+
             <!-- Name Fields -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -293,17 +322,20 @@
                   class="block text-sm font-medium text-slate-700 mb-2"
                 >
                   First Name
+                  <span class="text-red-600 ml-1" aria-label="required">*</span>
                 </label>
                 <div class="relative">
                   <UserIcon
-                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    aria-hidden="true"
                   />
                   <input
                     id="firstName"
                     v-model="firstName"
                     type="text"
                     required
-                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    aria-required="true"
+                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-2 focus:outline-blue-600 focus:border-transparent"
                     placeholder="John"
                     :disabled="loading"
                   />
@@ -315,17 +347,20 @@
                   class="block text-sm font-medium text-slate-700 mb-2"
                 >
                   Last Name
+                  <span class="text-red-600 ml-1" aria-label="required">*</span>
                 </label>
                 <div class="relative">
                   <UserIcon
-                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    aria-hidden="true"
                   />
                   <input
                     id="lastName"
                     v-model="lastName"
                     type="text"
                     required
-                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    aria-required="true"
+                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-2 focus:outline-blue-600 focus:border-transparent"
                     placeholder="Smith"
                     :disabled="loading"
                   />
@@ -340,23 +375,35 @@
                 class="block text-sm font-medium text-slate-700 mb-2"
               >
                 Email
+                <span class="text-red-600 ml-1" aria-label="required">*</span>
               </label>
               <div class="relative">
                 <EnvelopeIcon
-                  class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  aria-hidden="true"
                 />
                 <input
                   id="email"
                   v-model="email"
                   type="email"
                   required
-                  class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  aria-required="true"
+                  :aria-describedby="
+                    fieldErrors.email ? 'email-error' : undefined
+                  "
+                  :aria-invalid="fieldErrors.email ? 'true' : 'false'"
+                  :class="[
+                    'w-full pl-10 pr-4 py-3 border rounded-lg transition-all focus:ring-2 focus:ring-offset-2 focus:outline-2 focus:border-transparent',
+                    fieldErrors.email
+                      ? 'border-red-600 focus:ring-red-500 focus:outline-red-600'
+                      : 'border-slate-300 focus:ring-blue-500 focus:outline-blue-600',
+                  ]"
                   placeholder="your.email@example.com"
                   :disabled="loading"
                   @blur="validateEmail"
                 />
               </div>
-              <FieldError :error="fieldErrors.email" />
+              <FieldError id="email-error" :error="fieldErrors.email" />
             </div>
 
             <!-- Family Code (Parents only) -->
@@ -365,21 +412,33 @@
                 for="familyCode"
                 class="block text-sm font-medium text-slate-700 mb-2"
               >
-                Family Code <span class="text-slate-500">(optional)</span>
+                Family Code
+                <span class="text-slate-500 font-normal">(optional)</span>
               </label>
               <input
                 id="familyCode"
                 v-model="familyCode"
                 type="text"
+                aria-describedby="familyCode-help"
+                :aria-invalid="fieldErrors.familyCode ? 'true' : 'false'"
+                :class="[
+                  'w-full px-4 py-3 border rounded-lg transition-all focus:ring-2 focus:ring-offset-2 focus:outline-2 focus:border-transparent uppercase',
+                  fieldErrors.familyCode
+                    ? 'border-red-600 focus:ring-red-500 focus:outline-red-600'
+                    : 'border-slate-300 focus:ring-blue-500 focus:outline-blue-600',
+                ]"
                 placeholder="FAM-XXXXXXXX"
-                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
                 :disabled="loading"
                 @blur="validateFamilyCode"
               />
-              <p class="text-xs text-slate-500 mt-1">
-                Enter your player's family code to link accounts
+              <p id="familyCode-help" class="text-xs text-slate-500 mt-1">
+                If you have your player's family code, enter it here to link
+                your accounts. You can add it later.
               </p>
-              <FieldError :error="fieldErrors.familyCode" />
+              <FieldError
+                id="familyCode-error"
+                :error="fieldErrors.familyCode"
+              />
             </div>
 
             <!-- Password Fields -->
@@ -390,23 +449,39 @@
                   class="block text-sm font-medium text-slate-700 mb-2"
                 >
                   Password
+                  <span class="text-red-600 ml-1" aria-label="required">*</span>
                 </label>
                 <div class="relative">
                   <LockClosedIcon
-                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    aria-hidden="true"
                   />
                   <input
                     id="password"
                     v-model="password"
                     type="password"
                     required
-                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    aria-required="true"
+                    aria-describedby="password-requirements password-error"
+                    :aria-invalid="fieldErrors.password ? 'true' : 'false'"
+                    :class="[
+                      'w-full pl-10 pr-4 py-3 border rounded-lg transition-all focus:ring-2 focus:ring-offset-2 focus:outline-2 focus:border-transparent',
+                      fieldErrors.password
+                        ? 'border-red-600 focus:ring-red-500 focus:outline-red-600'
+                        : 'border-slate-300 focus:ring-blue-500 focus:outline-blue-600',
+                    ]"
                     placeholder="Create a password"
                     :disabled="loading"
                     @blur="validatePassword"
                   />
                 </div>
-                <FieldError :error="fieldErrors.password" />
+                <p
+                  id="password-requirements"
+                  class="text-xs text-slate-500 mt-1"
+                >
+                  Must be 8+ characters with uppercase, lowercase, and a number
+                </p>
+                <FieldError id="password-error" :error="fieldErrors.password" />
               </div>
               <div>
                 <label
@@ -414,50 +489,90 @@
                   class="block text-sm font-medium text-slate-700 mb-2"
                 >
                   Confirm Password
+                  <span class="text-red-600 ml-1" aria-label="required">*</span>
                 </label>
                 <div class="relative">
                   <LockClosedIcon
-                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    aria-hidden="true"
                   />
                   <input
                     id="confirmPassword"
                     v-model="confirmPassword"
                     type="password"
                     required
-                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    aria-required="true"
+                    :aria-invalid="
+                      fieldErrors.confirmPassword ? 'true' : 'false'
+                    "
+                    :class="[
+                      'w-full pl-10 pr-4 py-3 border rounded-lg transition-all focus:ring-2 focus:ring-offset-2 focus:outline-2 focus:border-transparent',
+                      fieldErrors.confirmPassword
+                        ? 'border-red-600 focus:ring-red-500 focus:outline-red-600'
+                        : 'border-slate-300 focus:ring-blue-500 focus:outline-blue-600',
+                    ]"
                     placeholder="Confirm password"
                     :disabled="loading"
                   />
                 </div>
+                <FieldError
+                  id="confirmPassword-error"
+                  :error="fieldErrors.confirmPassword"
+                />
               </div>
             </div>
-            <p class="text-xs text-slate-500 -mt-4">
-              Must be 8+ characters with uppercase, lowercase, and a number
-            </p>
+
+            <!-- Loading indicator (screen reader announcement) -->
+            <div
+              v-if="loading"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              class="sr-only"
+            >
+              Creating your account, please wait...
+            </div>
 
             <!-- Terms and Conditions -->
             <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-              <label class="flex items-start gap-3 cursor-pointer">
+              <div class="flex items-start gap-3">
                 <input
+                  id="agreeToTerms"
                   v-model="agreeToTerms"
                   type="checkbox"
-                  class="mt-1 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  required
+                  aria-required="true"
+                  :aria-invalid="fieldErrors.terms ? 'true' : 'false'"
+                  :aria-describedby="
+                    fieldErrors.terms ? 'terms-error' : undefined
+                  "
+                  :class="[
+                    'mt-1 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                    fieldErrors.terms && 'border-red-600',
+                  ]"
                 />
-                <span class="text-slate-700 text-sm">
+                <label for="agreeToTerms" class="text-slate-700 text-sm flex-1">
                   I agree to the
                   <NuxtLink
                     to="/legal/terms"
-                    class="text-blue-600 hover:text-blue-700"
-                    >Terms and Conditions</NuxtLink
+                    class="text-blue-600 hover:text-blue-700 underline rounded px-1 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
                   >
+                    Terms and Conditions
+                  </NuxtLink>
                   and
                   <NuxtLink
                     to="/legal/privacy"
-                    class="text-blue-600 hover:text-blue-700"
-                    >Privacy Policy</NuxtLink
+                    class="text-blue-600 hover:text-blue-700 underline rounded px-1 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
                   >
-                </span>
-              </label>
+                    Privacy Policy
+                  </NuxtLink>
+                </label>
+              </div>
+              <FieldError
+                v-if="fieldErrors.terms"
+                id="terms-error"
+                :error="fieldErrors.terms"
+              />
             </div>
 
             <!-- Submit -->
@@ -465,7 +580,11 @@
               data-testid="signup-button"
               type="submit"
               :disabled="loading || hasErrors"
-              class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg"
+              :aria-busy="loading"
+              :aria-label="
+                loading ? 'Creating account, please wait' : 'Create Account'
+              "
+              class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition shadow-lg disabled:from-slate-400 disabled:to-slate-400 disabled:cursor-not-allowed"
             >
               {{ loading ? "Creating account..." : "Create Account" }}
             </button>
@@ -743,5 +862,15 @@ button[data-testid^="user-type-"]:not(:disabled).selected {
 
 button[data-testid^="user-type-"]:disabled {
   @apply opacity-50 cursor-not-allowed;
+}
+
+/* Screen reader only content */
+.sr-only {
+  @apply absolute w-1 h-1 p-0 -m-1 overflow-hidden whitespace-nowrap border-0;
+}
+
+.sr-only:focus,
+.focus\:not-sr-only:focus {
+  @apply relative w-auto h-auto p-2 m-0 overflow-visible whitespace-normal;
 }
 </style>
