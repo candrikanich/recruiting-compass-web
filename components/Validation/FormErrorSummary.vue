@@ -2,6 +2,7 @@
   <Transition name="slide-down">
     <div
       v-if="errors.length > 0"
+      ref="containerRef"
       id="form-error-summary"
       data-testid="error-message"
       role="alert"
@@ -47,16 +48,32 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from "vue";
 import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/vue/24/solid";
 import type { FormFieldError } from "~/composables/useFormValidation";
 
-defineProps<{
+const props = defineProps<{
   errors: FormFieldError[];
 }>();
 
 defineEmits<{
   dismiss: [];
 }>();
+
+const containerRef = ref<HTMLElement | null>(null);
+
+// Focus error summary when errors appear
+watch(
+  () => props.errors.length > 0,
+  (hasErrors) => {
+    if (hasErrors && containerRef.value) {
+      // Use requestAnimationFrame to ensure DOM has updated
+      requestAnimationFrame(() => {
+        containerRef.value?.focus();
+      });
+    }
+  },
+);
 
 /**
  * Formats field name for display

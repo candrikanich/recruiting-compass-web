@@ -335,6 +335,7 @@
                     type="text"
                     required
                     aria-required="true"
+                    autocomplete="given-name"
                     class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-2 focus:outline-blue-600 focus:border-transparent"
                     placeholder="John"
                     :disabled="loading"
@@ -360,6 +361,7 @@
                     type="text"
                     required
                     aria-required="true"
+                    autocomplete="family-name"
                     class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-2 focus:outline-blue-600 focus:border-transparent"
                     placeholder="Smith"
                     :disabled="loading"
@@ -388,6 +390,7 @@
                   type="email"
                   required
                   aria-required="true"
+                  autocomplete="email"
                   :aria-describedby="
                     fieldErrors.email ? 'email-error' : undefined
                   "
@@ -462,6 +465,7 @@
                     type="password"
                     required
                     aria-required="true"
+                    autocomplete="new-password"
                     aria-describedby="password-requirements password-error"
                     :aria-invalid="fieldErrors.password ? 'true' : 'false'"
                     :class="[
@@ -502,6 +506,7 @@
                     type="password"
                     required
                     aria-required="true"
+                    autocomplete="new-password"
                     :aria-invalid="
                       fieldErrors.confirmPassword ? 'true' : 'false'
                     "
