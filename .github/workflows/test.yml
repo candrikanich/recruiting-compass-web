@@ -75,10 +75,63 @@ jobs:
           fi
           echo "✅ Coverage meets ${{ env.COVERAGE_THRESHOLD }}% threshold"
 
+  # Step 2b: Automated Accessibility Testing
+  accessibility:
+    name: Automated Accessibility Tests
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare Nuxt
+        run: npx nuxi prepare
+
+      - name: Build for testing
+        run: npm run build
+
+      - name: Start development server
+        run: npm run preview &
+        timeout-minutes: 2
+
+      - name: Wait for server
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:3000 > /dev/null; then
+              echo "✅ Server is ready"
+              exit 0
+            fi
+            echo "⏳ Waiting for server... ($i/30)"
+            sleep 2
+          done
+          echo "❌ Server failed to start"
+          exit 1
+
+      - name: Run accessibility tests
+        run: npm run test:a11y
+
+      - name: Upload accessibility report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-report
+          path: accessibility-report.json
+          retention-days: 30
+
   # Step 3: Deploy to Staging (only on develop branch)
   deploy-staging:
     name: Deploy to Staging
-    needs: test
+    needs: [test, accessibility]
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     environment: staging
@@ -125,8 +178,8 @@ jobs:
   notify-failure:
     name: Notify Slack on Failure
     runs-on: ubuntu-latest
-    if: always() && (needs.quality.result == 'failure' || needs.test.result == 'failure' || (github.event_name == 'push' && needs.deploy-staging.result == 'failure'))
-    needs: [quality, test, deploy-staging]
+    if: always() && (needs.quality.result == 'failure' || needs.test.result == 'failure' || needs.accessibility.result == 'failure' || (github.event_name == 'push' && needs.deploy-staging.result == 'failure'))
+    needs: [quality, test, accessibility, deploy-staging]
 
     steps:
       - name: Send Slack notification
@@ -159,8 +212,8 @@ jobs:
   notify-success:
     name: Notify Slack on Success
     runs-on: ubuntu-latest
-    if: always() && needs.quality.result == 'success' && needs.test.result == 'success' && (github.event_name == 'pull_request' || needs.deploy-staging.result == 'success')
-    needs: [quality, test, deploy-staging]
+    if: always() && needs.quality.result == 'success' && needs.test.result == 'success' && needs.accessibility.result == 'success' && (github.event_name == 'pull_request' || needs.deploy-staging.result == 'success')
+    needs: [quality, test, accessibility, deploy-staging]
 
     steps:
       - name: Send Slack notification
