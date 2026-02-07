@@ -443,7 +443,7 @@ describe("login.vue", () => {
     it("should handle login error", async () => {
       mockValidation.validate.mockResolvedValue({
         email: "test@example.com",
-        password: "wrongpassword",
+        password: "wrongpassword", // pragma: allowlist secret
       });
       mockAuth.login.mockRejectedValue(new Error("Invalid credentials"));
 
@@ -665,7 +665,7 @@ describe("login.vue", () => {
     });
 
     it("should handle special characters in password", async () => {
-      const specialPassword = "P@$$w0rd!@#$%^&*()";
+      const specialPassword = "P@$$w0rd!@#$%^&*()"; // pragma: allowlist secret
 
       const wrapper = createWrapper();
       await wrapper.find('input[type="password"]').setValue(specialPassword);

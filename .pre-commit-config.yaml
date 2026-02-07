@@ -9,6 +9,7 @@ repos:
     rev: v1.4.0
     hooks:
       - id: detect-secrets
+        args: ["--baseline", ".secrets.baseline"]
 
   # File integrity checks (no external dependencies)
   - repo: https://github.com/pre-commit/pre-commit-hooks
