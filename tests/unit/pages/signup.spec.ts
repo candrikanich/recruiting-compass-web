@@ -178,25 +178,18 @@ describe("signup.vue", () => {
       );
     });
 
-    it("should deselect previous selection when switching user type", async () => {
+    it("should hide user type selector after selection and show correct form", async () => {
       const wrapper = createWrapper();
       const playerButton = wrapper.find('[data-testid="user-type-player"]');
-      const parentButton = wrapper.find('[data-testid="user-type-parent"]');
 
       await playerButton.trigger("click");
       await wrapper.vm.$nextTick();
-      expect(wrapper.find('[data-testid="signup-form-player"]').exists()).toBe(
-        true,
-      );
 
-      await parentButton.trigger("click");
-      await wrapper.vm.$nextTick();
-
-      // Player form should be hidden, parent form should be shown
-      expect(wrapper.find('[data-testid="signup-form-player"]').exists()).toBe(
+      // After selecting player, the selector is hidden and the form is shown
+      expect(wrapper.find('[data-testid="user-type-player"]').exists()).toBe(
         false,
       );
-      expect(wrapper.find('[data-testid="signup-form-parent"]').exists()).toBe(
+      expect(wrapper.find('[data-testid="signup-form-player"]').exists()).toBe(
         true,
       );
     });
@@ -437,8 +430,12 @@ describe("signup.vue", () => {
       expect(backLink).toBeDefined();
     });
 
-    it("should render sign in link", () => {
+    it("should render sign in link after selecting user type", async () => {
       const wrapper = createWrapper();
+      const playerButton = wrapper.find('[data-testid="user-type-player"]');
+      await playerButton.trigger("click");
+      await wrapper.vm.$nextTick();
+
       const signInLink = wrapper
         .findAll("a")
         .find((el) => el.text().includes("Sign in"));

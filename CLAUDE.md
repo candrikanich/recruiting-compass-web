@@ -8,6 +8,12 @@
 - **Verify work**: Run `npm test`, `npm run type-check` after code changes
 - **Format on commit**: PostToolUse hook auto-formats all edits
 
+## Git & Pre-commit Hooks
+
+- **detect-secrets**: If the hook flags false positives in source files, update `.secrets.baseline` by running `python3 -m detect_secrets scan > .secrets.baseline`. NEVER add inline pragma comments to `.vue` template attributes — they get parsed as props and break TypeScript. NEVER use `sed`/`perl` to modify source files to work around detect-secrets.
+- **Type checking**: Runs on push only (not on commit). CI also runs type-check on every push to `develop` and PR to `main`.
+- Test files, `.claude/skills/`, `planning/`, and `documentation/` are excluded from secret scanning.
+
 ## Core Stack
 
 - Nuxt 3 (Vue 3) with file-based routing
