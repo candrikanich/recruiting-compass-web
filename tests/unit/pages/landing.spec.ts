@@ -22,6 +22,10 @@ const mountPage = () =>
           template: '<a :href="to" :class="$attrs.class"><slot /></a>',
           props: ["to"],
         },
+        SkipLink: {
+          template: '<a :href="to" class="sr-only">{{ text }}</a>',
+          props: ["to", "text"],
+        },
       },
     },
   });

@@ -1,5 +1,5 @@
 import { vi, beforeEach, afterEach } from "vitest";
-import { nextTick } from "vue";
+import { nextTick, ref } from "vue";
 import { createPinia, setActivePinia } from "pinia";
 import { config } from "@vue/test-utils";
 
@@ -13,6 +13,12 @@ global.useState = vi.fn();
 global.useFetch = vi.fn();
 global.useAsyncData = vi.fn();
 global.definePageMeta = vi.fn();
+global.useLoadingStates = vi.fn(() => ({
+  loading: ref(false),
+  validating: ref(false),
+  setLoading: vi.fn(),
+  setValidating: vi.fn(),
+}));
 
 // Mock browser APIs
 Object.defineProperty(window, "confirm", {

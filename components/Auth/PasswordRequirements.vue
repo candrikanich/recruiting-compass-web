@@ -1,5 +1,6 @@
 <template>
   <div
+    :id="id"
     class="p-4 bg-slate-50 rounded-lg border border-slate-200"
     role="list"
     aria-label="Password requirements"
@@ -44,9 +45,11 @@ import { CheckCircleIcon } from "@heroicons/vue/24/outline";
 const props = withDefaults(
   defineProps<{
     password: string;
+    id?: string;
   }>(),
   {
     password: "",
+    id: "password-requirements",
   },
 );
 

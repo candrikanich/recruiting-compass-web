@@ -1,12 +1,7 @@
 <template>
   <div class="min-h-screen relative overflow-hidden bg-emerald-600">
     <!-- Skip link -->
-    <a
-      href="#login-form"
-      class="absolute top-0 left-0 bg-blue-600 text-white px-4 py-2 m-2 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white -translate-y-full focus:translate-y-0 transition-transform"
-    >
-      Skip to login form
-    </a>
+    <SkipLink to="#login-form" text="Skip to login form" />
 
     <!-- Multi-Sport Field Background -->
     <MultiSportFieldBackground />
@@ -112,9 +107,8 @@ const route = useRoute();
 const email = ref("");
 const password = ref("");
 const rememberMe = ref(false);
-const loading = ref(false);
-const validating = ref(false);
 
+const { loading, validating } = useLoadingStates();
 const { login } = useAuth();
 const userStore = useUserStore();
 const {

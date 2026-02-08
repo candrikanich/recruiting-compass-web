@@ -4,12 +4,7 @@
     <MultiSportFieldBackground />
 
     <!-- Skip link for keyboard navigation -->
-    <a
-      href="#signup-form"
-      class="sr-only focus:not-sr-only focus:absolute focus:left-0 focus:top-0 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-br-lg"
-    >
-      Skip to signup form
-    </a>
+    <SkipLink to="#signup-form" text="Skip to signup form" />
 
     <!-- Content -->
     <div
@@ -59,6 +54,21 @@
             @select="selectUserType"
             class="mb-8"
           />
+
+          <!-- SR-only announcement for form transition -->
+          <div
+            v-if="userType"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            class="sr-only"
+          >
+            {{
+              userType === "player"
+                ? "Player signup form loaded"
+                : "Parent signup form loaded"
+            }}
+          </div>
 
           <!-- Form pragma: allowlist secret -->
           <SignupForm
@@ -119,8 +129,8 @@ const role = ref("");
 const familyCode = ref("");
 const userType = ref<"player" | "parent" | null>(null);
 const agreeToTerms = ref(false);
-const loading = ref(false);
 
+const { loading } = useLoadingStates();
 const { signup } = useAuth();
 const supabase = useSupabase();
 const {

@@ -43,30 +43,23 @@
     <!-- Form -->
     <form v-if="!emailSent" @submit.prevent="handleSubmit" class="space-y-6">
       <div>
-        <label
-          for="email"
-          class="block text-sm font-medium text-slate-700 mb-2"
-        >
-          Email
-        </label>
-        <div class="relative">
-          <EnvelopeIcon
-            class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-            aria-hidden="true"
-          />
-          <input
-            id="email"
-            v-model="email"
-            type="email"
-            required
-            autocomplete="email"
-            class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="your.email@example.com"
-            :disabled="loading || validating"
-            @blur="validateEmail"
-          />
-        </div>
-        <FieldError :error="fieldErrors.email" />
+        <LoginInputField
+          id="email"
+          label="Email"
+          type="email"
+          placeholder="your.email@example.com"
+          autocomplete="email"
+          :model-value="email"
+          :error="fieldErrors.email"
+          :disabled="loading || validating"
+          :icon="EnvelopeIcon"
+          :required="true"
+          @update:model-value="email = $event"
+          @blur="validateEmail"
+        />
+        <p id="email-help" class="mt-1 text-xs text-slate-600">
+          Enter the email address associated with your account
+        </p>
       </div>
 
       <button
@@ -146,7 +139,7 @@ definePageMeta({ layout: "public" });
 import { ref, computed } from "vue";
 import { EnvelopeIcon } from "@heroicons/vue/24/outline";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
-import FieldError from "~/components/DesignSystem/FieldError.vue";
+import LoginInputField from "~/components/Auth/LoginInputField.vue";
 import { usePasswordReset } from "~/composables/usePasswordReset";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useResendCooldown } from "~/composables/useResendCooldown";
@@ -156,11 +149,10 @@ import { z } from "zod";
 const EMAIL_SCHEMA = z.object({ email: forgotPasswordSchema.shape.email });
 
 const email = ref("");
-const loading = ref(false);
-const validating = ref(false);
 const emailSent = ref(false);
 const submittedEmail = ref("");
 
+const { loading, validating } = useLoadingStates();
 const passwordReset = usePasswordReset();
 const cooldown = useResendCooldown(60);
 const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } =

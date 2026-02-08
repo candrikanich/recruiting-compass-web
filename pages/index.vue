@@ -22,12 +22,7 @@
       class="relative z-10 min-h-screen flex flex-col items-center justify-center px-6"
     >
       <!-- Skip link target -->
-      <a
-        href="#cta-buttons"
-        class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-slate-900 focus:rounded-lg focus:shadow-lg"
-      >
-        Skip to main content
-      </a>
+      <SkipLink to="#cta-buttons" text="Skip to main content" />
 
       <!-- Hero Section -->
       <div class="text-center max-w-4xl mx-auto mb-12">

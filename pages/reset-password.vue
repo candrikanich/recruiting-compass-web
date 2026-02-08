@@ -74,82 +74,38 @@
       class="space-y-6"
     >
       <!-- Password -->
-      <div>
-        <label
-          for="password"
-          class="block text-sm font-medium text-slate-700 mb-2"
-        >
-          New Password
-        </label>
-        <div class="relative">
-          <LockClosedIcon
-            class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-            aria-hidden="true"
-          />
-          <input
-            id="password"
-            v-model="password"
-            :type="showPassword ? 'text' : 'password'"
-            required
-            class="w-full pl-10 pr-12 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter your new password"
-            :disabled="loading || validating"
-            @blur="validatePassword"
-          />
-          <button
-            type="button"
-            @click="showPassword = !showPassword"
-            :aria-label="showPassword ? 'Hide password' : 'Show password'"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
-          >
-            <component
-              :is="showPassword ? EyeSlashIcon : EyeIcon"
-              class="w-5 h-5"
-              aria-hidden="true"
-            />
-          </button>
-        </div>
-        <FieldError :error="fieldErrors.password" />
-      </div>
+      <PasswordInput
+        id="password"
+        label="New Password"
+        placeholder="Enter your new password"
+        autocomplete="new-password"
+        :model-value="password"
+        :error="fieldErrors.password"
+        :disabled="loading || validating"
+        :show-toggle="true"
+        aria-describedby="password-requirements"
+        @update:model-value="password = $event"
+        @blur="validatePassword"
+      />
 
       <!-- Confirm Password -->
       <div>
-        <label
-          for="confirmPassword"
-          class="block text-sm font-medium text-slate-700 mb-2"
-        >
-          Confirm Password
-        </label>
-        <div class="relative">
-          <LockClosedIcon
-            class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-            aria-hidden="true"
-          />
-          <input
-            id="confirmPassword"
-            v-model="confirmPassword"
-            :type="showPassword ? 'text' : 'password'"
-            required
-            autocomplete="new-password"
-            class="w-full pl-10 pr-12 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Confirm your new password"
-            :disabled="loading || validating"
-            @blur="validateConfirmPassword"
-          />
-          <button
-            type="button"
-            @click="showPassword = !showPassword"
-            :aria-label="showPassword ? 'Hide password' : 'Show password'"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
-          >
-            <component
-              :is="showPassword ? EyeSlashIcon : EyeIcon"
-              class="w-5 h-5"
-              aria-hidden="true"
-            />
-          </button>
-        </div>
-        <FieldError :error="fieldErrors.confirmPassword" />
+        <PasswordInput
+          id="confirmPassword"
+          label="Confirm Password"
+          placeholder="Confirm your new password"
+          autocomplete="new-password"
+          :model-value="confirmPassword"
+          :error="fieldErrors.confirmPassword"
+          :disabled="loading || validating"
+          :show-toggle="true"
+          aria-describedby="confirm-password-help"
+          @update:model-value="confirmPassword = $event"
+          @blur="validateConfirmPassword"
+        />
+        <p id="confirm-password-help" class="mt-1 text-xs text-slate-600">
+          Must match your new password
+        </p>
       </div>
 
       <!-- Password Requirements Checklist -->
@@ -173,6 +129,19 @@
         }}
       </button>
     </form>
+
+    <!-- SR-only countdown announcement -->
+    <div
+      v-if="passwordUpdated && redirectCountdown > 0"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      class="sr-only"
+    >
+      Redirecting to login in {{ redirectCountdown }} second{{
+        redirectCountdown !== 1 ? "s" : ""
+      }}
+    </div>
 
     <!-- Success Actions -->
     <section v-if="passwordUpdated" aria-label="Next steps" class="space-y-4">
@@ -220,13 +189,8 @@ definePageMeta({ layout: "public" });
 
 import { ref, computed, watch, nextTick, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import {
-  LockClosedIcon,
-  EyeIcon,
-  EyeSlashIcon,
-} from "@heroicons/vue/24/outline";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
-import FieldError from "~/components/DesignSystem/FieldError.vue";
+import PasswordInput from "~/components/Form/PasswordInput.vue";
 import { usePasswordReset } from "~/composables/usePasswordReset";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { resetPasswordSchema } from "~/utils/validation/schemas";
@@ -241,14 +205,14 @@ const router = useRouter();
 
 const password = ref("");
 const confirmPassword = ref("");
-const showPassword = ref(false);
-const loading = ref(false);
-const validating = ref(false);
 const passwordUpdated = ref(false);
+
+const { loading, validating } = useLoadingStates();
 const invalidToken = ref(false);
 const invalidTokenMessage = ref("");
 const isValidating = ref(false);
 const loginLinkRef = ref<HTMLAnchorElement | null>(null);
+const redirectCountdown = ref(0);
 
 const passwordReset = usePasswordReset();
 const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } =
@@ -277,6 +241,15 @@ watch(passwordUpdated, async (updated) => {
     await nextTick();
     const loginEl = document.querySelector('a[href="/login"]') as HTMLElement;
     loginEl?.focus();
+
+    // Start countdown
+    redirectCountdown.value = 2;
+    const countdownInterval = setInterval(() => {
+      redirectCountdown.value--;
+      if (redirectCountdown.value <= 0) {
+        clearInterval(countdownInterval);
+      }
+    }, 1000);
 
     setTimeout(() => {
       router.push("/login");

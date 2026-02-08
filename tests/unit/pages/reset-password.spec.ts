@@ -47,6 +47,16 @@ vi.mock("~/composables/useFormValidation", () => ({
   })),
 }));
 
+// Mock useLoadingStates
+vi.mock("~/composables/useLoadingStates", () => ({
+  useLoadingStates: () => ({
+    loading: ref(false),
+    validating: ref(false),
+    setLoading: vi.fn(),
+    setValidating: vi.fn(),
+  }),
+}));
+
 // Mock Heroicons
 vi.mock("@heroicons/vue/24/outline", () => ({
   ArrowLeftIcon: { template: "<svg></svg>" },

@@ -7,12 +7,7 @@
     >
       <div class="w-full max-w-md">
         <!-- Skip link -->
-        <a
-          href="#verify-card"
-          class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded focus:ring-2 focus:ring-white focus:ring-offset-2"
-        >
-          Skip to verification status
-        </a>
+        <SkipLink to="#verify-card" text="Skip to verification status" />
 
         <!-- Navigation -->
         <nav aria-label="Page navigation" class="mb-6">
@@ -36,15 +31,15 @@
               class="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg"
               :class="{
                 'bg-emerald-100': isVerified,
-                'bg-amber-100': !isVerified && !verificationChecking,
-                'bg-blue-100': verificationChecking,
+                'bg-amber-100': !isVerified && !loading,
+                'bg-blue-100': loading,
               }"
               role="img"
               :aria-label="statusIconLabel"
             >
               <!-- Loading state -->
               <svg
-                v-if="verificationChecking"
+                v-if="loading"
                 class="w-11 h-11 text-blue-600 animate-spin motion-reduce:animate-none"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -116,7 +111,7 @@
           <section aria-label="Verification status" class="mb-8 space-y-4">
             <!-- Loading message -->
             <div
-              v-if="verificationChecking"
+              v-if="loading"
               role="status"
               aria-live="polite"
               aria-atomic="true"
@@ -129,7 +124,7 @@
 
             <!-- Success message -->
             <div
-              v-if="isVerified && !verificationChecking"
+              v-if="isVerified && !loading"
               role="status"
               aria-live="polite"
               aria-atomic="true"
@@ -143,7 +138,7 @@
 
             <!-- Pending message -->
             <div
-              v-if="!isVerified && !verificationChecking && userEmail"
+              v-if="!isVerified && !loading && userEmail"
               role="status"
               aria-live="polite"
               aria-atomic="true"
@@ -161,7 +156,7 @@
 
             <!-- Error message -->
             <div
-              v-if="emailVerification.error.value && !verificationChecking"
+              v-if="emailVerification.error.value && !loading"
               role="alert"
               aria-live="assertive"
               aria-atomic="true"
@@ -244,8 +239,9 @@ const route = useRoute();
 const emailVerification = useEmailVerification();
 
 const isVerified = ref(false);
-const verificationChecking = ref(false);
 const userEmail = ref("");
+
+const { loading } = useLoadingStates();
 const resendCooldown = ref(0);
 
 const resendButtonRef = ref<HTMLButtonElement | null>(null);
@@ -253,7 +249,7 @@ const dashboardButtonRef = ref<HTMLButtonElement | null>(null);
 const cooldownAnnouncementRef = ref<HTMLDivElement | null>(null);
 
 const statusIconLabel = computed(() => {
-  if (verificationChecking.value) return "Checking email verification status";
+  if (loading.value) return "Checking email verification status";
   if (isVerified.value) return "Email verified";
   return "Email pending verification";
 });
@@ -288,7 +284,7 @@ const handleTokenVerification = async () => {
     return;
   }
 
-  verificationChecking.value = true;
+  loading.value = true;
 
   const success = await emailVerification.verifyEmailToken(token);
 
@@ -297,11 +293,11 @@ const handleTokenVerification = async () => {
     router.replace({ query: {} });
   }
 
-  verificationChecking.value = false;
+  loading.value = false;
 };
 
 const checkVerificationStatus = async () => {
-  verificationChecking.value = true;
+  loading.value = true;
 
   const verified = await emailVerification.checkEmailVerificationStatus();
   isVerified.value = verified;
@@ -313,7 +309,7 @@ const checkVerificationStatus = async () => {
     }
   }
 
-  verificationChecking.value = false;
+  loading.value = false;
 };
 
 const handleResendEmail = async () => {

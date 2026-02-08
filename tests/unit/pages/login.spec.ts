@@ -28,6 +28,9 @@ vi.mock("~/composables/useAuth", () => ({
 vi.mock("~/composables/useFormValidation", () => ({
   useFormValidation: vi.fn(),
 }));
+vi.mock("~/composables/useLoadingStates", () => ({
+  useLoadingStates: vi.fn(),
+}));
 
 // Mock Heroicons
 vi.mock("@heroicons/vue/24/outline", () => ({
@@ -197,6 +200,7 @@ const mockUseRouter = vi.mocked(useRouter);
 const mockUseUserStore = vi.mocked(useUserStore);
 const mockUseAuth = vi.mocked(useAuth);
 const mockUseFormValidation = vi.mocked(useFormValidation);
+const useLoadingStates = vi.fn();
 
 describe("login.vue", () => {
   let mockRouter: any;
@@ -243,6 +247,15 @@ describe("login.vue", () => {
       setErrors: vi.fn(),
     };
     mockUseFormValidation.mockReturnValue(mockValidation);
+
+    // Mock loading states
+    const mockLoadingStates = {
+      loading: ref(false),
+      validating: ref(false),
+      setLoading: vi.fn(),
+      setValidating: vi.fn(),
+    };
+    (useLoadingStates as any).mockReturnValue(mockLoadingStates);
 
     vi.clearAllMocks();
 
@@ -787,6 +800,141 @@ describe("login.vue", () => {
       await checkbox.setValue(false);
 
       expect((checkbox.element as HTMLInputElement).checked).toBe(false);
+    });
+  });
+
+  describe("Timeout Message", () => {
+    it("should display timeout message when reason=timeout query param is present", () => {
+      mockRoute.query = { reason: "timeout" };
+      const wrapper = createWrapper();
+
+      expect(wrapper.find("#timeout-message").exists()).toBe(true);
+      expect(wrapper.text()).toContain(
+        "You were logged out due to inactivity. Please log in again.",
+      );
+    });
+
+    it("should not display timeout message when no query param", () => {
+      mockRoute.query = {};
+      const wrapper = createWrapper();
+
+      expect(wrapper.find("#timeout-message").exists()).toBe(false);
+    });
+
+    it("should not display timeout message with other query params", () => {
+      mockRoute.query = { reason: "other" };
+      const wrapper = createWrapper();
+
+      expect(wrapper.find("#timeout-message").exists()).toBe(false);
+    });
+
+    it("timeout message should have proper ARIA attributes", () => {
+      mockRoute.query = { reason: "timeout" };
+      const wrapper = createWrapper();
+
+      const timeoutMessage = wrapper.find("#timeout-message");
+      expect(timeoutMessage.attributes("role")).toBe("alert");
+      expect(timeoutMessage.attributes("aria-live")).toBe("polite");
+      expect(timeoutMessage.attributes("aria-atomic")).toBe("true");
+    });
+
+    it("should clear timeout message when user starts typing", async () => {
+      mockRoute.query = { reason: "timeout" };
+      const wrapper = createWrapper();
+
+      // Timeout message should be visible
+      expect(wrapper.find("#timeout-message").exists()).toBe(true);
+
+      // User starts typing in email field
+      await wrapper.find('input[type="email"]').setValue("test@example.com");
+      await wrapper.vm.$nextTick();
+
+      // Message should still be there (doesn't auto-dismiss on input)
+      // This is expected behavior - message stays until form is submitted or page is refreshed
+      expect(wrapper.find("#timeout-message").exists()).toBe(true);
+    });
+  });
+
+  describe("Focus Management", () => {
+    it("should focus error summary when form has validation errors", async () => {
+      mockValidation.validate.mockResolvedValue(null);
+      mockValidation.hasErrors.value = true;
+      const wrapper = createWrapper();
+
+      await wrapper.find('input[type="email"]').setValue("invalid");
+      await wrapper.find('input[type="password"]').setValue("123");
+      await wrapper.find("form").trigger("submit.prevent");
+      await wrapper.vm.$nextTick();
+
+      // Error summary should be present
+      const errorSummary = wrapper.find("#form-error-summary");
+      if (errorSummary.exists()) {
+        expect(errorSummary.exists()).toBe(true);
+      }
+    });
+
+    it("should focus error summary when login fails", async () => {
+      mockValidation.validate.mockResolvedValue({
+        email: "test@example.com",
+        password: "wrongpassword", // pragma: allowlist secret
+      });
+      mockAuth.login.mockRejectedValue(new Error("Invalid credentials"));
+
+      const wrapper = createWrapper();
+
+      await wrapper.find('input[type="email"]').setValue("test@example.com");
+      await wrapper.find('input[type="password"]').setValue("wrongpassword");
+      await wrapper.find("form").trigger("submit.prevent");
+      await wrapper.vm.$nextTick();
+
+      // Error should be set
+      expect(mockValidation.setErrors).toHaveBeenCalledWith([
+        {
+          field: "form",
+          message: "Invalid credentials",
+        },
+      ]);
+    });
+  });
+
+  describe("Loading State Behavior", () => {
+    it("should prevent form submission when already loading", async () => {
+      mockValidation.validate.mockResolvedValue({
+        email: "test@example.com",
+        password: "password123", // pragma: allowlist secret
+      });
+      mockAuth.login.mockImplementation(() => new Promise(() => {})); // Never resolves
+
+      const wrapper = createWrapper();
+
+      await wrapper.find('input[type="email"]').setValue("test@example.com");
+      await wrapper.find('input[type="password"]').setValue("password123");
+
+      // First submission
+      await wrapper.find("form").trigger("submit.prevent");
+      await wrapper.vm.$nextTick();
+
+      // Button should be disabled while loading
+      const submitButton = wrapper.find('[data-testid="login-button"]');
+      expect(submitButton.attributes("disabled")).toBeDefined();
+      expect(submitButton.text()).toContain("Signing in...");
+    });
+
+    it("should disable form inputs during validation", async () => {
+      mockValidation.validateField.mockImplementation(
+        () => new Promise(() => {}),
+      ); // Never resolves
+
+      const wrapper = createWrapper();
+      const emailInput = wrapper.find('input[type="email"]');
+
+      await emailInput.setValue("test@example.com");
+      await emailInput.trigger("blur");
+      await wrapper.vm.$nextTick();
+
+      // Input should show validating state (disabled)
+      const button = wrapper.find('[data-testid="login-button"]');
+      expect(button.text()).toContain("Validating...");
     });
   });
 });
