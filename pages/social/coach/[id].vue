@@ -42,7 +42,7 @@
                 {{ coach.first_name }} {{ coach.last_name }}
               </h1>
               <p class="text-lg text-gray-600 mt-1">
-                {{ roleLabel(coach.role) }}
+                {{ getRoleLabel(coach.role) }}
               </p>
               <p class="text-sm text-gray-500 mt-1" v-if="schoolName">
                 {{ schoolName }}
@@ -160,6 +160,7 @@ import { ShareIcon, PhotoIcon } from "@heroicons/vue/24/outline";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import { useSocialMedia } from "~/composables/useSocialMedia";
+import { getRoleLabel } from "~/utils/coachLabels";
 import type { Coach } from "~/types/models";
 
 definePageMeta({
@@ -197,15 +198,6 @@ const coachInstagramCount = computed(
 const coachFlaggedCount = computed(
   () => coachPosts.value.filter((p) => p.flagged_for_review).length,
 );
-
-const roleLabel = (role: string): string => {
-  const labels: Record<string, string> = {
-    head: "Head Coach",
-    assistant: "Assistant Coach",
-    recruiting: "Recruiting Coordinator",
-  };
-  return labels[role] || role;
-};
 
 const togglePostFlag = async (postId: string, flagged: boolean) => {
   try {

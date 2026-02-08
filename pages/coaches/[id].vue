@@ -47,7 +47,7 @@
                 {{ coach.first_name }} {{ coach.last_name }}
               </h1>
               <p class="text-lg text-slate-700 mt-1">
-                {{ roleLabel(coach.role) }}
+                {{ getRoleLabel(coach.role) }}
               </p>
               <p class="text-slate-600 mt-1" v-if="schoolName">
                 {{ schoolName }}
@@ -548,6 +548,14 @@ import {
 } from "@heroicons/vue/24/outline";
 import ResponsivenessBadge from "~/components/ResponsivenessBadge.vue";
 import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
+import { getRoleLabel } from "~/utils/coachLabels";
+import {
+  getTypeIcon as getInteractionIconComponent,
+  getTypeIconBg as getInteractionBgColor,
+  getTypeIconColor as getInteractionIconColor,
+  formatType as formatInteractionType,
+  getSentimentBadgeClass as getSentimentColor,
+} from "~/utils/interactionFormatters";
 import type { Coach, Interaction } from "~/types/models";
 
 definePageMeta({
@@ -638,15 +646,6 @@ const stats = computed(() => {
   };
 });
 
-const roleLabel = (role: string): string => {
-  const labels: Record<string, string> = {
-    head: "Head Coach",
-    assistant: "Assistant Coach",
-    recruiting: "Recruiting Coordinator",
-  };
-  return labels[role] || role;
-};
-
 const formatDate = (dateString: string | undefined): string => {
   if (!dateString) return "";
   const date = new Date(dateString);
@@ -662,62 +661,6 @@ const daysAgo = (dateString: string): number => {
   const today = new Date();
   const diffTime = Math.abs(today.getTime() - date.getTime());
   return Math.floor(diffTime / (1000 * 60 * 60 * 24));
-};
-
-const formatInteractionType = (type: string): string => {
-  return type
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-};
-
-const getInteractionBgColor = (type: string): string => {
-  const colors: Record<string, string> = {
-    email: "bg-blue-100",
-    text: "bg-emerald-100",
-    phone_call: "bg-orange-100",
-    in_person_visit: "bg-purple-100",
-    virtual_meeting: "bg-indigo-100",
-    camp: "bg-amber-100",
-    showcase: "bg-pink-100",
-    tweet: "bg-sky-100",
-    dm: "bg-violet-100",
-  };
-  return colors[type] || "bg-slate-100";
-};
-
-const getInteractionIconColor = (type: string): string => {
-  const colors: Record<string, string> = {
-    email: "text-blue-600",
-    text: "text-emerald-600",
-    phone_call: "text-orange-600",
-    in_person_visit: "text-purple-600",
-    virtual_meeting: "text-indigo-600",
-    camp: "text-amber-600",
-    showcase: "text-pink-600",
-    tweet: "text-sky-600",
-    dm: "text-violet-600",
-  };
-  return colors[type] || "text-slate-600";
-};
-
-const getInteractionIconComponent = (type: string) => {
-  const icons: Record<string, any> = {
-    email: EnvelopeIcon,
-    text: ChatBubbleLeftIcon,
-    phone_call: PhoneIcon,
-  };
-  return icons[type] || ChatBubbleLeftIcon;
-};
-
-const getSentimentColor = (sentiment: string): string => {
-  const colors: Record<string, string> = {
-    very_positive: "bg-emerald-100 text-emerald-700",
-    positive: "bg-blue-100 text-blue-700",
-    neutral: "bg-slate-100 text-slate-700",
-    negative: "bg-red-100 text-red-700",
-  };
-  return colors[sentiment] || "bg-slate-100 text-slate-700";
 };
 
 const sendEmail = () => {

@@ -322,6 +322,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { useCommunicationTemplates } from "~/composables/useCommunicationTemplates";
+import { getRoleLabel } from "~/utils/coachLabels";
 import type { Coach, School } from "~/types/models";
 
 interface Props {
@@ -402,15 +403,6 @@ watch(selectedTextTemplate, (templateId) => {
     }
   }
 });
-
-const getRoleLabel = (role: string): string => {
-  const labels: Record<string, string> = {
-    head: "Head Coach",
-    assistant: "Assistant Coach",
-    recruiting: "Recruiting Coordinator",
-  };
-  return labels[role] || role;
-};
 
 const formatPhone = (phone: string): string => {
   const cleaned = phone.replace(/\D/g, "");

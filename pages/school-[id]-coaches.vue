@@ -247,7 +247,7 @@
                 {{ coach.first_name }} {{ coach.last_name }}
               </h3>
               <p class="text-sm text-slate-600 capitalize">
-                {{ roleLabel(coach.role) }}
+                {{ getRoleLabel(coach.role) }}
               </p>
             </div>
             <button
@@ -349,6 +349,7 @@ import { ref, onMounted, reactive, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
+import { getRoleLabel } from "~/utils/coachLabels";
 
 definePageMeta({});
 
@@ -387,15 +388,6 @@ const newCoach = reactive({
   instagram_handle: "",
   notes: "",
 });
-
-const roleLabel = (role: string) => {
-  const labels: Record<string, string> = {
-    head: "Head Coach",
-    assistant: "Assistant Coach",
-    recruiting: "Recruiting Coordinator",
-  };
-  return labels[role] || role;
-};
 
 const handleAddCoach = async () => {
   try {

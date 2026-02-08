@@ -467,6 +467,7 @@ import { interactionSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import InterestCalibration from "~/components/Interaction/InterestCalibration.vue";
+import { getRoleLabel } from "~/utils/coachLabels";
 import type { Interaction } from "~/types/models";
 
 definePageMeta({
@@ -582,15 +583,6 @@ const saveOtherCoach = () => {
   showOtherCoachModal.value = false;
   // Could add a note: form.value.content += `\n[Coach: ${otherCoachName.value}]`
   otherCoachName.value = "";
-};
-
-const getRoleLabel = (role: string): string => {
-  const labels: Record<string, string> = {
-    head: "Head Coach",
-    assistant: "Assistant Coach",
-    recruiting: "Recruiting Coordinator",
-  };
-  return labels[role] || role;
 };
 
 const handleFileSelect = (event: Event) => {

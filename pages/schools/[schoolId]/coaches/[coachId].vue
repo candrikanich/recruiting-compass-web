@@ -255,6 +255,7 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useSupabase } from "~/composables/useSupabase";
 import { useSchools } from "~/composables/useSchools";
+import { getRoleLabel } from "~/utils/coachLabels";
 import type { Coach } from "~/types/models";
 
 definePageMeta({
@@ -283,15 +284,6 @@ const editedCoach = ref<{
 });
 
 const schoolName = ref("");
-
-const getRoleLabel = (role: string): string => {
-  const labels: Record<string, string> = {
-    head: "Head Coach",
-    assistant: "Assistant Coach",
-    recruiting: "Recruiting Coordinator",
-  };
-  return labels[role] || role;
-};
 
 const getResponsiveColor = (score: number): string => {
   if (score >= 80) return "text-green-600";

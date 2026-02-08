@@ -501,6 +501,7 @@ import {
   ChatBubbleLeftIcon,
   PlusIcon,
 } from "@heroicons/vue/24/outline";
+import { getRoleLabel } from "~/utils/coachLabels";
 import type { Coach, School } from "~/types/models";
 
 definePageMeta({
@@ -553,15 +554,6 @@ const handleFilterUpdate = (field: string, value: string | null) => {
 
 const clearFilters = () => {
   filterValues.value = new Map();
-};
-
-const getRoleLabel = (role: string): string => {
-  const labels: Record<string, string> = {
-    head: "Head Coach",
-    assistant: "Assistant",
-    recruiting: "Recruiting",
-  };
-  return labels[role] || role;
 };
 
 const getResponsivenessLabel = (value: string): string => {

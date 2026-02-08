@@ -453,193 +453,25 @@
             </div>
           </div>
 
-          <!-- Notes Card -->
-          <div
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
-          >
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-semibold text-slate-900">Notes</h2>
-              <div class="flex items-center gap-2">
-                <NotesHistory :school-id="id" />
-                <button
-                  @click="editingNotes = !editingNotes"
-                  class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition flex items-center gap-1"
-                >
-                  <PencilIcon class="w-4 h-4" />
-                  {{ editingNotes ? "Cancel" : "Edit" }}
-                </button>
-              </div>
-            </div>
-            <div v-if="editingNotes" class="space-y-3">
-              <textarea
-                v-model="editedNotes"
-                rows="4"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Add notes about this school..."
-              />
-              <button
-                @click="saveNotes"
-                :disabled="loading"
-                class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-              >
-                {{ loading ? "Saving..." : "Save Notes" }}
-              </button>
-            </div>
-            <p v-else class="text-slate-700 text-sm whitespace-pre-wrap">
-              {{ school.notes || "No notes added yet." }}
-            </p>
-          </div>
-
-          <!-- Private Notes Card -->
-          <div
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
-          >
-            <div class="flex items-center justify-between mb-2">
-              <div class="flex items-center gap-2">
-                <DocumentTextIcon class="w-5 h-5 text-slate-400" />
-                <h2 class="text-lg font-semibold text-slate-900">
-                  My Private Notes
-                </h2>
-              </div>
-              <button
-                @click="editingPrivateNotes = !editingPrivateNotes"
-                class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition flex items-center gap-1"
-              >
-                <PencilIcon class="w-4 h-4" />
-                {{ editingPrivateNotes ? "Cancel" : "Edit" }}
-              </button>
-            </div>
-            <p class="text-xs text-slate-500 mb-3">
-              Only you can see these notes
-            </p>
-            <div v-if="editingPrivateNotes" class="space-y-3">
-              <textarea
-                v-model="editedPrivateNotes"
-                rows="4"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Add your private thoughts..."
-              />
-              <button
-                @click="savePrivateNotes"
-                :disabled="loading"
-                class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-              >
-                {{ loading ? "Saving..." : "Save Notes" }}
-              </button>
-            </div>
-            <p v-else class="text-slate-700 text-sm whitespace-pre-wrap">
-              {{ myPrivateNote || "No private notes added yet." }}
-            </p>
-          </div>
+          <!-- Notes Cards -->
+          <SchoolNotesCard
+            :notes="school.notes"
+            :private-note="myPrivateNote"
+            :school-id="id"
+            :is-saving="loading"
+            @update:notes="handleUpdateNotes"
+            @update:private-notes="handleUpdatePrivateNotes"
+          />
 
           <!-- Pros and Cons -->
-          <div v-if="school" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Pros -->
-            <div
-              class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
-            >
-              <h3
-                class="font-semibold text-slate-900 mb-4 flex items-center gap-2"
-              >
-                <div
-                  class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center"
-                >
-                  <CheckIcon class="w-4 h-4 text-emerald-600" />
-                </div>
-                Pros
-              </h3>
-              <div class="space-y-2 mb-4">
-                <div
-                  v-for="(pro, index) in school.pros ?? []"
-                  :key="`pro-${index}`"
-                  class="flex items-center justify-between p-2 bg-emerald-50 rounded-lg text-emerald-700 text-sm"
-                >
-                  <span>{{ pro }}</span>
-                  <button
-                    @click="removePro(index)"
-                    class="text-emerald-400 hover:text-red-500 transition"
-                  >
-                    <XMarkIcon class="w-4 h-4" />
-                  </button>
-                </div>
-                <div
-                  v-if="!(school.pros ?? []).length"
-                  class="text-slate-400 text-sm"
-                >
-                  No pros added yet
-                </div>
-              </div>
-              <div class="flex gap-2">
-                <input
-                  v-model="newPro"
-                  type="text"
-                  placeholder="Add a pro..."
-                  class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  @keyup.enter="addPro"
-                />
-                <button
-                  @click="addPro"
-                  :disabled="!newPro.trim()"
-                  class="px-3 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            <!-- Cons -->
-            <div
-              class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
-            >
-              <h3
-                class="font-semibold text-slate-900 mb-4 flex items-center gap-2"
-              >
-                <div
-                  class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center"
-                >
-                  <XMarkIcon class="w-4 h-4 text-red-600" />
-                </div>
-                Cons
-              </h3>
-              <div class="space-y-2 mb-4">
-                <div
-                  v-for="(con, index) in school.cons ?? []"
-                  :key="`con-${index}`"
-                  class="flex items-center justify-between p-2 bg-red-50 rounded-lg text-red-700 text-sm"
-                >
-                  <span>{{ con }}</span>
-                  <button
-                    @click="removeCon(index)"
-                    class="text-red-400 hover:text-red-600 transition"
-                  >
-                    <XMarkIcon class="w-4 h-4" />
-                  </button>
-                </div>
-                <div
-                  v-if="!(school.cons ?? []).length"
-                  class="text-slate-400 text-sm"
-                >
-                  No cons added yet
-                </div>
-              </div>
-              <div class="flex gap-2">
-                <input
-                  v-model="newCon"
-                  type="text"
-                  placeholder="Add a con..."
-                  class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  @keyup.enter="addCon"
-                />
-                <button
-                  @click="addCon"
-                  :disabled="!newCon.trim()"
-                  class="px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition disabled:opacity-50"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          </div>
+          <SchoolProsConsCard
+            :pros="school.pros ?? []"
+            :cons="school.cons ?? []"
+            @add-pro="addPro"
+            @add-con="addCon"
+            @remove-pro="removePro"
+            @remove-con="removeCon"
+          />
 
           <!-- Coaching Philosophy Card -->
           <SchoolCoachingPhilosophy
@@ -714,138 +546,13 @@
         </div>
 
         <!-- Sidebar - Right Column -->
-        <div class="space-y-6">
-          <!-- Quick Actions -->
-          <div
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
-          >
-            <h3 class="font-semibold text-slate-900 mb-4">Quick Actions</h3>
-            <div class="space-y-3">
-              <NuxtLink
-                :to="`/schools/${id}/interactions`"
-                class="block w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-center flex items-center justify-center gap-2"
-              >
-                <ChatBubbleLeftRightIcon class="w-4 h-4" />
-                Log Interaction
-              </NuxtLink>
-              <button
-                @click="showEmailModal = true"
-                class="block w-full px-4 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 transition text-center flex items-center justify-center gap-2"
-              >
-                <EnvelopeIcon class="w-4 h-4" />
-                Send Email
-              </button>
-              <NuxtLink
-                :to="`/schools/${id}/coaches`"
-                class="block w-full px-4 py-2.5 bg-slate-600 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition text-center flex items-center justify-center gap-2"
-              >
-                <UsersIcon class="w-4 h-4" />
-                Manage Coaches
-              </NuxtLink>
-            </div>
-          </div>
-
-          <!-- Coaches -->
-          <div
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
-          >
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center gap-2">
-                <UserCircleIcon class="w-5 h-5 text-slate-400" />
-                <h3 class="font-semibold text-slate-900">Coaches</h3>
-              </div>
-              <NuxtLink
-                :to="`/schools/${id}/coaches`"
-                class="text-sm text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Manage &rarr;
-              </NuxtLink>
-            </div>
-            <div v-if="schoolCoaches.length > 0" class="space-y-3">
-              <div
-                v-for="coach in schoolCoaches"
-                :key="coach.id"
-                class="p-3 border border-slate-200 rounded-lg"
-              >
-                <p class="font-medium text-slate-900 text-sm">
-                  {{ coach.first_name }} {{ coach.last_name }}
-                </p>
-                <p class="text-xs text-slate-500 capitalize mb-2">
-                  {{ getRoleLabel(coach.role) }}
-                </p>
-                <div class="flex flex-wrap gap-1">
-                  <a
-                    v-if="coach.email"
-                    :href="`mailto:${coach.email}`"
-                    class="p-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"
-                    title="Email"
-                  >
-                    <EnvelopeIcon class="w-3.5 h-3.5" />
-                  </a>
-                  <a
-                    v-if="coach.phone"
-                    :href="`sms:${coach.phone}`"
-                    class="p-1.5 bg-green-100 text-green-700 rounded hover:bg-green-200 transition"
-                    title="Text"
-                  >
-                    <ChatBubbleLeftIcon class="w-3.5 h-3.5" />
-                  </a>
-                  <a
-                    v-if="coach.phone"
-                    :href="`tel:${coach.phone}`"
-                    class="p-1.5 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition"
-                    title="Call"
-                  >
-                    <PhoneIcon class="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div v-else class="text-center py-4 text-slate-500 text-sm">
-              No coaches added yet
-            </div>
-          </div>
-
-          <!-- Ranking -->
-          <div
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
-          >
-            <h3 class="font-semibold text-slate-900 mb-4">Ranking</h3>
-            <div class="text-center py-4">
-              <div class="w-16 h-1 bg-blue-500 mx-auto mb-2 rounded-full"></div>
-              <p class="text-slate-600 text-sm">Current ranking</p>
-            </div>
-          </div>
-
-          <!-- Attribution -->
-          <div
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-5"
-          >
-            <h4 class="font-semibold text-slate-900 mb-3">Attribution</h4>
-            <div class="space-y-2 text-sm">
-              <div class="flex justify-between">
-                <span class="text-slate-600">Created by:</span>
-                <span class="text-slate-900">Parent</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-600">Last updated:</span>
-                <span class="text-slate-900">Parent</span>
-              </div>
-              <div v-if="school.updated_at" class="text-slate-500 text-xs">
-                {{ new Date(school.updated_at).toLocaleDateString() }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Delete School -->
-          <button
-            @click="confirmDelete"
-            class="w-full px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-2"
-          >
-            <TrashIcon class="w-4 h-4" />
-            Delete School
-          </button>
-        </div>
+        <SchoolSidebar
+          :school-id="id"
+          :coaches="schoolCoaches"
+          :school="school"
+          @open-email-modal="showEmailModal = true"
+          @delete="confirmDelete"
+        />
       </div>
 
       <!-- Not Found -->
@@ -882,26 +589,14 @@ import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useUserStore } from "~/stores/user";
 import { getCarnegieSize, getSizeColorClass } from "~/utils/schoolSize";
 import { calculateDistance, formatDistance } from "~/utils/distance";
-import Header from "~/components/Header.vue";
 import SchoolLogo from "~/components/School/SchoolLogo.vue";
 import SchoolMap from "~/components/School/SchoolMap.vue";
-import NotesHistory from "~/components/School/NotesHistory.vue";
 import EmailSendModal from "~/components/EmailSendModal.vue";
 import {
   ArrowLeftIcon,
   MapPinIcon,
   StarIcon,
-  PencilIcon,
-  CheckIcon,
-  XMarkIcon,
   DocumentTextIcon,
-  ChatBubbleLeftRightIcon,
-  UsersIcon,
-  UserCircleIcon,
-  EnvelopeIcon,
-  ChatBubbleLeftIcon,
-  PhoneIcon,
-  TrashIcon,
   ArrowTopRightOnSquareIcon,
 } from "@heroicons/vue/24/outline";
 import type { School } from "~/types/models";
@@ -969,13 +664,7 @@ const calculatedDistanceFromHome = computed(() => {
   return null;
 });
 
-const editingNotes = ref(false);
-const editedNotes = ref("");
-const editingPrivateNotes = ref(false);
-const editedPrivateNotes = ref("");
 const editingBasicInfo = ref(false);
-const newPro = ref("");
-const newCon = ref("");
 const showUploadModal = ref(false);
 const showEmailModal = ref(false);
 const editedBasicInfo = ref({
@@ -1036,19 +725,10 @@ const updatePriorityTier = async (tier: "A" | "B" | "C" | null) => {
   }
 };
 
-const saveNotes = async () => {
-  if (!school.value) return;
-  const updated = await updateSchool(id, { notes: editedNotes.value });
-  if (updated) {
-    school.value = updated;
-    editingNotes.value = false;
-  }
-};
-
 const myPrivateNote = computed({
   get: () => {
     if (!school.value || !userStore.user) return "";
-    return school.value.private_notes?.[userStore.user.id] || "";
+    return (school.value.private_notes?.[userStore.user.id] as string) || "";
   },
   set: (value: string) => {
     if (!school.value || !userStore.user) return;
@@ -1059,17 +739,24 @@ const myPrivateNote = computed({
   },
 });
 
-const savePrivateNotes = async () => {
+const handleUpdateNotes = async (notesValue: string) => {
+  if (!school.value) return;
+  const updated = await updateSchool(id, { notes: notesValue });
+  if (updated) {
+    school.value = updated;
+  }
+};
+
+const handleUpdatePrivateNotes = async (privateNotesValue: string) => {
   if (!school.value || !userStore.user) return;
   const updated = await updateSchool(id, {
     private_notes: {
       ...(school.value.private_notes || {}),
-      [userStore.user.id]: editedPrivateNotes.value,
+      [userStore.user.id]: privateNotesValue,
     },
   });
   if (updated) {
     school.value = updated;
-    editingPrivateNotes.value = false;
   }
 };
 
@@ -1087,25 +774,23 @@ const removeCon = async (index: number) => {
   if (updated) school.value = updated;
 };
 
-const addPro = async () => {
-  if (!school.value || !newPro.value.trim()) return;
+const addPro = async (proValue: string) => {
+  if (!school.value || !proValue.trim()) return;
   const updated = await updateSchool(id, {
-    pros: [...(school.value.pros ?? []), newPro.value],
+    pros: [...(school.value.pros ?? []), proValue],
   });
   if (updated) {
     school.value = updated;
-    newPro.value = "";
   }
 };
 
-const addCon = async () => {
-  if (!school.value || !newCon.value.trim()) return;
+const addCon = async (conValue: string) => {
+  if (!school.value || !conValue.trim()) return;
   const updated = await updateSchool(id, {
-    cons: [...(school.value.cons ?? []), newCon.value],
+    cons: [...(school.value.cons ?? []), conValue],
   });
   if (updated) {
     school.value = updated;
-    newCon.value = "";
   }
 };
 
@@ -1143,15 +828,6 @@ const updateCoachingPhilosophy = async (data: Partial<School>) => {
   }
 };
 
-const getRoleLabel = (role: string): string => {
-  const labels: Record<string, string> = {
-    head: "Head Coach",
-    assistant: "Assistant Coach",
-    recruiting: "Recruiting Coordinator",
-  };
-  return labels[role] || role;
-};
-
 const confirmDelete = async () => {
   if (confirm("Are you sure you want to delete this school?")) {
     try {
@@ -1174,7 +850,6 @@ const confirmDelete = async () => {
 };
 
 const handleDocumentUploadSuccess = async () => {
-  // Refresh documents list after successful upload
   await fetchDocuments();
 };
 
@@ -1187,8 +862,6 @@ const loadFitScore = async () => {
     if (cachedScore) {
       fitScore.value = cachedScore;
     } else {
-      // Calculate fit score with minimal data (school only)
-      // Full fit score calculation requires athlete data
       const studentSize = school.value.academic_info?.student_size;
       const numericSize =
         typeof studentSize === "number" ? studentSize : undefined;
@@ -1199,7 +872,6 @@ const loadFitScore = async () => {
       });
     }
 
-    // Compute division recommendations based on fit score
     if (fitScore.value) {
       divisionRecommendation.value = getRecommendedDivisions(
         school.value.division,
@@ -1246,8 +918,6 @@ const lookupCollegeData = async () => {
 onMounted(async () => {
   school.value = await getSchool(id);
   if (school.value) {
-    editedNotes.value = school.value.notes || "";
-    editedPrivateNotes.value = String(myPrivateNote.value || "");
     editedBasicInfo.value = {
       address: String(school.value.academic_info?.address || ""),
       baseball_facility_address: String(

@@ -744,6 +744,7 @@ import { useInteractions } from "~/composables/useInteractions";
 import { CheckIcon, XMarkIcon } from "@heroicons/vue/24/solid";
 import ExportButton from "~/components/Performance/ExportButton.vue";
 import ExportModal from "~/components/Performance/ExportModal.vue";
+import { getRoleLabel } from "~/utils/coachLabels";
 import type { Event, PerformanceMetric, Coach } from "~/types/models";
 import type { Database } from "~/types/database";
 
@@ -869,15 +870,6 @@ const availableCoaches = computed(() => {
   const presentIds = event.value?.coaches_present || [];
   return schoolCoaches.value.filter((c) => !presentIds.includes(c.id));
 });
-
-const getRoleLabel = (role: string): string => {
-  const labels: Record<string, string> = {
-    head: "Head Coach",
-    assistant: "Assistant",
-    recruiting: "Recruiting Coordinator",
-  };
-  return labels[role] || role;
-};
 
 const getSourceLabel = (source: string): string => {
   const labels: Record<string, string> = {
