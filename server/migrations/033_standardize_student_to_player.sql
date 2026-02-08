@@ -9,20 +9,20 @@
 -- PostgreSQL cannot remove enum values or use newly added values in the same
 -- transaction. Instead, create a new enum type and swap via text cast.
 
--- First, temporarily drop all RLS policies that depend on users.role
+-- First, save and drop ALL RLS policies that reference 'role' on ANY table
 -- (PostgreSQL blocks ALTER TYPE on columns referenced by policies)
-DROP POLICY IF EXISTS "Non-parents can insert interactions" ON interactions;
-DROP POLICY IF EXISTS "Only students can create interactions" ON interactions;
-
--- Also drop any policies on users table that reference role column
 DO $$
 DECLARE
   pol RECORD;
 BEGIN
   FOR pol IN
-    SELECT policyname FROM pg_policies WHERE tablename = 'users' AND qual::text LIKE '%role%'
+    SELECT policyname, tablename
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND (qual::text LIKE '%role%' OR with_check::text LIKE '%role%')
   LOOP
-    EXECUTE format('DROP POLICY IF EXISTS %I ON users', pol.policyname);
+    RAISE NOTICE 'Dropping policy % on table %', pol.policyname, pol.tablename;
+    EXECUTE format('DROP POLICY IF EXISTS %I ON %I', pol.policyname, pol.tablename);
   END LOOP;
 END $$;
 
@@ -42,11 +42,13 @@ ALTER TYPE user_role_new RENAME TO user_role;
 -- 2. UPDATE family_members.role CHECK CONSTRAINT
 -- ============================================================================
 
+-- Drop old CHECK constraint BEFORE migrating data
+ALTER TABLE family_members DROP CONSTRAINT IF EXISTS family_members_role_check;
+
 -- Migrate existing data
 UPDATE family_members SET role = 'player' WHERE role = 'student';
 
--- Drop old CHECK constraint and add new one
-ALTER TABLE family_members DROP CONSTRAINT IF EXISTS family_members_role_check;
+-- Add new CHECK constraint
 ALTER TABLE family_members ADD CONSTRAINT family_members_role_check
   CHECK (role IN ('player', 'parent'));
 
