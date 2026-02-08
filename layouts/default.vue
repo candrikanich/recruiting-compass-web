@@ -1,7 +1,8 @@
 <template>
   <div>
+    <SkipLink to="#main-content" text="Skip to main content" />
     <Header />
-    <main>
+    <main id="main-content">
       <slot />
     </main>
     <SpeedInsights />

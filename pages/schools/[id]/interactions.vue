@@ -90,9 +90,12 @@
       <div
         v-if="loading && interactions.length === 0"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        role="status"
+        aria-live="polite"
       >
         <div
           class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+          aria-hidden="true"
         ></div>
         <p class="text-slate-600">Loading interactions...</p>
       </div>
@@ -150,6 +153,21 @@
         />
       </div>
     </div>
+
+    <!-- Live Region for Screen Reader Announcements -->
+    <div v-bind="liveRegionAttrs">{{ announcement }}</div>
+
+    <!-- Confirm Delete Dialog -->
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Interaction"
+      message="Are you sure you want to delete this interaction?"
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="executeDeleteInteraction"
+      @cancel="cancelDeleteInteraction"
+    />
   </div>
 </template>
 
@@ -161,6 +179,7 @@ import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import type { Interaction } from "~/types/models";
 import { ChatBubbleLeftRightIcon } from "@heroicons/vue/24/outline";
+import { useLiveRegion } from "~/composables/useLiveRegion";
 
 definePageMeta({});
 
@@ -178,6 +197,9 @@ const {
 const { coaches, fetchCoaches } = useCoaches();
 const { getSchool } = useSchools();
 
+const { announcement, announce, liveRegionAttrs } = useLiveRegion();
+const isDeleteDialogOpen = ref(false);
+const interactionToDeleteId = ref<string | null>(null);
 const showAddForm = ref(false);
 const schoolName = ref("");
 const coachMap = ref<Record<string, string>>({});
@@ -318,30 +340,38 @@ const handleAddInteraction = async (data: InteractionSubmitData) => {
     const errorMsg =
       err instanceof Error ? err.message : "Unknown error occurred";
     console.error("Failed to log interaction:", errorMsg);
-    alert(`Failed to log interaction: ${errorMsg}`);
+    announce(`Failed to log interaction: ${errorMsg}`);
   }
 };
 
-const deleteInteraction = async (interactionId: string) => {
-  if (confirm("Are you sure you want to delete this interaction?")) {
-    try {
-      const result = await smartDelete(interactionId);
+const deleteInteraction = (interactionId: string) => {
+  interactionToDeleteId.value = interactionId;
+  isDeleteDialogOpen.value = true;
+};
 
-      if (result.cascadeUsed) {
-        console.log("Interaction and related records deleted successfully");
-      } else {
-        console.log("Interaction deleted successfully");
-      }
-
-      await fetchInteractions({
-        schoolId: route.params.id as string,
-      });
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to delete interaction";
-      console.error("Failed to delete interaction:", message);
-    }
+const executeDeleteInteraction = async () => {
+  if (!interactionToDeleteId.value) return;
+  const deletingId = interactionToDeleteId.value;
+  isDeleteDialogOpen.value = false;
+  interactionToDeleteId.value = null;
+  try {
+    const result = await smartDelete(deletingId);
+    const message = result.cascadeUsed
+      ? "Interaction and related records deleted"
+      : "Interaction deleted";
+    announce(message);
+    await fetchInteractions({ schoolId: route.params.id as string });
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : "Failed to delete interaction";
+    announce(errorMessage);
+    console.error("Failed to delete interaction:", errorMessage);
   }
+};
+
+const cancelDeleteInteraction = () => {
+  isDeleteDialogOpen.value = false;
+  interactionToDeleteId.value = null;
 };
 
 onMounted(async () => {

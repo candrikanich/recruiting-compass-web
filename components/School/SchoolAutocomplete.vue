@@ -5,6 +5,13 @@
       v-model="searchQuery"
       type="text"
       placeholder="Type college name..."
+      role="combobox"
+      aria-autocomplete="list"
+      :aria-expanded="showDropdown"
+      aria-controls="autocomplete-listbox"
+      :aria-activedescendant="
+        selectedIndex >= 0 ? `autocomplete-option-${selectedIndex}` : undefined
+      "
       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
       @input="handleInput"
       @keydown="handleKeydown"
@@ -15,16 +22,23 @@
     <!-- Dropdown Results -->
     <div
       v-if="showDropdown"
+      id="autocomplete-listbox"
+      role="listbox"
       class="absolute top-full left-0 right-0 mt-1 rounded-lg z-50 max-h-64 overflow-y-auto bg-white border border-slate-300 shadow-lg"
     >
       <!-- Loading State -->
-      <div v-if="loading" class="px-4 py-3 text-center text-slate-600">
+      <div
+        v-if="loading"
+        class="px-4 py-3 text-center text-slate-600"
+        role="status"
+      >
         <div class="inline-block animate-spin">
           <svg
             class="w-4 h-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <circle
               class="opacity-25"
@@ -62,7 +76,10 @@
         <button
           v-for="(college, index) in results"
           :key="college.id"
+          :id="`autocomplete-option-${index}`"
           type="button"
+          role="option"
+          :aria-selected="index === selectedIndex"
           :class="[
             'w-full text-left px-4 py-3 transition cursor-pointer last:border-b-0 border-b border-slate-300',
             index === selectedIndex ? 'bg-blue-100' : 'hover:bg-blue-50',

@@ -687,54 +687,64 @@ describe("pages/schools/[id]/coaches.vue", () => {
     it("should show delete button on each coach card", () => {
       const wrapper = mount(SchoolCoachesPage);
 
-      const deleteButtons = wrapper.findAll('button[title="Delete coach"]');
+      const deleteButtons = wrapper.findAll(
+        'button[aria-label*="Delete coach"]',
+      );
       expect(deleteButtons.length).toBeGreaterThan(0);
     });
 
-    it("should confirm before deleting", async () => {
+    it("should open confirm dialog before deleting", async () => {
       const wrapper = mount(SchoolCoachesPage);
 
-      const deleteButton = wrapper.find('button[title="Delete coach"]');
+      const deleteButton = wrapper.find('button[aria-label*="Delete coach"]');
       await deleteButton.trigger("click");
+      await nextTick();
 
-      expect(window.confirm).toHaveBeenCalledWith(
-        "Are you sure you want to delete this coach? This will also remove related interactions, offers, and social media posts.",
-      );
+      // Verify dialog state is set (ConfirmDialog uses Teleport so we check via exposed state)
+      expect((wrapper.vm as any).isDeleteDialogOpen).toBe(true);
     });
 
-    it("should delete coach when confirmed", async () => {
+    it("should delete coach when confirmed via dialog", async () => {
       mockSmartDelete.mockResolvedValue({ cascadeUsed: false });
-      (window.confirm as any).mockReturnValue(true);
 
       const wrapper = mount(SchoolCoachesPage);
 
-      const deleteButton = wrapper.find('button[title="Delete coach"]');
+      const deleteButton = wrapper.find('button[aria-label*="Delete coach"]');
       await deleteButton.trigger("click");
+      await nextTick();
+
+      // Simulate dialog confirm by calling the handler directly
+      await (wrapper.vm as any).executeDeleteCoach();
       await flushPromises();
 
       expect(mockSmartDelete).toHaveBeenCalled();
     });
 
-    it("should not delete coach when cancelled", async () => {
-      (window.confirm as any).mockReturnValue(false);
-
+    it("should not delete coach when dialog is cancelled", async () => {
       const wrapper = mount(SchoolCoachesPage);
 
-      const deleteButton = wrapper.find('button[title="Delete coach"]');
+      const deleteButton = wrapper.find('button[aria-label*="Delete coach"]');
       await deleteButton.trigger("click");
-      await flushPromises();
+      await nextTick();
+
+      // Simulate dialog cancel
+      (wrapper.vm as any).cancelDeleteCoach();
+      await nextTick();
 
       expect(mockSmartDelete).not.toHaveBeenCalled();
+      expect((wrapper.vm as any).isDeleteDialogOpen).toBe(false);
     });
 
     it("should handle delete error", async () => {
       mockSmartDelete.mockRejectedValue(new Error("Delete failed"));
-      (window.confirm as any).mockReturnValue(true);
 
       const wrapper = mount(SchoolCoachesPage);
 
-      const deleteButton = wrapper.find('button[title="Delete coach"]');
+      const deleteButton = wrapper.find('button[aria-label*="Delete coach"]');
       await deleteButton.trigger("click");
+      await nextTick();
+
+      await (wrapper.vm as any).executeDeleteCoach();
       await flushPromises();
 
       expect(console.error).toHaveBeenCalledWith(

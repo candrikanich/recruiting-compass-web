@@ -26,12 +26,14 @@
         v-model="formData.name"
         type="text"
         required
+        :aria-invalid="!!fieldErrors.name"
+        :aria-describedby="fieldErrors.name ? 'name-error' : undefined"
         class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
         placeholder="e.g., University of Florida"
         :disabled="loading"
         @blur="validateName"
       />
-      <DesignSystemFieldError :error="fieldErrors.name" />
+      <DesignSystemFieldError id="name-error" :error="fieldErrors.name" />
     </div>
 
     <!-- Location -->
@@ -51,12 +53,17 @@
         id="location"
         v-model="formData.location"
         type="text"
+        :aria-invalid="!!fieldErrors.location"
+        :aria-describedby="fieldErrors.location ? 'location-error' : undefined"
         class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
         placeholder="e.g., Gainesville, Florida"
         :disabled="loading"
         @blur="validateLocation"
       />
-      <DesignSystemFieldError :error="fieldErrors.location" />
+      <DesignSystemFieldError
+        id="location-error"
+        :error="fieldErrors.location"
+      />
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -77,6 +84,10 @@
           id="division"
           v-model="formData.division"
           class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none cursor-pointer disabled:opacity-50"
+          :aria-invalid="!!fieldErrors.division"
+          :aria-describedby="
+            fieldErrors.division ? 'division-error' : undefined
+          "
           :disabled="loading"
           @blur="validateDivision"
           :style="selectDropdownStyle"
@@ -86,7 +97,10 @@
           <option value="D2">Division 2 (D2)</option>
           <option value="D3">Division 3 (D3)</option>
         </select>
-        <DesignSystemFieldError :error="fieldErrors.division" />
+        <DesignSystemFieldError
+          id="division-error"
+          :error="fieldErrors.division"
+        />
       </div>
 
       <!-- Conference -->
@@ -106,12 +120,19 @@
           id="conference"
           v-model="formData.conference"
           type="text"
+          :aria-invalid="!!fieldErrors.conference"
+          :aria-describedby="
+            fieldErrors.conference ? 'conference-error' : undefined
+          "
           class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
           placeholder="e.g., SEC, ACC, Pac-12"
           :disabled="loading"
           @blur="validateConference"
         />
-        <DesignSystemFieldError :error="fieldErrors.conference" />
+        <DesignSystemFieldError
+          id="conference-error"
+          :error="fieldErrors.conference"
+        />
       </div>
     </div>
 
@@ -132,12 +153,14 @@
         id="website"
         v-model="formData.website"
         type="text"
+        :aria-invalid="!!fieldErrors.website"
+        :aria-describedby="fieldErrors.website ? 'website-error' : undefined"
         class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
         placeholder="https://example.com or www.example.com"
         :disabled="loading"
         @blur="validateWebsite"
       />
-      <DesignSystemFieldError :error="fieldErrors.website" />
+      <DesignSystemFieldError id="website-error" :error="fieldErrors.website" />
     </div>
 
     <!-- Social Media -->
@@ -153,12 +176,19 @@
           id="twitter"
           v-model="formData.twitter_handle"
           type="text"
+          :aria-invalid="!!fieldErrors.twitter_handle"
+          :aria-describedby="
+            fieldErrors.twitter_handle ? 'twitter-error' : undefined
+          "
           class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
           placeholder="@handle"
           :disabled="loading"
           @blur="validateTwitter"
         />
-        <DesignSystemFieldError :error="fieldErrors.twitter_handle" />
+        <DesignSystemFieldError
+          id="twitter-error"
+          :error="fieldErrors.twitter_handle"
+        />
       </div>
 
       <div>
@@ -172,12 +202,19 @@
           id="instagram"
           v-model="formData.instagram_handle"
           type="text"
+          :aria-invalid="!!fieldErrors.instagram_handle"
+          :aria-describedby="
+            fieldErrors.instagram_handle ? 'instagram-error' : undefined
+          "
           class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
           placeholder="@handle"
           :disabled="loading"
           @blur="validateInstagram"
         />
-        <DesignSystemFieldError :error="fieldErrors.instagram_handle" />
+        <DesignSystemFieldError
+          id="instagram-error"
+          :error="fieldErrors.instagram_handle"
+        />
       </div>
     </div>
 
@@ -190,12 +227,14 @@
         id="notes"
         v-model="formData.notes"
         rows="4"
+        :aria-invalid="!!fieldErrors.notes"
+        :aria-describedby="fieldErrors.notes ? 'notes-error' : undefined"
         class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none placeholder:text-slate-400 disabled:opacity-50"
         placeholder="Any notes about this school..."
         :disabled="loading"
         @blur="validateNotes"
       />
-      <DesignSystemFieldError :error="fieldErrors.notes" />
+      <DesignSystemFieldError id="notes-error" :error="fieldErrors.notes" />
     </div>
 
     <!-- Status -->
@@ -207,6 +246,8 @@
         id="status"
         v-model="formData.status"
         class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none cursor-pointer disabled:opacity-50"
+        :aria-invalid="!!fieldErrors.status"
+        :aria-describedby="fieldErrors.status ? 'status-error' : undefined"
         :disabled="loading"
         @blur="validateStatus"
         :style="selectDropdownStyle"
@@ -218,7 +259,7 @@
         <option value="declined">Declined</option>
         <option value="committed">Committed</option>
       </select>
-      <DesignSystemFieldError :error="fieldErrors.status" />
+      <DesignSystemFieldError id="status-error" :error="fieldErrors.status" />
     </div>
 
     <!-- College Scorecard Data (Display Only) -->

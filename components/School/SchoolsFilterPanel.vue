@@ -5,6 +5,7 @@
       <!-- Search (left) -->
       <div class="flex-1">
         <label
+          for="school-search"
           class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3"
         >
           Find Schools
@@ -12,8 +13,10 @@
         <div class="relative group">
           <MagnifyingGlassIcon
             class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
+            aria-hidden="true"
           />
           <input
+            id="school-search"
             type="text"
             :value="String(filterValues.name ?? '')"
             @input="
@@ -50,6 +53,10 @@
             max="100"
             step="5"
             :value="filterValues.fit_score?.min ?? 0"
+            aria-label="Fit score minimum"
+            :aria-valuenow="filterValues.fit_score?.min ?? 0"
+            aria-valuemin="0"
+            aria-valuemax="100"
             @input="
               $emit('update:filter', 'fit_score', {
                 min: parseInt(($event.target as HTMLInputElement).value),
@@ -64,6 +71,10 @@
             max="100"
             step="5"
             :value="filterValues.fit_score?.max ?? 100"
+            aria-label="Fit score maximum"
+            :aria-valuenow="filterValues.fit_score?.max ?? 100"
+            aria-valuemin="0"
+            aria-valuemax="100"
             @input="
               $emit('update:filter', 'fit_score', {
                 min: filterValues.fit_score?.min ?? 0,
@@ -94,6 +105,10 @@
           max="3000"
           step="50"
           :value="filterValues.distance?.max ?? 3000"
+          aria-label="Maximum distance in miles"
+          :aria-valuenow="filterValues.distance?.max ?? 3000"
+          aria-valuemin="0"
+          aria-valuemax="3000"
           @input="
             $emit('update:filter', 'distance', {
               max: parseInt(($event.target as HTMLInputElement).value),
@@ -227,14 +242,16 @@
           {{ value }}
           <button
             @click="$emit('remove-filter', key as string)"
+            :aria-label="`Remove ${value} filter`"
             class="ml-1 text-blue-400 hover:text-blue-600 transition-colors group-hover:opacity-100"
           >
-            <XMarkIcon class="w-3.5 h-3.5" />
+            <XMarkIcon class="w-3.5 h-3.5" aria-hidden="true" />
           </button>
         </span>
       </div>
       <button
         @click="$emit('clear-filters')"
+        aria-label="Clear all filters"
         class="ml-auto text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors"
       >
         Clear all

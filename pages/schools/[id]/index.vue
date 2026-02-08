@@ -20,9 +20,12 @@
       <div
         v-if="loading"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        role="status"
+        aria-live="polite"
       >
         <div
           class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+          aria-hidden="true"
         ></div>
         <p class="text-slate-600">Loading school...</p>
       </div>
@@ -52,7 +55,11 @@
                   >
                     {{ school.division }}
                   </span>
+                  <label for="school-status" class="sr-only"
+                    >School status</label
+                  >
                   <select
+                    id="school-status"
                     v-model="school.status"
                     @change="updateStatusHandler"
                     :disabled="statusUpdating"
@@ -92,6 +99,12 @@
               </div>
               <button
                 @click="toggleFavorite"
+                :aria-label="
+                  school.is_favorite
+                    ? 'Remove from favorites'
+                    : 'Add to favorites'
+                "
+                :aria-pressed="school.is_favorite"
                 class="flex-shrink-0 transition-all"
                 :class="
                   school.is_favorite
@@ -102,6 +115,7 @@
                 <StarIcon
                   class="w-6 h-6"
                   :class="school.is_favorite ? 'fill-yellow-500' : ''"
+                  aria-hidden="true"
                 />
               </button>
             </div>
@@ -569,6 +583,21 @@
         </NuxtLink>
       </div>
     </main>
+
+    <!-- Live Region for Screen Reader Announcements -->
+    <div v-bind="liveRegionAttrs">{{ announcement }}</div>
+
+    <!-- Confirm Delete Dialog -->
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete School"
+      message="Are you sure you want to delete this school? This will also remove associated coaches, interactions, and related records."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="executeDelete"
+      @cancel="isDeleteDialogOpen = false"
+    />
   </div>
 </template>
 
@@ -600,6 +629,7 @@ import {
   ArrowTopRightOnSquareIcon,
 } from "@heroicons/vue/24/outline";
 import type { School } from "~/types/models";
+import { useLiveRegion } from "~/composables/useLiveRegion";
 
 definePageMeta({});
 
@@ -664,6 +694,8 @@ const calculatedDistanceFromHome = computed(() => {
   return null;
 });
 
+const { announcement, announce, liveRegionAttrs } = useLiveRegion();
+const isDeleteDialogOpen = ref(false);
 const editingBasicInfo = ref(false);
 const showUploadModal = ref(false);
 const showEmailModal = ref(false);
@@ -828,24 +860,26 @@ const updateCoachingPhilosophy = async (data: Partial<School>) => {
   }
 };
 
-const confirmDelete = async () => {
-  if (confirm("Are you sure you want to delete this school?")) {
-    try {
-      const result = await smartDelete(id);
-      if (result.cascadeUsed) {
-        alert(
-          "School deleted successfully.\n\nNote: This also removed associated coaches, interactions, and other related records.",
-        );
-      }
-      await navigateTo("/schools");
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Failed to delete school. Please try again.";
-      alert(errorMessage);
-      console.error("Failed to delete school:", err);
-    }
+const confirmDelete = () => {
+  isDeleteDialogOpen.value = true;
+};
+
+const executeDelete = async () => {
+  isDeleteDialogOpen.value = false;
+  try {
+    const result = await smartDelete(id);
+    const message = result.cascadeUsed
+      ? "School and related records deleted"
+      : "School deleted";
+    announce(message);
+    await navigateTo("/schools");
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error
+        ? err.message
+        : "Failed to delete school. Please try again.";
+    announce(errorMessage);
+    console.error("Failed to delete school:", err);
   }
 };
 

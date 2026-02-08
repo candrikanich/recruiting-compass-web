@@ -20,6 +20,12 @@
 
         <button
           @click.stop="$emit('toggle-favorite', school.id, school.is_favorite)"
+          :aria-label="
+            school.is_favorite
+              ? `Remove ${school.name} from favorites`
+              : `Add ${school.name} to favorites`
+          "
+          :aria-pressed="school.is_favorite"
           :class="[
             'flex-shrink-0 transition-all',
             school.is_favorite
@@ -29,6 +35,7 @@
         >
           <StarIcon
             :class="['w-5 h-5', school.is_favorite ? 'fill-yellow-500' : '']"
+            aria-hidden="true"
           />
         </button>
       </div>
@@ -73,16 +80,18 @@
     <div class="px-5 pb-5 flex gap-2">
       <NuxtLink
         :to="`/schools/${school.id}`"
+        :aria-label="`View ${school.name}`"
         class="flex-1 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-center flex items-center justify-center gap-2"
       >
-        <EyeIcon class="w-4 h-4" />
+        <EyeIcon class="w-4 h-4" aria-hidden="true" />
         View
       </NuxtLink>
       <button
         @click.stop="$emit('delete', school.id)"
+        :aria-label="`Delete ${school.name}`"
         class="px-3 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition"
       >
-        <TrashIcon class="w-4 h-4" />
+        <TrashIcon class="w-4 h-4" aria-hidden="true" />
       </button>
     </div>
   </div>

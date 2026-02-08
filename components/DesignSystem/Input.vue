@@ -32,6 +32,14 @@ const inputId = computed(
   () => props.id || `input-${Math.random().toString(36).slice(2, 9)}`,
 );
 
+const errorId = computed(() => `${inputId.value}-error`);
+const hintId = computed(() => `${inputId.value}-hint`);
+const ariaDescribedBy = computed(() => {
+  if (props.error) return errorId.value;
+  if (props.hint) return hintId.value;
+  return undefined;
+});
+
 const sizeClasses: Record<InputSize, string> = {
   sm: "px-2.5 py-1.5 text-sm",
   md: "px-3 py-2 text-base",
@@ -91,6 +99,8 @@ function handleInput(event: Event) {
         :placeholder="placeholder"
         :disabled="disabled"
         :required="required"
+        :aria-invalid="!!error"
+        :aria-describedby="ariaDescribedBy"
         :class="[inputClasses, $slots.icon ? 'pl-10' : '']"
         @input="handleInput"
         @blur="emit('blur', $event)"
@@ -98,10 +108,15 @@ function handleInput(event: Event) {
       />
     </div>
 
-    <p v-if="error" class="mt-1.5 text-sm text-red-600">
+    <p
+      v-if="error"
+      :id="errorId"
+      class="mt-1.5 text-sm text-red-600"
+      role="alert"
+    >
       {{ error }}
     </p>
-    <p v-else-if="hint" class="mt-1.5 text-sm text-slate-500">
+    <p v-else-if="hint" :id="hintId" class="mt-1.5 text-sm text-slate-500">
       {{ hint }}
     </p>
   </div>

@@ -84,9 +84,15 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="text-center py-12">
+      <div
+        v-if="loading"
+        class="text-center py-12"
+        role="status"
+        aria-live="polite"
+      >
         <div
           class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"
+          aria-hidden="true"
         ></div>
         <p class="text-slate-600">Loading schools...</p>
       </div>
@@ -94,6 +100,7 @@
       <!-- Error State -->
       <div
         v-if="error"
+        role="alert"
         class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-red-700"
       >
         {{ error }}
@@ -172,6 +179,21 @@
         />
       </div>
     </main>
+
+    <!-- Live Region for Screen Reader Announcements -->
+    <div v-bind="liveRegionAttrs">{{ announcement }}</div>
+
+    <!-- Confirm Delete Dialog -->
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete School"
+      message="Are you sure you want to delete this school? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteSchool"
+      @cancel="cancelDeleteSchool"
+    />
   </div>
 </template>
 
@@ -198,6 +220,7 @@ import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
 import { calculateDistance } from "~/utils/distance";
 import { extractStateFromLocation } from "~/utils/locationParser";
 import type { FilterConfig, FilterValue } from "~/types/filters";
+import { useLiveRegion } from "~/composables/useLiveRegion";
 
 interface SchoolFilterValues {
   name?: string;
@@ -234,6 +257,10 @@ const priorityTierFilter = ref<("A" | "B" | "C")[] | null>(null);
 const sortBy = ref<string>("a-z");
 
 const isParent = computed(() => userStore.user?.role === "parent");
+
+const { announcement, announce, liveRegionAttrs } = useLiveRegion();
+const isDeleteDialogOpen = ref(false);
+const schoolToDeleteId = ref<string | null>(null);
 
 watch(
   () => userStore.user?.id,
@@ -524,20 +551,33 @@ const handleRemoveFilter = (field: string) => {
   }
 };
 
-const handleDeleteSchool = async (schoolId: string) => {
-  if (confirm("Are you sure you want to delete this school?")) {
-    try {
-      const result = await smartDelete(schoolId);
-      if (result.cascadeUsed) {
-        console.info("School deleted with cascade (removed related records)");
-      }
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to delete school";
-      alert(message);
-      console.error("Delete failed:", err);
-    }
+const handleDeleteSchool = (schoolId: string) => {
+  schoolToDeleteId.value = schoolId;
+  isDeleteDialogOpen.value = true;
+};
+
+const confirmDeleteSchool = async () => {
+  if (!schoolToDeleteId.value) return;
+  const deletingId = schoolToDeleteId.value;
+  isDeleteDialogOpen.value = false;
+  schoolToDeleteId.value = null;
+  try {
+    const result = await smartDelete(deletingId);
+    const message = result.cascadeUsed
+      ? "School and related records deleted"
+      : "School deleted";
+    announce(message);
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to delete school";
+    announce(message);
+    console.error("Delete failed:", err);
   }
+};
+
+const cancelDeleteSchool = () => {
+  isDeleteDialogOpen.value = false;
+  schoolToDeleteId.value = null;
 };
 
 const { handleExportCSV, handleExportPDF } = useSchoolExport({
