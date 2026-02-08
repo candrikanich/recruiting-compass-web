@@ -57,7 +57,7 @@ const createMockSupabase = () => ({
 const createMockUser = () => ({
   id: "user-123",
   email: "test@example.com",
-  role: "student",
+  role: "player",
 });
 
 // These will be reassigned in beforeEach

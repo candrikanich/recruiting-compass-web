@@ -392,6 +392,26 @@
                   />
                 </svg>
               </button>
+              <button
+                @click="openDeleteModal(coach)"
+                data-test="coach-delete-btn"
+                class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                title="Delete coach"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
             </div>
             <button
               @click="handleCoachAction('view', coach)"
@@ -442,6 +462,20 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Delete Confirmation Modal -->
+    <DeleteConfirmationModal
+      :is-open="deleteModalOpen"
+      :item-name="
+        selectedDeleteCoach
+          ? `${selectedDeleteCoach.first_name} ${selectedDeleteCoach.last_name}`
+          : ''
+      "
+      item-type="coach"
+      :is-loading="isDeleting"
+      @cancel="closeDeleteModal"
+      @confirm="deleteCoach"
+    />
   </div>
 </template>
 
@@ -451,10 +485,12 @@ import { navigateTo } from "#app";
 import { useSupabase } from "~/composables/useSupabase";
 import { useCommunication } from "~/composables/useCommunication";
 import { useFamilyContext } from "~/composables/useFamilyContext";
+import { useCoaches } from "~/composables/useCoaches";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 import Header from "~/components/Header.vue";
 import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
+import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
 import {
   MagnifyingGlassIcon,
   XMarkIcon,
@@ -484,6 +520,7 @@ const {
   openCommunication,
   handleInteractionLogged,
 } = useCommunication();
+const { smartDelete } = useCoaches();
 
 const allCoaches = ref<Coach[]>([]);
 const schools = ref<School[]>([]);
@@ -491,6 +528,11 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 const sortBy = ref("name");
 const filterValues = ref(new Map<string, string | null>());
+
+// Delete modal state
+const deleteModalOpen = ref(false);
+const selectedDeleteCoach = ref<Coach | null>(null);
+const isDeleting = ref(false);
 
 const hasActiveFilters = computed(() => {
   for (const [, value] of filterValues.value) {
@@ -721,6 +763,37 @@ const handleExportCSV = () => {
 const handleExportPDF = () => {
   // TODO: Implement PDF export
   console.log("Export PDF");
+};
+
+const openDeleteModal = (coach: Coach) => {
+  selectedDeleteCoach.value = coach;
+  deleteModalOpen.value = true;
+};
+
+const closeDeleteModal = () => {
+  deleteModalOpen.value = false;
+  selectedDeleteCoach.value = null;
+};
+
+const deleteCoach = async () => {
+  if (!selectedDeleteCoach.value?.id) return;
+
+  isDeleting.value = true;
+  try {
+    await smartDelete(selectedDeleteCoach.value.id);
+    // Remove coach from local list
+    allCoaches.value = allCoaches.value.filter(
+      (c) => c.id !== selectedDeleteCoach.value?.id,
+    );
+    closeDeleteModal();
+  } catch (err: unknown) {
+    const message =
+      err instanceof Error ? err.message : "Failed to delete coach";
+    error.value = message;
+    console.error("Failed to delete coach:", err);
+  } finally {
+    isDeleting.value = false;
+  }
 };
 
 const fetchData = async () => {

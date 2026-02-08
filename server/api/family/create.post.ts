@@ -8,20 +8,20 @@ export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
   const supabase = useSupabaseAdmin();
 
-  // Only students can create families
+  // Only players can create families
   const userRole = await getUserRole(user.id, supabase);
-  if (userRole !== "student") {
+  if (userRole !== "player") {
     throw createError({
       statusCode: 403,
-      message: "Only students can create families",
+      message: "Only players can create families",
     });
   }
 
-  // Check if student already has a family
+  // Check if player already has a family
   const fetchResponse = await supabase
     .from("family_units")
     .select("id, family_code")
-    .eq("student_user_id", user.id)
+    .eq("player_user_id", user.id)
     .maybeSingle();
 
   const { data: existingFamily } = fetchResponse as {
@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
   const insertResponse = await supabase
     .from("family_units")
     .insert({
-      student_user_id: user.id,
+      player_user_id: user.id,
       family_name: "My Family",
       family_code: familyCode,
       code_generated_at: new Date().toISOString(),
@@ -67,11 +67,11 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Add student to family_members
+  // Add player to family_members
   const memberResponse = await supabase.from("family_members").insert({
     family_unit_id: newFamily.id,
     user_id: user.id,
-    role: "student",
+    role: "player",
   } as Database["public"]["Tables"]["family_members"]["Insert"]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

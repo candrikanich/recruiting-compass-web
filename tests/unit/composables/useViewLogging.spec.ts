@@ -61,7 +61,7 @@ describe("useViewLogging", () => {
     });
 
     it("should not log when user is not a parent", async () => {
-      mockUserStore.user.role = "student";
+      mockUserStore.user.role = "player";
       const { logParentView } = useViewLogging();
 
       await logParentView("school", "athlete-456", "school-789");

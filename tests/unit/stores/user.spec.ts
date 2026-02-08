@@ -109,9 +109,9 @@ describe("useUserStore", () => {
     });
 
     it("should return userRole from user", () => {
-      store.user = createMockUser({ role: "student" });
+      store.user = createMockUser({ role: "player" });
 
-      expect(store.userRole).toBe("student");
+      expect(store.userRole).toBe("player");
     });
 
     it("should return undefined for userRole when no user", () => {
@@ -125,13 +125,13 @@ describe("useUserStore", () => {
       expect(store.isLoggedIn).toBe(true);
     });
 
-    it("should return true for isAthlete when role is student", () => {
-      store.user = createMockUser({ role: "student" });
+    it("should return true for isAthlete when role is player", () => {
+      store.user = createMockUser({ role: "player" });
 
       expect(store.isAthlete).toBe(true);
     });
 
-    it("should return false for isAthlete when role is not student", () => {
+    it("should return false for isAthlete when role is not player", () => {
       store.user = createMockUser({ role: "parent" });
 
       expect(store.isAthlete).toBe(false);
@@ -148,7 +148,7 @@ describe("useUserStore", () => {
     });
 
     it("should return false for isParent when role is not parent", () => {
-      store.user = createMockUser({ role: "student" });
+      store.user = createMockUser({ role: "player" });
 
       expect(store.isParent).toBe(false);
     });
@@ -289,8 +289,8 @@ describe("useUserStore", () => {
       expect(store.user?.role).toBe("parent");
     });
 
-    it("should fetch student role user", async () => {
-      const studentUser = createMockUser({ role: "student" });
+    it("should fetch player role user", async () => {
+      const studentUser = createMockUser({ role: "player" });
       const mockSession = { user: { id: "user-123" } };
 
       const { mockSupabase, mockQuery } = getMockSupabase();
@@ -302,7 +302,7 @@ describe("useUserStore", () => {
 
       await store.initializeUser();
 
-      expect(store.user?.role).toBe("student");
+      expect(store.user?.role).toBe("player");
     });
   });
 
@@ -483,7 +483,7 @@ describe("useUserStore", () => {
           {
             id: "user-123",
             email: "test@example.com",
-            role: "student",
+            role: "player",
             full_name: "",
           },
         ],

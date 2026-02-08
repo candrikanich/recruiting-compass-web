@@ -57,7 +57,7 @@ const createMockSupabase = () => ({
 const createMockUser = () => ({
   id: "user-123",
   email: "test@example.com",
-  role: "student",
+  role: "player",
 });
 
 // These will be reassigned in beforeEach
@@ -277,7 +277,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
       );
     });
 
-    it("should throw error when user is not a student", async () => {
+    it("should throw error when user is not a player", async () => {
       mockUser = { ...createMockUser(), role: "parent" };
 
       const { createInteraction } = useInteractions();
@@ -285,7 +285,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
         createMockInteraction();
 
       await expect(createInteraction(interactionData)).rejects.toThrow(
-        "Only students can create interactions",
+        "Only players can create interactions",
       );
     });
 

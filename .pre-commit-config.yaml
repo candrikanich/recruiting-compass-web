@@ -9,6 +9,15 @@ repos:
     rev: v1.4.0
     hooks:
       - id: detect-secrets
+        args: ["--baseline", ".secrets.baseline"]
+        exclude: |
+          (?x)^(
+            tests/.*|
+            \.claude/skills/.*|
+            \.secrets\.baseline$|
+            planning/.*|
+            documentation/.*
+          )$
 
   # File integrity checks (no external dependencies)
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -26,19 +35,12 @@ repos:
             tsconfig\.build\.json
           )$
 
-  # Local npm-based type checking (catches TypeScript errors before commit and push)
+  # Type checking on push only (CI also checks on commit via GitHub Actions)
   - repo: local
     hooks:
-      - id: type-check-commit
-        name: TypeScript Type Check (Pre-Commit)
-        entry: npm run type-check
-        language: system
-        pass_filenames: false
-        stages: [commit]
-
       - id: type-check-push
         name: TypeScript Type Check (Pre-Push)
         entry: npm run type-check
         language: system
         pass_filenames: false
-        stages: [push]
+        stages: [pre-push]

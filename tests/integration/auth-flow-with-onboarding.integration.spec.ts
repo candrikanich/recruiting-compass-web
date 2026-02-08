@@ -313,12 +313,12 @@ describe("Auth Flow with Onboarding Integration", () => {
       expect(true).toBe(true); // Parent signup → /family-code-entry or /dashboard
     });
 
-    it("should set correct user_type in database for players", () => {
-      expect(true).toBe(true); // user_type='player'
+    it("should set correct role in database for players", () => {
+      expect(true).toBe(true); // role='player'
     });
 
-    it("should set correct user_type in database for parents", () => {
-      expect(true).toBe(true); // user_type='parent'
+    it("should set correct role in database for parents", () => {
+      expect(true).toBe(true); // role='parent'
     });
 
     it("should generate family_code only for players", () => {

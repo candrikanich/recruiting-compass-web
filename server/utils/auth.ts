@@ -29,7 +29,7 @@ const roleCache = new Map<string, CachedRole>();
 /**
  * User role type
  */
-export type UserRole = "parent" | "student";
+export type UserRole = "parent" | "player";
 
 /**
  * Extracts and verifies user from request

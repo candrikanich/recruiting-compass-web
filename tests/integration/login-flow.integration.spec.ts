@@ -143,7 +143,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
           id: mockUser.id,
           email: mockUser.email,
           full_name: "Test User",
-          role: "student",
+          role: "player",
         },
         error: null,
       });
@@ -172,7 +172,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
         id: mockUser.id,
         email: mockUser.email,
         full_name: "Test User",
-        role: "student",
+        role: "player",
       });
       expect(userStore.loading).toBe(false);
 
@@ -195,7 +195,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
           id: mockUser.id,
           email: mockUser.email,
           full_name: "Test User",
-          role: "student",
+          role: "player",
         },
         error: null,
       });
@@ -240,7 +240,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
           id: mockUser.id,
           email: mockUser.email,
           full_name: "Test User",
-          role: "student",
+          role: "player",
         },
         error: null,
       });
@@ -353,7 +353,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
           id: mockUser.id,
           email: mockUser.email,
           full_name: "Test User",
-          role: "student",
+          role: "player",
         },
         error: null,
       });
@@ -366,7 +366,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
         "new@example.com",
         "password123",
         "Test User",
-        "student",
+        "player",
       );
 
       // Verify signup
@@ -377,8 +377,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
         options: {
           data: {
             full_name: "Test User",
-            role: "student",
-            user_type: "student",
+            role: "player",
             family_code: expect.stringMatching(/^FAM-[A-Z0-9]+$/),
             onboarding_completed: false,
           },
@@ -414,7 +413,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
           id: mockUser.id,
           email: mockUser.email,
           full_name: "Test User",
-          role: "student",
+          role: "player",
         },
         error: null,
       });
@@ -500,7 +499,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
           id: mockUser.id,
           email: mockUser.email,
           full_name: "Test User",
-          role: "student",
+          role: "player",
         },
         error: null,
       });

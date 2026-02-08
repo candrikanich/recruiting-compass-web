@@ -75,6 +75,9 @@ jobs:
           fi
           echo "✅ Coverage meets ${{ env.COVERAGE_THRESHOLD }}% threshold"
 
+  # Note: Accessibility testing is available via "npm run test:a11y" locally
+  # CI/CD integration coming after more pages are covered with a11y fixes
+
   # Step 3: Deploy to Staging (only on develop branch)
   deploy-staging:
     name: Deploy to Staging

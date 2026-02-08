@@ -31,7 +31,7 @@ const viewLogging = useViewLogging();
 
 const hasParentViewed = ref(false);
 const lastViewTime = ref<string | null>(null);
-const isAthlete = computed(() => userStore.user?.role === "student");
+const isAthlete = computed(() => userStore.user?.role === "player");
 
 /**
  * Format time difference for display

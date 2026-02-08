@@ -45,7 +45,7 @@
 
       <!-- Family Code Section for Students -->
       <section
-        v-if="isStudent && myFamilyCode"
+        v-if="isPlayer && myFamilyCode"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
       >
         <FamilyCodeDisplay
@@ -58,7 +58,7 @@
 
       <!-- Family Members Section for Students -->
       <section
-        v-if="isStudent && myFamilyCode && familyMembers.length > 0"
+        v-if="isPlayer && myFamilyCode && familyMembers.length > 0"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
       >
         <h2 class="text-xl font-bold text-gray-900 mb-4">
@@ -77,7 +77,7 @@
             v-for="member in familyMembers"
             :key="member.id"
             :member="member"
-            :is-student="isStudent"
+            :is-player="isPlayer"
             @remove="handleRemoveMember"
           />
         </div>
@@ -137,7 +137,7 @@
       >
         <p class="text-gray-500 mb-2">No families joined yet</p>
         <p class="text-sm text-gray-400">
-          Ask a student to share their family code above to join their family
+          Ask a player to share their family code above to join their family
         </p>
       </div>
     </main>
@@ -175,7 +175,7 @@ definePageMeta({
 });
 
 const userStore = useUserStore();
-const isStudent = computed(() => userStore.user?.role === "student");
+const isPlayer = computed(() => userStore.user?.role === "player");
 const isParent = computed(() => userStore.user?.role === "parent");
 
 const {
@@ -237,21 +237,21 @@ const fetchFamilyMembers = async () => {
 
 onMounted(async () => {
   console.log(
-    "[family-management] onMounted, isStudent:",
-    isStudent.value,
+    "[family-management] onMounted, isPlayer:",
+    isPlayer.value,
     "myFamilyId:",
     myFamilyId.value,
   );
   await fetchMyCode();
   console.log(
-    "[family-management] After fetchMyCode, isStudent:",
-    isStudent.value,
+    "[family-management] After fetchMyCode, isPlayer:",
+    isPlayer.value,
     "myFamilyId:",
     myFamilyId.value,
   );
 
   // Auto-create family for students without one
-  if (isStudent.value && !myFamilyCode.value) {
+  if (isPlayer.value && !myFamilyCode.value) {
     console.log("[family-management] No family found, auto-creating...");
     await createFamily();
     console.log(
@@ -260,13 +260,13 @@ onMounted(async () => {
     );
   }
 
-  if (isStudent.value && myFamilyId.value) {
+  if (isPlayer.value && myFamilyId.value) {
     console.log("[family-management] Calling fetchFamilyMembers");
     await fetchFamilyMembers();
   } else {
     console.log(
-      "[family-management] Not fetching members - isStudent:",
-      isStudent.value,
+      "[family-management] Not fetching members - isPlayer:",
+      isPlayer.value,
       "myFamilyId:",
       myFamilyId.value,
     );

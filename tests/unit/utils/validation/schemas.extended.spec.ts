@@ -89,16 +89,16 @@ describe("signupSchema - Extended", () => {
     expect(result.role).toBe("parent");
   });
 
-  it("should accept student role", () => {
+  it("should accept player role", () => {
     const data = {
       fullName: "Jane Doe",
       email: "jane@example.com",
       password: "SecurePass123",
       confirmPassword: "SecurePass123",
-      role: "student",
+      role: "player",
     };
     const result = signupSchema.parse(data);
-    expect(result.role).toBe("student");
+    expect(result.role).toBe("player");
   });
 
   it("should reject invalid role", () => {

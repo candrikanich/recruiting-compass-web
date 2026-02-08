@@ -12,7 +12,7 @@ vi.mock("~/composables/useSupabase", () => ({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
           single: vi.fn().mockResolvedValue({
-            data: { id: "family-1", student_user_id: "student-1" },
+            data: { id: "family-1", player_user_id: "player-1" },
             error: null,
           }),
         })),

@@ -108,9 +108,9 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
     });
   });
 
-  test.describe("Student User - Normal Editing", () => {
-    test("student sees normal player details page", async ({ page }) => {
-      // Assuming we can switch to student context or the test user is a student
+  test.describe("Player User - Normal Editing", () => {
+    test("player sees normal player details page", async ({ page }) => {
+      // Assuming we can switch to player context or the test user is a player
       await page.goto("/settings/player-details");
       await page.waitForLoadState("networkidle");
 
@@ -125,7 +125,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await expect(pageTitle).toBeVisible();
     });
 
-    test("student sees enabled form inputs", async ({ page }) => {
+    test("player sees enabled form inputs", async ({ page }) => {
       await page.goto("/settings/player-details");
       await page.waitForLoadState("networkidle");
 
@@ -135,7 +135,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       expect(isDisabled).toBe(false);
     });
 
-    test("student can edit and save profile", async ({ page }) => {
+    test("player can edit and save profile", async ({ page }) => {
       await page.goto("/settings/player-details");
       await page.waitForLoadState("networkidle");
 
@@ -152,7 +152,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await expect(saveButton).not.toBeDisabled();
     });
 
-    test("student sees save button enabled and shows proper text", async ({
+    test("player sees save button enabled and shows proper text", async ({
       page,
     }) => {
       await page.goto("/settings/player-details");

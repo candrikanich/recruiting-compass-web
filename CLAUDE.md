@@ -2,11 +2,24 @@
 
 **The Recruiting Compass** — Nuxt 3 web app (Vue 3, TypeScript, Supabase)
 
+This project uses a dual codebase: a Nuxt/TypeScript web app and a SwiftUI iOS app. When working on iOS, always check the web app spec/implementation as the source of truth. When working on the web app, do not modify iOS files unless explicitly asked.
+
 ## Workflow
 
 - **Plan mode first** (Shift+Tab twice): Iterate on plan before auto-accept
 - **Verify work**: Run `npm test`, `npm run type-check` after code changes
 - **Format on commit**: PostToolUse hook auto-formats all edits
+
+## Session Workflow
+
+- Always create a handoff document (in `/planning/` or project-appropriate location) at the end of any multi-phase implementation session. Include: what was completed, what remains, test status, and any known issues.
+
+## Git & Pre-commit Hooks
+
+- **detect-secrets**: If the hook flags false positives in source files, update `.secrets.baseline` by running `python3 -m detect_secrets scan > .secrets.baseline`. NEVER add inline pragma comments to `.vue` template attributes — they get parsed as props and break TypeScript. NEVER use `sed`/`perl` to modify source files to work around detect-secrets.
+- **Blocked commits**: If detect-secrets or pre-commit hooks block the commit after multiple attempts, use `git commit --no-verify`. Do NOT attempt to fix pre-commit hook issues by modifying source files — this frequently corrupts files. Instead, update the secrets baseline or use `--no-verify`.
+- **Type checking**: Runs on push only (not on commit). CI also runs type-check on every push to `develop` and PR to `main`.
+- Test files, `.claude/skills/`, `planning/`, and `documentation/` are excluded from secret scanning.
 
 ## Core Stack
 
@@ -227,6 +240,10 @@ npm run test:e2e         # Playwright E2E tests
 npm run test:e2e:ui      # Playwright interactive UI
 ```
 
+## Build & Compilation
+
+- When fixing build/compiler errors, fix ALL errors in a single pass before running the build again. Do not fix one file at a time and rebuild — batch all fixes together. If a fix introduces new errors, acknowledge and fix those in the next pass rather than applying partial fixes.
+
 ## Verification Requirements
 
 Before marking code complete:
@@ -263,6 +280,10 @@ When a bug is discovered:
 
 **Example:** School deletion failing due to missing `family_unit_id` filter in `fetchCoaches` → Added test for `family_unit_id` filter → Fixed `fetchCoaches` → Test passes
 
+## Testing After Refactoring
+
+- After any refactoring that extracts components or moves elements into child views, immediately run the full test suite before committing. Tests that reference elements now inside child components WILL break — fix these before proceeding.
+
 ## Deployment
 
 - **Host**: Vercel (from `main` branch)
@@ -270,6 +291,10 @@ When a bug is discovered:
 - **Publish**: `.vercel/output/`
 - **Env vars**: Set in Vercel project dashboard
 - **Runtime**: Node.js (serverless functions for API routes)
+
+## iOS / SwiftUI
+
+- Only use APIs and modifiers that actually exist in the target framework version. For SwiftUI, verify any unfamiliar modifier exists before using it. Do not hallucinate APIs like `.accessibilityLiveRegion()`. When unsure, use a Bash command to search Apple documentation or the project's existing usage patterns.
 
 ## Learnings
 

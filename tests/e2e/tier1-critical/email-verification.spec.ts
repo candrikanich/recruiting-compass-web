@@ -15,7 +15,7 @@ test.describe("Email Verification Flow", () => {
     await page.fill("#firstName", "Email");
     await page.fill("#lastName", "Verification");
     await page.fill("#email", testEmail);
-    await page.selectOption("#role", "student");
+    await page.selectOption("#role", "player");
     await page.fill("#password", testPassword);
     await page.fill("#confirmPassword", testPassword);
 

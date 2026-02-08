@@ -20,7 +20,7 @@ describe("LoggedByBadge", () => {
           id: "athlete-123",
           full_name: "John Athlete",
           email: "john@example.com",
-          role: "student",
+          role: "player",
         },
         error: null,
       }),
@@ -116,7 +116,7 @@ describe("LoggedByBadge", () => {
     expect(badge.classes()).toContain("text-blue-700");
   });
 
-  it("applies correct badge color for student role", async () => {
+  it("applies correct badge color for player role", async () => {
     const wrapper = mount(LoggedByBadge, {
       props: {
         loggedByUserId: "athlete-123",

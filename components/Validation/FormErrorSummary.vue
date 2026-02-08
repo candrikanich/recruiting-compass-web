@@ -2,12 +2,19 @@
   <Transition name="slide-down">
     <div
       v-if="errors.length > 0"
+      ref="containerRef"
+      id="form-error-summary"
       data-testid="error-message"
-      class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+      tabindex="-1"
+      class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg focus:outline-2 focus:outline-offset-2 focus:outline-red-600"
     >
       <div class="flex items-start gap-3">
         <ExclamationTriangleIcon
           class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
+          aria-hidden="true"
         />
         <div class="flex-1">
           <h3 class="text-sm font-semibold text-red-800 mb-2">
@@ -30,10 +37,10 @@
         <button
           type="button"
           @click="$emit('dismiss')"
-          class="text-red-600 hover:text-red-800 transition flex-shrink-0 mt-0.5"
+          class="text-red-600 hover:text-red-800 transition flex-shrink-0 mt-0.5 focus:outline-2 focus:outline-offset-2 focus:outline-red-600"
           aria-label="Dismiss error summary"
         >
-          <XMarkIcon class="w-5 h-5" />
+          <XMarkIcon class="w-5 h-5" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -41,16 +48,32 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from "vue";
 import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/vue/24/solid";
 import type { FormFieldError } from "~/composables/useFormValidation";
 
-defineProps<{
+const props = defineProps<{
   errors: FormFieldError[];
 }>();
 
 defineEmits<{
   dismiss: [];
 }>();
+
+const containerRef = ref<HTMLElement | null>(null);
+
+// Focus error summary when errors appear
+watch(
+  () => props.errors.length > 0,
+  (hasErrors) => {
+    if (hasErrors && containerRef.value) {
+      // Use requestAnimationFrame to ensure DOM has updated
+      requestAnimationFrame(() => {
+        containerRef.value?.focus();
+      });
+    }
+  },
+);
 
 /**
  * Formats field name for display

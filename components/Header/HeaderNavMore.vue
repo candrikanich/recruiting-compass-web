@@ -77,12 +77,14 @@ import {
   GiftIcon,
   DocumentTextIcon,
   ChartPieIcon,
+  CalendarDaysIcon,
 } from "@heroicons/vue/24/outline";
 
 const route = useRoute();
 const isOpen = ref(false);
 
 const moreItems = [
+  { to: "/events", label: "Events", icon: CalendarDaysIcon },
   { to: "/performance", label: "Performance", icon: ChartBarIcon },
   { to: "/offers", label: "Offers", icon: GiftIcon },
   { to: "/documents", label: "Documents", icon: DocumentTextIcon },

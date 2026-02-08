@@ -22,7 +22,7 @@ export const useUserStore = defineStore("user", {
     userRole: (state) => state.user?.role,
     isLoggedIn: (state) => state.isAuthenticated,
     emailVerified: (state) => state.isEmailVerified,
-    isAthlete: (state) => state.user?.role === "student",
+    isAthlete: (state) => state.user?.role === "player",
     isParent: (state) => state.user?.role === "parent",
     isAdmin: (state) => state.user?.role === "admin",
   },
@@ -77,7 +77,7 @@ export const useUserStore = defineStore("user", {
             id: session.user.id,
             email: session.user.email || "",
             full_name: session.user.user_metadata?.full_name || "",
-            role: "student", // Default role
+            role: "player", // Default role
           };
           this.isAuthenticated = true;
 
@@ -182,7 +182,7 @@ export const useUserStore = defineStore("user", {
             id: userId,
             email,
             full_name: fullName || email.split("@")[0],
-            role: "student",
+            role: "player",
           },
         ];
 
@@ -216,7 +216,7 @@ export const useUserStore = defineStore("user", {
           id: userId,
           email,
           full_name: fullName || email.split("@")[0],
-          role: "student",
+          role: "player",
         };
 
         return true; // Success

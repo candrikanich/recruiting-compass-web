@@ -10,11 +10,11 @@ export default defineEventHandler(async (event) => {
   const userRole = await getUserRole(user.id, supabase);
 
   // Students: Get their family code
-  if (userRole === "student") {
+  if (userRole === "player") {
     const familyResponse = await supabase
       .from("family_units")
       .select("id, family_code, family_name, code_generated_at")
-      .eq("student_user_id", user.id)
+      .eq("player_user_id", user.id)
       .maybeSingle();
 
     const { data: family } = familyResponse as {

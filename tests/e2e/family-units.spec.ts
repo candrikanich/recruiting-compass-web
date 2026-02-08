@@ -4,11 +4,11 @@ const BASE_URL = "http://localhost:3003";
 
 // Test data from documentation
 const TEST_ACCOUNTS = {
-  student1: {
+  player1: {
     email: "test.player2028@andrikanich.com",
     password: "test-password",
   },
-  student2: {
+  player2: {
     email: "test.player2030@andrikanich.com",
     password: "test-password",
   },
@@ -76,12 +76,12 @@ test.describe("Family Units", () => {
     }
   });
 
-  test("student can view their own schools", async ({ page }) => {
+  test("player can view their own schools", async ({ page }) => {
     await page.goto(`${BASE_URL}/login`);
 
-    // Login as student
-    await page.fill('input[type="email"]', TEST_ACCOUNTS.student1.email);
-    await page.fill('input[type="password"]', TEST_ACCOUNTS.student1.password);
+    // Login as player
+    await page.fill('input[type="email"]', TEST_ACCOUNTS.player1.email);
+    await page.fill('input[type="password"]', TEST_ACCOUNTS.player1.password);
     await page.click('button:has-text("Sign in")');
 
     // Wait for redirect
@@ -94,18 +94,18 @@ test.describe("Family Units", () => {
     // Check schools page loads with data
     await expect(page.locator("h1:has-text('Schools')")).toBeVisible();
 
-    // Verify student sees their schools (test data has schools for student1)
+    // Verify player sees their schools (test data has schools for player1)
     const schoolCards = page.locator('[class*="grid"]').first();
     const isLoaded = await schoolCards.isVisible().catch(() => false);
     expect(isLoaded).toBeTruthy();
   });
 
-  test("student cannot see athlete selector", async ({ page }) => {
+  test("player cannot see athlete selector", async ({ page }) => {
     await page.goto(`${BASE_URL}/login`);
 
-    // Login as student
-    await page.fill('input[type="email"]', TEST_ACCOUNTS.student1.email);
-    await page.fill('input[type="password"]', TEST_ACCOUNTS.student1.password);
+    // Login as player
+    await page.fill('input[type="email"]', TEST_ACCOUNTS.player1.email);
+    await page.fill('input[type="password"]', TEST_ACCOUNTS.player1.password);
     await page.click('button:has-text("Sign in")');
 
     // Wait for redirect
@@ -115,11 +115,11 @@ test.describe("Family Units", () => {
     await page.goto(`${BASE_URL}/schools`);
     await page.waitForLoadState("networkidle");
 
-    // Check that athlete selector is not visible (student should not see it)
+    // Check that athlete selector is not visible (player should not see it)
     const selectElements = page.locator("select");
     const count = await selectElements.count();
 
-    // If there's a select for athlete switching, it should not be visible for students
+    // If there's a select for athlete switching, it should not be visible for players
     // (The rest of the selects like filters are okay)
     const athleteSelectorText = page.locator("text=Viewing");
     const isVisible = await athleteSelectorText.isVisible().catch(() => false);
@@ -129,9 +129,9 @@ test.describe("Family Units", () => {
   test("private notes can be added to schools", async ({ page }) => {
     await page.goto(`${BASE_URL}/login`);
 
-    // Login as student
-    await page.fill('input[type="email"]', TEST_ACCOUNTS.student1.email);
-    await page.fill('input[type="password"]', TEST_ACCOUNTS.student1.password);
+    // Login as player
+    await page.fill('input[type="email"]', TEST_ACCOUNTS.player1.email);
+    await page.fill('input[type="password"]', TEST_ACCOUNTS.player1.password);
     await page.click('button:has-text("Sign in")');
 
     // Wait for redirect
@@ -180,9 +180,9 @@ test.describe("Family Units", () => {
   test("schools page displays school data correctly", async ({ page }) => {
     await page.goto(`${BASE_URL}/login`);
 
-    // Login as student with existing data
-    await page.fill('input[type="email"]', TEST_ACCOUNTS.student1.email);
-    await page.fill('input[type="password"]', TEST_ACCOUNTS.student1.password);
+    // Login as player with existing data
+    await page.fill('input[type="email"]', TEST_ACCOUNTS.player1.email);
+    await page.fill('input[type="password"]', TEST_ACCOUNTS.player1.password);
     await page.click('button:has-text("Sign in")');
 
     // Wait for redirect

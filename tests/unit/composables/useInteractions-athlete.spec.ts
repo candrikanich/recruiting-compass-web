@@ -12,7 +12,7 @@ const mockSupabase = {
 let mockUser: any = {
   id: "athlete-123",
   email: "athlete@example.com",
-  role: "student",
+  role: "player",
 };
 
 vi.mock("~/composables/useSupabase", () => ({
@@ -54,7 +54,7 @@ describe("useInteractions - Athlete Features", () => {
     mockUser = {
       id: "athlete-123",
       email: "athlete@example.com",
-      role: "student",
+      role: "player",
     };
 
     setActivePinia(createPinia());

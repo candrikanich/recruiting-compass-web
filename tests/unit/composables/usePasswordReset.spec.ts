@@ -318,6 +318,28 @@ describe("usePasswordReset", () => {
       expect(passwordUpdated.value).toBe(false);
     });
 
+    it("should reject whitespace-only password", async () => {
+      const { confirmPasswordReset, error } = usePasswordReset();
+
+      const result = await confirmPasswordReset("   ");
+
+      expect(result).toBe(false);
+      expect(error.value).toBe("Password is required");
+    });
+
+    it("should trim password before sending to Supabase", async () => {
+      const { mockAuth } = getMockSupabase();
+      const { confirmPasswordReset } = usePasswordReset();
+
+      mockAuth.updateUser.mockResolvedValue({ error: null });
+
+      await confirmPasswordReset("  ValidPassword123  ");
+
+      expect(mockAuth.updateUser).toHaveBeenCalledWith({
+        password: "ValidPassword123",
+      });
+    });
+
     it("should handle email with special characters", async () => {
       const { mockAuth } = getMockSupabase();
       const { requestPasswordReset } = usePasswordReset();

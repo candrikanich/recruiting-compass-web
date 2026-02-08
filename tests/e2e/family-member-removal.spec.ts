@@ -4,7 +4,7 @@ const BASE_URL = "http://localhost:3003";
 
 // Test data from documentation
 const TEST_ACCOUNTS = {
-  student: {
+  player: {
     email: "test.player2028@andrikanich.com",
     password: "test-password",
   },
@@ -78,20 +78,20 @@ test.describe("Family Member Removal", () => {
     }
   });
 
-  test("family member card shows correct styling for students", async ({
+  test("family member card shows correct styling for players", async ({
     page,
   }) => {
     // Navigate to family management
     await page.goto(`${BASE_URL}/settings/family-management`);
 
-    // Look for blue border cards (student cards)
-    const studentCards = page.locator('[class*="border-blue-200"]');
-    const studentCount = await studentCards.count().catch(() => 0);
+    // Look for blue border cards (player cards)
+    const playerCards = page.locator('[class*="border-blue-200"]');
+    const playerCount = await playerCards.count().catch(() => 0);
 
-    // If student cards exist, verify styling
-    if (studentCount > 0) {
-      const firstStudentCard = studentCards.first();
-      const classList = await firstStudentCard
+    // If player cards exist, verify styling
+    if (playerCount > 0) {
+      const firstPlayerCard = playerCards.first();
+      const classList = await firstPlayerCard
         .getAttribute("class")
         .catch(() => "");
       expect(classList).toContain("border-blue-200");

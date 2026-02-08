@@ -354,8 +354,8 @@ const useInteractionsInternal = (): {
     files?: File[],
   ) => {
     if (!userStore.user) throw new Error("User not authenticated");
-    if (userStore.user.role !== "student") {
-      throw new Error("Only students can create interactions");
+    if (userStore.user.role !== "player") {
+      throw new Error("Only players can create interactions");
     }
     if (!activeFamily.activeFamilyId.value) {
       throw new Error("No family context available");

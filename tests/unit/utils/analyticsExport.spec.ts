@@ -3,7 +3,6 @@ import {
   chartToImage,
   elementToImage,
   exportAnalyticsPDF,
-  exportAnalyticsExcel,
   generateAnalyticsReport,
 } from "~/utils/exportUtils";
 
@@ -41,16 +40,6 @@ vi.mock("jspdf", () => {
 // Mock autoTable plugin
 vi.mock("jspdf-autotable", () => ({
   default: vi.fn(),
-}));
-
-vi.mock("xlsx", () => ({
-  utils: {
-    aoa_to_sheet: vi.fn(),
-    json_to_sheet: vi.fn(() => ({})),
-    book_new: vi.fn(() => ({ SheetNames: [], Sheets: {} })),
-    book_append_sheet: vi.fn(),
-  },
-  writeFile: vi.fn(),
 }));
 
 describe("Analytics Export Utils", () => {
@@ -195,67 +184,6 @@ describe("Analytics Export Utils", () => {
           startDate: new Date(),
           endDate: new Date(),
         });
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
-    });
-  });
-
-  describe("exportAnalyticsExcel", () => {
-    it("creates workbook", async () => {
-      const mockCharts = [document.createElement("div")];
-      const data = [{ metric: "test", value: 100 }];
-
-      await exportAnalyticsExcel(mockCharts, data);
-
-      expect(true).toBe(true);
-    });
-
-    it("adds data sheet", async () => {
-      const mockCharts = [document.createElement("div")];
-      const data = [
-        { name: "Item1", count: 10 },
-        { name: "Item2", count: 20 },
-      ];
-
-      await exportAnalyticsExcel(mockCharts, data);
-
-      expect(true).toBe(true);
-    });
-
-    it("adds summary sheet", async () => {
-      const mockCharts = [document.createElement("div")];
-      const data = [{ metric: "test" }];
-
-      await exportAnalyticsExcel(mockCharts, data);
-
-      expect(true).toBe(true);
-    });
-
-    it("calls writeFile with correct filename", async () => {
-      const mockCharts = [document.createElement("div")];
-      const data = [{ metric: "test" }];
-
-      await exportAnalyticsExcel(mockCharts, data);
-
-      expect(true).toBe(true);
-    });
-
-    it("handles empty data", async () => {
-      const mockCharts = [];
-      const data = [];
-
-      await exportAnalyticsExcel(mockCharts, data);
-
-      expect(true).toBe(true);
-    });
-
-    it("handles errors gracefully", async () => {
-      const mockCharts = [document.createElement("div")];
-      const data = null as any;
-
-      try {
-        await exportAnalyticsExcel(mockCharts, data);
       } catch (error) {
         expect(error).toBeDefined();
       }

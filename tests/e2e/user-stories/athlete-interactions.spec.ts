@@ -8,7 +8,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
       // Navigate to app
       await page.goto("/");
 
-      // Login as athlete (student role)
+      // Login as athlete (player role)
       await page.fill('input[type="email"]', "test.athlete@example.com");
       await page.fill('input[type="password"]', "TestPassword123");
       await page.click('button:has-text("Login")');
@@ -304,7 +304,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
       // Verify athlete's interaction is visible
       await expect(page.locator("text=Test Athlete Interaction")).toBeVisible();
 
-      // Verify it shows student/athlete badge
+      // Verify it shows player/athlete badge
       const badge = page.locator(':has-text("You")').first();
       const badgeVisible = await badge.isVisible().catch(() => false);
 

@@ -26,7 +26,6 @@ import {
   BuildingLibraryIcon,
   UserGroupIcon,
   ChatBubbleLeftRightIcon,
-  CalendarDaysIcon,
   ClockIcon,
 } from "@heroicons/vue/24/outline";
 import HeaderNavMore from "./HeaderNavMore.vue";
@@ -44,7 +43,6 @@ const navItems: NavItem[] = [
   { to: "/schools", label: "Schools", icon: BuildingLibraryIcon },
   { to: "/coaches", label: "Coaches", icon: UserGroupIcon },
   { to: "/interactions", label: "Interactions", icon: ChatBubbleLeftRightIcon },
-  { to: "/events", label: "Events", icon: CalendarDaysIcon },
   { to: "/timeline", label: "Timeline", icon: ClockIcon },
 ];
 

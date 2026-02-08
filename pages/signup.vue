@@ -1,214 +1,10 @@
 <template>
   <div class="min-h-screen relative overflow-hidden bg-emerald-600">
     <!-- Multi-Sport Field Background -->
-    <div class="absolute inset-0">
-      <!-- Grass texture with gradient -->
-      <div
-        class="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700"
-      ></div>
+    <MultiSportFieldBackground />
 
-      <!-- Multi-Sport Field markings -->
-      <svg
-        class="absolute inset-0 w-full h-full opacity-20"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 1200 800"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <!-- Baseball: Infield dirt circle -->
-        <circle
-          cx="600"
-          cy="800"
-          r="350"
-          fill="none"
-          stroke="white"
-          stroke-width="3"
-          opacity="0.4"
-        />
-
-        <!-- Baseball: Foul lines -->
-        <line
-          x1="600"
-          y1="800"
-          x2="100"
-          y2="100"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.5"
-        />
-        <line
-          x1="600"
-          y1="800"
-          x2="1100"
-          y2="100"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.5"
-        />
-
-        <!-- Baseball: Basepaths -->
-        <line
-          x1="600"
-          y1="800"
-          x2="750"
-          y2="650"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <line
-          x1="750"
-          y1="650"
-          x2="600"
-          y2="500"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <line
-          x1="600"
-          y1="500"
-          x2="450"
-          y2="650"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <line
-          x1="450"
-          y1="650"
-          x2="600"
-          y2="800"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-
-        <!-- Baseball: Bases -->
-        <rect
-          x="595"
-          y="795"
-          width="10"
-          height="10"
-          fill="white"
-          opacity="0.6"
-        />
-        <rect
-          x="745"
-          y="645"
-          width="10"
-          height="10"
-          fill="white"
-          opacity="0.6"
-        />
-        <rect
-          x="595"
-          y="495"
-          width="10"
-          height="10"
-          fill="white"
-          opacity="0.6"
-        />
-        <rect
-          x="445"
-          y="645"
-          width="10"
-          height="10"
-          fill="white"
-          opacity="0.6"
-        />
-
-        <!-- Football: Hash marks and yard lines -->
-        <line
-          x1="50"
-          y1="150"
-          x2="50"
-          y2="650"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <line
-          x1="50"
-          y1="200"
-          x2="100"
-          y2="200"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <line
-          x1="50"
-          y1="300"
-          x2="100"
-          y2="300"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <line
-          x1="50"
-          y1="400"
-          x2="120"
-          y2="400"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.4"
-        />
-
-        <!-- Basketball: Court outline -->
-        <rect
-          x="100"
-          y="50"
-          width="300"
-          height="200"
-          fill="none"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <path
-          d="M 120 70 Q 180 100 120 180"
-          fill="none"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-
-        <!-- Soccer: Center circle -->
-        <circle
-          cx="600"
-          cy="200"
-          r="60"
-          fill="none"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <line
-          x1="300"
-          y1="200"
-          x2="900"
-          y2="200"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-      </svg>
-
-      <!-- Subtle pattern overlay -->
-      <div
-        class="absolute inset-0 opacity-5"
-        :style="{
-          backgroundImage: `repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 20px,
-            rgba(255, 255, 255, 0.3) 20px,
-            rgba(255, 255, 255, 0.3) 22px
-          )`,
-        }"
-      ></div>
-    </div>
+    <!-- Skip link for keyboard navigation -->
+    <SkipLink to="#signup-form" text="Skip to signup form" />
 
     <!-- Content -->
     <div
@@ -219,9 +15,9 @@
         <div class="mb-6">
           <NuxtLink
             to="/"
-            class="text-white hover:text-white/80 transition-colors flex items-center gap-2"
+            class="text-white hover:text-white/80 transition-colors flex items-center gap-2 rounded px-2 py-1 focus:outline-2 focus:outline-offset-2 focus:outline-white"
           >
-            <ArrowLeftIcon class="w-4 h-4" />
+            <ArrowLeftIcon class="w-4 h-4" aria-hidden="true" />
             Back to Welcome
           </NuxtLink>
         </div>
@@ -230,6 +26,9 @@
         <div
           class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20"
         >
+          <!-- Heading (hidden but available for screen readers) -->
+          <h1 class="sr-only">Sign Up</h1>
+
           <!-- Header -->
           <div class="text-center mb-8">
             <img
@@ -248,252 +47,55 @@
           />
 
           <!-- User Type Selection -->
-          <div v-if="!userType" class="space-y-4 mb-8">
-            <p class="text-slate-600 text-sm font-medium">I'm a:</p>
-            <div class="grid grid-cols-2 gap-3">
-              <button
-                data-testid="user-type-player"
-                type="button"
-                @click="selectUserType('player')"
-                :disabled="loading"
-                :class="[
-                  'px-4 py-3 rounded-lg border-2 transition-all font-medium',
-                  'border-slate-200 hover:border-blue-500 text-slate-700',
-                ]"
-              >
-                I'm a Player
-              </button>
-              <button
-                data-testid="user-type-parent"
-                type="button"
-                @click="selectUserType('parent')"
-                :disabled="loading"
-                :class="[
-                  'px-4 py-3 rounded-lg border-2 transition-all font-medium',
-                  'border-slate-200 hover:border-blue-500 text-slate-700',
-                ]"
-              >
-                I'm a Parent
-              </button>
-            </div>
-          </div>
+          <UserTypeSelector
+            v-if="!userType"
+            :selected="userType"
+            :disabled="loading"
+            @select="selectUserType"
+            class="mb-8"
+          />
 
-          <!-- Form -->
-          <form
+          <!-- SR-only announcement for form transition -->
+          <div
             v-if="userType"
-            @submit.prevent="handleSignup"
-            :data-testid="`signup-form-${userType}`"
-            class="space-y-6"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            class="sr-only"
           >
-            <!-- Name Fields -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  for="firstName"
-                  class="block text-sm font-medium text-slate-700 mb-2"
-                >
-                  First Name
-                </label>
-                <div class="relative">
-                  <UserIcon
-                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-                  />
-                  <input
-                    id="firstName"
-                    v-model="firstName"
-                    type="text"
-                    required
-                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="John"
-                    :disabled="loading"
-                  />
-                </div>
-              </div>
-              <div>
-                <label
-                  for="lastName"
-                  class="block text-sm font-medium text-slate-700 mb-2"
-                >
-                  Last Name
-                </label>
-                <div class="relative">
-                  <UserIcon
-                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-                  />
-                  <input
-                    id="lastName"
-                    v-model="lastName"
-                    type="text"
-                    required
-                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Smith"
-                    :disabled="loading"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Email -->
-            <div>
-              <label
-                for="email"
-                class="block text-sm font-medium text-slate-700 mb-2"
-              >
-                Email
-              </label>
-              <div class="relative">
-                <EnvelopeIcon
-                  class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-                />
-                <input
-                  id="email"
-                  v-model="email"
-                  type="email"
-                  required
-                  class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="your.email@example.com"
-                  :disabled="loading"
-                  @blur="validateEmail"
-                />
-              </div>
-              <FieldError :error="fieldErrors.email" />
-            </div>
-
-            <!-- Family Code (Parents only) -->
-            <div v-if="userType === 'parent'">
-              <label
-                for="familyCode"
-                class="block text-sm font-medium text-slate-700 mb-2"
-              >
-                Family Code <span class="text-slate-500">(optional)</span>
-              </label>
-              <input
-                id="familyCode"
-                v-model="familyCode"
-                type="text"
-                placeholder="FAM-XXXXXXXX"
-                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
-                :disabled="loading"
-                @blur="validateFamilyCode"
-              />
-              <p class="text-xs text-slate-500 mt-1">
-                Enter your player's family code to link accounts
-              </p>
-              <FieldError :error="fieldErrors.familyCode" />
-            </div>
-
-            <!-- Password Fields -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  for="password"
-                  class="block text-sm font-medium text-slate-700 mb-2"
-                >
-                  Password
-                </label>
-                <div class="relative">
-                  <LockClosedIcon
-                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-                  />
-                  <input
-                    id="password"
-                    v-model="password"
-                    type="password"
-                    required
-                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Create a password"
-                    :disabled="loading"
-                    @blur="validatePassword"
-                  />
-                </div>
-                <FieldError :error="fieldErrors.password" />
-              </div>
-              <div>
-                <label
-                  for="confirmPassword"
-                  class="block text-sm font-medium text-slate-700 mb-2"
-                >
-                  Confirm Password
-                </label>
-                <div class="relative">
-                  <LockClosedIcon
-                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-                  />
-                  <input
-                    id="confirmPassword"
-                    v-model="confirmPassword"
-                    type="password"
-                    required
-                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Confirm password"
-                    :disabled="loading"
-                  />
-                </div>
-              </div>
-            </div>
-            <p class="text-xs text-slate-500 -mt-4">
-              Must be 8+ characters with uppercase, lowercase, and a number
-            </p>
-
-            <!-- Terms and Conditions -->
-            <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-              <label class="flex items-start gap-3 cursor-pointer">
-                <input
-                  v-model="agreeToTerms"
-                  type="checkbox"
-                  class="mt-1 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span class="text-slate-700 text-sm">
-                  I agree to the
-                  <NuxtLink
-                    to="/legal/terms"
-                    class="text-blue-600 hover:text-blue-700"
-                    >Terms and Conditions</NuxtLink
-                  >
-                  and
-                  <NuxtLink
-                    to="/legal/privacy"
-                    class="text-blue-600 hover:text-blue-700"
-                    >Privacy Policy</NuxtLink
-                  >
-                </span>
-              </label>
-            </div>
-
-            <!-- Submit -->
-            <button
-              data-testid="signup-button"
-              type="submit"
-              :disabled="loading || hasErrors"
-              class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg"
-            >
-              {{ loading ? "Creating account..." : "Create Account" }}
-            </button>
-          </form>
-
-          <!-- Divider -->
-          <div class="relative my-6">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-slate-200"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="bg-white px-4 text-slate-500"
-                >Already have an account?</span
-              >
-            </div>
+            {{
+              userType === "player"
+                ? "Player signup form loaded"
+                : "Parent signup form loaded"
+            }}
           </div>
 
-          <!-- Sign In Link -->
-          <div class="text-center">
-            <p class="text-slate-600 text-sm">
-              <NuxtLink
-                to="/login"
-                class="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Sign in instead
-              </NuxtLink>
-            </p>
-          </div>
+          <!-- Form pragma: allowlist secret -->
+          <SignupForm
+            v-if="userType"
+            :user-type="userType"
+            :first-name="firstName"
+            :last-name="lastName"
+            :email="email"
+            :password="password"
+            :confirm-password="confirmPassword"
+            :family-code="familyCode"
+            :agree-to-terms="agreeToTerms"
+            :loading="loading"
+            :has-errors="hasErrors"
+            :field-errors="fieldErrors"
+            @update:first-name="firstName = $event"
+            @update:last-name="lastName = $event"
+            @update:email="email = $event"
+            @update:password="password = $event"
+            @update:confirm-password="confirmPassword = $event"
+            @update:family-code="familyCode = $event"
+            @update:agree-to-terms="agreeToTerms = $event"
+            @submit="handleSignup"
+            @validate-email="validateEmail"
+            @validate-password="validatePassword"
+            @validate-family-code="validateFamilyCode"
+          />
         </div>
       </div>
     </div>
@@ -504,21 +106,20 @@
 definePageMeta({ layout: "public" });
 
 import { ref, watch } from "vue";
-import { useRoute } from "vue-router";
 import { useAuth } from "~/composables/useAuth";
 import { useSupabase } from "~/composables/useSupabase";
-import { useUserStore } from "~/stores/user";
 import { useFormValidation } from "~/composables/useFormValidation";
+import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
 import { signupSchema } from "~/utils/validation/schemas";
-import { z } from "zod";
 import {
-  ArrowLeftIcon,
-  UserIcon,
-  EnvelopeIcon,
-  LockClosedIcon,
-} from "@heroicons/vue/24/outline";
+  SIGNUP_EMAIL_SCHEMA,
+  SIGNUP_PASSWORD_SCHEMA,
+} from "~/utils/validation/signupSchemas";
+import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
-import FieldError from "~/components/DesignSystem/FieldError.vue";
+import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackground.vue";
+import UserTypeSelector from "~/components/Auth/UserTypeSelector.vue";
+import SignupForm from "~/components/Auth/SignupForm.vue";
 
 const firstName = ref("");
 const lastName = ref("");
@@ -529,12 +130,10 @@ const role = ref("");
 const familyCode = ref("");
 const userType = ref<"player" | "parent" | null>(null);
 const agreeToTerms = ref(false);
-const loading = ref(false);
 
+const { loading } = useLoadingStates();
 const { signup } = useAuth();
 const supabase = useSupabase();
-const userStore = useUserStore();
-const route = useRoute();
 const {
   errors,
   fieldErrors,
@@ -544,38 +143,29 @@ const {
   hasErrors,
   setErrors,
 } = useFormValidation();
+const { focusErrorSummary } = useFormErrorFocus();
 
 const selectUserType = (type: "player" | "parent") => {
   userType.value = type;
-  role.value = type === "player" ? "student" : "parent";
+  role.value = type;
   clearErrors();
 };
 
-// Field-level validators
-const emailSchema = z.object({ email: signupSchema.shape.email });
-const passwordSchema = z.object({ password: signupSchema.shape.password });
-const roleSchema = z.object({ role: signupSchema.shape.role });
-
 const validateEmail = async () => {
-  await validateField("email", email.value, emailSchema.shape.email);
+  await validateField("email", email.value, SIGNUP_EMAIL_SCHEMA.shape.email);
 };
 
 const validatePassword = async () => {
   await validateField(
     "password",
     password.value,
-    passwordSchema.shape.password,
+    SIGNUP_PASSWORD_SCHEMA.shape.password,
   );
-};
-
-const validateRole = async () => {
-  await validateField("role", role.value, roleSchema.shape.role);
 };
 
 // Clear terms error when checkbox is checked
 watch(agreeToTerms, (isChecked) => {
   if (isChecked) {
-    // Remove the terms error if present
     const updatedErrors = errors.value.filter(
       (err) => err.message !== "Please agree to the terms and conditions",
     );
@@ -596,6 +186,7 @@ const handleSignup = async () => {
   // Check passwords match
   if (password.value !== confirmPassword.value) {
     setErrors([{ field: "form", message: "Passwords don't match" }]);
+    await focusErrorSummary();
     return;
   }
 
@@ -604,6 +195,7 @@ const handleSignup = async () => {
     setErrors([
       { field: "form", message: "Please agree to the terms and conditions" },
     ]);
+    await focusErrorSummary();
     return;
   }
 
@@ -623,6 +215,7 @@ const handleSignup = async () => {
   );
 
   if (!validated) {
+    await focusErrorSummary();
     return;
   }
 
@@ -645,7 +238,6 @@ const handleSignup = async () => {
         validated.role,
         signupOptions,
       );
-      console.log("Auth signup returned:", authData);
 
       if (!authData?.user?.id) {
         throw new Error("No user returned from signup");
@@ -659,17 +251,12 @@ const handleSignup = async () => {
         signupErr instanceof Error ? signupErr.message : String(signupErr);
 
       if (errMessage.includes("already registered")) {
-        console.log("User already registered, checking current session...");
-
         // Try to get the current session
         const {
           data: { session },
         } = await supabase.auth.getSession();
 
         if (session?.user?.id) {
-          console.log(
-            "Session exists for user, proceeding with profile creation",
-          );
           userId = session.user.id;
         } else {
           // No active session - this is a real error
@@ -697,17 +284,14 @@ const handleSignup = async () => {
     const { error: upsertError } = upsertResponse as { error: any };
 
     if (upsertError) {
-      console.error("Error upserting user profile:", upsertError);
       throw upsertError;
     }
-
-    console.log("User profile created successfully");
 
     // Determine redirect based on user type
     let redirectUrl = "";
 
-    if (validated.role === "student") {
-      // Students (players) go to onboarding
+    if (validated.role === "player") {
+      // Players go to onboarding
       redirectUrl = "/onboarding";
     } else if (validated.role === "parent") {
       // Parents go to family code entry or dashboard
@@ -724,24 +308,25 @@ const handleSignup = async () => {
         "/verify-email?email=" + encodeURIComponent(validated.email);
     }
 
-    console.log("Redirecting to:", redirectUrl);
     await navigateTo(redirectUrl);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Signup failed";
     // Set form-level error
     setErrors([{ field: "form", message }]);
-    console.error("Signup error:", err);
+    await focusErrorSummary();
     loading.value = false;
   }
 };
 </script>
 
 <style scoped>
-button[data-testid^="user-type-"]:not(:disabled).selected {
-  @apply bg-blue-50 border-blue-500 text-blue-700;
+/* Screen reader only content */
+.sr-only {
+  @apply absolute w-1 h-1 p-0 -m-1 overflow-hidden whitespace-nowrap border-0;
 }
 
-button[data-testid^="user-type-"]:disabled {
-  @apply opacity-50 cursor-not-allowed;
+.sr-only:focus,
+.focus\:not-sr-only:focus {
+  @apply relative w-auto h-auto p-2 m-0 overflow-visible whitespace-normal;
 }
 </style>
