@@ -1,423 +1,21 @@
 <template>
   <div class="min-h-screen relative overflow-hidden bg-emerald-600">
-    <!-- Multi-Sport Field Background -->
-    <div class="absolute inset-0">
-      <!-- Grass texture with gradient -->
-      <div
-        class="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700"
-      ></div>
+    <AuthMultiSportFieldBackground />
 
-      <!-- Multi-Sport Field markings -->
-      <svg
-        class="absolute inset-0 w-full h-full opacity-20"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 1200 800"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <!-- Baseball: Infield dirt circle -->
-        <circle
-          cx="600"
-          cy="800"
-          r="350"
-          fill="none"
-          stroke="white"
-          stroke-width="3"
-          opacity="0.4"
-        />
-
-        <!-- Baseball: Foul lines -->
-        <line
-          x1="600"
-          y1="800"
-          x2="100"
-          y2="100"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.5"
-        />
-        <line
-          x1="600"
-          y1="800"
-          x2="1100"
-          y2="100"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.5"
-        />
-
-        <!-- Baseball: Basepaths -->
-        <line
-          x1="600"
-          y1="800"
-          x2="750"
-          y2="650"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <line
-          x1="750"
-          y1="650"
-          x2="600"
-          y2="500"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <line
-          x1="600"
-          y1="500"
-          x2="450"
-          y2="650"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <line
-          x1="450"
-          y1="650"
-          x2="600"
-          y2="800"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-
-        <!-- Baseball: Bases -->
-        <rect
-          x="595"
-          y="795"
-          width="10"
-          height="10"
-          fill="white"
-          opacity="0.6"
-        />
-        <rect
-          x="745"
-          y="645"
-          width="10"
-          height="10"
-          fill="white"
-          opacity="0.6"
-        />
-        <rect
-          x="595"
-          y="495"
-          width="10"
-          height="10"
-          fill="white"
-          opacity="0.6"
-        />
-        <rect
-          x="445"
-          y="645"
-          width="10"
-          height="10"
-          fill="white"
-          opacity="0.6"
-        />
-
-        <!-- Baseball: Outfield arc -->
-        <path
-          d="M 200 200 Q 600 50 1000 200"
-          fill="none"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-
-        <!-- Football: Hash marks and yard lines (left side) -->
-        <line
-          x1="50"
-          y1="150"
-          x2="50"
-          y2="650"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <line
-          x1="50"
-          y1="200"
-          x2="100"
-          y2="200"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <line
-          x1="50"
-          y1="300"
-          x2="100"
-          y2="300"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <line
-          x1="50"
-          y1="400"
-          x2="120"
-          y2="400"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.4"
-        />
-        <line
-          x1="50"
-          y1="500"
-          x2="100"
-          y2="500"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <line
-          x1="50"
-          y1="600"
-          x2="100"
-          y2="600"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-
-        <!-- Football: Hash marks (right side) -->
-        <line
-          x1="1150"
-          y1="150"
-          x2="1150"
-          y2="650"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <line
-          x1="1100"
-          y1="200"
-          x2="1150"
-          y2="200"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <line
-          x1="1100"
-          y1="300"
-          x2="1150"
-          y2="300"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <line
-          x1="1080"
-          y1="400"
-          x2="1150"
-          y2="400"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.4"
-        />
-        <line
-          x1="1100"
-          y1="500"
-          x2="1150"
-          y2="500"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <line
-          x1="1100"
-          y1="600"
-          x2="1150"
-          y2="600"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-
-        <!-- Basketball: Court outline (top left) -->
-        <rect
-          x="100"
-          y="50"
-          width="300"
-          height="200"
-          fill="none"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <line
-          x1="100"
-          y1="150"
-          x2="200"
-          y2="150"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <path
-          d="M 120 70 Q 180 100 120 180"
-          fill="none"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <rect
-          x="100"
-          y="120"
-          width="60"
-          height="60"
-          fill="none"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <circle
-          cx="300"
-          cy="150"
-          r="30"
-          fill="none"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-
-        <!-- Basketball: Court outline (top right) -->
-        <rect
-          x="800"
-          y="50"
-          width="300"
-          height="200"
-          fill="none"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <line
-          x1="1000"
-          y1="150"
-          x2="1100"
-          y2="150"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <path
-          d="M 1080 70 Q 1020 100 1080 180"
-          fill="none"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <rect
-          x="1040"
-          y="120"
-          width="60"
-          height="60"
-          fill="none"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-
-        <!-- Soccer: Penalty boxes -->
-        <rect
-          x="150"
-          y="600"
-          width="150"
-          height="100"
-          fill="none"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <rect
-          x="200"
-          y="650"
-          width="50"
-          height="50"
-          fill="none"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <path
-          d="M 200 630 Q 225 600 250 630"
-          fill="none"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-
-        <rect
-          x="900"
-          y="600"
-          width="150"
-          height="100"
-          fill="none"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <rect
-          x="950"
-          y="650"
-          width="50"
-          height="50"
-          fill="none"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-        <path
-          d="M 950 630 Q 975 600 1000 630"
-          fill="none"
-          stroke="white"
-          stroke-width="1"
-          opacity="0.3"
-        />
-
-        <!-- Soccer: Center circle -->
-        <circle
-          cx="600"
-          cy="200"
-          r="60"
-          fill="none"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-        <circle cx="600" cy="200" r="3" fill="white" opacity="0.4" />
-        <line
-          x1="300"
-          y1="200"
-          x2="900"
-          y2="200"
-          stroke="white"
-          stroke-width="2"
-          opacity="0.3"
-        />
-      </svg>
-    </div>
-
-    <!-- Content -->
-    <div
+    <main
       class="relative z-10 min-h-screen flex items-center justify-center px-6 py-12"
     >
       <div class="w-full max-w-md">
-        <!-- Back Link -->
-        <div class="mb-6">
+        <!-- Navigation -->
+        <nav aria-label="Page navigation" class="mb-6">
           <NuxtLink
             to="/"
-            class="text-white hover:text-white/80 transition-colors flex items-center gap-2"
+            class="text-white hover:text-white/80 transition-colors flex items-center gap-2 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
           >
-            <ArrowLeftIcon class="w-4 h-4" />
-            Back to Welcome
+            <ArrowLeftIcon class="w-4 h-4" aria-hidden="true" />
+            Back to Home
           </NuxtLink>
-        </div>
+        </nav>
 
         <!-- Reset Password Card -->
         <div
@@ -426,20 +24,23 @@
           <!-- Status Icon & Header -->
           <div class="text-center mb-8">
             <div
-              class="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg"
+              class="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg"
               :class="{
                 'bg-emerald-100': passwordUpdated,
                 'bg-amber-100': !passwordUpdated && !invalidToken,
                 'bg-red-100': invalidToken,
                 'bg-blue-100': isValidating,
               }"
+              role="img"
+              :aria-label="statusIconLabel"
             >
               <!-- Validating state -->
               <svg
                 v-if="isValidating"
-                class="w-11 h-11 text-blue-600 animate-spin"
+                class="w-11 h-11 text-blue-600 animate-spin motion-reduce:animate-none"
                 fill="none"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <circle
                   class="opacity-25"
@@ -448,12 +49,12 @@
                   r="10"
                   stroke="currentColor"
                   stroke-width="4"
-                ></circle>
+                />
                 <path
                   class="opacity-75"
                   fill="currentColor"
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
+                />
               </svg>
 
               <!-- Success state -->
@@ -464,6 +65,7 @@
                 stroke="currentColor"
                 viewBox="0 0 24 24"
                 stroke-width="2"
+                aria-hidden="true"
               >
                 <path
                   stroke-linecap="round"
@@ -480,6 +82,7 @@
                 stroke="currentColor"
                 viewBox="0 0 24 24"
                 stroke-width="1.5"
+                aria-hidden="true"
               >
                 <path
                   stroke-linecap="round"
@@ -496,6 +99,7 @@
                 stroke="currentColor"
                 viewBox="0 0 24 24"
                 stroke-width="1.5"
+                aria-hidden="true"
               >
                 <path
                   stroke-linecap="round"
@@ -525,24 +129,30 @@
             </p>
           </div>
 
-          <!-- Validation errors -->
-          <div class="mb-8 space-y-4">
+          <!-- Status messages -->
+          <section aria-label="Status messages" class="mb-8 space-y-4">
             <!-- Invalid token error -->
             <div
               v-if="invalidToken"
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
               class="p-4 bg-red-50 border border-red-200 rounded-lg"
             >
-              <p class="text-red-800 text-sm font-medium">
-                {{ passwordReset.error }}
+              <p class="text-red-900 text-sm font-medium">
+                {{ invalidTokenMessage }}
               </p>
             </div>
 
             <!-- Success message -->
             <div
               v-if="passwordUpdated"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
               class="p-4 bg-emerald-50 border border-emerald-200 rounded-lg"
             >
-              <p class="text-emerald-800 text-sm font-medium">
+              <p class="text-emerald-900 text-sm font-medium">
                 Your password has been successfully reset. You can now log in
                 with your new password.
               </p>
@@ -558,17 +168,18 @@
             <!-- API error from password reset -->
             <div
               v-if="
-                passwordReset.error?.value?.trim() &&
-                !passwordUpdated &&
-                !invalidToken
+                passwordReset.error.value && !passwordUpdated && !invalidToken
               "
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
               class="p-4 bg-red-50 border border-red-200 rounded-lg"
             >
-              <p class="text-red-800 text-sm font-medium">
+              <p class="text-red-900 text-sm font-medium">
                 {{ passwordReset.error.value }}
               </p>
             </div>
-          </div>
+          </section>
 
           <!-- Form -->
           <form
@@ -587,6 +198,7 @@
               <div class="relative">
                 <LockClosedIcon
                   class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  aria-hidden="true"
                 />
                 <input
                   id="password"
@@ -601,11 +213,13 @@
                 <button
                   type="button"
                   @click="showPassword = !showPassword"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                 >
                   <component
                     :is="showPassword ? EyeSlashIcon : EyeIcon"
                     class="w-5 h-5"
+                    aria-hidden="true"
                   />
                 </button>
               </div>
@@ -623,6 +237,7 @@
               <div class="relative">
                 <LockClosedIcon
                   class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  aria-hidden="true"
                 />
                 <input
                   id="confirmPassword"
@@ -637,11 +252,13 @@
                 <button
                   type="button"
                   @click="showPassword = !showPassword"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                 >
                   <component
                     :is="showPassword ? EyeSlashIcon : EyeIcon"
                     class="w-5 h-5"
+                    aria-hidden="true"
                   />
                 </button>
               </div>
@@ -649,15 +266,20 @@
             </div>
 
             <!-- Password Requirements Checklist -->
-            <div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <div
+              class="p-4 bg-slate-50 rounded-lg border border-slate-200"
+              role="list"
+              aria-label="Password requirements"
+            >
               <p class="text-sm font-medium text-slate-700 mb-3">
                 Password must contain:
               </p>
               <ul class="space-y-2">
-                <li class="flex items-center gap-2 text-sm">
+                <li class="flex items-center gap-2 text-sm" role="listitem">
                   <CheckCircleIcon
                     v-if="password.length >= 8"
                     class="w-5 h-5 text-emerald-600 flex-shrink-0"
+                    aria-hidden="true"
                   />
                   <svg
                     v-else
@@ -665,6 +287,7 @@
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <circle cx="12" cy="12" r="10" stroke-width="2" />
                   </svg>
@@ -676,10 +299,11 @@
                     At least 8 characters
                   </span>
                 </li>
-                <li class="flex items-center gap-2 text-sm">
+                <li class="flex items-center gap-2 text-sm" role="listitem">
                   <CheckCircleIcon
                     v-if="/[A-Z]/.test(password)"
                     class="w-5 h-5 text-emerald-600 flex-shrink-0"
+                    aria-hidden="true"
                   />
                   <svg
                     v-else
@@ -687,6 +311,7 @@
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <circle cx="12" cy="12" r="10" stroke-width="2" />
                   </svg>
@@ -700,10 +325,11 @@
                     One uppercase letter
                   </span>
                 </li>
-                <li class="flex items-center gap-2 text-sm">
+                <li class="flex items-center gap-2 text-sm" role="listitem">
                   <CheckCircleIcon
                     v-if="/[a-z]/.test(password)"
                     class="w-5 h-5 text-emerald-600 flex-shrink-0"
+                    aria-hidden="true"
                   />
                   <svg
                     v-else
@@ -711,6 +337,7 @@
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <circle cx="12" cy="12" r="10" stroke-width="2" />
                   </svg>
@@ -724,10 +351,11 @@
                     One lowercase letter
                   </span>
                 </li>
-                <li class="flex items-center gap-2 text-sm">
+                <li class="flex items-center gap-2 text-sm" role="listitem">
                   <CheckCircleIcon
                     v-if="/[0-9]/.test(password)"
                     class="w-5 h-5 text-emerald-600 flex-shrink-0"
+                    aria-hidden="true"
                   />
                   <svg
                     v-else
@@ -735,6 +363,7 @@
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <circle cx="12" cy="12" r="10" stroke-width="2" />
                   </svg>
@@ -753,10 +382,12 @@
 
             <!-- Submit -->
             <button
+              ref="submitButtonRef"
               data-testid="reset-password-button"
               type="submit"
               :disabled="!isFormValid || loading || validating"
-              class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg"
+              :aria-busy="loading"
+              class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               {{
                 loading
@@ -769,49 +400,58 @@
           </form>
 
           <!-- Success Actions -->
-          <div v-if="passwordUpdated" class="space-y-4">
+          <section
+            v-if="passwordUpdated"
+            aria-label="Next steps"
+            class="space-y-4"
+          >
             <NuxtLink
+              ref="loginLinkRef"
               to="/login"
-              class="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-center"
+              class="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Go to Login
             </NuxtLink>
 
             <NuxtLink
               to="/"
-              class="block w-full py-3 px-4 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-colors text-center"
+              class="block w-full py-3 px-4 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-colors text-center focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
             >
               Back to Home
             </NuxtLink>
-          </div>
+          </section>
 
           <!-- Error Actions -->
-          <div v-if="invalidToken" class="space-y-4">
+          <section
+            v-if="invalidToken"
+            aria-label="Recovery options"
+            class="space-y-4"
+          >
             <NuxtLink
               to="/forgot-password"
-              class="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-center"
+              class="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Request New Reset Link
             </NuxtLink>
 
             <NuxtLink
               to="/login"
-              class="block w-full py-3 px-4 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-colors text-center"
+              class="block w-full py-3 px-4 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-colors text-center focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
             >
               Back to Login
             </NuxtLink>
-          </div>
+          </section>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ layout: "public" });
 
-import { ref, onMounted, computed } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { ref, computed, watch, nextTick, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import {
   ArrowLeftIcon,
   LockClosedIcon,
@@ -826,13 +466,11 @@ import { useFormValidation } from "~/composables/useFormValidation";
 import { resetPasswordSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
 
-// Static schema - defined once outside component scope
 const PASSWORD_SCHEMA = z.object({
   password: resetPasswordSchema.shape.password,
   confirmPassword: z.string(),
 });
 
-const route = useRoute();
 const router = useRouter();
 
 const password = ref("");
@@ -842,13 +480,21 @@ const loading = ref(false);
 const validating = ref(false);
 const passwordUpdated = ref(false);
 const invalidToken = ref(false);
+const invalidTokenMessage = ref("");
 const isValidating = ref(false);
+const loginLinkRef = ref<HTMLAnchorElement | null>(null);
 
 const passwordReset = usePasswordReset();
 const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } =
   useFormValidation();
 
-// Computed property for form validity
+const statusIconLabel = computed(() => {
+  if (isValidating.value) return "Validating reset link";
+  if (passwordUpdated.value) return "Password reset successful";
+  if (invalidToken.value) return "Invalid or expired reset link";
+  return "Create new password";
+});
+
 const isFormValid = computed(() => {
   const passwordValid =
     password.value.length >= 8 &&
@@ -858,6 +504,18 @@ const isFormValid = computed(() => {
   const passwordsMatch = password.value === confirmPassword.value;
 
   return !hasErrors.value && passwordValid && passwordsMatch;
+});
+
+watch(passwordUpdated, async (updated) => {
+  if (updated) {
+    await nextTick();
+    const loginEl = document.querySelector('a[href="/login"]') as HTMLElement;
+    loginEl?.focus();
+
+    setTimeout(() => {
+      router.push("/login");
+    }, 2000);
+  }
 });
 
 const validatePassword = async () => {
@@ -885,7 +543,6 @@ const validateConfirmPassword = async () => {
 };
 
 const handleResetPassword = async () => {
-  // Validate entire form before submission
   const validated = await validate(
     {
       password: password.value,
@@ -907,28 +564,20 @@ const handleResetPassword = async () => {
 
     if (success) {
       passwordUpdated.value = true;
-
-      // Auto-redirect to login after 2 seconds
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
     }
   } finally {
     loading.value = false;
   }
 };
 
-// Initialize - check for session set by Supabase from URL hash
 onMounted(async () => {
   const supabase = useSupabase();
 
-  // Supabase automatically parses the hash fragment (#access_token=...)
-  // and sets up the session. Check if session exists.
   const { data } = await supabase.auth.getSession();
 
   if (!data.session) {
     invalidToken.value = true;
-    (passwordReset.error as any).value =
+    invalidTokenMessage.value =
       "No reset link provided. Please request a new password reset.";
   }
 });

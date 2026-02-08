@@ -1,30 +1,16 @@
-/**
- * POST /api/auth/resend-verification
- * Resend email verification email to user
- *
- * Handles resending verification emails:
- * 1. User requests new verification email (rate-limited)
- * 2. Supabase sends new verification email with new token
- * 3. Response indicates success or provides error reason
- */
+import { createServerSupabaseClient } from "~/server/utils/supabase";
 
-interface ResendVerificationRequest {
-  email: string;
-}
-
-interface ResendVerificationResponse {
+type ResendVerificationResponse = {
   success: boolean;
   message: string;
-}
+};
 
 export default defineEventHandler(
   async (event): Promise<ResendVerificationResponse> => {
     try {
-      // Parse request body
-      const body = await readBody<ResendVerificationRequest>(event);
+      const body = await readBody<{ email: string }>(event);
       const { email } = body;
 
-      // Validate email is provided
       if (!email) {
         throw createError({
           statusCode: 400,
@@ -32,7 +18,6 @@ export default defineEventHandler(
         });
       }
 
-      // Basic email format validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         throw createError({
@@ -41,28 +26,8 @@ export default defineEventHandler(
         });
       }
 
-      // Get Supabase credentials
-      const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL;
-      const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-      const supabaseAnonKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY;
+      const supabaseAdmin = createServerSupabaseClient();
 
-      if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
-        console.error("Missing Supabase configuration");
-        throw createError({
-          statusCode: 500,
-
-          statusMessage: "Server configuration error",
-        });
-      }
-
-      // Import Supabase client
-      const { createClient } = await import("@supabase/supabase-js");
-
-      // Use service role key to access admin auth API for resending
-      const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-
-      // Resend verification email via admin API
-      // Using Magic Link approach instead of email_change_current
       const { data: userData, error: userError } =
         await // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabaseAdmin.auth.admin as any).listUsersByFilter({
@@ -70,8 +35,6 @@ export default defineEventHandler(
         });
 
       if (userError || !userData.users || userData.users.length === 0) {
-        // For security, don't reveal if email exists
-        // Just indicate that if user exists, email will be sent
         return {
           success: true,
           message:
@@ -81,7 +44,6 @@ export default defineEventHandler(
 
       const user = userData.users[0];
 
-      // Check if email is already verified
       if (user.email_confirmed_at) {
         return {
           success: true,
@@ -89,7 +51,6 @@ export default defineEventHandler(
         };
       }
 
-      // Resend confirmation email via admin API using generateLink with correct params
       const { error: resendError } =
         await // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabaseAdmin.auth.admin as any).generateLink({
@@ -100,7 +61,6 @@ export default defineEventHandler(
       if (resendError) {
         console.error("Error resending verification email:", resendError);
 
-        // Check for rate limiting
         if (
           resendError.message &&
           resendError.message.includes("over_email_send_rate_limit")
@@ -124,7 +84,6 @@ export default defineEventHandler(
         message: "Verification email sent successfully.",
       };
     } catch (err) {
-      // If it's already a properly formatted error, re-throw it
       if (err instanceof Error && "statusCode" in err) {
         throw err;
       }

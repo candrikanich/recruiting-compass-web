@@ -13,7 +13,6 @@
       viewBox="0 0 1200 800"
       preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"
-      role="presentation"
     >
       <!-- Baseball: Infield dirt circle -->
       <circle
