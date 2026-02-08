@@ -33,11 +33,12 @@ describe("pages/index.vue (Landing Page)", () => {
       expect(wrapper.find(".min-h-screen").exists()).toBe(true);
     });
 
-    it("renders the logo image with correct alt text", () => {
+    it("renders the logo image with descriptive alt text", () => {
       const wrapper = mountPage();
-      const logo = wrapper.find('img[alt="Recruiting Compass Logo"]');
+      const logo = wrapper.find("img");
       expect(logo.exists()).toBe(true);
-      expect(logo.attributes("src")).toBeDefined();
+      expect(logo.attributes("alt")).toContain("Recruiting Compass");
+      expect(logo.attributes("alt")).toContain("recruiting tracker");
     });
   });
 
@@ -124,8 +125,6 @@ describe("pages/index.vue (Landing Page)", () => {
 
   describe("Layout", () => {
     it("uses the public layout via definePageMeta", () => {
-      // definePageMeta is a compiler macro — verify by checking the page
-      // renders without auth-related elements (no sidebar, no user menu)
       const wrapper = mountPage();
       expect(wrapper.find("[data-testid='sidebar']").exists()).toBe(false);
       expect(wrapper.find("[data-testid='user-menu']").exists()).toBe(false);
@@ -141,6 +140,83 @@ describe("pages/index.vue (Landing Page)", () => {
       const wrapper = mountPage();
       const grid = wrapper.find(".grid-cols-1.md\\:grid-cols-3");
       expect(grid.exists()).toBe(true);
+    });
+  });
+
+  describe("Accessibility", () => {
+    it("uses <main> landmark for content area", () => {
+      const wrapper = mountPage();
+      expect(wrapper.find("main").exists()).toBe(true);
+    });
+
+    it("has a visually-hidden h1 heading", () => {
+      const wrapper = mountPage();
+      const h1 = wrapper.find("h1");
+      expect(h1.exists()).toBe(true);
+      expect(h1.classes()).toContain("sr-only");
+      expect(h1.text()).toBe("Recruiting Compass");
+    });
+
+    it("has a visually-hidden h2 for the features section", () => {
+      const wrapper = mountPage();
+      const h2 = wrapper.find("h2");
+      expect(h2.exists()).toBe(true);
+      expect(h2.classes()).toContain("sr-only");
+      expect(h2.text()).toBe("Features");
+    });
+
+    it("has proper heading hierarchy (h1 > h2 > h3)", () => {
+      const wrapper = mountPage();
+      expect(wrapper.find("h1").exists()).toBe(true);
+      expect(wrapper.find("h2").exists()).toBe(true);
+      expect(wrapper.findAll("h3")).toHaveLength(3);
+    });
+
+    it("renders a skip link targeting CTA buttons", () => {
+      const wrapper = mountPage();
+      const skipLink = wrapper.find('a[href="#cta-buttons"]');
+      expect(skipLink.exists()).toBe(true);
+      expect(skipLink.text()).toBe("Skip to main content");
+      expect(skipLink.classes()).toContain("sr-only");
+    });
+
+    it("CTA links have visible focus rings", () => {
+      const wrapper = mountPage();
+      const signInLink = wrapper
+        .findAll("a")
+        .find((a) => a.text().includes("Sign In"));
+      expect(signInLink!.attributes("class")).toContain("focus:ring-2");
+      expect(signInLink!.attributes("class")).toContain("focus:ring-white");
+    });
+
+    it("feature card icons have aria-hidden", () => {
+      const wrapper = mountPage();
+      const cards = wrapper.findAll(".bg-white\\/10");
+      for (const card of cards) {
+        expect(card.find("svg").attributes("aria-hidden")).toBe("true");
+      }
+    });
+
+    it("decorative circles have aria-hidden", () => {
+      const wrapper = mountPage();
+      const circles = wrapper.findAll(".animate-pulse");
+      for (const circle of circles) {
+        expect(circle.attributes("aria-hidden")).toBe("true");
+      }
+    });
+
+    it("decorative circles respect prefers-reduced-motion", () => {
+      const wrapper = mountPage();
+      const circles = wrapper.findAll(".animate-pulse");
+      for (const circle of circles) {
+        expect(circle.classes()).toContain("motion-reduce:animate-none");
+      }
+    });
+
+    it("pattern overlay has aria-hidden", () => {
+      const wrapper = mountPage();
+      const overlay = wrapper.find("[aria-hidden='true'].opacity-5");
+      expect(overlay.exists()).toBe(true);
     });
   });
 });
