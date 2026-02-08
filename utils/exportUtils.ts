@@ -569,46 +569,6 @@ export const exportAnalyticsPDF = async (
 };
 
 /**
- * Export analytics data as Excel with charts
- */
-export const exportAnalyticsExcel = async (
-  chartImages: Array<{ title: string; imageData: string }>,
-  data: Array<Record<string, unknown>>,
-  filename?: string,
-): Promise<void> => {
-  try {
-    const XLSX = await import("xlsx");
-
-    const workbook = XLSX.utils.book_new();
-
-    // Data sheet
-    if (data && data.length > 0) {
-      const dataSheet = XLSX.utils.json_to_sheet(data);
-      XLSX.utils.book_append_sheet(workbook, dataSheet, "Data");
-    }
-
-    // Summary sheet for charts
-    const summaryData = [
-      ["Analytics Charts"],
-      [],
-      ["Charts are embedded as images in PDF export."],
-      [
-        "Use the PDF export option for a complete report with all visualizations.",
-      ],
-    ];
-    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(workbook, summarySheet, "Analytics");
-
-    // Download
-    const date = new Date().toISOString().split("T")[0];
-    XLSX.writeFile(workbook, filename || `analytics-data-${date}.xlsx`);
-  } catch (error) {
-    console.error("Failed to export analytics Excel:", error);
-    throw error;
-  }
-};
-
-/**
  * Generate printable analytics report with charts
  */
 export const generateAnalyticsReport = async (
