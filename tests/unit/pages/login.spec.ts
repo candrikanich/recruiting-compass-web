@@ -28,6 +28,11 @@ vi.mock("~/composables/useAuth", () => ({
 vi.mock("~/composables/useFormValidation", () => ({
   useFormValidation: vi.fn(),
 }));
+vi.mock("~/composables/useFormErrorFocus", () => ({
+  useFormErrorFocus: vi.fn(() => ({
+    focusErrorSummary: vi.fn().mockResolvedValue(true),
+  })),
+}));
 vi.mock("~/composables/useLoadingStates", () => ({
   useLoadingStates: vi.fn(),
 }));

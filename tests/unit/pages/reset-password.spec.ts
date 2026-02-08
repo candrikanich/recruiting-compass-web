@@ -47,6 +47,12 @@ vi.mock("~/composables/useFormValidation", () => ({
   })),
 }));
 
+vi.mock("~/composables/useFormErrorFocus", () => ({
+  useFormErrorFocus: vi.fn(() => ({
+    focusErrorSummary: vi.fn().mockResolvedValue(true),
+  })),
+}));
+
 // Mock useLoadingStates
 vi.mock("~/composables/useLoadingStates", () => ({
   useLoadingStates: () => ({

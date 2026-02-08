@@ -88,10 +88,11 @@
 <script setup lang="ts">
 definePageMeta({ layout: "public" });
 
-import { ref, computed, nextTick } from "vue";
+import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useAuth } from "~/composables/useAuth";
 import { useFormValidation } from "~/composables/useFormValidation";
+import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
 import { useUserStore } from "~/stores/user";
 import { loginSchema } from "~/utils/validation/schemas";
 import { EMAIL_SCHEMA, PASSWORD_SCHEMA } from "~/utils/validation/loginSchemas";
@@ -120,6 +121,7 @@ const {
   hasErrors,
   setErrors,
 } = useFormValidation();
+const { focusErrorSummary } = useFormErrorFocus();
 
 // Computed property for timeout message
 const timeoutMessage = computed(() => {
@@ -129,16 +131,6 @@ const timeoutMessage = computed(() => {
   }
   return null;
 });
-
-// Helper: Focus error summary for accessibility
-const focusErrorSummary = async () => {
-  await nextTick();
-  const errorSummary = document.getElementById("form-error-summary");
-  if (errorSummary) {
-    errorSummary.focus();
-    errorSummary.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }
-};
 
 const validateEmail = async () => {
   validating.value = true;

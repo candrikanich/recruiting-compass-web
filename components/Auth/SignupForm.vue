@@ -1,6 +1,7 @@
 <template>
   <form
     id="signup-form"
+    :aria-label="`Create ${userType === 'player' ? 'player' : 'parent'} account`"
     @submit.prevent="$emit('submit')"
     class="space-y-6"
     :data-testid="`signup-form-${userType}`"

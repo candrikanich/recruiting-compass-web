@@ -70,6 +70,7 @@
     <!-- Form -->
     <form
       v-if="!passwordUpdated && !invalidToken"
+      aria-label="Create new password"
       @submit.prevent="handleResetPassword"
       class="space-y-6"
     >
@@ -117,7 +118,14 @@
         data-testid="reset-password-button"
         type="submit"
         :disabled="!isFormValid || loading || validating"
-        :aria-busy="loading"
+        :aria-busy="loading || validating"
+        :aria-label="
+          loading
+            ? 'Resetting password, please wait'
+            : validating
+              ? 'Validating your information'
+              : 'Reset your password'
+        "
         class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         {{
@@ -193,6 +201,7 @@ import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import PasswordInput from "~/components/Form/PasswordInput.vue";
 import { usePasswordReset } from "~/composables/usePasswordReset";
 import { useFormValidation } from "~/composables/useFormValidation";
+import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
 import { resetPasswordSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
 
@@ -217,6 +226,7 @@ const redirectCountdown = ref(0);
 const passwordReset = usePasswordReset();
 const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } =
   useFormValidation();
+const { focusErrorSummary } = useFormErrorFocus();
 
 const statusIconLabel = computed(() => {
   if (isValidating.value) return "Validating reset link";
@@ -291,6 +301,7 @@ const handleResetPassword = async () => {
   );
 
   if (!validated) {
+    await focusErrorSummary();
     return;
   }
 

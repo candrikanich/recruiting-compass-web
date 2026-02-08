@@ -1,6 +1,7 @@
 <template>
   <form
     id="login-form"
+    aria-label="Sign in to your account"
     @submit.prevent="$emit('submit')"
     class="space-y-6"
     :aria-describedby="hasErrors ? 'form-error-summary' : undefined"

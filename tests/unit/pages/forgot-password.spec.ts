@@ -36,6 +36,12 @@ vi.mock("~/composables/useFormValidation", () => ({
   })),
 }));
 
+vi.mock("~/composables/useFormErrorFocus", () => ({
+  useFormErrorFocus: vi.fn(() => ({
+    focusErrorSummary: vi.fn().mockResolvedValue(true),
+  })),
+}));
+
 const mockStartCooldown = vi.fn();
 const mockAnnounce = vi.fn();
 const cooldownValue = ref(0);

@@ -41,7 +41,12 @@
     </AuthStatusMessage>
 
     <!-- Form -->
-    <form v-if="!emailSent" @submit.prevent="handleSubmit" class="space-y-6">
+    <form
+      v-if="!emailSent"
+      aria-label="Request password reset"
+      @submit.prevent="handleSubmit"
+      class="space-y-6"
+    >
       <div>
         <LoginInputField
           id="email"
@@ -66,6 +71,14 @@
         data-testid="send-reset-link-button"
         type="submit"
         :disabled="!isFormValid || loading || validating"
+        :aria-busy="loading || validating"
+        :aria-label="
+          loading
+            ? 'Sending reset link, please wait'
+            : validating
+              ? 'Validating your information'
+              : 'Send password reset link'
+        "
         class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         {{
@@ -142,6 +155,7 @@ import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import LoginInputField from "~/components/Auth/LoginInputField.vue";
 import { usePasswordReset } from "~/composables/usePasswordReset";
 import { useFormValidation } from "~/composables/useFormValidation";
+import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
 import { useResendCooldown } from "~/composables/useResendCooldown";
 import { forgotPasswordSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
@@ -157,6 +171,7 @@ const passwordReset = usePasswordReset();
 const cooldown = useResendCooldown(60);
 const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } =
   useFormValidation();
+const { focusErrorSummary } = useFormErrorFocus();
 
 // Assign the cooldown announcement ref
 const cooldownAnnouncement = cooldown.announcementRef;
@@ -185,6 +200,7 @@ const handleSubmit = async () => {
     );
 
     if (!validated) {
+      await focusErrorSummary();
       return;
     }
 
