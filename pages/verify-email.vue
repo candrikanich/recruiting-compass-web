@@ -286,30 +286,40 @@ const handleTokenVerification = async () => {
 
   loading.value = true;
 
-  const success = await emailVerification.verifyEmailToken(token);
+  try {
+    const success = await emailVerification.verifyEmailToken(token);
 
-  if (success) {
-    isVerified.value = true;
-    router.replace({ query: {} });
+    if (success) {
+      isVerified.value = true;
+      router.replace({ query: {} });
+    }
+  } catch (error) {
+    // Error is handled by emailVerification composable
+    console.error("Token verification error:", error);
+  } finally {
+    loading.value = false;
   }
-
-  loading.value = false;
 };
 
 const checkVerificationStatus = async () => {
   loading.value = true;
 
-  const verified = await emailVerification.checkEmailVerificationStatus();
-  isVerified.value = verified;
+  try {
+    const verified = await emailVerification.checkEmailVerificationStatus();
+    isVerified.value = verified;
 
-  if (!userEmail.value) {
-    const storedEmail = route.query.email as string;
-    if (storedEmail) {
-      userEmail.value = storedEmail;
+    if (!userEmail.value) {
+      const storedEmail = route.query.email as string;
+      if (storedEmail) {
+        userEmail.value = storedEmail;
+      }
     }
+  } catch (error) {
+    // Error is handled by emailVerification composable
+    console.error("Verification status check error:", error);
+  } finally {
+    loading.value = false;
   }
-
-  loading.value = false;
 };
 
 const handleResendEmail = async () => {
