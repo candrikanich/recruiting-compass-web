@@ -4,22 +4,35 @@
 -- Date: 2026-02-07
 
 -- ============================================================================
--- 1. UPDATE user_role ENUM: add 'player', migrate data, remove 'student'
+-- 1. UPDATE user_role ENUM: replace 'student' with 'player'
 -- ============================================================================
--- PostgreSQL cannot remove enum values, so we create a new type and swap.
+-- PostgreSQL cannot remove enum values or use newly added values in the same
+-- transaction. Instead, create a new enum type and swap via text cast.
 
--- Add 'player' to existing enum first (allows data migration)
-ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'player';
+-- First, temporarily drop all RLS policies that depend on users.role
+-- (PostgreSQL blocks ALTER TYPE on columns referenced by policies)
+DROP POLICY IF EXISTS "Non-parents can insert interactions" ON interactions;
+DROP POLICY IF EXISTS "Only students can create interactions" ON interactions;
 
--- Migrate all existing 'student' rows to 'player'
-UPDATE users SET role = 'player' WHERE role = 'student';
+-- Also drop any policies on users table that reference role column
+DO $$
+DECLARE
+  pol RECORD;
+BEGIN
+  FOR pol IN
+    SELECT policyname FROM pg_policies WHERE tablename = 'users' AND qual::text LIKE '%role%'
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON users', pol.policyname);
+  END LOOP;
+END $$;
 
 -- Create new enum without 'student'
 CREATE TYPE user_role_new AS ENUM ('admin', 'parent', 'player');
 
--- Swap the column type
+-- Swap the column type, mapping 'student' → 'player' during the cast
 ALTER TABLE users
-  ALTER COLUMN role TYPE user_role_new USING role::text::user_role_new;
+  ALTER COLUMN role TYPE user_role_new
+  USING (CASE WHEN role::text = 'student' THEN 'player' ELSE role::text END)::user_role_new;
 
 -- Drop old enum and rename new one
 DROP TYPE user_role;

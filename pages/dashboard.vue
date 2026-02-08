@@ -16,32 +16,16 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Parent Context Banner -->
-      <div
-        v-if="activeFamily.isViewingAsParent.value"
-        class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg mb-6"
-      >
-        <div class="flex items-center">
-          <EyeIcon class="w-5 h-5 text-indigo-600 mr-3" />
-          <p class="text-sm text-indigo-800">
-            You're viewing
-            <strong
-              >{{
-                activeFamily.parentAccessibleFamilies.value.find(
-                  (f: { athleteId: string }) =>
-                    f.athleteId === activeFamily.activeAthleteId.value,
-                )?.athleteName || "this athlete"
-              }}'s</strong
-            >
-            recruiting data. Data is read-only. Your views are visible to them.
-          </p>
-        </div>
-      </div>
+      <ParentContextBanner
+        :is-viewing-as-parent="activeFamily.isViewingAsParent.value"
+        :athlete-name="activeAthleteName"
+      />
 
       <!-- Stats Cards Component -->
       <DashboardStatsCards
-        :coach-count="coachCount"
-        :school-count="schoolCount"
-        :interaction-count="interactionCount"
+        :coach-count="dashboardData.coachCount.value"
+        :school-count="dashboardData.schoolCount.value"
+        :interaction-count="dashboardData.interactionCount.value"
         :total-offers="totalOffers"
         :accepted-offers="acceptedOffers"
         :a-tier-school-count="aTierSchoolCount"
@@ -52,105 +36,60 @@
       <DashboardSuggestions
         :suggestions="suggestionsComposable?.dashboardSuggestions.value || []"
         :is-viewing-as-parent="activeFamily.isViewingAsParent.value || false"
-        :athlete-name="
-          activeFamily.parentAccessibleFamilies.value.find(
-            (f: { athleteId: string }) =>
-              f.athleteId === activeFamily.activeAthleteId.value,
-          )?.athleteName
-        "
+        :athlete-name="activeAthleteName"
         @dismiss="handleSuggestionDismiss"
       />
 
-      <!-- UNIFIED 3-COLUMN GRID -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Row 1: Charts (2 cols) + Recruiting Packet (1 col) -->
-        <div class="lg:col-span-2">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InteractionTrendChart :interactions="allInteractions" />
-            <SchoolInterestChart :schools="allSchools" />
-          </div>
-        </div>
-        <div class="lg:col-span-1 space-y-6">
-          <RecruitingPacketWidget
-            :recruiting-packet-loading="recruitingPacketLoading"
-            :recruiting-packet-error="recruitingPacketError"
-            :has-generated-packet="
-              recruitingPacketComposable.hasGeneratedPacket.value
-            "
-            @generate-packet="handleGeneratePacket"
-            @email-packet="handleEmailPacket"
-          />
-          <SchoolsBySizeWidget
-            :breakdown="schoolSizeBreakdown"
-            :count="schoolCount"
-          />
-        </div>
+      <!-- Charts Section -->
+      <DashboardChartsSection
+        :schools="dashboardData.allSchools.value"
+        :interactions="dashboardData.allInteractions.value"
+        :school-size-breakdown="schoolSizeBreakdown"
+        :school-count="dashboardData.schoolCount.value"
+        :recruiting-packet-loading="recruitingPacketLoading"
+        :recruiting-packet-error="recruitingPacketError"
+        :has-generated-packet="
+          recruitingPacketComposable.hasGeneratedPacket.value
+        "
+        @generate-packet="handleGeneratePacket"
+        @email-packet="handleEmailPacket"
+      />
 
-        <!-- Row 2: Performance Metrics (2 cols) + Upcoming Events (1 col) -->
-        <PerformanceMetricsWidget
-          :metrics="allMetrics"
-          :top-metrics="topMetrics"
-          :show-performance="true"
-          class="lg:col-span-2"
-        />
-        <UpcomingEventsWidget
-          :events="upcomingEvents"
-          :show-events="true"
-          class="lg:col-span-1"
-        />
+      <!-- Metrics Section -->
+      <DashboardMetricsSection
+        :metrics="dashboardData.allMetrics.value"
+        :top-metrics="topMetrics"
+        :upcoming-events="upcomingEvents"
+        class="mt-6"
+      />
 
-        <!-- Row 3: School Map (2 cols) + Recent Activity (1 col) -->
-        <SchoolMapWidget
-          v-if="showWidget('schoolMapWidget', 'widgets')"
-          :schools="allSchools"
-          class="lg:col-span-2"
-        />
-        <div class="lg:col-span-1">
-          <RecentActivityFeed
-            v-if="showWidget('recentActivityFeed', 'widgets')"
-          />
-        </div>
+      <!-- Map & Activity Section -->
+      <DashboardMapActivitySection
+        :schools="dashboardData.allSchools.value"
+        :show-widget="showWidget"
+        class="mt-6"
+      />
 
-        <!-- Row 4: Tasks, Frequency, Social (each 1 col) -->
-        <QuickTasksWidget
-          :tasks="userTasksComposable?.tasks.value || []"
-          :show-tasks="true"
-          @add-task="addTask"
-          @toggle-task="toggleTask"
-          @delete-task="deleteTask"
-          @clear-completed="() => userTasksComposable?.clearCompleted()"
-        />
-        <ContactFrequencyWidget
-          :interactions="allInteractions"
-          :schools="allSchools"
-        />
-        <div class="lg:col-span-1">
-          <SocialMediaWidget :show-social="true" />
-        </div>
-
-        <!-- Row 5: Full-width widgets -->
-        <CoachFollowupWidget
-          v-if="showWidget('coachFollowupWidget', 'widgets')"
-          class="lg:col-span-2"
-        />
-        <AthleteActivityWidget
-          v-if="userStore.isParent && showWidget('athleteActivity', 'widgets')"
-          class="lg:col-span-1"
-        />
-        <AtAGlanceSummary
-          v-if="showWidget('atAGlanceSummary', 'widgets')"
-          :coaches="allCoaches"
-          :schools="allSchools"
-          :interactions="allInteractions"
-          :offers="allOffers"
-          class="lg:col-span-3"
-        />
-      </div>
+      <!-- Widgets Section -->
+      <DashboardWidgetsSection
+        :tasks="userTasksComposable?.tasks.value || []"
+        :coaches="dashboardData.allCoaches.value"
+        :schools="dashboardData.allSchools.value"
+        :interactions="dashboardData.allInteractions.value"
+        :offers="dashboardData.allOffers.value"
+        :is-parent="userStore.isParent"
+        :show-widget="showWidget"
+        class="mt-6"
+        @add-task="addTask"
+        @toggle-task="toggleTask"
+        @delete-task="deleteTask"
+        @clear-completed="() => userTasksComposable?.clearCompleted()"
+      />
 
       <!-- Email Recruiting Packet Modal -->
       <EmailRecruitingPacketModal
         :is-open="recruitingPacketComposable.showEmailModal.value"
-        :available-coaches="allCoaches"
+        :available-coaches="dashboardData.allCoaches.value"
         :default-subject="recruitingPacketComposable.defaultEmailSubject.value"
         :default-body="recruitingPacketComposable.defaultEmailBody.value"
         @close="recruitingPacketComposable.setShowEmailModal(false)"
@@ -163,89 +102,60 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed, inject } from "vue";
 import { useRouter } from "vue-router";
-import { useSupabase } from "~/composables/useSupabase";
 import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
-import { useNotificationStore } from "~/stores/notifications";
 import { useNotifications } from "~/composables/useNotifications";
-import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import { useToast } from "~/composables/useToast";
 import { useUserTasks } from "~/composables/useUserTasks";
 import { useSuggestions } from "~/composables/useSuggestions";
 import { useFamilyContext } from "~/composables/useFamilyContext";
 import { useViewLogging } from "~/composables/useViewLogging";
 import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
+import { useDashboardData } from "~/composables/useDashboardData";
+import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
-import InteractionTrendChart from "~/components/Dashboard/InteractionTrendChart.vue";
-import SchoolInterestChart from "~/components/Dashboard/SchoolInterestChart.vue";
-import RecruitingPacketWidget from "~/components/Dashboard/RecruitingPacketWidget.vue";
-import SchoolsBySizeWidget from "~/components/Dashboard/SchoolsBySizeWidget.vue";
-import PerformanceMetricsWidget from "~/components/Dashboard/PerformanceMetricsWidget.vue";
-import UpcomingEventsWidget from "~/components/Dashboard/UpcomingEventsWidget.vue";
-import SchoolMapWidget from "~/components/Dashboard/SchoolMapWidget.vue";
-import RecentActivityFeed from "~/components/Dashboard/RecentActivityFeed.vue";
-import QuickTasksWidget from "~/components/Dashboard/QuickTasksWidget.vue";
-import ContactFrequencyWidget from "~/components/Dashboard/ContactFrequencyWidget.vue";
-import SocialMediaWidget from "~/components/Dashboard/SocialMediaWidget.vue";
-import CoachFollowupWidget from "~/components/Dashboard/CoachFollowupWidget.vue";
-import AthleteActivityWidget from "~/components/Dashboard/AthleteActivityWidget.vue";
-import AtAGlanceSummary from "~/components/Dashboard/AtAGlanceSummary.vue";
+import DashboardChartsSection from "~/components/Dashboard/DashboardChartsSection.vue";
+import DashboardMetricsSection from "~/components/Dashboard/DashboardMetricsSection.vue";
+import DashboardMapActivitySection from "~/components/Dashboard/DashboardMapActivitySection.vue";
+import DashboardWidgetsSection from "~/components/Dashboard/DashboardWidgetsSection.vue";
 import EmailRecruitingPacketModal from "~/components/EmailRecruitingPacketModal.vue";
-import { EyeIcon } from "@heroicons/vue/24/solid";
-import { getCarnegieSize } from "~/utils/schoolSize";
-import type {
-  Coach,
-  School,
-  Interaction,
-  Offer,
-  Event,
-  Notification,
-  PerformanceMetric,
-} from "~/types/models";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
+import {
+  calculateSchoolSizeBreakdown,
+  calculateContactsThisMonth,
+  calculateTotalOffers,
+  calculateAcceptedOffers,
+  calculateATierSchoolCount,
+  getUpcomingEvents,
+  getTopMetrics,
+} from "~/utils/dashboardCalculations";
 
 definePageMeta({
   middleware: ["auth", "onboarding"],
 });
 
 const { logout } = useAuth();
-const supabase = useSupabase();
 const { showToast } = useToast();
+const router = useRouter();
 
-// Store-dependent composables: Now properly initialized via Pinia module
+// Store-dependent composables
 const userStore = useUserStore();
-const notificationStore = useNotificationStore();
 const notificationsComposable = useNotifications();
-const documentsComposable = useDocumentsConsolidated();
 const userTasksComposable = useUserTasks();
 const suggestionsComposable = useSuggestions();
+const viewLoggingComposable = useViewLogging();
+const recruitingPacketComposable = useRecruitingPacket();
+const dashboardData = useDashboardData();
+
 // Inject family context provided at app.vue level (with singleton fallback)
 const activeFamily =
   inject<UseActiveFamilyReturn>("activeFamily") || useFamilyContext();
-const viewLoggingComposable = useViewLogging();
-const recruitingPacketComposable = useRecruitingPacket();
 
+// Local state
 const user = ref<any>(null);
-const router = useRouter();
 const recruitingPacketLoading = ref(false);
 const recruitingPacketError = ref<string | null>(null);
-const coachCount = ref(0);
-const schoolCount = ref(0);
-const interactionCount = ref(0);
-const allCoaches = ref<Coach[]>([]);
-const allSchools = ref<School[]>([]);
-const allInteractions = ref<Interaction[]>([]);
-const allOffers = ref<Offer[]>([]);
-const allEvents = ref<Event[]>([]);
-const allMetrics = ref<PerformanceMetric[]>([]);
-const showTaskForm = ref(false);
-const newTask = ref("");
-const generatingNotifications = ref(false);
-const graduationYear = computed(() => {
-  // Default to 4 years from now if preferences unavailable
-  return new Date().getFullYear() + 4;
-});
 
 // Determine target user ID (current user or viewed athlete if parent)
 const targetUserId = computed(() => {
@@ -254,6 +164,15 @@ const targetUserId = computed(() => {
     : userStore?.user?.id;
 });
 
+// Get active athlete name for parent context banner
+const activeAthleteName = computed(() => {
+  return activeFamily.parentAccessibleFamilies.value.find(
+    (f: { athleteId: string }) =>
+      f.athleteId === activeFamily.activeAthleteId.value,
+  )?.athleteName;
+});
+
+// User first name for greeting
 const userFirstName = computed(() => {
   if (!user.value) return "";
   let firstName = "";
@@ -274,73 +193,36 @@ const showWidget = (
   return true;
 };
 
-const recentNotifications = computed(() => {
-  return notificationsComposable?.notifications?.value?.slice(0, 5) || [];
-});
+// Computed statistics using utility functions
+const schoolSizeBreakdown = computed(() =>
+  calculateSchoolSizeBreakdown(dashboardData.allSchools.value),
+);
 
-// Upcoming events (sorted by date)
-const upcomingEvents = computed(() => {
-  const now = new Date();
-  return allEvents.value
-    .filter((e) => new Date(e.start_date) >= now)
-    .sort(
-      (a, b) =>
-        new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
-    )
-    .slice(0, 5);
-});
+const contactsThisMonth = computed(() =>
+  calculateContactsThisMonth(dashboardData.allInteractions.value),
+);
 
-// Top 3 performance metrics
-const topMetrics = computed(() => {
-  return allMetrics.value.slice(0, 3);
-});
+const totalOffers = computed(() =>
+  calculateTotalOffers(dashboardData.allOffers.value),
+);
 
-const totalOffers = computed(() => {
-  return allOffers.value.length;
-});
+const acceptedOffers = computed(() =>
+  calculateAcceptedOffers(dashboardData.allOffers.value),
+);
 
-const acceptedOffers = computed(() => {
-  return allOffers.value.filter((o) => o.status === "accepted").length;
-});
+const aTierSchoolCount = computed(() =>
+  calculateATierSchoolCount(dashboardData.allSchools.value),
+);
 
-const aTierSchoolCount = computed(() => {
-  return allSchools.value.filter((s) => s.priority_tier === "A").length;
-});
+const upcomingEvents = computed(() =>
+  getUpcomingEvents(dashboardData.allEvents.value),
+);
 
-const contactsThisMonth = computed(() => {
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  return allInteractions.value.filter((i) => {
-    const interactionDate = new Date(i.occurred_at || i.created_at || "");
-    return interactionDate >= startOfMonth && interactionDate <= now;
-  }).length;
-});
+const topMetrics = computed(() =>
+  getTopMetrics(dashboardData.allMetrics.value, 3),
+);
 
-// Calculate school size breakdown
-const schoolSizeBreakdown = computed(() => {
-  const breakdown: Record<string, number> = {
-    "Very Small": 0,
-    Small: 0,
-    Medium: 0,
-    Large: 0,
-    "Very Large": 0,
-  };
-
-  allSchools.value.forEach((school) => {
-    const studentSize = school.academic_info?.student_size;
-    if (studentSize) {
-      const size = getCarnegieSize(
-        typeof studentSize === "number" ? studentSize : null,
-      );
-      if (size && size in breakdown) {
-        breakdown[size]++;
-      }
-    }
-  });
-
-  return breakdown;
-});
-
+// Task event handlers
 const addTask = async (taskText: string) => {
   if (taskText.trim() && userTasksComposable) {
     try {
@@ -365,178 +247,14 @@ const deleteTask = async (taskId: string) => {
   }
 };
 
+// Suggestion event handlers
 const handleSuggestionDismiss = async (suggestionId: string) => {
   if (suggestionsComposable) {
     await suggestionsComposable.dismissSuggestion(suggestionId);
   }
 };
 
-const fetchCounts = async () => {
-  if (!activeFamily.activeFamilyId.value) {
-    return;
-  }
-
-  try {
-    // Fetch schools (filtered by family unit, not user)
-    const { data: schoolsData, error: schoolsError } = await supabase
-      .from("schools")
-      .select("*")
-      .eq("family_unit_id", activeFamily.activeFamilyId.value);
-
-    if (schoolsError) {
-      console.error("Error fetching schools:", schoolsError);
-    } else if (schoolsData) {
-      allSchools.value = schoolsData;
-      schoolCount.value = schoolsData.length;
-    }
-
-    // Fetch coaches
-    if (allSchools.value.length > 0) {
-      const schoolIds = allSchools.value.map((s) => s.id);
-      const {
-        data: coachesData,
-        count: coachesCount,
-        error: coachesError,
-      } = await supabase
-        .from("coaches")
-        .select("*", { count: "exact" })
-        .in("school_id", schoolIds);
-
-      if (!coachesError) {
-        allCoaches.value = coachesData || [];
-        coachCount.value = coachesCount || 0;
-      }
-    }
-
-    // Fetch interactions
-    const {
-      data: interactionsData,
-      count: interactionsCount,
-      error: interactionsError,
-    } = await supabase
-      .from("interactions")
-      .select("*", { count: "exact" })
-      .eq("logged_by", targetUserId.value || "");
-
-    if (!interactionsError && interactionsData) {
-      allInteractions.value = interactionsData;
-      interactionCount.value = interactionsCount || 0;
-    }
-
-    // Fetch offers
-    try {
-      const { data: offersData, error: offersError } = await supabase
-        .from("offers")
-        .select("*")
-        .eq("user_id", targetUserId.value || "");
-
-      if (!offersError && offersData) {
-        allOffers.value = offersData;
-      }
-    } catch (err) {
-      allOffers.value = [];
-    }
-
-    // Fetch events
-    try {
-      const { data: eventsData, error: eventsError } = await supabase
-        .from("events")
-        .select("*")
-        .eq("user_id", targetUserId.value || "");
-
-      if (!eventsError && eventsData) {
-        allEvents.value = eventsData;
-      }
-    } catch (err) {
-      allEvents.value = [];
-    }
-
-    // Fetch performance metrics
-    try {
-      const { data: metricsData, error: metricsError } = await supabase
-        .from("performance_metrics")
-        .select("*")
-        .eq("user_id", targetUserId.value || "");
-
-      if (!metricsError && metricsData) {
-        allMetrics.value = metricsData;
-      }
-    } catch (err) {
-      allMetrics.value = [];
-    }
-  } catch (err) {
-    console.error("Error fetching counts:", err);
-  }
-};
-
-onMounted(async () => {
-  // Initialize data loading now that Pinia is properly configured
-  if (userStore.user) {
-    user.value = userStore.user;
-
-    // Note: User preferences (V2) requires SUPABASE_SERVICE_ROLE_KEY
-    // For now, we use default settings; preferences can be loaded on demand
-
-    await fetchCounts();
-    if (notificationsComposable) {
-      await notificationsComposable.fetchNotifications();
-    }
-    // Fetch suggestions on dashboard load
-    if (suggestionsComposable) {
-      await suggestionsComposable.fetchSuggestions("dashboard");
-    }
-  }
-});
-
-// Watch for athlete switches
-watch(
-  () => activeFamily.activeAthleteId.value,
-  async (newId, oldId) => {
-    if (newId && newId !== oldId && activeFamily.isViewingAsParent.value) {
-      await fetchCounts();
-      await suggestionsComposable?.fetchSuggestions("dashboard");
-      await viewLoggingComposable?.logParentView("dashboard", newId);
-    }
-  },
-);
-
-// Refetch data when returning to dashboard (e.g., after editing a school)
-watch(
-  () => router.currentRoute.value.path,
-  async (newPath) => {
-    if (newPath === "/dashboard") {
-      await fetchCounts();
-    }
-  },
-);
-
-const generateNotifications = async () => {
-  if (!notificationsComposable) return;
-
-  try {
-    generatingNotifications.value = true;
-    const result = await $fetch("/api/notifications/generate", {
-      method: "POST",
-    });
-
-    if (result.success) {
-      showToast(`Created ${result.created} notifications`, "success");
-      await notificationsComposable.fetchNotifications();
-    }
-  } catch (err) {
-    console.error("Error generating notifications:", err);
-    showToast("Failed to generate notifications", "error");
-  } finally {
-    generatingNotifications.value = false;
-  }
-};
-
-const handleNotificationClick = (notification: Notification) => {
-  if (!notification.read_at && notificationsComposable) {
-    notificationsComposable.markAsRead(notification.id);
-  }
-};
-
+// Recruiting packet event handlers
 const handleGeneratePacket = async () => {
   recruitingPacketLoading.value = true;
   recruitingPacketError.value = null;
@@ -599,12 +317,69 @@ const handleSendEmail = async (emailData: {
   }
 };
 
+// Centralized dashboard refresh logic
+const refreshDashboard = async () => {
+  if (!activeFamily.activeFamilyId.value || !targetUserId.value) {
+    return;
+  }
+
+  await dashboardData.fetchAll(
+    activeFamily.activeFamilyId.value,
+    targetUserId.value,
+  );
+
+  await suggestionsComposable?.fetchSuggestions("dashboard");
+
+  if (
+    activeFamily.isViewingAsParent.value &&
+    activeFamily.activeAthleteId.value
+  ) {
+    await viewLoggingComposable?.logParentView(
+      "dashboard",
+      activeFamily.activeAthleteId.value,
+    );
+  }
+};
+
+// Lifecycle
+onMounted(async () => {
+  if (userStore.user) {
+    user.value = userStore.user;
+
+    await refreshDashboard();
+    if (notificationsComposable) {
+      await notificationsComposable.fetchNotifications();
+    }
+  }
+});
+
+// Watch for athlete switches
+watch(
+  () => activeFamily.activeAthleteId.value,
+  async (newId, oldId) => {
+    if (newId && newId !== oldId && activeFamily.isViewingAsParent.value) {
+      await refreshDashboard();
+    }
+  },
+);
+
+// Refetch data when returning to dashboard
+watch(
+  () => router.currentRoute.value.path,
+  async (newPath) => {
+    if (newPath === "/dashboard") {
+      await refreshDashboard();
+    }
+  },
+);
+
+// Watch for user changes
 watch(
   () => userStore?.user,
   async (newUser) => {
     user.value = newUser;
     if (newUser && notificationsComposable) {
-      await fetchCounts();
+      await refreshDashboard();
       await notificationsComposable.fetchNotifications();
     }
   },
