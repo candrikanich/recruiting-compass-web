@@ -1,4 +1,4 @@
-import { ref, computed, type Ref } from "vue";
+import { ref, computed } from "vue";
 
 /**
  * Composable for managing resend cooldown timers

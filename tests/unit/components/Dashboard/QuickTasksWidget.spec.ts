@@ -161,15 +161,14 @@ describe("QuickTasksWidget", () => {
         .findAll("button")
         .find((b) => b.text().includes("Add Task"));
       await addButton!.trigger("click");
+      await wrapper.vm.$nextTick();
 
       const input = wrapper.find('input[id="new-task-input"]');
       await input.setValue("New important task");
 
-      const submitButtons = wrapper.findAll("button");
-      const submitButton = submitButtons.find((b) => {
-        return b.classes().some((c) => c.includes("text-blue-600"));
-      });
-      await submitButton!.trigger("click");
+      const form = wrapper.find("form");
+      await form.trigger("submit");
+      await wrapper.vm.$nextTick();
 
       expect(wrapper.emitted("add-task")).toBeTruthy();
       expect(wrapper.emitted("add-task")![0]).toEqual(["New important task"]);
@@ -182,10 +181,14 @@ describe("QuickTasksWidget", () => {
         .findAll("button")
         .find((b) => b.text().includes("Add Task"));
       await addButton!.trigger("click");
+      await wrapper.vm.$nextTick();
 
       const input = wrapper.find('input[id="new-task-input"]');
       await input.setValue("Enter key task");
-      await input.trigger("keyup.enter");
+
+      const form = wrapper.find("form");
+      await form.trigger("submit");
+      await wrapper.vm.$nextTick();
 
       expect(wrapper.emitted("add-task")).toBeTruthy();
       expect(wrapper.emitted("add-task")![0]).toEqual(["Enter key task"]);

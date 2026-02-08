@@ -4,7 +4,7 @@
  * Handles parallel fetching and family context
  */
 
-import { ref, type Ref } from "vue";
+import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import type {
   Coach,
