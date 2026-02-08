@@ -71,7 +71,7 @@ describe("server/utils/auth", () => {
               user: {
                 id: "user-123",
                 email: "test@example.com",
-                user_metadata: { role: "student" },
+                user_metadata: { role: "player" },
               },
             },
             error: null,
@@ -86,7 +86,7 @@ describe("server/utils/auth", () => {
       expect(result).toEqual({
         id: "user-123",
         email: "test@example.com",
-        user_metadata: { role: "student" },
+        user_metadata: { role: "player" },
       });
     });
 
@@ -181,7 +181,7 @@ describe("server/utils/auth", () => {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
           single: vi.fn().mockResolvedValue({
-            data: { role: "student" },
+            data: { role: "player" },
             error: null,
           }),
         }),
@@ -189,7 +189,7 @@ describe("server/utils/auth", () => {
 
       const result = await getUserRole("user-123", mockSupabase);
 
-      expect(result).toBe("student");
+      expect(result).toBe("player");
     });
 
     it("should return null on database error", async () => {
@@ -369,7 +369,7 @@ describe("server/utils/auth", () => {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
           single: vi.fn().mockResolvedValue({
-            data: { role: "student" },
+            data: { role: "player" },
             error: null,
           }),
         }),
@@ -392,7 +392,7 @@ describe("server/utils/auth", () => {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
           single: vi.fn().mockResolvedValue({
-            data: { role: "student" },
+            data: { role: "player" },
             error: null,
           }),
         }),

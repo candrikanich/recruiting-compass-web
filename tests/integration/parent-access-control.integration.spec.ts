@@ -24,7 +24,7 @@ const mockSupabaseClient = {
 const testAthleteUser = {
   id: "athlete-123",
   email: "athlete@example.com",
-  role: "student",
+  role: "player",
 };
 
 const testParentUser = {
@@ -299,9 +299,9 @@ describe("Parent/Athlete Access Control Integration Tests", () => {
         expect(true).toBe(true); // Placeholder
       });
 
-      it("should fetch student role correctly", async () => {
-        // Should return 'student' for student users
-        // Expected: 'student'
+      it("should fetch player role correctly", async () => {
+        // Should return 'player' for player users
+        // Expected: 'player'
 
         expect(true).toBe(true); // Placeholder
       });
@@ -386,7 +386,7 @@ describe("Parent/Athlete Access Control Integration Tests", () => {
  * 1. Set up a test Supabase project
  * 2. Seed test data:
  *    - Create parent user with role='parent'
- *    - Create athlete user with role='student'
+ *    - Create athlete user with role='player'
  *    - Create verified account_link between them
  *    - Create test schools, tasks, interactions, etc.
  *

@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
       family_unit_id,
       user_id,
       role,
-      family_units(id, family_name, student_user_id),
+      family_units(id, family_name, player_user_id),
       users(id, email)
     `,
     )
@@ -52,21 +52,21 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Verify requester is the student who owns the family
+  // Verify requester is the player who owns the family
   const family = member.family_units as unknown as {
     id: string;
     family_name: string;
-    student_user_id: string;
+    player_user_id: string;
   };
 
-  if (!family || !family.student_user_id) {
+  if (!family || !family.player_user_id) {
     throw createError({
       statusCode: 500,
       message: "Family data not found for member",
     });
   }
 
-  if (family.student_user_id !== user.id) {
+  if (family.player_user_id !== user.id) {
     throw createError({
       statusCode: 403,
       message: "Only the family owner can remove members",

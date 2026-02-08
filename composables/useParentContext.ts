@@ -60,7 +60,7 @@ export const useParentContext = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ((store.user as any)?.linked_accounts as LinkedAccount[]) || [];
     linkedAthletes.value = linkedAccounts.filter(
-      (account: LinkedAccount) => account.relationship === "student",
+      (account: LinkedAccount) => account.relationship === "player",
     );
 
     // Determine which athlete is being viewed

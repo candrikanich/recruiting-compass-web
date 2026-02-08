@@ -41,7 +41,7 @@ export const signupSchema = z
     email: emailSchema,
     password: strongPasswordSchema,
     confirmPassword: z.string(),
-    role: z.enum(["parent", "student", "player"]),
+    role: z.enum(["parent", "player"]),
     familyCode: z.string().optional().default(""),
   })
   .refine((data) => data.password === data.confirmPassword, {

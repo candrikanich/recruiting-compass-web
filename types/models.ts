@@ -43,7 +43,7 @@ export interface Amenities {
 export interface User {
   id: string;
   email: string;
-  role?: "admin" | "parent" | "student";
+  role?: "admin" | "parent" | "player";
   full_name?: string;
   profile_photo_url?: string | null;
   is_admin?: boolean;

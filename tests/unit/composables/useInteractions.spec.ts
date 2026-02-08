@@ -33,7 +33,7 @@ let mockUser: {
 } | null = {
   id: "user-123",
   email: "test@example.com",
-  role: "student",
+  role: "player",
 };
 
 vi.mock("~/stores/user", () => ({
@@ -57,7 +57,7 @@ describe("useInteractions", () => {
     mockUser = {
       id: "user-123",
       email: "test@example.com",
-      role: "student",
+      role: "player",
     };
 
     // Create mock query that returns itself for chaining
@@ -416,7 +416,7 @@ describe("useInteractions", () => {
       mockUser = {
         id: "user-123",
         email: "test@example.com",
-        role: "student",
+        role: "player",
       };
     });
 
@@ -600,7 +600,7 @@ describe("useInteractions", () => {
       mockUser = {
         id: "user-123",
         email: "test@example.com",
-        role: "student",
+        role: "player",
       };
     });
 
@@ -710,7 +710,7 @@ describe("useInteractions", () => {
       mockUser = {
         id: "user-123",
         email: "test@example.com",
-        role: "student",
+        role: "player",
       };
     });
 
@@ -1303,7 +1303,7 @@ describe("useInteractions", () => {
       expect(noteHistory.value).toEqual([]);
       expect(noteHistoryError.value).toBeNull();
 
-      mockUser = { id: "user-123", email: "test@example.com", role: "student" };
+      mockUser = { id: "user-123", email: "test@example.com", role: "player" };
     });
 
     it("should return composable functions and properties", () => {

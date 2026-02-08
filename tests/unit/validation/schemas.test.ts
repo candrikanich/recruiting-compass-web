@@ -90,10 +90,10 @@ describe("signupSchema", () => {
       email: "jane@example.com",
       password: "SecurePass123",
       confirmPassword: "SecurePass123",
-      role: "student",
+      role: "player",
     };
     const result = await signupSchema.parseAsync(data);
-    expect(result.role).toBe("student");
+    expect(result.role).toBe("player");
   });
 });
 

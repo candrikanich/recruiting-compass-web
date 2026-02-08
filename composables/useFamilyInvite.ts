@@ -138,7 +138,7 @@ export const useFamilyInvite = () => {
         parent_user_id: session.user.id,
         invited_email: session.user.email,
         status: "confirmed",
-        initiator_role: "student",
+        initiator_role: "player",
       };
       const { error: linkError } = (await (
         supabase.from("account_links") as unknown as {

@@ -51,7 +51,7 @@
           <ul>
             <li>
               <strong>Registration Information:</strong> Name, email address,
-              password, phone number, and role (parent or student athlete)
+              password, phone number, and role (parent or player)
             </li>
             <li>
               <strong>Profile Information:</strong> Profile photo, biographical

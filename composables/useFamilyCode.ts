@@ -37,12 +37,12 @@ export const useFamilyCode = () => {
         return;
       }
 
-      if (currentUserRole.value === "student") {
-        // Students: Get their family code
+      if (currentUserRole.value === "player") {
+        // Players: Get their family code
         const familyResponse = await supabase
           .from("family_units")
           .select("id, family_code, family_name, code_generated_at")
-          .eq("student_user_id", userStore.user.id)
+          .eq("player_user_id", userStore.user.id)
           .maybeSingle();
         const { data: family, error: fetchError } = familyResponse as {
           data: {
@@ -114,11 +114,11 @@ export const useFamilyCode = () => {
   };
 
   /**
-   * Creates a new family (students only) - calls API endpoint with auth
+   * Creates a new family (players only) - calls API endpoint with auth
    */
   const createFamily = async () => {
-    if (currentUserRole.value !== "student") {
-      error.value = "Only students can create families";
+    if (currentUserRole.value !== "player") {
+      error.value = "Only players can create families";
       return false;
     }
 
@@ -212,7 +212,7 @@ export const useFamilyCode = () => {
   };
 
   /**
-   * Regenerates family code (students only)
+   * Regenerates family code (players only)
    */
   const regenerateCode = async () => {
     if (!myFamilyId.value) {
@@ -267,7 +267,7 @@ export const useFamilyCode = () => {
   };
 
   /**
-   * Removes a family member (students only)
+   * Removes a family member (players only)
    */
   const removeFamilyMember = async (memberId: string) => {
     loading.value = true;

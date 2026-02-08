@@ -23,6 +23,11 @@ vi.mock("~/composables/useAuth");
 vi.mock("~/composables/useSupabase");
 vi.mock("~/stores/user");
 vi.mock("~/composables/useFormValidation");
+vi.mock("~/composables/useFormErrorFocus", () => ({
+  useFormErrorFocus: vi.fn(() => ({
+    focusErrorSummary: vi.fn().mockResolvedValue(true),
+  })),
+}));
 vi.mock("~/composables/useLoadingStates");
 
 vi.mock("@heroicons/vue/24/outline", () => ({
@@ -585,7 +590,7 @@ describe("signup.vue", () => {
         email: "test@example.com",
         password: "Password123", // pragma: allowlist secret
         confirmPassword: "Password123",
-        role: "student",
+        role: "player",
         familyCode: "",
       });
       mockAuth.signup.mockResolvedValue({
@@ -622,7 +627,7 @@ describe("signup.vue", () => {
         "test@example.com",
         "Password123",
         "Test User",
-        "student",
+        "player",
         {},
       );
     });
@@ -800,7 +805,7 @@ describe("signup.vue", () => {
         email: "test@example.com",
         password: "Password123", // pragma: allowlist secret
         confirmPassword: "Password123",
-        role: "student",
+        role: "player",
         familyCode: "",
       });
       mockAuth.signup.mockRejectedValue(new Error("Email already exists"));
@@ -833,7 +838,7 @@ describe("signup.vue", () => {
         email: "test@example.com",
         password: "Password123", // pragma: allowlist secret
         confirmPassword: "Password123",
-        role: "student",
+        role: "player",
         familyCode: "",
       });
       mockAuth.signup.mockRejectedValue(new Error("User already registered"));
@@ -893,7 +898,7 @@ describe("signup.vue", () => {
         email: "test@example.com",
         password: "Password123", // pragma: allowlist secret
         confirmPassword: "Password123",
-        role: "student",
+        role: "player",
         familyCode: "",
       });
       mockAuth.signup.mockImplementation(() => new Promise(() => {})); // Never resolves

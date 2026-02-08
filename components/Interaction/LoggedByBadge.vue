@@ -48,7 +48,7 @@ const roleBadgeClass = computed(() => {
     return "bg-blue-100 text-blue-700";
   }
 
-  if (loggedByUser.value.role === "student") {
+  if (loggedByUser.value.role === "player") {
     return "bg-purple-100 text-purple-700";
   }
 

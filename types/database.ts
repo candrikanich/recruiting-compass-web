@@ -929,7 +929,7 @@ export type Database = {
           family_code: string | null;
           family_name: string | null;
           id: string;
-          student_user_id: string;
+          player_user_id: string;
           updated_at: string | null;
         };
         Insert: {
@@ -938,7 +938,7 @@ export type Database = {
           family_code?: string | null;
           family_name?: string | null;
           id?: string;
-          student_user_id: string;
+          player_user_id: string;
           updated_at?: string | null;
         };
         Update: {
@@ -947,13 +947,13 @@ export type Database = {
           family_code?: string | null;
           family_name?: string | null;
           id?: string;
-          student_user_id?: string;
+          player_user_id?: string;
           updated_at?: string | null;
         };
         Relationships: [
           {
-            foreignKeyName: "family_units_student_user_id_fkey";
-            columns: ["student_user_id"];
+            foreignKeyName: "family_units_player_user_id_fkey";
+            columns: ["player_user_id"];
             isOneToOne: true;
             referencedRelation: "users";
             referencedColumns: ["id"];
@@ -2304,7 +2304,7 @@ export type Database = {
         | "official_visit_scheduled"
         | "not_pursuing";
       social_platform: "twitter" | "instagram";
-      user_role: "admin" | "parent" | "student";
+      user_role: "admin" | "parent" | "player";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -2496,7 +2496,7 @@ export const Constants = {
         "not_pursuing",
       ],
       social_platform: ["twitter", "instagram"],
-      user_role: ["admin", "parent", "student"],
+      user_role: ["admin", "parent", "player"],
     },
   },
 } as const;

@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
   // Find family by code
   const familyResponse = await supabase
     .from("family_units")
-    .select("id, family_name, student_user_id")
+    .select("id, family_name, player_user_id")
     .eq("family_code", familyCode)
     .single();
 
@@ -64,7 +64,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Prevent joining own family
-  if (family.student_user_id === user.id) {
+  if (family.player_user_id === user.id) {
     throw createError({
       statusCode: 400,
       message: "You cannot join your own family",
@@ -137,7 +137,7 @@ export default defineEventHandler(async (event) => {
 
   // Create notification for student (non-blocking, fire-and-forget)
   const notifPromise = supabase.from("notifications").insert({
-    user_id: family.student_user_id,
+    user_id: family.player_user_id,
     type: "family_member_joined",
     title: "New family member joined",
     message: `${user.email || "A user"} joined your family`,

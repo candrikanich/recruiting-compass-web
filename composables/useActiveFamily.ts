@@ -24,7 +24,7 @@ interface FamilyContext {
  * Usage:
  * const { activeFamilyId, activeAthleteId, familyMembers } = useActiveFamily();
  *
- * Students: activeFamilyId returns their family, activeAthleteId returns their ID
+ * Players: activeFamilyId returns their family, activeAthleteId returns their ID
  * Parents: activeFamilyId returns family of athlete in route.query.athlete_id or first family
  */
 
@@ -36,7 +36,7 @@ export const useActiveFamily = () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
 
-  const studentFamilyId = ref<string | null>(null);
+  const playerFamilyId = ref<string | null>(null);
   const parentAccessibleFamilies = ref<
     Array<{
       familyUnitId: string;
@@ -49,13 +49,13 @@ export const useActiveFamily = () => {
   const currentAthleteId = ref<string | null>(null);
   const familyMembers = ref<FamilyMember[]>([]);
 
-  const isStudent = computed(() => userStore.user?.role === "student");
+  const isPlayer = computed(() => userStore.user?.role === "player");
   const isParent = computed(() => userStore.user?.role === "parent");
 
   // Current active family unit ID
   const activeFamilyId = computed((): string | null => {
-    if (isStudent.value) {
-      return studentFamilyId.value;
+    if (isPlayer.value) {
+      return playerFamilyId.value;
     }
 
     // For parents, find family of currently viewed athlete
@@ -71,7 +71,7 @@ export const useActiveFamily = () => {
 
   // Current active athlete ID (subject being viewed)
   const activeAthleteId = computed((): string | null => {
-    if (isStudent.value) {
+    if (isPlayer.value) {
       return userStore.user?.id || null;
     }
 
@@ -123,12 +123,12 @@ export const useActiveFamily = () => {
     error.value = null;
 
     try {
-      if (isStudent.value) {
-        // For students, fetch their family unit
+      if (isPlayer.value) {
+        // For players, fetch their family unit
         const response = await supabase
           .from("family_units")
           .select("id, family_name")
-          .eq("student_user_id", userStore.user.id)
+          .eq("player_user_id", userStore.user.id)
           .maybeSingle();
 
         const { data, error: fetchError } = response as {
@@ -139,13 +139,13 @@ export const useActiveFamily = () => {
 
         if (fetchError) {
           console.error(
-            "[useActiveFamily] Error fetching student family unit:",
+            "[useActiveFamily] Error fetching player family unit:",
             fetchError,
           );
           // Don't throw - just log and continue. Family will be null but we can still proceed.
         }
         if (data) {
-          studentFamilyId.value = data.id;
+          playerFamilyId.value = data.id;
         }
       } else if (isParent.value) {
         // For parents, fetch all accessible families via API
@@ -313,7 +313,7 @@ export const useActiveFamily = () => {
     );
   }
 
-  // Reinitialize if user role changes (e.g., from unloaded to parent/student)
+  // Reinitialize if user role changes (e.g., from unloaded to parent/player)
   watch(
     () => userStore.user?.role,
     async (newRole) => {
@@ -332,7 +332,7 @@ export const useActiveFamily = () => {
    * - If viewing as parent (parent looking at child's data): return child's ID
    * - Otherwise: return logged-in user's ID
    *
-   * This ensures data residency with the athlete/student, even when created by parent
+   * This ensures data residency with the athlete/player, even when created by parent
    */
   const getDataOwnerUserId = (): string | null => {
     return activeAthleteId.value;
@@ -362,7 +362,7 @@ export const useActiveFamily = () => {
     parentAccessibleFamilies,
 
     // Computed
-    isStudent,
+    isPlayer,
     isParent,
 
     // Methods

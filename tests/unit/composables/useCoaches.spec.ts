@@ -39,7 +39,7 @@ describe("useCoaches", () => {
     userStore.user = {
       id: "user-123",
       email: "test@example.com",
-      role: "student",
+      role: "player",
     };
 
     mockQuery = {

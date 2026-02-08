@@ -419,7 +419,6 @@ describe("useAuth", () => {
           data: {
             full_name: "John Doe",
             role: "parent",
-            user_type: "parent",
           },
         },
       });
@@ -654,7 +653,7 @@ describe("useAuth", () => {
     });
   });
 
-  describe("signup with user_type (onboarding)", () => {
+  describe("signup with role (onboarding)", () => {
     it("should generate family_code for player signup", async () => {
       const { mockSupabase, mockAuth } = getMockSupabase();
 
@@ -677,7 +676,6 @@ describe("useAuth", () => {
             full_name: "Jane Player",
             role: "player",
             family_code: expect.stringMatching(/^[A-Z0-9\-]+$/),
-            user_type: "player",
             onboarding_completed: false,
           },
         },
@@ -707,7 +705,6 @@ describe("useAuth", () => {
           data: {
             full_name: "John Parent",
             role: "parent",
-            user_type: "parent",
             family_code: "FAM-ABC123",
           },
         },
@@ -736,7 +733,6 @@ describe("useAuth", () => {
           data: {
             full_name: "John Parent",
             role: "parent",
-            user_type: "parent",
           },
         },
       });

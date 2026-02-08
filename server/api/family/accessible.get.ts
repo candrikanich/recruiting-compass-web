@@ -66,7 +66,7 @@ export default defineEventHandler(async (event) => {
     // Fetch family unit details
     const { data: families, error: familiesError } = await supabase
       .from("family_units")
-      .select("id, student_user_id, family_name")
+      .select("id, player_user_id, family_name")
       .in("id", familyUnitIds);
 
     if (familiesError) {
@@ -75,12 +75,12 @@ export default defineEventHandler(async (event) => {
       throw familiesError;
     }
 
-    // Get student user IDs and fetch user details separately
-    const studentUserIds = families?.map((f) => f.student_user_id) || [];
+    // Get player user IDs and fetch user details separately
+    const playerUserIds = families?.map((f) => f.player_user_id) || [];
     const { data: users, error: usersError } = await supabase
       .from("users")
       .select("id, full_name, graduation_year")
-      .in("id", studentUserIds);
+      .in("id", playerUserIds);
 
     if (usersError) {
       console.error("[/api/family/accessible] users error:", usersError);
@@ -105,10 +105,10 @@ export default defineEventHandler(async (event) => {
 
     // Map to response format
     const accessibleFamilies = (families || []).map((family) => {
-      const userDetails = usersMap[family.student_user_id];
+      const userDetails = usersMap[family.player_user_id];
       return {
         familyUnitId: family.id,
-        athleteId: family.student_user_id,
+        athleteId: family.player_user_id,
         athleteName: userDetails?.full_name || "Unknown Athlete",
         graduationYear: userDetails?.graduation_year || null,
         familyName: family.family_name || "Family",

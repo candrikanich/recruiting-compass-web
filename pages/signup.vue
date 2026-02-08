@@ -109,6 +109,7 @@ import { ref, watch } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useSupabase } from "~/composables/useSupabase";
 import { useFormValidation } from "~/composables/useFormValidation";
+import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
 import { signupSchema } from "~/utils/validation/schemas";
 import {
   SIGNUP_EMAIL_SCHEMA,
@@ -142,10 +143,11 @@ const {
   hasErrors,
   setErrors,
 } = useFormValidation();
+const { focusErrorSummary } = useFormErrorFocus();
 
 const selectUserType = (type: "player" | "parent") => {
   userType.value = type;
-  role.value = type === "player" ? "student" : "parent";
+  role.value = type;
   clearErrors();
 };
 
@@ -184,6 +186,7 @@ const handleSignup = async () => {
   // Check passwords match
   if (password.value !== confirmPassword.value) {
     setErrors([{ field: "form", message: "Passwords don't match" }]);
+    await focusErrorSummary();
     return;
   }
 
@@ -192,6 +195,7 @@ const handleSignup = async () => {
     setErrors([
       { field: "form", message: "Please agree to the terms and conditions" },
     ]);
+    await focusErrorSummary();
     return;
   }
 
@@ -211,6 +215,7 @@ const handleSignup = async () => {
   );
 
   if (!validated) {
+    await focusErrorSummary();
     return;
   }
 
@@ -285,8 +290,8 @@ const handleSignup = async () => {
     // Determine redirect based on user type
     let redirectUrl = "";
 
-    if (validated.role === "student") {
-      // Students (players) go to onboarding
+    if (validated.role === "player") {
+      // Players go to onboarding
       redirectUrl = "/onboarding";
     } else if (validated.role === "parent") {
       // Parents go to family code entry or dashboard
@@ -308,6 +313,7 @@ const handleSignup = async () => {
     const message = err instanceof Error ? err.message : "Signup failed";
     // Set form-level error
     setErrors([{ field: "form", message }]);
+    await focusErrorSummary();
     loading.value = false;
   }
 };
