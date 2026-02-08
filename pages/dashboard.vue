@@ -2,9 +2,18 @@
   <div
     class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
   >
+    <!-- Skip Link for Keyboard Navigation -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:shadow-lg"
+    >
+      Skip to main content
+    </a>
+
     <!-- Page Header -->
-    <div
+    <header
       class="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200"
+      role="banner"
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
@@ -12,79 +21,100 @@
           Welcome back, {{ userFirstName }}! 👋
         </p>
       </div>
-    </div>
+    </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main
+      id="main-content"
+      class="max-w-7xl mx-auto px-4 sm:px-6 py-8"
+      role="main"
+    >
       <!-- Parent Context Banner -->
       <ParentContextBanner
         :is-viewing-as-parent="activeFamily.isViewingAsParent.value"
         :athlete-name="activeAthleteName"
       />
 
-      <!-- Stats Cards Component -->
-      <DashboardStatsCards
-        :coach-count="dashboardData.coachCount.value"
-        :school-count="dashboardData.schoolCount.value"
-        :interaction-count="dashboardData.interactionCount.value"
-        :total-offers="totalOffers"
-        :accepted-offers="acceptedOffers"
-        :a-tier-school-count="aTierSchoolCount"
-        :contacts-this-month="contactsThisMonth"
-      />
+      <!-- Statistics Overview Section -->
+      <section aria-labelledby="stats-heading">
+        <h2 id="stats-heading" class="sr-only">Statistics Overview</h2>
+        <DashboardStatsCards
+          :coach-count="dashboardData.coachCount.value"
+          :school-count="dashboardData.schoolCount.value"
+          :interaction-count="dashboardData.interactionCount.value"
+          :total-offers="totalOffers"
+          :accepted-offers="acceptedOffers"
+          :a-tier-school-count="aTierSchoolCount"
+          :contacts-this-month="contactsThisMonth"
+        />
+      </section>
 
-      <!-- Suggestions Component -->
-      <DashboardSuggestions
-        :suggestions="suggestionsComposable?.dashboardSuggestions.value || []"
-        :is-viewing-as-parent="activeFamily.isViewingAsParent.value || false"
-        :athlete-name="activeAthleteName"
-        @dismiss="handleSuggestionDismiss"
-      />
+      <!-- Suggestions Section -->
+      <section aria-labelledby="suggestions-heading">
+        <h2 id="suggestions-heading" class="sr-only">Recommended Actions</h2>
+        <DashboardSuggestions
+          :suggestions="suggestionsComposable?.dashboardSuggestions.value || []"
+          :is-viewing-as-parent="activeFamily.isViewingAsParent.value || false"
+          :athlete-name="activeAthleteName"
+          @dismiss="handleSuggestionDismiss"
+        />
+      </section>
 
-      <!-- Charts Section -->
-      <DashboardChartsSection
-        :schools="dashboardData.allSchools.value"
-        :interactions="dashboardData.allInteractions.value"
-        :school-size-breakdown="schoolSizeBreakdown"
-        :school-count="dashboardData.schoolCount.value"
-        :recruiting-packet-loading="recruitingPacketLoading"
-        :recruiting-packet-error="recruitingPacketError"
-        :has-generated-packet="
-          recruitingPacketComposable.hasGeneratedPacket.value
-        "
-        @generate-packet="handleGeneratePacket"
-        @email-packet="handleEmailPacket"
-      />
+      <!-- Charts & Analytics Section -->
+      <section aria-labelledby="charts-heading">
+        <h2 id="charts-heading" class="sr-only">Charts & Analytics</h2>
+        <DashboardChartsSection
+          :schools="dashboardData.allSchools.value"
+          :interactions="dashboardData.allInteractions.value"
+          :school-size-breakdown="schoolSizeBreakdown"
+          :school-count="dashboardData.schoolCount.value"
+          :recruiting-packet-loading="recruitingPacketLoading"
+          :recruiting-packet-error="recruitingPacketError"
+          :has-generated-packet="
+            recruitingPacketComposable.hasGeneratedPacket.value
+          "
+          @generate-packet="handleGeneratePacket"
+          @email-packet="handleEmailPacket"
+        />
+      </section>
 
-      <!-- Metrics Section -->
-      <DashboardMetricsSection
-        :metrics="dashboardData.allMetrics.value"
-        :top-metrics="topMetrics"
-        :upcoming-events="upcomingEvents"
-        class="mt-6"
-      />
+      <!-- Performance & Events Section -->
+      <section aria-labelledby="metrics-heading" class="mt-6">
+        <h2 id="metrics-heading" class="sr-only">
+          Performance Metrics & Upcoming Events
+        </h2>
+        <DashboardMetricsSection
+          :metrics="dashboardData.allMetrics.value"
+          :top-metrics="topMetrics"
+          :upcoming-events="upcomingEvents"
+        />
+      </section>
 
       <!-- Map & Activity Section -->
-      <DashboardMapActivitySection
-        :schools="dashboardData.allSchools.value"
-        :show-widget="showWidget"
-        class="mt-6"
-      />
+      <section aria-labelledby="map-heading" class="mt-6">
+        <h2 id="map-heading" class="sr-only">School Map & Recent Activity</h2>
+        <DashboardMapActivitySection
+          :schools="dashboardData.allSchools.value"
+          :show-widget="showWidget"
+        />
+      </section>
 
       <!-- Widgets Section -->
-      <DashboardWidgetsSection
-        :tasks="userTasksComposable?.tasks.value || []"
-        :coaches="dashboardData.allCoaches.value"
-        :schools="dashboardData.allSchools.value"
-        :interactions="dashboardData.allInteractions.value"
-        :offers="dashboardData.allOffers.value"
-        :is-parent="userStore.isParent"
-        :show-widget="showWidget"
-        class="mt-6"
-        @add-task="addTask"
-        @toggle-task="toggleTask"
-        @delete-task="deleteTask"
-        @clear-completed="() => userTasksComposable?.clearCompleted()"
-      />
+      <section aria-labelledby="widgets-heading" class="mt-6">
+        <h2 id="widgets-heading" class="sr-only">Dashboard Widgets</h2>
+        <DashboardWidgetsSection
+          :tasks="userTasksComposable?.tasks.value || []"
+          :coaches="dashboardData.allCoaches.value"
+          :schools="dashboardData.allSchools.value"
+          :interactions="dashboardData.allInteractions.value"
+          :offers="dashboardData.allOffers.value"
+          :is-parent="userStore.isParent"
+          :show-widget="showWidget"
+          @add-task="addTask"
+          @toggle-task="toggleTask"
+          @delete-task="deleteTask"
+          @clear-completed="() => userTasksComposable?.clearCompleted()"
+        />
+      </section>
 
       <!-- Email Recruiting Packet Modal -->
       <EmailRecruitingPacketModal

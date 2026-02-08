@@ -8,17 +8,55 @@
         <div
           class="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-md"
         >
-          <span class="text-lg">📈</span>
+          <span class="text-lg" aria-hidden="true">📈</span>
         </div>
-        <h3 class="text-slate-900 font-semibold">
+        <h3 id="interaction-chart-title" class="text-slate-900 font-semibold">
           Interaction Trends (30 Days)
         </h3>
+        <!-- Data summary for screen readers -->
+        <div
+          class="sr-only"
+          role="region"
+          aria-labelledby="interaction-chart-title"
+          aria-live="polite"
+        >
+          {{ chartDataSummary }}
+        </div>
       </div>
-      <div class="text-sm text-slate-600">Total: {{ totalInteractions }}</div>
+      <div class="text-sm text-slate-600" aria-label="Total interactions count">
+        Total: {{ totalInteractions }}
+      </div>
     </div>
 
     <div v-if="chartData" class="relative h-64">
-      <canvas ref="chartCanvas"></canvas>
+      <canvas
+        ref="chartCanvas"
+        role="img"
+        aria-labelledby="interaction-chart-title"
+        aria-describedby="interaction-chart-description"
+      ></canvas>
+      <!-- Hidden text description of chart -->
+      <p id="interaction-chart-description" class="sr-only">
+        {{ chartDataSummary }}
+      </p>
+      <!-- Accessible data table as text alternative -->
+      <table id="interaction-data-table" class="sr-only">
+        <caption>
+          Interaction Trends - Detailed Data
+        </caption>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Interactions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(row, index) in chartDataTable" :key="index">
+            <td>{{ row.label }}</td>
+            <td>{{ row.value }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <div
@@ -131,6 +169,26 @@ const chartData = computed(() => {
   }
 
   return { labels, data };
+});
+
+// Chart data summary for screen readers
+const chartDataSummary = computed(() => {
+  if (!chartData.value) return "No chart data available";
+
+  const total = chartData.value.data.reduce((sum, val) => sum + val, 0);
+  const max = Math.max(...chartData.value.data);
+  const maxDate = chartData.value.labels[chartData.value.data.indexOf(max)];
+
+  return `Chart showing ${total} total interactions over the last 30 days. Peak activity was ${max} interactions on ${maxDate}.`;
+});
+
+// Chart data table for screen readers
+const chartDataTable = computed(() => {
+  if (!chartData.value) return [];
+  return chartData.value.labels.map((label, idx) => ({
+    label,
+    value: chartData.value!.data[idx],
+  }));
 });
 
 const initializeChart = () => {

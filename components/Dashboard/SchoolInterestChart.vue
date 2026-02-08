@@ -8,15 +8,58 @@
         <div
           class="w-10 h-10 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center shadow-md"
         >
-          <span class="text-lg">🎯</span>
+          <span class="text-lg" aria-hidden="true">🎯</span>
         </div>
-        <h3 class="text-slate-900 font-semibold">School Pipeline</h3>
+        <h3
+          id="school-pipeline-chart-title"
+          class="text-slate-900 font-semibold"
+        >
+          School Pipeline
+        </h3>
+        <!-- Data summary for screen readers -->
+        <div
+          class="sr-only"
+          role="region"
+          aria-labelledby="school-pipeline-chart-title"
+          aria-live="polite"
+        >
+          {{ chartDataSummary }}
+        </div>
       </div>
-      <div class="text-sm text-slate-600">Total: {{ totalSchools }}</div>
+      <div class="text-sm text-slate-600" aria-label="Total schools count">
+        Total: {{ totalSchools }}
+      </div>
     </div>
 
     <div v-if="chartData" class="relative h-64">
-      <canvas ref="chartCanvas"></canvas>
+      <canvas
+        ref="chartCanvas"
+        role="img"
+        aria-labelledby="school-pipeline-chart-title"
+        aria-describedby="school-pipeline-chart-description"
+      ></canvas>
+      <!-- Hidden text description of chart -->
+      <p id="school-pipeline-chart-description" class="sr-only">
+        {{ chartDataSummary }}
+      </p>
+      <!-- Accessible data table as text alternative -->
+      <table id="school-pipeline-data-table" class="sr-only">
+        <caption>
+          School Pipeline - Detailed Data
+        </caption>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Number of Schools</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(row, index) in chartDataTable" :key="index">
+            <td>{{ row.label }}</td>
+            <td>{{ row.value }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <div
@@ -115,6 +158,27 @@ const chartData = computed(() => {
   ];
 
   return { labels, data, colors };
+});
+
+// Chart data summary for screen readers
+const chartDataSummary = computed(() => {
+  if (!chartData.value) return "No chart data available";
+
+  const total = chartData.value.data.reduce((sum, val) => sum + val, 0);
+  const statusDescriptions = chartData.value.labels.map(
+    (label, idx) => `${label}: ${chartData.value!.data[idx]} schools`,
+  );
+
+  return `Bar chart showing ${total} total schools across recruitment pipeline. ${statusDescriptions.join(", ")}.`;
+});
+
+// Chart data table for screen readers
+const chartDataTable = computed(() => {
+  if (!chartData.value) return [];
+  return chartData.value.labels.map((label, idx) => ({
+    label,
+    value: chartData.value!.data[idx],
+  }));
 });
 
 const initializeChart = () => {

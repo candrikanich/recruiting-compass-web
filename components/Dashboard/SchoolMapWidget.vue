@@ -37,25 +37,91 @@
     <div
       v-if="schools.length > 0"
       class="mt-4 grid grid-cols-2 md:grid-cols-5 gap-3 text-sm"
+      role="list"
+      aria-label="School status legend"
     >
-      <div class="flex items-center gap-2 text-slate-600">
-        <div class="w-3 h-3 rounded-full bg-slate-400"></div>
+      <div class="flex items-center gap-2 text-slate-600" role="listitem">
+        <div
+          class="w-5 h-5 rounded-full bg-slate-400 border-2 border-slate-600 flex items-center justify-center"
+        >
+          <span class="text-white text-xs font-bold" aria-hidden="true">?</span>
+        </div>
         <span>Researching</span>
       </div>
-      <div class="flex items-center gap-2 text-slate-900">
-        <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+      <div class="flex items-center gap-2 text-slate-900" role="listitem">
+        <div
+          class="w-5 h-5 rounded-full bg-blue-500 border-2 border-slate-600 flex items-center justify-center"
+        >
+          <svg
+            class="w-3 h-3 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="3"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </div>
         <span>Contacted</span>
       </div>
-      <div class="flex items-center gap-2 text-slate-900">
-        <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+      <div class="flex items-center gap-2 text-slate-900" role="listitem">
+        <div
+          class="w-5 h-5 rounded-full bg-emerald-500 border-2 border-slate-600 flex items-center justify-center"
+        >
+          <svg
+            class="w-3 h-3 text-white"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            />
+          </svg>
+        </div>
         <span>Interested</span>
       </div>
-      <div class="flex items-center gap-2 text-slate-900">
-        <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+      <div class="flex items-center gap-2 text-slate-900" role="listitem">
+        <div
+          class="w-5 h-5 rounded-full bg-orange-500 border-2 border-slate-600 flex items-center justify-center"
+        >
+          <svg
+            class="w-3 h-3 text-white"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"
+            />
+          </svg>
+        </div>
         <span>Offer</span>
       </div>
-      <div class="flex items-center gap-2 text-slate-900">
-        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+      <div class="flex items-center gap-2 text-slate-900" role="listitem">
+        <div
+          class="w-5 h-5 rounded-full bg-red-500 border-2 border-slate-600 flex items-center justify-center"
+        >
+          <svg
+            class="w-3 h-3 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="3"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
         <span>Committed</span>
       </div>
     </div>

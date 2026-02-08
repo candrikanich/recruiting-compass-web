@@ -110,7 +110,7 @@ describe("QuickTasksWidget", () => {
   describe("form visibility toggle", () => {
     it("does not show task form by default", () => {
       const wrapper = mountWidget();
-      const input = wrapper.find('input[placeholder="Enter task..."]');
+      const input = wrapper.find('input[id="new-task-input"]');
 
       expect(input.exists()).toBe(false);
     });
@@ -121,8 +121,9 @@ describe("QuickTasksWidget", () => {
         .findAll("button")
         .find((b) => b.text().includes("Add Task"));
       await addButton!.trigger("click");
+      await wrapper.vm.$nextTick();
 
-      const input = wrapper.find('input[placeholder="Enter task..."]');
+      const input = wrapper.find('input[id="new-task-input"]');
       expect(input.exists()).toBe(true);
     });
 
@@ -133,9 +134,8 @@ describe("QuickTasksWidget", () => {
         .findAll("button")
         .find((b) => b.text().includes("Add Task"));
       await addButton!.trigger("click");
-      expect(wrapper.find('input[placeholder="Enter task..."]').exists()).toBe(
-        true,
-      );
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find('input[id="new-task-input"]').exists()).toBe(true);
 
       const cancelButtons = wrapper.findAll("button");
       const cancelButton = cancelButtons.find((b) => {
@@ -146,11 +146,10 @@ describe("QuickTasksWidget", () => {
       });
       if (cancelButton) {
         await cancelButton.trigger("click");
+        await wrapper.vm.$nextTick();
       }
 
-      expect(wrapper.find('input[placeholder="Enter task..."]').exists()).toBe(
-        false,
-      );
+      expect(wrapper.find('input[id="new-task-input"]').exists()).toBe(false);
     });
   });
 
@@ -163,7 +162,7 @@ describe("QuickTasksWidget", () => {
         .find((b) => b.text().includes("Add Task"));
       await addButton!.trigger("click");
 
-      const input = wrapper.find('input[placeholder="Enter task..."]');
+      const input = wrapper.find('input[id="new-task-input"]');
       await input.setValue("New important task");
 
       const submitButtons = wrapper.findAll("button");
@@ -184,7 +183,7 @@ describe("QuickTasksWidget", () => {
         .find((b) => b.text().includes("Add Task"));
       await addButton!.trigger("click");
 
-      const input = wrapper.find('input[placeholder="Enter task..."]');
+      const input = wrapper.find('input[id="new-task-input"]');
       await input.setValue("Enter key task");
       await input.trigger("keyup.enter");
 
@@ -200,7 +199,7 @@ describe("QuickTasksWidget", () => {
         .find((b) => b.text().includes("Add Task"));
       await addButton!.trigger("click");
 
-      const input = wrapper.find('input[placeholder="Enter task..."]');
+      const input = wrapper.find('input[id="new-task-input"]');
       await input.setValue("   ");
       await input.trigger("keyup.enter");
 
@@ -211,10 +210,8 @@ describe("QuickTasksWidget", () => {
       const tasks = [createTask({ id: "task-42", text: "Toggle me" })];
       const wrapper = mountWidget({ tasks });
 
-      const checkboxButton = wrapper
-        .findAll("button")
-        .find((b) => b.classes().some((c) => c.includes("rounded-md")));
-      await checkboxButton!.trigger("click");
+      const checkbox = wrapper.find('input[id="task-task-42"]');
+      await checkbox.trigger("change");
 
       expect(wrapper.emitted("toggle-task")).toBeTruthy();
       expect(wrapper.emitted("toggle-task")![0]).toEqual(["task-42"]);
@@ -252,14 +249,17 @@ describe("QuickTasksWidget", () => {
         .findAll("button")
         .find((b) => b.text().includes("Add Task"));
       await addButton!.trigger("click");
+      await wrapper.vm.$nextTick();
 
-      const input = wrapper.find('input[placeholder="Enter task..."]');
+      const input = wrapper.find('input[id="new-task-input"]');
       await input.setValue("Quick task");
-      await input.trigger("keyup.enter");
 
-      expect(wrapper.find('input[placeholder="Enter task..."]').exists()).toBe(
-        false,
-      );
+      // Form submission triggers the handler
+      const form = wrapper.find("form");
+      await form.trigger("submit");
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('input[id="new-task-input"]').exists()).toBe(false);
     });
   });
 });
