@@ -82,6 +82,50 @@ vi.mock("~/components/DesignSystem/FieldError.vue", () => ({
   },
 }));
 
+vi.mock("~/components/Auth/AuthPageLayout.vue", () => ({
+  default: {
+    name: "AuthPageLayout",
+    template:
+      '<div><nav aria-label="Page navigation"></nav><div><slot /></div></div>',
+    props: ["backLink"],
+  },
+}));
+
+vi.mock("~/components/Auth/AuthStatusIcon.vue", () => ({
+  default: {
+    name: "AuthStatusIcon",
+    template:
+      '<div role="img" :aria-label="ariaLabel" :class="`status-${status}`"></div>',
+    props: ["status", "icon", "ariaLabel"],
+  },
+}));
+
+vi.mock("~/components/Auth/AuthStatusMessage.vue", () => ({
+  default: {
+    name: "AuthStatusMessage",
+    template:
+      "<div :role=\"variant === 'error' ? 'alert' : 'status'\" :aria-live=\"variant === 'error' ? 'assertive' : 'polite'\" aria-atomic=\"true\"><slot /></div>",
+    props: ["variant"],
+  },
+}));
+
+vi.mock("~/components/Auth/PasswordRequirements.vue", () => ({
+  default: {
+    name: "PasswordRequirements",
+    template: `
+      <div role="list" aria-label="Password requirements">
+        <ul>
+          <li role="listitem" :class="password.length >= 8 ? 'text-emerald-600' : ''">At least 8 characters</li>
+          <li role="listitem" :class="/[A-Z]/.test(password) ? 'text-emerald-600' : ''">One uppercase letter</li>
+          <li role="listitem" :class="/[a-z]/.test(password) ? 'text-emerald-600' : ''">One lowercase letter</li>
+          <li role="listitem" :class="/[0-9]/.test(password) ? 'text-emerald-600' : ''">One number</li>
+        </ul>
+      </div>
+    `,
+    props: ["password"],
+  },
+}));
+
 const mountPage = (props = {}) =>
   mount(ResetPasswordPage, {
     global: {
@@ -89,6 +133,35 @@ const mountPage = (props = {}) =>
         NuxtLink: {
           template: '<a :href="to" :class="$attrs.class"><slot /></a>',
           props: ["to"],
+        },
+        AuthPageLayout: {
+          template:
+            '<div><nav aria-label="Page navigation"><a :href="backLink?.to">{{ backLink?.text }}</a></nav><main><slot /></main></div>',
+          props: ["backLink"],
+        },
+        AuthStatusIcon: {
+          template:
+            '<div role="img" :aria-label="ariaLabel" :class="`status-${status}`"></div>',
+          props: ["status", "icon", "ariaLabel"],
+        },
+        AuthStatusMessage: {
+          template:
+            "<div :role=\"variant === 'error' ? 'alert' : 'status'\" :aria-live=\"variant === 'error' ? 'assertive' : 'polite'\" aria-atomic=\"true\"><slot /></div>",
+          props: ["variant"],
+        },
+        PasswordRequirements: {
+          template: `
+            <div role="list" aria-label="Password requirements">
+              <p>Password must contain:</p>
+              <ul>
+                <li role="listitem" :class="password.length >= 8 ? 'text-emerald-600' : ''">At least 8 characters</li>
+                <li role="listitem" :class="/[A-Z]/.test(password) ? 'text-emerald-600' : ''">One uppercase letter</li>
+                <li role="listitem" :class="/[a-z]/.test(password) ? 'text-emerald-600' : ''">One lowercase letter</li>
+                <li role="listitem" :class="/[0-9]/.test(password) ? 'text-emerald-600' : ''">One number</li>
+              </ul>
+            </div>
+          `,
+          props: ["password"],
         },
       },
     },

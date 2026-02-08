@@ -36,6 +36,39 @@ vi.mock("~/composables/useFormValidation", () => ({
   })),
 }));
 
+const mockStartCooldown = vi.fn();
+const mockAnnounce = vi.fn();
+const cooldownValue = ref(0);
+const isActiveCooldown = ref(false);
+const buttonLabelValue = ref("Resend");
+
+vi.mock("~/composables/useResendCooldown", () => ({
+  useResendCooldown: vi.fn(() => ({
+    cooldown: cooldownValue,
+    isActive: isActiveCooldown,
+    announcementRef: ref(null),
+    buttonLabel: buttonLabelValue,
+    startCooldown: mockStartCooldown.mockImplementation(() => {
+      cooldownValue.value = 60;
+      isActiveCooldown.value = true;
+      buttonLabelValue.value = "Resend in 60s";
+
+      // Simulate timer countdown
+      const interval = setInterval(() => {
+        if (cooldownValue.value > 0) {
+          cooldownValue.value--;
+          buttonLabelValue.value = `Resend in ${cooldownValue.value}s`;
+        } else {
+          isActiveCooldown.value = false;
+          buttonLabelValue.value = "Resend";
+          clearInterval(interval);
+        }
+      }, 1000);
+    }),
+    announce: mockAnnounce,
+  })),
+}));
+
 // Mock Heroicons
 vi.mock("@heroicons/vue/24/outline", () => ({
   ArrowLeftIcon: { template: "<svg></svg>" },
@@ -68,6 +101,33 @@ vi.mock("~/components/DesignSystem/FieldError.vue", () => ({
   },
 }));
 
+vi.mock("~/components/Auth/AuthPageLayout.vue", () => ({
+  default: {
+    name: "AuthPageLayout",
+    template:
+      '<div><nav v-if="backLink" aria-label="Page navigation"></nav><div><slot /></div></div>',
+    props: ["backLink"],
+  },
+}));
+
+vi.mock("~/components/Auth/AuthStatusIcon.vue", () => ({
+  default: {
+    name: "AuthStatusIcon",
+    template:
+      '<div role="img" :aria-label="ariaLabel" :class="`status-${status}`"></div>',
+    props: ["status", "icon", "ariaLabel"],
+  },
+}));
+
+vi.mock("~/components/Auth/AuthStatusMessage.vue", () => ({
+  default: {
+    name: "AuthStatusMessage",
+    template:
+      "<div :role=\"variant === 'error' ? 'alert' : 'status'\" :aria-live=\"variant === 'error' ? 'assertive' : 'polite'\" aria-atomic=\"true\"><slot /></div>",
+    props: ["variant"],
+  },
+}));
+
 const mountPage = (props = {}) =>
   mount(ForgotPasswordPage, {
     global: {
@@ -75,6 +135,21 @@ const mountPage = (props = {}) =>
         NuxtLink: {
           template: '<a :href="to" :class="$attrs.class"><slot /></a>',
           props: ["to"],
+        },
+        AuthPageLayout: {
+          template:
+            '<div><nav aria-label="Page navigation"><a :href="backLink?.to">{{ backLink?.text }}</a></nav><main><slot /></main></div>',
+          props: ["backLink"],
+        },
+        AuthStatusIcon: {
+          template:
+            '<div role="img" :aria-label="ariaLabel" :class="`status-${status}`"></div>',
+          props: ["status", "icon", "ariaLabel"],
+        },
+        AuthStatusMessage: {
+          template:
+            "<div :role=\"variant === 'error' ? 'alert' : 'status'\" :aria-live=\"variant === 'error' ? 'assertive' : 'polite'\" aria-atomic=\"true\"><slot /></div>",
+          props: ["variant"],
         },
       },
     },
@@ -84,6 +159,10 @@ const mountPage = (props = {}) =>
 describe("pages/forgot-password.vue", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset cooldown state
+    cooldownValue.value = 0;
+    isActiveCooldown.value = false;
+    buttonLabelValue.value = "Resend";
     // Make mockValidate return the email that was passed to it
     mockValidate.mockImplementation(async (data) => ({
       email: data.email,
