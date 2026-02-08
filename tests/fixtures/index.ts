@@ -5,6 +5,12 @@
 
 export * from "./documents.fixture";
 export * from "./search.fixture";
+export * from "./user.fixture";
+export * from "./events.fixture";
+export * from "./offers.fixture";
+export * from "./metrics.fixture";
+export * from "./coaches.fixture";
+export * from "./interactions.fixture";
 
 // Re-export commonly used utilities
 export function generateId(prefix: string = "id"): string {
