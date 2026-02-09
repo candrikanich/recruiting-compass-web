@@ -95,22 +95,25 @@
 
           <!-- Edit Mode -->
           <div v-else class="space-y-4">
-            <div
+            <fieldset
               v-for="day in DAYS"
               :key="day"
               class="p-4 border border-gray-200 rounded-lg"
             >
+              <legend class="sr-only">{{ day }} availability</legend>
+
               <div class="flex items-center gap-4 mb-3">
                 <label class="flex items-center gap-2 flex-1">
                   <input
+                    :id="`day-${day}-checkbox`"
                     type="checkbox"
                     :checked="getDayAvailability(day)?.available"
                     @change="toggleDayEdit(day)"
-                    class="w-4 h-4 rounded border-gray-300"
+                    class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
                   />
-                  <span class="font-semibold text-gray-900 capitalize">{{
-                    day
-                  }}</span>
+                  <span class="font-semibold text-gray-900 capitalize">
+                    {{ day }}
+                  </span>
                 </label>
               </div>
 
@@ -119,26 +122,42 @@
                 class="flex items-center gap-4 ml-6"
               >
                 <div>
-                  <label class="block text-sm text-gray-600 mb-1">Start</label>
+                  <label
+                    :for="`start-${day}`"
+                    class="block text-sm text-gray-600 mb-1"
+                  >
+                    Start
+                    <span class="text-red-600" aria-label="required">*</span>
+                  </label>
                   <input
+                    :id="`start-${day}`"
                     type="time"
                     :value="getDayAvailability(day)?.start_time"
                     @input="updateDayTime(day, 'start_time', $event)"
-                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
                   />
                 </div>
 
                 <div>
-                  <label class="block text-sm text-gray-600 mb-1">End</label>
+                  <label
+                    :for="`end-${day}`"
+                    class="block text-sm text-gray-600 mb-1"
+                  >
+                    End
+                    <span class="text-red-600" aria-label="required">*</span>
+                  </label>
                   <input
+                    :id="`end-${day}`"
                     type="time"
                     :value="getDayAvailability(day)?.end_time"
                     @input="updateDayTime(day, 'end_time', $event)"
-                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
                   />
                 </div>
               </div>
-            </div>
+            </fieldset>
 
             <!-- Save Button -->
             <button
@@ -169,25 +188,33 @@
           >
             <div class="flex items-end gap-4">
               <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Date</label
+                <label
+                  for="blackout-date"
+                  class="block text-sm font-medium text-gray-700 mb-2"
                 >
+                  Date
+                </label>
                 <input
+                  id="blackout-date"
                   v-model="newBlackoutDate"
                   type="date"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
               <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Reason (optional)</label
+                <label
+                  for="blackout-reason"
+                  class="block text-sm font-medium text-gray-700 mb-2"
                 >
+                  Reason (optional)
+                </label>
                 <input
+                  id="blackout-reason"
                   v-model="blackoutReason"
                   type="text"
                   placeholder="e.g., Away, Vacation"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
