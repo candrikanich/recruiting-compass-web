@@ -1,27 +1,42 @@
 <template>
-  <dialog v-if="isOpen" class="rounded-lg shadow-lg p-6 max-w-sm mx-auto">
+  <dialog
+    v-if="isOpen"
+    class="rounded-lg shadow-lg p-6 max-w-sm mx-auto border border-red-200"
+    role="alertdialog"
+    aria-labelledby="delete-title"
+    aria-describedby="delete-message"
+    @close="$emit('cancel')"
+  >
     <div class="space-y-4">
-      <h2 class="text-lg font-bold text-red-600">Delete {{ itemType }}?</h2>
+      <h2 id="delete-title" class="text-lg font-bold text-red-600">
+        Delete {{ itemType }}?
+      </h2>
 
-      <p class="text-gray-700">
+      <p id="delete-message" class="text-gray-700">
         This will permanently delete <strong>{{ itemName }}</strong>
         and any related interactions. This cannot be undone.
       </p>
 
-      <div class="flex gap-3 justify-end">
+      <div
+        class="flex gap-3 justify-end"
+        role="group"
+        aria-label="Delete confirmation actions"
+      >
         <button
           @click="$emit('cancel')"
           :disabled="isLoading"
-          class="px-4 py-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50"
+          aria-label="Cancel deletion"
+          class="px-4 py-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
         >
           Cancel
         </button>
         <button
           @click="$emit('confirm')"
           :disabled="isLoading"
-          class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+          aria-label="Confirm permanent deletion"
+          class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
         >
-          <span v-if="isLoading">Deleting...</span>
+          <span v-if="isLoading" aria-live="polite">Deleting...</span>
           <span v-else>Delete</span>
         </button>
       </div>
