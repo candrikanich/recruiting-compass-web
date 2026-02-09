@@ -86,204 +86,21 @@
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"
       >
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <!-- Search -->
-          <div>
-            <label
-              for="coaches-search"
-              class="block text-sm font-medium text-slate-700 mb-1"
-            >
-              Search coaches
-            </label>
-            <div class="relative">
-              <MagnifyingGlassIcon
-                class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                aria-hidden="true"
-              />
-              <input
-                id="coaches-search"
-                type="text"
-                :value="filterValues.get('search') || ''"
-                @input="
-                  handleFilterUpdate(
-                    'search',
-                    ($event.target as HTMLInputElement).value,
-                  )
-                "
-                aria-describedby="coaches-search-hint"
-                placeholder="Name, email, phone..."
-                class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <p id="coaches-search-hint" class="mt-1 text-xs text-slate-500">
-              Search by first/last name, email, phone number, Twitter handle,
-              Instagram handle, or notes
-            </p>
-          </div>
+        <CoachFilters
+          :filter-values="filterValues"
+          :sort-by="sortBy"
+          @update:filter="handleFilterUpdate"
+          @update:sort="sortBy = $event"
+        />
 
-          <!-- Role -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >Role</label
-            >
-            <select
-              :value="filterValues.get('role') || ''"
-              @change="
-                handleFilterUpdate(
-                  'role',
-                  ($event.target as HTMLSelectElement).value || null,
-                )
-              "
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">-- All --</option>
-              <option value="head">Head Coach</option>
-              <option value="assistant">Assistant Coach</option>
-              <option value="recruiting">Recruiting Coordinator</option>
-            </select>
-          </div>
-
-          <!-- Last Contact -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >Last Contact</label
-            >
-            <select
-              :value="filterValues.get('lastContact') || ''"
-              @change="
-                handleFilterUpdate(
-                  'lastContact',
-                  ($event.target as HTMLSelectElement).value || null,
-                )
-              "
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">-- All --</option>
-              <option value="7">Last 7 days</option>
-              <option value="14">Last 14 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="60">Last 60 days</option>
-              <option value="90">Last 90 days</option>
-            </select>
-          </div>
-
-          <!-- Responsiveness -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >Responsiveness</label
-            >
-            <select
-              :value="filterValues.get('responsiveness') || ''"
-              @change="
-                handleFilterUpdate(
-                  'responsiveness',
-                  ($event.target as HTMLSelectElement).value || null,
-                )
-              "
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">-- All --</option>
-              <option value="high">High (75%+)</option>
-              <option value="medium">Medium (50-74%)</option>
-              <option value="low">Low (&lt;50%)</option>
-            </select>
-          </div>
-
-          <!-- Sort -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >Sort By</label
-            >
-            <select
-              v-model="sortBy"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="name">Last Name (A-Z)</option>
-              <option value="school">School (A-Z)</option>
-              <option value="last-contacted">Last Contacted</option>
-              <option value="responsiveness">Responsiveness</option>
-              <option value="role">Role</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Active Filters -->
-        <div
-          v-if="hasActiveFilters"
-          class="mt-4 pt-4 border-t border-slate-200"
-        >
-          <div
-            class="flex items-center gap-2 flex-wrap"
-            role="group"
-            aria-label="Active filters"
-          >
-            <span class="text-sm font-medium text-slate-700">
-              Active filters ({{ activeFilterCount }}):
-            </span>
-
-            <button
-              v-if="filterValues.get('search')"
-              @click="handleFilterUpdate('search', null)"
-              :aria-label="`Remove search filter: ${filterValues.get('search')}`"
-              class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Search: {{ filterValues.get("search") }}
-              <XMarkIcon class="w-3 h-3" aria-hidden="true" />
-            </button>
-            <button
-              v-if="filterValues.get('role')"
-              @click="handleFilterUpdate('role', null)"
-              :aria-label="`Remove role filter: ${getRoleLabel(filterValues.get('role') as string)}`"
-              class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Role: {{ getRoleLabel(filterValues.get("role") as string) }}
-              <XMarkIcon class="w-3 h-3" aria-hidden="true" />
-            </button>
-            <button
-              v-if="filterValues.get('lastContact')"
-              @click="handleFilterUpdate('lastContact', null)"
-              :aria-label="`Remove last contact filter: Last ${filterValues.get('lastContact')} days`"
-              class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Last {{ filterValues.get("lastContact") }} days
-              <XMarkIcon class="w-3 h-3" aria-hidden="true" />
-            </button>
-            <button
-              v-if="filterValues.get('responsiveness')"
-              @click="handleFilterUpdate('responsiveness', null)"
-              :aria-label="`Remove responsiveness filter: ${getResponsivenessLabel(filterValues.get('responsiveness') as string)}`"
-              class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              {{
-                getResponsivenessLabel(
-                  filterValues.get("responsiveness") as string,
-                )
-              }}
-              <XMarkIcon class="w-3 h-3" aria-hidden="true" />
-            </button>
-
-            <button
-              @click="clearFilters"
-              aria-label="Clear all active filters"
-              class="text-xs text-slate-600 hover:text-slate-900 underline ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
-            >
-              Clear all
-            </button>
-          </div>
-
-          <!-- Announce filter change -->
-          <div
-            role="status"
-            aria-live="polite"
-            aria-atomic="false"
-            class="sr-only"
-          >
-            {{ filteredCoaches.length }} coach{{
-              filteredCoaches.length !== 1 ? "es" : ""
-            }}
-            found with current filters
-          </div>
-        </div>
+        <ActiveCoachFilterChips
+          :filter-values="filterValues"
+          :has-active-filters="hasActiveFilters"
+          :active-filter-count="activeFilterCount"
+          :filtered-count="filteredCoaches.length"
+          @remove:filter="handleFilterUpdate($event, null)"
+          @clear:all="clearFilters"
+        />
       </div>
 
       <!-- Loading State -->
@@ -402,7 +219,7 @@
                     {{ coach.first_name }} {{ coach.last_name }}
                   </h3>
                   <p class="text-sm text-slate-500">
-                    {{ getSchoolName(coach.school_id) }}
+                    {{ getSchoolName(coach.school_id, schools) }}
                   </p>
                 </div>
               </div>
@@ -488,7 +305,7 @@
             >
               <span class="text-slate-500">Last contact</span>
               <time :datetime="coach.last_contact_date" class="text-slate-700">
-                {{ formatDate(coach.last_contact_date) }}
+                {{ formatCoachDate(coach.last_contact_date) }}
                 ({{ getDaysAgoExact(coach.last_contact_date) }})
               </time>
             </div>
@@ -654,11 +471,15 @@ import { useSupabase } from "~/composables/useSupabase";
 import { useCommunication } from "~/composables/useCommunication";
 import { useFamilyContext } from "~/composables/useFamilyContext";
 import { useCoaches } from "~/composables/useCoaches";
+import { useCoachPageFilters } from "~/composables/useCoachPageFilters";
+import { useCoachExport } from "~/composables/useCoachExport";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 import Header from "~/components/Header.vue";
 import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
 import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
+import CoachFilters from "~/components/Coach/CoachFilters.vue";
+import ActiveCoachFilterChips from "~/components/Coach/ActiveCoachFilterChips.vue";
 import {
   MagnifyingGlassIcon,
   XMarkIcon,
@@ -670,6 +491,18 @@ import {
   PlusIcon,
 } from "@heroicons/vue/24/outline";
 import { getRoleLabel } from "~/utils/coachLabels";
+import {
+  formatCoachDate,
+  getDaysAgoExact,
+  getRoleBadgeClass,
+  getResponsivenessBarClass,
+  getResponsivenessTextClass,
+} from "~/utils/coachFormatters";
+import {
+  getInitials,
+  getSchoolById,
+  getSchoolName,
+} from "~/utils/coachHelpers";
 import type { Coach, School } from "~/types/models";
 
 definePageMeta({
@@ -696,7 +529,22 @@ const schools = ref<School[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const sortBy = ref("name");
-const filterValues = ref(new Map<string, string | null>());
+
+// Use filter composable for stateful filter management
+const {
+  filterValues,
+  filteredCoaches,
+  hasActiveFilters,
+  activeFilterCount,
+  handleFilterUpdate,
+  clearFilters,
+} = useCoachPageFilters(allCoaches, schools, sortBy);
+
+// Use export composable for CSV/PDF exports
+const { handleExportCSV, handleExportPDF } = useCoachExport({
+  filteredCoaches,
+  schools,
+});
 
 // Delete modal state
 const deleteModalOpen = ref(false);
@@ -707,215 +555,9 @@ const isDeleting = ref(false);
 const exportLoading = ref(false);
 const exportMessage = ref("");
 
-const hasActiveFilters = computed(() => {
-  for (const [, value] of filterValues.value) {
-    if (value) return true;
-  }
-  return false;
-});
-
-const activeFilterCount = computed(() => {
-  let count = 0;
-  for (const [, value] of filterValues.value) {
-    if (value) count++;
-  }
-  return count;
-});
-
-const handleFilterUpdate = (field: string, value: string | null) => {
-  const newMap = new Map(filterValues.value);
-  if (value) {
-    newMap.set(field, value);
-  } else {
-    newMap.delete(field);
-  }
-  filterValues.value = newMap;
-};
-
-const clearFilters = () => {
-  filterValues.value = new Map();
-};
-
-const getResponsivenessLabel = (value: string): string => {
-  const labels: Record<string, string> = {
-    high: "High (75%+)",
-    medium: "Medium (50-74%)",
-    low: "Low (<50%)",
-  };
-  return labels[value] || value;
-};
-
-const getRoleBadgeClass = (role: string): string => {
-  const classes: Record<string, string> = {
-    head: "bg-purple-100 text-purple-700",
-    assistant: "bg-blue-100 text-blue-700",
-    recruiting: "bg-emerald-100 text-emerald-700",
-  };
-  return classes[role] || "bg-slate-100 text-slate-700";
-};
-
-const getResponsivenessBarClass = (score: number): string => {
-  if (score >= 75) return "bg-emerald-500";
-  if (score >= 50) return "bg-amber-500";
-  return "bg-red-500";
-};
-
-const getResponsivenessTextClass = (score: number): string => {
-  if (score >= 75) return "text-emerald-600";
-  if (score >= 50) return "text-amber-600";
-  return "text-red-600";
-};
-
-const getInitials = (coach: Coach): string => {
-  return `${coach.first_name[0]}${coach.last_name[0]}`.toUpperCase();
-};
-
-// Compute user's locale from browser
-const userLocale = computed(() => navigator.language || "en-US");
-
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString(userLocale.value, {
-    weekday: "short",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
-const formatDateWithTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleString(userLocale.value, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZoneName: "short",
-  });
-};
-
-const getDaysAgoExact = (dateString: string): string => {
-  const date = new Date(dateString);
-  const today = new Date();
-  const days = Math.floor(
-    (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
-  );
-  if (days === 0) return "today";
-  if (days === 1) return "1 day ago";
-  return `${days} days ago`;
-};
-
-// Filter and sort coaches
-const filteredCoaches = computed(() => {
-  let result = allCoaches.value.filter((coach) => {
-    // Search filter
-    const searchTerm = filterValues.value.get("search");
-    const searchLower = String(searchTerm || "").toLowerCase();
-    const matchesSearch =
-      !searchTerm ||
-      coach.first_name.toLowerCase().includes(searchLower) ||
-      coach.last_name.toLowerCase().includes(searchLower) ||
-      coach.email?.toLowerCase().includes(searchLower) ||
-      coach.phone?.includes(String(searchTerm)) ||
-      coach.notes?.toLowerCase().includes(searchLower) ||
-      coach.twitter_handle?.toLowerCase().includes(searchLower) ||
-      coach.instagram_handle?.toLowerCase().includes(searchLower);
-
-    // Role filter
-    const roleFilter = filterValues.value.get("role");
-    const matchesRole = !roleFilter || coach.role === roleFilter;
-
-    // Last contact filter
-    let matchesLastContact = true;
-    const lastContactFilter = filterValues.value.get("lastContact");
-    if (lastContactFilter) {
-      const days = parseInt(String(lastContactFilter), 10);
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - days);
-      if (coach.last_contact_date) {
-        matchesLastContact = new Date(coach.last_contact_date) >= cutoffDate;
-      }
-    }
-
-    // Responsiveness filter
-    let matchesResponsiveness = true;
-    const responsivenessFilter = filterValues.value.get("responsiveness");
-    if (responsivenessFilter) {
-      const score = coach.responsiveness_score || 0;
-      switch (responsivenessFilter) {
-        case "high":
-          matchesResponsiveness = score >= 75;
-          break;
-        case "medium":
-          matchesResponsiveness = score >= 50 && score < 75;
-          break;
-        case "low":
-          matchesResponsiveness = score < 50;
-          break;
-      }
-    }
-
-    return (
-      matchesSearch &&
-      matchesRole &&
-      matchesLastContact &&
-      matchesResponsiveness
-    );
-  });
-
-  // Sort results
-  result.sort((a, b) => {
-    switch (sortBy.value) {
-      case "name":
-        return (
-          a.last_name.localeCompare(b.last_name) ||
-          a.first_name.localeCompare(b.first_name)
-        );
-      case "school": {
-        const schoolA = getSchoolName(a.school_id) || "";
-        const schoolB = getSchoolName(b.school_id) || "";
-        return schoolA.localeCompare(schoolB);
-      }
-      case "last-contacted": {
-        const dateA = a.last_contact_date
-          ? new Date(a.last_contact_date).getTime()
-          : 0;
-        const dateB = b.last_contact_date
-          ? new Date(b.last_contact_date).getTime()
-          : 0;
-        return dateB - dateA;
-      }
-      case "responsiveness":
-        return (b.responsiveness_score || 0) - (a.responsiveness_score || 0);
-      case "role": {
-        const roleOrder = { head: 0, assistant: 1, recruiting: 2 };
-        return (
-          (roleOrder[a.role as keyof typeof roleOrder] || 3) -
-          (roleOrder[b.role as keyof typeof roleOrder] || 3)
-        );
-      }
-      default:
-        return 0;
-    }
-  });
-
-  return result;
-});
-
-const getSchool = (schoolId?: string): School | undefined => {
-  if (!schoolId) return undefined;
-  return schools.value.find((s) => s.id === schoolId);
-};
-
-const getSchoolName = (schoolId?: string): string => {
-  const school = getSchool(schoolId);
-  return school?.name || "Unknown";
-};
-
 const selectedCoachSchool = computed(() => {
   return selectedCoach.value
-    ? getSchool(selectedCoach.value.school_id)
+    ? getSchoolById(selectedCoach.value.school_id, schools.value)
     : undefined;
 });
 
@@ -954,49 +596,7 @@ const handleCoachAction = async (action: string, coach: Coach) => {
   }
 };
 
-const handleExportCSV = async () => {
-  exportLoading.value = true;
-  exportMessage.value = "Preparing CSV export...";
-  try {
-    // TODO: Implement CSV export
-    console.log("Export CSV");
-    exportMessage.value = "CSV exported successfully";
-    setTimeout(() => {
-      exportMessage.value = "";
-    }, 3000);
-  } catch (err) {
-    exportMessage.value =
-      "Export failed: " +
-      (err instanceof Error ? err.message : "Unknown error");
-    setTimeout(() => {
-      exportMessage.value = "";
-    }, 5000);
-  } finally {
-    exportLoading.value = false;
-  }
-};
-
-const handleExportPDF = async () => {
-  exportLoading.value = true;
-  exportMessage.value = "Preparing PDF export...";
-  try {
-    // TODO: Implement PDF export
-    console.log("Export PDF");
-    exportMessage.value = "PDF exported successfully";
-    setTimeout(() => {
-      exportMessage.value = "";
-    }, 3000);
-  } catch (err) {
-    exportMessage.value =
-      "Export failed: " +
-      (err instanceof Error ? err.message : "Unknown error");
-    setTimeout(() => {
-      exportMessage.value = "";
-    }, 5000);
-  } finally {
-    exportLoading.value = false;
-  }
-};
+// Export functions now provided by useCoachExport composable
 
 const openDeleteModal = (coach: Coach) => {
   selectedDeleteCoach.value = coach;
