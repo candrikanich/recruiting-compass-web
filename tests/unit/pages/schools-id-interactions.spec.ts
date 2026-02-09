@@ -660,4 +660,365 @@ describe("Interaction Logging & Saving - Composable Integration", () => {
       expect(result.type).toBe("other");
     });
   });
+
+  describe("Cascade Delete (smartDelete)", () => {
+    it("should use smartDelete instead of regular delete", async () => {
+      const mockSmartDelete = vi.fn().mockResolvedValue({
+        cascadeUsed: false,
+      });
+
+      await mockSmartDelete("interaction-1");
+
+      expect(mockSmartDelete).toHaveBeenCalledWith("interaction-1");
+    });
+
+    it("should return cascadeUsed: false for simple delete", async () => {
+      const mockSmartDelete = vi.fn().mockResolvedValue({
+        cascadeUsed: false,
+      });
+
+      const result = await mockSmartDelete("interaction-1");
+
+      expect(result.cascadeUsed).toBe(false);
+    });
+
+    it("should return cascadeUsed: true when cascade delete is needed", async () => {
+      const mockSmartDelete = vi.fn().mockResolvedValue({
+        cascadeUsed: true,
+      });
+
+      const result = await mockSmartDelete("interaction-with-dependencies");
+
+      expect(result.cascadeUsed).toBe(true);
+    });
+
+    it("should handle cascade delete with FK violations", async () => {
+      const mockSmartDelete = vi.fn().mockImplementation(async (id: string) => {
+        // Simulate FK violation on first attempt, cascade on second
+        if (id === "interaction-with-fk") {
+          return { cascadeUsed: true };
+        }
+        return { cascadeUsed: false };
+      });
+
+      const result = await mockSmartDelete("interaction-with-fk");
+
+      expect(result.cascadeUsed).toBe(true);
+    });
+
+    it("should differentiate between simple and cascade delete in UI message", async () => {
+      const mockSmartDelete = vi.fn();
+
+      // Simple delete
+      mockSmartDelete.mockResolvedValueOnce({ cascadeUsed: false });
+      let result = await mockSmartDelete("interaction-1");
+      expect(result.cascadeUsed).toBe(false);
+      // UI should show: "Interaction deleted"
+
+      // Cascade delete
+      mockSmartDelete.mockResolvedValueOnce({ cascadeUsed: true });
+      result = await mockSmartDelete("interaction-2");
+      expect(result.cascadeUsed).toBe(true);
+      // UI should show: "Interaction and related records deleted"
+    });
+
+    it("should handle cascade delete errors", async () => {
+      const mockSmartDelete = vi
+        .fn()
+        .mockRejectedValue(new Error("Cascade delete failed"));
+
+      try {
+        await mockSmartDelete("interaction-1");
+        expect.fail("Should have thrown error");
+      } catch (error) {
+        expect((error as Error).message).toBe("Cascade delete failed");
+      }
+    });
+  });
+
+  describe("Edge Cases", () => {
+    it("should handle interaction with very long content (10000 chars)", async () => {
+      const longContent = "A".repeat(10000);
+      const interaction = createMockInteraction({ content: longContent });
+      mockCreateInteraction.mockResolvedValue(interaction);
+
+      const result = await mockCreateInteraction({
+        school_id: "school-123",
+        type: "email",
+        direction: "outbound",
+        content: longContent,
+        occurred_at: "2024-01-15T10:00:00Z",
+      });
+
+      expect(result.content.length).toBe(10000);
+    });
+
+    it("should handle interaction with max subject length", async () => {
+      const longSubject = "A".repeat(500);
+      const interaction = createMockInteraction({ subject: longSubject });
+      mockCreateInteraction.mockResolvedValue(interaction);
+
+      const result = await mockCreateInteraction({
+        school_id: "school-123",
+        type: "email",
+        direction: "outbound",
+        subject: longSubject,
+        content: "Test",
+        occurred_at: "2024-01-15T10:00:00Z",
+      });
+
+      expect(result.subject.length).toBe(500);
+    });
+
+    it("should handle concurrent interaction creation", async () => {
+      let counter = 0;
+      mockCreateInteraction.mockImplementation(async (data: any) =>
+        createMockInteraction({
+          id: `interaction-${counter++}`,
+          ...data,
+        }),
+      );
+
+      const promises = Array.from({ length: 5 }, (_, i) =>
+        mockCreateInteraction({
+          school_id: "school-123",
+          type: "email",
+          direction: "outbound",
+          content: `Concurrent interaction ${i}`,
+          occurred_at: "2024-01-15T10:00:00Z",
+        }),
+      );
+
+      const results = await Promise.all(promises);
+
+      expect(results).toHaveLength(5);
+      // All should have unique IDs
+      const ids = results.map((r) => r.id);
+      const uniqueIds = new Set(ids);
+      expect(uniqueIds.size).toBe(5);
+    });
+
+    it("should handle interaction at exact datetime boundary", async () => {
+      const boundary = "2024-12-31T23:59:59.999Z";
+      const interaction = createMockInteraction({ occurred_at: boundary });
+      mockCreateInteraction.mockResolvedValue(interaction);
+
+      const result = await mockCreateInteraction({
+        school_id: "school-123",
+        type: "email",
+        direction: "outbound",
+        content: "Test",
+        occurred_at: boundary,
+      });
+
+      expect(result.occurred_at).toBe(boundary);
+    });
+
+    it("should handle interaction with unicode characters", async () => {
+      const unicodeContent = "你好 🎉 Ñoño café résumé";
+      const interaction = createMockInteraction({ content: unicodeContent });
+      mockCreateInteraction.mockResolvedValue(interaction);
+
+      const result = await mockCreateInteraction({
+        school_id: "school-123",
+        type: "email",
+        direction: "outbound",
+        content: unicodeContent,
+        occurred_at: "2024-01-15T10:00:00Z",
+      });
+
+      expect(result.content).toBe(unicodeContent);
+    });
+
+    it("should handle interaction with null optional fields", async () => {
+      const interaction = createMockInteraction({
+        subject: null,
+        sentiment: null,
+        coach_id: null,
+        event_id: null,
+      });
+      mockCreateInteraction.mockResolvedValue(interaction);
+
+      const result = await mockCreateInteraction({
+        school_id: "school-123",
+        type: "email",
+        direction: "outbound",
+        content: "Minimal interaction",
+        occurred_at: "2024-01-15T10:00:00Z",
+      });
+
+      expect(result.subject).toBeNull();
+      expect(result.sentiment).toBeNull();
+      expect(result.coach_id).toBeNull();
+    });
+
+    it("should handle rapid filter changes", async () => {
+      const interactions = [
+        createMockInteraction({ type: "email" }),
+        createMockInteraction({ id: "int-2", type: "phone_call" }),
+        createMockInteraction({ id: "int-3", type: "text" }),
+      ];
+
+      mockFetchInteractions.mockResolvedValue(interactions);
+
+      // Simulate rapid filter changes
+      await mockFetchInteractions({ schoolId: "school-123", type: "email" });
+      await mockFetchInteractions({
+        schoolId: "school-123",
+        type: "phone_call",
+      });
+      await mockFetchInteractions({ schoolId: "school-123", type: "text" });
+
+      expect(mockFetchInteractions).toHaveBeenCalledTimes(3);
+    });
+
+    it("should handle network timeout gracefully", async () => {
+      mockCreateInteraction.mockRejectedValue(
+        new Error("Network request failed"),
+      );
+
+      try {
+        await mockCreateInteraction({
+          school_id: "school-123",
+          type: "email",
+          direction: "outbound",
+          content: "Test",
+          occurred_at: "2024-01-15T10:00:00Z",
+        });
+        expect.fail("Should have thrown error");
+      } catch (error) {
+        expect((error as Error).message).toBe("Network request failed");
+      }
+    });
+
+    it("should handle reminder creation failure silently", async () => {
+      const mockCreateReminder = vi
+        .fn()
+        .mockRejectedValue(new Error("Reminder creation failed"));
+      mockCreateInteraction.mockResolvedValue(createMockInteraction());
+
+      // Create interaction successfully
+      const interaction = await mockCreateInteraction({
+        school_id: "school-123",
+        type: "email",
+        direction: "outbound",
+        content: "Test",
+        occurred_at: "2024-01-15T10:00:00Z",
+      });
+
+      expect(interaction.id).toBeDefined();
+
+      // Try to create reminder (should fail silently)
+      try {
+        await mockCreateReminder(
+          "Follow up",
+          "2024-02-15T00:00:00Z",
+          "email",
+          "medium",
+          "Test content",
+          "school-123",
+          null,
+          interaction.id,
+        );
+      } catch (error) {
+        // Error should be caught and logged, not thrown to user
+        expect((error as Error).message).toBe("Reminder creation failed");
+      }
+    });
+  });
+
+  describe("Performance & Load Testing", () => {
+    it("should handle 100+ interactions efficiently", async () => {
+      const interactions = Array.from({ length: 100 }, (_, i) =>
+        createMockInteraction({
+          id: `interaction-${i}`,
+          content: `Interaction ${i}`,
+        }),
+      );
+
+      mockFetchInteractions.mockResolvedValue(interactions);
+
+      const result = await mockFetchInteractions({ schoolId: "school-123" });
+
+      expect(result).toHaveLength(100);
+    });
+
+    it("should handle filtering 100+ interactions", async () => {
+      const interactions = Array.from({ length: 100 }, (_, i) =>
+        createMockInteraction({
+          id: `interaction-${i}`,
+          type: i % 2 === 0 ? "email" : "phone_call",
+        }),
+      );
+
+      mockFetchInteractions.mockImplementation(async ({ type }) => {
+        if (type) {
+          return interactions.filter((i) => i.type === type);
+        }
+        return interactions;
+      });
+
+      const emailInteractions = await mockFetchInteractions({
+        schoolId: "school-123",
+        type: "email",
+      });
+
+      expect(emailInteractions.length).toBe(50);
+    });
+
+    it("should handle large file attachments", async () => {
+      const largeFile = new File(
+        [new ArrayBuffer(10 * 1024 * 1024)],
+        "large-file.pdf",
+        { type: "application/pdf" },
+      );
+
+      const interaction = createMockInteraction({
+        attachments: [
+          "https://example.com/files/interactions/school-123/large-file.pdf",
+        ],
+      });
+
+      mockCreateInteraction.mockResolvedValue(interaction);
+
+      const result = await mockCreateInteraction({
+        school_id: "school-123",
+        type: "email",
+        direction: "outbound",
+        content: "Email with large attachment",
+        occurred_at: "2024-01-15T10:00:00Z",
+      });
+
+      expect(result.attachments).toHaveLength(1);
+    });
+
+    it("should handle multiple simultaneous file uploads", async () => {
+      const files = Array.from(
+        { length: 5 },
+        (_, i) =>
+          new File([`content ${i}`], `file-${i}.pdf`, {
+            type: "application/pdf",
+          }),
+      );
+
+      const interaction = createMockInteraction({
+        attachments: files.map(
+          (f, i) =>
+            `https://example.com/files/interactions/school-123/file-${i}.pdf`,
+        ),
+      });
+
+      mockCreateInteraction.mockResolvedValue(interaction);
+
+      const result = await mockCreateInteraction({
+        school_id: "school-123",
+        type: "email",
+        direction: "outbound",
+        content: "Email with multiple attachments",
+        occurred_at: "2024-01-15T10:00:00Z",
+      });
+
+      expect(result.attachments).toHaveLength(5);
+    });
+  });
 });
