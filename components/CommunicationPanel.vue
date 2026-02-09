@@ -24,7 +24,7 @@
         >
         <span class="text-slate-500"> • {{ getRoleLabel(coach.role) }}</span>
       </p>
-      <p v-if="school" class="text-sm text-slate-600">{{ school.name }}</p>
+      <p v-if="schoolName" class="text-sm text-slate-600">{{ schoolName }}</p>
     </div>
 
     <!-- Communication Buttons -->
@@ -162,7 +162,7 @@
             <div class="grid grid-cols-2 gap-2 text-xs text-blue-800 font-mono">
               <div>{{ props.playerName }}</div>
               <div>{{ props.coach.first_name }}</div>
-              <div>{{ props.school?.name }}</div>
+              <div>{{ props.schoolName }}</div>
               <div>{{ props.highSchool }}</div>
             </div>
           </div>
@@ -323,11 +323,11 @@
 import { ref, computed, watch } from "vue";
 import { useCommunicationTemplates } from "~/composables/useCommunicationTemplates";
 import { getRoleLabel } from "~/utils/coachLabels";
-import type { Coach, School } from "~/types/models";
+import type { Coach } from "~/types/models";
 
 interface Props {
   coach: Coach;
-  school?: School;
+  schoolName?: string;
   playerName?: string;
   highSchool?: string;
 }
@@ -374,7 +374,7 @@ const messageTemplates = computed(() => getTemplatesByType("message"));
 const templateVars = {
   playerName: props.playerName,
   coachFirstName: props.coach.first_name,
-  schoolName: props.school?.name || "Your School",
+  schoolName: props.schoolName || "Your School",
   highSchool: props.highSchool,
 };
 
