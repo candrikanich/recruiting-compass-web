@@ -61,7 +61,7 @@
             </label>
             <select
               id="roleFilter"
-              v-model="roleFilter"
+              v-model="filters.role"
               class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
               :style="selectDropdownStyle"
             >
@@ -82,7 +82,7 @@
             </label>
             <select
               id="sortFilter"
-              v-model="sortFilter"
+              v-model="sortBy"
               class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
               :style="selectDropdownStyle"
             >
@@ -95,7 +95,7 @@
 
         <!-- Clear Filters Button -->
         <div
-          v-if="searchQuery || roleFilter || sortFilter !== 'name'"
+          v-if="searchQuery || filters.role || sortBy !== 'name'"
           class="mt-4 flex justify-end"
         >
           <button
@@ -131,56 +131,51 @@
         </p>
       </div>
 
-      <!-- Loading State -->
-      <div
-        v-if="loading && coaches.length === 0"
-        class="text-center py-8"
-        role="status"
-        aria-live="polite"
+      <!-- Page State: Loading / Error / Empty -->
+      <PageState
+        :loading="loading && coaches.length === 0"
+        :isEmpty="!loading && coaches.length === 0"
+        loading-message="Loading coaches..."
+        empty-title="No coaches added yet"
+        empty-message="Add your first coach to get started"
       >
-        <p class="text-slate-600">Loading coaches...</p>
-      </div>
-
-      <!-- Empty State -->
-      <div
-        v-if="!loading && coaches.length === 0"
-        class="bg-white rounded-2xl shadow-lg p-8 text-center border border-slate-200"
-      >
-        <p class="text-slate-600 mb-4">No coaches added yet</p>
-      </div>
-
-      <!-- No Results State -->
-      <div
-        v-if="!loading && coaches.length > 0 && filteredCoaches.length === 0"
-        class="bg-white rounded-2xl shadow-lg p-8 text-center border border-slate-200"
-      >
-        <p class="text-slate-600">No coaches match your filters</p>
-      </div>
-
-      <!-- Coaches Grid -->
-      <div
-        v-if="filteredCoaches.length > 0"
-        class="grid grid-cols-1 md:grid-cols-2 gap-6"
-      >
-        <div v-for="coach in filteredCoaches" :key="coach.id" class="relative">
-          <!-- Delete Button Overlay -->
-          <button
-            @click="deleteCoach(coach.id)"
-            :aria-label="`Delete coach ${coach.first_name} ${coach.last_name}`"
-            class="absolute -top-2 -right-2 z-10 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 text-xs font-bold transition flex items-center justify-center"
-          >
-            <XMarkIcon class="w-4 h-4" aria-hidden="true" />
-          </button>
-          <CoachCard
-            :coach="coach"
-            @email="sendEmail(coach)"
-            @text="sendText(coach)"
-            @tweet="handleOpenTwitter(coach)"
-            @instagram="handleOpenInstagram(coach)"
-            @view="viewCoach(coach)"
-          />
+        <!-- No Results State (separate from empty) -->
+        <div
+          v-if="coaches.length > 0 && filteredCoaches.length === 0"
+          class="bg-white rounded-2xl shadow-lg p-8 text-center border border-slate-200"
+        >
+          <p class="text-slate-600">No coaches match your filters</p>
         </div>
-      </div>
+
+        <!-- Coaches Grid -->
+        <div
+          v-if="filteredCoaches.length > 0"
+          class="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
+          <div
+            v-for="coach in filteredCoaches"
+            :key="coach.id"
+            class="relative"
+          >
+            <!-- Delete Button Overlay -->
+            <button
+              @click="deleteCoach(coach.id)"
+              :aria-label="`Delete coach ${coach.first_name} ${coach.last_name}`"
+              class="absolute -top-2 -right-2 z-10 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 text-xs font-bold transition flex items-center justify-center"
+            >
+              <XMarkIcon class="w-4 h-4" aria-hidden="true" />
+            </button>
+            <CoachCard
+              :coach="coach"
+              @email="sendEmail(coach)"
+              @text="sendText(coach)"
+              @tweet="handleOpenTwitter(coach)"
+              @instagram="handleOpenInstagram(coach)"
+              @view="viewCoach(coach)"
+            />
+          </div>
+        </div>
+      </PageState>
     </div>
 
     <!-- Communication Panel Modal -->
@@ -229,6 +224,9 @@ import {
 } from "~/utils/socialMediaHandlers";
 import { useCoachFilters } from "~/composables/useCoachFilters";
 import type { CoachSortOption } from "~/composables/useCoachFilters";
+import { useEntityNames } from "~/composables/useEntityNames";
+import { usePageFilters } from "~/composables/usePageFilters";
+import PageState from "~/components/shared/PageState.vue";
 
 definePageMeta({
   middleware: "auth",
@@ -272,10 +270,14 @@ const isDeleteDialogOpen = ref(false);
 const coachToDeleteId = ref<string | null>(null);
 const showAddForm = ref(false);
 const schoolName = ref("");
-const searchQuery = ref("");
-const roleFilter = ref("");
-const sortFilter = ref<CoachSortOption>("name");
 const localError = ref("");
+
+// Use shared utilities
+useEntityNames();
+const { searchQuery, filters, sortBy, clearFilters } =
+  usePageFilters<CoachSortOption>({
+    defaultSort: "name",
+  });
 
 // Create a school object from schoolName for CommunicationPanel
 const school = computed((): School | undefined => {
@@ -305,16 +307,10 @@ const filteredCoaches = computed(() =>
   applyFiltersAndSort(
     coaches.value,
     searchQuery.value,
-    roleFilter.value,
-    sortFilter.value,
+    (filters.value.role as string) || "",
+    sortBy.value as CoachSortOption,
   ),
 );
-
-const clearFilters = () => {
-  searchQuery.value = "";
-  roleFilter.value = "";
-  sortFilter.value = "name";
-};
 
 const handleCoachFormSubmit = async (formData: any) => {
   try {
@@ -407,14 +403,15 @@ const viewCoach = (coach: (typeof coaches.value)[0]) => {
 defineExpose({
   showAddForm,
   searchQuery,
-  roleFilter,
-  sortFilter,
+  filters,
+  sortBy,
   filteredCoaches,
   handleCoachFormSubmit,
   isDeleteDialogOpen,
   coachToDeleteId,
   executeDeleteCoach,
   cancelDeleteCoach,
+  clearFilters,
 });
 
 onMounted(async () => {

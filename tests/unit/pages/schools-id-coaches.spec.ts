@@ -379,7 +379,7 @@ describe("pages/schools/[id]/coaches.vue", () => {
       await nextTick();
 
       // Test that sort state is changed
-      expect(wrapper.vm.sortFilter).toBe("lastContact");
+      expect(wrapper.vm.sortBy).toBe("lastContact");
       expect(wrapper.vm.filteredCoaches).toBeDefined();
       expect(wrapper.vm.filteredCoaches.length).toBe(3);
     });
@@ -393,7 +393,7 @@ describe("pages/schools/[id]/coaches.vue", () => {
       await nextTick();
 
       // Test that sort state is changed
-      expect(wrapper.vm.sortFilter).toBe("responsiveness");
+      expect(wrapper.vm.sortBy).toBe("responsiveness");
       expect(wrapper.vm.filteredCoaches).toBeDefined();
       expect(wrapper.vm.filteredCoaches.length).toBe(3);
     });
