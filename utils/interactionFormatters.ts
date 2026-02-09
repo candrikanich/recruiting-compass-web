@@ -102,3 +102,21 @@ export const getSentimentBadgeClass = (sentiment: string): string => {
   };
   return classes[sentiment] || "bg-slate-100 text-slate-700";
 };
+
+export const formatDirection = (direction: string): string => {
+  return direction === "outbound" ? "Outbound" : "Inbound";
+};
+
+export const formatInteractionDateTime = (
+  dateStr: string | undefined,
+): string => {
+  if (!dateStr) return "Unknown";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
