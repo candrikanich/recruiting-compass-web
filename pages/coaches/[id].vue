@@ -129,9 +129,11 @@
                   :href="`https://twitter.com/${coach.twitter_handle.replace('@', '')}`"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="text-blue-600 hover:text-blue-700"
+                  :aria-label="`View ${coach.first_name}'s Twitter profile (opens in new window)`"
+                  class="text-blue-600 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
                 >
                   {{ coach.twitter_handle }}
+                  <span aria-hidden="true" class="ml-1 inline-block">↗</span>
                 </a>
               </div>
             </div>
@@ -151,9 +153,11 @@
                   :href="`https://instagram.com/${coach.instagram_handle.replace('@', '')}`"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="text-blue-600 hover:text-blue-700"
+                  :aria-label="`View ${coach.first_name}'s Instagram profile (opens in new window)`"
+                  class="text-blue-600 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
                 >
                   {{ coach.instagram_handle }}
+                  <span aria-hidden="true" class="ml-1 inline-block">↗</span>
                 </a>
               </div>
             </div>
@@ -491,7 +495,8 @@
 
           <div v-if="recentInteractions.length > 10" class="text-center pt-4">
             <button
-              class="text-blue-600 hover:text-blue-700 font-semibold text-sm"
+              :aria-label="`View all ${recentInteractions.length} interactions with ${coach?.first_name} ${coach?.last_name}`"
+              class="text-blue-600 hover:text-blue-700 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-2 py-1"
             >
               View All {{ recentInteractions.length }} Interactions →
             </button>

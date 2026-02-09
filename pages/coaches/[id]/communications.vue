@@ -139,7 +139,12 @@
       </div>
 
       <!-- Messages Thread -->
-      <div v-if="!loading && filteredInteractions.length > 0" class="space-y-4">
+      <div
+        v-if="!loading && filteredInteractions.length > 0"
+        role="region"
+        aria-label="Communication history with coach"
+        class="space-y-4"
+      >
         <div
           v-for="interaction in filteredInteractions"
           :key="interaction.id"
