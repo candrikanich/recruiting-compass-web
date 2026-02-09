@@ -240,6 +240,74 @@ export const schoolSelectors = {
 };
 
 /**
+ * Notes fixtures for testing notes editing
+ */
+export const notesFixtures = {
+  shared:
+    "Great coaching staff. Strong academic programs. Beautiful campus located in the mountains.",
+  private:
+    "Concerned about distance from home. Need to discuss financial aid package.",
+  long: "Lorem ipsum dolor sit amet. ".repeat(100),
+  special: 'Contains "quotes", line\nbreaks, and special chars: @#$%',
+};
+
+/**
+ * Notes selectors for E2E testing
+ */
+export const notesSelectors = {
+  sharedNotesSection: "text=Notes",
+  privateNotesSection: "text=My Private Notes",
+  editButton: 'button:has-text("Edit")',
+  cancelButton: 'button:has-text("Cancel")',
+  saveButton: 'button:has-text("Save Notes")',
+  notesTextarea: 'textarea[placeholder*="notes"]',
+  privateNotesTextarea: 'textarea[placeholder*="private"]',
+  privacyHint: "text=Only you can see these notes",
+  notesDisplay: ".text-slate-700.text-sm.whitespace-pre-wrap",
+};
+
+/**
+ * Status history selectors for E2E testing
+ */
+export const statusHistorySelectors = {
+  heading: 'h3:has-text("Status History")',
+  loadingSpinner: ".animate-spin",
+  emptyState: "text=No status changes yet",
+  historyEntry: ".flex.items-start.gap-4",
+  statusBadge: ".px-2.py-1.text-xs.font-medium.rounded-full",
+  arrowIcon: "svg.w-4.h-4",
+  timestamp: ".text-xs.text-slate-400",
+  userName: ".text-sm.text-slate-600",
+  errorMessage: ".bg-red-50",
+};
+
+/**
+ * Sidebar selectors for E2E testing
+ */
+export const sidebarSelectors = {
+  quickActions: 'h3:has-text("Quick Actions")',
+  logInteractionLink: 'a:has-text("Log Interaction")',
+  sendEmailButton: 'button:has-text("Send Email")',
+  manageCoachesLink: 'a:has-text("Manage Coaches")',
+  coachesList: ".space-y-3",
+  coachCard: ".p-3.border.border-slate-200.rounded-lg",
+  coachName: ".font-medium.text-slate-900.text-sm",
+  coachRole: ".text-xs.text-slate-500.capitalize",
+  emailIcon: 'a[href^="mailto:"]',
+  phoneIcon: 'a[href^="tel:"]',
+  smsIcon: 'a[href^="sms:"]',
+  emptyCoachState: "text=No coaches added yet",
+  attributionSection: 'h4:has-text("Attribution")',
+  createdBy: "text=Created by:",
+  lastUpdated: "text=Last updated:",
+  deleteButton: 'button:has-text("Delete School")',
+  confirmDialog: '[role="dialog"]',
+  confirmDeleteButton:
+    'button:has-text("Delete"):not(:has-text("Delete School"))',
+  cancelDialogButton: 'button:has-text("Cancel")',
+};
+
+/**
  * Helper functions for school E2E operations
  */
 export const schoolHelpers = {
@@ -365,5 +433,72 @@ export const schoolHelpers = {
         expectedData.notes,
       );
     }
+  },
+
+  /**
+   * Wait for school detail page to load completely
+   */
+  async waitForSchoolDetailLoad(page) {
+    await page.waitForSelector("h1.text-2xl", { timeout: 10000 });
+    await page.waitForLoadState("networkidle");
+  },
+
+  /**
+   * Create a school with status change history
+   */
+  async createSchoolWithHistory(page, statusChanges) {
+    const schoolData = createSchoolData({
+      name: generateUniqueSchoolName("History Test"),
+    });
+    const schoolId = await schoolHelpers.createSchool(page, schoolData);
+
+    for (const status of statusChanges) {
+      await schoolHelpers.changeSchoolStatus(page, schoolId, status);
+    }
+
+    return schoolId;
+  },
+
+  /**
+   * Change school status
+   */
+  async changeSchoolStatus(page, schoolId, newStatus) {
+    await page.goto(`/schools/${schoolId}`);
+    await page.waitForLoadState("networkidle");
+
+    const statusSelect = page.locator(schoolSelectors.statusSelect).first();
+    await statusSelect.selectOption(newStatus);
+
+    await page.waitForTimeout(1000);
+  },
+
+  /**
+   * Add coach to school
+   */
+  async addCoachToSchool(page, schoolId, coachData) {
+    await page.goto(`/schools/${schoolId}/coaches`);
+    await page.waitForLoadState("networkidle");
+
+    await page.click('button:has-text("Add Coach")');
+    await page.waitForURL(/\/coaches\/new/);
+
+    if (coachData.firstName) {
+      await page.fill('input[name="firstName"]', coachData.firstName);
+    }
+    if (coachData.lastName) {
+      await page.fill('input[name="lastName"]', coachData.lastName);
+    }
+    if (coachData.role) {
+      await page.selectOption('select[name="role"]', coachData.role);
+    }
+    if (coachData.email) {
+      await page.fill('input[name="email"]', coachData.email);
+    }
+    if (coachData.phone) {
+      await page.fill('input[name="phone"]', coachData.phone);
+    }
+
+    await page.click('button:has-text("Save Coach")');
+    await page.waitForLoadState("networkidle");
   },
 };
