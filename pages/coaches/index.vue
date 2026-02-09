@@ -2,6 +2,14 @@
   <div
     class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
   >
+    <!-- Skip Link -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-blue-600 focus:text-white focus:font-medium focus:rounded-br-lg"
+    >
+      Skip to main content
+    </a>
+
     <!-- Global Navigation -->
 
     <!-- Timeline Status Snippet -->
@@ -69,7 +77,11 @@
       </div>
     </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8" :aria-busy="loading">
+    <main
+      id="main-content"
+      class="max-w-7xl mx-auto px-4 sm:px-6 py-8"
+      :aria-busy="loading"
+    >
       <!-- Filter Bar -->
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"

@@ -1,6 +1,14 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Skip Link -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-blue-600 focus:text-white focus:font-medium focus:rounded-br-lg"
+    >
+      Skip to main content
+    </a>
+
+    <div id="main-content" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Back Link -->
       <div class="mb-6">
         <NuxtLink
@@ -166,8 +174,12 @@
                 <span
                   v-if="interaction.sentiment"
                   :class="getSentimentClass(interaction.sentiment)"
+                  :aria-label="`Sentiment: ${formatSentimentText(interaction.sentiment)}`"
                 >
-                  {{ formatSentiment(interaction.sentiment) }}
+                  <span aria-hidden="true">{{
+                    getSentimentEmoji(interaction.sentiment)
+                  }}</span>
+                  {{ formatSentimentText(interaction.sentiment) }}
                 </span>
               </div>
               <p class="text-sm text-gray-500">
@@ -355,6 +367,26 @@ const formatSentiment = (sentiment: string): string => {
     positive: "👍 Positive",
     neutral: "😐 Neutral",
     negative: "👎 Negative",
+  };
+  return map[sentiment] || sentiment;
+};
+
+const getSentimentEmoji = (sentiment: string): string => {
+  const map: Record<string, string> = {
+    very_positive: "😊",
+    positive: "👍",
+    neutral: "😐",
+    negative: "👎",
+  };
+  return map[sentiment] || "";
+};
+
+const formatSentimentText = (sentiment: string): string => {
+  const map: Record<string, string> = {
+    very_positive: "Very Positive",
+    positive: "Positive",
+    neutral: "Neutral",
+    negative: "Negative",
   };
   return map[sentiment] || sentiment;
 };

@@ -1,6 +1,14 @@
 <template>
   <div class="min-h-screen bg-slate-50">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Skip Link -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-blue-600 focus:text-white focus:font-medium focus:rounded-br-lg"
+    >
+      Skip to main content
+    </a>
+
+    <div id="main-content" class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="mb-6">
         <NuxtLink
           to="/coaches"

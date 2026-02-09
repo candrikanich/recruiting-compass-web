@@ -2,6 +2,14 @@
   <div
     class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
   >
+    <!-- Skip Link -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-blue-600 focus:text-white focus:font-medium focus:rounded-br-lg"
+    >
+      Skip to main content
+    </a>
+
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4">
@@ -15,7 +23,7 @@
       </div>
     </div>
 
-    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+    <main id="main-content" class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-12">
         <p class="text-slate-600">Loading coach profile...</p>
@@ -264,43 +272,69 @@
         </div>
 
         <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
-          >
-            <p class="text-sm text-slate-500 mb-1">Total Interactions</p>
-            <p class="text-3xl font-bold text-slate-900">
-              {{ stats.totalInteractions }}
-            </p>
-          </div>
+        <section aria-labelledby="coach-stats-heading">
+          <h2 id="coach-stats-heading" class="sr-only">Coach Statistics</h2>
 
-          <div
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
-          >
-            <p class="text-sm text-slate-500 mb-1">Days Since Contact</p>
-            <p
-              class="text-3xl font-bold"
-              :class="
-                stats.daysSinceContact === 0
-                  ? 'text-emerald-600'
-                  : stats.daysSinceContact > 30
-                    ? 'text-red-600'
-                    : 'text-orange-500'
-              "
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
             >
-              {{ stats.daysSinceContact }}
-            </p>
-          </div>
+              <h3
+                id="stat-interactions"
+                class="text-sm text-slate-500 mb-1 font-medium"
+              >
+                Total Interactions
+              </h3>
+              <p
+                class="text-3xl font-bold text-slate-900"
+                aria-labelledby="stat-interactions"
+              >
+                {{ stats.totalInteractions }}
+              </p>
+            </div>
 
-          <div
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
-          >
-            <p class="text-sm text-slate-500 mb-1">Response Method</p>
-            <p class="text-xl font-bold text-slate-900">
-              {{ stats.preferredMethod || "N/A" }}
-            </p>
+            <div
+              class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
+            >
+              <h3
+                id="stat-days-since-contact"
+                class="text-sm text-slate-500 mb-1 font-medium"
+              >
+                Days Since Contact
+              </h3>
+              <p
+                class="text-3xl font-bold"
+                :class="
+                  stats.daysSinceContact === 0
+                    ? 'text-emerald-600'
+                    : stats.daysSinceContact > 30
+                      ? 'text-red-600'
+                      : 'text-orange-500'
+                "
+                aria-labelledby="stat-days-since-contact"
+              >
+                {{ stats.daysSinceContact }}
+              </p>
+            </div>
+
+            <div
+              class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
+            >
+              <h3
+                id="stat-response-method"
+                class="text-sm text-slate-500 mb-1 font-medium"
+              >
+                Response Method
+              </h3>
+              <p
+                class="text-xl font-bold text-slate-900"
+                aria-labelledby="stat-response-method"
+              >
+                {{ stats.preferredMethod || "N/A" }}
+              </p>
+            </div>
           </div>
-        </div>
+        </section>
 
         <!-- Notes Section -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
