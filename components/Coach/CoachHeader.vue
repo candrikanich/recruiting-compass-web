@@ -196,13 +196,15 @@
       </NuxtLink>
       <button
         @click="$emit('edit-coach')"
+        aria-label="Edit coach information"
         class="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition"
       >
-        <PencilIcon class="w-4 h-4" />
+        <PencilIcon class="w-4 h-4" aria-hidden="true" />
         Edit
       </button>
       <button
         @click="$emit('delete-coach')"
+        aria-label="Delete this coach permanently"
         data-test="coach-detail-delete-btn"
         class="inline-flex items-center gap-2 px-4 py-2 border border-red-300 text-red-700 text-sm font-semibold rounded-lg hover:bg-red-50 transition ml-auto"
       >

@@ -1,6 +1,9 @@
 <template>
   <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-    <h3 class="text-lg font-semibold text-slate-900 mb-4">
+    <h3
+      id="recent-interactions-heading"
+      class="text-lg font-semibold text-slate-900 mb-4"
+    >
       Recent Interactions
     </h3>
 
@@ -10,8 +13,12 @@
     </div>
 
     <!-- Interactions List -->
-    <div v-else class="border border-slate-200 rounded-lg overflow-hidden">
-      <div
+    <ul
+      v-else
+      aria-labelledby="recent-interactions-heading"
+      class="border border-slate-200 rounded-lg overflow-hidden"
+    >
+      <li
         v-for="(interaction, index) in displayedInteractions"
         :key="interaction.id"
         class="flex items-center justify-between px-4 py-3"
@@ -19,6 +26,8 @@
       >
         <div class="flex items-center gap-3">
           <div
+            role="img"
+            :aria-label="`${formatInteractionType(interaction.type)} icon`"
             class="w-8 h-8 rounded-full flex items-center justify-center"
             :class="getInteractionBgColor(interaction.type)"
           >
@@ -26,20 +35,26 @@
               :is="getInteractionIconComponent(interaction.type)"
               class="w-4 h-4"
               :class="getInteractionIconColor(interaction.type)"
+              aria-hidden="true"
             />
           </div>
           <div>
             <p class="font-medium text-slate-900">
               {{ formatInteractionType(interaction.type) }}
             </p>
-            <p class="text-xs text-slate-500">
+            <time
+              :datetime="interaction.occurred_at"
+              class="text-xs text-slate-500"
+            >
               {{ formatDate(interaction.occurred_at) }}
-            </p>
+            </time>
           </div>
         </div>
         <div class="flex items-center gap-2">
           <span
             v-if="interaction.sentiment"
+            role="status"
+            :aria-label="`Sentiment: ${interaction.sentiment}`"
             class="px-2 py-1 text-xs font-semibold rounded"
             :class="getSentimentColor(interaction.sentiment)"
           >
@@ -52,8 +67,8 @@
             {{ interaction.subject }}
           </span>
         </div>
-      </div>
-    </div>
+      </li>
+    </ul>
 
     <!-- View All Link -->
     <div v-if="hasMoreInteractions" class="text-center pt-4">

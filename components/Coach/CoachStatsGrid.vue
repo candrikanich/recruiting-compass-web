@@ -27,13 +27,18 @@
         >
           Days Since Contact
         </h3>
-        <p
-          class="text-3xl font-bold"
-          :class="daysSinceContactColor"
-          aria-labelledby="stat-days-since-contact"
-        >
-          {{ stats.daysSinceContact }}
-        </p>
+        <div>
+          <p class="text-3xl font-bold" :class="daysSinceContactColor">
+            {{ stats.daysSinceContact }}
+          </p>
+          <p class="text-sm font-medium mt-1" :class="daysSinceContactColor">
+            {{ statusLabel }}
+          </p>
+          <span class="sr-only">
+            Last contact was {{ stats.daysSinceContact }} days ago. Contact
+            status is {{ statusLabel.toLowerCase() }}.
+          </span>
+        </div>
       </div>
 
       <!-- Preferred Response Method -->
@@ -67,5 +72,11 @@ const daysSinceContactColor = computed(() => {
   if (props.stats.daysSinceContact === 0) return "text-emerald-600";
   if (props.stats.daysSinceContact > 30) return "text-red-600";
   return "text-orange-500";
+});
+
+const statusLabel = computed(() => {
+  if (props.stats.daysSinceContact === 0) return "Recent";
+  if (props.stats.daysSinceContact > 30) return "Overdue";
+  return "Follow-up Soon";
 });
 </script>
