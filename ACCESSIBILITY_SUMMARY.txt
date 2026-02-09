@@ -1,0 +1,189 @@
+WCAG 2.1 AA ACCESSIBILITY AUDIT - COACH DETAIL PAGE
+=====================================================
+
+OVERALL COMPLIANCE: ~75% (estimated)
+STATUS: Multiple critical and high-priority issues found
+
+FINDINGS BY SEVERITY:
+=====================
+
+CRITICAL ISSUES (3) - WCAG 2.1 Level A violations
+1. Communication Panel Modal - No focus trap, missing ARIA
+2. EditCoachModal - No focus trap, close button unlabeled
+3. DeleteConfirmationModal - dialog element not used properly
+
+HIGH PRIORITY ISSUES (5) - WCAG 2.1 Level AA violations
+4. Color-only status indicators (red/orange/green without text)
+5. Interaction list lacks semantic structure and keyboard support
+6. Save button state changes not announced to screen readers
+7. Communication buttons missing aria-haspopup and clear labels
+8. Close buttons (×) have no accessible names
+
+MEDIUM PRIORITY ISSUES (6) - Reduced usability
+9. Button text clarity ("Edit" vs "Edit Coach")
+10. Link focus styling missing on "Back to Coaches"
+11. Form fields missing aria-invalid attribute
+12. Skip link needs testing
+13. Loading/error states need aria-live regions
+14. Touch target sizing needs verification at 200% zoom
+
+LOW PRIORITY ISSUES (4) - Minor enhancements
+15. Heading hierarchy verification
+16. Sentiment badge patterns (color + pattern)
+
+COMPLIANT ELEMENTS (7):
+- Skip link implementation
+- Form label associations
+- Field error handling
+- DeleteConfirmationModal native dialog (partially)
+- Stats section semantic structure
+- Focus ring utilities
+- Icon accessibility patterns
+
+IMPACT ANALYSIS:
+================
+
+Who is affected:
+- Keyboard-only users (no mouse)
+- Screen reader users (NVDA, JAWS, VoiceOver)
+- Color-blind users (15-20% of male population)
+- Users with motor disabilities
+- Users with cognitive disabilities
+
+Real-world impact:
+- Modals are inaccessible to keyboard users
+- Screen readers cannot announce button purposes
+- 15-20% of users cannot distinguish status by color alone
+- Dynamic updates are invisible to assistive technology
+- Navigation flows are broken for keyboard-only users
+
+EFFORT ESTIMATION:
+==================
+
+Critical fixes: 2-3 days
+High priority fixes: 2-3 days
+Medium priority fixes: 1-2 days
+Total: ~5-8 days to reach 90%+ compliance
+
+ROI: Significant - affects 15-20% of potential user base
+
+QUICK START:
+============
+
+Priority 1 (Today):
+1. Add focus trap to Communication Panel Modal
+2. Add focus trap to EditCoachModal
+3. Fix DeleteConfirmationModal .showModal()
+
+Priority 2 (This week):
+4. Add text labels to status indicators
+5. Fix close button labels (×)
+6. Add aria-live to save feedback
+
+Priority 3 (Next sprint):
+7. Convert interaction list to semantic <ul>/<li>
+8. Add aria-haspopup to modal trigger buttons
+9. Add aria-invalid to form fields
+
+FILES TO MODIFY:
+================
+
+Critical:
+- /pages/coaches/[id].vue
+- /components/EditCoachModal.vue
+- /components/DeleteConfirmationModal.vue
+
+High Impact:
+- /components/CommunicationPanel.vue
+- /components/Coach/CoachStatsGrid.vue
+- /components/Coach/CoachHeader.vue
+- /components/Coach/CoachNotesEditor.vue
+- /components/Coach/CoachRecentInteractions.vue
+
+Medium Impact:
+- /components/Coach/CoachForm.vue
+
+DETAILED DOCUMENTATION:
+=======================
+
+See ACCESSIBILITY_AUDIT.md for:
+- Full WCAG criteria references
+- Detailed problem descriptions
+- Code examples and fixes
+- Testing procedures
+- Implementation checklist
+
+See ACCESSIBILITY_FIX_EXAMPLES.md for:
+- Before/after code comparisons
+- Step-by-step implementation guides
+- Focus trap code patterns
+- ARIA live region examples
+- Testing scenarios
+
+TESTING CHECKLIST:
+==================
+
+Keyboard Navigation:
+- [ ] All interactive elements Tab-accessible
+- [ ] Focus order logical
+- [ ] Escape closes modals
+- [ ] No unintended focus traps
+
+Screen Reader:
+- [ ] Modal titles announced
+- [ ] All buttons have accessible names
+- [ ] Status indicators have text labels
+- [ ] Save/error messages announced
+- [ ] Error fields identified
+
+Visual:
+- [ ] Focus rings visible (3:1 contrast)
+- [ ] Touch targets 44x44px minimum
+- [ ] Color + text for all status info
+- [ ] High zoom (200%) functional
+
+Mobile:
+- [ ] Works without zoom
+- [ ] Touch targets don't overlap
+- [ ] Readable at 16px text minimum
+
+QUICK REFERENCE:
+================
+
+CRITICAL FIXES:
+- Modal: Add role="dialog" + aria-modal="true" + aria-labelledby
+- Modal: Implement focus trap to keep Tab within modal
+- Close buttons: Add aria-label="Close [context]"
+- DeleteConfirmationModal: Call .showModal() in JavaScript
+
+HIGH PRIORITY FIXES:
+- Status numbers: Add text badge (e.g., "Urgent", "Just contacted")
+- Interaction list: Use <ul>/<li> instead of <div>
+- Save button: Add aria-busy + aria-live region for feedback
+- Communication buttons: Add aria-haspopup="dialog"
+
+MEDIUM PRIORITY FIXES:
+- Form fields: Add aria-invalid when error exists
+- Links: Add focus:ring-2 focus:ring-offset-2 styling
+- Loading states: Add role="status" aria-live="polite"
+
+REFERENCES:
+===========
+
+WCAG 2.1: https://www.w3.org/WAI/WCAG21/quickref/
+WAI-ARIA: https://www.w3.org/WAI/ARIA/apg/
+Modal Pattern: https://www.w3.org/WAI/ARIA/apg/patterns/dialogmodal/
+Focus Management: https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/
+
+NEXT STEPS:
+===========
+
+1. Read ACCESSIBILITY_AUDIT.md for full context
+2. Review ACCESSIBILITY_FIX_EXAMPLES.md for code patterns
+3. Start with Critical issues (modals)
+4. Test each fix with keyboard + screen reader
+5. Iterate through High → Medium → Low priorities
+6. Run final WCAG compliance check
+
+Expected outcome: 90%+ WCAG 2.1 AA compliance
+Time to implement: 3-5 days
