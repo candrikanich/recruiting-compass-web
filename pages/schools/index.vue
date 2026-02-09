@@ -210,17 +210,18 @@ import { useFamilyContext } from "~/composables/useFamilyContext";
 import { useUserStore } from "~/stores/user";
 import { useUniversalFilter } from "~/composables/useUniversalFilter";
 import { useSchoolExport } from "~/composables/useSchoolExport";
+import { useSchoolDistance } from "~/composables/useSchoolDistance";
+import { useLiveRegion } from "~/composables/useLiveRegion";
 import type { School } from "~/types";
+import type { FilterValue } from "~/types/filters";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
   ArrowDownTrayIcon,
 } from "@heroicons/vue/24/outline";
 import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
-import { calculateDistance } from "~/utils/distance";
+import { createSchoolFilterConfigs } from "~/utils/schoolFilterConfigs";
 import { extractStateFromLocation } from "~/utils/locationParser";
-import type { FilterConfig, FilterValue } from "~/types/filters";
-import { useLiveRegion } from "~/composables/useLiveRegion";
 
 interface SchoolFilterValues {
   name?: string;
@@ -307,139 +308,16 @@ const stateOptions = computed(() => {
     .map((state) => ({ value: state, label: state }));
 });
 
-const distanceCache = computed(() => {
-  const cache = new Map<string, number>();
-  const homeLocation = getHomeLocation();
-  if (!homeLocation?.latitude || !homeLocation?.longitude) return cache;
+const { distanceCache } = useSchoolDistance(
+  computed(() => schools.value),
+  computed(() => userHomeLocation.value),
+);
 
-  schools.value.forEach((school) => {
-    const coords = school.academic_info;
-    const coordLat = coords?.latitude;
-    const coordLng = coords?.longitude;
-    if (
-      coordLat &&
-      coordLng &&
-      typeof coordLat === "number" &&
-      typeof coordLng === "number"
-    ) {
-      cache.set(
-        school.id,
-        calculateDistance(
-          {
-            latitude: homeLocation.latitude ?? 0,
-            longitude: homeLocation.longitude ?? 0,
-          },
-          { latitude: coordLat, longitude: coordLng },
-        ),
-      );
-    }
-  });
-  return cache;
-});
-
-const filterConfigs: FilterConfig[] = [
-  {
-    type: "text",
-    field: "name",
-    label: "Search",
-    placeholder: "School name or location...",
-    filterFn: (item: Record<string, unknown>, filterValue: any): boolean => {
-      if (!filterValue) return true;
-      const school = item as unknown as School;
-      const query = String(filterValue).toLowerCase();
-      return (
-        school.name.toLowerCase().includes(query) ||
-        school.location?.toLowerCase().includes(query) ||
-        false
-      );
-    },
-  },
-  {
-    type: "select",
-    field: "division",
-    label: "Division",
-    options: [
-      { value: "D1", label: "Division 1" },
-      { value: "D2", label: "Division 2" },
-      { value: "D3", label: "Division 3" },
-      { value: "NAIA", label: "NAIA" },
-      { value: "JUCO", label: "JUCO" },
-    ],
-  },
-  {
-    type: "select",
-    field: "status",
-    label: "Status",
-    options: [
-      { value: "researching", label: "Researching" },
-      { value: "contacted", label: "Contacted" },
-      { value: "interested", label: "Interested" },
-      { value: "offer_received", label: "Offer Received" },
-      { value: "committed", label: "Committed" },
-    ],
-  },
-  { type: "boolean", field: "is_favorite", label: "Favorites Only" },
-  {
-    type: "select",
-    field: "state",
-    label: "State",
-    options: stateOptions.value,
-    filterFn: (
-      item: Record<string, unknown>,
-      filterValue: FilterValue,
-    ): boolean => {
-      const school = item as unknown as School;
-      let schoolState: string | undefined =
-        school.academic_info?.state || (school.state as string | undefined);
-      if (!schoolState && school.location) {
-        schoolState = extractStateFromLocation(school.location) || undefined;
-      }
-      return schoolState === filterValue;
-    },
-  },
-  {
-    type: "range",
-    field: "fit_score",
-    label: "Fit Score",
-    min: 0,
-    max: 100,
-    step: 5,
-    defaultValue: [0, 100] as [number, number],
-    filterFn: (
-      item: Record<string, unknown>,
-      filterValue: FilterValue,
-    ): boolean => {
-      const school = item as unknown as School;
-      const score = school.fit_score;
-      if (score === null || score === undefined) return true;
-      const rangeValue = filterValue as { min?: number; max?: number } | null;
-      return (
-        score >= (rangeValue?.min ?? 0) && score <= (rangeValue?.max ?? 100)
-      );
-    },
-  },
-  {
-    type: "range",
-    field: "distance",
-    label: "Distance",
-    min: 0,
-    max: 3000,
-    step: 50,
-    defaultValue: [0, 3000] as [number, number],
-    filterFn: (
-      item: Record<string, unknown>,
-      filterValue: FilterValue,
-    ): boolean => {
-      const school = item as unknown as School;
-      const homeLoc = getHomeLocation();
-      if (!homeLoc?.latitude || !homeLoc?.longitude) return true;
-      const distance = distanceCache.value.get(school.id);
-      if (distance === undefined) return true;
-      const rangeValue = filterValue as { max?: number } | null;
-      return distance <= (rangeValue?.max ?? 3000);
-    },
-  },
-];
+const filterConfigs = createSchoolFilterConfigs(
+  stateOptions,
+  getHomeLocation,
+  distanceCache,
+);
 
 const {
   filterValues,
