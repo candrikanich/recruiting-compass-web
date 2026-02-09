@@ -98,230 +98,300 @@
     </div>
 
     <!-- Email Composer Modal -->
-    <div
-      v-if="showEmailComposer"
-      class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-    >
-      <div
-        class="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200"
-      >
-        <div class="p-6 border-b border-slate-200">
-          <h3 class="text-lg font-semibold text-slate-900">
-            Send Email to {{ coach.first_name }}
-          </h3>
-        </div>
-
-        <div class="p-6 space-y-5">
-          <!-- Template Selection -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2"
-              >Template</label
+    <Teleport to="body">
+      <Transition name="fade">
+        <div
+          v-if="showEmailComposer"
+          class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          @keydown.escape="handleCloseEmail"
+        >
+          <div
+            ref="emailDialogRef"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="email-modal-title"
+            class="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200"
+          >
+            <div
+              class="p-6 border-b border-slate-200 flex items-center justify-between"
             >
-            <select
-              v-model="selectedEmailTemplate"
-              class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-            >
-              <option value="">Custom message</option>
-              <option v-for="t in emailTemplates" :key="t.id" :value="t.id">
-                {{ t.name }}
-              </option>
-            </select>
-          </div>
+              <h3
+                id="email-modal-title"
+                class="text-lg font-semibold text-slate-900"
+              >
+                Send Email to {{ coach.first_name }}
+              </h3>
+              <button
+                @click="handleCloseEmail"
+                aria-label="Close email composer"
+                class="text-2xl text-slate-500 transition hover:text-slate-900"
+              >
+                ×
+              </button>
+            </div>
 
-          <!-- Subject -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2"
-              >Subject</label
-            >
-            <input
-              v-model="emailComposer.subject"
-              type="text"
-              class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder="Email subject..."
-            />
-          </div>
+            <div class="p-6 space-y-5">
+              <!-- Template Selection -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2"
+                  >Template</label
+                >
+                <select
+                  v-model="selectedEmailTemplate"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                >
+                  <option value="">Custom message</option>
+                  <option v-for="t in emailTemplates" :key="t.id" :value="t.id">
+                    {{ t.name }}
+                  </option>
+                </select>
+              </div>
 
-          <!-- Body -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2"
-              >Message</label
-            >
-            <textarea
-              v-model="emailComposer.body"
-              rows="6"
-              class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder="Your message..."
-            />
-          </div>
+              <!-- Subject -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2"
+                  >Subject</label
+                >
+                <input
+                  v-model="emailComposer.subject"
+                  type="text"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="Email subject..."
+                />
+              </div>
 
-          <!-- Variables Helper -->
-          <div class="rounded-lg p-3 bg-blue-50 border border-blue-200">
-            <p class="text-xs font-semibold mb-2 text-blue-900">
-              Available Variables:
-            </p>
-            <div class="grid grid-cols-2 gap-2 text-xs text-blue-800 font-mono">
-              <div>{{ props.playerName }}</div>
-              <div>{{ props.coach.first_name }}</div>
-              <div>{{ props.schoolName }}</div>
-              <div>{{ props.highSchool }}</div>
+              <!-- Body -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2"
+                  >Message</label
+                >
+                <textarea
+                  v-model="emailComposer.body"
+                  rows="6"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="Your message..."
+                />
+              </div>
+
+              <!-- Variables Helper -->
+              <div class="rounded-lg p-3 bg-blue-50 border border-blue-200">
+                <p class="text-xs font-semibold mb-2 text-blue-900">
+                  Available Variables:
+                </p>
+                <div
+                  class="grid grid-cols-2 gap-2 text-xs text-blue-800 font-mono"
+                >
+                  <div>{{ props.playerName }}</div>
+                  <div>{{ props.coach.first_name }}</div>
+                  <div>{{ props.schoolName }}</div>
+                  <div>{{ props.highSchool }}</div>
+                </div>
+              </div>
+
+              <!-- Log Interaction Checkbox -->
+              <div class="flex items-center gap-2 pt-2">
+                <input
+                  id="emailLogInteraction"
+                  v-model="shouldLogInteraction"
+                  type="checkbox"
+                  class="w-4 h-4 rounded border-slate-300 text-blue-600"
+                />
+                <label for="emailLogInteraction" class="text-sm text-slate-700">
+                  Log this interaction in coach history
+                </label>
+              </div>
+            </div>
+
+            <div class="p-6 border-t border-slate-200 flex gap-3">
+              <button
+                @click="sendEmail"
+                class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm"
+              >
+                Send Email
+              </button>
+              <button
+                @click="handleCloseEmail"
+                class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition text-sm"
+              >
+                Cancel
+              </button>
             </div>
           </div>
-
-          <!-- Log Interaction Checkbox -->
-          <div class="flex items-center gap-2 pt-2">
-            <input
-              id="emailLogInteraction"
-              v-model="shouldLogInteraction"
-              type="checkbox"
-              class="w-4 h-4 rounded border-slate-300 text-blue-600"
-            />
-            <label for="emailLogInteraction" class="text-sm text-slate-700">
-              Log this interaction in coach history
-            </label>
-          </div>
         </div>
-
-        <div class="p-6 border-t border-slate-200 flex gap-3">
-          <button
-            @click="sendEmail"
-            class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm"
-          >
-            Send Email
-          </button>
-          <button
-            @click="showEmailComposer = false"
-            class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition text-sm"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
 
     <!-- Text Composer Modal -->
-    <div
-      v-if="showTextComposer"
-      class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-    >
-      <div
-        class="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200"
-      >
-        <div class="p-6 border-b border-slate-200">
-          <h3 class="text-lg font-semibold text-slate-900">
-            Send Text to {{ coach.first_name }}
-          </h3>
-        </div>
-
-        <div class="p-6 space-y-5">
-          <!-- Template Selection -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2"
-              >Template</label
+    <Teleport to="body">
+      <Transition name="fade">
+        <div
+          v-if="showTextComposer"
+          class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          @keydown.escape="handleCloseText"
+        >
+          <div
+            ref="textDialogRef"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="text-modal-title"
+            class="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200"
+          >
+            <div
+              class="p-6 border-b border-slate-200 flex items-center justify-between"
             >
-            <select
-              v-model="selectedTextTemplate"
-              class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-            >
-              <option value="">Custom message</option>
-              <option v-for="t in messageTemplates" :key="t.id" :value="t.id">
-                {{ t.name }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Body -->
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <label class="block text-sm font-medium text-slate-700"
-                >Message</label
+              <h3
+                id="text-modal-title"
+                class="text-lg font-semibold text-slate-900"
               >
-              <span class="text-xs text-slate-500"
-                >{{ textComposer.body.length }}/160</span
+                Send Text to {{ coach.first_name }}
+              </h3>
+              <button
+                @click="handleCloseText"
+                aria-label="Close text composer"
+                class="text-2xl text-slate-500 transition hover:text-slate-900"
               >
+                ×
+              </button>
             </div>
-            <textarea
-              v-model="textComposer.body"
-              rows="4"
-              maxlength="160"
-              class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder="Your message..."
-            />
-            <p class="text-xs text-slate-500 mt-2">
-              SMS limited to 160 characters
-            </p>
-          </div>
 
-          <!-- Log Interaction Checkbox -->
-          <div class="flex items-center gap-2 pt-2">
-            <input
-              id="textLogInteraction"
-              v-model="shouldLogInteraction"
-              type="checkbox"
-              class="w-4 h-4 rounded border-slate-300 text-blue-600"
-            />
-            <label for="textLogInteraction" class="text-sm text-slate-700">
-              Log this interaction in coach history
-            </label>
+            <div class="p-6 space-y-5">
+              <!-- Template Selection -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2"
+                  >Template</label
+                >
+                <select
+                  v-model="selectedTextTemplate"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                >
+                  <option value="">Custom message</option>
+                  <option
+                    v-for="t in messageTemplates"
+                    :key="t.id"
+                    :value="t.id"
+                  >
+                    {{ t.name }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Body -->
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <label class="block text-sm font-medium text-slate-700"
+                    >Message</label
+                  >
+                  <span class="text-xs text-slate-500"
+                    >{{ textComposer.body.length }}/160</span
+                  >
+                </div>
+                <textarea
+                  v-model="textComposer.body"
+                  rows="4"
+                  maxlength="160"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="Your message..."
+                />
+                <p class="text-xs text-slate-500 mt-2">
+                  SMS limited to 160 characters
+                </p>
+              </div>
+
+              <!-- Log Interaction Checkbox -->
+              <div class="flex items-center gap-2 pt-2">
+                <input
+                  id="textLogInteraction"
+                  v-model="shouldLogInteraction"
+                  type="checkbox"
+                  class="w-4 h-4 rounded border-slate-300 text-blue-600"
+                />
+                <label for="textLogInteraction" class="text-sm text-slate-700">
+                  Log this interaction in coach history
+                </label>
+              </div>
+            </div>
+
+            <div class="p-6 border-t border-slate-200 flex gap-3">
+              <button
+                @click="sendText"
+                class="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition text-sm"
+              >
+                Send Text
+              </button>
+              <button
+                @click="handleCloseText"
+                class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition text-sm"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
-
-        <div class="p-6 border-t border-slate-200 flex gap-3">
-          <button
-            @click="sendText"
-            class="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition text-sm"
-          >
-            Send Text
-          </button>
-          <button
-            @click="showTextComposer = false"
-            class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition text-sm"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
 
     <!-- Template Manager Modal -->
-    <div
-      v-if="showTemplateManager"
-      class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-    >
-      <div
-        class="bg-white rounded-xl shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-200"
-      >
-        <div class="p-6 border-b border-slate-200">
-          <h3 class="text-lg font-semibold text-slate-900">
-            Communication Templates
-          </h3>
-        </div>
-
-        <div class="p-6">
-          <p class="text-sm text-slate-600 mb-4">
-            Manage your custom communication templates
-          </p>
-          <!-- Template list would go here in full implementation -->
-          <p class="text-center text-slate-500 py-8 text-sm">
-            Template management coming in next update
-          </p>
-        </div>
-
-        <div class="p-6 border-t border-slate-200">
-          <button
-            @click="showTemplateManager = false"
-            class="w-full px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition text-sm"
+    <Teleport to="body">
+      <Transition name="fade">
+        <div
+          v-if="showTemplateManager"
+          class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          @keydown.escape="handleCloseTemplate"
+        >
+          <div
+            ref="templateDialogRef"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="template-modal-title"
+            class="bg-white rounded-xl shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-200"
           >
-            Close
-          </button>
+            <div
+              class="p-6 border-b border-slate-200 flex items-center justify-between"
+            >
+              <h3
+                id="template-modal-title"
+                class="text-lg font-semibold text-slate-900"
+              >
+                Communication Templates
+              </h3>
+              <button
+                @click="handleCloseTemplate"
+                aria-label="Close template manager"
+                class="text-2xl text-slate-500 transition hover:text-slate-900"
+              >
+                ×
+              </button>
+            </div>
+
+            <div class="p-6">
+              <p class="text-sm text-slate-600 mb-4">
+                Manage your custom communication templates
+              </p>
+              <!-- Template list would go here in full implementation -->
+              <p class="text-center text-slate-500 py-8 text-sm">
+                Template management coming in next update
+              </p>
+            </div>
+
+            <div class="p-6 border-t border-slate-200">
+              <button
+                @click="handleCloseTemplate"
+                class="w-full px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition text-sm"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, nextTick } from "vue";
 import { useCommunicationTemplates } from "~/composables/useCommunicationTemplates";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 import { getRoleLabel } from "~/utils/coachLabels";
 import type { Coach } from "~/types/models";
 
@@ -345,6 +415,33 @@ const { getTemplatesByType, interpolateTemplate } = useCommunicationTemplates();
 
 const showEmailComposer = ref(false);
 const showTextComposer = ref(false);
+
+// Focus trap setup for all three modals
+const emailDialogRef = ref<HTMLElement | null>(null);
+const textDialogRef = ref<HTMLElement | null>(null);
+const templateDialogRef = ref<HTMLElement | null>(null);
+
+const { activate: activateEmail, deactivate: deactivateEmail } =
+  useFocusTrap(emailDialogRef);
+const { activate: activateText, deactivate: deactivateText } =
+  useFocusTrap(textDialogRef);
+const { activate: activateTemplate, deactivate: deactivateTemplate } =
+  useFocusTrap(templateDialogRef);
+
+const handleCloseEmail = () => {
+  deactivateEmail();
+  showEmailComposer.value = false;
+};
+
+const handleCloseText = () => {
+  deactivateText();
+  showTextComposer.value = false;
+};
+
+const handleCloseTemplate = () => {
+  deactivateTemplate();
+  showTemplateManager.value = false;
+};
 
 // Helper to interpolate text containing variables
 const interpolateText = (
@@ -424,7 +521,7 @@ const sendEmail = async () => {
     });
   }
 
-  showEmailComposer.value = false;
+  handleCloseEmail();
 };
 
 const sendText = async () => {
@@ -439,7 +536,7 @@ const sendText = async () => {
     });
   }
 
-  showTextComposer.value = false;
+  handleCloseText();
 };
 
 const openInstagram = () => {
@@ -448,4 +545,44 @@ const openInstagram = () => {
     "_blank",
   );
 };
+
+// Focus trap activation watchers
+watch(showEmailComposer, async (isOpen) => {
+  if (isOpen) {
+    await nextTick();
+    activateEmail();
+  } else {
+    deactivateEmail();
+  }
+});
+
+watch(showTextComposer, async (isOpen) => {
+  if (isOpen) {
+    await nextTick();
+    activateText();
+  } else {
+    deactivateText();
+  }
+});
+
+watch(showTemplateManager, async (isOpen) => {
+  if (isOpen) {
+    await nextTick();
+    activateTemplate();
+  } else {
+    deactivateTemplate();
+  }
+});
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

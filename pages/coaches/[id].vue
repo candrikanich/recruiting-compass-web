@@ -94,20 +94,28 @@
         <div
           v-if="showPanel && coach"
           class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-          @click="showPanel = false"
+          @keydown.escape="handleCloseCommunicationPanel"
         >
           <div
+            ref="communicationDialogRef"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="communication-panel-title"
             class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             @click.stop
           >
             <div
               class="sticky top-0 bg-white border-b border-slate-200 p-4 flex items-center justify-between rounded-t-xl"
             >
-              <h2 class="text-xl font-bold text-slate-900">
+              <h2
+                id="communication-panel-title"
+                class="text-xl font-bold text-slate-900"
+              >
                 Quick Communication
               </h2>
               <button
-                @click="showPanel = false"
+                @click="handleCloseCommunicationPanel"
+                aria-label="Close communication panel"
                 class="text-slate-400 hover:text-slate-600"
               >
                 <XMarkIcon class="w-6 h-6" />
@@ -118,7 +126,7 @@
                 :coach="coach"
                 :school-name="schoolName"
                 :initial-type="communicationType"
-                @close="showPanel = false"
+                @close="handleCloseCommunicationPanel"
                 @interaction-logged="handleCoachInteractionLogged"
               />
             </div>
@@ -129,8 +137,9 @@
 
     <!-- Edit Coach Modal -->
     <EditCoachModal
-      v-if="uiState.showEditModal && coach"
+      v-if="coach"
       :coach="coach"
+      :is-open="uiState.showEditModal"
       @close="uiState.showEditModal = false"
       @updated="handleCoachUpdated"
     />
@@ -148,13 +157,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from "vue";
+import { ref, computed, reactive, onMounted, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCommunication } from "~/composables/useCommunication";
 import { useCoachStats } from "~/composables/useCoachStats";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 import { openTwitter, openInstagram } from "~/utils/socialMediaHandlers";
 import { useUserStore } from "~/stores/user";
 import { ArrowLeftIcon, XMarkIcon } from "@heroicons/vue/24/outline";
@@ -195,6 +205,28 @@ const uiState = reactive({
   showEditModal: false,
   deleteModalOpen: false,
   isDeleting: false,
+});
+
+// Focus trap for communication panel
+const communicationDialogRef = ref<HTMLElement | null>(null);
+const {
+  activate: activateCommunicationPanel,
+  deactivate: deactivateCommunicationPanel,
+} = useFocusTrap(communicationDialogRef);
+
+const handleCloseCommunicationPanel = () => {
+  deactivateCommunicationPanel();
+  showPanel.value = false;
+};
+
+// Watch for communication panel changes to activate/deactivate focus trap
+watch(showPanel, async (isOpen) => {
+  if (isOpen) {
+    await nextTick();
+    activateCommunicationPanel();
+  } else {
+    deactivateCommunicationPanel();
+  }
 });
 
 // Computed properties
