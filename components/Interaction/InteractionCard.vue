@@ -55,6 +55,7 @@ const handleView = () => {
               :is="getTypeIcon(interaction.type)"
               class="w-5 h-5"
               :class="getTypeIconColor(interaction.type)"
+              aria-hidden="true"
             />
           </div>
 
@@ -68,8 +69,8 @@ const handleView = () => {
                 class="px-2 py-0.5 text-xs font-medium rounded-full"
                 :class="
                   interaction.direction === 'outbound'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-emerald-100 text-emerald-700'
+                    ? 'bg-blue-100 text-blue-900'
+                    : 'bg-emerald-100 text-emerald-900'
                 "
               >
                 {{ formatDirection(interaction.direction) }}
@@ -91,7 +92,7 @@ const handleView = () => {
             <!-- Subject -->
             <p
               v-if="interaction.subject"
-              class="text-slate-700 font-medium truncate"
+              class="text-slate-900 font-medium truncate"
             >
               {{ interaction.subject }}
             </p>
@@ -115,7 +116,7 @@ const handleView = () => {
             <!-- Meta -->
             <div class="flex items-center gap-4 mt-3 text-xs text-slate-400">
               <span class="flex items-center gap-1">
-                <CalendarIcon class="w-3.5 h-3.5" />
+                <CalendarIcon class="w-3.5 h-3.5" aria-hidden="true" />
                 {{
                   formatInteractionDateTime(
                     interaction.occurred_at || interaction.created_at,
@@ -128,7 +129,7 @@ const handleView = () => {
                 "
                 class="flex items-center gap-1"
               >
-                <PaperClipIcon class="w-3.5 h-3.5" />
+                <PaperClipIcon class="w-3.5 h-3.5" aria-hidden="true" />
                 {{ interaction.attachments.length }} file(s)
               </span>
             </div>
@@ -138,7 +139,12 @@ const handleView = () => {
         <!-- Action -->
         <button
           @click="handleView"
-          class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition flex-shrink-0"
+          :aria-label="
+            interaction.subject
+              ? 'View details for ' + interaction.subject
+              : 'View interaction details'
+          "
+          class="px-4 py-2.5 min-h-[44px] text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition flex-shrink-0 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
         >
           View
         </button>

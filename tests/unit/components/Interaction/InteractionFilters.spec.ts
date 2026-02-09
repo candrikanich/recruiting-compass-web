@@ -366,24 +366,28 @@ describe("InteractionFilters", () => {
     it("has proper labels for all inputs", () => {
       const wrapper = createWrapper({ isParent: true });
 
+      // Check for label-input associations using 'for' attribute
+      expect(wrapper.html()).toContain('for="filter-search"');
+      expect(wrapper.html()).toContain('id="filter-search"');
+      expect(wrapper.html()).toContain('for="filter-type"');
+      expect(wrapper.html()).toContain('id="filter-type"');
+      expect(wrapper.html()).toContain('for="filter-logged-by"');
+      expect(wrapper.html()).toContain('id="filter-logged-by"');
+      expect(wrapper.html()).toContain('for="filter-direction"');
+      expect(wrapper.html()).toContain('id="filter-direction"');
+      expect(wrapper.html()).toContain('for="filter-sentiment"');
+      expect(wrapper.html()).toContain('id="filter-sentiment"');
+      expect(wrapper.html()).toContain('for="filter-time-period"');
+      expect(wrapper.html()).toContain('id="filter-time-period"');
+
+      // Check for fieldset/legend structure
+      expect(wrapper.html()).toContain("<fieldset>");
       expect(wrapper.html()).toContain(
-        '<label class="block text-sm font-medium text-slate-700 mb-1">Search</label>',
+        '<legend class="sr-only">Filter interactions</legend>',
       );
-      expect(wrapper.html()).toContain(
-        '<label class="block text-sm font-medium text-slate-700 mb-1">Type</label>',
-      );
-      expect(wrapper.html()).toContain(
-        '<label class="block text-sm font-medium text-slate-700 mb-1">Logged By</label>',
-      );
-      expect(wrapper.html()).toContain(
-        '<label class="block text-sm font-medium text-slate-700 mb-1">Direction</label>',
-      );
-      expect(wrapper.html()).toContain(
-        '<label class="block text-sm font-medium text-slate-700 mb-1">Sentiment</label>',
-      );
-      expect(wrapper.html()).toContain(
-        '<label class="block text-sm font-medium text-slate-700 mb-1">Time Period</label>',
-      );
+
+      // Check for decorative icon with aria-hidden
+      expect(wrapper.html()).toContain('aria-hidden="true"');
     });
 
     it("has placeholder text for search input", () => {

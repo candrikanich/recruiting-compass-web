@@ -511,4 +511,200 @@ describe("ActiveFilterChips", () => {
       expect(chips.length).toBe(2);
     });
   });
+
+  describe("Accessibility", () => {
+    it("has region role with aria-label on wrapper", () => {
+      const filterValues = new Map<string, string | null>([["search", "test"]]);
+      const wrapper = mount(ActiveFilterChips, {
+        props: {
+          filterValues,
+          linkedAthletes: mockLinkedAthletes,
+          currentUserId,
+        },
+      });
+
+      const region = wrapper.find('[role="region"]');
+      expect(region.exists()).toBe(true);
+      expect(region.attributes("aria-label")).toBe("Active filters");
+    });
+
+    it("has descriptive aria-label for search chip", () => {
+      const filterValues = new Map<string, string | null>([
+        ["search", "test query"],
+      ]);
+      const wrapper = mount(ActiveFilterChips, {
+        props: {
+          filterValues,
+          linkedAthletes: mockLinkedAthletes,
+          currentUserId,
+        },
+      });
+
+      const chip = wrapper.find("button");
+      expect(chip.attributes("aria-label")).toBe(
+        "Remove search filter for: test query",
+      );
+    });
+
+    it("has descriptive aria-label for type chip", () => {
+      const filterValues = new Map<string, string | null>([["type", "email"]]);
+      const wrapper = mount(ActiveFilterChips, {
+        props: {
+          filterValues,
+          linkedAthletes: mockLinkedAthletes,
+          currentUserId,
+        },
+      });
+
+      const chip = wrapper.find("button");
+      expect(chip.attributes("aria-label")).toBe("Remove type filter: Email");
+    });
+
+    it("has descriptive aria-label for logged by chip", () => {
+      const filterValues = new Map<string, string | null>([
+        ["loggedBy", currentUserId],
+      ]);
+      const wrapper = mount(ActiveFilterChips, {
+        props: {
+          filterValues,
+          linkedAthletes: mockLinkedAthletes,
+          currentUserId,
+        },
+      });
+
+      const chip = wrapper.find("button");
+      expect(chip.attributes("aria-label")).toBe(
+        "Remove logged by filter: Me (Parent)",
+      );
+    });
+
+    it("has descriptive aria-label for direction chip", () => {
+      const filterValues = new Map<string, string | null>([
+        ["direction", "outbound"],
+      ]);
+      const wrapper = mount(ActiveFilterChips, {
+        props: {
+          filterValues,
+          linkedAthletes: mockLinkedAthletes,
+          currentUserId,
+        },
+      });
+
+      const chip = wrapper.find("button");
+      expect(chip.attributes("aria-label")).toBe(
+        "Remove direction filter: Outbound",
+      );
+    });
+
+    it("has descriptive aria-label for sentiment chip", () => {
+      const filterValues = new Map<string, string | null>([
+        ["sentiment", "very_positive"],
+      ]);
+      const wrapper = mount(ActiveFilterChips, {
+        props: {
+          filterValues,
+          linkedAthletes: mockLinkedAthletes,
+          currentUserId,
+        },
+      });
+
+      const chip = wrapper.find("button");
+      expect(chip.attributes("aria-label")).toBe(
+        "Remove sentiment filter: Very Positive",
+      );
+    });
+
+    it("has descriptive aria-label for time period chip", () => {
+      const filterValues = new Map<string, string | null>([
+        ["timePeriod", "30"],
+      ]);
+      const wrapper = mount(ActiveFilterChips, {
+        props: {
+          filterValues,
+          linkedAthletes: mockLinkedAthletes,
+          currentUserId,
+        },
+      });
+
+      const chip = wrapper.find("button");
+      expect(chip.attributes("aria-label")).toBe(
+        "Remove time period filter: Last 30 days",
+      );
+    });
+
+    it("has aria-label for clear all button", () => {
+      const filterValues = new Map<string, string | null>([["search", "test"]]);
+      const wrapper = mount(ActiveFilterChips, {
+        props: {
+          filterValues,
+          linkedAthletes: mockLinkedAthletes,
+          currentUserId,
+        },
+      });
+
+      const clearButton = wrapper.findAll("button").at(-1);
+      expect(clearButton?.attributes("aria-label")).toBe("Clear all filters");
+    });
+
+    it("has aria-hidden on all XMarkIcons", () => {
+      const filterValues = new Map<string, string | null>([
+        ["search", "test"],
+        ["type", "email"],
+        ["direction", "outbound"],
+      ]);
+      const wrapper = mount(ActiveFilterChips, {
+        props: {
+          filterValues,
+          linkedAthletes: mockLinkedAthletes,
+          currentUserId,
+        },
+      });
+
+      const icons = wrapper.findAll("svg");
+      icons.forEach((icon) => {
+        expect(icon.attributes("aria-hidden")).toBe("true");
+      });
+    });
+
+    it("has focus indicators on all chip buttons", () => {
+      const filterValues = new Map<string, string | null>([
+        ["search", "test"],
+        ["type", "email"],
+      ]);
+      const wrapper = mount(ActiveFilterChips, {
+        props: {
+          filterValues,
+          linkedAthletes: mockLinkedAthletes,
+          currentUserId,
+        },
+      });
+
+      // All chip buttons should have focus classes (search, type, clear all = 3)
+      const buttons = wrapper.findAll("button");
+      buttons.forEach((button) => {
+        expect(button.classes()).toContain("focus:outline-2");
+        expect(button.classes()).toContain("focus:outline-blue-600");
+        expect(button.classes()).toContain("focus:outline-offset-1");
+      });
+    });
+
+    it("has no focus:outline-none classes", () => {
+      const filterValues = new Map<string, string | null>([
+        ["search", "test"],
+        ["type", "email"],
+      ]);
+      const wrapper = mount(ActiveFilterChips, {
+        props: {
+          filterValues,
+          linkedAthletes: mockLinkedAthletes,
+          currentUserId,
+        },
+      });
+
+      const buttons = wrapper.findAll("button");
+      buttons.forEach((button) => {
+        expect(button.classes()).not.toContain("focus:outline-none");
+      });
+    });
+  });
 });

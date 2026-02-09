@@ -76,22 +76,22 @@ describe("interactionFormatters", () => {
   describe("getSentimentBadgeClass", () => {
     it("returns correct class for each sentiment", () => {
       expect(getSentimentBadgeClass("very_positive")).toBe(
-        "bg-emerald-100 text-emerald-700",
+        "bg-emerald-100 text-emerald-900",
       );
       expect(getSentimentBadgeClass("positive")).toBe(
-        "bg-blue-100 text-blue-700",
+        "bg-blue-100 text-blue-900",
       );
       expect(getSentimentBadgeClass("neutral")).toBe(
-        "bg-slate-100 text-slate-700",
+        "bg-slate-100 text-slate-900",
       );
       expect(getSentimentBadgeClass("negative")).toBe(
-        "bg-red-100 text-red-700",
+        "bg-red-100 text-red-900",
       );
     });
 
     it("returns default for unknown sentiment", () => {
       expect(getSentimentBadgeClass("unknown")).toBe(
-        "bg-slate-100 text-slate-700",
+        "bg-slate-100 text-slate-900",
       );
     });
   });

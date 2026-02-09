@@ -84,7 +84,7 @@ describe("InteractionCard", () => {
       },
     });
 
-    const directionBadge = wrapper.find(".bg-blue-100.text-blue-700");
+    const directionBadge = wrapper.find(".bg-blue-100.text-blue-900");
     expect(directionBadge.exists()).toBe(true);
     expect(directionBadge.text()).toBe("Outbound");
   });
@@ -110,7 +110,7 @@ describe("InteractionCard", () => {
       },
     });
 
-    const directionBadge = wrapper.find(".bg-emerald-100.text-emerald-700");
+    const directionBadge = wrapper.find(".bg-emerald-100.text-emerald-900");
     expect(directionBadge.exists()).toBe(true);
     expect(directionBadge.text()).toBe("Inbound");
   });
@@ -163,7 +163,7 @@ describe("InteractionCard", () => {
       },
     });
 
-    const sentimentBadge = wrapper.find(".bg-blue-100.text-blue-700");
+    const sentimentBadge = wrapper.find(".bg-blue-100.text-blue-900");
     expect(sentimentBadge.exists()).toBe(true);
     expect(wrapper.html()).toContain("Positive");
   });
@@ -201,7 +201,7 @@ describe("InteractionCard", () => {
       },
     });
 
-    const subject = wrapper.find(".text-slate-700.font-medium.truncate");
+    const subject = wrapper.find(".text-slate-900.font-medium.truncate");
     expect(subject.exists()).toBe(true);
     expect(subject.text()).toBe("Test Subject");
   });
@@ -224,7 +224,7 @@ describe("InteractionCard", () => {
       },
     });
 
-    const subject = wrapper.find(".text-slate-700.font-medium.truncate");
+    const subject = wrapper.find(".text-slate-900.font-medium.truncate");
     expect(subject.exists()).toBe(false);
   });
 
@@ -497,7 +497,7 @@ describe("InteractionCard", () => {
       },
     });
 
-    const sentimentBadge = wrapper.find(".bg-emerald-100.text-emerald-700");
+    const sentimentBadge = wrapper.find(".bg-emerald-100.text-emerald-900");
     expect(sentimentBadge.exists()).toBe(true);
     expect(sentimentBadge.text()).toBe("Very Positive");
   });
@@ -520,7 +520,7 @@ describe("InteractionCard", () => {
       },
     });
 
-    const sentimentBadge = wrapper.find(".bg-red-100.text-red-700");
+    const sentimentBadge = wrapper.find(".bg-red-100.text-red-900");
     expect(sentimentBadge.exists()).toBe(true);
     expect(sentimentBadge.text()).toBe("Negative");
   });
@@ -545,8 +545,103 @@ describe("InteractionCard", () => {
     });
 
     expect(wrapper.html()).toContain("Neutral");
-    const sentimentBadge = wrapper.find(".bg-slate-100.text-slate-700");
+    const sentimentBadge = wrapper.find(".bg-slate-100.text-slate-900");
     expect(sentimentBadge.exists()).toBe(true);
     expect(sentimentBadge.text()).toBe("Neutral");
+  });
+
+  describe("Accessibility", () => {
+    it("has proper focus indicators on View button", () => {
+      const wrapper = mount(InteractionCard, {
+        props: defaultProps,
+        global: {
+          components: {
+            LoggedByBadge,
+          },
+        },
+      });
+
+      const viewButton = wrapper.find("button");
+      expect(viewButton.classes()).toContain("focus:outline-2");
+      expect(viewButton.classes()).toContain("focus:outline-blue-600");
+      expect(viewButton.classes()).toContain("focus:outline-offset-1");
+      expect(viewButton.classes()).not.toContain("focus:outline-none");
+    });
+
+    it("has accessible name on View button with subject", () => {
+      const wrapper = mount(InteractionCard, {
+        props: defaultProps,
+        global: {
+          components: {
+            LoggedByBadge,
+          },
+        },
+      });
+
+      const viewButton = wrapper.find("button");
+      expect(viewButton.attributes("aria-label")).toBe(
+        "View details for Test Subject",
+      );
+    });
+
+    it("has generic accessible name on View button without subject", () => {
+      const interactionWithoutSubject = {
+        ...mockInteraction,
+        subject: null,
+      };
+
+      const wrapper = mount(InteractionCard, {
+        props: {
+          ...defaultProps,
+          interaction: interactionWithoutSubject,
+        },
+        global: {
+          components: {
+            LoggedByBadge,
+          },
+        },
+      });
+
+      const viewButton = wrapper.find("button");
+      expect(viewButton.attributes("aria-label")).toBe(
+        "View interaction details",
+      );
+    });
+
+    it("has minimum touch target size on View button", () => {
+      const wrapper = mount(InteractionCard, {
+        props: defaultProps,
+        global: {
+          components: {
+            LoggedByBadge,
+          },
+        },
+      });
+
+      const viewButton = wrapper.find("button");
+      expect(viewButton.classes()).toContain("min-h-[44px]");
+      expect(viewButton.classes()).toContain("px-4");
+      expect(viewButton.classes()).toContain("py-2.5");
+    });
+
+    it("marks decorative icons with aria-hidden", () => {
+      const wrapper = mount(InteractionCard, {
+        props: defaultProps,
+        global: {
+          components: {
+            LoggedByBadge,
+            CalendarIcon,
+            PaperClipIcon,
+            EnvelopeIcon,
+          },
+        },
+      });
+
+      const html = wrapper.html();
+
+      const ariaHiddenMatches = html.match(/aria-hidden="true"/g);
+      expect(ariaHiddenMatches).toBeTruthy();
+      expect(ariaHiddenMatches?.length).toBeGreaterThanOrEqual(3);
+    });
   });
 });

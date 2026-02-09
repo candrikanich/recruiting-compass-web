@@ -56,7 +56,7 @@ describe("InteractionTimelineItem Component", () => {
       });
 
       expect(wrapper.text()).toContain("Outbound");
-      expect(wrapper.html()).toContain("bg-blue-100 text-blue-700");
+      expect(wrapper.html()).toContain("bg-blue-100 text-blue-900");
     });
 
     it("should render inbound direction badge", () => {
@@ -69,7 +69,7 @@ describe("InteractionTimelineItem Component", () => {
       });
 
       expect(wrapper.text()).toContain("Inbound");
-      expect(wrapper.html()).toContain("bg-emerald-100 text-emerald-700");
+      expect(wrapper.html()).toContain("bg-emerald-100 text-emerald-900");
     });
 
     it("should render subject when present", () => {
@@ -96,7 +96,7 @@ describe("InteractionTimelineItem Component", () => {
       });
 
       const subjectElement = wrapper.find(
-        "p.text-slate-700.font-medium.truncate",
+        "p.text-slate-900.font-medium.truncate",
       );
       expect(subjectElement.exists()).toBe(false);
     });

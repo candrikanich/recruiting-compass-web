@@ -27,8 +27,8 @@
                 class="px-2 py-0.5 text-xs font-medium rounded-full"
                 :class="
                   interaction.direction === 'outbound'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-emerald-100 text-emerald-700'
+                    ? 'bg-blue-100 text-blue-900'
+                    : 'bg-emerald-100 text-emerald-900'
                 "
               >
                 {{
@@ -47,7 +47,7 @@
             <!-- Subject -->
             <p
               v-if="interaction.subject"
-              class="text-slate-700 font-medium truncate"
+              class="text-slate-900 font-medium truncate"
             >
               {{ interaction.subject }}
             </p>

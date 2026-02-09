@@ -41,18 +41,18 @@ const displayName = computed(() => {
 
 const roleBadgeClass = computed(() => {
   if (!loggedByUser.value) {
-    return "bg-slate-100 text-slate-700";
+    return "bg-slate-100 text-slate-900";
   }
 
   if (loggedByUser.value.role === "parent") {
-    return "bg-blue-100 text-blue-700";
+    return "bg-blue-100 text-blue-900";
   }
 
   if (loggedByUser.value.role === "player") {
-    return "bg-purple-100 text-purple-700";
+    return "bg-purple-100 text-purple-900";
   }
 
-  return "bg-slate-100 text-slate-700";
+  return "bg-slate-100 text-slate-900";
 });
 
 onMounted(async () => {

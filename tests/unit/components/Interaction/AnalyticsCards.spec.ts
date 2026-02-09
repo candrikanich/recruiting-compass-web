@@ -168,4 +168,64 @@ describe("AnalyticsCards", () => {
       expect(card.find(".text-sm.text-slate-500").exists()).toBe(true);
     });
   });
+
+  describe("Accessibility", () => {
+    it("has semantic section with accessible label", () => {
+      const wrapper = mount(AnalyticsCards);
+
+      const section = wrapper.find("section");
+      expect(section.exists()).toBe(true);
+      expect(section.attributes("aria-label")).toBe("Interaction statistics");
+    });
+
+    it("hides decorative icons from screen readers", () => {
+      const wrapper = mount(AnalyticsCards);
+
+      const icons = wrapper.findAll('[aria-hidden="true"]');
+      expect(icons).toHaveLength(4);
+
+      icons.forEach((icon) => {
+        expect(icon.attributes("aria-hidden")).toBe("true");
+        expect(icon.classes()).toContain("w-5");
+        expect(icon.classes()).toContain("h-5");
+      });
+    });
+
+    it("marks stat numbers with status role for live updates", () => {
+      const wrapper = mount(AnalyticsCards, {
+        props: {
+          totalCount: 42,
+          outboundCount: 18,
+          inboundCount: 24,
+          thisWeekCount: 7,
+        },
+      });
+
+      const statusElements = wrapper.findAll('[role="status"]');
+      expect(statusElements).toHaveLength(4);
+
+      expect(statusElements[0].text()).toBe("42");
+      expect(statusElements[1].text()).toBe("18");
+      expect(statusElements[2].text()).toBe("24");
+      expect(statusElements[3].text()).toBe("7");
+
+      statusElements.forEach((element) => {
+        expect(element.classes()).toContain("text-2xl");
+        expect(element.classes()).toContain("font-bold");
+        expect(element.classes()).toContain("text-slate-900");
+      });
+    });
+
+    it("maintains accessible structure across all cards", () => {
+      const wrapper = mount(AnalyticsCards);
+
+      const cards = wrapper.findAll(".bg-white");
+      expect(cards).toHaveLength(4);
+
+      cards.forEach((card) => {
+        expect(card.find('[aria-hidden="true"]').exists()).toBe(true);
+        expect(card.find('[role="status"]').exists()).toBe(true);
+      });
+    });
+  });
 });

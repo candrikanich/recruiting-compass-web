@@ -2,6 +2,14 @@
   <div
     class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
   >
+    <!-- Skip Link -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:outline-2 focus:outline-blue-600 focus:outline-offset-2"
+    >
+      Skip to main content
+    </a>
+
     <!-- Global Navigation -->
 
     <!-- Timeline Status Snippet -->
@@ -33,25 +41,25 @@
             <button
               v-if="filteredInteractions.length > 0"
               @click="handleExportCSV"
-              class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700"
+              class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
             >
-              <ArrowDownTrayIcon class="w-4 h-4" />
+              <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
               CSV
             </button>
             <button
               v-if="filteredInteractions.length > 0"
               @click="handleExportPDF"
-              class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700"
+              class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
             >
-              <ArrowDownTrayIcon class="w-4 h-4" />
+              <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
               PDF
             </button>
             <NuxtLink
               to="/interactions/add"
               data-testid="log-interaction-button"
-              class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+              class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
             >
-              <PlusIcon class="w-4 h-4" />
+              <PlusIcon class="w-4 h-4" aria-hidden="true" />
               Log Interaction
             </NuxtLink>
           </div>
@@ -59,8 +67,9 @@
       </div>
     </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Analytics Cards -->
+      <h2 class="sr-only">Statistics</h2>
       <AnalyticsCards
         :total-count="allInteractions.length"
         :outbound-count="outboundCount"
@@ -69,6 +78,7 @@
       />
 
       <!-- Filter Bar -->
+      <h2 class="sr-only">Filter Options</h2>
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"
       >
@@ -90,9 +100,19 @@
         />
       </div>
 
+      <!-- Filter Results Announcement -->
+      <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
+        {{ filteredInteractions.length }} interaction{{
+          filteredInteractions.length !== 1 ? "s" : ""
+        }}
+        found{{ hasActiveFilters ? " with active filters" : "" }}
+      </div>
+
       <!-- Loading State -->
       <div
         v-if="loading && allInteractions.length === 0"
+        role="status"
+        aria-live="polite"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
       >
         <div
@@ -104,6 +124,7 @@
       <!-- Error State -->
       <div
         v-else-if="error"
+        role="status"
         class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6"
       >
         <p class="text-red-700">{{ error }}</p>
@@ -112,6 +133,7 @@
       <!-- Empty State -->
       <div
         v-else-if="allInteractions.length === 0"
+        role="alert"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
       >
         <ChatBubbleLeftRightIcon
@@ -120,7 +142,7 @@
         <p class="text-slate-900 font-medium mb-2">No interactions yet</p>
         <NuxtLink
           to="/interactions/add"
-          class="text-blue-600 hover:text-blue-700 font-medium"
+          class="text-blue-600 hover:text-blue-700 font-medium underline"
         >
           Log your first interaction
         </NuxtLink>
@@ -129,6 +151,7 @@
       <!-- No Results State -->
       <div
         v-else-if="filteredInteractions.length === 0"
+        role="status"
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
       >
         <MagnifyingGlassIcon class="w-12 h-12 text-slate-300 mx-auto mb-4" />
@@ -141,6 +164,7 @@
       </div>
 
       <!-- Interactions Timeline -->
+      <h2 class="sr-only">Interaction Timeline</h2>
       <div v-else class="space-y-4">
         <InteractionCard
           v-for="interaction in filteredInteractions"
