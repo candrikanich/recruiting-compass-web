@@ -1,9 +1,15 @@
 <template>
   <div
+    role="status"
+    :aria-label="ariaLabel"
     class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full"
     :class="badgeClass"
   >
-    <div class="w-2 h-2 rounded-full" :class="dotClass"></div>
+    <div
+      class="w-2 h-2 rounded-full"
+      :class="dotClass"
+      aria-hidden="true"
+    ></div>
     <span class="text-sm font-medium">{{ label }}</span>
   </div>
 </template>
@@ -41,4 +47,9 @@ const dotClass = computed(() => {
   if (props.percentage >= 20) return "bg-brand-orange-500";
   return "bg-brand-red-500";
 });
+
+const ariaLabel = computed(
+  () =>
+    `Coach responsiveness: ${label.value} (${props.percentage}% response rate)`,
+);
 </script>
