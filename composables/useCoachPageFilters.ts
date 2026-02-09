@@ -20,7 +20,7 @@ export const useCoachPageFilters = (
    * Apply all active filters and sorting to coaches array
    */
   const filteredCoaches: ComputedRef<Coach[]> = computed(() => {
-    let result = allCoaches.value.filter((coach) => {
+    const result = allCoaches.value.filter((coach) => {
       // Search filter - searches across multiple fields
       const searchTerm = filterValues.value.get("search");
       const searchLower = String(searchTerm || "").toLowerCase();

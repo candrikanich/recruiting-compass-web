@@ -108,79 +108,64 @@
         found{{ hasActiveFilters ? " with active filters" : "" }}
       </div>
 
-      <!-- Loading State -->
-      <div
-        v-if="loading && allInteractions.length === 0"
-        role="status"
-        aria-live="polite"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+      <!-- Page State (Loading/Error/Empty) -->
+      <template
+        v-if="filteredInteractions.length === 0 && allInteractions.length > 0"
       >
+        <!-- No Results State (filtered but no matches) -->
         <div
-          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
-        ></div>
-        <p class="text-slate-600">Loading interactions...</p>
-      </div>
-
-      <!-- Error State -->
-      <div
-        v-else-if="error"
-        role="status"
-        class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6"
-      >
-        <p class="text-red-700">{{ error }}</p>
-      </div>
-
-      <!-- Empty State -->
-      <div
-        v-else-if="allInteractions.length === 0"
-        role="alert"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
-      >
-        <ChatBubbleLeftRightIcon
-          class="w-12 h-12 text-slate-300 mx-auto mb-4"
-        />
-        <p class="text-slate-900 font-medium mb-2">No interactions yet</p>
-        <NuxtLink
-          to="/interactions/add"
-          class="text-blue-600 hover:text-blue-700 font-medium underline"
+          role="status"
+          class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
         >
-          Log your first interaction
-        </NuxtLink>
-      </div>
+          <MagnifyingGlassIcon class="w-12 h-12 text-slate-300 mx-auto mb-4" />
+          <p class="text-slate-900 font-medium mb-2">
+            No interactions match your filters
+          </p>
+          <p class="text-sm text-slate-500">
+            Try adjusting your search or filters
+          </p>
+        </div>
+      </template>
 
-      <!-- No Results State -->
-      <div
-        v-else-if="filteredInteractions.length === 0"
-        role="status"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+      <!-- Main Content with PageState for Loading/Error/Empty -->
+      <PageState
+        v-else
+        :loading="loading && allInteractions.length === 0"
+        :error="error"
+        :isEmpty="allInteractions.length === 0"
+        loading-message="Loading interactions..."
+        empty-title="No interactions yet"
+        empty-message=""
+        :empty-icon="ChatBubbleLeftRightIcon"
       >
-        <MagnifyingGlassIcon class="w-12 h-12 text-slate-300 mx-auto mb-4" />
-        <p class="text-slate-900 font-medium mb-2">
-          No interactions match your filters
-        </p>
-        <p class="text-sm text-slate-500">
-          Try adjusting your search or filters
-        </p>
-      </div>
+        <!-- Interactions Timeline -->
+        <h2 class="sr-only">Interaction Timeline</h2>
+        <div class="space-y-4">
+          <InteractionCard
+            v-for="interaction in filteredInteractions"
+            :key="interaction.id"
+            :interaction="interaction"
+            :school-name="getSchoolName(interaction.school_id)"
+            :coach-name="
+              interaction.coach_id
+                ? getCoachName(interaction.coach_id)
+                : undefined
+            "
+            :current-user-id="userStore.user?.id || ''"
+            :is-parent="userStore.isParent"
+            @view="viewInteraction"
+          />
+        </div>
 
-      <!-- Interactions Timeline -->
-      <h2 class="sr-only">Interaction Timeline</h2>
-      <div v-else class="space-y-4">
-        <InteractionCard
-          v-for="interaction in filteredInteractions"
-          :key="interaction.id"
-          :interaction="interaction"
-          :school-name="getSchoolName(interaction.school_id)"
-          :coach-name="
-            interaction.coach_id
-              ? getCoachName(interaction.coach_id)
-              : undefined
-          "
-          :current-user-id="userStore.user?.id || ''"
-          :is-parent="userStore.isParent"
-          @view="viewInteraction"
-        />
-      </div>
+        <template #empty-action>
+          <NuxtLink
+            to="/interactions/add"
+            class="text-blue-600 hover:text-blue-700 font-medium underline"
+          >
+            Log your first interaction
+          </NuxtLink>
+        </template>
+      </PageState>
     </main>
   </div>
 </template>
@@ -190,25 +175,26 @@ import { ref, onMounted, watch, inject } from "vue";
 import { useInteractions } from "~/composables/useInteractions";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
+import { useEntityNames } from "~/composables/useEntityNames";
+import { useLinkedAthletes } from "~/composables/useLinkedAthletes";
 import { useFamilyContext } from "~/composables/useFamilyContext";
 import { useInteractionFilters } from "~/composables/useInteractionFilters";
 import { useInteractionAnalytics } from "~/composables/useInteractionAnalytics";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
-import { useSupabase } from "~/composables/useSupabase";
 import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
 import AnalyticsCards from "~/components/Interaction/AnalyticsCards.vue";
 import InteractionFilters from "~/components/Interaction/InteractionFilters.vue";
 import ActiveFilterChips from "~/components/Interaction/ActiveFilterChips.vue";
 import InteractionCard from "~/components/Interaction/InteractionCard.vue";
-import type { User, School, Coach } from "~/types/models";
+import PageState from "~/components/shared/PageState.vue";
+import type { Interaction } from "~/types/models";
 import {
   ArrowDownTrayIcon,
   PlusIcon,
   ChatBubbleLeftRightIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/vue/24/outline";
-import type { Interaction } from "~/types/models";
 import {
   exportInteractionsToCSV,
   generateInteractionsPDF,
@@ -220,20 +206,18 @@ definePageMeta({
 });
 
 const userStore = useUserStore();
-const supabase = useSupabase();
 // Inject family context provided at app.vue level (with singleton fallback)
 const activeFamily = (inject<UseActiveFamilyReturn>("activeFamily") ||
   useFamilyContext()) as UseActiveFamilyReturn;
 const { activeFamilyId } = activeFamily;
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
-const { schools: schoolsData, fetchSchools } = useSchools();
-const { coaches: coachesData, fetchAllCoaches } = useCoaches();
+const { fetchSchools } = useSchools();
+const { fetchAllCoaches } = useCoaches();
+const { getSchoolName, getCoachName } = useEntityNames();
+const { linkedAthletes, fetchLinkedAthletes } = useLinkedAthletes();
 
 // Data
 const allInteractions = ref<Interaction[]>([]);
-const schools = ref<School[]>([]);
-const coaches = ref<Coach[]>([]);
-const linkedAthletes = ref<User[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
@@ -254,20 +238,6 @@ const handleFilterChange = (payload: {
   value: string | null;
 }) => {
   handleFilterUpdate(payload.field, payload.value);
-};
-
-const getSchoolName = (schoolId: string | undefined): string => {
-  if (!schoolId) return "Unknown";
-  const school = schools.value.find((s) => s.id === schoolId);
-  return school?.name || "Unknown";
-};
-
-const getCoachName = (coachId: string | undefined): string => {
-  if (!coachId) return "Unknown";
-  const coach = coaches.value.find((c) => c.id === coachId);
-  return coach
-    ? `${coach.first_name || ""} ${coach.last_name || ""}`.trim()
-    : "Unknown";
 };
 
 const viewInteraction = async (interaction: Interaction) => {
@@ -323,30 +293,7 @@ onMounted(async () => {
 
     // Load linked athletes if parent
     if (userStore.isParent) {
-      const { data: accountLinks, error: linksError } = (await supabase
-        .from("account_links")
-        .select("player_user_id")
-        .eq("parent_user_id", userStore.user.id)) as {
-        data: Array<{ player_user_id: string | null }> | null;
-        error: any;
-      };
-
-      if (!linksError && accountLinks && accountLinks.length > 0) {
-        const athleteIds = accountLinks
-          .map((link) => link.player_user_id)
-          .filter((id): id is string => id !== null);
-
-        if (athleteIds.length > 0) {
-          const { data: athletes, error: athletesError } = await supabase
-            .from("users")
-            .select("*")
-            .in("id", athleteIds);
-
-          if (!athletesError && athletes) {
-            linkedAthletes.value = athletes;
-          }
-        }
-      }
+      await fetchLinkedAthletes(userStore.user.id);
     }
 
     // Fetch interactions
@@ -358,8 +305,6 @@ onMounted(async () => {
       await fetchInteractions({});
     }
 
-    schools.value = schoolsData.value;
-    coaches.value = coachesData.value;
     allInteractions.value = interactionsData.value;
   } catch (err: unknown) {
     const message =

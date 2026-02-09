@@ -142,6 +142,7 @@ import { useFamilyContext } from "~/composables/useFamilyContext";
 import { useViewLogging } from "~/composables/useViewLogging";
 import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import { useDashboardData } from "~/composables/useDashboardData";
+import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
@@ -151,15 +152,6 @@ import DashboardMapActivitySection from "~/components/Dashboard/DashboardMapActi
 import DashboardWidgetsSection from "~/components/Dashboard/DashboardWidgetsSection.vue";
 import EmailRecruitingPacketModal from "~/components/EmailRecruitingPacketModal.vue";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
-import {
-  calculateSchoolSizeBreakdown,
-  calculateContactsThisMonth,
-  calculateTotalOffers,
-  calculateAcceptedOffers,
-  calculateATierSchoolCount,
-  getUpcomingEvents,
-  getTopMetrics,
-} from "~/utils/dashboardCalculations";
 
 definePageMeta({
   middleware: ["auth", "onboarding"],
@@ -177,6 +169,17 @@ const suggestionsComposable = useSuggestions();
 const viewLoggingComposable = useViewLogging();
 const recruitingPacketComposable = useRecruitingPacket();
 const dashboardData = useDashboardData();
+
+// Dashboard calculations derived from dashboard data
+const {
+  schoolSizeBreakdown,
+  contactsThisMonth,
+  totalOffers,
+  acceptedOffers,
+  aTierSchoolCount,
+  upcomingEvents,
+  topMetrics,
+} = useDashboardCalculations(dashboardData);
 
 // Inject family context provided at app.vue level (with singleton fallback)
 const activeFamily =
@@ -222,35 +225,6 @@ const showWidget = (
 ): boolean => {
   return true;
 };
-
-// Computed statistics using utility functions
-const schoolSizeBreakdown = computed(() =>
-  calculateSchoolSizeBreakdown(dashboardData.allSchools.value),
-);
-
-const contactsThisMonth = computed(() =>
-  calculateContactsThisMonth(dashboardData.allInteractions.value),
-);
-
-const totalOffers = computed(() =>
-  calculateTotalOffers(dashboardData.allOffers.value),
-);
-
-const acceptedOffers = computed(() =>
-  calculateAcceptedOffers(dashboardData.allOffers.value),
-);
-
-const aTierSchoolCount = computed(() =>
-  calculateATierSchoolCount(dashboardData.allSchools.value),
-);
-
-const upcomingEvents = computed(() =>
-  getUpcomingEvents(dashboardData.allEvents.value),
-);
-
-const topMetrics = computed(() =>
-  getTopMetrics(dashboardData.allMetrics.value, 3),
-);
 
 // Task event handlers
 const addTask = async (taskText: string) => {
