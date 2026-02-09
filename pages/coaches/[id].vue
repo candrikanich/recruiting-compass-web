@@ -179,7 +179,7 @@
             </button>
             <button
               v-if="coach.twitter_handle"
-              @click="openTwitter"
+              @click="handleOpenTwitter"
               class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-sm font-semibold rounded-lg hover:from-sky-600 hover:to-sky-700 transition shadow-sm"
             >
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -191,7 +191,7 @@
             </button>
             <button
               v-if="coach.instagram_handle"
-              @click="openInstagram"
+              @click="handleOpenInstagram"
               class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition shadow-sm"
             >
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -533,6 +533,12 @@ import { useSchools } from "~/composables/useSchools";
 import type { School } from "~/types/models";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCommunication } from "~/composables/useCommunication";
+import {
+  openTwitter,
+  openInstagram,
+  openEmail,
+  openSMS,
+} from "~/utils/socialMediaHandlers";
 import { useUserStore } from "~/stores/user";
 import {
   ArrowLeftIcon,
@@ -701,18 +707,12 @@ const callCoach = () => {
   }
 };
 
-const openTwitter = () => {
-  if (coach.value?.twitter_handle) {
-    const handle = coach.value.twitter_handle.replace("@", "");
-    window.open(`https://twitter.com/${handle}`, "_blank");
-  }
+const handleOpenTwitter = () => {
+  openTwitter(coach.value?.twitter_handle);
 };
 
-const openInstagram = () => {
-  if (coach.value?.instagram_handle) {
-    const handle = coach.value.instagram_handle.replace("@", "");
-    window.open(`https://instagram.com/${handle}`, "_blank");
-  }
+const handleOpenInstagram = () => {
+  openInstagram(coach.value?.instagram_handle);
 };
 
 const showEditModal = ref(false);

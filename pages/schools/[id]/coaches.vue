@@ -175,8 +175,8 @@
             :coach="coach"
             @email="sendEmail(coach)"
             @text="sendText(coach)"
-            @tweet="openTwitter(coach)"
-            @instagram="openInstagram(coach)"
+            @tweet="handleOpenTwitter(coach)"
+            @instagram="handleOpenInstagram(coach)"
             @view="viewCoach(coach)"
           />
         </div>
@@ -221,6 +221,14 @@ import { useCommunication } from "~/composables/useCommunication";
 import { useUserStore } from "~/stores/user";
 import type { School } from "~/types";
 import { useLiveRegion } from "~/composables/useLiveRegion";
+import {
+  openTwitter,
+  openInstagram,
+  openEmail,
+  openSMS,
+} from "~/utils/socialMediaHandlers";
+import { useCoachFilters } from "~/composables/useCoachFilters";
+import type { CoachSortOption } from "~/composables/useCoachFilters";
 
 definePageMeta({
   middleware: "auth",
@@ -266,7 +274,7 @@ const showAddForm = ref(false);
 const schoolName = ref("");
 const searchQuery = ref("");
 const roleFilter = ref("");
-const sortFilter = ref<"name" | "lastContact" | "responsiveness">("name");
+const sortFilter = ref<CoachSortOption>("name");
 const localError = ref("");
 
 // Create a school object from schoolName for CommunicationPanel
@@ -291,53 +299,16 @@ const school = computed((): School | undefined => {
   };
 });
 
-const filteredCoaches = computed(() => {
-  let result = [...coaches.value];
+const { applyFiltersAndSort } = useCoachFilters();
 
-  // Apply search filter
-  if (searchQuery.value) {
-    const searchLower = searchQuery.value.toLowerCase();
-    result = result.filter(
-      (coach) =>
-        coach.first_name.toLowerCase().includes(searchLower) ||
-        coach.last_name.toLowerCase().includes(searchLower) ||
-        coach.email?.toLowerCase().includes(searchLower) ||
-        coach.phone?.includes(searchQuery.value),
-    );
-  }
-
-  // Apply role filter
-  if (roleFilter.value) {
-    result = result.filter((coach) => coach.role === roleFilter.value);
-  }
-
-  // Apply sorting (create a new array to avoid mutation)
-  if (sortFilter.value === "name") {
-    result = result.sort((a, b) => {
-      const nameA = `${a.first_name} ${a.last_name}`.toLowerCase();
-      const nameB = `${b.first_name} ${b.last_name}`.toLowerCase();
-      return nameA.localeCompare(nameB);
-    });
-  } else if (sortFilter.value === "lastContact") {
-    result = result.sort((a, b) => {
-      const dateA = a.last_contact_date
-        ? new Date(a.last_contact_date).getTime()
-        : 0;
-      const dateB = b.last_contact_date
-        ? new Date(b.last_contact_date).getTime()
-        : 0;
-      return dateB - dateA; // Most recent first
-    });
-  } else if (sortFilter.value === "responsiveness") {
-    result = result.sort((a, b) => {
-      const scoreA = a.responsiveness_score || 0;
-      const scoreB = b.responsiveness_score || 0;
-      return scoreB - scoreA; // Highest responsiveness first
-    });
-  }
-
-  return result;
-});
+const filteredCoaches = computed(() =>
+  applyFiltersAndSort(
+    coaches.value,
+    searchQuery.value,
+    roleFilter.value,
+    sortFilter.value,
+  ),
+);
 
 const clearFilters = () => {
   searchQuery.value = "";
@@ -400,17 +371,11 @@ const cancelDeleteCoach = () => {
 };
 
 const sendEmail = (coach: (typeof coaches.value)[0]) => {
-  if (coach.email) {
-    window.location.href = `mailto:${coach.email}`;
-  }
+  openEmail(coach.email);
 };
 
 const sendText = (coach: (typeof coaches.value)[0]) => {
-  if (coach.phone) {
-    // Remove any non-digit characters for SMS URL
-    const phone = coach.phone.replace(/\D/g, "");
-    window.location.href = `sms:${phone}`;
-  }
+  openSMS(coach.phone);
 };
 
 const handleSchoolCoachInteractionLogged = async (interactionData: any) => {
@@ -426,18 +391,12 @@ const handleSchoolCoachInteractionLogged = async (interactionData: any) => {
   }
 };
 
-const openTwitter = (coach: (typeof coaches.value)[0]) => {
-  if (coach.twitter_handle) {
-    const handle = coach.twitter_handle.replace("@", "");
-    window.open(`https://twitter.com/${handle}`, "_blank");
-  }
+const handleOpenTwitter = (coach: (typeof coaches.value)[0]) => {
+  openTwitter(coach.twitter_handle);
 };
 
-const openInstagram = (coach: (typeof coaches.value)[0]) => {
-  if (coach.instagram_handle) {
-    const handle = coach.instagram_handle.replace("@", "");
-    window.open(`https://instagram.com/${handle}`, "_blank");
-  }
+const handleOpenInstagram = (coach: (typeof coaches.value)[0]) => {
+  openInstagram(coach.instagram_handle);
 };
 
 const viewCoach = (coach: (typeof coaches.value)[0]) => {
