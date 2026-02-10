@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import type { User } from "~/types/models";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 /**
  * useUsers composable
@@ -27,7 +28,7 @@ export const useUsers = () => {
 
       const { data, error: fetchError } = response as {
         data: User;
-        error: any;
+        error: PostgrestError | null;
       };
 
       if (fetchError) {
@@ -59,7 +60,7 @@ export const useUsers = () => {
 
       const { data, error: fetchError } = response as {
         data: User[];
-        error: any;
+        error: PostgrestError | null;
       };
 
       if (fetchError) {

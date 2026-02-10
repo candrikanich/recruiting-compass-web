@@ -2,8 +2,6 @@
  * Formatting utilities for coach data display
  */
 
-import type { Coach } from "~/types/models";
-
 /**
  * Format date with weekday included
  */
