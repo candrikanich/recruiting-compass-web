@@ -146,10 +146,10 @@
 
     <!-- Delete Confirmation Modal -->
     <DeleteConfirmationModal
-      :is-open="uiState.deleteModalOpen"
+      :is-open="deleteModalOpen"
       :item-name="coach ? `${coach.first_name} ${coach.last_name}` : ''"
       item-type="coach"
-      :is-loading="uiState.isDeleting"
+      :is-loading="isDeleting"
       @cancel="closeDeleteModal"
       @confirm="deleteCoach"
     />
@@ -157,16 +157,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted, watch, nextTick } from "vue";
+import { ref, computed, reactive, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
-import { useCommunication } from "~/composables/useCommunication";
 import { useCoachStats } from "~/composables/useCoachStats";
-import { useFocusTrap } from "~/composables/useFocusTrap";
 import { openTwitter, openInstagram } from "~/utils/socialMediaHandlers";
 import { useUserStore } from "~/stores/user";
+import { useDeleteModal } from "~/composables/useDeleteModal";
+import { usePrivateNotes } from "~/composables/usePrivateNotes";
+import { useCommunicationModal } from "~/composables/useCommunicationModal";
 import { ArrowLeftIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
 import CoachHeader from "~/components/Coach/CoachHeader.vue";
@@ -186,12 +187,6 @@ const coachId = route.params.id as string;
 const { getCoach, updateCoach, smartDelete } = useCoaches();
 const { getSchool } = useSchools();
 const { interactions, fetchInteractions } = useInteractions();
-const {
-  showPanel,
-  communicationType,
-  openCommunication,
-  handleInteractionLogged,
-} = useCommunication();
 const userStore = useUserStore();
 
 // Coach data and loading state
@@ -200,33 +195,28 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const schoolName = ref("");
 
-// Consolidated UI state
+// Communication modal with focus trap management
+const {
+  dialogRef: communicationDialogRef,
+  showPanel,
+  communicationType,
+  openCommunication,
+  handleInteractionLogged,
+  handleClose: handleCloseCommunicationPanel,
+} = useCommunicationModal();
+
+// Delete modal management
+const {
+  isOpen: deleteModalOpen,
+  isDeleting,
+  open: openDeleteModal,
+  close: closeDeleteModal,
+  confirm: confirmDelete,
+} = useDeleteModal(smartDelete);
+
+// Edit modal state
 const uiState = reactive({
   showEditModal: false,
-  deleteModalOpen: false,
-  isDeleting: false,
-});
-
-// Focus trap for communication panel
-const communicationDialogRef = ref<HTMLElement | null>(null);
-const {
-  activate: activateCommunicationPanel,
-  deactivate: deactivateCommunicationPanel,
-} = useFocusTrap(communicationDialogRef);
-
-const handleCloseCommunicationPanel = () => {
-  deactivateCommunicationPanel();
-  showPanel.value = false;
-};
-
-// Watch for communication panel changes to activate/deactivate focus trap
-watch(showPanel, async (isOpen) => {
-  if (isOpen) {
-    await nextTick();
-    activateCommunicationPanel();
-  } else {
-    deactivateCommunicationPanel();
-  }
 });
 
 // Computed properties
@@ -253,19 +243,8 @@ const notes = computed({
   },
 });
 
-const privateNotes = computed({
-  get: (): string => {
-    if (!coach.value || !userStore.user) return "";
-    return String(coach.value.private_notes?.[userStore.user.id] || "");
-  },
-  set: (value: string) => {
-    if (!coach.value || !userStore.user) return;
-    coach.value.private_notes = {
-      ...(coach.value.private_notes || {}),
-      [userStore.user.id]: value,
-    };
-  },
-});
+// Private notes using composable
+const privateNotes = usePrivateNotes(coach);
 
 // Communication handlers
 const sendEmail = () => {
@@ -327,29 +306,19 @@ const handleCoachUpdated = async (updated: Coach) => {
   coach.value = updated;
 };
 
-const openDeleteModal = () => {
-  uiState.deleteModalOpen = true;
-};
-
-const closeDeleteModal = () => {
-  uiState.deleteModalOpen = false;
-};
-
+// Delete handler using composable
 const deleteCoach = async () => {
   if (!coach.value?.id) return;
 
-  uiState.isDeleting = true;
   try {
-    await smartDelete(coach.value.id);
-    closeDeleteModal();
-    router.push("/coaches");
+    await confirmDelete(coach.value.id, () => {
+      router.push("/coaches");
+    });
   } catch (err: unknown) {
     const message =
       err instanceof Error ? err.message : "Failed to delete coach";
     error.value = message;
     console.error("Failed to delete coach:", err);
-  } finally {
-    uiState.isDeleting = false;
   }
 };
 

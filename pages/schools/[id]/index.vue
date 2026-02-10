@@ -131,7 +131,7 @@
           :coaches="schoolCoaches"
           :school="school"
           @open-email-modal="showEmailModal = true"
-          @delete="confirmDelete"
+          @delete="openDeleteConfirm"
         />
       </div>
 
@@ -162,7 +162,7 @@
       cancel-text="Cancel"
       variant="danger"
       @confirm="executeDelete"
-      @cancel="isDeleteDialogOpen = false"
+      @cancel="closeDeleteDialog"
     />
   </div>
 </template>
@@ -183,8 +183,11 @@ import { useSchoolBasicInfo } from "~/composables/useSchoolBasicInfo";
 import { useSchoolProsCons } from "~/composables/useSchoolProsCons";
 import { useSchoolStatusManagement } from "~/composables/useSchoolStatusManagement";
 import { useLiveRegion } from "~/composables/useLiveRegion";
+import { useDeleteModal } from "~/composables/useDeleteModal";
+import { usePrivateNotes } from "~/composables/usePrivateNotes";
+import { useSingleSchoolDistance } from "~/composables/useSchoolDistance";
+import { createUpdateHandler } from "~/utils/updateHandler";
 import { getCarnegieSize } from "~/utils/schoolSize";
-import { calculateDistance, formatDistance } from "~/utils/distance";
 import type { Document, AcademicInfo } from "~/types/models";
 import type { FitScoreResult, DivisionRecommendation } from "~/types/timeline";
 import type { School } from "~/types/models";
@@ -240,8 +243,16 @@ const { statusUpdating, updateStatus, updatePriority, toggleFavorite } =
 const school = ref<School | null>(null);
 const fitScore = ref<FitScoreResult | null>(null);
 const divisionRecommendation = ref<DivisionRecommendation | null>(null);
-const isDeleteDialogOpen = ref(false);
 const showEmailModal = ref(false);
+
+// Delete modal management
+const {
+  isOpen: isDeleteDialogOpen,
+  isDeleting: deleteInProgress,
+  open: openDeleteDialog,
+  close: closeDeleteDialog,
+  confirm: confirmDelete,
+} = useDeleteModal(smartDelete);
 
 // Computed
 const schoolCoaches = computed(() => allCoaches.value);
@@ -255,52 +266,15 @@ const calculatedSize = computed(() =>
     school.value?.academic_info?.student_size as number | null | undefined,
   ),
 );
-const calculatedDistanceFromHome = computed(() => {
-  const schoolLat = school.value?.academic_info?.latitude as
-    | number
-    | null
-    | undefined;
-  const schoolLng = school.value?.academic_info?.longitude as
-    | number
-    | null
-    | undefined;
-  const homeLoc = getHomeLocation();
-  const homeLat = homeLoc?.latitude;
-  const homeLng = homeLoc?.longitude;
-  if (schoolLat && schoolLng && homeLat && homeLng) {
-    const distance = calculateDistance(
-      { latitude: homeLat, longitude: homeLng },
-      { latitude: schoolLat, longitude: schoolLng },
-    );
-    return formatDistance(distance);
-  }
-  return null;
-});
-const myPrivateNote = computed({
-  get: () => {
-    if (!school.value || !userStore.user) return "";
-    return (school.value.private_notes?.[userStore.user.id] as string) || "";
-  },
-  set: (value: string) => {
-    if (!school.value || !userStore.user) return;
-    school.value.private_notes = {
-      ...(school.value.private_notes || {}),
-      [userStore.user.id]: value,
-    };
-  },
-});
+// Distance calculation using composable
+const calculatedDistanceFromHome = useSingleSchoolDistance(school);
 
-// Handlers - Status Management
-const handleStatusUpdate = async (status: School["status"]) => {
-  const updated = await updateStatus(status);
-  if (updated) school.value = updated;
-};
+// Private notes using composable
+const myPrivateNote = usePrivateNotes(school);
 
-const handlePriorityUpdate = async (tier: "A" | "B" | "C" | null) => {
-  const updated = await updatePriority(tier);
-  if (updated) school.value = updated;
-};
-
+// Handlers - Status Management (using createUpdateHandler utility)
+const handleStatusUpdate = createUpdateHandler(school, updateStatus);
+const handlePriorityUpdate = createUpdateHandler(school, updatePriority);
 const handleToggleFavorite = async () => {
   if (!school.value) return;
   const updated = await toggleFavorite(school.value);
@@ -324,75 +298,68 @@ const handleSaveBasicInfo = async () => {
   }
 };
 
-// Handlers - Notes
-const handleUpdateNotes = async (notesValue: string) => {
-  if (!school.value) return;
-  const updated = await updateSchool(id, { notes: notesValue });
-  if (updated) {
-    school.value = updated;
-  }
-};
+// Handlers - Notes (using createUpdateHandler utility)
+const handleUpdateNotes = createUpdateHandler(
+  school,
+  async (notesValue: string) => {
+    return await updateSchool(id, { notes: notesValue });
+  },
+);
 
-const handleUpdatePrivateNotes = async (privateNotesValue: string) => {
-  if (!school.value || !userStore.user) return;
-  const updated = await updateSchool(id, {
-    private_notes: {
-      ...(school.value.private_notes || {}),
-      [userStore.user.id]: privateNotesValue,
-    },
-  });
-  if (updated) {
-    school.value = updated;
-  }
-};
+const handleUpdatePrivateNotes = createUpdateHandler(
+  school,
+  async (privateNotesValue: string) => {
+    if (!school.value || !userStore.user) return null;
+    return await updateSchool(id, {
+      private_notes: {
+        ...(school.value.private_notes || {}),
+        [userStore.user.id]: privateNotesValue,
+      },
+    });
+  },
+);
 
-// Handlers - Pros/Cons
-const handleAddPro = async (proValue: string) => {
-  if (!school.value) return;
-  const updated = await addPro(school.value, proValue);
-  if (updated) school.value = updated;
-};
+// Handlers - Pros/Cons (using createUpdateHandler utility)
+const handleAddPro = createUpdateHandler(school, async (proValue: string) => {
+  if (!school.value) return null;
+  return await addPro(school.value, proValue);
+});
 
-const handleRemovePro = async (index: number) => {
-  if (!school.value) return;
-  const updated = await removePro(school.value, index);
-  if (updated) school.value = updated;
-};
+const handleRemovePro = createUpdateHandler(school, async (index: number) => {
+  if (!school.value) return null;
+  return await removePro(school.value, index);
+});
 
-const handleAddCon = async (conValue: string) => {
-  if (!school.value) return;
-  const updated = await addCon(school.value, conValue);
-  if (updated) school.value = updated;
-};
+const handleAddCon = createUpdateHandler(school, async (conValue: string) => {
+  if (!school.value) return null;
+  return await addCon(school.value, conValue);
+});
 
-const handleRemoveCon = async (index: number) => {
-  if (!school.value) return;
-  const updated = await removeCon(school.value, index);
-  if (updated) school.value = updated;
-};
+const handleRemoveCon = createUpdateHandler(school, async (index: number) => {
+  if (!school.value) return null;
+  return await removeCon(school.value, index);
+});
 
 // Handlers - Other
-const updateCoachingPhilosophy = async (data: Partial<School>) => {
-  if (!school.value) return;
-  const updated = await updateSchool(id, data);
-  if (updated) {
-    school.value = updated;
-  }
-};
+const updateCoachingPhilosophy = createUpdateHandler(
+  school,
+  async (data: Partial<School>) => {
+    return await updateSchool(id, data);
+  },
+);
 
-const confirmDelete = () => {
-  isDeleteDialogOpen.value = true;
+// Delete handlers
+const openDeleteConfirm = () => {
+  openDeleteDialog();
 };
 
 const executeDelete = async () => {
-  isDeleteDialogOpen.value = false;
   try {
-    const result = await smartDelete(id);
-    const message = result.cascadeUsed
-      ? "School and related records deleted"
-      : "School deleted";
-    announce(message);
-    await navigateTo("/schools");
+    await confirmDelete(id, async () => {
+      closeDeleteDialog();
+      announce("School and related records deleted");
+      await navigateTo("/schools");
+    });
   } catch (err) {
     const errorMessage =
       err instanceof Error

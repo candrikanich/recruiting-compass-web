@@ -9,10 +9,7 @@
             {{ formatDateTime(interaction.occurred_at) }}
           </p>
         </div>
-        <InteractionActions
-          @export="handleExport"
-          @delete="showDeleteConfirm = true"
-        />
+        <InteractionActions @export="handleExport" @delete="openDeleteModal" />
       </div>
 
       <!-- Status Badges -->
@@ -97,7 +94,7 @@
       cancel-text="Cancel"
       variant="danger"
       @confirm="confirmDelete"
-      @cancel="showDeleteConfirm = false"
+      @cancel="closeDeleteModal"
     />
   </main>
 </template>
@@ -111,6 +108,7 @@ import { useCoaches } from "~/composables/useCoaches";
 import { useEvents } from "~/composables/useEvents";
 import { useUsers } from "~/composables/useUsers";
 import { useUserStore } from "~/stores/user";
+import { useDeleteModal } from "~/composables/useDeleteModal";
 import { formatDateTime } from "~/utils/dateFormatters";
 import { downloadSingleInteractionCSV } from "~/utils/interactions/exportSingleCSV";
 import type { Interaction } from "~/types/models";
@@ -132,7 +130,15 @@ const { getUserById } = useUsers();
 const interactionId = route.params.id as string;
 const interaction = ref<Interaction | null>(null);
 const loggedByUser = ref<{ full_name?: string } | null>(null);
-const showDeleteConfirm = ref(false);
+
+// Delete modal management
+const {
+  isOpen: showDeleteConfirm,
+  isDeleting,
+  open: openDeleteModal,
+  close: closeDeleteModal,
+  confirm: confirmDeleteAction,
+} = useDeleteModal(deleteInt);
 
 onMounted(async () => {
   // Redirect to add page if trying to create new interaction
@@ -195,8 +201,8 @@ const handleExport = () => {
 };
 
 const confirmDelete = async () => {
-  showDeleteConfirm.value = false;
-  await deleteInt(interactionId);
-  router.push("/interactions");
+  await confirmDeleteAction(interactionId, () => {
+    router.push("/interactions");
+  });
 };
 </script>

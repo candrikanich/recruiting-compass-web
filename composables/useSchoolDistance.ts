@@ -8,7 +8,8 @@
 import { computed, type ComputedRef } from "vue";
 import type { School } from "~/types";
 import type { HomeLocation } from "~/types/models";
-import { calculateDistance } from "~/utils/distance";
+import { calculateDistance, formatDistance } from "~/utils/distance";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 
 export function useSchoolDistance(
   schools: ComputedRef<School[]>,
@@ -50,4 +51,50 @@ export function useSchoolDistance(
   });
 
   return { distanceCache };
+}
+
+/**
+ * Helper to extract coordinates from object with optional chaining
+ */
+function extractCoordinates(
+  location:
+    | { latitude?: number | null; longitude?: number | null }
+    | null
+    | undefined,
+): { latitude: number; longitude: number } | null {
+  if (!location?.latitude || !location?.longitude) return null;
+  return {
+    latitude: location.latitude,
+    longitude: location.longitude,
+  };
+}
+
+/**
+ * Composable for calculating distance from home to a single school
+ * Used in school detail page to reduce nested conditionals
+ *
+ * @param school - Ref to the school entity
+ * @returns Computed formatted distance string or null if coordinates unavailable
+ *
+ * @example
+ * const school = ref<School | null>(null);
+ * const distanceFromHome = useSingleSchoolDistance(school);
+ *
+ * // In template:
+ * <p v-if="distanceFromHome">{{ distanceFromHome }} from home</p>
+ */
+export function useSingleSchoolDistance(
+  school: import("vue").Ref<School | null>,
+) {
+  const { getHomeLocation } = usePreferenceManager();
+
+  return computed(() => {
+    const schoolCoords = extractCoordinates(school.value?.academic_info);
+    const homeCoords = extractCoordinates(getHomeLocation());
+
+    if (!schoolCoords || !homeCoords) return null;
+
+    const distance = calculateDistance(homeCoords, schoolCoords);
+    return formatDistance(distance);
+  });
 }
