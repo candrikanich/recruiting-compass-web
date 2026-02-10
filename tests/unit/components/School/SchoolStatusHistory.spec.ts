@@ -68,9 +68,10 @@ describe("SchoolStatusHistory", () => {
       const wrapper = mountComponent();
       // The loading spinner is shown via the disabled button with animate-spin child
       await vi.dynamicImportSettled();
-      // Loading is true so the button with spinner should exist
-      const spinnerButton = wrapper.find("button[disabled]");
-      expect(spinnerButton.exists()).toBe(true);
+      // Loading is true so the div with role="status" should exist
+      const loadingDiv = wrapper.find('[role="status"]');
+      expect(loadingDiv.exists()).toBe(true);
+      expect(loadingDiv.text()).toContain("Loading status history");
     });
   });
 

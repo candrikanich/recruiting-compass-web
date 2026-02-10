@@ -50,7 +50,7 @@ describe("SchoolDocumentsCard", () => {
       });
 
       const uploadBtn = wrapper.find("button");
-      expect(uploadBtn.text()).toContain("+ Upload");
+      expect(uploadBtn.text()).toContain("Upload");
     });
 
     it("renders icon", () => {

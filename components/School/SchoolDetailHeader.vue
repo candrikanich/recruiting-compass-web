@@ -7,7 +7,7 @@
           {{ school.name }}
         </h1>
         <div class="flex items-center gap-2 text-slate-600 mb-3">
-          <MapPinIcon class="w-4 h-4" />
+          <MapPinIcon class="w-4 h-4" aria-hidden="true" />
           {{ school.location }}
         </div>
         <div class="flex flex-wrap gap-2">
@@ -17,24 +17,30 @@
           >
             {{ school.division }}
           </span>
-          <label for="school-status" class="sr-only">School status</label>
-          <select
-            id="school-status"
-            :model-value="school.status"
-            @change="handleStatusChange"
-            :disabled="statusUpdating"
-            class="px-2 py-1 text-xs font-medium rounded-full border-0 cursor-pointer focus:ring-2 focus:ring-blue-500"
-            :class="[
-              getStatusBadgeColor(school.status),
-              statusUpdating ? 'opacity-50' : '',
-            ]"
-          >
-            <option value="researching">Researching</option>
-            <option value="contacted">Contacted</option>
-            <option value="interested">Interested</option>
-            <option value="offer_received">Offer Received</option>
-            <option value="committed">Committed</option>
-          </select>
+          <div class="relative">
+            <label for="school-status" class="sr-only">School status</label>
+            <select
+              id="school-status"
+              :model-value="school.status"
+              @change="handleStatusChange"
+              :disabled="statusUpdating"
+              :aria-busy="statusUpdating"
+              class="px-2 py-1 text-xs font-medium rounded-full border-2 border-transparent cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+              :class="[
+                getStatusBadgeColor(school.status),
+                statusUpdating ? 'opacity-50 cursor-not-allowed' : '',
+              ]"
+            >
+              <option value="researching">Researching</option>
+              <option value="contacted">Contacted</option>
+              <option value="interested">Interested</option>
+              <option value="offer_received">Offer Received</option>
+              <option value="committed">Committed</option>
+            </select>
+            <span v-if="statusUpdating" class="sr-only">
+              Status is updating, please wait
+            </span>
+          </div>
           <div class="py-1">
             <SchoolPrioritySelector
               :model-value="school.priority_tier ?? null"
@@ -63,7 +69,7 @@
           school.is_favorite ? 'Remove from favorites' : 'Add to favorites'
         "
         :aria-pressed="school.is_favorite"
-        class="flex-shrink-0 transition-all"
+        class="flex-shrink-0 transition-all rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         :class="
           school.is_favorite
             ? 'text-yellow-500'

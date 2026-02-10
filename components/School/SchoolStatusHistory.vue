@@ -2,11 +2,18 @@
   <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-semibold text-slate-900">Status History</h3>
-      <button v-if="loading" disabled class="text-sm text-slate-400">
+      <div
+        v-if="loading"
+        class="flex items-center gap-2"
+        role="status"
+        aria-live="polite"
+      >
         <div
           class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"
+          aria-hidden="true"
         ></div>
-      </button>
+        <span class="text-sm text-slate-400">Loading status history...</span>
+      </div>
     </div>
 
     <!-- Empty State -->

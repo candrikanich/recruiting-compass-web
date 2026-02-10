@@ -7,9 +7,10 @@
       </div>
       <button
         @click="showUploadModal = true"
+        aria-label="Upload document"
         class="px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
       >
-        + Upload
+        Upload
       </button>
     </div>
 
@@ -29,7 +30,7 @@
         </div>
         <NuxtLink
           :to="`/documents/${doc.id}`"
-          class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition"
+          class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           View
         </NuxtLink>

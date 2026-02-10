@@ -7,9 +7,9 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/schools"
-          class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+          class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
         >
-          <ArrowLeftIcon class="w-4 h-4" />
+          <ArrowLeftIcon class="w-4 h-4" aria-hidden="true" />
           Back to Schools
         </NuxtLink>
       </div>
