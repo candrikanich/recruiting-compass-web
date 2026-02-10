@@ -10,7 +10,9 @@
     <!-- Role -->
     <div>
       <label for="role" class="block text-sm font-medium mb-1 text-slate-600">
-        Role <span class="text-red-600">*</span>
+        Role
+        <span class="text-red-600" aria-hidden="true">*</span>
+        <span class="sr-only">(required)</span>
       </label>
       <select
         id="role"
@@ -18,7 +20,7 @@
         required
         aria-required="true"
         aria-describedby="role-error"
-        class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-500/20"
+        class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
         :disabled="loading"
         @blur="validateRole"
       >
@@ -37,7 +39,9 @@
           for="firstName"
           class="block text-sm font-medium mb-1 text-slate-600"
         >
-          First Name <span class="text-red-600">*</span>
+          First Name
+          <span class="text-red-600" aria-hidden="true">*</span>
+          <span class="sr-only">(required)</span>
         </label>
         <input
           id="firstName"
@@ -46,7 +50,7 @@
           required
           aria-required="true"
           aria-describedby="firstName-error"
-          class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-500/20"
+          class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
           placeholder="e.g., John"
           :disabled="loading"
           @blur="validateFirstName"
@@ -63,7 +67,9 @@
           for="lastName"
           class="block text-sm font-medium mb-1 text-slate-600"
         >
-          Last Name <span class="text-red-600">*</span>
+          Last Name
+          <span class="text-red-600" aria-hidden="true">*</span>
+          <span class="sr-only">(required)</span>
         </label>
         <input
           id="lastName"
@@ -72,7 +78,7 @@
           required
           aria-required="true"
           aria-describedby="lastName-error"
-          class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-500/20"
+          class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
           placeholder="e.g., Smith"
           :disabled="loading"
           @blur="validateLastName"
@@ -93,7 +99,7 @@
         id="email"
         v-model="formData.email"
         type="email"
-        class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-500/20"
+        class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
         placeholder="john.smith@university.edu"
         :disabled="loading"
         @blur="validateEmail"
@@ -110,7 +116,7 @@
         id="phone"
         v-model="formData.phone"
         type="tel"
-        class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-500/20"
+        class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
         placeholder="(555) 123-4567"
         :disabled="loading"
         @blur="validatePhone"
@@ -131,7 +137,7 @@
           id="twitter"
           v-model="formData.twitter_handle"
           type="text"
-          class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-500/20"
+          class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
           placeholder="@handle"
           :disabled="loading"
           @blur="validateTwitter"
@@ -150,7 +156,7 @@
           id="instagram"
           v-model="formData.instagram_handle"
           type="text"
-          class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-500/20"
+          class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
           placeholder="@handle"
           :disabled="loading"
           @blur="validateInstagram"
@@ -168,7 +174,7 @@
         id="notes"
         v-model="formData.notes"
         rows="4"
-        class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-500/20"
+        class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
         placeholder="Any notes about this coach..."
         :disabled="loading"
         @blur="validateNotes"
@@ -181,6 +187,7 @@
       <button
         data-testid="add-coach-button"
         type="submit"
+        :aria-busy="loading"
         :disabled="
           loading ||
           hasErrors ||
@@ -188,14 +195,14 @@
           !formData.first_name ||
           !formData.last_name
         "
-        class="flex-1 px-4 py-2 text-white font-semibold rounded-lg transition bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+        class="flex-1 px-4 py-3 text-white font-semibold rounded-lg transition bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
       >
         {{ loading ? "Adding..." : "Add Coach" }}
       </button>
       <button
         type="button"
         @click="$emit('cancel')"
-        class="flex-1 px-4 py-2 font-semibold rounded-lg transition bg-slate-100 text-slate-900 hover:bg-slate-200"
+        class="flex-1 px-4 py-3 font-semibold rounded-lg transition bg-slate-100 text-slate-900 hover:bg-slate-200"
       >
         Cancel
       </button>

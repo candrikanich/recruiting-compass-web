@@ -10,10 +10,12 @@
     <!-- Name -->
     <div>
       <label for="name" class="block text-sm font-medium mb-2 text-slate-700">
-        School Name <span class="text-red-500">*</span>
+        School Name
+        <span class="text-red-500" aria-hidden="true">*</span>
+        <span class="sr-only">(required)</span>
         <span
           v-if="isAutoFilled('name')"
-          class="text-xs font-normal text-blue-600"
+          class="text-xs font-normal text-blue-700"
           >(auto-filled)</span
         >
       </label>
@@ -28,7 +30,7 @@
         required
         :aria-invalid="!!fieldErrors.name"
         :aria-describedby="fieldErrors.name ? 'name-error' : undefined"
-        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
+        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600 disabled:opacity-50"
         placeholder="e.g., University of Florida"
         :disabled="loading"
         @blur="validateName"
@@ -45,7 +47,7 @@
         Location
         <span
           v-if="isAutoFilled('location')"
-          class="text-xs font-normal text-blue-600"
+          class="text-xs font-normal text-blue-700"
           >(auto-filled)</span
         >
       </label>
@@ -55,7 +57,7 @@
         type="text"
         :aria-invalid="!!fieldErrors.location"
         :aria-describedby="fieldErrors.location ? 'location-error' : undefined"
-        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
+        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600 disabled:opacity-50"
         placeholder="e.g., Gainesville, Florida"
         :disabled="loading"
         @blur="validateLocation"
@@ -76,7 +78,7 @@
           Division
           <span
             v-if="isAutoFilled('division')"
-            class="text-xs font-normal text-blue-600"
+            class="text-xs font-normal text-blue-700"
             >(auto-filled)</span
           >
         </label>
@@ -112,7 +114,7 @@
           Conference
           <span
             v-if="isAutoFilled('conference')"
-            class="text-xs font-normal text-blue-600"
+            class="text-xs font-normal text-blue-700"
             >(auto-filled)</span
           >
         </label>
@@ -124,7 +126,7 @@
           :aria-describedby="
             fieldErrors.conference ? 'conference-error' : undefined
           "
-          class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
+          class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600 disabled:opacity-50"
           placeholder="e.g., SEC, ACC, Pac-12"
           :disabled="loading"
           @blur="validateConference"
@@ -145,7 +147,7 @@
         School Website
         <span
           v-if="isAutoFilled('website')"
-          class="text-xs font-normal text-blue-600"
+          class="text-xs font-normal text-blue-700"
           >(auto-filled)</span
         >
       </label>
@@ -155,7 +157,7 @@
         type="text"
         :aria-invalid="!!fieldErrors.website"
         :aria-describedby="fieldErrors.website ? 'website-error' : undefined"
-        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
+        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600 disabled:opacity-50"
         placeholder="https://example.com or www.example.com"
         :disabled="loading"
         @blur="validateWebsite"
@@ -180,7 +182,7 @@
           :aria-describedby="
             fieldErrors.twitter_handle ? 'twitter-error' : undefined
           "
-          class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
+          class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600 disabled:opacity-50"
           placeholder="@handle"
           :disabled="loading"
           @blur="validateTwitter"
@@ -206,7 +208,7 @@
           :aria-describedby="
             fieldErrors.instagram_handle ? 'instagram-error' : undefined
           "
-          class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
+          class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600 disabled:opacity-50"
           placeholder="@handle"
           :disabled="loading"
           @blur="validateInstagram"
@@ -229,7 +231,7 @@
         rows="4"
         :aria-invalid="!!fieldErrors.notes"
         :aria-describedby="fieldErrors.notes ? 'notes-error' : undefined"
-        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none placeholder:text-slate-400 disabled:opacity-50"
+        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none placeholder:text-slate-600 disabled:opacity-50"
         placeholder="Any notes about this school..."
         :disabled="loading"
         @blur="validateNotes"
@@ -316,7 +318,7 @@
           v-if="collegeScorecardData.latitude && collegeScorecardData.longitude"
         >
           <p class="text-slate-600">Location</p>
-          <p class="font-semibold text-green-700">Map coordinates available</p>
+          <p class="font-semibold text-green-800">Map coordinates available</p>
         </div>
       </div>
     </div>
@@ -326,6 +328,7 @@
       <button
         data-testid="add-school-button"
         type="submit"
+        :aria-busy="loading"
         :disabled="loading || hasErrors || !formData.name"
         class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50"
       >

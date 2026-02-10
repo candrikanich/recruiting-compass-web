@@ -2,13 +2,16 @@
   <!-- Skip Link -->
   <a
     href="#main-content"
+    @click="handleSkipLink"
     class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-blue-600 focus:text-white focus:font-medium focus:rounded-br-lg"
   >
     Skip to main content
   </a>
 
   <FormPageLayout
+    ref="mainContentRef"
     id="main-content"
+    tabindex="-1"
     back-to="/coaches"
     back-text="Back to Coaches"
     title="Add New Coach"
@@ -24,15 +27,25 @@
     />
 
     <!-- Coach Form -->
-    <CoachForm
-      v-if="selectedSchoolId"
-      :loading="loading"
-      @submit="handleCoachFormSubmit"
-      @cancel="() => navigateTo('/coaches')"
-    />
+    <div v-if="selectedSchoolId">
+      <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
+        School selected. Coach form now available.
+      </div>
+      <CoachForm
+        :loading="loading"
+        @submit="handleCoachFormSubmit"
+        @cancel="() => navigateTo('/coaches')"
+      />
+    </div>
 
     <!-- Prompt if no school selected -->
-    <div v-else class="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+    <div
+      v-else
+      class="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4"
+      role="status"
+      aria-live="polite"
+      aria-label="School selection required"
+    >
       <p class="text-sm text-slate-600">Please select a school to continue</p>
     </div>
   </FormPageLayout>
@@ -50,6 +63,12 @@ definePageMeta({
 const { createCoach, loading } = useCoaches();
 
 const selectedSchoolId = ref("");
+const mainContentRef = ref<HTMLElement | null>(null);
+
+const handleSkipLink = (e: Event) => {
+  e.preventDefault();
+  mainContentRef.value?.focus();
+};
 
 const handleCoachFormSubmit = async (coachData: any) => {
   try {

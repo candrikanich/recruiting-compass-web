@@ -148,7 +148,9 @@ const handleCancel = () => {
     <!-- Interaction Type -->
     <div>
       <label for="type" class="block text-sm font-medium text-slate-700">
-        Type <span class="text-red-500">*</span>
+        Type
+        <span class="text-red-500" aria-hidden="true">*</span>
+        <span class="sr-only">(required)</span>
       </label>
       <select
         id="type"
@@ -173,16 +175,20 @@ const handleCancel = () => {
     </div>
 
     <!-- Direction -->
-    <div>
-      <label class="block text-sm font-medium text-slate-700">
-        Direction <span class="text-red-500">*</span>
-      </label>
-      <div class="mt-2 flex gap-4">
+    <fieldset>
+      <legend class="block text-sm font-medium text-slate-700 mb-3">
+        Direction
+        <span class="text-red-500" aria-hidden="true">*</span>
+        <span class="sr-only">(required)</span>
+      </legend>
+      <div class="flex gap-4">
         <label class="group flex cursor-pointer items-center gap-3">
           <input
             v-model="form.direction"
             type="radio"
             value="outbound"
+            required
+            aria-required="true"
             :disabled="loading"
             class="h-5 w-5 border-2 border-slate-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
           />
@@ -197,6 +203,8 @@ const handleCancel = () => {
             v-model="form.direction"
             type="radio"
             value="inbound"
+            required
+            aria-required="true"
             :disabled="loading"
             class="h-5 w-5 border-2 border-slate-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
           />
@@ -208,21 +216,28 @@ const handleCancel = () => {
         </label>
       </div>
       <DesignSystemFieldError :error="fieldErrors.direction" />
-    </div>
+    </fieldset>
 
     <!-- Date/Time -->
     <div>
       <label for="occurred_at" class="block text-sm font-medium text-slate-700">
-        Date & Time <span class="text-red-500">*</span>
+        Date & Time
+        <span class="text-red-500" aria-hidden="true">*</span>
+        <span class="sr-only">(required)</span>
       </label>
       <input
         id="occurred_at"
         v-model="form.occurred_at"
         type="datetime-local"
         required
+        aria-required="true"
+        aria-describedby="datetime-help"
         :disabled="loading"
         class="mt-1 block w-full rounded-lg border-2 border-slate-300 bg-white px-4 py-3 transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
       />
+      <p id="datetime-help" class="mt-1 text-xs text-slate-600">
+        Select a date and time using the picker, or enter: YYYY-MM-DD HH:MM
+      </p>
       <DesignSystemFieldError :error="fieldErrors.occurred_at" />
     </div>
 
@@ -300,6 +315,7 @@ const handleCancel = () => {
       <button
         data-testid="log-interaction-submit-button"
         type="submit"
+        :aria-busy="loading"
         :disabled="loading || !isFormValid"
         class="flex-1 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 px-4 py-3 font-semibold text-white transition hover:from-indigo-600 hover:to-indigo-700 disabled:opacity-50"
       >

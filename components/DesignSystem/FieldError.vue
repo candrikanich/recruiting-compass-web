@@ -4,6 +4,8 @@
       v-if="error"
       :id="id"
       role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
       class="mt-1 text-sm text-red-600 flex items-start gap-1"
     >
       <ExclamationCircleIcon
