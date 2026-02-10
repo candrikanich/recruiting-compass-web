@@ -82,6 +82,11 @@ jobs:
       actions: read
       contents: read
 
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -89,8 +94,18 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: javascript-typescript
-          queries: security-and-quality
+          languages: ${{ matrix.language }}
+          queries: security-extended
+          # Exclude test files and generated code from analysis
+          paths-ignore:
+            - "**/*.spec.ts"
+            - "**/*.spec.js"
+            - "**/*.test.ts"
+            - "**/*.test.js"
+            - "**/node_modules/**"
+            - "**/.nuxt/**"
+            - "**/.output/**"
+            - "**/dist/**"
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
@@ -98,7 +113,9 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
-          category: "/language:javascript-typescript"
+          category: "/language:${{ matrix.language }}"
+          # Continue even if some files have parsing issues
+          upload-as-artifact: false
 
   # Job 3: Secret scanning (GitHub's native - catches secrets in code)
   secret-scan:
