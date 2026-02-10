@@ -6,46 +6,18 @@
         <div>
           <h1 class="text-3xl font-bold">{{ interaction.subject }}</h1>
           <p class="text-gray-600 mt-2">
-            {{ formatDate(interaction.occurred_at) }}
+            {{ formatDateTime(interaction.occurred_at) }}
           </p>
         </div>
-        <div class="flex gap-2">
-          <button
-            @click="exportInteraction"
-            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            📤 Export
-          </button>
-          <button
-            @click="deleteInteraction"
-            class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            🗑️ Delete
-          </button>
-        </div>
+        <InteractionActions @export="handleExport" @delete="handleDelete" />
       </div>
 
       <!-- Status Badges -->
-      <div class="flex gap-2">
-        <span
-          class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-        >
-          {{ interaction.type }}
-        </span>
-        <span
-          :class="[
-            'px-3 py-1 rounded-full text-sm font-medium',
-            interaction.direction === 'inbound'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-purple-100 text-purple-800',
-          ]"
-        >
-          {{ interaction.direction }}
-        </span>
-        <span :class="sentimentClass">
-          {{ interaction.sentiment }}
-        </span>
-      </div>
+      <StatusBadges
+        :type="interaction.type"
+        :direction="interaction.direction"
+        :sentiment="interaction.sentiment"
+      />
 
       <!-- Main Content -->
       <div class="bg-white rounded-lg shadow p-6">
@@ -57,80 +29,38 @@
 
       <!-- Details Grid -->
       <div class="grid grid-cols-2 gap-4">
-        <div class="bg-white rounded-lg shadow p-4">
-          <h3 class="font-semibold text-gray-900 mb-2">School</h3>
-          <p v-if="school" class="text-gray-700">
-            <NuxtLink
-              :to="`/schools/${school.id}`"
-              class="text-blue-600 hover:underline"
-            >
-              {{ school.name }}
-            </NuxtLink>
-          </p>
-          <p v-else class="text-gray-500">—</p>
-        </div>
+        <DetailCard
+          label="School"
+          :value="school?.name"
+          :link-to="school ? `/schools/${school.id}` : undefined"
+        />
 
-        <div class="bg-white rounded-lg shadow p-4">
-          <h3 class="font-semibold text-gray-900 mb-2">Coach</h3>
-          <p v-if="coach" class="text-gray-700">
-            <NuxtLink
-              :to="`/coaches/${coach.id}`"
-              class="text-blue-600 hover:underline"
-            >
-              {{ coach.first_name }} {{ coach.last_name }}
-            </NuxtLink>
-          </p>
-          <p v-else class="text-gray-500">—</p>
-        </div>
+        <DetailCard
+          label="Coach"
+          :value="coachFullName"
+          :link-to="coach ? `/coaches/${coach.id}` : undefined"
+        />
 
-        <div class="bg-white rounded-lg shadow p-4">
-          <h3 class="font-semibold text-gray-900 mb-2">Event</h3>
-          <p v-if="event" class="text-gray-700">
-            <NuxtLink
-              :to="`/events/${event.id}`"
-              class="text-blue-600 hover:underline"
-            >
-              {{ event.name }}
-            </NuxtLink>
-          </p>
-          <p v-else class="text-gray-500">—</p>
-        </div>
+        <DetailCard
+          label="Event"
+          :value="event?.name"
+          :link-to="event ? `/events/${event.id}` : undefined"
+        />
 
-        <div class="bg-white rounded-lg shadow p-4">
-          <h3 class="font-semibold text-gray-900 mb-2">Logged By</h3>
-          <p class="text-gray-700">{{ loggedByName }}</p>
-        </div>
+        <DetailCard label="Logged By" :value="loggedByName" />
       </div>
 
       <!-- Attachments -->
-      <div
+      <AttachmentList
         v-if="interaction.attachments && interaction.attachments.length > 0"
-        class="bg-white rounded-lg shadow p-6"
-      >
-        <h2 class="text-xl font-bold mb-4">
-          Attachments ({{ interaction.attachments.length }})
-        </h2>
-        <div class="grid grid-cols-2 gap-4">
-          <a
-            v-for="(url, idx) in interaction.attachments"
-            :key="idx"
-            :href="url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="p-4 border rounded-lg hover:bg-gray-50 transition"
-          >
-            <p class="text-sm font-medium text-blue-600 break-all">
-              📎 {{ getFilename(url) }}
-            </p>
-          </a>
-        </div>
-      </div>
+        :attachments="interaction.attachments"
+      />
 
       <!-- Metadata -->
       <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-600 space-y-2">
         <p>
           <span class="font-semibold">Created:</span>
-          {{ formatDate(interaction.created_at) }}
+          {{ formatDateTime(interaction.created_at) }}
         </p>
       </div>
     </div>
@@ -149,22 +79,28 @@ import { useInteractions } from "~/composables/useInteractions";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useEvents } from "~/composables/useEvents";
-import { useSupabase } from "~/composables/useSupabase";
+import { useUsers } from "~/composables/useUsers";
 import { useUserStore } from "~/stores/user";
-import type { Interaction, User } from "~/types/models";
+import { formatDateTime } from "~/utils/dateFormatters";
+import { downloadSingleInteractionCSV } from "~/utils/interactions/exportSingleCSV";
+import type { Interaction } from "~/types/models";
+import DetailCard from "~/components/Interaction/DetailCard.vue";
+import StatusBadges from "~/components/Interaction/StatusBadges.vue";
+import InteractionActions from "~/components/Interaction/InteractionActions.vue";
+import AttachmentList from "~/components/Interaction/AttachmentList.vue";
 
 const route = useRoute();
 const router = useRouter();
-const supabase = useSupabase();
 const userStore = useUserStore();
 const { getInteraction, deleteInteraction: deleteInt } = useInteractions();
 const { schools } = useSchools();
 const { coaches } = useCoaches();
 const { events } = useEvents();
+const { getUserById } = useUsers();
 
 const interactionId = route.params.id as string;
 const interaction = ref<Interaction | null>(null);
-const loggedByUser = ref<User | null>(null);
+const loggedByUser = ref<{ full_name?: string } | null>(null);
 
 onMounted(async () => {
   // Redirect to add page if trying to create new interaction
@@ -175,16 +111,9 @@ onMounted(async () => {
 
   interaction.value = await getInteraction(interactionId);
 
+  // Fetch user who logged this interaction
   if (interaction.value?.logged_by) {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", interaction.value.logged_by)
-      .single();
-
-    if (!error && data) {
-      loggedByUser.value = data;
-    }
+    loggedByUser.value = await getUserById(interaction.value.logged_by);
   }
 });
 
@@ -209,6 +138,11 @@ const event = computed(() => {
   );
 });
 
+const coachFullName = computed(() => {
+  if (!coach.value) return null;
+  return `${coach.value.first_name} ${coach.value.last_name}`;
+});
+
 const loggedByName = computed(() => {
   if (!interaction.value?.logged_by) return "Unknown";
 
@@ -216,78 +150,24 @@ const loggedByName = computed(() => {
     return "You";
   }
 
-  if (loggedByUser.value) {
-    return loggedByUser.value.full_name || "Unknown";
+  if (loggedByUser.value?.full_name) {
+    return loggedByUser.value.full_name;
   }
 
   return "Unknown User";
 });
 
-const sentimentClass = computed(() => {
-  const sentiment = interaction.value?.sentiment;
-  const classes = "px-3 py-1 rounded-full text-sm font-medium";
-
-  if (!sentiment) return classes;
-
-  const sentimentMap: Record<string, string> = {
-    very_positive: `${classes} bg-green-100 text-green-800`,
-    positive: `${classes} bg-lime-100 text-lime-800`,
-    neutral: `${classes} bg-gray-100 text-gray-800`,
-    negative: `${classes} bg-red-100 text-red-800`,
-  };
-
-  return sentimentMap[sentiment] || classes;
-});
-
-const formatDate = (date: string | undefined): string => {
-  if (!date) return "Unknown";
-  return new Date(date).toLocaleString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
-const getFilename = (url: string) => {
-  return url.split("/").pop() || url;
-};
-
-const exportInteraction = () => {
+const handleExport = () => {
   if (!interaction.value) return;
-  const csv = [
-    ["Field", "Value"],
-    ["Subject", interaction.value.subject || "N/A"],
-    ["Type", interaction.value.type],
-    ["Direction", interaction.value.direction],
-    ["Sentiment", interaction.value.sentiment || "N/A"],
-    ["School", school.value?.name || "N/A"],
-    [
-      "Coach",
-      coach.value
-        ? `${coach.value.first_name} ${coach.value.last_name}`
-        : "N/A",
-    ],
-    ["Date", formatDate(interaction.value.occurred_at)],
-    ["Content", interaction.value.content || "N/A"],
-    ["Attachments", interaction.value.attachments?.length || 0],
-  ]
-    .map((row) => row.map((cell) => `"${cell}"`).join(","))
-    .join("\n");
-
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `interaction-${(interaction.value.subject || "export").toLowerCase().replace(/\s+/g, "-")}.csv`;
-  a.click();
+  downloadSingleInteractionCSV(interaction.value, school.value, coach.value);
 };
 
-const deleteInteraction = async () => {
-  if (confirm("Are you sure you want to delete this interaction?")) {
-    await deleteInt(interactionId);
-    router.push("/interactions");
+const handleDelete = async () => {
+  if (!confirm("Are you sure you want to delete this interaction?")) {
+    return;
   }
+
+  await deleteInt(interactionId);
+  router.push("/interactions");
 };
 </script>

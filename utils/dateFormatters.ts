@@ -39,3 +39,20 @@ export const formatDateWithRelative = (dateString: string): string => {
   const days = daysAgo(dateString);
   return `${formatted} (${days} ${days === 1 ? "day" : "days"} ago)`;
 };
+
+/**
+ * Format a date string to a localized date-time string
+ * @param dateString - ISO date string
+ * @returns Formatted date-time string (e.g., "Jan 15, 2024, 3:45 PM")
+ */
+export const formatDateTime = (dateString: string | undefined): string => {
+  if (!dateString) return "Unknown";
+
+  return new Date(dateString).toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
