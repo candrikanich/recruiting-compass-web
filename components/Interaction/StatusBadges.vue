@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import Badge from "~/components/DesignSystem/Badge.vue";
 import {
   getSentimentBadgeColor,
