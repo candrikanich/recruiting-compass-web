@@ -1,0 +1,17 @@
+name: "CodeQL Configuration"
+
+# Exclude test files and generated code from security analysis
+paths-ignore:
+  - "**/*.spec.ts"
+  - "**/*.spec.js"
+  - "**/*.test.ts"
+  - "**/*.test.js"
+  - "**/node_modules/**"
+  - "**/.nuxt/**"
+  - "**/.output/**"
+  - "**/dist/**"
+  - "**/.vercel/**"
+
+# Run security-extended queries (includes security-and-quality)
+queries:
+  - uses: security-extended
