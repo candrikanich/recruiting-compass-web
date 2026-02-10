@@ -10,12 +10,13 @@ defineProps<Props>();
 
 <template>
   <div class="bg-white rounded-lg shadow p-4">
-    <h3 class="font-semibold text-gray-900 mb-2">{{ label }}</h3>
+    <strong class="font-semibold text-gray-900 mb-2 block">{{ label }}</strong>
     <p v-if="value" class="text-gray-700">
       <NuxtLink
         v-if="linkTo"
         :to="linkTo"
-        class="text-blue-600 hover:underline"
+        :aria-label="`View details for ${label}: ${value}`"
+        class="text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
       >
         {{ value }}
       </NuxtLink>

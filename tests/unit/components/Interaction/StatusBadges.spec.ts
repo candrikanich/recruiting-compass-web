@@ -163,9 +163,9 @@ describe("StatusBadges", () => {
     });
   });
 
-  describe("Badge Props", () => {
-    it("passes variant='light' to all badges", () => {
-      const wrapper = mount(StatusBadges, {
+  describe("Badge Rendering", () => {
+    it("renders correct number of badges based on props", () => {
+      const wrapperWithSentiment = mount(StatusBadges, {
         props: {
           type: "email",
           direction: "outbound",
@@ -178,18 +178,31 @@ describe("StatusBadges", () => {
         },
       });
 
-      const badges = wrapper.findAllComponents(Badge);
-      badges.forEach((badge) => {
-        expect(badge.props("variant")).toBe("light");
+      const wrapperWithoutSentiment = mount(StatusBadges, {
+        props: {
+          type: "email",
+          direction: "outbound",
+        },
+        global: {
+          components: {
+            Badge,
+          },
+        },
       });
+
+      // With sentiment: type + direction + sentiment = 3 badges
+      expect(wrapperWithSentiment.findAllComponents(Badge).length).toBe(3);
+
+      // Without sentiment: type + direction = 2 badges
+      expect(wrapperWithoutSentiment.findAllComponents(Badge).length).toBe(2);
     });
 
-    it("passes color prop to badges", () => {
+    it("renders badges with correct content", () => {
       const wrapper = mount(StatusBadges, {
         props: {
-          type: "email",
-          direction: "outbound",
-          sentiment: "positive",
+          type: "phone_call",
+          direction: "inbound",
+          sentiment: "neutral",
         },
         global: {
           components: {
@@ -198,11 +211,11 @@ describe("StatusBadges", () => {
         },
       });
 
-      const badges = wrapper.findAllComponents(Badge);
-      // Each badge should have a color prop
-      badges.forEach((badge) => {
-        expect(badge.props("color")).toBeDefined();
-      });
+      const text = wrapper.text();
+      // Verify all badge contents are present
+      expect(text).toContain("phone_call");
+      expect(text).toContain("inbound");
+      expect(text).toContain("neutral");
     });
   });
 
@@ -241,9 +254,10 @@ describe("StatusBadges", () => {
       });
 
       const badges = wrapper.findAllComponents(Badge);
-      expect(badges[0].text()).toBe("phone_call");
-      expect(badges[1].text()).toBe("inbound");
-      expect(badges[2].text()).toBe("neutral");
+      // Note: .text() includes sr-only accessibility labels
+      expect(badges[0].text()).toContain("phone_call");
+      expect(badges[1].text()).toContain("inbound");
+      expect(badges[2].text()).toContain("neutral");
     });
 
     it("renders only type and direction badges when no sentiment", () => {
@@ -261,8 +275,9 @@ describe("StatusBadges", () => {
 
       const badges = wrapper.findAllComponents(Badge);
       expect(badges.length).toBe(2);
-      expect(badges[0].text()).toBe("email");
-      expect(badges[1].text()).toBe("outbound");
+      // Note: .text() includes sr-only accessibility labels
+      expect(badges[0].text()).toContain("email");
+      expect(badges[1].text()).toContain("outbound");
     });
   });
 

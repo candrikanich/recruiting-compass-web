@@ -29,15 +29,15 @@ const sizeClasses: Record<BadgeSize, string> = {
 const colorVariants: Record<BadgeColor, Record<BadgeVariant, string>> = {
   blue: {
     solid: "bg-brand-blue-600 text-white",
-    light: "bg-brand-blue-100 text-brand-blue-700",
+    light: "bg-brand-blue-200 text-brand-blue-900",
   },
   purple: {
     solid: "bg-brand-purple-600 text-white",
-    light: "bg-brand-purple-100 text-brand-purple-700",
+    light: "bg-brand-purple-200 text-brand-purple-900",
   },
   emerald: {
     solid: "bg-brand-emerald-600 text-white",
-    light: "bg-brand-emerald-100 text-brand-emerald-700",
+    light: "bg-brand-emerald-200 text-brand-emerald-900",
   },
   orange: {
     solid: "bg-brand-orange-600 text-white",
@@ -45,11 +45,11 @@ const colorVariants: Record<BadgeColor, Record<BadgeVariant, string>> = {
   },
   slate: {
     solid: "bg-brand-slate-700 text-white",
-    light: "bg-brand-slate-100 text-brand-slate-700",
+    light: "bg-brand-slate-200 text-brand-slate-900",
   },
   red: {
     solid: "bg-brand-red-600 text-white",
-    light: "bg-brand-red-100 text-brand-red-700",
+    light: "bg-brand-red-200 text-brand-red-900",
   },
 };
 

@@ -370,13 +370,19 @@ describe("Interaction Detail Page", () => {
       });
 
       it("returns 'Unknown User' when user fetch fails", async () => {
+        // Override interaction to have a different logged_by user ID
+        const interactionWithDifferentUser = {
+          ...mockInteraction,
+          logged_by: "user-999", // Different from current user (user-001)
+        };
+        mockGetInteraction.mockResolvedValue(interactionWithDifferentUser);
         mockGetUserById.mockResolvedValue(null);
 
         const wrapper = mount(InteractionDetailPage);
 
         await flushPromises();
 
-        expect(wrapper.text()).toContain("Unknown");
+        expect(wrapper.text()).toContain("Unknown User");
       });
     });
   });
@@ -397,13 +403,14 @@ describe("Interaction Detail Page", () => {
       }
     });
 
-    it("does not call export when interaction is null", () => {
-      const {
-        downloadSingleInteractionCSV,
-      } = require("~/utils/interactions/exportSingleCSV");
+    it("does not call export when interaction is null", async () => {
+      const { downloadSingleInteractionCSV } =
+        await import("~/utils/interactions/exportSingleCSV");
       mockGetInteraction.mockResolvedValue(null);
 
       mount(InteractionDetailPage);
+
+      await flushPromises();
 
       // Should not crash when interaction is null
       expect(downloadSingleInteractionCSV).not.toHaveBeenCalled();
@@ -520,25 +527,47 @@ describe("Interaction Detail Page", () => {
     });
 
     it("handles fetch error gracefully", async () => {
-      mockGetInteraction.mockRejectedValue(new Error("Network error"));
+      // Suppress console errors and unhandled rejection warnings
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      // Mock error is caught by composable, so no unhandled rejection
+      const mockError = new Error("Network error");
+      mockGetInteraction.mockRejectedValueOnce(mockError);
 
       const wrapper = mount(InteractionDetailPage);
 
+      // Wait for async operations and error handling
       await flushPromises();
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Should not crash
       expect(wrapper.exists()).toBe(true);
+
+      consoleErrorSpy.mockRestore();
     });
 
     it("handles user fetch error gracefully", async () => {
-      mockGetUserById.mockRejectedValue(new Error("User not found"));
+      // Suppress console errors and unhandled rejection warnings
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      // Mock error is caught by composable, so no unhandled rejection
+      const mockError = new Error("User not found");
+      mockGetUserById.mockRejectedValueOnce(mockError);
 
       const wrapper = mount(InteractionDetailPage);
 
+      // Wait for async operations and error handling
       await flushPromises();
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Should still render interaction, just without user name
       expect(wrapper.exists()).toBe(true);
+
+      consoleErrorSpy.mockRestore();
     });
   });
 

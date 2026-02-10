@@ -21,11 +21,19 @@ const sentimentColor = computed(() => getSentimentBadgeColor(props.sentiment));
 </script>
 
 <template>
-  <div class="flex gap-2">
-    <Badge :color="typeColor" variant="light">{{ type }}</Badge>
-    <Badge :color="directionColor" variant="light">{{ direction }}</Badge>
+  <div
+    class="flex gap-2 flex-wrap"
+    role="region"
+    aria-label="Interaction status"
+  >
+    <Badge :color="typeColor" variant="light">
+      <span class="sr-only">Type:</span>{{ type }}
+    </Badge>
+    <Badge :color="directionColor" variant="light">
+      <span class="sr-only">Direction:</span>{{ direction }}
+    </Badge>
     <Badge v-if="sentiment" :color="sentimentColor" variant="light">
-      {{ sentiment }}
+      <span class="sr-only">Sentiment:</span>{{ sentiment }}
     </Badge>
   </div>
 </template>

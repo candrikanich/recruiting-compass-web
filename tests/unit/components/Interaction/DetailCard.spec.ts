@@ -11,7 +11,7 @@ describe("DetailCard", () => {
       },
     });
 
-    expect(wrapper.find("h3").text()).toBe("School");
+    expect(wrapper.find("strong").text()).toBe("School");
     expect(wrapper.find("p").text()).toBe("University of Test");
   });
 
@@ -89,10 +89,11 @@ describe("DetailCard", () => {
       },
     });
 
-    const label = wrapper.find("h3");
+    const label = wrapper.find("strong");
     expect(label.classes()).toContain("font-semibold");
     expect(label.classes()).toContain("text-gray-900");
     expect(label.classes()).toContain("mb-2");
+    expect(label.classes()).toContain("block");
   });
 
   it("applies correct CSS classes to value paragraph", () => {

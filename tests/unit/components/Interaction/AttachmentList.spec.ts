@@ -60,7 +60,12 @@ describe("AttachmentList", () => {
         },
       });
 
-      expect(spy).toHaveBeenCalledTimes(3);
+      // extractFilename is called 4 times per attachment:
+      // 1. Display filename in aria-label
+      // 2. Display filename in link text
+      // 3. getFileExtension for aria-label
+      // 4. getFileExtension for file type label
+      expect(spy).toHaveBeenCalledTimes(12);
       expect(spy).toHaveBeenCalledWith(mockAttachments[0]);
       expect(spy).toHaveBeenCalledWith(mockAttachments[1]);
       expect(spy).toHaveBeenCalledWith(mockAttachments[2]);
@@ -198,12 +203,21 @@ describe("AttachmentList", () => {
         },
       });
 
-      const paragraphs = wrapper.findAll("p");
-      paragraphs.forEach((p) => {
-        expect(p.classes()).toContain("text-sm");
-        expect(p.classes()).toContain("font-medium");
-        expect(p.classes()).toContain("text-blue-600");
-        expect(p.classes()).toContain("break-all");
+      const links = wrapper.findAll("a");
+      links.forEach((link) => {
+        // Check filename paragraph (first p in each link)
+        const filenameParagraph = link.find("p.text-sm");
+        expect(filenameParagraph.exists()).toBe(true);
+        expect(filenameParagraph.classes()).toContain("text-sm");
+        expect(filenameParagraph.classes()).toContain("font-medium");
+        expect(filenameParagraph.classes()).toContain("text-blue-600");
+        expect(filenameParagraph.classes()).toContain("break-all");
+
+        // Check file type paragraph (second p in each link)
+        const fileTypeParagraph = link.find("p.text-xs");
+        expect(fileTypeParagraph.exists()).toBe(true);
+        expect(fileTypeParagraph.classes()).toContain("text-xs");
+        expect(fileTypeParagraph.classes()).toContain("text-gray-500");
       });
     });
   });
