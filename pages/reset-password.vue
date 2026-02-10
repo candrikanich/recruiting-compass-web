@@ -198,7 +198,7 @@ definePageMeta({ layout: "public" });
 import { ref, computed, watch, nextTick, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
-import PasswordInput from "~/components/Form/PasswordInput.vue";
+import PasswordInput from "~/components/PasswordInput.vue";
 import { usePasswordReset } from "~/composables/usePasswordReset";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
