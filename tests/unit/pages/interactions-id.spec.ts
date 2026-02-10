@@ -527,47 +527,36 @@ describe("Interaction Detail Page", () => {
     });
 
     it("handles fetch error gracefully", async () => {
-      // Suppress console errors and unhandled rejection warnings
-      const consoleErrorSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-
-      // Mock error is caught by composable, so no unhandled rejection
-      const mockError = new Error("Network error");
-      mockGetInteraction.mockRejectedValueOnce(mockError);
+      // Mock composable returning null (simulates error case without rejection)
+      // The real composable catches errors and returns null, so we mock that behavior
+      mockGetInteraction.mockResolvedValueOnce(null);
 
       const wrapper = mount(InteractionDetailPage);
 
-      // Wait for async operations and error handling
       await flushPromises();
-      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      // Should not crash
+      // Should not crash and show loading state
       expect(wrapper.exists()).toBe(true);
-
-      consoleErrorSpy.mockRestore();
+      expect(wrapper.text()).toContain("Loading interaction");
     });
 
     it("handles user fetch error gracefully", async () => {
-      // Suppress console errors and unhandled rejection warnings
-      const consoleErrorSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-
-      // Mock error is caught by composable, so no unhandled rejection
-      const mockError = new Error("User not found");
-      mockGetUserById.mockRejectedValueOnce(mockError);
+      // Mock getUserById returning null (simulates error case without rejection)
+      // The real composable catches errors and returns null
+      const interactionWithUser = {
+        ...mockInteraction,
+        logged_by: "user-999",
+      };
+      mockGetInteraction.mockResolvedValueOnce(interactionWithUser);
+      mockGetUserById.mockResolvedValueOnce(null);
 
       const wrapper = mount(InteractionDetailPage);
 
-      // Wait for async operations and error handling
       await flushPromises();
-      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      // Should still render interaction, just without user name
+      // Should still render interaction with "Unknown User"
       expect(wrapper.exists()).toBe(true);
-
-      consoleErrorSpy.mockRestore();
+      expect(wrapper.text()).toContain("Unknown User");
     });
   });
 
