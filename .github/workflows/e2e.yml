@@ -1,10 +1,11 @@
 name: E2E Tests
 
 on:
+  # Only run on PRs to main (production gate)
   pull_request:
-    branches: [develop, main]
-  push:
-    branches: [develop]
+    branches: [main]
+  # Allow manual triggering from Actions tab
+  workflow_dispatch:
 
 concurrency:
   group: e2e-${{ github.ref }}

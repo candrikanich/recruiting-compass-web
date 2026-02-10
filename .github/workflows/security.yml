@@ -1,13 +1,14 @@
 name: Security Scanning
 
 on:
-  push:
-    branches: [develop, main]
+  # Only run on PRs to main (production gate)
   pull_request:
-    branches: [develop, main]
+    branches: [main]
+  # Run daily to catch newly disclosed vulnerabilities
   schedule:
-    # Run daily at 6 AM UTC to catch new vulnerabilities
     - cron: "0 6 * * *"
+  # Allow manual triggering from Actions tab
+  workflow_dispatch:
 
 concurrency:
   group: security-${{ github.ref }}
