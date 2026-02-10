@@ -28,8 +28,14 @@
             >
               <span class="text-red-700 mt-1">•</span>
               <div>
-                <strong>{{ formatFieldName(error.field) }}:</strong>
-                {{ error.message }}
+                <button
+                  type="button"
+                  @click="focusField(error.field)"
+                  class="font-semibold text-red-700 hover:underline focus:outline-2 focus:outline-offset-2 focus:outline-red-600"
+                >
+                  {{ formatFieldName(error.field) }}
+                </button>
+                : {{ error.message }}
               </div>
             </li>
           </ul>
@@ -74,6 +80,17 @@ watch(
     }
   },
 );
+
+/**
+ * Focus the field associated with an error
+ */
+const focusField = (fieldName: string) => {
+  const fieldId = fieldName.replace(/\./g, "-");
+  const element =
+    document.getElementById(fieldId) ||
+    document.querySelector(`[name="${fieldName}"]`);
+  element?.focus();
+};
 
 /**
  * Formats field name for display
