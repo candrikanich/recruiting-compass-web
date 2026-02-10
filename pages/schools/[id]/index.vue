@@ -199,7 +199,7 @@ import SchoolProsConsCard from "~/components/School/SchoolProsConsCard.vue";
 import SchoolCoachingPhilosophy from "~/components/School/CoachingPhilosophy.vue";
 import SchoolSidebar from "~/components/School/SchoolSidebar.vue";
 import EmailSendModal from "~/components/EmailSendModal.vue";
-import FitScoreDisplay from "~/components/FitScoreDisplay.vue";
+import FitScoreDisplay from "~/components/FitScore/FitScoreDisplay.vue";
 import DesignSystemConfirmDialog from "~/components/DesignSystem/ConfirmDialog.vue";
 
 definePageMeta({});
@@ -291,7 +291,7 @@ const myPrivateNote = computed({
 });
 
 // Handlers - Status Management
-const handleStatusUpdate = async (status: string) => {
+const handleStatusUpdate = async (status: School["status"]) => {
   const updated = await updateStatus(status);
   if (updated) school.value = updated;
 };

@@ -101,14 +101,14 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  "update:status": [status: string];
+  "update:status": [status: School["status"]];
   "update:priority": [tier: "A" | "B" | "C" | null];
   "toggle-favorite": [];
 }>();
 
 const handleStatusChange = (event: Event) => {
   const target = event.target as HTMLSelectElement;
-  emit("update:status", target.value);
+  emit("update:status", target.value as School["status"]);
 };
 
 const handlePriorityUpdate = (tier: "A" | "B" | "C" | null) => {

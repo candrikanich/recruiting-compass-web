@@ -8,7 +8,9 @@ export const useSchoolStatusManagement = (schoolId: string) => {
   const statusUpdating = ref(false);
   const priorityUpdating = ref(false);
 
-  const updateStatus = async (status: string): Promise<School | null> => {
+  const updateStatus = async (
+    status: School["status"],
+  ): Promise<School | null> => {
     statusUpdating.value = true;
     try {
       const updated = await updateSchoolStatus(schoolId, status);
