@@ -11,6 +11,14 @@ export default defineNuxtConfig({
 
   modules: ["@pinia/nuxt"],
 
+  app: {
+    head: {
+      htmlAttrs: {
+        lang: "en",
+      },
+    },
+  },
+
   // Vite caching configuration
   vite: {
     // Cache directory for faster builds

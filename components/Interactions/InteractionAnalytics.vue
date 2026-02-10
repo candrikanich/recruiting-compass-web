@@ -88,6 +88,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { formatType } from "~/utils/interactionFormatters";
 import type { Interaction } from "~/types/models";
 
 const props = defineProps<{
@@ -132,21 +133,6 @@ const getMostCommonType = () => {
 const getMostCommonTypeCount = () => {
   const entries = Object.entries(typeDistribution.value);
   return entries.length > 0 ? entries[0][1] : 0;
-};
-
-const formatType = (type: string): string => {
-  const typeMap: Record<string, string> = {
-    email: "Email",
-    text: "Text",
-    phone_call: "Phone Call",
-    in_person_visit: "In-Person Visit",
-    virtual_meeting: "Virtual Meeting",
-    camp: "Camp",
-    showcase: "Showcase",
-    tweet: "Tweet",
-    dm: "Direct Message",
-  };
-  return typeMap[type] || type;
 };
 
 const getTypeColor = (type: string): string => {

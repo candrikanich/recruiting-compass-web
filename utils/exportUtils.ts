@@ -2,7 +2,7 @@
  * Export utilities for generating CSV and PDF reports
  */
 
-import type { Interaction, School, Offer } from "~/types/models";
+import type { Interaction, School, Offer, Coach } from "~/types/models";
 import { downloadFile } from "./exportHelpers";
 
 // Extend jsPDF type to include autoTable
@@ -741,4 +741,159 @@ const getStatusBadge = (status: string): string => {
     committed: '<span class="badge badge-green">Committed</span>',
   };
   return badges[status] || status;
+};
+
+// ============================================
+// Coach Exports
+// ============================================
+
+export interface CoachExportData extends Coach {
+  schoolName?: string;
+}
+
+export const exportCoachesToCSV = (
+  coaches: CoachExportData[],
+  filename?: string,
+): void => {
+  const headers = [
+    "First Name",
+    "Last Name",
+    "Role",
+    "School",
+    "Email",
+    "Phone",
+    "Twitter",
+    "Instagram",
+    "Responsiveness Score",
+    "Last Contact Date",
+    "Notes",
+  ];
+
+  const rows = coaches.map((c) => [
+    c.first_name,
+    c.last_name,
+    formatRole(c.role),
+    c.schoolName || "",
+    c.email || "",
+    c.phone || "",
+    c.twitter_handle || "",
+    c.instagram_handle || "",
+    c.responsiveness_score !== null && c.responsiveness_score !== undefined
+      ? `${c.responsiveness_score}%`
+      : "",
+    c.last_contact_date
+      ? new Date(c.last_contact_date).toLocaleDateString()
+      : "",
+    c.notes || "",
+  ]);
+
+  const csv = toCSV(headers, rows);
+  const date = new Date().toISOString().split("T")[0];
+  downloadFile(
+    csv,
+    filename || `coaches-${date}.csv`,
+    "text/csv;charset=utf-8;",
+  );
+};
+
+export const generateCoachesPDF = (
+  coaches: CoachExportData[],
+  title?: string,
+): void => {
+  // Summary stats
+  const totalCount = coaches.length;
+  const headCoachCount = coaches.filter((c) => c.role === "head").length;
+  const assistantCount = coaches.filter((c) => c.role === "assistant").length;
+  const recruitingCount = coaches.filter((c) => c.role === "recruiting").length;
+  const avgResponsiveness =
+    coaches.length > 0
+      ? Math.round(
+          coaches.reduce((sum, c) => sum + (c.responsiveness_score || 0), 0) /
+            coaches.length,
+        )
+      : 0;
+
+  const summaryHTML = `
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="value">${totalCount}</div>
+        <div class="label">Total Coaches</div>
+      </div>
+      <div class="summary-card">
+        <div class="value">${headCoachCount}</div>
+        <div class="label">Head Coaches</div>
+      </div>
+      <div class="summary-card">
+        <div class="value">${assistantCount + recruitingCount}</div>
+        <div class="label">Staff</div>
+      </div>
+      <div class="summary-card">
+        <div class="value">${avgResponsiveness}%</div>
+        <div class="label">Avg Responsiveness</div>
+      </div>
+    </div>
+  `;
+
+  // Group by school
+  const bySchool = new Map<string, CoachExportData[]>();
+  coaches.forEach((c) => {
+    const key = c.schoolName || "No School";
+    if (!bySchool.has(key)) bySchool.set(key, []);
+    bySchool.get(key)!.push(c);
+  });
+
+  let tableHTML = "";
+  bySchool.forEach((schoolCoaches, schoolName) => {
+    tableHTML += `<h2>${schoolName} (${schoolCoaches.length})</h2>`;
+    tableHTML += `
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Responsiveness</th>
+            <th>Last Contact</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${schoolCoaches
+            .map(
+              (c) => `
+            <tr>
+              <td><strong>${c.first_name} ${c.last_name}</strong></td>
+              <td><span class="badge ${getRoleBadgeClass(c.role)}">${formatRole(c.role)}</span></td>
+              <td>${c.email || "-"}</td>
+              <td>${c.phone || "-"}</td>
+              <td>${c.responsiveness_score !== null && c.responsiveness_score !== undefined ? `${c.responsiveness_score}%` : "-"}</td>
+              <td>${c.last_contact_date ? new Date(c.last_contact_date).toLocaleDateString() : "-"}</td>
+            </tr>
+          `,
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
+  });
+
+  generatePrintableReport(title || "Coaches Report", summaryHTML + tableHTML);
+};
+
+const formatRole = (role: string): string => {
+  const roles: Record<string, string> = {
+    head: "Head Coach",
+    assistant: "Assistant Coach",
+    recruiting: "Recruiting Coordinator",
+  };
+  return roles[role] || role;
+};
+
+const getRoleBadgeClass = (role: string): string => {
+  const badges: Record<string, string> = {
+    head: "badge-purple",
+    assistant: "badge-blue",
+    recruiting: "badge-green",
+  };
+  return badges[role] || "badge-gray";
 };

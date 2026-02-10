@@ -1,0 +1,187 @@
+name: Security Scanning
+
+on:
+  # Only run on PRs to main (production gate)
+  pull_request:
+    branches: [main]
+  # Run daily to catch newly disclosed vulnerabilities
+  schedule:
+    - cron: "0 6 * * *"
+  # Allow manual triggering from Actions tab
+  workflow_dispatch:
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  # Job 1: Dependency vulnerability scanning
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        id: npm-audit
+        run: |
+          # Run audit and capture results
+          npm audit --audit-level=moderate --json > audit-results.json || true
+
+          # Parse results
+          VULNERABILITIES=$(jq '.metadata.vulnerabilities.total' audit-results.json)
+          CRITICAL=$(jq '.metadata.vulnerabilities.critical' audit-results.json)
+          HIGH=$(jq '.metadata.vulnerabilities.high' audit-results.json)
+          MODERATE=$(jq '.metadata.vulnerabilities.moderate' audit-results.json)
+
+          echo "total=$VULNERABILITIES" >> $GITHUB_OUTPUT
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+          echo "moderate=$MODERATE" >> $GITHUB_OUTPUT
+
+          # Display summary
+          echo "📊 Vulnerability Summary:"
+          echo "  - Critical: $CRITICAL"
+          echo "  - High: $HIGH"
+          echo "  - Moderate: $MODERATE"
+          echo "  - Total: $VULNERABILITIES"
+
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-results
+          path: audit-results.json
+          retention-days: 30
+
+      - name: Fail on critical or high vulnerabilities
+        if: steps.npm-audit.outputs.critical > 0 || steps.npm-audit.outputs.high > 0
+        run: |
+          echo "❌ Found ${{ steps.npm-audit.outputs.critical }} critical and ${{ steps.npm-audit.outputs.high }} high severity vulnerabilities"
+          echo "Run 'npm audit fix' to resolve automatically fixable issues"
+          exit 1
+
+  # Job 2: SAST with CodeQL (GitHub's native solution)
+  codeql:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended
+          # Exclude test files and generated code from analysis
+          paths-ignore:
+            - "**/*.spec.ts"
+            - "**/*.spec.js"
+            - "**/*.test.ts"
+            - "**/*.test.js"
+            - "**/node_modules/**"
+            - "**/.nuxt/**"
+            - "**/.output/**"
+            - "**/dist/**"
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+          # Continue even if some files have parsing issues
+          upload-as-artifact: false
+
+  # Job 3: Secret scanning (GitHub's native - catches secrets in code)
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for comprehensive scan
+
+      - name: TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
+
+  # Job 4: License compliance check
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check licenses
+        run: |
+          npx license-checker --summary --production --onlyAllow "MIT;ISC;BSD;Apache;Apache-2.0;0BSD;BSD-2-Clause;BSD-3-Clause;CC0-1.0;Unlicense" || true
+
+  # Job 5: Notify on security issues
+  notify-security-issues:
+    name: Notify on Security Issues
+    runs-on: ubuntu-latest
+    if: failure() && github.event_name == 'schedule'
+    needs: [dependency-scan, codeql, secret-scan]
+
+    steps:
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "🚨 Security Scan Failure",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*🚨 Security Scan Failed*\n*Repository:* ${{ github.repository }}\n*Scan Type:* Daily Security Scan\n*Branch:* ${{ github.ref_name }}\n\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                  }
+                }
+              ]
+            }

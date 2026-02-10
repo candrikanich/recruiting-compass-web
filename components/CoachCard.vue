@@ -9,7 +9,7 @@
           {{ coach.first_name }} {{ coach.last_name }}
         </h3>
         <p class="text-sm capitalize text-slate-600">
-          {{ roleLabel(coach.role) }}
+          {{ getRoleLabel(coach.role) }}
         </p>
         <p v-if="schoolName" class="text-xs mt-1 text-slate-600">
           {{ schoolName }}
@@ -159,6 +159,7 @@
 
 <script setup lang="ts">
 import { ShareIcon, PhotoIcon } from "@heroicons/vue/24/outline";
+import { getRoleLabel } from "~/utils/coachLabels";
 import type { Coach } from "~/types/models";
 import { getResponsivenessLabel } from "~/utils/coachResponsiveness";
 
@@ -174,15 +175,6 @@ const emit = defineEmits<{
   instagram: [coach: Coach];
   view: [coach: Coach];
 }>();
-
-const roleLabel = (role: string) => {
-  const labels: Record<string, string> = {
-    head: "Head Coach",
-    assistant: "Assistant Coach",
-    recruiting: "Recruiting Coordinator",
-  };
-  return labels[role] || role;
-};
 
 const getResponsivenessLabelClass = (score: number): string => {
   if (score >= 75) {

@@ -113,7 +113,7 @@ describe("LoggedByBadge", () => {
 
     const badge = wrapper.find("div");
     expect(badge.classes()).toContain("bg-blue-100");
-    expect(badge.classes()).toContain("text-blue-700");
+    expect(badge.classes()).toContain("text-blue-900");
   });
 
   it("applies correct badge color for player role", async () => {
@@ -129,7 +129,7 @@ describe("LoggedByBadge", () => {
 
     const badge = wrapper.find("div");
     expect(badge.classes()).toContain("bg-purple-100");
-    expect(badge.classes()).toContain("text-purple-700");
+    expect(badge.classes()).toContain("text-purple-900");
   });
 
   it("applies neutral color when user role is unknown", async () => {
@@ -161,7 +161,7 @@ describe("LoggedByBadge", () => {
 
     const badge = wrapper.find("div");
     expect(badge.classes()).toContain("bg-slate-100");
-    expect(badge.classes()).toContain("text-slate-700");
+    expect(badge.classes()).toContain("text-slate-900");
   });
 
   it("does not fetch user data when loggedByUserId equals currentUserId", async () => {

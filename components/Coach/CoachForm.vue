@@ -16,6 +16,8 @@
         id="role"
         v-model="formData.role"
         required
+        aria-required="true"
+        aria-describedby="role-error"
         class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-500/20"
         :disabled="loading"
         @blur="validateRole"
@@ -25,7 +27,7 @@
         <option value="assistant">Assistant Coach</option>
         <option value="recruiting">Recruiting Coordinator</option>
       </select>
-      <DesignSystemFieldError :error="fieldErrors.role" />
+      <DesignSystemFieldError id="role-error" :error="fieldErrors.role" />
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -42,12 +44,17 @@
           v-model="formData.first_name"
           type="text"
           required
+          aria-required="true"
+          aria-describedby="firstName-error"
           class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-500/20"
           placeholder="e.g., John"
           :disabled="loading"
           @blur="validateFirstName"
         />
-        <DesignSystemFieldError :error="fieldErrors.first_name" />
+        <DesignSystemFieldError
+          id="firstName-error"
+          :error="fieldErrors.first_name"
+        />
       </div>
 
       <!-- Last Name -->
@@ -63,12 +70,17 @@
           v-model="formData.last_name"
           type="text"
           required
+          aria-required="true"
+          aria-describedby="lastName-error"
           class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-500/20"
           placeholder="e.g., Smith"
           :disabled="loading"
           @blur="validateLastName"
         />
-        <DesignSystemFieldError :error="fieldErrors.last_name" />
+        <DesignSystemFieldError
+          id="lastName-error"
+          :error="fieldErrors.last_name"
+        />
       </div>
     </div>
 

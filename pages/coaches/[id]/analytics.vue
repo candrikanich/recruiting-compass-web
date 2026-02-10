@@ -1,6 +1,14 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Skip Link -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-blue-600 focus:text-white focus:font-medium focus:rounded-br-lg"
+    >
+      Skip to main content
+    </a>
+
+    <div id="main-content" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Back Link -->
       <div class="mb-6">
         <NuxtLink
@@ -57,10 +65,44 @@
             </div>
           </div>
 
+          <!-- Accessible Data Summary -->
+          <div
+            v-if="trendData.length > 0"
+            class="mb-4 p-4 bg-blue-50 rounded-lg"
+          >
+            <p class="text-sm font-medium text-gray-900 mb-2">Trend Summary</p>
+            <dl class="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <dt class="text-gray-600">Highest</dt>
+                <dd class="text-lg font-bold text-green-700">
+                  {{ Math.max(...trendData.map((p) => p.score)) }}%
+                </dd>
+              </div>
+              <div>
+                <dt class="text-gray-600">Average</dt>
+                <dd class="text-lg font-bold text-blue-700">
+                  {{
+                    Math.round(
+                      trendData.reduce((sum, p) => sum + p.score, 0) /
+                        trendData.length,
+                    )
+                  }}%
+                </dd>
+              </div>
+              <div>
+                <dt class="text-gray-600">Lowest</dt>
+                <dd class="text-lg font-bold text-red-700">
+                  {{ Math.min(...trendData.map((p) => p.score)) }}%
+                </dd>
+              </div>
+            </dl>
+          </div>
+
           <!-- Trend Chart -->
           <div
             v-if="trendData.length > 0"
             class="h-64 bg-gray-50 rounded p-4 flex items-end gap-1"
+            aria-hidden="true"
           >
             <div
               v-for="(point, idx) in trendData"
@@ -159,7 +201,50 @@
 
               <div class="pt-4 border-t border-gray-200">
                 <p class="text-gray-600 text-sm mb-3">Interaction Breakdown</p>
-                <div class="space-y-2">
+
+                <!-- Accessible Data Table -->
+                <table class="sr-only">
+                  <caption>
+                    Interaction breakdown by direction
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Direction</th>
+                      <th scope="col">Count</th>
+                      <th scope="col">Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Outbound</th>
+                      <td>{{ metrics.outboundCount }}</td>
+                      <td>
+                        {{
+                          Math.round(
+                            (metrics.outboundCount /
+                              metrics.totalInteractions) *
+                              100,
+                          )
+                        }}%
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Inbound</th>
+                      <td>{{ metrics.inboundCount }}</td>
+                      <td>
+                        {{
+                          Math.round(
+                            (metrics.inboundCount / metrics.totalInteractions) *
+                              100,
+                          )
+                        }}%
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Visual Chart -->
+                <div class="space-y-2" aria-hidden="true">
                   <div>
                     <div class="flex items-center justify-between mb-1">
                       <span class="text-sm text-gray-600">Outbound</span>

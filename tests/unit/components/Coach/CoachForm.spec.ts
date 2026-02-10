@@ -1,0 +1,287 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { mount } from "@vue/test-utils";
+import CoachForm from "~/components/Coach/CoachForm.vue";
+import type { ComponentPublicInstance } from "vue";
+
+// Mock the validation composable
+const mockValidate = vi.fn();
+const mockValidateField = vi.fn();
+const mockClearErrors = vi.fn();
+
+vi.mock("~/composables/useFormValidation", () => ({
+  useFormValidation: () => ({
+    errors: { value: {} },
+    fieldErrors: { value: {} },
+    validate: mockValidate,
+    validateField: mockValidateField,
+    clearErrors: mockClearErrors,
+    hasErrors: { value: false },
+  }),
+}));
+
+// Mock the validation schemas
+vi.mock("~/utils/validation/schemas", () => ({
+  coachSchema: {
+    shape: {
+      role: {},
+      first_name: {},
+      last_name: {},
+      email: {},
+      phone: {},
+      twitter_handle: {},
+      instagram_handle: {},
+      notes: {},
+    },
+  },
+}));
+
+describe("CoachForm", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockValidate.mockResolvedValue({
+      role: "head",
+      first_name: "John",
+      last_name: "Doe",
+    });
+  });
+
+  const mountForm = (props = {}) =>
+    mount(CoachForm, {
+      props: {
+        loading: false,
+        ...props,
+      },
+      global: {
+        stubs: {
+          FormErrorSummary: true,
+          DesignSystemFieldError: true,
+        },
+      },
+    });
+
+  describe("Form Rendering", () => {
+    it("should render all required fields", () => {
+      const wrapper = mountForm();
+
+      expect(wrapper.find("#role").exists()).toBe(true);
+      expect(wrapper.find("#firstName").exists()).toBe(true);
+      expect(wrapper.find("#lastName").exists()).toBe(true);
+    });
+
+    it("should render role select with all options", () => {
+      const wrapper = mountForm();
+      const roleSelect = wrapper.find("#role");
+      const options = roleSelect.findAll("option");
+
+      expect(options.length).toBeGreaterThanOrEqual(4);
+      expect(options[1].text()).toContain("Head Coach");
+      expect(options[2].text()).toContain("Assistant Coach");
+      expect(options[3].text()).toContain("Recruiting Coordinator");
+    });
+
+    it("should render optional fields", () => {
+      const wrapper = mountForm();
+
+      expect(wrapper.find("#email").exists()).toBe(true);
+      expect(wrapper.find("#phone").exists()).toBe(true);
+      expect(wrapper.find("#twitter").exists()).toBe(true);
+      expect(wrapper.find("#instagram").exists()).toBe(true);
+      expect(wrapper.find("#notes").exists()).toBe(true);
+    });
+
+    it("should render submit and cancel buttons", () => {
+      const wrapper = mountForm();
+
+      const submitButton = wrapper.find('button[type="submit"]');
+      const cancelButton = wrapper.find('button[type="button"]');
+
+      expect(submitButton.exists()).toBe(true);
+      expect(submitButton.text()).toContain("Add Coach");
+      expect(cancelButton.exists()).toBe(true);
+      expect(cancelButton.text()).toContain("Cancel");
+    });
+  });
+
+  describe("Form Validation", () => {
+    it("should require role field", () => {
+      const wrapper = mountForm();
+      const roleSelect = wrapper.find("#role");
+
+      expect(roleSelect.attributes("required")).toBeDefined();
+      expect(roleSelect.attributes("aria-required")).toBe("true");
+    });
+
+    it("should require first name field", () => {
+      const wrapper = mountForm();
+      const firstNameInput = wrapper.find("#firstName");
+
+      expect(firstNameInput.attributes("required")).toBeDefined();
+      expect(firstNameInput.attributes("aria-required")).toBe("true");
+    });
+
+    it("should require last name field", () => {
+      const wrapper = mountForm();
+      const lastNameInput = wrapper.find("#lastName");
+
+      expect(lastNameInput.attributes("required")).toBeDefined();
+      expect(lastNameInput.attributes("aria-required")).toBe("true");
+    });
+
+    it("should validate email format", () => {
+      const wrapper = mountForm();
+      const emailInput = wrapper.find("#email");
+
+      expect(emailInput.attributes("type")).toBe("email");
+    });
+
+    it("should validate phone format", () => {
+      const wrapper = mountForm();
+      const phoneInput = wrapper.find("#phone");
+
+      expect(phoneInput.attributes("type")).toBe("tel");
+    });
+  });
+
+  describe("Form Submission", () => {
+    it("should emit submit event with form data", async () => {
+      const wrapper = mountForm();
+
+      await wrapper.find("#role").setValue("head");
+      await wrapper.find("#firstName").setValue("John");
+      await wrapper.find("#lastName").setValue("Doe");
+      await wrapper.find("#email").setValue("john@example.com");
+
+      await wrapper.find("form").trigger("submit");
+      await wrapper.vm.$nextTick();
+
+      expect(mockValidate).toHaveBeenCalled();
+      expect(wrapper.emitted("submit")).toBeTruthy();
+    });
+
+    it("should emit cancel event when cancel clicked", async () => {
+      const wrapper = mountForm();
+
+      const cancelButton = wrapper.find('button[type="button"]');
+      await cancelButton.trigger("click");
+
+      expect(wrapper.emitted("cancel")).toBeTruthy();
+    });
+
+    it("should disable submit button when loading", () => {
+      const wrapper = mountForm({ loading: true });
+      const submitButton = wrapper.find('button[type="submit"]');
+
+      expect(submitButton.attributes("disabled")).toBeDefined();
+    });
+
+    it("should disable submit button when required fields are empty", () => {
+      const wrapper = mountForm();
+      const submitButton = wrapper.find('button[type="submit"]');
+
+      expect(submitButton.attributes("disabled")).toBeDefined();
+    });
+
+    it("should show loading text when submitting", () => {
+      const wrapper = mountForm({ loading: true });
+      const submitButton = wrapper.find('button[type="submit"]');
+
+      expect(submitButton.text()).toContain("Adding...");
+    });
+  });
+
+  describe("Initial Data", () => {
+    it("should pre-fill form with initial data", async () => {
+      const initialData = {
+        role: "assistant",
+        first_name: "Jane",
+        last_name: "Smith",
+        email: "jane@example.com",
+      };
+
+      const wrapper = mountForm({ initialData });
+      await wrapper.vm.$nextTick();
+
+      expect((wrapper.find("#role").element as HTMLSelectElement).value).toBe(
+        "assistant",
+      );
+      expect(
+        (wrapper.find("#firstName").element as HTMLInputElement).value,
+      ).toBe("Jane");
+      expect(
+        (wrapper.find("#lastName").element as HTMLInputElement).value,
+      ).toBe("Smith");
+      expect((wrapper.find("#email").element as HTMLInputElement).value).toBe(
+        "jane@example.com",
+      );
+    });
+
+    it("should handle empty initial data", () => {
+      const wrapper = mountForm({ initialData: {} });
+
+      expect((wrapper.find("#role").element as HTMLSelectElement).value).toBe(
+        "",
+      );
+      expect(
+        (wrapper.find("#firstName").element as HTMLInputElement).value,
+      ).toBe("");
+    });
+  });
+
+  describe("Loading States", () => {
+    it("should disable all inputs when loading", () => {
+      const wrapper = mountForm({ loading: true });
+
+      expect(wrapper.find("#role").attributes("disabled")).toBeDefined();
+      expect(wrapper.find("#firstName").attributes("disabled")).toBeDefined();
+      expect(wrapper.find("#lastName").attributes("disabled")).toBeDefined();
+      expect(wrapper.find("#email").attributes("disabled")).toBeDefined();
+    });
+  });
+
+  describe("Edge Cases", () => {
+    it("should handle special characters in names", async () => {
+      const wrapper = mountForm();
+
+      await wrapper.find("#firstName").setValue("O'Brien");
+      await wrapper.find("#lastName").setValue("O'Connor-Smith");
+
+      expect(
+        (wrapper.find("#firstName").element as HTMLInputElement).value,
+      ).toBe("O'Brien");
+      expect(
+        (wrapper.find("#lastName").element as HTMLInputElement).value,
+      ).toBe("O'Connor-Smith");
+    });
+
+    it("should handle XSS attempt in input fields", async () => {
+      const wrapper = mountForm();
+
+      const xssString = '<script>alert("xss")</script>';
+      await wrapper.find("#firstName").setValue(xssString);
+      await wrapper.find("form").trigger("submit");
+
+      expect(mockValidate).toHaveBeenCalled();
+    });
+  });
+
+  describe("Accessibility", () => {
+    it("should have proper aria-required attributes", () => {
+      const wrapper = mountForm();
+
+      expect(wrapper.find("#role").attributes("aria-required")).toBe("true");
+      expect(wrapper.find("#firstName").attributes("aria-required")).toBe(
+        "true",
+      );
+      expect(wrapper.find("#lastName").attributes("aria-required")).toBe(
+        "true",
+      );
+    });
+
+    it("should have placeholder text for guidance", () => {
+      const wrapper = mountForm();
+
+      expect(wrapper.find("#firstName").attributes("placeholder")).toBeTruthy();
+      expect(wrapper.find("#lastName").attributes("placeholder")).toBeTruthy();
+    });
+  });
+});

@@ -61,7 +61,7 @@
             </label>
             <select
               id="roleFilter"
-              v-model="roleFilter"
+              v-model="filters.role"
               class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
               :style="selectDropdownStyle"
             >
@@ -82,7 +82,7 @@
             </label>
             <select
               id="sortFilter"
-              v-model="sortFilter"
+              v-model="sortBy"
               class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
               :style="selectDropdownStyle"
             >
@@ -95,7 +95,7 @@
 
         <!-- Clear Filters Button -->
         <div
-          v-if="searchQuery || roleFilter || sortFilter !== 'name'"
+          v-if="searchQuery || filters.role || sortBy !== 'name'"
           class="mt-4 flex justify-end"
         >
           <button
@@ -131,51 +131,51 @@
         </p>
       </div>
 
-      <!-- Loading State -->
-      <div v-if="loading && coaches.length === 0" class="text-center py-8">
-        <p class="text-slate-600">Loading coaches...</p>
-      </div>
-
-      <!-- Empty State -->
-      <div
-        v-if="!loading && coaches.length === 0"
-        class="bg-white rounded-2xl shadow-lg p-8 text-center border border-slate-200"
+      <!-- Page State: Loading / Error / Empty -->
+      <PageState
+        :loading="loading && coaches.length === 0"
+        :isEmpty="!loading && coaches.length === 0"
+        loading-message="Loading coaches..."
+        empty-title="No coaches added yet"
+        empty-message="Add your first coach to get started"
       >
-        <p class="text-slate-600 mb-4">No coaches added yet</p>
-      </div>
-
-      <!-- No Results State -->
-      <div
-        v-if="!loading && coaches.length > 0 && filteredCoaches.length === 0"
-        class="bg-white rounded-2xl shadow-lg p-8 text-center border border-slate-200"
-      >
-        <p class="text-slate-600">No coaches match your filters</p>
-      </div>
-
-      <!-- Coaches Grid -->
-      <div
-        v-if="filteredCoaches.length > 0"
-        class="grid grid-cols-1 md:grid-cols-2 gap-6"
-      >
-        <div v-for="coach in filteredCoaches" :key="coach.id" class="relative">
-          <!-- Delete Button Overlay -->
-          <button
-            @click="deleteCoach(coach.id)"
-            class="absolute -top-2 -right-2 z-10 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 text-xs font-bold transition flex items-center justify-center"
-            title="Delete coach"
-          >
-            <XMarkIcon class="w-4 h-4" />
-          </button>
-          <CoachCard
-            :coach="coach"
-            @email="sendEmail(coach)"
-            @text="sendText(coach)"
-            @tweet="openTwitter(coach)"
-            @instagram="openInstagram(coach)"
-            @view="viewCoach(coach)"
-          />
+        <!-- No Results State (separate from empty) -->
+        <div
+          v-if="coaches.length > 0 && filteredCoaches.length === 0"
+          class="bg-white rounded-2xl shadow-lg p-8 text-center border border-slate-200"
+        >
+          <p class="text-slate-600">No coaches match your filters</p>
         </div>
-      </div>
+
+        <!-- Coaches Grid -->
+        <div
+          v-if="filteredCoaches.length > 0"
+          class="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
+          <div
+            v-for="coach in filteredCoaches"
+            :key="coach.id"
+            class="relative"
+          >
+            <!-- Delete Button Overlay -->
+            <button
+              @click="deleteCoach(coach.id)"
+              :aria-label="`Delete coach ${coach.first_name} ${coach.last_name}`"
+              class="absolute -top-2 -right-2 z-10 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 text-xs font-bold transition flex items-center justify-center"
+            >
+              <XMarkIcon class="w-4 h-4" aria-hidden="true" />
+            </button>
+            <CoachCard
+              :coach="coach"
+              @email="sendEmail(coach)"
+              @text="sendText(coach)"
+              @tweet="handleOpenTwitter(coach)"
+              @instagram="handleOpenInstagram(coach)"
+              @view="viewCoach(coach)"
+            />
+          </div>
+        </div>
+      </PageState>
     </div>
 
     <!-- Communication Panel Modal -->
@@ -186,6 +186,21 @@
       :initial-type="communicationType"
       @close="showPanel = false"
       @interaction-logged="handleSchoolCoachInteractionLogged"
+    />
+
+    <!-- Live Region for Screen Reader Announcements -->
+    <div v-bind="liveRegionAttrs">{{ announcement }}</div>
+
+    <!-- Confirm Delete Dialog -->
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Coach"
+      message="Are you sure you want to delete this coach? This will also remove related interactions, offers, and social media posts."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="executeDeleteCoach"
+      @cancel="cancelDeleteCoach"
     />
   </div>
 </template>
@@ -200,6 +215,18 @@ import { useInteractions } from "~/composables/useInteractions";
 import { useCommunication } from "~/composables/useCommunication";
 import { useUserStore } from "~/stores/user";
 import type { School } from "~/types";
+import { useLiveRegion } from "~/composables/useLiveRegion";
+import {
+  openTwitter,
+  openInstagram,
+  openEmail,
+  openSMS,
+} from "~/utils/socialMediaHandlers";
+import { useCoachFilters } from "~/composables/useCoachFilters";
+import type { CoachSortOption } from "~/composables/useCoachFilters";
+import { useEntityNames } from "~/composables/useEntityNames";
+import { usePageFilters } from "~/composables/usePageFilters";
+import PageState from "~/components/shared/PageState.vue";
 
 definePageMeta({
   middleware: "auth",
@@ -238,12 +265,19 @@ const {
 } = useCommunication();
 const userStore = useUserStore();
 
+const { announcement, announce, liveRegionAttrs } = useLiveRegion();
+const isDeleteDialogOpen = ref(false);
+const coachToDeleteId = ref<string | null>(null);
 const showAddForm = ref(false);
 const schoolName = ref("");
-const searchQuery = ref("");
-const roleFilter = ref("");
-const sortFilter = ref<"name" | "lastContact" | "responsiveness">("name");
 const localError = ref("");
+
+// Use shared utilities
+useEntityNames();
+const { searchQuery, filters, sortBy, clearFilters } =
+  usePageFilters<CoachSortOption>({
+    defaultSort: "name",
+  });
 
 // Create a school object from schoolName for CommunicationPanel
 const school = computed((): School | undefined => {
@@ -267,59 +301,16 @@ const school = computed((): School | undefined => {
   };
 });
 
-const filteredCoaches = computed(() => {
-  let result = [...coaches.value];
+const { applyFiltersAndSort } = useCoachFilters();
 
-  // Apply search filter
-  if (searchQuery.value) {
-    const searchLower = searchQuery.value.toLowerCase();
-    result = result.filter(
-      (coach) =>
-        coach.first_name.toLowerCase().includes(searchLower) ||
-        coach.last_name.toLowerCase().includes(searchLower) ||
-        coach.email?.toLowerCase().includes(searchLower) ||
-        coach.phone?.includes(searchQuery.value),
-    );
-  }
-
-  // Apply role filter
-  if (roleFilter.value) {
-    result = result.filter((coach) => coach.role === roleFilter.value);
-  }
-
-  // Apply sorting (create a new array to avoid mutation)
-  if (sortFilter.value === "name") {
-    result = result.sort((a, b) => {
-      const nameA = `${a.first_name} ${a.last_name}`.toLowerCase();
-      const nameB = `${b.first_name} ${b.last_name}`.toLowerCase();
-      return nameA.localeCompare(nameB);
-    });
-  } else if (sortFilter.value === "lastContact") {
-    result = result.sort((a, b) => {
-      const dateA = a.last_contact_date
-        ? new Date(a.last_contact_date).getTime()
-        : 0;
-      const dateB = b.last_contact_date
-        ? new Date(b.last_contact_date).getTime()
-        : 0;
-      return dateB - dateA; // Most recent first
-    });
-  } else if (sortFilter.value === "responsiveness") {
-    result = result.sort((a, b) => {
-      const scoreA = a.responsiveness_score || 0;
-      const scoreB = b.responsiveness_score || 0;
-      return scoreB - scoreA; // Highest responsiveness first
-    });
-  }
-
-  return result;
-});
-
-const clearFilters = () => {
-  searchQuery.value = "";
-  roleFilter.value = "";
-  sortFilter.value = "name";
-};
+const filteredCoaches = computed(() =>
+  applyFiltersAndSort(
+    coaches.value,
+    searchQuery.value,
+    (filters.value.role as string) || "",
+    sortBy.value as CoachSortOption,
+  ),
+);
 
 const handleCoachFormSubmit = async (formData: any) => {
   try {
@@ -345,42 +336,42 @@ const handleCoachFormSubmit = async (formData: any) => {
   }
 };
 
-const deleteCoach = async (coachId: string) => {
-  if (
-    window.confirm(
-      "Are you sure you want to delete this coach? This will also remove related interactions, offers, and social media posts.",
-    )
-  ) {
-    try {
-      const result = await smartDelete(coachId);
+const deleteCoach = (coachId: string) => {
+  coachToDeleteId.value = coachId;
+  isDeleteDialogOpen.value = true;
+};
 
-      if (result.cascadeUsed) {
-        console.log("Coach and related records deleted successfully");
-      } else {
-        console.log("Coach deleted successfully");
-      }
-
-      await fetchCoaches(route.params.id as string);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to delete coach";
-      console.error("Failed to delete coach:", message);
-    }
+const executeDeleteCoach = async () => {
+  if (!coachToDeleteId.value) return;
+  const deletingId = coachToDeleteId.value;
+  isDeleteDialogOpen.value = false;
+  coachToDeleteId.value = null;
+  try {
+    const result = await smartDelete(deletingId);
+    const message = result.cascadeUsed
+      ? "Coach and related records deleted"
+      : "Coach deleted";
+    announce(message);
+    await fetchCoaches(route.params.id as string);
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : "Failed to delete coach";
+    announce(errorMessage);
+    console.error("Failed to delete coach:", errorMessage);
   }
+};
+
+const cancelDeleteCoach = () => {
+  isDeleteDialogOpen.value = false;
+  coachToDeleteId.value = null;
 };
 
 const sendEmail = (coach: (typeof coaches.value)[0]) => {
-  if (coach.email) {
-    window.location.href = `mailto:${coach.email}`;
-  }
+  openEmail(coach.email);
 };
 
 const sendText = (coach: (typeof coaches.value)[0]) => {
-  if (coach.phone) {
-    // Remove any non-digit characters for SMS URL
-    const phone = coach.phone.replace(/\D/g, "");
-    window.location.href = `sms:${phone}`;
-  }
+  openSMS(coach.phone);
 };
 
 const handleSchoolCoachInteractionLogged = async (interactionData: any) => {
@@ -396,18 +387,12 @@ const handleSchoolCoachInteractionLogged = async (interactionData: any) => {
   }
 };
 
-const openTwitter = (coach: (typeof coaches.value)[0]) => {
-  if (coach.twitter_handle) {
-    const handle = coach.twitter_handle.replace("@", "");
-    window.open(`https://twitter.com/${handle}`, "_blank");
-  }
+const handleOpenTwitter = (coach: (typeof coaches.value)[0]) => {
+  openTwitter(coach.twitter_handle);
 };
 
-const openInstagram = (coach: (typeof coaches.value)[0]) => {
-  if (coach.instagram_handle) {
-    const handle = coach.instagram_handle.replace("@", "");
-    window.open(`https://instagram.com/${handle}`, "_blank");
-  }
+const handleOpenInstagram = (coach: (typeof coaches.value)[0]) => {
+  openInstagram(coach.instagram_handle);
 };
 
 const viewCoach = (coach: (typeof coaches.value)[0]) => {
@@ -418,10 +403,15 @@ const viewCoach = (coach: (typeof coaches.value)[0]) => {
 defineExpose({
   showAddForm,
   searchQuery,
-  roleFilter,
-  sortFilter,
+  filters,
+  sortBy,
   filteredCoaches,
   handleCoachFormSubmit,
+  isDeleteDialogOpen,
+  coachToDeleteId,
+  executeDeleteCoach,
+  cancelDeleteCoach,
+  clearFilters,
 });
 
 onMounted(async () => {

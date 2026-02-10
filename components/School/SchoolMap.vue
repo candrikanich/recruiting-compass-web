@@ -99,11 +99,11 @@ const updateMarker = async () => {
   }
 };
 
-watch([() => props.latitude, () => props.longitude], () => {
+watch([() => props.latitude, () => props.longitude], async () => {
   if (map) {
-    updateMarker();
+    await updateMarker();
   } else if (hasCoordinates.value) {
-    initMap();
+    await initMap();
   }
 });
 

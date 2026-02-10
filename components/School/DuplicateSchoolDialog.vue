@@ -4,8 +4,15 @@
       <div
         v-if="isOpen"
         class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4"
+        @keydown.escape="$emit('cancel')"
       >
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-50">
+        <div
+          ref="dialogRef"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="duplicate-dialog-title"
+          class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-50"
+        >
           <!-- Header -->
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
@@ -22,12 +29,16 @@
                   d="M12 9v2m0 4v2m0 0v2m0-6V9m0 0V7m0 0h2m0 0h2m0 0h-2m0 0h-2"
                 />
               </svg>
-              <h2 class="text-lg font-semibold text-gray-900">
+              <h2
+                id="duplicate-dialog-title"
+                class="text-lg font-semibold text-gray-900"
+              >
                 Duplicate School Detected
               </h2>
             </div>
             <button
               @click="$emit('cancel')"
+              aria-label="Close dialog"
               class="text-gray-400 hover:text-gray-600"
             >
               <svg
@@ -150,7 +161,9 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, nextTick } from "vue";
 import type { School } from "~/types/models";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 
 interface Props {
   isOpen: boolean;
@@ -163,9 +176,24 @@ defineEmits<{
   cancel: [];
 }>();
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   matchType: null,
 });
+
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
+
+watch(
+  () => props.isOpen,
+  async (isOpen) => {
+    if (isOpen) {
+      await nextTick();
+      activate();
+    } else {
+      deactivate();
+    }
+  },
+);
 
 const formatDomain = (url: string | null | undefined): string => {
   if (!url) return "";
