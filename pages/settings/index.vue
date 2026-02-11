@@ -150,7 +150,7 @@ const {
 } = usePreferenceManager();
 
 const hasHomeLocation = computed(() => {
-  const loc = getHomeLocation();
+  const loc = getHomeLocation.value;
   return !!(loc?.latitude && loc?.longitude);
 });
 

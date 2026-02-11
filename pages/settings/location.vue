@@ -313,7 +313,7 @@ const handleClear = () => {
 
 onMounted(async () => {
   await loadAllPreferences();
-  const location = getHomeLocation();
+  const location = getHomeLocation.value;
   if (location) {
     Object.assign(localLocation, location);
 

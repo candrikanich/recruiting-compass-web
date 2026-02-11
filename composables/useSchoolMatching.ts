@@ -117,7 +117,7 @@ export const useSchoolMatching = () => {
    * Evaluate distance preference
    */
   const evaluateDistance = (school: School, maxMiles: number): boolean => {
-    const home = getHomeLocation();
+    const home = getHomeLocation.value;
     if (!home?.latitude || !home?.longitude) return true; // Can't evaluate without home
 
     const academicInfo = school.academic_info as {

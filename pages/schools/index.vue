@@ -245,7 +245,8 @@ const { schools, loading, error, fetchSchools, toggleFavorite, smartDelete } =
   useSchools();
 const { fetchMultipleLogos } = useSchoolLogos();
 const { calculateMatchScore } = useSchoolMatching();
-const { getSchoolPreferences, getHomeLocation } = usePreferenceManager();
+const { getSchoolPreferences, getHomeLocation, loadAllPreferences } =
+  usePreferenceManager();
 const { offers, fetchOffers } = useOffers();
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { coaches: coachesData, fetchAllCoaches } = useCoaches();
@@ -282,7 +283,7 @@ watch(
   { immediate: true },
 );
 
-const userHomeLocation = computed(() => getHomeLocation());
+const userHomeLocation = computed(() => getHomeLocation.value);
 
 const hasPreferences = computed(() => {
   const prefs = getSchoolPreferences();
@@ -467,7 +468,12 @@ const { handleExportCSV, handleExportPDF } = useSchoolExport({
 });
 
 onMounted(async () => {
-  await Promise.all([fetchOffers(), fetchAllCoaches(), fetchInteractions({})]);
+  await Promise.all([
+    fetchOffers(),
+    fetchAllCoaches(),
+    fetchInteractions({}),
+    loadAllPreferences(),
+  ]);
   allInteractions.value = interactionsData.value;
   allCoaches.value = coachesData.value;
 

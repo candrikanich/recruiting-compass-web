@@ -90,7 +90,7 @@ export function useSingleSchoolDistance(
 
   return computed(() => {
     const schoolCoords = extractCoordinates(school.value?.academic_info);
-    const homeCoords = extractCoordinates(getHomeLocation());
+    const homeCoords = extractCoordinates(getHomeLocation.value);
 
     if (!schoolCoords || !homeCoords) return null;
 

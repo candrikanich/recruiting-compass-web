@@ -13,7 +13,7 @@ import { extractStateFromLocation } from "~/utils/locationParser";
 
 export function createSchoolFilterConfigs(
   stateOptions: ComputedRef<{ value: string; label: string }[]>,
-  getHomeLocation: () => HomeLocation | null,
+  getHomeLocation: ComputedRef<HomeLocation | null>,
   distanceCache: ComputedRef<Map<string, number>>,
 ): FilterConfig[] {
   return [
@@ -113,7 +113,7 @@ export function createSchoolFilterConfigs(
         filterValue: FilterValue,
       ): boolean => {
         const school = item as unknown as School;
-        const homeLoc = getHomeLocation();
+        const homeLoc = getHomeLocation.value;
         if (!homeLoc?.latitude || !homeLoc?.longitude) return true;
         const distance = distanceCache.value.get(school.id);
         if (distance === undefined) return true;
