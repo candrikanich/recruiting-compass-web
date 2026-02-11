@@ -234,6 +234,17 @@ const saveSuccess = ref(false);
 const { triggerSave } = useAutoSave({
   debounceMs: 500,
   onSave: async () => {
+    // Auto-geocode if we have an address but no coordinates
+    if (
+      hasAddress.value &&
+      (!localLocation.latitude || !localLocation.longitude)
+    ) {
+      const result = await geocodeAddress(fullAddress.value);
+      if (result) {
+        localLocation.latitude = result.latitude;
+        localLocation.longitude = result.longitude;
+      }
+    }
     await setHomeLocation(localLocation);
   },
 });
@@ -267,6 +278,18 @@ const handleSave = async () => {
   saveSuccess.value = false;
 
   try {
+    // Auto-geocode if we have an address but no coordinates
+    if (
+      hasAddress.value &&
+      (!localLocation.latitude || !localLocation.longitude)
+    ) {
+      const result = await geocodeAddress(fullAddress.value);
+      if (result) {
+        localLocation.latitude = result.latitude;
+        localLocation.longitude = result.longitude;
+      }
+    }
+
     await setHomeLocation(localLocation);
     saveSuccess.value = true;
     setTimeout(() => (saveSuccess.value = false), 3000);
@@ -293,6 +316,20 @@ onMounted(async () => {
   const location = getHomeLocation();
   if (location) {
     Object.assign(localLocation, location);
+
+    // Auto-geocode if we have an address but no coordinates
+    if (
+      hasAddress.value &&
+      (!localLocation.latitude || !localLocation.longitude)
+    ) {
+      const result = await geocodeAddress(fullAddress.value);
+      if (result) {
+        localLocation.latitude = result.latitude;
+        localLocation.longitude = result.longitude;
+        // Save the coordinates immediately
+        await setHomeLocation(localLocation);
+      }
+    }
   }
 });
 </script>
