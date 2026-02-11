@@ -161,7 +161,6 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from "vue";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
-import { useDocumentSharing } from "~/composables/useDocumentSharing";
 import { useFormValidation } from "~/composables/useFormValidation";
 import type { Database } from "~/types/database";
 
@@ -179,11 +178,11 @@ const emit = defineEmits<{
 
 const {
   uploadDocument,
+  shareDocument,
   uploadProgress,
   uploadError: docUploadError,
   isUploading,
 } = useDocumentsConsolidated();
-const { shareDocument } = useDocumentSharing();
 const { validateFile } = useFormValidation();
 
 const fileInput = ref<HTMLInputElement | null>(null);
