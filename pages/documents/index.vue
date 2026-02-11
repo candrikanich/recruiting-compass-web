@@ -369,6 +369,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed } from "vue";
+import { PlusIcon } from "@heroicons/vue/24/outline";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import { useSchools } from "~/composables/useSchools";
 import { useUniversalFilter } from "~/composables/useUniversalFilter";
