@@ -7,7 +7,7 @@
       <div class="max-w-3xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/settings"
-          class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 mb-2"
+          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings

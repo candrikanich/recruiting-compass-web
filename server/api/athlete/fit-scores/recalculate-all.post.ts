@@ -197,12 +197,22 @@ export default defineEventHandler(
         });
       }
 
-      // Batch update schools table
-      const { data: _updateResult, error: updateError } = await supabase
-        .from("schools")
-        // @ts-expect-error - custom columns (fit_score, fit_score_data) not in Supabase types
-        .upsert(updates, { onConflict: "id" })
-        .select();
+      // Batch update schools table - update each school individually
+      const updatePromises = updates.map((update) =>
+        supabase
+          .from("schools")
+          // @ts-expect-error - custom columns (fit_score, fit_score_data) not in Supabase types
+          .update({
+            fit_score: update.fit_score,
+            fit_score_data: update.fit_score_data,
+            updated_at: update.updated_at,
+          })
+          .eq("id", update.id)
+          .select(),
+      );
+
+      const results = await Promise.all(updatePromises);
+      const updateError = results.find((r) => r.error)?.error;
 
       if (updateError) {
         throw updateError;

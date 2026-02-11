@@ -1,8 +1,8 @@
 <template>
   <div
-    class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group"
+    class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group flex flex-col h-full"
   >
-    <div class="p-5">
+    <div class="p-5 flex-1 flex flex-col">
       <div class="flex items-start gap-4 mb-4">
         <SchoolLogo
           :school="school"
@@ -69,15 +69,17 @@
         </span>
       </div>
 
-      <p v-if="school.conference" class="text-slate-600 text-sm mb-2">
-        {{ school.conference }}
-      </p>
-      <p v-if="school.notes" class="text-slate-600 text-sm line-clamp-2 mb-4">
-        {{ school.notes }}
-      </p>
+      <div class="flex-1">
+        <p v-if="school.conference" class="text-slate-600 text-sm mb-2">
+          {{ school.conference }}
+        </p>
+        <p v-if="school.notes" class="text-slate-600 text-sm line-clamp-2">
+          {{ school.notes }}
+        </p>
+      </div>
     </div>
 
-    <div class="px-5 pb-5 flex gap-2">
+    <div class="px-5 pb-5 flex gap-2 mt-auto">
       <NuxtLink
         :to="`/schools/${school.id}`"
         :aria-label="`View ${school.name}`"

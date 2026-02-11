@@ -96,6 +96,9 @@
       </div>
     </div>
 
+    <!-- Status History -->
+    <SchoolStatusHistory :school-id="schoolId" />
+
     <!-- Attribution -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
       <h4 class="font-semibold text-slate-900 mb-3">Attribution</h4>
@@ -137,6 +140,7 @@ import {
   PhoneIcon,
   TrashIcon,
 } from "@heroicons/vue/24/outline";
+import SchoolStatusHistory from "~/components/School/SchoolStatusHistory.vue";
 
 defineProps<{
   schoolId: string;

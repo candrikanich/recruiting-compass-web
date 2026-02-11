@@ -133,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import Header from "~/components/Header.vue";
 import SettingsCard from "~/components/Settings/SettingsCard.vue";
@@ -142,8 +142,12 @@ definePageMeta({
   middleware: "auth",
 });
 
-const { getHomeLocation, getPlayerDetails, getSchoolPreferences } =
-  usePreferenceManager();
+const {
+  getHomeLocation,
+  getPlayerDetails,
+  getSchoolPreferences,
+  loadAllPreferences,
+} = usePreferenceManager();
 
 const hasHomeLocation = computed(() => {
   const loc = getHomeLocation();
@@ -158,5 +162,10 @@ const hasPlayerDetails = computed(() => {
 const hasSchoolPreferences = computed(() => {
   const prefs = getSchoolPreferences();
   return !!prefs?.preferences?.length;
+});
+
+// Load all preferences when the page mounts to ensure reactive updates
+onMounted(async () => {
+  await loadAllPreferences();
 });
 </script>

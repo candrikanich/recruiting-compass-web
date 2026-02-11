@@ -20,7 +20,7 @@
 
         <!-- Division Badge -->
         <div
-          v-if="school.division || school.priority_tier"
+          v-if="school.division || school.priority_tier || calculatedSize"
           class="flex items-center gap-2 mt-2 flex-wrap"
         >
           <span
@@ -37,6 +37,13 @@
             :title="`Priority: ${priorityTierLabel}`"
           >
             {{ school.priority_tier }} - {{ priorityTierLabel }}
+          </span>
+          <span
+            v-if="calculatedSize"
+            class="inline-block px-2 py-1 text-xs font-medium rounded"
+            :class="sizeColorClass"
+          >
+            {{ calculatedSize }}
           </span>
           <span
             v-if="school.conference"
@@ -100,6 +107,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import SchoolLogo from "./SchoolLogo.vue";
+import { getCarnegieSize, getSizeColorClass } from "~/utils/schoolSize";
 import type { School } from "~/types/models";
 
 interface SchoolWithFitScore extends School {
@@ -122,6 +130,14 @@ const emit = defineEmits<{
 }>();
 
 const isFavorite = computed(() => props.school.is_favorite === true);
+
+// School size support
+const calculatedSize = computed(() => {
+  const studentSize = props.school.academic_info?.student_size;
+  return getCarnegieSize(typeof studentSize === "number" ? studentSize : null);
+});
+
+const sizeColorClass = computed(() => getSizeColorClass(calculatedSize.value));
 
 // Fit score support
 const hasFitScore = computed(() => {

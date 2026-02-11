@@ -41,13 +41,11 @@
               Status is updating, please wait
             </span>
           </div>
-          <div class="py-1">
-            <SchoolPrioritySelector
-              :model-value="school.priority_tier ?? null"
-              @update:model-value="handlePriorityUpdate"
-              :data-testid="`priority-selector-${school.id}`"
-            />
-          </div>
+          <SchoolPrioritySelector
+            :model-value="school.priority_tier ?? null"
+            @update:model-value="handlePriorityUpdate"
+            :data-testid="`priority-selector-${school.id}`"
+          />
           <span
             v-if="calculatedSize"
             class="px-2 py-1 text-xs font-medium rounded-full"

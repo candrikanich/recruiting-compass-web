@@ -51,6 +51,46 @@ const { data: playerPrefs, error: prefError } = await supabase
 const playerDetails = (playerPrefs.data || {}) as Partial<PlayerDetails>;
 ```
 
+### Changed Lines 201-206 (Second Fix - Upsert to Update):
+
+**Original (BROKEN):**
+
+```typescript
+// Used upsert which tries INSERT first, causing null constraint errors
+const { data: _updateResult, error: updateError } = await supabase
+  .from("schools")
+  .upsert(updates, { onConflict: "id" })
+  .select();
+```
+
+**Fixed:**
+
+```typescript
+// Use individual update calls for each school
+const updatePromises = updates.map((update) =>
+  supabase
+    .from("schools")
+    .update({
+      fit_score: update.fit_score,
+      fit_score_data: update.fit_score_data,
+      updated_at: update.updated_at,
+    })
+    .eq("id", update.id)
+    .select(),
+);
+
+const results = await Promise.all(updatePromises);
+const updateError = results.find((r) => r.error)?.error;
+```
+
+**Why this fix was needed:** The original code used `.upsert()` which tries to INSERT a new row first, then UPDATE on conflict. When inserting, Postgres requires all NOT NULL columns (like `user_id`), but we only provided `id`, `fit_score`, `fit_score_data`, and `updated_at`. This caused:
+
+```
+null value in column "user_id" of relation "schools" violates not-null constraint
+```
+
+The fix uses individual `.update()` calls which only UPDATE existing rows, avoiding the INSERT attempt entirely.
+
 ## Database Schema
 
 The V2 preferences migration created a category-based structure in the existing `user_preferences` table:
