@@ -3,7 +3,7 @@
     <Transition name="fade">
       <div
         v-if="isOpen"
-        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end z-50 p-4"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end z-[1001] p-4"
       >
         <div
           class="bg-white rounded-t-2xl w-full max-w-md shadow-2xl overflow-hidden animate-slide-up"
@@ -167,12 +167,13 @@ const emit = defineEmits<Emits>();
 const step = ref<"preview" | "confirmation">("preview");
 
 const handleSendClick = () => {
-  // Build mailto link
-  const params = new URLSearchParams();
-  params.set("subject", props.subject || "");
-  params.set("body", props.body || "");
+  // Build mailto link with proper encoding
+  // Use encodeURIComponent instead of URLSearchParams to preserve line breaks
+  // and avoid + encoding for spaces
+  const subject = encodeURIComponent(props.subject || "");
+  const body = encodeURIComponent(props.body || "");
 
-  const mailtoLink = `mailto:${props.recipientEmail}?${params.toString()}`;
+  const mailtoLink = `mailto:${props.recipientEmail}?subject=${subject}&body=${body}`;
 
   // Open email client
   if (typeof window !== "undefined") {
