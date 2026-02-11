@@ -17,6 +17,7 @@ import {
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { PlayerDetails } from "~/types/models";
 import type { FitScoreInputs } from "~/types/timeline";
+import type { Json } from "~/types/database";
 
 interface RecalculationResult {
   success: boolean;
@@ -201,10 +202,9 @@ export default defineEventHandler(
       const updatePromises = updates.map((update) =>
         supabase
           .from("schools")
-          // @ts-expect-error - custom columns (fit_score, fit_score_data) not in Supabase types
           .update({
             fit_score: update.fit_score,
-            fit_score_data: update.fit_score_data,
+            fit_score_data: update.fit_score_data as unknown as Json,
             updated_at: update.updated_at,
           })
           .eq("id", update.id)
