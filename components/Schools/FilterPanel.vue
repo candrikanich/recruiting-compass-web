@@ -114,11 +114,13 @@
               max: parseInt(($event.target as HTMLInputElement).value),
             })
           "
-          :disabled="!userHomeLocation"
+          :disabled="
+            !userHomeLocation?.latitude || !userHomeLocation?.longitude
+          "
           class="w-full h-2.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
         />
         <p
-          v-if="!userHomeLocation"
+          v-if="!userHomeLocation?.latitude || !userHomeLocation?.longitude"
           class="text-xs text-amber-700 mt-1 px-2 py-0.5 bg-amber-50 rounded border border-amber-200"
         >
           Set home location
@@ -132,7 +134,7 @@
         class="lg:col-span-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4"
       >
         <!-- Division -->
-        <FilterSelect
+        <SchoolFilterSelect
           label="Division"
           :value="String(filterValues.division ?? '')"
           @change="$emit('update:filter', 'division', $event || null)"
@@ -143,10 +145,10 @@
           <option value="D3">D3</option>
           <option value="NAIA">NAIA</option>
           <option value="JUCO">JUCO</option>
-        </FilterSelect>
+        </SchoolFilterSelect>
 
         <!-- Status -->
-        <FilterSelect
+        <SchoolFilterSelect
           label="Status"
           :value="String(filterValues.status ?? '')"
           @change="$emit('update:filter', 'status', $event || null)"
@@ -157,10 +159,10 @@
           <option value="interested">Interested</option>
           <option value="offer_received">Offer</option>
           <option value="committed">Committed</option>
-        </FilterSelect>
+        </SchoolFilterSelect>
 
         <!-- State -->
-        <FilterSelect
+        <SchoolFilterSelect
           label="State"
           :value="String(filterValues.state ?? '')"
           @change="$emit('update:filter', 'state', $event || null)"
@@ -173,10 +175,10 @@
           >
             {{ option.label }}
           </option>
-        </FilterSelect>
+        </SchoolFilterSelect>
 
         <!-- Favorites -->
-        <FilterSelect
+        <SchoolFilterSelect
           label="Favorites"
           :value="filterValues.is_favorite ? 'true' : ''"
           @change="
@@ -185,10 +187,10 @@
         >
           <option value="">All</option>
           <option value="true">Starred</option>
-        </FilterSelect>
+        </SchoolFilterSelect>
 
         <!-- Priority Tier -->
-        <FilterSelect
+        <SchoolFilterSelect
           label="Tier"
           :value="
             priorityTierFilter && priorityTierFilter.length === 1
@@ -206,10 +208,10 @@
           <option value="A">A - Top Choice</option>
           <option value="B">B - Strong Interest</option>
           <option value="C">C - Fallback</option>
-        </FilterSelect>
+        </SchoolFilterSelect>
 
         <!-- Sort -->
-        <FilterSelect
+        <SchoolFilterSelect
           label="Sort"
           :value="sortBy"
           @change="$emit('update:sort', $event)"
@@ -218,7 +220,7 @@
           <option value="fit-score">Fit Score</option>
           <option value="distance">Distance</option>
           <option value="last-contact">Last Contact</option>
-        </FilterSelect>
+        </SchoolFilterSelect>
       </div>
     </div>
 
@@ -262,7 +264,7 @@
 
 <script setup lang="ts">
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/vue/24/outline";
-import FilterSelect from "~/components/School/FilterSelect.vue";
+import type { HomeLocation } from "~/types/models";
 
 interface SchoolFilterValues {
   name?: string;
@@ -279,7 +281,7 @@ defineProps<{
   hasActiveFilters: boolean;
   activeFiltersDisplay: Record<string, string>;
   stateOptions: { value: string; label: string }[];
-  userHomeLocation: { latitude: number; longitude: number } | null;
+  userHomeLocation: HomeLocation | null;
   sortBy: string;
   priorityTierFilter: ("A" | "B" | "C")[] | null;
 }>();
