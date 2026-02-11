@@ -298,6 +298,4 @@ When a bug is discovered:
 
 ## Learnings
 
-Track evolving patterns discovered in code reviews and PR feedback. Update during PR process when you find recurring issues, gotchas, or anti-patterns.
-
-- (Add learnings as they emerge)
+See [planning/lessons.md](./planning/lessons.md) for evolving patterns, recurring issues, and anti-patterns discovered during development.
