@@ -163,18 +163,28 @@ describe("SchoolMap", () => {
         schoolName: "UF",
       });
       await flushPromises();
+      await nextTick();
+
+      // Record initial call counts
+      const initialSetViewCalls = mockSetView.mock.calls.length;
+      const initialSetLatLngCalls = mockSetLatLng.mock.calls.length;
 
       await wrapper.setProps({
         latitude: 30.4383,
         longitude: -84.2807,
       });
+
+      // Wait for all async operations (watch, dynamic import, DOM updates)
       await flushPromises();
+      await nextTick();
+      await flushPromises(); // Double flush to ensure dynamic import completes
 
       // Either setLatLng or setView should be called after coordinate change
-      expect(
-        mockSetLatLng.mock.calls.length > 0 ||
-          mockSetView.mock.calls.length > 1,
-      ).toBe(true);
+      const setViewCalled = mockSetView.mock.calls.length > initialSetViewCalls;
+      const setLatLngCalled =
+        mockSetLatLng.mock.calls.length > initialSetLatLngCalls;
+
+      expect(setViewCalled || setLatLngCalled).toBe(true);
     });
   });
 });

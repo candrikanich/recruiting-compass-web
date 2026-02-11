@@ -44,17 +44,6 @@
             @toggle-favorite="handleToggleFavorite"
           />
 
-          <!-- Fit Score Card -->
-          <div
-            v-if="fitScore"
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
-          >
-            <h2 class="text-lg font-semibold text-slate-900 mb-4">
-              School Fit Analysis
-            </h2>
-            <FitScoreDisplay :fit-score="fitScore" :show-breakdown="true" />
-          </div>
-
           <!-- Division Recommendations Card -->
           <DivisionRecommendationCard
             v-if="divisionRecommendation?.shouldConsiderOtherDivisions"
@@ -127,6 +116,8 @@
           :school-id="id"
           :coaches="schoolCoaches"
           :school="school"
+          :fit-score="fitScore"
+          :division-recommendation="divisionRecommendation"
           @open-email-modal="showEmailModal = true"
           @delete="openDeleteConfirm"
         />

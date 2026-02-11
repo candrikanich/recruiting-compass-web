@@ -84,9 +84,9 @@
 
         <div v-if="autoSyncEnabled" class="mt-4 p-4 bg-blue-50 rounded-lg">
           <p class="text-sm text-blue-800">
-            <strong>Next scheduled sync:</strong> Automatic sync runs via GitLab
-            CI schedules every 6 hours. Configure schedules in your GitLab
-            project settings.
+            <strong>Next scheduled sync:</strong> Automatic sync runs via GitHub
+            Actions every 6 hours. Configure schedules in your GitHub repository
+            settings.
           </p>
         </div>
       </div>

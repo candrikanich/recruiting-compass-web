@@ -32,6 +32,14 @@ const stubs = {
     template: '<a :href="to"><slot /></a>',
     props: ["to"],
   },
+  SchoolStatusHistory: {
+    template: "<div>Status History</div>",
+    props: ["schoolId"],
+  },
+  FitScoreDisplay: {
+    template: "<div>Fit Score Display</div>",
+    props: ["fitScore", "showBreakdown"],
+  },
 };
 
 const createMockSchool = (overrides = {}): School => ({
@@ -220,6 +228,40 @@ describe("SchoolSidebar", () => {
       });
       expect(wrapper.text()).toContain("Ranking");
       expect(wrapper.text()).toContain("Current ranking");
+    });
+  });
+
+  describe("Fit Score section", () => {
+    it("renders Fit Score section when fitScore is provided", () => {
+      const mockFitScore = {
+        score: 85,
+        breakdown: {
+          academics: { score: 90, weight: 0.3 },
+          athletics: { score: 80, weight: 0.4 },
+          location: { score: 85, weight: 0.3 },
+        },
+      };
+      const wrapper = mount(SchoolSidebar, {
+        props: { ...defaultProps, fitScore: mockFitScore },
+        global: { stubs },
+      });
+      expect(wrapper.text()).toContain("School Fit Analysis");
+    });
+
+    it("does not render Fit Score section when fitScore is null", () => {
+      const wrapper = mount(SchoolSidebar, {
+        props: { ...defaultProps, fitScore: null },
+        global: { stubs },
+      });
+      expect(wrapper.text()).not.toContain("School Fit Analysis");
+    });
+
+    it("does not render Fit Score section when fitScore is undefined", () => {
+      const wrapper = mount(SchoolSidebar, {
+        props: defaultProps,
+        global: { stubs },
+      });
+      expect(wrapper.text()).not.toContain("School Fit Analysis");
     });
   });
 

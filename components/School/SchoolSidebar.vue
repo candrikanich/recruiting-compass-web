@@ -96,6 +96,15 @@
       </div>
     </div>
 
+    <!-- Fit Score Card -->
+    <div
+      v-if="fitScore"
+      class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
+    >
+      <h3 class="font-semibold text-slate-900 mb-4">School Fit Analysis</h3>
+      <FitScoreDisplay :fit-score="fitScore" :show-breakdown="true" />
+    </div>
+
     <!-- Status History -->
     <SchoolStatusHistory :school-id="schoolId" />
 
@@ -131,6 +140,7 @@
 <script setup lang="ts">
 import { getRoleLabel } from "~/utils/coachLabels";
 import type { School, Coach } from "~/types/models";
+import type { FitScoreResult, DivisionRecommendation } from "~/types/timeline";
 import {
   ChatBubbleLeftRightIcon,
   UsersIcon,
@@ -141,11 +151,14 @@ import {
   TrashIcon,
 } from "@heroicons/vue/24/outline";
 import SchoolStatusHistory from "~/components/School/SchoolStatusHistory.vue";
+import FitScoreDisplay from "~/components/FitScore/FitScoreDisplay.vue";
 
 defineProps<{
   schoolId: string;
   coaches: Coach[];
   school: School;
+  fitScore?: FitScoreResult | null;
+  divisionRecommendation?: DivisionRecommendation | null;
 }>();
 
 const emit = defineEmits<{
