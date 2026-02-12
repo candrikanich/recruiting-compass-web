@@ -108,6 +108,7 @@
             :subject="`Contact from ${school?.name || 'Recruiting Compass'}`"
             :body="`Hello,\n\nI am reaching out regarding recruitment opportunities at ${school?.name || 'your school'}.\n\nBest regards`"
             @close="showEmailModal = false"
+            @confirmed="handleEmailConfirmed"
           />
         </div>
 
@@ -208,6 +209,7 @@ const { getSchool, updateSchool, smartDelete, loading } = useSchools();
 const { coaches: allCoaches, fetchCoaches } = useCoaches();
 const { documents, fetchDocuments } = useDocumentsConsolidated();
 const { calculateSchoolFitScore, getFitScore } = useFitScore();
+const { createInteraction } = useInteractions();
 const {
   fetchByName,
   loading: collegeDataLoading,
@@ -331,6 +333,41 @@ const handleRemoveCon = createUpdateHandler(school, async (index: number) => {
   if (!school.value) return null;
   return await removeCon(school.value, index);
 });
+
+// Handlers - Email
+const handleEmailConfirmed = async () => {
+  if (!school.value) return;
+
+  try {
+    const coachId =
+      schoolCoaches.value.length > 0 ? schoolCoaches.value[0].id : null;
+    const subject = `Contact from ${school.value.name || "Recruiting Compass"}`;
+    const body = `Hello,\n\nI am reaching out regarding recruitment opportunities at ${school.value.name || "your school"}.\n\nBest regards`;
+
+    await createInteraction(
+      {
+        school_id: id,
+        coach_id: coachId,
+        event_id: null,
+        type: "email",
+        direction: "outbound",
+        subject,
+        content: body,
+        sentiment: null,
+        occurred_at: new Date().toISOString(),
+        logged_by: "",
+        attachments: [],
+      },
+      undefined,
+    );
+
+    announce("Email interaction logged successfully");
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : "Unknown error";
+    console.error("Failed to log email interaction:", errorMsg);
+    announce(`Failed to log interaction: ${errorMsg}`);
+  }
+};
 
 // Handlers - Other
 const updateCoachingPhilosophy = createUpdateHandler(

@@ -960,6 +960,89 @@ export type Database = {
           },
         ];
       };
+      follow_up_reminders: {
+        Row: {
+          coach_id: string | null;
+          completed_at: string | null;
+          created_at: string | null;
+          description: string | null;
+          due_date: string;
+          id: string;
+          interaction_id: string | null;
+          is_completed: boolean;
+          notification_sent: boolean;
+          priority: string;
+          reminder_type: string;
+          school_id: string | null;
+          title: string;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          coach_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          due_date: string;
+          id?: string;
+          interaction_id?: string | null;
+          is_completed?: boolean;
+          notification_sent?: boolean;
+          priority?: string;
+          reminder_type: string;
+          school_id?: string | null;
+          title: string;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          coach_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          due_date?: string;
+          id?: string;
+          interaction_id?: string | null;
+          is_completed?: boolean;
+          notification_sent?: boolean;
+          priority?: string;
+          reminder_type?: string;
+          school_id?: string | null;
+          title?: string;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "follow_up_reminders_coach_id_fkey";
+            columns: ["coach_id"];
+            isOneToOne: false;
+            referencedRelation: "coaches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follow_up_reminders_interaction_id_fkey";
+            columns: ["interaction_id"];
+            isOneToOne: false;
+            referencedRelation: "interactions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follow_up_reminders_school_id_fkey";
+            columns: ["school_id"];
+            isOneToOne: false;
+            referencedRelation: "schools";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follow_up_reminders_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       interactions: {
         Row: {
           attachments: string[] | null;
