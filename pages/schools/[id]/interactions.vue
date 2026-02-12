@@ -337,9 +337,9 @@ const handleAddInteraction = async (data: InteractionSubmitData) => {
     showAddForm.value = false;
     await fetchInteractions({ schoolId: id });
   } catch (err) {
+    console.error("Failed to log interaction:", err);
     const errorMsg =
       err instanceof Error ? err.message : "Unknown error occurred";
-    console.error("Failed to log interaction:", errorMsg);
     announce(`Failed to log interaction: ${errorMsg}`);
   }
 };

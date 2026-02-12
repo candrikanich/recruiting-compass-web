@@ -158,6 +158,13 @@ vi.mock("~/stores/user", () => ({
   }),
 }));
 
+// Mock the active family composable
+vi.mock("~/composables/useActiveFamily", () => ({
+  useActiveFamily: () => ({
+    getDataOwnerUserId: () => "user-123",
+  }),
+}));
+
 // Mock Supabase
 vi.mock("~/composables/useSupabase", () => ({
   useSupabase: () => mockSupabase,
