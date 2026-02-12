@@ -681,9 +681,15 @@ const useInteractionsInternal = (): {
 
     remindersErrorRef.value = null;
 
+    const dataOwnerUserId = activeFamily.getDataOwnerUserId();
+    if (!dataOwnerUserId) {
+      remindersErrorRef.value = "No user ID available";
+      return null;
+    }
+
     try {
       const newReminder: FollowUpReminderInsert = {
-        user_id: activeFamily.getDataOwnerUserId(),
+        user_id: dataOwnerUserId,
         title,
         description,
         due_date: dueDate,
