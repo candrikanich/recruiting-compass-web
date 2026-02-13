@@ -1,16 +1,22 @@
 <template>
   <div>
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
-    <DesignSystemToast />
-    <FeedbackButton />
-    <SessionTimeoutWarning
-      :visible="isWarningVisible"
-      :seconds-remaining="secondsUntilLogout"
-      @stay-logged-in="dismissWarning"
-      @logout-now="handleTimeout"
-    />
+    <!-- Service Unavailable Error Page (highest priority) -->
+    <ServiceUnavailable v-if="isServiceUnavailable" />
+
+    <!-- Normal app content (hidden when service is unavailable) -->
+    <template v-else>
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+      <DesignSystemToast />
+      <FeedbackButton />
+      <SessionTimeoutWarning
+        :visible="isWarningVisible"
+        :seconds-remaining="secondsUntilLogout"
+        @stay-logged-in="dismissWarning"
+        @logout-now="handleTimeout"
+      />
+    </template>
   </div>
 </template>
 
@@ -20,6 +26,9 @@ import { useSessionTimeout } from "~/composables/useSessionTimeout";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "~/composables/useActiveFamily";
 import SessionTimeoutWarning from "~/components/Auth/SessionTimeoutWarning.vue";
+
+// Service status for error page
+const { isServiceUnavailable } = useServiceStatus();
 
 const { isWarningVisible, secondsUntilLogout, dismissWarning, handleTimeout } =
   useSessionTimeout();

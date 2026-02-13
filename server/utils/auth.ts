@@ -111,7 +111,12 @@ export async function getUserRole(
       .single();
 
     if (error || !data) {
-      logger.error("Failed to fetch user role", error);
+      logger.error("Failed to fetch user role", {
+        error,
+        userId,
+        errorMessage: error?.message,
+        errorCode: error?.code,
+      });
       return null;
     }
 

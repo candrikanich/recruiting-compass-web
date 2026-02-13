@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
 
   // Only players can create families
   const userRole = await getUserRole(user.id, supabase);
+  console.log("[family/create] User role:", userRole, "for user:", user.id);
   if (userRole !== "player") {
     throw createError({
       statusCode: 403,
@@ -61,9 +62,10 @@ export default defineEventHandler(async (event) => {
   };
 
   if (familyError || !newFamily) {
+    console.error("[family/create] Family creation error:", familyError);
     throw createError({
       statusCode: 500,
-      message: "Failed to create family",
+      message: `Failed to create family: ${familyError?.message || "Unknown error"}`,
     });
   }
 
@@ -78,9 +80,10 @@ export default defineEventHandler(async (event) => {
   const { error: memberError } = memberResponse as { error: any };
 
   if (memberError) {
+    console.error("[family/create] Member insert error:", memberError);
     throw createError({
       statusCode: 500,
-      message: "Failed to add student to family",
+      message: `Failed to add student to family: ${memberError?.message || "Unknown error"}`,
     });
   }
 
