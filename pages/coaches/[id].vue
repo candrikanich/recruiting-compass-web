@@ -162,9 +162,9 @@ import {
   computed,
   reactive,
   onMounted,
-  defineAsyncComponent,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { navigateTo } from "#app";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
@@ -175,9 +175,7 @@ import { useDeleteModal } from "~/composables/useDeleteModal";
 import { usePrivateNotes } from "~/composables/usePrivateNotes";
 import { useCommunicationModal } from "~/composables/useCommunicationModal";
 import { ArrowLeftIcon, XMarkIcon } from "@heroicons/vue/24/outline";
-const DeleteConfirmationModal = defineAsyncComponent(
-  () => import("~/components/DeleteConfirmationModal.vue"),
-);
+import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
 import CoachHeader from "~/components/Coach/CoachHeader.vue";
 import CoachStatsGrid from "~/components/Coach/CoachStatsGrid.vue";
 import CoachNotesEditor from "~/components/Coach/CoachNotesEditor.vue";
@@ -320,7 +318,7 @@ const deleteCoach = async () => {
 
   try {
     await confirmDelete(coach.value.id, () => {
-      router.push("/coaches");
+      navigateTo("/coaches");
     });
   } catch (err: unknown) {
     const message =
