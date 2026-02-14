@@ -94,12 +94,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { useSupabase } from "~/composables/useSupabase";
+import { useSchools } from "~/composables/useSchools";
+import { useCoaches } from "~/composables/useCoaches";
 import { useUserStore } from "~/stores/user";
 import { useCommunication } from "~/composables/useCommunication";
 import type { Coach, School } from "~/types/models";
 
-const supabase = useSupabase();
+const { schools: allSchools, fetchSchools } = useSchools();
+const { coaches: allCoachesData, fetchAllCoaches } = useCoaches();
 const userStore = useUserStore();
 const communicationComposable = useCommunication();
 
@@ -118,9 +120,6 @@ const openCommunication = (
   communicationComposable.openCommunication(coach, type);
 };
 
-const allCoaches = ref<Coach[]>([]);
-const allSchools = ref<School[]>([]);
-
 // Threshold for follow-up: 14 days
 const FOLLOW_UP_THRESHOLD_DAYS = 14;
 
@@ -129,7 +128,7 @@ const needsFollowup = computed(() => {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - FOLLOW_UP_THRESHOLD_DAYS);
 
-  return allCoaches.value
+  return allCoachesData.value
     .filter((coach) => {
       // Include coaches with no last contact, or those contacted before threshold
       if (!coach.last_contact_date) return true;
@@ -149,7 +148,7 @@ const needsFollowup = computed(() => {
 // Get school by ID
 const getSchool = (schoolId?: string): School | undefined => {
   if (!schoolId) return undefined;
-  return allSchools.value.find((s) => s.id === schoolId);
+  return allSchools.value.find((s: School) => s.id === schoolId);
 };
 
 // Get school name by ID
@@ -186,34 +185,11 @@ const handleText = (coach: Coach) => {
   openCommunication(coach, "text");
 };
 
-// Fetch data
+// Fetch data from composables
 const fetchData = async () => {
   if (!userStore.user) return;
-
   try {
-    // Fetch schools
-    const { data: schoolsData, error: schoolsError } = await supabase
-      .from("schools")
-      .select("*")
-      .eq("user_id", userStore.user.id);
-
-    if (!schoolsError && schoolsData) {
-      allSchools.value = schoolsData;
-    }
-
-    // Fetch coaches
-    if (allSchools.value.length > 0) {
-      const schoolIds = allSchools.value.map((s) => s.id);
-      const { data: coachesData, error: coachesError } = await supabase
-        .from("coaches")
-        .select("*")
-        .in("school_id", schoolIds)
-        .order("last_contact_date", { ascending: true, nullsFirst: true });
-
-      if (!coachesError && coachesData) {
-        allCoaches.value = coachesData;
-      }
-    }
+    await Promise.all([fetchSchools(), fetchAllCoaches()]);
   } catch (err) {
     console.error("Error fetching follow-up data:", err);
   }

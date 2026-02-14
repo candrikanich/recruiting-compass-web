@@ -118,12 +118,14 @@ export const useUniversalFilter = <T extends Record<string, unknown>>(
       debounceTimeouts[field] = setTimeout(() => {
         filterValues.value[field] = value;
         activePresetId.value = undefined;
+        saveToStorage();
         delete debounceTimeouts[field];
       }, debounceMs);
     } else {
       // No debounce - update immediately
       filterValues.value[field] = value;
       activePresetId.value = undefined;
+      saveToStorage();
     }
   };
 
@@ -135,6 +137,7 @@ export const useUniversalFilter = <T extends Record<string, unknown>>(
     });
     filterValues.value = initial;
     activePresetId.value = undefined;
+    saveToStorage();
   };
 
   // Get active filter count (non-null, non-empty filters)
@@ -311,10 +314,6 @@ export const useUniversalFilter = <T extends Record<string, unknown>>(
   // Initialize on mount
   initializeFilters();
   loadFromStorage();
-
-  // Auto-save to storage when filters change
-  watch(filterValues, saveToStorage, { deep: true });
-  watch(presets, saveToStorage, { deep: true });
 
   return {
     // State

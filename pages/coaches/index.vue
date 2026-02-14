@@ -197,11 +197,11 @@
 
       <!-- Coaches Grid -->
       <ul
-        v-if="filteredCoaches.length > 0"
+        v-if="paginatedCoaches.length > 0"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
         <li
-          v-for="coach in filteredCoaches"
+          v-for="coach in paginatedCoaches"
           :key="coach.id"
           class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition overflow-hidden"
         >
@@ -368,7 +368,7 @@
               </button>
               <button
                 @click="openDeleteModal(coach)"
-                data-test="coach-delete-btn"
+                      data-test="coach-delete-btn"
                 :aria-label="`Delete ${coach.first_name} ${coach.last_name}`"
                 class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
@@ -397,6 +397,30 @@
           </div>
         </li>
       </ul>
+
+      <!-- Pagination Controls -->
+      <div
+        v-if="filteredCoaches.length > ITEMS_PER_PAGE"
+        class="flex items-center justify-center gap-4 mt-8"
+      >
+        <button
+          @click="goToPage(currentPage - 1)"
+          :disabled="!hasPrevPage"
+          class="px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <span class="text-sm text-slate-600">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+        <button
+          @click="goToPage(currentPage + 1)"
+          :disabled="!hasNextPage"
+          class="px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
     </main>
 
     <!-- Communication Panel Modal -->
@@ -538,6 +562,29 @@ const schools = ref<School[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const sortBy = ref("name");
+
+// Pagination
+const ITEMS_PER_PAGE = 12;
+const currentPage = ref(1);
+
+const paginatedCoaches = computed(() => {
+  const start = (currentPage.value - 1) * ITEMS_PER_PAGE;
+  const end = start + ITEMS_PER_PAGE;
+  return filteredCoaches.value.slice(start, end);
+});
+
+const totalPages = computed(() =>
+  Math.ceil(filteredCoaches.value.length / ITEMS_PER_PAGE),
+);
+
+const hasNextPage = computed(() => currentPage.value < totalPages.value);
+const hasPrevPage = computed(() => currentPage.value > 1);
+
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+  }
+};
 
 // Use filter composable for stateful filter management
 const {

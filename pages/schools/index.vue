@@ -167,16 +167,40 @@
 
       <!-- Schools Grid -->
       <div
-        v-if="!loading && filteredSchools.length > 0"
+        v-if="!loading && paginatedSchools.length > 0"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
         <SchoolListCard
-          v-for="school in filteredSchools"
+          v-for="school in paginatedSchools"
           :key="school.id"
           :school="school"
           @toggle-favorite="toggleFavorite"
           @delete="handleDeleteSchool"
         />
+      </div>
+
+      <!-- Pagination Controls -->
+      <div
+        v-if="!loading && filteredSchools.length > ITEMS_PER_PAGE"
+        class="flex items-center justify-center gap-4 mt-8"
+      >
+        <button
+          @click="goToPage(currentPage - 1)"
+          :disabled="!hasPrevPage"
+          class="px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <span class="text-sm text-slate-600">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+        <button
+          @click="goToPage(currentPage + 1)"
+          :disabled="!hasNextPage"
+          class="px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
       </div>
     </main>
 
@@ -257,6 +281,29 @@ const allInteractions = ref<any[]>([]);
 const allCoaches = ref<any[]>([]);
 const priorityTierFilter = ref<("A" | "B" | "C")[] | null>(null);
 const sortBy = ref<string>("a-z");
+
+// Pagination
+const ITEMS_PER_PAGE = 12;
+const currentPage = ref(1);
+
+const paginatedSchools = computed(() => {
+  const start = (currentPage.value - 1) * ITEMS_PER_PAGE;
+  const end = start + ITEMS_PER_PAGE;
+  return filteredSchools.value.slice(start, end);
+});
+
+const totalPages = computed(() =>
+  Math.ceil(filteredSchools.value.length / ITEMS_PER_PAGE),
+);
+
+const hasNextPage = computed(() => currentPage.value < totalPages.value);
+const hasPrevPage = computed(() => currentPage.value > 1);
+
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+  }
+};
 
 const isParent = computed(() => userStore.user?.role === "parent");
 

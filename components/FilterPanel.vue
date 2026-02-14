@@ -85,13 +85,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
+import { useDebounceFn } from "@vueuse/core";
 
 // Mobile/desktop state
 const isOpen = ref(false);
 const isDesktop = ref(false); // SSR-safe default
 
-// Handle window resize
-const handleResize = () => {
+// Handle window resize with debounce
+const handleResize = useDebounceFn(() => {
   const newIsDesktop = window.innerWidth >= 1024;
   if (newIsDesktop !== isDesktop.value) {
     isDesktop.value = newIsDesktop;
@@ -99,7 +100,7 @@ const handleResize = () => {
       isOpen.value = false; // Close mobile drawer on desktop resize
     }
   }
-};
+}, 150);
 
 onMounted(() => {
   isDesktop.value = window.innerWidth >= 1024;
