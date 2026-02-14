@@ -80,6 +80,27 @@ export const resetPasswordSchema = z
 // SCHOOL SCHEMAS
 // ============================================================================
 
+const academicInfoSchema = z
+  .object({
+    gpa_requirement: z.number().optional(),
+    sat_requirement: z.number().optional(),
+    act_requirement: z.number().optional(),
+    additional_requirements: z.array(z.string()).optional(),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
+    student_size: z.number().nullable().optional(),
+    carnegie_size: z.string().nullable().optional(),
+    enrollment_all: z.number().nullable().optional(),
+    admission_rate: z.number().nullable().optional(),
+    tuition_in_state: z.number().nullable().optional(),
+    tuition_out_of_state: z.number().nullable().optional(),
+  })
+  .passthrough() // Allow additional properties for flexibility
+  .optional();
+
 export const schoolSchema = z.object({
   name: z
     .string()
@@ -106,6 +127,7 @@ export const schoolSchema = z.object({
   is_favorite: z.boolean().default(false),
   pros: z.array(sanitizedTextSchema(500)).default([]),
   cons: z.array(sanitizedTextSchema(500)).default([]),
+  academic_info: academicInfoSchema,
 });
 
 // ============================================================================

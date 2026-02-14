@@ -157,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, defineAsyncComponent } from "vue";
 import { useRoute } from "vue-router";
 import { navigateTo } from "#app";
 import { useSchools } from "~/composables/useSchools";
@@ -194,7 +194,9 @@ import SchoolNotesCard from "~/components/School/SchoolNotesCard.vue";
 import SchoolProsConsCard from "~/components/School/SchoolProsConsCard.vue";
 import SchoolCoachingPhilosophy from "~/components/School/CoachingPhilosophy.vue";
 import SchoolSidebar from "~/components/School/SchoolSidebar.vue";
-import EmailSendModal from "~/components/EmailSendModal.vue";
+const EmailSendModal = defineAsyncComponent(
+  () => import("~/components/EmailSendModal.vue"),
+);
 import FitScoreDisplay from "~/components/FitScore/FitScoreDisplay.vue";
 import DesignSystemConfirmDialog from "~/components/DesignSystem/ConfirmDialog.vue";
 

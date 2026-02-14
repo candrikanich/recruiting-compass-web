@@ -11,6 +11,7 @@
             :src="profilePhotoUrl"
             :alt="userName"
             class="w-full h-full object-cover"
+            loading="lazy"
             @error="handleImageError"
           />
         </div>

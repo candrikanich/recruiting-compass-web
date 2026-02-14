@@ -465,7 +465,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, inject } from "vue";
+import {
+  ref,
+  computed,
+  onMounted,
+  watch,
+  inject,
+  defineAsyncComponent,
+} from "vue";
 import { navigateTo } from "#app";
 import { useSupabase } from "~/composables/useSupabase";
 import { useCommunication } from "~/composables/useCommunication";
@@ -477,7 +484,9 @@ import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 import Header from "~/components/Header.vue";
 import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
-import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
+const DeleteConfirmationModal = defineAsyncComponent(
+  () => import("~/components/DeleteConfirmationModal.vue"),
+);
 import CoachFilters from "~/components/Coach/CoachFilters.vue";
 import ActiveCoachFilterChips from "~/components/Coach/ActiveCoachFilterChips.vue";
 import {

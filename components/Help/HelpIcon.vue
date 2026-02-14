@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, defineAsyncComponent } from "vue";
 import TooltipGuide from "./TooltipGuide.vue";
-import HelpModal from "./HelpModal.vue";
+const HelpModal = defineAsyncComponent(() => import("./HelpModal.vue"));
 import type { HelpDefinition } from "./helpDefinitions";
 import { getHelpDefinition } from "./helpDefinitions";
 

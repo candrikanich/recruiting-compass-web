@@ -444,11 +444,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import {
+  ref,
+  computed,
+  onMounted,
+  watch,
+  defineAsyncComponent,
+} from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useSupabase } from "~/composables/useSupabase";
 import { useToast } from "~/composables/useToast";
-import BulkDeleteConfirmModal from "~/components/Admin/BulkDeleteConfirmModal.vue";
+const BulkDeleteConfirmModal = defineAsyncComponent(
+  () => import("~/components/Admin/BulkDeleteConfirmModal.vue"),
+);
 
 definePageMeta({
   layout: "default",

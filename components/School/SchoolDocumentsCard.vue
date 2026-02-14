@@ -52,10 +52,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, defineAsyncComponent } from "vue";
 import type { Document } from "~/types/models";
 import { DocumentTextIcon } from "@heroicons/vue/24/outline";
-import SchoolDocumentUploadModal from "~/components/School/DocumentUploadModal.vue";
+const SchoolDocumentUploadModal = defineAsyncComponent(
+  () => import("~/components/School/DocumentUploadModal.vue"),
+);
 
 defineProps<{
   schoolId: string;

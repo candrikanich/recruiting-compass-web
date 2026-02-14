@@ -62,19 +62,27 @@
       <!-- Charts & Analytics Section -->
       <section aria-labelledby="charts-heading">
         <h2 id="charts-heading" class="sr-only">Charts & Analytics</h2>
-        <DashboardChartsSection
-          :schools="dashboardData.allSchools.value"
-          :interactions="dashboardData.allInteractions.value"
-          :school-size-breakdown="schoolSizeBreakdown"
-          :school-count="dashboardData.schoolCount.value"
-          :recruiting-packet-loading="recruitingPacketLoading"
-          :recruiting-packet-error="recruitingPacketError"
-          :has-generated-packet="
-            recruitingPacketComposable.hasGeneratedPacket.value
-          "
-          @generate-packet="handleGeneratePacket"
-          @email-packet="handleEmailPacket"
-        />
+        <Suspense>
+          <DashboardChartsSection
+            :schools="dashboardData.allSchools.value"
+            :interactions="dashboardData.allInteractions.value"
+            :school-size-breakdown="schoolSizeBreakdown"
+            :school-count="dashboardData.schoolCount.value"
+            :recruiting-packet-loading="recruitingPacketLoading"
+            :recruiting-packet-error="recruitingPacketError"
+            :has-generated-packet="
+              recruitingPacketComposable.hasGeneratedPacket.value
+            "
+            @generate-packet="handleGeneratePacket"
+            @email-packet="handleEmailPacket"
+          />
+          <template #fallback>
+            <div class="grid gap-6 md:grid-cols-2">
+              <div class="animate-pulse bg-gray-200 h-80 rounded-lg"></div>
+              <div class="animate-pulse bg-gray-200 h-80 rounded-lg"></div>
+            </div>
+          </template>
+        </Suspense>
       </section>
 
       <!-- Performance & Events Section -->
@@ -92,28 +100,41 @@
       <!-- Map & Activity Section -->
       <section aria-labelledby="map-heading" class="mt-6">
         <h2 id="map-heading" class="sr-only">School Map & Recent Activity</h2>
-        <DashboardMapActivitySection
-          :schools="dashboardData.allSchools.value"
-          :show-widget="showWidget"
-        />
+        <Suspense>
+          <DashboardMapActivitySection
+            :schools="dashboardData.allSchools.value"
+            :show-widget="showWidget"
+          />
+          <template #fallback>
+            <div class="animate-pulse bg-gray-200 h-96 rounded-lg"></div>
+          </template>
+        </Suspense>
       </section>
 
       <!-- Widgets Section -->
       <section aria-labelledby="widgets-heading" class="mt-6">
         <h2 id="widgets-heading" class="sr-only">Dashboard Widgets</h2>
-        <DashboardWidgetsSection
-          :tasks="userTasksComposable?.tasks.value || []"
-          :coaches="dashboardData.allCoaches.value"
-          :schools="dashboardData.allSchools.value"
-          :interactions="dashboardData.allInteractions.value"
-          :offers="dashboardData.allOffers.value"
-          :is-parent="userStore.isParent"
-          :show-widget="showWidget"
-          @add-task="addTask"
-          @toggle-task="toggleTask"
-          @delete-task="deleteTask"
-          @clear-completed="() => userTasksComposable?.clearCompleted()"
-        />
+        <Suspense>
+          <DashboardWidgetsSection
+            :tasks="userTasksComposable?.tasks.value || []"
+            :coaches="dashboardData.allCoaches.value"
+            :schools="dashboardData.allSchools.value"
+            :interactions="dashboardData.allInteractions.value"
+            :offers="dashboardData.allOffers.value"
+            :is-parent="userStore.isParent"
+            :show-widget="showWidget"
+            @add-task="addTask"
+            @toggle-task="toggleTask"
+            @delete-task="deleteTask"
+            @clear-completed="() => userTasksComposable?.clearCompleted()"
+          />
+          <template #fallback>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="animate-pulse bg-gray-200 h-32 rounded"></div>
+              <div class="animate-pulse bg-gray-200 h-32 rounded"></div>
+            </div>
+          </template>
+        </Suspense>
       </section>
 
       <!-- Email Recruiting Packet Modal -->
@@ -130,7 +151,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed, inject } from "vue";
+import {
+  ref,
+  onMounted,
+  watch,
+  computed,
+  inject,
+  defineAsyncComponent,
+} from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
@@ -146,11 +174,19 @@ import { useDashboardCalculations } from "~/composables/useDashboardCalculations
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
-import DashboardChartsSection from "~/components/Dashboard/DashboardChartsSection.vue";
+const DashboardChartsSection = defineAsyncComponent(
+  () => import("~/components/Dashboard/DashboardChartsSection.vue"),
+);
 import DashboardMetricsSection from "~/components/Dashboard/DashboardMetricsSection.vue";
-import DashboardMapActivitySection from "~/components/Dashboard/DashboardMapActivitySection.vue";
-import DashboardWidgetsSection from "~/components/Dashboard/DashboardWidgetsSection.vue";
-import EmailRecruitingPacketModal from "~/components/EmailRecruitingPacketModal.vue";
+const DashboardMapActivitySection = defineAsyncComponent(
+  () => import("~/components/Dashboard/DashboardMapActivitySection.vue"),
+);
+const DashboardWidgetsSection = defineAsyncComponent(
+  () => import("~/components/Dashboard/DashboardWidgetsSection.vue"),
+);
+const EmailRecruitingPacketModal = defineAsyncComponent(
+  () => import("~/components/EmailRecruitingPacketModal.vue"),
+);
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 definePageMeta({

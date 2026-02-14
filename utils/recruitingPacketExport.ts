@@ -18,7 +18,8 @@ export interface AthletePacketData extends Partial<User> {
   height?: string;
   weight?: string;
   position?: string;
-  high_school?: string;
+  high_school?: string; // Legacy field - prefer school_name
+  school_name?: string;
   graduation_year?: number;
   gpa?: number;
   sat_score?: number;
@@ -474,7 +475,7 @@ const renderCoverPage = (athlete: AthletePacketData): string => {
       <div class="athlete-name">${athlete.full_name || "Athlete Name"}</div>
       ${athlete.position ? `<div class="athlete-position">${athlete.position}</div>` : ""}
       <div class="athlete-details">
-        ${athlete.high_school ? `${athlete.high_school}` : ""}
+        ${athlete.school_name || athlete.high_school ? `${athlete.school_name || athlete.high_school}` : ""}
         ${athlete.graduation_year ? ` • Class of ${athlete.graduation_year}` : ""}
       </div>
       <div class="generation-date">Generated on ${new Date().toLocaleDateString(

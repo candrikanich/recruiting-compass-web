@@ -735,7 +735,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed } from "vue";
+import {
+  ref,
+  onMounted,
+  reactive,
+  computed,
+  defineAsyncComponent,
+} from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useEvents } from "~/composables/useEvents";
 import { usePerformance } from "~/composables/usePerformance";
@@ -743,7 +749,9 @@ import { useCoaches } from "~/composables/useCoaches";
 import { useInteractions } from "~/composables/useInteractions";
 import { CheckIcon, XMarkIcon } from "@heroicons/vue/24/solid";
 import ExportButton from "~/components/Performance/ExportButton.vue";
-import ExportModal from "~/components/Performance/ExportModal.vue";
+const ExportModal = defineAsyncComponent(
+  () => import("~/components/Performance/ExportModal.vue"),
+);
 import { getRoleLabel } from "~/utils/coachLabels";
 import type { Event, PerformanceMetric, Coach } from "~/types/models";
 import type { Database } from "~/types/database";
