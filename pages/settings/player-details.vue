@@ -1108,6 +1108,12 @@ onMounted(async () => {
   await loadAllPreferences();
   const playerDetails = getPlayerDetails();
   if (playerDetails) {
+    // Data migration: copy high_school to school_name if school_name is empty
+    // This handles legacy data from before the field rename
+    if (playerDetails.high_school && !playerDetails.school_name) {
+      playerDetails.school_name = playerDetails.high_school;
+    }
+
     // Normalize positions to ensure consistency
     const normalizedDetails = {
       ...playerDetails,
