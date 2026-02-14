@@ -50,6 +50,7 @@
             :src="schoolLogo"
             :alt="`${selectedCollege.name} logo`"
             class="h-10 w-10 object-contain"
+            loading="lazy"
           />
         </div>
         <button

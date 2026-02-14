@@ -127,6 +127,7 @@
             v-else-if="isImage"
             :src="document.file_url"
             class="max-w-full rounded-lg"
+            loading="lazy"
           />
 
           <!-- PDF -->

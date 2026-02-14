@@ -7,6 +7,7 @@
       :alt="`${school.name} logo`"
       class="logo-image"
       :style="{ width: sizePixels, height: sizePixels }"
+      loading="lazy"
       @error="handleImageError"
     />
 
