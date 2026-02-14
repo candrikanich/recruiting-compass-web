@@ -157,7 +157,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from "vue";
+import {
+  ref,
+  computed,
+  reactive,
+  onMounted,
+  defineAsyncComponent,
+} from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
@@ -169,7 +175,9 @@ import { useDeleteModal } from "~/composables/useDeleteModal";
 import { usePrivateNotes } from "~/composables/usePrivateNotes";
 import { useCommunicationModal } from "~/composables/useCommunicationModal";
 import { ArrowLeftIcon, XMarkIcon } from "@heroicons/vue/24/outline";
-import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
+const DeleteConfirmationModal = defineAsyncComponent(
+  () => import("~/components/DeleteConfirmationModal.vue"),
+);
 import CoachHeader from "~/components/Coach/CoachHeader.vue";
 import CoachStatsGrid from "~/components/Coach/CoachStatsGrid.vue";
 import CoachNotesEditor from "~/components/Coach/CoachNotesEditor.vue";

@@ -552,14 +552,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed } from "vue";
+import {
+  ref,
+  onMounted,
+  reactive,
+  computed,
+  defineAsyncComponent,
+} from "vue";
 import { usePerformance } from "~/composables/usePerformance";
 import { CheckIcon, XMarkIcon } from "@heroicons/vue/24/solid";
 import type { PerformanceMetric } from "~/types/models";
 import { Line } from "vue-chartjs";
 import Header from "~/components/Header.vue";
 import ExportButton from "~/components/Performance/ExportButton.vue";
-import ExportModal from "~/components/Performance/ExportModal.vue";
+const ExportModal = defineAsyncComponent(
+  () => import("~/components/Performance/ExportModal.vue"),
+);
 import {
   Chart as ChartJS,
   CategoryScale,

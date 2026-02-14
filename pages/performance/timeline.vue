@@ -99,10 +99,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import {
+  ref,
+  computed,
+  onMounted,
+  watch,
+  defineAsyncComponent,
+} from "vue";
 import { usePerformance } from "~/composables/usePerformance";
 import { useEvents } from "~/composables/useEvents";
-import ExportModal from "~/components/Performance/ExportModal.vue";
+const ExportModal = defineAsyncComponent(
+  () => import("~/components/Performance/ExportModal.vue"),
+);
 import type { PerformanceMetric } from "~/types/models";
 
 definePageMeta({ middleware: "auth" });

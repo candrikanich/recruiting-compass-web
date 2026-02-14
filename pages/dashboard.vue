@@ -143,7 +143,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed, inject } from "vue";
+import {
+  ref,
+  onMounted,
+  watch,
+  computed,
+  inject,
+  defineAsyncComponent,
+} from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
@@ -167,7 +174,9 @@ const DashboardMapActivitySection = defineAsyncComponent(
   () => import("~/components/Dashboard/DashboardMapActivitySection.vue"),
 );
 import DashboardWidgetsSection from "~/components/Dashboard/DashboardWidgetsSection.vue";
-import EmailRecruitingPacketModal from "~/components/EmailRecruitingPacketModal.vue";
+const EmailRecruitingPacketModal = defineAsyncComponent(
+  () => import("~/components/EmailRecruitingPacketModal.vue"),
+);
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 definePageMeta({
