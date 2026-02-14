@@ -80,6 +80,49 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
     await expect(page.locator("text=Created:")).toBeVisible();
   });
 
+  test("displays school and coach names (not just labels)", async ({
+    page,
+  }) => {
+    // Navigate to detail page
+    await page.goto(`/interactions/${interactionId}`);
+    await page.waitForLoadState("networkidle");
+
+    // Find the school DetailCard - it should have both label and value
+    const schoolCard = page.locator('text="School"').locator("..");
+    await expect(schoolCard).toBeVisible();
+
+    // The school name should be a clickable link (not just the word "School")
+    // DetailCard renders the value as a link if link-to prop is provided
+    const schoolLink = page.locator('a[href*="/schools/"]').first();
+    const hasSchoolLink = await schoolLink.isVisible().catch(() => false);
+
+    if (hasSchoolLink) {
+      // Verify the link has actual text (the school name), not empty
+      const linkText = await schoolLink.textContent();
+      expect(linkText).toBeTruthy();
+      expect(linkText?.trim()).not.toBe("");
+      expect(linkText?.trim()).not.toBe("Unknown");
+    } else {
+      // If no link, verify at least the school name text is shown
+      // (might happen if school data is missing but should still show something)
+      const schoolText = await schoolCard.textContent();
+      expect(schoolText).toContain("School");
+      // Should have more than just the label
+      expect(schoolText?.length || 0).toBeGreaterThan(10);
+    }
+
+    // Check for coach if coach link exists
+    const coachLink = page.locator('a[href*="/coaches/"]').first();
+    const hasCoachLink = await coachLink.isVisible().catch(() => false);
+
+    if (hasCoachLink) {
+      const coachLinkText = await coachLink.textContent();
+      expect(coachLinkText).toBeTruthy();
+      expect(coachLinkText?.trim()).not.toBe("");
+      expect(coachLinkText?.trim()).not.toBe("Unknown");
+    }
+  });
+
   test("navigates to related school when clicking school link", async ({
     page,
   }) => {

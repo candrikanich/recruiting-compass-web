@@ -122,8 +122,8 @@ const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 const { getInteraction, deleteInteraction: deleteInt } = useInteractions();
-const { schools } = useSchools();
-const { coaches } = useCoaches();
+const { schools, fetchSchools } = useSchools();
+const { coaches, fetchAllCoaches } = useCoaches();
 const { events } = useEvents();
 const { getUserById } = useUsers();
 
@@ -153,6 +153,11 @@ onMounted(async () => {
   if (interaction.value?.logged_by) {
     loggedByUser.value = await getUserById(interaction.value.logged_by);
   }
+
+  // Fetch schools and coaches to populate stores for computed properties
+  // This ensures school/coach names are displayed even on direct navigation
+  await fetchSchools();
+  await fetchAllCoaches();
 });
 
 const school = computed(() => {

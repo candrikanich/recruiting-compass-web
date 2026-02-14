@@ -211,9 +211,23 @@ const activeFamily = (inject<UseActiveFamilyReturn>("activeFamily") ||
   useFamilyContext()) as UseActiveFamilyReturn;
 const { activeFamilyId } = activeFamily;
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
-const { fetchSchools } = useSchools();
-const { fetchAllCoaches } = useCoaches();
-const { getSchoolName, getCoachName } = useEntityNames();
+const { schools, fetchSchools } = useSchools();
+const { coaches, fetchAllCoaches } = useCoaches();
+
+// Create local name resolution functions using the same refs we're fetching
+const getSchoolName = (schoolId?: string): string => {
+  if (!schoolId) return "Unknown";
+  const school = schools.value.find((s) => s.id === schoolId);
+  return school?.name || "Unknown";
+};
+
+const getCoachName = (coachId?: string): string => {
+  if (!coachId) return "Unknown";
+  const coach = coaches.value.find((c) => c.id === coachId);
+  if (!coach) return "Unknown";
+  const name = `${coach.first_name || ""} ${coach.last_name || ""}`.trim();
+  return name || "Unknown";
+};
 const { linkedAthletes, fetchLinkedAthletes } = useLinkedAthletes();
 
 // Data
