@@ -11,6 +11,20 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 ## Completed
 
+- **Structured Logging with Request Correlation** (2026-02-14)
+  - Fixed temporal dead zone error in logger initialization
+  - Added LOG_LEVEL environment variable support with production controls
+  - Implemented request correlation middleware for distributed tracing
+  - Added client-side correlation ID plugin
+  - Implemented data sanitization for sensitive fields
+  - Files modified/created:
+    - `server/utils/logger.ts` (enhanced)
+    - `server/middleware/correlation.ts` (new)
+    - `plugins/correlation.client.ts` (new)
+  - All test suites passing (5486 tests)
+  - Type checking: ✅ PASS
+  - Commit: `fe47537` feat: add structured logging with request correlation
+
 - **High School Section Merge** (2026-02-14)
   - Merged "Current High School" section into "Basic Info" section
   - Added data migration for legacy `high_school` field
