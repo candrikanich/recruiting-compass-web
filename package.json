@@ -20,7 +20,9 @@
     "test:a11y": "node tests/a11y/axe-test.js",
     "test:a11y:pa11y": "pa11y-ci --config tests/a11y/.pa11yci.json",
     "db:seed:test": "tsx tests/e2e/seed/seed.ts",
-    "db:reset:test": "tsx tests/e2e/seed/reset.ts"
+    "db:reset:test": "tsx tests/e2e/seed/reset.ts",
+    "analyze": "nuxi build --analyze",
+    "build:check": "npm run build && npm run analyze"
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",

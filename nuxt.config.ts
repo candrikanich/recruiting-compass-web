@@ -54,6 +54,7 @@ export default defineNuxtConfig({
           assetFileNames: "_nuxt/[name]-[hash][extname]",
         },
       },
+      chunkSizeWarningLimit: 500, // Warn if any chunk > 500 KB
     },
   },
 
