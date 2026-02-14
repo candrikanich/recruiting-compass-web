@@ -13,7 +13,7 @@
             <ArrowLeftIcon class="w-4 h-4" />
             Back to Settings
           </NuxtLink>
-          <ProfileEditHistory />
+          <SettingsProfileEditHistory />
         </div>
         <h1
           data-testid="page-title"
@@ -77,7 +77,7 @@
           <h2 class="text-lg font-semibold text-slate-900 mb-4">
             Profile Photo
           </h2>
-          <ProfilePhotoUpload />
+          <SettingsProfilePhotoUpload />
         </div>
 
         <!-- Basic Info -->

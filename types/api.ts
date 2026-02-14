@@ -10,6 +10,8 @@ export interface CollegeSearchResult {
   state: string;
   location: string; // "City, State" format
   website: string | null;
+  division?: string; // NCAA division (populated after lookup)
+  conference?: string; // NCAA conference (populated after lookup)
 }
 
 export interface CollegeScorecardSchool {

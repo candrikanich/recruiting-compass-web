@@ -74,6 +74,8 @@
         name: selectedCollege?.name || '',
         location: selectedCollege?.location || '',
         website: selectedCollege?.website || '',
+        division: selectedCollege?.division || '',
+        conference: selectedCollege?.conference || '',
       }"
       :initialAutoFilledFields="autoFilledFields"
       @submit="handleSchoolFormSubmit"
@@ -139,9 +141,17 @@ const handleCollegeSelect = async (college: CollegeSearchResult) => {
     }),
   ]);
 
-  // Apply NCAA data
+  // Apply NCAA data - update selectedCollege to include division and conference
   if (ncaaResult) {
+    // Extend selectedCollege with NCAA data so it flows to initialData
+    selectedCollege.value = {
+      ...selectedCollege.value,
+      division: ncaaResult.division,
+      conference: ncaaResult.conference,
+    };
+
     autoFilledFields.division = true;
+    autoFilledFields.conference = !!ncaaResult.conference;
 
     if (ncaaResult.logo) {
       schoolLogo.value = ncaaResult.logo;
