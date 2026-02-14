@@ -164,7 +164,6 @@ import {
   onMounted,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { navigateTo } from "#app";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
@@ -318,7 +317,7 @@ const deleteCoach = async () => {
 
   try {
     await confirmDelete(coach.value.id, () => {
-      navigateTo("/coaches");
+      router.push("/coaches");
     });
   } catch (err: unknown) {
     const message =
