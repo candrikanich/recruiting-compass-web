@@ -202,7 +202,7 @@ test.describe("Player Details Auto-Save", () => {
 
     // Check for key field labels
     expect(labelTexts.join("|")).toMatch(
-      /Graduation Year|High School|Primary Sport/,
+      /Graduation Year|School Name|Primary Sport/,
     );
   });
 
