@@ -52,6 +52,19 @@ export default defineNuxtConfig({
           chunkFileNames: "_nuxt/[name]-[hash].js",
           entryFileNames: "_nuxt/[name]-[hash].js",
           assetFileNames: "_nuxt/[name]-[hash][extname]",
+
+          // Manual vendor chunking for better caching
+          manualChunks: {
+            "vendor-pdf": ["jspdf", "jspdf-autotable", "html2canvas"],
+            "vendor-charts": [
+              "chart.js",
+              "vue-chartjs",
+              "chartjs-adapter-date-fns",
+              "chartjs-plugin-annotation",
+            ],
+            "vendor-maps": ["leaflet"],
+            "vendor-utils": ["fuse.js", "date-fns"],
+          },
         },
       },
       chunkSizeWarningLimit: 500, // Warn if any chunk > 500 KB
