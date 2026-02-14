@@ -114,19 +114,27 @@
       <!-- Widgets Section -->
       <section aria-labelledby="widgets-heading" class="mt-6">
         <h2 id="widgets-heading" class="sr-only">Dashboard Widgets</h2>
-        <DashboardWidgetsSection
-          :tasks="userTasksComposable?.tasks.value || []"
-          :coaches="dashboardData.allCoaches.value"
-          :schools="dashboardData.allSchools.value"
-          :interactions="dashboardData.allInteractions.value"
-          :offers="dashboardData.allOffers.value"
-          :is-parent="userStore.isParent"
-          :show-widget="showWidget"
-          @add-task="addTask"
-          @toggle-task="toggleTask"
-          @delete-task="deleteTask"
-          @clear-completed="() => userTasksComposable?.clearCompleted()"
-        />
+        <Suspense>
+          <DashboardWidgetsSection
+            :tasks="userTasksComposable?.tasks.value || []"
+            :coaches="dashboardData.allCoaches.value"
+            :schools="dashboardData.allSchools.value"
+            :interactions="dashboardData.allInteractions.value"
+            :offers="dashboardData.allOffers.value"
+            :is-parent="userStore.isParent"
+            :show-widget="showWidget"
+            @add-task="addTask"
+            @toggle-task="toggleTask"
+            @delete-task="deleteTask"
+            @clear-completed="() => userTasksComposable?.clearCompleted()"
+          />
+          <template #fallback>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="animate-pulse bg-gray-200 h-32 rounded"></div>
+              <div class="animate-pulse bg-gray-200 h-32 rounded"></div>
+            </div>
+          </template>
+        </Suspense>
       </section>
 
       <!-- Email Recruiting Packet Modal -->
@@ -173,7 +181,9 @@ import DashboardMetricsSection from "~/components/Dashboard/DashboardMetricsSect
 const DashboardMapActivitySection = defineAsyncComponent(
   () => import("~/components/Dashboard/DashboardMapActivitySection.vue"),
 );
-import DashboardWidgetsSection from "~/components/Dashboard/DashboardWidgetsSection.vue";
+const DashboardWidgetsSection = defineAsyncComponent(
+  () => import("~/components/Dashboard/DashboardWidgetsSection.vue"),
+);
 const EmailRecruitingPacketModal = defineAsyncComponent(
   () => import("~/components/EmailRecruitingPacketModal.vue"),
 );
