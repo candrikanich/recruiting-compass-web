@@ -19,7 +19,7 @@ async function _shouldSendEmail(
       .eq("category", "notification_settings")
       .single();
 
-    const settings = prefs?.data as any;
+    const settings = prefs?.data as Record<string, unknown> | undefined;
     if (!settings?.enableEmailNotifications) return false;
     if (settings.emailOnlyHighPriority && priority !== "high") return false;
     return true;
@@ -413,7 +413,7 @@ export async function generateDailyDigest(
       .eq("category", "notification_settings")
       .single();
 
-    const settings = prefs?.data as any;
+    const settings = prefs?.data as Record<string, unknown> | undefined;
     if (!settings?.enableDailyDigest) {
       return { count: 0, type: "daily_digest" };
     }

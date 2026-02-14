@@ -49,7 +49,10 @@ export const createInboundInteractionAlert = async ({
       console.warn("Failed to fetch coach data:", coachRes.reason);
     }
 
-    if ((prefs?.data as any)?.enableInboundInteractionAlerts) {
+    if (
+      (prefs?.data as Record<string, unknown> | undefined)
+        ?.enableInboundInteractionAlerts
+    ) {
       // Get coach name for notification
       let coachName = "A coach";
       if (coach) {

@@ -14,7 +14,7 @@ import {
   calculateOpportunityFit,
   calculatePersonalFit,
 } from "~/utils/fitScoreCalculation";
-import { logCRUD, logError } from "~/server/utils/auditLog";
+import { logCRUD } from "~/server/utils/auditLog";
 import type { PlayerDetails } from "~/types/models";
 import type { FitScoreInputs } from "~/types/timeline";
 import type { Json } from "~/types/database";

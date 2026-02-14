@@ -328,7 +328,10 @@ export const useInteractionStore = defineStore("interactions", {
               error: any;
             };
 
-            if ((prefs?.data as any)?.enableInboundInteractionAlerts) {
+            if (
+              (prefs?.data as Record<string, unknown> | undefined)
+                ?.enableInboundInteractionAlerts
+            ) {
               let coachName = "A coach";
               if (data.coach_id) {
                 const response = await supabase

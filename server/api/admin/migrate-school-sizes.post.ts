@@ -4,9 +4,6 @@
  */
 
 import { useSupabaseAdmin } from "~/server/utils/supabase";
-import type { Database } from "~/types/database";
-
-type School = Database["public"]["Tables"]["schools"]["Row"];
 
 interface MigrationResult {
   success: boolean;
@@ -49,7 +46,7 @@ export default defineEventHandler(async (): Promise<MigrationResult> => {
     // Process each school
     for (const school of schools) {
       try {
-        const academicInfo = school.academic_info as any;
+        const academicInfo = school.academic_info as Record<string, unknown>;
 
         // Skip if no academic_info
         if (!academicInfo) {
