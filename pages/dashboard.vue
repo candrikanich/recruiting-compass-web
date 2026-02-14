@@ -100,10 +100,15 @@
       <!-- Map & Activity Section -->
       <section aria-labelledby="map-heading" class="mt-6">
         <h2 id="map-heading" class="sr-only">School Map & Recent Activity</h2>
-        <DashboardMapActivitySection
-          :schools="dashboardData.allSchools.value"
-          :show-widget="showWidget"
-        />
+        <Suspense>
+          <DashboardMapActivitySection
+            :schools="dashboardData.allSchools.value"
+            :show-widget="showWidget"
+          />
+          <template #fallback>
+            <div class="animate-pulse bg-gray-200 h-96 rounded-lg"></div>
+          </template>
+        </Suspense>
       </section>
 
       <!-- Widgets Section -->
@@ -158,7 +163,9 @@ const DashboardChartsSection = defineAsyncComponent(
   () => import("~/components/Dashboard/DashboardChartsSection.vue"),
 );
 import DashboardMetricsSection from "~/components/Dashboard/DashboardMetricsSection.vue";
-import DashboardMapActivitySection from "~/components/Dashboard/DashboardMapActivitySection.vue";
+const DashboardMapActivitySection = defineAsyncComponent(
+  () => import("~/components/Dashboard/DashboardMapActivitySection.vue"),
+);
 import DashboardWidgetsSection from "~/components/Dashboard/DashboardWidgetsSection.vue";
 import EmailRecruitingPacketModal from "~/components/EmailRecruitingPacketModal.vue";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
