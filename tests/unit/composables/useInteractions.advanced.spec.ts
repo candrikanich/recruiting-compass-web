@@ -651,7 +651,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
       const result = await createReminder(
         "Follow up call",
         "2025-12-25",
-        "email",
+        "follow_up",
         "high",
       );
 
@@ -739,7 +739,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
       const result = await createReminder(
         "Test reminder",
         "2025-12-25",
-        "email",
+        "follow_up",
       );
 
       expect(result).toBeNull();

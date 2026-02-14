@@ -171,7 +171,11 @@ export interface Interaction {
     | "camp"
     | "showcase"
     | "tweet"
-    | "dm";
+    | "dm"
+    | "game"
+    | "unofficial_visit"
+    | "official_visit"
+    | "other";
   direction: "outbound" | "inbound";
   subject?: string | null;
   content?: string | null;

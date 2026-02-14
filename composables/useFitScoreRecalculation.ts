@@ -5,6 +5,7 @@
  */
 
 import { ref } from "vue";
+import { useSupabase } from "./useSupabase";
 
 interface RecalculationResponse {
   success: boolean;
@@ -14,6 +15,7 @@ interface RecalculationResponse {
 }
 
 export const useFitScoreRecalculation = () => {
+  const supabase = useSupabase();
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -26,15 +28,24 @@ export const useFitScoreRecalculation = () => {
     error.value = null;
 
     try {
-      const res = await fetch("/api/athlete/fit-scores/recalculate-all", {
-        method: "POST",
-      });
+      // Get the session token
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (!res.ok) {
-        throw new Error(`Failed to recalculate fit scores: ${res.status}`);
+      if (!session?.access_token) {
+        throw new Error("No authentication token found");
       }
 
-      const response = (await res.json()) as RecalculationResponse;
+      const response = await $fetch<RecalculationResponse>(
+        "/api/athlete/fit-scores/recalculate-all",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        },
+      );
 
       if (!response?.success) {
         throw new Error(response?.message || "Recalculation failed");

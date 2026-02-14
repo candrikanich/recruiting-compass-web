@@ -952,9 +952,92 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "family_units_player_user_id_fkey";
+            foreignKeyName: "family_units_student_user_id_fkey";
             columns: ["player_user_id"];
             isOneToOne: true;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      follow_up_reminders: {
+        Row: {
+          coach_id: string | null;
+          completed_at: string | null;
+          created_at: string | null;
+          description: string | null;
+          due_date: string;
+          id: string;
+          interaction_id: string | null;
+          is_completed: boolean;
+          notification_sent: boolean;
+          priority: string;
+          reminder_type: string;
+          school_id: string | null;
+          title: string;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          coach_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          due_date: string;
+          id?: string;
+          interaction_id?: string | null;
+          is_completed?: boolean;
+          notification_sent?: boolean;
+          priority?: string;
+          reminder_type: string;
+          school_id?: string | null;
+          title: string;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          coach_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          due_date?: string;
+          id?: string;
+          interaction_id?: string | null;
+          is_completed?: boolean;
+          notification_sent?: boolean;
+          priority?: string;
+          reminder_type?: string;
+          school_id?: string | null;
+          title?: string;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "follow_up_reminders_coach_id_fkey";
+            columns: ["coach_id"];
+            isOneToOne: false;
+            referencedRelation: "coaches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follow_up_reminders_interaction_id_fkey";
+            columns: ["interaction_id"];
+            isOneToOne: false;
+            referencedRelation: "interactions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follow_up_reminders_school_id_fkey";
+            columns: ["school_id"];
+            isOneToOne: false;
+            referencedRelation: "schools";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follow_up_reminders_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
@@ -978,6 +1061,7 @@ export type Database = {
             | null;
           subject: string | null;
           type: Database["public"]["Enums"]["interaction_type"];
+          updated_at: string | null;
           updated_by: string | null;
         };
         Insert: {
@@ -997,6 +1081,7 @@ export type Database = {
             | null;
           subject?: string | null;
           type: Database["public"]["Enums"]["interaction_type"];
+          updated_at?: string | null;
           updated_by?: string | null;
         };
         Update: {
@@ -1016,6 +1101,7 @@ export type Database = {
             | null;
           subject?: string | null;
           type?: Database["public"]["Enums"]["interaction_type"];
+          updated_at?: string | null;
           updated_by?: string | null;
         };
         Relationships: [
@@ -1418,6 +1504,41 @@ export type Database = {
           verified?: boolean | null;
         };
         Relationships: [];
+      };
+      positions: {
+        Row: {
+          created_at: string | null;
+          display_order: number;
+          id: string;
+          name: string;
+          sport_id: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          display_order?: number;
+          id?: string;
+          name: string;
+          sport_id: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          display_order?: number;
+          id?: string;
+          name?: string;
+          sport_id?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "positions_sport_id_fkey";
+            columns: ["sport_id"];
+            isOneToOne: false;
+            referencedRelation: "sports";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       preference_history: {
         Row: {
@@ -1899,6 +2020,33 @@ export type Database = {
           },
         ];
       };
+      sports: {
+        Row: {
+          created_at: string | null;
+          display_order: number;
+          has_position_list: boolean;
+          id: string;
+          name: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          display_order?: number;
+          has_position_list?: boolean;
+          id?: string;
+          name: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          display_order?: number;
+          has_position_list?: boolean;
+          id?: string;
+          name?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
       suggestion: {
         Row: {
           action_type: string | null;
@@ -2023,6 +2171,44 @@ export type Database = {
         };
         Relationships: [];
       };
+      user_notes: {
+        Row: {
+          created_at: string | null;
+          entity_id: string;
+          entity_type: string;
+          id: string;
+          note_content: string | null;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          entity_id: string;
+          entity_type: string;
+          id?: string;
+          note_content?: string | null;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          entity_id?: string;
+          entity_type?: string;
+          id?: string;
+          note_content?: string | null;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_notes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_preferences: {
         Row: {
           category: string;
@@ -2113,60 +2299,128 @@ export type Database = {
       };
       users: {
         Row: {
+          act_score: number | null;
           created_at: string | null;
           current_phase: string | null;
           email: string;
           full_name: string | null;
+          gpa: number | null;
           graduation_year: number | null;
           icloud_sync_enabled: boolean | null;
           id: string;
           is_admin: boolean | null;
+          is_preview_mode: boolean;
+          onboarding_completed: boolean;
           phase_milestone_data: Json | null;
           phone: string | null;
+          primary_position_custom: string | null;
+          primary_position_id: string | null;
+          primary_sport_id: string | null;
+          profile_completeness: number | null;
           recovery_mode_active: boolean | null;
           recovery_plan_shown_at: string | null;
           role: Database["public"]["Enums"]["user_role"];
+          sat_score: number | null;
+          secondary_position_custom: string | null;
+          secondary_position_id: string | null;
+          secondary_sport_id: string | null;
           status_label: string | null;
           status_score: number | null;
           updated_at: string | null;
+          zip_code: string | null;
         };
         Insert: {
+          act_score?: number | null;
           created_at?: string | null;
           current_phase?: string | null;
           email: string;
           full_name?: string | null;
+          gpa?: number | null;
           graduation_year?: number | null;
           icloud_sync_enabled?: boolean | null;
           id: string;
           is_admin?: boolean | null;
+          is_preview_mode?: boolean;
+          onboarding_completed?: boolean;
           phase_milestone_data?: Json | null;
           phone?: string | null;
+          primary_position_custom?: string | null;
+          primary_position_id?: string | null;
+          primary_sport_id?: string | null;
+          profile_completeness?: number | null;
           recovery_mode_active?: boolean | null;
           recovery_plan_shown_at?: string | null;
           role: Database["public"]["Enums"]["user_role"];
+          sat_score?: number | null;
+          secondary_position_custom?: string | null;
+          secondary_position_id?: string | null;
+          secondary_sport_id?: string | null;
           status_label?: string | null;
           status_score?: number | null;
           updated_at?: string | null;
+          zip_code?: string | null;
         };
         Update: {
+          act_score?: number | null;
           created_at?: string | null;
           current_phase?: string | null;
           email?: string;
           full_name?: string | null;
+          gpa?: number | null;
           graduation_year?: number | null;
           icloud_sync_enabled?: boolean | null;
           id?: string;
           is_admin?: boolean | null;
+          is_preview_mode?: boolean;
+          onboarding_completed?: boolean;
           phase_milestone_data?: Json | null;
           phone?: string | null;
+          primary_position_custom?: string | null;
+          primary_position_id?: string | null;
+          primary_sport_id?: string | null;
+          profile_completeness?: number | null;
           recovery_mode_active?: boolean | null;
           recovery_plan_shown_at?: string | null;
           role?: Database["public"]["Enums"]["user_role"];
+          sat_score?: number | null;
+          secondary_position_custom?: string | null;
+          secondary_position_id?: string | null;
+          secondary_sport_id?: string | null;
           status_label?: string | null;
           status_score?: number | null;
           updated_at?: string | null;
+          zip_code?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "users_primary_position_id_fkey";
+            columns: ["primary_position_id"];
+            isOneToOne: false;
+            referencedRelation: "positions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "users_primary_sport_id_fkey";
+            columns: ["primary_sport_id"];
+            isOneToOne: false;
+            referencedRelation: "sports";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "users_secondary_position_id_fkey";
+            columns: ["secondary_position_id"];
+            isOneToOne: false;
+            referencedRelation: "positions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "users_secondary_sport_id_fkey";
+            columns: ["secondary_sport_id"];
+            isOneToOne: false;
+            referencedRelation: "sports";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {
@@ -2279,7 +2533,11 @@ export type Database = {
         | "camp"
         | "showcase"
         | "tweet"
-        | "dm";
+        | "dm"
+        | "game"
+        | "unofficial_visit"
+        | "official_visit"
+        | "other";
       notification_type:
         | "follow_up_reminder"
         | "deadline_alert"
@@ -2468,6 +2726,10 @@ export const Constants = {
         "showcase",
         "tweet",
         "dm",
+        "game",
+        "unofficial_visit",
+        "official_visit",
+        "other",
       ],
       notification_type: [
         "follow_up_reminder",

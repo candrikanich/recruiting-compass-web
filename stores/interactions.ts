@@ -316,18 +316,22 @@ export const useInteractionStore = defineStore("interactions", {
           try {
             const response = await supabase
               .from("user_preferences")
-              .select("notification_settings")
+              .select("data")
               .eq("user_id", userStore.user.id)
+              .eq("category", "notification_settings")
               .single();
 
             const { data: prefs } = response as {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              data: { notification_settings: any } | null;
+              data: { data: any } | null;
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               error: any;
             };
 
-            if (prefs?.notification_settings?.enableInboundInteractionAlerts) {
+            if (
+              (prefs?.data as Record<string, unknown> | undefined)
+                ?.enableInboundInteractionAlerts
+            ) {
               let coachName = "A coach";
               if (data.coach_id) {
                 const response = await supabase

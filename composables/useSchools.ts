@@ -217,12 +217,12 @@ const useSchoolsInternal = (): {
         validated.notes = sanitizeHtml(validated.notes);
       }
       if (validated.pros && Array.isArray(validated.pros)) {
-        validated.pros = validated.pros.map((p: string | undefined) =>
+        validated.pros = validated.pros.map((p: string | null | undefined) =>
           p ? sanitizeHtml(p) : p,
         );
       }
       if (validated.cons && Array.isArray(validated.cons)) {
-        validated.cons = validated.cons.map((c: string | undefined) =>
+        validated.cons = validated.cons.map((c: string | null | undefined) =>
           c ? sanitizeHtml(c) : c,
         );
       }

@@ -27,9 +27,18 @@ export default defineEventHandler(async (event) => {
       .replace(/^-+|-+$/g, "");
 
     // Try multiple favicon sources in order of preference
-    // Prioritize external services (they handle fuzzy matching)
+    // Prioritize high-resolution icons, fall back to standard favicons
     const faviconSources = [
+      // High-resolution sources (256x256 and above)
+      `https://www.google.com/s2/favicons?sz=256&domain=${encodeURIComponent(String(schoolDomain))}`,
+      `https://${domain}/apple-touch-icon.png`, // Usually 180x180
+      `https://www.${domain}/apple-touch-icon.png`,
+      `https://${domain}/apple-touch-icon-precomposed.png`,
+
+      // Medium resolution (128x128)
       `https://www.google.com/s2/favicons?sz=128&domain=${encodeURIComponent(String(schoolDomain))}`,
+
+      // Standard favicons (usually 16x16 or 32x32)
       `https://icons.duckduckgo.com/ip3/${domain}.ico`,
       `https://${domain}/favicon.ico`,
       `https://www.${domain}/favicon.ico`,

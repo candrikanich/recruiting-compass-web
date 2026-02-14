@@ -65,21 +65,6 @@
       </div>
     </div>
 
-    <!-- School Name with Autocomplete Toggle -->
-    <div class="mb-6">
-      <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-        School Name <span class="text-red-600">*</span>
-        <span
-          v-if="autoFilledFields.name"
-          class="text-xs text-blue-600 font-normal"
-          >(auto-filled)</span
-        >
-      </label>
-      <div v-if="useAutocomplete" class="mb-4">
-        <SchoolAutocomplete @select="handleCollegeSelect" :disabled="loading" />
-      </div>
-    </div>
-
     <!-- School Form with Validation -->
     <SchoolForm
       :loading="loading"
@@ -95,68 +80,6 @@
       @collegeSelect="handleCollegeSelect"
       @cancel="() => navigateTo('/schools')"
     />
-
-    <!-- College Scorecard Data (Display Only) -->
-    <div
-      v-if="collegeScorecardData"
-      class="border-t border-slate-200 pt-6 mt-6"
-    >
-      <h3 class="text-sm font-semibold text-slate-900 mb-4">
-        College Scorecard Data
-      </h3>
-      <div
-        class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50 rounded-xl text-sm"
-      >
-        <div v-if="collegeScorecardData.studentSize">
-          <p class="text-slate-600">Student Size</p>
-          <p class="font-semibold text-slate-900">
-            {{ collegeScorecardData.studentSize.toLocaleString() }}
-          </p>
-        </div>
-        <div v-if="collegeScorecardData.carnegieSize">
-          <p class="text-slate-600">Size Category</p>
-          <p class="font-semibold text-slate-900">
-            {{ collegeScorecardData.carnegieSize }}
-          </p>
-        </div>
-        <div v-if="collegeScorecardData.enrollmentAll">
-          <p class="text-slate-600">Total Enrollment</p>
-          <p class="font-semibold text-slate-900">
-            {{ collegeScorecardData.enrollmentAll.toLocaleString() }}
-          </p>
-        </div>
-        <div v-if="collegeScorecardData.admissionRate">
-          <p class="text-slate-600">Admission Rate</p>
-          <p class="font-semibold text-slate-900">
-            {{ (collegeScorecardData.admissionRate * 100).toFixed(1) }}%
-          </p>
-        </div>
-        <div v-if="collegeScorecardData.studentFacultyRatio">
-          <p class="text-slate-600">Student-Faculty Ratio</p>
-          <p class="font-semibold text-slate-900">
-            {{ collegeScorecardData.studentFacultyRatio }}:1
-          </p>
-        </div>
-        <div v-if="collegeScorecardData.tuitionInState">
-          <p class="text-slate-600">Tuition (In-State)</p>
-          <p class="font-semibold text-slate-900">
-            ${{ collegeScorecardData.tuitionInState.toLocaleString() }}
-          </p>
-        </div>
-        <div v-if="collegeScorecardData.tuitionOutOfState">
-          <p class="text-slate-600">Tuition (Out-of-State)</p>
-          <p class="font-semibold text-slate-900">
-            ${{ collegeScorecardData.tuitionOutOfState.toLocaleString() }}
-          </p>
-        </div>
-        <div
-          v-if="collegeScorecardData.latitude && collegeScorecardData.longitude"
-        >
-          <p class="text-slate-600">Location</p>
-          <p class="font-semibold text-green-700">Map coordinates available</p>
-        </div>
-      </div>
-    </div>
   </FormPageLayout>
 </template>
 

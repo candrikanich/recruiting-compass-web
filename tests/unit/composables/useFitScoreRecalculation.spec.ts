@@ -1,6 +1,40 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useFitScoreRecalculation } from "~/composables/useFitScoreRecalculation";
 
+// Mock useSupabase composable
+vi.mock("~/composables/useSupabase", () => ({
+  useSupabase: () => ({
+    auth: {
+      getSession: vi.fn().mockResolvedValue({
+        data: {
+          session: {
+            access_token: "mock-token-123",
+            user: { id: "user-123" },
+          },
+        },
+        error: null,
+      }),
+    },
+  }),
+}));
+
+// Mock $fetch (Nuxt's fetch utility)
+const mockFetch = vi.fn(async (url: string, options?: any) => {
+  if (url === "/api/athlete/fit-scores/recalculate-all") {
+    if (options?.method === "POST") {
+      return {
+        success: true,
+        updated: 5,
+        failed: 0,
+        message: "Updated fit scores for 5 schools",
+      };
+    }
+  }
+  throw new Error("Not found");
+});
+
+vi.stubGlobal("$fetch", mockFetch);
+
 // Mock the native fetch function
 vi.stubGlobal(
   "fetch",
@@ -25,6 +59,20 @@ vi.stubGlobal(
 describe("useFitScoreRecalculation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset $fetch mock to default behavior
+    mockFetch.mockImplementation(async (url: string, options?: any) => {
+      if (url === "/api/athlete/fit-scores/recalculate-all") {
+        if (options?.method === "POST") {
+          return {
+            success: true,
+            updated: 5,
+            failed: 0,
+            message: "Updated fit scores for 5 schools",
+          };
+        }
+      }
+      throw new Error("Not found");
+    });
   });
 
   it("should initialize with loading false and no error", () => {
@@ -35,13 +83,18 @@ describe("useFitScoreRecalculation", () => {
 
   it("should call API endpoint on recalculateAllFitScores", async () => {
     const { recalculateAllFitScores } = useFitScoreRecalculation();
-    const fetchSpy = vi.mocked(global.fetch as any);
+    const fetchSpy = vi.mocked(global.$fetch as any);
 
     await recalculateAllFitScores();
 
     expect(fetchSpy).toHaveBeenCalledWith(
       "/api/athlete/fit-scores/recalculate-all",
-      { method: "POST" },
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer mock-token-123",
+        },
+      },
     );
   });
 
@@ -69,7 +122,7 @@ describe("useFitScoreRecalculation", () => {
   it("should handle API errors gracefully", async () => {
     const { recalculateAllFitScores, error } = useFitScoreRecalculation();
 
-    const fetchSpy = vi.mocked(global.fetch as any);
+    const fetchSpy = vi.mocked(global.$fetch as any);
     fetchSpy.mockRejectedValueOnce(new Error("Network error"));
 
     try {
@@ -83,7 +136,7 @@ describe("useFitScoreRecalculation", () => {
   it("should set error state on failure", async () => {
     const { recalculateAllFitScores, error } = useFitScoreRecalculation();
 
-    const fetchSpy = vi.mocked(global.fetch as any);
+    const fetchSpy = vi.mocked(global.$fetch as any);
     fetchSpy.mockRejectedValueOnce(new Error("API Error"));
 
     try {
@@ -96,16 +149,11 @@ describe("useFitScoreRecalculation", () => {
   it("should handle unsuccessful response from API", async () => {
     const { recalculateAllFitScores, error } = useFitScoreRecalculation();
 
-    const fetchSpy = vi.mocked(global.fetch as any);
-    fetchSpy.mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          success: false,
-          message: "Recalculation failed",
-        }),
-        { status: 200, statusText: "OK" },
-      ),
-    );
+    const fetchSpy = vi.mocked(global.$fetch as any);
+    fetchSpy.mockResolvedValueOnce({
+      success: false,
+      message: "Recalculation failed",
+    });
 
     try {
       await recalculateAllFitScores();
@@ -117,7 +165,7 @@ describe("useFitScoreRecalculation", () => {
   it("should clear error on successful recalculation", async () => {
     const { recalculateAllFitScores, error } = useFitScoreRecalculation();
 
-    const fetchSpy = vi.mocked(global.fetch as any);
+    const fetchSpy = vi.mocked(global.$fetch as any);
 
     // Trigger error first
     fetchSpy.mockRejectedValueOnce(new Error("Network error"));
@@ -130,17 +178,12 @@ describe("useFitScoreRecalculation", () => {
     expect(error.value).toBeTruthy();
 
     // Reset mock and succeed
-    fetchSpy.mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          success: true,
-          updated: 5,
-          failed: 0,
-          message: "Updated fit scores for 5 schools",
-        }),
-        { status: 200, statusText: "OK" },
-      ),
-    );
+    fetchSpy.mockResolvedValueOnce({
+      success: true,
+      updated: 5,
+      failed: 0,
+      message: "Updated fit scores for 5 schools",
+    });
 
     await recalculateAllFitScores();
 
@@ -150,15 +193,10 @@ describe("useFitScoreRecalculation", () => {
   it("should handle missing success field in response", async () => {
     const { recalculateAllFitScores, error } = useFitScoreRecalculation();
 
-    const fetchSpy = vi.mocked(global.fetch as any);
-    fetchSpy.mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          message: "Recalculation failed",
-        }),
-        { status: 200, statusText: "OK" },
-      ),
-    );
+    const fetchSpy = vi.mocked(global.$fetch as any);
+    fetchSpy.mockResolvedValueOnce({
+      message: "Recalculation failed",
+    });
 
     try {
       await recalculateAllFitScores();

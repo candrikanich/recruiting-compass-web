@@ -5,10 +5,10 @@
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-        <div class="flex justify-between items-start mb-2">
+        <div class="flex justify-between items-start mb-3">
           <NuxtLink
             to="/settings"
-            class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+            class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <ArrowLeftIcon class="w-4 h-4" />
             Back to Settings

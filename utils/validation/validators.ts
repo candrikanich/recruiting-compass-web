@@ -26,7 +26,7 @@ export const urlSchema = z
 
 /**
  * Phone number schema with flexible format validation
- * Accepts: (123) 456-7890, 123-456-7890, 123.456.7890, 1234567890
+ * Accepts: (123) 456-7890, 123-456-7890, 123.456.7890, 1234567890, "", null, or undefined
  */
 export const phoneSchema = z
   .string()
@@ -35,11 +35,12 @@ export const phoneSchema = z
     "Please enter a valid phone number",
   )
   .or(z.literal(""))
+  .or(z.null())
   .optional();
 
 /**
  * Twitter handle schema
- * Accepts: @username or username (1-15 characters)
+ * Accepts: @username or username (1-15 characters), "", null, or undefined
  */
 export const twitterHandleSchema = z
   .string()
@@ -49,11 +50,12 @@ export const twitterHandleSchema = z
   )
   .transform((val) => (val.startsWith("@") ? val.slice(1) : val))
   .or(z.literal(""))
+  .or(z.null())
   .optional();
 
 /**
  * Instagram handle schema
- * Accepts: @username or username (1-30 characters, allows . and _)
+ * Accepts: @username or username (1-30 characters, allows . and _), "", null, or undefined
  */
 export const instagramHandleSchema = z
   .string()
@@ -63,33 +65,36 @@ export const instagramHandleSchema = z
   )
   .transform((val) => (val.startsWith("@") ? val.slice(1) : val))
   .or(z.literal(""))
+  .or(z.null())
   .optional();
 
 /**
  * TikTok handle schema
- * Accepts: @username or username (1-30 characters)
+ * Accepts: @username or username (1-30 characters), "", null, or undefined
  */
 export const tiktokHandleSchema = z
   .string()
   .regex(/^@?[A-Za-z0-9_.]{1,30}$/, "Invalid TikTok handle (1-30 characters)")
   .transform((val) => (val.startsWith("@") ? val.slice(1) : val))
   .or(z.literal(""))
+  .or(z.null())
   .optional();
 
 /**
  * Facebook handle schema
- * Accepts: username or custom URL (1-50 characters)
+ * Accepts: username or custom URL (1-50 characters), "", null, or undefined
  */
 export const facebookHandleSchema = z
   .string()
   .min(1, "Facebook handle required")
   .max(50, "Facebook handle must not exceed 50 characters")
   .or(z.literal(""))
+  .or(z.null())
   .optional();
 
 /**
  * Sanitized text schema
- * Removes all HTML tags, limits length
+ * Removes all HTML tags, limits length, accepts "", null, or undefined
  */
 export const sanitizedTextSchema = (maxLength: number = 1000) =>
   z
@@ -97,11 +102,12 @@ export const sanitizedTextSchema = (maxLength: number = 1000) =>
     .max(maxLength, `Text must not exceed ${maxLength} characters`)
     .transform((val) => stripHtml(val).trim())
     .or(z.literal(""))
+    .or(z.null())
     .optional();
 
 /**
  * Rich text schema with sanitization
- * Allows safe HTML tags (paragraphs, bold, italic, links, lists)
+ * Allows safe HTML tags (paragraphs, bold, italic, links, lists), "", null, or undefined
  */
 export const richTextSchema = (maxLength: number = 5000) =>
   z
@@ -109,16 +115,18 @@ export const richTextSchema = (maxLength: number = 5000) =>
     .max(maxLength, `Text must not exceed ${maxLength} characters`)
     .transform((val) => sanitizeHtml(val).trim())
     .or(z.literal(""))
+    .or(z.null())
     .optional();
 
 /**
- * US state code schema (2-letter abbreviation)
+ * US state code schema (2-letter abbreviation), "", null, or undefined
  */
 export const stateSchema = z
   .string()
   .length(2, "State must be 2 letters")
   .toUpperCase()
   .or(z.literal(""))
+  .or(z.null())
   .optional();
 
 /**

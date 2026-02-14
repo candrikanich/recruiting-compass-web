@@ -96,17 +96,7 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
-          queries: security-extended
-          # Exclude test files and generated code from analysis
-          paths-ignore:
-            - "**/*.spec.ts"
-            - "**/*.spec.js"
-            - "**/*.test.ts"
-            - "**/*.test.js"
-            - "**/node_modules/**"
-            - "**/.nuxt/**"
-            - "**/.output/**"
-            - "**/dist/**"
+          config-file: ./.github/codeql/codeql-config.yml
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v4

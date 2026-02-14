@@ -318,16 +318,18 @@ include: [
 ],
 ```
 
-### GitLab Pipeline
+### GitHub Actions
 
-Add to `.gitlab-ci.yml`:
+Add to your workflow:
 
 ```yaml
 test:
-  script:
-    - npm install
-    - npm run test:coverage
-  coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+    - run: npm install
+    - run: npm run test:coverage
 ```
 
 ---

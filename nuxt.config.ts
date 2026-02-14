@@ -43,6 +43,18 @@ export default defineNuxtConfig({
         "jspdf-autotable",
       ],
     },
+
+    // Force file hash regeneration on every build to prevent CDN cache issues
+    build: {
+      rollupOptions: {
+        output: {
+          // Add timestamp to chunk file names to force new URLs
+          chunkFileNames: "_nuxt/[name]-[hash].js",
+          entryFileNames: "_nuxt/[name]-[hash].js",
+          assetFileNames: "_nuxt/[name]-[hash][extname]",
+        },
+      },
+    },
   },
 
   nitro: {

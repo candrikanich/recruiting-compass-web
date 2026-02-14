@@ -59,7 +59,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });
@@ -87,7 +87,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });
@@ -114,7 +114,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });
@@ -142,7 +142,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });
@@ -170,7 +170,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: false },
+          data: { enableInboundInteractionAlerts: false },
         },
         error: null,
       });
@@ -196,7 +196,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });
@@ -224,7 +224,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });
@@ -255,7 +255,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });
@@ -309,7 +309,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });
@@ -326,7 +326,7 @@ describe("Inbound Alerts", () => {
         if (callCount === 1) {
           return Promise.resolve({
             data: {
-              notification_settings: { enableInboundInteractionAlerts: true },
+              data: { enableInboundInteractionAlerts: true },
             },
             error: null,
           });
@@ -352,7 +352,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });
@@ -391,7 +391,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });
@@ -417,7 +417,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });
@@ -446,7 +446,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });
@@ -480,7 +480,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });
@@ -509,7 +509,7 @@ describe("Inbound Alerts", () => {
 
       mockSupabase.single.mockResolvedValueOnce({
         data: {
-          notification_settings: { enableInboundInteractionAlerts: true },
+          data: { enableInboundInteractionAlerts: true },
         },
         error: null,
       });

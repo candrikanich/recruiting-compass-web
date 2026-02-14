@@ -44,20 +44,6 @@
             @toggle-favorite="handleToggleFavorite"
           />
 
-          <!-- Status History Card -->
-          <SchoolStatusHistory :school-id="id" />
-
-          <!-- Fit Score Card -->
-          <div
-            v-if="fitScore"
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
-          >
-            <h2 class="text-lg font-semibold text-slate-900 mb-4">
-              School Fit Analysis
-            </h2>
-            <FitScoreDisplay :fit-score="fitScore" :show-breakdown="true" />
-          </div>
-
           <!-- Division Recommendations Card -->
           <DivisionRecommendationCard
             v-if="divisionRecommendation?.shouldConsiderOtherDivisions"
@@ -122,6 +108,7 @@
             :subject="`Contact from ${school?.name || 'Recruiting Compass'}`"
             :body="`Hello,\n\nI am reaching out regarding recruitment opportunities at ${school?.name || 'your school'}.\n\nBest regards`"
             @close="showEmailModal = false"
+            @confirmed="handleEmailConfirmed"
           />
         </div>
 
@@ -130,6 +117,8 @@
           :school-id="id"
           :coaches="schoolCoaches"
           :school="school"
+          :fit-score="fitScore"
+          :division-recommendation="divisionRecommendation"
           @open-email-modal="showEmailModal = true"
           @delete="openDeleteConfirm"
         />
@@ -188,15 +177,19 @@ import { usePrivateNotes } from "~/composables/usePrivateNotes";
 import { useSingleSchoolDistance } from "~/composables/useSchoolDistance";
 import { createUpdateHandler } from "~/utils/updateHandler";
 import { getCarnegieSize } from "~/utils/schoolSize";
+import { calculateFitScore } from "~/utils/fitScoreCalculation";
 import type { Document, AcademicInfo } from "~/types/models";
-import type { FitScoreResult, DivisionRecommendation } from "~/types/timeline";
+import type {
+  FitScoreResult,
+  DivisionRecommendation,
+  FitScoreInputs,
+} from "~/types/timeline";
 import type { School } from "~/types/models";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import SchoolDetailHeader from "~/components/School/SchoolDetailHeader.vue";
 import DivisionRecommendationCard from "~/components/School/DivisionRecommendationCard.vue";
 import SchoolInformationCard from "~/components/School/SchoolInformationCard.vue";
 import SchoolDocumentsCard from "~/components/School/SchoolDocumentsCard.vue";
-import SchoolStatusHistory from "~/components/School/SchoolStatusHistory.vue";
 import SchoolNotesCard from "~/components/School/SchoolNotesCard.vue";
 import SchoolProsConsCard from "~/components/School/SchoolProsConsCard.vue";
 import SchoolCoachingPhilosophy from "~/components/School/CoachingPhilosophy.vue";
@@ -216,6 +209,7 @@ const { getSchool, updateSchool, smartDelete, loading } = useSchools();
 const { coaches: allCoaches, fetchCoaches } = useCoaches();
 const { documents, fetchDocuments } = useDocumentsConsolidated();
 const { calculateSchoolFitScore, getFitScore } = useFitScore();
+const { createInteraction } = useInteractions();
 const {
   fetchByName,
   loading: collegeDataLoading,
@@ -340,6 +334,41 @@ const handleRemoveCon = createUpdateHandler(school, async (index: number) => {
   return await removeCon(school.value, index);
 });
 
+// Handlers - Email
+const handleEmailConfirmed = async () => {
+  if (!school.value) return;
+
+  try {
+    const coachId =
+      schoolCoaches.value.length > 0 ? schoolCoaches.value[0].id : null;
+    const subject = `Contact from ${school.value.name || "Recruiting Compass"}`;
+    const body = `Hello,\n\nI am reaching out regarding recruitment opportunities at ${school.value.name || "your school"}.\n\nBest regards`;
+
+    await createInteraction(
+      {
+        school_id: id,
+        coach_id: coachId,
+        event_id: null,
+        type: "email",
+        direction: "outbound",
+        subject,
+        content: body,
+        sentiment: null,
+        occurred_at: new Date().toISOString(),
+        logged_by: "",
+        attachments: [],
+      },
+      undefined,
+    );
+
+    announce("Email interaction logged successfully");
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : "Unknown error";
+    console.error("Failed to log email interaction:", errorMsg);
+    announce(`Failed to log interaction: ${errorMsg}`);
+  }
+};
+
 // Handlers - Other
 const updateCoachingPhilosophy = createUpdateHandler(
   school,
@@ -379,18 +408,36 @@ const loadFitScore = async () => {
   try {
     const { getRecommendedDivisions } = useDivisionRecommendations();
 
-    const cachedScore = getFitScore(id);
-    if (cachedScore) {
-      fitScore.value = cachedScore;
+    // Check if school has fit_score from database (populated by server-side recalculation)
+    const schoolFitScore =
+      "fit_score" in school.value && typeof school.value.fit_score === "number"
+        ? school.value.fit_score
+        : null;
+    const schoolFitScoreData =
+      "fit_score_data" in school.value &&
+      typeof school.value.fit_score_data === "object" &&
+      school.value.fit_score_data !== null
+        ? (school.value.fit_score_data as Partial<FitScoreInputs>)
+        : null;
+
+    if (schoolFitScore !== null && schoolFitScoreData) {
+      // Use fit score from database (most recent, updated by server)
+      fitScore.value = calculateFitScore(schoolFitScoreData);
     } else {
-      const studentSize = school.value.academic_info?.student_size;
-      const numericSize =
-        typeof studentSize === "number" ? studentSize : undefined;
-      fitScore.value = await calculateSchoolFitScore(id, undefined, {
-        campusSize: numericSize,
-        avgGpa: school.value.academic_info?.gpa_requirement ?? undefined,
-        offeredMajors: [],
-      });
+      // Fall back to cache or recalculate
+      const cachedScore = getFitScore(id);
+      if (cachedScore) {
+        fitScore.value = cachedScore;
+      } else {
+        const studentSize = school.value.academic_info?.student_size;
+        const numericSize =
+          typeof studentSize === "number" ? studentSize : undefined;
+        fitScore.value = await calculateSchoolFitScore(id, undefined, {
+          campusSize: numericSize,
+          avgGpa: school.value.academic_info?.gpa_requirement ?? undefined,
+          offeredMajors: [],
+        });
+      }
     }
 
     if (fitScore.value) {
@@ -415,7 +462,7 @@ const lookupCollegeData = async () => {
         address: result.address || school.value.academic_info?.address,
         city: result.city || school.value.academic_info?.city,
         state: result.state || school.value.academic_info?.state,
-        student_size: String(result.studentSize || ""),
+        student_size: result.studentSize || null,
         carnegie_size: result.carnegieSize,
         enrollment_all: result.enrollmentAll,
         admission_rate: result.admissionRate,

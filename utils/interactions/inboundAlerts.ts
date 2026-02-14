@@ -24,8 +24,9 @@ export const createInboundInteractionAlert = async ({
     const [prefsRes, coachRes] = await Promise.allSettled([
       supabase
         .from("user_preferences")
-        .select("notification_settings")
+        .select("data")
         .eq("user_id", userId)
+        .eq("category", "notification_settings")
         .single(),
       interaction.coach_id
         ? supabase
@@ -48,7 +49,10 @@ export const createInboundInteractionAlert = async ({
       console.warn("Failed to fetch coach data:", coachRes.reason);
     }
 
-    if (prefs?.notification_settings?.enableInboundInteractionAlerts) {
+    if (
+      (prefs?.data as Record<string, unknown> | undefined)
+        ?.enableInboundInteractionAlerts
+    ) {
       // Get coach name for notification
       let coachName = "A coach";
       if (coach) {

@@ -369,13 +369,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed } from "vue";
+import { PlusIcon } from "@heroicons/vue/24/outline";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import { useSchools } from "~/composables/useSchools";
 import { useUniversalFilter } from "~/composables/useUniversalFilter";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useErrorHandler } from "~/composables/useErrorHandler";
-import FilterPanel from "~/components/Common/FilterPanel.vue";
-import UniversalFilter from "~/components/Common/UniversalFilter.vue";
+import FilterPanel from "~/components/FilterPanel.vue";
+import UniversalFilter from "~/components/UniversalFilter.vue";
 import { useUserStore } from "~/stores/user";
 import type { Document } from "~/types/models";
 import type { FilterConfig } from "~/types/filters";

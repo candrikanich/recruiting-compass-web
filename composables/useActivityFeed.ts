@@ -74,6 +74,10 @@ export const useActivityFeed = () => {
       showcase: "🎬",
       tweet: "🐦",
       dm: "📱",
+      game: "🏀",
+      unofficial_visit: "🏫",
+      official_visit: "🎓",
+      other: "📝",
     };
     return iconMap[type] || "📝";
   };

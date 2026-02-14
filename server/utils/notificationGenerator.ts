@@ -14,16 +14,14 @@ async function _shouldSendEmail(
   try {
     const { data: prefs } = await supabase
       .from("user_preferences")
-      .select("notification_settings")
+      .select("data")
       .eq("user_id", userId)
+      .eq("category", "notification_settings")
       .single();
 
-    if (!prefs?.notification_settings?.enableEmailNotifications) return false;
-    if (
-      prefs.notification_settings.emailOnlyHighPriority &&
-      priority !== "high"
-    )
-      return false;
+    const settings = prefs?.data as Record<string, unknown> | undefined;
+    if (!settings?.enableEmailNotifications) return false;
+    if (settings.emailOnlyHighPriority && priority !== "high") return false;
     return true;
   } catch {
     return false;
@@ -410,11 +408,13 @@ export async function generateDailyDigest(
     // Check if daily digest is enabled
     const { data: prefs } = await supabase
       .from("user_preferences")
-      .select("notification_settings")
+      .select("data")
       .eq("user_id", userId)
+      .eq("category", "notification_settings")
       .single();
 
-    if (!prefs?.notification_settings?.enableDailyDigest) {
+    const settings = prefs?.data as Record<string, unknown> | undefined;
+    if (!settings?.enableDailyDigest) {
       return { count: 0, type: "daily_digest" };
     }
 

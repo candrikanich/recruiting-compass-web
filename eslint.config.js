@@ -15,7 +15,6 @@ export default [
       ".vercel/**/*",
       "coverage",
       "*.cjs",
-      ".gitlab-ci.yml",
       ".vite",
       "__tests__",
       "tests/**/*",

@@ -166,11 +166,11 @@ export function usePreferenceManager() {
   };
 
   /**
-   * Get typed home location with validation
+   * Get typed home location with validation (reactive)
    */
-  const getHomeLocation = (): HomeLocation | null => {
-    return validateHomeLocation(locationPrefs.preferences.value);
-  };
+  const getHomeLocation = computed((): HomeLocation | null =>
+    validateHomeLocation(locationPrefs.preferences.value),
+  );
 
   /**
    * Set home location and save (merges with current so partial updates from onboarding work)

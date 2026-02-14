@@ -9,7 +9,7 @@
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/settings"
-          class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 mb-2"
+          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
@@ -234,6 +234,17 @@ const saveSuccess = ref(false);
 const { triggerSave } = useAutoSave({
   debounceMs: 500,
   onSave: async () => {
+    // Auto-geocode if we have an address but no coordinates
+    if (
+      hasAddress.value &&
+      (!localLocation.latitude || !localLocation.longitude)
+    ) {
+      const result = await geocodeAddress(fullAddress.value);
+      if (result) {
+        localLocation.latitude = result.latitude;
+        localLocation.longitude = result.longitude;
+      }
+    }
     await setHomeLocation(localLocation);
   },
 });
@@ -267,6 +278,18 @@ const handleSave = async () => {
   saveSuccess.value = false;
 
   try {
+    // Auto-geocode if we have an address but no coordinates
+    if (
+      hasAddress.value &&
+      (!localLocation.latitude || !localLocation.longitude)
+    ) {
+      const result = await geocodeAddress(fullAddress.value);
+      if (result) {
+        localLocation.latitude = result.latitude;
+        localLocation.longitude = result.longitude;
+      }
+    }
+
     await setHomeLocation(localLocation);
     saveSuccess.value = true;
     setTimeout(() => (saveSuccess.value = false), 3000);
@@ -290,9 +313,23 @@ const handleClear = () => {
 
 onMounted(async () => {
   await loadAllPreferences();
-  const location = getHomeLocation();
+  const location = getHomeLocation.value;
   if (location) {
     Object.assign(localLocation, location);
+
+    // Auto-geocode if we have an address but no coordinates
+    if (
+      hasAddress.value &&
+      (!localLocation.latitude || !localLocation.longitude)
+    ) {
+      const result = await geocodeAddress(fullAddress.value);
+      if (result) {
+        localLocation.latitude = result.latitude;
+        localLocation.longitude = result.longitude;
+        // Save the coordinates immediately
+        await setHomeLocation(localLocation);
+      }
+    }
   }
 });
 </script>

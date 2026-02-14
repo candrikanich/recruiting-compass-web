@@ -138,16 +138,21 @@ watch(
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-    135deg,
-    rgb(168, 85, 247) 0%,
-    rgb(147, 51, 234) 100%
-  );
+  background: white;
   border-radius: 0.25rem;
   overflow: hidden;
   flex-shrink: 0;
   font-weight: 600;
   color: white;
+}
+
+/* Purple gradient background only for fallback state */
+.school-logo:has(.logo-fallback) {
+  background: linear-gradient(
+    135deg,
+    rgb(168, 85, 247) 0%,
+    rgb(147, 51, 234) 100%
+  );
 }
 
 .logo-image {

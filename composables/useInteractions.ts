@@ -12,9 +12,8 @@ import { sanitizeHtml } from "~/utils/validation/sanitize";
 
 // Get Table types from Database
 type InteractionsTable = Database["public"]["Tables"]["interactions"];
-// Note: follow_up_reminders table type comes from the runtime FollowUpReminder type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type FollowUpRemindersTable = any; // TODO: Generate from database.ts when table is added
+type FollowUpRemindersTable =
+  Database["public"]["Tables"]["follow_up_reminders"];
 import {
   exportInteractionsToCSV,
   downloadInteractionsCSV,
@@ -672,7 +671,7 @@ const useInteractionsInternal = (): {
     title: string,
     dueDate: string,
     reminderType: FollowUpReminder["reminder_type"],
-    _priority: FollowUpReminder["priority"] = "medium",
+    priority: FollowUpReminder["priority"] = "medium",
     description?: string,
     schoolId?: string,
     coachId?: string,
@@ -682,13 +681,20 @@ const useInteractionsInternal = (): {
 
     remindersErrorRef.value = null;
 
+    const dataOwnerUserId = activeFamily.getDataOwnerUserId();
+    if (!dataOwnerUserId) {
+      remindersErrorRef.value = "No user ID available";
+      return null;
+    }
+
     try {
       const newReminder: FollowUpReminderInsert = {
-        user_id: activeFamily.getDataOwnerUserId(),
-        notes: description,
-        reminder_date: dueDate,
-        reminder_type: reminderType as "email" | "sms" | "phone_call" | null,
-
+        user_id: dataOwnerUserId,
+        title,
+        description,
+        due_date: dueDate,
+        reminder_type: reminderType,
+        priority,
         school_id: schoolId,
         coach_id: coachId,
         interaction_id: interactionId,

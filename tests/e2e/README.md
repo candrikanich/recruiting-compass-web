@@ -302,21 +302,21 @@ Phase 1 completed - data-testid attributes added to:
 
 ## CI/CD Integration
 
-### GitLab CI/CD Configuration
+### GitHub Actions Configuration
 
-Tests run automatically on every commit to `main` or merge request:
+Tests run automatically on every push to `develop` or pull request to `main`:
 
 ```yaml
-stages:
-  - install # Install dependencies and browsers
+jobs:
   - lint # ESLint and type checking
-  - test # Unit tests and E2E tests
+  - test # Unit tests
+  - e2e # E2E tests with Playwright
   - build # Production build
 ```
 
-**Required GitLab CI/CD Variables:**
+**Required GitHub Secrets:**
 
-Set these as protected variables in **Settings > CI/CD > Variables**:
+Set these in **Settings > Secrets and variables > Actions**:
 
 ```
 TEST_SUPABASE_URL          = https://your-test-project.supabase.co
@@ -324,25 +324,22 @@ TEST_SUPABASE_ANON_KEY     = eyJhbG...
 SUPABASE_SERVICE_ROLE_KEY  = eyJhbG...
 ```
 
-### Pipeline Stages
+### Workflow Jobs
 
-1. **Install** (Playwright image)
-   - `npm ci` - Install dependencies
-   - `npx playwright install --with-deps chromium`
-
-2. **Lint** (Node image)
+1. **Lint**
    - `npm run lint` - ESLint
    - `npm run type-check` - TypeScript
 
-3. **Unit Tests** (Node image)
+2. **Unit Tests**
    - `npm run test -- --run --coverage`
 
-4. **E2E Tests** (Playwright image)
+3. **E2E Tests**
+   - `npx playwright install --with-deps chromium`
    - `npm run db:seed:test` - Seed database
    - `npm run dev &` - Start dev server
    - `npm run test:e2e` - Run Playwright tests
 
-5. **Build** (Node image)
+4. **Build**
    - `npm run build` - Production build
 
 ## Local Development

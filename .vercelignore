@@ -1,5 +1,4 @@
 .git
-.gitlab-ci.yml
 node_modules
 .nuxt
 .output/server

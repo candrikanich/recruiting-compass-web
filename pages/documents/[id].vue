@@ -571,8 +571,11 @@ const toggleSchoolSelection = (schoolId: string) => {
 const removeShare = async (schoolId: string) => {
   if (!document.value) return;
   try {
-    const success = await removeSchoolAccess(document.value.id, schoolId);
-    if (success) {
+    const updatedSchools = (document.value.shared_with_schools || []).filter(
+      (id) => id !== schoolId,
+    );
+    const result = await removeSchoolAccess(document.value.id, updatedSchools);
+    if (result) {
       await fetchDocuments();
     } else {
       logError(new Error("Failed to remove school access"));
@@ -589,12 +592,12 @@ const saveSharing = async () => {
       ...(document.value.shared_with_schools || []),
       ...selectedSchools.value,
     ];
-    for (const schoolId of selectedSchools.value) {
-      await shareDocument(document.value.id, schoolId, "view");
+    const result = await shareDocument(document.value.id, allSharedSchools);
+    if (result) {
+      selectedSchools.value = [];
+      showShareModal.value = false;
+      await fetchDocuments();
     }
-    selectedSchools.value = [];
-    showShareModal.value = false;
-    await fetchDocuments();
   } catch (err) {
     logError(err);
   }

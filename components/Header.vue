@@ -135,7 +135,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
-import AthleteSwitcher from "~/components/Common/AthleteSwitcher.vue";
+import AthleteSwitcher from "~/components/AthleteSwitcher.vue";
 import HeaderNav from "~/components/Header/HeaderNav.vue";
 import HeaderProfile from "~/components/Header/HeaderProfile.vue";
 import NotificationCenter from "~/components/Header/NotificationCenter.vue";

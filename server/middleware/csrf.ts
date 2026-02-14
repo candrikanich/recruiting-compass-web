@@ -49,7 +49,16 @@ export default defineEventHandler((event) => {
     "/api/interactions/", // Interaction cascade-delete and diagnostic endpoints
   ];
 
+  // Skip CSRF for athlete-specific mutation endpoints (background calculations)
+  const athleteEndpoints = [
+    "/api/athlete/fit-scores/recalculate-all", // Fit score batch recalculation
+  ];
+
   if (publicEndpoints.some((endpoint) => path?.startsWith(endpoint))) {
+    return;
+  }
+
+  if (athleteEndpoints.some((endpoint) => path === endpoint)) {
     return;
   }
 

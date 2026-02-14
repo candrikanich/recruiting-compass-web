@@ -37,7 +37,7 @@
       </div>
 
       <!-- Filters -->
-      <InteractionFiltersBar
+      <InteractionsInteractionFiltersBar
         v-model:selected-type="selectedType"
         v-model:selected-direction="selectedDirection"
         v-model:selected-date-range="selectedDateRange"
@@ -78,7 +78,7 @@
       </div>
 
       <!-- Add Interaction Form -->
-      <InteractionAddForm
+      <InteractionsInteractionAddForm
         v-if="showAddForm"
         :coaches="coaches"
         :loading="loading"
@@ -144,7 +144,7 @@
 
       <!-- Interactions Timeline -->
       <div v-if="filteredInteractions.length > 0" class="space-y-4">
-        <InteractionTimelineItem
+        <InteractionsInteractionTimelineItem
           v-for="interaction in filteredInteractions"
           :key="interaction.id"
           :interaction="interaction"
@@ -337,9 +337,9 @@ const handleAddInteraction = async (data: InteractionSubmitData) => {
     showAddForm.value = false;
     await fetchInteractions({ schoolId: id });
   } catch (err) {
+    console.error("Failed to log interaction:", err);
     const errorMsg =
       err instanceof Error ? err.message : "Unknown error occurred";
-    console.error("Failed to log interaction:", errorMsg);
     announce(`Failed to log interaction: ${errorMsg}`);
   }
 };

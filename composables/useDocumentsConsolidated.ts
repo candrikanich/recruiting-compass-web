@@ -373,12 +373,12 @@ export const useDocumentsConsolidated = () => {
         [
           {
             user_id: userStore.user.id,
+            uploaded_by: userStore.user.id,
             title,
             description,
             type,
             file_url: urlData.publicUrl,
-            file_size: file.size,
-            mime_type: file.type,
+            file_type: file.type,
             version: 1,
             is_current: true,
             created_at: new Date().toISOString(),
@@ -497,96 +497,84 @@ export const useDocumentsConsolidated = () => {
   // ═══════════════════════════════════════════════════════════════════════════
 
   /**
-   * Share document with schools or users
+   * Share document with schools by updating shared_with_schools array
    *
    * @param documentId - Document ID
-   * @param recipientId - School or user ID
-   * @param permission - Permission level (view, edit, admin)
-   * @returns Promise<boolean> - Success status
+   * @param schoolIds - Array of school IDs to share with
+   * @returns Promise<Document | null> - Updated document or null on error
    */
   const shareDocument = async (
     documentId: string,
-    recipientId: string,
-    permission: "view" | "edit" | "admin" = "view",
-  ): Promise<boolean> => {
+    schoolIds: string[],
+  ): Promise<Document | null> => {
     if (!userStore.user) {
       sharingError.value = "User not authenticated";
-      return false;
+      return null;
     }
 
     isSharing.value = true;
     sharingError.value = null;
 
     try {
-      const { data, error: insertErr } = await queryInsert(
-        "document_shares",
-        [
-          {
-            document_id: documentId,
-            shared_by_id: userStore.user.id,
-            recipient_id: recipientId,
-            permission,
-            created_at: new Date().toISOString(),
-          },
-        ],
+      const { data, error: updateErr } = await queryUpdate<Document>(
+        "documents",
+        { shared_with_schools: schoolIds },
+        { id: documentId },
         { context: "shareDocument" },
       );
 
-      if (insertErr || !data) {
-        throw insertErr || new Error("Share failed");
+      if (updateErr || !data) {
+        throw updateErr || new Error("Failed to share document");
       }
 
-      return true;
+      return Array.isArray(data) ? data[0] : data;
     } catch (err) {
       const message = getErrorMessage(err, { context: "shareDocument" });
       sharingError.value = message;
       logError(err, { context: "shareDocument" });
-      return false;
+      return null;
     } finally {
       isSharing.value = false;
     }
   };
 
   /**
-   * Revoke document access
+   * Revoke document access from schools by updating shared_with_schools array
    *
    * @param documentId - Document ID
-   * @param recipientId - Recipient ID to revoke
-   * @returns Promise<boolean> - Success status
+   * @param schoolIds - Array of school IDs to revoke access from
+   * @returns Promise<Document | null> - Updated document or null on error
    */
   const revokeAccess = async (
     documentId: string,
-    recipientId: string,
-  ): Promise<boolean> => {
+    schoolIds: string[],
+  ): Promise<Document | null> => {
     if (!userStore.user) {
       sharingError.value = "User not authenticated";
-      return false;
+      return null;
     }
 
     isSharing.value = true;
     sharingError.value = null;
 
     try {
-      const { error: deleteErr } = await queryDelete(
-        "document_shares",
-        {
-          document_id: documentId,
-          recipient_id: recipientId,
-          shared_by_id: userStore.user.id,
-        },
+      const { data, error: updateErr } = await queryUpdate<Document>(
+        "documents",
+        { shared_with_schools: schoolIds },
+        { id: documentId },
         { context: "revokeAccess" },
       );
 
-      if (deleteErr) {
-        throw deleteErr;
+      if (updateErr || !data) {
+        throw updateErr || new Error("Failed to revoke access");
       }
 
-      return true;
+      return Array.isArray(data) ? data[0] : data;
     } catch (err) {
       const message = getErrorMessage(err, { context: "revokeAccess" });
       sharingError.value = message;
       logError(err, { context: "revokeAccess" });
-      return false;
+      return null;
     } finally {
       isSharing.value = false;
     }

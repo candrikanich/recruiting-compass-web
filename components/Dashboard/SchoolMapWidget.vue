@@ -148,7 +148,7 @@ let mapInstance: L.Map | null = null;
 let isInitializing = false;
 
 const getMapCenter = (): [number, number] => {
-  const locationPref = preferenceManager.getHomeLocation();
+  const locationPref = preferenceManager.getHomeLocation.value;
   if (locationPref?.latitude && locationPref?.longitude) {
     return [locationPref.latitude, locationPref.longitude];
   }

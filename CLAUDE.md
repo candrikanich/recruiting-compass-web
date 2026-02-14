@@ -64,97 +64,25 @@ Call via: `$fetch('/api/endpoint', { method: 'POST', body: {...} })`
 
 ## Composables Pattern
 
-```typescript
-export const useMyFeature = () => {
-  const data = ref<MyType[]>([]);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
-
-  const fetchData = async () => {
-    loading.value = true;
-    try {
-      data.value = await $fetch("/api/my-data");
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : "Unknown error";
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  onMounted(fetchData);
-  return { data, loading, error, fetchData };
-};
-```
+Return `{ data: ref, loading: ref, error: ref, fetchData }`. Try/catch with user-friendly errors. onMounted for auto-fetch.
 
 ## Multi-Step Workflows
 
-For sequential workflows (send invitation → accept → confirm):
+Track states: sentItems (I initiated), receivedItems (sent to me), pendingItems (awaiting confirmation), completedItems (done).
 
-```typescript
-export const useMultiStepFeature = () => {
-  const sentItems = ref<Item[]>([]);        // I initiated
-  const receivedItems = ref<Item[]>([]);    // Sent to me
-  const pendingItems = ref<Item[]>([]);     // Awaiting my confirmation
-  const completedItems = ref<Item[]>([]);   // Finalized
-
-  const initiateAction = async (email: string) => { /* Step 1 */ };
-  const acceptAsReceiver = async (token: string) => { /* Step 2 */ };
-  const confirmAsInitiator = async (itemId: string) => { /* Step 3 */ };
-  const determineRelationship = (initiatorRole: string, receiverRole: string) => {};
-
-  return { sentItems, receivedItems, pendingItems, completedItems, ... };
-};
-```
-
-**Notifications:** Trigger at step 2 (HIGH priority to next actor) and step 3 (MEDIUM to both). Include `action_url` for relevant management page. Don't block workflow if notification fails.
+**Notifications:** Step 2 (HIGH to next actor), Step 3 (MEDIUM to both). Include `action_url`. Don't block on failure.
 
 ## Settings Page Pattern
 
-Organize by action (what user can DO), not state:
-
-```vue
-<!-- Section 1: User must take action (amber=warning) -->
-<section v-if="pendingConfirmations.length">
-  <h2>⚠️ Pending Confirmations</h2>
-  <ConfirmationCard v-for="item in pendingConfirmations" />
-</section>
-
-<!-- Section 2: Awaiting user response (blue=received) -->
-<section v-if="receivedInvitations.length">
-  <h2>📨 Received Invitations</h2>
-  <PendingInvitationCard v-for="item in receivedInvitations" />
-</section>
-
-<!-- Section 3: User initiated, others responding (gray=sent) -->
-<section v-if="sentInvitations.length">
-  <h2>⏳ Sent Invitations</h2>
-  <SentInvitationCard v-for="item in sentInvitations" />
-</section>
-
-<!-- Section 4: Completed (green=done) -->
-<section v-if="completedItems.length">
-  <h2>✅ Completed</h2>
-  <CompletedCard v-for="item in completedItems" />
-</section>
-```
-
-Use separate card components for each state. Only show relevant action buttons per user role.
+Organize by action: 1) Pending Confirmations (amber), 2) Received Invitations (blue), 3) Sent Invitations (gray), 4) Completed (green). Separate card components per state.
 
 ## Supabase & Database
 
-**Client:** Always use `useSupabase()` composable (singleton):
+**Client:** Use `useSupabase()` singleton. Select specific columns, filter with `.eq()`.
 
-```typescript
-const supabase = useSupabase();
-const { data } = await supabase
-  .from("coaches")
-  .select("id, first_name, last_name")
-  .eq("school_id", schoolId);
-```
+**Schema:** Add columns as nullable, separate migration. Use CHECK constraints for enums (not PG enums).
 
-**Schema changes:** Add columns as nullable, separate data migration into second step. Use CHECK constraints for enum-like VARCHAR fields instead of PostgreSQL enums.
-
-**Types:** Generated in `types/database.ts` from schema. Regenerate after migrations: `npx supabase gen types typescript --local > types/database.ts`
+**Types:** `npx supabase gen types typescript --local > types/database.ts` after migrations
 
 ## Code Quality
 
@@ -173,59 +101,11 @@ const { data } = await supabase
 
 ### Cascade-Delete Pattern
 
-For entities with foreign key dependencies (coaches, interactions, schools):
+1. Try simple delete (fast path) 2. Catch FK errors ("Cannot delete", "violates foreign key") 3. Fall back to `/api/[entity]/[id]/cascade-delete` (children first, `confirmDelete: true`) 4. Return `{ cascadeUsed: boolean }` for UX messaging 5. CSRF bypass (check `/server/middleware/csrf.ts`)
 
-1. **Try Simple Delete** (fast path)
-   - Direct Supabase delete on primary record
-   - Throws if FK constraint exists
+**Security:** Use `family_unit_id` for access control (not `user_id`)
 
-2. **Catch FK Errors**
-   - Detect: "Cannot delete", "violates foreign key constraint", "still referenced"
-   - Other errors pass through
-
-3. **Fall Back to Cascade Endpoint**
-   - API call to `/api/[entity]/[id]/cascade-delete`
-   - Deletes children first (by FK dependency order), then parent
-   - Requires explicit `confirmDelete: true` in body
-
-4. **Return UX Metadata**
-   - `{ cascadeUsed: boolean }` - Tells UI which path was taken
-   - Show appropriate message: "Deleted coach" vs "Deleted coach and 3 interactions"
-
-5. **CSRF Bypass**
-   - Cascade and diagnostic endpoints bypass CSRF
-   - Check `/server/middleware/csrf.ts` for approved paths
-
-**Example Implementation:**
-
-```typescript
-const smartDelete = async (id: string): Promise<{ cascadeUsed: boolean }> => {
-  try {
-    await deleteEntity(id);  // Simple delete
-    return { cascadeUsed: false };
-  } catch (err) {
-    if (isFK Constraint error) {
-      const response = await $fetch(`/api/entity/${id}/cascade-delete`, {
-        method: "POST",
-        body: { confirmDelete: true },
-      });
-      if (response.success) {
-        state.value = state.value.filter((i) => i.id !== id);
-        return { cascadeUsed: true };
-      }
-    }
-    throw err;
-  }
-};
-```
-
-**Security Note**: Use `family_unit_id` (not `user_id`) for access control. Family context is the boundary for multi-family apps.
-
-**Entities Implemented:**
-
-- Schools: `/server/api/schools/[id]/cascade-delete.post.ts`
-- Coaches: `/server/api/coaches/[id]/cascade-delete.post.ts`
-- Interactions: `/server/api/interactions/[id]/cascade-delete.post.ts`
+**Entities:** schools, coaches, interactions
 
 ## Commands
 
@@ -242,47 +122,21 @@ npm run test:e2e:ui      # Playwright interactive UI
 
 ## Build & Compilation
 
-- When fixing build/compiler errors, fix ALL errors in a single pass before running the build again. Do not fix one file at a time and rebuild — batch all fixes together. If a fix introduces new errors, acknowledge and fix those in the next pass rather than applying partial fixes.
+Fix ALL errors in single pass before rebuilding. Batch fixes together.
 
-## Verification Requirements
+## Verification
 
-Before marking code complete:
-
-- [ ] `npm run type-check` passes (no TypeScript errors)
-- [ ] `npm run lint` passes (no linting errors)
-- [ ] `npm run test` passes (unit tests)
-- [ ] Browser test: Changes work as expected in UI
-- [ ] `git push` succeeds (pre-commit hooks pass)
+- [ ] `npm run type-check`, `npm run lint`, `npm run test` pass
+- [ ] Browser test works
+- [ ] `git push` succeeds (hooks pass)
 
 ## Bug-Driven TDD
 
-When a bug is discovered:
-
-1. **Write a failing test** that reproduces the bug
-   - Test should fail with the current code
-   - Include comments explaining what the bug was
-   - Place test in the appropriate `*.spec.ts` file
-
-2. **Fix the code** to make the test pass
-   - Minimal fix for root cause only
-   - Don't refactor or add extra features
-
-3. **Verify the test passes** and doesn't break other tests
-   - Run full test suite: `npm run test`
-   - Ensure coverage doesn't decrease
-
-**Benefits:**
-
-- Prevents regression (bug won't come back)
-- Increases test coverage incrementally
-- Documents the bug for future developers
-- Proves the fix actually works
-
-**Example:** School deletion failing due to missing `family_unit_id` filter in `fetchCoaches` → Added test for `family_unit_id` filter → Fixed `fetchCoaches` → Test passes
+Write failing test → Fix code (minimal) → Verify passes. Prevents regression, increases coverage.
 
 ## Testing After Refactoring
 
-- After any refactoring that extracts components or moves elements into child views, immediately run the full test suite before committing. Tests that reference elements now inside child components WILL break — fix these before proceeding.
+Run full test suite immediately after extracting components. Fix broken element references.
 
 ## Deployment
 
@@ -298,6 +152,4 @@ When a bug is discovered:
 
 ## Learnings
 
-Track evolving patterns discovered in code reviews and PR feedback. Update during PR process when you find recurring issues, gotchas, or anti-patterns.
-
-- (Add learnings as they emerge)
+See [planning/lessons.md](./planning/lessons.md) for evolving patterns, recurring issues, and anti-patterns discovered during development.
