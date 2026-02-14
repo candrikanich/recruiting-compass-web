@@ -107,9 +107,12 @@ const runMigration = async () => {
   result.value = null;
 
   try {
-    const response = (await $fetch("/api/admin/migrate-school-sizes", {
-      method: "POST",
-    })) as MigrationResult;
+    const response = await $fetch<MigrationResult>(
+      "/api/admin/migrate-school-sizes",
+      {
+        method: "POST",
+      },
+    );
 
     result.value = response;
   } catch (err) {

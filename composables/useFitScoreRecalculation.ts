@@ -37,7 +37,7 @@ export const useFitScoreRecalculation = () => {
         throw new Error("No authentication token found");
       }
 
-      const response = (await $fetch(
+      const response = await $fetch<RecalculationResponse>(
         "/api/athlete/fit-scores/recalculate-all",
         {
           method: "POST",
@@ -45,7 +45,7 @@ export const useFitScoreRecalculation = () => {
             Authorization: `Bearer ${session.access_token}`,
           },
         },
-      )) as RecalculationResponse;
+      );
 
       if (!response?.success) {
         throw new Error(response?.message || "Recalculation failed");
