@@ -62,19 +62,27 @@
       <!-- Charts & Analytics Section -->
       <section aria-labelledby="charts-heading">
         <h2 id="charts-heading" class="sr-only">Charts & Analytics</h2>
-        <DashboardChartsSection
-          :schools="dashboardData.allSchools.value"
-          :interactions="dashboardData.allInteractions.value"
-          :school-size-breakdown="schoolSizeBreakdown"
-          :school-count="dashboardData.schoolCount.value"
-          :recruiting-packet-loading="recruitingPacketLoading"
-          :recruiting-packet-error="recruitingPacketError"
-          :has-generated-packet="
-            recruitingPacketComposable.hasGeneratedPacket.value
-          "
-          @generate-packet="handleGeneratePacket"
-          @email-packet="handleEmailPacket"
-        />
+        <Suspense>
+          <DashboardChartsSection
+            :schools="dashboardData.allSchools.value"
+            :interactions="dashboardData.allInteractions.value"
+            :school-size-breakdown="schoolSizeBreakdown"
+            :school-count="dashboardData.schoolCount.value"
+            :recruiting-packet-loading="recruitingPacketLoading"
+            :recruiting-packet-error="recruitingPacketError"
+            :has-generated-packet="
+              recruitingPacketComposable.hasGeneratedPacket.value
+            "
+            @generate-packet="handleGeneratePacket"
+            @email-packet="handleEmailPacket"
+          />
+          <template #fallback>
+            <div class="grid gap-6 md:grid-cols-2">
+              <div class="animate-pulse bg-gray-200 h-80 rounded-lg"></div>
+              <div class="animate-pulse bg-gray-200 h-80 rounded-lg"></div>
+            </div>
+          </template>
+        </Suspense>
       </section>
 
       <!-- Performance & Events Section -->
@@ -146,7 +154,9 @@ import { useDashboardCalculations } from "~/composables/useDashboardCalculations
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
-import DashboardChartsSection from "~/components/Dashboard/DashboardChartsSection.vue";
+const DashboardChartsSection = defineAsyncComponent(
+  () => import("~/components/Dashboard/DashboardChartsSection.vue"),
+);
 import DashboardMetricsSection from "~/components/Dashboard/DashboardMetricsSection.vue";
 import DashboardMapActivitySection from "~/components/Dashboard/DashboardMapActivitySection.vue";
 import DashboardWidgetsSection from "~/components/Dashboard/DashboardWidgetsSection.vue";
