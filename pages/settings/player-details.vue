@@ -113,13 +113,56 @@
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2"
-                >High School</label
+                >School Name</label
               >
               <input
-                v-model="form.high_school"
+                v-model="form.school_name"
                 :disabled="isParentRole"
                 type="text"
                 placeholder="e.g., Lincoln High School"
+                @blur="triggerSave"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >School City</label
+              >
+              <input
+                v-model="form.school_city"
+                :disabled="isParentRole"
+                type="text"
+                placeholder="e.g., Atlanta"
+                @blur="triggerSave"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >School State</label
+              >
+              <input
+                v-model="form.school_state"
+                :disabled="isParentRole"
+                type="text"
+                placeholder="e.g., GA"
+                maxlength="2"
+                @blur="triggerSave"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >School Address</label
+              >
+              <input
+                v-model="form.school_address"
+                :disabled="isParentRole"
+                type="text"
+                placeholder="e.g., 123 Main St"
                 @blur="triggerSave"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
@@ -972,7 +1015,6 @@ const heightInches = ref<number | undefined>(undefined);
 
 const form = ref<PlayerDetails>({
   graduation_year: undefined,
-  high_school: "",
   club_team: "",
   positions: [],
   bats: undefined,
