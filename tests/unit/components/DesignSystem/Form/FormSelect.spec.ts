@@ -81,8 +81,8 @@ describe('FormSelect', () => {
       global: {
         stubs: {
           DesignSystemFieldError: {
-            template: '<div data-testid="field-error">{{ message }}</div>',
-            props: ['message', 'id']
+            template: '<div data-testid="field-error">{{ error }}</div>',
+            props: ['error', 'id']
           }
         }
       }
@@ -127,5 +127,21 @@ describe('FormSelect', () => {
     expect(select.attributes('disabled')).toBeDefined();
     expect(select.classes()).toContain('disabled:opacity-50');
     expect(select.classes()).toContain('disabled:cursor-not-allowed');
+  });
+
+  it('emits blur event when select loses focus', async () => {
+    const wrapper = mount(FormSelect, {
+      props: {
+        modelValue: '',
+        label: 'Test Label',
+        options: defaultOptions
+      }
+    });
+
+    const select = wrapper.find('select');
+    await select.trigger('blur');
+
+    expect(wrapper.emitted('blur')).toBeTruthy();
+    expect(wrapper.emitted('blur')).toHaveLength(1);
   });
 });

@@ -50,12 +50,13 @@ const handleBlur = () => {
   <div>
     <label :for="inputId" class="block text-sm font-medium text-slate-700 mb-2">
       {{ label }}
-      <span v-if="required" class="text-red-500">*</span>
+      <span v-if="required" class="text-red-500" aria-hidden="true">*</span>
       <span v-if="required" class="sr-only">(required)</span>
     </label>
     <select
       :id="inputId"
       :value="modelValue"
+      :required="required"
       :disabled="disabled"
       :aria-invalid="!!error"
       :aria-describedby="error ? `${inputId}-error` : undefined"
@@ -69,6 +70,6 @@ const handleBlur = () => {
         {{ option.label }}
       </option>
     </select>
-    <DesignSystemFieldError v-if="error" :id="`${inputId}-error`" :message="error" />
+    <DesignSystemFieldError v-if="error" :id="`${inputId}-error`" :error="error" />
   </div>
 </template>
