@@ -310,7 +310,7 @@ const handleCancel = () => {
     </div>
 
     <!-- Add Coach Modal -->
-    <AddCoachModal
+    <CoachAddCoachModal
       :show="showAddCoachModal"
       :school-id="form.school_id"
       @close="showAddCoachModal = false"
@@ -318,7 +318,7 @@ const handleCancel = () => {
     />
 
     <!-- Other Coach Modal -->
-    <OtherCoachModal
+    <CoachOtherCoachModal
       :show="showOtherCoachModal"
       @close="showOtherCoachModal = false"
       @continue="handleOtherCoachContinue"
