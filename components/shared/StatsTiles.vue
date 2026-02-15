@@ -10,22 +10,29 @@
       v-for="(stat, index) in stats"
       :key="index"
       :data-testid="stat.testId"
-      class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition"
+      class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 hover:shadow-md transition"
     >
-      <div class="flex items-center justify-between mb-3">
-        <component
+      <div class="flex items-center gap-3">
+        <div
           v-if="stat.icon"
-          :is="stat.icon"
-          :class="getIconClass(stat.color)"
-          class="w-8 h-8"
-          aria-hidden="true"
-        />
-      </div>
-      <div class="text-3xl font-bold text-slate-900 mb-1">
-        {{ stat.value }}
-      </div>
-      <div class="text-sm text-slate-600">
-        {{ stat.label }}
+          :class="getIconBgClass(stat.color)"
+          class="w-10 h-10 rounded-lg flex items-center justify-center"
+        >
+          <component
+            :is="stat.icon"
+            :class="getIconClass(stat.color)"
+            class="w-5 h-5"
+            aria-hidden="true"
+          />
+        </div>
+        <div>
+          <p class="text-2xl font-bold text-slate-900">
+            {{ stat.value }}
+          </p>
+          <p class="text-sm text-slate-500">
+            {{ stat.label }}
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -60,5 +67,16 @@ const getIconClass = (color?: string): string => {
     slate: 'text-slate-600'
   };
   return colorMap[color || 'blue'] || 'text-blue-600';
+};
+
+const getIconBgClass = (color?: string): string => {
+  const colorMap: Record<string, string> = {
+    blue: 'bg-blue-100',
+    amber: 'bg-amber-100',
+    green: 'bg-green-100',
+    purple: 'bg-purple-100',
+    slate: 'bg-slate-100'
+  };
+  return colorMap[color || 'blue'] || 'bg-blue-100';
 };
 </script>
