@@ -29,13 +29,11 @@ vi.mock("~/composables/useToast", () => ({
   useToast: vi.fn(() => ({ showToast: vi.fn() })),
 }));
 
-vi.mock("~/components/Admin/BulkDeleteConfirmModal.vue", () => ({
-  default: {
-    name: "BulkDeleteConfirmModal",
-    template: "<div data-testid='bulk-delete-modal'><slot /></div>",
-    props: ["isOpen", "emails"],
-  },
-}));
+const BulkDeleteConfirmModalStub = {
+  name: "BulkDeleteConfirmModal",
+  template: "<div data-testid='bulk-delete-modal'><slot /></div>",
+  props: ["isOpen", "emails"],
+};
 
 const mockFetch = vi.fn();
 beforeEach(() => {
@@ -88,7 +86,10 @@ describe("Admin Dashboard (index.vue)", () => {
     const wrapper = mount(AdminIndex, {
       global: {
         plugins: [createPinia()],
-        stubs: { NuxtLink: { template: "<a><slot /></a>", props: ["to"] } },
+        stubs: {
+            NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
+            BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
+          },
       },
     });
 
@@ -108,7 +109,10 @@ describe("Admin Dashboard (index.vue)", () => {
     const wrapper = mount(AdminIndex, {
       global: {
         plugins: [createPinia()],
-        stubs: { NuxtLink: { template: "<a><slot /></a>", props: ["to"] } },
+        stubs: {
+            NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
+            BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
+          },
       },
     });
 
@@ -128,7 +132,10 @@ describe("Admin Dashboard (index.vue)", () => {
     mount(AdminIndex, {
       global: {
         plugins: [createPinia()],
-        stubs: { NuxtLink: { template: "<a><slot /></a>", props: ["to"] } },
+        stubs: {
+            NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
+            BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
+          },
       },
     });
 
@@ -147,7 +154,10 @@ describe("Admin Dashboard (index.vue)", () => {
     const wrapper = mount(AdminIndex, {
       global: {
         plugins: [createPinia()],
-        stubs: { NuxtLink: { template: "<a><slot /></a>", props: ["to"] } },
+        stubs: {
+            NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
+            BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
+          },
       },
     });
 
