@@ -1,22 +1,8 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Header -->
-      <div class="mb-8">
-        <div class="flex items-center justify-between mb-2">
-          <h1 data-testid="page-title" class="text-3xl font-bold text-gray-900">
-            Documents
-          </h1>
-          <span class="text-sm text-gray-500"
-            >{{ filteredDocuments.length }} of
-            {{ documents.length }} total</span
-          >
-        </div>
-        <p class="text-gray-600 mt-1">
-          Manage videos, transcripts, and other recruiting documents
-        </p>
-      </div>
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+    <PageHeader title="Documents" description="Manage videos, transcripts, and other recruiting documents" />
 
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Statistics Row -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-white rounded-lg shadow p-4">
@@ -363,7 +349,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 
