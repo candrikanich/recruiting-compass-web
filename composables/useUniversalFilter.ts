@@ -4,7 +4,7 @@
  * Supports: text, select, multiselect, daterange, boolean, range filters
  */
 
-import { ref, computed, watch, isRef, type Ref, type ComputedRef } from "vue";
+import { ref, computed, isRef, type Ref, type ComputedRef } from "vue";
 import type {
   FilterConfig,
   FilterValue,

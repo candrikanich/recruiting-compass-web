@@ -44,7 +44,7 @@ export const useAthleteActivity = (): AthleteActivityState & {
 
       const { data: accountLinks, error: linksError } = response as {
         data: Array<{ player_user_id: string | null }> | null;
-        error: any;
+        error: { message: string } | null;
       };
 
       if (linksError) {
