@@ -111,6 +111,7 @@
         <div class="p-6">
           <TaskList
             :tasks="tasks"
+            :phase-progress="percentComplete"
             @task-toggle="$emit('task-toggle', $event)"
           />
         </div>

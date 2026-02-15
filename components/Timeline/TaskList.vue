@@ -15,6 +15,7 @@
       :task="task"
       :show-category="showCategory"
       :show-status="showStatus"
+      :phase-progress="phaseProgress"
       @toggle-complete="$emit('task-toggle', $event)"
       @complete-prerequisite="$emit('task-toggle', $event)"
     />
@@ -37,6 +38,7 @@ interface Props {
   showStatus?: boolean;
   filterCategory?: TaskCategory | null;
   filterStatus?: TaskStatus | null;
+  phaseProgress?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -45,6 +47,7 @@ const props = withDefaults(defineProps<Props>(), {
   showStatus: true,
   filterCategory: null,
   filterStatus: null,
+  phaseProgress: 0,
 });
 
 defineEmits<{
