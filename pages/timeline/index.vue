@@ -230,11 +230,9 @@ const {
 const {
   currentPhase,
   milestoneProgress,
-  canAdvance,
   loading: phaseLoading,
   error: phaseError,
   fetchPhase,
-  advancePhase: phaseAdvancePhase,
 } = usePhaseCalculation();
 const {
   statusScore,
@@ -348,11 +346,6 @@ const retryFetch = async () => {
   await fetchTasksWithStatus();
   await fetchPhase();
   await fetchStatusScore();
-};
-
-const advancePhase = async () => {
-  await phaseAdvancePhase();
-  initializeExpanded();
 };
 
 const handlePriorityClick = (taskId: string) => {
