@@ -16,7 +16,7 @@
         <h1 class="text-3xl font-bold text-gray-900 mb-6">Add New Event</h1>
 
         <!-- EventForm Component -->
-        <EventEventForm
+        <EventForm
           :loading="loading"
           :schools="schools"
           @submit="handleFormSubmit"
