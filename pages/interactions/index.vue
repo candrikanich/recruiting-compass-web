@@ -10,13 +10,6 @@
       Skip to main content
     </a>
 
-    <!-- Global Navigation -->
-
-    <!-- Timeline Status Snippet -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
-      <StatusSnippet context="interactions" />
-    </div>
-
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
@@ -182,7 +175,6 @@ import { useInteractionFilters } from "~/composables/useInteractionFilters";
 import { useInteractionAnalytics } from "~/composables/useInteractionAnalytics";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
-import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
 import AnalyticsCards from "~/components/Interaction/AnalyticsCards.vue";
 import InteractionFilters from "~/components/Interaction/InteractionFilters.vue";
 import ActiveFilterChips from "~/components/Interaction/ActiveFilterChips.vue";

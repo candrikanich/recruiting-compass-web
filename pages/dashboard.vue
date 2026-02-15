@@ -34,6 +34,12 @@
         :athlete-name="activeAthleteName"
       />
 
+      <!-- Timeline Summary -->
+      <section aria-labelledby="timeline-heading">
+        <h2 id="timeline-heading" class="sr-only">Timeline Summary</h2>
+        <DashboardTimelineCard />
+      </section>
+
       <!-- Statistics Overview Section -->
       <section aria-labelledby="stats-heading">
         <h2 id="stats-heading" class="sr-only">Statistics Overview</h2>
@@ -172,6 +178,7 @@ import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
+import DashboardTimelineCard from "~/components/Dashboard/DashboardTimelineCard.vue";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
 const DashboardChartsSection = defineAsyncComponent(

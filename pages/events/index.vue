@@ -2,11 +2,6 @@
   <div
     class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
   >
-    <!-- Timeline Status Snippet -->
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
-      <StatusSnippet context="events" />
-    </div>
-
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
@@ -328,7 +323,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useEvents } from "~/composables/useEvents";
-import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
 import {
   PlusIcon,
   MagnifyingGlassIcon,

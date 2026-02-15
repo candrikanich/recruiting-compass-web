@@ -2,11 +2,6 @@
   <div
     class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
   >
-    <!-- Timeline Status Snippet -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
-      <StatusSnippet context="schools" />
-    </div>
-
     <!-- Athlete Selector (for parents) -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4" v-if="isParent">
       <AthleteSelector />
@@ -243,7 +238,6 @@ import {
   PlusIcon,
   ArrowDownTrayIcon,
 } from "@heroicons/vue/24/outline";
-import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
 import { createSchoolFilterConfigs } from "~/utils/schoolFilterConfigs";
 import { extractStateFromLocation } from "~/utils/locationParser";
 
