@@ -1,5 +1,6 @@
 <template>
   <div
+    :data-task-id="task.id"
     class="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition"
   >
     <!-- Checkbox -->

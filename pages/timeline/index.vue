@@ -196,6 +196,21 @@
   transform: translateY(-10px);
   opacity: 0;
 }
+:deep(.task-highlight) {
+  animation: highlight-pulse 2s ease-out;
+}
+
+@keyframes highlight-pulse {
+  0%,
+  15% {
+    background-color: rgb(219 234 254); /* blue-100 */
+    box-shadow: 0 0 0 2px rgb(147 197 253); /* blue-300 */
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
 </style>
 
 <script setup lang="ts">
@@ -255,8 +270,12 @@ const worriesCollapsed = ref(true);
 const stressCollapsed = ref(true);
 
 // Computed properties
+// Only show loading skeletons on initial load, not on background refreshes
+const initialLoadComplete = ref(false);
 const loading = computed(
-  () => tasksLoading.value || phaseLoading.value || statusLoading.value,
+  () =>
+    !initialLoadComplete.value &&
+    (tasksLoading.value || phaseLoading.value || statusLoading.value),
 );
 const error = computed(
   () => tasksError.value || phaseError.value || statusError.value,
@@ -343,9 +362,11 @@ const handleTaskToggle = async (taskId: string) => {
 };
 
 const retryFetch = async () => {
+  initialLoadComplete.value = false;
   await fetchTasksWithStatus();
   await fetchPhase();
   await fetchStatusScore();
+  initialLoadComplete.value = true;
 };
 
 const handlePriorityClick = (taskId: string) => {
@@ -361,11 +382,17 @@ const handlePriorityClick = (taskId: string) => {
   else if (gradeLevel === 11) juniorExpanded.value = true;
   else if (gradeLevel === 12) seniorExpanded.value = true;
 
-  // Wait for expansion animation, then scroll to task
-  nextTick(() => {
-    const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
-    taskElement?.scrollIntoView({ behavior: "smooth", block: "center" });
-  });
+  // Wait for expansion animation (300ms transition), then scroll and highlight
+  setTimeout(() => {
+    const taskElement = document.querySelector(
+      `[data-task-id="${taskId}"]`,
+    ) as HTMLElement | null;
+    if (!taskElement) return;
+
+    taskElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    taskElement.classList.add("task-highlight");
+    setTimeout(() => taskElement.classList.remove("task-highlight"), 2000);
+  }, 350);
 };
 
 // Helper functions
@@ -392,6 +419,7 @@ const getStatusColorClass = (label: StatusLabel): string => {
 // Lifecycle
 onMounted(async () => {
   await Promise.all([fetchTasksWithStatus(), fetchPhase(), fetchStatusScore()]);
+  initialLoadComplete.value = true;
   initializeExpanded();
 });
 </script>
