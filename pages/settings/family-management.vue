@@ -200,76 +200,34 @@ const familyMembers = ref<FamilyMember[]>([]);
 const loadingMembers = ref(false);
 
 const fetchFamilyMembers = async () => {
-  console.log(
-    "[family-management] fetchFamilyMembers called, myFamilyId:",
-    myFamilyId.value,
-  );
-  if (!myFamilyId.value) {
-    console.log("[family-management] No family ID, returning early");
-    return;
-  }
+  if (!myFamilyId.value) return;
   loadingMembers.value = true;
   try {
     const { $fetchAuth } = useAuthFetch();
-    console.log(
-      "[family-management] Fetching members for family:",
-      myFamilyId.value,
-    );
     const response = (await $fetchAuth(
       `/api/family/members?familyId=${myFamilyId.value}`,
     )) as {
       success: boolean;
       members: FamilyMember[];
     };
-    console.log("[family-management] API response:", response);
     familyMembers.value = response.members || [];
-    console.log(
-      "[family-management] Set familyMembers to:",
-      familyMembers.value,
-    );
   } catch (err) {
     error.value = "Failed to load family members";
-    console.error("fetchFamilyMembers error:", err);
   } finally {
     loadingMembers.value = false;
   }
 };
 
 onMounted(async () => {
-  console.log(
-    "[family-management] onMounted, isPlayer:",
-    isPlayer.value,
-    "myFamilyId:",
-    myFamilyId.value,
-  );
   await fetchMyCode();
-  console.log(
-    "[family-management] After fetchMyCode, isPlayer:",
-    isPlayer.value,
-    "myFamilyId:",
-    myFamilyId.value,
-  );
 
   // Auto-create family for students without one
   if (isPlayer.value && !myFamilyCode.value) {
-    console.log("[family-management] No family found, auto-creating...");
     await createFamily();
-    console.log(
-      "[family-management] After auto-create, myFamilyId:",
-      myFamilyId.value,
-    );
   }
 
   if (isPlayer.value && myFamilyId.value) {
-    console.log("[family-management] Calling fetchFamilyMembers");
     await fetchFamilyMembers();
-  } else {
-    console.log(
-      "[family-management] Not fetching members - isPlayer:",
-      isPlayer.value,
-      "myFamilyId:",
-      myFamilyId.value,
-    );
   }
 });
 
