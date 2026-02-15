@@ -8,8 +8,7 @@ export default defineNuxtConfig({
   },
 
   css: ["~/assets/css/main.css"],
-
-  modules: ["@pinia/nuxt"],
+  modules: ["@pinia/nuxt", "@sentry/nuxt/module"],
 
   app: {
     head: {
@@ -108,6 +107,17 @@ export default defineNuxtConfig({
         process.env.NUXT_PUBLIC_USE_CONSOLIDATED_PERFORMANCE !== "false",
       useConsolidatedInteractions:
         process.env.NUXT_PUBLIC_USE_CONSOLIDATED_INTERACTIONS !== "false",
+      sentryDsn: process.env.NUXT_PUBLIC_SENTRY_DSN || "",
     },
+  },
+
+  sentry: {
+    org: "chris-andrikanich",
+    project: "javascript-nuxt",
+    autoInjectServerSentry: "top-level-import",
+  },
+
+  sourcemap: {
+    client: "hidden",
   },
 });
