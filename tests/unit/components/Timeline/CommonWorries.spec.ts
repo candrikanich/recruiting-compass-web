@@ -150,4 +150,23 @@ describe("CommonWorries Component", () => {
 
     expect(wrapper.text()).toContain("Questions other parents ask");
   });
+
+  it("renders collapsed when collapsed prop is true", () => {
+    const wrapper = mount(CommonWorries, {
+      props: {
+        worries: [{ id: "w1", question: "Should I worry?", answer: "No" }],
+        collapsed: true,
+      },
+    });
+    expect(wrapper.text()).toContain("Common Worries");
+    expect(wrapper.text()).not.toContain("Should I worry?");
+  });
+
+  it("emits toggle when header is clicked", async () => {
+    const wrapper = mount(CommonWorries, {
+      props: { worries: [], collapsed: false },
+    });
+    await wrapper.find("[data-testid='guidance-header']").trigger("click");
+    expect(wrapper.emitted("toggle")).toBeTruthy();
+  });
 });

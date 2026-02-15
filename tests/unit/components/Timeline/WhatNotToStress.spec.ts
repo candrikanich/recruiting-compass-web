@@ -181,4 +181,23 @@ describe("WhatNotToStress Component", () => {
     expect(messageItem.exists()).toBe(true);
     expect(messageItem.classes()).toContain("hover:border-emerald-200");
   });
+
+  it("renders collapsed when collapsed prop is true", () => {
+    const wrapper = mount(WhatNotToStress, {
+      props: {
+        messages: [{ id: "r1", title: "Relax", message: "It's fine", icon: "🛡️" }],
+        collapsed: true,
+      },
+    });
+    expect(wrapper.text()).toContain("What NOT to Stress About");
+    expect(wrapper.text()).not.toContain("Relax");
+  });
+
+  it("emits toggle when header is clicked", async () => {
+    const wrapper = mount(WhatNotToStress, {
+      props: { messages: [], collapsed: false },
+    });
+    await wrapper.find("[data-testid='guidance-header']").trigger("click");
+    expect(wrapper.emitted("toggle")).toBeTruthy();
+  });
 });

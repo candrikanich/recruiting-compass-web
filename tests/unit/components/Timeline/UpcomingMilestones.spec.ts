@@ -225,4 +225,23 @@ describe("UpcomingMilestones Component", () => {
     // Should still be rendered as link (a tag)
     expect(wrapper.find("a").exists()).toBe(true);
   });
+
+  it("renders collapsed when collapsed prop is true", () => {
+    const wrapper = mount(UpcomingMilestones, {
+      props: {
+        milestones: [{ date: "2026-03-01", title: "Some Milestone", type: "deadline", description: "desc" }],
+        collapsed: true,
+      },
+    });
+    expect(wrapper.text()).toContain("Upcoming Milestones");
+    expect(wrapper.text()).not.toContain("Some Milestone");
+  });
+
+  it("emits toggle when header is clicked", async () => {
+    const wrapper = mount(UpcomingMilestones, {
+      props: { milestones: [], collapsed: false },
+    });
+    await wrapper.find("[data-testid='guidance-header']").trigger("click");
+    expect(wrapper.emitted("toggle")).toBeTruthy();
+  });
 });
