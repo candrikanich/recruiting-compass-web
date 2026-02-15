@@ -24,9 +24,9 @@ describe('useCoachListStats', () => {
 
   it('filters head coaches by role', () => {
     const coaches = ref<Coach[]>([
-      { id: '1', first_name: 'John', last_name: 'Doe', role: 'head_coach', school_id: 's1' } as Coach,
-      { id: '2', first_name: 'Jane', last_name: 'Smith', role: 'assistant_coach', school_id: 's1' } as Coach,
-      { id: '3', first_name: 'Bob', last_name: 'Johnson', role: 'head_coach', school_id: 's1' } as Coach
+      { id: '1', first_name: 'John', last_name: 'Doe', role: 'head', school_id: 's1' } as Coach,
+      { id: '2', first_name: 'Jane', last_name: 'Smith', role: 'assistant', school_id: 's1' } as Coach,
+      { id: '3', first_name: 'Bob', last_name: 'Johnson', role: 'head', school_id: 's1' } as Coach
     ]);
 
     const { stats } = useCoachListStats(coaches);

@@ -45,9 +45,9 @@ describe('useSchoolStats', () => {
 
   it('counts visited schools', () => {
     const schools = ref<School[]>([
-      { id: '1', name: 'School 1', visit_date: '2026-01-15', family_unit_id: 'f1' } as School,
-      { id: '2', name: 'School 2', visit_date: null, family_unit_id: 'f1' } as School,
-      { id: '3', name: 'School 3', visit_date: '2026-02-01', family_unit_id: 'f1' } as School
+      { id: '1', name: 'School 1', status: 'official_visit_scheduled', family_unit_id: 'f1' } as School,
+      { id: '2', name: 'School 2', status: 'interested', family_unit_id: 'f1' } as School,
+      { id: '3', name: 'School 3', status: 'official_visit_invited', family_unit_id: 'f1' } as School
     ]);
 
     const { stats } = useSchoolStats(schools);

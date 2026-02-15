@@ -25,7 +25,7 @@ export function useCoachListStats(coaches: Ref<Coach[]>) {
       },
       {
         label: 'Head Coaches',
-        value: coaches.value.filter(c => c.role === 'head_coach').length,
+        value: coaches.value.filter(c => c.role === 'head').length,
         icon: StarIcon,
         color: 'purple' as const,
         testId: 'stat-head-coaches'

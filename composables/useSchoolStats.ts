@@ -34,7 +34,9 @@ export function useSchoolStats(schools: Ref<School[]>) {
     },
     {
       label: 'Visited',
-      value: schools.value.filter(s => s.visit_date != null).length,
+      value: schools.value.filter(s =>
+        s.status === 'official_visit_scheduled' || s.status === 'official_visit_invited'
+      ).length,
       icon: MapPinIcon,
       color: 'green' as const,
       testId: 'stat-visited'
