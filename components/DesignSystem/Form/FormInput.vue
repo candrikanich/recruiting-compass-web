@@ -4,7 +4,7 @@
       {{ label }}
       <span v-if="required" class="text-red-500" aria-hidden="true">*</span>
       <span v-if="required" class="sr-only">(required)</span>
-      <span v-if="autoFilled" class="text-sm text-blue-700 ml-2">(auto-filled)</span>
+      <span v-if="autoFilled" class="text-xs font-normal text-blue-700 ml-1">(auto-filled)</span>
     </label>
     <input
       :id="inputId"
@@ -16,13 +16,15 @@
       :maxlength="maxlength"
       :aria-invalid="error ? 'true' : undefined"
       :aria-describedby="error ? `${inputId}-error` : undefined"
-      class="w-full px-4 py-3 border-2 rounded-xl transition-colors"
+      class="px-4 py-3 bg-white border-2 rounded-xl"
       :class="[
         error ? 'border-red-500' : 'border-slate-300',
-        'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+        'transition-all placeholder:text-slate-600',
+        'disabled:opacity-50 disabled:cursor-not-allowed'
       ]"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-      @blur="$emit('blur', $event)"
+      @blur="$emit('blur')"
     />
     <DesignSystemFieldError v-if="error" :error="error" :id="`${inputId}-error`" />
   </div>
@@ -54,8 +56,8 @@ const props = withDefaults(
 )
 
 defineEmits<{
-  (e: 'update:modelValue', value: string): void
-  (e: 'blur', event: FocusEvent): void
+  'update:modelValue': [value: string | number]
+  blur: []
 }>()
 
 const inputId = computed(() => {
