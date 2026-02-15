@@ -87,6 +87,33 @@ describe("SchoolForm", () => {
           },
           FormErrorSummary: true,
           DesignSystemFieldError: true,
+          DesignSystemFormInput: {
+            template: '<input :id="getFieldId(label)" v-model="modelValue" :type="type || \'text\'" :disabled="disabled" :required="required" :placeholder="placeholder" @blur="$emit(\'blur\')" />',
+            props: ['modelValue', 'label', 'type', 'disabled', 'required', 'placeholder', 'error', 'autoFilled'],
+            emits: ['update:modelValue', 'blur'],
+            setup(props: any) {
+              const getFieldId = (label: string) => label.toLowerCase().replace(/\s+/g, '').replace(/\W/g, '')
+              return { getFieldId }
+            }
+          },
+          DesignSystemFormSelect: {
+            template: '<select :id="getFieldId(label)" v-model="modelValue" :disabled="disabled" :required="required" @blur="$emit(\'blur\')"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select>',
+            props: ['modelValue', 'label', 'disabled', 'required', 'options', 'error'],
+            emits: ['update:modelValue', 'blur'],
+            setup(props: any) {
+              const getFieldId = (label: string) => label ? label.toLowerCase().replace(/\s+/g, '').replace(/\W/g, '') : 'select'
+              return { getFieldId }
+            }
+          },
+          DesignSystemFormTextarea: {
+            template: '<textarea :id="getFieldId(label)" v-model="modelValue" :disabled="disabled" :rows="rows" :placeholder="placeholder" @blur="$emit(\'blur\')"></textarea>',
+            props: ['modelValue', 'label', 'disabled', 'rows', 'placeholder', 'error'],
+            emits: ['update:modelValue', 'blur'],
+            setup(props: any) {
+              const getFieldId = (label: string) => label.toLowerCase().replace(/\s+/g, '').replace(/\W/g, '')
+              return { getFieldId }
+            }
+          }
         },
       },
     });
