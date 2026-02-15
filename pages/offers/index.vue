@@ -5,42 +5,27 @@
     <!-- Global Navigation -->
 
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <div
-          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+    <PageHeader title="Offers" description="Track and compare your scholarship offers">
+      <template #actions>
+        <button
+          v-if="selectedOffers.length >= 2"
+          data-testid="compare-offers-button"
+          @click="showComparison = true"
+          class="px-3 py-2 text-sm font-medium border border-blue-300 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition flex items-center gap-2"
         >
-          <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Offers</h1>
-            <p class="text-slate-600">
-              {{ filteredOffers.length }} offer{{
-                filteredOffers.length !== 1 ? "s" : ""
-              }}
-              found
-            </p>
-          </div>
-          <div class="flex items-center gap-3">
-            <button
-              v-if="selectedOffers.length >= 2"
-              data-testid="compare-offers-button"
-              @click="showComparison = true"
-              class="px-3 py-2 text-sm font-medium border border-blue-300 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition flex items-center gap-2"
-            >
-              <ScaleIcon class="w-4 h-4" />
-              Compare ({{ selectedOffers.length }})
-            </button>
-            <button
-              data-testid="log-offer-button"
-              @click="showAddForm = !showAddForm"
-              class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
-            >
-              <PlusIcon class="w-4 h-4" />
-              {{ showAddForm ? "Cancel" : "Log Offer" }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+          <ScaleIcon class="w-4 h-4" />
+          Compare ({{ selectedOffers.length }})
+        </button>
+        <button
+          data-testid="log-offer-button"
+          @click="showAddForm = !showAddForm"
+          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+        >
+          <PlusIcon class="w-4 h-4" />
+          {{ showAddForm ? "Cancel" : "Log Offer" }}
+        </button>
+      </template>
+    </PageHeader>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Summary Cards -->

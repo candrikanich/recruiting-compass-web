@@ -3,31 +3,20 @@
     class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <div class="flex items-center justify-between">
-          <h1
-            data-testid="page-title"
-            class="text-2xl font-bold text-slate-900"
-          >
-            Events
-          </h1>
-          <p class="text-slate-600 mt-1">
-            Track camps, showcases, visits, and games
-          </p>
-        </div>
+    <PageHeader title="Events" description="Track camps, showcases, visits, and games">
+      <template #actions>
         <NuxtLink
           to="/events/create"
           data-testid="add-event-button"
-          class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition inline-flex items-center gap-2"
+          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-sm"
         >
-          <PlusIcon class="w-5 h-5" />
+          <PlusIcon class="w-4 h-4" />
           Add Event
         </NuxtLink>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Filters Card -->
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
