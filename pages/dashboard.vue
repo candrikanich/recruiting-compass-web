@@ -11,17 +11,10 @@
     </a>
 
     <!-- Page Header -->
-    <header
-      class="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200"
-      role="banner"
-    >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
-        <p v-if="user" class="text-slate-600 mt-1">
-          Welcome back, {{ userFirstName }}! 👋
-        </p>
-      </div>
-    </header>
+    <PageHeader
+      title="Dashboard"
+      :description="user ? `Welcome back, ${userFirstName}! 👋` : undefined"
+    />
 
     <main
       id="main-content"

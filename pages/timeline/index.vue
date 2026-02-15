@@ -5,49 +5,37 @@
     <!-- Header -->
 
     <!-- Page Header Section -->
-    <div
-      class="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200"
-    >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div class="flex items-start justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-slate-900 mb-2">
-              Recruiting Timeline
-            </h1>
-            <p class="text-slate-600">Track your 4-year recruiting journey</p>
+    <PageHeader title="Recruiting Timeline" description="Track your 4-year recruiting journey">
+      <template #actions>
+        <!-- Current Phase Badge -->
+        <div
+          v-if="!phaseLoading"
+          class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm"
+        >
+          <div class="text-sm text-slate-600 mb-1">Current Phase</div>
+          <div class="text-lg font-bold text-slate-900">
+            {{ getPhaseDisplayName(currentPhase) }}
           </div>
-          <div class="flex items-center gap-4">
-            <!-- Current Phase Badge -->
-            <div
-              v-if="!phaseLoading"
-              class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm"
-            >
-              <div class="text-sm text-slate-600 mb-1">Current Phase</div>
-              <div class="text-lg font-bold text-slate-900">
-                {{ getPhaseDisplayName(currentPhase) }}
-              </div>
-            </div>
+        </div>
 
-            <!-- Status Indicator -->
+        <!-- Status Indicator -->
+        <div
+          v-if="!statusLoading"
+          class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm"
+        >
+          <div class="text-sm text-slate-600 mb-1">Status</div>
+          <div class="flex items-center gap-2">
             <div
-              v-if="!statusLoading"
-              class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm"
-            >
-              <div class="text-sm text-slate-600 mb-1">Status</div>
-              <div class="flex items-center gap-2">
-                <div
-                  class="w-3 h-3 rounded-full"
-                  :class="getStatusColorClass(statusLabel)"
-                />
-                <div class="text-lg font-bold text-slate-900">
-                  {{ statusScore }}/100
-                </div>
-              </div>
+              class="w-3 h-3 rounded-full"
+              :class="getStatusColorClass(statusLabel)"
+            />
+            <div class="text-lg font-bold text-slate-900">
+              {{ statusScore }}/100
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
