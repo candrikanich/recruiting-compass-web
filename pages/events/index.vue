@@ -17,6 +17,9 @@
     </PageHeader>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <!-- Summary Tiles -->
+      <StatsTiles :stats="eventStats" aria-label="Events Statistics" />
+
       <!-- Filters Card -->
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
@@ -312,6 +315,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useEvents } from "~/composables/useEvents";
+import { useEventStats } from "~/composables/useEventStats";
+import StatsTiles from "~/components/shared/StatsTiles.vue";
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -340,6 +345,11 @@ const {
   fetchEvents,
   deleteEvent: deleteEventAPI,
 } = useEvents();
+
+// Summary statistics
+const { stats: eventStats } = useEventStats(
+  computed(() => events.value)
+);
 
 const currentMonth = ref(new Date());
 const sortBy = ref("date_desc");
