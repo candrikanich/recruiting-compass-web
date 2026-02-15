@@ -13,12 +13,14 @@ interface Props {
   required?: boolean;
   disabled?: boolean;
   error?: string;
+  autoFilled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   required: false,
   disabled: false,
-  error: ''
+  error: '',
+  autoFilled: false
 });
 
 const emit = defineEmits<{
@@ -52,6 +54,7 @@ const handleBlur = () => {
       {{ label }}
       <span v-if="required" class="text-red-500" aria-hidden="true">*</span>
       <span v-if="required" class="sr-only">(required)</span>
+      <span v-if="autoFilled" class="text-xs font-normal text-blue-700 ml-1">(auto-filled)</span>
     </label>
     <select
       :id="inputId"

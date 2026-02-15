@@ -47,18 +47,11 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Division -->
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">
-          Division
-          <span
-            v-if="isAutoFilled('division')"
-            class="text-xs font-normal text-blue-700"
-            >(auto-filled)</span
-          >
-        </label>
         <DesignSystemFormSelect
           v-model="formData.division"
-          label=""
+          label="Division"
           :disabled="loading"
+          :auto-filled="isAutoFilled('division')"
           :options="divisionOptions"
           :error="fieldErrors.division"
           @blur="validateDivision"
