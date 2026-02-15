@@ -58,6 +58,9 @@
       class="max-w-7xl mx-auto px-4 sm:px-6 py-8"
       :aria-busy="loading"
     >
+      <!-- Summary Tiles -->
+      <StatsTiles :stats="coachStats" aria-label="Coaches Statistics" />
+
       <!-- Filter Bar -->
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"
@@ -480,6 +483,8 @@ import { useFamilyContext } from "~/composables/useFamilyContext";
 import { useCoaches } from "~/composables/useCoaches";
 import { useCoachPageFilters } from "~/composables/useCoachPageFilters";
 import { useCoachExport } from "~/composables/useCoachExport";
+import { useCoachListStats } from "~/composables/useCoachListStats";
+import StatsTiles from "~/components/shared/StatsTiles.vue";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 import Header from "~/components/Header.vue";
@@ -531,6 +536,11 @@ const {
   handleInteractionLogged,
 } = useCommunication();
 const { smartDelete } = useCoaches();
+
+// Summary statistics
+const { stats: coachStats } = useCoachListStats(
+  computed(() => allCoaches.value)
+);
 
 const allCoaches = ref<Coach[]>([]);
 const schools = ref<School[]>([]);
