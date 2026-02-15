@@ -31,18 +31,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { useId } from 'vue'
 
 const props = withDefaults(
   defineProps<{
-    modelValue: string | number
+    modelValue: string
     label: string
     placeholder?: string
     required?: boolean
     disabled?: boolean
     error?: string
     autoFilled?: boolean
-    type?: string
+    type?: 'text' | 'email' | 'password' | 'tel' | 'url' | 'search' | 'number'
     maxlength?: number
   }>(),
   {
@@ -56,11 +56,9 @@ const props = withDefaults(
 )
 
 defineEmits<{
-  'update:modelValue': [value: string | number]
+  'update:modelValue': [value: string]
   blur: []
 }>()
 
-const inputId = computed(() => {
-  return `input-${props.label.toLowerCase().replace(/\s+/g, '-')}`
-})
+const inputId = useId()
 </script>

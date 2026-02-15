@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import FormInput from '~/components/DesignSystem/Form/FormInput.vue'
-import DesignSystemFieldError from '~/components/DesignSystem/FieldError.vue'
 
 describe('FormInput', () => {
   it('renders label and input correctly', () => {
@@ -61,7 +60,8 @@ describe('FormInput', () => {
     const input = wrapper.find('input')
     expect(input.classes()).toContain('border-red-500')
     expect(input.attributes('aria-invalid')).toBe('true')
-    expect(input.attributes('aria-describedby')).toBe('input-school-name-error')
+    // useId() generates a unique ID, so we just check that aria-describedby is set
+    expect(input.attributes('aria-describedby')).toContain('-error')
 
     // Check for error component
     const errorDiv = wrapper.find('.error')
@@ -109,5 +109,20 @@ describe('FormInput', () => {
 
     const input = wrapper.find('input')
     expect(input.attributes('disabled')).toBeDefined()
+  })
+
+  it('emits blur event when input loses focus', async () => {
+    const wrapper = mount(FormInput, {
+      props: {
+        modelValue: '',
+        label: 'School Name'
+      }
+    })
+
+    const input = wrapper.find('input')
+    await input.trigger('blur')
+
+    expect(wrapper.emitted('blur')).toBeTruthy()
+    expect(wrapper.emitted('blur')?.[0]).toEqual([])
   })
 })
