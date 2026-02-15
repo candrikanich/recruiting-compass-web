@@ -12,5 +12,5 @@ Sentry.init({
 
   enableLogs: true,
 
-  debug: import.meta.dev,
+  debug: false,
 });

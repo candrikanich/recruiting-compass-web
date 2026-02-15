@@ -7,5 +7,5 @@ Sentry.init({
 
   enableLogs: true,
 
-  debug: process.env.NODE_ENV === "development",
+  debug: false,
 });
