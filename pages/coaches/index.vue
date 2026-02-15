@@ -11,64 +11,47 @@
     </a>
 
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <div
-          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+    <PageHeader title="Coaches" description="Track and manage your coach contacts">
+      <template #actions>
+        <NuxtLink
+          to="/coaches/new"
+          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-sm"
         >
-          <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Coaches</h1>
-            <p class="text-slate-600">
-              {{ filteredCoaches.length }} coach{{
-                filteredCoaches.length !== 1 ? "es" : ""
-              }}
-              found
-            </p>
-          </div>
-          <div class="flex items-center gap-3">
-            <NuxtLink
-              to="/coaches/new"
-              class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-sm"
-            >
-              <PlusIcon class="w-4 h-4" />
-              Add Coach
-            </NuxtLink>
-            <button
-              v-if="filteredCoaches.length > 0"
-              @click="handleExportCSV"
-              :disabled="exportLoading"
-              :aria-busy="exportLoading"
-              aria-label="Export coaches to CSV"
-              class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
-            >
-              <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
-              {{ exportLoading ? "Exporting..." : "CSV" }}
-            </button>
-            <button
-              v-if="filteredCoaches.length > 0"
-              @click="handleExportPDF"
-              :disabled="exportLoading"
-              :aria-busy="exportLoading"
-              aria-label="Export coaches to PDF"
-              class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
-            >
-              <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
-              {{ exportLoading ? "Exporting..." : "PDF" }}
-            </button>
-
-            <!-- Export Status Announcement -->
-            <div
-              v-if="exportMessage"
-              role="status"
-              aria-live="polite"
-              class="text-sm mt-2 text-green-700"
-            >
-              {{ exportMessage }}
-            </div>
-          </div>
+          <PlusIcon class="w-4 h-4" />
+          Add Coach
+        </NuxtLink>
+        <button
+          v-if="filteredCoaches.length > 0"
+          @click="handleExportCSV"
+          :disabled="exportLoading"
+          :aria-busy="exportLoading"
+          aria-label="Export coaches to CSV"
+          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+        >
+          <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
+          {{ exportLoading ? "Exporting..." : "CSV" }}
+        </button>
+        <button
+          v-if="filteredCoaches.length > 0"
+          @click="handleExportPDF"
+          :disabled="exportLoading"
+          :aria-busy="exportLoading"
+          aria-label="Export coaches to PDF"
+          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+        >
+          <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
+          {{ exportLoading ? "Exporting..." : "PDF" }}
+        </button>
+        <div
+          v-if="exportMessage"
+          role="status"
+          aria-live="polite"
+          class="text-sm mt-2 text-green-700"
+        >
+          {{ exportMessage }}
         </div>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <main
       id="main-content"

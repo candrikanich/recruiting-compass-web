@@ -11,54 +11,37 @@
     </a>
 
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <div
-          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+    <PageHeader
+      :title="userStore.isAthlete ? 'My Interactions' : 'Interactions'"
+      description="Log and review your recruiting communications"
+    >
+      <template #actions>
+        <button
+          v-if="filteredInteractions.length > 0"
+          @click="handleExportCSV"
+          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
         >
-          <div>
-            <h1 class="text-2xl font-semibold text-slate-900">
-              {{ userStore.isAthlete ? "My Interactions" : "Interactions" }}
-            </h1>
-            <p class="text-slate-600">
-              {{ filteredInteractions.length }} interaction{{
-                filteredInteractions.length !== 1 ? "s" : ""
-              }}
-              found
-            </p>
-            <p v-if="userStore.isAthlete" class="text-sm text-slate-500 mt-1">
-              Your recruiting interactions are visible to your linked parent(s)
-            </p>
-          </div>
-          <div class="flex items-center gap-3">
-            <button
-              v-if="filteredInteractions.length > 0"
-              @click="handleExportCSV"
-              class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
-            >
-              <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
-              CSV
-            </button>
-            <button
-              v-if="filteredInteractions.length > 0"
-              @click="handleExportPDF"
-              class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
-            >
-              <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
-              PDF
-            </button>
-            <NuxtLink
-              to="/interactions/add"
-              data-testid="log-interaction-button"
-              class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
-            >
-              <PlusIcon class="w-4 h-4" aria-hidden="true" />
-              Log Interaction
-            </NuxtLink>
-          </div>
-        </div>
-      </div>
-    </div>
+          <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
+          CSV
+        </button>
+        <button
+          v-if="filteredInteractions.length > 0"
+          @click="handleExportPDF"
+          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
+        >
+          <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
+          PDF
+        </button>
+        <NuxtLink
+          to="/interactions/add"
+          data-testid="log-interaction-button"
+          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
+        >
+          <PlusIcon class="w-4 h-4" aria-hidden="true" />
+          Log Interaction
+        </NuxtLink>
+      </template>
+    </PageHeader>
 
     <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Analytics Cards -->

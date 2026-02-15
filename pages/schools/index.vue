@@ -8,48 +8,33 @@
     </div>
 
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <div
-          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+    <PageHeader title="Schools" description="Track and evaluate your target schools">
+      <template #actions>
+        <button
+          v-if="filteredSchools.length > 0"
+          @click="handleExportCSV"
+          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700"
         >
-          <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Schools</h1>
-            <p class="text-slate-600">
-              {{ filteredSchools.length }} school{{
-                filteredSchools.length !== 1 ? "s" : ""
-              }}
-              found
-            </p>
-          </div>
-          <div class="flex items-center gap-3">
-            <button
-              v-if="filteredSchools.length > 0"
-              @click="handleExportCSV"
-              class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700"
-            >
-              <ArrowDownTrayIcon class="w-4 h-4" />
-              CSV
-            </button>
-            <button
-              v-if="filteredSchools.length > 0"
-              @click="handleExportPDF"
-              class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700"
-            >
-              <ArrowDownTrayIcon class="w-4 h-4" />
-              PDF
-            </button>
-            <NuxtLink
-              to="/schools/new"
-              class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
-            >
-              <PlusIcon class="w-4 h-4" />
-              Add School
-            </NuxtLink>
-          </div>
-        </div>
-      </div>
-    </div>
+          <ArrowDownTrayIcon class="w-4 h-4" />
+          CSV
+        </button>
+        <button
+          v-if="filteredSchools.length > 0"
+          @click="handleExportPDF"
+          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700"
+        >
+          <ArrowDownTrayIcon class="w-4 h-4" />
+          PDF
+        </button>
+        <NuxtLink
+          to="/schools/new"
+          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+        >
+          <PlusIcon class="w-4 h-4" />
+          Add School
+        </NuxtLink>
+      </template>
+    </PageHeader>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Filter Panel -->
