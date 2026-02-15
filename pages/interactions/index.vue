@@ -116,7 +116,7 @@
       >
         <!-- Interactions Timeline -->
         <h2 class="sr-only">Interaction Timeline</h2>
-        <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <InteractionCard
             v-for="interaction in filteredInteractions"
             :key="interaction.id"
