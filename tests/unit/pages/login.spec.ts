@@ -815,7 +815,7 @@ describe("login.vue", () => {
 
       expect(wrapper.find("#timeout-message").exists()).toBe(true);
       expect(wrapper.text()).toContain(
-        "You were logged out due to inactivity. Please log in again.",
+        "You were logged out due to inactivity. Please sign in again.",
       );
     });
 

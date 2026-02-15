@@ -127,7 +127,10 @@ const { focusErrorSummary } = useFormErrorFocus();
 const timeoutMessage = computed(() => {
   const reason = route.query.reason;
   if (typeof reason === "string" && reason === "timeout") {
-    return "You were logged out due to inactivity. Please log in again.";
+    return "You were logged out due to inactivity. Please sign in again.";
+  }
+  if (typeof reason === "string" && reason === "session_expired") {
+    return "Your session has expired. Please sign in again.";
   }
   return null;
 });
