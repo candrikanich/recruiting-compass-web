@@ -37,6 +37,9 @@
     </PageHeader>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <!-- Summary Tiles -->
+      <StatsTiles :stats="schoolStats" aria-label="Schools Statistics" />
+
       <!-- Filter Panel -->
       <SchoolsFilterPanel
         :filter-values="typedFilterValues"
@@ -206,6 +209,8 @@ import { ref, computed, onMounted, watch, inject } from "vue";
 import { useSchools } from "~/composables/useSchools";
 import { useSchoolLogos } from "~/composables/useSchoolLogos";
 import { useSchoolMatching } from "~/composables/useSchoolMatching";
+import { useSchoolStats } from "~/composables/useSchoolStats";
+import StatsTiles from "~/components/shared/StatsTiles.vue";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useOffers } from "~/composables/useOffers";
 import { useInteractions } from "~/composables/useInteractions";
@@ -255,6 +260,11 @@ const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { coaches: coachesData, fetchAllCoaches } = useCoaches();
 
 const userStore = useUserStore();
+
+// Summary statistics
+const { stats: schoolStats } = useSchoolStats(
+  computed(() => schools.value)
+);
 
 const allInteractions = ref<any[]>([]);
 const allCoaches = ref<any[]>([]);
