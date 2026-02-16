@@ -393,6 +393,16 @@ onMounted(async () => {
   }
 });
 
+// Watch for family context to load (fixes hard refresh showing 0s)
+watch(
+  () => activeFamily.activeFamilyId.value,
+  async (newFamilyId, oldFamilyId) => {
+    if (newFamilyId && newFamilyId !== oldFamilyId && targetUserId.value) {
+      await refreshDashboard();
+    }
+  },
+);
+
 // Watch for athlete switches
 watch(
   () => activeFamily.activeAthleteId.value,
