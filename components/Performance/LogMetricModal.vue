@@ -22,16 +22,16 @@ const notes = ref('');
 const loading = ref(false);
 const error = ref<string | null>(null);
 
-// Metric type options
+// Metric type options (per spec)
 const metricTypes = [
-  { value: 'fastball_velocity', label: 'Fastball Velocity' },
-  { value: 'exit_velocity', label: 'Exit Velocity' },
-  { value: 'bat_speed', label: 'Bat Speed' },
-  { value: 'sixty_yard_dash', label: '60-Yard Dash' },
-  { value: 'pop_time', label: 'Pop Time' },
-  { value: 'throw_velocity', label: 'Throw Velocity' },
-  { value: 'vertical_jump', label: 'Vertical Jump' },
-  { value: 'broad_jump', label: 'Broad Jump' },
+  { value: 'velocity', label: 'Fastball Velocity (mph)' },
+  { value: 'exit_velo', label: 'Exit Velocity (mph)' },
+  { value: 'sixty_time', label: '60-Yard Dash (sec)' },
+  { value: 'pop_time', label: 'Pop Time (sec)' },
+  { value: 'batting_avg', label: 'Batting Average' },
+  { value: 'era', label: 'ERA' },
+  { value: 'strikeouts', label: 'Strikeouts' },
+  { value: 'other', label: 'Other' },
 ] as const;
 
 // Computed properties
@@ -114,7 +114,7 @@ onMounted(() => {
                   required
                   class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
-                  <option value="">Select metric type...</option>
+                  <option value="">Select Metric</option>
                   <option
                     v-for="type in metricTypes"
                     :key="type.value"

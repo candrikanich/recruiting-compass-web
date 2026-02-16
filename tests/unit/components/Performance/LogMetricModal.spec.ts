@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import LogMetricModal from '~/components/Performance/LogMetricModal.vue';
 
 describe('LogMetricModal', () => {
@@ -89,11 +89,30 @@ describe('LogMetricModal - Form Fields', () => {
 
     const options = wrapper.find('#metricType').findAll('option');
     expect(options).toHaveLength(9); // 8 types + empty option
-    expect(options[1].text()).toContain('Fastball Velocity');
-    expect(options[2].text()).toContain('Exit Velocity');
+
+    // Verify spec-compliant options
+    expect(options[0].text()).toBe('Select Metric');
+    expect(options[1].text()).toBe('Fastball Velocity (mph)');
+    expect(options[2].text()).toBe('Exit Velocity (mph)');
+    expect(options[3].text()).toBe('60-Yard Dash (sec)');
+    expect(options[4].text()).toBe('Pop Time (sec)');
+    expect(options[5].text()).toBe('Batting Average');
+    expect(options[6].text()).toBe('ERA');
+    expect(options[7].text()).toBe('Strikeouts');
+    expect(options[8].text()).toBe('Other');
+
+    // Verify spec-compliant values
+    expect(options[1].element.value).toBe('velocity');
+    expect(options[2].element.value).toBe('exit_velo');
+    expect(options[3].element.value).toBe('sixty_time');
+    expect(options[4].element.value).toBe('pop_time');
+    expect(options[5].element.value).toBe('batting_avg');
+    expect(options[6].element.value).toBe('era');
+    expect(options[7].element.value).toBe('strikeouts');
+    expect(options[8].element.value).toBe('other');
   });
 
-  it('defaults date to today', () => {
+  it('defaults date to today', async () => {
     const wrapper = mount(LogMetricModal, {
       props: { show: true },
       global: {
@@ -102,6 +121,8 @@ describe('LogMetricModal - Form Fields', () => {
         },
       },
     });
+
+    await flushPromises(); // Wait for onMounted hook
 
     const today = new Date().toISOString().split('T')[0];
     expect((wrapper.find('#date').element as HTMLInputElement).value).toBe(today);
