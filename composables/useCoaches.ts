@@ -87,9 +87,29 @@ export const useCoaches = (): {
     error.value = null;
 
     try {
+      // 🚀 Quick Win: Select only needed columns + use new composite index
       const { data, error: fetchError } = await supabase
         .from("coaches")
-        .select("*")
+        .select(
+          `
+          id,
+          school_id,
+          user_id,
+          role,
+          first_name,
+          last_name,
+          email,
+          phone,
+          twitter_handle,
+          instagram_handle,
+          notes,
+          responsiveness_score,
+          last_contact_date,
+          family_unit_id,
+          created_at,
+          updated_at
+        `,
+        )
         .eq("school_id", schoolId)
         .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .order("created_at", { ascending: false });
@@ -124,9 +144,26 @@ export const useCoaches = (): {
     error.value = null;
 
     try {
+      // 🚀 Quick Win: Select only needed columns for list/search views
       let query = supabase
         .from("coaches")
-        .select("*")
+        .select(
+          `
+          id,
+          school_id,
+          role,
+          first_name,
+          last_name,
+          email,
+          phone,
+          twitter_handle,
+          instagram_handle,
+          responsiveness_score,
+          last_contact_date,
+          family_unit_id,
+          created_at
+        `,
+        )
         .eq("family_unit_id", activeFamily.activeFamilyId.value);
 
       if (filters?.schoolId) {
@@ -175,9 +212,22 @@ export const useCoaches = (): {
     error.value = null;
 
     try {
+      // 🚀 Quick Win: Select only needed columns for batch fetch
       const { data, error: fetchError } = await supabase
         .from("coaches")
-        .select("*")
+        .select(
+          `
+          id,
+          school_id,
+          role,
+          first_name,
+          last_name,
+          email,
+          phone,
+          responsiveness_score,
+          family_unit_id
+        `,
+        )
         .in("school_id", schoolIds)
         .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .order("school_id", { ascending: true })
@@ -202,6 +252,7 @@ export const useCoaches = (): {
     error.value = null;
 
     try {
+      // 🚀 Quick Win: Fetch all columns for detail view
       const { data, error: fetchError } = await supabase
         .from("coaches")
         .select("*")
