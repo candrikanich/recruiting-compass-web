@@ -337,14 +337,6 @@
               >
                 Shared: {{ (doc.shared_with_schools || []).length }}
               </span>
-              <NuxtLink
-                to="/documents/create"
-                data-testid="add-document-button"
-                class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition inline-flex items-center gap-2"
-              >
-                <PlusIcon class="w-5 h-5" />
-                Add Document
-              </NuxtLink>
             </div>
           </div>
         </div>
