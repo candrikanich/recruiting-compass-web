@@ -34,10 +34,10 @@
             @click="showExportModal = true"
           />
           <button
-            @click="showAddForm = !showAddForm"
+            @click="showLogMetricModal = true"
             class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
           >
-            {{ showAddForm ? "Cancel" : "+ Log Metric" }}
+            + Log Metric
           </button>
         </div>
       </div>
@@ -45,147 +45,6 @@
       <!-- Performance Dashboard (Analytics Overview) -->
       <div v-if="metrics.length > 0" class="mb-8">
         <PerformanceDashboard :metrics="metrics" />
-      </div>
-
-      <!-- Add Metric Form -->
-      <div v-if="showAddForm" class="bg-white rounded-lg shadow p-6 mb-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">
-          Log Performance Metric
-        </h2>
-        <form @submit.prevent="handleAddMetric" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Metric Type -->
-            <div>
-              <label
-                for="metricType"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Metric Type <span class="text-red-600">*</span>
-              </label>
-              <select
-                id="metricType"
-                v-model="newMetric.metric_type"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Metric</option>
-                <option value="velocity">Fastball Velocity (mph)</option>
-                <option value="exit_velo">Exit Velocity (mph)</option>
-                <option value="sixty_time">60-Yard Dash (sec)</option>
-                <option value="pop_time">Pop Time (sec)</option>
-                <option value="batting_avg">Batting Average</option>
-                <option value="era">ERA</option>
-                <option value="strikeouts">Strikeouts</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <!-- Value -->
-            <div>
-              <label
-                for="value"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Value <span class="text-red-600">*</span>
-              </label>
-              <input
-                id="value"
-                v-model.number="newMetric.value"
-                type="number"
-                required
-                step="0.01"
-                placeholder="0.00"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <!-- Date -->
-            <div>
-              <label
-                for="date"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Date <span class="text-red-600">*</span>
-              </label>
-              <input
-                id="date"
-                v-model="newMetric.recorded_date"
-                type="date"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <!-- Unit -->
-            <div>
-              <label
-                for="unit"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Unit
-              </label>
-              <input
-                id="unit"
-                v-model="newMetric.unit"
-                type="text"
-                placeholder="e.g., mph, sec, avg"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          <!-- Verified Checkbox -->
-          <div class="flex items-center">
-            <input
-              v-model="newMetric.verified"
-              type="checkbox"
-              class="w-4 h-4 rounded"
-            />
-            <label class="ml-2 text-sm text-gray-700"
-              >Verified by third party</label
-            >
-          </div>
-
-          <!-- Notes -->
-          <div>
-            <label
-              for="notes"
-              class="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Notes
-            </label>
-            <textarea
-              id="notes"
-              v-model="newMetric.notes"
-              rows="3"
-              placeholder="Additional context or observations..."
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <!-- Buttons -->
-          <div class="flex gap-4">
-            <button
-              type="submit"
-              :disabled="
-                loading ||
-                !newMetric.metric_type ||
-                newMetric.value === null ||
-                !newMetric.recorded_date
-              "
-              class="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-            >
-              {{ loading ? "Logging..." : "Log Metric" }}
-            </button>
-            <button
-              type="button"
-              @click="showAddForm = false"
-              class="flex-1 px-4 py-2 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
       </div>
 
       <!-- Metric Charts -->
@@ -547,6 +406,13 @@
         context="dashboard"
         @close="showExportModal = false"
       />
+
+      <!-- Log Metric Modal -->
+      <PerformanceLogMetricModal
+        :show="showLogMetricModal"
+        @close="showLogMetricModal = false"
+        @metric-created="handleMetricCreated"
+      />
     </div>
   </div>
 </template>
@@ -567,6 +433,9 @@ import Header from "~/components/Header.vue";
 import ExportButton from "~/components/Performance/ExportButton.vue";
 const ExportModal = defineAsyncComponent(
   () => import("~/components/Performance/ExportModal.vue"),
+);
+const PerformanceLogMetricModal = defineAsyncComponent(
+  () => import("~/components/Performance/LogMetricModal.vue"),
 );
 import {
   Chart as ChartJS,
@@ -606,6 +475,7 @@ const {
 const showAddForm = ref(false);
 const showEditForm = ref(false);
 const showExportModal = ref(false);
+const showLogMetricModal = ref(false);
 const isUpdating = ref(false);
 const editingMetric = ref<PerformanceMetric | null>(null);
 const selectedMetricType = ref("");
@@ -841,6 +711,10 @@ const handleAddMetric = async () => {
   } catch (err) {
     console.error("Failed to log metric:", err);
   }
+};
+
+const handleMetricCreated = async () => {
+  await fetchMetrics();
 };
 
 const deleteMetric = async (metricId: string) => {

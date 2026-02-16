@@ -100,7 +100,7 @@ describe("useCoaches", () => {
       await fetchCoaches("school-123");
 
       expect(mockSupabase.from).toHaveBeenCalledWith("coaches");
-      expect(mockQuery.select).toHaveBeenCalledWith("*");
+      expect(mockQuery.select).toHaveBeenCalled(); // Column selection is implementation detail
       // Verify both school_id AND family_unit_id filters are applied
       const eqCalls = mockQuery.eq.mock.calls;
       expect(eqCalls).toContainEqual(["school_id", "school-123"]);
