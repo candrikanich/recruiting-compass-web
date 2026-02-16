@@ -24,7 +24,7 @@
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
       >
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <!-- Search -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-2"
@@ -76,9 +76,7 @@
               <option value="attended">Attended</option>
             </select>
           </div>
-        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Date Range Filter -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-2"
