@@ -19,7 +19,8 @@ const { events, loading: eventsLoading, fetchEvents } = useEvents();
 const { createMetric } = usePerformance();
 
 // Form state
-const metricType = ref('');
+type MetricType = 'velocity' | 'exit_velo' | 'sixty_time' | 'pop_time' | 'batting_avg' | 'era' | 'strikeouts' | 'other';
+const metricType = ref<MetricType | ''>('');
 const value = ref<number | null>(null);
 const date = ref('');
 const unit = ref('');
@@ -92,10 +93,10 @@ const handleSubmit = async () => {
 
   try {
     const newMetric = await createMetric({
-      metric_type: metricType.value,
+      metric_type: metricType.value as MetricType,
       value: value.value!,
       recorded_date: date.value,
-      unit: unit.value || null,
+      unit: unit.value || '',
       event_id: eventId.value,
       verified: verified.value,
       notes: notes.value || null,
