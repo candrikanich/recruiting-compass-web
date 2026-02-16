@@ -274,6 +274,7 @@ export interface Document {
 export interface Offer {
   id: string;
   user_id?: string;
+  family_unit_id?: string;
   school_id: string;
   offer_type:
     | "full_ride"

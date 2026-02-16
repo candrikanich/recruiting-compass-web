@@ -13,6 +13,18 @@ vi.mock("~/composables/useSupabase", () => ({
   useSupabase: () => mockSupabase,
 }));
 
+// Mock useActiveFamily
+const mockActiveFamily = {
+  activeFamilyId: { value: "family-123" },
+  activeAthleteId: { value: "user-123" },
+  isViewingAsParent: { value: false },
+  getDataOwnerUserId: () => "user-123",
+};
+
+vi.mock("~/composables/useActiveFamily", () => ({
+  useActiveFamily: () => mockActiveFamily,
+}));
+
 describe("useOffers - Critical Offer Creation Flow", () => {
   let mockQuery: any;
   let userStore: ReturnType<typeof useUserStore>;
@@ -46,6 +58,7 @@ describe("useOffers - Critical Offer Creation Flow", () => {
   const createMockOffer = (overrides = {}): Offer => ({
     id: "offer-1",
     user_id: "user-123",
+    family_unit_id: "family-123",
     school_id: "school-1",
     coach_id: null,
     offer_type: "full_ride",
@@ -226,7 +239,7 @@ describe("useOffers - Critical Offer Creation Flow", () => {
       await fetchOffers();
 
       expect(mockSupabase.from).toHaveBeenCalledWith("offers");
-      expect(mockQuery.eq).toHaveBeenCalledWith("user_id", "user-123");
+      expect(mockQuery.eq).toHaveBeenCalledWith("family_unit_id", "family-123");
       expect(offers.value).toEqual(mockOffers);
     });
 
