@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { computed } from 'vue';
 import LogMetricModal from '~/components/Performance/LogMetricModal.vue';
@@ -9,13 +9,13 @@ vi.mock('~/composables/useEvents', () => ({
     events: computed(() => [
       {
         id: '1',
-        event_name: 'PG Underclass Showcase',
+        name: 'PG Underclass Showcase',
         start_date: '2025-01-15',
         end_date: '2025-01-15',
       },
       {
         id: '2',
-        event_name: 'Perfect Game National',
+        name: 'Perfect Game National',
         start_date: '2025-01-10',
         end_date: '2025-01-12',
       },
@@ -23,6 +23,14 @@ vi.mock('~/composables/useEvents', () => ({
     loading: computed(() => false),
     error: computed(() => null),
     fetchEvents: vi.fn(),
+  })),
+}));
+
+// Mock usePerformance composable
+const mockCreateMetric = vi.fn();
+vi.mock('~/composables/usePerformance', () => ({
+  usePerformance: vi.fn(() => ({
+    createMetric: mockCreateMetric,
   })),
 }));
 
@@ -195,5 +203,213 @@ describe('LogMetricModal - Event Integration', () => {
     expect(options[0].text()).toBe('No event');
     expect(options[1].text()).toContain('PG Underclass Showcase');
     expect(options[1].text()).toContain('Jan 15, 2025');
+  });
+});
+
+describe('LogMetricModal - Form Submission', () => {
+  beforeEach(() => {
+    mockCreateMetric.mockClear();
+  });
+
+  it('calls createMetric with correct payload on submit', async () => {
+    mockCreateMetric.mockResolvedValue({ id: '123' });
+
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: {
+        stubs: {
+          Teleport: true,
+        },
+      },
+    });
+
+    // Fill form
+    await wrapper.find('#metricType').setValue('velocity');
+    await wrapper.find('#value').setValue('92');
+    await wrapper.find('#date').setValue('2025-01-15');
+    await wrapper.find('#unit').setValue('mph');
+    await wrapper.find('input[type="checkbox"]').setValue(true);
+    await wrapper.find('#notes').setValue('Test note');
+
+    // Submit
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+
+    expect(mockCreateMetric).toHaveBeenCalledWith({
+      metric_type: 'velocity',
+      value: 92,
+      recorded_date: '2025-01-15',
+      unit: 'mph',
+      event_id: null,
+      verified: true,
+      notes: 'Test note',
+    });
+  });
+
+  it('emits metric-created event on successful submission', async () => {
+    const newMetric = { id: '123', metric_type: 'velocity', value: 92 };
+    mockCreateMetric.mockResolvedValue(newMetric);
+
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: {
+        stubs: {
+          Teleport: true,
+        },
+      },
+    });
+
+    // Fill and submit
+    await wrapper.find('#metricType').setValue('velocity');
+    await wrapper.find('#value').setValue('92');
+    await wrapper.find('#date').setValue('2025-01-15');
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+
+    expect(wrapper.emitted('metric-created')).toBeTruthy();
+    expect(wrapper.emitted('metric-created')?.[0]).toEqual([newMetric]);
+  });
+
+  it('closes modal on successful submission', async () => {
+    mockCreateMetric.mockResolvedValue({ id: '123' });
+
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: {
+        stubs: {
+          Teleport: true,
+        },
+      },
+    });
+
+    // Fill and submit
+    await wrapper.find('#metricType').setValue('velocity');
+    await wrapper.find('#value').setValue('92');
+    await wrapper.find('#date').setValue('2025-01-15');
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+
+    expect(wrapper.emitted('close')).toBeTruthy();
+  });
+
+  it('displays error message on submission failure', async () => {
+    mockCreateMetric.mockRejectedValue(new Error('Network error'));
+
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: {
+        stubs: {
+          Teleport: true,
+        },
+      },
+    });
+
+    // Fill and submit
+    await wrapper.find('#metricType').setValue('velocity');
+    await wrapper.find('#value').setValue('92');
+    await wrapper.find('#date').setValue('2025-01-15');
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Network error');
+    expect(wrapper.emitted('close')).toBeFalsy();
+  });
+
+  it('shows loading state during submission', async () => {
+    mockCreateMetric.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
+
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: {
+        stubs: {
+          Teleport: true,
+        },
+      },
+    });
+
+    // Fill and submit
+    await wrapper.find('#metricType').setValue('velocity');
+    await wrapper.find('#value').setValue('92');
+    await wrapper.find('#date').setValue('2025-01-15');
+    await wrapper.find('form').trigger('submit');
+
+    expect(wrapper.find('button[type="submit"]').text()).toBe('Logging...');
+    expect(wrapper.find('button[type="submit"]').attributes('disabled')).toBeDefined();
+  });
+});
+
+describe('LogMetricModal - Keyboard Support & Accessibility', () => {
+  it('closes modal when ESC key is pressed', async () => {
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      attachTo: document.body,
+      global: {
+        stubs: {
+          Teleport: false,
+        },
+      },
+    });
+
+    // Trigger ESC key on document
+    const event = new KeyboardEvent('keydown', { key: 'Escape' });
+    document.dispatchEvent(event);
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.emitted('close')).toBeTruthy();
+
+    wrapper.unmount();
+  });
+
+  it('focuses first input when modal opens', async () => {
+    const wrapper = mount(LogMetricModal, {
+      props: { show: false },
+      attachTo: document.body,
+      global: {
+        stubs: {
+          Teleport: false,
+        },
+      },
+    });
+
+    await wrapper.setProps({ show: true });
+    await flushPromises();
+    await wrapper.vm.$nextTick();
+
+    const firstInput = document.querySelector('#metricType') as HTMLElement;
+    expect(document.activeElement).toBe(firstInput);
+
+    wrapper.unmount();
+  });
+
+  it('has proper ARIA attributes', () => {
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: {
+        stubs: {
+          Teleport: true,
+        },
+      },
+    });
+
+    const dialog = wrapper.find('[role="dialog"]');
+    expect(dialog.attributes('aria-modal')).toBe('true');
+    expect(dialog.attributes('aria-labelledby')).toBeDefined();
+  });
+
+  it('has accessible form labels', () => {
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: {
+        stubs: {
+          Teleport: true,
+        },
+      },
+    });
+
+    const metricTypeLabel = wrapper.find('label[for="metricType"]');
+    expect(metricTypeLabel.exists()).toBe(true);
+
+    const valueLabel = wrapper.find('label[for="value"]');
+    expect(valueLabel.exists()).toBe(true);
   });
 });

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { useEvents } from '~/composables/useEvents';
+import { usePerformance } from '~/composables/usePerformance';
 
 interface Props {
   show: boolean;
@@ -15,6 +16,7 @@ const emit = defineEmits<{
 
 // Composables
 const { events, loading: eventsLoading, fetchEvents } = useEvents();
+const { createMetric } = usePerformance();
 
 // Form state
 const metricType = ref('');
@@ -79,16 +81,30 @@ const resetForm = () => {
   error.value = null;
 };
 
-const handleSubmit = () => {
-  console.log('Form submitted:', {
-    metricType: metricType.value,
-    value: value.value,
-    date: date.value,
-    unit: unit.value,
-    verified: verified.value,
-    notes: notes.value,
-  });
-  // Real implementation in Task 4
+const handleSubmit = async () => {
+  if (!isFormValid.value) return;
+
+  loading.value = true;
+  error.value = null;
+
+  try {
+    const newMetric = await createMetric({
+      metric_type: metricType.value,
+      value: value.value!,
+      recorded_date: date.value,
+      unit: unit.value || null,
+      event_id: eventId.value,
+      verified: verified.value,
+      notes: notes.value || null,
+    });
+
+    emit('metric-created', newMetric);
+    handleClose();
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to save metric. Please try again.';
+  } finally {
+    loading.value = false;
+  }
 };
 
 // Lifecycle
@@ -220,7 +236,7 @@ watch(
                     :key="event.id"
                     :value="event.id"
                   >
-                    {{ event.event_name }} - {{ formatEventDate(event.start_date) }}
+                    {{ event.name }} - {{ formatEventDate(event.start_date) }}
                   </option>
                 </template>
               </select>
