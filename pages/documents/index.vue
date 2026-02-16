@@ -90,39 +90,29 @@
         </template>
       </FilterPanel>
 
-      <!-- View Toggle & Upload Button -->
-      <div class="flex gap-4 mb-8">
-        <div class="flex gap-2">
-          <button
-            @click="viewMode = 'grid'"
-            :class="[
-              'px-3 py-2 rounded-lg text-sm font-medium transition',
-              viewMode === 'grid'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-900 hover:bg-gray-300',
-            ]"
-          >
-            ⊞ Grid
-          </button>
-          <button
-            @click="viewMode = 'list'"
-            :class="[
-              'px-3 py-2 rounded-lg text-sm font-medium transition',
-              viewMode === 'list'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-900 hover:bg-gray-300',
-            ]"
-          >
-            ☰ List
-          </button>
-        </div>
-
-        <!-- Upload Button -->
+      <!-- View Toggle -->
+      <div class="flex gap-2 mb-8">
         <button
-          @click="showUploadForm = !showUploadForm"
-          class="w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+          @click="viewMode = 'grid'"
+          :class="[
+            'px-3 py-2 rounded-lg text-sm font-medium transition',
+            viewMode === 'grid'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-900 hover:bg-gray-300',
+          ]"
         >
-          {{ showUploadForm ? "Hide Form" : "+ Upload Document" }}
+          ⊞ Grid
+        </button>
+        <button
+          @click="viewMode = 'list'"
+          :class="[
+            'px-3 py-2 rounded-lg text-sm font-medium transition',
+            viewMode === 'list'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-900 hover:bg-gray-300',
+          ]"
+        >
+          ☰ List
         </button>
       </div>
 
