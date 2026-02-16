@@ -53,39 +53,110 @@
 
         <template #filter>
           <div class="bg-white p-4 rounded-lg shadow">
-            <UniversalFilter
-              :columns="4"
-              :configs="filterConfigs"
-              :filter-values="
-                Object.fromEntries(Object.entries(filterValues.value || {}))
-              "
-              :presets="presets"
-              :filtered-count="filteredDocuments.length"
-              :has-active-filters="hasActiveFilters"
-              @update:filter="handleFilterUpdate"
-              @clear-filters="clearFilters"
-              @save-preset="handleSavePreset"
-              @load-preset="handleLoadPreset"
-            />
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <!-- Search -->
+              <div>
+                <label
+                  for="search"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                  >Search</label
+                >
+                <input
+                  id="search"
+                  :value="searchValue"
+                  @input="handleFilterUpdate('search', ($event.target as HTMLInputElement).value)"
+                  type="text"
+                  placeholder="Title or description..."
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
 
-            <!-- Sort Options -->
-            <div class="mt-6 pt-6 border-t">
-              <label
-                for="sort"
-                class="text-sm font-medium text-gray-700 mb-2 block"
-                >Sort By</label
-              >
-              <select
-                v-model="sortBy"
-                id="sort"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-              >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="name">Name (A-Z)</option>
-                <option value="type">Type</option>
-                <option value="shared">Most Shared</option>
-              </select>
+              <!-- Type -->
+              <div>
+                <label
+                  for="type"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                  >Type</label
+                >
+                <select
+                  id="type"
+                  :value="typeValue"
+                  @change="handleFilterUpdate('type', ($event.target as HTMLSelectElement).value || null)"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="">-- All --</option>
+                  <option value="highlight_video">🎥 Highlight Video</option>
+                  <option value="transcript">📄 Transcript</option>
+                  <option value="resume">📄 Resume</option>
+                  <option value="rec_letter">💌 Rec Letter</option>
+                  <option value="questionnaire">📝 Questionnaire</option>
+                  <option value="stats_sheet">📊 Stats Sheet</option>
+                </select>
+              </div>
+
+              <!-- School -->
+              <div>
+                <label
+                  for="schoolId"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                  >School</label
+                >
+                <select
+                  id="schoolId"
+                  :value="schoolIdValue"
+                  @change="handleFilterUpdate('schoolId', ($event.target as HTMLSelectElement).value || null)"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="">-- All --</option>
+                  <option value="general">General (No School)</option>
+                  <option
+                    v-for="school in schools"
+                    :key="school.id"
+                    :value="school.id"
+                  >
+                    {{ school.name }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Status -->
+              <div>
+                <label
+                  for="shared"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                  >Status</label
+                >
+                <select
+                  id="shared"
+                  :value="sharedValue"
+                  @change="handleFilterUpdate('shared', ($event.target as HTMLSelectElement).value || null)"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="">-- All --</option>
+                  <option value="true">Shared</option>
+                  <option value="false">Not Shared</option>
+                </select>
+              </div>
+
+              <!-- Sort By -->
+              <div>
+                <label
+                  for="sort"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                  >Sort By</label
+                >
+                <select
+                  v-model="sortBy"
+                  id="sort"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="name">Name (A-Z)</option>
+                  <option value="type">Type</option>
+                  <option value="shared">Most Shared</option>
+                </select>
+              </div>
             </div>
           </div>
         </template>
@@ -278,6 +349,12 @@ const {
 
 // Convert readonly presets to mutable array
 const presets = computed(() => [...readonlyPresets.value]);
+
+// Computed helpers for type-safe filter access
+const searchValue = computed(() => String(filterValues.value?.search || ''));
+const typeValue = computed(() => String(filterValues.value?.type || ''));
+const schoolIdValue = computed(() => String(filterValues.value?.schoolId || ''));
+const sharedValue = computed(() => String(filterValues.value?.shared || ''));
 
 // Filter event handlers
 const handleFilterUpdate = (field: string, value: any) => {
