@@ -2,13 +2,13 @@
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
     <PageHeader title="Documents" description="Manage videos, transcripts, and other recruiting documents">
       <template #actions>
-        <button
-          @click="showUploadForm = !showUploadForm"
+        <NuxtLink
+          to="/documents/add"
           class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
         >
           <PlusIcon class="w-4 h-4" />
-          {{ showUploadForm ? "Hide Form" : "+ Add Document" }}
-        </button>
+          + Add Document
+        </NuxtLink>
       </template>
     </PageHeader>
 
@@ -117,165 +117,6 @@
         </button>
       </div>
 
-      <!-- Upload Form -->
-      <div v-if="showUploadForm" class="bg-white rounded-lg shadow p-6 mb-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Upload Document</h2>
-        <form @submit.prevent="handleUpload" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Document Type -->
-            <div>
-              <label
-                for="type"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Document Type <span class="text-red-600">*</span>
-              </label>
-              <select
-                id="type"
-                v-model="newDoc.type"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Type</option>
-                <option value="highlight_video">Highlight Video</option>
-                <option value="transcript">Transcript</option>
-                <option value="resume">Resume</option>
-                <option value="rec_letter">Recommendation Letter</option>
-                <option value="questionnaire">Questionnaire</option>
-                <option value="stats_sheet">Stats Sheet</option>
-              </select>
-            </div>
-
-            <!-- Title -->
-            <div>
-              <label
-                for="title"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Title <span class="text-red-600">*</span>
-              </label>
-              <input
-                id="title"
-                v-model="newDoc.title"
-                type="text"
-                required
-                placeholder="e.g., Freshman Highlights 2025"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <!-- School (Optional) -->
-            <div>
-              <label
-                for="school"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                School (Optional)
-              </label>
-              <select
-                id="school"
-                v-model="newDoc.schoolId"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">General / Not School-Specific</option>
-                <option
-                  v-for="school in schools"
-                  :key="school.id"
-                  :value="school.id"
-                >
-                  {{ school.name }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Version -->
-            <div>
-              <label
-                for="version"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Version (Optional)
-              </label>
-              <input
-                id="version"
-                v-model.number="newDoc.version"
-                type="number"
-                min="1"
-                placeholder="1"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          <!-- Description -->
-          <div>
-            <label
-              for="description"
-              class="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Description
-            </label>
-            <textarea
-              id="description"
-              v-model="newDoc.description"
-              rows="3"
-              placeholder="Additional details about this document..."
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <!-- File Upload -->
-          <div>
-            <label
-              for="file"
-              class="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Select File
-            </label>
-            <div class="relative">
-              <input
-                id="file"
-                ref="fileInput"
-                type="file"
-                @change="handleFileSelect"
-                class="sr-only"
-              />
-              <button
-                type="button"
-                @click="fileInput?.click()"
-                :disabled="!newDoc.type"
-                class="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ selectedFileName || "Click to select file" }}
-              </button>
-            </div>
-            <p class="text-xs text-gray-500 mt-2">
-              Allowed formats: {{ allowedFileTypes }}
-            </p>
-          </div>
-
-          <!-- Buttons -->
-          <div class="flex gap-4">
-            <button
-              type="submit"
-              :disabled="
-                loading || !newDoc.type || !newDoc.title || !selectedFile
-              "
-              class="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-            >
-              {{ loading ? "Uploading..." : "Upload" }}
-            </button>
-            <button
-              type="button"
-              @click="showUploadForm = false"
-              class="flex-1 px-4 py-2 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-
       <!-- Loading State -->
       <div v-if="loading && documents.length === 0" class="text-center py-12">
         <p class="text-gray-600">Loading documents...</p>
@@ -359,9 +200,6 @@ import UniversalFilter from "~/components/UniversalFilter.vue";
 import { useUserStore } from "~/stores/user";
 import type { Document } from "~/types/models";
 import type { FilterConfig } from "~/types/filters";
-import type { Database } from "~/types/database";
-
-type DocumentType = Database["public"]["Enums"]["document_type"];
 
 definePageMeta({
   middleware: "auth",
@@ -371,32 +209,16 @@ const userStore = useUserStore();
 const {
   documents,
   loading,
-  isUploading,
   error,
-  uploadError,
   fetchDocuments,
-  uploadDocument,
   deleteDocument: deleteDocumentAPI,
 } = useDocumentsConsolidated();
 const { schools: allSchools, fetchSchools } = useSchools();
-const { validateFile, fileErrors } = useFormValidation();
 const { getErrorMessage, logError } = useErrorHandler();
 
-const showUploadForm = ref(false);
-const selectedFile = ref<File | null>(null);
-const selectedFileName = ref("");
-const fileInput = ref<HTMLInputElement | null>(null);
 const schools = ref<any[]>([]);
 const sortBy = ref("newest");
 const viewMode = ref<"grid" | "list">("grid");
-
-const newDoc = reactive({
-  type: "",
-  title: "",
-  description: "",
-  schoolId: "",
-  version: 1,
-});
 
 // Filter configurations
 const filterConfigs = computed<FilterConfig[]>(() => [
@@ -584,23 +406,6 @@ const mostCommonType = computed(() => {
   return typeNames[mostCommon[0]] || mostCommon[0];
 });
 
-const allowedFileTypes = computed(() => {
-  const typeExtensions: Record<string, string[]> = {
-    highlight_video: [".mp4", ".mov", ".avi"],
-    transcript: [".pdf", ".txt"],
-    resume: [".pdf", ".doc", ".docx"],
-    rec_letter: [".pdf"],
-    questionnaire: [".pdf", ".doc", ".docx"],
-    stats_sheet: [".csv", ".xls", ".xlsx"],
-  };
-
-  if (!newDoc.type || !typeExtensions[newDoc.type]) {
-    return "Select a document type first";
-  }
-
-  return typeExtensions[newDoc.type].join(", ");
-});
-
 const getTypeEmoji = (type: string): string => {
   const emojis: Record<string, string> = {
     highlight_video: "🎥",
@@ -626,60 +431,6 @@ const formatDate = (dateString?: string): string => {
 const getSchoolName = (schoolId: string | null | undefined): string => {
   if (!schoolId) return "General";
   return schools.value.find((s) => s.id === schoolId)?.name || "Unknown";
-};
-
-const handleFileSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files.length > 0) {
-    const file = target.files[0];
-
-    // Validate file
-    try {
-      validateFile(file, newDoc.type as DocumentType);
-      selectedFile.value = file;
-      selectedFileName.value = file.name;
-    } catch (err) {
-      console.error(
-        "File validation failed:",
-        err instanceof Error ? err.message : "Unknown error",
-      );
-      selectedFile.value = null;
-      selectedFileName.value = "";
-    }
-  }
-};
-
-const handleUpload = async () => {
-  if (!selectedFile.value) return;
-
-  try {
-    const result = await uploadDocument(
-      selectedFile.value,
-      newDoc.type as DocumentType,
-      newDoc.title,
-      {
-        description: newDoc.description || undefined,
-        school_id: newDoc.schoolId || undefined,
-        version: newDoc.version || 1,
-      } as unknown as string,
-    );
-
-    if (result.success) {
-      // Reset form
-      newDoc.type = "";
-      newDoc.title = "";
-      newDoc.description = "";
-      newDoc.schoolId = "";
-      newDoc.version = 1;
-      selectedFile.value = null;
-      selectedFileName.value = "";
-      showUploadForm.value = false;
-    } else {
-      console.error("Upload failed:", uploadError.value);
-    }
-  } catch (err) {
-    console.error("Failed to upload document:", err);
-  }
 };
 
 const handleDeleteDocument = async (docId: string) => {
