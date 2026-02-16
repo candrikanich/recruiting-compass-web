@@ -1,6 +1,30 @@
 import { describe, it, expect, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
+import { computed } from 'vue';
 import LogMetricModal from '~/components/Performance/LogMetricModal.vue';
+
+// Mock useEvents composable
+vi.mock('~/composables/useEvents', () => ({
+  useEvents: vi.fn(() => ({
+    events: computed(() => [
+      {
+        id: '1',
+        event_name: 'PG Underclass Showcase',
+        start_date: '2025-01-15',
+        end_date: '2025-01-15',
+      },
+      {
+        id: '2',
+        event_name: 'Perfect Game National',
+        start_date: '2025-01-10',
+        end_date: '2025-01-12',
+      },
+    ]),
+    loading: computed(() => false),
+    error: computed(() => null),
+    fetchEvents: vi.fn(),
+  })),
+}));
 
 describe('LogMetricModal', () => {
   it('renders when show prop is true', () => {
@@ -140,5 +164,36 @@ describe('LogMetricModal - Form Fields', () => {
 
     const submitButton = wrapper.find('button[type="submit"]');
     expect(submitButton.attributes('disabled')).toBeDefined();
+  });
+});
+
+describe('LogMetricModal - Event Integration', () => {
+  it('renders event dropdown', () => {
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: {
+        stubs: {
+          Teleport: true,
+        },
+      },
+    });
+
+    expect(wrapper.find('#event').exists()).toBe(true);
+  });
+
+  it('displays events sorted by date descending', () => {
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: {
+        stubs: {
+          Teleport: true,
+        },
+      },
+    });
+
+    const options = wrapper.find('#event').findAll('option');
+    expect(options[0].text()).toBe('No event');
+    expect(options[1].text()).toContain('PG Underclass Showcase');
+    expect(options[1].text()).toContain('Jan 15, 2025');
   });
 });

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useEvents } from '~/composables/useEvents';
 
 interface Props {
   show: boolean;
@@ -12,11 +13,15 @@ const emit = defineEmits<{
   'metric-created': [metric: any];
 }>();
 
+// Composables
+const { events, loading: eventsLoading, fetchEvents } = useEvents();
+
 // Form state
 const metricType = ref('');
 const value = ref<number | null>(null);
 const date = ref('');
 const unit = ref('');
+const eventId = ref<string | null>(null);
 const verified = ref(false);
 const notes = ref('');
 const loading = ref(false);
@@ -39,6 +44,23 @@ const isFormValid = computed(() => {
   return metricType.value && value.value !== null && date.value;
 });
 
+const sortedEvents = computed(() => {
+  return [...events.value].sort((a, b) => {
+    return new Date(b.start_date).getTime() - new Date(a.start_date).getTime();
+  });
+});
+
+const formatEventDate = (dateString: string): string => {
+  // Use UTC to avoid timezone issues with date-only strings
+  const date = new Date(dateString + 'T00:00:00Z');
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+};
+
 // Methods
 const handleClose = () => {
   resetForm();
@@ -50,6 +72,7 @@ const resetForm = () => {
   value.value = null;
   date.value = '';
   unit.value = '';
+  eventId.value = null;
   verified.value = false;
   notes.value = '';
   loading.value = false;
@@ -72,6 +95,16 @@ const handleSubmit = () => {
 onMounted(() => {
   date.value = new Date().toISOString().split('T')[0];
 });
+
+// Watch show prop to fetch events when modal opens
+watch(
+  () => props.show,
+  async (newVal) => {
+    if (newVal) {
+      await fetchEvents();
+    }
+  }
+);
 </script>
 
 <template>
@@ -166,6 +199,31 @@ onMounted(() => {
                   placeholder="e.g., mph, seconds, inches"
                 />
               </div>
+            </div>
+
+            <!-- Event Dropdown (full width) -->
+            <div class="mb-4">
+              <label for="event" class="block text-sm font-medium text-gray-700 mb-1">
+                Event (Optional)
+              </label>
+              <select
+                id="event"
+                v-model="eventId"
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option v-if="eventsLoading" value="">Loading events...</option>
+                <option v-else-if="events.length === 0" value="">No events available</option>
+                <template v-else>
+                  <option :value="null">No event</option>
+                  <option
+                    v-for="event in sortedEvents"
+                    :key="event.id"
+                    :value="event.id"
+                  >
+                    {{ event.event_name }} - {{ formatEventDate(event.start_date) }}
+                  </option>
+                </template>
+              </select>
             </div>
 
             <!-- Verified Checkbox -->
