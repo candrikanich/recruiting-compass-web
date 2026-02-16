@@ -158,6 +158,12 @@
   </div>
 </template>
 
+<script lang="ts">
+export default {
+  name: "SchoolDocumentUploadModal",
+};
+</script>
+
 <script setup lang="ts">
 import { ref, reactive, computed } from "vue";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";

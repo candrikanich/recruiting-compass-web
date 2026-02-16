@@ -2,16 +2,34 @@
   <div
     class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border border-blue-200 shadow-sm p-6"
   >
-    <div class="flex items-center gap-2 mb-4">
+    <div
+      data-testid="guidance-header"
+      role="button"
+      tabindex="0"
+      class="w-full flex items-center gap-2 mb-4 text-left cursor-pointer"
+      @click="$emit('toggle')"
+      @keydown.enter="$emit('toggle')"
+      @keydown.space.prevent="$emit('toggle')"
+    >
       <span class="text-2xl">⚡</span>
-      <h3 class="text-lg font-bold text-slate-900">What Matters Right Now</h3>
+      <h3 class="text-lg font-bold text-slate-900 flex-1">What Matters Right Now</h3>
+      <svg
+        class="w-5 h-5 text-slate-400 transition-transform duration-200"
+        :class="{ 'rotate-180': !collapsed }"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
     </div>
 
-    <p class="text-sm text-slate-600 mb-4">
-      {{ phaseLabel }} year priorities to focus on
-    </p>
+    <div v-if="!collapsed">
+      <p class="text-sm text-slate-600 mb-4">
+        {{ phaseLabel }} year priorities to focus on
+      </p>
 
-    <div class="space-y-3">
+      <div class="space-y-3">
       <div
         v-if="priorities.length === 0"
         class="text-sm text-slate-500 py-4 text-center"
@@ -48,6 +66,7 @@
           </div>
         </div>
       </button>
+      </div>
     </div>
   </div>
 </template>
@@ -58,11 +77,15 @@ import type { WhatMattersItem } from "~/utils/whatMattersNow";
 interface Props {
   priorities: WhatMattersItem[];
   phaseLabel: string;
+  collapsed?: boolean;
 }
 
-defineProps<Props>();
+withDefaults(defineProps<Props>(), {
+  collapsed: false,
+});
 
 defineEmits<{
   "priority-click": [taskId: string];
+  toggle: [];
 }>();
 </script>

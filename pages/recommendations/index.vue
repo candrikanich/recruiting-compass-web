@@ -1,21 +1,8 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Header -->
-      <div class="mb-8">
-        <div class="flex items-center justify-between mb-2">
-          <h1 class="text-3xl font-bold text-gray-900">
-            Recommendation Letters
-          </h1>
-          <span class="text-sm text-gray-500"
-            >{{ filteredLetters.length }} total</span
-          >
-        </div>
-        <p class="text-gray-600">
-          Track recommendation letter requests and submissions
-        </p>
-      </div>
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+    <PageHeader title="Recommendation Letters" description="Track recommendation letter requests and submissions" />
 
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Filters Section -->
       <div class="bg-white rounded-lg shadow p-6 mb-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -370,7 +357,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 

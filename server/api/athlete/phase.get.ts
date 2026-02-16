@@ -9,28 +9,42 @@ import { requireAuth } from "~/server/utils/auth";
 import type { AthleteAPI } from "~/types/api/athlete";
 import type { Phase } from "~/types/timeline";
 import {
-  calculatePhase,
   getMilestoneProgress,
   canAdvancePhase,
 } from "~/utils/phaseCalculation";
+import { calculateCurrentGrade } from "~/utils/gradeHelpers";
+
+/**
+ * Map grade level (9-12) to phase
+ */
+function gradeToPhase(grade: number): Phase {
+  if (grade === 9) return "freshman";
+  if (grade === 10) return "sophomore";
+  if (grade === 11) return "junior";
+  if (grade === 12) return "senior";
+  // Default to freshman if grade is out of range
+  return "freshman";
+}
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
   try {
-    // Fetch user to get current phase
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("current_phase")
-      .eq("id", user.id)
+    // Fetch graduation year from user_preferences (player category)
+    const { data: prefData, error: prefError } = await supabase
+      .from("user_preferences")
+      .select("data")
+      .eq("user_id", user.id)
+      .eq("category", "player")
       .single();
 
-    if (userError) {
-      console.error("Error fetching user phase:", userError);
+    if (prefError && prefError.code !== "PGRST116") {
+      // PGRST116 = no rows found, which is OK (player prefs not set yet)
+      console.error("Error fetching player preferences:", prefError);
       throw createError({
         statusCode: 500,
-        statusMessage: "Failed to fetch user phase",
+        statusMessage: "Failed to fetch player preferences",
       });
     }
 
@@ -53,17 +67,20 @@ export default defineEventHandler(async (event) => {
       ?.map((at: { task_id: string }) => at.task_id)
       .filter(Boolean) as string[];
 
-    // Calculate current phase if not already set
-    const currentPhaseValue = (userData as { current_phase?: string })
-      ?.current_phase;
-    let currentPhase: Phase = (
-      typeof currentPhaseValue === "string" ? currentPhaseValue : "freshman"
-    ) as Phase;
-    const calculatedPhase = calculatePhase(completedTaskIds, false);
+    // Calculate current phase based on graduation year from player preferences
+    const playerData = prefData?.data as Record<string, unknown> | null;
+    const graduationYear =
+      typeof playerData?.graduation_year === "number"
+        ? playerData.graduation_year
+        : null;
 
-    // Use calculated phase if it's more advanced than stored phase
-    if (calculatedPhase > currentPhase) {
-      currentPhase = calculatedPhase;
+    let currentPhase: Phase;
+
+    if (graduationYear) {
+      const currentGrade = calculateCurrentGrade(graduationYear);
+      currentPhase = gradeToPhase(currentGrade);
+    } else {
+      currentPhase = "freshman";
     }
 
     // Get milestone progress for current phase

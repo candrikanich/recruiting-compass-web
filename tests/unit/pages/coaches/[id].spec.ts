@@ -110,7 +110,7 @@ vi.mock("~/components/Coach/CoachHeader.vue", () => ({
         <button @click="$emit('open-twitter')" data-test="open-twitter-btn">Twitter</button>
         <button @click="$emit('open-instagram')" data-test="open-instagram-btn">Instagram</button>
         <button @click="$emit('edit-coach')" data-test="edit-coach-btn">Edit</button>
-        <button @click="$emit('delete-coach')" data-test="delete-coach-btn">Delete</button>
+        <button @click="$emit('delete-coach')" data-test="coach-detail-delete-btn">Delete</button>
       </div>
     `,
   },
@@ -538,7 +538,7 @@ describe("Coach Detail Page", () => {
 
       await flushPromises();
 
-      const deleteBtn = wrapper.find('[data-test="delete-coach-btn"]');
+      const deleteBtn = wrapper.find('[data-test="coach-detail-delete-btn"]');
       await deleteBtn.trigger("click");
       await flushPromises();
 
@@ -559,7 +559,7 @@ describe("Coach Detail Page", () => {
 
       await flushPromises();
 
-      const deleteBtn = wrapper.find('[data-test="delete-coach-btn"]');
+      const deleteBtn = wrapper.find('[data-test="coach-detail-delete-btn"]');
       await deleteBtn.trigger("click");
       await flushPromises();
 
@@ -583,7 +583,7 @@ describe("Coach Detail Page", () => {
 
       await flushPromises();
 
-      const deleteBtn = wrapper.find('[data-test="delete-coach-btn"]');
+      const deleteBtn = wrapper.find('[data-test="coach-detail-delete-btn"]');
       await deleteBtn.trigger("click");
       await flushPromises();
 
@@ -610,7 +610,7 @@ describe("Coach Detail Page", () => {
 
       await flushPromises();
 
-      const deleteBtn = wrapper.find('[data-test="delete-coach-btn"]');
+      const deleteBtn = wrapper.find('[data-test="coach-detail-delete-btn"]');
       await deleteBtn.trigger("click");
       await flushPromises();
 

@@ -162,7 +162,6 @@ import {
   computed,
   reactive,
   onMounted,
-  defineAsyncComponent,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCoaches } from "~/composables/useCoaches";
@@ -175,9 +174,7 @@ import { useDeleteModal } from "~/composables/useDeleteModal";
 import { usePrivateNotes } from "~/composables/usePrivateNotes";
 import { useCommunicationModal } from "~/composables/useCommunicationModal";
 import { ArrowLeftIcon, XMarkIcon } from "@heroicons/vue/24/outline";
-const DeleteConfirmationModal = defineAsyncComponent(
-  () => import("~/components/DeleteConfirmationModal.vue"),
-);
+import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
 import CoachHeader from "~/components/Coach/CoachHeader.vue";
 import CoachStatsGrid from "~/components/Coach/CoachStatsGrid.vue";
 import CoachNotesEditor from "~/components/Coach/CoachNotesEditor.vue";

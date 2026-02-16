@@ -22,7 +22,7 @@
  * @returns Composable with load/save operations
  */
 
-import { ref, computed, watch, onBeforeUnmount } from "vue";
+import { ref, computed } from "vue";
 import { useSupabase } from "~/composables/useSupabase";
 
 export type PreferenceCategory =
@@ -273,35 +273,6 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
     state.value.error = null;
   };
 
-  /**
-   * Auto-save preferences when they change (with debounce)
-   * Optional: set autoSave: true in composable options
-   */
-  const setupAutoSave = (debounceMs: number = 3000) => {
-    let timeout: ReturnType<typeof setTimeout> | null = null;
-
-    watch(
-      () => preferences.value,
-      () => {
-        // Clear previous timeout
-        if (timeout) clearTimeout(timeout);
-
-        // Schedule save
-        timeout = setTimeout(() => {
-          savePreferences().catch((err) => {
-            console.warn("[useUserPreferencesV2] Auto-save failed:", err);
-          });
-        }, debounceMs);
-      },
-      { deep: true },
-    );
-
-    // Cleanup on unmount
-    onBeforeUnmount(() => {
-      if (timeout) clearTimeout(timeout);
-    });
-  };
-
   return {
     // State
     preferences,
@@ -318,6 +289,5 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
     updatePreference,
     updatePreferences,
     clear,
-    setupAutoSave,
   };
 }

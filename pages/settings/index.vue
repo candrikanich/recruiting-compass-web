@@ -5,14 +5,7 @@
     <!-- Global Navigation -->
 
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-        <h1 class="text-2xl font-semibold text-slate-900">Settings</h1>
-        <p class="text-slate-600">
-          Manage your profile, preferences, and account settings
-        </p>
-      </div>
-    </div>
+    <PageHeader title="Settings" description="Manage your profile, preferences, and account settings" />
 
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <!-- Profile Section -->

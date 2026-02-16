@@ -73,6 +73,8 @@ const mockUser = {
 const mockGetInteraction = vi.fn();
 const mockDeleteInteraction = vi.fn();
 const mockGetUserById = vi.fn();
+const mockFetchSchools = vi.fn();
+const mockFetchAllCoaches = vi.fn();
 
 vi.mock("~/composables/useInteractions", () => ({
   useInteractions: () => ({
@@ -84,12 +86,14 @@ vi.mock("~/composables/useInteractions", () => ({
 vi.mock("~/composables/useSchools", () => ({
   useSchools: () => ({
     schools: ref([mockSchool]),
+    fetchSchools: mockFetchSchools,
   }),
 }));
 
 vi.mock("~/composables/useCoaches", () => ({
   useCoaches: () => ({
     coaches: ref([mockCoach]),
+    fetchAllCoaches: mockFetchAllCoaches,
   }),
 }));
 
@@ -124,6 +128,8 @@ describe("Interaction Detail Page", () => {
     vi.clearAllMocks();
     mockGetInteraction.mockResolvedValue(mockInteraction);
     mockGetUserById.mockResolvedValue(mockUser);
+    mockFetchSchools.mockResolvedValue(undefined);
+    mockFetchAllCoaches.mockResolvedValue(undefined);
     mockRoute.params.id = "interaction-123";
   });
 

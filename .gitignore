@@ -43,3 +43,6 @@ test-results/
 
 # Temp files
 *.tmp
+
+# Sentry Config File
+.env.sentry-build-plugin

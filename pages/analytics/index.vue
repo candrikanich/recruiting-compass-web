@@ -1,17 +1,8 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <div class="bg-white border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <h1 class="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-        <p class="text-gray-600 mt-1">
-          Comprehensive recruiting metrics and performance insights
-        </p>
-      </div>
-    </div>
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+    <PageHeader title="Analytics" description="Comprehensive recruiting metrics and performance insights" />
 
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Date Range Controls -->
       <DateRangeToolbar
         :date-range="dateRange"
@@ -144,7 +135,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 

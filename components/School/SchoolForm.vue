@@ -8,8 +8,8 @@
     />
 
     <!-- Name -->
-    <div>
-      <label for="name" class="block text-sm font-medium mb-2 text-slate-700">
+    <div v-if="useAutocomplete">
+      <label class="block text-sm font-medium mb-2 text-slate-700">
         School Name
         <span class="text-red-500" aria-hidden="true">*</span>
         <span class="sr-only">(required)</span>
@@ -19,250 +19,110 @@
           >(auto-filled)</span
         >
       </label>
-      <div v-if="useAutocomplete">
-        <SchoolAutocomplete @select="handleCollegeSelect" :disabled="loading" />
-      </div>
-      <input
-        v-else
-        id="name"
-        v-model="formData.name"
-        type="text"
-        required
-        :aria-invalid="!!fieldErrors.name"
-        :aria-describedby="fieldErrors.name ? 'name-error' : undefined"
-        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600 disabled:opacity-50"
-        placeholder="e.g., University of Florida"
-        :disabled="loading"
-        @blur="validateName"
-      />
-      <DesignSystemFieldError id="name-error" :error="fieldErrors.name" />
+      <SchoolAutocomplete @select="handleCollegeSelect" :disabled="loading" />
     </div>
+    <DesignSystemFormInput
+      v-else
+      v-model="formData.name"
+      label="School Name"
+      :required="true"
+      :disabled="loading"
+      :auto-filled="isAutoFilled('name')"
+      placeholder="e.g., University of Florida"
+      :error="fieldErrors.name"
+      @blur="validateName"
+    />
 
     <!-- Location -->
-    <div>
-      <label
-        for="location"
-        class="block text-sm font-medium mb-2 text-slate-700"
-      >
-        Location
-        <span
-          v-if="isAutoFilled('location')"
-          class="text-xs font-normal text-blue-700"
-          >(auto-filled)</span
-        >
-      </label>
-      <input
-        id="location"
-        v-model="formData.location"
-        type="text"
-        :aria-invalid="!!fieldErrors.location"
-        :aria-describedby="fieldErrors.location ? 'location-error' : undefined"
-        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600 disabled:opacity-50"
-        placeholder="e.g., Gainesville, Florida"
-        :disabled="loading"
-        @blur="validateLocation"
-      />
-      <DesignSystemFieldError
-        id="location-error"
-        :error="fieldErrors.location"
-      />
-    </div>
+    <DesignSystemFormInput
+      v-model="formData.location"
+      label="Location"
+      :disabled="loading"
+      :auto-filled="isAutoFilled('location')"
+      placeholder="e.g., Gainesville, Florida"
+      :error="fieldErrors.location"
+      @blur="validateLocation"
+    />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Division -->
       <div>
-        <label
-          for="division"
-          class="block text-sm font-medium mb-2 text-slate-700"
-        >
-          Division
-          <span
-            v-if="isAutoFilled('division')"
-            class="text-xs font-normal text-blue-700"
-            >(auto-filled)</span
-          >
-        </label>
-        <select
-          id="division"
+        <DesignSystemFormSelect
           v-model="formData.division"
-          class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none cursor-pointer disabled:opacity-50"
-          :aria-invalid="!!fieldErrors.division"
-          :aria-describedby="
-            fieldErrors.division ? 'division-error' : undefined
-          "
+          label="Division"
           :disabled="loading"
-          @blur="validateDivision"
-          :style="selectDropdownStyle"
-        >
-          <option value="">Select Division</option>
-          <option value="D1">Division 1 (D1)</option>
-          <option value="D2">Division 2 (D2)</option>
-          <option value="D3">Division 3 (D3)</option>
-        </select>
-        <DesignSystemFieldError
-          id="division-error"
+          :auto-filled="isAutoFilled('division')"
+          :options="divisionOptions"
           :error="fieldErrors.division"
+          @blur="validateDivision"
         />
       </div>
 
       <!-- Conference -->
-      <div>
-        <label
-          for="conference"
-          class="block text-sm font-medium mb-2 text-slate-700"
-        >
-          Conference
-          <span
-            v-if="isAutoFilled('conference')"
-            class="text-xs font-normal text-blue-700"
-            >(auto-filled)</span
-          >
-        </label>
-        <input
-          id="conference"
-          v-model="formData.conference"
-          type="text"
-          :aria-invalid="!!fieldErrors.conference"
-          :aria-describedby="
-            fieldErrors.conference ? 'conference-error' : undefined
-          "
-          class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600 disabled:opacity-50"
-          placeholder="e.g., SEC, ACC, Pac-12"
-          :disabled="loading"
-          @blur="validateConference"
-        />
-        <DesignSystemFieldError
-          id="conference-error"
-          :error="fieldErrors.conference"
-        />
-      </div>
+      <DesignSystemFormInput
+        v-model="formData.conference"
+        label="Conference"
+        :disabled="loading"
+        :auto-filled="isAutoFilled('conference')"
+        placeholder="e.g., SEC, ACC, Pac-12"
+        :error="fieldErrors.conference"
+        @blur="validateConference"
+      />
     </div>
 
     <!-- Website -->
-    <div>
-      <label
-        for="website"
-        class="block text-sm font-medium mb-2 text-slate-700"
-      >
-        School Website
-        <span
-          v-if="isAutoFilled('website')"
-          class="text-xs font-normal text-blue-700"
-          >(auto-filled)</span
-        >
-      </label>
-      <input
-        id="website"
-        v-model="formData.website"
-        type="text"
-        :aria-invalid="!!fieldErrors.website"
-        :aria-describedby="fieldErrors.website ? 'website-error' : undefined"
-        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600 disabled:opacity-50"
-        placeholder="https://example.com or www.example.com"
-        :disabled="loading"
-        @blur="validateWebsite"
-      />
-      <DesignSystemFieldError id="website-error" :error="fieldErrors.website" />
-    </div>
+    <DesignSystemFormInput
+      v-model="formData.website"
+      label="School Website"
+      type="url"
+      :disabled="loading"
+      :auto-filled="isAutoFilled('website')"
+      placeholder="https://example.com or www.example.com"
+      :error="fieldErrors.website"
+      @blur="validateWebsite"
+    />
 
     <!-- Social Media -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div>
-        <label
-          for="twitter"
-          class="block text-sm font-medium mb-2 text-slate-700"
-        >
-          Twitter Handle
-        </label>
-        <input
-          id="twitter"
-          v-model="formData.twitter_handle"
-          type="text"
-          :aria-invalid="!!fieldErrors.twitter_handle"
-          :aria-describedby="
-            fieldErrors.twitter_handle ? 'twitter-error' : undefined
-          "
-          class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600 disabled:opacity-50"
-          placeholder="@handle"
-          :disabled="loading"
-          @blur="validateTwitter"
-        />
-        <DesignSystemFieldError
-          id="twitter-error"
-          :error="fieldErrors.twitter_handle"
-        />
-      </div>
+      <DesignSystemFormInput
+        v-model="formData.twitter_handle"
+        label="Twitter Handle"
+        :disabled="loading"
+        placeholder="@handle"
+        :error="fieldErrors.twitter_handle"
+        @blur="validateTwitter"
+      />
 
-      <div>
-        <label
-          for="instagram"
-          class="block text-sm font-medium mb-2 text-slate-700"
-        >
-          Instagram Handle
-        </label>
-        <input
-          id="instagram"
-          v-model="formData.instagram_handle"
-          type="text"
-          :aria-invalid="!!fieldErrors.instagram_handle"
-          :aria-describedby="
-            fieldErrors.instagram_handle ? 'instagram-error' : undefined
-          "
-          class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600 disabled:opacity-50"
-          placeholder="@handle"
-          :disabled="loading"
-          @blur="validateInstagram"
-        />
-        <DesignSystemFieldError
-          id="instagram-error"
-          :error="fieldErrors.instagram_handle"
-        />
-      </div>
+      <DesignSystemFormInput
+        v-model="formData.instagram_handle"
+        label="Instagram Handle"
+        :disabled="loading"
+        placeholder="@handle"
+        :error="fieldErrors.instagram_handle"
+        @blur="validateInstagram"
+      />
     </div>
 
     <!-- Notes -->
-    <div>
-      <label for="notes" class="block text-sm font-medium mb-2 text-slate-700">
-        Notes
-      </label>
-      <textarea
-        id="notes"
-        v-model="formData.notes"
-        rows="4"
-        :aria-invalid="!!fieldErrors.notes"
-        :aria-describedby="fieldErrors.notes ? 'notes-error' : undefined"
-        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none placeholder:text-slate-600 disabled:opacity-50"
-        placeholder="Any notes about this school..."
-        :disabled="loading"
-        @blur="validateNotes"
-      />
-      <DesignSystemFieldError id="notes-error" :error="fieldErrors.notes" />
-    </div>
+    <DesignSystemFormTextarea
+      v-model="formData.notes"
+      label="Notes"
+      :disabled="loading"
+      placeholder="Any notes about this school..."
+      :rows="4"
+      :error="fieldErrors.notes"
+      @blur="validateNotes"
+    />
 
     <!-- Status -->
-    <div>
-      <label for="status" class="block text-sm font-medium mb-2 text-slate-700">
-        Initial Status
-      </label>
-      <select
-        id="status"
-        v-model="formData.status"
-        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none cursor-pointer disabled:opacity-50"
-        :aria-invalid="!!fieldErrors.status"
-        :aria-describedby="fieldErrors.status ? 'status-error' : undefined"
-        :disabled="loading"
-        @blur="validateStatus"
-        :style="selectDropdownStyle"
-      >
-        <option value="researching">Researching</option>
-        <option value="contacted">Contacted</option>
-        <option value="interested">Interested</option>
-        <option value="offer_received">Offer Received</option>
-        <option value="declined">Declined</option>
-        <option value="committed">Committed</option>
-      </select>
-      <DesignSystemFieldError id="status-error" :error="fieldErrors.status" />
-    </div>
+    <DesignSystemFormSelect
+      v-model="formData.status"
+      label="Initial Status"
+      :disabled="loading"
+      :options="statusOptions"
+      :error="fieldErrors.status"
+      @blur="validateStatus"
+    />
 
     <!-- College Scorecard Data (Display Only) -->
     <div v-if="collegeScorecardData" class="border-t border-slate-200 pt-6">
@@ -353,16 +213,24 @@ import { schoolSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
 import type { CollegeDataResult } from "~/composables/useCollegeData";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
-import FieldError from "~/components/DesignSystem/FieldError.vue";
 
-// Dropdown style for selects
-const selectDropdownStyle = computed(() => ({
-  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-  backgroundPosition: "right 0.75rem center",
-  backgroundRepeat: "no-repeat",
-  backgroundSize: "1.5em 1.5em",
-  paddingRight: "2.5rem",
-}));
+// Division options
+const divisionOptions = computed(() => [
+  { value: '', label: 'Select Division' },
+  { value: 'D1', label: 'Division 1 (D1)' },
+  { value: 'D2', label: 'Division 2 (D2)' },
+  { value: 'D3', label: 'Division 3 (D3)' }
+])
+
+// Status options
+const statusOptions = computed(() => [
+  { value: 'researching', label: 'Researching' },
+  { value: 'contacted', label: 'Contacted' },
+  { value: 'interested', label: 'Interested' },
+  { value: 'offer_received', label: 'Offer Received' },
+  { value: 'declined', label: 'Declined' },
+  { value: 'committed', label: 'Committed' }
+])
 
 const props = defineProps<{
   loading: boolean;

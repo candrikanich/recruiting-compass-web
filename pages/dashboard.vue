@@ -11,17 +11,10 @@
     </a>
 
     <!-- Page Header -->
-    <header
-      class="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200"
-      role="banner"
-    >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
-        <p v-if="user" class="text-slate-600 mt-1">
-          Welcome back, {{ userFirstName }}! 👋
-        </p>
-      </div>
-    </header>
+    <PageHeader
+      title="Dashboard"
+      :description="user ? `Welcome back, ${userFirstName}! 👋` : undefined"
+    />
 
     <main
       id="main-content"
@@ -33,6 +26,12 @@
         :is-viewing-as-parent="activeFamily.isViewingAsParent.value"
         :athlete-name="activeAthleteName"
       />
+
+      <!-- Timeline Summary -->
+      <section aria-labelledby="timeline-heading">
+        <h2 id="timeline-heading" class="sr-only">Timeline Summary</h2>
+        <DashboardTimelineCard />
+      </section>
 
       <!-- Statistics Overview Section -->
       <section aria-labelledby="stats-heading">
@@ -172,6 +171,7 @@ import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
+import DashboardTimelineCard from "~/components/Dashboard/DashboardTimelineCard.vue";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
 const DashboardChartsSection = defineAsyncComponent(

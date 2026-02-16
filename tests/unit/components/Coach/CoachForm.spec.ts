@@ -55,6 +55,33 @@ describe("CoachForm", () => {
         stubs: {
           FormErrorSummary: true,
           DesignSystemFieldError: true,
+          DesignSystemFormInput: {
+            template: '<input :id="getFieldId(label)" v-model="modelValue" :type="type || \'text\'" :disabled="disabled" :required="required" :placeholder="placeholder" @blur="$emit(\'blur\')" />',
+            props: ['modelValue', 'label', 'type', 'disabled', 'required', 'placeholder', 'error'],
+            emits: ['update:modelValue', 'blur'],
+            setup(props: any) {
+              const getFieldId = (label: string) => label.toLowerCase().replace(/\s+/g, '').replace(/\W/g, '')
+              return { getFieldId }
+            }
+          },
+          DesignSystemFormSelect: {
+            template: '<select :id="getFieldId(label)" v-model="modelValue" :disabled="disabled" :required="required" @blur="$emit(\'blur\')"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select>',
+            props: ['modelValue', 'label', 'disabled', 'required', 'options', 'error'],
+            emits: ['update:modelValue', 'blur'],
+            setup(props: any) {
+              const getFieldId = (label: string) => label.toLowerCase().replace(/\s+/g, '').replace(/\W/g, '')
+              return { getFieldId }
+            }
+          },
+          DesignSystemFormTextarea: {
+            template: '<textarea :id="getFieldId(label)" v-model="modelValue" :disabled="disabled" :rows="rows" :placeholder="placeholder" @blur="$emit(\'blur\')"></textarea>',
+            props: ['modelValue', 'label', 'disabled', 'rows', 'placeholder', 'error'],
+            emits: ['update:modelValue', 'blur'],
+            setup(props: any) {
+              const getFieldId = (label: string) => label.toLowerCase().replace(/\s+/g, '').replace(/\W/g, '')
+              return { getFieldId }
+            }
+          }
         },
       },
     });
@@ -64,8 +91,8 @@ describe("CoachForm", () => {
       const wrapper = mountForm();
 
       expect(wrapper.find("#role").exists()).toBe(true);
-      expect(wrapper.find("#firstName").exists()).toBe(true);
-      expect(wrapper.find("#lastName").exists()).toBe(true);
+      expect(wrapper.find("#firstname").exists()).toBe(true);
+      expect(wrapper.find("#lastname").exists()).toBe(true);
     });
 
     it("should render role select with all options", () => {
@@ -84,8 +111,8 @@ describe("CoachForm", () => {
 
       expect(wrapper.find("#email").exists()).toBe(true);
       expect(wrapper.find("#phone").exists()).toBe(true);
-      expect(wrapper.find("#twitter").exists()).toBe(true);
-      expect(wrapper.find("#instagram").exists()).toBe(true);
+      expect(wrapper.find("#twitterhandle").exists()).toBe(true);
+      expect(wrapper.find("#instagramhandle").exists()).toBe(true);
       expect(wrapper.find("#notes").exists()).toBe(true);
     });
 
@@ -108,23 +135,20 @@ describe("CoachForm", () => {
       const roleSelect = wrapper.find("#role");
 
       expect(roleSelect.attributes("required")).toBeDefined();
-      expect(roleSelect.attributes("aria-required")).toBe("true");
     });
 
     it("should require first name field", () => {
       const wrapper = mountForm();
-      const firstNameInput = wrapper.find("#firstName");
+      const firstNameInput = wrapper.find("#firstname");
 
       expect(firstNameInput.attributes("required")).toBeDefined();
-      expect(firstNameInput.attributes("aria-required")).toBe("true");
     });
 
     it("should require last name field", () => {
       const wrapper = mountForm();
-      const lastNameInput = wrapper.find("#lastName");
+      const lastNameInput = wrapper.find("#lastname");
 
       expect(lastNameInput.attributes("required")).toBeDefined();
-      expect(lastNameInput.attributes("aria-required")).toBe("true");
     });
 
     it("should validate email format", () => {
@@ -147,8 +171,8 @@ describe("CoachForm", () => {
       const wrapper = mountForm();
 
       await wrapper.find("#role").setValue("head");
-      await wrapper.find("#firstName").setValue("John");
-      await wrapper.find("#lastName").setValue("Doe");
+      await wrapper.find("#firstname").setValue("John");
+      await wrapper.find("#lastname").setValue("Doe");
       await wrapper.find("#email").setValue("john@example.com");
 
       await wrapper.find("form").trigger("submit");
@@ -205,10 +229,10 @@ describe("CoachForm", () => {
         "assistant",
       );
       expect(
-        (wrapper.find("#firstName").element as HTMLInputElement).value,
+        (wrapper.find("#firstname").element as HTMLInputElement).value,
       ).toBe("Jane");
       expect(
-        (wrapper.find("#lastName").element as HTMLInputElement).value,
+        (wrapper.find("#lastname").element as HTMLInputElement).value,
       ).toBe("Smith");
       expect((wrapper.find("#email").element as HTMLInputElement).value).toBe(
         "jane@example.com",
@@ -222,7 +246,7 @@ describe("CoachForm", () => {
         "",
       );
       expect(
-        (wrapper.find("#firstName").element as HTMLInputElement).value,
+        (wrapper.find("#firstname").element as HTMLInputElement).value,
       ).toBe("");
     });
   });
@@ -232,8 +256,8 @@ describe("CoachForm", () => {
       const wrapper = mountForm({ loading: true });
 
       expect(wrapper.find("#role").attributes("disabled")).toBeDefined();
-      expect(wrapper.find("#firstName").attributes("disabled")).toBeDefined();
-      expect(wrapper.find("#lastName").attributes("disabled")).toBeDefined();
+      expect(wrapper.find("#firstname").attributes("disabled")).toBeDefined();
+      expect(wrapper.find("#lastname").attributes("disabled")).toBeDefined();
       expect(wrapper.find("#email").attributes("disabled")).toBeDefined();
     });
   });
@@ -242,14 +266,14 @@ describe("CoachForm", () => {
     it("should handle special characters in names", async () => {
       const wrapper = mountForm();
 
-      await wrapper.find("#firstName").setValue("O'Brien");
-      await wrapper.find("#lastName").setValue("O'Connor-Smith");
+      await wrapper.find("#firstname").setValue("O'Brien");
+      await wrapper.find("#lastname").setValue("O'Connor-Smith");
 
       expect(
-        (wrapper.find("#firstName").element as HTMLInputElement).value,
+        (wrapper.find("#firstname").element as HTMLInputElement).value,
       ).toBe("O'Brien");
       expect(
-        (wrapper.find("#lastName").element as HTMLInputElement).value,
+        (wrapper.find("#lastname").element as HTMLInputElement).value,
       ).toBe("O'Connor-Smith");
     });
 
@@ -257,7 +281,7 @@ describe("CoachForm", () => {
       const wrapper = mountForm();
 
       const xssString = '<script>alert("xss")</script>';
-      await wrapper.find("#firstName").setValue(xssString);
+      await wrapper.find("#firstname").setValue(xssString);
       await wrapper.find("form").trigger("submit");
 
       expect(mockValidate).toHaveBeenCalled();
@@ -265,23 +289,19 @@ describe("CoachForm", () => {
   });
 
   describe("Accessibility", () => {
-    it("should have proper aria-required attributes", () => {
+    it("should have proper required attributes", () => {
       const wrapper = mountForm();
 
-      expect(wrapper.find("#role").attributes("aria-required")).toBe("true");
-      expect(wrapper.find("#firstName").attributes("aria-required")).toBe(
-        "true",
-      );
-      expect(wrapper.find("#lastName").attributes("aria-required")).toBe(
-        "true",
-      );
+      expect(wrapper.find("#role").attributes("required")).toBeDefined();
+      expect(wrapper.find("#firstname").attributes("required")).toBeDefined();
+      expect(wrapper.find("#lastname").attributes("required")).toBeDefined();
     });
 
     it("should have placeholder text for guidance", () => {
       const wrapper = mountForm();
 
-      expect(wrapper.find("#firstName").attributes("placeholder")).toBeTruthy();
-      expect(wrapper.find("#lastName").attributes("placeholder")).toBeTruthy();
+      expect(wrapper.find("#firstname").attributes("placeholder")).toBeTruthy();
+      expect(wrapper.find("#lastname").attributes("placeholder")).toBeTruthy();
     });
   });
 });

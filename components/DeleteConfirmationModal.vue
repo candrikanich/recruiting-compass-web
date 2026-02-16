@@ -5,6 +5,7 @@
         v-if="isOpen"
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
         @keydown.escape="handleCancel"
+        data-test="delete-modal"
       >
         <div
           ref="dialogRef"
@@ -33,6 +34,7 @@
                 @click="handleCancel"
                 :disabled="isLoading"
                 aria-label="Cancel deletion"
+                data-test="cancel-delete-btn"
                 class="px-4 py-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
               >
                 Cancel
@@ -41,6 +43,7 @@
                 @click="handleConfirm"
                 :disabled="isLoading"
                 aria-label="Confirm permanent deletion"
+                data-test="confirm-delete-btn"
                 class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >
                 <span v-if="isLoading" aria-live="polite">Deleting...</span>

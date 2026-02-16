@@ -10,78 +10,57 @@
       Skip to main content
     </a>
 
-    <!-- Global Navigation -->
-
-    <!-- Timeline Status Snippet -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
-      <StatusSnippet context="coaches" />
-    </div>
-
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <div
-          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+    <PageHeader title="Coaches" description="Track and manage your coach contacts">
+      <template #actions>
+        <NuxtLink
+          to="/coaches/new"
+          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-sm"
         >
-          <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Coaches</h1>
-            <p class="text-slate-600">
-              {{ filteredCoaches.length }} coach{{
-                filteredCoaches.length !== 1 ? "es" : ""
-              }}
-              found
-            </p>
-          </div>
-          <div class="flex items-center gap-3">
-            <NuxtLink
-              to="/coaches/new"
-              class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-sm"
-            >
-              <PlusIcon class="w-4 h-4" />
-              Add Coach
-            </NuxtLink>
-            <button
-              v-if="filteredCoaches.length > 0"
-              @click="handleExportCSV"
-              :disabled="exportLoading"
-              :aria-busy="exportLoading"
-              aria-label="Export coaches to CSV"
-              class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
-            >
-              <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
-              {{ exportLoading ? "Exporting..." : "CSV" }}
-            </button>
-            <button
-              v-if="filteredCoaches.length > 0"
-              @click="handleExportPDF"
-              :disabled="exportLoading"
-              :aria-busy="exportLoading"
-              aria-label="Export coaches to PDF"
-              class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
-            >
-              <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
-              {{ exportLoading ? "Exporting..." : "PDF" }}
-            </button>
-
-            <!-- Export Status Announcement -->
-            <div
-              v-if="exportMessage"
-              role="status"
-              aria-live="polite"
-              class="text-sm mt-2 text-green-700"
-            >
-              {{ exportMessage }}
-            </div>
-          </div>
+          <PlusIcon class="w-4 h-4" />
+          Add Coach
+        </NuxtLink>
+        <button
+          v-if="filteredCoaches.length > 0"
+          @click="handleExportCSV"
+          :disabled="exportLoading"
+          :aria-busy="exportLoading"
+          aria-label="Export coaches to CSV"
+          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+        >
+          <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
+          {{ exportLoading ? "Exporting..." : "CSV" }}
+        </button>
+        <button
+          v-if="filteredCoaches.length > 0"
+          @click="handleExportPDF"
+          :disabled="exportLoading"
+          :aria-busy="exportLoading"
+          aria-label="Export coaches to PDF"
+          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+        >
+          <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
+          {{ exportLoading ? "Exporting..." : "PDF" }}
+        </button>
+        <div
+          v-if="exportMessage"
+          role="status"
+          aria-live="polite"
+          class="text-sm mt-2 text-green-700"
+        >
+          {{ exportMessage }}
         </div>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <main
       id="main-content"
       class="max-w-7xl mx-auto px-4 sm:px-6 py-8"
       :aria-busy="loading"
     >
+      <!-- Summary Tiles -->
+      <StatsTiles :stats="coachStats" aria-label="Coaches Statistics" />
+
       <!-- Filter Bar -->
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"
@@ -197,11 +176,11 @@
 
       <!-- Coaches Grid -->
       <ul
-        v-if="filteredCoaches.length > 0"
+        v-if="paginatedCoaches.length > 0"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
         <li
-          v-for="coach in filteredCoaches"
+          v-for="coach in paginatedCoaches"
           :key="coach.id"
           class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition overflow-hidden"
         >
@@ -368,7 +347,7 @@
               </button>
               <button
                 @click="openDeleteModal(coach)"
-                data-test="coach-delete-btn"
+                      data-test="coach-delete-btn"
                 :aria-label="`Delete ${coach.first_name} ${coach.last_name}`"
                 class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
@@ -397,6 +376,30 @@
           </div>
         </li>
       </ul>
+
+      <!-- Pagination Controls -->
+      <div
+        v-if="filteredCoaches.length > ITEMS_PER_PAGE"
+        class="flex items-center justify-center gap-4 mt-8"
+      >
+        <button
+          @click="goToPage(currentPage - 1)"
+          :disabled="!hasPrevPage"
+          class="px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <span class="text-sm text-slate-600">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+        <button
+          @click="goToPage(currentPage + 1)"
+          :disabled="!hasNextPage"
+          class="px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
     </main>
 
     <!-- Communication Panel Modal -->
@@ -480,10 +483,11 @@ import { useFamilyContext } from "~/composables/useFamilyContext";
 import { useCoaches } from "~/composables/useCoaches";
 import { useCoachPageFilters } from "~/composables/useCoachPageFilters";
 import { useCoachExport } from "~/composables/useCoachExport";
+import { useCoachListStats } from "~/composables/useCoachListStats";
+import StatsTiles from "~/components/shared/StatsTiles.vue";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 import Header from "~/components/Header.vue";
-import StatusSnippet from "~/components/Timeline/StatusSnippet.vue";
 const DeleteConfirmationModal = defineAsyncComponent(
   () => import("~/components/DeleteConfirmationModal.vue"),
 );
@@ -533,11 +537,39 @@ const {
 } = useCommunication();
 const { smartDelete } = useCoaches();
 
+// Summary statistics
+const { stats: coachStats } = useCoachListStats(
+  computed(() => allCoaches.value)
+);
+
 const allCoaches = ref<Coach[]>([]);
 const schools = ref<School[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const sortBy = ref("name");
+
+// Pagination
+const ITEMS_PER_PAGE = 12;
+const currentPage = ref(1);
+
+const paginatedCoaches = computed(() => {
+  const start = (currentPage.value - 1) * ITEMS_PER_PAGE;
+  const end = start + ITEMS_PER_PAGE;
+  return filteredCoaches.value.slice(start, end);
+});
+
+const totalPages = computed(() =>
+  Math.ceil(filteredCoaches.value.length / ITEMS_PER_PAGE),
+);
+
+const hasNextPage = computed(() => currentPage.value < totalPages.value);
+const hasPrevPage = computed(() => currentPage.value > 1);
+
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+  }
+};
 
 // Use filter composable for stateful filter management
 const {

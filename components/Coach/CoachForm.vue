@@ -8,179 +8,93 @@
     />
 
     <!-- Role -->
-    <div>
-      <label for="role" class="block text-sm font-medium mb-1 text-slate-600">
-        Role
-        <span class="text-red-600" aria-hidden="true">*</span>
-        <span class="sr-only">(required)</span>
-      </label>
-      <select
-        id="role"
-        v-model="formData.role"
-        required
-        aria-required="true"
-        aria-describedby="role-error"
-        class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
-        :disabled="loading"
-        @blur="validateRole"
-      >
-        <option value="">Select Role</option>
-        <option value="head">Head Coach</option>
-        <option value="assistant">Assistant Coach</option>
-        <option value="recruiting">Recruiting Coordinator</option>
-      </select>
-      <DesignSystemFieldError id="role-error" :error="fieldErrors.role" />
-    </div>
+    <DesignSystemFormSelect
+      v-model="formData.role"
+      label="Role"
+      :required="true"
+      :disabled="loading"
+      :options="roleOptions"
+      :error="fieldErrors.role"
+      @blur="validateRole"
+    />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- First Name -->
-      <div>
-        <label
-          for="firstName"
-          class="block text-sm font-medium mb-1 text-slate-600"
-        >
-          First Name
-          <span class="text-red-600" aria-hidden="true">*</span>
-          <span class="sr-only">(required)</span>
-        </label>
-        <input
-          id="firstName"
-          v-model="formData.first_name"
-          type="text"
-          required
-          aria-required="true"
-          aria-describedby="firstName-error"
-          class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
-          placeholder="e.g., John"
-          :disabled="loading"
-          @blur="validateFirstName"
-        />
-        <DesignSystemFieldError
-          id="firstName-error"
-          :error="fieldErrors.first_name"
-        />
-      </div>
+      <DesignSystemFormInput
+        v-model="formData.first_name"
+        label="First Name"
+        :required="true"
+        :disabled="loading"
+        placeholder="e.g., John"
+        :error="fieldErrors.first_name"
+        @blur="validateFirstName"
+      />
 
       <!-- Last Name -->
-      <div>
-        <label
-          for="lastName"
-          class="block text-sm font-medium mb-1 text-slate-600"
-        >
-          Last Name
-          <span class="text-red-600" aria-hidden="true">*</span>
-          <span class="sr-only">(required)</span>
-        </label>
-        <input
-          id="lastName"
-          v-model="formData.last_name"
-          type="text"
-          required
-          aria-required="true"
-          aria-describedby="lastName-error"
-          class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
-          placeholder="e.g., Smith"
-          :disabled="loading"
-          @blur="validateLastName"
-        />
-        <DesignSystemFieldError
-          id="lastName-error"
-          :error="fieldErrors.last_name"
-        />
-      </div>
+      <DesignSystemFormInput
+        v-model="formData.last_name"
+        label="Last Name"
+        :required="true"
+        :disabled="loading"
+        placeholder="e.g., Smith"
+        :error="fieldErrors.last_name"
+        @blur="validateLastName"
+      />
     </div>
 
     <!-- Email -->
-    <div>
-      <label for="email" class="block text-sm font-medium mb-1 text-slate-600">
-        Email
-      </label>
-      <input
-        id="email"
-        v-model="formData.email"
-        type="email"
-        class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
-        placeholder="john.smith@university.edu"
-        :disabled="loading"
-        @blur="validateEmail"
-      />
-      <DesignSystemFieldError :error="fieldErrors.email" />
-    </div>
+    <DesignSystemFormInput
+      v-model="formData.email"
+      label="Email"
+      type="email"
+      :disabled="loading"
+      placeholder="john.smith@university.edu"
+      :error="fieldErrors.email"
+      @blur="validateEmail"
+    />
 
     <!-- Phone -->
-    <div>
-      <label for="phone" class="block text-sm font-medium mb-1 text-slate-600">
-        Phone
-      </label>
-      <input
-        id="phone"
-        v-model="formData.phone"
-        type="tel"
-        class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
-        placeholder="(555) 123-4567"
-        :disabled="loading"
-        @blur="validatePhone"
-      />
-      <DesignSystemFieldError :error="fieldErrors.phone" />
-    </div>
+    <DesignSystemFormInput
+      v-model="formData.phone"
+      label="Phone"
+      type="tel"
+      :disabled="loading"
+      placeholder="(555) 123-4567"
+      :error="fieldErrors.phone"
+      @blur="validatePhone"
+    />
 
     <!-- Social Media -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div>
-        <label
-          for="twitter"
-          class="block text-sm font-medium mb-1 text-slate-600"
-        >
-          Twitter Handle
-        </label>
-        <input
-          id="twitter"
-          v-model="formData.twitter_handle"
-          type="text"
-          class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
-          placeholder="@handle"
-          :disabled="loading"
-          @blur="validateTwitter"
-        />
-        <DesignSystemFieldError :error="fieldErrors.twitter_handle" />
-      </div>
+      <DesignSystemFormInput
+        v-model="formData.twitter_handle"
+        label="Twitter Handle"
+        :disabled="loading"
+        placeholder="@handle"
+        :error="fieldErrors.twitter_handle"
+        @blur="validateTwitter"
+      />
 
-      <div>
-        <label
-          for="instagram"
-          class="block text-sm font-medium mb-1 text-slate-600"
-        >
-          Instagram Handle
-        </label>
-        <input
-          id="instagram"
-          v-model="formData.instagram_handle"
-          type="text"
-          class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
-          placeholder="@handle"
-          :disabled="loading"
-          @blur="validateInstagram"
-        />
-        <DesignSystemFieldError :error="fieldErrors.instagram_handle" />
-      </div>
+      <DesignSystemFormInput
+        v-model="formData.instagram_handle"
+        label="Instagram Handle"
+        :disabled="loading"
+        placeholder="@handle"
+        :error="fieldErrors.instagram_handle"
+        @blur="validateInstagram"
+      />
     </div>
 
     <!-- Notes -->
-    <div>
-      <label for="notes" class="block text-sm font-medium mb-1 text-slate-600">
-        Notes
-      </label>
-      <textarea
-        id="notes"
-        v-model="formData.notes"
-        rows="4"
-        class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent focus:ring-blue-600"
-        placeholder="Any notes about this coach..."
-        :disabled="loading"
-        @blur="validateNotes"
-      />
-      <DesignSystemFieldError :error="fieldErrors.notes" />
-    </div>
+    <DesignSystemFormTextarea
+      v-model="formData.notes"
+      label="Notes"
+      :disabled="loading"
+      placeholder="Any notes about this coach..."
+      :rows="4"
+      :error="fieldErrors.notes"
+      @blur="validateNotes"
+    />
 
     <!-- Submit and Cancel buttons -->
     <div class="flex gap-4">
@@ -195,14 +109,14 @@
           !formData.first_name ||
           !formData.last_name
         "
-        class="flex-1 px-4 py-3 text-white font-semibold rounded-lg transition bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+        class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50"
       >
         {{ loading ? "Adding..." : "Add Coach" }}
       </button>
       <button
         type="button"
         @click="$emit('cancel')"
-        class="flex-1 px-4 py-3 font-semibold rounded-lg transition bg-slate-100 text-slate-900 hover:bg-slate-200"
+        class="flex-1 px-4 py-3 bg-white text-slate-700 font-semibold rounded-xl border-2 border-slate-300 hover:bg-slate-50 transition"
       >
         Cancel
       </button>
@@ -211,11 +125,19 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, toRefs } from "vue";
+import { reactive, watch, toRefs, computed } from "vue";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { coachSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
+
+// Role options
+const roleOptions = computed(() => [
+  { value: '', label: 'Select Role' },
+  { value: 'head', label: 'Head Coach' },
+  { value: 'assistant', label: 'Assistant Coach' },
+  { value: 'recruiting', label: 'Recruiting Coordinator' }
+])
 
 const props = defineProps<{
   loading: boolean;

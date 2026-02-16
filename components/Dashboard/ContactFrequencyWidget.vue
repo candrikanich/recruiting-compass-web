@@ -215,29 +215,37 @@ const averageContactFrequency = computed(() => {
 });
 
 const schoolsWithNoRecentContact = computed(() => {
+  if (!props.schools || props.schools.length === 0) return 0;
+  if (!props.interactions || props.interactions.length === 0) {
+    return props.schools.length;
+  }
+
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  return (
-    props.schools?.filter((school) => {
-      const lastInteraction = props.interactions
-        ?.filter((i) => i.school_id === school.id)
-        ?.sort((a, b) => {
-          const dateAStr = a.occurred_at || a.created_at;
-          const dateBStr = b.occurred_at || b.created_at;
-          if (!dateAStr || !dateBStr) return 0;
-          const dateA = new Date(dateAStr).getTime();
-          const dateB = new Date(dateBStr).getTime();
-          return dateB - dateA;
-        })[0];
+  // Build school interaction index once
+  const schoolLastInteractionMap = new Map<string, Date>();
 
-      if (!lastInteraction) return true;
-      const lastDate =
-        lastInteraction.occurred_at || lastInteraction.created_at;
-      if (!lastDate) return true;
-      return new Date(lastDate) < thirtyDaysAgo;
-    }).length || 0
-  );
+  props.interactions.forEach((interaction) => {
+    if (!interaction.school_id) return;
+
+    const dateStr = interaction.occurred_at || interaction.created_at;
+    if (!dateStr) return;
+
+    const interactionDate = new Date(dateStr).getTime();
+    const existing = schoolLastInteractionMap.get(interaction.school_id);
+
+    if (!existing || interactionDate > existing.getTime()) {
+      schoolLastInteractionMap.set(interaction.school_id, new Date(interactionDate));
+    }
+  });
+
+  // Count schools without recent contact
+  return props.schools.filter((school) => {
+    const lastDate = schoolLastInteractionMap.get(school.id);
+    if (!lastDate) return true;
+    return lastDate < thirtyDaysAgo;
+  }).length;
 });
 
 const formatLastContactDate = (date: string): string => {

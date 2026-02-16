@@ -52,13 +52,36 @@ const selectedFiles = ref<File[]>([]);
 const showAddCoachModal = ref(false);
 const showOtherCoachModal = ref(false);
 
-const selectDropdownStyle = computed(() => ({
-  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-  backgroundPosition: "right 0.75rem center",
-  backgroundRepeat: "no-repeat",
-  backgroundSize: "1.5em 1.5em",
-  paddingRight: "2.5rem",
-}));
+// Sentiment value (non-null version for the select)
+const sentimentValue = computed({
+  get: () => form.value.sentiment || '',
+  set: (value: string) => {
+    form.value.sentiment = value === '' ? null : value
+  }
+})
+
+// Type options
+const typeOptions = computed(() => [
+  { value: '', label: 'Select Type' },
+  { value: 'email', label: '📧 Email' },
+  { value: 'text', label: '💬 Text' },
+  { value: 'phone_call', label: '☎️ Phone Call' },
+  { value: 'in_person_visit', label: '👥 In-Person Visit' },
+  { value: 'virtual_meeting', label: '💻 Virtual Meeting' },
+  { value: 'camp', label: '⚾ Camp' },
+  { value: 'showcase', label: '🎯 Showcase' },
+  { value: 'tweet', label: 'X (Twitter)' },
+  { value: 'dm', label: '💭 DM' }
+])
+
+// Sentiment options
+const sentimentOptions = computed(() => [
+  { value: '', label: 'No sentiment' },
+  { value: 'very_positive', label: '😄 Very Positive' },
+  { value: 'positive', label: '😊 Positive' },
+  { value: 'neutral', label: '😐 Neutral' },
+  { value: 'negative', label: '😕 Negative' }
+])
 
 const shouldShowCalibration = computed(() => {
   return (
@@ -146,33 +169,14 @@ const handleCancel = () => {
     />
 
     <!-- Interaction Type -->
-    <div>
-      <label for="type" class="block text-sm font-medium text-slate-700">
-        Type
-        <span class="text-red-500" aria-hidden="true">*</span>
-        <span class="sr-only">(required)</span>
-      </label>
-      <select
-        id="type"
-        v-model="form.type"
-        required
-        :disabled="loading"
-        class="mt-1 block w-full appearance-none rounded-lg border-2 border-slate-300 bg-white px-4 py-3 transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
-        :style="selectDropdownStyle"
-      >
-        <option value="">Select Type</option>
-        <option value="email">📧 Email</option>
-        <option value="text">💬 Text</option>
-        <option value="phone_call">☎️ Phone Call</option>
-        <option value="in_person_visit">👥 In-Person Visit</option>
-        <option value="virtual_meeting">💻 Virtual Meeting</option>
-        <option value="camp">⚾ Camp</option>
-        <option value="showcase">🎯 Showcase</option>
-        <option value="tweet">X (Twitter)</option>
-        <option value="dm">💭 DM</option>
-      </select>
-      <DesignSystemFieldError :error="fieldErrors.type" />
-    </div>
+    <DesignSystemFormSelect
+      v-model="form.type"
+      label="Type"
+      :required="true"
+      :disabled="loading"
+      :options="typeOptions"
+      :error="fieldErrors.type"
+    />
 
     <!-- Direction -->
     <fieldset>
@@ -220,78 +224,52 @@ const handleCancel = () => {
 
     <!-- Date/Time -->
     <div>
-      <label for="occurred_at" class="block text-sm font-medium text-slate-700">
+      <label class="block text-sm font-medium text-slate-700 mb-2">
         Date & Time
         <span class="text-red-500" aria-hidden="true">*</span>
         <span class="sr-only">(required)</span>
       </label>
       <input
-        id="occurred_at"
         v-model="form.occurred_at"
         type="datetime-local"
         required
-        aria-required="true"
-        aria-describedby="datetime-help"
         :disabled="loading"
-        class="mt-1 block w-full rounded-lg border-2 border-slate-300 bg-white px-4 py-3 transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50"
       />
-      <p id="datetime-help" class="mt-1 text-xs text-slate-600">
+      <p class="mt-1 text-xs text-slate-600">
         Select a date and time using the picker, or enter: YYYY-MM-DD HH:MM
       </p>
       <DesignSystemFieldError :error="fieldErrors.occurred_at" />
     </div>
 
     <!-- Subject -->
-    <div>
-      <label for="subject" class="block text-sm font-medium text-slate-700">
-        Subject (Optional)
-      </label>
-      <input
-        id="subject"
-        v-model="form.subject"
-        type="text"
-        placeholder="Email subject, call topic, etc."
-        :disabled="loading"
-        class="mt-1 block w-full rounded-lg border-2 border-slate-300 bg-white px-4 py-3 placeholder:text-slate-400 transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
-      />
-      <DesignSystemFieldError :error="fieldErrors.subject" />
-    </div>
+    <DesignSystemFormInput
+      v-model="form.subject"
+      label="Subject (Optional)"
+      :disabled="loading"
+      placeholder="Email subject, call topic, etc."
+      :error="fieldErrors.subject"
+    />
 
     <!-- Content -->
-    <div>
-      <label for="content" class="block text-sm font-medium text-slate-700">
-        Content (Optional)
-      </label>
-      <textarea
-        id="content"
-        v-model="form.content"
-        rows="4"
-        placeholder="Details about the interaction..."
-        :disabled="loading"
-        class="mt-1 block w-full resize-none rounded-lg border-2 border-slate-300 bg-white px-4 py-3 placeholder:text-slate-400 transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
-      />
-      <DesignSystemFieldError :error="fieldErrors.content" />
-    </div>
+    <DesignSystemFormTextarea
+      v-model="form.content"
+      label="Content (Optional)"
+      :disabled="loading"
+      placeholder="Details about the interaction..."
+      :rows="4"
+      :error="fieldErrors.content"
+    />
 
     <!-- Sentiment -->
     <div>
-      <label for="sentiment" class="block text-sm font-medium text-slate-700">
-        Sentiment (Optional)
-      </label>
-      <select
-        id="sentiment"
-        v-model="form.sentiment"
+      <DesignSystemFormSelect
+        v-model="sentimentValue"
+        label="Sentiment (Optional)"
         :disabled="loading"
-        class="mt-1 block w-full appearance-none rounded-lg border-2 border-slate-300 bg-white px-4 py-3 transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
-        :style="selectDropdownStyle"
-      >
-        <option value="">No sentiment</option>
-        <option value="very_positive">😄 Very Positive</option>
-        <option value="positive">😊 Positive</option>
-        <option value="neutral">😐 Neutral</option>
-        <option value="negative">😕 Negative</option>
-      </select>
-      <DesignSystemFieldError :error="fieldErrors.sentiment" />
+        :options="sentimentOptions"
+        :error="fieldErrors.sentiment"
+      />
     </div>
 
     <!-- Interest Calibration (conditional) -->
@@ -317,7 +295,7 @@ const handleCancel = () => {
         type="submit"
         :aria-busy="loading"
         :disabled="loading || !isFormValid"
-        class="flex-1 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 px-4 py-3 font-semibold text-white transition hover:from-indigo-600 hover:to-indigo-700 disabled:opacity-50"
+        class="flex-1 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 font-semibold text-white transition hover:from-blue-600 hover:to-blue-700 disabled:opacity-50"
       >
         {{ loading ? "Logging..." : "Log Interaction" }}
       </button>
@@ -332,7 +310,7 @@ const handleCancel = () => {
     </div>
 
     <!-- Add Coach Modal -->
-    <AddCoachModal
+    <CoachAddCoachModal
       :show="showAddCoachModal"
       :school-id="form.school_id"
       @close="showAddCoachModal = false"
@@ -340,7 +318,7 @@ const handleCancel = () => {
     />
 
     <!-- Other Coach Modal -->
-    <OtherCoachModal
+    <CoachOtherCoachModal
       :show="showOtherCoachModal"
       @close="showOtherCoachModal = false"
       @continue="handleOtherCoachContinue"

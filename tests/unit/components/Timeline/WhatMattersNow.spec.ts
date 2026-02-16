@@ -156,4 +156,30 @@ describe("WhatMattersNow Component", () => {
     const content = wrapper.find("[class*='line-clamp']");
     expect(content.exists()).toBe(true);
   });
+
+  it("renders collapsed when collapsed prop is true", () => {
+    const wrapper = mount(WhatMattersNow, {
+      props: {
+        priorities: [
+          { taskId: "t1", title: "Do thing", whyItMatters: "reason", category: "academic-standing", priority: 10, isRequired: true },
+        ],
+        phaseLabel: "Freshman",
+        collapsed: true,
+      },
+    });
+    expect(wrapper.text()).toContain("What Matters Right Now");
+    expect(wrapper.text()).not.toContain("Do thing");
+  });
+
+  it("emits toggle when header is clicked", async () => {
+    const wrapper = mount(WhatMattersNow, {
+      props: {
+        priorities: [],
+        phaseLabel: "Freshman",
+        collapsed: false,
+      },
+    });
+    await wrapper.find("[data-testid='guidance-header']").trigger("click");
+    expect(wrapper.emitted("toggle")).toBeTruthy();
+  });
 });

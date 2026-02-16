@@ -5,49 +5,37 @@
     <!-- Header -->
 
     <!-- Page Header Section -->
-    <div
-      class="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200"
-    >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div class="flex items-start justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-slate-900 mb-2">
-              Recruiting Timeline
-            </h1>
-            <p class="text-slate-600">Track your 4-year recruiting journey</p>
+    <PageHeader title="Recruiting Timeline" description="Track your 4-year recruiting journey">
+      <template #actions>
+        <!-- Current Phase Badge -->
+        <div
+          v-if="!phaseLoading"
+          class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm"
+        >
+          <div class="text-sm text-slate-600 mb-1">Current Phase</div>
+          <div class="text-lg font-bold text-slate-900">
+            {{ getPhaseDisplayName(currentPhase) }}
           </div>
-          <div class="flex items-center gap-4">
-            <!-- Current Phase Badge -->
-            <div
-              v-if="!phaseLoading"
-              class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm"
-            >
-              <div class="text-sm text-slate-600 mb-1">Current Phase</div>
-              <div class="text-lg font-bold text-slate-900">
-                {{ getPhaseDisplayName(currentPhase) }}
-              </div>
-            </div>
+        </div>
 
-            <!-- Status Indicator -->
+        <!-- Status Indicator -->
+        <div
+          v-if="!statusLoading"
+          class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm"
+        >
+          <div class="text-sm text-slate-600 mb-1">Status</div>
+          <div class="flex items-center gap-2">
             <div
-              v-if="!statusLoading"
-              class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm"
-            >
-              <div class="text-sm text-slate-600 mb-1">Status</div>
-              <div class="flex items-center gap-2">
-                <div
-                  class="w-3 h-3 rounded-full"
-                  :class="getStatusColorClass(statusLabel)"
-                />
-                <div class="text-lg font-bold text-slate-900">
-                  {{ statusScore }}/100
-                </div>
-              </div>
+              class="w-3 h-3 rounded-full"
+              :class="getStatusColorClass(statusLabel)"
+            />
+            <div class="text-lg font-bold text-slate-900">
+              {{ statusScore }}/100
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -76,29 +64,20 @@
 
       <!-- Content Section -->
       <div v-else>
-        <!-- Parent Guidance Sections (Tier 1 - Visible First) -->
-        <div class="space-y-6 mb-8">
-          <!-- Row 1: Action-oriented guidance (2 columns) -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <WhatMattersNow
-              :priorities="whatMattersNow"
-              :phase-label="getPhaseDisplayName(currentPhase)"
-              @priority-click="handlePriorityClick"
-            />
-            <UpcomingMilestones :milestones="upcomingMilestones" />
-          </div>
-
-          <!-- Row 2: Reassurance guidance (2 columns) -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <CommonWorries :worries="commonWorries" />
-            <WhatNotToStress :messages="reassuranceMessages" />
-          </div>
-        </div>
-
-        <!-- Main Grid -->
+        <!-- Main Grid: Tasks (2/3) + Guidance Sidebar (1/3) -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Left Column: Phase Cards -->
+          <!-- Left Column: Stat Pills + Phase Cards -->
           <div class="lg:col-span-2 space-y-6">
+            <!-- Stat Pills -->
+            <TimelineStatPills
+              :status-score="statusScore"
+              :status-label="statusLabel"
+              :task-completed="taskCompletedCount"
+              :task-total="taskTotalCount"
+              :milestones-completed="milestonesCompletedCount"
+              :milestones-total="milestonesTotalCount"
+            />
+
             <!-- Freshman Phase Card -->
             <PhaseCardInline
               phase="freshman"
@@ -160,153 +139,30 @@
             />
           </div>
 
-          <!-- Right Column: Sidebar -->
-          <div class="space-y-6">
-            <!-- Portfolio Health -->
-            <PortfolioHealth />
-
-            <!-- Overall Status Card -->
-            <OverallStatusCard />
-
-            <!-- Status Breakdown (if available) -->
-            <div
-              v-if="!statusLoading && scoreBreakdown"
-              class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
-            >
-              <h3 class="text-slate-900 font-semibold mb-4">
-                Status Breakdown
-              </h3>
-
-              <div class="space-y-3">
-                <!-- Task Completion -->
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-slate-600">Task Completion</span>
-                  <span class="text-sm font-medium text-slate-900"
-                    >{{ (scoreBreakdown.taskCompletionRate * 100) | 0 }}%</span
-                  >
-                </div>
-                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    class="h-full bg-blue-500"
-                    :style="{
-                      width: `${scoreBreakdown.taskCompletionRate * 100}%`,
-                    }"
-                  />
-                </div>
-
-                <!-- Interaction Frequency -->
-                <div class="flex items-center justify-between pt-2">
-                  <span class="text-sm text-slate-600"
-                    >Interaction Frequency</span
-                  >
-                  <span class="text-sm font-medium text-slate-900"
-                    >{{
-                      (scoreBreakdown.interactionFrequencyScore * 100) | 0
-                    }}%</span
-                  >
-                </div>
-                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    class="h-full bg-purple-500"
-                    :style="{
-                      width: `${scoreBreakdown.interactionFrequencyScore * 100}%`,
-                    }"
-                  />
-                </div>
-
-                <!-- Coach Interest -->
-                <div class="flex items-center justify-between pt-2">
-                  <span class="text-sm text-slate-600">Coach Interest</span>
-                  <span class="text-sm font-medium text-slate-900"
-                    >{{ (scoreBreakdown.coachInterestScore * 100) | 0 }}%</span
-                  >
-                </div>
-                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    class="h-full bg-emerald-500"
-                    :style="{
-                      width: `${scoreBreakdown.coachInterestScore * 100}%`,
-                    }"
-                  />
-                </div>
-
-                <!-- Academic Standing -->
-                <div class="flex items-center justify-between pt-2">
-                  <span class="text-sm text-slate-600">Academic Standing</span>
-                  <span class="text-sm font-medium text-slate-900"
-                    >{{
-                      (scoreBreakdown.academicStandingScore * 100) | 0
-                    }}%</span
-                  >
-                </div>
-                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    class="h-full bg-orange-500"
-                    :style="{
-                      width: `${scoreBreakdown.academicStandingScore * 100}%`,
-                    }"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Milestone Progress (if current phase) -->
-            <div
-              v-if="
-                !phaseLoading &&
-                currentPhase !== 'committed' &&
-                milestoneProgress
-              "
-              class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
-            >
-              <h3 class="text-slate-900 font-semibold mb-4">
-                Milestone Progress
-              </h3>
-
-              <div class="mb-4">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-sm text-slate-600"
-                    >Progress to Next Phase</span
-                  >
-                  <span class="text-sm font-medium text-slate-900"
-                    >{{ milestoneProgress?.percentComplete ?? 0 }}%</span
-                  >
-                </div>
-                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    class="h-full bg-gradient-to-r from-blue-500 to-emerald-500"
-                    :style="{
-                      width: `${milestoneProgress?.percentComplete ?? 0}%`,
-                    }"
-                  />
-                </div>
-              </div>
-
-              <div class="text-xs text-slate-600 space-y-1">
-                <p>
-                  {{ milestoneProgress?.completed?.length ?? 0 }} of
-                  {{ milestoneProgress?.required?.length ?? 0 }} milestones
-                  complete
-                </p>
-                <p v-if="canAdvance" class="text-emerald-600 font-medium">
-                  ✓ Ready to advance!
-                </p>
-                <p v-else class="text-slate-500">
-                  {{ milestoneProgress?.remaining?.length ?? 0 }} milestone{{
-                    (milestoneProgress?.remaining?.length ?? 0) !== 1 ? "s" : ""
-                  }}
-                  remaining
-                </p>
-              </div>
-
-              <button
-                v-if="canAdvance"
-                @click="advancePhase"
-                class="mt-4 w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium text-sm"
-              >
-                Advance to Next Phase
-              </button>
-            </div>
+          <!-- Right Column: Guidance Sidebar -->
+          <div data-testid="guidance-sidebar" class="space-y-4">
+            <WhatMattersNow
+              :priorities="whatMattersNow"
+              :phase-label="getPhaseDisplayName(currentPhase)"
+              :collapsed="whatMattersCollapsed"
+              @toggle="whatMattersCollapsed = !whatMattersCollapsed"
+              @priority-click="handlePriorityClick"
+            />
+            <UpcomingMilestones
+              :milestones="upcomingMilestones"
+              :collapsed="milestonesCollapsed"
+              @toggle="milestonesCollapsed = !milestonesCollapsed"
+            />
+            <CommonWorries
+              :worries="commonWorries"
+              :collapsed="worriesCollapsed"
+              @toggle="worriesCollapsed = !worriesCollapsed"
+            />
+            <WhatNotToStress
+              :messages="reassuranceMessages"
+              :collapsed="stressCollapsed"
+              @toggle="stressCollapsed = !stressCollapsed"
+            />
           </div>
         </div>
       </div>
@@ -328,6 +184,21 @@
   transform: translateY(-10px);
   opacity: 0;
 }
+:deep(.task-highlight) {
+  animation: highlight-pulse 2s ease-out;
+}
+
+@keyframes highlight-pulse {
+  0%,
+  15% {
+    background-color: rgb(219 234 254); /* blue-100 */
+    box-shadow: 0 0 0 2px rgb(147 197 253); /* blue-300 */
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
 </style>
 
 <script setup lang="ts">
@@ -335,10 +206,9 @@ import { ref, computed, onMounted, nextTick } from "vue";
 import { useTasks } from "~/composables/useTasks";
 import { usePhaseCalculation } from "~/composables/usePhaseCalculation";
 import { useStatusScore } from "~/composables/useStatusScore";
-import type { Phase, TaskWithStatus, StatusLabel } from "~/types/timeline";
+import type { Phase, StatusLabel } from "~/types/timeline";
 import PhaseCardInline from "~/components/Timeline/PhaseCardInline.vue";
-import PortfolioHealth from "~/components/Timeline/PortfolioHealth.vue";
-import OverallStatusCard from "~/components/Timeline/OverallStatusCard.vue";
+import TimelineStatPills from "~/components/Timeline/TimelineStatPills.vue";
 import WhatMattersNow from "~/components/Timeline/WhatMattersNow.vue";
 import CommonWorries from "~/components/Timeline/CommonWorries.vue";
 import WhatNotToStress from "~/components/Timeline/WhatNotToStress.vue";
@@ -363,30 +233,37 @@ const {
 const {
   currentPhase,
   milestoneProgress,
-  canAdvance,
   loading: phaseLoading,
   error: phaseError,
   fetchPhase,
-  advancePhase: phaseAdvancePhase,
 } = usePhaseCalculation();
 const {
   statusScore,
   statusLabel,
-  scoreBreakdown,
   loading: statusLoading,
   error: statusError,
   fetchStatusScore,
 } = useStatusScore();
 
-// Local state for expand/collapse
+// Local state for phase expand/collapse
 const freshmanExpanded = ref(false);
 const sophomoreExpanded = ref(false);
 const juniorExpanded = ref(false);
 const seniorExpanded = ref(false);
 
+// Guidance sidebar collapse state
+const whatMattersCollapsed = ref(false);
+const milestonesCollapsed = ref(true);
+const worriesCollapsed = ref(true);
+const stressCollapsed = ref(true);
+
 // Computed properties
+// Only show loading skeletons on initial load, not on background refreshes
+const initialLoadComplete = ref(false);
 const loading = computed(
-  () => tasksLoading.value || phaseLoading.value || statusLoading.value,
+  () =>
+    !initialLoadComplete.value &&
+    (tasksLoading.value || phaseLoading.value || statusLoading.value),
 );
 const error = computed(
   () => tasksError.value || phaseError.value || statusError.value,
@@ -398,6 +275,21 @@ const tasksByGrade = computed(() => ({
   11: tasksWithStatus.value.filter((t) => t.grade_level === 11),
   12: tasksWithStatus.value.filter((t) => t.grade_level === 12),
 }));
+
+// Stat pill aggregates
+const taskCompletedCount = computed(
+  () =>
+    tasksWithStatus.value.filter(
+      (t) => t.athlete_task?.status === "completed",
+    ).length,
+);
+const taskTotalCount = computed(() => tasksWithStatus.value.length);
+const milestonesCompletedCount = computed(
+  () => milestoneProgress.value?.completed?.length ?? 0,
+);
+const milestonesTotalCount = computed(
+  () => milestoneProgress.value?.required?.length ?? 0,
+);
 
 // Parent guidance sections computed properties
 const whatMattersNow = computed(() =>
@@ -458,14 +350,11 @@ const handleTaskToggle = async (taskId: string) => {
 };
 
 const retryFetch = async () => {
+  initialLoadComplete.value = false;
   await fetchTasksWithStatus();
   await fetchPhase();
   await fetchStatusScore();
-};
-
-const advancePhase = async () => {
-  await phaseAdvancePhase();
-  initializeExpanded();
+  initialLoadComplete.value = true;
 };
 
 const handlePriorityClick = (taskId: string) => {
@@ -481,11 +370,17 @@ const handlePriorityClick = (taskId: string) => {
   else if (gradeLevel === 11) juniorExpanded.value = true;
   else if (gradeLevel === 12) seniorExpanded.value = true;
 
-  // Wait for expansion animation, then scroll to task
-  nextTick(() => {
-    const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
-    taskElement?.scrollIntoView({ behavior: "smooth", block: "center" });
-  });
+  // Wait for expansion animation (300ms transition), then scroll and highlight
+  setTimeout(() => {
+    const taskElement = document.querySelector(
+      `[data-task-id="${taskId}"]`,
+    ) as HTMLElement | null;
+    if (!taskElement) return;
+
+    taskElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    taskElement.classList.add("task-highlight");
+    setTimeout(() => taskElement.classList.remove("task-highlight"), 2000);
+  }, 350);
 };
 
 // Helper functions
@@ -512,6 +407,7 @@ const getStatusColorClass = (label: StatusLabel): string => {
 // Lifecycle
 onMounted(async () => {
   await Promise.all([fetchTasksWithStatus(), fetchPhase(), fetchStatusScore()]);
+  initialLoadComplete.value = true;
   initializeExpanded();
 });
 </script>

@@ -1,11 +1,37 @@
 /**
  * Error handling utility for secure error responses
  * Prevents information disclosure while maintaining debugging capability
+ * Captures errors to Sentry in production
  */
 
+import * as Sentry from "@sentry/nuxt";
 import { createLogger } from "./logger";
 
 const logger = createLogger("error-handler");
+
+/**
+ * Capture error in Sentry with context (production only)
+ */
+function captureInSentry(
+  error: unknown,
+  level: "error" | "warning" = "error",
+  context?: Record<string, unknown>,
+): void {
+  if (process.env.NODE_ENV !== "production" || !process.env.SENTRY_DSN) {
+    return;
+  }
+
+  Sentry.withScope((scope) => {
+    if (context) {
+      scope.setContext("error_details", context);
+    }
+    if (error instanceof Error) {
+      Sentry.captureException(error);
+    } else {
+      Sentry.captureMessage(String(error), level);
+    }
+  });
+}
 
 export interface SafeError {
   statusCode: number;
@@ -45,6 +71,7 @@ export function sanitizeError(error: unknown, defaultCode = 500): SafeError {
   // Handle standard errors
   if (error instanceof SyntaxError) {
     logger.error("Syntax error", error);
+    captureInSentry(error, "error", { type: "syntax_error" });
     return {
       statusCode: 400,
       statusMessage: "Bad Request",
@@ -56,6 +83,7 @@ export function sanitizeError(error: unknown, defaultCode = 500): SafeError {
 
   if (error instanceof TypeError) {
     logger.error("Type error", error);
+    captureInSentry(error, "error", { type: "type_error" });
     return {
       statusCode: 400,
       statusMessage: "Bad Request",
@@ -68,6 +96,7 @@ export function sanitizeError(error: unknown, defaultCode = 500): SafeError {
   if (error instanceof Error) {
     // Log full error for debugging
     logger.error("Unhandled error", error);
+    captureInSentry(error, "error", { type: "unhandled_error" });
 
     // Return sanitized response
     return {
@@ -82,6 +111,7 @@ export function sanitizeError(error: unknown, defaultCode = 500): SafeError {
 
   // Unknown error type
   logger.error("Unknown error type", error);
+  captureInSentry(error, "error", { type: "unknown_error" });
   return {
     statusCode: defaultCode,
     statusMessage: "Internal Server Error",
@@ -101,6 +131,7 @@ export function createSafeErrorResponse(
   defaultCode = 500,
 ): SafeError {
   logger.error(`Error in ${context}`, error);
+  captureInSentry(error, "error", { context });
   return sanitizeError(error, defaultCode);
 }
 
@@ -149,6 +180,7 @@ export function sanitizeDatabaseError(error: unknown): SafeError {
 
   // Generic database error
   logger.error("Database error", error);
+  captureInSentry(error, "error", { type: "database_error" });
   return {
     statusCode: 500,
     statusMessage: "Internal Server Error",

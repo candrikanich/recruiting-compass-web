@@ -87,6 +87,33 @@ describe("SchoolForm", () => {
           },
           FormErrorSummary: true,
           DesignSystemFieldError: true,
+          DesignSystemFormInput: {
+            template: '<div><label :for="getFieldId(label)">{{ label }}<span v-if="autoFilled"> (auto-filled)</span></label><input :id="getFieldId(label)" v-model="modelValue" :type="type || \'text\'" :disabled="disabled" :required="required" :placeholder="placeholder" @blur="$emit(\'blur\')" /></div>',
+            props: ['modelValue', 'label', 'type', 'disabled', 'required', 'placeholder', 'error', 'autoFilled'],
+            emits: ['update:modelValue', 'blur'],
+            setup(props: any) {
+              const getFieldId = (label: string) => label.toLowerCase().replace(/\s+/g, '').replace(/\W/g, '')
+              return { getFieldId }
+            }
+          },
+          DesignSystemFormSelect: {
+            template: '<div><label :for="getFieldId(label)">{{ label }}<span v-if="autoFilled"> (auto-filled)</span></label><select :id="getFieldId(label)" v-model="modelValue" :disabled="disabled" :required="required" @blur="$emit(\'blur\')"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select></div>',
+            props: ['modelValue', 'label', 'disabled', 'required', 'options', 'error', 'autoFilled'],
+            emits: ['update:modelValue', 'blur'],
+            setup(props: any) {
+              const getFieldId = (label: string) => label ? label.toLowerCase().replace(/\s+/g, '').replace(/\W/g, '') : 'select'
+              return { getFieldId }
+            }
+          },
+          DesignSystemFormTextarea: {
+            template: '<textarea :id="getFieldId(label)" v-model="modelValue" :disabled="disabled" :rows="rows" :placeholder="placeholder" @blur="$emit(\'blur\')"></textarea>',
+            props: ['modelValue', 'label', 'disabled', 'rows', 'placeholder', 'error'],
+            emits: ['update:modelValue', 'blur'],
+            setup(props: any) {
+              const getFieldId = (label: string) => label.toLowerCase().replace(/\s+/g, '').replace(/\W/g, '')
+              return { getFieldId }
+            }
+          }
         },
       },
     });
@@ -94,7 +121,7 @@ describe("SchoolForm", () => {
   describe("form fields", () => {
     it("renders name field", () => {
       const wrapper = mountForm({ useAutocomplete: false });
-      expect(wrapper.find("#name").exists()).toBe(true);
+      expect(wrapper.find("#schoolname").exists()).toBe(true);
     });
 
     it("renders location field", () => {
@@ -114,17 +141,17 @@ describe("SchoolForm", () => {
 
     it("renders website field", () => {
       const wrapper = mountForm();
-      expect(wrapper.find("#website").exists()).toBe(true);
+      expect(wrapper.find("#schoolwebsite").exists()).toBe(true);
     });
 
     it("renders twitter handle field", () => {
       const wrapper = mountForm();
-      expect(wrapper.find("#twitter").exists()).toBe(true);
+      expect(wrapper.find("#twitterhandle").exists()).toBe(true);
     });
 
     it("renders instagram handle field", () => {
       const wrapper = mountForm();
-      expect(wrapper.find("#instagram").exists()).toBe(true);
+      expect(wrapper.find("#instagramhandle").exists()).toBe(true);
     });
 
     it("renders notes field", () => {
@@ -134,7 +161,7 @@ describe("SchoolForm", () => {
 
     it("renders status select with researching default", () => {
       const wrapper = mountForm();
-      const statusSelect = wrapper.find("#status");
+      const statusSelect = wrapper.find("#initialstatus");
       expect(statusSelect.exists()).toBe(true);
       expect((statusSelect.element as HTMLSelectElement).value).toBe(
         "researching",
@@ -194,7 +221,7 @@ describe("SchoolForm", () => {
 
     it("shows manual name input when useAutocomplete is false", () => {
       const wrapper = mountForm({ useAutocomplete: false });
-      expect(wrapper.find("#name").exists()).toBe(true);
+      expect(wrapper.find("#schoolname").exists()).toBe(true);
       expect(
         wrapper.find('[data-testid="school-autocomplete-stub"]').exists(),
       ).toBe(false);
@@ -204,6 +231,7 @@ describe("SchoolForm", () => {
   describe("auto-filled field indicators", () => {
     it("shows auto-filled indicator for auto-filled fields", () => {
       const wrapper = mountForm({
+        useAutocomplete: false,
         initialAutoFilledFields: {
           name: true,
           location: true,
@@ -259,7 +287,7 @@ describe("SchoolForm", () => {
 
       const wrapper = mountForm({ useAutocomplete: false });
 
-      await wrapper.find("#name").setValue("University of Florida");
+      await wrapper.find("#schoolname").setValue("University of Florida");
       await wrapper.find("form").trigger("submit");
       await flushPromises();
 
@@ -305,7 +333,7 @@ describe("SchoolForm", () => {
     it("disables submit when hasErrors is true", async () => {
       mockHasErrorsRef.value = true;
       const wrapper = mountForm({ useAutocomplete: false });
-      await wrapper.find("#name").setValue("Test School");
+      await wrapper.find("#schoolname").setValue("Test School");
       await nextTick();
 
       const submitBtn = wrapper.find('[data-testid="add-school-button"]');
@@ -330,8 +358,8 @@ describe("SchoolForm", () => {
   describe("field validation on blur", () => {
     it("validates name field on blur", async () => {
       const wrapper = mountForm({ useAutocomplete: false });
-      await wrapper.find("#name").setValue("Test");
-      await wrapper.find("#name").trigger("blur");
+      await wrapper.find("#schoolname").setValue("Test");
+      await wrapper.find("#schoolname").trigger("blur");
       await flushPromises();
 
       expect(mockValidateField).toHaveBeenCalled();
@@ -347,7 +375,7 @@ describe("SchoolForm", () => {
 
     it("validates website field on blur", async () => {
       const wrapper = mountForm();
-      await wrapper.find("#website").trigger("blur");
+      await wrapper.find("#schoolwebsite").trigger("blur");
       await flushPromises();
 
       expect(mockValidateField).toHaveBeenCalled();
@@ -379,7 +407,7 @@ describe("SchoolForm", () => {
         },
       });
 
-      expect((wrapper.find("#name").element as HTMLInputElement).value).toBe(
+      expect((wrapper.find("#schoolname").element as HTMLInputElement).value).toBe(
         "Pre-filled School",
       );
       expect(
@@ -395,7 +423,7 @@ describe("SchoolForm", () => {
 
     it("defaults status to researching when not specified", () => {
       const wrapper = mountForm();
-      expect((wrapper.find("#status").element as HTMLSelectElement).value).toBe(
+      expect((wrapper.find("#initialstatus").element as HTMLSelectElement).value).toBe(
         "researching",
       );
     });
@@ -404,7 +432,7 @@ describe("SchoolForm", () => {
   describe("status options", () => {
     it("has all 6 status options", () => {
       const wrapper = mountForm();
-      const options = wrapper.findAll("#status option");
+      const options = wrapper.findAll("#initialstatus option");
       expect(options.length).toBe(6);
 
       const values = options.map((o) => (o.element as HTMLOptionElement).value);
