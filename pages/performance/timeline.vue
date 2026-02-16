@@ -1,8 +1,16 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Sub-navigation tabs -->
-      <div class="mb-6 border-b border-gray-200">
+  <div
+    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+  >
+    <!-- Page Header -->
+    <PageHeader
+      title="Performance Timeline & Analytics"
+      description="Track your progress over time and compare metrics across events"
+    />
+
+    <!-- Sub-navigation tabs -->
+    <div class="bg-white border-b border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6">
         <nav class="flex gap-6">
           <NuxtLink
             to="/performance"
@@ -18,16 +26,9 @@
           </NuxtLink>
         </nav>
       </div>
+    </div>
 
-      <!-- Page Header -->
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">
-          Performance Timeline & Analytics
-        </h1>
-        <p class="text-gray-600 mt-1">
-          Track your progress over time and compare metrics across events
-        </p>
-      </div>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       <!-- Filters Bar -->
       <PerformanceTimelineFilters
@@ -94,7 +95,7 @@
         context="timeline"
         @close="showExportModal = false"
       />
-    </div>
+    </main>
   </div>
 </template>
 
