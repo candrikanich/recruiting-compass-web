@@ -374,9 +374,11 @@ describe('LogMetricModal - Keyboard Support & Accessibility', () => {
     await wrapper.setProps({ show: true });
     await flushPromises();
     await wrapper.vm.$nextTick();
+    // Additional tick for focus to settle
+    await wrapper.vm.$nextTick();
 
     const firstInput = document.querySelector('#metricType') as HTMLElement;
-    expect(document.activeElement).toBe(firstInput);
+    expect(document.activeElement?.id).toBe('metricType');
 
     wrapper.unmount();
   });

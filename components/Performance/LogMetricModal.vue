@@ -29,6 +29,9 @@ const notes = ref('');
 const loading = ref(false);
 const error = ref<string | null>(null);
 
+// Refs for focus management
+const firstInputRef = ref<HTMLElement | null>(null);
+
 // Metric type options (per spec)
 const metricTypes = [
   { value: 'velocity', label: 'Fastball Velocity (mph)' },
@@ -107,17 +110,34 @@ const handleSubmit = async () => {
   }
 };
 
+// Keyboard event handler
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    handleClose();
+  }
+};
+
 // Lifecycle
 onMounted(() => {
   date.value = new Date().toISOString().split('T')[0];
+  // Add ESC key listener
+  document.addEventListener('keydown', handleKeydown);
 });
 
-// Watch show prop to fetch events when modal opens
+onBeforeUnmount(() => {
+  // Clean up event listener
+  document.removeEventListener('keydown', handleKeydown);
+});
+
+// Watch show prop to fetch events and manage focus
 watch(
   () => props.show,
   async (newVal) => {
     if (newVal) {
       await fetchEvents();
+      // Focus first input after modal renders
+      await nextTick();
+      firstInputRef.value?.focus();
     }
   }
 );
@@ -134,11 +154,12 @@ watch(
         class="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-xl"
         role="dialog"
         aria-modal="true"
+        aria-labelledby="modal-title"
         @click.stop
       >
         <!-- Header -->
         <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white">
-          <h2 class="text-xl font-bold">Log Performance Metric</h2>
+          <h2 id="modal-title" class="text-xl font-bold">Log Performance Metric</h2>
           <p class="mt-1 text-sm text-white/90">Record your athletic performance</p>
         </div>
 
@@ -159,6 +180,7 @@ watch(
                 </label>
                 <select
                   id="metricType"
+                  ref="firstInputRef"
                   v-model="metricType"
                   required
                   class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
