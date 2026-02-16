@@ -30,7 +30,7 @@
       </div>
 
       <!-- Filters Bar -->
-      <TimelineFilters
+      <PerformanceTimelineFilters
         v-model:dateRange="dateRange"
         v-model:verifiedOnly="verifiedOnly"
         @export="handleExport"
