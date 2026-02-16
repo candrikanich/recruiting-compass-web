@@ -26,12 +26,7 @@ Added 4 critical composite indexes for common query patterns:
 - Postgres can use index-only scans (no heap fetch)
 - ORDER BY DESC optimized with DESC index ordering
 
-**To Apply:**
-```bash
-npm run db:migrate
-# or
-supabase db push
-```
+**Status:** ✅ Applied (2026-02-16)
 
 ---
 
@@ -152,9 +147,9 @@ const { items, loadMore } = useTypedCursorPagination<Interaction>(
 
 ## 🧪 Testing Checklist
 
-- [ ] Run `npm run type-check` - Verify no TypeScript errors
-- [ ] Run `npm test` - All unit tests pass
-- [ ] Apply migration 036 to local database
+- [x] Run `npm run type-check` - Verify no TypeScript errors
+- [x] Run `npm test` - All unit tests pass (5629 passing)
+- [x] Apply migration 036 to database
 - [ ] Test school list page (fetchSchools with new columns)
 - [ ] Test interaction timeline (fetchInteractions with new index)
 - [ ] Test coach search (fetchAllCoaches with new columns)
