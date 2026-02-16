@@ -64,7 +64,7 @@ export const compressImage = async (
   const compressionOptions = {
     maxSizeMB: options?.maxSizeMB ?? DEFAULT_COMPRESSED_SIZE_MB,
     maxWidthOrHeight: options?.maxWidthOrHeight ?? DEFAULT_MAX_DIMENSION,
-    useWebWorker: options?.useWebWorker ?? true,
+    useWebWorker: options?.useWebWorker ?? false, // Disabled to avoid CSP violation from CDN worker loading
     fileType: "image/jpeg" as const,
   };
 
