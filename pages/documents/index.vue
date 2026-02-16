@@ -54,6 +54,7 @@
         <template #filter>
           <div class="bg-white p-4 rounded-lg shadow">
             <UniversalFilter
+              :columns="4"
               :configs="filterConfigs"
               :filter-values="
                 Object.fromEntries(Object.entries(filterValues.value || {}))
