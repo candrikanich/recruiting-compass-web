@@ -75,9 +75,7 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: false,
     },
-    externals: {
-      inline: ["isomorphic-dompurify"],
-    },
+
   },
 
   postcss: {
