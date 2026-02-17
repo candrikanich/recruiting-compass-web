@@ -9,7 +9,7 @@
  * - Sample data queries with counts
  */
 
-import { defineEventHandler, getHeader, getCookie } from "h3";
+import { defineEventHandler, getHeader, getCookie, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 
