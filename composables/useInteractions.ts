@@ -224,12 +224,6 @@ const useInteractionsInternal = (): {
     loadingRef.value = true;
     errorRef.value = null;
 
-    // DEBUG: Log filters in dev/test
-    if (process.env.NODE_ENV !== "production") {
-      console.log("fetchInteractions called with filters:", filters);
-      console.log("filters?.schoolId:", filters?.schoolId);
-    }
-
     try {
       // 🚀 Quick Win: Select only needed columns (2-3x faster for list views)
       let query = supabase

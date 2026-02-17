@@ -95,9 +95,6 @@ const fetchLogo = async () => {
   const cached = getSchoolLogoCached(props.school.id);
   if (cached !== undefined) {
     logoUrl.value = cached;
-    console.log(
-      `[SchoolLogo] Using cached logo for ${props.school.name}: ${cached}`,
-    );
     return;
   }
 
@@ -106,7 +103,6 @@ const fetchLogo = async () => {
     const url = await fetchSchoolLogo(props.school);
     logoUrl.value = url;
     imageError.value = false;
-    console.log(`[SchoolLogo] Fetched logo for ${props.school.name}: ${url}`);
   } catch (error) {
     console.warn(
       `[SchoolLogo] Failed to fetch logo for ${props.school.name}:`,
