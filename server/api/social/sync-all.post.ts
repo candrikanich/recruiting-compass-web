@@ -3,6 +3,7 @@
  * Admin endpoint for syncing all users' social media posts (used by background jobs)
  */
 
+import { defineEventHandler, getHeader, createError } from "h3";
 import { createClient } from "@supabase/supabase-js";
 import { TwitterService } from "~/server/utils/twitterService";
 import { InstagramService } from "~/server/utils/instagramService";
@@ -21,19 +22,25 @@ interface SyncStats {
 }
 
 export default defineEventHandler(async (event): Promise<SyncStats> => {
+  // Auth checks run before the try/catch so errors propagate with correct status codes
+  const authHeader = getHeader(event, "authorization");
+  const syncApiKey = process.env.SYNC_API_KEY;
+
+  if (!syncApiKey) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: "SYNC_API_KEY not configured — endpoint disabled",
+    });
+  }
+  if (authHeader !== `Bearer ${syncApiKey}`) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Invalid API key",
+    });
+  }
+
   try {
-    // Verify authorization (check for API key in header)
-    const authHeader = getHeader(event, "authorization");
     const config = useRuntimeConfig();
-    const syncApiKey = process.env.SYNC_API_KEY;
-
-    if (syncApiKey && authHeader !== `Bearer ${syncApiKey}`) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: "Invalid API key",
-      });
-    }
-
     const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY;
     if (!supabaseUrl || !supabaseKey) {
