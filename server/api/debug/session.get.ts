@@ -14,6 +14,11 @@ import { requireAuth } from "~/server/utils/auth";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 
 export default defineEventHandler(async (event) => {
+  // Debug endpoint — disabled in production
+  if (process.env.NODE_ENV === "production") {
+    throw createError({ statusCode: 404, statusMessage: "Not found" });
+  }
+
   try {
     // Verify user is authenticated
     const user = await requireAuth(event);
