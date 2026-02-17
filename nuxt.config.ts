@@ -75,8 +75,8 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: false,
     },
-    rollupConfig: {
-      external: ["isomorphic-dompurify"],
+    externals: {
+      inline: ["isomorphic-dompurify"],
     },
   },
 
