@@ -1,8 +1,30 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Sub-navigation tabs -->
-      <div class="mb-6 border-b border-gray-200">
+  <div
+    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+  >
+    <!-- Page Header -->
+    <PageHeader
+      title="Performance Metrics"
+      description="Track your athletic performance over time"
+    >
+      <template #actions>
+        <ExportButton
+          v-if="metrics.length > 0"
+          variant="full"
+          @click="showExportModal = true"
+        />
+        <button
+          @click="showLogMetricModal = true"
+          class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+        >
+          + Log Metric
+        </button>
+      </template>
+    </PageHeader>
+
+    <!-- Sub-navigation tabs -->
+    <div class="bg-white border-b border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6">
         <nav class="flex gap-6">
           <NuxtLink
             to="/performance"
@@ -18,29 +40,9 @@
           </NuxtLink>
         </nav>
       </div>
+    </div>
 
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-8">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">Performance Metrics</h1>
-          <p class="text-gray-600 mt-1">
-            Track your athletic performance over time
-          </p>
-        </div>
-        <div class="flex gap-4">
-          <ExportButton
-            v-if="metrics.length > 0"
-            variant="full"
-            @click="showExportModal = true"
-          />
-          <button
-            @click="showLogMetricModal = true"
-            class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
-          >
-            + Log Metric
-          </button>
-        </div>
-      </div>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       <!-- Performance Dashboard (Analytics Overview) -->
       <div v-if="metrics.length > 0" class="mb-8">
@@ -413,7 +415,7 @@
         @close="showLogMetricModal = false"
         @metric-created="handleMetricCreated"
       />
-    </div>
+    </main>
   </div>
 </template>
 

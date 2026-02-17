@@ -1,7 +1,7 @@
 <template>
   <div class="universal-filter">
     <!-- Filter controls -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div :class="filterGridClasses">
       <!-- Dynamic filter inputs -->
       <div
         v-for="config in visibleConfigs"
@@ -325,6 +325,7 @@ interface Props {
   presets: FilterPreset[];
   filteredCount: number;
   hasActiveFilters: boolean;
+  columns?: number;
 }
 
 interface Emits {
@@ -334,7 +335,9 @@ interface Emits {
   (e: "load-preset", presetId: string): void;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  columns: 3,
+});
 const emit = defineEmits<Emits>();
 
 // UI state
@@ -347,6 +350,11 @@ const newPresetDescription = ref("");
 const visibleConfigs = computed(() => {
   return props.configs.filter((c) => c.visible !== false);
 });
+
+// Dynamic grid classes based on columns prop
+const filterGridClasses = computed(() =>
+  `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${props.columns} gap-4`
+);
 
 // Handle single value changes
 const setFilterValue = (field: string, value: any) => {

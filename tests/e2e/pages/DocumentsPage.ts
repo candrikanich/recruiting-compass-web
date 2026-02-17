@@ -13,8 +13,9 @@ export class DocumentsPage extends BasePage {
 
   // Document Management
   async clickAddDocument() {
-    await this.click('[data-testid="add-document-button"]');
-    await this.waitForURL("/documents/create");
+    // Click the "Add Document" button in the header to toggle upload form
+    await this.page.getByRole('button', { name: /add document/i }).click();
+    await this.page.waitForTimeout(500); // Wait for form to appear
   }
 
   async expectDocumentsVisible() {

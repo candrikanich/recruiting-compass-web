@@ -150,7 +150,11 @@ const surfaceMoreSuggestions = async () => {
 
 onMounted(async () => {
   try {
-    const { data } = await supabase.from("schools").select("*");
+    const { data } = await supabase
+      .from("schools")
+      .select(
+        "id, name, location, division, conference, ranking, is_favorite, status, priority_tier, website, user_id, family_unit_id",
+      );
     if (data) {
       allSchools.value = data as School[];
     }

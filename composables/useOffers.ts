@@ -1,11 +1,18 @@
 import { ref, computed, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { useActiveFamily } from "./useActiveFamily";
 import type { Offer } from "~/types/models";
 
 /**
  * useOffers composable
  * Manages scholarship offers and decision tracking
+ *
+ * FAMILY-BASED ACCESS CONTROL:
+ * - Offers are owned by family units, not individual users
+ * - Students see their own offers (their family)
+ * - Parents see all offers in accessible families
+ * - Queries filter by family_unit_id instead of user_id
  *
  * Offer types:
  * - full_ride: 100% scholarship coverage
@@ -46,6 +53,7 @@ export const useOffers = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const activeFamily = useActiveFamily();
 
   const offers = ref<Offer[]>([]);
   const loading = ref(false);
@@ -56,6 +64,10 @@ export const useOffers = (): {
     schoolId?: string;
   }) => {
     if (!userStore.user) return;
+    if (!activeFamily.activeFamilyId?.value) {
+      console.debug("[useOffers] No family context, skipping fetch");
+      return;
+    }
 
     loading.value = true;
     error.value = null;
@@ -64,7 +76,7 @@ export const useOffers = (): {
       let query = supabase
         .from("offers")
         .select("*")
-        .eq("user_id", userStore.user.id);
+        .eq("family_unit_id", activeFamily.activeFamilyId.value);
 
       if (filters?.status) {
         query = query.eq("status", filters.status);
@@ -95,6 +107,14 @@ export const useOffers = (): {
     offerData: Omit<Offer, "id" | "created_at" | "updated_at">,
   ) => {
     if (!userStore.user) throw new Error("User not authenticated");
+    if (!activeFamily.activeFamilyId.value) {
+      throw new Error("Family context not loaded");
+    }
+
+    const dataOwnerUserId = activeFamily.getDataOwnerUserId();
+    if (!dataOwnerUserId) {
+      throw new Error("Athlete context not set");
+    }
 
     loading.value = true;
     error.value = null;
@@ -106,7 +126,8 @@ export const useOffers = (): {
           .insert([
             {
               ...offerData,
-              user_id: userStore.user.id,
+              user_id: dataOwnerUserId,
+              family_unit_id: activeFamily.activeFamilyId.value,
             },
           ])
           .select()

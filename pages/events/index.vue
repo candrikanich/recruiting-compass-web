@@ -24,7 +24,7 @@
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
       >
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
           <!-- Search -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-2"
@@ -76,9 +76,7 @@
               <option value="attended">Attended</option>
             </select>
           </div>
-        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Date Range Filter -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-2"
@@ -95,25 +93,22 @@
               <option value="next_month">Next Month</option>
             </select>
           </div>
-        </div>
-      </div>
 
-      <!-- Results Count and Sort -->
-      <div class="flex items-center justify-between mb-6">
-        <div class="text-slate-600">{{ filteredEvents.length }} results</div>
-        <div class="w-64">
-          <label class="block text-sm font-medium text-slate-700 mb-2"
-            >Sort By</label
-          >
-          <select
-            v-model="sortBy"
-            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-          >
-            <option value="date_desc">Date (Newest First)</option>
-            <option value="date_asc">Date (Oldest First)</option>
-            <option value="name">Name (A-Z)</option>
-            <option value="type">Type (A-Z)</option>
-          </select>
+          <!-- Sort By -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2"
+              >Sort By</label
+            >
+            <select
+              v-model="sortBy"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+            >
+              <option value="date_desc">Date (Newest First)</option>
+              <option value="date_asc">Date (Oldest First)</option>
+              <option value="name">Name (A-Z)</option>
+              <option value="type">Type (A-Z)</option>
+            </select>
+          </div>
         </div>
       </div>
 

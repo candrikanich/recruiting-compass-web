@@ -1,6 +1,16 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
-    <PageHeader title="Documents" description="Manage videos, transcripts, and other recruiting documents" />
+    <PageHeader title="Documents" description="Manage videos, transcripts, and other recruiting documents">
+      <template #actions>
+        <NuxtLink
+          to="/documents/add"
+          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+        >
+          <PlusIcon class="w-4 h-4" />
+          + Add Document
+        </NuxtLink>
+      </template>
+    </PageHeader>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Statistics Row -->
@@ -43,236 +53,139 @@
 
         <template #filter>
           <div class="bg-white p-4 rounded-lg shadow">
-            <UniversalFilter
-              :configs="filterConfigs"
-              :filter-values="
-                Object.fromEntries(Object.entries(filterValues.value || {}))
-              "
-              :presets="presets"
-              :filtered-count="filteredDocuments.length"
-              :has-active-filters="hasActiveFilters"
-              @update:filter="handleFilterUpdate"
-              @clear-filters="clearFilters"
-              @save-preset="handleSavePreset"
-              @load-preset="handleLoadPreset"
-            />
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <!-- Search -->
+              <div>
+                <label
+                  for="search"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                  >Search</label
+                >
+                <input
+                  id="search"
+                  :value="searchValue"
+                  @input="handleFilterUpdate('search', ($event.target as HTMLInputElement).value)"
+                  type="text"
+                  placeholder="Title or description..."
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
 
-            <!-- Sort Options -->
-            <div class="mt-6 pt-6 border-t">
-              <label
-                for="sort"
-                class="text-sm font-medium text-gray-700 mb-2 block"
-                >Sort By</label
-              >
-              <select
-                v-model="sortBy"
-                id="sort"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-              >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="name">Name (A-Z)</option>
-                <option value="type">Type</option>
-                <option value="shared">Most Shared</option>
-              </select>
+              <!-- Type -->
+              <div>
+                <label
+                  for="type"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                  >Type</label
+                >
+                <select
+                  id="type"
+                  :value="typeValue"
+                  @change="handleFilterUpdate('type', ($event.target as HTMLSelectElement).value || null)"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="">-- All --</option>
+                  <option value="highlight_video">🎥 Highlight Video</option>
+                  <option value="transcript">📄 Transcript</option>
+                  <option value="resume">📄 Resume</option>
+                  <option value="rec_letter">💌 Rec Letter</option>
+                  <option value="questionnaire">📝 Questionnaire</option>
+                  <option value="stats_sheet">📊 Stats Sheet</option>
+                </select>
+              </div>
+
+              <!-- School -->
+              <div>
+                <label
+                  for="schoolId"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                  >School</label
+                >
+                <select
+                  id="schoolId"
+                  :value="schoolIdValue"
+                  @change="handleFilterUpdate('schoolId', ($event.target as HTMLSelectElement).value || null)"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="">-- All --</option>
+                  <option value="general">General (No School)</option>
+                  <option
+                    v-for="school in schools"
+                    :key="school.id"
+                    :value="school.id"
+                  >
+                    {{ school.name }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Status -->
+              <div>
+                <label
+                  for="shared"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                  >Status</label
+                >
+                <select
+                  id="shared"
+                  :value="sharedValue"
+                  @change="handleFilterUpdate('shared', ($event.target as HTMLSelectElement).value || null)"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="">-- All --</option>
+                  <option value="true">Shared</option>
+                  <option value="false">Not Shared</option>
+                </select>
+              </div>
+
+              <!-- Sort By -->
+              <div>
+                <label
+                  for="sort"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                  >Sort By</label
+                >
+                <select
+                  v-model="sortBy"
+                  id="sort"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="name">Name (A-Z)</option>
+                  <option value="type">Type</option>
+                  <option value="shared">Most Shared</option>
+                </select>
+              </div>
             </div>
           </div>
         </template>
       </FilterPanel>
 
-      <!-- View Toggle & Upload Button -->
-      <div class="flex gap-4 mb-8">
-        <div class="flex gap-2">
-          <button
-            @click="viewMode = 'grid'"
-            :class="[
-              'px-3 py-2 rounded-lg text-sm font-medium transition',
-              viewMode === 'grid'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-900 hover:bg-gray-300',
-            ]"
-          >
-            ⊞ Grid
-          </button>
-          <button
-            @click="viewMode = 'list'"
-            :class="[
-              'px-3 py-2 rounded-lg text-sm font-medium transition',
-              viewMode === 'list'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-900 hover:bg-gray-300',
-            ]"
-          >
-            ☰ List
-          </button>
-        </div>
-
-        <!-- Upload Button -->
+      <!-- View Toggle -->
+      <div class="flex gap-2 mb-8">
         <button
-          @click="showUploadForm = !showUploadForm"
-          class="w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+          @click="viewMode = 'grid'"
+          :class="[
+            'px-3 py-2 rounded-lg text-sm font-medium transition',
+            viewMode === 'grid'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-900 hover:bg-gray-300',
+          ]"
         >
-          {{ showUploadForm ? "Hide Form" : "+ Upload Document" }}
+          ⊞ Grid
         </button>
-      </div>
-
-      <!-- Upload Form -->
-      <div v-if="showUploadForm" class="bg-white rounded-lg shadow p-6 mb-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Upload Document</h2>
-        <form @submit.prevent="handleUpload" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Document Type -->
-            <div>
-              <label
-                for="type"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Document Type <span class="text-red-600">*</span>
-              </label>
-              <select
-                id="type"
-                v-model="newDoc.type"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Type</option>
-                <option value="highlight_video">Highlight Video</option>
-                <option value="transcript">Transcript</option>
-                <option value="resume">Resume</option>
-                <option value="rec_letter">Recommendation Letter</option>
-                <option value="questionnaire">Questionnaire</option>
-                <option value="stats_sheet">Stats Sheet</option>
-              </select>
-            </div>
-
-            <!-- Title -->
-            <div>
-              <label
-                for="title"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Title <span class="text-red-600">*</span>
-              </label>
-              <input
-                id="title"
-                v-model="newDoc.title"
-                type="text"
-                required
-                placeholder="e.g., Freshman Highlights 2025"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <!-- School (Optional) -->
-            <div>
-              <label
-                for="school"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                School (Optional)
-              </label>
-              <select
-                id="school"
-                v-model="newDoc.schoolId"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">General / Not School-Specific</option>
-                <option
-                  v-for="school in schools"
-                  :key="school.id"
-                  :value="school.id"
-                >
-                  {{ school.name }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Version -->
-            <div>
-              <label
-                for="version"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Version (Optional)
-              </label>
-              <input
-                id="version"
-                v-model.number="newDoc.version"
-                type="number"
-                min="1"
-                placeholder="1"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          <!-- Description -->
-          <div>
-            <label
-              for="description"
-              class="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Description
-            </label>
-            <textarea
-              id="description"
-              v-model="newDoc.description"
-              rows="3"
-              placeholder="Additional details about this document..."
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <!-- File Upload -->
-          <div>
-            <label
-              for="file"
-              class="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Select File
-            </label>
-            <div class="relative">
-              <input
-                id="file"
-                ref="fileInput"
-                type="file"
-                @change="handleFileSelect"
-                class="sr-only"
-              />
-              <button
-                type="button"
-                @click="fileInput?.click()"
-                :disabled="!newDoc.type"
-                class="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ selectedFileName || "Click to select file" }}
-              </button>
-            </div>
-            <p class="text-xs text-gray-500 mt-2">
-              Allowed formats: {{ allowedFileTypes }}
-            </p>
-          </div>
-
-          <!-- Buttons -->
-          <div class="flex gap-4">
-            <button
-              type="submit"
-              :disabled="
-                loading || !newDoc.type || !newDoc.title || !selectedFile
-              "
-              class="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-            >
-              {{ loading ? "Uploading..." : "Upload" }}
-            </button>
-            <button
-              type="button"
-              @click="showUploadForm = false"
-              class="flex-1 px-4 py-2 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+        <button
+          @click="viewMode = 'list'"
+          :class="[
+            'px-3 py-2 rounded-lg text-sm font-medium transition',
+            viewMode === 'list'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-900 hover:bg-gray-300',
+          ]"
+        >
+          ☰ List
+        </button>
       </div>
 
       <!-- Loading State -->
@@ -337,14 +250,6 @@
               >
                 Shared: {{ (doc.shared_with_schools || []).length }}
               </span>
-              <NuxtLink
-                to="/documents/create"
-                data-testid="add-document-button"
-                class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition inline-flex items-center gap-2"
-              >
-                <PlusIcon class="w-5 h-5" />
-                Add Document
-              </NuxtLink>
             </div>
           </div>
         </div>
@@ -366,9 +271,6 @@ import UniversalFilter from "~/components/UniversalFilter.vue";
 import { useUserStore } from "~/stores/user";
 import type { Document } from "~/types/models";
 import type { FilterConfig } from "~/types/filters";
-import type { Database } from "~/types/database";
-
-type DocumentType = Database["public"]["Enums"]["document_type"];
 
 definePageMeta({
   middleware: "auth",
@@ -378,32 +280,16 @@ const userStore = useUserStore();
 const {
   documents,
   loading,
-  isUploading,
   error,
-  uploadError,
   fetchDocuments,
-  uploadDocument,
   deleteDocument: deleteDocumentAPI,
 } = useDocumentsConsolidated();
 const { schools: allSchools, fetchSchools } = useSchools();
-const { validateFile, fileErrors } = useFormValidation();
 const { getErrorMessage, logError } = useErrorHandler();
 
-const showUploadForm = ref(false);
-const selectedFile = ref<File | null>(null);
-const selectedFileName = ref("");
-const fileInput = ref<HTMLInputElement | null>(null);
 const schools = ref<any[]>([]);
 const sortBy = ref("newest");
 const viewMode = ref<"grid" | "list">("grid");
-
-const newDoc = reactive({
-  type: "",
-  title: "",
-  description: "",
-  schoolId: "",
-  version: 1,
-});
 
 // Filter configurations
 const filterConfigs = computed<FilterConfig[]>(() => [
@@ -463,6 +349,12 @@ const {
 
 // Convert readonly presets to mutable array
 const presets = computed(() => [...readonlyPresets.value]);
+
+// Computed helpers for type-safe filter access
+const searchValue = computed(() => String(filterValues.value?.search || ''));
+const typeValue = computed(() => String(filterValues.value?.type || ''));
+const schoolIdValue = computed(() => String(filterValues.value?.schoolId || ''));
+const sharedValue = computed(() => String(filterValues.value?.shared || ''));
 
 // Filter event handlers
 const handleFilterUpdate = (field: string, value: any) => {
@@ -591,23 +483,6 @@ const mostCommonType = computed(() => {
   return typeNames[mostCommon[0]] || mostCommon[0];
 });
 
-const allowedFileTypes = computed(() => {
-  const typeExtensions: Record<string, string[]> = {
-    highlight_video: [".mp4", ".mov", ".avi"],
-    transcript: [".pdf", ".txt"],
-    resume: [".pdf", ".doc", ".docx"],
-    rec_letter: [".pdf"],
-    questionnaire: [".pdf", ".doc", ".docx"],
-    stats_sheet: [".csv", ".xls", ".xlsx"],
-  };
-
-  if (!newDoc.type || !typeExtensions[newDoc.type]) {
-    return "Select a document type first";
-  }
-
-  return typeExtensions[newDoc.type].join(", ");
-});
-
 const getTypeEmoji = (type: string): string => {
   const emojis: Record<string, string> = {
     highlight_video: "🎥",
@@ -633,60 +508,6 @@ const formatDate = (dateString?: string): string => {
 const getSchoolName = (schoolId: string | null | undefined): string => {
   if (!schoolId) return "General";
   return schools.value.find((s) => s.id === schoolId)?.name || "Unknown";
-};
-
-const handleFileSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files.length > 0) {
-    const file = target.files[0];
-
-    // Validate file
-    try {
-      validateFile(file, newDoc.type as DocumentType);
-      selectedFile.value = file;
-      selectedFileName.value = file.name;
-    } catch (err) {
-      console.error(
-        "File validation failed:",
-        err instanceof Error ? err.message : "Unknown error",
-      );
-      selectedFile.value = null;
-      selectedFileName.value = "";
-    }
-  }
-};
-
-const handleUpload = async () => {
-  if (!selectedFile.value) return;
-
-  try {
-    const result = await uploadDocument(
-      selectedFile.value,
-      newDoc.type as DocumentType,
-      newDoc.title,
-      {
-        description: newDoc.description || undefined,
-        school_id: newDoc.schoolId || undefined,
-        version: newDoc.version || 1,
-      } as unknown as string,
-    );
-
-    if (result.success) {
-      // Reset form
-      newDoc.type = "";
-      newDoc.title = "";
-      newDoc.description = "";
-      newDoc.schoolId = "";
-      newDoc.version = 1;
-      selectedFile.value = null;
-      selectedFileName.value = "";
-      showUploadForm.value = false;
-    } else {
-      console.error("Upload failed:", uploadError.value);
-    }
-  } catch (err) {
-    console.error("Failed to upload document:", err);
-  }
 };
 
 const handleDeleteDocument = async (docId: string) => {

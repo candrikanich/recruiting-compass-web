@@ -127,8 +127,6 @@ const useSchoolsInternal = (): {
           id,
           name,
           location,
-          city,
-          state,
           division,
           conference,
           ranking,
@@ -140,7 +138,6 @@ const useSchoolsInternal = (): {
           favicon_url,
           twitter_handle,
           instagram_handle,
-          ncaa_id,
           notes,
           pros,
           cons,
@@ -195,10 +192,48 @@ const useSchoolsInternal = (): {
     errorRef.value = null;
 
     try {
-      // 🚀 Quick Win: Fetch all columns for detail view (user may need any field)
+      // Fetch all available columns for detail view
       const schoolResponse = await supabase
         .from("schools")
-        .select("*")
+        .select(
+          `
+          id,
+          name,
+          location,
+          division,
+          conference,
+          ranking,
+          is_favorite,
+          status,
+          status_changed_at,
+          priority_tier,
+          website,
+          favicon_url,
+          twitter_handle,
+          instagram_handle,
+          notes,
+          pros,
+          cons,
+          fit_score,
+          fit_tier,
+          user_id,
+          family_unit_id,
+          created_at,
+          updated_at,
+          academic_info,
+          amenities,
+          coaching_philosophy,
+          coaching_style,
+          recruiting_approach,
+          communication_style,
+          success_metrics,
+          offer_details,
+          private_notes,
+          fit_score_data,
+          created_by,
+          updated_by
+        `,
+        )
         .eq("id", id)
         .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .single();

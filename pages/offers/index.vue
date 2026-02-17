@@ -450,9 +450,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed } from "vue";
+import { ref, onMounted, reactive, computed, watch } from "vue";
 import { useOffers } from "~/composables/useOffers";
 import { useSchools } from "~/composables/useSchools";
+import { useActiveFamily } from "~/composables/useActiveFamily";
 import Header from "~/components/Header.vue";
 import OfferComparison from "~/components/OfferComparison.vue";
 import {
@@ -482,6 +483,7 @@ const {
   daysUntilDeadline,
 } = useOffers();
 const { schools, fetchSchools } = useSchools();
+const activeFamily = useActiveFamily();
 
 const showAddForm = ref(false);
 const showComparison = ref(false);
@@ -681,7 +683,32 @@ const deleteOffer = async (offerId: string) => {
 };
 
 onMounted(async () => {
-  await fetchSchools();
-  await fetchOffers();
+  // Only fetch if family context is already loaded
+  if (activeFamily.activeFamilyId?.value) {
+    await fetchSchools();
+    await fetchOffers();
+  }
 });
+
+// Watch for family context to load (handles race condition on page load)
+watch(
+  () => activeFamily.activeFamilyId.value,
+  async (newFamilyId, oldFamilyId) => {
+    if (newFamilyId && newFamilyId !== oldFamilyId) {
+      await fetchSchools();
+      await fetchOffers();
+    }
+  },
+);
+
+// Watch for athlete switches (for parents)
+watch(
+  () => activeFamily.activeAthleteId.value,
+  async (newId, oldId) => {
+    if (newId && newId !== oldId && activeFamily.isViewingAsParent.value) {
+      await fetchSchools();
+      await fetchOffers();
+    }
+  },
+);
 </script>
