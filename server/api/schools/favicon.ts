@@ -4,7 +4,12 @@
  * Handles caching to minimize external requests
  */
 
+import { requireAuth } from "~/server/utils/auth";
+
 export default defineEventHandler(async (event) => {
+  // Require authentication to prevent unauthenticated SSRF
+  await requireAuth(event);
+
   try {
     const { schoolDomain, schoolId } = getQuery(event);
 

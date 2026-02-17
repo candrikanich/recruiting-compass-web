@@ -9,9 +9,7 @@ import {
 // Mock the Supabase client creation
 vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn(() => ({
-    auth: {
-      setSession: vi.fn(),
-    },
+    auth: {},
   })),
 }));
 
@@ -59,15 +57,23 @@ describe("server/utils/supabase", () => {
       expect(client).toBeDefined();
     });
 
-    it("should set user session with provided token", () => {
+    it("should pass user token as Authorization header to createClient", async () => {
       process.env.NUXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
       process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
 
-      const client = createServerSupabaseUserClient("user-token-123");
-      expect(client.auth.setSession).toHaveBeenCalledWith({
-        access_token: "user-token-123",
-        refresh_token: "",
-      });
+      const { createClient } = await import("@supabase/supabase-js");
+
+      createServerSupabaseUserClient("user-token-123");
+
+      expect(createClient).toHaveBeenCalledWith(
+        "https://test.supabase.co",
+        "test-anon-key",
+        expect.objectContaining({
+          global: {
+            headers: { Authorization: "Bearer user-token-123" },
+          },
+        }),
+      );
     });
 
     it("should throw error when SUPABASE_URL is missing", () => {

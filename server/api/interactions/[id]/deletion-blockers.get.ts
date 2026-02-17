@@ -1,4 +1,5 @@
 import { defineEventHandler, getRouterParam, createError } from "h3";
+import { requireAuth } from "~/server/utils/auth";
 
 interface BlockerInfo {
   table: string;
@@ -24,6 +25,9 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Interaction ID is required",
     });
   }
+
+  // Require auth before revealing schema info
+  await requireAuth(event);
 
   const blockers: BlockerInfo[] = [];
 
