@@ -169,10 +169,15 @@ export default defineEventHandler(async (event) => {
       },
     };
   } catch (err: unknown) {
+    // Re-throw H3 errors immediately — they are client errors, not audit failures
+    if (err instanceof Error && "statusCode" in err) {
+      throw err;
+    }
+
+    // Only log as audit failure for unexpected errors
     const errorMessage =
       err instanceof Error ? err.message : "Failed to calculate fit score";
 
-    // Log failed fit score update
     await logError(event, {
       userId: user.id,
       action: "UPDATE",
@@ -182,9 +187,6 @@ export default defineEventHandler(async (event) => {
       description: "Failed to update fit score",
     });
 
-    if (err instanceof Error && "statusCode" in err) {
-      throw err;
-    }
     logger.error("Fit score calculation error", err);
     throw createError({
       statusCode: 500,
