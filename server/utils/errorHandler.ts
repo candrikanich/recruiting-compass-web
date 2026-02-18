@@ -5,6 +5,7 @@
  */
 
 import * as Sentry from "@sentry/nuxt";
+import { isAppError } from "~/types/errors";
 import { createLogger } from "./logger";
 
 const logger = createLogger("error-handler");
@@ -52,7 +53,19 @@ export function sanitizeError(error: unknown, defaultCode = 500): SafeError {
     !process.env.NODE_ENV || process.env.NODE_ENV === "development";
   const isProduction = process.env.NODE_ENV === "production";
 
-  // Handle H3 errors (already have statusCode)
+  // Handle typed AppError instances first (type-safe path)
+  if (isAppError(error)) {
+    return {
+      statusCode: error.statusCode,
+      statusMessage: error.message,
+      data: {
+        message: isDevelopment ? error.message : "An error occurred",
+        details: isDevelopment ? error.type : undefined,
+      },
+    };
+  }
+
+  // Handle H3 errors (duck-type check for Nuxt's createError output)
   if (error instanceof Error && "statusCode" in error) {
     const h3Error = error as Error & {
       statusCode?: number;
