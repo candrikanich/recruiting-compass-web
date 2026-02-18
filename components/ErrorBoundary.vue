@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onErrorCaptured } from "vue";
+import { ref, onErrorCaptured, defineComponent, h } from "vue";
 
 const error = ref<Error | null>(null);
 const key = ref(0);
@@ -13,6 +13,14 @@ function retry() {
   error.value = null;
   key.value++;
 }
+
+// Thin renderless wrapper: changing :key forces Vue to remount this component
+// and therefore remount all slotted children, clearing their error state.
+const SlotWrapper = defineComponent({
+  setup(_, { slots }) {
+    return () => slots.default?.();
+  },
+});
 </script>
 
 <template>
@@ -31,5 +39,7 @@ function retry() {
       Try again
     </button>
   </div>
-  <slot v-else :key="key" />
+  <SlotWrapper v-else :key="key">
+    <slot />
+  </SlotWrapper>
 </template>

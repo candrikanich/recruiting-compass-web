@@ -170,11 +170,11 @@ export const useInteractionReminders = () => {
 
       if (err) throw err;
 
-      const index = reminders.value.findIndex((r) => r.id === id);
-      if (index !== -1) {
-        reminders.value[index].is_completed = true;
-        reminders.value[index].completed_at = new Date().toISOString();
-      }
+      reminders.value = reminders.value.map((r) =>
+        r.id === id
+          ? { ...r, is_completed: true, completed_at: new Date().toISOString() }
+          : r,
+      );
 
       return true;
     } catch (err) {
