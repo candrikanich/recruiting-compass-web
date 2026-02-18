@@ -1,9 +1,11 @@
 import { ref } from "vue";
 import type { School } from "~/types/models";
 import { useSchools } from "~/composables/useSchools";
+import { useSchoolStatus } from "~/composables/useSchoolStatus";
 
 export const useSchoolStatusManagement = (schoolId: string) => {
-  const { updateSchool, updateStatus: updateSchoolStatus } = useSchools();
+  const { updateSchool } = useSchools();
+  const { updateStatus: updateSchoolStatus } = useSchoolStatus();
 
   const statusUpdating = ref(false);
   const priorityUpdating = ref(false);

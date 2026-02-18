@@ -67,6 +67,8 @@ let mockUser = createMockUser();
 describe("useInteractions - Advanced Lifecycle", () => {
   let mockQuery: any;
   let useInteractions: any;
+  let useInteractionReminders: any;
+  let useInteractionNotes: any;
   let useUserStore: any;
 
   beforeEach(async () => {
@@ -162,6 +164,14 @@ describe("useInteractions - Advanced Lifecycle", () => {
     // Dynamically import after mocks are registered
     const composableModule = await import("~/composables/useInteractions");
     useInteractions = composableModule.useInteractions;
+
+    const remindersModule = await import(
+      "~/composables/useInteractionReminders"
+    );
+    useInteractionReminders = remindersModule.useInteractionReminders;
+
+    const notesModule = await import("~/composables/useInteractionNotes");
+    useInteractionNotes = notesModule.useInteractionNotes;
 
     const storeModule = await import("~/stores/user");
     useUserStore = storeModule.useUserStore;
@@ -632,7 +642,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
       ];
       mockQuery.__setTestResponse({ data: mockReminders, error: null });
 
-      const { loadReminders, reminders } = useInteractions();
+      const { loadReminders, reminders } = useInteractionReminders();
       await loadReminders();
 
       expect(reminders.value).toEqual(mockReminders);
@@ -647,7 +657,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
         error: null,
       });
 
-      const { createReminder, reminders } = useInteractions();
+      const { createReminder, reminders } = useInteractionReminders();
       const result = await createReminder(
         "Follow up call",
         "2025-12-25",
@@ -663,7 +673,11 @@ describe("useInteractions - Advanced Lifecycle", () => {
       const reminder = createMockReminder({ id: "reminder-123" });
       mockQuery.__setTestResponse({ data: [reminder], error: null });
 
-      const { loadReminders, reminders, completeReminder } = useInteractions();
+      const {
+        loadReminders,
+        reminders,
+        completeReminder,
+      } = useInteractionReminders();
       await loadReminders();
 
       expect(reminders.value[0].is_completed).toBe(false);
@@ -684,7 +698,11 @@ describe("useInteractions - Advanced Lifecycle", () => {
       const reminder = createMockReminder({ id: "reminder-123" });
       mockQuery.__setTestResponse({ data: [reminder], error: null });
 
-      const { loadReminders, reminders, deleteReminder } = useInteractions();
+      const {
+        loadReminders,
+        reminders,
+        deleteReminder,
+      } = useInteractionReminders();
       await loadReminders();
 
       expect(reminders.value.length).toBe(1);
@@ -701,13 +719,13 @@ describe("useInteractions - Advanced Lifecycle", () => {
       const reminder = createMockReminder({ id: "reminder-123" });
       mockQuery.__setTestResponse({ data: [reminder], error: null });
 
-      const { loadReminders, reminders } = useInteractions();
+      const { loadReminders } = useInteractionReminders();
       await loadReminders();
 
       mockQuery.update = vi.fn().mockReturnValue(mockQuery);
       mockQuery.__setTestResponse({ data: null, error: null });
 
-      const { updateReminder } = useInteractions();
+      const { updateReminder } = useInteractionReminders();
       const success = await updateReminder("reminder-123", {
         is_completed: true,
       });
@@ -721,7 +739,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
       const mockError = new Error("Load failed");
       mockQuery.__setTestResponse({ data: null, error: mockError });
 
-      const { loadReminders, remindersError } = useInteractions();
+      const { loadReminders, remindersError } = useInteractionReminders();
       await loadReminders();
 
       expect(remindersError.value).toBe("Load failed");
@@ -735,7 +753,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
         error: new Error("Create failed"),
       });
 
-      const { createReminder, remindersError } = useInteractions();
+      const { createReminder, remindersError } = useInteractionReminders();
       const result = await createReminder(
         "Test reminder",
         "2025-12-25",
@@ -750,7 +768,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
       const reminder = createMockReminder({ id: "reminder-123" });
       mockQuery.__setTestResponse({ data: [reminder], error: null });
 
-      const { loadReminders } = useInteractions();
+      const { loadReminders } = useInteractionReminders();
       await loadReminders();
 
       mockQuery.update = vi.fn().mockReturnValue(mockQuery);
@@ -759,7 +777,10 @@ describe("useInteractions - Advanced Lifecycle", () => {
         error: new Error("Update failed"),
       });
 
-      const { completeReminder, remindersError } = useInteractions();
+      const {
+        completeReminder,
+        remindersError,
+      } = useInteractionReminders();
       const success = await completeReminder("reminder-123");
 
       expect(success).toBe(false);
@@ -770,7 +791,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
       const reminder = createMockReminder({ id: "reminder-123" });
       mockQuery.__setTestResponse({ data: [reminder], error: null });
 
-      const { loadReminders } = useInteractions();
+      const { loadReminders } = useInteractionReminders();
       await loadReminders();
 
       mockQuery.delete = vi.fn().mockReturnValue(mockQuery);
@@ -779,7 +800,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
         error: new Error("Delete failed"),
       });
 
-      const { deleteReminder, remindersError } = useInteractions();
+      const { deleteReminder, remindersError } = useInteractionReminders();
       const success = await deleteReminder("reminder-123");
 
       expect(success).toBe(false);
@@ -790,7 +811,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
       const reminder = createMockReminder({ id: "reminder-123" });
       mockQuery.__setTestResponse({ data: [reminder], error: null });
 
-      const { loadReminders } = useInteractions();
+      const { loadReminders } = useInteractionReminders();
       await loadReminders();
 
       mockQuery.update = vi.fn().mockReturnValue(mockQuery);
@@ -799,7 +820,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
         error: new Error("Update failed"),
       });
 
-      const { updateReminder, remindersError } = useInteractions();
+      const { updateReminder, remindersError } = useInteractionReminders();
       const success = await updateReminder("reminder-123", {
         is_completed: true,
       });
@@ -822,7 +843,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
       ];
       mockQuery.__setTestResponse({ data: mockAuditLogs, error: null });
 
-      const { fetchNoteHistory, noteHistory } = useInteractions();
+      const { fetchNoteHistory, noteHistory } = useInteractionNotes();
       await fetchNoteHistory("school-123");
 
       expect(mockSupabase.from).toHaveBeenCalledWith("audit_logs");
@@ -833,7 +854,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
       const mockError = new Error("Fetch failed");
       mockQuery.__setTestResponse({ data: null, error: mockError });
 
-      const { fetchNoteHistory, noteHistoryError } = useInteractions();
+      const { fetchNoteHistory, noteHistoryError } = useInteractionNotes();
       await fetchNoteHistory("school-123");
 
       expect(noteHistoryError.value).toBe("Fetch failed");
@@ -855,7 +876,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
         error: null,
       });
 
-      const { loadReminders, activeReminders } = useInteractions();
+      const { loadReminders, activeReminders } = useInteractionReminders();
       await loadReminders();
 
       expect(activeReminders.value.length).toBe(1);
@@ -883,7 +904,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
         error: null,
       });
 
-      const { loadReminders, overdueReminders } = useInteractions();
+      const { loadReminders, overdueReminders } = useInteractionReminders();
       await loadReminders();
 
       expect(overdueReminders.value.length).toBeGreaterThan(0);
@@ -906,7 +927,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
         error: null,
       });
 
-      const { loadReminders, highPriorityReminders } = useInteractions();
+      const { loadReminders, highPriorityReminders } = useInteractionReminders();
       await loadReminders();
 
       expect(highPriorityReminders.value.length).toBe(1);
@@ -930,7 +951,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
         error: null,
       });
 
-      const { loadReminders, getRemindersFor } = useInteractions();
+      const { loadReminders, getRemindersFor } = useInteractionReminders();
       await loadReminders();
 
       const schoolReminders = getRemindersFor("school", "school-123");
@@ -941,7 +962,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
 
   describe("Format Due Date", () => {
     it("should format today's date", () => {
-      const { formatDueDate } = useInteractions();
+      const { formatDueDate } = useInteractionReminders();
       const today = new Date();
       const result = formatDueDate(today.toISOString());
 
@@ -949,7 +970,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
     });
 
     it("should format tomorrow's date", () => {
-      const { formatDueDate } = useInteractions();
+      const { formatDueDate } = useInteractionReminders();
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const result = formatDueDate(tomorrow.toISOString());
@@ -958,7 +979,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
     });
 
     it("should format overdue dates", () => {
-      const { formatDueDate } = useInteractions();
+      const { formatDueDate } = useInteractionReminders();
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       const result = formatDueDate(yesterday.toISOString());
@@ -967,7 +988,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
     });
 
     it("should format future dates", () => {
-      const { formatDueDate } = useInteractions();
+      const { formatDueDate } = useInteractionReminders();
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 3);
       const result = formatDueDate(futureDate.toISOString());

@@ -167,7 +167,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { useInteractions } from "~/composables/useInteractions";
+import { useInteractionNotes } from "~/composables/useInteractionNotes";
 
 const props = defineProps<{
   schoolId: string;
@@ -179,7 +179,7 @@ const {
   noteHistoryLoading: loading,
   noteHistoryError: error,
   fetchNoteHistory,
-} = useInteractions();
+} = useInteractionNotes();
 
 const isOpen = ref(false);
 const expandedIds = ref<string[]>([]);

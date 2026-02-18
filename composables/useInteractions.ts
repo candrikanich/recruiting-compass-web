@@ -1,19 +1,15 @@
-import { ref, computed, shallowRef, inject, type ComputedRef } from "vue";
+import { ref, computed, shallowRef, inject, watch, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
 import { useFamilyContext } from "./useFamilyContext";
-import { useToast } from "~/composables/useToast";
-import type { Interaction, FollowUpReminder } from "~/types/models";
+import type { Interaction } from "~/types/models";
 import type { Database } from "~/types/database";
-import type { AuditLog } from "~/types/database-helpers";
 import { interactionSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
 
 // Get Table types from Database
 type InteractionsTable = Database["public"]["Tables"]["interactions"];
-type FollowUpRemindersTable =
-  Database["public"]["Tables"]["follow_up_reminders"];
 import {
   exportInteractionsToCSV,
   downloadInteractionsCSV,
@@ -27,21 +23,10 @@ import { createInboundInteractionAlert } from "~/utils/interactions/inboundAlert
 // Type aliases for Supabase casting
 type _InteractionInsert = InteractionsTable["Insert"];
 type _InteractionUpdate = InteractionsTable["Update"];
-type FollowUpReminderInsert = FollowUpRemindersTable["Insert"];
-type _FollowUpReminderUpdate = FollowUpRemindersTable["Update"];
-
-export interface NoteHistoryEntry {
-  id: string;
-  timestamp: string;
-  editedBy: string;
-  editedByName?: string;
-  previousContent: string | null;
-  currentContent: string | null;
-}
 
 /**
  * useInteractions composable
- * Manages all interaction (communication) data for the recruiting tracker
+ * Manages interaction (communication) CRUD and filters for the recruiting tracker.
  *
  * FAMILY-BASED ACCESS CONTROL (v2.0):
  * - Interactions are owned by family units, not individual users
@@ -50,13 +35,9 @@ export interface NoteHistoryEntry {
  * - Queries filter by family_unit_id instead of user_id
  * - ONLY STUDENTS can create interactions (enforced at DB level)
  *
- * Key features:
- * - Fetch interactions with optional filters (school, coach, type, direction, sentiment)
- * - Client-side date range filtering for precise control
- * - CSV export functionality for reporting
- * - CRUD operations (add, update, delete interactions)
- * - Error handling and loading states
- * - Follow-up reminders and tracking
+ * Related composables:
+ * - useInteractionReminders  – follow-up reminder CRUD + computed filters
+ * - useInteractionNotes      – note history from audit logs
  */
 type InteractionFilters = {
   schoolId?: string;
@@ -101,110 +82,46 @@ const useInteractionsInternal = (): {
     athleteUserId: string,
     filters?: Omit<InteractionFilters, "loggedBy">,
   ) => Promise<void>;
-  noteHistory: ComputedRef<NoteHistoryEntry[]>;
-  noteHistoryLoading: ComputedRef<boolean>;
-  noteHistoryError: ComputedRef<string | null>;
-  formattedNoteHistory: ComputedRef<
-    Array<
-      NoteHistoryEntry & { formattedTime: string; isCurrentVersion: boolean }
-    >
-  >;
-  fetchNoteHistory: (schoolId: string) => Promise<void>;
-  reminders: ComputedRef<FollowUpReminder[]>;
-  remindersLoading: ComputedRef<boolean>;
-  remindersError: ComputedRef<string | null>;
-  activeReminders: ComputedRef<FollowUpReminder[]>;
-  overdueReminders: ComputedRef<FollowUpReminder[]>;
-  upcomingReminders: ComputedRef<FollowUpReminder[]>;
-  completedReminders: ComputedRef<FollowUpReminder[]>;
-  highPriorityReminders: ComputedRef<FollowUpReminder[]>;
-  loadReminders: () => Promise<void>;
-  createReminder: (
-    title: string,
-    dueDate: string,
-    reminderType: FollowUpReminder["reminder_type"],
-    priority?: FollowUpReminder["priority"],
-    description?: string,
-    schoolId?: string,
-    coachId?: string,
-    interactionId?: string,
-  ) => Promise<FollowUpReminder | null>;
-  completeReminder: (id: string) => Promise<boolean>;
-  deleteReminder: (id: string) => Promise<boolean>;
-  updateReminder: (
-    id: string,
-    updates: Partial<FollowUpReminder>,
-  ) => Promise<boolean>;
-  getRemindersFor: (
-    entityType: "school" | "coach" | "interaction",
-    entityId: string,
-  ) => FollowUpReminder[];
-  formatDueDate: (dueDate: string) => string;
   smartDelete: (id: string) => Promise<{ cascadeUsed: boolean }>;
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
-  // Try to get the provided family context (from page), fall back to singleton
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
-  const activeFamily = injectedFamily || useFamilyContext();
-  const toast = useToast();
 
   if (!injectedFamily) {
+    if (import.meta.dev) {
+      throw new Error(
+        "[useInteractions] activeFamily was not provided. " +
+          "Wrap the component tree with provide('activeFamily', useActiveFamily()) — " +
+          "app.vue already does this for all pages.",
+      );
+    }
     console.warn(
-      "[useInteractions] activeFamily injection failed, using singleton fallback. " +
-        "This may cause data sync issues when parent switches athletes.",
+      "[useInteractions] activeFamily injection missing — data may be stale when parent switches athletes.",
     );
   }
+
+  const activeFamily = injectedFamily ?? useFamilyContext();
 
   const interactions = shallowRef<Interaction[]>([]);
   const loadingRef = ref(false);
   const errorRef = ref<string | null>(null);
 
-  // Note history state (consolidated from useNotesHistory)
-  const noteHistory = shallowRef<NoteHistoryEntry[]>([]);
-  const noteHistoryLoadingRef = ref(false);
-  const noteHistoryErrorRef = ref<string | null>(null);
-
-  // Follow-up reminders state (consolidated from useFollowUpReminders)
-  const reminders = shallowRef<FollowUpReminder[]>([]);
-  const remindersLoadingRef = ref(false);
-  const remindersErrorRef = ref<string | null>(null);
-
   // Computed proxies for return type compatibility
   const loading = computed(() => loadingRef.value);
   const error = computed(() => errorRef.value);
-  const noteHistoryLoading = computed(() => noteHistoryLoadingRef.value);
-  const noteHistoryError = computed(() => noteHistoryErrorRef.value);
-  const remindersLoading = computed(() => remindersLoadingRef.value);
-  const remindersError = computed(() => remindersErrorRef.value);
 
-  // Reminder computed filters
-  const activeReminders = computed(() => {
-    return reminders.value.filter((r) => !r.is_completed);
-  });
-
-  const overdueReminders = computed(() => {
-    const now = new Date();
-    return activeReminders.value.filter((r) => new Date(r.due_date) < now);
-  });
-
-  const upcomingReminders = computed(() => {
-    const now = new Date();
-    const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    return activeReminders.value.filter(
-      (r) =>
-        new Date(r.due_date) >= now && new Date(r.due_date) <= oneWeekFromNow,
-    );
-  });
-
-  const completedReminders = computed(() => {
-    return reminders.value.filter((r) => r.is_completed);
-  });
-
-  const highPriorityReminders = computed(() => {
-    return activeReminders.value.filter((r) => r.priority === "high");
-  });
+  // Auto-invalidate cache when parent switches athlete
+  watch(
+    () => activeFamily.activeAthleteId?.value,
+    async (newId, oldId) => {
+      if (newId && newId !== oldId) {
+        interactions.value = [];
+        await fetchInteractions();
+      }
+    },
+  );
 
   const fetchInteractions = async (filters?: {
     schoolId?: string;
@@ -225,7 +142,6 @@ const useInteractionsInternal = (): {
     errorRef.value = null;
 
     try {
-      // 🚀 Quick Win: Select only needed columns (2-3x faster for list views)
       let query = supabase
         .from("interactions")
         .select(
@@ -274,7 +190,6 @@ const useInteractionsInternal = (): {
         query = query.eq("logged_by", filters.loggedBy);
       }
 
-      // Move date filtering to SQL (10x less data transferred, faster)
       if (filters?.startDate) {
         query = query.gte(
           "occurred_at",
@@ -308,12 +223,10 @@ const useInteractionsInternal = (): {
     }
   };
 
-  // Export interactions to CSV
   const exportToCSV = (): string => {
     return exportInteractionsToCSV(interactions.value);
   };
 
-  // Download CSV file
   const downloadCSV = () => {
     downloadInteractionsCSV(interactions.value);
   };
@@ -323,7 +236,6 @@ const useInteractionsInternal = (): {
     errorRef.value = null;
 
     try {
-      // 🚀 Quick Win: Fetch all columns for detail view
       const response = await supabase
         .from("interactions")
         .select("*")
@@ -348,17 +260,13 @@ const useInteractionsInternal = (): {
     }
   };
 
-  // Validate and upload attachment files
   const uploadAttachments = async (
     files: File[],
     interactionId: string,
   ): Promise<string[]> => {
-    // Validate all files first
     for (const file of files) {
       validateAttachmentFile(file);
     }
-
-    // Upload validated files
     return uploadInteractionAttachments(supabase, files, interactionId);
   };
 
@@ -378,10 +286,8 @@ const useInteractionsInternal = (): {
     errorRef.value = null;
 
     try {
-      // Validate interaction data with Zod schema
       const validated = await interactionSchema.parseAsync(interactionData);
 
-      // Additional XSS protection: sanitize HTML content
       if (validated.subject) {
         validated.subject = sanitizeHtml(validated.subject);
       }
@@ -389,7 +295,6 @@ const useInteractionsInternal = (): {
         validated.content = sanitizeHtml(validated.content);
       }
 
-      // Validate file attachments if provided
       if (files && files.length > 0) {
         for (const file of files) {
           validateAttachmentFile(file);
@@ -406,7 +311,6 @@ const useInteractionsInternal = (): {
           },
         ])
         .select()
-
         .single();
 
       const { data, error: insertError } = insertResponse as {
@@ -417,7 +321,6 @@ const useInteractionsInternal = (): {
 
       if (insertError) throw insertError;
 
-      // Upload attachments if provided
       if (files && files.length > 0) {
         const uploadedPaths = await uploadAttachments(files, data.id);
         if (uploadedPaths.length > 0) {
@@ -431,7 +334,6 @@ const useInteractionsInternal = (): {
         }
       }
 
-      // Create inbound interaction alert if enabled
       if (data.direction === "inbound" && userStore.user) {
         await createInboundInteractionAlert({
           interaction: data,
@@ -462,7 +364,6 @@ const useInteractionsInternal = (): {
     errorRef.value = null;
 
     try {
-      // Sanitize content fields to prevent XSS
       const sanitizedUpdates = { ...updates };
 
       if (sanitizedUpdates.subject) {
@@ -475,7 +376,6 @@ const useInteractionsInternal = (): {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateResponse = await (supabase.from("interactions") as any)
         .update(sanitizedUpdates)
-
         .eq("id", id)
         .eq("logged_by", userStore.user.id)
         .select()
@@ -489,7 +389,6 @@ const useInteractionsInternal = (): {
 
       if (updateError) throw updateError;
 
-      // Update local state
       const index = interactions.value.findIndex((i) => i.id === id);
       if (index !== -1) {
         interactions.value[index] = data;
@@ -524,7 +423,6 @@ const useInteractionsInternal = (): {
 
       if (deleteError) throw deleteError;
 
-      // Update local state
       interactions.value = interactions.value.filter((i) => i.id !== id);
     } catch (err: unknown) {
       const message =
@@ -571,334 +469,6 @@ const useInteractionsInternal = (): {
     });
   };
 
-  // Fetch note history from audit logs (consolidated from useNotesHistory)
-  const fetchNoteHistory = async (schoolId: string): Promise<void> => {
-    if (!userStore.user) return;
-
-    noteHistoryLoadingRef.value = true;
-    noteHistoryErrorRef.value = null;
-
-    try {
-      // Query audit logs for note updates on this school
-      // 🚀 Quick Win: Select only needed columns + use new composite index
-      const auditResponse = await supabase
-        .from("audit_logs")
-        .select("id, user_id, resource_id, old_values, new_values, created_at")
-        .eq("user_id", userStore.user.id)
-        .eq("resource_type", "school")
-        .eq("resource_id", schoolId)
-        .eq("action", "UPDATE")
-        .order("created_at", { ascending: false });
-
-      const { data, error: fetchError } = auditResponse as {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: any[];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error: any;
-      };
-
-      if (fetchError) throw fetchError;
-
-      // Filter logs that contain note changes
-      const noteEntries: NoteHistoryEntry[] = [];
-
-      if (data && Array.isArray(data)) {
-        for (const log of data) {
-          const auditLog = log as unknown as AuditLog;
-
-          // Check if this log entry includes a notes field change
-
-          if (
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (auditLog?.new_values as any)?.notes !== undefined ||
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (auditLog?.old_values as any)?.notes !== undefined
-          ) {
-            noteEntries.push({
-              id: (auditLog?.id as string) || "",
-              timestamp:
-                (auditLog?.created_at as string) || new Date().toISOString(),
-              editedBy: (auditLog?.user_id as string) || "Unknown",
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              previousContent: (auditLog?.old_values as any)?.notes || null,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              currentContent: (auditLog?.new_values as any)?.notes || null,
-            });
-          }
-        }
-      }
-
-      noteHistory.value = noteEntries;
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch note history";
-      noteHistoryErrorRef.value = message;
-      noteHistory.value = [];
-    } finally {
-      noteHistoryLoadingRef.value = false;
-    }
-  };
-
-  const formattedNoteHistory = computed(() => {
-    return noteHistory.value.map((entry) => ({
-      ...entry,
-      formattedTime: new Date(entry.timestamp).toLocaleString(),
-      isCurrentVersion: entry === noteHistory.value[0], // Most recent is current
-    }));
-  });
-
-  // Follow-up reminder CRUD methods (migrated from useFollowUpReminders)
-  const loadReminders = async () => {
-    if (!userStore.user) return;
-
-    remindersLoadingRef.value = true;
-    remindersErrorRef.value = null;
-
-    try {
-      // 🚀 Quick Win: Select all columns + use new composite index (user_id, due_date, is_completed)
-      const remindersResponse = await supabase
-        .from("follow_up_reminders")
-        .select("*")
-        .eq("user_id", userStore.user.id)
-        .order("due_date", { ascending: true });
-
-      const { data, error: err } = remindersResponse as {
-        data: FollowUpReminder[];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error: any;
-      };
-
-      if (err) throw err;
-      reminders.value = data || [];
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to load reminders";
-      remindersErrorRef.value = message;
-      console.error("Load reminders error:", err);
-      toast.showToast("Failed to load reminders. Please try again.");
-    } finally {
-      remindersLoadingRef.value = false;
-    }
-  };
-
-  const createReminder = async (
-    title: string,
-    dueDate: string,
-    reminderType: FollowUpReminder["reminder_type"],
-    priority: FollowUpReminder["priority"] = "medium",
-    description?: string,
-    schoolId?: string,
-    coachId?: string,
-    interactionId?: string,
-  ): Promise<FollowUpReminder | null> => {
-    if (!userStore.user) return null;
-
-    remindersErrorRef.value = null;
-
-    const dataOwnerUserId = activeFamily.getDataOwnerUserId();
-    if (!dataOwnerUserId) {
-      remindersErrorRef.value = "No user ID available";
-      return null;
-    }
-
-    try {
-      const newReminder: FollowUpReminderInsert = {
-        user_id: dataOwnerUserId,
-        title,
-        description,
-        due_date: dueDate,
-        reminder_type: reminderType,
-        priority,
-        school_id: schoolId,
-        coach_id: coachId,
-        interaction_id: interactionId,
-        is_completed: false,
-      };
-
-      const reminderResponse =
-        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase.from("follow_up_reminders") as any)
-          .insert([newReminder])
-          .select()
-          .single();
-
-      const { data, error: err } = reminderResponse as {
-        data: FollowUpReminder;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error: any;
-      };
-
-      if (err) throw err;
-
-      reminders.value = [data, ...reminders.value];
-      return data;
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to create reminder";
-      remindersErrorRef.value = message;
-      console.error("Create reminder error:", err);
-      toast.showToast("Failed to create reminder. Please try again.");
-      return null;
-    }
-  };
-
-  const completeReminder = async (id: string): Promise<boolean> => {
-    if (!userStore.user) return false;
-
-    remindersErrorRef.value = null;
-
-    try {
-      const completeResponse =
-        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase.from("follow_up_reminders") as any)
-          .update({
-            is_completed: true,
-            completed_at: new Date().toISOString(),
-          })
-          .eq("id", id)
-          .eq("user_id", userStore.user.id);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: err } = completeResponse as { error: any };
-
-      if (err) throw err;
-
-      const index = reminders.value.findIndex((r) => r.id === id);
-      if (index !== -1) {
-        reminders.value[index].is_completed = true;
-        reminders.value[index].completed_at = new Date().toISOString();
-      }
-
-      return true;
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to complete reminder";
-
-      remindersErrorRef.value = message;
-      console.error("Complete reminder error:", err);
-      toast.showToast("Failed to complete reminder. Please try again.");
-      return false;
-    }
-  };
-
-  const deleteReminder = async (id: string): Promise<boolean> => {
-    if (!userStore.user) return false;
-
-    remindersErrorRef.value = null;
-
-    try {
-      const deleteResponse = await supabase
-        .from("follow_up_reminders")
-        .delete()
-        .eq("id", id)
-        .eq("user_id", userStore.user.id);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: err } = deleteResponse as { error: any };
-
-      if (err) throw err;
-
-      reminders.value = reminders.value.filter((r) => r.id !== id);
-      return true;
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to delete reminder";
-      remindersErrorRef.value = message;
-      console.error("Delete reminder error:", err);
-      toast.showToast("Failed to delete reminder. Please try again.");
-
-      return false;
-    }
-  };
-
-  const updateReminder = async (
-    id: string,
-    updates: Partial<FollowUpReminder>,
-  ): Promise<boolean> => {
-    if (!userStore.user) return false;
-
-    remindersErrorRef.value = null;
-
-    try {
-      const updateReminderResponse =
-        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase.from("follow_up_reminders") as any)
-          .update(updates)
-          .eq("id", id)
-          .eq("user_id", userStore.user.id);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: err } = updateReminderResponse as { error: any };
-
-      if (err) throw err;
-
-      const index = reminders.value.findIndex((r) => r.id === id);
-      if (index !== -1) {
-        reminders.value[index] = { ...reminders.value[index], ...updates };
-      }
-
-      return true;
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update reminder";
-      remindersErrorRef.value = message;
-      console.error("Update reminder error:", err);
-      toast.showToast("Failed to update reminder. Please try again.");
-      return false;
-    }
-  };
-
-  const getRemindersFor = (
-    entityType: "school" | "coach" | "interaction",
-    entityId: string,
-  ): FollowUpReminder[] => {
-    const key =
-      entityType === "school"
-        ? "school_id"
-        : entityType === "coach"
-          ? "coach_id"
-          : "interaction_id";
-    return reminders.value.filter(
-      (r) => r[key as keyof FollowUpReminder] === entityId,
-    );
-  };
-
-  const formatDueDate = (dueDate: string): string => {
-    const date = new Date(dueDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const oneWeekFromNow = new Date(today);
-    oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
-
-    const dateAtMidnight = new Date(date);
-    dateAtMidnight.setHours(0, 0, 0, 0);
-
-    if (dateAtMidnight.getTime() === today.getTime()) {
-      return "Today";
-    }
-    if (dateAtMidnight.getTime() === tomorrow.getTime()) {
-      return "Tomorrow";
-    }
-    if (dateAtMidnight < today) {
-      const daysOverdue = Math.floor(
-        (today.getTime() - dateAtMidnight.getTime()) / (24 * 60 * 60 * 1000),
-      );
-      return "Overdue by " + daysOverdue + " day(s)";
-    }
-    if (dateAtMidnight <= oneWeekFromNow) {
-      const daysUntil = Math.floor(
-        (dateAtMidnight.getTime() - today.getTime()) / (24 * 60 * 60 * 1000),
-      );
-      return "In " + daysUntil + " day(s)";
-    }
-
-    return date.toLocaleDateString();
-  };
-
   const smartDelete = async (id: string): Promise<{ cascadeUsed: boolean }> => {
     try {
       await deleteInteraction(id);
@@ -907,13 +477,11 @@ const useInteractionsInternal = (): {
       const message =
         err instanceof Error ? err.message : "Failed to delete interaction";
 
-      // Check if this is a FK constraint error
       if (
         message.includes("Cannot delete") ||
         message.includes("violates foreign key constraint") ||
         message.includes("still referenced")
       ) {
-        // Try cascade delete via API endpoint
         const result = await fetch(`/api/interactions/${id}/cascade-delete`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -937,7 +505,6 @@ const useInteractionsInternal = (): {
   };
 
   return {
-    // Interaction state and methods
     interactions: computed(() => interactions.value),
     loading,
     error,
@@ -952,29 +519,5 @@ const useInteractionsInternal = (): {
     downloadCSV,
     fetchMyInteractions,
     fetchAthleteInteractions,
-
-    // Note history methods
-    noteHistory: computed(() => noteHistory.value),
-    noteHistoryLoading,
-    noteHistoryError,
-    formattedNoteHistory,
-    fetchNoteHistory,
-
-    // Reminder state and methods (migrated from useFollowUpReminders)
-    reminders: computed(() => reminders.value),
-    remindersLoading,
-    remindersError,
-    activeReminders,
-    overdueReminders,
-    upcomingReminders,
-    completedReminders,
-    highPriorityReminders,
-    loadReminders,
-    createReminder,
-    completeReminder,
-    deleteReminder,
-    updateReminder,
-    getRemindersFor,
-    formatDueDate,
   };
 };
