@@ -71,17 +71,23 @@ const useSchoolsInternal = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
-  // Try to get the provided family context (from page), fall back to singleton
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
-  const activeFamily = injectedFamily || useFamilyContext();
 
   if (!injectedFamily) {
+    if (import.meta.dev) {
+      throw new Error(
+        "[useSchools] activeFamily was not provided. " +
+          "Wrap the component tree with provide('activeFamily', useActiveFamily()) — " +
+          "app.vue already does this for all pages.",
+      );
+    }
     console.warn(
-      "[useSchools] activeFamily injection failed, using singleton fallback. " +
-        "This may cause data sync issues when parent switches athletes.",
+      "[useSchools] activeFamily injection missing — data may be stale when parent switches athletes.",
     );
   }
+
+  const activeFamily = injectedFamily ?? useFamilyContext();
 
   const schools = shallowRef<School[]>([]);
   const loadingRef = ref(false);

@@ -61,17 +61,23 @@ export const useCoaches = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
-  // Try to get the provided family context (from page), fall back to singleton
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
-  const activeFamily = injectedFamily || useFamilyContext();
 
   if (!injectedFamily) {
+    if (import.meta.dev) {
+      throw new Error(
+        "[useCoaches] activeFamily was not provided. " +
+          "Wrap the component tree with provide('activeFamily', useActiveFamily()) — " +
+          "app.vue already does this for all pages.",
+      );
+    }
     console.warn(
-      "[useCoaches] activeFamily injection failed, using singleton fallback. " +
-        "This may cause data sync issues when parent switches athletes.",
+      "[useCoaches] activeFamily injection missing — data may be stale when parent switches athletes.",
     );
   }
+
+  const activeFamily = injectedFamily ?? useFamilyContext();
 
   const coaches = ref<Coach[]>([]);
   const loading = ref(false);
