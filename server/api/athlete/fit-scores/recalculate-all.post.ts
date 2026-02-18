@@ -38,7 +38,7 @@ export default defineEventHandler(
 
     try {
       // Fetch user's player details from V2 preferences (category-based)
-      logger.info(`Fetching player details for user: ${user.id}`);
+      logger.info("Fetching player details", { userId: user.id });
 
       const { data: playerPrefs, error: prefError } = await supabase
         .from("user_preferences")
@@ -52,8 +52,17 @@ export default defineEventHandler(
         error: prefError?.message,
       });
 
-      if (prefError || !playerPrefs) {
-        logger.error("Failed to fetch player details", prefError);
+      if (prefError) {
+        logger.error("DB error fetching player preferences", prefError);
+        throw createError({
+          statusCode: 500,
+          statusMessage: "Failed to fetch player details",
+        });
+      }
+      if (!playerPrefs) {
+        logger.warn("Player preferences not found for user", {
+          userId: user.id,
+        });
         throw createError({
           statusCode: 400,
           statusMessage:
@@ -68,7 +77,7 @@ export default defineEventHandler(
       );
 
       if (!playerDetails || Object.keys(playerDetails).length === 0) {
-        logger.error("Player details empty");
+        logger.warn("Player details empty or incomplete", { userId: user.id });
         throw createError({
           statusCode: 400,
           statusMessage:

@@ -238,9 +238,14 @@ export default defineEventHandler(async (event) => {
 
     return result as AthleteTask;
   } catch (err) {
+    // Re-throw H3 errors immediately — they were already logged at their source
+    if (err instanceof Error && "statusCode" in err) {
+      throw err;
+    }
+
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
 
-    // Log any unexpected errors
+    // Only log truly unexpected errors
     await logError(event, {
       userId: user.id,
       action: "UPDATE",
@@ -250,18 +255,7 @@ export default defineEventHandler(async (event) => {
       description: "Unexpected error updating task status",
     });
 
-    if (err instanceof Error && err.message === "Unauthorized") {
-      throw createError({
-        statusCode: 401,
-        statusMessage: "Unauthorized",
-      });
-    }
-
-    if (err instanceof Error && "statusCode" in err) {
-      throw err;
-    }
-
-    logger.error("Error in PATCH /api/athlete-tasks/[taskId]", err);
+    logger.error("Unexpected error in PATCH /api/athlete-tasks/[taskId]", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to update task status",

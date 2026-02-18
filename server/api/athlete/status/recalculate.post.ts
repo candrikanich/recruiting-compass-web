@@ -231,31 +231,28 @@ export default defineEventHandler(async (event) => {
 
     return result as StatusScoreResult;
   } catch (err) {
+    // Re-throw H3 errors immediately — they were already logged at their source
+    if (err instanceof Error && "statusCode" in err) {
+      throw err;
+    }
+
     const errorMessage =
       err instanceof Error ? err.message : "Failed to recalculate status";
 
-    // Log failed status recalculation
+    // Only log truly unexpected errors
     await logError(event, {
       userId: user.id,
       action: "UPDATE",
       resourceType: "users",
       resourceId: user.id,
       errorMessage,
-      description: "Failed to recalculate status score",
+      description: "Unexpected error recalculating status score",
     });
 
-    if (err instanceof Error && err.message === "Unauthorized") {
-      throw createError({
-        statusCode: 401,
-        statusMessage: "Unauthorized",
-      });
-    }
-
-    if (err instanceof Error && "statusCode" in err) {
-      throw err;
-    }
-
-    logger.error("Error in POST /api/athlete/status/recalculate", err);
+    logger.error(
+      "Unexpected error in POST /api/athlete/status/recalculate",
+      err,
+    );
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to recalculate status",

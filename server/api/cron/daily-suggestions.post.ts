@@ -83,6 +83,7 @@ export default defineEventHandler(async (event) => {
       throw error;
     }
 
+    logger.error("Unexpected error in cron/daily-suggestions", error);
     throw createError({
       statusCode: 500,
       message: "Failed to run daily suggestions cron job",

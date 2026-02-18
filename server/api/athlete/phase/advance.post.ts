@@ -140,31 +140,25 @@ export default defineEventHandler(async (event) => {
       message: `Congratulations! You've advanced to ${phaseLabels[nextPhase]}!`,
     } as AdvancePhaseResponse;
   } catch (err) {
+    // Re-throw H3 errors immediately — they were already logged at their source
+    if (err instanceof Error && "statusCode" in err) {
+      throw err;
+    }
+
     const errorMessage =
       err instanceof Error ? err.message : "Failed to advance phase";
 
-    // Log failed phase advance
+    // Only log truly unexpected errors
     await logError(event, {
       userId: user.id,
       action: "UPDATE",
       resourceType: "users",
       resourceId: user.id,
       errorMessage,
-      description: "Failed to advance phase",
+      description: "Unexpected error advancing phase",
     });
 
-    if (err instanceof Error && err.message === "Unauthorized") {
-      throw createError({
-        statusCode: 401,
-        statusMessage: "Unauthorized",
-      });
-    }
-
-    if (err instanceof Error && "statusCode" in err) {
-      throw err;
-    }
-
-    logger.error("Error in POST /api/athlete/phase/advance", err);
+    logger.error("Unexpected error in POST /api/athlete/phase/advance", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to advance phase",
