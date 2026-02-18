@@ -1,4 +1,7 @@
 import { ref, computed } from "vue";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useUserExport");
 
 interface ExportState {
   isLoading: boolean;
@@ -88,7 +91,7 @@ export const useUserExport = () => {
         state.value.error = errorMessage;
       }
 
-      console.error("Export failed", { error: errorMessage });
+      logger.error("Export failed", { error: errorMessage });
     } finally {
       state.value.isLoading = false;
     }
@@ -117,7 +120,7 @@ export const useUserExport = () => {
       document.body.removeChild(link);
     } catch (err: unknown) {
       state.value.error = "Failed to download file";
-      console.error("Download failed", { error: err });
+      logger.error("Download failed", { error: err });
     }
   };
 

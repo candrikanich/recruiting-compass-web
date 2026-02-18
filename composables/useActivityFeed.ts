@@ -3,6 +3,9 @@ import { useSupabase } from "~/composables/useSupabase";
 import { useAuth } from "~/composables/useAuth";
 import type { Interaction, School } from "~/types/models";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useActivityFeed");
 
 interface InteractionPayload {
   id: string;
@@ -166,7 +169,7 @@ export const useActivityFeed = () => {
         interactionsResult.data as unknown as InteractionWithSchool[] | null;
 
       if (interactionsError) {
-        console.error("Error fetching interactions:", interactionsError);
+        logger.error("Error fetching interactions:", interactionsError);
       } else if (interactionsWithSchools) {
         for (const interaction of interactionsWithSchools) {
           const school = Array.isArray(interaction.schools)
@@ -217,7 +220,7 @@ export const useActivityFeed = () => {
         statusResult.data as unknown as StatusChangeWithSchool[] | null;
 
       if (statusError) {
-        console.error("Error fetching status changes:", statusError);
+        logger.error("Error fetching status changes:", statusError);
       } else if (statusChanges) {
         for (const change of statusChanges) {
           const school = Array.isArray(change.schools)
@@ -301,7 +304,7 @@ export const useActivityFeed = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to fetch activities";
-      console.error("Error fetching activities:", err);
+      logger.error("Error fetching activities:", err);
       activities.value = [];
     } finally {
       loading.value = false;
@@ -457,7 +460,7 @@ export const useActivityFeed = () => {
 
       channel.subscribe();
     } catch (err) {
-      console.error("Error subscribing to activity updates:", err);
+      logger.error("Error subscribing to activity updates:", err);
     }
 
     onUnmounted(() => {

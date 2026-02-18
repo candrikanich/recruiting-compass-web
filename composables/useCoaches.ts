@@ -7,6 +7,9 @@ import type { Coach } from "~/types/models";
 import type { Database } from "~/types/database";
 import { coachSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useCoaches");
 
 type CoachesInsert = Database["public"]["Tables"]["coaches"]["Insert"];
 type CoachesUpdate = Database["public"]["Tables"]["coaches"]["Update"];
@@ -65,15 +68,9 @@ export const useCoaches = (): {
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
 
   if (!injectedFamily) {
-    if (import.meta.dev) {
-      throw new Error(
-        "[useCoaches] activeFamily was not provided. " +
-          "Wrap the component tree with provide('activeFamily', useActiveFamily()) — " +
-          "app.vue already does this for all pages.",
-      );
-    }
-    console.warn(
-      "[useCoaches] activeFamily injection missing — data may be stale when parent switches athletes.",
+    logger.warn(
+      "[useCoaches] activeFamily injection failed, using singleton fallback. " +
+        "This may cause data sync issues when parent switches athletes.",
     );
   }
 
@@ -132,7 +129,7 @@ export const useCoaches = (): {
         .order("created_at", { ascending: false });
 
       if (fetchError) {
-        console.error("Fetch error:", fetchError);
+        logger.error("Fetch error:", fetchError);
         throw fetchError;
       }
 
@@ -141,7 +138,7 @@ export const useCoaches = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch coaches";
       error.value = message;
-      console.error("Coach fetch error:", message);
+      logger.error("Coach fetch error:", message);
     } finally {
       loading.value = false;
     }
@@ -204,7 +201,7 @@ export const useCoaches = (): {
       const { data, error: fetchError } = await query;
 
       if (fetchError) {
-        console.error("Fetch error:", fetchError);
+        logger.error("Fetch error:", fetchError);
         throw fetchError;
       }
 
@@ -213,7 +210,7 @@ export const useCoaches = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch coaches";
       error.value = message;
-      console.error("Coach fetch error:", message);
+      logger.error("Coach fetch error:", message);
     } finally {
       loading.value = false;
     }
@@ -340,7 +337,7 @@ export const useCoaches = (): {
       };
 
       if (insertError) {
-        console.error("Supabase insert error details:", {
+        logger.error("Supabase insert error details:", {
           message: insertError.message,
           details: insertError.details,
           hint: insertError.hint,

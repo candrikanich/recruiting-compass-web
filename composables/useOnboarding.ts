@@ -5,6 +5,9 @@
 
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useOnboarding");
 
 export interface OnboardingAssessment {
   hasHighlightVideo: boolean;
@@ -117,7 +120,7 @@ export const useOnboarding = () => {
             });
           } catch (err) {
             // Log error but continue - task might not exist for this user
-            console.error(`Failed to complete task ${taskId}:`, err);
+            logger.error(`Failed to complete task ${taskId}:`, err);
           }
         }
       }
@@ -150,7 +153,7 @@ export const useOnboarding = () => {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Onboarding failed";
       error.value = message;
-      console.error("Onboarding error:", err);
+      logger.error("Onboarding error:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -184,7 +187,7 @@ export const useOnboarding = () => {
       };
 
       if (error) {
-        console.error("Failed to check onboarding status:", error);
+        logger.error("Failed to check onboarding status:", error);
         return false;
       }
 
@@ -193,7 +196,7 @@ export const useOnboarding = () => {
       isOnboardingComplete.value = isComplete;
       return isComplete;
     } catch (err) {
-      console.error("Error checking onboarding status:", err);
+      logger.error("Error checking onboarding status:", err);
       return false;
     }
   };
@@ -236,7 +239,7 @@ export const useOnboarding = () => {
       const message =
         err instanceof Error ? err.message : "Failed to save onboarding step";
       error.value = message;
-      console.error("Onboarding step save error:", err);
+      logger.error("Onboarding step save error:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -267,7 +270,7 @@ export const useOnboarding = () => {
             const parsed = JSON.parse(stored);
             currentStep = parsed.current_step || 0;
           } catch (e) {
-            console.error("Failed to parse stored onboarding progress:", e);
+            logger.error("Failed to parse stored onboarding progress:", e);
           }
         }
       }
@@ -280,7 +283,7 @@ export const useOnboarding = () => {
       );
       return progress;
     } catch (err) {
-      console.error("Error getting onboarding progress:", err);
+      logger.error("Error getting onboarding progress:", err);
       return 0;
     }
   };

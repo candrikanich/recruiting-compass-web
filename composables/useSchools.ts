@@ -6,6 +6,9 @@ import { useFamilyContext } from "./useFamilyContext";
 import type { School } from "~/types/models";
 import { schoolSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useSchools");
 
 /**
  * useSchools composable
@@ -70,15 +73,9 @@ const useSchoolsInternal = (): {
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
 
   if (!injectedFamily) {
-    if (import.meta.dev) {
-      throw new Error(
-        "[useSchools] activeFamily was not provided. " +
-          "Wrap the component tree with provide('activeFamily', useActiveFamily()) — " +
-          "app.vue already does this for all pages.",
-      );
-    }
-    console.warn(
-      "[useSchools] activeFamily injection missing — data may be stale when parent switches athletes.",
+    logger.warn(
+      "[useSchools] activeFamily injection failed, using singleton fallback. " +
+        "This may cause data sync issues when parent switches athletes.",
     );
   }
 
@@ -107,24 +104,24 @@ const useSchoolsInternal = (): {
   );
 
   const fetchSchools = async () => {
-    console.debug("[useSchools] fetchSchools called");
-    console.debug(`[useSchools] User: ${userStore.user?.id || "null"}`);
-    console.debug(
+    logger.debug("[useSchools] fetchSchools called");
+    logger.debug(`[useSchools] User: ${userStore.user?.id || "null"}`);
+    logger.debug(
       `[useSchools] Active Family ID: ${activeFamily.activeFamilyId?.value || "null"}`,
     );
 
     // Ensure we have both user and family context
     if (!userStore.user) {
-      console.debug("[useSchools] No user, skipping fetch");
+      logger.debug("[useSchools] No user, skipping fetch");
       return;
     }
 
     if (!activeFamily.activeFamilyId?.value) {
-      console.debug("[useSchools] No family context, skipping fetch");
+      logger.debug("[useSchools] No family context, skipping fetch");
       return;
     }
 
-    console.debug(
+    logger.debug(
       `[useSchools] Fetching for family: ${activeFamily.activeFamilyId.value}`,
     );
     loadingRef.value = true;
@@ -176,7 +173,7 @@ const useSchoolsInternal = (): {
       const seen = new Set<string>();
       const deduplicated = (data || []).filter((school) => {
         if (seen.has(school.id)) {
-          console.warn(
+          logger.warn(
             `[useSchools] Duplicate school detected: ${school.name} (ID: ${school.id})`,
           );
           return false;
@@ -186,12 +183,12 @@ const useSchoolsInternal = (): {
       });
 
       schools.value = deduplicated;
-      console.debug(`[useSchools] Loaded ${schools.value.length} schools`);
+      logger.debug(`[useSchools] Loaded ${schools.value.length} schools`);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch schools";
       errorRef.value = message;
-      console.error("[useSchools] Error:", message);
+      logger.error("[useSchools] Error:", message);
     } finally {
       loadingRef.value = false;
     }
@@ -335,11 +332,11 @@ const useSchoolsInternal = (): {
         const { useSchoolLogos } = await import("./useSchoolLogos");
         const { fetchSchoolLogo } = useSchoolLogos();
         fetchSchoolLogo(data).catch((err) => {
-          console.warn("Failed to fetch logo for new school:", err);
+          logger.warn("Failed to fetch logo for new school:", err);
           // Don't fail school creation if logo fetch fails
         });
       } catch (logoError) {
-        console.warn("Failed to initialize logo fetching:", logoError);
+        logger.warn("Failed to initialize logo fetching:", logoError);
         // Don't fail school creation if logo fetching initialization fails
       }
 
@@ -460,7 +457,7 @@ const useSchoolsInternal = (): {
       const message =
         err instanceof Error ? err.message : "Failed to delete school";
       errorRef.value = message;
-      console.error("[useSchools] Delete error:", {
+      logger.error("[useSchools] Delete error:", {
         schoolId: id,
         error: message,
       });

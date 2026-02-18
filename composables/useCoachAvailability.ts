@@ -1,3 +1,4 @@
+import { createClientLogger } from "~/utils/logger";
 import { useCoaches } from "./useCoaches";
 import type { CoachAvailability, DayAvailability } from "~/types/models";
 
@@ -22,6 +23,8 @@ const DEFAULT_AVAILABILITY: CoachAvailability = {
   sunday: { available: false, start_time: "10:00", end_time: "16:00" },
   blackout_dates: [],
 };
+
+const logger = createClientLogger("useCoachAvailability");
 
 export const useCoachAvailability = () => {
   const { coaches, updateCoach } = useCoaches();
@@ -51,7 +54,7 @@ export const useCoachAvailability = () => {
       const success = await updateCoach(coachId, { availability });
       return success;
     } catch (err) {
-      console.error("Failed to update coach availability:", err);
+      logger.error("Failed to update coach availability:", err);
       return false;
     }
   };

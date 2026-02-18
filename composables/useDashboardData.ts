@@ -6,6 +6,7 @@
 
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
+import { createClientLogger } from "~/utils/logger";
 import type {
   Coach,
   School,
@@ -14,6 +15,8 @@ import type {
   Event,
   PerformanceMetric,
 } from "~/types/models";
+
+const logger = createClientLogger("useDashboardData");
 
 export interface DashboardCounts {
   coaches: number;
@@ -89,7 +92,7 @@ export const useDashboardData = () => {
       .eq("family_unit_id", familyId);
 
     if (schoolsError) {
-      console.error("Error fetching schools:", schoolsError);
+      logger.error("Error fetching schools:", schoolsError);
       throw schoolsError;
     }
 
@@ -119,7 +122,7 @@ export const useDashboardData = () => {
       .in("school_id", schoolIds);
 
     if (coachesError) {
-      console.error("Error fetching coaches:", coachesError);
+      logger.error("Error fetching coaches:", coachesError);
       throw coachesError;
     }
 
@@ -141,7 +144,7 @@ export const useDashboardData = () => {
       .eq("logged_by", userId);
 
     if (interactionsError) {
-      console.error("Error fetching interactions:", interactionsError);
+      logger.error("Error fetching interactions:", interactionsError);
       throw interactionsError;
     }
 
@@ -165,7 +168,7 @@ export const useDashboardData = () => {
         allOffers.value = offersData;
       }
     } catch (err) {
-      console.error("Error fetching offers:", err);
+      logger.error("Error fetching offers:", err);
       allOffers.value = [];
     }
   };
@@ -184,7 +187,7 @@ export const useDashboardData = () => {
         allEvents.value = eventsData;
       }
     } catch (err) {
-      console.error("Error fetching events:", err);
+      logger.error("Error fetching events:", err);
       allEvents.value = [];
     }
   };
@@ -203,7 +206,7 @@ export const useDashboardData = () => {
         allMetrics.value = metricsData;
       }
     } catch (err) {
-      console.error("Error fetching metrics:", err);
+      logger.error("Error fetching metrics:", err);
       allMetrics.value = [];
     }
   };
@@ -215,7 +218,7 @@ export const useDashboardData = () => {
    */
   const fetchAll = async (familyId: string, userId: string): Promise<void> => {
     if (!familyId) {
-      console.warn("No family ID provided, skipping data fetch");
+      logger.warn("No family ID provided, skipping data fetch");
       return;
     }
 
@@ -239,7 +242,7 @@ export const useDashboardData = () => {
       const message =
         err instanceof Error ? err.message : "Failed to fetch dashboard data";
       error.value = message;
-      console.error("Dashboard data fetch error:", err);
+      logger.error("Dashboard data fetch error:", err);
       throw err;
     } finally {
       loading.value = false;

@@ -6,7 +6,10 @@
 import { ref } from "vue";
 import { useSupabase } from "~/composables/useSupabase";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
 import type { Interaction, User } from "~/types/models";
+
+const logger = createClientLogger("useAthleteActivity");
 
 interface AthleteActivityState {
   linkedAthletes: Ref<User[]>;
@@ -98,7 +101,7 @@ export const useAthleteActivity = (): AthleteActivityState & {
       const message =
         err instanceof Error ? err.message : "Failed to load athlete activity";
       error.value = message;
-      console.error("[useAthleteActivity] Error:", err);
+      logger.error("Error:", err);
     } finally {
       loading.value = false;
     }

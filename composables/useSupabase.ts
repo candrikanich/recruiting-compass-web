@@ -1,7 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { useRuntimeConfig } from "#app";
+import { createClientLogger } from "~/utils/logger";
 
 let supabaseClient: ReturnType<typeof createClient> | null = null;
+
+const logger = createClientLogger("useSupabase");
 
 export const useSupabase = () => {
   if (!supabaseClient) {
@@ -11,7 +14,7 @@ export const useSupabase = () => {
     const supabaseAnonKey = config.public.supabaseAnonKey || "";
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.error("Supabase config missing:", {
+      logger.error("Supabase config missing:", {
         supabaseUrl: supabaseUrl ? "SET" : "MISSING",
         supabaseAnonKey: supabaseAnonKey ? "SET" : "MISSING",
       });
@@ -73,7 +76,7 @@ export const useSupabase = () => {
       supabaseClient.auth.onAuthStateChange((event, session) => {
         // Clear invalid session tokens to prevent refresh errors
         if (event === "TOKEN_REFRESHED" && !session) {
-          console.warn("[useSupabase] Token refresh failed, clearing session");
+          logger.warn("Token refresh failed, clearing session");
           void supabaseClient?.auth.signOut();
         }
       });

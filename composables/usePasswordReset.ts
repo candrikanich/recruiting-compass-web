@@ -1,4 +1,5 @@
 import { ref, readonly } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import { useSupabase } from "./useSupabase";
 
 /**
@@ -18,6 +19,8 @@ import { useSupabase } from "./useSupabase";
  *
  * @returns Object with password reset actions and readonly state
  */
+
+const logger = createClientLogger("usePasswordReset");
 
 export const usePasswordReset = () => {
   // State
@@ -52,7 +55,7 @@ export const usePasswordReset = () => {
 
       if (resetError) {
         error.value = resetError.message || "Failed to request password reset";
-        console.error("Password reset request error:", resetError);
+        logger.error("Password reset request error:", resetError);
         return false;
       }
 
@@ -62,7 +65,7 @@ export const usePasswordReset = () => {
       const message =
         err instanceof Error ? err.message : "Failed to request password reset";
       error.value = message;
-      console.error("Password reset request error:", err);
+      logger.error("Password reset request error:", err);
       return false;
     } finally {
       loading.value = false;
@@ -93,7 +96,7 @@ export const usePasswordReset = () => {
 
       if (updateError) {
         error.value = updateError.message || "Failed to reset password";
-        console.error("Password reset confirmation error:", updateError);
+        logger.error("Password reset confirmation error:", updateError);
         return false;
       }
 
@@ -103,7 +106,7 @@ export const usePasswordReset = () => {
       const message =
         err instanceof Error ? err.message : "Failed to reset password";
       error.value = message;
-      console.error("Password reset confirmation error:", err);
+      logger.error("Password reset confirmation error:", err);
       return false;
     } finally {
       loading.value = false;

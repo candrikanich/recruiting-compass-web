@@ -1,4 +1,5 @@
 import { ref, computed, type ComputedRef } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { PerformanceMetric, Performance } from "~/types/models";
@@ -23,6 +24,9 @@ type _PerformanceMetricUpdate =
  * - Group metrics by period and category
  * - Calculate funnel metrics
  */
+
+const logger = createClientLogger("usePerformanceConsolidated");
+
 export const usePerformanceConsolidated = (): {
   metrics: ComputedRef<PerformanceMetric[]>;
   metricsByType: ComputedRef<Record<string, PerformanceMetric[]>>;
@@ -168,7 +172,7 @@ export const usePerformanceConsolidated = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch metrics";
       error.value = message;
-      console.error("Metric fetch error:", message);
+      logger.error("Metric fetch error:", message);
     } finally {
       loading.value = false;
     }

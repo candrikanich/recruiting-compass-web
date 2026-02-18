@@ -1,3 +1,5 @@
+import { createClientLogger } from "~/utils/logger";
+
 /**
  * Document file validation utilities
  * Centralized validation logic for document uploads
@@ -43,10 +45,12 @@ const FILE_SIZE_LIMITS = {
   stats_sheet: 5 * 1024 * 1024, // 5MB
 };
 
+const logger = createClientLogger("useDocumentValidation");
+
 // Deprecation warning: consolidated into useFormValidation().validateFile()
 if (process.env.NODE_ENV !== "test") {
-  console.warn(
-    "[DEPRECATED] `useDocumentValidation` is deprecated. Use `useFormValidation().validateFile()` from `~/composables/useFormValidation` instead.",
+  logger.warn(
+    "`useDocumentValidation` is deprecated. Use `useFormValidation().validateFile()` from `~/composables/useFormValidation` instead.",
   );
 }
 

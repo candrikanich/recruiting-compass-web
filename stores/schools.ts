@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type { School, SchoolStatusHistory } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
 
 export interface SchoolFilters {
   division: string;
@@ -32,6 +33,8 @@ export interface SchoolState {
  * await schoolStore.fetchSchools()
  * schoolStore.setSelectedSchool(schoolId)
  */
+const logger = createClientLogger("stores/schools");
+
 export const useSchoolStore = defineStore("schools", {
   state: (): SchoolState => ({
     schools: [],
@@ -150,7 +153,7 @@ export const useSchoolStore = defineStore("schools", {
         const message =
           err instanceof Error ? err.message : "Failed to fetch schools";
         this.error = message;
-        console.error(message);
+        logger.error(message);
       } finally {
         this.loading = false;
       }

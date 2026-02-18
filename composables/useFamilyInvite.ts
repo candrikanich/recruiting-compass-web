@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
+import { createClientLogger } from "~/utils/logger";
 
 /**
  * Composable for managing family invitations
@@ -12,6 +13,8 @@ import { useSupabase } from "./useSupabase";
  * await sendParentInvite('parent@example.com')
  * const playerData = await linkParentWithCode('FAM-ABC123')
  */
+const logger = createClientLogger("useFamilyInvite");
+
 export const useFamilyInvite = () => {
   const supabase = useSupabase();
 
@@ -85,7 +88,7 @@ export const useFamilyInvite = () => {
       const message =
         err instanceof Error ? err.message : "Failed to send parent invite";
       error.value = message;
-      console.error("Parent invite error:", err);
+      logger.error("Parent invite error:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -147,7 +150,7 @@ export const useFamilyInvite = () => {
       ).insert(linkData)) as { error: unknown };
 
       if (linkError) {
-        console.error("Link creation failed (non-blocking):", linkError);
+        logger.error("Link creation failed (non-blocking):", linkError);
         // Don't throw - link may already exist
       }
 
@@ -156,7 +159,7 @@ export const useFamilyInvite = () => {
       const message =
         err instanceof Error ? err.message : "Failed to link with family code";
       error.value = message;
-      console.error("Family link error:", err);
+      logger.error("Family link error:", err);
       throw err;
     } finally {
       loading.value = false;

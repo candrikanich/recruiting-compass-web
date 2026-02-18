@@ -8,6 +8,9 @@ import { ref, computed } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { School } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useSchoolLogos");
 
 interface CachedLogo {
   schoolId: string;
@@ -84,7 +87,7 @@ export const useSchoolLogos = () => {
       // 1. Check database first
       if (school.favicon_url && !options.forceRefresh) {
         // Cache from database
-        console.log(
+        logger.info(
           `[useSchoolLogos] Found favicon_url in database for ${school.name}: ${school.favicon_url}`,
         );
         logoCache.set(schoolId, {
@@ -99,7 +102,7 @@ export const useSchoolLogos = () => {
       }
 
       // 2. Fetch from API if not in database
-      console.log(
+      logger.info(
         `[useSchoolLogos] Fetching favicon from API for ${school.name} with domain: ${domain}`,
       );
       const response = await $fetch("/api/schools/favicon", {
@@ -110,7 +113,7 @@ export const useSchoolLogos = () => {
       });
 
       const faviconUrl = response.faviconUrl;
-      console.log(`[useSchoolLogos] API returned: ${faviconUrl}`);
+      logger.info(`[useSchoolLogos] API returned: ${faviconUrl}`);
 
       // 3. Save to database for persistence
       if (faviconUrl) {
@@ -121,7 +124,7 @@ export const useSchoolLogos = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .eq("id", schoolId)) as { error?: any };
         } catch (dbError) {
-          console.warn(
+          logger.warn(
             `Failed to save favicon to database for ${schoolId}:`,
             dbError,
           );
@@ -143,7 +146,7 @@ export const useSchoolLogos = () => {
 
       return faviconUrl;
     } catch (error) {
-      console.warn(`Failed to fetch logo for school ${schoolId}:`, error);
+      logger.warn(`Failed to fetch logo for school ${schoolId}:`, error);
       logoMap.value.set(schoolId, null);
       return null;
     } finally {
@@ -211,11 +214,11 @@ export const useSchoolLogos = () => {
     const schoolsNeedingLogos = schools.filter((s) => !s.favicon_url);
 
     if (schoolsNeedingLogos.length === 0) {
-      console.log("All schools already have favicons in database");
+      logger.info("All schools already have favicons in database");
       return 0;
     }
 
-    console.log(`Fetching logos for ${schoolsNeedingLogos.length} schools...`);
+    logger.info(`Fetching logos for ${schoolsNeedingLogos.length} schools...`);
 
     const results = await fetchMultipleLogos(schoolsNeedingLogos);
 
@@ -224,7 +227,7 @@ export const useSchoolLogos = () => {
       (url) => url !== null,
     ).length;
 
-    console.log(
+    logger.info(
       `Successfully fetched ${successCount}/${schoolsNeedingLogos.length} logos`,
     );
 

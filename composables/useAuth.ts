@@ -2,6 +2,9 @@ import { ref, readonly, onBeforeUnmount, getCurrentInstance } from "vue";
 import type { User, Session } from "@supabase/supabase-js";
 import { useSupabase } from "~/composables/useSupabase";
 import type { SessionPreferences } from "~/types/session";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useAuth");
 
 /**
  * Composable for authentication operations
@@ -85,7 +88,7 @@ export const useAuth = () => {
   const restoreSession = async (): Promise<Session | null> => {
     // Guard: already initialized, return current session
     if (isInitialized.value) {
-      console.debug(
+      logger.debug(
         "[useAuth] Session already initialized, returning cached session",
       );
       return session.value;
@@ -93,7 +96,7 @@ export const useAuth = () => {
 
     // Guard: initialization already in progress, wait for it
     if (initializationAttempt.value) {
-      console.debug("[useAuth] Session initialization in progress, waiting...");
+      logger.debug("[useAuth] Session initialization in progress, waiting...");
       // Wait for initialization to complete
       while (initializationAttempt.value && !isInitialized.value) {
         await new Promise((resolve) => setTimeout(resolve, 50));
@@ -118,7 +121,7 @@ export const useAuth = () => {
       if (sessionData?.user) {
         session.value = sessionData;
         isInitialized.value = true;
-        console.debug(
+        logger.debug(
           "[useAuth] Session restored successfully for user:",
           sessionData.user.email,
         );
@@ -128,13 +131,13 @@ export const useAuth = () => {
 
       session.value = null;
       isInitialized.value = true;
-      console.debug("[useAuth] No active session found");
+      logger.debug("[useAuth] No active session found");
       return null;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to restore session";
       error.value = err instanceof Error ? err : new Error(message);
-      console.error("[useAuth] Session restoration failed:", message);
+      logger.error("[useAuth] Session restoration failed:", message);
       return null;
     } finally {
       loading.value = false;
@@ -169,7 +172,7 @@ export const useAuth = () => {
       // Store initialization is handled by caller
       if (data.session?.user) {
         session.value = data.session;
-        console.debug(
+        logger.debug(
           "[useAuth] Login successful for user:",
           data.session.user.email,
         );
@@ -187,10 +190,10 @@ export const useAuth = () => {
             "session_preferences",
             JSON.stringify(preferences),
           );
-          console.debug("[useAuth] Session preferences stored");
+          logger.debug("[useAuth] Session preferences stored");
         }
       } else {
-        console.warn("[useAuth] Login returned but no session in data");
+        logger.warn("[useAuth] Login returned but no session in data");
       }
 
       return { data, error: null };

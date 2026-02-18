@@ -3,6 +3,9 @@ import { useRoute } from "vue-router";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { Database } from "~/types/database";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useActiveFamily");
 
 type FamilyMember = Database["public"]["Tables"]["family_members"]["Row"];
 
@@ -138,7 +141,7 @@ export const useActiveFamily = () => {
         };
 
         if (fetchError) {
-          console.error(
+          logger.error(
             "[useActiveFamily] Error fetching player family unit:",
             fetchError,
           );
@@ -157,7 +160,7 @@ export const useActiveFamily = () => {
 
           // Skip API call if no valid session (e.g., during logout)
           if (!session?.access_token) {
-            console.debug(
+            logger.debug(
               "[useActiveFamily] No valid session, skipping API call",
             );
             parentAccessibleFamilies.value = [];
@@ -170,7 +173,7 @@ export const useActiveFamily = () => {
             },
           });
 
-          console.debug(
+          logger.debug(
             `[useActiveFamily] API response: ${response.families?.length || 0} families`,
             response.families,
           );
@@ -217,7 +220,7 @@ export const useActiveFamily = () => {
           // If API call fails, log the error for debugging
           const errMsg =
             err instanceof Error ? err.message : JSON.stringify(err);
-          console.debug("[useActiveFamily] API call failed:", errMsg);
+          logger.debug("[useActiveFamily] API call failed:", errMsg);
           parentAccessibleFamilies.value = [];
         }
       }
@@ -225,7 +228,7 @@ export const useActiveFamily = () => {
       const message =
         err instanceof Error ? err.message : "Failed to load family info";
       error.value = message;
-      console.error("[useActiveFamily] Error:", message);
+      logger.error("[useActiveFamily] Error:", message);
     } finally {
       loading.value = false;
     }
@@ -247,7 +250,7 @@ export const useActiveFamily = () => {
       if (fetchError) throw fetchError;
       familyMembers.value = data || [];
     } catch (err: unknown) {
-      console.error("[useActiveFamily] Error fetching family members:", err);
+      logger.error("[useActiveFamily] Error fetching family members:", err);
     }
   };
 
@@ -265,7 +268,7 @@ export const useActiveFamily = () => {
     const previousAthleteId = currentAthleteId.value;
     currentAthleteId.value = athleteId;
 
-    console.debug(
+    logger.debug(
       `[useActiveFamily] Athlete switched: ${previousAthleteId} → ${athleteId}, ` +
         `instance: ${_debugInstanceId}, family: ${activeFamilyId.value}`,
     );
@@ -309,7 +312,7 @@ export const useActiveFamily = () => {
     // If not in component context (e.g., in middleware), initialize immediately
     // without awaiting to avoid blocking
     initializeFamily().catch((err) =>
-      console.warn("Failed to initialize family context:", err),
+      logger.warn("Failed to initialize family context:", err),
     );
   }
 
@@ -318,7 +321,7 @@ export const useActiveFamily = () => {
     () => userStore.user?.role,
     async (newRole) => {
       if (newRole) {
-        console.debug(
+        logger.debug(
           `[useActiveFamily] User role changed to "${newRole}", reinitializing...`,
         );
         await initializeFamily();

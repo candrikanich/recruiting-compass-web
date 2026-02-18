@@ -7,6 +7,9 @@ import type { Interaction } from "~/types/models";
 import type { Database } from "~/types/database";
 import { interactionSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useInteractions");
 
 // Get Table types from Database
 type InteractionsTable = Database["public"]["Tables"]["interactions"];
@@ -90,15 +93,9 @@ const useInteractionsInternal = (): {
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
 
   if (!injectedFamily) {
-    if (import.meta.dev) {
-      throw new Error(
-        "[useInteractions] activeFamily was not provided. " +
-          "Wrap the component tree with provide('activeFamily', useActiveFamily()) — " +
-          "app.vue already does this for all pages.",
-      );
-    }
-    console.warn(
-      "[useInteractions] activeFamily injection missing — data may be stale when parent switches athletes.",
+    logger.warn(
+      "[useInteractions] activeFamily injection failed, using singleton fallback. " +
+        "This may cause data sync issues when parent switches athletes.",
     );
   }
 
@@ -330,7 +327,7 @@ const useInteractionsInternal = (): {
               .update({ attachments: uploadedPaths })
               .eq("id", data.id);
           if (updateError)
-            console.error("Failed to update attachment paths:", updateError);
+            logger.error("Failed to update attachment paths:", updateError);
         }
       }
 

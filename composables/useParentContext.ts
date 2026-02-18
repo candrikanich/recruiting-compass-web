@@ -1,6 +1,7 @@
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
 
 // Type for linked accounts (simplified from database structure)
 interface LinkedAccount {
@@ -9,6 +10,8 @@ interface LinkedAccount {
   email: string;
   relationship: string;
 }
+
+const logger = createClientLogger("useParentContext");
 
 /**
  * Composable to determine if current user is a parent viewing athlete data
@@ -111,7 +114,7 @@ export const useParentContext = () => {
    */
   const switchAthlete = async (athleteId: string) => {
     if (!canViewAthlete(athleteId)) {
-      console.error("Parent does not have access to this athlete");
+      logger.error("Parent does not have access to this athlete");
       return;
     }
     currentAthleteId.value = athleteId;

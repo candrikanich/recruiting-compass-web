@@ -3,8 +3,11 @@ import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
 import { useFamilyContext } from "./useFamilyContext";
+import { createClientLogger } from "~/utils/logger";
 import type { Event } from "~/types/models";
 import type { Database } from "~/types/database";
+
+const logger = createClientLogger("useEvents");
 
 // Type aliases for Supabase casting
 type _EventInsert = Database["public"]["Tables"]["events"]["Insert"];
@@ -56,8 +59,8 @@ export const useEvents = (): {
   const activeFamily = injectedFamily || useFamilyContext();
 
   if (!injectedFamily) {
-    console.warn(
-      "[useEvents] activeFamily injection failed, using singleton fallback. " +
+    logger.warn(
+      "activeFamily injection failed, using singleton fallback. " +
         "This may cause data sync issues when parent switches athletes.",
     );
   }
@@ -117,7 +120,7 @@ export const useEvents = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch events";
       error.value = message;
-      console.error("Event fetch error:", message);
+      logger.error("Event fetch error:", message);
     } finally {
       loading.value = false;
     }
@@ -145,7 +148,7 @@ export const useEvents = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch event";
       error.value = message;
-      console.error("Event fetch error:", message);
+      logger.error("Event fetch error:", message);
       return null;
     } finally {
       loading.value = false;

@@ -4,8 +4,11 @@ import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
 import { useFamilyContext } from "./useFamilyContext";
 import { useToast } from "~/composables/useToast";
+import { createClientLogger } from "~/utils/logger";
 import type { FollowUpReminder } from "~/types/models";
 import type { Database } from "~/types/database";
+
+const logger = createClientLogger("useInteractionReminders");
 
 type FollowUpRemindersTable =
   Database["public"]["Tables"]["follow_up_reminders"];
@@ -81,7 +84,7 @@ export const useInteractionReminders = () => {
       const message =
         err instanceof Error ? err.message : "Failed to load reminders";
       remindersErrorRef.value = message;
-      console.error("Load reminders error:", err);
+      logger.error("Load reminders error:", err);
       toast.showToast("Failed to load reminders. Please try again.");
     } finally {
       remindersLoadingRef.value = false;
@@ -143,7 +146,7 @@ export const useInteractionReminders = () => {
       const message =
         err instanceof Error ? err.message : "Failed to create reminder";
       remindersErrorRef.value = message;
-      console.error("Create reminder error:", err);
+      logger.error("Create reminder error:", err);
       toast.showToast("Failed to create reminder. Please try again.");
       return null;
     }
@@ -181,7 +184,7 @@ export const useInteractionReminders = () => {
       const message =
         err instanceof Error ? err.message : "Failed to complete reminder";
       remindersErrorRef.value = message;
-      console.error("Complete reminder error:", err);
+      logger.error("Complete reminder error:", err);
       toast.showToast("Failed to complete reminder. Please try again.");
       return false;
     }
@@ -210,7 +213,7 @@ export const useInteractionReminders = () => {
       const message =
         err instanceof Error ? err.message : "Failed to delete reminder";
       remindersErrorRef.value = message;
-      console.error("Delete reminder error:", err);
+      logger.error("Delete reminder error:", err);
       toast.showToast("Failed to delete reminder. Please try again.");
       return false;
     }
@@ -247,7 +250,7 @@ export const useInteractionReminders = () => {
       const message =
         err instanceof Error ? err.message : "Failed to update reminder";
       remindersErrorRef.value = message;
-      console.error("Update reminder error:", err);
+      logger.error("Update reminder error:", err);
       toast.showToast("Failed to update reminder. Please try again.");
       return false;
     }

@@ -4,6 +4,9 @@ import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
 import { useFamilyContext } from "./useFamilyContext";
 import type { School } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useSchoolStatus");
 
 /**
  * useSchoolStatus composable
@@ -24,7 +27,7 @@ export const useSchoolStatus = () => {
           "app.vue already does this for all pages.",
       );
     }
-    console.warn(
+    logger.warn(
       "[useSchoolStatus] activeFamily injection missing — data may be stale when parent switches athletes.",
     );
   }

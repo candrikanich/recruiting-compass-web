@@ -1,4 +1,5 @@
 import { ref, computed } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import { useFamilyContext } from "~/composables/useFamilyContext";
 
 export interface FamilyCodeData {
@@ -7,6 +8,8 @@ export interface FamilyCodeData {
   familyName: string;
   codeGeneratedAt: string;
 }
+
+const logger = createClientLogger("useFamilyCode");
 
 export const useFamilyCode = () => {
   const userStore = useUserStore();
@@ -107,7 +110,7 @@ export const useFamilyCode = () => {
       }
     } catch (e) {
       error.value = e instanceof Error ? e.message : "Failed to fetch code";
-      console.error("fetchMyCode error:", e);
+      logger.error("fetchMyCode error:", e);
     } finally {
       loading.value = false;
     }
@@ -151,7 +154,7 @@ export const useFamilyCode = () => {
         (errorData?.data as Record<string, unknown> | undefined)?.message ||
         (err instanceof Error ? err.message : "Failed to create family");
       error.value = String(errorMessage);
-      console.error("createFamily error:", err);
+      logger.error("createFamily error:", err);
       return false;
     } finally {
       loading.value = false;
@@ -204,7 +207,7 @@ export const useFamilyCode = () => {
           ((errorData.data as Record<string, unknown>)?.message as string) ||
           (err instanceof Error ? err.message : "Failed to join family");
       }
-      console.error("joinByCode error:", err);
+      logger.error("joinByCode error:", err);
       return false;
     } finally {
       loading.value = false;
@@ -242,7 +245,7 @@ export const useFamilyCode = () => {
           ?.message ||
         (err instanceof Error ? err.message : "Failed to regenerate code");
       error.value = errorMessage as string;
-      console.error("regenerateCode error:", err);
+      logger.error("regenerateCode error:", err);
       return false;
     } finally {
       loading.value = false;
@@ -288,7 +291,7 @@ export const useFamilyCode = () => {
         ((errorData.data as Record<string, unknown>)?.message as string) ||
         (err instanceof Error ? err.message : "Failed to remove member");
       error.value = message;
-      console.error("removeFamilyMember error:", err);
+      logger.error("removeFamilyMember error:", err);
       return false;
     } finally {
       loading.value = false;

@@ -3,6 +3,9 @@ import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
 import type { Offer } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useOffers");
 
 /**
  * useOffers composable
@@ -65,7 +68,7 @@ export const useOffers = (): {
   }) => {
     if (!userStore.user) return;
     if (!activeFamily.activeFamilyId?.value) {
-      console.debug("[useOffers] No family context, skipping fetch");
+      logger.debug("[useOffers] No family context, skipping fetch");
       return;
     }
 
@@ -97,7 +100,7 @@ export const useOffers = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch offers";
       error.value = message;
-      console.error("Offer fetch error:", message);
+      logger.error("Offer fetch error:", message);
     } finally {
       loading.value = false;
     }

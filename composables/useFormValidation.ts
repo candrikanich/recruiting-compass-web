@@ -28,6 +28,7 @@
 
 import { ref, computed, type Ref, type ComputedRef } from "vue";
 import { z } from "zod";
+import { createClientLogger } from "~/utils/logger";
 
 /**
  * Form field error type (renamed from ValidationError to avoid conflicts with useValidation composable)
@@ -156,6 +157,8 @@ export interface UseFormValidationReturn {
   getFileDescription: (type: SupportedFileType) => string;
 }
 
+const logger = createClientLogger("useFormValidation");
+
 export function useFormValidation(): UseFormValidationReturn {
   const errors = ref<FormFieldError[]>([]);
   const fileErrors = ref<FileValidationError[]>([]);
@@ -183,7 +186,7 @@ export function useFormValidation(): UseFormValidationReturn {
     schema?: z.ZodSchema<T>,
   ): Promise<T | null> => {
     if (!schema) {
-      console.warn("[useFormValidation] No schema provided to validate()");
+      logger.warn("No schema provided to validate()");
       return null;
     }
 

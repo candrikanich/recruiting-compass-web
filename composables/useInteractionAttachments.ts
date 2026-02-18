@@ -1,6 +1,9 @@
 import { ref } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import { useSupabase } from "~/composables/useSupabase";
 import { useUserStore } from "~/stores/user";
+
+const logger = createClientLogger("useInteractionAttachments");
 
 export const useInteractionAttachments = () => {
   const supabase = useSupabase();
@@ -102,7 +105,7 @@ export const useInteractionAttachments = () => {
 
       return true;
     } catch (err) {
-      console.error("Error deleting attachment:", err);
+      logger.error("Error deleting attachment:", err);
       return false;
     }
   };

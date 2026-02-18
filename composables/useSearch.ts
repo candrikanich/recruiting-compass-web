@@ -1,5 +1,8 @@
 import { useEntitySearch } from "./useEntitySearch";
 import { useSearchFilters } from "./useSearchFilters";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useSearch");
 
 /**
  * Composable for search (backwards-compatible wrapper)
@@ -30,8 +33,8 @@ export const useSearch = () => {
 
   // Deprecation warning
   if (process.env.NODE_ENV === "development") {
-    console.warn(
-      "[DEPRECATED] useSearch is deprecated as of Phase 4. " +
+    logger.warn(
+      "useSearch is deprecated as of Phase 4. " +
         "Use useSearchConsolidated() instead.\n" +
         "Migration guide: See DEPRECATION_AUDIT.md",
     );
