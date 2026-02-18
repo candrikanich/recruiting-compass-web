@@ -160,6 +160,27 @@ describe("useAuthFetch", () => {
       expect(mockAddCsrfHeader).toHaveBeenCalled();
     });
 
+    it("calls addCsrfHeader for PUT requests", async () => {
+      const { $fetchAuth } = useAuthFetch();
+      await $fetchAuth("/api/data", { method: "PUT" });
+
+      expect(mockAddCsrfHeader).toHaveBeenCalled();
+    });
+
+    it("calls addCsrfHeader for PATCH requests", async () => {
+      const { $fetchAuth } = useAuthFetch();
+      await $fetchAuth("/api/data", { method: "PATCH" });
+
+      expect(mockAddCsrfHeader).toHaveBeenCalled();
+    });
+
+    it("calls addCsrfHeader for DELETE requests", async () => {
+      const { $fetchAuth } = useAuthFetch();
+      await $fetchAuth("/api/data", { method: "DELETE" });
+
+      expect(mockAddCsrfHeader).toHaveBeenCalled();
+    });
+
     it("does not call addCsrfHeader for GET requests", async () => {
       const { $fetchAuth } = useAuthFetch();
       await $fetchAuth("/api/data", { method: "GET" });
