@@ -141,50 +141,37 @@ export const useActivityFeed = () => {
 
       const events: ActivityEvent[] = [];
 
-      // Fetch interactions
-      const interactionsResponse = await supabase
+      // Fetch interactions with school names embedded
+      type InteractionWithSchool = {
+        id: string;
+        school_id: string;
+        type: string;
+        content: string | null;
+        subject: string | null;
+        occurred_at: string | null;
+        created_at: string;
+        schools: { id: string; name: string } | { id: string; name: string }[] | null;
+      };
+      const interactionsResult = await supabase
         .from("interactions")
         .select(
-          "id, school_id, type, content, subject, occurred_at, created_at",
+          "id, school_id, type, content, subject, occurred_at, created_at, schools(id, name)",
         )
         .eq("logged_by", session.value!.user!.id)
         .order("created_at", { ascending: false })
         .limit(50);
 
-      const { data: interactions } = interactionsResponse as {
-        data: Array<{
-          id: string;
-          school_id: string;
-          type: string;
-          content: string | null;
-          subject: string | null;
-          occurred_at: string | null;
-          created_at: string;
-        }> | null;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error: any;
-      };
+      const interactionsError = interactionsResult.error;
+      const interactionsWithSchools =
+        interactionsResult.data as unknown as InteractionWithSchool[] | null;
 
-      if (interactions && interactions.length > 0) {
-        // Get school details for interactions
-        const schoolIds = [
-          ...new Set(interactions.map((i) => i.school_id).filter(Boolean)),
-        ];
-        const schoolsResponse = await supabase
-          .from("schools")
-          .select("id, name")
-          .in("id", schoolIds);
-
-        const { data: schools } = schoolsResponse as {
-          data: Array<{ id: string; name: string }> | null;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-        const schoolMap = new Map(schools?.map((s) => [s.id, s]) || []);
-
-        interactions.forEach((interaction) => {
-          const school = schoolMap.get(interaction.school_id);
+      if (interactionsError) {
+        console.error("Error fetching interactions:", interactionsError);
+      } else if (interactionsWithSchools) {
+        for (const interaction of interactionsWithSchools) {
+          const school = Array.isArray(interaction.schools)
+            ? interaction.schools[0]
+            : interaction.schools;
           events.push({
             id: `interaction-${interaction.id}`,
             type: "interaction",
@@ -192,82 +179,65 @@ export const useActivityFeed = () => {
               interaction.occurred_at ||
               interaction.created_at ||
               new Date().toISOString(),
-
             title: getInteractionTitle(
-              interaction as Interaction,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              school as any,
+              interaction as unknown as Interaction,
+              school as unknown as School | undefined,
             ),
-            description: getInteractionDescription(interaction as Interaction),
+            description: getInteractionDescription(
+              interaction as unknown as Interaction,
+            ),
             icon: getInteractionIcon(interaction.type as Interaction["type"]),
             entityType: "interaction",
             entityId: interaction.id,
-            entityName: school?.name,
+            entityName: (school as { name?: string } | null)?.name,
             clickable: true,
             clickUrl: `/interactions?id=${interaction.id}`,
           });
-        });
+        }
       }
 
-      // Fetch school status changes
-      const statusChangesResponse = await supabase
+      // Fetch school status changes with school names embedded
+      type StatusChangeWithSchool = {
+        id: string;
+        school_id: string;
+        new_status: string;
+        notes: string | null;
+        changed_at: string;
+        schools: { id: string; name: string } | { id: string; name: string }[] | null;
+      };
+      const statusResult = await supabase
         .from("school_status_history")
-        .select("id, school_id, new_status, notes, changed_at")
+        .select("id, school_id, new_status, notes, changed_at, schools(id, name)")
         .eq("changed_by", session.value!.user!.id)
         .order("changed_at", { ascending: false })
         .limit(50);
 
-      const { data: statusChanges } = statusChangesResponse as {
-        data: Array<{
-          id: string;
-          school_id: string;
-          new_status: string;
+      const statusError = statusResult.error;
+      const statusChanges =
+        statusResult.data as unknown as StatusChangeWithSchool[] | null;
 
-          notes: string | null;
-          changed_at: string;
-        }> | null;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error: any;
-      };
-
-      if (statusChanges && statusChanges.length > 0) {
-        // Get school details for status changes
-        const statusSchoolIds = [
-          ...new Set(statusChanges.map((s) => s.school_id).filter(Boolean)),
-        ];
-        const statusSchoolsResponse = await supabase
-          .from("schools")
-          .select("id, name")
-
-          .in("id", statusSchoolIds);
-
-        const { data: statusSchools } = statusSchoolsResponse as {
-          data: Array<{ id: string; name: string }> | null;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-        const statusSchoolMap = new Map(
-          statusSchools?.map((s) => [s.id, s]) || [],
-        );
-
-        statusChanges.forEach((change) => {
-          const school = statusSchoolMap.get(change.school_id);
+      if (statusError) {
+        console.error("Error fetching status changes:", statusError);
+      } else if (statusChanges) {
+        for (const change of statusChanges) {
+          const school = Array.isArray(change.schools)
+            ? change.schools[0]
+            : change.schools;
           const statusLabel = change.new_status.replace(/_/g, " ");
           events.push({
             id: `status-${change.id}`,
             type: "school_status_change",
             timestamp: change.changed_at,
-            title: `${school?.name} status changed to ${statusLabel}`,
+            title: `${(school as { name?: string } | null)?.name ?? "Unknown School"} status changed to ${statusLabel}`,
             description: change.notes || "No additional notes",
             icon: "📍",
             entityType: "school",
             entityId: change.school_id,
-            entityName: school?.name,
+            entityName: (school as { name?: string } | null)?.name,
             clickable: true,
             clickUrl: `/schools/${change.school_id}`,
           });
-        });
+        }
       }
 
       // Fetch documents

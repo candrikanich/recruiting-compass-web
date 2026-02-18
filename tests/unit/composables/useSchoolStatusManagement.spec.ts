@@ -4,10 +4,16 @@ import type { School } from "~/types/models";
 
 // Mock useSchools composable
 const mockUpdateSchool = vi.fn();
-const mockUpdateStatus = vi.fn();
 vi.mock("~/composables/useSchools", () => ({
   useSchools: () => ({
     updateSchool: mockUpdateSchool,
+  }),
+}));
+
+// Mock useSchoolStatus composable
+const mockUpdateStatus = vi.fn();
+vi.mock("~/composables/useSchoolStatus", () => ({
+  useSchoolStatus: () => ({
     updateStatus: mockUpdateStatus,
   }),
 }));

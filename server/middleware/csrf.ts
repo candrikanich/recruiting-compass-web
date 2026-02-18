@@ -15,60 +15,52 @@ import { requireCsrfToken } from "../utils/csrf";
  *   },
  * })
  */
+
+// Exact path prefixes that are CSRF-exempt
+const CSRF_EXEMPT_PREFIXES = [
+  "/api/csrf-token",
+  "/api/health",
+  "/api/auth",
+] as const;
+
+// Exact full paths that are CSRF-exempt
+const CSRF_EXEMPT_EXACT_PATHS = [
+  "/api/athlete/fit-scores/recalculate-all",
+] as const;
+
+// Path patterns requiring BOTH a domain prefix AND a specific operation suffix
+const CSRF_EXEMPT_PATTERNS: Array<{ prefixes: string[]; suffix: string }> = [
+  {
+    prefixes: ["/api/schools/", "/api/coaches/", "/api/interactions/"],
+    suffix: "/cascade-delete",
+  },
+  {
+    prefixes: ["/api/schools/", "/api/coaches/", "/api/interactions/"],
+    suffix: "/deletion-blockers",
+  },
+];
+
 export default defineEventHandler((event) => {
   const method = event.node.req.method;
   const path = event.path;
 
-  // Only validate CSRF for state-changing methods
   const stateChangingMethods = ["POST", "PUT", "PATCH", "DELETE"];
-  if (!stateChangingMethods.includes(method || "")) {
-    return; // GET, HEAD, OPTIONS, etc. don't need CSRF protection
+  if (!stateChangingMethods.includes(method || "")) return;
+
+  if (event.context._skipCsrfValidation) return;
+
+  if (CSRF_EXEMPT_PREFIXES.some((prefix) => path?.startsWith(prefix))) return;
+
+  if (CSRF_EXEMPT_EXACT_PATHS.some((exact) => path === exact)) return;
+
+  for (const { prefixes, suffix } of CSRF_EXEMPT_PATTERNS) {
+    if (
+      path?.endsWith(suffix) &&
+      prefixes.some((prefix) => path.startsWith(prefix))
+    ) {
+      return;
+    }
   }
 
-  // Check if CSRF validation is being skipped (e.g., for admin endpoints)
-  if (event.context._skipCsrfValidation) {
-    return;
-  }
-
-  // Skip CSRF for auth endpoints (they use other protections)
-  // and for endpoints that don't require authentication
-  if (path?.startsWith("/api/auth")) {
-    return;
-  }
-
-  // Skip CSRF for public endpoints
-  const publicEndpoints = [
-    "/api/csrf-token", // Token generation endpoint
-    "/api/health", // Health check
-  ];
-
-  // Skip CSRF for administrative utilities (diagnostic/cleanup endpoints)
-  const adminEndpoints = [
-    "/api/schools/", // School cascade-delete and diagnostic endpoints
-    "/api/coaches/", // Coach cascade-delete and diagnostic endpoints
-    "/api/interactions/", // Interaction cascade-delete and diagnostic endpoints
-  ];
-
-  // Skip CSRF for athlete-specific mutation endpoints (background calculations)
-  const athleteEndpoints = [
-    "/api/athlete/fit-scores/recalculate-all", // Fit score batch recalculation
-  ];
-
-  if (publicEndpoints.some((endpoint) => path?.startsWith(endpoint))) {
-    return;
-  }
-
-  if (athleteEndpoints.some((endpoint) => path === endpoint)) {
-    return;
-  }
-
-  if (
-    adminEndpoints.some((endpoint) => path?.includes(endpoint)) &&
-    (path?.includes("cascade-delete") || path?.includes("deletion-blockers"))
-  ) {
-    return;
-  }
-
-  // Validate CSRF token for protected endpoints
   requireCsrfToken(event);
 });
