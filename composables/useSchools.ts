@@ -53,11 +53,6 @@ const useSchoolsInternal = (): {
   smartDelete: (id: string) => Promise<{ cascadeUsed: boolean }>;
   toggleFavorite: (id: string, isFavorite: boolean) => Promise<School>;
   updateRanking: (schools_: School[]) => Promise<void>;
-  updateStatus: (
-    schoolId: string,
-    newStatus: School["status"],
-    notes?: string,
-  ) => Promise<School>;
   findDuplicate: (
     schoolData: Partial<School> | Record<string, string | null | undefined>,
   ) => {
@@ -614,110 +609,6 @@ const useSchoolsInternal = (): {
   });
 
   /**
-   * Update school status with history tracking
-   * Story 3.4: Status change timestamped and tracked in history
-   */
-  const updateStatus = async (
-    schoolId: string,
-    newStatus: School["status"],
-    notes?: string,
-  ): Promise<School> => {
-    if (!userStore.user || !activeFamily.activeFamilyId.value) {
-      throw new Error("User not authenticated or family not loaded");
-    }
-
-    loadingRef.value = true;
-    errorRef.value = null;
-
-    try {
-      // Find current school to get previous status (from local cache or fetch from DB)
-      let school = schools.value.find((s) => s.id === schoolId);
-
-      if (!school) {
-        // If not in local cache, fetch from database (e.g., viewing detail page)
-        // 🚀 Quick Win: Only fetch status field (minimal data transfer)
-        const fetchResponse = await supabase
-          .from("schools")
-          .select("id, status")
-          .eq("id", schoolId)
-          .eq("family_unit_id", activeFamily.activeFamilyId.value)
-          .single();
-
-        const { data: fetchedSchool, error: fetchError } = fetchResponse as {
-          data: School;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-        if (fetchError || !fetchedSchool) {
-          throw new Error("School not found");
-        }
-        school = fetchedSchool;
-      }
-
-      const previousStatus = school.status;
-      const now = new Date().toISOString();
-
-      // Update school status and status_changed_at timestamp
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updateStatusResponse = await (supabase.from("schools") as any)
-        .update({
-          status: newStatus,
-          status_changed_at: now,
-          updated_by: userStore.user.id,
-          updated_at: now,
-        })
-        .eq("id", schoolId)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
-        .select()
-        .single();
-
-      const { data: updatedSchool, error: schoolError } =
-        updateStatusResponse as {
-          data: School;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-      if (schoolError) throw schoolError;
-
-      // Create status history entry
-      const historyResponse =
-        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase.from("school_status_history") as any).insert([
-          {
-            school_id: schoolId,
-            previous_status: previousStatus,
-            new_status: newStatus,
-            changed_by: userStore.user.id,
-            changed_at: now,
-            notes: notes || null,
-          },
-        ]);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: historyError } = historyResponse as { error: any };
-
-      if (historyError) throw historyError;
-
-      // Update local state
-      const index = schools.value.findIndex((s) => s.id === schoolId);
-      if (index !== -1) {
-        schools.value[index] = updatedSchool;
-      }
-
-      return updatedSchool;
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update school status";
-      errorRef.value = message;
-      throw err;
-    } finally {
-      loadingRef.value = false;
-    }
-  };
-
-  /**
    * Smart delete: tries simple delete first, falls back to cascade-delete
    * if there are related records blocking deletion
    */
@@ -772,7 +663,6 @@ const useSchoolsInternal = (): {
     smartDelete,
     toggleFavorite,
     updateRanking,
-    updateStatus,
     findDuplicate,
     hasDuplicate,
     isNameDuplicate,
