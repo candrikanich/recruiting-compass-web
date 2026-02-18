@@ -1,4 +1,4 @@
-import { ref, computed, inject, type ComputedRef } from "vue";
+import { ref, computed, inject, watch, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
@@ -82,6 +82,17 @@ export const useCoaches = (): {
   const coaches = ref<Coach[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
+
+  // Auto-invalidate cache when parent switches athlete
+  watch(
+    () => activeFamily.activeAthleteId?.value,
+    async (newId, oldId) => {
+      if (newId && newId !== oldId) {
+        coaches.value = [];
+        await fetchAllCoaches();
+      }
+    },
+  );
 
   const fetchCoaches = async (schoolId: string) => {
     if (!activeFamily.activeFamilyId.value) {

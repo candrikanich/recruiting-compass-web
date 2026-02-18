@@ -1,4 +1,4 @@
-import { ref, computed, shallowRef, inject, type ComputedRef } from "vue";
+import { ref, computed, shallowRef, inject, watch, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
@@ -184,6 +184,17 @@ const useInteractionsInternal = (): {
   const noteHistoryError = computed(() => noteHistoryErrorRef.value);
   const remindersLoading = computed(() => remindersLoadingRef.value);
   const remindersError = computed(() => remindersErrorRef.value);
+
+  // Auto-invalidate cache when parent switches athlete
+  watch(
+    () => activeFamily.activeAthleteId?.value,
+    async (newId, oldId) => {
+      if (newId && newId !== oldId) {
+        interactions.value = [];
+        await fetchInteractions();
+      }
+    },
+  );
 
   // Reminder computed filters
   const activeReminders = computed(() => {

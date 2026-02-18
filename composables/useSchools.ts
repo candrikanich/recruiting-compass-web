@@ -1,4 +1,4 @@
-import { ref, computed, shallowRef, inject } from "vue";
+import { ref, computed, shallowRef, inject, watch } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
@@ -98,6 +98,17 @@ const useSchoolsInternal = (): {
 
   const favoriteSchools = computed(() =>
     schools.value.filter((s) => s.is_favorite),
+  );
+
+  // Auto-invalidate cache when parent switches athlete
+  watch(
+    () => activeFamily.activeAthleteId?.value,
+    async (newId, oldId) => {
+      if (newId && newId !== oldId) {
+        schools.value = [];
+        await fetchSchools();
+      }
+    },
   );
 
   const fetchSchools = async () => {
