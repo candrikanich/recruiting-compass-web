@@ -1,6 +1,9 @@
 import { defineStore } from "pinia";
 import type { User } from "~/types/models";
 import { useSupabase } from "~/composables/useSupabase";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("stores/user");
 
 export interface UserState {
   user: User | null;
@@ -48,18 +51,18 @@ export const useUserStore = defineStore("user", {
           } = await supabase.auth.getSession();
 
           if (sessionError) {
-            console.error(
+            logger.error(
               `[initializeUser] Attempt ${attemptNum}: Error getting session:`,
               sessionError,
             );
           } else if (currentSession) {
-            console.debug(
+            logger.debug(
               `[initializeUser] Attempt ${attemptNum}: Session found!`,
             );
             session = currentSession;
             break;
           } else {
-            console.debug(
+            logger.debug(
               `[initializeUser] Attempt ${attemptNum}: No session yet`,
             );
           }
@@ -86,7 +89,7 @@ export const useUserStore = defineStore("user", {
             session.user.email_confirmed_at !== null &&
             session.user.email_confirmed_at !== undefined;
 
-          console.debug(
+          logger.debug(
             "[initializeUser] User authenticated:",
             session.user.email,
           );
@@ -101,7 +104,7 @@ export const useUserStore = defineStore("user", {
           // Handle fetch errors (but not "not found")
           if (fetchError && fetchError.code !== "PGRST116") {
             // PGRST116 = "not found", which is expected if profile doesn't exist
-            console.error(
+            logger.error(
               "[initializeUser] Unexpected fetch error:",
               fetchError,
             );
@@ -110,10 +113,10 @@ export const useUserStore = defineStore("user", {
           if (profile) {
             // Profile exists, use it
             this.user = profile;
-            console.debug("[initializeUser] Existing profile loaded");
+            logger.debug("[initializeUser] Existing profile loaded");
           } else {
             // Profile doesn't exist, try to create it
-            console.debug(
+            logger.debug(
               "[initializeUser] No profile found, attempting creation",
             );
             const created = await this.createUserProfile(
@@ -124,7 +127,7 @@ export const useUserStore = defineStore("user", {
 
             if (!created) {
               // Creation failed but don't block - user is still authenticated
-              console.warn(
+              logger.warn(
                 "[initializeUser] Failed to create profile for user:",
                 session.user.id,
               );
@@ -133,10 +136,10 @@ export const useUserStore = defineStore("user", {
         } else {
           this.user = null;
           this.isAuthenticated = false;
-          console.debug("[initializeUser] No active session");
+          logger.debug("[initializeUser] No active session");
         }
       } catch (error) {
-        console.error("[initializeUser] Unexpected error:", error);
+        logger.error("[initializeUser] Unexpected error:", error);
         this.user = null;
         this.isAuthenticated = false;
       } finally {
@@ -152,7 +155,7 @@ export const useUserStore = defineStore("user", {
       const supabase = useSupabase();
 
       try {
-        console.debug(
+        logger.debug(
           "[createUserProfile] Attempting to create profile for:",
           email,
         );
@@ -165,7 +168,7 @@ export const useUserStore = defineStore("user", {
           .single();
 
         if (existing) {
-          console.debug("[createUserProfile] Profile already exists, skipping");
+          logger.debug("[createUserProfile] Profile already exists, skipping");
           return true; // Already exists, treat as success
         }
 
@@ -201,7 +204,7 @@ export const useUserStore = defineStore("user", {
         if (error) {
           // Check if it's a duplicate key error (email or id already exists)
           if (error.code === "23505") {
-            console.debug(
+            logger.debug(
               "[createUserProfile] Profile exists (duplicate key), treating as success",
             );
             return true; // It exists, treat as success
@@ -209,7 +212,7 @@ export const useUserStore = defineStore("user", {
           throw error;
         }
 
-        console.debug("[createUserProfile] Profile created successfully");
+        logger.debug("[createUserProfile] Profile created successfully");
 
         // Update local state
         this.user = {
@@ -222,7 +225,7 @@ export const useUserStore = defineStore("user", {
         return true; // Success
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unknown error";
-        console.error("[createUserProfile] Failed:", message);
+        logger.error("[createUserProfile] Failed:", message);
         return false; // Failure
       }
     },
@@ -254,7 +257,7 @@ export const useUserStore = defineStore("user", {
         } = await supabase.auth.getUser();
 
         if (error || !user) {
-          console.error("Error fetching verification status:", error);
+          logger.error("Error fetching verification status:", error);
           return;
         }
 
@@ -263,7 +266,7 @@ export const useUserStore = defineStore("user", {
           user.email_confirmed_at !== null &&
           user.email_confirmed_at !== undefined;
       } catch (err) {
-        console.error("Error refreshing verification status:", err);
+        logger.error("Error refreshing verification status:", err);
       }
     },
 
