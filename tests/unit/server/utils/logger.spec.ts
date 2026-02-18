@@ -138,6 +138,10 @@ describe("server/utils/logger", () => {
         process.env.NODE_ENV = "production";
       });
 
+      afterEach(() => {
+        delete process.env.LOG_LEVEL;
+      });
+
       it("should not log info messages in production", () => {
         const logger = createLogger("test");
         logger.info("Test message");
@@ -172,8 +176,6 @@ describe("server/utils/logger", () => {
         expect(parsed.message).toBe("Production error");
         expect(parsed.context).toBe("test");
         expect(parsed.timestamp).toBeDefined();
-
-        delete process.env.LOG_LEVEL;
       });
 
       it("should suppress logs below configured LOG_LEVEL in production", () => {
@@ -184,8 +186,6 @@ describe("server/utils/logger", () => {
         // warn is below error threshold — should not appear
         expect(consoleWarnSpy).not.toHaveBeenCalled();
         expect(consoleLogSpy).not.toHaveBeenCalled();
-
-        delete process.env.LOG_LEVEL;
       });
     });
 
