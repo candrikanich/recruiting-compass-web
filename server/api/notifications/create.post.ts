@@ -4,6 +4,7 @@
  * CSRF protection disabled: endpoint requires authentication via requireAuth()
  */
 
+import { defineEventHandler, readBody, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
@@ -48,9 +49,10 @@ export default defineEventHandler(async (event) => {
       ])) as any;
 
     if (error) {
+      logger.error("Failed to insert notification", error);
       throw createError({
         statusCode: 500,
-        statusMessage: error.message,
+        statusMessage: "Failed to create notification",
       });
     }
 

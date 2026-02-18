@@ -59,6 +59,7 @@ export default defineEventHandler(async (event) => {
     .order("added_at", { ascending: true });
 
   if (membersError) {
+    logger.error("Failed to fetch family members", membersError);
     throw createError({
       statusCode: 500,
       message: "Failed to fetch family members",
