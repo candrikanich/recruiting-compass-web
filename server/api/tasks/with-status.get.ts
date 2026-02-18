@@ -6,9 +6,11 @@
 import { defineEventHandler, getQuery } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import type { TaskWithStatus } from "~/types/timeline";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "tasks/with-status");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
@@ -33,7 +35,7 @@ export default defineEventHandler(async (event) => {
     );
 
     if (tasksError) {
-      console.error("Supabase error fetching tasks:", tasksError);
+      logger.error("Supabase error fetching tasks", tasksError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to fetch tasks",
@@ -47,10 +49,7 @@ export default defineEventHandler(async (event) => {
       .eq("athlete_id", user.id);
 
     if (athleteTasksError) {
-      console.error(
-        "Supabase error fetching athlete tasks:",
-        athleteTasksError,
-      );
+      logger.error("Supabase error fetching athlete tasks", athleteTasksError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to fetch athlete tasks",
@@ -115,12 +114,11 @@ export default defineEventHandler(async (event) => {
       data: merged,
     };
   } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Failed to fetch tasks with status";
-    console.error("Tasks with status fetch error:", err);
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Tasks with status fetch error", err);
     throw createError({
       statusCode: 500,
-      statusMessage: message,
+      statusMessage: "Failed to fetch tasks with status",
     });
   }
 });

@@ -8,9 +8,11 @@
 
 import { defineEventHandler } from "h3";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "user/preferences");
   // Require authentication
   const user = await requireAuth(event);
   const category = event.context.params?.category;
@@ -42,11 +44,8 @@ export default defineEventHandler(async (event) => {
       message: "Preferences deleted successfully",
     };
   } catch (err) {
-    console.error(
-      `[Preferences DELETE] Error deleting ${category} for user ${user.id}:`,
-      err,
-    );
-
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Error deleting preferences", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to delete preferences",

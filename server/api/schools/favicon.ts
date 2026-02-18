@@ -4,7 +4,10 @@
  * Handles caching to minimize external requests
  */
 
+import { useLogger } from "~/server/utils/logger";
+
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "schools/favicon");
   try {
     const { schoolDomain, schoolId } = getQuery(event);
 
@@ -82,7 +85,7 @@ export default defineEventHandler(async (event) => {
         // Store in memory cache or Redis (basic implementation)
         // In production, could use Supabase Cache or Redis
       } catch (cacheError) {
-        console.warn("Failed to cache favicon:", cacheError);
+        logger.warn("Failed to cache favicon", cacheError);
         // Continue anyway, just log the error
       }
     }
@@ -94,8 +97,9 @@ export default defineEventHandler(async (event) => {
       schoolId,
       timestamp: new Date().toISOString(),
     };
-  } catch (error) {
-    console.error("Favicon scraper error:", error);
+  } catch (err) {
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Favicon scraper error", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to fetch favicon",

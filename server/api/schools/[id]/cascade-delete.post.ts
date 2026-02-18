@@ -1,5 +1,6 @@
 import { defineEventHandler, getRouterParam, createError, readBody } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 
 /**
  * Cascade delete a school and all related records
@@ -20,6 +21,7 @@ import { createServerSupabaseClient } from "~/server/utils/supabase";
  * - schoolId: the deleted school ID
  */
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "schools/cascade-delete");
   const schoolId = getRouterParam(event, "id");
 
   if (!schoolId) {
@@ -135,12 +137,11 @@ export default defineEventHandler(async (event) => {
           : "No records to delete",
     };
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to cascade delete school";
-    console.error("[cascade-delete] Error:", { schoolId, error: message });
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Error cascade deleting school", err);
     throw createError({
       statusCode: 500,
-      statusMessage: message,
+      statusMessage: "Failed to cascade delete school",
     });
   }
 });

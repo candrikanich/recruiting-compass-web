@@ -6,6 +6,7 @@
 import { defineEventHandler } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import type { Task } from "~/types/timeline";
 
 interface DependenciesResponse {
@@ -33,6 +34,7 @@ function isAthleteTaskCompleted(at: unknown): boolean {
 }
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "tasks/dependencies");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
   const taskId = event.context.params?.taskId as string;
@@ -53,7 +55,7 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (taskError) {
-      console.error("Supabase error fetching task:", taskError);
+      logger.warn("Task not found", { taskId });
       throw createError({
         statusCode: 404,
         statusMessage: "Task not found",
@@ -74,10 +76,7 @@ export default defineEventHandler(async (event) => {
       await supabase.from("task").select("*").in("id", dependencyIds);
 
     if (prerequisitesError) {
-      console.error(
-        "Supabase error fetching prerequisites:",
-        prerequisitesError,
-      );
+      logger.error("Error fetching task prerequisites", prerequisitesError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to fetch task dependencies",
@@ -92,8 +91,8 @@ export default defineEventHandler(async (event) => {
       .in("task_id", dependencyIds);
 
     if (athleteTasksError) {
-      console.error(
-        "Supabase error fetching athlete tasks:",
+      logger.error(
+        "Error fetching athlete task completion status",
         athleteTasksError,
       );
       throw createError({
@@ -149,7 +148,7 @@ export default defineEventHandler(async (event) => {
       throw err;
     }
 
-    console.error("Error in GET /api/tasks/[taskId]/dependencies:", err);
+    logger.error("Error fetching task dependencies", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to fetch task dependencies",

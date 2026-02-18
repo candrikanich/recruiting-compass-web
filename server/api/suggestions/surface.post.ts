@@ -1,9 +1,11 @@
 import { defineEventHandler } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import { surfacePendingSuggestions } from "~/server/utils/suggestionStaggering";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "suggestions/surface");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
@@ -18,11 +20,12 @@ export default defineEventHandler(async (event) => {
       success: true,
       surfacedCount,
     };
-  } catch (error) {
-    console.error("Error surfacing suggestions:", error);
+  } catch (err) {
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Error surfacing suggestions", err);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: "Failed to surface suggestions",
     };
   }
 });

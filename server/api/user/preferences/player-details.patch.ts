@@ -7,6 +7,7 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import { playerDetailsSchema } from "~/utils/validation/schemas";
 import { triggerSuggestionUpdate } from "~/server/utils/triggerSuggestionUpdate";
@@ -44,6 +45,7 @@ function compareFields(
 }
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "user/preferences/player-details");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
@@ -171,7 +173,7 @@ export default defineEventHandler(async (event) => {
         description: "Failed to update player details",
       });
 
-      console.error("Supabase error updating player details:", updateError);
+      logger.error("Supabase error updating player details", updateError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to update player details",
@@ -199,8 +201,8 @@ export default defineEventHandler(async (event) => {
         await triggerSuggestionUpdate(supabase, user.id, "profile_change");
       } catch (triggerError) {
         // Log error but don't fail the request - suggestions are non-critical
-        console.error(
-          "Failed to trigger suggestion update after profile change:",
+        logger.error(
+          "Failed to trigger suggestion update after profile change",
           triggerError,
         );
         await logError(event, {
@@ -243,7 +245,7 @@ export default defineEventHandler(async (event) => {
       throw err;
     }
 
-    console.error("Error in PATCH /api/user/preferences/player-details:", err);
+    logger.error("Error updating player details", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to update player details",
