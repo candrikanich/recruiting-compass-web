@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { createLogger } from "~/server/utils/logger";
+import { createLogger, useLogger } from "~/server/utils/logger";
 
 describe("server/utils/logger", () => {
   const originalEnv = process.env.NODE_ENV;
@@ -138,6 +138,10 @@ describe("server/utils/logger", () => {
         process.env.NODE_ENV = "production";
       });
 
+      afterEach(() => {
+        delete process.env.LOG_LEVEL;
+      });
+
       it("should not log info messages in production", () => {
         const logger = createLogger("test");
         logger.info("Test message");
@@ -157,6 +161,31 @@ describe("server/utils/logger", () => {
         logger.error("Test error");
 
         expect(consoleErrorSpy).not.toHaveBeenCalled();
+      });
+
+      it("should log in production when LOG_LEVEL is set", () => {
+        process.env.LOG_LEVEL = "error";
+        const logger = createLogger("test");
+        logger.error("Production error");
+
+        // In production with LOG_LEVEL set, outputs structured JSON via console.log
+        expect(consoleLogSpy).toHaveBeenCalled();
+        const jsonStr = consoleLogSpy.mock.calls[0][0] as string;
+        const parsed = JSON.parse(jsonStr);
+        expect(parsed.level).toBe("ERROR");
+        expect(parsed.message).toBe("Production error");
+        expect(parsed.context).toBe("test");
+        expect(parsed.timestamp).toBeDefined();
+      });
+
+      it("should suppress logs below configured LOG_LEVEL in production", () => {
+        process.env.LOG_LEVEL = "error";
+        const logger = createLogger("test");
+        logger.warn("This should be suppressed");
+
+        // warn is below error threshold — should not appear
+        expect(consoleWarnSpy).not.toHaveBeenCalled();
+        expect(consoleLogSpy).not.toHaveBeenCalled();
       });
     });
 
@@ -212,6 +241,120 @@ describe("server/utils/logger", () => {
         const call = consoleLogSpy.mock.calls[0][0];
         expect(call).toContain("[auth:oauth2]");
       });
+    });
+  });
+
+  describe("useLogger", () => {
+    it("should create a logger with event context", () => {
+      const mockEvent = {
+        context: { requestId: "test-req-id-12345678", user: { id: "user-abc" } },
+        path: "/api/test",
+        method: "GET",
+      } as any;
+
+      const logger = useLogger(mockEvent, "test-context");
+      expect(logger).toBeDefined();
+      expect(logger.info).toBeDefined();
+      expect(logger.error).toBeDefined();
+    });
+
+    describe("in development mode", () => {
+      beforeEach(() => {
+        process.env.NODE_ENV = "development";
+      });
+
+      it("should include correlation ID prefix in dev logs", () => {
+        const mockEvent = {
+          context: { requestId: "test-req-id-12345678" },
+          path: "/api/test",
+          method: "GET",
+        } as any;
+
+        const logger = useLogger(mockEvent, "test");
+        logger.info("Test with correlation");
+
+        expect(consoleLogSpy).toHaveBeenCalled();
+        const call = consoleLogSpy.mock.calls[0][0];
+        // requestId is sliced to 8 chars in dev mode: "test-req"
+        expect(call).toContain("[req:");
+      });
+
+      it("should not include request prefix when no requestId in context", () => {
+        const mockEvent = {
+          context: {},
+          path: "/api/test",
+          method: "GET",
+        } as any;
+
+        const logger = useLogger(mockEvent);
+        logger.info("Test without correlation");
+
+        const call = consoleLogSpy.mock.calls[0][0];
+        expect(call).not.toContain("[req:");
+      });
+
+      it("should use default context 'api' when no context provided", () => {
+        const mockEvent = {
+          context: {},
+          path: "/api/test",
+          method: "GET",
+        } as any;
+
+        const logger = useLogger(mockEvent);
+        logger.info("Test");
+
+        const call = consoleLogSpy.mock.calls[0][0];
+        expect(call).toContain("[api]");
+      });
+    });
+  });
+
+  describe("sanitization in production", () => {
+    beforeEach(() => {
+      process.env.NODE_ENV = "production";
+      process.env.LOG_LEVEL = "info";
+    });
+
+    afterEach(() => {
+      delete process.env.LOG_LEVEL;
+    });
+
+    it("should redact password fields in logged data", () => {
+      const logger = createLogger("test");
+      logger.info("User login", { email: "user@example.com", password: "secret123" });
+
+      expect(consoleLogSpy).toHaveBeenCalled();
+      const parsed = JSON.parse(consoleLogSpy.mock.calls[0][0] as string);
+      expect(parsed.data.password).toBe("[REDACTED]");
+      expect(parsed.data.email).toBe("user@example.com");
+    });
+
+    it("should redact access_token fields", () => {
+      const logger = createLogger("test");
+      logger.info("Token event", { access_token: "bearer-xyz", userId: "123" });
+
+      const parsed = JSON.parse(consoleLogSpy.mock.calls[0][0] as string);
+      expect(parsed.data.access_token).toBe("[REDACTED]");
+      expect(parsed.data.userId).toBe("123");
+    });
+
+    it("should serialize Error objects safely (no stack in production)", () => {
+      const logger = createLogger("test");
+      logger.error("Operation failed", new Error("DB connection refused"));
+
+      const parsed = JSON.parse(consoleLogSpy.mock.calls[0][0] as string);
+      expect(parsed.data.name).toBe("Error");
+      expect(parsed.data.message).toBe("DB connection refused");
+      expect(parsed.data.stack).toBeUndefined(); // stack hidden in production
+    });
+
+    it("should recursively sanitize nested objects", () => {
+      const logger = createLogger("test");
+      logger.info("Nested data", { user: { id: "123", token: "secret-token" } });
+
+      const parsed = JSON.parse(consoleLogSpy.mock.calls[0][0] as string);
+      expect(parsed.data.user.token).toBe("[REDACTED]");
+      expect(parsed.data.user.id).toBe("123");
     });
   });
 });

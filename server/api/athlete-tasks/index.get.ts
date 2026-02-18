@@ -6,9 +6,11 @@
 import { defineEventHandler } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import type { AthleteTask } from "~/types/timeline";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "athlete-tasks");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
@@ -20,7 +22,7 @@ export default defineEventHandler(async (event) => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Supabase error fetching athlete tasks:", error);
+      logger.error("Supabase error fetching athlete tasks", error);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to fetch athlete tasks",
@@ -36,7 +38,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    console.error("Error in GET /api/athlete-tasks:", err);
+    logger.error("Error in GET /api/athlete-tasks", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to fetch athlete tasks",

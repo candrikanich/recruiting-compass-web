@@ -6,9 +6,11 @@
 import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import { calculatePortfolioHealth } from "~/utils/fitScoreCalculation";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "athlete/portfolio-health");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
@@ -53,14 +55,10 @@ export default defineEventHandler(async (event) => {
       },
     };
   } catch (err: unknown) {
-    const message =
-      err instanceof Error
-        ? err.message
-        : "Failed to calculate portfolio health";
-    console.error("Portfolio health error:", err);
+    logger.error("Portfolio health error", err);
     throw createError({
       statusCode: 500,
-      statusMessage: message,
+      statusMessage: "Failed to calculate portfolio health",
     });
   }
 });

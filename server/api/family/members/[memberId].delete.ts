@@ -1,8 +1,10 @@
 import { defineEventHandler, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "family/members/delete");
   const user = await requireAuth(event);
   const memberId = event.context.params?.memberId as string;
   const supabase = useSupabaseAdmin();
@@ -38,7 +40,7 @@ export default defineEventHandler(async (event) => {
   };
 
   if (memberError) {
-    console.error("Family member fetch error:", memberError);
+    logger.error("Failed to fetch family member", memberError);
     throw createError({
       statusCode: 500,
       message: "Failed to fetch member details",
@@ -99,7 +101,7 @@ export default defineEventHandler(async (event) => {
   const { error: deleteError } = deleteResponse as { error: any };
 
   if (deleteError) {
-    console.error("Family member delete error:", deleteError);
+    logger.error("Failed to delete family member", deleteError);
     throw createError({
       statusCode: 500,
 
@@ -126,7 +128,7 @@ export default defineEventHandler(async (event) => {
       // Success - do nothing
     })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .catch((err: any) => console.warn("Failed to log removal action:", err));
+    .catch((err: any) => logger.warn("Failed to log removal action", err));
 
   // Get member info for notifications
   const memberInfo = member.users as unknown as {
@@ -153,7 +155,7 @@ export default defineEventHandler(async (event) => {
       })
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .catch((err: any) =>
-        console.warn("Failed to create parent notification:", err),
+        logger.warn("Failed to create parent notification", err),
       );
 
     const notif2Promise = supabase.from("notifications").insert({
@@ -173,7 +175,7 @@ export default defineEventHandler(async (event) => {
       })
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .catch((err: any) =>
-        console.warn("Failed to create student notification:", err),
+        logger.warn("Failed to create student notification", err),
       );
   }
 

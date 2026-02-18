@@ -5,6 +5,7 @@ import {
   isValidFamilyCodeFormat,
   checkRateLimit,
 } from "~/server/utils/familyCode";
+import { useLogger } from "~/server/utils/logger";
 import type { Database } from "~/types/database";
 
 interface JoinByCodeBody {
@@ -12,6 +13,7 @@ interface JoinByCodeBody {
 }
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "family/code/join");
   const user = await requireAuth(event);
   const body = await readBody<JoinByCodeBody>(event);
   const { familyCode } = body;
@@ -133,7 +135,7 @@ export default defineEventHandler(async (event) => {
       // Success - do nothing
     })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .catch((err: any) => console.warn("Failed to log join action:", err));
+    .catch((err: any) => logger.warn("Failed to log join action", err));
 
   // Create notification for student (non-blocking, fire-and-forget)
   const notifPromise = supabase.from("notifications").insert({
@@ -151,7 +153,7 @@ export default defineEventHandler(async (event) => {
       // Success - do nothing
     })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .catch((err: any) => console.warn("Notification creation failed:", err));
+    .catch((err: any) => logger.warn("Notification creation failed", err));
 
   return successResponse;
 });

@@ -6,6 +6,7 @@
 
 import { defineEventHandler } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { StatusScoreResult, Phase } from "~/types/timeline";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
@@ -18,6 +19,7 @@ import {
 } from "~/utils/statusScoreCalculation";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "athlete/status/recalculate");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
@@ -33,7 +35,7 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (userError) {
-      console.error("Error fetching user:", userError);
+      logger.error("Error fetching user", userError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to fetch user",
@@ -59,7 +61,7 @@ export default defineEventHandler(async (event) => {
       .eq("required", true);
 
     if (tasksError) {
-      console.error("Error fetching required tasks:", tasksError);
+      logger.error("Error fetching required tasks", tasksError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to fetch required tasks",
@@ -78,7 +80,7 @@ export default defineEventHandler(async (event) => {
       .eq("status", "completed");
 
     if (completedError) {
-      console.error("Error fetching completed tasks:", completedError);
+      logger.error("Error fetching completed tasks", completedError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to fetch completed tasks",
@@ -207,7 +209,7 @@ export default defineEventHandler(async (event) => {
     const { error: updateError } = updateResult;
 
     if (updateError) {
-      console.error("Error updating status score:", updateError);
+      logger.error("Error updating status score", updateError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to save status score",
@@ -229,34 +231,31 @@ export default defineEventHandler(async (event) => {
 
     return result as StatusScoreResult;
   } catch (err) {
+    // Re-throw H3 errors immediately — they were already logged at their source
+    if (err instanceof Error && "statusCode" in err) {
+      throw err;
+    }
+
     const errorMessage =
       err instanceof Error ? err.message : "Failed to recalculate status";
 
-    // Log failed status recalculation
+    // Only log truly unexpected errors
     await logError(event, {
       userId: user.id,
       action: "UPDATE",
       resourceType: "users",
       resourceId: user.id,
       errorMessage,
-      description: "Failed to recalculate status score",
+      description: "Unexpected error recalculating status score",
     });
 
-    if (err instanceof Error && err.message === "Unauthorized") {
-      throw createError({
-        statusCode: 401,
-        statusMessage: "Unauthorized",
-      });
-    }
-
-    if (err instanceof Error && "statusCode" in err) {
-      throw err;
-    }
-
-    console.error("Error in POST /api/athlete/status/recalculate:", err);
+    logger.error(
+      "Unexpected error in POST /api/athlete/status/recalculate",
+      err,
+    );
     throw createError({
       statusCode: 500,
-      statusMessage: errorMessage,
+      statusMessage: "Failed to recalculate status",
     });
   }
 });

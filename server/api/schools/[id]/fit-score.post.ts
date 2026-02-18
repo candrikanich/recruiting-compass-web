@@ -7,11 +7,13 @@
 import { defineEventHandler, getRouterParam, createError, readBody } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import { calculateFitScore } from "~/utils/fitScoreCalculation";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { FitScoreInputs } from "~/types/timeline";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "schools/fit-score");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
@@ -167,10 +169,15 @@ export default defineEventHandler(async (event) => {
       },
     };
   } catch (err: unknown) {
+    // Re-throw H3 errors immediately — they are client errors, not audit failures
+    if (err instanceof Error && "statusCode" in err) {
+      throw err;
+    }
+
+    // Only log as audit failure for unexpected errors
     const errorMessage =
       err instanceof Error ? err.message : "Failed to calculate fit score";
 
-    // Log failed fit score update
     await logError(event, {
       userId: user.id,
       action: "UPDATE",
@@ -180,13 +187,10 @@ export default defineEventHandler(async (event) => {
       description: "Failed to update fit score",
     });
 
-    if (err instanceof Error && "statusCode" in err) {
-      throw err;
-    }
-    console.error("Fit score calculation error:", err);
+    logger.error("Fit score calculation error", err);
     throw createError({
       statusCode: 500,
-      statusMessage: errorMessage,
+      statusMessage: "Failed to calculate fit score",
     });
   }
 });

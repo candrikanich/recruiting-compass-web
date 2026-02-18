@@ -8,9 +8,11 @@
 
 import { defineEventHandler, getQuery } from "h3";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "user/preferences/history");
   // Require authentication
   const user = await requireAuth(event);
   const category = event.context.params?.category;
@@ -57,11 +59,8 @@ export default defineEventHandler(async (event) => {
       offset,
     };
   } catch (err) {
-    console.error(
-      `[Preferences History GET] Error fetching history for ${category}:`,
-      err,
-    );
-
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Error fetching preference history", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to fetch preference history",

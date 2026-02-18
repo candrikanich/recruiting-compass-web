@@ -1,3 +1,4 @@
+import { useLogger } from "~/server/utils/logger";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 
 type ResendVerificationResponse = {
@@ -7,6 +8,7 @@ type ResendVerificationResponse = {
 
 export default defineEventHandler(
   async (event): Promise<ResendVerificationResponse> => {
+    const logger = useLogger(event, "auth/resend-verification");
     try {
       const body = await readBody<{ email: string }>(event);
       const { email } = body;
@@ -59,7 +61,7 @@ export default defineEventHandler(
         });
 
       if (resendError) {
-        console.error("Error resending verification email:", resendError);
+        logger.error("Error resending verification email", resendError);
 
         if (
           resendError.message &&
@@ -88,7 +90,7 @@ export default defineEventHandler(
         throw err;
       }
 
-      console.error("Error in POST /api/auth/resend-verification:", err);
+      logger.error("Error in POST /api/auth/resend-verification", err);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to resend verification email. Please try again.",

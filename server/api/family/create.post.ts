@@ -2,15 +2,17 @@ import { defineEventHandler, createError } from "h3";
 import { requireAuth, getUserRole } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { generateFamilyCode } from "~/server/utils/familyCode";
+import { useLogger } from "~/server/utils/logger";
 import type { Database } from "~/types/database";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "family/create");
   const user = await requireAuth(event);
   const supabase = useSupabaseAdmin();
 
   // Only players can create families
   const userRole = await getUserRole(user.id, supabase);
-  console.log("[family/create] User role:", userRole, "for user:", user.id);
+  logger.debug("Resolved user role", { userRole, userId: user.id });
   if (userRole !== "player") {
     throw createError({
       statusCode: 403,
@@ -62,10 +64,10 @@ export default defineEventHandler(async (event) => {
   };
 
   if (familyError || !newFamily) {
-    console.error("[family/create] Family creation error:", familyError);
+    logger.error("Family creation failed", familyError);
     throw createError({
       statusCode: 500,
-      message: `Failed to create family: ${familyError?.message || "Unknown error"}`,
+      message: "Failed to create family",
     });
   }
 
@@ -80,10 +82,10 @@ export default defineEventHandler(async (event) => {
   const { error: memberError } = memberResponse as { error: any };
 
   if (memberError) {
-    console.error("[family/create] Member insert error:", memberError);
+    logger.error("Failed to add player to family members", memberError);
     throw createError({
       statusCode: 500,
-      message: `Failed to add student to family: ${memberError?.message || "Unknown error"}`,
+      message: "Failed to add student to family",
     });
   }
 
@@ -97,7 +99,7 @@ export default defineEventHandler(async (event) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (logResponse as any).catch((err: any) =>
-    console.warn("Failed to log code generation:", err),
+    logger.warn("Failed to log code generation", err),
   );
 
   return {

@@ -7,6 +7,7 @@ import { defineEventHandler, readBody } from "h3";
 import { z } from "zod";
 import { Resend } from "resend";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 
 // Email validation schema
 const emailPacketSchema = z.object({
@@ -118,6 +119,7 @@ const formatEmailHtml = (
 };
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "recruiting-packet/email");
   // Authenticate user and get verified user ID
   const user = await requireAuth(event);
   const userId = user.id;
@@ -182,29 +184,27 @@ export default defineEventHandler(async (event) => {
     // Check for failures
     const failures = results.filter((r) => r && "error" in r);
     if (failures.length > 0) {
-      console.error("Resend email errors:", failures);
+      logger.error("Resend email send failures", { count: failures.length });
       throw new Error(`Failed to send to ${failures.length} recipients`);
     }
 
-    // Audit log (in production, save to database)
-    console.info(
-      `[RECRUITING_PACKET_EMAIL] User: ${userId}, Recipients: ${body.recipients.length}, Subject: ${body.subject}`,
-    );
+    logger.info("Recruiting packet email sent", {
+      userId,
+      recipientCount: body.recipients.length,
+      subject: body.subject,
+    });
 
     return {
       success: true,
       message: `Email sent to ${body.recipients.length} recipient(s)`,
       sentTo: body.recipients,
     };
-  } catch (error) {
-    console.error("Error sending recruiting packet email:", error);
-
-    const message =
-      error instanceof Error ? error.message : "Failed to send email";
-
+  } catch (err) {
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Error sending recruiting packet email", err);
     throw createError({
       statusCode: 500,
-      statusMessage: message,
+      statusMessage: "Failed to send email",
     });
   }
 });

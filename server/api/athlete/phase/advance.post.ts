@@ -6,6 +6,7 @@
 
 import { defineEventHandler } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { Phase } from "~/types/timeline";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
@@ -22,6 +23,7 @@ interface AdvancePhaseResponse {
 }
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "athlete/phase/advance");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
@@ -37,7 +39,7 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (userError) {
-      console.error("Error fetching user phase:", userError);
+      logger.error("Error fetching user phase", userError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to fetch user phase",
@@ -55,7 +57,7 @@ export default defineEventHandler(async (event) => {
       .eq("status", "completed");
 
     if (tasksError) {
-      console.error("Error fetching athlete tasks:", tasksError);
+      logger.error("Error fetching athlete tasks", tasksError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to fetch athlete tasks",
@@ -105,7 +107,7 @@ export default defineEventHandler(async (event) => {
     const { error: updateError } = updateResult;
 
     if (updateError) {
-      console.error("Error updating user phase:", updateError);
+      logger.error("Error updating user phase", updateError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to update phase",
@@ -138,34 +140,28 @@ export default defineEventHandler(async (event) => {
       message: `Congratulations! You've advanced to ${phaseLabels[nextPhase]}!`,
     } as AdvancePhaseResponse;
   } catch (err) {
+    // Re-throw H3 errors immediately — they were already logged at their source
+    if (err instanceof Error && "statusCode" in err) {
+      throw err;
+    }
+
     const errorMessage =
       err instanceof Error ? err.message : "Failed to advance phase";
 
-    // Log failed phase advance
+    // Only log truly unexpected errors
     await logError(event, {
       userId: user.id,
       action: "UPDATE",
       resourceType: "users",
       resourceId: user.id,
       errorMessage,
-      description: "Failed to advance phase",
+      description: "Unexpected error advancing phase",
     });
 
-    if (err instanceof Error && err.message === "Unauthorized") {
-      throw createError({
-        statusCode: 401,
-        statusMessage: "Unauthorized",
-      });
-    }
-
-    if (err instanceof Error && "statusCode" in err) {
-      throw err;
-    }
-
-    console.error("Error in POST /api/athlete/phase/advance:", err);
+    logger.error("Unexpected error in POST /api/athlete/phase/advance", err);
     throw createError({
       statusCode: 500,
-      statusMessage: errorMessage,
+      statusMessage: "Failed to advance phase",
     });
   }
 });

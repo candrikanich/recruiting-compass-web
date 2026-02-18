@@ -7,10 +7,12 @@
 
 import { defineEventHandler, getQuery } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 import { getCached } from "~/server/utils/cache";
 import type { Task } from "~/types/timeline";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "tasks");
   try {
     const supabase = createServerSupabaseClient();
 
@@ -51,10 +53,10 @@ export default defineEventHandler(async (event) => {
     const { data, error } = await request;
 
     if (error) {
-      console.error("Supabase error fetching tasks:", JSON.stringify(error));
+      logger.error("Supabase error fetching tasks", error);
       throw createError({
         statusCode: 500,
-        statusMessage: `Failed to fetch tasks: ${error.message}`,
+        statusMessage: "Failed to fetch tasks",
       });
     }
 
@@ -68,11 +70,11 @@ export default defineEventHandler(async (event) => {
 
     return tasks;
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("Error in GET /api/tasks:", message);
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Error fetching tasks", err);
     throw createError({
       statusCode: 500,
-      statusMessage: message,
+      statusMessage: "Failed to fetch tasks",
     });
   }
 });

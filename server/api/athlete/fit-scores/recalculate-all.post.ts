@@ -7,6 +7,7 @@
 import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import {
   calculateFitScore,
   calculateAthleticFit,
@@ -28,6 +29,7 @@ interface RecalculationResult {
 
 export default defineEventHandler(
   async (event): Promise<RecalculationResult> => {
+    const logger = useLogger(event, "athlete/fit-scores");
     const user = await requireAuth(event);
     const supabase = createServerSupabaseClient();
 
@@ -36,7 +38,7 @@ export default defineEventHandler(
 
     try {
       // Fetch user's player details from V2 preferences (category-based)
-      console.log("[FitScore] Fetching player details for user:", user.id);
+      logger.info("Fetching player details", { userId: user.id });
 
       const { data: playerPrefs, error: prefError } = await supabase
         .from("user_preferences")
@@ -45,14 +47,22 @@ export default defineEventHandler(
         .eq("category", "player")
         .single();
 
-      console.log("[FitScore] Query result:", {
+      logger.debug("Player preferences query result", {
         found: !!playerPrefs,
         error: prefError?.message,
-        data: playerPrefs,
       });
 
-      if (prefError || !playerPrefs) {
-        console.error("[FitScore] Failed to fetch player details:", prefError);
+      if (prefError) {
+        logger.error("DB error fetching player preferences", prefError);
+        throw createError({
+          statusCode: 500,
+          statusMessage: "Failed to fetch player details",
+        });
+      }
+      if (!playerPrefs) {
+        logger.warn("Player preferences not found for user", {
+          userId: user.id,
+        });
         throw createError({
           statusCode: 400,
           statusMessage:
@@ -62,13 +72,12 @@ export default defineEventHandler(
 
       const playerDetails = (playerPrefs.data || {}) as Partial<PlayerDetails>;
 
-      console.log(
-        "[FitScore] Player details keys:",
-        Object.keys(playerDetails),
+      logger.debug(
+        `Player details keys: ${Object.keys(playerDetails).join(", ")}`,
       );
 
       if (!playerDetails || Object.keys(playerDetails).length === 0) {
-        console.error("[FitScore] Player details empty");
+        logger.warn("Player details empty or incomplete", { userId: user.id });
         throw createError({
           statusCode: 400,
           statusMessage:
@@ -182,8 +191,8 @@ export default defineEventHandler(
             updated_at: new Date().toISOString(),
           });
         } catch (err) {
-          console.error(
-            `Failed to calculate fit score for school ${school.id}:`,
+          logger.error(
+            `Failed to calculate fit score for school ${school.id}`,
             err,
           );
           // Continue with other schools on error
@@ -240,19 +249,14 @@ export default defineEventHandler(
         message: `Updated fit scores for ${updates.length} school${updates.length !== 1 ? "s" : ""}`,
       };
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to recalculate fit scores";
-
-      // Log failed batch update (skip audit log for now to avoid UUID error)
-      console.error("Fit score recalculation failed:", errorMessage);
+      logger.error("Fit score recalculation failed", err);
 
       if (err instanceof Error && "statusCode" in err) {
         throw err;
       }
-      console.error("Fit score batch recalculation error:", err);
       throw createError({
         statusCode: 500,
-        statusMessage: errorMessage,
+        statusMessage: "Failed to recalculate fit scores",
       });
     }
   },

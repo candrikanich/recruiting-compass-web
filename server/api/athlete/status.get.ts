@@ -9,6 +9,7 @@ import { defineEventHandler } from "h3";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import type { Database } from "~/types/database";
 
 import { calculateStatusScoreResult } from "~/utils/statusScoreCalculation";
@@ -60,6 +61,7 @@ async function callGetAthleteStatusRpc(
 }
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "athlete/status");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
@@ -68,7 +70,7 @@ export default defineEventHandler(async (event) => {
     const { data, error } = await callGetAthleteStatusRpc(supabase, user.id);
 
     if (error) {
-      console.error("Error calling get_athlete_status RPC:", error);
+      logger.error("Error calling get_athlete_status RPC", error);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to calculate athlete status",
@@ -113,7 +115,7 @@ export default defineEventHandler(async (event) => {
       throw err;
     }
 
-    console.error("Error in GET /api/athlete/status:", err);
+    logger.error("Error in GET /api/athlete/status", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to fetch status",

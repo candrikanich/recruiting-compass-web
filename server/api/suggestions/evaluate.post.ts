@@ -6,6 +6,7 @@
 
 import { defineEventHandler } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 import { RuleEngine } from "~/server/utils/ruleEngine";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
 import type { RuleContext } from "~/server/utils/rules/index";
@@ -24,6 +25,7 @@ import { officialVisitRule } from "~/server/utils/rules/officialVisit";
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
+  const logger = useLogger(event, "suggestions/evaluate");
 
   // Ensure requesting user is not a parent (mutation restricted)
   await assertNotParent(user.id, supabase);
@@ -113,6 +115,7 @@ export default defineEventHandler(async (event) => {
 
     return { generated: result.count, ids: result.ids };
   } catch (error: unknown) {
+    logger.error("Failed to evaluate suggestions", error);
     throw createError({
       statusCode: 500,
       message:

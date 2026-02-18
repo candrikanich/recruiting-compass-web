@@ -7,6 +7,7 @@
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import type { Database } from "~/types/database";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -54,6 +55,7 @@ async function hasAccessToSchool(
 }
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "schools/fit-score");
   const user = await requireAuth(event);
   const schoolId = getRouterParam(event, "id");
 
@@ -111,12 +113,10 @@ export default defineEventHandler(async (event) => {
     if (err instanceof Error && "statusCode" in err) {
       throw err;
     }
-    const message =
-      err instanceof Error ? err.message : "Failed to fetch fit score";
-    console.error("Fit score fetch error:", err);
+    logger.error("Fit score fetch error", err);
     throw createError({
       statusCode: 500,
-      statusMessage: message,
+      statusMessage: "Failed to fetch fit score",
     });
   }
 });

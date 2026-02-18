@@ -8,6 +8,7 @@
 
 import { defineEventHandler, createError, getHeader } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 import { triggerSuggestionUpdate } from "~/server/utils/triggerSuggestionUpdate";
 
 interface CronResult {
@@ -18,6 +19,7 @@ interface CronResult {
 }
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "cron/daily-suggestions");
   try {
     // Verify cron secret for security
     const cronSecret = getHeader(event, "x-cron-secret");
@@ -46,7 +48,7 @@ export default defineEventHandler(async (event) => {
     if (fetchError || !athletes) {
       throw createError({
         statusCode: 500,
-        message: `Failed to fetch athletes: ${fetchError?.message || "Unknown error"}`,
+        message: "Failed to fetch athletes",
       });
     }
 
@@ -68,8 +70,8 @@ export default defineEventHandler(async (event) => {
           athleteId: athlete.id,
           error: error instanceof Error ? error.message : "Unknown error",
         });
-        console.error(
-          `Failed to update suggestions for athlete ${athlete.id}:`,
+        logger.error(
+          `Failed to update suggestions for athlete ${athlete.id}`,
           error,
         );
       }
@@ -81,12 +83,10 @@ export default defineEventHandler(async (event) => {
       throw error;
     }
 
+    logger.error("Unexpected error in cron/daily-suggestions", error);
     throw createError({
       statusCode: 500,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to run daily suggestions cron job",
+      message: "Failed to run daily suggestions cron job",
     });
   }
 });

@@ -9,6 +9,7 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import type { Database } from "~/types/database";
 
@@ -18,6 +19,7 @@ const preferencesSchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "user/preferences");
   // Require authentication
   const user = await requireAuth(event);
   const category = event.context.params?.category;
@@ -102,10 +104,7 @@ export default defineEventHandler(async (event) => {
       updatedAt: result.data?.updated_at,
     };
   } catch (err) {
-    console.error(
-      `[Preferences POST] Error saving ${category} for user ${user.id}:`,
-      err,
-    );
+    if (err instanceof Error && "statusCode" in err) throw err;
 
     if (err instanceof z.ZodError) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -116,6 +115,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    logger.error("Error saving preferences", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to save preferences",

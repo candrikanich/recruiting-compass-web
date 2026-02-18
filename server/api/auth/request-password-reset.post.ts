@@ -11,6 +11,7 @@
  * Security: Always returns success message to prevent email enumeration
  */
 
+import { useLogger } from "~/server/utils/logger";
 import { forgotPasswordSchema } from "~/utils/validation/schemas";
 
 interface RequestPasswordResetRequest {
@@ -24,6 +25,7 @@ interface RequestPasswordResetResponse {
 
 export default defineEventHandler(
   async (event): Promise<RequestPasswordResetResponse> => {
+    const logger = useLogger(event, "auth/request-password-reset");
     try {
       // Parse request body
       const body = await readBody<RequestPasswordResetRequest>(event);
@@ -47,7 +49,7 @@ export default defineEventHandler(
       const supabaseAnonKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY;
 
       if (!supabaseUrl || !supabaseAnonKey) {
-        console.error("Missing Supabase configuration");
+        logger.error("Missing Supabase configuration");
         throw createError({
           statusCode: 500,
           statusMessage: "Server configuration error",
@@ -74,7 +76,7 @@ export default defineEventHandler(
       );
 
       if (error) {
-        console.error("Password reset request error:", error);
+        logger.error("Password reset request error", error);
 
         // Check for rate limiting error
         if (
@@ -104,7 +106,7 @@ export default defineEventHandler(
         throw err;
       }
 
-      console.error("Error in POST /api/auth/request-password-reset:", err);
+      logger.error("Error in POST /api/auth/request-password-reset", err);
 
       // For security, don't reveal specific errors
       return {

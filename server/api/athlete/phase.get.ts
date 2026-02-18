@@ -6,6 +6,7 @@
 import { defineEventHandler } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import type { AthleteAPI } from "~/types/api/athlete";
 import type { Phase } from "~/types/timeline";
 import {
@@ -27,6 +28,7 @@ function gradeToPhase(grade: number): Phase {
 }
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "athlete/phase");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
@@ -41,7 +43,7 @@ export default defineEventHandler(async (event) => {
 
     if (prefError && prefError.code !== "PGRST116") {
       // PGRST116 = no rows found, which is OK (player prefs not set yet)
-      console.error("Error fetching player preferences:", prefError);
+      logger.error("Error fetching player preferences", prefError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to fetch player preferences",
@@ -56,7 +58,7 @@ export default defineEventHandler(async (event) => {
       .eq("status", "completed");
 
     if (tasksError) {
-      console.error("Error fetching athlete tasks:", tasksError);
+      logger.error("Error fetching athlete tasks", tasksError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to fetch athlete tasks",
@@ -108,7 +110,7 @@ export default defineEventHandler(async (event) => {
       throw err;
     }
 
-    console.error("Error in GET /api/athlete/phase:", err);
+    logger.error("Error in GET /api/athlete/phase", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to fetch phase",

@@ -4,6 +4,7 @@
  * Handles expired sessions with user-friendly messaging and login redirect.
  */
 
+import type { FetchOptions } from "ofetch";
 import { useSupabase } from "~/composables/useSupabase";
 import { useCsrf } from "~/composables/useCsrf";
 import { useToast } from "~/composables/useToast";
@@ -21,6 +22,7 @@ export class SessionExpiredError extends Error {
 export const useAuthFetch = () => {
   const { addCsrfHeader } = useCsrf();
   const { showToast } = useToast();
+  const supabase = useSupabase();
 
   const handleSessionExpired = async () => {
     showToast(
@@ -37,11 +39,10 @@ export const useAuthFetch = () => {
   /**
    * Make authenticated fetch call with auto-injected auth and CSRF headers
    */
-  const $fetchAuth = async (
+  const $fetchAuth = async <T = unknown>(
     url: string,
-    options?: Record<string, unknown>,
-  ): Promise<unknown> => {
-    const supabase = useSupabase();
+    options?: FetchOptions,
+  ): Promise<T> => {
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -51,21 +52,33 @@ export const useAuthFetch = () => {
       throw new SessionExpiredError();
     }
 
-    // Build headers with auth token
-    let headers = (options?.headers ?? {}) as Record<string, string>;
-    headers.Authorization = `Bearer ${session.access_token}`;
+    // Build headers with auth token — spread to avoid mutating the caller's object
+    const authHeaders: Record<string, string> = {
+      ...((options?.headers ?? {}) as Record<string, string>),
+      Authorization: `Bearer ${session.access_token}`,
+    };
 
     // Add CSRF token for state-changing methods
     const method = ((options?.method as string) ?? "GET").toUpperCase();
-    if (STATE_CHANGING_METHODS.includes(method)) {
-      headers = await addCsrfHeader(headers);
+    const headers = STATE_CHANGING_METHODS.includes(method)
+      ? await addCsrfHeader(authHeaders)
+      : authHeaders;
+
+    // Add correlation ID for end-to-end request tracing
+    if (typeof window !== "undefined") {
+      const correlationId = sessionStorage.getItem("correlation-id");
+      if (correlationId) {
+        headers["x-request-id"] = correlationId;
+      }
     }
 
     try {
-      return await $fetch(url, {
-        ...options,
-        headers,
-      });
+      // Nuxt's global $fetch uses NitroFetchRequest for its URL parameter and
+      // NitroFetchOptions for options — resolving those types against ofetch's
+      // FetchOptions causes excessive stack depth. Casting to `any` here is the
+      // minimal escape hatch; callers still get full type safety via <T>.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (await ($fetch as any)(url, { ...options, headers })) as T;
     } catch (err) {
       // Handle 401 responses (token expired between getSession and API call)
       if (err instanceof FetchError && err.statusCode === 401) {

@@ -9,6 +9,7 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import type { Database } from "~/types/database";
 
@@ -20,6 +21,7 @@ const historySchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "user/preferences/history");
   // Require authentication
   const user = await requireAuth(event);
 
@@ -61,10 +63,7 @@ export default defineEventHandler(async (event) => {
       created_at: data?.created_at,
     };
   } catch (err) {
-    console.error(
-      `[Preferences History POST] Error recording history for user ${user.id}:`,
-      err,
-    );
+    if (err instanceof Error && "statusCode" in err) throw err;
 
     if (err instanceof z.ZodError) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,6 +74,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    logger.error("Error recording preference history", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to record preference history",
