@@ -28,12 +28,11 @@ interface DeleteUserResponse {
 import { defineEventHandler, readBody, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { createLogger } from "~/server/utils/logger";
-
-const logger = createLogger("admin/delete-user");
+import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(
   async (event): Promise<DeleteUserResponse> => {
+    const logger = useLogger(event, "admin/delete-user");
     try {
       // 1. Verify user is authenticated
       const user = await requireAuth(event);
@@ -238,8 +237,7 @@ export default defineEventHandler(
       // Generic error response
       throw createError({
         statusCode: 500,
-        statusMessage:
-          error instanceof Error ? error.message : "Failed to delete user",
+        statusMessage: "Failed to delete user",
       });
     }
   },

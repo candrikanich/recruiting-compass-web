@@ -7,9 +7,11 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import { triggerSuggestionUpdate } from "~/server/utils/triggerSuggestionUpdate";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "suggestions/trigger-update");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
@@ -37,23 +39,24 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    logger.info("Triggering suggestion update", { reason });
+
     const result = await triggerSuggestionUpdate(supabase, user.id, reason, {
       interactionSchoolId,
       interactionCoachId,
     });
 
     return result;
-  } catch (error: unknown) {
-    if (error instanceof Error && "statusCode" in error) {
-      throw error;
+  } catch (err: unknown) {
+    if (err instanceof Error && "statusCode" in err) {
+      throw err;
     }
+
+    logger.error("Failed to trigger suggestion update", err);
 
     throw createError({
       statusCode: 500,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to trigger suggestion update",
+      message: "Failed to trigger suggestion update",
     });
   }
 });

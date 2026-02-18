@@ -7,9 +7,7 @@
 import { defineEventHandler, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { createLogger } from "~/server/utils/logger";
-
-const logger = createLogger("admin/health");
+import { useLogger } from "~/server/utils/logger";
 
 export interface AdminHealthResponse {
   ok: boolean;
@@ -24,6 +22,7 @@ export interface AdminHealthResponse {
 
 export default defineEventHandler(
   async (event): Promise<AdminHealthResponse> => {
+    const logger = useLogger(event, "admin/health");
     try {
       const user = await requireAuth(event);
       const supabaseAdmin = useSupabaseAdmin();
@@ -92,8 +91,7 @@ export default defineEventHandler(
       }
       throw createError({
         statusCode: 500,
-        statusMessage:
-          error instanceof Error ? error.message : "Health check failed",
+        statusMessage: "Health check failed",
       });
     }
   },

@@ -5,7 +5,7 @@
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
-import { createLogger } from "~/server/utils/logger";
+import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 
 interface AdminProfileRequest {
@@ -14,9 +14,8 @@ interface AdminProfileRequest {
   fullName: string;
 }
 
-const logger = createLogger("auth/admin-profile");
-
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "auth/admin-profile");
   try {
     const body = await readBody<AdminProfileRequest>(event);
     const { userId, email, fullName } = body;
@@ -45,7 +44,7 @@ export default defineEventHandler(async (event) => {
       logger.error("Failed to create admin profile", error);
       throw createError({
         statusCode: 500,
-        statusMessage: error.message || "Failed to create admin profile",
+        statusMessage: "Failed to create admin profile",
       });
     }
 
@@ -61,8 +60,7 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 500,
-      statusMessage:
-        err instanceof Error ? err.message : "Profile creation failed",
+      statusMessage: "Failed to create admin profile",
     });
   }
 });

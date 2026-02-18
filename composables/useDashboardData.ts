@@ -89,7 +89,6 @@ export const useDashboardData = () => {
       .eq("family_unit_id", familyId);
 
     if (schoolsError) {
-      console.error("Error fetching schools:", schoolsError);
       throw schoolsError;
     }
 
@@ -119,7 +118,6 @@ export const useDashboardData = () => {
       .in("school_id", schoolIds);
 
     if (coachesError) {
-      console.error("Error fetching coaches:", coachesError);
       throw coachesError;
     }
 
@@ -141,7 +139,6 @@ export const useDashboardData = () => {
       .eq("logged_by", userId);
 
     if (interactionsError) {
-      console.error("Error fetching interactions:", interactionsError);
       throw interactionsError;
     }
 
@@ -164,8 +161,7 @@ export const useDashboardData = () => {
       if (!offersError && offersData) {
         allOffers.value = offersData;
       }
-    } catch (err) {
-      console.error("Error fetching offers:", err);
+    } catch {
       allOffers.value = [];
     }
   };
@@ -183,8 +179,7 @@ export const useDashboardData = () => {
       if (!eventsError && eventsData) {
         allEvents.value = eventsData;
       }
-    } catch (err) {
-      console.error("Error fetching events:", err);
+    } catch {
       allEvents.value = [];
     }
   };
@@ -202,8 +197,7 @@ export const useDashboardData = () => {
       if (!metricsError && metricsData) {
         allMetrics.value = metricsData;
       }
-    } catch (err) {
-      console.error("Error fetching metrics:", err);
+    } catch {
       allMetrics.value = [];
     }
   };
@@ -215,7 +209,6 @@ export const useDashboardData = () => {
    */
   const fetchAll = async (familyId: string, userId: string): Promise<void> => {
     if (!familyId) {
-      console.warn("No family ID provided, skipping data fetch");
       return;
     }
 
@@ -236,10 +229,8 @@ export const useDashboardData = () => {
         fetchMetrics(userId),
       ]);
     } catch (err) {
-      const message =
+      error.value =
         err instanceof Error ? err.message : "Failed to fetch dashboard data";
-      error.value = message;
-      console.error("Dashboard data fetch error:", err);
       throw err;
     } finally {
       loading.value = false;
