@@ -1,6 +1,7 @@
 import { defineEventHandler, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 
 interface UserDetails {
   id: string;
@@ -9,8 +10,9 @@ interface UserDetails {
 }
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "family/accessible");
   const user = await requireAuth(event);
-  console.log("[/api/family/accessible] User authenticated:", user.id);
+  logger.debug("User authenticated", { userId: user.id });
 
   try {
     const supabase = useSupabaseAdmin();
@@ -31,28 +33,17 @@ export default defineEventHandler(async (event) => {
       .eq("role", "parent");
 
     if (membersError) {
-      console.error(
-        "[/api/family/accessible] familyMembers error:",
-        membersError,
-      );
-      // Log full error details
-      console.error("Full error object:", JSON.stringify(membersError));
+      logger.error("Failed to fetch family members", membersError);
       throw membersError;
     }
 
-    console.log(
-      "[/api/family/accessible] Found family members:",
-      familyMembers?.length || 0,
-    );
-    console.log(
-      "[/api/family/accessible] Family member details:",
-      familyMembers,
-    );
+    logger.debug("Found family members", {
+      count: familyMembers?.length ?? 0,
+      members: familyMembers,
+    });
 
     if (!familyMembers || familyMembers.length === 0) {
-      console.log(
-        "[/api/family/accessible] No family memberships found, returning empty",
-      );
+      logger.debug("No family memberships found, returning empty");
       return {
         success: true,
         families: [],
@@ -61,7 +52,7 @@ export default defineEventHandler(async (event) => {
 
     // Get family unit IDs
     const familyUnitIds = familyMembers.map((fm) => fm.family_unit_id);
-    console.log("[/api/family/accessible] Family unit IDs:", familyUnitIds);
+    logger.debug("Family unit IDs", { familyUnitIds });
 
     // Fetch family unit details
     const { data: families, error: familiesError } = await supabase
@@ -70,8 +61,7 @@ export default defineEventHandler(async (event) => {
       .in("id", familyUnitIds);
 
     if (familiesError) {
-      console.error("[/api/family/accessible] families error:", familiesError);
-      console.error("Full families error:", JSON.stringify(familiesError));
+      logger.error("Failed to fetch family units", familiesError);
       throw familiesError;
     }
 
@@ -83,8 +73,7 @@ export default defineEventHandler(async (event) => {
       .in("id", playerUserIds);
 
     if (usersError) {
-      console.error("[/api/family/accessible] users error:", usersError);
-      console.error("Full users error:", JSON.stringify(usersError));
+      logger.error("Failed to fetch user details", usersError);
       throw usersError;
     }
 
@@ -97,11 +86,10 @@ export default defineEventHandler(async (event) => {
       {} as Record<string, UserDetails>,
     );
 
-    console.log(
-      "[/api/family/accessible] Found families:",
-      families?.length || 0,
-    );
-    console.log("[/api/family/accessible] Found users:", users?.length || 0);
+    logger.debug("Fetched families and users", {
+      familyCount: families?.length ?? 0,
+      userCount: users?.length ?? 0,
+    });
 
     // Map to response format
     const accessibleFamilies = (families || []).map((family) => {
@@ -115,21 +103,21 @@ export default defineEventHandler(async (event) => {
       };
     });
 
-    console.log(
-      `[/api/family/accessible] Returning ${accessibleFamilies.length} families for user ${user.id}:`,
-      accessibleFamilies,
-    );
+    logger.debug("Returning accessible families", {
+      count: accessibleFamilies.length,
+      userId: user.id,
+      families: accessibleFamilies,
+    });
     return {
       success: true,
       families: accessibleFamilies,
     };
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to fetch families";
-    console.error("[/api/family/accessible] ERROR:", message, err);
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Failed to fetch families", err);
     throw createError({
       statusCode: 500,
-      message: `Failed to fetch families: ${message}`,
+      message: "Failed to fetch families",
     });
   }
 });

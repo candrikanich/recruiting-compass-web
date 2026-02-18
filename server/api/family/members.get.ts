@@ -1,6 +1,7 @@
 import { defineEventHandler, createError, getQuery } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 
 interface FamilyMemberRow {
   id: string;
@@ -22,6 +23,7 @@ interface FamilyMemberWithUser extends FamilyMemberRow {
 }
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "family/members");
   const user = await requireAuth(event);
   const supabase = useSupabaseAdmin();
   const query = getQuery(event);
@@ -65,9 +67,7 @@ export default defineEventHandler(async (event) => {
 
   // Fetch user details separately to ensure they're retrieved with admin privileges
   if (!members || members.length === 0) {
-    console.log(
-      `[family/members] No family members found for family ${familyId}`,
-    );
+    logger.debug("No family members found", { familyId });
     return {
       success: true,
       familyId,
@@ -76,12 +76,10 @@ export default defineEventHandler(async (event) => {
     };
   }
 
-  console.log(
-    `[family/members] Found ${members.length} family members for family ${familyId}`,
-  );
+  logger.debug("Found family members", { count: members.length, familyId });
 
   const userIds = (members as FamilyMemberRow[]).map((m) => m.user_id);
-  console.log(`[family/members] Fetching user details for IDs:`, userIds);
+  logger.debug("Fetching user details", { userIds });
 
   const { data: users, error: usersError } = await supabase
     .from("users")
@@ -89,16 +87,14 @@ export default defineEventHandler(async (event) => {
     .in("id", userIds);
 
   if (usersError) {
-    console.error(`[family/members] Error fetching users:`, usersError);
+    logger.error("Failed to fetch user details", usersError);
     throw createError({
       statusCode: 500,
-      message: `Failed to fetch user details: ${usersError.message}`,
+      message: "Failed to fetch user details",
     });
   }
 
-  console.log(
-    `[family/members] Successfully fetched ${users?.length || 0} users`,
-  );
+  logger.debug("Successfully fetched users", { count: users?.length ?? 0 });
 
   // Map user details to family members
   const usersMap = new Map(users?.map((u: User) => [u.id, u]) || []);
@@ -114,9 +110,9 @@ export default defineEventHandler(async (event) => {
     },
   }));
 
-  console.log(
-    `[family/members] Returning ${membersWithUsers.length} members with user details`,
-  );
+  logger.debug("Returning members with user details", {
+    count: membersWithUsers.length,
+  });
 
   return {
     success: true,

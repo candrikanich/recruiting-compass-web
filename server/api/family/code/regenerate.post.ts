@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { generateFamilyCode } from "~/server/utils/familyCode";
+import { useLogger } from "~/server/utils/logger";
 import type { Database } from "~/types/database";
 
 interface RegenerateCodeBody {
@@ -9,6 +10,7 @@ interface RegenerateCodeBody {
 }
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "family/code/regenerate");
   const user = await requireAuth(event);
   const body = await readBody<RegenerateCodeBody>(event);
   const { familyId } = body;
@@ -68,7 +70,7 @@ export default defineEventHandler(async (event) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (logPromise as any).catch(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (err: any) => console.warn("Failed to log regeneration:", err),
+    (err: any) => logger.warn("Failed to log regeneration", err),
   );
 
   return {

@@ -13,8 +13,10 @@ import {
   generateCoachFollowupNotifications,
 } from "~/server/utils/notificationGenerator";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "notifications/generate");
   try {
     // Get authenticated user
     const user = await requireAuth(event);
@@ -48,10 +50,11 @@ export default defineEventHandler(async (event) => {
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    console.error("Error generating notifications:", err);
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Failed to generate notifications", err);
     throw createError({
       statusCode: err.statusCode || 500,
-      statusMessage: err.statusMessage || "Failed to generate notifications",
+      statusMessage: "Failed to generate notifications",
     });
   }
 });

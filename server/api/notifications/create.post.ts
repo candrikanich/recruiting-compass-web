@@ -6,8 +6,10 @@
 
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "notifications/create");
   try {
     await requireAuth(event);
 
@@ -57,11 +59,8 @@ export default defineEventHandler(async (event) => {
       notification: data,
     };
   } catch (err) {
-    console.error("Error in POST /api/notifications/create:", err);
-
-    if (err instanceof Error && "statusCode" in err) {
-      throw err;
-    }
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Failed to create notification", err);
 
     throw createError({
       statusCode: 500,

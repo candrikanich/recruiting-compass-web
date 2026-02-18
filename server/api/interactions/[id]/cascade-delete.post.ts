@@ -1,5 +1,6 @@
 import { defineEventHandler, getRouterParam, createError, readBody } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 
 /**
  * Cascade delete an interaction and all related records
@@ -20,6 +21,7 @@ import { createServerSupabaseClient } from "~/server/utils/supabase";
  * - interactionId: the deleted interaction ID
  */
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "interactions/cascade-delete");
   const interactionId = getRouterParam(event, "id");
 
   if (!interactionId) {
@@ -82,14 +84,11 @@ export default defineEventHandler(async (event) => {
           : "No records to delete",
     };
   } catch (err) {
-    const message =
-      err instanceof Error
-        ? err.message
-        : "Failed to cascade delete interaction";
-    console.error("[cascade-delete] Error:", { interactionId, error: message });
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Failed to cascade delete interaction", err);
     throw createError({
       statusCode: 500,
-      statusMessage: message,
+      statusMessage: "Failed to cascade delete interaction",
     });
   }
 });

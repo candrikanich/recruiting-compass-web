@@ -8,6 +8,7 @@ import {
 } from "h3";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 
 /**
  * Cascade delete a coach and all related records
@@ -28,6 +29,7 @@ import { requireAuth } from "~/server/utils/auth";
  * - coachId: the deleted coach ID
  */
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "coaches/cascade-delete");
   const coachId = getRouterParam(event, "id");
 
   if (!coachId) {
@@ -125,12 +127,11 @@ export default defineEventHandler(async (event) => {
           : "No records to delete",
     };
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to cascade delete coach";
-    console.error("[cascade-delete] Error:", { coachId, error: message });
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Failed to cascade delete coach", err);
     throw createError({
       statusCode: 500,
-      statusMessage: message,
+      statusMessage: "Failed to cascade delete coach",
     });
   }
 });
