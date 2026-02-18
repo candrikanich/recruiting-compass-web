@@ -4,6 +4,7 @@
  */
 
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 
 interface MigrationResult {
   success: boolean;
@@ -14,8 +15,11 @@ interface MigrationResult {
   errors: Array<{ schoolId: string; error: string }>;
 }
 
-export default defineEventHandler(async (): Promise<MigrationResult> => {
+export default defineEventHandler(async (event): Promise<MigrationResult> => {
   const supabase = useSupabaseAdmin();
+  const logger = useLogger(event, "admin/migrate-school-sizes");
+
+  logger.info("Starting school sizes migration");
 
   const result: MigrationResult = {
     success: false,
@@ -108,8 +112,16 @@ export default defineEventHandler(async (): Promise<MigrationResult> => {
 
     result.success = result.errorCount === 0;
 
+    logger.info("School sizes migration complete", {
+      totalSchools: result.totalSchools,
+      migratedCount: result.migratedCount,
+      skippedCount: result.skippedCount,
+      errorCount: result.errorCount,
+    });
+
     return result;
   } catch (err) {
+    logger.error("School sizes migration failed", err);
     throw createError({
       statusCode: 500,
       statusMessage: err instanceof Error ? err.message : "Migration failed",

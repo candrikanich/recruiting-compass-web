@@ -1,5 +1,6 @@
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 
 interface BlockerInfo {
   table: string;
@@ -27,14 +28,18 @@ export default defineEventHandler(async (event) => {
   }
 
   const client = createServerSupabaseClient();
+  const logger = useLogger(event, "coaches/deletion-blockers");
 
   const blockers: BlockerInfo[] = [];
 
   // Check interactions
-  const { count: interactionCount } = await client
+  const { count: interactionCount, error: interactionError } = await client
     .from("interactions")
     .select("*", { count: "exact", head: true })
     .eq("coach_id", coachId);
+  if (interactionError) {
+    logger.warn("Failed to count coach interactions", interactionError);
+  }
   if (interactionCount && interactionCount > 0) {
     blockers.push({
       table: "interactions",
@@ -44,19 +49,25 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check offers
-  const { count: offerCount } = await client
+  const { count: offerCount, error: offerError } = await client
     .from("offers")
     .select("*", { count: "exact", head: true })
     .eq("coach_id", coachId);
+  if (offerError) {
+    logger.warn("Failed to count coach offers", offerError);
+  }
   if (offerCount && offerCount > 0) {
     blockers.push({ table: "offers", count: offerCount, column: "coach_id" });
   }
 
   // Check social_media_posts
-  const { count: postCount } = await client
+  const { count: postCount, error: postError } = await client
     .from("social_media_posts")
     .select("*", { count: "exact", head: true })
     .eq("coach_id", coachId);
+  if (postError) {
+    logger.warn("Failed to count coach social media posts", postError);
+  }
   if (postCount && postCount > 0) {
     blockers.push({
       table: "social_media_posts",

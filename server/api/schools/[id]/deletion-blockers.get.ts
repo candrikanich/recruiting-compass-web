@@ -1,5 +1,6 @@
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 
 interface BlockerInfo {
   table: string;
@@ -27,23 +28,30 @@ export default defineEventHandler(async (event) => {
   }
 
   const client = createServerSupabaseClient();
+  const logger = useLogger(event, "schools/deletion-blockers");
 
   const blockers: BlockerInfo[] = [];
 
   // Check coaches
-  const { count: coachCount } = await client
+  const { count: coachCount, error: coachError } = await client
     .from("coaches")
     .select("*", { count: "exact", head: true })
     .eq("school_id", schoolId);
+  if (coachError) {
+    logger.warn("Failed to count school coaches", coachError);
+  }
   if (coachCount && coachCount > 0) {
     blockers.push({ table: "coaches", count: coachCount, column: "school_id" });
   }
 
   // Check interactions
-  const { count: interactionCount } = await client
+  const { count: interactionCount, error: interactionError } = await client
     .from("interactions")
     .select("*", { count: "exact", head: true })
     .eq("school_id", schoolId);
+  if (interactionError) {
+    logger.warn("Failed to count school interactions", interactionError);
+  }
   if (interactionCount && interactionCount > 0) {
     blockers.push({
       table: "interactions",
@@ -53,19 +61,25 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check offers
-  const { count: offerCount } = await client
+  const { count: offerCount, error: offerError } = await client
     .from("offers")
     .select("*", { count: "exact", head: true })
     .eq("school_id", schoolId);
+  if (offerError) {
+    logger.warn("Failed to count school offers", offerError);
+  }
   if (offerCount && offerCount > 0) {
     blockers.push({ table: "offers", count: offerCount, column: "school_id" });
   }
 
   // Check school_status_history
-  const { count: historyCount } = await client
+  const { count: historyCount, error: historyError } = await client
     .from("school_status_history")
     .select("*", { count: "exact", head: true })
     .eq("school_id", schoolId);
+  if (historyError) {
+    logger.warn("Failed to count school status history", historyError);
+  }
   if (historyCount && historyCount > 0) {
     blockers.push({
       table: "school_status_history",
@@ -75,10 +89,13 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check social_media_posts
-  const { count: postCount } = await client
+  const { count: postCount, error: postError } = await client
     .from("social_media_posts")
     .select("*", { count: "exact", head: true })
     .eq("school_id", schoolId);
+  if (postError) {
+    logger.warn("Failed to count school social media posts", postError);
+  }
   if (postCount && postCount > 0) {
     blockers.push({
       table: "social_media_posts",
@@ -88,10 +105,13 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check documents
-  const { count: docCount } = await client
+  const { count: docCount, error: docError } = await client
     .from("documents")
     .select("*", { count: "exact", head: true })
     .eq("school_id", schoolId);
+  if (docError) {
+    logger.warn("Failed to count school documents", docError);
+  }
   if (docCount && docCount > 0) {
     blockers.push({
       table: "documents",
@@ -101,19 +121,25 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check events
-  const { count: eventCount } = await client
+  const { count: eventCount, error: eventError } = await client
     .from("events")
     .select("*", { count: "exact", head: true })
     .eq("school_id", schoolId);
+  if (eventError) {
+    logger.warn("Failed to count school events", eventError);
+  }
   if (eventCount && eventCount > 0) {
     blockers.push({ table: "events", count: eventCount, column: "school_id" });
   }
 
   // Check suggestions
-  const { count: suggestionCount } = await client
+  const { count: suggestionCount, error: suggestionError } = await client
     .from("suggestion")
     .select("*", { count: "exact", head: true })
     .eq("related_school_id", schoolId);
+  if (suggestionError) {
+    logger.warn("Failed to count school suggestions", suggestionError);
+  }
   if (suggestionCount && suggestionCount > 0) {
     blockers.push({
       table: "suggestion",
