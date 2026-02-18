@@ -6,6 +6,7 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { AthleteTask, TaskStatus } from "~/types/timeline";
 
@@ -23,6 +24,7 @@ interface UpdateTaskData {
 }
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "athlete-tasks");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
   const taskId = event.context.params?.taskId as string;
@@ -86,7 +88,7 @@ export default defineEventHandler(async (event) => {
             .in("id", dependencies);
 
         if (prerequisiteError) {
-          console.error("Error fetching prerequisites:", prerequisiteError);
+          logger.error("Error fetching prerequisites", prerequisiteError);
           throw createError({
             statusCode: 500,
             statusMessage: "Failed to validate dependencies",
@@ -105,10 +107,7 @@ export default defineEventHandler(async (event) => {
               .maybeSingle();
 
           if (athleteTaskError) {
-            console.error(
-              "Error checking prerequisite status:",
-              athleteTaskError,
-            );
+            logger.error("Error checking prerequisite status", athleteTaskError);
           }
 
           const status = athleteTaskData?.status || "not_started";
@@ -150,7 +149,7 @@ export default defineEventHandler(async (event) => {
 
     if (selectError && selectError.code !== "PGRST116") {
       // PGRST116 means no rows found, which is expected
-      console.error("Error checking existing athlete task:", selectError);
+      logger.error("Error checking existing athlete task", selectError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to update task status",
@@ -182,7 +181,7 @@ export default defineEventHandler(async (event) => {
           description: "Failed to update task status",
         });
 
-        console.error("Supabase error updating athlete task:", error);
+        logger.error("Supabase error updating athlete task", error);
         throw createError({
           statusCode: 500,
           statusMessage: "Failed to update task status",
@@ -216,7 +215,7 @@ export default defineEventHandler(async (event) => {
           description: "Failed to create task status",
         });
 
-        console.error("Supabase error creating athlete task:", error);
+        logger.error("Supabase error creating athlete task", error);
         throw createError({
           statusCode: 500,
           statusMessage: "Failed to create task status",
@@ -262,7 +261,7 @@ export default defineEventHandler(async (event) => {
       throw err;
     }
 
-    console.error("Error in PATCH /api/athlete-tasks/[taskId]:", err);
+    logger.error("Error in PATCH /api/athlete-tasks/[taskId]", err);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to update task status",

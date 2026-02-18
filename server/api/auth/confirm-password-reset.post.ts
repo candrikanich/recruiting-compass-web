@@ -15,6 +15,7 @@
  * - Password strength requirements enforced
  */
 
+import { useLogger } from "~/server/utils/logger";
 import { resetPasswordSchema } from "~/utils/validation/schemas";
 
 interface ConfirmPasswordResetRequest {
@@ -28,6 +29,7 @@ interface ConfirmPasswordResetResponse {
 
 export default defineEventHandler(
   async (event): Promise<ConfirmPasswordResetResponse> => {
+    const logger = useLogger(event, "auth/confirm-password-reset");
     try {
       // Get current user session - Supabase sets auth token in session
       // when user clicks reset link in email
@@ -78,7 +80,7 @@ export default defineEventHandler(
         });
 
       if (updateError) {
-        console.error("Password update error:", updateError);
+        logger.error("Password update error", updateError);
 
         // Provide specific error messages
         if (
@@ -118,7 +120,7 @@ export default defineEventHandler(
         throw err;
       }
 
-      console.error("Error in POST /api/auth/confirm-password-reset:", err);
+      logger.error("Error in POST /api/auth/confirm-password-reset", err);
 
       throw createError({
         statusCode: 500,

@@ -1,3 +1,4 @@
+import { useLogger } from "~/server/utils/logger";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 
 type VerifyEmailResponse = {
@@ -7,6 +8,7 @@ type VerifyEmailResponse = {
 
 export default defineEventHandler(
   async (event): Promise<VerifyEmailResponse> => {
+    const logger = useLogger(event, "auth/verify-email");
     try {
       const body = await readBody<{ token: string }>(event);
       const { token } = body;
@@ -27,7 +29,7 @@ export default defineEventHandler(
       });
 
       if (error) {
-        console.error("Email verification error:", error);
+        logger.error("Email verification error", error);
 
         if (error.message.includes("expired")) {
           throw createError({
@@ -74,7 +76,7 @@ export default defineEventHandler(
         throw err;
       }
 
-      console.error("Error in POST /api/auth/verify-email:", err);
+      logger.error("Error in POST /api/auth/verify-email", err);
       throw createError({
         statusCode: 500,
         statusMessage: "Email verification failed. Please try again.",

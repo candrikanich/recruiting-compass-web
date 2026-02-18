@@ -13,7 +13,7 @@
 import { defineEventHandler, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { createLogger } from "~/server/utils/logger";
+import { useLogger } from "~/server/utils/logger";
 
 interface User {
   id: string;
@@ -28,9 +28,8 @@ interface GetUsersResponse {
   users: User[];
 }
 
-const logger = createLogger("admin/users");
-
 export default defineEventHandler(async (event): Promise<GetUsersResponse> => {
+  const logger = useLogger(event, "admin/users");
   try {
     // Verify user is authenticated
     const user = await requireAuth(event);
@@ -68,7 +67,7 @@ export default defineEventHandler(async (event): Promise<GetUsersResponse> => {
 
     const userCount = users?.length || 0;
     logger.info(`Admin ${user.id} fetched all users (${userCount} total)`);
-    console.log(`[API] Fetched ${userCount} users from database`);
+    logger.info(`Fetched ${userCount} users from database`);
 
     return {
       users: (users || []) as User[],
@@ -82,8 +81,7 @@ export default defineEventHandler(async (event): Promise<GetUsersResponse> => {
 
     throw createError({
       statusCode: 500,
-      statusMessage:
-        error instanceof Error ? error.message : "Failed to fetch users",
+      statusMessage: "Failed to fetch users",
     });
   }
 });
