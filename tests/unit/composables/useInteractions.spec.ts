@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useInteractions } from "~/composables/useInteractions";
+import { useInteractionNotes } from "~/composables/useInteractionNotes";
 import { setActivePinia, createPinia } from "pinia";
 import { useUserStore } from "~/stores/user";
 import type { Interaction } from "~/types/models";
@@ -1268,10 +1269,10 @@ describe("useInteractions", () => {
     });
   });
 
-  describe("fetchNoteHistory (consolidated from useNotesHistory)", () => {
+  describe("fetchNoteHistory (useInteractionNotes)", () => {
     it("should initialize with empty note history state", () => {
       const { noteHistory, noteHistoryLoading, noteHistoryError } =
-        useInteractions();
+        useInteractionNotes();
 
       expect(noteHistory.value).toEqual([]);
       expect(noteHistoryLoading.value).toBe(false);
@@ -1279,13 +1280,13 @@ describe("useInteractions", () => {
     });
 
     it("should have fetchNoteHistory method", () => {
-      const { fetchNoteHistory } = useInteractions();
+      const { fetchNoteHistory } = useInteractionNotes();
 
       expect(typeof fetchNoteHistory).toBe("function");
     });
 
     it("should format history entries with dates", () => {
-      const { formattedNoteHistory } = useInteractions();
+      const { formattedNoteHistory } = useInteractionNotes();
 
       expect(formattedNoteHistory.value).toBeDefined();
       expect(Array.isArray(formattedNoteHistory.value)).toBe(true);
@@ -1294,7 +1295,7 @@ describe("useInteractions", () => {
     it("should handle missing user gracefully", async () => {
       mockUser = null;
       const { fetchNoteHistory, noteHistory, noteHistoryError } =
-        useInteractions();
+        useInteractionNotes();
 
       // When no user is authenticated
       await fetchNoteHistory("test-school-id");
@@ -1307,7 +1308,7 @@ describe("useInteractions", () => {
     });
 
     it("should return composable functions and properties", () => {
-      const composable = useInteractions();
+      const composable = useInteractionNotes();
 
       expect(composable).toHaveProperty("noteHistory");
       expect(composable).toHaveProperty("formattedNoteHistory");
@@ -1317,7 +1318,7 @@ describe("useInteractions", () => {
     });
 
     it("should have formattedNoteHistory as computed", () => {
-      const { formattedNoteHistory } = useInteractions();
+      const { formattedNoteHistory } = useInteractionNotes();
 
       // Computed properties are reactive
       expect(formattedNoteHistory.value).toBeDefined();
