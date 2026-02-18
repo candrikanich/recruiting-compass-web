@@ -18,10 +18,12 @@ vi.mock("~/composables/useSupabase", () => ({
   }),
 }));
 
-// useCsrf — stub addCsrfHeader to return headers unchanged (no HTTP calls)
+// useCsrf — hoist addCsrfHeader spy so tests can assert on it
+const mockAddCsrfHeader = vi.fn(async (h: Record<string, string>) => h);
+
 vi.mock("~/composables/useCsrf", () => ({
   useCsrf: () => ({
-    addCsrfHeader: vi.fn(async (h: Record<string, string>) => h),
+    addCsrfHeader: mockAddCsrfHeader,
   }),
 }));
 
@@ -48,6 +50,8 @@ describe("useAuthFetch", () => {
     mockFetch.mockResolvedValue({ ok: true });
     // Default: no correlation ID in sessionStorage
     vi.spyOn(sessionStorage, "getItem").mockReturnValue(null);
+    // Default: addCsrfHeader returns headers unchanged
+    mockAddCsrfHeader.mockImplementation(async (h) => h);
   });
 
   describe("$fetchAuth — auth header injection", () => {
@@ -145,6 +149,22 @@ describe("useAuthFetch", () => {
           }),
         }),
       );
+    });
+  });
+
+  describe("$fetchAuth — CSRF header injection", () => {
+    it("calls addCsrfHeader for POST requests", async () => {
+      const { $fetchAuth } = useAuthFetch();
+      await $fetchAuth("/api/data", { method: "POST" });
+
+      expect(mockAddCsrfHeader).toHaveBeenCalled();
+    });
+
+    it("does not call addCsrfHeader for GET requests", async () => {
+      const { $fetchAuth } = useAuthFetch();
+      await $fetchAuth("/api/data", { method: "GET" });
+
+      expect(mockAddCsrfHeader).not.toHaveBeenCalled();
     });
   });
 });
