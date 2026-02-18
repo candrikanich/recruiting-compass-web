@@ -61,6 +61,14 @@ export const useAuthFetch = () => {
       headers = await addCsrfHeader(headers);
     }
 
+    // Add correlation ID for end-to-end request tracing
+    if (typeof window !== "undefined") {
+      const correlationId = sessionStorage.getItem("correlation-id");
+      if (correlationId) {
+        headers["x-request-id"] = correlationId;
+      }
+    }
+
     try {
       return await $fetch(url, {
         ...options,
