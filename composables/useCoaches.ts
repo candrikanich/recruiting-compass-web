@@ -11,6 +11,9 @@ import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("useCoaches");
 
+// Keyed by schoolId to allow concurrent fetches for different schools
+const fetchInFlight = new Map<string, Promise<void>>();
+
 type CoachesInsert = Database["public"]["Tables"]["coaches"]["Insert"];
 type CoachesUpdate = Database["public"]["Tables"]["coaches"]["Update"];
 type CoachesRow = Database["public"]["Tables"]["coaches"]["Row"];
@@ -91,7 +94,10 @@ export const useCoaches = (): {
     },
   );
 
-  const fetchCoaches = async (schoolId: string) => {
+  const fetchCoaches = (schoolId: string): Promise<void> => {
+    if (fetchInFlight.has(schoolId)) return fetchInFlight.get(schoolId)!;
+
+    const promise = (async () => {
     if (!activeFamily.activeFamilyId.value) {
       error.value = "No family context";
       return;
@@ -142,6 +148,12 @@ export const useCoaches = (): {
     } finally {
       loading.value = false;
     }
+    })().finally(() => {
+      fetchInFlight.delete(schoolId);
+    });
+
+    fetchInFlight.set(schoolId, promise);
+    return promise;
   };
 
   const fetchAllCoaches = async (filters?: {

@@ -137,8 +137,13 @@ describe("useCoaches", () => {
       await fetchCoaches("school-123");
 
       expect(error.value).toBe("Database error");
-      expect(console.error).toHaveBeenCalledWith("Fetch error:", fetchError);
       expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("[useCoaches]"),
+        "Fetch error:",
+        expect.objectContaining({ message: "Database error" }),
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("[useCoaches]"),
         "Coach fetch error:",
         "Database error",
       );
@@ -366,6 +371,26 @@ describe("useCoaches", () => {
       // Verify it's a computed ref (readonly)
       expect(error.effect).toBeDefined();
       expect(typeof error.value).toBe("object"); // can be null or string
+    });
+  });
+
+  describe("fetchCoaches - deduplication", () => {
+    it("deduplicates concurrent fetchCoaches calls for the same schoolId", async () => {
+      let resolveQuery!: (val: any) => void;
+      const queryPromise = new Promise((resolve) => {
+        resolveQuery = resolve;
+      });
+      mockQuery.order.mockReturnValue(queryPromise);
+
+      const { fetchCoaches } = useCoaches();
+
+      const p1 = fetchCoaches("school-1");
+      const p2 = fetchCoaches("school-1");
+
+      resolveQuery({ data: [], error: null });
+      await Promise.all([p1, p2]);
+
+      expect(mockSupabase.from).toHaveBeenCalledTimes(1);
     });
   });
 });
