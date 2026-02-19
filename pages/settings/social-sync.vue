@@ -195,7 +195,7 @@
         </div>
 
         <button
-          @click="saveSettings"
+          @click="handleSave"
           :disabled="saving"
           class="mt-6 px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition"
         >
@@ -210,32 +210,33 @@
 import { ref, computed, onMounted } from "vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useSupabase } from "~/composables/useSupabase";
-import { useUserStore } from "~/stores/user";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSocialMedia } from "~/composables/useSocialMedia";
+import { useSocialSyncSettings } from "~/composables/useSocialSyncSettings";
 
 definePageMeta({
   middleware: "auth",
 });
 
 const supabase = useSupabase();
-const userStore = useUserStore();
 const { schools, fetchSchools } = useSchools();
 const { coaches, fetchCoaches } = useCoaches();
 const { posts, fetchPosts } = useSocialMedia();
+const {
+  autoSyncEnabled,
+  notifyOnRecruitingPosts,
+  notifyOnMentions,
+  lastSyncTime,
+  saving,
+  loadSettings,
+  saveSettings,
+} = useSocialSyncSettings();
 
 const loading = ref(true);
 const syncing = ref(false);
-const saving = ref(false);
 const syncMessage = ref("");
 const syncSuccess = ref(true);
-
-// Settings
-const autoSyncEnabled = ref(true);
-const notifyOnRecruitingPosts = ref(false);
-const notifyOnMentions = ref(false);
-const lastSyncTime = ref<string | null>(null);
 
 interface TrackedAccount {
   handle: string;
@@ -301,63 +302,17 @@ const loadTrackedAccounts = async () => {
   trackedAccounts.value = accounts;
 };
 
-const loadSettings = async () => {
-  if (!userStore.user) return;
-
-  try {
-    const response = await supabase
-      .from("user_preferences")
-      .select("social_sync_settings")
-      .eq("user_id", userStore.user.id)
-      .single();
-    const { data } = response as {
-      data: { social_sync_settings: any } | null;
-      error: any;
-    };
-
-    if (data?.social_sync_settings) {
-      autoSyncEnabled.value = data.social_sync_settings.autoSyncEnabled ?? true;
-      notifyOnRecruitingPosts.value =
-        data.social_sync_settings.notifyOnRecruitingPosts ?? false;
-      notifyOnMentions.value =
-        data.social_sync_settings.notifyOnMentions ?? false;
-      lastSyncTime.value = data.social_sync_settings.lastSyncTime ?? null;
-    }
-  } catch (e) {
-    console.error("Failed to load settings:", e);
-  }
-};
-
-const saveSettings = async () => {
-  if (!userStore.user) return;
-
-  saving.value = true;
-  try {
-    const response = await (supabase.from("user_preferences") as any)
-      .update({
-        social_sync_settings: {
-          autoSyncEnabled: autoSyncEnabled.value,
-          notifyOnRecruitingPosts: notifyOnRecruitingPosts.value,
-          notifyOnMentions: notifyOnMentions.value,
-          lastSyncTime: lastSyncTime.value,
-        },
-      })
-      .eq("user_id", userStore.user.id);
-    const { error } = response as { error: any };
-
-    if (error) throw error;
-
+const handleSave = async () => {
+  const result = await saveSettings();
+  if (result.success) {
     syncMessage.value = "Settings saved!";
     syncSuccess.value = true;
     setTimeout(() => {
       syncMessage.value = "";
     }, 3000);
-  } catch (e) {
-    console.error("Failed to save settings:", e);
+  } else {
     syncMessage.value = "Failed to save settings";
     syncSuccess.value = false;
-  } finally {
-    saving.value = false;
   }
 };
 
@@ -385,7 +340,7 @@ const syncNow = async () => {
     lastSyncTime.value = new Date().toISOString();
 
     // Save last sync time
-    await saveSettings();
+    await handleSave();
 
     // Refresh posts
     await fetchPosts();
@@ -414,6 +369,7 @@ onMounted(async () => {
     await loadTrackedAccounts();
     await loadSettings();
     await fetchPosts();
+
   } catch (err) {
     console.error("Error loading data:", err);
   } finally {

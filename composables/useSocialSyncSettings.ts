@@ -42,8 +42,7 @@ export function useSocialSyncSettings() {
 
     saving.value = true;
     try {
-      const { error } = await supabase
-        .from("user_preferences")
+      const { error } = await (supabase.from("user_preferences") as any)
         .update({
           social_sync_settings: {
             autoSyncEnabled: autoSyncEnabled.value,
