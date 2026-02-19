@@ -145,6 +145,7 @@ describe("useAuth", () => {
       expect(auth.session.value).toBe(null);
       expect(result).toBe(null);
       expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("[useAuth]"),
         "[useAuth] Session restoration failed:",
         "Session fetch failed",
       );

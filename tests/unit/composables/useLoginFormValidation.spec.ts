@@ -268,7 +268,8 @@ describe("Login Form Validation Integration", () => {
 
       expect(result).toBe(null);
       expect(consoleSpy).toHaveBeenCalledWith(
-        "[useFormValidation] No schema provided to validate()",
+        expect.stringContaining("[useFormValidation]"),
+        "No schema provided to validate()",
       );
 
       consoleSpy.mockRestore();

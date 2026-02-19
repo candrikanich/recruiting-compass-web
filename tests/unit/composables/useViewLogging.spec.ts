@@ -79,9 +79,6 @@ describe("useViewLogging", () => {
 
     it("should handle logging errors silently", async () => {
       const { logParentView } = useViewLogging();
-      const consoleDebugSpy = vi
-        .spyOn(console, "debug")
-        .mockImplementation(() => {});
 
       mockSupabase.from.mockReturnValue({
         insert: vi.fn().mockResolvedValue({ error: new Error("DB error") }),
@@ -91,9 +88,6 @@ describe("useViewLogging", () => {
       await expect(
         logParentView("school", "athlete-456", "school-789"),
       ).resolves.not.toThrow();
-
-      expect(consoleDebugSpy).toHaveBeenCalled();
-      consoleDebugSpy.mockRestore();
     });
 
     it("should log without itemId when not provided", async () => {

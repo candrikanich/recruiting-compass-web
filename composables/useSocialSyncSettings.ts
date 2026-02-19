@@ -25,6 +25,7 @@ export function useSocialSyncSettings() {
         .eq("user_id", userStore.user.id)
         .single();
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const settings = (data as any)?.social_sync_settings;
       if (settings) {
         autoSyncEnabled.value = settings.autoSyncEnabled ?? true;
@@ -42,6 +43,7 @@ export function useSocialSyncSettings() {
 
     saving.value = true;
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (supabase.from("user_preferences") as any)
         .update({
           social_sync_settings: {

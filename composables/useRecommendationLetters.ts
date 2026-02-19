@@ -64,16 +64,14 @@ export function useRecommendationLetters() {
 
     try {
       if (existingId) {
-        const { error: updateError } = await (
-          supabase.from("recommendation_letters") as any
-        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: updateError } = await (supabase.from("recommendation_letters") as any)
           .update(formData)
           .eq("id", existingId);
         if (updateError) throw updateError;
       } else {
-        const { error: insertError } = await (
-          supabase.from("recommendation_letters") as any
-        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: insertError } = await (supabase.from("recommendation_letters") as any)
           .insert([{ ...formData, user_id: userStore.user?.id }])
           .select();
         if (insertError) throw insertError;

@@ -84,8 +84,9 @@ describe("useSchoolStatusManagement", () => {
       expect(result).toBeNull();
       expect(statusUpdating.value).toBe(false);
       expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("[useSchoolStatusManagement]"),
         "Failed to update status:",
-        expect.any(Error),
+        expect.objectContaining({ message: "Update failed" }),
       );
 
       consoleErrorSpy.mockRestore();
