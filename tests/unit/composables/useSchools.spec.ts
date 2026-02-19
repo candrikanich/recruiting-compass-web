@@ -141,5 +141,23 @@ describe("useSchools", () => {
       );
       expect(baldwinWallaces).toHaveLength(1);
     });
+
+    it("deduplicates concurrent fetchSchools calls - only one Supabase query fires", async () => {
+      let resolveQuery!: (val: any) => void;
+      const queryPromise = new Promise((resolve) => {
+        resolveQuery = resolve;
+      });
+      mockQuery.order.mockReturnValue(queryPromise);
+
+      const { fetchSchools } = useSchools();
+
+      const p1 = fetchSchools();
+      const p2 = fetchSchools();
+
+      resolveQuery({ data: [], error: null });
+      await Promise.all([p1, p2]);
+
+      expect(mockSupabase.from).toHaveBeenCalledTimes(1);
+    });
   });
 });

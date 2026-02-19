@@ -10,6 +10,9 @@ import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("useSchools");
 
+// In-flight deduplication: prevents concurrent duplicate Supabase calls
+let fetchInFlight: Promise<void> | null = null;
+
 /**
  * useSchools composable
  * Manages college/university program data and recruiting status
@@ -103,7 +106,10 @@ const useSchoolsInternal = (): {
     },
   );
 
-  const fetchSchools = async () => {
+  const fetchSchools = (): Promise<void> => {
+    if (fetchInFlight) return fetchInFlight;
+
+    fetchInFlight = (async () => {
     logger.debug("[useSchools] fetchSchools called");
     logger.debug(`[useSchools] User: ${userStore.user?.id || "null"}`);
     logger.debug(
@@ -192,6 +198,11 @@ const useSchoolsInternal = (): {
     } finally {
       loadingRef.value = false;
     }
+    })().finally(() => {
+      fetchInFlight = null;
+    });
+
+    return fetchInFlight;
   };
 
   const getSchool = async (id: string): Promise<School | null> => {
