@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
       logger.error("Failed to create admin profile", error);
       throw createError({
         statusCode: 500,
-        statusMessage: error.message || "Failed to create admin profile",
+        statusMessage: "Failed to create admin profile",
       });
     }
 
@@ -61,8 +61,7 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 500,
-      statusMessage:
-        err instanceof Error ? err.message : "Profile creation failed",
+      statusMessage: "Profile creation failed",
     });
   }
 });
