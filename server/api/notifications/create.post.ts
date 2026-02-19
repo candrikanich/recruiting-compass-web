@@ -12,10 +12,9 @@ import { useLogger } from "~/server/utils/logger";
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "notifications/create");
   try {
-    await requireAuth(event);
+    const user = await requireAuth(event);
 
     const body = await readBody<{
-      user_id: string;
       type: string;
       title: string;
       message?: string;
@@ -23,10 +22,10 @@ export default defineEventHandler(async (event) => {
       action_url?: string;
     }>(event);
 
-    if (!body.user_id || !body.type || !body.title) {
+    if (!body.type || !body.title) {
       throw createError({
         statusCode: 400,
-        statusMessage: "Missing required fields: user_id, type, title",
+        statusMessage: "Missing required fields: type, title",
       });
     }
 
@@ -37,7 +36,7 @@ export default defineEventHandler(async (event) => {
       (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (supabase.from("notifications") as any).insert([
         {
-          user_id: body.user_id,
+          user_id: user.id,
           type: body.type,
           title: body.title,
           message: body.message || null,
