@@ -3,7 +3,11 @@
     <!-- Notification Bell -->
     <button
       @click="isOpen = !isOpen"
-      class="relative p-2 rounded-lg hover:bg-slate-100 transition-colors"
+      :aria-label="unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'"
+      :aria-expanded="isOpen"
+      aria-controls="notifications-dropdown"
+      aria-haspopup="menu"
+      class="relative p-2 rounded-lg hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
     >
       <svg
         class="w-6 h-6 text-slate-600"
@@ -11,6 +15,7 @@
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
+        aria-hidden="true"
       >
         <path
           stroke-linecap="round"
@@ -22,6 +27,7 @@
       <!-- Badge -->
       <span
         v-if="unreadCount > 0"
+        aria-hidden="true"
         class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center"
       >
         {{ Math.min(unreadCount, 9) }}
@@ -39,6 +45,8 @@
     >
       <div
         v-if="isOpen"
+        id="notifications-dropdown"
+        role="menu"
         class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-slate-200 z-50 max-h-96 flex flex-col"
       >
         <!-- Header -->
@@ -49,7 +57,7 @@
           <button
             v-if="notifications.length > 0"
             @click="markAllAsRead"
-            class="text-xs text-blue-600 hover:text-blue-700 font-medium"
+            class="text-xs text-blue-600 hover:text-blue-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded"
           >
             Mark all read
           </button>
@@ -60,15 +68,17 @@
           <button
             v-for="notification in notifications"
             :key="notification.id"
+            role="menuitem"
             @click="handleNotificationClick(notification)"
             :class="[
-              'w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors',
+              'w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors focus:outline-none focus:bg-slate-50',
               !notification.read_at ? 'bg-blue-50' : '',
             ]"
           >
             <div class="flex items-start gap-3">
               <div
                 v-if="!notification.read_at"
+                aria-hidden="true"
                 class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"
               />
               <div class="flex-1 min-w-0">

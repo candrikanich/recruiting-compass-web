@@ -21,11 +21,12 @@
         <div class="flex items-center gap-2">
           <NuxtLink
             to="/search"
-            class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition"
+            aria-label="Search coaches and schools"
             title="Search"
+            class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
             data-testid="nav-search-button"
           >
-            <MagnifyingGlassIcon class="w-5 h-5" />
+            <MagnifyingGlassIcon class="w-5 h-5" aria-hidden="true" />
           </NuxtLink>
           <NotificationCenter />
           <HeaderProfile class="hidden md:block" />
@@ -33,10 +34,14 @@
           <!-- Mobile Menu Button -->
           <button
             @click="toggleMobileMenu"
-            class="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition"
+            :aria-label="isMobileMenuOpen ? 'Close menu' : 'Open menu'"
+            :aria-expanded="isMobileMenuOpen"
+            aria-haspopup="menu"
+            aria-controls="mobile-nav-menu"
+            class="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
           >
-            <Bars3Icon v-if="!isMobileMenuOpen" class="w-6 h-6" />
-            <XMarkIcon v-else class="w-6 h-6" />
+            <Bars3Icon v-if="!isMobileMenuOpen" class="w-6 h-6" aria-hidden="true" />
+            <XMarkIcon v-else class="w-6 h-6" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -52,6 +57,7 @@
       >
         <div
           v-if="isMobileMenuOpen"
+          id="mobile-nav-menu"
           class="md:hidden py-4 border-t border-slate-200"
         >
           <!-- Navigation -->
@@ -60,8 +66,9 @@
               v-for="item in navItems"
               :key="item.to"
               :to="item.to"
+              :aria-current="isActive(item.to) ? 'page' : undefined"
               :data-testid="`mobile-nav-${item.to.replace('/', '')}`"
-              class="flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition"
+              class="flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               :class="
                 isActive(item.to)
                   ? 'bg-blue-50 text-blue-600'
@@ -69,7 +76,7 @@
               "
               @click="closeMobileMenu"
             >
-              <component :is="item.icon" class="w-5 h-5" />
+              <component :is="item.icon" class="w-5 h-5" aria-hidden="true" />
               <span>{{ item.label }}</span>
             </NuxtLink>
           </nav>
@@ -102,10 +109,11 @@
               v-for="item in settingsItems"
               :key="item.to"
               :to="item.to"
-              class="flex items-center gap-3 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg transition"
+              :aria-current="isActive(item.to) ? 'page' : undefined"
+              class="flex items-center gap-3 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               @click="closeMobileMenu"
             >
-              <component :is="item.icon" class="w-5 h-5" />
+              <component :is="item.icon" class="w-5 h-5" aria-hidden="true" />
               <span>{{ item.label }}</span>
             </NuxtLink>
           </nav>
@@ -115,9 +123,9 @@
             <button
               data-testid="mobile-logout-button"
               @click="handleLogout"
-              class="flex items-center gap-3 w-full px-3 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition"
+              class="flex items-center gap-3 w-full px-3 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             >
-              <ArrowRightOnRectangleIcon class="w-5 h-5" />
+              <ArrowRightOnRectangleIcon class="w-5 h-5" aria-hidden="true" />
               <span>Log Out</span>
             </button>
           </div>
