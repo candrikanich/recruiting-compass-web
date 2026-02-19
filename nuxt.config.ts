@@ -1,6 +1,7 @@
 export default defineNuxtConfig({
   compatibilityDate: "2024-04-03",
   devtools: { enabled: false },
+  // CSR-only: app is auth-gated with heavy client-side state, real-time data, and complex interactive UI
   ssr: false,
 
   devServer: {
@@ -33,7 +34,6 @@ export default defineNuxtConfig({
         "fuse.js",
         "leaflet",
         "@vueuse/core",
-        "date-fns",
       ],
       exclude: [
         // These are heavy or change often; exclude for rebunding on change

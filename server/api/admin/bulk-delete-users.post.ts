@@ -112,13 +112,14 @@ export default defineEventHandler(
         });
       }
 
-      // 5. Process deletions sequentially
+      // 5. Resolve all emails to user IDs in parallel, collecting failures early
       const deletedEmails: string[] = [];
       const errors: BulkDeleteError[] = [];
 
-      for (const targetEmail of normalizedEmails) {
-        try {
-          // Get user to delete by email from users table
+      const resolvedUsers: Array<{ email: string; id: string }> = [];
+
+      await Promise.all(
+        normalizedEmails.map(async (targetEmail) => {
           const { data: targetUserData, error: getUserError } =
             await supabaseAdmin
               .from("users")
@@ -127,94 +128,96 @@ export default defineEventHandler(
               .single();
 
           if (getUserError || !targetUserData?.id) {
-            errors.push({
-              email: targetEmail,
-              reason: "User not found",
-            });
-            continue;
+            errors.push({ email: targetEmail, reason: "User not found" });
+          } else {
+            resolvedUsers.push({ email: targetEmail, id: targetUserData.id });
           }
+        }),
+      );
 
-          const targetUserId = targetUserData.id;
+      if (resolvedUsers.length > 0) {
+        const targetUserIds = resolvedUsers.map((u) => u.id);
 
-          // Delete all user data from database tables in order of dependencies
-          const tableDeleteAttempts = [
-            {
-              table: "parent_view_log",
-              columns: ["parent_user_id", "athlete_id"],
-            },
-            { table: "user_preferences", columns: ["user_id"] },
-            { table: "preference_history", columns: ["user_id"] },
-            { table: "athlete_task", columns: ["athlete_id"] },
-            { table: "suggestion", columns: ["athlete_id"] },
-            { table: "interactions", columns: ["logged_by"] },
-            { table: "events", columns: ["user_id"] },
-            { table: "performance_metrics", columns: ["user_id"] },
-            { table: "documents", columns: ["user_id"] },
-            { table: "offers", columns: ["user_id"] },
-            { table: "coaches", columns: ["user_id"] },
-            { table: "schools", columns: ["user_id"] },
-            { table: "notifications", columns: ["user_id"] },
-            { table: "communication_templates", columns: ["user_id"] },
-            { table: "users", columns: ["id"] },
-          ];
+        // Delete all user data from database tables in order of dependencies.
+        // One query per table per column covers all target users at once.
+        const tableDeleteAttempts = [
+          {
+            table: "parent_view_log",
+            columns: ["parent_user_id", "athlete_id"],
+          },
+          { table: "user_preferences", columns: ["user_id"] },
+          { table: "preference_history", columns: ["user_id"] },
+          { table: "athlete_task", columns: ["athlete_id"] },
+          { table: "suggestion", columns: ["athlete_id"] },
+          { table: "interactions", columns: ["logged_by"] },
+          { table: "events", columns: ["user_id"] },
+          { table: "performance_metrics", columns: ["user_id"] },
+          { table: "documents", columns: ["user_id"] },
+          { table: "offers", columns: ["user_id"] },
+          { table: "coaches", columns: ["user_id"] },
+          { table: "schools", columns: ["user_id"] },
+          { table: "notifications", columns: ["user_id"] },
+          { table: "communication_templates", columns: ["user_id"] },
+          { table: "users", columns: ["id"] },
+        ];
 
-          for (const { table, columns } of tableDeleteAttempts) {
-            try {
-              for (const column of columns) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const response = await (supabaseAdmin.from(table as any) as any)
-                  .delete()
-                  .eq(column, targetUserId);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const { error: deleteError } = response as { error: any };
-
-                if (deleteError && deleteError.code !== "42P01") {
-                  logger.warn(
-                    `Failed to delete from ${table}.${column}:`,
-                    deleteError,
-                  );
-                }
-              }
-            } catch (error) {
-              logger.warn(
-                `Error deleting from ${table} for user ${targetUserId}:`,
-                error,
-              );
-            }
-          }
-
-          // Try to delete user from auth system
+        for (const { table, columns } of tableDeleteAttempts) {
           try {
-            if (supabaseAdmin.auth.admin?.deleteUser) {
-              const { error: deleteError } =
-                await supabaseAdmin.auth.admin.deleteUser(targetUserId);
+            for (const column of columns) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const response = await (supabaseAdmin.from(table as any) as any)
+                .delete()
+                .in(column, targetUserIds);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const { error: deleteError } = response as { error: any };
 
-              if (deleteError) {
+              if (deleteError && deleteError.code !== "42P01") {
                 logger.warn(
-                  `Failed to delete auth user ${targetUserId} (${targetEmail}):`,
+                  `Failed to delete from ${table}.${column}:`,
                   deleteError,
                 );
               }
             }
-          } catch (authError) {
-            logger.warn(
-              `Could not delete from auth system for ${targetEmail}:`,
-              authError,
-            );
+          } catch (error) {
+            logger.warn(`Error deleting from ${table}:`, error);
           }
-
-          // Successfully deleted
-          deletedEmails.push(targetEmail);
-          logger.info(
-            `User ${targetEmail} (${targetUserId}) and all associated data deleted by admin ${user.id}`,
-          );
-        } catch (err) {
-          errors.push({
-            email: targetEmail,
-            reason: err instanceof Error ? err.message : "Unknown error",
-          });
-          logger.error(`Failed to delete user ${targetEmail}:`, err);
         }
+
+        // Delete each user from the auth system and record results
+        await Promise.all(
+          resolvedUsers.map(async ({ email: targetEmail, id: targetUserId }) => {
+            try {
+              if (supabaseAdmin.auth.admin?.deleteUser) {
+                const { error: deleteError } =
+                  await supabaseAdmin.auth.admin.deleteUser(targetUserId);
+
+                if (deleteError) {
+                  logger.warn(
+                    `Failed to delete auth user ${targetUserId} (${targetEmail}):`,
+                    deleteError,
+                  );
+                }
+              }
+
+              deletedEmails.push(targetEmail);
+              logger.info(
+                `User ${targetEmail} (${targetUserId}) and all associated data deleted by admin ${user.id}`,
+              );
+            } catch (authError) {
+              errors.push({
+                email: targetEmail,
+                reason:
+                  authError instanceof Error
+                    ? authError.message
+                    : "Unknown error",
+              });
+              logger.error(
+                `Could not delete from auth system for ${targetEmail}:`,
+                authError,
+              );
+            }
+          }),
+        );
       }
 
       // 6. Log bulk operation summary

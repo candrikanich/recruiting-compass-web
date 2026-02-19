@@ -450,7 +450,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed, watch } from "vue";
+import { ref, reactive, computed, watch } from "vue";
 import { useOffers } from "~/composables/useOffers";
 import { useSchools } from "~/composables/useSchools";
 import { useActiveFamily } from "~/composables/useActiveFamily";
@@ -682,15 +682,7 @@ const deleteOffer = async (offerId: string) => {
   }
 };
 
-onMounted(async () => {
-  // Only fetch if family context is already loaded
-  if (activeFamily.activeFamilyId?.value) {
-    await fetchSchools();
-    await fetchOffers();
-  }
-});
-
-// Watch for family context to load (handles race condition on page load)
+// Watch for family context to load — immediate: true handles initial fetch on page load
 watch(
   () => activeFamily.activeFamilyId.value,
   async (newFamilyId, oldFamilyId) => {
@@ -699,6 +691,7 @@ watch(
       await fetchOffers();
     }
   },
+  { immediate: true },
 );
 
 // Watch for athlete switches (for parents)

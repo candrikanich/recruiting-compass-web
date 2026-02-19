@@ -152,7 +152,6 @@
 <script setup lang="ts">
 import {
   ref,
-  onMounted,
   watch,
   computed,
   inject,
@@ -380,18 +379,6 @@ const refreshDashboard = async () => {
     );
   }
 };
-
-// Lifecycle
-onMounted(async () => {
-  if (userStore.user) {
-    user.value = userStore.user;
-
-    await refreshDashboard();
-    if (notificationsComposable) {
-      await notificationsComposable.fetchNotifications();
-    }
-  }
-});
 
 // Watch for family context to load (fixes hard refresh showing 0s)
 watch(

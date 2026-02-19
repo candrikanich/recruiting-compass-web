@@ -32,7 +32,11 @@ export default defineEventHandler(async (event) => {
       return cached;
     }
 
-    let request = supabase.from("task").select("*");
+    let request = supabase
+      .from("task")
+      .select(
+        "id, category, grade_level, title, description, required, dependency_task_ids, why_it_matters, failure_risk, division_applicability, created_at, updated_at",
+      );
 
     // Apply filters
     if (gradeLevel) {

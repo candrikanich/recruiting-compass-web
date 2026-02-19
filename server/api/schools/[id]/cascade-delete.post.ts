@@ -8,7 +8,7 @@ import { useLogger } from "~/server/utils/logger";
  * POST /api/schools/[id]/cascade-delete
  *
  * This endpoint safely deletes a school by:
- * 1. Deleting all related records (coaches, interactions, offers, etc.)
+ * 1. Deleting all related records (coaches, interactions, offers, etc.) in parallel
  * 2. Finally deleting the school itself
  *
  * Body (optional):
@@ -67,65 +67,38 @@ export default defineEventHandler(async (event) => {
   const deleted: Record<string, number> = {};
 
   try {
-    // Delete in dependency order (careful of cascade constraints)
+    // Delete all child records in parallel — none of these tables have FK
+    // dependencies on each other, only on the parent school row.
+    const [
+      { count: historyCount },
+      { count: coachCount },
+      { count: interactionCount },
+      { count: offerCount },
+      { count: postCount },
+      { count: docCount },
+      { count: eventCount },
+      { count: suggestionCount },
+    ] = await Promise.all([
+      client.from("school_status_history").delete().eq("school_id", schoolId),
+      client.from("coaches").delete().eq("school_id", schoolId),
+      client.from("interactions").delete().eq("school_id", schoolId),
+      client.from("offers").delete().eq("school_id", schoolId),
+      client.from("social_media_posts").delete().eq("school_id", schoolId),
+      client.from("documents").delete().eq("school_id", schoolId),
+      client.from("events").delete().eq("school_id", schoolId),
+      client.from("suggestion").delete().eq("related_school_id", schoolId),
+    ]);
 
-    // 1. Delete audit logs
-    const { count: historyCount } = await client
-      .from("school_status_history")
-      .delete()
-      .eq("school_id", schoolId);
     if (historyCount) deleted.school_status_history = historyCount;
-
-    // 2. Delete coaches (has FK constraint)
-    const { count: coachCount } = await client
-      .from("coaches")
-      .delete()
-      .eq("school_id", schoolId);
     if (coachCount) deleted.coaches = coachCount;
-
-    // 3. Delete interactions (has FK constraint)
-    const { count: interactionCount } = await client
-      .from("interactions")
-      .delete()
-      .eq("school_id", schoolId);
     if (interactionCount) deleted.interactions = interactionCount;
-
-    // 4. Delete offers (has FK constraint)
-    const { count: offerCount } = await client
-      .from("offers")
-      .delete()
-      .eq("school_id", schoolId);
     if (offerCount) deleted.offers = offerCount;
-
-    // 5. Delete social media posts (has FK constraint)
-    const { count: postCount } = await client
-      .from("social_media_posts")
-      .delete()
-      .eq("school_id", schoolId);
     if (postCount) deleted.social_media_posts = postCount;
-
-    // 6. Delete documents (optional FK)
-    const { count: docCount } = await client
-      .from("documents")
-      .delete()
-      .eq("school_id", schoolId);
     if (docCount) deleted.documents = docCount;
-
-    // 7. Delete events (optional FK)
-    const { count: eventCount } = await client
-      .from("events")
-      .delete()
-      .eq("school_id", schoolId);
     if (eventCount) deleted.events = eventCount;
-
-    // 8. Delete suggestions (optional FK)
-    const { count: suggestionCount } = await client
-      .from("suggestion")
-      .delete()
-      .eq("related_school_id", schoolId);
     if (suggestionCount) deleted.suggestion = suggestionCount;
 
-    // 9. Finally delete the school
+    // Finally delete the school — must come after all children are removed
     const { count: schoolCount, error: deleteError } = await client
       .from("schools")
       .delete()

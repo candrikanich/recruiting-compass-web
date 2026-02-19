@@ -16,7 +16,7 @@ export interface SchoolState {
   error: string | null;
   isFetched: boolean;
   filters: SchoolFilters;
-  statusHistory: Map<string, SchoolStatusHistory[]>;
+  statusHistory: Record<string, SchoolStatusHistory[]>;
 }
 
 /**
@@ -47,7 +47,7 @@ export const useSchoolStore = defineStore("schools", {
       state: "",
       verified: null,
     },
-    statusHistory: new Map(),
+    statusHistory: {},
   }),
 
   getters: {
@@ -113,7 +113,7 @@ export const useSchoolStore = defineStore("schools", {
      * Get status history for a specific school
      */
     statusHistoryFor: (state) => (schoolId: string) =>
-      state.statusHistory.get(schoolId) || [],
+      state.statusHistory[schoolId] || [],
   },
 
   actions: {
@@ -564,7 +564,7 @@ export const useSchoolStore = defineStore("schools", {
         }
 
         // Clear status history cache for this school to force refresh
-        this.statusHistory.delete(schoolId);
+        delete this.statusHistory[schoolId];
 
         return updatedSchool;
       } catch (err: unknown) {
@@ -587,8 +587,8 @@ export const useSchoolStore = defineStore("schools", {
 
       try {
         // Check cache first
-        if (this.statusHistory.has(schoolId)) {
-          return this.statusHistory.get(schoolId) || [];
+        if (schoolId in this.statusHistory) {
+          return this.statusHistory[schoolId] || [];
         }
 
         const { data, error } = await supabase
@@ -600,7 +600,7 @@ export const useSchoolStore = defineStore("schools", {
         if (error) throw error;
 
         // Cache the result
-        this.statusHistory.set(schoolId, data || []);
+        this.statusHistory[schoolId] = data || [];
         return data || [];
       } catch (err: unknown) {
         const message =

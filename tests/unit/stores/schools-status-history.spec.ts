@@ -84,10 +84,10 @@ describe("Schools Store - Status History (Story 3.4)", () => {
   });
 
   describe("Store state initialization", () => {
-    it("should initialize with empty statusHistory Map", () => {
+    it("should initialize with empty statusHistory object", () => {
       const store = useSchoolStore();
-      expect(store.statusHistory).toBeInstanceOf(Map);
-      expect(store.statusHistory.size).toBe(0);
+      expect(store.statusHistory).toEqual({});
+      expect(Object.keys(store.statusHistory).length).toBe(0);
     });
   });
 
@@ -186,11 +186,11 @@ describe("Schools Store - Status History (Story 3.4)", () => {
       };
 
       store.schools = [mockSchool];
-      store.statusHistory.set("school-1", []);
+      store.statusHistory["school-1"] = [];
 
       await store.updateStatus("school-1", "committed");
 
-      expect(store.statusHistory.has("school-1")).toBe(false);
+      expect("school-1" in store.statusHistory).toBe(false);
     });
   });
 
@@ -210,9 +210,9 @@ describe("Schools Store - Status History (Story 3.4)", () => {
       const store = useSchoolStore();
 
       await store.getStatusHistory("school-1");
-      expect(store.statusHistory.has("school-1")).toBe(true);
+      expect("school-1" in store.statusHistory).toBe(true);
 
-      const cachedHistory = store.statusHistory.get("school-1");
+      const cachedHistory = store.statusHistory["school-1"];
       expect(cachedHistory).toBeDefined();
       expect(Array.isArray(cachedHistory)).toBe(true);
     });

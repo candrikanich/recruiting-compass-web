@@ -15,6 +15,11 @@ interface DependenciesResponse {
   incompletePrerequisites: Task[];
 }
 
+const TASK_COLUMNS =
+  "id, category, grade_level, title, description, required, dependency_task_ids, why_it_matters, failure_risk, division_applicability, created_at, updated_at";
+
+const ATHLETE_TASK_COLUMNS = "task_id, status";
+
 // Helper to safely get dependency task IDs
 function getDependencyTaskIds(task: unknown): string[] {
   const taskRecord = task as Record<string, unknown>;
@@ -50,7 +55,7 @@ export default defineEventHandler(async (event) => {
     // Fetch the task to get its dependencies
     const { data: taskData, error: taskError } = await supabase
       .from("task")
-      .select("*")
+      .select(TASK_COLUMNS)
       .eq("id", taskId)
       .single();
 
@@ -73,7 +78,10 @@ export default defineEventHandler(async (event) => {
 
     // Fetch prerequisite tasks
     const { data: prerequisitesData, error: prerequisitesError } =
-      await supabase.from("task").select("*").in("id", dependencyIds);
+      await supabase
+        .from("task")
+        .select(TASK_COLUMNS)
+        .in("id", dependencyIds);
 
     if (prerequisitesError) {
       logger.error("Error fetching task prerequisites", prerequisitesError);
@@ -86,7 +94,7 @@ export default defineEventHandler(async (event) => {
     // Fetch athlete's completion status for prerequisites
     const { data: athleteTasksData, error: athleteTasksError } = await supabase
       .from("athlete_task")
-      .select("*")
+      .select(ATHLETE_TASK_COLUMNS)
       .eq("athlete_id", user.id)
       .in("task_id", dependencyIds);
 
