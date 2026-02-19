@@ -8,6 +8,13 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
   // Check if auth enforcement is enabled via feature flag
   const authEnforcementEnabled = config.public.authEnforcementEnabled === true;
 
+  if (!authEnforcementEnabled && process.client) {
+    console.warn(
+      "[AUTH] WARNING: Auth enforcement is DISABLED. All routes are unprotected. " +
+        "Set NUXT_PUBLIC_AUTH_ENFORCEMENT_ENABLED=true in your environment.",
+    );
+  }
+
   // User is initialized from app.vue, no need to initialize here
   // This middleware handles both session timeout and route protection
 
