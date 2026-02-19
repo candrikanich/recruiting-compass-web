@@ -2,19 +2,13 @@ import { defineEventHandler, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
+import { requireUuidParam } from "~/server/utils/validation";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/members/delete");
   const user = await requireAuth(event);
-  const memberId = event.context.params?.memberId as string;
+  const memberId = requireUuidParam(event, "memberId");
   const supabase = useSupabaseAdmin();
-
-  if (!memberId) {
-    throw createError({
-      statusCode: 400,
-      message: "Member ID is required",
-    });
-  }
 
   // Fetch member with family details
   const memberResponse = await supabase
@@ -104,7 +98,6 @@ export default defineEventHandler(async (event) => {
     logger.error("Failed to delete family member", deleteError);
     throw createError({
       statusCode: 500,
-
       message: "Failed to remove member",
     });
   }
@@ -116,7 +109,6 @@ export default defineEventHandler(async (event) => {
   const logPromise = supabase.from("family_code_usage_log").insert({
     family_unit_id: family.id,
     user_id: user.id,
-
     action: "removed_member",
     code_used: "",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -133,7 +125,6 @@ export default defineEventHandler(async (event) => {
   // Get member info for notifications
   const memberInfo = member.users as unknown as {
     id: string;
-
     email: string;
   } | null;
 
@@ -163,7 +154,6 @@ export default defineEventHandler(async (event) => {
       type: "family_member_removed",
       title: "Family member removed",
       message: `${memberInfo.email} has been removed from your family`,
-
       priority: "low",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);

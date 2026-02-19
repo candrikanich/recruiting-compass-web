@@ -1,6 +1,5 @@
 import {
   defineEventHandler,
-  getRouterParam,
   createError,
   readBody,
   getHeader,
@@ -9,6 +8,7 @@ import {
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
+import { requireUuidParam } from "~/server/utils/validation";
 
 /**
  * Cascade delete an interaction and all related records
@@ -30,14 +30,10 @@ import { useLogger } from "~/server/utils/logger";
  */
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "interactions/cascade-delete");
-  const interactionId = getRouterParam(event, "id");
 
-  if (!interactionId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Interaction ID is required",
-    });
-  }
+  // Auth first, then validate inputs
+  await requireAuth(event);
+  const interactionId = requireUuidParam(event, "id");
 
   let body = {};
   try {
@@ -56,13 +52,15 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  await requireAuth(event);
   const authHeader = getHeader(event, "authorization");
   const token: string | null = authHeader?.startsWith("Bearer ")
     ? authHeader.slice(7)
     : getCookie(event, "sb-access-token") || null;
   if (!token) {
-    throw createError({ statusCode: 401, statusMessage: "Unauthorized - no authentication token" });
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Unauthorized - no authentication token",
+    });
   }
   const client = createServerSupabaseUserClient(token);
   const deleted: Record<string, number> = {};

@@ -112,6 +112,7 @@ export const useOnboarding = () => {
 
       // Auto-complete tasks
       if (tasksToComplete.length > 0) {
+        const taskErrors: string[] = [];
         for (const taskId of tasksToComplete) {
           try {
             await $fetch(`/api/athlete-tasks/${taskId}`, {
@@ -119,9 +120,12 @@ export const useOnboarding = () => {
               body: { status: "completed" },
             });
           } catch (err) {
-            // Log error but continue - task might not exist for this user
             logger.error(`Failed to complete task ${taskId}:`, err);
+            taskErrors.push(taskId);
           }
+        }
+        if (taskErrors.length > 0) {
+          throw new Error(`Failed to complete ${taskErrors.length} task(s). Please try again.`);
         }
       }
 

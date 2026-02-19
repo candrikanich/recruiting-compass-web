@@ -7,6 +7,7 @@ import { defineEventHandler, readBody, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
+import { requireUuidParam } from "~/server/utils/validation";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { AthleteTask, TaskStatus } from "~/types/timeline";
 
@@ -27,14 +28,7 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "athlete-tasks");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
-  const taskId = event.context.params?.taskId as string;
-
-  if (!taskId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Task ID is required",
-    });
-  }
+  const taskId = requireUuidParam(event, "taskId");
 
   try {
     const body = await readBody<UpdateTaskBody>(event);
@@ -56,7 +50,6 @@ export default defineEventHandler(async (event) => {
     if (!validStatuses.includes(body.status)) {
       throw createError({
         statusCode: 400,
-
         statusMessage: "Invalid status value",
       });
     }

@@ -79,7 +79,7 @@ export const useFamilyInvite = () => {
       )) as { data: unknown; error: unknown };
 
       if (emailError) {
-        throw emailError;
+        throw new Error(emailError instanceof Error ? emailError.message : String(emailError));
       }
 
       // Track last invited email
@@ -150,8 +150,11 @@ export const useFamilyInvite = () => {
       ).insert(linkData)) as { error: unknown };
 
       if (linkError) {
-        logger.error("Link creation failed (non-blocking):", linkError);
-        // Don't throw - link may already exist
+        // Non-blocking: a link record may already exist if the parent previously
+        // used this family code. The player data is still returned so the UI
+        // can proceed. If duplicate-link errors should be treated as fatal in
+        // the future, throw linkError here instead.
+        logger.warn("Account link creation failed (non-blocking):", linkError);
       }
 
       return playerUser;

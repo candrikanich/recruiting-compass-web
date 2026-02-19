@@ -3,10 +3,11 @@
  * Fetch task dependencies and completion status
  */
 
-import { defineEventHandler } from "h3";
+import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
+import { requireUuidParam } from "~/server/utils/validation";
 import type { Task } from "~/types/timeline";
 
 interface DependenciesResponse {
@@ -42,14 +43,7 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "tasks/dependencies");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
-  const taskId = event.context.params?.taskId as string;
-
-  if (!taskId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Task ID is required",
-    });
-  }
+  const taskId = requireUuidParam(event, "taskId");
 
   try {
     // Fetch the task to get its dependencies

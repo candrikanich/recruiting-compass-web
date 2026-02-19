@@ -13,6 +13,14 @@ import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import type { Database } from "~/types/database";
 
+const ALLOWED_CATEGORIES = [
+  "notifications",
+  "location",
+  "player",
+  "school",
+  "dashboard",
+] as const;
+
 // Validation schema for preference data
 const preferencesSchema = z.object({
   data: z.record(z.string(), z.unknown()),
@@ -28,6 +36,13 @@ export default defineEventHandler(async (event) => {
     throw createError({
       statusCode: 400,
       statusMessage: "Category parameter is required",
+    });
+  }
+
+  if (!ALLOWED_CATEGORIES.includes(category as (typeof ALLOWED_CATEGORIES)[number])) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Invalid category",
     });
   }
 

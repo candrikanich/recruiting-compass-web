@@ -80,7 +80,8 @@ export const useCoaches = (): {
   const activeFamily = injectedFamily ?? useFamilyContext();
 
   const coaches = ref<Coach[]>([]);
-  const loading = ref(false);
+  const loadingCount = ref(0);
+  const loading = computed(() => loadingCount.value > 0);
   const error = ref<string | null>(null);
 
   // Auto-invalidate cache when parent switches athlete
@@ -103,7 +104,7 @@ export const useCoaches = (): {
       return;
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -146,7 +147,7 @@ export const useCoaches = (): {
       error.value = message;
       logger.error("Coach fetch error:", message);
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
     })().finally(() => {
       fetchInFlight.delete(schoolId);
@@ -166,7 +167,7 @@ export const useCoaches = (): {
       return;
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -224,7 +225,7 @@ export const useCoaches = (): {
       error.value = message;
       logger.error("Coach fetch error:", message);
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -234,7 +235,7 @@ export const useCoaches = (): {
       return;
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -267,14 +268,14 @@ export const useCoaches = (): {
         err instanceof Error ? err.message : "Failed to fetch coaches";
       error.value = message;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
   const getCoach = async (id: string): Promise<Coach | null> => {
     if (!userStore.user) return null;
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -293,7 +294,7 @@ export const useCoaches = (): {
       error.value = message;
       return null;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -305,7 +306,7 @@ export const useCoaches = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -367,7 +368,7 @@ export const useCoaches = (): {
       error.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -376,7 +377,7 @@ export const useCoaches = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -448,7 +449,7 @@ export const useCoaches = (): {
       error.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -457,7 +458,7 @@ export const useCoaches = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -477,7 +478,7 @@ export const useCoaches = (): {
       error.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -520,7 +521,7 @@ export const useCoaches = (): {
 
   return {
     coaches: computed(() => coaches.value),
-    loading: computed(() => loading.value),
+    loading,
     error: computed(() => error.value),
     fetchCoaches,
     fetchAllCoaches,

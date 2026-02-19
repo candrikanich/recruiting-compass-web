@@ -4,10 +4,11 @@
  * RESTRICTED: Athletes only (parents have read-only access)
  */
 
-import { defineEventHandler, getRouterParam, createError, readBody } from "h3";
+import { defineEventHandler, createError, readBody } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
+import { requireUuidParam } from "~/server/utils/validation";
 import { calculateFitScore } from "~/utils/fitScoreCalculation";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { FitScoreInputs } from "~/types/timeline";
@@ -20,19 +21,7 @@ export default defineEventHandler(async (event) => {
   // Ensure requesting user is not a parent (mutation restricted)
   await assertNotParent(user.id, supabase);
 
-  const schoolId = getRouterParam(event, "id");
-
-  // Validate school ID is provided
-  if (
-    !schoolId ||
-    typeof schoolId !== "string" ||
-    schoolId.trim().length === 0
-  ) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Valid school ID is required",
-    });
-  }
+  const schoolId = requireUuidParam(event, "id");
 
   let body: Partial<FitScoreInputs> = {};
   try {
@@ -89,7 +78,6 @@ export default defineEventHandler(async (event) => {
   ) {
     throw createError({
       statusCode: 400,
-
       statusMessage: "personalFit must be a number between 0 and 15",
     });
   }
@@ -98,7 +86,6 @@ export default defineEventHandler(async (event) => {
     // Verify school ownership
     const { data: school, error: schoolError } = await supabase
       .from("schools")
-
       .select("id, user_id")
       .eq("id", schoolId)
       .eq("user_id", user.id)

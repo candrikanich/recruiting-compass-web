@@ -1,6 +1,7 @@
-import { defineEventHandler, getRouterParam, createError } from "h3";
+import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
+import { requireUuidParam } from "~/server/utils/validation";
 
 interface BlockerInfo {
   table: string;
@@ -18,14 +19,7 @@ interface BlockerInfo {
  * - message: User-friendly message explaining what's blocking deletion
  */
 export default defineEventHandler(async (event) => {
-  const coachId = getRouterParam(event, "id");
-
-  if (!coachId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Coach ID is required",
-    });
-  }
+  const coachId = requireUuidParam(event, "id");
 
   const client = createServerSupabaseClient();
   const logger = useLogger(event, "coaches/deletion-blockers");

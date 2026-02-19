@@ -4,10 +4,11 @@
  * ACCESSIBLE: Athletes (owners) and Parents (read-only via account link)
  */
 
-import { defineEventHandler, getRouterParam, createError } from "h3";
+import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
+import { requireUuidParam } from "~/server/utils/validation";
 import type { Database } from "~/types/database";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -57,14 +58,7 @@ async function hasAccessToSchool(
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "schools/fit-score");
   const user = await requireAuth(event);
-  const schoolId = getRouterParam(event, "id");
-
-  if (!schoolId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "School ID is required",
-    });
-  }
+  const schoolId = requireUuidParam(event, "id");
 
   const supabase = createServerSupabaseClient();
 

@@ -32,6 +32,7 @@ export const useAttachments = () => {
       URL.revokeObjectURL(url);
     } catch (err) {
       logger.error("Failed to download attachment:", err);
+      throw err;
     }
   };
 
@@ -45,7 +46,7 @@ export const useAttachments = () => {
       return true;
     } catch (err) {
       logger.error("Failed to delete attachment:", err);
-      return false;
+      throw err;
     }
   };
 

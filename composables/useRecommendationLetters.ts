@@ -77,7 +77,13 @@ export function useRecommendationLetters() {
         if (insertError) throw insertError;
       }
 
-      await fetchLetters();
+      const { data: refreshed, error: refreshError } = await supabase
+        .from("recommendation_letters")
+        .select("*")
+        .eq("user_id", userStore.user!.id)
+        .order("requested_date", { ascending: false });
+      if (refreshError) throw refreshError;
+      letters.value = (refreshed as RecommendationLetter[]) || [];
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to save letter";
@@ -104,6 +110,8 @@ export function useRecommendationLetters() {
         err instanceof Error ? err.message : "Failed to delete letter";
       error.value = message;
       logger.error("deleteLetter failed", err);
+    } finally {
+      loading.value = false;
     }
   };
 

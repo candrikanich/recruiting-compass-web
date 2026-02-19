@@ -1,5 +1,32 @@
 import { z, ZodError } from "zod";
 import type { H3Event } from "h3";
+import { getRouterParam, createError } from "h3";
+
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Reads a route param and validates it is a well-formed UUID.
+ * Throws 400 Bad Request if the value is missing or not a UUID.
+ *
+ * @param event H3Event from server handler
+ * @param paramName Router param name (e.g. "id", "taskId")
+ * @returns The validated UUID string
+ * @throws 400 Bad Request if param is missing or not a valid UUID
+ *
+ * @example
+ * const schoolId = requireUuidParam(event, "id");
+ */
+export function requireUuidParam(event: H3Event, paramName: string): string {
+  const value = getRouterParam(event, paramName);
+  if (!value || !UUID_REGEX.test(value)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: `Invalid ${paramName}: must be a valid UUID`,
+    });
+  }
+  return value;
+}
 
 /**
  * Validates request body against a Zod schema.

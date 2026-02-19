@@ -1,7 +1,14 @@
-import { defineEventHandler, getRouterParam, createError, readBody, getHeader, getCookie } from "h3";
+import {
+  defineEventHandler,
+  createError,
+  readBody,
+  getHeader,
+  getCookie,
+} from "h3";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
+import { requireUuidParam } from "~/server/utils/validation";
 
 /**
  * Cascade delete a school and all related records
@@ -23,14 +30,10 @@ import { useLogger } from "~/server/utils/logger";
  */
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "schools/cascade-delete");
-  const schoolId = getRouterParam(event, "id");
 
-  if (!schoolId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "School ID is required",
-    });
-  }
+  // Auth first, then validate inputs
+  await requireAuth(event);
+  const schoolId = requireUuidParam(event, "id");
 
   let body = {};
   try {
@@ -49,9 +52,6 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Verify user is authenticated
-  await requireAuth(event);
-
   // Get user's access token for RLS-respecting client
   const authHeader = getHeader(event, "authorization");
   const token: string | null = authHeader?.startsWith("Bearer ")
@@ -59,7 +59,10 @@ export default defineEventHandler(async (event) => {
     : getCookie(event, "sb-access-token") || null;
 
   if (!token) {
-    throw createError({ statusCode: 401, statusMessage: "Unauthorized - no authentication token" });
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Unauthorized - no authentication token",
+    });
   }
 
   // Use authenticated client to respect RLS policies

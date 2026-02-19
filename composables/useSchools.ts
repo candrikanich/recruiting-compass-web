@@ -85,10 +85,10 @@ const useSchoolsInternal = (): {
   const activeFamily = injectedFamily ?? useFamilyContext();
 
   const schools = shallowRef<School[]>([]);
-  const loadingRef = ref(false);
+  const loadingCount = ref(0);
   const errorRef = ref<string | null>(null);
 
-  const loading = computed(() => loadingRef.value);
+  const loading = computed(() => loadingCount.value > 0);
   const error = computed(() => errorRef.value);
 
   const favoriteSchools = computed(() =>
@@ -130,7 +130,7 @@ const useSchoolsInternal = (): {
     logger.debug(
       `[useSchools] Fetching for family: ${activeFamily.activeFamilyId.value}`,
     );
-    loadingRef.value = true;
+    loadingCount.value++;
     errorRef.value = null;
 
     try {
@@ -196,7 +196,7 @@ const useSchoolsInternal = (): {
       errorRef.value = message;
       logger.error("[useSchools] Error:", message);
     } finally {
-      loadingRef.value = false;
+      loadingCount.value--;
     }
     })().finally(() => {
       fetchInFlight = null;
@@ -208,7 +208,7 @@ const useSchoolsInternal = (): {
   const getSchool = async (id: string): Promise<School | null> => {
     if (!userStore.user || !activeFamily.activeFamilyId.value) return null;
 
-    loadingRef.value = true;
+    loadingCount.value++;
     errorRef.value = null;
 
     try {
@@ -272,7 +272,7 @@ const useSchoolsInternal = (): {
       errorRef.value = message;
       return null;
     } finally {
-      loadingRef.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -291,7 +291,7 @@ const useSchoolsInternal = (): {
       throw new Error("Athlete context not set");
     }
 
-    loadingRef.value = true;
+    loadingCount.value++;
     errorRef.value = null;
 
     try {
@@ -358,7 +358,7 @@ const useSchoolsInternal = (): {
       errorRef.value = message;
       throw err;
     } finally {
-      loadingRef.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -367,7 +367,7 @@ const useSchoolsInternal = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loadingRef.value = true;
+    loadingCount.value++;
     errorRef.value = null;
 
     try {
@@ -421,7 +421,7 @@ const useSchoolsInternal = (): {
       errorRef.value = message;
       throw err;
     } finally {
-      loadingRef.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -430,7 +430,7 @@ const useSchoolsInternal = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loadingRef.value = true;
+    loadingCount.value++;
     errorRef.value = null;
 
     try {
@@ -474,7 +474,7 @@ const useSchoolsInternal = (): {
       });
       throw err;
     } finally {
-      loadingRef.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -485,7 +485,7 @@ const useSchoolsInternal = (): {
   const updateRanking = async (schools_: School[]) => {
     if (!userStore.user) throw new Error("User not authenticated");
 
-    loadingRef.value = true;
+    loadingCount.value++;
     errorRef.value = null;
 
     try {
@@ -514,7 +514,7 @@ const useSchoolsInternal = (): {
         err instanceof Error ? err.message : "Failed to update ranking";
       errorRef.value = message;
     } finally {
-      loadingRef.value = false;
+      loadingCount.value--;
     }
   };
 

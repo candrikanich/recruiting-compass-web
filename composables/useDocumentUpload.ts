@@ -151,8 +151,7 @@ export const useDocumentUpload = () => {
           .upload(fileName, file);
 
         if (uploadError) {
-          logger.warn("Storage upload failed:", uploadError);
-          fileUrl = fileName;
+          throw new Error("File upload failed. Please try again.");
         } else if (uploadData) {
           fileUrl = uploadData.path;
         }

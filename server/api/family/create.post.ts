@@ -83,6 +83,12 @@ export default defineEventHandler(async (event) => {
 
   if (memberError) {
     logger.error("Failed to add player to family members", memberError);
+    // Clean up the orphaned family record
+    try {
+      await supabase.from("family_units").delete().eq("id", newFamily.id);
+    } catch (cleanupErr) {
+      logger.warn("Failed to clean up orphaned family record", cleanupErr);
+    }
     throw createError({
       statusCode: 500,
       message: "Failed to add student to family",
