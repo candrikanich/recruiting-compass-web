@@ -1,4 +1,4 @@
-import { ref, computed, inject, type ComputedRef } from "vue";
+import { ref, computed, inject, watch, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
@@ -7,6 +7,12 @@ import type { Coach } from "~/types/models";
 import type { Database } from "~/types/database";
 import { coachSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useCoaches");
+
+// Keyed by schoolId to allow concurrent fetches for different schools
+const fetchInFlight = new Map<string, Promise<void>>();
 
 type CoachesInsert = Database["public"]["Tables"]["coaches"]["Insert"];
 type CoachesUpdate = Database["public"]["Tables"]["coaches"]["Update"];
@@ -61,29 +67,44 @@ export const useCoaches = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
-  // Try to get the provided family context (from page), fall back to singleton
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
-  const activeFamily = injectedFamily || useFamilyContext();
 
   if (!injectedFamily) {
-    console.warn(
+    logger.warn(
       "[useCoaches] activeFamily injection failed, using singleton fallback. " +
         "This may cause data sync issues when parent switches athletes.",
     );
   }
 
+  const activeFamily = injectedFamily ?? useFamilyContext();
+
   const coaches = ref<Coach[]>([]);
-  const loading = ref(false);
+  const loadingCount = ref(0);
+  const loading = computed(() => loadingCount.value > 0);
   const error = ref<string | null>(null);
 
-  const fetchCoaches = async (schoolId: string) => {
+  // Auto-invalidate cache when parent switches athlete
+  watch(
+    () => activeFamily.activeAthleteId?.value,
+    async (newId, oldId) => {
+      if (newId && newId !== oldId) {
+        coaches.value = [];
+        await fetchAllCoaches();
+      }
+    },
+  );
+
+  const fetchCoaches = (schoolId: string): Promise<void> => {
+    if (fetchInFlight.has(schoolId)) return fetchInFlight.get(schoolId)!;
+
+    const promise = (async () => {
     if (!activeFamily.activeFamilyId.value) {
       error.value = "No family context";
       return;
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -115,7 +136,7 @@ export const useCoaches = (): {
         .order("created_at", { ascending: false });
 
       if (fetchError) {
-        console.error("Fetch error:", fetchError);
+        logger.error("Fetch error:", fetchError);
         throw fetchError;
       }
 
@@ -124,10 +145,16 @@ export const useCoaches = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch coaches";
       error.value = message;
-      console.error("Coach fetch error:", message);
+      logger.error("Coach fetch error:", message);
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
+    })().finally(() => {
+      fetchInFlight.delete(schoolId);
+    });
+
+    fetchInFlight.set(schoolId, promise);
+    return promise;
   };
 
   const fetchAllCoaches = async (filters?: {
@@ -140,7 +167,7 @@ export const useCoaches = (): {
       return;
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -187,7 +214,7 @@ export const useCoaches = (): {
       const { data, error: fetchError } = await query;
 
       if (fetchError) {
-        console.error("Fetch error:", fetchError);
+        logger.error("Fetch error:", fetchError);
         throw fetchError;
       }
 
@@ -196,9 +223,9 @@ export const useCoaches = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch coaches";
       error.value = message;
-      console.error("Coach fetch error:", message);
+      logger.error("Coach fetch error:", message);
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -208,7 +235,7 @@ export const useCoaches = (): {
       return;
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -241,14 +268,14 @@ export const useCoaches = (): {
         err instanceof Error ? err.message : "Failed to fetch coaches";
       error.value = message;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
   const getCoach = async (id: string): Promise<Coach | null> => {
     if (!userStore.user) return null;
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -267,7 +294,7 @@ export const useCoaches = (): {
       error.value = message;
       return null;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -279,7 +306,7 @@ export const useCoaches = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -323,7 +350,7 @@ export const useCoaches = (): {
       };
 
       if (insertError) {
-        console.error("Supabase insert error details:", {
+        logger.error("Supabase insert error details:", {
           message: insertError.message,
           details: insertError.details,
           hint: insertError.hint,
@@ -341,7 +368,7 @@ export const useCoaches = (): {
       error.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -350,7 +377,7 @@ export const useCoaches = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -422,7 +449,7 @@ export const useCoaches = (): {
       error.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -431,7 +458,7 @@ export const useCoaches = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -451,7 +478,7 @@ export const useCoaches = (): {
       error.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -494,7 +521,7 @@ export const useCoaches = (): {
 
   return {
     coaches: computed(() => coaches.value),
-    loading: computed(() => loading.value),
+    loading,
     error: computed(() => error.value),
     fetchCoaches,
     fetchAllCoaches,

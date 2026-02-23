@@ -1,8 +1,11 @@
 import { ref, computed, type ComputedRef, type Ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
 import type { CommunicationTemplate } from "~/types/models";
 import type { Database } from "~/types/database";
+
+const logger = createClientLogger("useCommunicationTemplates");
 
 // Type aliases for Supabase casting
 type CommunicationTemplateInsert =
@@ -157,7 +160,7 @@ export const useCommunicationTemplates = (): {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to load templates";
-      console.error("Load templates error:", err);
+      logger.error("Load templates error:", err);
     } finally {
       isLoading.value = false;
     }
@@ -213,7 +216,7 @@ export const useCommunicationTemplates = (): {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to create template";
-      console.error("Create template error:", err);
+      logger.error("Create template error:", err);
       return null;
     }
   };
@@ -248,7 +251,7 @@ export const useCommunicationTemplates = (): {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to update template";
-      console.error("Update template error:", err);
+      logger.error("Update template error:", err);
       return false;
     }
   };
@@ -273,7 +276,7 @@ export const useCommunicationTemplates = (): {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to delete template";
-      console.error("Delete template error:", err);
+      logger.error("Delete template error:", err);
       return false;
     }
   };
@@ -443,7 +446,7 @@ export const useCommunicationTemplates = (): {
           return false;
       }
     } catch (err) {
-      console.error("Error checking unlock condition:", err);
+      logger.error("Error checking unlock condition:", err);
       return false;
     }
   };
@@ -508,7 +511,7 @@ export const useCommunicationTemplates = (): {
         progressPercent,
       };
     } catch (err) {
-      console.error("Error checking template unlock:", err);
+      logger.error("Error checking template unlock:", err);
       return {
         unlocked: false,
         missingConditions: [],

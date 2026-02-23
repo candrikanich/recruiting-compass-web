@@ -4,6 +4,7 @@
  */
 
 import { ref, computed, type ComputedRef, type Ref } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import type {
   Task,
   AthleteTask,
@@ -16,6 +17,8 @@ import type {
 } from "~/types/timeline";
 
 import { useAuthFetch } from "~/composables/useAuthFetch";
+
+const logger = createClientLogger("useTasks");
 
 export const useTasks = (): {
   tasks: Ref<Task[]>;
@@ -78,7 +81,7 @@ export const useTasks = (): {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to fetch tasks";
-      console.error("Error fetching tasks:", err);
+      logger.error("Error fetching tasks:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -101,7 +104,7 @@ export const useTasks = (): {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to fetch athlete tasks";
-      console.error("Error fetching athlete tasks:", err);
+      logger.error("Error fetching athlete tasks:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -158,7 +161,7 @@ export const useTasks = (): {
         err instanceof Error
           ? err.message
           : "Failed to fetch tasks with status";
-      console.error("Error fetching tasks with status:", err);
+      logger.error("Error fetching tasks with status:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -250,7 +253,7 @@ export const useTasks = (): {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to update task status";
-      console.error("Error updating task status:", err);
+      logger.error("Error updating task status:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -274,7 +277,7 @@ export const useTasks = (): {
       // Return the prerequisite tasks
       return tasks.value.filter((t) => task.dependency_task_ids.includes(t.id));
     } catch (err) {
-      console.error("Error getting task dependencies:", err);
+      logger.error("Error getting task dependencies:", err);
       return [];
     }
   };
@@ -318,7 +321,7 @@ export const useTasks = (): {
         incompletePrerequisites: incompleteTasks,
       };
     } catch (err) {
-      console.error("Error checking dependencies:", err);
+      logger.error("Error checking dependencies:", err);
       return { complete: false, incompletePrerequisites: [] };
     }
   };
@@ -391,7 +394,7 @@ export const useTasks = (): {
         warning,
       };
     } catch (err) {
-      console.error("Error getting task with dependency warning:", err);
+      logger.error("Error getting task with dependency warning:", err);
       const task = tasks.value.find((t) => t.id === taskId);
       return {
         task: task || ({} as Task),

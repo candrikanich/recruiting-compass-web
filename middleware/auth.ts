@@ -3,13 +3,6 @@ import { isProtectedRoute } from "~/types/routes";
 
 export default defineNuxtRouteMiddleware(async (to, _from) => {
   const userStore = useUserStore();
-  const config = useRuntimeConfig();
-
-  // Check if auth enforcement is enabled via feature flag
-  const authEnforcementEnabled = config.public.authEnforcementEnabled === true;
-
-  // User is initialized from app.vue, no need to initialize here
-  // This middleware handles both session timeout and route protection
 
   // Check session timeout on client side
   if (process.client) {
@@ -36,12 +29,11 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     }
   }
 
-  // Auth enforcement: protect routes based on feature flag
-  if (authEnforcementEnabled && isProtectedRoute(to.path)) {
+  // Route protection — always enforced
+  if (isProtectedRoute(to.path)) {
     const isAuthenticated = userStore.isAuthenticated;
 
     if (!isAuthenticated) {
-      // Redirect to login with return URL
       return navigateTo(`/login?redirect=${encodeURIComponent(to.fullPath)}`);
     }
   }

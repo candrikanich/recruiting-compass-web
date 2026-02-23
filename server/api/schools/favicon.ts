@@ -4,10 +4,13 @@
  * Handles caching to minimize external requests
  */
 
+import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "schools/favicon");
+  await requireAuth(event);
+
   try {
     const { schoolDomain, schoolId } = getQuery(event);
 

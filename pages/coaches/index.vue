@@ -471,7 +471,6 @@
 import {
   ref,
   computed,
-  onMounted,
   watch,
   inject,
   defineAsyncComponent,
@@ -725,9 +724,6 @@ watch(
   { immediate: true },
 );
 
-onMounted(async () => {
-  await fetchData();
-});
 </script>
 
 <style scoped>

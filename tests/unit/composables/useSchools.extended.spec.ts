@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useUserStore } from "~/stores/user";
 import { useSchools } from "~/composables/useSchools";
+import { useSchoolStatus } from "~/composables/useSchoolStatus";
 import type { School } from "~/types/models";
 
 // Mock useSupabase
@@ -410,18 +411,18 @@ describe("useSchools - Extended Coverage", () => {
         error: { message: "Failed to update status" },
       });
 
-      const schools = useSchools();
+      const schoolStatus = useSchoolStatus();
       await expect(() =>
-        schools.updateStatus("school-1", "offer_received"),
+        schoolStatus.updateStatus("school-1", "offer_received"),
       ).rejects.toThrow();
     });
 
     it("should throw when user not authenticated", async () => {
       userStore.user = null;
 
-      const schools = useSchools();
+      const schoolStatus = useSchoolStatus();
       await expect(() =>
-        schools.updateStatus("school-1", "interested"),
+        schoolStatus.updateStatus("school-1", "interested"),
       ).rejects.toThrow("User not authenticated");
     });
   });

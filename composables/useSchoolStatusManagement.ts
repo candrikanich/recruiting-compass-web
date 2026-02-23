@@ -1,9 +1,14 @@
 import { ref } from "vue";
 import type { School } from "~/types/models";
 import { useSchools } from "~/composables/useSchools";
+import { useSchoolStatus } from "~/composables/useSchoolStatus";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useSchoolStatusManagement");
 
 export const useSchoolStatusManagement = (schoolId: string) => {
-  const { updateSchool, updateStatus: updateSchoolStatus } = useSchools();
+  const { updateSchool } = useSchools();
+  const { updateStatus: updateSchoolStatus } = useSchoolStatus();
 
   const statusUpdating = ref(false);
   const priorityUpdating = ref(false);
@@ -16,7 +21,7 @@ export const useSchoolStatusManagement = (schoolId: string) => {
       const updated = await updateSchoolStatus(schoolId, status);
       return updated;
     } catch (err) {
-      console.error("Failed to update status:", err);
+      logger.error("Failed to update status:", err);
       return null;
     } finally {
       statusUpdating.value = false;

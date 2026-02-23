@@ -1,4 +1,5 @@
 import { ref } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import type { CollegeScorecardResponse } from "~/types/api";
 import { collegeScorecardResponseSchema } from "~/utils/validation/schemas";
 import { sanitizeUrl } from "~/utils/validation/sanitize";
@@ -25,6 +26,8 @@ export interface CollegeDataResult {
  * Session-based cache for College Scorecard lookups (inlined from useCollegeScorecardCache)
  */
 let scoreboardCache: Map<string, CollegeDataResult> | null = null;
+
+const logger = createClientLogger("useCollegeData");
 
 export const useCollegeData = () => {
   const data = ref<CollegeDataResult | null>(null);
@@ -238,7 +241,7 @@ export const useCollegeData = () => {
         await collegeScorecardResponseSchema.parseAsync(apiData);
       } catch (validationError) {
         error.value = "Invalid response from College Scorecard API";
-        console.error("API response validation failed:", validationError);
+        logger.error("API response validation failed:", validationError);
         return null;
       }
 
@@ -314,7 +317,7 @@ export const useCollegeData = () => {
         await collegeScorecardResponseSchema.parseAsync(apiData);
       } catch (validationError) {
         error.value = "Invalid response from College Scorecard API";
-        console.error("API response validation failed:", validationError);
+        logger.error("API response validation failed:", validationError);
         return null;
       }
 

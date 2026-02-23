@@ -4,7 +4,10 @@
  */
 
 import { ref } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import type { GeocodingResult } from "~/utils/geocoding";
+
+const logger = createClientLogger("useGeocoding");
 
 export const useGeocoding = () => {
   const loading = ref(false);
@@ -56,7 +59,7 @@ export const useGeocoding = () => {
       };
     } catch (err) {
       error.value = err instanceof Error ? err.message : "Geocoding failed";
-      console.error("Geocoding error:", err);
+      logger.error("Geocoding error:", err);
       return null;
     } finally {
       loading.value = false;
@@ -101,7 +104,7 @@ export const useGeocoding = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Reverse geocoding failed";
-      console.error("Reverse geocoding error:", err);
+      logger.error("Reverse geocoding error:", err);
       return null;
     } finally {
       loading.value = false;

@@ -19,6 +19,7 @@ import {
   calculateOpportunityFit,
   calculatePersonalFit,
 } from "~/utils/fitScoreCalculation";
+import { createClientLogger } from "~/utils/logger";
 
 interface UseFitScoreState {
   schoolFitScores: Map<string, FitScoreResult>;
@@ -26,6 +27,8 @@ interface UseFitScoreState {
   loading: boolean;
   error: string | null;
 }
+
+const logger = createClientLogger("useFitScore");
 
 export const useFitScore = (): {
   schoolFitScores: ComputedRef<Map<string, FitScoreResult>>;
@@ -181,7 +184,7 @@ export const useFitScore = (): {
       const message =
         err instanceof Error ? err.message : "Failed to calculate fit score";
       state.value.error = message;
-      console.error("Fit score calculation error:", err);
+      logger.error("Fit score calculation error:", err);
       throw err;
     } finally {
       state.value.loading = false;
@@ -233,7 +236,7 @@ export const useFitScore = (): {
       const message =
         err instanceof Error ? err.message : "Failed to recalculate fit scores";
       state.value.error = message;
-      console.error("Fit score recalculation error:", err);
+      logger.error("Fit score recalculation error:", err);
       throw err;
     } finally {
       state.value.loading = false;
@@ -276,7 +279,7 @@ export const useFitScore = (): {
           ? err.message
           : "Failed to calculate portfolio health";
       state.value.error = message;
-      console.error("Portfolio health error:", err);
+      logger.error("Portfolio health error:", err);
       throw err;
     }
   }
@@ -327,7 +330,7 @@ export const useFitScore = (): {
       const message =
         err instanceof Error ? err.message : "Failed to recalculate fit scores";
       state.value.error = message;
-      console.error("Server fit score recalculation error:", err);
+      logger.error("Server fit score recalculation error:", err);
       throw err;
     } finally {
       state.value.loading = false;

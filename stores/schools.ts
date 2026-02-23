@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type { School, SchoolStatusHistory } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
 
 export interface SchoolFilters {
   division: string;
@@ -15,7 +16,7 @@ export interface SchoolState {
   error: string | null;
   isFetched: boolean;
   filters: SchoolFilters;
-  statusHistory: Map<string, SchoolStatusHistory[]>;
+  statusHistory: Record<string, SchoolStatusHistory[]>;
 }
 
 /**
@@ -32,6 +33,8 @@ export interface SchoolState {
  * await schoolStore.fetchSchools()
  * schoolStore.setSelectedSchool(schoolId)
  */
+const logger = createClientLogger("stores/schools");
+
 export const useSchoolStore = defineStore("schools", {
   state: (): SchoolState => ({
     schools: [],
@@ -44,7 +47,7 @@ export const useSchoolStore = defineStore("schools", {
       state: "",
       verified: null,
     },
-    statusHistory: new Map(),
+    statusHistory: {},
   }),
 
   getters: {
@@ -110,7 +113,7 @@ export const useSchoolStore = defineStore("schools", {
      * Get status history for a specific school
      */
     statusHistoryFor: (state) => (schoolId: string) =>
-      state.statusHistory.get(schoolId) || [],
+      state.statusHistory[schoolId] || [],
   },
 
   actions: {
@@ -150,7 +153,7 @@ export const useSchoolStore = defineStore("schools", {
         const message =
           err instanceof Error ? err.message : "Failed to fetch schools";
         this.error = message;
-        console.error(message);
+        logger.error(message);
       } finally {
         this.loading = false;
       }
@@ -561,7 +564,7 @@ export const useSchoolStore = defineStore("schools", {
         }
 
         // Clear status history cache for this school to force refresh
-        this.statusHistory.delete(schoolId);
+        delete this.statusHistory[schoolId];
 
         return updatedSchool;
       } catch (err: unknown) {
@@ -584,8 +587,8 @@ export const useSchoolStore = defineStore("schools", {
 
       try {
         // Check cache first
-        if (this.statusHistory.has(schoolId)) {
-          return this.statusHistory.get(schoolId) || [];
+        if (schoolId in this.statusHistory) {
+          return this.statusHistory[schoolId] || [];
         }
 
         const { data, error } = await supabase
@@ -597,7 +600,7 @@ export const useSchoolStore = defineStore("schools", {
         if (error) throw error;
 
         // Cache the result
-        this.statusHistory.set(schoolId, data || []);
+        this.statusHistory[schoolId] = data || [];
         return data || [];
       } catch (err: unknown) {
         const message =

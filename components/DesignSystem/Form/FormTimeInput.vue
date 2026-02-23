@@ -39,6 +39,7 @@ function handleInput(event: Event) {
         class="text-red-500"
         aria-hidden="true"
       >*</span>
+      <span v-if="required" class="sr-only">(required)</span>
     </label>
     <input
       :id="id"
@@ -46,10 +47,12 @@ function handleInput(event: Event) {
       :value="modelValue"
       :required="required"
       :disabled="disabled"
+      :aria-invalid="error ? 'true' : undefined"
+      :aria-describedby="error ? `${id}-error` : undefined"
       class="w-full px-4 py-2.5 border-2 border-slate-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed transition-colors"
       :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-500': error }"
       @input="handleInput"
     />
-    <DesignSystemFieldError :error="error" />
+    <DesignSystemFieldError :id="`${id}-error`" :error="error" />
   </div>
 </template>

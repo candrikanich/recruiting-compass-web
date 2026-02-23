@@ -1,5 +1,6 @@
 import { ref, computed } from "vue";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
 
 export interface UserTask {
   id: string;
@@ -8,6 +9,8 @@ export interface UserTask {
   created_at: string;
   completed_at?: string | null;
 }
+
+const logger = createClientLogger("useUserTasks");
 
 export const useUserTasks = () => {
   // Lazy-load store to avoid Pinia timing issues
@@ -41,7 +44,7 @@ export const useUserTasks = () => {
         tasks.value = [];
       }
     } catch (e) {
-      console.error("Failed to fetch tasks:", e);
+      logger.error("Failed to fetch tasks:", e);
       tasks.value = [];
     } finally {
       loading.value = false;
@@ -59,7 +62,7 @@ export const useUserTasks = () => {
         JSON.stringify(tasks.value),
       );
     } catch (e) {
-      console.error("Failed to save tasks:", e);
+      logger.error("Failed to save tasks:", e);
     }
   };
 

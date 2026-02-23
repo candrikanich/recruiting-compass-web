@@ -8,7 +8,7 @@
  * Response: { success: boolean }
  */
 
-import { defineEventHandler, createError } from "h3";
+import { defineEventHandler, createError, getRouterParam } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { createLogger } from "~/server/utils/logger";

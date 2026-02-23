@@ -253,8 +253,9 @@ describe("useUserStore", () => {
       await store.initializeUser();
 
       expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("[stores/user]"),
         "[initializeUser] Unexpected error:",
-        expect.any(Error),
+        expect.objectContaining({ message: "Session error" }),
       );
       expect(store.user).toBeNull();
       expect(store.isAuthenticated).toBe(false);

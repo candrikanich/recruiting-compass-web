@@ -6,10 +6,18 @@
  * If no preferences exist for the category, returns empty object
  */
 
-import { defineEventHandler } from "h3";
+import { defineEventHandler, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+
+const ALLOWED_CATEGORIES = [
+  "notifications",
+  "location",
+  "player",
+  "school",
+  "dashboard",
+] as const;
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "user/preferences");
@@ -21,6 +29,13 @@ export default defineEventHandler(async (event) => {
     throw createError({
       statusCode: 400,
       statusMessage: "Category parameter is required",
+    });
+  }
+
+  if (!ALLOWED_CATEGORIES.includes(category as (typeof ALLOWED_CATEGORIES)[number])) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Invalid category",
     });
   }
 

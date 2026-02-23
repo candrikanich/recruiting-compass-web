@@ -62,12 +62,25 @@ const checkRateLimit = (userId: string, maxEmails: number = 20): boolean => {
 };
 
 /**
+ * Escape HTML special characters to prevent XSS in email body
+ */
+const escapeHtml = (str: string): string =>
+  str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+
+/**
  * Format professional email template
  */
 const formatEmailHtml = (
   body: string,
   athleteName: string | undefined,
 ): string => {
+  const safeName = escapeHtml(athleteName || "Athlete");
+  const safeBody = escapeHtml(body);
   return `
     <!DOCTYPE html>
     <html>
@@ -88,10 +101,10 @@ const formatEmailHtml = (
       <body>
         <div class="container">
           <div class="header">
-            <h2>${athleteName || "Athlete"} - Recruiting Profile</h2>
+            <h2>${safeName} - Recruiting Profile</h2>
           </div>
           <div class="content">
-            <div class="message">${body}</div>
+            <div class="message">${safeBody}</div>
             <div class="attachment-note">
               📎 Recruiting packet PDF is attached to this email.
             </div>

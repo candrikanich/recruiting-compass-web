@@ -1,6 +1,7 @@
 export default defineNuxtConfig({
   compatibilityDate: "2024-04-03",
   devtools: { enabled: false },
+  // CSR-only: app is auth-gated with heavy client-side state, real-time data, and complex interactive UI
   ssr: false,
 
   devServer: {
@@ -33,7 +34,6 @@ export default defineNuxtConfig({
         "fuse.js",
         "leaflet",
         "@vueuse/core",
-        "date-fns",
       ],
       exclude: [
         // These are heavy or change often; exclude for rebunding on change
@@ -94,17 +94,6 @@ export default defineNuxtConfig({
         process.env.NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY || "",
       authEnforcementEnabled:
         process.env.NUXT_PUBLIC_AUTH_ENFORCEMENT_ENABLED === "true",
-      useConsolidatedComposables:
-        process.env.NUXT_PUBLIC_USE_CONSOLIDATED_COMPOSABLES === "true",
-      serverSidePreferences:
-        process.env.NUXT_PUBLIC_SERVER_SIDE_PREFERENCES === "true",
-      // Phase 3: Composable Consolidation feature flags
-      useConsolidatedFiles:
-        process.env.NUXT_PUBLIC_USE_CONSOLIDATED_FILES !== "false",
-      useConsolidatedPerformance:
-        process.env.NUXT_PUBLIC_USE_CONSOLIDATED_PERFORMANCE !== "false",
-      useConsolidatedInteractions:
-        process.env.NUXT_PUBLIC_USE_CONSOLIDATED_INTERACTIONS !== "false",
       sentryDsn: process.env.NUXT_PUBLIC_SENTRY_DSN || "",
     },
   },

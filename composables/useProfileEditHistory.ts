@@ -3,6 +3,7 @@ import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { PreferenceHistoryEntry } from "~/types/models";
 import type { FormattedHistoryEntry } from "./useProfile";
+import { createClientLogger } from "~/utils/logger";
 
 /**
  * Map database field names to human-readable labels
@@ -46,6 +47,8 @@ const FIELD_LABELS: Record<string, string> = {
   travel_team_name: "Travel Team Name",
   travel_team_coach: "Travel Team Coach",
 };
+
+const logger = createClientLogger("useProfileEditHistory");
 
 export const useProfileEditHistory = (): {
   history: Ref<FormattedHistoryEntry[]>;
@@ -115,7 +118,7 @@ export const useProfileEditHistory = (): {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to load edit history";
-      console.error("Error fetching edit history:", err);
+      logger.error("Error fetching edit history:", err);
     } finally {
       loading.value = false;
     }

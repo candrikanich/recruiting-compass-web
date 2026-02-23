@@ -314,7 +314,7 @@
                 Edit
               </button>
               <button
-                @click="deleteLetter(letter.id)"
+                @click="handleDelete(letter.id)"
                 class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
               >
                 Delete
@@ -363,8 +363,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { useSchools } from "~/composables/useSchools";
-import { useUserStore } from "~/stores/user";
+import { useRecommendationLetters } from "~/composables/useRecommendationLetters";
 import type { Database } from "~/types/database";
 
 definePageMeta({
@@ -374,12 +373,9 @@ definePageMeta({
 type RecommendationLetter =
   Database["public"]["Tables"]["recommendation_letters"]["Row"];
 
-const userStore = useUserStore();
-const supabase = useSupabase();
+const { letters, loading, error, fetchLetters, saveLetter, deleteLetter } =
+  useRecommendationLetters();
 
-// Data
-const letters = ref<RecommendationLetter[]>([]);
-const loading = ref(false);
 const showAddForm = ref(false);
 const editingId = ref<string | null>(null);
 
@@ -515,79 +511,17 @@ const cancelEdit = () => {
 };
 
 const handleSave = async () => {
-  try {
-    loading.value = true;
-
-    if (editingId.value) {
-      const updateResponse = await (
-        supabase.from("recommendation_letters") as any
-      )
-        .update(formData.value)
-        .eq("id", editingId.value);
-      const { error } = updateResponse as { data: any; error: any };
-
-      if (error) throw error;
-    } else {
-      const insertResponse = await (
-        supabase.from("recommendation_letters") as any
-      ).insert([{ ...formData.value, user_id: userStore.user?.id }]);
-      const { error } = insertResponse as { data: any; error: any };
-
-      if (error) throw error;
-    }
-
-    await loadLetters();
-    cancelEdit();
-  } catch (err) {
-    console.error("Error saving letter:", err);
-  } finally {
-    loading.value = false;
-  }
+  await saveLetter(formData.value, editingId.value);
+  if (!error.value) cancelEdit();
 };
 
-const deleteLetter = async (id: string) => {
+const handleDelete = async (id: string) => {
   if (confirm("Delete this recommendation letter record?")) {
-    try {
-      const { error } = await supabase
-        .from("recommendation_letters")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
-      await loadLetters();
-    } catch (err) {
-      console.error("Error deleting letter:", err);
-    }
+    await deleteLetter(id);
   }
 };
 
-const loadLetters = async () => {
-  try {
-    loading.value = true;
-    const response = await supabase
-      .from("recommendation_letters")
-      .select("*")
-      .eq("user_id", userStore.user?.id ?? "")
-      .order("requested_date", { ascending: false });
-
-    const { data, error } = response as {
-      data: RecommendationLetter[];
-      error: any;
-    };
-    if (error) throw error;
-    letters.value = data || [];
-  } catch (err) {
-    console.error("Error loading letters:", err);
-  } finally {
-    loading.value = false;
-  }
-};
-
-onMounted(async () => {
-  if (!userStore.user) return;
-  try {
-    await loadLetters();
-  } catch (err) {
-    console.error("Error loading data:", err);
-  }
+onMounted(() => {
+  fetchLetters();
 });
 </script>

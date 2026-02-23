@@ -8,6 +8,9 @@ import type { Phase, MilestoneProgress } from "~/types/timeline";
 import type { AthleteAPI } from "~/types/api/athlete";
 import { getNextPhase, PHASE_INFO } from "~/utils/phaseCalculation";
 import { useAuthFetch } from "~/composables/useAuthFetch";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("usePhaseCalculation");
 
 export const usePhaseCalculation = (): {
   currentPhase: Ref<Phase>;
@@ -50,7 +53,7 @@ export const usePhaseCalculation = (): {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to fetch phase";
-      console.error("Error fetching phase:", err);
+      logger.error("Error fetching phase:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -83,7 +86,7 @@ export const usePhaseCalculation = (): {
       const message =
         err instanceof Error ? err.message : "Failed to advance phase";
       error.value = message;
-      console.error("Error advancing phase:", err);
+      logger.error("Error advancing phase:", err);
       throw err;
     } finally {
       loading.value = false;

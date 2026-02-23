@@ -7,6 +7,9 @@
  * If this is being created, it indicates an injection issue that should be debugged.
  */
 import { useActiveFamily, type UseActiveFamilyReturn } from "./useActiveFamily";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useFamilyContext");
 
 let familyContextInstance: UseActiveFamilyReturn | null = null;
 
@@ -16,7 +19,7 @@ let familyContextInstance: UseActiveFamilyReturn | null = null;
  */
 export const useFamilyContext = () => {
   if (!familyContextInstance) {
-    console.warn(
+    logger.warn(
       "[useFamilyContext] Creating singleton - injection should be preferred! " +
         "Check that activeFamily is being provided at app.vue level.",
     );

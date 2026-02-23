@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type { Coach } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
 
 export interface CoachFilters {
   schoolId?: string;
@@ -31,6 +32,8 @@ export interface CoachState {
  * const responsive = coachStore.coachesByResponsiveness
  * const coaches = responsive.map((c: any) => ({ id: c.id, school_id: c.school_id, first_name: c.first_name, last_name: c.last_name, email: c.email, responsiveness_score: c.responsiveness_score, last_contact_date: c.last_contact_date, role: c.role }))
  */
+const logger = createClientLogger("stores/coaches");
+
 export const useCoachStore = defineStore("coaches", {
   state: (): CoachState => ({
     coaches: [],
@@ -152,7 +155,7 @@ export const useCoachStore = defineStore("coaches", {
         const message =
           err instanceof Error ? err.message : "Failed to fetch coaches";
         this.error = message;
-        console.error(message);
+        logger.error(message);
       } finally {
         this.loading = false;
       }
@@ -207,7 +210,7 @@ export const useCoachStore = defineStore("coaches", {
         const message =
           err instanceof Error ? err.message : "Failed to fetch coaches";
         this.error = message;
-        console.error(message);
+        logger.error(message);
       } finally {
         this.loading = false;
       }
@@ -248,7 +251,7 @@ export const useCoachStore = defineStore("coaches", {
         const message =
           err instanceof Error ? err.message : "Failed to fetch coaches";
         this.error = message;
-        console.error(message);
+        logger.error(message);
       } finally {
         this.loading = false;
       }

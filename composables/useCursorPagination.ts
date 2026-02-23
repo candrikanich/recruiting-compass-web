@@ -1,5 +1,8 @@
 import { ref, computed, type Ref } from "vue";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useCursorPagination");
 
 /**
  * Cursor-based pagination helper
@@ -105,7 +108,7 @@ export const useCursorPagination = <T extends Record<string, unknown>>(
           ? err.message
           : "Failed to load paginated results";
       error.value = message;
-      console.error("[useCursorPagination] Error:", message);
+      logger.error("[useCursorPagination] Error:", message);
     } finally {
       loading.value = false;
     }
@@ -238,7 +241,7 @@ export const useTypedCursorPagination = <T extends Record<string, unknown>>(
           ? err.message
           : "Failed to load paginated results";
       error.value = message;
-      console.error("[useTypedCursorPagination] Error:", message);
+      logger.error("[useTypedCursorPagination] Error:", message);
     } finally {
       loading.value = false;
     }

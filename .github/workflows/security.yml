@@ -119,12 +119,20 @@ jobs:
         with:
           fetch-depth: 0 # Full history for comprehensive scan
 
+      - name: Resolve base to SHA (non-PR)
+        id: base-sha
+        if: github.event_name != 'pull_request'
+        run: |
+          REF="origin/${{ github.event.repository.default_branch }}"
+          echo "sha=$(git rev-parse "$REF")" >> $GITHUB_OUTPUT
+
       - name: TruffleHog Secret Scan
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
+          # PR: use PR base/head; schedule/workflow_dispatch: use resolved default-branch SHA and trigger SHA
+          base: ${{ github.event.pull_request.base.sha || steps.base-sha.outputs.sha }}
+          head: ${{ github.event.pull_request.head.sha || github.sha }}
           extra_args: --only-verified
 
   # Job 4: License compliance check

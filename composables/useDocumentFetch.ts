@@ -1,7 +1,10 @@
 import { ref, computed } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
 import type { Document } from "~/types/models";
+
+const logger = createClientLogger("useDocumentFetch");
 
 /**
  * Composable for document fetching operations
@@ -28,8 +31,8 @@ import type { Document } from "~/types/models";
  */
 export const useDocumentFetch = () => {
   if (process.env.NODE_ENV === "development") {
-    console.warn(
-      "[DEPRECATED] useDocumentFetch is deprecated as of Phase 4. " +
+    logger.warn(
+      "useDocumentFetch is deprecated as of Phase 4. " +
         "Use useDocumentsConsolidated() instead.\n" +
         "Migration guide: See DEPRECATION_AUDIT.md",
     );
@@ -93,7 +96,7 @@ export const useDocumentFetch = () => {
       const message =
         err instanceof Error ? err.message : "Failed to fetch documents";
       error.value = message;
-      console.error("Document fetch error:", message);
+      logger.error("Document fetch error:", message);
     } finally {
       loading.value = false;
     }
@@ -125,7 +128,7 @@ export const useDocumentFetch = () => {
 
       return data || [];
     } catch (err: unknown) {
-      console.error("Failed to fetch document versions:", err);
+      logger.error("Failed to fetch document versions:", err);
       return [];
     }
   };
@@ -200,7 +203,7 @@ export const useDocumentFetch = () => {
           .remove([doc.file_url]);
 
         if (storageError)
-          console.error("Storage deletion failed:", storageError);
+          logger.error("Storage deletion failed:", storageError);
         // Continue even if storage delete fails - don't want orphaned DB records
       }
 

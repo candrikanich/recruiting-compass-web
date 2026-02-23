@@ -23,6 +23,7 @@
  */
 
 import { ref, computed } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import { useSupabase } from "~/composables/useSupabase";
 
 export type PreferenceCategory =
@@ -38,6 +39,8 @@ interface UserPreferencesState {
   lastSavedAt: Date | null;
   isDirty: boolean;
 }
+
+const logger = createClientLogger("useUserPreferencesV2");
 
 export function useUserPreferencesV2(category: PreferenceCategory) {
   const supabase = useSupabase();
@@ -100,10 +103,7 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to load preferences";
-      console.warn(
-        `[useUserPreferencesV2] Failed to load ${category}:`,
-        message,
-      );
+      logger.warn(`Failed to load ${category}:`, message);
       state.value.error = message;
 
       // Fallback: try to load from localStorage if offline
@@ -112,9 +112,7 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
         if (cached) {
           try {
             preferences.value = JSON.parse(cached);
-            console.debug(
-              `[useUserPreferencesV2] Loaded ${category} from localStorage fallback`,
-            );
+            logger.debug(`Loaded ${category} from localStorage fallback`);
           } catch {
             // Ignore parse errors
           }
@@ -176,10 +174,7 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to save preferences";
-      console.error(
-        `[useUserPreferencesV2] Failed to save ${category}:`,
-        message,
-      );
+      logger.error(`Failed to save ${category}:`, message);
       state.value.error = message;
 
       // Still cache to localStorage so changes aren't lost
@@ -235,10 +230,7 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to delete preferences";
-      console.error(
-        `[useUserPreferencesV2] Failed to delete ${category}:`,
-        message,
-      );
+      logger.error(`Failed to delete ${category}:`, message);
       state.value.error = message;
 
       throw err;

@@ -175,6 +175,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useInteractions } from "~/composables/useInteractions";
+import { useInteractionReminders } from "~/composables/useInteractionReminders";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import type { Interaction } from "~/types/models";
@@ -192,8 +193,9 @@ const {
   fetchInteractions,
   createInteraction,
   smartDelete,
-  createReminder,
 } = useInteractions();
+
+const { createReminder } = useInteractionReminders();
 const { coaches, fetchCoaches } = useCoaches();
 const { getSchool } = useSchools();
 

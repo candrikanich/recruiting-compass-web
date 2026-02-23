@@ -1,6 +1,5 @@
 import {
   defineEventHandler,
-  getRouterParam,
   createError,
   readBody,
   getHeader,
@@ -9,6 +8,7 @@ import {
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
+import { requireUuidParam } from "~/server/utils/validation";
 
 /**
  * Cascade delete a coach and all related records
@@ -30,14 +30,10 @@ import { useLogger } from "~/server/utils/logger";
  */
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "coaches/cascade-delete");
-  const coachId = getRouterParam(event, "id");
 
-  if (!coachId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Coach ID is required",
-    });
-  }
+  // Auth first, then validate inputs
+  await requireAuth(event);
+  const coachId = requireUuidParam(event, "id");
 
   let body = {};
   try {
@@ -55,9 +51,6 @@ export default defineEventHandler(async (event) => {
         'Must set "confirmDelete": true in request body to proceed',
     });
   }
-
-  // Verify user is authenticated and get token
-  await requireAuth(event);
 
   // Get user's access token for RLS-respecting client
   const authHeader = getHeader(event, "authorization");

@@ -32,8 +32,7 @@ export default defineEventHandler(async (event) => {
     }
     throw createError({
       statusCode: 500,
-      statusMessage:
-        error instanceof Error ? error.message : "Failed to batch fetch logos",
+      statusMessage: "Failed to batch fetch logos",
     });
   }
 });

@@ -1,4 +1,4 @@
-import { ref, computed, shallowRef, inject } from "vue";
+import { ref, computed, shallowRef, inject, watch } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
@@ -6,6 +6,12 @@ import { useFamilyContext } from "./useFamilyContext";
 import type { School } from "~/types/models";
 import { schoolSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useSchools");
+
+// In-flight deduplication: prevents concurrent duplicate Supabase calls
+let fetchInFlight: Promise<void> | null = null;
 
 /**
  * useSchools composable
@@ -53,11 +59,6 @@ const useSchoolsInternal = (): {
   smartDelete: (id: string) => Promise<{ cascadeUsed: boolean }>;
   toggleFavorite: (id: string, isFavorite: boolean) => Promise<School>;
   updateRanking: (schools_: School[]) => Promise<void>;
-  updateStatus: (
-    schoolId: string,
-    newStatus: School["status"],
-    notes?: string,
-  ) => Promise<School>;
   findDuplicate: (
     schoolData: Partial<School> | Record<string, string | null | undefined>,
   ) => {
@@ -71,51 +72,65 @@ const useSchoolsInternal = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
-  // Try to get the provided family context (from page), fall back to singleton
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
-  const activeFamily = injectedFamily || useFamilyContext();
 
   if (!injectedFamily) {
-    console.warn(
+    logger.warn(
       "[useSchools] activeFamily injection failed, using singleton fallback. " +
         "This may cause data sync issues when parent switches athletes.",
     );
   }
 
+  const activeFamily = injectedFamily ?? useFamilyContext();
+
   const schools = shallowRef<School[]>([]);
-  const loadingRef = ref(false);
+  const loadingCount = ref(0);
   const errorRef = ref<string | null>(null);
 
-  const loading = computed(() => loadingRef.value);
+  const loading = computed(() => loadingCount.value > 0);
   const error = computed(() => errorRef.value);
 
   const favoriteSchools = computed(() =>
     schools.value.filter((s) => s.is_favorite),
   );
 
-  const fetchSchools = async () => {
-    console.debug("[useSchools] fetchSchools called");
-    console.debug(`[useSchools] User: ${userStore.user?.id || "null"}`);
-    console.debug(
+  // Auto-invalidate cache when parent switches athlete
+  watch(
+    () => activeFamily.activeAthleteId?.value,
+    async (newId, oldId) => {
+      if (newId && newId !== oldId) {
+        schools.value = [];
+        await fetchSchools();
+      }
+    },
+  );
+
+  const fetchSchools = (): Promise<void> => {
+    if (fetchInFlight) return fetchInFlight;
+
+    fetchInFlight = (async () => {
+    logger.debug("[useSchools] fetchSchools called");
+    logger.debug(`[useSchools] User: ${userStore.user?.id || "null"}`);
+    logger.debug(
       `[useSchools] Active Family ID: ${activeFamily.activeFamilyId?.value || "null"}`,
     );
 
     // Ensure we have both user and family context
     if (!userStore.user) {
-      console.debug("[useSchools] No user, skipping fetch");
+      logger.debug("[useSchools] No user, skipping fetch");
       return;
     }
 
     if (!activeFamily.activeFamilyId?.value) {
-      console.debug("[useSchools] No family context, skipping fetch");
+      logger.debug("[useSchools] No family context, skipping fetch");
       return;
     }
 
-    console.debug(
+    logger.debug(
       `[useSchools] Fetching for family: ${activeFamily.activeFamilyId.value}`,
     );
-    loadingRef.value = true;
+    loadingCount.value++;
     errorRef.value = null;
 
     try {
@@ -164,7 +179,7 @@ const useSchoolsInternal = (): {
       const seen = new Set<string>();
       const deduplicated = (data || []).filter((school) => {
         if (seen.has(school.id)) {
-          console.warn(
+          logger.warn(
             `[useSchools] Duplicate school detected: ${school.name} (ID: ${school.id})`,
           );
           return false;
@@ -174,21 +189,26 @@ const useSchoolsInternal = (): {
       });
 
       schools.value = deduplicated;
-      console.debug(`[useSchools] Loaded ${schools.value.length} schools`);
+      logger.debug(`[useSchools] Loaded ${schools.value.length} schools`);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch schools";
       errorRef.value = message;
-      console.error("[useSchools] Error:", message);
+      logger.error("[useSchools] Error:", message);
     } finally {
-      loadingRef.value = false;
+      loadingCount.value--;
     }
+    })().finally(() => {
+      fetchInFlight = null;
+    });
+
+    return fetchInFlight;
   };
 
   const getSchool = async (id: string): Promise<School | null> => {
     if (!userStore.user || !activeFamily.activeFamilyId.value) return null;
 
-    loadingRef.value = true;
+    loadingCount.value++;
     errorRef.value = null;
 
     try {
@@ -252,7 +272,7 @@ const useSchoolsInternal = (): {
       errorRef.value = message;
       return null;
     } finally {
-      loadingRef.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -271,7 +291,7 @@ const useSchoolsInternal = (): {
       throw new Error("Athlete context not set");
     }
 
-    loadingRef.value = true;
+    loadingCount.value++;
     errorRef.value = null;
 
     try {
@@ -323,11 +343,11 @@ const useSchoolsInternal = (): {
         const { useSchoolLogos } = await import("./useSchoolLogos");
         const { fetchSchoolLogo } = useSchoolLogos();
         fetchSchoolLogo(data).catch((err) => {
-          console.warn("Failed to fetch logo for new school:", err);
+          logger.warn("Failed to fetch logo for new school:", err);
           // Don't fail school creation if logo fetch fails
         });
       } catch (logoError) {
-        console.warn("Failed to initialize logo fetching:", logoError);
+        logger.warn("Failed to initialize logo fetching:", logoError);
         // Don't fail school creation if logo fetching initialization fails
       }
 
@@ -338,7 +358,7 @@ const useSchoolsInternal = (): {
       errorRef.value = message;
       throw err;
     } finally {
-      loadingRef.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -347,7 +367,7 @@ const useSchoolsInternal = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loadingRef.value = true;
+    loadingCount.value++;
     errorRef.value = null;
 
     try {
@@ -401,7 +421,7 @@ const useSchoolsInternal = (): {
       errorRef.value = message;
       throw err;
     } finally {
-      loadingRef.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -410,7 +430,7 @@ const useSchoolsInternal = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loadingRef.value = true;
+    loadingCount.value++;
     errorRef.value = null;
 
     try {
@@ -448,13 +468,13 @@ const useSchoolsInternal = (): {
       const message =
         err instanceof Error ? err.message : "Failed to delete school";
       errorRef.value = message;
-      console.error("[useSchools] Delete error:", {
+      logger.error("[useSchools] Delete error:", {
         schoolId: id,
         error: message,
       });
       throw err;
     } finally {
-      loadingRef.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -465,7 +485,7 @@ const useSchoolsInternal = (): {
   const updateRanking = async (schools_: School[]) => {
     if (!userStore.user) throw new Error("User not authenticated");
 
-    loadingRef.value = true;
+    loadingCount.value++;
     errorRef.value = null;
 
     try {
@@ -494,7 +514,7 @@ const useSchoolsInternal = (): {
         err instanceof Error ? err.message : "Failed to update ranking";
       errorRef.value = message;
     } finally {
-      loadingRef.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -597,110 +617,6 @@ const useSchoolsInternal = (): {
   });
 
   /**
-   * Update school status with history tracking
-   * Story 3.4: Status change timestamped and tracked in history
-   */
-  const updateStatus = async (
-    schoolId: string,
-    newStatus: School["status"],
-    notes?: string,
-  ): Promise<School> => {
-    if (!userStore.user || !activeFamily.activeFamilyId.value) {
-      throw new Error("User not authenticated or family not loaded");
-    }
-
-    loadingRef.value = true;
-    errorRef.value = null;
-
-    try {
-      // Find current school to get previous status (from local cache or fetch from DB)
-      let school = schools.value.find((s) => s.id === schoolId);
-
-      if (!school) {
-        // If not in local cache, fetch from database (e.g., viewing detail page)
-        // 🚀 Quick Win: Only fetch status field (minimal data transfer)
-        const fetchResponse = await supabase
-          .from("schools")
-          .select("id, status")
-          .eq("id", schoolId)
-          .eq("family_unit_id", activeFamily.activeFamilyId.value)
-          .single();
-
-        const { data: fetchedSchool, error: fetchError } = fetchResponse as {
-          data: School;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-        if (fetchError || !fetchedSchool) {
-          throw new Error("School not found");
-        }
-        school = fetchedSchool;
-      }
-
-      const previousStatus = school.status;
-      const now = new Date().toISOString();
-
-      // Update school status and status_changed_at timestamp
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updateStatusResponse = await (supabase.from("schools") as any)
-        .update({
-          status: newStatus,
-          status_changed_at: now,
-          updated_by: userStore.user.id,
-          updated_at: now,
-        })
-        .eq("id", schoolId)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
-        .select()
-        .single();
-
-      const { data: updatedSchool, error: schoolError } =
-        updateStatusResponse as {
-          data: School;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-      if (schoolError) throw schoolError;
-
-      // Create status history entry
-      const historyResponse =
-        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase.from("school_status_history") as any).insert([
-          {
-            school_id: schoolId,
-            previous_status: previousStatus,
-            new_status: newStatus,
-            changed_by: userStore.user.id,
-            changed_at: now,
-            notes: notes || null,
-          },
-        ]);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: historyError } = historyResponse as { error: any };
-
-      if (historyError) throw historyError;
-
-      // Update local state
-      const index = schools.value.findIndex((s) => s.id === schoolId);
-      if (index !== -1) {
-        schools.value[index] = updatedSchool;
-      }
-
-      return updatedSchool;
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update school status";
-      errorRef.value = message;
-      throw err;
-    } finally {
-      loadingRef.value = false;
-    }
-  };
-
-  /**
    * Smart delete: tries simple delete first, falls back to cascade-delete
    * if there are related records blocking deletion
    */
@@ -755,7 +671,6 @@ const useSchoolsInternal = (): {
     smartDelete,
     toggleFavorite,
     updateRanking,
-    updateStatus,
     findDuplicate,
     hasDuplicate,
     isNameDuplicate,

@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
+import { createClientLogger } from "~/utils/logger";
 
 /**
  * Composable for managing preview mode for parents
@@ -13,6 +14,8 @@ import { useSupabase } from "./useSupabase";
  * const isPreview = isInPreviewMode()
  * await exitPreviewMode('real-player-id')
  */
+const logger = createClientLogger("useParentPreviewMode");
+
 export const useParentPreviewMode = () => {
   const supabase = useSupabase();
 
@@ -65,7 +68,7 @@ export const useParentPreviewMode = () => {
       const message =
         err instanceof Error ? err.message : "Failed to enter preview mode";
       error.value = message;
-      console.error("Preview mode entry error:", err);
+      logger.error("Preview mode entry error:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -118,7 +121,7 @@ export const useParentPreviewMode = () => {
       const message =
         err instanceof Error ? err.message : "Failed to exit preview mode";
       error.value = message;
-      console.error("Preview mode exit error:", err);
+      logger.error("Preview mode exit error:", err);
       throw err;
     } finally {
       loading.value = false;

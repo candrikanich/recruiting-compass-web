@@ -1,4 +1,7 @@
 import { useSupabase } from "./useSupabase";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useAttachments");
 
 export const useAttachments = () => {
   const supabase = useSupabase();
@@ -28,7 +31,8 @@ export const useAttachments = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Failed to download attachment:", err);
+      logger.error("Failed to download attachment:", err);
+      throw err;
     }
   };
 
@@ -41,8 +45,8 @@ export const useAttachments = () => {
       if (error) throw error;
       return true;
     } catch (err) {
-      console.error("Failed to delete attachment:", err);
-      return false;
+      logger.error("Failed to delete attachment:", err);
+      throw err;
     }
   };
 

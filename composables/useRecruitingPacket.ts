@@ -22,12 +22,15 @@ import {
   generatePacketFilename,
 } from "~/utils/recruitingPacketExport";
 import type { School } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
 
 interface PacketGenerationResult {
   html: string;
   filename: string;
   data: RecruitingPacketData;
 }
+
+const logger = createClientLogger("useRecruitingPacket");
 
 export const useRecruitingPacket = () => {
   const supabase = useSupabase();
@@ -72,7 +75,7 @@ export const useRecruitingPacket = () => {
     };
 
     if (profileError) {
-      console.warn("Profile not found, using basic user data");
+      logger.warn("Profile not found, using basic user data");
     }
 
     const athleteData: AthletePacketData = {
@@ -263,7 +266,7 @@ export const useRecruitingPacket = () => {
           ? err.message
           : "Failed to generate recruiting packet";
       error.value = message;
-      console.error("Packet generation error:", err);
+      logger.error("Packet generation error:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -291,7 +294,7 @@ export const useRecruitingPacket = () => {
       const message =
         err instanceof Error ? err.message : "Failed to open packet preview";
       error.value = message;
-      console.error("Preview error:", err);
+      logger.error("Preview error:", err);
       throw err;
     }
   };
@@ -330,7 +333,7 @@ export const useRecruitingPacket = () => {
       // For now, return HTML as base64 (actual PDF conversion handled by server)
       return btoa(unescape(encodeURIComponent(generatedHtml.value)));
     } catch (err) {
-      console.error("Base64 encoding error:", err);
+      logger.error("Base64 encoding error:", err);
       throw err;
     }
   };
@@ -376,7 +379,7 @@ export const useRecruitingPacket = () => {
       const message =
         err instanceof Error ? err.message : "Failed to send email";
       error.value = message;
-      console.error("Email error:", err);
+      logger.error("Email error:", err);
       throw err;
     } finally {
       loading.value = false;

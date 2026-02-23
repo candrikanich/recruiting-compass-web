@@ -50,10 +50,7 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 500,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to trigger suggestion update",
+      message: "Failed to trigger suggestion update",
     });
   }
 });

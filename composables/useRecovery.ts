@@ -1,4 +1,5 @@
 import { ref } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
 import { useTasks } from "~/composables/useTasks";
@@ -28,6 +29,8 @@ export interface RecoveryCheckResult {
   trigger: RecoveryTrigger | null;
   plan: RecoveryPlan | null;
 }
+
+const logger = createClientLogger("useRecovery");
 
 export function useRecovery() {
   const { schools } = useSchools();
@@ -148,7 +151,7 @@ export function useRecovery() {
           };
         }
       } catch (err) {
-        console.error("Error checking eligibility:", err);
+        logger.error("Error checking eligibility:", err);
       }
 
       return null;

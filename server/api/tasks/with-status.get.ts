@@ -9,6 +9,12 @@ import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import type { TaskWithStatus } from "~/types/timeline";
 
+const TASK_COLUMNS =
+  "id, category, grade_level, title, description, required, dependency_task_ids, why_it_matters, failure_risk, division_applicability, created_at, updated_at";
+
+const ATHLETE_TASK_COLUMNS =
+  "id, athlete_id, task_id, status, completed_at, is_recovery_task, created_at, updated_at";
+
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "tasks/with-status");
   const user = await requireAuth(event);
@@ -21,7 +27,7 @@ export default defineEventHandler(async (event) => {
       : undefined;
 
     // Fetch all tasks
-    let tasksRequest = supabase.from("task").select("*");
+    let tasksRequest = supabase.from("task").select(TASK_COLUMNS);
 
     if (gradeLevel) {
       tasksRequest = tasksRequest.eq("grade_level", gradeLevel);
@@ -45,7 +51,7 @@ export default defineEventHandler(async (event) => {
     // Fetch athlete's task statuses
     const { data: athleteTasksData, error: athleteTasksError } = await supabase
       .from("athlete_task")
-      .select("*")
+      .select(ATHLETE_TASK_COLUMNS)
       .eq("athlete_id", user.id);
 
     if (athleteTasksError) {

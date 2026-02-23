@@ -9,8 +9,8 @@ const mockNoteHistoryLoading = ref(false);
 const mockNoteHistoryError = ref<string | null>(null);
 const mockFetchNoteHistory = vi.fn();
 
-vi.mock("~/composables/useInteractions", () => ({
-  useInteractions: () => ({
+vi.mock("~/composables/useInteractionNotes", () => ({
+  useInteractionNotes: () => ({
     noteHistory: mockNoteHistory,
     formattedNoteHistory: mockFormattedNoteHistory,
     noteHistoryLoading: mockNoteHistoryLoading,

@@ -11,6 +11,7 @@ import { computed } from "vue";
 import { useUserPreferencesV2 } from "./useUserPreferencesV2";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
 import type {
   NotificationSettings,
   HomeLocation,
@@ -27,6 +28,8 @@ import {
   getDefaultNotificationSettings,
   getDefaultDashboardLayout,
 } from "~/utils/preferenceValidation";
+
+const logger = createClientLogger("usePreferenceManager");
 
 export function usePreferenceManager() {
   const userStore = useUserStore();
@@ -88,10 +91,7 @@ export function usePreferenceManager() {
         dashboardPrefs.loadPreferences(),
       ]);
     } catch (err) {
-      console.error(
-        "[usePreferenceManager] Failed to load all preferences:",
-        err,
-      );
+      logger.error("Failed to load all preferences:", err);
       throw err;
     }
   };
@@ -124,7 +124,7 @@ export function usePreferenceManager() {
         await Promise.all(promises);
       }
     } catch (err) {
-      console.error("[usePreferenceManager] Failed to save preferences:", err);
+      logger.error("Failed to save preferences:", err);
       throw err;
     }
   };
@@ -329,10 +329,7 @@ export function usePreferenceManager() {
         },
       });
     } catch (err) {
-      console.warn(
-        "[usePreferenceManager] Failed to track preference change:",
-        err,
-      );
+      logger.warn("Failed to track preference change:", err);
       // Don't throw - history tracking failure shouldn't break the save
     }
   };
@@ -375,10 +372,7 @@ export function usePreferenceManager() {
         total: number;
       };
     } catch (err) {
-      console.error(
-        `[usePreferenceManager] Failed to fetch history for ${category}:`,
-        err,
-      );
+      logger.error(`Failed to fetch history for ${category}:`, err);
       return { data: [], total: 0 };
     }
   };
