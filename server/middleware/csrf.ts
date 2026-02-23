@@ -28,18 +28,6 @@ const CSRF_EXEMPT_EXACT_PATHS = [
   "/api/athlete/fit-scores/recalculate-all",
 ] as const;
 
-// Path patterns requiring BOTH a domain prefix AND a specific operation suffix
-const CSRF_EXEMPT_PATTERNS: Array<{ prefixes: string[]; suffix: string }> = [
-  {
-    prefixes: ["/api/schools/", "/api/coaches/", "/api/interactions/"],
-    suffix: "/cascade-delete",
-  },
-  {
-    prefixes: ["/api/schools/", "/api/coaches/", "/api/interactions/"],
-    suffix: "/deletion-blockers",
-  },
-];
-
 export default defineEventHandler((event) => {
   const method = event.node.req.method;
   const path = event.path;
@@ -47,20 +35,9 @@ export default defineEventHandler((event) => {
   const stateChangingMethods = ["POST", "PUT", "PATCH", "DELETE"];
   if (!stateChangingMethods.includes(method || "")) return;
 
-  if (event.context._skipCsrfValidation) return;
-
   if (CSRF_EXEMPT_PREFIXES.some((prefix) => path?.startsWith(prefix))) return;
 
   if (CSRF_EXEMPT_EXACT_PATHS.some((exact) => path === exact)) return;
-
-  for (const { prefixes, suffix } of CSRF_EXEMPT_PATTERNS) {
-    if (
-      path?.endsWith(suffix) &&
-      prefixes.some((prefix) => path.startsWith(prefix))
-    ) {
-      return;
-    }
-  }
 
   requireCsrfToken(event);
 });

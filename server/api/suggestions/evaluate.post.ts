@@ -118,10 +118,7 @@ export default defineEventHandler(async (event) => {
     logger.error("Failed to evaluate suggestions", error);
     throw createError({
       statusCode: 500,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to evaluate suggestions",
+      message: "Failed to evaluate suggestions",
     });
   }
 });

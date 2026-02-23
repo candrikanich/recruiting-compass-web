@@ -95,7 +95,7 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     return {
       error: true,
-      message: error instanceof Error ? error.message : "Unknown error",
+      message: "Session check failed",
       authenticated: false,
     };
   }

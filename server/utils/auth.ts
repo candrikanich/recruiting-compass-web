@@ -6,6 +6,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createError, getCookie, getHeader, type H3Event } from "h3";
 import type { Database } from "~/types/database";
 import { createLogger } from "./logger";
+import { useSupabaseAdmin } from "./supabase";
 
 const logger = createLogger("auth");
 
@@ -194,6 +195,32 @@ export async function canMutateAthleteData(
 
   // Other cases (cross-user mutations) are not allowed
   return false;
+}
+
+/**
+ * Requires the caller to be an authenticated admin.
+ * Combines requireAuth + is_admin check in one call.
+ * Use at the top of all admin-only endpoints.
+ */
+export async function requireAdmin(event: H3Event): Promise<AuthUser> {
+  const user = await requireAuth(event);
+  const supabaseAdmin = useSupabaseAdmin();
+
+  const { data } = await supabaseAdmin
+    .from("users")
+    .select("is_admin")
+    .eq("id", user.id)
+    .single();
+
+  if (!data?.is_admin) {
+    logger.warn(`Non-admin user ${user.id} attempted an admin operation`);
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Forbidden",
+    });
+  }
+
+  return user;
 }
 
 /**
