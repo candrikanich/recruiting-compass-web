@@ -48,3 +48,4 @@ test-results/
 .env.sentry-build-plugin
 supabase/.temp/
 .vercel
+.worktrees
