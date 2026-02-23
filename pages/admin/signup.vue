@@ -496,13 +496,14 @@ const handleSignup = async () => {
     }
 
     // Create or update admin user profile using server endpoint
-    // This bypasses RLS using the service role key
+    // This bypasses RLS using the service role key; requires adminToken for server-side validation
     await $fetch("/api/auth/admin-profile", {
       method: "POST",
       body: {
         userId,
         email: validated.email,
         fullName: validated.fullName,
+        adminToken: adminToken.value,
       },
     }).catch((err) => {
       throw new Error(

@@ -1,6 +1,6 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
-import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { createServerSupabaseClient } from "~/server/utils/supabase";
 
 type VerifyEmailResponse = {
   success: boolean;
@@ -21,7 +21,8 @@ export default defineEventHandler(
         });
       }
 
-      const supabase = createServerSupabaseUserClient("");
+      // Use anon client for OTP verification — no user context needed, Supabase validates the OTP server-side
+      const supabase = createServerSupabaseClient();
 
       const { data, error } = await supabase.auth.verifyOtp({
         email: "",

@@ -26,7 +26,7 @@ interface DeleteUserResponse {
 }
 
 import { defineEventHandler, readBody, createError } from "h3";
-import { requireAuth } from "~/server/utils/auth";
+import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { createLogger } from "~/server/utils/logger";
 
@@ -35,25 +35,11 @@ const logger = createLogger("admin/delete-user");
 export default defineEventHandler(
   async (event): Promise<DeleteUserResponse> => {
     try {
-      // 1. Verify user is authenticated
-      const user = await requireAuth(event);
+      // 1. Verify user is an authenticated admin
+      const user = await requireAdmin(event);
 
       // Create admin client with service role
       const supabaseAdmin = useSupabaseAdmin();
-
-      const { data: userData } = await supabaseAdmin
-        .from("users")
-        .select("is_admin")
-        .eq("id", user.id)
-        .single();
-
-      if (!userData?.is_admin) {
-        logger.warn(`Non-admin user ${user.id} attempted to delete a user`);
-        throw createError({
-          statusCode: 403,
-          statusMessage: "Only administrators can delete users",
-        });
-      }
 
       // 2. Parse and validate request body
       const body = await readBody<DeleteUserRequest>(event);
@@ -238,8 +224,7 @@ export default defineEventHandler(
       // Generic error response
       throw createError({
         statusCode: 500,
-        statusMessage:
-          error instanceof Error ? error.message : "Failed to delete user",
+        statusMessage: "Failed to delete user",
       });
     }
   },

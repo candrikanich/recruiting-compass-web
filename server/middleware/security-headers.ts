@@ -35,10 +35,15 @@ export default defineEventHandler((event) => {
   );
 
   // Content-Security-Policy: Prevent XSS and injection attacks
-  // Nuxt 3 with SSR disabled requires inline scripts for initialization
-  // Note: script-src includes 'unsafe-inline' for both environments to support Nuxt's runtime
-  // Vercel Speed Insights: Allow va.vercel-scripts.com for analytics, vitals.vercel-insights.com for beacon API, and blob: workers
-  // Supabase Storage: Allow frame-src and object-src for PDF previews, wss: for WebSocket connections
+  //
+  // KNOWN LIMITATION — 'unsafe-inline' in script-src:
+  // This app runs in SPA mode (ssr: false). With SSR disabled, Nuxt cannot inject per-request
+  // nonces at render time, so 'unsafe-inline' is genuinely required for Nuxt to function.
+  // To eliminate this, enable SSR and use nonce-based CSP (https://nuxt.com/docs/getting-started/seo-meta).
+  // XSS defence depth: input sanitized via sanitize-html, zero v-html usage, Zod validation on all inputs.
+  //
+  // Vercel Speed Insights: va.vercel-scripts.com, vitals.vercel-insights.com, blob: workers
+  // Supabase Storage: frame-src/object-src for PDF previews, wss: for WebSocket
   const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL || '';
   const supabaseWss = supabaseUrl.replace('https://', 'wss://');
   const cspHeader = isProduction

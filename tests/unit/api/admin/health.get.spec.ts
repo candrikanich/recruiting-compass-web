@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn().mockResolvedValue({ id: "admin-user-id" }),
+  requireAdmin: vi.fn().mockResolvedValue({ id: "admin-user-id" }),
 }));
 
 const mockFrom = vi.fn();

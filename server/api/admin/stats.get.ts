@@ -5,7 +5,7 @@
  */
 
 import { defineEventHandler, createError } from "h3";
-import { requireAuth } from "~/server/utils/auth";
+import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { createLogger } from "~/server/utils/logger";
 
@@ -22,22 +22,8 @@ export interface AdminStatsResponse {
 export default defineEventHandler(
   async (event): Promise<AdminStatsResponse> => {
     try {
-      const user = await requireAuth(event);
+      await requireAdmin(event);
       const supabaseAdmin = useSupabaseAdmin();
-
-      const { data: adminCheck } = await supabaseAdmin
-        .from("users")
-        .select("is_admin")
-        .eq("id", user.id)
-        .single();
-
-      if (!adminCheck?.is_admin) {
-        logger.warn(`Non-admin user ${user.id} attempted to fetch stats`);
-        throw createError({
-          statusCode: 403,
-          statusMessage: "Only administrators can view stats",
-        });
-      }
 
       const [usersRes, schoolsRes, coachesRes, interactionsRes, familyRes] =
         await Promise.all([
@@ -72,8 +58,7 @@ export default defineEventHandler(
       }
       throw createError({
         statusCode: 500,
-        statusMessage:
-          error instanceof Error ? error.message : "Failed to fetch stats",
+        statusMessage: "Failed to fetch stats",
       });
     }
   },

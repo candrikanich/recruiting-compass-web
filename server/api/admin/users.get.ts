@@ -11,7 +11,7 @@
  */
 
 import { defineEventHandler, createError } from "h3";
-import { requireAuth } from "~/server/utils/auth";
+import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 
@@ -31,25 +31,9 @@ interface GetUsersResponse {
 export default defineEventHandler(async (event): Promise<GetUsersResponse> => {
   const logger = useLogger(event, "admin/users");
   try {
-    // Verify user is authenticated
-    const user = await requireAuth(event);
-
-    // Create admin client with service role
+    // Verify user is an authenticated admin
+    const user = await requireAdmin(event);
     const supabaseAdmin = useSupabaseAdmin();
-
-    const { data: adminCheck } = await supabaseAdmin
-      .from("users")
-      .select("is_admin")
-      .eq("id", user.id)
-      .single();
-
-    if (!adminCheck?.is_admin) {
-      logger.warn(`Non-admin user ${user.id} attempted to fetch all users`);
-      throw createError({
-        statusCode: 403,
-        statusMessage: "Only administrators can view all users",
-      });
-    }
 
     // Fetch all users, ordered by creation date (newest first)
     const { data: users, error: fetchError } = await supabaseAdmin

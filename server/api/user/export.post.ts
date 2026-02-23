@@ -116,7 +116,6 @@ export default defineEventHandler(async (event) => {
     logger.error("Error generating user export", {
       userId,
       error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
     });
 
     if (error instanceof Error && error.message.includes("Unauthorized")) {
