@@ -80,6 +80,14 @@
             Settings
           </NuxtLink>
           <NuxtLink
+            to="/help"
+            role="menuitem"
+            class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors focus:outline-none focus:bg-slate-50"
+            @click="isOpen = false"
+          >
+            Help Center
+          </NuxtLink>
+          <NuxtLink
             v-if="isAdmin"
             to="/admin"
             role="menuitem"
