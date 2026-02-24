@@ -125,9 +125,9 @@ export const useSessionTimeout = () => {
       DEFAULT_TIMEOUT_CONFIG.inactivityThresholdMs - timeSinceActivity;
     const warningWindow = DEFAULT_TIMEOUT_CONFIG.warningBeforeLogoutMs;
 
-    // Session expired
+    // Session expired — log the user out
     if (timeUntilTimeout <= 0) {
-      localStorage.removeItem("session_preferences");
+      handleTimeout();
       return;
     }
 
