@@ -120,7 +120,7 @@ export default defineEventHandler(
 
       const resolvedUsers: Array<{ email: string; id: string }> = [];
 
-      for (const result of resolutionResults) {
+      resolutionResults.forEach((result, index) => {
         if (result.status === "fulfilled") {
           if (result.value.resolved) {
             resolvedUsers.push({ email: result.value.email, id: result.value.id });
@@ -128,9 +128,9 @@ export default defineEventHandler(
             errors.push({ email: result.value.email, reason: "User not found" });
           }
         } else {
-          errors.push({ email: "unknown", reason: "Resolution failed" });
+          errors.push({ email: normalizedEmails[index], reason: "Resolution failed" });
         }
-      }
+      });
 
       if (resolvedUsers.length > 0) {
         const targetUserIds = resolvedUsers.map((u) => u.id);
