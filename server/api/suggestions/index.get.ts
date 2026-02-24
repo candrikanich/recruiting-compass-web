@@ -1,20 +1,23 @@
 import { defineEventHandler, getQuery } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
-import { requireAuth } from "~/server/utils/auth";
+import { requireAuth, getUserRole } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import {
   getSurfacedSuggestions,
   getPendingSuggestionCount,
 } from "~/server/utils/suggestionStaggering";
+import { triggerSuggestionUpdate } from "~/server/utils/triggerSuggestionUpdate";
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
+  const logger = useLogger(event, "suggestions");
   const query = getQuery(event);
 
   const location = (query.location as string) || "dashboard";
   const schoolId = query.schoolId as string | undefined;
 
-  const [suggestions, pendingCount] = await Promise.all([
+  let [suggestions, pendingCount] = await Promise.all([
     getSurfacedSuggestions(
       supabase,
       user.id,
@@ -23,6 +26,30 @@ export default defineEventHandler(async (event) => {
     ),
     getPendingSuggestionCount(supabase, user.id),
   ]);
+
+  // Bootstrap: if no suggestions exist yet and this is an athlete (not a parent),
+  // run the rule engine inline so the first dashboard load returns populated results.
+  if (suggestions.length === 0 && pendingCount === 0) {
+    const role = await getUserRole(user.id, supabase);
+    if (role !== "parent") {
+      logger.info("No suggestions found — bootstrapping for new user");
+      try {
+        await triggerSuggestionUpdate(supabase, user.id, "daily_refresh");
+        [suggestions, pendingCount] = await Promise.all([
+          getSurfacedSuggestions(
+            supabase,
+            user.id,
+            location as "dashboard" | "school_detail",
+            schoolId,
+          ),
+          getPendingSuggestionCount(supabase, user.id),
+        ]);
+      } catch (err) {
+        // Bootstrap failure is non-fatal — return empty rather than erroring
+        logger.warn("Suggestion bootstrap failed, returning empty", err);
+      }
+    }
+  }
 
   return { suggestions, pendingCount };
 });
