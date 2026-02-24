@@ -37,9 +37,9 @@
       <section aria-labelledby="stats-heading">
         <h2 id="stats-heading" class="sr-only">Statistics Overview</h2>
         <DashboardStatsCards
-          :coach-count="dashboardData.coachCount.value"
-          :school-count="dashboardData.schoolCount.value"
-          :interaction-count="dashboardData.interactionCount.value"
+          :coach-count="coachCount"
+          :school-count="schoolCount"
+          :interaction-count="interactionCount"
           :total-offers="totalOffers"
           :accepted-offers="acceptedOffers"
           :a-tier-school-count="aTierSchoolCount"
@@ -63,10 +63,10 @@
         <h2 id="charts-heading" class="sr-only">Charts & Analytics</h2>
         <Suspense>
           <DashboardChartsSection
-            :schools="dashboardData.allSchools.value"
-            :interactions="dashboardData.allInteractions.value"
+            :schools="allSchools"
+            :interactions="allInteractions"
             :school-size-breakdown="schoolSizeBreakdown"
-            :school-count="dashboardData.schoolCount.value"
+            :school-count="schoolCount"
             :recruiting-packet-loading="recruitingPacketLoading"
             :recruiting-packet-error="recruitingPacketError"
             :has-generated-packet="
@@ -90,7 +90,7 @@
           Performance Metrics & Upcoming Events
         </h2>
         <DashboardMetricsSection
-          :metrics="dashboardData.allMetrics.value"
+          :metrics="allMetrics"
           :top-metrics="topMetrics"
           :upcoming-events="upcomingEvents"
         />
@@ -101,7 +101,7 @@
         <h2 id="map-heading" class="sr-only">School Map & Recent Activity</h2>
         <Suspense>
           <DashboardMapActivitySection
-            :schools="dashboardData.allSchools.value"
+            :schools="allSchools"
             :show-widget="showWidget"
           />
           <template #fallback>
@@ -116,10 +116,10 @@
         <Suspense>
           <DashboardWidgetsSection
             :tasks="userTasksComposable?.tasks.value || []"
-            :coaches="dashboardData.allCoaches.value"
-            :schools="dashboardData.allSchools.value"
-            :interactions="dashboardData.allInteractions.value"
-            :offers="dashboardData.allOffers.value"
+            :coaches="allCoaches"
+            :schools="allSchools"
+            :interactions="allInteractions"
+            :offers="allOffers"
             :is-parent="userStore.isParent"
             :show-widget="showWidget"
             @add-task="addTask"
@@ -139,7 +139,7 @@
       <!-- Email Recruiting Packet Modal -->
       <EmailRecruitingPacketModal
         :is-open="recruitingPacketComposable.showEmailModal.value"
-        :available-coaches="dashboardData.allCoaches.value"
+        :available-coaches="allCoaches"
         :default-subject="recruitingPacketComposable.defaultEmailSubject.value"
         :default-body="recruitingPacketComposable.defaultEmailBody.value"
         @close="recruitingPacketComposable.setShowEmailModal(false)"
@@ -204,6 +204,16 @@ const suggestionsComposable = useSuggestions();
 const viewLoggingComposable = useViewLogging();
 const recruitingPacketComposable = useRecruitingPacket();
 const dashboardData = useDashboardData();
+const {
+  coachCount,
+  schoolCount,
+  interactionCount,
+  allSchools,
+  allInteractions,
+  allCoaches,
+  allMetrics,
+  allOffers,
+} = dashboardData;
 
 // Dashboard calculations derived from dashboard data
 const {
