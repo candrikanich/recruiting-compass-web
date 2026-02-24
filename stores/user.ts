@@ -75,13 +75,9 @@ export const useUserStore = defineStore("user", {
         }
 
         if (session?.user) {
-          // Set user from auth session first
-          this.user = {
-            id: session.user.id,
-            email: session.user.email || "",
-            full_name: session.user.user_metadata?.full_name || "",
-            role: "player", // Default role
-          };
+          // Set isAuthenticated immediately but defer this.user until the real
+          // profile is loaded — prevents a race window where role === "player"
+          // for parent/admin users while the DB fetch is in flight.
           this.isAuthenticated = true;
 
           // Check email verification status
@@ -111,7 +107,7 @@ export const useUserStore = defineStore("user", {
           }
 
           if (profile) {
-            // Profile exists, use it
+            // Profile exists, use it (has the correct role)
             this.user = profile;
             logger.debug("[initializeUser] Existing profile loaded");
           } else {
@@ -126,11 +122,17 @@ export const useUserStore = defineStore("user", {
             );
 
             if (!created) {
-              // Creation failed but don't block - user is still authenticated
+              // Creation failed — fall back to minimal user from auth session
               logger.warn(
                 "[initializeUser] Failed to create profile for user:",
                 session.user.id,
               );
+              this.user = {
+                id: session.user.id,
+                email: session.user.email || "",
+                full_name: session.user.user_metadata?.full_name || "",
+                role: "player",
+              };
             }
           }
         } else {

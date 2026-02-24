@@ -18,6 +18,12 @@ vi.mock("~/utils/validation/sanitize", () => ({
   sanitizeHtml: (html: string) => html.replace(/<[^>]*>/g, ""),
 }));
 
+vi.mock("~/composables/useFamilyContext", () => ({
+  useFamilyContext: () => ({
+    activeFamilyId: { value: "family-123" },
+  }),
+}));
+
 describe("useSchoolStore", () => {
   let schoolStore: ReturnType<typeof useSchoolStore>;
   let userStore: ReturnType<typeof useUserStore>;
@@ -244,7 +250,7 @@ describe("useSchoolStore", () => {
         }),
       );
       expect(mockQuery.eq).toHaveBeenCalledWith("id", "existing-school");
-      expect(mockQuery.eq).toHaveBeenCalledWith("user_id", "user-123");
+      expect(mockQuery.eq).toHaveBeenCalledWith("family_unit_id", "family-123");
     });
 
     it("should sanitize HTML in updates", async () => {
@@ -396,12 +402,12 @@ describe("useSchoolStore", () => {
       let eqCallCount = 0;
       deleteChain.eq.mockImplementation(() => {
         eqCallCount++;
-        // Return the chain for the first eq call (for further chaining)
-        // Return the response for the second eq call (to be awaited)
-        if (eqCallCount === 1) {
+        // Return the chain for the first two eq calls (.eq("id", ...) and
+        // .eq("family_unit_id", ...)) and resolve on the last call.
+        if (eqCallCount < 2) {
           return deleteChain;
         }
-        // For the second call, return something awaitable
+        // For the last call, return something awaitable
         return Promise.resolve(response);
       });
 
@@ -481,7 +487,7 @@ describe("useSchoolStore", () => {
       expect(mockSupabase.from).toHaveBeenCalledWith("schools");
       expect(mockQuery.select).toHaveBeenCalledWith("*");
       expect(mockQuery.eq).toHaveBeenCalledWith("id", "school-to-get");
-      expect(mockQuery.eq).toHaveBeenCalledWith("user_id", "user-123");
+      expect(mockQuery.eq).toHaveBeenCalledWith("family_unit_id", "family-123");
       expect(mockQuery.single).toHaveBeenCalled();
     });
 

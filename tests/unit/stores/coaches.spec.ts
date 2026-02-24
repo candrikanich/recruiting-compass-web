@@ -17,6 +17,12 @@ vi.mock("~/utils/validation/sanitize", () => ({
   sanitizeHtml: (html: string) => html.replace(/<[^>]*>/g, ""),
 }));
 
+vi.mock("~/composables/useFamilyContext", () => ({
+  useFamilyContext: () => ({
+    activeFamilyId: { value: "family-123" },
+  }),
+}));
+
 describe("useCoachStore", () => {
   let coachStore: ReturnType<typeof useCoachStore>;
   let userStore: ReturnType<typeof useUserStore>;
@@ -42,6 +48,7 @@ describe("useCoachStore", () => {
   });
 
   beforeEach(() => {
+    vi.clearAllMocks();
     setActivePinia(createPinia());
     coachStore = useCoachStore();
     userStore = useUserStore();
@@ -62,7 +69,6 @@ describe("useCoachStore", () => {
     };
 
     mockSupabase.from.mockReturnValue(mockQuery);
-    vi.clearAllMocks();
   });
 
   describe("State Management", () => {
@@ -365,23 +371,40 @@ describe("useCoachStore", () => {
   });
 
   describe("deleteCoach", () => {
+    const setupDeleteMock = (response: any) => {
+      const deleteChain = { eq: vi.fn() };
+      let eqCallCount = 0;
+      deleteChain.eq.mockImplementation(() => {
+        eqCallCount++;
+        // .eq("id", ...) returns chain; .eq("family_unit_id", ...) resolves
+        if (eqCallCount < 2) return deleteChain;
+        return Promise.resolve(response);
+      });
+      mockQuery.delete.mockReturnValue(deleteChain);
+      return deleteChain;
+    };
+
     it("should delete a coach", async () => {
       const coach1 = createMockCoach();
       const coach2 = createMockCoach({ id: "coach-2" });
       coachStore.coaches = [coach1, coach2];
 
-      mockQuery.eq.mockResolvedValue({ error: null });
+      const deleteChain = setupDeleteMock({ error: null });
 
       await coachStore.deleteCoach("coach-1");
 
       expect(mockQuery.delete).toHaveBeenCalled();
-      expect(mockQuery.eq).toHaveBeenCalledWith("id", "coach-1");
+      expect(deleteChain.eq).toHaveBeenCalledWith("id", "coach-1");
+      expect(deleteChain.eq).toHaveBeenCalledWith(
+        "family_unit_id",
+        "family-123",
+      );
       expect(coachStore.coaches).toHaveLength(1);
       expect(coachStore.coaches[0].id).toBe("coach-2");
     });
 
     it("should handle delete error", async () => {
-      mockQuery.eq.mockResolvedValue({ error: new Error("Delete failed") });
+      setupDeleteMock({ error: new Error("Delete failed") });
 
       await expect(coachStore.deleteCoach("coach-1")).rejects.toThrow(
         "Delete failed",
@@ -391,7 +414,7 @@ describe("useCoachStore", () => {
 
     it("should clear error on successful delete", async () => {
       coachStore.error = "Previous error";
-      mockQuery.eq.mockResolvedValue({ error: null });
+      setupDeleteMock({ error: null });
 
       await coachStore.deleteCoach("coach-1");
 
