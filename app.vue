@@ -26,6 +26,8 @@ import { useSessionTimeout } from "~/composables/useSessionTimeout";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "~/composables/useActiveFamily";
 import SessionTimeoutWarning from "~/components/Auth/SessionTimeoutWarning.vue";
+import { createClientLogger } from "~/utils/logger";
+const logger = createClientLogger("app");
 
 // Service status for error page
 const { isServiceUnavailable } = useServiceStatus();
@@ -45,13 +47,13 @@ let initializePromise: Promise<void> | null = null;
 
 onBeforeMount(async () => {
   if (!initializePromise) {
-    console.debug("[App] Starting user initialization");
+    logger.debug("Starting user initialization");
     initializePromise = (async () => {
       try {
         await userStore.initializeUser();
-        console.debug("[App] User initialization complete");
+        logger.debug("User initialization complete");
       } catch (err) {
-        console.error("[App] Failed to initialize user:", err);
+        logger.error("Failed to initialize user", err);
       }
     })();
   }
