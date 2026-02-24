@@ -100,10 +100,7 @@
       <section aria-labelledby="map-heading" class="mt-6">
         <h2 id="map-heading" class="sr-only">School Map & Recent Activity</h2>
         <Suspense>
-          <DashboardMapActivitySection
-            :schools="allSchools"
-            :show-widget="showWidget"
-          />
+          <DashboardMapActivitySection :schools="allSchools" />
           <template #fallback>
             <div class="animate-pulse bg-gray-200 h-96 rounded-lg"></div>
           </template>
@@ -121,7 +118,6 @@
             :interactions="allInteractions"
             :offers="allOffers"
             :is-parent="userStore.isParent"
-            :show-widget="showWidget"
             @add-task="addTask"
             @toggle-task="toggleTask"
             @delete-task="deleteTask"
@@ -158,6 +154,7 @@ import {
   defineAsyncComponent,
 } from "vue";
 import { useRouter } from "vue-router";
+import { createClientLogger } from "~/utils/logger";
 import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
 import { useNotifications } from "~/composables/useNotifications";
@@ -191,6 +188,8 @@ import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 definePageMeta({
   middleware: ["auth", "onboarding"],
 });
+
+const logger = createClientLogger("dashboard");
 
 const { logout } = useAuth();
 const { showToast } = useToast();
@@ -262,15 +261,6 @@ const userFirstName = computed(() => {
   return firstName.charAt(0).toUpperCase() + firstName.slice(1);
 });
 
-// Helper to check if widget should be shown based on preferences
-// Defaults to showing all widgets when preferences not loaded
-const showWidget = (
-  _widgetKey: string,
-  _section: "statsCards" | "widgets",
-): boolean => {
-  return true;
-};
-
 // Task event handlers
 const addTask = async (taskText: string) => {
   if (taskText.trim() && userTasksComposable) {
@@ -278,7 +268,7 @@ const addTask = async (taskText: string) => {
       await userTasksComposable.addTask(taskText);
       showToast(`Task added!`, "success");
     } catch (err) {
-      console.error("Failed to add task:", err);
+      logger.error("Failed to add task", err);
       showToast("Failed to add task", "error");
     }
   }
@@ -318,7 +308,7 @@ const handleGeneratePacket = async () => {
         : "Failed to generate recruiting packet";
     recruitingPacketError.value = message;
     showToast(message, "error");
-    console.error("Packet generation error:", err);
+    logger.error("Packet generation error", err);
   } finally {
     recruitingPacketLoading.value = false;
   }
@@ -341,7 +331,7 @@ const handleEmailPacket = async () => {
       err instanceof Error ? err.message : "Failed to prepare packet for email";
     recruitingPacketError.value = message;
     showToast(message, "error");
-    console.error("Packet email prep error:", err);
+    logger.error("Packet email prep error", err);
   } finally {
     recruitingPacketLoading.value = false;
   }
@@ -362,7 +352,7 @@ const handleSendEmail = async (emailData: {
     const message = err instanceof Error ? err.message : "Failed to send email";
     recruitingPacketError.value = message;
     showToast(message, "error");
-    console.error("Email sending error:", err);
+    logger.error("Email sending error", err);
   }
 };
 
