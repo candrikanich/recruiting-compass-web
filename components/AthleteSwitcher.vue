@@ -32,22 +32,13 @@ import { useFamilyContext } from "~/composables/useFamilyContext";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 const injected = inject<UseActiveFamilyReturn>("activeFamily");
-console.debug("[AthleteSwitcher] Injection result:", { injected: !!injected });
-
 const activeFamily = injected || useFamilyContext();
 
 // Show switcher only if parent has multiple children
 const showSwitcher = computed(() => {
   const isParent = activeFamily.isParent.value;
   const familiesCount = activeFamily.parentAccessibleFamilies.value.length;
-  const show = isParent && familiesCount > 1;
-
-  console.debug(
-    `[AthleteSwitcher] isParent=${isParent}, familiesCount=${familiesCount}, show=${show}`,
-    activeFamily.parentAccessibleFamilies.value,
-  );
-
-  return show;
+  return isParent && familiesCount > 1;
 });
 
 const accessibleAthletes = computed(
