@@ -242,7 +242,9 @@ export const useInteractionReminders = () => {
 
       const index = reminders.value.findIndex((r) => r.id === id);
       if (index !== -1) {
-        reminders.value[index] = { ...reminders.value[index], ...updates };
+        reminders.value = reminders.value.map((r, i) =>
+          i === index ? { ...r, ...updates } : r,
+        );
       }
 
       return true;

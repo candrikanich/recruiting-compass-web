@@ -388,7 +388,7 @@ const useInteractionsInternal = (): {
 
       const index = interactions.value.findIndex((i) => i.id === id);
       if (index !== -1) {
-        interactions.value[index] = data;
+        interactions.value = interactions.value.map((item, i) => (i === index ? data : item));
       }
 
       return data;

@@ -412,7 +412,7 @@ const useSchoolsInternal = (): {
       // Update local state
       const index = schools.value.findIndex((s) => s.id === id);
       if (index !== -1) {
-        schools.value[index] = data;
+        schools.value = schools.value.map((s, i) => (i === index ? data : s));
       }
 
       return data;
