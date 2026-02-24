@@ -8,6 +8,7 @@ import type { Database } from "~/types/database";
 import { interactionSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
 import { createClientLogger } from "~/utils/logger";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 
 const logger = createClientLogger("useInteractions");
 
@@ -89,6 +90,7 @@ const useInteractionsInternal = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const { $fetchAuth } = useAuthFetch();
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
 
@@ -479,15 +481,10 @@ const useInteractionsInternal = (): {
         message.includes("violates foreign key constraint") ||
         message.includes("still referenced")
       ) {
-        const result = await fetch(`/api/interactions/${id}/cascade-delete`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ confirmDelete: true }),
-        });
-        const cascadeResponse = (await result.json()) as Record<
-          string,
-          unknown
-        >;
+        const cascadeResponse = await $fetchAuth<Record<string, unknown>>(
+          `/api/interactions/${id}/cascade-delete`,
+          { method: "POST", body: { confirmDelete: true } },
+        );
         if (cascadeResponse.success) {
           interactions.value = interactions.value.filter((i) => i.id !== id);
           return { cascadeUsed: true };

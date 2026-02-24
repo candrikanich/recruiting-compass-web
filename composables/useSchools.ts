@@ -7,6 +7,7 @@ import type { School } from "~/types/models";
 import { schoolSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
 import { createClientLogger } from "~/utils/logger";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 
 const logger = createClientLogger("useSchools");
 
@@ -69,6 +70,7 @@ const useSchoolsInternal = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const { $fetchAuth } = useAuthFetch();
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
 
@@ -637,12 +639,10 @@ const useSchoolsInternal = (): {
         message.includes("still referenced")
       ) {
         // Use cascade delete API
-        const result = await fetch(`/api/schools/${id}/cascade-delete`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ confirmDelete: true }),
-        });
-        const response = (await result.json()) as Record<string, unknown>;
+        const response = await $fetchAuth<Record<string, unknown>>(
+          `/api/schools/${id}/cascade-delete`,
+          { method: "POST", body: { confirmDelete: true } },
+        );
 
         if (response.success) {
           // Update local state

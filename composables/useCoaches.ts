@@ -8,6 +8,7 @@ import type { Database } from "~/types/database";
 import { coachSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
 import { createClientLogger } from "~/utils/logger";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 
 const logger = createClientLogger("useCoaches");
 
@@ -67,6 +68,7 @@ export const useCoaches = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const { $fetchAuth } = useAuthFetch();
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
 
@@ -497,15 +499,10 @@ export const useCoaches = (): {
         message.includes("still referenced")
       ) {
         // Try cascade delete via API endpoint
-        const result = await fetch(`/api/coaches/${id}/cascade-delete`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ confirmDelete: true }),
-        });
-        const cascadeResponse = (await result.json()) as Record<
-          string,
-          unknown
-        >;
+        const cascadeResponse = await $fetchAuth<Record<string, unknown>>(
+          `/api/coaches/${id}/cascade-delete`,
+          { method: "POST", body: { confirmDelete: true } },
+        );
         if (cascadeResponse.success) {
           coaches.value = coaches.value.filter((c) => c.id !== id);
           return { cascadeUsed: true };
