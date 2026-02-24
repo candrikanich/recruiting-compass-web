@@ -99,7 +99,7 @@ export function useRecovery() {
     });
 
     if (recentPositive.length === 0) {
-      const lastInteraction = interactions.value.sort(
+      const lastInteraction = [...interactions.value].sort(
         (a, b) =>
           new Date(b.occurred_at || b.created_at || "").getTime() -
           new Date(a.occurred_at || a.created_at || "").getTime(),

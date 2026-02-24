@@ -42,19 +42,17 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
   try {
     const config = useRuntimeConfig();
     const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!supabaseUrl || !supabaseKey) {
       throw new Error("Missing Supabase credentials");
     }
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Initialize services
-    const twitterService = new TwitterService(
-      config.twitterBearerToken as string,
-    );
-    const instagramService = new InstagramService(
-      config.instagramAccessToken as string,
-    );
+    const twitterBearerToken = config.twitterBearerToken as string | undefined;
+    const instagramAccessToken = config.instagramAccessToken as string | undefined;
+    const twitterService = new TwitterService(twitterBearerToken ?? "");
+    const instagramService = new InstagramService(instagramAccessToken ?? "");
 
     // Get all users
     const { data: users, error: usersError } = await supabase
@@ -89,7 +87,8 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
 
         const { data: coaches } = await supabase
           .from("coaches")
-          .select("id, name, twitter_handle, instagram_handle");
+          .select("id, name, twitter_handle, instagram_handle")
+          .eq("user_id", user.id);
 
         if (schoolsError) {
           stats.failedUsers++;

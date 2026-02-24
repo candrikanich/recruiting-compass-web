@@ -10,9 +10,6 @@ import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("useSchools");
 
-// In-flight deduplication: prevents concurrent duplicate Supabase calls
-let fetchInFlight: Promise<void> | null = null;
-
 /**
  * useSchools composable
  * Manages college/university program data and recruiting status
@@ -57,7 +54,7 @@ const useSchoolsInternal = (): {
   updateSchool: (id: string, updates: Partial<School>) => Promise<School>;
   deleteSchool: (id: string) => Promise<void>;
   smartDelete: (id: string) => Promise<{ cascadeUsed: boolean }>;
-  toggleFavorite: (id: string, isFavorite: boolean) => Promise<School>;
+  toggleFavorite: (id: string, currentFavorite: boolean) => Promise<School>;
   updateRanking: (schools_: School[]) => Promise<void>;
   findDuplicate: (
     schoolData: Partial<School> | Record<string, string | null | undefined>,
@@ -90,6 +87,9 @@ const useSchoolsInternal = (): {
 
   const loading = computed(() => loadingCount.value > 0);
   const error = computed(() => errorRef.value);
+
+  // In-flight deduplication: prevents concurrent duplicate Supabase calls
+  let fetchInFlight: Promise<void> | null = null;
 
   const favoriteSchools = computed(() =>
     schools.value.filter((s) => s.is_favorite),
@@ -479,8 +479,8 @@ const useSchoolsInternal = (): {
     }
   };
 
-  const toggleFavorite = async (id: string, isFavorite: boolean) => {
-    return updateSchool(id, { is_favorite: !isFavorite });
+  const toggleFavorite = async (id: string, currentFavorite: boolean) => {
+    return updateSchool(id, { is_favorite: !currentFavorite });
   };
 
   const updateRanking = async (schools_: School[]) => {

@@ -594,8 +594,8 @@ describe("signup.vue", () => {
         familyCode: "",
       });
       mockAuth.signup.mockResolvedValue({
-        user: { id: "user-123" },
-        session: null,
+        data: { user: { id: "user-123" }, session: null },
+        error: null,
       });
       mockSupabase.from.mockReturnValue({
         upsert: vi.fn().mockResolvedValue({ error: null }),

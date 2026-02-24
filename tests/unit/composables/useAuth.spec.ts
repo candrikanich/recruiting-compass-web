@@ -141,7 +141,7 @@ describe("useAuth", () => {
 
       expect(auth.loading.value).toBe(false);
       expect(auth.error.value).toEqual(sessionError);
-      expect(auth.isInitialized.value).toBe(false);
+      expect(auth.isInitialized.value).toBe(true);
       expect(auth.session.value).toBe(null);
       expect(result).toBe(null);
       expect(console.error).toHaveBeenCalledWith(
@@ -396,7 +396,7 @@ describe("useAuth", () => {
       });
       expect(auth.loading.value).toBe(false);
       expect(auth.error.value).toBe(null);
-      expect(result).toEqual(signupData);
+      expect(result).toEqual({ data: signupData, error: null });
     });
 
     it("should signup with full name and role", async () => {
@@ -423,7 +423,7 @@ describe("useAuth", () => {
           },
         },
       });
-      expect(result).toEqual(signupData);
+      expect(result).toEqual({ data: signupData, error: null });
     });
 
     it("should trim email during signup", async () => {
@@ -681,7 +681,7 @@ describe("useAuth", () => {
           },
         },
       });
-      expect(result).toEqual(signupData);
+      expect(result).toEqual({ data: signupData, error: null });
     });
 
     it("should accept family_code for parent signup", async () => {
@@ -710,7 +710,7 @@ describe("useAuth", () => {
           },
         },
       });
-      expect(result).toEqual(signupData);
+      expect(result).toEqual({ data: signupData, error: null });
     });
 
     it("should handle parent signup without family_code", async () => {
@@ -737,7 +737,7 @@ describe("useAuth", () => {
           },
         },
       });
-      expect(result).toEqual(signupData);
+      expect(result).toEqual({ data: signupData, error: null });
     });
 
     it("should handle invalid family_code for parent signup", async () => {

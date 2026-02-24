@@ -153,6 +153,12 @@ export default defineEventHandler(async (event) => {
   }
 
   // Initialize Resend client
+  if (!process.env.RESEND_API_KEY) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Email service not configured",
+    });
+  }
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {

@@ -10,6 +10,7 @@ export const useSessionTimeout = () => {
   let warningInterval: ReturnType<typeof setInterval> | null = null;
   let _lastActivityTime = Date.now();
   let activityThrottleTimeout: ReturnType<typeof setTimeout> | null = null;
+  let boundActivityHandler: (() => void) | null = null;
 
   const getSessionPreferences = (): SessionPreferences | null => {
     try {
@@ -152,12 +153,12 @@ export const useSessionTimeout = () => {
     if (!prefs || !prefs.rememberMe) return;
 
     // Add activity event listeners
-    const eventHandler = () => {
+    boundActivityHandler = () => {
       handleActivity();
     };
 
     DEFAULT_TIMEOUT_CONFIG.activityEvents.forEach((event) => {
-      document.addEventListener(event, eventHandler, true);
+      document.addEventListener(event, boundActivityHandler!, true);
     });
 
     // Start checking for timeout every 30 seconds
@@ -188,13 +189,12 @@ export const useSessionTimeout = () => {
     }
 
     // Remove event listeners
-    const eventHandler = () => {
-      handleActivity();
-    };
-
-    DEFAULT_TIMEOUT_CONFIG.activityEvents.forEach((event) => {
-      document.removeEventListener(event, eventHandler, true);
-    });
+    if (boundActivityHandler) {
+      DEFAULT_TIMEOUT_CONFIG.activityEvents.forEach((event) => {
+        document.removeEventListener(event, boundActivityHandler!, true);
+      });
+      boundActivityHandler = null;
+    }
   };
 
   onMounted(() => {

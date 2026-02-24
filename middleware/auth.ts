@@ -25,7 +25,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
         }
       }
     } catch {
-      // Silently fail if localStorage parsing fails
+      localStorage.removeItem("session_preferences");
     }
   }
 

@@ -1,4 +1,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { createLogger } from "~/server/utils/logger";
+
+const logger = createLogger("notifications/generator");
 
 export interface NotificationGenerationResult {
   count: number;
@@ -128,7 +131,7 @@ export async function generateOfferNotifications(
       const leadTimes = [14, 7, 3, 1];
 
       for (const days of leadTimes) {
-        if (daysUntil === days) {
+        if (daysUntil <= days && daysUntil > 0) {
           // Check if notification already exists
           const { data: existing, error: checkError } = await supabase
             .from("notifications")
@@ -168,7 +171,7 @@ export async function generateOfferNotifications(
 
     return { count: createdCount, type: "offers" };
   } catch (err) {
-    console.error("Error generating offer notifications:", err);
+    logger.error("Error generating offer notifications:", err);
     return { count: 0, type: "offers" };
   }
 }
@@ -207,7 +210,7 @@ export async function generateRecommendationNotifications(
       const leadTimes = [14, 7];
 
       for (const days of leadTimes) {
-        if (daysUntil === days) {
+        if (daysUntil <= days && daysUntil > 0) {
           // Check if notification already exists
           const { data: existing, error: checkError } = await supabase
             .from("notifications")
@@ -246,7 +249,7 @@ export async function generateRecommendationNotifications(
 
     return { count: createdCount, type: "recommendations" };
   } catch (err) {
-    console.error("Error generating recommendation notifications:", err);
+    logger.error("Error generating recommendation notifications:", err);
     return { count: 0, type: "recommendations" };
   }
 }
@@ -281,7 +284,7 @@ export async function generateEventNotifications(
       const leadTimes = [7, 1];
 
       for (const days of leadTimes) {
-        if (daysUntil === days) {
+        if (daysUntil <= days && daysUntil > 0) {
           // Check if notification already exists
           const { data: existing, error: checkError } = await supabase
             .from("notifications")
@@ -321,7 +324,7 @@ export async function generateEventNotifications(
 
     return { count: createdCount, type: "events" };
   } catch (err) {
-    console.error("Error generating event notifications:", err);
+    logger.error("Error generating event notifications:", err);
     return { count: 0, type: "events" };
   }
 }
@@ -354,7 +357,7 @@ export async function generateCoachFollowupNotifications(
         (now.getTime() - lastContact.getTime()) / (1000 * 60 * 60 * 24),
       );
 
-      if (daysSince === FOLLOWUP_THRESHOLD) {
+      if (daysSince >= FOLLOWUP_THRESHOLD) {
         // Check if notification already exists for this coach
         const { data: existing, error: checkError } = await supabase
           .from("notifications")
@@ -392,7 +395,7 @@ export async function generateCoachFollowupNotifications(
 
     return { count: createdCount, type: "coaches" };
   } catch (err) {
-    console.error("Error generating coach follow-up notifications:", err);
+    logger.error("Error generating coach follow-up notifications:", err);
     return { count: 0, type: "coaches" };
   }
 }

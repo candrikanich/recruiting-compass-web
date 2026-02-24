@@ -81,17 +81,6 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // If favicon found and schoolId provided, store in cache
-    if (faviconUrl && schoolId) {
-      try {
-        const _cacheKey = `favicon-${schoolId}`;
-        // Store in memory cache or Redis (basic implementation)
-        // In production, could use Supabase Cache or Redis
-      } catch (cacheError) {
-        logger.warn("Failed to cache favicon", cacheError);
-        // Continue anyway, just log the error
-      }
-    }
 
     return {
       success: true,

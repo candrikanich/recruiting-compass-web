@@ -137,6 +137,7 @@ export const useAuth = () => {
       const message =
         err instanceof Error ? err.message : "Failed to restore session";
       error.value = err instanceof Error ? err : new Error(message);
+      isInitialized.value = true;
       logger.error("[useAuth] Session restoration failed:", message);
       return null;
     } finally {
@@ -309,7 +310,7 @@ export const useAuth = () => {
 
       // Store initialization is handled by caller
 
-      return data;
+      return { data, error: null };
     } catch (err: unknown) {
       const authError = err instanceof Error ? err : new Error("Signup failed");
       error.value = authError;
