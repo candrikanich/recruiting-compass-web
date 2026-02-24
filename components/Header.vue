@@ -9,8 +9,8 @@
         >
           <img
             src="@/assets/logos/recruiting-compass-horizontal.svg"
-            alt="Recruiting Compass"
-            class="h-32 w-auto"
+            alt="The Recruiting Compass: Find Your Path. Make Your Move."
+            class="h-14 w-auto"
           />
         </NuxtLink>
 

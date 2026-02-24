@@ -161,7 +161,8 @@ const useSchoolsInternal = (): {
           user_id,
           family_unit_id,
           created_at,
-          updated_at
+          updated_at,
+          academic_info
         `,
         )
         .eq("family_unit_id", activeFamily.activeFamilyId.value)
