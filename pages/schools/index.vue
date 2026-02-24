@@ -206,6 +206,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, inject } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import { useSchools } from "~/composables/useSchools";
 import { useSchoolLogos } from "~/composables/useSchoolLogos";
 import { useSchoolMatching } from "~/composables/useSchoolMatching";
@@ -243,6 +244,8 @@ interface SchoolFilterValues {
 }
 
 definePageMeta({});
+
+const logger = createClientLogger("schools");
 
 const activeFamily =
   inject<ReturnType<typeof useActiveFamily>>("activeFamily") ||
@@ -488,7 +491,7 @@ const confirmDeleteSchool = async () => {
     const message =
       err instanceof Error ? err.message : "Failed to delete school";
     announce(message);
-    console.error("Delete failed:", err);
+    logger.error("Delete failed", err);
   }
 };
 
@@ -517,7 +520,7 @@ onMounted(async () => {
 
   if (schools.value.length > 0) {
     fetchMultipleLogos(schools.value).catch((err) => {
-      console.warn("Failed to fetch logos:", err);
+      logger.warn("Failed to fetch logos", err);
     });
   }
 });

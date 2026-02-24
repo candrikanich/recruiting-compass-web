@@ -23,7 +23,7 @@
     >
       <!-- Parent Context Banner -->
       <ParentContextBanner
-        :is-viewing-as-parent="activeFamily.isViewingAsParent.value"
+        :is-viewing-as-parent="isViewingAsParent"
         :athlete-name="activeAthleteName"
       />
 
@@ -51,8 +51,8 @@
       <section aria-labelledby="suggestions-heading">
         <h2 id="suggestions-heading" class="sr-only">Recommended Actions</h2>
         <DashboardSuggestions
-          :suggestions="suggestionsComposable?.dashboardSuggestions.value || []"
-          :is-viewing-as-parent="activeFamily.isViewingAsParent.value || false"
+          :suggestions="dashboardSuggestions || []"
+          :is-viewing-as-parent="isViewingAsParent || false"
           :athlete-name="activeAthleteName"
           @dismiss="handleSuggestionDismiss"
         />
@@ -69,9 +69,7 @@
             :school-count="schoolCount"
             :recruiting-packet-loading="recruitingPacketLoading"
             :recruiting-packet-error="recruitingPacketError"
-            :has-generated-packet="
-              recruitingPacketComposable.hasGeneratedPacket.value
-            "
+            :has-generated-packet="hasGeneratedPacket"
             @generate-packet="handleGeneratePacket"
             @email-packet="handleEmailPacket"
           />
@@ -112,7 +110,7 @@
         <h2 id="widgets-heading" class="sr-only">Dashboard Widgets</h2>
         <Suspense>
           <DashboardWidgetsSection
-            :tasks="userTasksComposable?.tasks.value || []"
+            :tasks="tasks || []"
             :coaches="allCoaches"
             :schools="allSchools"
             :interactions="allInteractions"
@@ -134,11 +132,11 @@
 
       <!-- Email Recruiting Packet Modal -->
       <EmailRecruitingPacketModal
-        :is-open="recruitingPacketComposable.showEmailModal.value"
+        :is-open="showEmailModal"
         :available-coaches="allCoaches"
-        :default-subject="recruitingPacketComposable.defaultEmailSubject.value"
-        :default-body="recruitingPacketComposable.defaultEmailBody.value"
-        @close="recruitingPacketComposable.setShowEmailModal(false)"
+        :default-subject="defaultEmailSubject"
+        :default-body="defaultEmailBody"
+        @close="setShowEmailModal(false)"
         @send="handleSendEmail"
       />
     </main>
@@ -202,6 +200,24 @@ const userTasksComposable = useUserTasks();
 const suggestionsComposable = useSuggestions();
 const viewLoggingComposable = useViewLogging();
 const recruitingPacketComposable = useRecruitingPacket();
+
+// Destructure recruiting packet refs for template auto-unwrapping
+const {
+  hasGeneratedPacket,
+  showEmailModal,
+  defaultEmailSubject,
+  defaultEmailBody,
+  setShowEmailModal,
+} = recruitingPacketComposable;
+
+// Destructure suggestions ref for template auto-unwrapping
+const { dashboardSuggestions } = suggestionsComposable ?? {
+  dashboardSuggestions: ref([]),
+};
+
+// Destructure tasks ref for template auto-unwrapping
+const { tasks } = userTasksComposable ?? { tasks: ref([]) };
+
 const dashboardData = useDashboardData();
 const {
   coachCount,
@@ -228,6 +244,9 @@ const {
 // Inject family context provided at app.vue level (with singleton fallback)
 const activeFamily =
   inject<UseActiveFamilyReturn>("activeFamily") || useFamilyContext();
+
+// Destructure activeFamily refs used in template for auto-unwrapping
+const { isViewingAsParent } = activeFamily;
 
 // Local state
 const user = computed(() => userStore.user);
