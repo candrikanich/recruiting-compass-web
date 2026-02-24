@@ -3,7 +3,7 @@
  * Manages fit score state and calculations for schools
  */
 
-import { ref, computed } from "vue";
+import { ref, shallowRef, computed } from "vue";
 import type { School } from "~/types/models";
 import type {
   FitScoreResult,
@@ -20,13 +20,6 @@ import {
   calculatePersonalFit,
 } from "~/utils/fitScoreCalculation";
 import { createClientLogger } from "~/utils/logger";
-
-interface UseFitScoreState {
-  schoolFitScores: Map<string, FitScoreResult>;
-  portfolioHealth: PortfolioHealth | null;
-  loading: boolean;
-  error: string | null;
-}
 
 const logger = createClientLogger("useFitScore");
 
@@ -74,12 +67,10 @@ export const useFitScore = (): {
   getFitScore: (schoolId: string) => FitScoreResult | undefined;
   clearCache: () => void;
 } => {
-  const state = ref<UseFitScoreState>({
-    schoolFitScores: new Map(),
-    portfolioHealth: null,
-    loading: false,
-    error: null,
-  });
+  const schoolFitScoresRef = shallowRef<Map<string, FitScoreResult>>(new Map());
+  const portfolioHealthRef = ref<PortfolioHealth | null>(null);
+  const loadingRef = ref(false);
+  const errorRef = ref<string | null>(null);
 
   /**
    * Calculate fit score for a single school
@@ -116,8 +107,8 @@ export const useFitScore = (): {
       majorStrengthRating?: number;
     },
   ): Promise<FitScoreResult> {
-    state.value.loading = true;
-    state.value.error = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
       // Calculate each dimension
@@ -176,18 +167,20 @@ export const useFitScore = (): {
         personalFit,
       });
 
-      // Cache the result
-      state.value.schoolFitScores.set(schoolId, fitScore);
+      // Cache the result — replace the Map reference so shallowRef triggers reactivity
+      const newMap = new Map(schoolFitScoresRef.value);
+      newMap.set(schoolId, fitScore);
+      schoolFitScoresRef.value = newMap;
 
       return fitScore;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to calculate fit score";
-      state.value.error = message;
+      errorRef.value = message;
       logger.error("Fit score calculation error:", err);
       throw err;
     } finally {
-      state.value.loading = false;
+      loadingRef.value = false;
     }
   }
 
@@ -197,8 +190,8 @@ export const useFitScore = (): {
   async function recalculateAllFitScores(
     schools: School[],
   ): Promise<Map<string, FitScoreResult>> {
-    state.value.loading = true;
-    state.value.error = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
       const allScores = new Map<string, FitScoreResult>();
@@ -230,16 +223,16 @@ export const useFitScore = (): {
         }
       }
 
-      state.value.schoolFitScores = allScores;
+      schoolFitScoresRef.value = allScores;
       return allScores;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to recalculate fit scores";
-      state.value.error = message;
+      errorRef.value = message;
       logger.error("Fit score recalculation error:", err);
       throw err;
     } finally {
-      state.value.loading = false;
+      loadingRef.value = false;
     }
   }
 
@@ -252,7 +245,7 @@ export const useFitScore = (): {
     try {
       // Ensure we have fit scores for all schools
       const schoolsWithFitScores = schools.map((school) => {
-        const cached = state.value.schoolFitScores.get(school.id);
+        const cached = schoolFitScoresRef.value.get(school.id);
         const fitScore =
           cached?.score ||
           ("fit_score" in school && typeof school.fit_score === "number"
@@ -271,14 +264,14 @@ export const useFitScore = (): {
       });
 
       const health = calculatePortfolioHealthUtil(schoolsWithFitScores);
-      state.value.portfolioHealth = health;
+      portfolioHealthRef.value = health;
       return health;
     } catch (err: unknown) {
       const message =
         err instanceof Error
           ? err.message
           : "Failed to calculate portfolio health";
-      state.value.error = message;
+      errorRef.value = message;
       logger.error("Portfolio health error:", err);
       throw err;
     }
@@ -288,7 +281,7 @@ export const useFitScore = (): {
    * Get cached fit score for a school
    */
   function getFitScore(schoolId: string): FitScoreResult | undefined {
-    return state.value.schoolFitScores.get(schoolId);
+    return schoolFitScoresRef.value.get(schoolId);
   }
 
   /**
@@ -302,8 +295,8 @@ export const useFitScore = (): {
     failed: number;
     message: string;
   }> {
-    state.value.loading = true;
-    state.value.error = null;
+    loadingRef.value = true;
+    errorRef.value = null;
 
     try {
       const res = await fetch("/api/athlete/fit-scores/recalculate-all", {
@@ -329,11 +322,11 @@ export const useFitScore = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to recalculate fit scores";
-      state.value.error = message;
+      errorRef.value = message;
       logger.error("Server fit score recalculation error:", err);
       throw err;
     } finally {
-      state.value.loading = false;
+      loadingRef.value = false;
     }
   }
 
@@ -341,15 +334,15 @@ export const useFitScore = (): {
    * Clear all cached fit scores
    */
   function clearCache(): void {
-    state.value.schoolFitScores.clear();
-    state.value.portfolioHealth = null;
+    schoolFitScoresRef.value = new Map();
+    portfolioHealthRef.value = null;
   }
 
   // Computed properties
-  const schoolFitScores = computed(() => state.value.schoolFitScores);
-  const portfolioHealth = computed(() => state.value.portfolioHealth);
-  const loading = computed(() => state.value.loading);
-  const error = computed(() => state.value.error);
+  const schoolFitScores = computed(() => schoolFitScoresRef.value);
+  const portfolioHealth = computed(() => portfolioHealthRef.value);
+  const loading = computed(() => loadingRef.value);
+  const error = computed(() => errorRef.value);
 
   return {
     // State
