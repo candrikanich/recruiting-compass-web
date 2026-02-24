@@ -328,8 +328,10 @@ const useInteractionsInternal = (): {
             (supabase.from("interactions") as any)
               .update({ attachments: uploadedPaths })
               .eq("id", data.id);
-          if (updateError)
+          if (updateError) {
             logger.error("Failed to update attachment paths:", updateError);
+            throw new Error("Failed to save attachments. Interaction created but files were not linked.");
+          }
         }
       }
 
@@ -341,7 +343,7 @@ const useInteractionsInternal = (): {
         });
       }
 
-      interactions.value.unshift(data);
+      interactions.value = [data, ...interactions.value];
       return data;
     } catch (err: unknown) {
       const message =
