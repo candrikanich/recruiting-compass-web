@@ -119,7 +119,7 @@ export const useDashboardData = () => {
     } = await supabase
       .from("coaches")
       .select(
-        "id, first_name, last_name, title, email, phone, school_id, twitter_handle, instagram_handle, last_contact_date, created_at, updated_at",
+        "id, first_name, last_name, role, email, phone, school_id, twitter_handle, instagram_handle, last_contact_date, created_at, updated_at",
         { count: "exact" },
       )
       .in("school_id", schoolIds);
