@@ -95,6 +95,7 @@ export function useRecommendationLetters() {
   };
 
   const deleteLetter = async (id: string) => {
+    loading.value = true;
     error.value = null;
 
     try {
