@@ -92,7 +92,7 @@ export default defineEventHandler(async (event) => {
           : "User signup may have failed to set family_unit_id. Check users table and signup logic.",
       },
     };
-  } catch (_error) {
+  } catch {
     return {
       error: true,
       message: "Session check failed",
