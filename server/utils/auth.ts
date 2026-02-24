@@ -99,9 +99,12 @@ export async function getUserRole(
 ): Promise<UserRole | null> {
   // Check cache first
   const cached = roleCache.get(userId);
-  if (cached && Date.now() < cached.expiresAt) {
-    logger.info(`Role cache hit for user ${userId}`);
-    return cached.role;
+  if (cached) {
+    if (Date.now() < cached.expiresAt) {
+      logger.info(`Role cache hit for user ${userId}`);
+      return cached.role;
+    }
+    roleCache.delete(userId);
   }
 
   try {
