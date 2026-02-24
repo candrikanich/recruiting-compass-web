@@ -278,11 +278,11 @@ const currentPage = ref(1);
 const paginatedSchools = computed(() => {
   const start = (currentPage.value - 1) * ITEMS_PER_PAGE;
   const end = start + ITEMS_PER_PAGE;
-  return filteredSchools.value.slice(start, end);
+  return sortedFilteredSchools.value.slice(start, end);
 });
 
 const totalPages = computed(() =>
-  Math.ceil(filteredSchools.value.length / ITEMS_PER_PAGE),
+  Math.ceil(sortedFilteredSchools.value.length / ITEMS_PER_PAGE),
 );
 
 const hasNextPage = computed(() => currentPage.value < totalPages.value);
@@ -425,7 +425,11 @@ const filteredSchools = computed(() => {
     });
   }
 
-  const sorted = [...filtered].sort((a, b) => {
+  return filtered;
+});
+
+const sortedFilteredSchools = computed(() => {
+  return [...filteredSchools.value].sort((a, b) => {
     switch (sortBy.value) {
       case "fit-score":
         return (b.fit_score ?? -1) - (a.fit_score ?? -1);
@@ -450,8 +454,6 @@ const filteredSchools = computed(() => {
         return a.name.localeCompare(b.name);
     }
   });
-
-  return sorted;
 });
 
 const handleFilterUpdate = (field: string, value: any) => {
@@ -496,7 +498,7 @@ const cancelDeleteSchool = () => {
 };
 
 const { handleExportCSV, handleExportPDF } = useSchoolExport({
-  filteredSchools,
+  filteredSchools: sortedFilteredSchools,
   offers,
   allInteractions,
   allCoaches,
