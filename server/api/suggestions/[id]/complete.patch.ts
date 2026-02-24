@@ -2,7 +2,6 @@ import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { logCRUD, logError } from "~/server/utils/auditLog";
-import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
 
 interface CompleteUpdateData {
@@ -12,7 +11,6 @@ interface CompleteUpdateData {
 }
 
 export default defineEventHandler(async (event) => {
-  const logger = useLogger(event, "suggestions/complete");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
   const suggestionId = requireUuidParam(event, "id");

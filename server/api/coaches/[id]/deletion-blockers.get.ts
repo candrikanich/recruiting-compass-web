@@ -1,4 +1,4 @@
-import { defineEventHandler, createError, getHeader } from "h3";
+import { defineEventHandler, getHeader } from "h3";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
