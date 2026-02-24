@@ -27,26 +27,36 @@ export default defineEventHandler(async (event) => {
     getPendingSuggestionCount(supabase, user.id),
   ]);
 
-  // Bootstrap: if no suggestions exist yet and this is an athlete (not a parent),
-  // run the rule engine inline so the first dashboard load returns populated results.
+  // Bootstrap: if no surfaced/pending suggestions exist AND this user has never had
+  // any suggestion generated before (including dismissed/completed), run the rule
+  // engine inline so the first dashboard load returns populated results.
+  // Checking all-time total prevents re-running on every visit once the user has
+  // dismissed all their suggestions or the rules fire nothing.
   if (suggestions.length === 0 && pendingCount === 0) {
     const role = await getUserRole(user.id, supabase);
     if (role !== "parent") {
-      logger.info("No suggestions found — bootstrapping for new user");
-      try {
-        await triggerSuggestionUpdate(supabase, user.id, "daily_refresh");
-        [suggestions, pendingCount] = await Promise.all([
-          getSurfacedSuggestions(
-            supabase,
-            user.id,
-            location as "dashboard" | "school_detail",
-            schoolId,
-          ),
-          getPendingSuggestionCount(supabase, user.id),
-        ]);
-      } catch (err) {
-        // Bootstrap failure is non-fatal — return empty rather than erroring
-        logger.warn("Suggestion bootstrap failed, returning empty", err);
+      const { count: totalEver } = await supabase
+        .from("suggestion")
+        .select("id", { count: "exact", head: true })
+        .eq("athlete_id", user.id);
+
+      if (totalEver === 0) {
+        logger.info("No suggestions ever generated — bootstrapping for new user");
+        try {
+          await triggerSuggestionUpdate(supabase, user.id, "daily_refresh");
+          [suggestions, pendingCount] = await Promise.all([
+            getSurfacedSuggestions(
+              supabase,
+              user.id,
+              location as "dashboard" | "school_detail",
+              schoolId,
+            ),
+            getPendingSuggestionCount(supabase, user.id),
+          ]);
+        } catch (err) {
+          // Bootstrap failure is non-fatal — return empty rather than erroring
+          logger.warn("Suggestion bootstrap failed, returning empty", err);
+        }
       }
     }
   }
