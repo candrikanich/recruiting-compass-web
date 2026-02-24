@@ -231,7 +231,7 @@ const activeFamily =
   inject<UseActiveFamilyReturn>("activeFamily") || useFamilyContext();
 
 // Local state
-const user = ref<any>(null);
+const user = computed(() => userStore.user);
 const recruitingPacketLoading = ref(false);
 const recruitingPacketError = ref<string | null>(null);
 
@@ -390,27 +390,21 @@ const refreshDashboard = async () => {
   }
 };
 
-// Watch for family context to load (fixes hard refresh showing 0s)
+// Consolidated: refresh when family or athlete context changes
 watch(
-  () => activeFamily.activeFamilyId.value,
-  async (newFamilyId, oldFamilyId) => {
-    if (newFamilyId && newFamilyId !== oldFamilyId && targetUserId.value) {
+  () =>
+    [
+      activeFamily.activeFamilyId.value,
+      activeFamily.activeAthleteId.value,
+    ] as const,
+  async ([familyId], [prevFamilyId]) => {
+    if (familyId && familyId !== prevFamilyId && targetUserId.value) {
       await refreshDashboard();
     }
   },
 );
 
-// Watch for athlete switches
-watch(
-  () => activeFamily.activeAthleteId.value,
-  async (newId, oldId) => {
-    if (newId && newId !== oldId && activeFamily.isViewingAsParent.value) {
-      await refreshDashboard();
-    }
-  },
-);
-
-// Refetch data when returning to dashboard
+// Refetch data when navigating back to dashboard
 watch(
   () => router.currentRoute.value.path,
   async (newPath) => {
@@ -420,11 +414,10 @@ watch(
   },
 );
 
-// Watch for user changes
+// Initialize on user load
 watch(
   () => userStore?.user,
   async (newUser) => {
-    user.value = newUser;
     if (newUser && notificationsComposable) {
       await refreshDashboard();
       await notificationsComposable.fetchNotifications();
