@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref, computed, onBeforeUnmount } from "vue";
 
 /**
  * Composable for managing resend cooldown timers
@@ -81,6 +81,11 @@ export const useResendCooldown = (durationSeconds = 60) => {
    * Computed label for resend button
    * Returns appropriate text based on cooldown state
    */
+  // Auto-cleanup when component unmounts
+  onBeforeUnmount(() => {
+    stopCooldown();
+  });
+
   const buttonLabel = computed(() => {
     if (isActive.value) {
       return `Resend in ${cooldown.value}s`;

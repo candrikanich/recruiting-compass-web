@@ -4,6 +4,9 @@ import { useToast } from "~/composables/useToast";
 describe("useToast", () => {
   beforeEach(() => {
     vi.clearAllTimers();
+    // Reset shared singleton state between tests
+    const { clearAll } = useToast();
+    clearAll();
   });
 
   it("should initialize with empty toasts", () => {

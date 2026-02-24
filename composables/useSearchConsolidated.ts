@@ -455,6 +455,7 @@ export const useSearchConsolidated = () => {
     }
 
     // Debounce actual search execution
+    clearTimeout(searchTimeoutId);
     searchTimeoutId = setTimeout(async () => {
       isSearching.value = true;
       searchError.value = null;
