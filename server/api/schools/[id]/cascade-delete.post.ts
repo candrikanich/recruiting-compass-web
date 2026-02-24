@@ -73,14 +73,14 @@ export default defineEventHandler(async (event) => {
     // Delete all child records in parallel — none of these tables have FK
     // dependencies on each other, only on the parent school row.
     const [
-      { count: historyCount },
-      { count: coachCount },
-      { count: interactionCount },
-      { count: offerCount },
-      { count: postCount },
-      { count: docCount },
-      { count: eventCount },
-      { count: suggestionCount },
+      { count: historyCount, error: historyError },
+      { count: coachCount, error: coachError },
+      { count: interactionCount, error: interactionError },
+      { count: offerCount, error: offerError },
+      { count: postCount, error: postError },
+      { count: docCount, error: docError },
+      { count: eventCount, error: eventError },
+      { count: suggestionCount, error: suggestionError },
     ] = await Promise.all([
       client.from("school_status_history").delete().eq("school_id", schoolId),
       client.from("coaches").delete().eq("school_id", schoolId),
@@ -91,6 +91,27 @@ export default defineEventHandler(async (event) => {
       client.from("events").delete().eq("school_id", schoolId),
       client.from("suggestion").delete().eq("related_school_id", schoolId),
     ]);
+
+    const childErrors = [
+      historyError,
+      coachError,
+      interactionError,
+      offerError,
+      postError,
+      docError,
+      eventError,
+      suggestionError,
+    ].filter(Boolean);
+    if (childErrors.length > 0) {
+      logger.error("Child record deletion failed during cascade delete", {
+        schoolId,
+        errors: childErrors,
+      });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to delete all related records",
+      });
+    }
 
     if (historyCount) deleted.school_status_history = historyCount;
     if (coachCount) deleted.coaches = coachCount;

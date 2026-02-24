@@ -73,24 +73,27 @@ export default defineEventHandler(async (event) => {
     // Delete in dependency order (careful of FK constraints)
 
     // 1. Delete interactions
-    const { count: interactionCount } = await client
+    const { count: interactionCount, error: interactionError } = await client
       .from("interactions")
       .delete()
       .eq("coach_id", coachId);
+    if (interactionError) throw interactionError;
     if (interactionCount) deleted.interactions = interactionCount;
 
     // 2. Delete offers
-    const { count: offerCount } = await client
+    const { count: offerCount, error: offerError } = await client
       .from("offers")
       .delete()
       .eq("coach_id", coachId);
+    if (offerError) throw offerError;
     if (offerCount) deleted.offers = offerCount;
 
     // 3. Delete social media posts
-    const { count: postCount } = await client
+    const { count: postCount, error: postError } = await client
       .from("social_media_posts")
       .delete()
       .eq("coach_id", coachId);
+    if (postError) throw postError;
     if (postCount) deleted.social_media_posts = postCount;
 
     // 4. Finally delete the coach
