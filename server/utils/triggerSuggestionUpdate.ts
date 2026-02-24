@@ -9,6 +9,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { RuleEngine } from "./ruleEngine";
 import { surfacePendingSuggestions } from "./suggestionStaggering";
+import { calculateCurrentGrade } from "~/utils/gradeHelpers";
 import type { RuleContext } from "./rules/index";
 import { interactionGapRule } from "./rules/interactionGap";
 import { missingVideoRule } from "./rules/missingVideo";
@@ -50,9 +51,11 @@ export async function triggerSuggestionUpdate(
   options?: TriggerUpdateOptions,
 ): Promise<TriggerUpdateResult> {
   try {
-    // Fetch all athlete data required for rule evaluation
+    // Fetch all athlete data required for rule evaluation.
+    // grade_level is derived from graduation_year stored in user_preferences
+    // (the profiles table was removed — see migration 041).
     const [
-      athlete,
+      playerPrefs,
       schools,
       interactions,
       tasks,
@@ -60,7 +63,12 @@ export async function triggerSuggestionUpdate(
       videos,
       events,
     ] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", athleteId).single(),
+      supabase
+        .from("user_preferences")
+        .select("data")
+        .eq("user_id", athleteId)
+        .eq("category", "player")
+        .single(),
       supabase.from("schools").select("*").eq("athlete_id", athleteId),
       supabase.from("interactions").select("*").eq("athlete_id", athleteId),
       supabase.from("task").select("*"),
@@ -69,14 +77,16 @@ export async function triggerSuggestionUpdate(
       supabase.from("events").select("*").eq("athlete_id", athleteId),
     ]);
 
-    if (!athlete.data) {
-      console.warn(`Athlete ${athleteId} not found`);
-      return { generated: 0, surfaced: 0, reason };
-    }
+    const playerData = playerPrefs.data?.data as Record<string, unknown> | null;
+    const graduationYear =
+      typeof playerData?.graduation_year === "number"
+        ? playerData.graduation_year
+        : null;
+    const gradeLevel = graduationYear ? calculateCurrentGrade(graduationYear) : 9;
 
     const context: RuleContext = {
       athleteId,
-      athlete: athlete.data,
+      athlete: { grade_level: gradeLevel },
       schools: schools.data || [],
       interactions: interactions.data || [],
       tasks: tasks.data || [],
