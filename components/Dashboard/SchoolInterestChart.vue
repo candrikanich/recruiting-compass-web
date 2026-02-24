@@ -268,5 +268,5 @@ onMounted(() => {
 
 watch(chartData, () => {
   initializeChart();
-});
+}, { flush: "post" });
 </script>

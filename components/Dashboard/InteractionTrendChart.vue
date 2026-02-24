@@ -270,15 +270,19 @@ onMounted(() => {
   initializeChart();
 });
 
-watch(chartData, (newData) => {
-  if (chartInstance && newData) {
-    // Update existing chart data instead of recreating
-    chartInstance.data.labels = newData.labels;
-    chartInstance.data.datasets[0].data = newData.data;
-    chartInstance.update("none"); // Update without animation
-  } else {
-    // No existing chart - create new one
-    initializeChart();
-  }
-});
+watch(
+  chartData,
+  (newData) => {
+    if (chartInstance && newData) {
+      // Update existing chart data instead of recreating
+      chartInstance.data.labels = newData.labels;
+      chartInstance.data.datasets[0].data = newData.data;
+      chartInstance.update("none"); // Update without animation
+    } else {
+      // No existing chart - create new one (runs after v-if renders canvas)
+      initializeChart();
+    }
+  },
+  { flush: "post" },
+);
 </script>
