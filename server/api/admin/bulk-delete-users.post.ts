@@ -193,6 +193,8 @@ export default defineEventHandler(
                     `Failed to delete auth user ${targetUserId} (${targetEmail}):`,
                     deleteError,
                   );
+                  errors.push({ email: targetEmail, reason: deleteError.message || "Auth deletion failed" });
+                  return;
                 }
               }
 
