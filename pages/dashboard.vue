@@ -387,8 +387,14 @@ watch(
       activeFamily.activeFamilyId.value,
       activeFamily.activeAthleteId.value,
     ] as const,
-  async ([familyId], [prevFamilyId]) => {
-    if (familyId && familyId !== prevFamilyId && targetUserId.value) {
+  async ([familyId, athleteId], [prevFamilyId, prevAthleteId]) => {
+    const familyChanged =
+      familyId && familyId !== prevFamilyId && targetUserId.value;
+    const athleteChanged =
+      athleteId &&
+      athleteId !== prevAthleteId &&
+      activeFamily.isViewingAsParent.value;
+    if (familyChanged || athleteChanged) {
       await refreshDashboard();
     }
   },
