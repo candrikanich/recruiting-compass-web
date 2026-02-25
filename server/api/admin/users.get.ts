@@ -67,10 +67,10 @@ export default defineEventHandler(async (event): Promise<GetUsersResponse> => {
       offset,
     };
   } catch (error) {
-    logger.error("Get users endpoint failed", error);
     if (error instanceof Error && "statusCode" in error) {
       throw error;
     }
+    logger.error("Get users endpoint failed", error);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to fetch users",
