@@ -175,6 +175,8 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
 
               if (!insertError) {
                 postsInserted++;
+              } else {
+                logger.warn("Failed to insert post", { post_url: post.post_url, error: insertError });
               }
             }
           }

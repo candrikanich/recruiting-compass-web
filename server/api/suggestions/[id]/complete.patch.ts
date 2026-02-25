@@ -23,11 +23,12 @@ export default defineEventHandler(async (event) => {
       completed_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from("suggestion")
       .update(updateData)
       .eq("id", suggestionId)
-      .eq("athlete_id", user.id);
+      .eq("athlete_id", user.id)
+      .select("id");
 
     if (error) {
       // Log failed completion
@@ -43,6 +44,13 @@ export default defineEventHandler(async (event) => {
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to complete suggestion",
+      });
+    }
+
+    if (!updated || updated.length === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Suggestion not found or not authorized",
       });
     }
 

@@ -119,10 +119,16 @@ export const useSchoolLogos = () => {
       if (faviconUrl) {
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (await (supabase.from("schools") as any)
+          const { error: dbError } = (await (supabase.from("schools") as any)
             .update({ favicon_url: faviconUrl })
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .eq("id", schoolId)) as { error?: any };
+          if (dbError) {
+            logger.warn(
+              `Failed to save favicon to database for ${schoolId}:`,
+              dbError,
+            );
+          }
         } catch (dbError) {
           logger.warn(
             `Failed to save favicon to database for ${schoolId}:`,

@@ -386,26 +386,33 @@ const handleSendEmail = async (emailData: {
 };
 
 // Centralized dashboard refresh logic
+let refreshInFlight = false;
 const refreshDashboard = async () => {
+  if (refreshInFlight) return;
   if (!activeFamily.activeFamilyId.value || !targetUserId.value) {
     return;
   }
 
-  await dashboardData.fetchAll(
-    activeFamily.activeFamilyId.value,
-    targetUserId.value,
-  );
-
-  await suggestionsComposable?.fetchSuggestions("dashboard");
-
-  if (
-    activeFamily.isViewingAsParent.value &&
-    activeFamily.activeAthleteId.value
-  ) {
-    await viewLoggingComposable?.logParentView(
-      "dashboard",
-      activeFamily.activeAthleteId.value,
+  refreshInFlight = true;
+  try {
+    await dashboardData.fetchAll(
+      activeFamily.activeFamilyId.value,
+      targetUserId.value,
     );
+
+    await suggestionsComposable?.fetchSuggestions("dashboard");
+
+    if (
+      activeFamily.isViewingAsParent.value &&
+      activeFamily.activeAthleteId.value
+    ) {
+      await viewLoggingComposable?.logParentView(
+        "dashboard",
+        activeFamily.activeAthleteId.value,
+      );
+    }
+  } finally {
+    refreshInFlight = false;
   }
 };
 

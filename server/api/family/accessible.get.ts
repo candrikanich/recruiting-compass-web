@@ -117,7 +117,7 @@ export default defineEventHandler(async (event) => {
     logger.error("Failed to fetch families", err);
     throw createError({
       statusCode: 500,
-      message: "Failed to fetch families",
+      statusMessage: "Failed to fetch families",
     });
   }
 });

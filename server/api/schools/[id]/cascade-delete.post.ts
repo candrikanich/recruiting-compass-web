@@ -5,10 +5,13 @@ import {
   getHeader,
   getCookie,
 } from "h3";
+import { z } from "zod";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
+
+const cascadeDeleteSchema = z.object({ confirmDelete: z.boolean().optional() });
 
 /**
  * Cascade delete a school and all related records
@@ -35,15 +38,14 @@ export default defineEventHandler(async (event) => {
   await requireAuth(event);
   const schoolId = requireUuidParam(event, "id");
 
-  let body = {};
+  let body: z.infer<typeof cascadeDeleteSchema>;
   try {
-    body = await readBody(event);
+    body = cascadeDeleteSchema.parse(await readBody(event).catch(() => ({})));
   } catch {
-    // Empty body is OK
+    throw createError({ statusCode: 400, statusMessage: "Invalid request body" });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { confirmDelete } = body as any;
+  const { confirmDelete } = body;
   if (!confirmDelete) {
     throw createError({
       statusCode: 400,

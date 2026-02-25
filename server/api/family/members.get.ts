@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
   if (!familyId) {
     throw createError({
       statusCode: 400,
-      message: "familyId query parameter is required",
+      statusMessage: "familyId query parameter is required",
     });
   }
 
@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
   if (accessError || !access) {
     throw createError({
       statusCode: 403,
-      message: "You do not have access to this family",
+      statusMessage: "You do not have access to this family",
     });
   }
 
@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
     logger.error("Failed to fetch family members", membersError);
     throw createError({
       statusCode: 500,
-      message: "Failed to fetch family members",
+      statusMessage: "Failed to fetch family members",
     });
   }
 
@@ -91,7 +91,7 @@ export default defineEventHandler(async (event) => {
     logger.error("Failed to fetch user details", usersError);
     throw createError({
       statusCode: 500,
-      message: "Failed to fetch user details",
+      statusMessage: "Failed to fetch user details",
     });
   }
 

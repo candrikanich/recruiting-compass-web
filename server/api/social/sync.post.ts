@@ -158,60 +158,45 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
       twitterFetched = twitterPosts.length;
 
       if (twitterPosts.length > 0) {
-        // Check for existing posts and insert new ones
-        const newPosts = [];
-        for (const post of twitterPosts) {
-          const { data: existing } = await supabase
-            .from("social_media_posts")
-            .select("id")
-            .eq("post_url", post.post_url)
-            .single();
+        // Build post data for all fetched tweets
+        const postsToUpsert = twitterPosts.map((post) => {
+          const school = findEntityByHandle(
+            schools as Array<{ id: string; twitter_handle?: string }>,
+            "twitter_handle",
+            post.author_handle,
+          );
+          const coach = findEntityByHandle(
+            (coaches as unknown as Array<{
+              id: string;
+              twitter_handle?: string;
+            }>) || [],
+            "twitter_handle",
+            post.author_handle,
+          );
+          const sentimentResult = analyzeSentiment(post.post_content);
+          return {
+            school_id: school?.id || null,
+            coach_id: coach?.id || null,
+            platform: post.platform,
+            post_url: post.post_url,
+            post_content: post.post_content,
+            post_date: post.post_date,
+            author_name: post.author_name,
+            author_handle: post.author_handle,
+            engagement_count: post.engagement_count,
+            is_recruiting_related: post.is_recruiting_related,
+            sentiment: sentimentResult.sentiment,
+          };
+        });
 
-          if (!existing) {
-            // Find associated school or coach
-            const school = findEntityByHandle(
-              schools as Array<{ id: string; twitter_handle?: string }>,
-              "twitter_handle",
-              post.author_handle,
-            );
-            const coach = findEntityByHandle(
-              (coaches as unknown as Array<{
-                id: string;
-                twitter_handle?: string;
-              }>) || [],
-              "twitter_handle",
-              post.author_handle,
-            );
+        const { error: upsertError } = await supabaseAny
+          .from("social_media_posts")
+          .upsert(postsToUpsert, { onConflict: "post_url", ignoreDuplicates: true });
 
-            // Analyze sentiment
-            const sentimentResult = analyzeSentiment(post.post_content);
-
-            newPosts.push({
-              school_id: school?.id || null,
-              coach_id: coach?.id || null,
-              platform: post.platform,
-              post_url: post.post_url,
-              post_content: post.post_content,
-              post_date: post.post_date,
-              author_name: post.author_name,
-              author_handle: post.author_handle,
-              engagement_count: post.engagement_count,
-              is_recruiting_related: post.is_recruiting_related,
-              sentiment: sentimentResult.sentiment,
-            });
-          }
-        }
-
-        if (newPosts.length > 0) {
-          const { error: insertError } = await supabaseAny
-            .from("social_media_posts")
-            .insert(newPosts);
-
-          if (insertError) {
-            logger.error("Failed to insert Twitter posts", insertError);
-          } else {
-            twitterNew = newPosts.length;
-          }
+        if (upsertError) {
+          logger.error("Failed to upsert Twitter posts", upsertError);
+        } else {
+          twitterNew = postsToUpsert.length;
         }
       }
     }
@@ -223,60 +208,48 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
       instagramFetched = instagramPosts.length;
 
       if (instagramPosts.length > 0) {
-        // Check for existing posts and insert new ones
-        const newPosts = [];
-        for (const post of instagramPosts) {
-          const { data: existing } = await supabase
-            .from("social_media_posts")
-            .select("id")
-            .eq("post_url", post.post_url)
-            .single();
+        // Build post data for all fetched Instagram media
+        const postsToUpsert = instagramPosts.map((post) => {
+          const school = findEntityByHandle(
+            schools as Array<{ id: string; instagram_handle?: string }>,
+            "instagram_handle",
+            post.author_handle,
+          );
+          const coach = findEntityByHandle(
+            (coaches as unknown as Array<{
+              id: string;
+              instagram_handle?: string;
+            }>) || [],
+            "instagram_handle",
+            post.author_handle,
+          );
+          const sentimentResult = analyzeSentiment(post.post_content);
+          return {
+            school_id: school?.id || null,
+            coach_id: coach?.id || null,
+            platform: post.platform,
+            post_url: post.post_url,
+            post_content: post.post_content,
+            post_date: post.post_date,
+            author_name: post.author_name,
+            author_handle: post.author_handle,
+            engagement_count: post.engagement_count,
+            is_recruiting_related: post.is_recruiting_related,
+            sentiment: sentimentResult.sentiment,
+          };
+        });
 
-          if (!existing) {
-            // Find associated school or coach
-            const school = findEntityByHandle(
-              schools as Array<{ id: string; instagram_handle?: string }>,
-              "instagram_handle",
-              post.author_handle,
-            );
-            const coach = findEntityByHandle(
-              (coaches as unknown as Array<{
-                id: string;
-                instagram_handle?: string;
-              }>) || [],
-              "instagram_handle",
-              post.author_handle,
-            );
+        const { error: upsertError } = await supabaseAny
+          .from("social_media_posts")
+          .upsert(postsToUpsert, {
+            onConflict: "post_url",
+            ignoreDuplicates: true,
+          });
 
-            // Analyze sentiment
-            const sentimentResult = analyzeSentiment(post.post_content);
-
-            newPosts.push({
-              school_id: school?.id || null,
-              coach_id: coach?.id || null,
-              platform: post.platform,
-              post_url: post.post_url,
-              post_content: post.post_content,
-              post_date: post.post_date,
-              author_name: post.author_name,
-              author_handle: post.author_handle,
-              engagement_count: post.engagement_count,
-              is_recruiting_related: post.is_recruiting_related,
-              sentiment: sentimentResult.sentiment,
-            });
-          }
-        }
-
-        if (newPosts.length > 0) {
-          const { error: insertError } = await supabaseAny
-            .from("social_media_posts")
-            .insert(newPosts);
-
-          if (insertError) {
-            logger.error("Failed to insert Instagram posts", insertError);
-          } else {
-            instagramNew = newPosts.length;
-          }
+        if (upsertError) {
+          logger.error("Failed to upsert Instagram posts", upsertError);
+        } else {
+          instagramNew = postsToUpsert.length;
         }
       }
     }

@@ -170,7 +170,7 @@ import {
 const route = useRoute();
 const supabase = useSupabase();
 
-let userStore = useUserStore();
+const userStore = useUserStore();
 const user = computed(() => userStore.user || null);
 const isMobileMenuOpen = ref(false);
 
@@ -244,11 +244,6 @@ const handleLogout = async () => {
 };
 
 onMounted(() => {
-  try {
-    userStore = useUserStore();
-  } catch (err) {
-    // Pinia may not be ready during certain navigation phases
-    console.debug("Header: Pinia not ready on mount", err);
-  }
+  // Pinia store is guaranteed to be initialized by mount time; no reassignment needed.
 });
 </script>

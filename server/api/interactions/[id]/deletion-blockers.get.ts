@@ -1,5 +1,6 @@
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 
 interface BlockerInfo {
   table: string;
@@ -17,7 +18,9 @@ interface BlockerInfo {
  * - message: User-friendly message explaining what's blocking deletion
  */
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "interactions/deletion-blockers");
   const interactionId = getRouterParam(event, "id");
+  logger.info("Checking deletion blockers");
 
   if (!interactionId) {
     throw createError({

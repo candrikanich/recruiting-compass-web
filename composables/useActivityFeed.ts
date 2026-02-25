@@ -2,7 +2,6 @@ import { ref, readonly, onUnmounted } from "vue";
 import { useSupabase } from "~/composables/useSupabase";
 import { useAuth } from "~/composables/useAuth";
 import type { Interaction, School } from "~/types/models";
-import type { RealtimeChannel } from "@supabase/supabase-js";
 import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("useActivityFeed");
@@ -65,6 +64,7 @@ export const useActivityFeed = () => {
   const error = ref<string | null>(null);
   const limit = ref(10);
   const offset = ref(0);
+  let subscription: ReturnType<typeof supabase.channel> | null = null;
 
   const getInteractionIcon = (type: Interaction["type"]): string => {
     const iconMap: Record<Interaction["type"], string> = {
@@ -311,13 +311,17 @@ export const useActivityFeed = () => {
     }
   };
 
-  const subscribeToUpdates = (): void => {
+  const subscribeToUpdates = async (): Promise<void> => {
     if (!session.value?.user?.id) return;
 
-    let channel: RealtimeChannel | null = null;
+    if (subscription) {
+      await subscription.unsubscribe();
+      subscription = null;
+    }
 
     try {
-      channel = supabase.channel("activity-feed");
+      subscription = supabase.channel("activity-feed");
+      const channel = subscription;
 
       // Subscribe to new interactions
       channel.on(
@@ -464,8 +468,9 @@ export const useActivityFeed = () => {
     }
 
     onUnmounted(() => {
-      if (channel) {
-        channel.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+        subscription = null;
       }
     });
   };
