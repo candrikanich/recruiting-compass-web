@@ -107,13 +107,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useSupabase } from "~/composables/useSupabase";
+import { computed, onMounted } from "vue";
 import { useUserStore } from "~/stores/user";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useAthleteActivity } from "~/composables/useAthleteActivity";
-import type { Interaction, User } from "~/types/models";
 import { ChatBubbleLeftRightIcon } from "@heroicons/vue/24/outline";
 import {
   getTypeIcon,
@@ -122,7 +120,6 @@ import {
   formatType,
 } from "~/utils/interactionFormatters";
 
-const supabase = useSupabase();
 const userStore = useUserStore();
 const { schools: schoolsData } = useSchools();
 const { coaches: coachesData } = useCoaches();

@@ -9,7 +9,7 @@
  */
 
 import { defineEventHandler, createError, getRouterParam } from "h3";
-import { requireAuth } from "~/server/utils/auth";
+import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { createLogger } from "~/server/utils/logger";
 
@@ -22,28 +22,9 @@ interface DeleteInvitationResponse {
 export default defineEventHandler(
   async (event): Promise<DeleteInvitationResponse> => {
     try {
-      // Verify user is authenticated
-      const user = await requireAuth(event);
-
-      // Create admin client with service role
+      // Verify user is an authenticated admin (atomic check via requireAdmin)
+      const user = await requireAdmin(event);
       const supabaseAdmin = useSupabaseAdmin();
-
-      // Check admin status
-      const { data: adminCheck } = await supabaseAdmin
-        .from("users")
-        .select("is_admin")
-        .eq("id", user.id)
-        .single();
-
-      if (!adminCheck?.is_admin) {
-        logger.warn(
-          `Non-admin user ${user.id} attempted to delete an invitation`,
-        );
-        throw createError({
-          statusCode: 403,
-          statusMessage: "Only administrators can delete invitations",
-        });
-      }
 
       // Get invitation ID from route parameter
       const invitationId = getRouterParam(event, "id");

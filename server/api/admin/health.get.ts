@@ -42,17 +42,19 @@ export default defineEventHandler(
           dbStatus = "ok";
           checks.push({ name: "Database", status: "ok" });
         } else {
+          logger.error("Database health check failed", error);
           checks.push({
             name: "Database",
             status: "error",
-            message: error.message,
+            message: "Database connection failed",
           });
         }
       } catch (e) {
+        logger.error("Database health check exception", e);
         checks.push({
           name: "Database",
           status: "error",
-          message: e instanceof Error ? e.message : "Connection failed",
+          message: "Database connection failed",
         });
       }
 

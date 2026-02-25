@@ -154,10 +154,9 @@ export const useCoachStore = defineStore("coaches", {
         this.coaches.push(...newCoaches);
         this.isFetchedBySchools[schoolId] = true;
       } catch (err: unknown) {
-        const message =
+        this.error =
           err instanceof Error ? err.message : "Failed to fetch coaches";
-        this.error = message;
-        logger.error(message);
+        logger.error("Failed to fetch coaches", err);
       } finally {
         this.loading = false;
       }
@@ -211,10 +210,9 @@ export const useCoachStore = defineStore("coaches", {
         this.isFetched = true;
         this.lastFetchedWithFilters = !!filters;
       } catch (err: unknown) {
-        const message =
+        this.error =
           err instanceof Error ? err.message : "Failed to fetch coaches";
-        this.error = message;
-        logger.error(message);
+        logger.error("Failed to fetch all coaches", err);
       } finally {
         this.loading = false;
       }
@@ -252,10 +250,9 @@ export const useCoachStore = defineStore("coaches", {
           this.isFetchedBySchools[id] = true;
         });
       } catch (err: unknown) {
-        const message =
+        this.error =
           err instanceof Error ? err.message : "Failed to fetch coaches";
-        this.error = message;
-        logger.error(message);
+        logger.error("Failed to fetch coaches by schools", err);
       } finally {
         this.loading = false;
       }

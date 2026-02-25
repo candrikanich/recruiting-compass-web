@@ -111,13 +111,12 @@ import {
   ArrowRightIcon,
   XMarkIcon,
 } from "@heroicons/vue/24/outline";
-import { useSupabase } from "~/composables/useSupabase";
+import { useAthleteProfile } from "~/composables/useAthleteProfile";
 import {
   getParentMessage,
   getRecruitingExpectations,
 } from "~/utils/parentMessaging";
 import type { Phase, Division, StatusLabel } from "~/types/timeline";
-import type { User } from "~/types/models";
 
 interface Props {
   athleteId: string;
@@ -125,12 +124,20 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const supabase = useSupabase();
-const loading = ref(true);
-const error = ref(false);
+const { athlete: athleteData, loading, error, fetchAthleteProfile } = useAthleteProfile(props.athleteId);
 const showLearnMore = ref(false);
-const athleteData = ref<User | null>(null);
-const message = ref("");
+
+const message = computed(() => {
+  if (!athleteData.value) return "";
+  return (
+    getParentMessage({
+      phase: athleteData.value.current_phase as Phase,
+      division: athleteData.value.target_division as Division,
+      status: athleteData.value.status_label as StatusLabel,
+    }) ||
+    "Support your athlete in their recruiting journey. Stay engaged and encourage consistent effort."
+  );
+});
 
 const phaseTitle = computed(() => {
   const phases: Record<Phase, string> = {
@@ -154,39 +161,7 @@ const expectationsMessage = computed(() => {
 });
 
 onMounted(async () => {
-  try {
-    loading.value = true;
-    error.value = false;
-
-    // Fetch athlete profile
-    const { data, error: fetchError } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", props.athleteId)
-      .single();
-
-    if (fetchError) {
-      console.error("Error fetching athlete data:", fetchError);
-      error.value = true;
-      return;
-    }
-
-    athleteData.value = data as User;
-
-    // Generate message based on athlete's current state
-    message.value =
-      getParentMessage({
-        phase: athleteData.value.current_phase as Phase,
-        division: athleteData.value.target_division as Division,
-        status: athleteData.value.status_label as StatusLabel,
-      }) ||
-      "Support your athlete in their recruiting journey. Stay engaged and encourage consistent effort.";
-  } catch (e) {
-    console.error("Unexpected error:", e);
-    error.value = true;
-  } finally {
-    loading.value = false;
-  }
+  await fetchAthleteProfile();
 });
 </script>
 
