@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { H3Event } from "h3";
 import type { Database } from "~/types/database";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -8,6 +8,7 @@ import {
   isParentViewingLinkedAthlete,
   canMutateAthleteData,
   assertNotParent,
+  clearRoleCacheForTesting,
   type AuthUser,
 } from "~/server/utils/auth";
 
@@ -386,6 +387,10 @@ describe("server/utils/auth", () => {
   });
 
   describe("getUserRole - role cache size limit", () => {
+    afterEach(() => {
+      clearRoleCacheForTesting();
+    });
+
     it("evicts the oldest entry when role cache exceeds 1000 entries", async () => {
       // Build a fresh supabase mock that always resolves with role "player"
       const mockSingle = vi.fn().mockResolvedValue({

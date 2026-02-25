@@ -251,3 +251,11 @@ export async function assertNotParent(
     });
   }
 }
+
+/**
+ * Clears the role cache — for testing only
+ * @internal
+ */
+export function clearRoleCacheForTesting(): void {
+  roleCache.clear();
+}
