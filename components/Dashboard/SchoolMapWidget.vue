@@ -224,6 +224,9 @@ const initializeMap = () => {
       maxZoom: 19,
     }).addTo(mapInstance);
 
+    // Recalculate dimensions in case the container was just mounted via v-if
+    mapInstance.invalidateSize();
+
     // Add home location marker if no schools
     if (
       props.schools.length === 0 &&
@@ -317,11 +320,14 @@ onUnmounted(() => {
   }
 });
 
+// flush: 'post' ensures the watcher runs after Vue has updated the DOM,
+// so mapContainer.value is non-null when schools first populates the v-if block
 watch(
   () => props.schools,
   () => {
     initializeMap();
   },
+  { flush: "post" },
 );
 </script>
 
