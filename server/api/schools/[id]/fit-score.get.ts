@@ -13,42 +13,33 @@ import type { Database } from "~/types/database";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * Check if user has access to school (either owner or parent link)
+ * Check if user has access to school (either owner or parent link).
+ * Uses a single query to fetch school id + user_id, then conditionally
+ * checks the parent link — reducing sequential queries from 3 to max 2.
  */
 async function hasAccessToSchool(
   userId: string,
   schoolId: string,
   supabase: SupabaseClient<Database>,
 ): Promise<boolean> {
-  // Check if user is the owner
-  const { data: ownedSchool } = await supabase
+  // Single query: fetch school with ownership info
+  const { data: school } = await supabase
     .from("schools")
-    .select("id")
-    .eq("id", schoolId)
-    .eq("user_id", userId)
-    .single();
-
-  if (ownedSchool) {
-    return true;
-  }
-
-  // Check if user is a parent with access to the school owner (athlete)
-  const schoolResult = await supabase
-    .from("schools")
-    .select("user_id")
+    .select("id, user_id")
     .eq("id", schoolId)
     .single();
 
-  if (!schoolResult.data?.user_id) {
-    return false;
-  }
+  if (!school) return false;
 
-  // Check if current user is a parent linked to the school owner
+  // User is the direct owner — fast path
+  if (school.user_id === userId) return true;
+
+  // Check if user is a parent linked to the school's athlete
   const { data: link } = await supabase
     .from("account_links")
     .select("id")
     .eq("parent_user_id", userId)
-    .eq("player_user_id", schoolResult.data.user_id)
+    .eq("player_user_id", school.user_id)
     .eq("status", "accepted")
     .single();
 
