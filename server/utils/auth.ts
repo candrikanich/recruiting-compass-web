@@ -26,6 +26,7 @@ interface CachedRole {
 }
 
 const roleCache = new Map<string, CachedRole>();
+const MAX_ROLE_CACHE_SIZE = 1_000;
 
 /**
  * User role type
@@ -135,6 +136,12 @@ export async function getUserRole(
       role,
       expiresAt: Date.now() + 5 * 60 * 1000,
     };
+    if (roleCache.size >= MAX_ROLE_CACHE_SIZE) {
+      const firstKey = roleCache.keys().next().value;
+      if (firstKey !== undefined) {
+        roleCache.delete(firstKey);
+      }
+    }
     roleCache.set(userId, cacheEntry);
 
     return role || null;

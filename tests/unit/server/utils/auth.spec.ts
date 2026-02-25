@@ -385,6 +385,32 @@ describe("server/utils/auth", () => {
     });
   });
 
+  describe("getUserRole - role cache size limit", () => {
+    it("evicts the oldest entry when role cache exceeds 1000 entries", async () => {
+      // Build a fresh supabase mock that always resolves with role "player"
+      const mockSingle = vi.fn().mockResolvedValue({
+        data: { role: "player" },
+        error: null,
+      });
+      const mockEq = vi.fn(() => ({ eq: mockEq, single: mockSingle }));
+      const mockSelect = vi.fn(() => ({ eq: mockEq }));
+      const mockFrom = vi.fn(() => ({ select: mockSelect }));
+      const mockSupabase = { from: mockFrom } as unknown as SupabaseClient<Database>;
+
+      // Fill the cache past the limit (1001 unique user IDs)
+      for (let i = 0; i < 1001; i++) {
+        await getUserRole(`size-test-user-${i}`, mockSupabase);
+      }
+
+      // Reset call count so we can detect re-fetches
+      mockFrom.mockClear();
+
+      // user-0 should have been evicted — expect a DB call
+      await getUserRole("size-test-user-0", mockSupabase);
+      expect(mockFrom).toHaveBeenCalled();
+    });
+  });
+
   describe("assertNotParent", () => {
     it("should not throw when user is not parent", async () => {
       const mockSupabase = {
