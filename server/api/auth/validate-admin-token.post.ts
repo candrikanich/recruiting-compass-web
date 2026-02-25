@@ -66,8 +66,7 @@ export default defineEventHandler(
 
       throw createError({
         statusCode: 500,
-        statusMessage:
-          error instanceof Error ? error.message : "Token validation failed",
+        statusMessage: "Token validation failed",
       });
     }
   },

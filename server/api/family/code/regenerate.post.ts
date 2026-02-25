@@ -11,6 +11,7 @@ interface RegenerateCodeBody {
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/code/regenerate");
+  try {
   const user = await requireAuth(event);
   const body = await readBody<RegenerateCodeBody>(event);
   const { familyId } = body;
@@ -77,4 +78,9 @@ export default defineEventHandler(async (event) => {
     success: true,
     familyCode: newCode,
   };
+  } catch (err) {
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Failed to regenerate family code", err);
+    throw createError({ statusCode: 500, statusMessage: "Failed to regenerate family code" });
+  }
 });

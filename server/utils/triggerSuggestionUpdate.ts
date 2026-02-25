@@ -10,6 +10,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { RuleEngine } from "./ruleEngine";
 import { surfacePendingSuggestions } from "./suggestionStaggering";
 import { calculateCurrentGrade } from "~/utils/gradeHelpers";
+import { createLogger } from "~/server/utils/logger";
 import type { RuleContext } from "./rules/index";
 import { interactionGapRule } from "./rules/interactionGap";
 import { missingVideoRule } from "./rules/missingVideo";
@@ -44,6 +45,8 @@ export interface TriggerUpdateOptions {
  * @param options - Optional context data (e.g., interaction details)
  * @returns Result with counts of generated and surfaced suggestions
  */
+const logger = createLogger("cron/trigger-suggestion-update");
+
 export async function triggerSuggestionUpdate(
   supabase: SupabaseClient,
   athleteId: string,
@@ -60,7 +63,6 @@ export async function triggerSuggestionUpdate(
       interactions,
       tasks,
       athleteTasks,
-      videos,
       events,
     ] = await Promise.all([
       supabase
@@ -69,12 +71,11 @@ export async function triggerSuggestionUpdate(
         .eq("user_id", athleteId)
         .eq("category", "player")
         .single(),
-      supabase.from("schools").select("*").eq("athlete_id", athleteId),
-      supabase.from("interactions").select("*").eq("athlete_id", athleteId),
+      supabase.from("schools").select("*").eq("user_id", athleteId),
+      supabase.from("interactions").select("*").eq("logged_by", athleteId),
       supabase.from("task").select("*"),
       supabase.from("athlete_task").select("*").eq("athlete_id", athleteId),
-      supabase.from("videos").select("*").eq("athlete_id", athleteId),
-      supabase.from("events").select("*").eq("athlete_id", athleteId),
+      supabase.from("events").select("*").eq("user_id", athleteId),
     ]);
 
     const playerData = playerPrefs.data?.data as Record<string, unknown> | null;
@@ -91,7 +92,7 @@ export async function triggerSuggestionUpdate(
       interactions: interactions.data || [],
       tasks: tasks.data || [],
       athleteTasks: athleteTasks.data || [],
-      videos: videos.data || [],
+      videos: [],
       events: events.data || [],
     };
 
@@ -150,8 +151,7 @@ export async function triggerSuggestionUpdate(
       3,
     );
 
-    // Log the trigger event
-    console.log(
+    logger.info(
       `Suggestion update triggered for athlete ${athleteId} (reason: ${reason}): ${generateResult.count} generated, ${surfacedCount} surfaced`,
     );
 
@@ -161,8 +161,8 @@ export async function triggerSuggestionUpdate(
       reason,
     };
   } catch (error) {
-    console.error(
-      `Failed to trigger suggestion update for athlete ${athleteId}:`,
+    logger.error(
+      `Failed to trigger suggestion update for athlete ${athleteId}`,
       error,
     );
     throw error;

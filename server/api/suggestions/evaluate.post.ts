@@ -52,12 +52,12 @@ export default defineEventHandler(async (event) => {
           .eq("user_id", athleteId)
           .eq("category", "player")
           .single(),
-        supabase.from("schools").select(schoolsSelect).eq("athlete_id", athleteId),
-        supabase.from("interactions").select(interactionsSelect).eq("athlete_id", athleteId),
+        supabase.from("schools").select(schoolsSelect).eq("user_id", athleteId),
+        supabase.from("interactions").select(interactionsSelect).eq("logged_by", athleteId),
         supabase.from("athlete_task").select(athleteTasksSelect).eq("athlete_id", athleteId),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase as any).from("videos").select(videosSelect).eq("athlete_id", athleteId),
-        supabase.from("events").select(eventsSelect).eq("athlete_id", athleteId),
+        supabase.from("events").select(eventsSelect).eq("user_id", athleteId),
       ]);
 
     const playerData = playerPrefs.data?.data as Record<string, unknown> | null;
@@ -102,6 +102,7 @@ export default defineEventHandler(async (event) => {
 
     return { generated: result.count, ids: result.ids };
   } catch (error: unknown) {
+    if (error instanceof Error && "statusCode" in error) throw error;
     logger.error("Failed to evaluate suggestions", error);
     throw createError({
       statusCode: 500,

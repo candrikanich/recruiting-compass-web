@@ -23,7 +23,8 @@ export default defineEventHandler(async (event) => {
       .order("created_at", { ascending: false });
 
     if (schoolsError) {
-      throw schoolsError;
+      logger.error("Failed to fetch schools", schoolsError);
+      throw createError({ statusCode: 500, statusMessage: "Failed to fetch schools" });
     }
 
     // Calculate portfolio health

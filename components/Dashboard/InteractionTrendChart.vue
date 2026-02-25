@@ -79,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -93,7 +93,10 @@ import {
   Filler,
 } from "chart.js";
 import { ChatBubbleLeftRightIcon } from "@heroicons/vue/24/outline";
+import { createClientLogger } from "~/utils/logger";
 import type { Interaction } from "~/types/models";
+
+const logger = createClientLogger("dashboard/interaction-trend-chart");
 
 interface Props {
   interactions: Interaction[];
@@ -262,12 +265,19 @@ const initializeChart = () => {
       },
     });
   } catch (error) {
-    console.error("[InteractionTrendChart] Error:", error);
+    logger.error("Chart initialization failed", error);
   }
 };
 
 onMounted(() => {
   initializeChart();
+});
+
+onUnmounted(() => {
+  if (chartInstance) {
+    chartInstance.destroy();
+    chartInstance = null;
+  }
 });
 
 watch(

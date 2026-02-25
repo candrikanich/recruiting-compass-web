@@ -81,6 +81,7 @@ export default defineEventHandler(async (event) => {
       { count: docCount, error: docError },
       { count: eventCount, error: eventError },
       { count: suggestionCount, error: suggestionError },
+      { count: reminderCount, error: reminderError },
     ] = await Promise.all([
       client.from("school_status_history").delete().eq("school_id", schoolId),
       client.from("coaches").delete().eq("school_id", schoolId),
@@ -90,6 +91,7 @@ export default defineEventHandler(async (event) => {
       client.from("documents").delete().eq("school_id", schoolId),
       client.from("events").delete().eq("school_id", schoolId),
       client.from("suggestion").delete().eq("related_school_id", schoolId),
+      client.from("follow_up_reminders").delete().eq("school_id", schoolId),
     ]);
 
     const childErrors = [
@@ -101,6 +103,7 @@ export default defineEventHandler(async (event) => {
       docError,
       eventError,
       suggestionError,
+      reminderError,
     ].filter(Boolean);
     if (childErrors.length > 0) {
       logger.error("Child record deletion failed during cascade delete", {
@@ -121,6 +124,7 @@ export default defineEventHandler(async (event) => {
     if (docCount) deleted.documents = docCount;
     if (eventCount) deleted.events = eventCount;
     if (suggestionCount) deleted.suggestion = suggestionCount;
+    if (reminderCount) deleted.follow_up_reminders = reminderCount;
 
     // Finally delete the school — must come after all children are removed
     const { count: schoolCount, error: deleteError } = await client

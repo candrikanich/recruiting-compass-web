@@ -192,16 +192,6 @@ import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue"
 import DashboardTimelineCard from "~/components/Dashboard/DashboardTimelineCard.vue";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
-const DashboardChartsSection = defineAsyncComponent(
-  () => import("~/components/Dashboard/DashboardChartsSection.vue"),
-);
-import DashboardMetricsSection from "~/components/Dashboard/DashboardMetricsSection.vue";
-const DashboardMapActivitySection = defineAsyncComponent(
-  () => import("~/components/Dashboard/DashboardMapActivitySection.vue"),
-);
-const DashboardWidgetsSection = defineAsyncComponent(
-  () => import("~/components/Dashboard/DashboardWidgetsSection.vue"),
-);
 const EmailRecruitingPacketModal = defineAsyncComponent(
   () => import("~/components/EmailRecruitingPacketModal.vue"),
 );
@@ -345,10 +335,7 @@ const handleGeneratePacket = async () => {
     await recruitingPacketComposable.openPacketPreview();
     showToast("Recruiting packet generated successfully!", "success");
   } catch (err) {
-    const message =
-      err instanceof Error
-        ? err.message
-        : "Failed to generate recruiting packet";
+    const message = "Failed to generate recruiting packet";
     recruitingPacketError.value = message;
     showToast(message, "error");
     logger.error("Packet generation error", err);
@@ -370,8 +357,7 @@ const handleEmailPacket = async () => {
     // Open email modal
     recruitingPacketComposable.setShowEmailModal(true);
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to prepare packet for email";
+    const message = "Failed to prepare packet for email";
     recruitingPacketError.value = message;
     showToast(message, "error");
     logger.error("Packet email prep error", err);
@@ -392,7 +378,7 @@ const handleSendEmail = async (emailData: {
       "success",
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to send email";
+    const message = "Failed to send email";
     recruitingPacketError.value = message;
     showToast(message, "error");
     logger.error("Email sending error", err);

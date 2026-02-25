@@ -12,9 +12,6 @@ import { useAuthFetch } from "~/composables/useAuthFetch";
 
 const logger = createClientLogger("useCoaches");
 
-// Keyed by schoolId to allow concurrent fetches for different schools
-const fetchInFlight = new Map<string, Promise<void>>();
-
 type CoachesInsert = Database["public"]["Tables"]["coaches"]["Insert"];
 type CoachesUpdate = Database["public"]["Tables"]["coaches"]["Update"];
 type CoachesRow = Database["public"]["Tables"]["coaches"]["Row"];
@@ -80,6 +77,10 @@ export const useCoaches = (): {
   }
 
   const activeFamily = injectedFamily ?? useFamilyContext();
+
+  // Keyed by schoolId to allow concurrent fetches for different schools.
+  // Declared inside the factory so each instance has its own independent map.
+  const fetchInFlight = new Map<string, Promise<void>>();
 
   const coaches = ref<Coach[]>([]);
   const loadingCount = ref(0);
@@ -362,7 +363,7 @@ export const useCoaches = (): {
         throw insertError;
       }
 
-      coaches.value.push(data as Coach);
+      coaches.value = [...coaches.value, data as Coach];
       return data as Coach;
     } catch (err: unknown) {
       const message =

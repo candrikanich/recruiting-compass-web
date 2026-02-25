@@ -82,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -264,6 +264,13 @@ const initializeChart = () => {
 
 onMounted(() => {
   initializeChart();
+});
+
+onUnmounted(() => {
+  if (chartInstance) {
+    chartInstance.destroy();
+    chartInstance = null;
+  }
 });
 
 watch(chartData, () => {

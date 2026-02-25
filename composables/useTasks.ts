@@ -210,6 +210,7 @@ export const useTasks = (): {
             const depTask = tasksWithStatus.value.find((t) => t.id === depId);
             return depTask?.title;
           })
+          .filter((title): title is string => title !== undefined)
           .filter((title) => {
             const depId = task?.dependency_task_ids.find(
               (id) =>
@@ -238,15 +239,19 @@ export const useTasks = (): {
         (at) => at.task_id === taskId,
       );
       if (athleteTaskIndex >= 0) {
-        athleteTasks.value[athleteTaskIndex] = typedResponse;
+        athleteTasks.value = athleteTasks.value.map((at, i) =>
+          i === athleteTaskIndex ? typedResponse : at,
+        );
       } else {
-        athleteTasks.value.push(typedResponse);
+        athleteTasks.value = [...athleteTasks.value, typedResponse];
       }
 
       // Update merged list if it exists
       const taskIndex = tasksWithStatus.value.findIndex((t) => t.id === taskId);
       if (taskIndex >= 0) {
-        tasksWithStatus.value[taskIndex].athlete_task = typedResponse;
+        tasksWithStatus.value = tasksWithStatus.value.map((t, i) =>
+          i === taskIndex ? { ...t, athlete_task: typedResponse } : t,
+        );
       }
 
       return typedResponse;

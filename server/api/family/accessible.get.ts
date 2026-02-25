@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
 
     if (membersError) {
       logger.error("Failed to fetch family members", membersError);
-      throw membersError;
+      throw createError({ statusCode: 500, statusMessage: "Failed to fetch accessible families" });
     }
 
     logger.debug("Found family members", {
@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
 
     if (familiesError) {
       logger.error("Failed to fetch family units", familiesError);
-      throw familiesError;
+      throw createError({ statusCode: 500, statusMessage: "Failed to fetch accessible families" });
     }
 
     // Get player user IDs and fetch user details separately
@@ -74,7 +74,7 @@ export default defineEventHandler(async (event) => {
 
     if (usersError) {
       logger.error("Failed to fetch user details", usersError);
-      throw usersError;
+      throw createError({ statusCode: 500, statusMessage: "Failed to fetch accessible families" });
     }
 
     // Create a map of user details

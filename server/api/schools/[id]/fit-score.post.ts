@@ -83,12 +83,26 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Verify school ownership
+    // Resolve the user's family_unit_id — the architecture uses family_unit_id for access control
+    const { data: membership, error: membershipError } = await supabase
+      .from("family_members")
+      .select("family_unit_id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (membershipError || !membership) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: "School not found",
+      });
+    }
+
+    // Verify school belongs to the user's family unit
     const { data: school, error: schoolError } = await supabase
       .from("schools")
-      .select("id, user_id")
+      .select("id, family_unit_id")
       .eq("id", schoolId)
-      .eq("user_id", user.id)
+      .eq("family_unit_id", membership.family_unit_id)
       .single();
 
     if (schoolError || !school) {

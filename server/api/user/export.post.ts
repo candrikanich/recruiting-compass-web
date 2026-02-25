@@ -2,7 +2,7 @@ import { defineEventHandler, createError, type H3Event } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { createExportDownloadUrl } from "~/server/utils/exportUser";
 import { auditLog, logError } from "~/server/utils/auditLog";
-import { logger } from "~/server/utils/logger";
+import { useLogger } from "~/server/utils/logger";
 
 /**
  * POST /api/user/export
@@ -24,6 +24,7 @@ import { logger } from "~/server/utils/logger";
  * }
  */
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "user/export");
   try {
     // Require authentication
     const user = await requireAuth(event);

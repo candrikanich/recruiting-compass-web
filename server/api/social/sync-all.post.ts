@@ -87,7 +87,7 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
 
         const { data: coaches } = await supabase
           .from("coaches")
-          .select("id, name, twitter_handle, instagram_handle")
+          .select("id, first_name, last_name, twitter_handle, instagram_handle")
           .eq("user_id", user.id);
 
         if (schoolsError) {

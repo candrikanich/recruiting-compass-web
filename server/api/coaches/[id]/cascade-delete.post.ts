@@ -72,7 +72,15 @@ export default defineEventHandler(async (event) => {
   try {
     // Delete in dependency order (careful of FK constraints)
 
-    // 1. Delete interactions
+    // 1. Delete follow-up reminders
+    const { count: reminderCount, error: reminderError } = await client
+      .from("follow_up_reminders")
+      .delete()
+      .eq("coach_id", coachId);
+    if (reminderError) throw reminderError;
+    if (reminderCount) deleted.follow_up_reminders = reminderCount;
+
+    // 2. Delete interactions
     const { count: interactionCount, error: interactionError } = await client
       .from("interactions")
       .delete()
@@ -80,7 +88,7 @@ export default defineEventHandler(async (event) => {
     if (interactionError) throw interactionError;
     if (interactionCount) deleted.interactions = interactionCount;
 
-    // 2. Delete offers
+    // 3. Delete offers
     const { count: offerCount, error: offerError } = await client
       .from("offers")
       .delete()
@@ -88,7 +96,7 @@ export default defineEventHandler(async (event) => {
     if (offerError) throw offerError;
     if (offerCount) deleted.offers = offerCount;
 
-    // 3. Delete social media posts
+    // 4. Delete social media posts
     const { count: postCount, error: postError } = await client
       .from("social_media_posts")
       .delete()
@@ -96,7 +104,7 @@ export default defineEventHandler(async (event) => {
     if (postError) throw postError;
     if (postCount) deleted.social_media_posts = postCount;
 
-    // 4. Finally delete the coach
+    // 5. Finally delete the coach
     const { count: coachCount, error: deleteError } = await client
       .from("coaches")
       .delete()

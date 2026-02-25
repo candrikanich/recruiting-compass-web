@@ -59,6 +59,8 @@ export function useRecommendationLetters() {
     formData: LetterFormData,
     existingId?: string | null,
   ) => {
+    if (!userStore.user?.id) throw new Error("Not authenticated");
+
     loading.value = true;
     error.value = null;
 
@@ -72,7 +74,7 @@ export function useRecommendationLetters() {
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { error: insertError } = await (supabase.from("recommendation_letters") as any)
-          .insert([{ ...formData, user_id: userStore.user?.id }])
+          .insert([{ ...formData, user_id: userStore.user.id }])
           .select();
         if (insertError) throw insertError;
       }
@@ -80,7 +82,7 @@ export function useRecommendationLetters() {
       const { data: refreshed, error: refreshError } = await supabase
         .from("recommendation_letters")
         .select("*")
-        .eq("user_id", userStore.user!.id)
+        .eq("user_id", userStore.user.id)
         .order("requested_date", { ascending: false });
       if (refreshError) throw refreshError;
       letters.value = (refreshed as RecommendationLetter[]) || [];

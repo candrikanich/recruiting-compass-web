@@ -7,20 +7,15 @@
  */
 
 import { defineEventHandler } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { batchFetchLogos } from "~/server/utils/batchFetchLogos";
-import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { requireAdmin } from "~/server/utils/auth";
 import { createLogger } from "~/server/utils/logger";
 
 const logger = createLogger("admin/batch-fetch-logos");
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = await requireAuth(event);
-    const supabase = createServerSupabaseClient();
-
-    // Ensure requesting user is not a parent (admin operation)
-    await assertNotParent(user.id, supabase);
+    const user = await requireAdmin(event);
 
     logger.info("Batch fetch logos endpoint called");
 

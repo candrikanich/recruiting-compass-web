@@ -68,10 +68,15 @@ export default defineEventHandler(async (event) => {
   try {
     // Delete in dependency order (careful of FK constraints)
 
-    // Currently no known FK blockers for interactions
-    // (follow_up_reminders is runtime-managed, no formal FK)
+    // 1. Delete follow-up reminders (follow_up_reminders_interaction_id_fkey)
+    const { count: reminderCount, error: reminderError } = await client
+      .from("follow_up_reminders")
+      .delete()
+      .eq("interaction_id", interactionId);
+    if (reminderError) throw reminderError;
+    if (reminderCount) deleted.follow_up_reminders = reminderCount;
 
-    // Delete the interaction
+    // 2. Delete the interaction
     const { count: interactionCount, error: deleteError } = await client
       .from("interactions")
       .delete()

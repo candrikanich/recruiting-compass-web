@@ -139,8 +139,8 @@ export const useActivityFeed = () => {
     error.value = null;
 
     try {
-      const fetchLimit = options?.limit || limit.value;
-      const fetchOffset = options?.offset || offset.value;
+      const fetchLimit = options?.limit ?? limit.value;
+      const fetchOffset = options?.offset ?? offset.value;
 
       const events: ActivityEvent[] = [];
 

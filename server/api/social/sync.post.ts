@@ -87,9 +87,10 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
       .select("id, name, twitter_handle, instagram_handle")
       .eq("user_id", user.id);
 
-    const { data: coaches, error: _coachesError } = await supabase
+    const { data: coaches, error: coachesError } = await supabase
       .from("coaches")
-      .select("id, name, twitter_handle, instagram_handle");
+      .select("id, first_name, last_name, twitter_handle, instagram_handle")
+      .eq("user_id", user.id);
 
     if (schoolsError) {
       logger.error("Failed to fetch schools", schoolsError);
@@ -97,6 +98,10 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
         statusCode: 500,
         statusMessage: "Failed to fetch schools",
       });
+    }
+
+    if (coachesError) {
+      logger.error("Failed to fetch coaches", coachesError);
     }
 
     // Collect all Twitter and Instagram handles using helper functions

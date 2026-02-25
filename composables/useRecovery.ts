@@ -34,7 +34,7 @@ const logger = createClientLogger("useRecovery");
 
 export function useRecovery() {
   const { schools } = useSchools();
-  const { interactions } = useInteractions();
+  const { interactions, loading: interactionsLoading } = useInteractions();
   const { athleteTasks } = useTasks();
 
   const isInRecoveryMode = ref(false);
@@ -76,6 +76,7 @@ export function useRecovery() {
    * Indicates stalled outreach efforts
    */
   const checkNoCoachInterest = (): RecoveryTrigger | null => {
+    if (interactionsLoading.value) return null;
     if (!interactions.value || interactions.value.length === 0) {
       return {
         type: "no_coach_interest",

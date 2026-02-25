@@ -541,13 +541,15 @@ export const useSchoolStore = defineStore("schools", {
         }
 
         // Fetch current status from DB to avoid stale-cache history corruption
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: currentSchool, error: selectError } = (await supabase
           .from("schools")
           .select("status")
           .eq("id", schoolId)
           .eq("family_unit_id", activeFamily.activeFamilyId.value)
-          .single()) as { data: { status: School["status"] } | null; error: any };
+          .single()) as {
+          data: { status: School["status"] } | null;
+          error: { message: string; code: string } | null;
+        };
 
         if (selectError) throw selectError;
 

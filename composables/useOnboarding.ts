@@ -5,6 +5,7 @@
 
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("useOnboarding");
@@ -37,6 +38,7 @@ const ONBOARDING_TASK_MAPPING = {
 
 export const useOnboarding = () => {
   const supabase = useSupabase();
+  const { $fetchAuth } = useAuthFetch();
   const loading = ref(false);
   const error = ref<string | null>(null);
   const isOnboardingComplete = ref(false);
@@ -115,7 +117,7 @@ export const useOnboarding = () => {
         const taskErrors: string[] = [];
         for (const taskId of tasksToComplete) {
           try {
-            await $fetch(`/api/athlete-tasks/${taskId}`, {
+            await $fetchAuth(`/api/athlete-tasks/${taskId}`, {
               method: "PATCH",
               body: { status: "completed" },
             });

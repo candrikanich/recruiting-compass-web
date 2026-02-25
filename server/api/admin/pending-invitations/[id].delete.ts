@@ -111,10 +111,7 @@ export default defineEventHandler(
 
       throw createError({
         statusCode: 500,
-        statusMessage:
-          error instanceof Error
-            ? error.message
-            : "Failed to delete invitation",
+        statusMessage: "Failed to delete invitation",
       });
     }
   },

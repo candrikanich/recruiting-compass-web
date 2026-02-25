@@ -38,8 +38,6 @@ export function useDeleteModal<T = string>(
       if (onSuccess) {
         onSuccess();
       }
-    } catch (error) {
-      throw error; // Re-throw so caller can handle error display
     } finally {
       isDeleting.value = false;
     }
