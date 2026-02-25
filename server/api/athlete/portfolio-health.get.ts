@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     // Calculate portfolio health
     const portfolioHealth = calculatePortfolioHealth(
       (schools || []).map((school: { fit_score?: number | null }) => ({
-        fit_score: school.fit_score || 0,
+        fit_score: school.fit_score ?? 0,
         fit_tier: undefined,
       })),
     );

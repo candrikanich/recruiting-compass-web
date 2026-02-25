@@ -26,8 +26,8 @@ export const prioritySchoolReminderRule: Rule = {
           const intA = a as Record<string, unknown>;
           const intB = b as Record<string, unknown>;
           return (
-            new Date(intB.interaction_date as string).getTime() -
-            new Date(intA.interaction_date as string).getTime()
+            new Date(intB.occurred_at as string).getTime() -
+            new Date(intA.occurred_at as string).getTime()
           );
         })[0];
 
@@ -38,7 +38,7 @@ export const prioritySchoolReminderRule: Rule = {
         ? Math.floor(
             (Date.now() -
               new Date(
-                lastInteractionRecord.interaction_date as string,
+                lastInteractionRecord.occurred_at as string,
               ).getTime()) /
               (1000 * 60 * 60 * 24),
           )

@@ -57,7 +57,7 @@ export function sanitizeError(error: unknown, defaultCode = 500): SafeError {
   if (isAppError(error)) {
     return {
       statusCode: error.statusCode,
-      statusMessage: error.message,
+      statusMessage: isProduction ? "An error occurred" : error.message,
       data: {
         message: isDevelopment ? error.message : "An error occurred",
         details: isDevelopment ? error.type : undefined,

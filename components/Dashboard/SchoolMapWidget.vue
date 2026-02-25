@@ -129,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import L from "leaflet";
 import { MapPinIcon } from "@heroicons/vue/24/outline";
 import { useUserStore } from "~/stores/user";
@@ -142,6 +142,14 @@ interface Props {
 
 const props = defineProps<Props>();
 const mapContainer = ref<HTMLDivElement | null>(null);
+
+const escapeHtml = (str: string) =>
+  str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
 const userStore = useUserStore();
 const preferenceManager = usePreferenceManager();
 let mapInstance: L.Map | null = null;
@@ -270,9 +278,9 @@ const initializeMap = () => {
 
         marker.bindPopup(`
           <div style="font-size: 12px; min-width: 280px;">
-            <p style="margin: 4px 0; font-weight: bold; font-size: 13px;">${school.name}</p>
-            <p style="margin: 2px 0; color: #666;">${location}</p>
-            <p style="margin: 2px 0; color: #666; text-transform: capitalize;">Status: ${school.status?.replace("_", " ") || "Unknown"}</p>
+            <p style="margin: 4px 0; font-weight: bold; font-size: 13px;">${escapeHtml(school.name)}</p>
+            <p style="margin: 2px 0; color: #666;">${escapeHtml(location)}</p>
+            <p style="margin: 2px 0; color: #666; text-transform: capitalize;">Status: ${escapeHtml(school.status?.replace("_", " ") || "Unknown")}</p>
           </div>
         `);
 
@@ -300,6 +308,13 @@ const initializeMap = () => {
 
 onMounted(() => {
   initializeMap();
+});
+
+onUnmounted(() => {
+  if (mapInstance) {
+    mapInstance.remove();
+    mapInstance = null;
+  }
 });
 
 watch(

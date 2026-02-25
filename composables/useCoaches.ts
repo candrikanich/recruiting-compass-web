@@ -1,4 +1,4 @@
-import { ref, computed, inject, watch, type ComputedRef } from "vue";
+import { ref, computed, shallowRef, inject, watch, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
@@ -82,7 +82,7 @@ export const useCoaches = (): {
   // Declared inside the factory so each instance has its own independent map.
   const fetchInFlight = new Map<string, Promise<void>>();
 
-  const coaches = ref<Coach[]>([]);
+  const coaches = shallowRef<Coach[]>([]);
   const loadingCount = ref(0);
   const loading = computed(() => loadingCount.value > 0);
   const error = ref<string | null>(null);
@@ -442,7 +442,7 @@ export const useCoaches = (): {
       // Update local state
       const index = coaches.value.findIndex((c) => c.id === id);
       if (index !== -1) {
-        coaches.value[index] = data as Coach;
+        coaches.value = coaches.value.map((c, i) => i === index ? data as Coach : c);
       }
 
       return data as Coach;

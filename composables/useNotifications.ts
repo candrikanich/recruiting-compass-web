@@ -1,4 +1,4 @@
-import { ref, computed, type ComputedRef } from "vue";
+import { ref, shallowRef, computed, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { createClientLogger } from "~/utils/logger";
@@ -43,7 +43,7 @@ export const useNotifications = (): {
     return userStore;
   };
 
-  const notifications = ref<Notification[]>([]);
+  const notifications = shallowRef<Notification[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -146,6 +146,7 @@ export const useNotifications = (): {
         (supabase.from("notifications") as any)
           .update({ read_at: new Date().toISOString() })
           .eq("id", id)
+          .eq("user_id", store.user.id)
           .select()
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .single()) as { data: Notification; error: any };
@@ -217,7 +218,8 @@ export const useNotifications = (): {
       const { error: deleteError } = await supabase
         .from("notifications")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .eq("user_id", store.user.id);
 
       if (deleteError) throw deleteError;
 

@@ -27,6 +27,14 @@ const props = defineProps<{
   schoolName?: string;
 }>();
 
+const escapeHtml = (str: string) =>
+  str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+
 const mapContainer = ref<HTMLElement | null>(null);
 let map: LeafletMap | null = null;
 let marker: Marker | null = null;
@@ -75,7 +83,7 @@ const initMap = async () => {
   marker = L.marker([lat, lng]).addTo(map);
 
   if (props.schoolName) {
-    marker.bindPopup(`<strong>${props.schoolName}</strong>`).openPopup();
+    marker.bindPopup(`<strong>${escapeHtml(props.schoolName)}</strong>`).openPopup();
   }
 };
 
@@ -95,7 +103,7 @@ const updateMarker = async () => {
   }
 
   if (props.schoolName && marker) {
-    marker.bindPopup(`<strong>${props.schoolName}</strong>`);
+    marker.bindPopup(`<strong>${escapeHtml(props.schoolName)}</strong>`);
   }
 };
 

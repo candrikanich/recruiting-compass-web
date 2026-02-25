@@ -8,6 +8,7 @@ export const useSessionTimeout = () => {
 
   let checkInterval: ReturnType<typeof setInterval> | null = null;
   let warningInterval: ReturnType<typeof setInterval> | null = null;
+  let isLoggingOut = false;
   let _lastActivityTime = Date.now();
   let activityThrottleTimeout: ReturnType<typeof setTimeout> | null = null;
   let boundActivityHandler: (() => void) | null = null;
@@ -68,11 +69,13 @@ export const useSessionTimeout = () => {
     if (warningInterval) clearInterval(warningInterval);
 
     warningInterval = setInterval(() => {
-      secondsUntilLogout.value -= 1;
+      secondsUntilLogout.value = Math.max(0, secondsUntilLogout.value - 1);
 
       if (secondsUntilLogout.value <= 0) {
         clearInterval(warningInterval as ReturnType<typeof setInterval>);
         warningInterval = null;
+        if (isLoggingOut) return;
+        isLoggingOut = true;
         handleTimeout();
       }
     }, 1000);
@@ -127,6 +130,8 @@ export const useSessionTimeout = () => {
 
     // Session expired — log the user out
     if (timeUntilTimeout <= 0) {
+      if (isLoggingOut) return;
+      isLoggingOut = true;
       handleTimeout();
       return;
     }

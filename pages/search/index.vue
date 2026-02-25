@@ -324,9 +324,8 @@ const handleFilterChange = async (updatedFilters: any) => {
   }
 };
 
-const onSearchSaved = (savedSearch: SavedSearch) => {
+const onSearchSaved = (_savedSearch: SavedSearch) => {
   // Toast notification could go here
-  console.log("Search saved:", savedSearch.name);
 };
 
 const applySavedSearch = async (savedSearch: SavedSearch) => {

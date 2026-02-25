@@ -66,6 +66,13 @@ export const useActivityFeed = () => {
   const offset = ref(0);
   let subscription: ReturnType<typeof supabase.channel> | null = null;
 
+  onUnmounted(() => {
+    if (subscription) {
+      subscription.unsubscribe();
+      subscription = null;
+    }
+  });
+
   const getInteractionIcon = (type: Interaction["type"]): string => {
     const iconMap: Record<Interaction["type"], string> = {
       email: "📧",
@@ -466,13 +473,6 @@ export const useActivityFeed = () => {
     } catch (err) {
       logger.error("Error subscribing to activity updates:", err);
     }
-
-    onUnmounted(() => {
-      if (subscription) {
-        subscription.unsubscribe();
-        subscription = null;
-      }
-    });
   };
 
   return {

@@ -450,10 +450,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from "vue";
+import { ref, reactive, computed, watch, inject } from "vue";
 import { useOffers } from "~/composables/useOffers";
 import { useSchools } from "~/composables/useSchools";
 import { useActiveFamily } from "~/composables/useActiveFamily";
+import { useFamilyContext } from "~/composables/useFamilyContext";
+import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import Header from "~/components/Header.vue";
 import OfferComparison from "~/components/OfferComparison.vue";
 import {
@@ -483,7 +485,8 @@ const {
   daysUntilDeadline,
 } = useOffers();
 const { schools, fetchSchools } = useSchools();
-const activeFamily = useActiveFamily();
+const activeFamily = (inject<UseActiveFamilyReturn>("activeFamily") ||
+  useFamilyContext()) as UseActiveFamilyReturn;
 
 const showAddForm = ref(false);
 const showComparison = ref(false);

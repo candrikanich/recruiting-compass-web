@@ -69,7 +69,8 @@ export function useRecommendationLetters() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { error: updateError } = await (supabase.from("recommendation_letters") as any)
           .update(formData)
-          .eq("id", existingId);
+          .eq("id", existingId)
+          .eq("user_id", userStore.user.id);
         if (updateError) throw updateError;
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,12 +92,14 @@ export function useRecommendationLetters() {
         err instanceof Error ? err.message : "Failed to save letter";
       error.value = message;
       logger.error("saveLetter failed", err);
+      throw err;
     } finally {
       loading.value = false;
     }
   };
 
   const deleteLetter = async (id: string) => {
+    if (!userStore.user?.id) throw new Error("User not authenticated");
     loading.value = true;
     error.value = null;
 
@@ -104,7 +107,8 @@ export function useRecommendationLetters() {
       const { error: deleteError } = await supabase
         .from("recommendation_letters")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .eq("user_id", userStore.user.id);
       if (deleteError) throw deleteError;
 
       await fetchLetters();
@@ -113,6 +117,7 @@ export function useRecommendationLetters() {
         err instanceof Error ? err.message : "Failed to delete letter";
       error.value = message;
       logger.error("deleteLetter failed", err);
+      throw err;
     } finally {
       loading.value = false;
     }

@@ -247,12 +247,12 @@ export const useFitScore = (): {
       const schoolsWithFitScores = schools.map((school) => {
         const cached = schoolFitScoresRef.value.get(school.id);
         const fitScore =
-          cached?.score ||
+          cached?.score ??
           ("fit_score" in school && typeof school.fit_score === "number"
             ? school.fit_score
             : 0);
         const fitTier =
-          cached?.tier ||
+          cached?.tier ??
           ("fit_tier" in school && typeof school.fit_tier === "string"
             ? (school.fit_tier as FitTier)
             : undefined);

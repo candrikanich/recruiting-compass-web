@@ -229,7 +229,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: "public" });
 
-import { ref, computed, watch, nextTick, onMounted } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useEmailVerification } from "~/composables/useEmailVerification";
@@ -243,6 +243,7 @@ const userEmail = ref("");
 
 const { loading } = useLoadingStates();
 const resendCooldown = ref(0);
+let resendIntervalId: ReturnType<typeof setInterval> | null = null;
 
 const resendButtonRef = ref<HTMLButtonElement | null>(null);
 const dashboardButtonRef = ref<HTMLButtonElement | null>(null);
@@ -335,10 +336,11 @@ const handleResendEmail = async () => {
         "Verification email sent. You can send another in 60 seconds.";
     }
 
-    const interval = setInterval(() => {
+    resendIntervalId = setInterval(() => {
       resendCooldown.value--;
       if (resendCooldown.value <= 0) {
-        clearInterval(interval);
+        clearInterval(resendIntervalId!);
+        resendIntervalId = null;
       }
     }, 1000);
   }
@@ -355,5 +357,11 @@ onMounted(async () => {
   }
 
   await handleTokenVerification();
+});
+
+onUnmounted(() => {
+  if (resendIntervalId) {
+    clearInterval(resendIntervalId);
+  }
 });
 </script>

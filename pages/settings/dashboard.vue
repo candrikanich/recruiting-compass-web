@@ -583,7 +583,6 @@ const saveChanges = async () => {
         ? err.message
         : "Failed to save dashboard customization";
     errorMessage.value = errorMsg;
-    console.error("Failed to save dashboard layout:", err);
   }
 };
 </script>

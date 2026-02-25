@@ -220,6 +220,9 @@ import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { getDefaultNotificationSettings } from "~/utils/preferenceValidation";
 import type { NotificationSettings } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("settings/notifications");
 
 definePageMeta({ middleware: "auth" });
 
@@ -242,7 +245,7 @@ const handleSave = async () => {
     saveSuccess.value = true;
     setTimeout(() => (saveSuccess.value = false), 3000);
   } catch (err) {
-    console.error("Failed to save notification settings:", err);
+    logger.error("Failed to save notification settings", err);
   } finally {
     saving.value = false;
   }

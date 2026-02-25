@@ -4,7 +4,7 @@
  * RESTRICTED: Athletes only (parents have read-only access)
  */
 
-import { defineEventHandler } from "h3";
+import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { TwitterService } from "~/server/utils/twitterService";
 import { InstagramService } from "~/server/utils/instagramService";
@@ -102,6 +102,10 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
 
     if (coachesError) {
       logger.error("Failed to fetch coaches", coachesError);
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to fetch coaches",
+      });
     }
 
     // Collect all Twitter and Instagram handles using helper functions

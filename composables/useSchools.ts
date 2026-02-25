@@ -118,6 +118,10 @@ const useSchoolsInternal = (): {
       `[useSchools] Active Family ID: ${activeFamily.activeFamilyId?.value || "null"}`,
     );
 
+    loadingCount.value++;
+    errorRef.value = null;
+
+    try {
     // Ensure we have both user and family context
     if (!userStore.user) {
       logger.debug("[useSchools] No user, skipping fetch");
@@ -132,10 +136,6 @@ const useSchoolsInternal = (): {
     logger.debug(
       `[useSchools] Fetching for family: ${activeFamily.activeFamilyId.value}`,
     );
-    loadingCount.value++;
-    errorRef.value = null;
-
-    try {
       // 🚀 Quick Win: Select only needed columns (2-3x faster, enables index-only scans)
       const schoolsResponse = await supabase
         .from("schools")

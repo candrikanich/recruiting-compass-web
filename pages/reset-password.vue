@@ -195,7 +195,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: "public" });
 
-import { ref, computed, watch, nextTick, onMounted } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import PasswordInput from "~/components/PasswordInput.vue";
@@ -222,6 +222,8 @@ const invalidTokenMessage = ref("");
 const isValidating = ref(false);
 const loginLinkRef = ref<HTMLAnchorElement | null>(null);
 const redirectCountdown = ref(0);
+let countdownInterval: ReturnType<typeof setInterval> | null = null;
+let redirectTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const passwordReset = usePasswordReset();
 const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } =
@@ -254,14 +256,15 @@ watch(passwordUpdated, async (updated) => {
 
     // Start countdown
     redirectCountdown.value = 2;
-    const countdownInterval = setInterval(() => {
+    countdownInterval = setInterval(() => {
       redirectCountdown.value--;
       if (redirectCountdown.value <= 0) {
-        clearInterval(countdownInterval);
+        clearInterval(countdownInterval!);
+        countdownInterval = null;
       }
     }, 1000);
 
-    setTimeout(() => {
+    redirectTimeout = setTimeout(() => {
       router.push("/login");
     }, 2000);
   }
@@ -319,6 +322,11 @@ const handleResetPassword = async () => {
     loading.value = false;
   }
 };
+
+onUnmounted(() => {
+  if (countdownInterval) clearInterval(countdownInterval);
+  if (redirectTimeout) clearTimeout(redirectTimeout);
+});
 
 onMounted(async () => {
   const supabase = useSupabase();

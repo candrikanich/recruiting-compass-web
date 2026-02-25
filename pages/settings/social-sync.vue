@@ -212,6 +212,9 @@ import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useSupabase } from "~/composables/useSupabase";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("settings/social-sync");
 import { useSocialMedia } from "~/composables/useSocialMedia";
 import { useSocialSyncSettings } from "~/composables/useSocialSyncSettings";
 
@@ -371,7 +374,7 @@ onMounted(async () => {
     await fetchPosts();
 
   } catch (err) {
-    console.error("Error loading data:", err);
+    logger.error("Error loading data", err);
   } finally {
     loading.value = false;
   }

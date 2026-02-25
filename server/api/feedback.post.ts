@@ -14,6 +14,8 @@ const logger = createLogger("feedback");
 
 export default defineEventHandler(async (event) => {
   try {
+    await requireAuth(event);
+
     // Get current user if authenticated
     const userId = await tryGetUserId(event);
 

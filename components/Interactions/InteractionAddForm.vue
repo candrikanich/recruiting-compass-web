@@ -162,7 +162,7 @@
           </p>
           <div
             v-for="(file, idx) in selectedFiles"
-            :key="idx"
+            :key="file.name + file.size"
             class="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200"
           >
             <div class="flex items-center gap-2 min-w-0">

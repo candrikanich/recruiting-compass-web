@@ -39,10 +39,26 @@ export default defineEventHandler(async (event) => {
     const schoolsSelect =
       "id, name, division, status, priority, priority_tier, fit_score";
     const interactionsSelect =
-      "id, school_id, interaction_date, related_event_id";
+      "id, school_id, occurred_at, related_event_id";
     const athleteTasksSelect = "task_id, status";
     const videosSelect = "id, health_status, title";
     const eventsSelect = "id, name, event_date, school_id, attended";
+
+    // Resolve family_unit_id — schools are owned by family units, not individual users
+    const { data: membership, error: membershipError } = await supabase
+      .from("family_members")
+      .select("family_unit_id")
+      .eq("user_id", athleteId)
+      .single();
+
+    if (membershipError || !membership) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Family membership not found",
+      });
+    }
+
+    const familyUnitId = membership.family_unit_id;
 
     const [playerPrefs, schools, interactions, athleteTasks, videos, events] =
       await Promise.all([
@@ -52,7 +68,7 @@ export default defineEventHandler(async (event) => {
           .eq("user_id", athleteId)
           .eq("category", "player")
           .single(),
-        supabase.from("schools").select(schoolsSelect).eq("user_id", athleteId),
+        supabase.from("schools").select(schoolsSelect).eq("family_unit_id", familyUnitId),
         supabase.from("interactions").select(interactionsSelect).eq("logged_by", athleteId),
         supabase.from("athlete_task").select(athleteTasksSelect).eq("athlete_id", athleteId),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

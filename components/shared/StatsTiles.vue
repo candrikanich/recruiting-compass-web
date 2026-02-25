@@ -7,8 +7,8 @@
     class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"
   >
     <div
-      v-for="(stat, index) in stats"
-      :key="index"
+      v-for="stat in stats"
+      :key="stat.label"
       :data-testid="stat.testId"
       class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 hover:shadow-md transition"
     >

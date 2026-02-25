@@ -197,6 +197,8 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
 
     return stats;
   } catch (error) {
+    if (error instanceof Error && "statusCode" in error) throw error;
+
     logger.error("Social media sync failed", error);
     throw createError({
       statusCode: 500,

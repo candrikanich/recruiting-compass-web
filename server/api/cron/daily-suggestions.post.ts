@@ -75,7 +75,7 @@ export default defineEventHandler(async (event) => {
         result.failed++;
         result.errors.push({
           athleteId: athlete.id,
-          error: error instanceof Error ? error.message : "Unknown error",
+          error: "Processing failed",
         });
         logger.error(
           `Failed to update suggestions for athlete ${athlete.id}`,

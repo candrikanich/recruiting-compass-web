@@ -11,7 +11,14 @@ import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 
 const createNotificationSchema = z.object({
-  type: z.string().min(1).max(100),
+  type: z.enum([
+    "follow_up_reminder",
+    "deadline_alert",
+    "daily_digest",
+    "inbound_interaction",
+    "offer",
+    "event",
+  ]),
   title: z.string().min(1).max(200),
   message: z.string().max(1000).optional(),
   priority: z.enum(["low", "medium", "high"]).optional().default("low"),

@@ -216,6 +216,7 @@ const useInteractionsInternal = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch interactions";
+      logger.error("[useInteractions] fetchInteractions error:", err);
       errorRef.value = message;
     } finally {
       loadingRef.value = false;
@@ -320,6 +321,8 @@ const useInteractionsInternal = (): {
 
       if (insertError) throw insertError;
 
+      let updatedData = data;
+
       if (files && files.length > 0) {
         const uploadedPaths = await uploadAttachments(files, data.id);
         if (uploadedPaths.length > 0) {
@@ -332,19 +335,20 @@ const useInteractionsInternal = (): {
             logger.error("Failed to update attachment paths:", updateError);
             throw new Error("Failed to save attachments. Interaction created but files were not linked.");
           }
+          updatedData = { ...data, attachments: uploadedPaths };
         }
       }
 
-      if (data.direction === "inbound" && userStore.user) {
+      if (updatedData.direction === "inbound" && userStore.user) {
         await createInboundInteractionAlert({
-          interaction: data,
+          interaction: updatedData,
           userId: userStore.user.id,
           supabase,
         });
       }
 
-      interactions.value = [data, ...interactions.value];
-      return data;
+      interactions.value = [updatedData, ...interactions.value];
+      return updatedData;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to create interaction";

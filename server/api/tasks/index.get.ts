@@ -7,6 +7,7 @@
 
 import { defineEventHandler, getQuery } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { getCached } from "~/server/utils/cache";
 import type { Task } from "~/types/timeline";
@@ -14,6 +15,8 @@ import type { Task } from "~/types/timeline";
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "tasks");
   try {
+    await requireAuth(event);
+
     const supabase = createServerSupabaseClient();
 
     const query = getQuery(event);

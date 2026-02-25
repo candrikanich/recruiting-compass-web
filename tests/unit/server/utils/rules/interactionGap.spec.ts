@@ -48,17 +48,17 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-a",
-          interaction_date: new Date(thirtyDaysAgo).toISOString(),
+          occurred_at: new Date(thirtyDaysAgo).toISOString(),
         },
         {
           id: "int-2",
           school_id: "school-b",
-          interaction_date: new Date(thirtyDaysAgo).toISOString(),
+          occurred_at: new Date(thirtyDaysAgo).toISOString(),
         },
         {
           id: "int-3",
           school_id: "school-c",
-          interaction_date: new Date(thirtyDaysAgo).toISOString(),
+          occurred_at: new Date(thirtyDaysAgo).toISOString(),
         },
       ] as unknown[];
 
@@ -97,17 +97,17 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
         {
           id: "int-2",
           school_id: "school-2",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
         {
           id: "int-3",
           school_id: "school-3",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -136,7 +136,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: twentyTwoDaysAgo.toISOString(),
+          occurred_at: twentyTwoDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -162,7 +162,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: twentyDaysAgo.toISOString(),
+          occurred_at: twentyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -213,17 +213,17 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
         {
           id: "int-2",
           school_id: "school-2",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
         {
           id: "int-3",
           school_id: "school-3",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -249,7 +249,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -276,7 +276,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: twentyFiveDaysAgo.toISOString(),
+          occurred_at: twentyFiveDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -303,7 +303,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyfiveDaysAgo.toISOString(),
+          occurred_at: thirtyfiveDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -332,7 +332,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -359,7 +359,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyfiveDaysAgo.toISOString(),
+          occurred_at: thirtyfiveDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -388,7 +388,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -420,7 +420,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: twentyDaysAgo.toISOString(),
+          occurred_at: twentyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -449,7 +449,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -482,7 +482,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -535,7 +535,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyfiveDaysAgo.toISOString(),
+          occurred_at: thirtyfiveDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -588,7 +588,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -641,7 +641,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 

@@ -142,7 +142,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useUserStore } from "~/stores/user";
-import { useSupabase } from "~/composables/useSupabase";
+import { useAuth } from "~/composables/useAuth";
 import AthleteSwitcher from "~/components/AthleteSwitcher.vue";
 import HeaderNav from "~/components/Header/HeaderNav.vue";
 import HeaderProfile from "~/components/Header/HeaderProfile.vue";
@@ -168,7 +168,7 @@ import {
 } from "@heroicons/vue/24/outline";
 
 const route = useRoute();
-const supabase = useSupabase();
+const authComposable = useAuth();
 
 const userStore = useUserStore();
 const user = computed(() => userStore.user || null);
@@ -238,7 +238,7 @@ const closeMobileMenu = () => {
 const handleLogout = async () => {
   if (!userStore?.user) return;
   closeMobileMenu();
-  await supabase.auth.signOut();
+  await authComposable.logout();
   userStore.logout();
   await navigateTo("/login");
 };
