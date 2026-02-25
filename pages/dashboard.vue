@@ -47,88 +47,112 @@
         />
       </section>
 
-      <!-- Suggestions Section -->
-      <section aria-labelledby="suggestions-heading">
-        <h2 id="suggestions-heading" class="sr-only">Recommended Actions</h2>
-        <DashboardSuggestions
-          :suggestions="dashboardSuggestions || []"
-          :is-viewing-as-parent="isViewingAsParent || false"
-          :athlete-name="activeAthleteName"
-          @dismiss="handleSuggestionDismiss"
-        />
-      </section>
+      <!-- Main content + persistent sidebar -->
+      <div class="grid grid-cols-1 lg:grid-cols-6 gap-6">
+        <!-- Left: main content (4 cols) -->
+        <div class="lg:col-span-4 space-y-6">
+          <!-- Action Items -->
+          <section aria-labelledby="suggestions-heading">
+            <h2 id="suggestions-heading" class="sr-only">Recommended Actions</h2>
+            <DashboardSuggestions
+              :suggestions="dashboardSuggestions || []"
+              :is-viewing-as-parent="isViewingAsParent || false"
+              :athlete-name="activeAthleteName"
+              @dismiss="handleSuggestionDismiss"
+            />
+          </section>
 
-      <!-- Charts & Analytics Section -->
-      <section aria-labelledby="charts-heading">
-        <h2 id="charts-heading" class="sr-only">Charts & Analytics</h2>
-        <Suspense>
-          <DashboardChartsSection
+          <!-- Charts (2 + 2) -->
+          <section aria-labelledby="charts-heading">
+            <h2 id="charts-heading" class="sr-only">Charts & Analytics</h2>
+            <Suspense>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <DashboardInteractionTrendChart :interactions="allInteractions" />
+                <DashboardSchoolInterestChart :schools="allSchools" />
+              </div>
+              <template #fallback>
+                <div class="grid grid-cols-2 gap-6">
+                  <div class="animate-pulse bg-gray-200 h-80 rounded-lg"></div>
+                  <div class="animate-pulse bg-gray-200 h-80 rounded-lg"></div>
+                </div>
+              </template>
+            </Suspense>
+          </section>
+
+          <!-- School Map (full width) -->
+          <section aria-labelledby="map-heading">
+            <h2 id="map-heading" class="sr-only">School Map</h2>
+            <Suspense>
+              <DashboardSchoolMapWidget :schools="allSchools" />
+              <template #fallback>
+                <div class="animate-pulse bg-gray-200 h-96 rounded-lg"></div>
+              </template>
+            </Suspense>
+          </section>
+
+          <!-- Performance Metrics (full width) -->
+          <section aria-labelledby="metrics-heading">
+            <h2 id="metrics-heading" class="sr-only">Performance Metrics</h2>
+            <DashboardPerformanceMetricsWidget
+              :metrics="allMetrics"
+              :top-metrics="topMetrics"
+              :show-performance="true"
+            />
+          </section>
+
+          <!-- Tasks + Contact Frequency (2 + 2) -->
+          <section aria-labelledby="widgets-heading">
+            <h2 id="widgets-heading" class="sr-only">Dashboard Widgets</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <DashboardQuickTasksWidget
+                :tasks="tasks || []"
+                :show-tasks="true"
+                @add-task="addTask"
+                @toggle-task="toggleTask"
+                @delete-task="deleteTask"
+                @clear-completed="() => userTasksComposable?.clearCompleted()"
+              />
+              <DashboardContactFrequencyWidget
+                :interactions="allInteractions"
+                :schools="allSchools"
+              />
+            </div>
+          </section>
+
+          <!-- Coach Followup (full width) -->
+          <DashboardCoachFollowupWidget />
+
+          <!-- At a Glance (full width) -->
+          <DashboardAtAGlanceSummary
+            :coaches="allCoaches"
             :schools="allSchools"
             :interactions="allInteractions"
-            :school-size-breakdown="schoolSizeBreakdown"
-            :school-count="schoolCount"
+            :offers="allOffers"
+          />
+        </div>
+
+        <!-- Right: persistent sidebar (2 cols) -->
+        <aside class="lg:col-span-2 space-y-6" aria-label="Dashboard sidebar">
+          <DashboardRecruitingPacketWidget
             :recruiting-packet-loading="recruitingPacketLoading"
             :recruiting-packet-error="recruitingPacketError"
             :has-generated-packet="hasGeneratedPacket"
             @generate-packet="handleGeneratePacket"
             @email-packet="handleEmailPacket"
           />
-          <template #fallback>
-            <div class="grid gap-6 md:grid-cols-2">
-              <div class="animate-pulse bg-gray-200 h-80 rounded-lg"></div>
-              <div class="animate-pulse bg-gray-200 h-80 rounded-lg"></div>
-            </div>
-          </template>
-        </Suspense>
-      </section>
-
-      <!-- Performance & Events Section -->
-      <section aria-labelledby="metrics-heading" class="mt-6">
-        <h2 id="metrics-heading" class="sr-only">
-          Performance Metrics & Upcoming Events
-        </h2>
-        <DashboardMetricsSection
-          :metrics="allMetrics"
-          :top-metrics="topMetrics"
-          :upcoming-events="upcomingEvents"
-        />
-      </section>
-
-      <!-- Map & Activity Section -->
-      <section aria-labelledby="map-heading" class="mt-6">
-        <h2 id="map-heading" class="sr-only">School Map & Recent Activity</h2>
-        <Suspense>
-          <DashboardMapActivitySection :schools="allSchools" />
-          <template #fallback>
-            <div class="animate-pulse bg-gray-200 h-96 rounded-lg"></div>
-          </template>
-        </Suspense>
-      </section>
-
-      <!-- Widgets Section -->
-      <section aria-labelledby="widgets-heading" class="mt-6">
-        <h2 id="widgets-heading" class="sr-only">Dashboard Widgets</h2>
-        <Suspense>
-          <DashboardWidgetsSection
-            :tasks="tasks || []"
-            :coaches="allCoaches"
-            :schools="allSchools"
-            :interactions="allInteractions"
-            :offers="allOffers"
-            :is-parent="userStore.isParent"
-            @add-task="addTask"
-            @toggle-task="toggleTask"
-            @delete-task="deleteTask"
-            @clear-completed="() => userTasksComposable?.clearCompleted()"
+          <DashboardSchoolsBySizeWidget
+            :breakdown="schoolSizeBreakdown"
+            :count="schoolCount"
           />
-          <template #fallback>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="animate-pulse bg-gray-200 h-32 rounded"></div>
-              <div class="animate-pulse bg-gray-200 h-32 rounded"></div>
-            </div>
-          </template>
-        </Suspense>
-      </section>
+          <DashboardUpcomingEventsWidget
+            :events="upcomingEvents"
+            :show-events="true"
+          />
+          <DashboardRecentActivityFeed />
+          <DashboardSocialMediaWidget :show-social="true" />
+          <DashboardAthleteActivityWidget v-if="userStore.isParent" />
+        </aside>
+      </div>
 
       <!-- Email Recruiting Packet Modal -->
       <EmailRecruitingPacketModal
