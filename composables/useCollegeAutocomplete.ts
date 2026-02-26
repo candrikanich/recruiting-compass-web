@@ -10,9 +10,6 @@ export const useCollegeAutocomplete = () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
 
-  const config = useRuntimeConfig();
-  const apiKey = config.public.collegeScorecardApiKey as string;
-
   /**
    * Format website URL to include protocol
    * Prepends http:// to URLs that don't have a protocol
@@ -63,33 +60,22 @@ export const useCollegeAutocomplete = () => {
       return;
     }
 
-    // Validate API key is configured
-    if (!apiKey) {
-      error.value =
-        "College search is not configured. Please enter the school manually.";
-      return;
-    }
-
     loading.value = true;
 
     try {
       const params = new URLSearchParams({
-        api_key: apiKey,
-        "school.name": query,
+        q: query,
         fields:
           "id,school.name,school.city,school.state,school.school_url,location.lat,location.lon,latest.admissions.admission_rate.overall,latest.student.size,program_percentage.mathematics,enrollment.all,net_price.public.by_income_level.110001-plus,tuition.in_state,tuition.out_of_state,alias,program_reporter.programs_offered,booksupply,roomboard.oncampus,otherexpense.oncampus,main_campus,carnegie_size_setting",
         per_page: "10",
       });
 
-      const url = `https://api.data.gov/ed/collegescorecard/v1/schools?${params.toString()}`;
+      const url = `/api/colleges/search?${params.toString()}`;
 
       const response = await fetch(url);
 
       if (!response.ok) {
-        if (response.status === 401) {
-          error.value =
-            "College Scorecard API key is invalid. Please check your configuration.";
-        } else if (response.status === 429) {
+        if (response.status === 429) {
           error.value = "Too many requests. Please try again in a moment.";
         } else {
           error.value =
