@@ -1,62 +1,198 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createError } from "h3";
 
-/**
- * Unit tests for the bulk delete users endpoint structure and validation.
- *
- * Note: Full integration tests for API endpoints are covered in E2E tests
- * which run the actual Nitro server and test the complete request/response cycle.
- * These tests validate the endpoint module can be imported and has correct structure.
- */
+// vi.mock factories are hoisted — declare mocks with vi.hoisted so they're
+// available both inside the factory and in tests
+const { mockReadBody } = vi.hoisted(() => ({ mockReadBody: vi.fn() }));
 
-describe("Bulk Delete Users API Endpoint", () => {
-  it("should be a valid endpoint module", async () => {
-    const handler = await import("~/server/api/admin/bulk-delete-users.post");
-    expect(handler).toBeDefined();
-    expect(handler.default).toBeDefined();
-    expect(typeof handler.default).toBe("function");
+vi.mock("h3", async (importOriginal) => {
+  const original = await importOriginal<typeof import("h3")>();
+  return { ...original, readBody: mockReadBody };
+});
+
+// Mock server utilities before importing the handler
+vi.mock("~/server/utils/auth", () => ({
+  requireAdmin: vi.fn(),
+}));
+
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: vi.fn(),
+}));
+
+vi.mock("~/server/utils/logger", () => ({
+  createLogger: () => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  }),
+}));
+
+import { requireAdmin } from "~/server/utils/auth";
+import { useSupabaseAdmin } from "~/server/utils/supabase";
+
+const mockRequireAdmin = vi.mocked(requireAdmin);
+const mockUseSupabaseAdmin = vi.mocked(useSupabaseAdmin);
+
+const mockEvent = {} as Parameters<typeof import("h3").defineEventHandler>[0];
+
+function makeAdminUser(email = "admin@example.com") {
+  return { id: "admin-uuid", email };
+}
+
+function makeSupabaseMock({
+  lookupData,
+  lookupError,
+  deleteUserError,
+}: {
+  lookupData?: { id: string } | null;
+  lookupError?: object | null;
+  deleteUserError?: object | null;
+} = {}) {
+  const deleteUserMock = vi.fn().mockResolvedValue({
+    error: deleteUserError ?? null,
   });
 
-  it("should define correct request/response interface types", async () => {
-    // The endpoint defines:
-    // - BulkDeleteUserRequest { emails: string[] }
-    // - BulkDeleteError { email: string, reason: string }
-    // - BulkDeleteUserResponse { success, failed, deletedEmails, errors, message }
-    expect(true).toBe(true);
+  return {
+    from: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: lookupData ?? { id: "target-uuid" },
+        error: lookupError ?? null,
+      }),
+      delete: vi.fn().mockReturnThis(),
+      in: vi.fn().mockResolvedValue({ error: null }),
+    }),
+    auth: {
+      admin: { deleteUser: deleteUserMock },
+    },
+    _deleteUserMock: deleteUserMock,
+  };
+}
+
+describe("POST /api/admin/bulk-delete-users", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockReadBody.mockResolvedValue({ emails: ["user@example.com"] });
   });
 
-  it("should validate email format before processing", () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    expect(emailRegex.test("user@example.com")).toBe(true);
-    expect(emailRegex.test("invalid-email")).toBe(false);
-    expect(emailRegex.test("@example.com")).toBe(false);
+  it("returns 403 when caller is not an admin", async () => {
+    mockRequireAdmin.mockRejectedValue(
+      createError({ statusCode: 403, statusMessage: "Forbidden" }),
+    );
+
+    const { default: handler } = await import(
+      "~/server/api/admin/bulk-delete-users.post"
+    );
+
+    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 403 });
   });
 
-  it("should reject empty email array", () => {
-    const emails: string[] = [];
-    expect(emails.length).toBe(0);
+  it("returns 400 when emails is not an array", async () => {
+    mockRequireAdmin.mockResolvedValue(makeAdminUser());
+    mockUseSupabaseAdmin.mockReturnValue(makeSupabaseMock() as ReturnType<typeof useSupabaseAdmin>);
+    mockReadBody.mockResolvedValue({ emails: "not-an-array" });
+
+    const { default: handler } = await import(
+      "~/server/api/admin/bulk-delete-users.post"
+    );
+
+    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 400 });
   });
 
-  it("should detect self-deletion", () => {
-    const currentEmail = "admin@example.com";
-    const targetEmails = ["user1@example.com", "admin@example.com"];
-    const isSelfDeletion = targetEmails.includes(currentEmail);
-    expect(isSelfDeletion).toBe(true);
+  it("returns 400 when emails array is empty", async () => {
+    mockRequireAdmin.mockResolvedValue(makeAdminUser());
+    mockUseSupabaseAdmin.mockReturnValue(makeSupabaseMock() as ReturnType<typeof useSupabaseAdmin>);
+    mockReadBody.mockResolvedValue({ emails: [] });
+
+    const { default: handler } = await import(
+      "~/server/api/admin/bulk-delete-users.post"
+    );
+
+    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 400 });
   });
 
-  it("should structure partial failure response correctly", () => {
-    const mockResponse = {
-      success: 2,
-      failed: 1,
-      deletedEmails: ["user1@example.com", "user2@example.com"],
-      errors: [{ email: "user3@example.com", reason: "User not found" }],
-      message: "2 user(s) deleted successfully, 1 failed",
-    };
+  it("returns 400 when an email has invalid format", async () => {
+    mockRequireAdmin.mockResolvedValue(makeAdminUser());
+    mockUseSupabaseAdmin.mockReturnValue(makeSupabaseMock() as ReturnType<typeof useSupabaseAdmin>);
+    mockReadBody.mockResolvedValue({ emails: ["valid@example.com", "not-an-email"] });
 
-    expect(mockResponse.success).toBe(2);
-    expect(mockResponse.failed).toBe(1);
-    expect(mockResponse.deletedEmails).toHaveLength(2);
-    expect(mockResponse.errors).toHaveLength(1);
-    expect(mockResponse.errors[0]).toHaveProperty("email");
-    expect(mockResponse.errors[0]).toHaveProperty("reason");
+    const { default: handler } = await import(
+      "~/server/api/admin/bulk-delete-users.post"
+    );
+
+    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("returns 400 when admin tries to delete their own account", async () => {
+    const adminEmail = "admin@example.com";
+    mockRequireAdmin.mockResolvedValue(makeAdminUser(adminEmail));
+    mockUseSupabaseAdmin.mockReturnValue(makeSupabaseMock() as ReturnType<typeof useSupabaseAdmin>);
+    mockReadBody.mockResolvedValue({ emails: [adminEmail] });
+
+    const { default: handler } = await import(
+      "~/server/api/admin/bulk-delete-users.post"
+    );
+
+    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("records failed result when user email is not found in database", async () => {
+    mockRequireAdmin.mockResolvedValue(makeAdminUser());
+    mockUseSupabaseAdmin.mockReturnValue(
+      makeSupabaseMock({ lookupData: null, lookupError: { code: "PGRST116" } }) as ReturnType<typeof useSupabaseAdmin>,
+    );
+    mockReadBody.mockResolvedValue({ emails: ["ghost@example.com"] });
+
+    const { default: handler } = await import(
+      "~/server/api/admin/bulk-delete-users.post"
+    );
+
+    const result = await handler(mockEvent);
+
+    expect(result.success).toBe(0);
+    expect(result.failed).toBe(1);
+    expect(result.errors[0]).toMatchObject({
+      email: "ghost@example.com",
+      reason: "User not found",
+    });
+  });
+
+  it("deletes user and returns success", async () => {
+    mockRequireAdmin.mockResolvedValue(makeAdminUser());
+    const supabaseMock = makeSupabaseMock({ lookupData: { id: "target-uuid" } });
+    mockUseSupabaseAdmin.mockReturnValue(supabaseMock as ReturnType<typeof useSupabaseAdmin>);
+    mockReadBody.mockResolvedValue({ emails: ["user@example.com"] });
+
+    const { default: handler } = await import(
+      "~/server/api/admin/bulk-delete-users.post"
+    );
+
+    const result = await handler(mockEvent);
+
+    expect(result.success).toBe(1);
+    expect(result.failed).toBe(0);
+    expect(result.deletedEmails).toContain("user@example.com");
+    expect(supabaseMock._deleteUserMock).toHaveBeenCalledWith("target-uuid");
+  });
+
+  it("records partial failure when auth deletion fails", async () => {
+    mockRequireAdmin.mockResolvedValue(makeAdminUser());
+    const supabaseMock = makeSupabaseMock({
+      lookupData: { id: "target-uuid" },
+      deleteUserError: { message: "User not found in auth" },
+    });
+    mockUseSupabaseAdmin.mockReturnValue(supabaseMock as ReturnType<typeof useSupabaseAdmin>);
+    mockReadBody.mockResolvedValue({ emails: ["user@example.com"] });
+
+    const { default: handler } = await import(
+      "~/server/api/admin/bulk-delete-users.post"
+    );
+
+    const result = await handler(mockEvent);
+
+    expect(result.success).toBe(0);
+    expect(result.failed).toBe(1);
+    expect(result.errors[0].reason).toBe("User not found in auth");
   });
 });

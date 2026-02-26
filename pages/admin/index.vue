@@ -454,6 +454,7 @@ import {
 import { useAuth } from "~/composables/useAuth";
 import { useSupabase } from "~/composables/useSupabase";
 import { useToast } from "~/composables/useToast";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 const BulkDeleteConfirmModal = defineAsyncComponent(
   () => import("~/components/Admin/BulkDeleteConfirmModal.vue"),
 );
@@ -474,6 +475,7 @@ interface User {
 const { session } = useAuth();
 const supabase = useSupabase();
 const { showToast } = useToast();
+const { $fetchAuth } = useAuthFetch();
 
 // Users state
 const users = ref<User[]>([]);
@@ -683,12 +685,9 @@ function formatDate(iso: string): string {
 const cancelInvitation = async (id: string) => {
   deletingInvitationId.value = id;
   try {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`/api/admin/pending-invitations/${id}`, {
+    await $fetchAuth(`/api/admin/pending-invitations/${id}`, {
       method: "DELETE",
-      headers,
     });
-    if (!res.ok) throw new Error(`Failed to cancel invitation: ${res.status}`);
     pendingInvitations.value = pendingInvitations.value.filter(
       (inv) => inv.id !== id,
     );
@@ -784,25 +783,10 @@ const deleteUser = async (email: string) => {
   deleting.value = email;
 
   try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData.session?.access_token;
-
-    if (!token) {
-      throw new Error("Not authenticated");
-    }
-
-    const httpRes = await fetch("/api/admin/delete-user", {
-      method: "POST",
-      body: JSON.stringify({ email }),
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!httpRes.ok)
-      throw new Error(`Failed to delete user: ${httpRes.status}`);
-    const response = await httpRes.json();
+    const response = await $fetchAuth<{ success: boolean }>(
+      "/api/admin/delete-user",
+      { method: "POST", body: { email } },
+    );
 
     if (response.success) {
       users.value = users.value.filter((u) => u.email !== email);
@@ -825,23 +809,16 @@ const bulkDeleteUsers = async () => {
   error.value = null;
 
   try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData.session?.access_token;
-
-    if (!token) throw new Error("Not authenticated");
-
-    const httpRes = await fetch("/api/admin/bulk-delete-users", {
+    const response = await $fetchAuth<{
+      success: number;
+      failed: number;
+      deletedEmails: string[];
+      errors: Array<{ email: string; reason: string }>;
+      message: string;
+    }>("/api/admin/bulk-delete-users", {
       method: "POST",
-      body: JSON.stringify({ emails: Array.from(selectedUserEmails.value) }),
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      body: { emails: Array.from(selectedUserEmails.value) },
     });
-
-    if (!httpRes.ok)
-      throw new Error(`Failed to bulk delete users: ${httpRes.status}`);
-    const response = await httpRes.json();
 
     // Remove deleted users from table
     users.value = users.value.filter(
