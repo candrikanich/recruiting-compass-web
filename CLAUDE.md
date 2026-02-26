@@ -168,6 +168,10 @@ Fix ALL errors in single pass before rebuilding. Batch fixes together.
 
 Write failing test → Fix code (minimal) → Verify passes. Prevents regression, increases coverage.
 
+## Testing Philosophy
+
+Never write tests that verify what the TypeScript type system already guarantees. Test runtime behavior, business logic, and edge cases — not type constraints.
+
 ## Testing After Refactoring
 
 Run full test suite immediately after extracting components. Fix broken element references.
