@@ -74,7 +74,10 @@ describe("useRecommendationLetters", () => {
     };
 
     it("inserts a new letter when no id provided", async () => {
-      mockQuery.select.mockResolvedValue({ data: [{ id: "new-id" }], error: null });
+      const insertSelectMock = vi.fn().mockResolvedValue({ data: [{ id: "new-id" }], error: null });
+      const insertMock = { select: insertSelectMock };
+      mockQuery.insert.mockReturnValue(insertMock);
+      mockQuery.order.mockResolvedValue({ data: [], error: null });
       const { saveLetter } = useRecommendationLetters();
       await saveLetter(formData);
       expect(mockQuery.insert).toHaveBeenCalledWith(
@@ -83,7 +86,9 @@ describe("useRecommendationLetters", () => {
     });
 
     it("updates an existing letter when id provided", async () => {
-      mockQuery.eq.mockResolvedValue({ data: null, error: null });
+      mockQuery.eq
+        .mockReturnValueOnce(mockQuery)
+        .mockResolvedValueOnce({ data: null, error: null });
       const { saveLetter } = useRecommendationLetters();
       await saveLetter(formData, "letter-abc");
       expect(mockQuery.update).toHaveBeenCalledWith(expect.objectContaining({ writer_name: "Dr. Smith" }));
@@ -91,16 +96,20 @@ describe("useRecommendationLetters", () => {
     });
 
     it("sets error state on save failure", async () => {
-      mockQuery.select.mockResolvedValue({ data: null, error: { message: "insert failed" } });
+      const insertSelectMock = vi.fn().mockResolvedValue({ data: null, error: { message: "insert failed" } });
+      const insertMock = { select: insertSelectMock };
+      mockQuery.insert.mockReturnValue(insertMock);
       const { saveLetter, error } = useRecommendationLetters();
-      await saveLetter(formData);
+      await saveLetter(formData).catch(() => {});
       expect(error.value).toBeTruthy();
     });
   });
 
   describe("deleteLetter", () => {
     it("deletes by id and refreshes the list", async () => {
-      mockQuery.eq.mockResolvedValue({ error: null });
+      mockQuery.eq
+        .mockReturnValueOnce(mockQuery)
+        .mockResolvedValueOnce({ error: null });
       mockQuery.order.mockResolvedValue({ data: [], error: null });
       const { deleteLetter } = useRecommendationLetters();
       await deleteLetter("letter-xyz");
@@ -110,9 +119,11 @@ describe("useRecommendationLetters", () => {
     });
 
     it("sets error state on delete failure", async () => {
-      mockQuery.eq.mockResolvedValue({ error: { message: "delete failed" } });
+      mockQuery.eq
+        .mockReturnValueOnce(mockQuery)
+        .mockResolvedValueOnce({ error: { message: "delete failed" } });
       const { deleteLetter, error } = useRecommendationLetters();
-      await deleteLetter("letter-xyz");
+      await deleteLetter("letter-xyz").catch(() => {});
       expect(error.value).toBeTruthy();
     });
   });

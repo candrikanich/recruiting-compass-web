@@ -452,14 +452,10 @@ const openTwitter = (coach: (typeof coaches.value)[0]) => {
 };
 
 onMounted(async () => {
-  console.log("Coaches page mounted, school ID:", id);
   const school = await getSchool(id);
-  console.log("School loaded:", school);
   if (school) {
     schoolName.value = school.name;
   }
-  console.log("Fetching coaches...");
   await fetchCoaches(id);
-  console.log("Coaches loaded:", coaches.value);
 });
 </script>

@@ -416,3 +416,14 @@ export type PlayerDetailsInput = z.infer<typeof playerDetailsSchema>;
 export type FeedbackInput = z.infer<typeof feedbackSchema>;
 export type DocumentInput = z.infer<typeof documentSchema>;
 export type SocialMediaPostInput = z.infer<typeof socialMediaPostSchema>;
+
+// ============================================================================
+// HELP FEEDBACK SCHEMA
+// ============================================================================
+
+export const helpFeedbackSchema = z.object({
+  page: z.string().min(1).max(200).startsWith("/"),
+  helpful: z.boolean(),
+});
+
+export type HelpFeedbackInput = z.infer<typeof helpFeedbackSchema>;

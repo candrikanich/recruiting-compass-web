@@ -5,10 +5,13 @@ import {
   getHeader,
   getCookie,
 } from "h3";
+import { z } from "zod";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
+
+const cascadeDeleteSchema = z.object({ confirmDelete: z.boolean().optional() });
 
 /**
  * Cascade delete an interaction and all related records
@@ -35,15 +38,14 @@ export default defineEventHandler(async (event) => {
   await requireAuth(event);
   const interactionId = requireUuidParam(event, "id");
 
-  let body = {};
+  let body: z.infer<typeof cascadeDeleteSchema>;
   try {
-    body = await readBody(event);
+    body = cascadeDeleteSchema.parse(await readBody(event).catch(() => ({})));
   } catch {
-    // Empty body is OK
+    throw createError({ statusCode: 400, statusMessage: "Invalid request body" });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { confirmDelete } = body as any;
+  const { confirmDelete } = body;
   if (!confirmDelete) {
     throw createError({
       statusCode: 400,
@@ -68,10 +70,15 @@ export default defineEventHandler(async (event) => {
   try {
     // Delete in dependency order (careful of FK constraints)
 
-    // Currently no known FK blockers for interactions
-    // (follow_up_reminders is runtime-managed, no formal FK)
+    // 1. Delete follow-up reminders (follow_up_reminders_interaction_id_fkey)
+    const { count: reminderCount, error: reminderError } = await client
+      .from("follow_up_reminders")
+      .delete()
+      .eq("interaction_id", interactionId);
+    if (reminderError) throw reminderError;
+    if (reminderCount) deleted.follow_up_reminders = reminderCount;
 
-    // Delete the interaction
+    // 2. Delete the interaction
     const { count: interactionCount, error: deleteError } = await client
       .from("interactions")
       .delete()

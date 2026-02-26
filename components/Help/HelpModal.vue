@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, ref } from "vue";
+import { watch, ref, onUnmounted } from "vue";
 import type { HelpDefinition } from "./helpDefinitions";
 
 interface Props {
@@ -12,27 +12,34 @@ interface Emits {
 }
 
 const props = defineProps<Props>();
-defineEmits<Emits>();
+const emit = defineEmits<Emits>();
 
 const modalRef = ref<HTMLDivElement | null>(null);
+let originalBodyOverflow = "";
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === "Escape") {
-    // Emit close event
+    emit("close");
   }
 };
 watch(
   () => props.isOpen,
   (isOpen) => {
     if (isOpen) {
+      originalBodyOverflow = document.body.style.overflow;
       document.addEventListener("keydown", handleKeydown);
       document.body.style.overflow = "hidden";
     } else {
       document.removeEventListener("keydown", handleKeydown);
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = originalBodyOverflow;
     }
   },
 );
+
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleKeydown);
+  document.body.style.overflow = originalBodyOverflow;
+});
 </script>
 
 <template>

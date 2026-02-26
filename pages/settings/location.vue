@@ -202,6 +202,9 @@ import {
   CheckCircleIcon,
 } from "@heroicons/vue/24/outline";
 import type { HomeLocation } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("settings/location");
 
 definePageMeta({ middleware: "auth" });
 
@@ -294,7 +297,7 @@ const handleSave = async () => {
     saveSuccess.value = true;
     setTimeout(() => (saveSuccess.value = false), 3000);
   } catch (err) {
-    console.error("Failed to save home location:", err);
+    logger.error("Failed to save home location", err);
   } finally {
     saving.value = false;
   }

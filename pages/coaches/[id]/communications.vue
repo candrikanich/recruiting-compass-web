@@ -416,14 +416,12 @@ const clearFilters = () => {
   selectedSentiment.value = "";
 };
 
-const replyToInteraction = (interaction: Interaction) => {
+const replyToInteraction = (_interaction: Interaction) => {
   // Future: Open reply modal
-  console.log("Reply to:", interaction.id);
 };
 
-const forwardInteraction = (interaction: Interaction) => {
+const forwardInteraction = (_interaction: Interaction) => {
   // Future: Open forward modal
-  console.log("Forward:", interaction.id);
 };
 
 onMounted(async () => {

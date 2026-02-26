@@ -122,53 +122,6 @@ export default defineEventHandler(async (event) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .catch((err: any) => logger.warn("Failed to log removal action", err));
 
-  // Get member info for notifications
-  const memberInfo = member.users as unknown as {
-    id: string;
-    email: string;
-  } | null;
-
-  // Create notifications in background (non-blocking, fire-and-forget)
-  if (memberInfo) {
-    const notif1Promise = supabase.from("notifications").insert({
-      user_id: memberInfo.id,
-      type: "family_member_removed",
-      title: "Removed from family",
-      message: `You have been removed from ${family.family_name}`,
-      priority: "high",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (notif1Promise as any)
-      .then(() => {
-        // Success - do nothing
-      })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .catch((err: any) =>
-        logger.warn("Failed to create parent notification", err),
-      );
-
-    const notif2Promise = supabase.from("notifications").insert({
-      user_id: user.id,
-      type: "family_member_removed",
-      title: "Family member removed",
-      message: `${memberInfo.email} has been removed from your family`,
-      priority: "low",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (notif2Promise as any)
-      .then(() => {
-        // Success - do nothing
-      })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .catch((err: any) =>
-        logger.warn("Failed to create student notification", err),
-      );
-  }
-
   return {
     success: true,
     message: "Member removed successfully",

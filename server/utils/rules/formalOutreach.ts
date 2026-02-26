@@ -36,8 +36,8 @@ export const formalOutreachRule: Rule = {
           const intA = a as Record<string, unknown>;
           const intB = b as Record<string, unknown>;
           return (
-            new Date(intB.interaction_date as string).getTime() -
-            new Date(intA.interaction_date as string).getTime()
+            new Date(intB.occurred_at as string).getTime() -
+            new Date(intA.occurred_at as string).getTime()
           );
         })[0];
 
@@ -45,7 +45,7 @@ export const formalOutreachRule: Rule = {
         const intRecord = lastInteraction as Record<string, unknown>;
         const daysSince = Math.floor(
           (Date.now() -
-            new Date(intRecord.interaction_date as string).getTime()) /
+            new Date(intRecord.occurred_at as string).getTime()) /
             (1000 * 60 * 60 * 24),
         );
         daysSinceInteractionList.push(daysSince);

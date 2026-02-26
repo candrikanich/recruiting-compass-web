@@ -239,11 +239,11 @@ const handleSignup = async () => {
         signupOptions,
       );
 
-      if (!authData?.user?.id) {
+      if (!authData?.data?.user?.id) {
         throw new Error("No user returned from signup");
       }
 
-      userId = authData.user.id;
+      userId = authData.data.user.id;
     } catch (signupErr: unknown) {
       // Handle "User already registered" error - the account may have been created
       // in a previous request (race condition or double-submit)

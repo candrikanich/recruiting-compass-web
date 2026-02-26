@@ -1,9 +1,10 @@
 /**
  * POST /api/cron/daily-suggestions
  * Scheduled cron job to refresh suggestions for all active athletes
- * Can be triggered manually or via Netlify scheduled functions
+ * Triggered by Vercel Cron (daily at 07:00 UTC) or manually.
  *
- * Security: Requires CRON_SECRET environment variable
+ * Security: Vercel sends CRON_SECRET as "Authorization: Bearer <secret>".
+ * Manual callers may also pass it as "x-cron-secret: <secret>".
  */
 
 import { defineEventHandler, createError, getHeader } from "h3";
@@ -21,11 +22,17 @@ interface CronResult {
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "cron/daily-suggestions");
   try {
-    // Verify cron secret for security
-    const cronSecret = getHeader(event, "x-cron-secret");
+    // Verify cron secret — Vercel sends "Authorization: Bearer <CRON_SECRET>",
+    // manual callers may use the legacy "x-cron-secret" header.
     const expectedSecret = process.env.CRON_SECRET;
+    const authHeader = getHeader(event, "authorization");
+    const legacyHeader = getHeader(event, "x-cron-secret");
+    const bearerSecret = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : undefined;
+    const providedSecret = bearerSecret ?? legacyHeader;
 
-    if (!expectedSecret || cronSecret !== expectedSecret) {
+    if (!expectedSecret || providedSecret !== expectedSecret) {
       throw createError({
         statusCode: 401,
         message: "Unauthorized: Invalid cron secret",
@@ -68,7 +75,7 @@ export default defineEventHandler(async (event) => {
         result.failed++;
         result.errors.push({
           athleteId: athlete.id,
-          error: error instanceof Error ? error.message : "Unknown error",
+          error: "Processing failed",
         });
         logger.error(
           `Failed to update suggestions for athlete ${athlete.id}`,

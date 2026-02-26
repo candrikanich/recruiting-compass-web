@@ -1,7 +1,6 @@
 /**
  * POST /api/notifications/create
  * Create a notification for a user
- * CSRF protection disabled: endpoint requires authentication via requireAuth()
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
@@ -11,11 +10,26 @@ import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 
 const createNotificationSchema = z.object({
-  type: z.string().min(1).max(100),
+  type: z.enum([
+    "follow_up_reminder",
+    "deadline_alert",
+    "daily_digest",
+    "inbound_interaction",
+    "offer",
+    "event",
+  ]),
   title: z.string().min(1).max(200),
   message: z.string().max(1000).optional(),
   priority: z.enum(["low", "medium", "high"]).optional().default("low"),
-  action_url: z.string().url().optional().or(z.literal("")),
+  // Only allow relative paths to prevent open redirect / phishing via arbitrary URLs
+  action_url: z
+    .string()
+    .max(500)
+    .refine(
+      (val) => val === "" || val.startsWith("/"),
+      "action_url must be a relative path (starting with /)",
+    )
+    .optional(),
 });
 
 export default defineEventHandler(async (event) => {
@@ -26,7 +40,10 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event);
     const parsed = createNotificationSchema.safeParse(body);
     if (!parsed.success) {
-      throw createError({ statusCode: 400, statusMessage: "Invalid request body" });
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Invalid request body",
+      });
     }
     const { type, title, message, priority, action_url } = parsed.data;
 

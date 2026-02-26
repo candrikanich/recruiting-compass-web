@@ -23,13 +23,14 @@ export default defineEventHandler(async (event) => {
       .order("created_at", { ascending: false });
 
     if (schoolsError) {
-      throw schoolsError;
+      logger.error("Failed to fetch schools", schoolsError);
+      throw createError({ statusCode: 500, statusMessage: "Failed to fetch schools" });
     }
 
     // Calculate portfolio health
     const portfolioHealth = calculatePortfolioHealth(
       (schools || []).map((school: { fit_score?: number | null }) => ({
-        fit_score: school.fit_score || 0,
+        fit_score: school.fit_score ?? 0,
         fit_tier: undefined,
       })),
     );

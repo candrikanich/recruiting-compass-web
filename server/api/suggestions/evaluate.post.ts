@@ -10,6 +10,7 @@ import { useLogger } from "~/server/utils/logger";
 import { RuleEngine } from "~/server/utils/ruleEngine";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
 import type { RuleContext } from "~/server/utils/rules/index";
+import { calculateCurrentGrade } from "~/utils/gradeHelpers";
 import { interactionGapRule } from "~/server/utils/rules/interactionGap";
 import { missingVideoRule } from "~/server/utils/rules/missingVideo";
 import { eventFollowUpRule } from "~/server/utils/rules/eventFollowUp";
@@ -33,56 +34,58 @@ export default defineEventHandler(async (event) => {
   const athleteId = user.id;
 
   try {
-    // Minimal column selects for rule context (no rule uses context.tasks)
-    const profilesSelect = "id, grade_level";
+    // grade_level is derived from graduation_year in user_preferences
+    // (the profiles table was removed — see migration 041).
     const schoolsSelect =
       "id, name, division, status, priority, priority_tier, fit_score";
     const interactionsSelect =
-      "id, school_id, interaction_date, related_event_id";
+      "id, school_id, occurred_at, related_event_id";
     const athleteTasksSelect = "task_id, status";
     const videosSelect = "id, health_status, title";
     const eventsSelect = "id, name, event_date, school_id, attended";
 
-    const [athlete, schools, interactions, athleteTasks, videos, events] =
+    // Resolve family_unit_id — schools are owned by family units, not individual users
+    const { data: membership, error: membershipError } = await supabase
+      .from("family_members")
+      .select("family_unit_id")
+      .eq("user_id", athleteId)
+      .single();
+
+    if (membershipError || !membership) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Family membership not found",
+      });
+    }
+
+    const familyUnitId = membership.family_unit_id;
+
+    const [playerPrefs, schools, interactions, athleteTasks, videos, events] =
       await Promise.all([
         supabase
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .from("profiles" as any)
-          .select(profilesSelect)
-          .eq("id", athleteId)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .single() as any,
-        supabase
-          .from("schools")
-          .select(schoolsSelect)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .eq("athlete_id", athleteId) as any,
-        supabase
-          .from("interactions")
-          .select(interactionsSelect)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .eq("athlete_id", athleteId) as any,
-        supabase
-          .from("athlete_task")
-          .select(athleteTasksSelect)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .eq("athlete_id", athleteId) as any,
-        supabase
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .from("videos" as any)
-          .select(videosSelect)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .eq("athlete_id", athleteId) as any,
-        supabase
-          .from("events")
-          .select(eventsSelect)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .eq("athlete_id", athleteId) as any,
+          .from("user_preferences")
+          .select("data")
+          .eq("user_id", athleteId)
+          .eq("category", "player")
+          .single(),
+        supabase.from("schools").select(schoolsSelect).eq("family_unit_id", familyUnitId),
+        supabase.from("interactions").select(interactionsSelect).eq("logged_by", athleteId),
+        supabase.from("athlete_task").select(athleteTasksSelect).eq("athlete_id", athleteId),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any).from("videos").select(videosSelect).eq("athlete_id", athleteId),
+        supabase.from("events").select(eventsSelect).eq("user_id", athleteId),
       ]);
+
+    const playerData = playerPrefs.data?.data as Record<string, unknown> | null;
+    const graduationYear =
+      typeof playerData?.graduation_year === "number"
+        ? playerData.graduation_year
+        : null;
+    const gradeLevel = graduationYear ? calculateCurrentGrade(graduationYear) : 9;
 
     const context: RuleContext = {
       athleteId,
-      athlete: athlete.data,
+      athlete: { grade_level: gradeLevel },
       schools: schools.data || [],
       interactions: interactions.data || [],
       tasks: [], // No rule uses context.tasks; avoid fetching entire task table
@@ -115,10 +118,11 @@ export default defineEventHandler(async (event) => {
 
     return { generated: result.count, ids: result.ids };
   } catch (error: unknown) {
+    if (error instanceof Error && "statusCode" in error) throw error;
     logger.error("Failed to evaluate suggestions", error);
     throw createError({
       statusCode: 500,
-      message: "Failed to evaluate suggestions",
+      statusMessage: "Failed to evaluate suggestions",
     });
   }
 });

@@ -156,7 +156,7 @@ export default defineEventHandler(async (event) => {
     // Calculate academic standing score from actual user data
     const { data: academicData } = await supabase
       .from("users")
-      .select("gpa, sat_score, act_score, ncaa_eligibility_status")
+      .select("gpa, sat_score, act_score")
       .eq("id", user.id)
       .single();
 
@@ -165,13 +165,11 @@ export default defineEventHandler(async (event) => {
           gpa?: number | null;
           sat_score?: number | null;
           act_score?: number | null;
-          ncaa_eligibility_status?: string | null;
         })
       : {
           gpa: null,
           sat_score: null,
           act_score: null,
-          ncaa_eligibility_status: null,
         };
 
     const academicStandingScore = calculateAcademicStandingScore(
@@ -180,10 +178,7 @@ export default defineEventHandler(async (event) => {
         sat: academicRecord?.sat_score ?? undefined,
         act: academicRecord?.act_score ?? undefined,
       },
-      (academicRecord?.ncaa_eligibility_status as
-        | "registered"
-        | "pending"
-        | "not_started") ?? "not_started",
+      "not_started",
       [],
     );
 

@@ -102,9 +102,7 @@ export default defineEventHandler(
       const deletedEmails: string[] = [];
       const errors: BulkDeleteError[] = [];
 
-      const resolvedUsers: Array<{ email: string; id: string }> = [];
-
-      await Promise.all(
+      const resolutionResults = await Promise.allSettled(
         normalizedEmails.map(async (targetEmail) => {
           const { data: targetUserData, error: getUserError } =
             await supabaseAdmin
@@ -114,12 +112,25 @@ export default defineEventHandler(
               .single();
 
           if (getUserError || !targetUserData?.id) {
-            errors.push({ email: targetEmail, reason: "User not found" });
-          } else {
-            resolvedUsers.push({ email: targetEmail, id: targetUserData.id });
+            return { resolved: false, email: targetEmail } as const;
           }
+          return { resolved: true, email: targetEmail, id: targetUserData.id } as const;
         }),
       );
+
+      const resolvedUsers: Array<{ email: string; id: string }> = [];
+
+      resolutionResults.forEach((result, index) => {
+        if (result.status === "fulfilled") {
+          if (result.value.resolved) {
+            resolvedUsers.push({ email: result.value.email, id: result.value.id });
+          } else {
+            errors.push({ email: result.value.email, reason: "User not found" });
+          }
+        } else {
+          errors.push({ email: normalizedEmails[index], reason: "Resolution failed" });
+        }
+      });
 
       if (resolvedUsers.length > 0) {
         const targetUserIds = resolvedUsers.map((u) => u.id);
@@ -182,6 +193,8 @@ export default defineEventHandler(
                     `Failed to delete auth user ${targetUserId} (${targetEmail}):`,
                     deleteError,
                   );
+                  errors.push({ email: targetEmail, reason: deleteError.message || "Auth deletion failed" });
+                  return;
                 }
               }
 

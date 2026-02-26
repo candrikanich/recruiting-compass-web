@@ -53,60 +53,23 @@ export default defineEventHandler(async (event) => {
 
     const supabase = useSupabaseAdmin();
 
-    // Try to update existing preferences
-    const fetchResponse = await supabase
+    const result = await supabase
       .from("user_preferences")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("category", category)
-      .single();
-
-    const { error: fetchError } = fetchResponse as {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any;
-    };
-
-    let result;
-
-    if (fetchError && fetchError.code === "PGRST116") {
-      // No existing preferences - insert new
-      const insertResponse = await supabase
-        .from("user_preferences")
-        .insert({
+      .upsert(
+        {
           user_id: user.id,
           category,
           data: data as Database["public"]["Tables"]["user_preferences"]["Insert"]["data"],
-        })
-        .select()
-        .single();
-
-      result = insertResponse as {
-        data: Database["public"]["Tables"]["user_preferences"]["Row"] | null;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error: any;
-      };
-    } else if (fetchError) {
-      throw fetchError;
-    } else {
-      // Update existing preferences
-      const updateResponse = await supabase
-        .from("user_preferences")
-        .update({
-          data: data as Database["public"]["Tables"]["user_preferences"]["Update"]["data"],
-
           updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id)
-        .eq("category", category)
-        .select()
-        .single();
-
-      result = updateResponse as {
-        data: Database["public"]["Tables"]["user_preferences"]["Row"] | null;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error: any;
-      };
-    }
+        },
+        { onConflict: "user_id,category" },
+      )
+      .select()
+      .single() as {
+      data: Database["public"]["Tables"]["user_preferences"]["Row"] | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any;
+    };
 
     if (result.error) {
       throw result.error;

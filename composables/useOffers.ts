@@ -4,6 +4,7 @@ import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
 import type { Offer } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
+import { offerSchema } from "~/utils/validation/schemas";
 
 const logger = createClientLogger("useOffers");
 
@@ -123,12 +124,14 @@ export const useOffers = (): {
     error.value = null;
 
     try {
+      const validated = await offerSchema.parseAsync(offerData);
+
       const { data, error: insertError } =
         (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase.from("offers") as any)
           .insert([
             {
-              ...offerData,
+              ...validated,
               user_id: dataOwnerUserId,
               family_unit_id: activeFamily.activeFamilyId.value,
             },
@@ -163,6 +166,7 @@ export const useOffers = (): {
         (supabase.from("offers") as any)
           .update(updates)
           .eq("id", id)
+          .eq("family_unit_id", activeFamily.activeFamilyId.value)
           .select()
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .single()) as { data: Offer; error: any };
@@ -187,6 +191,8 @@ export const useOffers = (): {
 
   const deleteOffer = async (id: string) => {
     if (!userStore.user) throw new Error("User not authenticated");
+    if (!activeFamily.activeFamilyId?.value)
+      throw new Error("No active family");
 
     loading.value = true;
     error.value = null;
@@ -195,7 +201,8 @@ export const useOffers = (): {
       const { error: deleteError } = await supabase
         .from("offers")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .eq("family_unit_id", activeFamily.activeFamilyId.value);
 
       if (deleteError) throw deleteError;
 

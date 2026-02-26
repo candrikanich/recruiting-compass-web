@@ -132,17 +132,25 @@ export const useSchoolStore = defineStore("schools", {
       try {
         const { useSupabase } = await import("~/composables/useSupabase");
         const { useUserStore } = await import("./user");
+        const { useFamilyContext } = await import(
+          "~/composables/useFamilyContext"
+        );
         const userStore = useUserStore();
+        const activeFamily = useFamilyContext();
         const supabase = useSupabase();
 
         if (!userStore.user) {
           throw new Error("User not authenticated");
         }
 
+        if (!activeFamily.activeFamilyId.value) {
+          throw new Error("No family context");
+        }
+
         const { data, error: fetchError } = await supabase
           .from("schools")
           .select("*")
-          .eq("user_id", userStore.user.id)
+          .eq("family_unit_id", activeFamily.activeFamilyId.value)
           .order("ranking", { ascending: true, nullsFirst: false });
 
         if (fetchError) throw fetchError;
@@ -165,8 +173,12 @@ export const useSchoolStore = defineStore("schools", {
     async getSchool(id: string): Promise<School | null> {
       const { useSupabase } = await import("~/composables/useSupabase");
       const { useUserStore } = await import("./user");
+      const { useFamilyContext } = await import(
+        "~/composables/useFamilyContext"
+      );
 
       const userStore = useUserStore();
+      const activeFamily = useFamilyContext();
       const supabase = useSupabase();
 
       this.loading = true;
@@ -177,11 +189,15 @@ export const useSchoolStore = defineStore("schools", {
           throw new Error("User not authenticated");
         }
 
+        if (!activeFamily.activeFamilyId.value) {
+          throw new Error("No family context");
+        }
+
         const { data, error: fetchError } = await supabase
           .from("schools")
           .select("*")
           .eq("id", id)
-          .eq("user_id", userStore.user.id)
+          .eq("family_unit_id", activeFamily.activeFamilyId.value)
           .single();
 
         if (fetchError) throw fetchError;
@@ -296,7 +312,11 @@ export const useSchoolStore = defineStore("schools", {
       const { useSupabase } = await import("~/composables/useSupabase");
       const { sanitizeHtml } = await import("~/utils/validation/sanitize");
       const { useUserStore } = await import("./user");
+      const { useFamilyContext } = await import(
+        "~/composables/useFamilyContext"
+      );
       const userStore = useUserStore();
+      const activeFamily = useFamilyContext();
       const supabase = useSupabase();
 
       this.loading = true;
@@ -305,6 +325,10 @@ export const useSchoolStore = defineStore("schools", {
       try {
         if (!userStore.user) {
           throw new Error("User not authenticated");
+        }
+
+        if (!activeFamily.activeFamilyId.value) {
+          throw new Error("No family context");
         }
 
         // Sanitize text fields
@@ -354,7 +378,7 @@ export const useSchoolStore = defineStore("schools", {
         const response = (await (supabase.from("schools") as any)
           .update(updateData)
           .eq("id", id)
-          .eq("user_id", userStore.user.id)
+          .eq("family_unit_id", activeFamily.activeFamilyId.value)
           .select()
           .single()) as {
           data: School;
@@ -389,7 +413,11 @@ export const useSchoolStore = defineStore("schools", {
     async deleteSchool(id: string) {
       const { useSupabase } = await import("~/composables/useSupabase");
       const { useUserStore } = await import("./user");
+      const { useFamilyContext } = await import(
+        "~/composables/useFamilyContext"
+      );
       const userStore = useUserStore();
+      const activeFamily = useFamilyContext();
       const supabase = useSupabase();
 
       this.loading = true;
@@ -400,11 +428,15 @@ export const useSchoolStore = defineStore("schools", {
           throw new Error("User not authenticated");
         }
 
+        if (!activeFamily.activeFamilyId.value) {
+          throw new Error("No family context");
+        }
+
         const { error: deleteError } = await supabase
           .from("schools")
           .delete()
           .eq("id", id)
-          .eq("user_id", userStore.user.id);
+          .eq("family_unit_id", activeFamily.activeFamilyId.value);
 
         if (deleteError) throw deleteError;
 
@@ -489,7 +521,11 @@ export const useSchoolStore = defineStore("schools", {
     ) {
       const { useSupabase } = await import("~/composables/useSupabase");
       const { useUserStore } = await import("./user");
+      const { useFamilyContext } = await import(
+        "~/composables/useFamilyContext"
+      );
       const userStore = useUserStore();
+      const activeFamily = useFamilyContext();
       const supabase = useSupabase();
 
       this.loading = true;
@@ -500,13 +536,24 @@ export const useSchoolStore = defineStore("schools", {
           throw new Error("User not authenticated");
         }
 
-        // Find current school to get previous status
-        const school = this.schools.find((s) => s.id === schoolId);
-        if (!school) {
-          throw new Error("School not found");
+        if (!activeFamily.activeFamilyId.value) {
+          throw new Error("No family context");
         }
 
-        const previousStatus = school.status;
+        // Fetch current status from DB to avoid stale-cache history corruption
+        const { data: currentSchool, error: selectError } = (await supabase
+          .from("schools")
+          .select("status")
+          .eq("id", schoolId)
+          .eq("family_unit_id", activeFamily.activeFamilyId.value)
+          .single()) as {
+          data: { status: School["status"] } | null;
+          error: { message: string; code: string } | null;
+        };
+
+        if (selectError) throw selectError;
+
+        const previousStatus = currentSchool?.status ?? null;
         const now = new Date().toISOString();
 
         // Update school status and status_changed_at timestamp
@@ -521,7 +568,7 @@ export const useSchoolStore = defineStore("schools", {
         const response = (await (supabase.from("schools") as any)
           .update(schoolUpdateData)
           .eq("id", schoolId)
-          .eq("user_id", userStore.user.id)
+          .eq("family_unit_id", activeFamily.activeFamilyId.value)
           .select()
           .single()) as {
           data: School;

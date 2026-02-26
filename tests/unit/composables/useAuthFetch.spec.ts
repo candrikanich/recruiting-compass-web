@@ -1,4 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+
+// The global setup.ts mocks useAuthFetch — unmock here to test the real implementation
+vi.unmock("~/composables/useAuthFetch");
+
 import { useAuthFetch, SessionExpiredError } from "~/composables/useAuthFetch";
 
 // $fetch is a Nuxt global — stub it at module level

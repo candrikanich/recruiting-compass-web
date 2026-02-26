@@ -195,13 +195,13 @@
 
 <script setup lang="ts">
 import { reactive, ref, watch, toRefs, nextTick } from "vue";
-import { useCoaches } from "~/composables/useCoaches";
 import { useFocusTrap } from "~/composables/useFocusTrap";
 import type { Coach } from "~/types/models";
 
 interface Props {
   coach: Coach;
   isOpen: boolean;
+  updateFn: (id: string, data: Partial<Coach>) => Promise<Coach>;
 }
 
 const props = defineProps<Props>();
@@ -211,7 +211,6 @@ const emit = defineEmits<{
   updated: [coach: Coach];
 }>();
 
-const { updateCoach } = useCoaches();
 const loading = ref(false);
 
 const dialogRef = ref<HTMLElement | null>(null);
@@ -258,7 +257,7 @@ watch(
 const handleSubmit = async () => {
   loading.value = true;
   try {
-    const updated = await updateCoach(props.coach.id, form);
+    const updated = await props.updateFn(props.coach.id, form);
     emit("updated", updated);
     handleClose();
   } catch (err) {

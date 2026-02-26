@@ -1,9 +1,10 @@
 import { ref, computed } from "vue";
 import type { Toast, ToastType } from "~/types/toast";
 
-export const useToast = () => {
-  const toasts = ref<Toast[]>([]);
+// Module-level singleton: all callers share the same toasts array
+const toasts = ref<Toast[]>([]);
 
+export const useToast = () => {
   const showToast = (
     message: string,
     type: ToastType = "info",

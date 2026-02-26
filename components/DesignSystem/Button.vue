@@ -82,17 +82,17 @@ const colorVariants: Record<ButtonColor, Record<ButtonVariant, string>> = {
     ghost: "text-brand-orange-600 hover:bg-brand-orange-100",
   },
   indigo: {
-    solid: "bg-brand-indigo-600 text-white hover:bg-brand-indigo-600",
+    solid: "bg-brand-indigo-600 text-white hover:bg-brand-indigo-700",
     gradient:
-      "bg-gradient-to-r from-brand-indigo-500 to-brand-indigo-600 text-white hover:from-brand-indigo-600 hover:to-brand-indigo-600",
+      "bg-gradient-to-r from-brand-indigo-500 to-brand-indigo-600 text-white hover:from-brand-indigo-600 hover:to-brand-indigo-700",
     outline:
       "border-2 border-brand-indigo-500 text-brand-indigo-600 hover:bg-brand-indigo-100",
     ghost: "text-brand-indigo-600 hover:bg-brand-indigo-100",
   },
   slate: {
-    solid: "bg-brand-slate-700 text-white hover:bg-brand-slate-700",
+    solid: "bg-brand-slate-700 text-white hover:bg-brand-slate-800",
     gradient:
-      "bg-gradient-to-r from-brand-slate-700 to-brand-slate-700 text-white hover:from-brand-slate-700 hover:to-brand-slate-700",
+      "bg-gradient-to-r from-brand-slate-700 to-brand-slate-700 text-white hover:from-brand-slate-700 hover:to-brand-slate-800",
     outline:
       "border-2 border-brand-slate-600 text-brand-slate-700 hover:bg-brand-slate-100",
     ghost: "text-brand-slate-700 hover:bg-brand-slate-100",

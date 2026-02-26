@@ -35,9 +35,6 @@ export const useCollegeData = () => {
   const error = ref<string | null>(null);
   const cacheSize = ref(0);
 
-  const config = useRuntimeConfig();
-  const apiKey = config.public.collegeScorecardApiKey as string;
-
   /**
    * Initialize cache if not already done
    */
@@ -194,11 +191,6 @@ export const useCollegeData = () => {
       return null;
     }
 
-    if (!apiKey) {
-      error.value = "College Scorecard API not configured";
-      return null;
-    }
-
     // Check cache first
     const normalizedName = schoolName.toLowerCase().trim();
     if (isCached(normalizedName)) {
@@ -213,14 +205,13 @@ export const useCollegeData = () => {
 
     try {
       const params = new URLSearchParams({
-        api_key: apiKey,
-        "school.name": schoolName,
+        q: schoolName,
         fields:
           "id,school.name,school.city,school.state,school.school_url,location.lat,location.lon,latest.admissions.admission_rate.overall,latest.student.size,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state",
         per_page: "1",
       });
 
-      const url = `https://api.data.gov/ed/collegescorecard/v1/schools?${params.toString()}`;
+      const url = `/api/colleges/search?${params.toString()}`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -277,11 +268,6 @@ export const useCollegeData = () => {
       return null;
     }
 
-    if (!apiKey) {
-      error.value = "College Scorecard API not configured";
-      return null;
-    }
-
     // Check cache first using ID as key
     const cacheKey = `id:${scoreId}`;
     if (isCached(cacheKey)) {
@@ -296,13 +282,12 @@ export const useCollegeData = () => {
 
     try {
       const params = new URLSearchParams({
-        api_key: apiKey,
         id: scoreId,
         fields:
           "id,school.name,school.city,school.state,school.school_url,location.lat,location.lon,latest.admissions.admission_rate.overall,latest.student.size,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state",
       });
 
-      const url = `https://api.data.gov/ed/collegescorecard/v1/schools?${params.toString()}`;
+      const url = `/api/colleges/search?${params.toString()}`;
       const response = await fetch(url);
 
       if (!response.ok) {

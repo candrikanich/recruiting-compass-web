@@ -1,19 +1,21 @@
-import { defineEventHandler, readBody, createError } from "h3";
+import { defineEventHandler, createError } from "h3";
+import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { generateFamilyCode } from "~/server/utils/familyCode";
 import { useLogger } from "~/server/utils/logger";
+import { validateBody } from "~/server/utils/validation";
 import type { Database } from "~/types/database";
 
-interface RegenerateCodeBody {
-  familyId: string;
-}
+const regenerateCodeSchema = z.object({
+  familyId: z.string().uuid(),
+});
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/code/regenerate");
+  try {
   const user = await requireAuth(event);
-  const body = await readBody<RegenerateCodeBody>(event);
-  const { familyId } = body;
+  const { familyId } = await validateBody(event, regenerateCodeSchema);
   const supabase = useSupabaseAdmin();
 
   // Verify user is student owner of this family
@@ -77,4 +79,9 @@ export default defineEventHandler(async (event) => {
     success: true,
     familyCode: newCode,
   };
+  } catch (err) {
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Failed to regenerate family code", err);
+    throw createError({ statusCode: 500, statusMessage: "Failed to regenerate family code" });
+  }
 });

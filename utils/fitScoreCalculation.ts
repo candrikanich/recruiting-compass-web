@@ -447,8 +447,8 @@ export function calculatePortfolioHealth(
   let unlikelies = 0;
 
   for (const school of schools) {
-    const score = school.fit_score || 0;
-    const tier = school.fit_tier || getFitTier(score);
+    const score = school.fit_score ?? 0;
+    const tier = school.fit_tier ?? getFitTier(score);
 
     switch (tier) {
       case "reach":

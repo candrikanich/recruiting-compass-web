@@ -147,6 +147,21 @@ vi.mock("#app", () => ({
     back: vi.fn(),
     go: vi.fn(),
   }),
+  useCookie: () => ref(null),
+  navigateTo: vi.fn(),
+}));
+
+// Mock useAuthFetch so composables that use it don't require CSRF/session setup
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: () => ({
+    $fetchAuth: vi.fn().mockResolvedValue({ success: true }),
+  }),
+  SessionExpiredError: class SessionExpiredError extends Error {
+    constructor() {
+      super("Your session has expired. Please sign in again.");
+      this.name = "SessionExpiredError";
+    }
+  },
 }));
 
 // Global component stubs to prevent resolution errors

@@ -59,6 +59,8 @@ export function useRecommendationLetters() {
     formData: LetterFormData,
     existingId?: string | null,
   ) => {
+    if (!userStore.user?.id) throw new Error("Not authenticated");
+
     loading.value = true;
     error.value = null;
 
@@ -67,12 +69,13 @@ export function useRecommendationLetters() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { error: updateError } = await (supabase.from("recommendation_letters") as any)
           .update(formData)
-          .eq("id", existingId);
+          .eq("id", existingId)
+          .eq("user_id", userStore.user.id);
         if (updateError) throw updateError;
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { error: insertError } = await (supabase.from("recommendation_letters") as any)
-          .insert([{ ...formData, user_id: userStore.user?.id }])
+          .insert([{ ...formData, user_id: userStore.user.id }])
           .select();
         if (insertError) throw insertError;
       }
@@ -80,7 +83,7 @@ export function useRecommendationLetters() {
       const { data: refreshed, error: refreshError } = await supabase
         .from("recommendation_letters")
         .select("*")
-        .eq("user_id", userStore.user!.id)
+        .eq("user_id", userStore.user.id)
         .order("requested_date", { ascending: false });
       if (refreshError) throw refreshError;
       letters.value = (refreshed as RecommendationLetter[]) || [];
@@ -89,19 +92,23 @@ export function useRecommendationLetters() {
         err instanceof Error ? err.message : "Failed to save letter";
       error.value = message;
       logger.error("saveLetter failed", err);
+      throw err;
     } finally {
       loading.value = false;
     }
   };
 
   const deleteLetter = async (id: string) => {
+    if (!userStore.user?.id) throw new Error("User not authenticated");
+    loading.value = true;
     error.value = null;
 
     try {
       const { error: deleteError } = await supabase
         .from("recommendation_letters")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .eq("user_id", userStore.user.id);
       if (deleteError) throw deleteError;
 
       await fetchLetters();
@@ -110,6 +117,7 @@ export function useRecommendationLetters() {
         err instanceof Error ? err.message : "Failed to delete letter";
       error.value = message;
       logger.error("deleteLetter failed", err);
+      throw err;
     } finally {
       loading.value = false;
     }

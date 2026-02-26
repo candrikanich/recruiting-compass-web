@@ -1,5 +1,5 @@
 import type { Rule, RuleContext } from "./rules/index";
-import { isDuplicateSuggestion } from "./rules/index";
+import { findExistingSuggestion } from "./rules/index";
 import type { SuggestionData, Suggestion, Urgency } from "~/types/timeline";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isDeadPeriod } from "./ncaaRecruitingCalendar";
@@ -197,13 +197,9 @@ export class RuleEngine {
     const insertedIds: string[] = [];
 
     for (const suggestion of allSuggestions) {
-      const isDuplicate = await isDuplicateSuggestion(
-        supabase,
-        athleteId,
-        suggestion,
-      );
+      const existing = await findExistingSuggestion(supabase, athleteId, suggestion);
 
-      if (!isDuplicate) {
+      if (!existing) {
         const { data, error } = await supabase
           .from("suggestion")
           .insert({
@@ -218,6 +214,16 @@ export class RuleEngine {
           insertedIds.push(data.id);
         } else {
           console.error("Failed to insert suggestion:", error);
+        }
+      } else if (suggestion.message && existing.message !== suggestion.message) {
+        // Suggestion already exists but count/context has changed — update the message in place
+        const { error } = await supabase
+          .from("suggestion")
+          .update({ message: suggestion.message })
+          .eq("id", existing.id);
+
+        if (error) {
+          console.error("Failed to update suggestion message:", error);
         }
       }
     }

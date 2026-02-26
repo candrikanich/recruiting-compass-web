@@ -54,10 +54,11 @@ interface _AuthActions {
  */
 function generateFamilyCode(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let code = "";
-  for (let i = 0; i < 8; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
+  const randomValues = new Uint8Array(8);
+  crypto.getRandomValues(randomValues);
+  const code = Array.from(randomValues)
+    .map((v) => chars[v % chars.length])
+    .join("");
   return `FAM-${code}`;
 }
 
@@ -137,6 +138,7 @@ export const useAuth = () => {
       const message =
         err instanceof Error ? err.message : "Failed to restore session";
       error.value = err instanceof Error ? err : new Error(message);
+      isInitialized.value = true;
       logger.error("[useAuth] Session restoration failed:", message);
       return null;
     } finally {
@@ -309,7 +311,7 @@ export const useAuth = () => {
 
       // Store initialization is handled by caller
 
-      return data;
+      return { data, error: null };
     } catch (err: unknown) {
       const authError = err instanceof Error ? err : new Error("Signup failed");
       error.value = authError;
@@ -442,34 +444,36 @@ export const useAuth = () => {
   const logAuthState = async () => {
     const state = await getAuthState();
 
-    console.group(
-      `%c[Auth Debug] ${state.isConsistent ? "✅ CONSISTENT" : "❌ ISSUES DETECTED"}`,
-      `color: ${state.isConsistent ? "green" : "red"}; font-weight: bold;`,
-    );
-
-    console.table({
-      "Auth User ID": state.authUserId || "(empty)",
-      "Auth Email": state.authEmail || "(empty)",
-      "Session User ID": state.sessionUserId || "(empty)",
-      "Session Email": state.sessionEmail || "(empty)",
-      "Store User ID": state.storeUserId || "(empty)",
-      "Store Email": state.storeEmail || "(empty)",
-      "Store Authenticated": state.storeAuthenticated,
-      "Store Loading": state.storeLoading,
-    });
-
-    if (state.issues.length > 0) {
+    if (import.meta.dev) {
       console.group(
-        "%c⚠️ Issues Detected",
-        "color: orange; font-weight: bold;",
+        `%c[Auth Debug] ${state.isConsistent ? "✅ CONSISTENT" : "❌ ISSUES DETECTED"}`,
+        `color: ${state.isConsistent ? "green" : "red"}; font-weight: bold;`,
       );
-      state.issues.forEach((issue) => {
-        console.warn(`• ${issue}`);
+
+      console.table({
+        "Auth User ID": state.authUserId || "(empty)",
+        "Auth Email": state.authEmail || "(empty)",
+        "Session User ID": state.sessionUserId || "(empty)",
+        "Session Email": state.sessionEmail || "(empty)",
+        "Store User ID": state.storeUserId || "(empty)",
+        "Store Email": state.storeEmail || "(empty)",
+        "Store Authenticated": state.storeAuthenticated,
+        "Store Loading": state.storeLoading,
       });
+
+      if (state.issues.length > 0) {
+        console.group(
+          "%c⚠️ Issues Detected",
+          "color: orange; font-weight: bold;",
+        );
+        state.issues.forEach((issue) => {
+          console.warn(`• ${issue}`);
+        });
+        console.groupEnd();
+      }
+
       console.groupEnd();
     }
-
-    console.groupEnd();
 
     return state;
   };
@@ -506,65 +510,79 @@ export const useAuth = () => {
     }
 
     if (Object.keys(changes).length === 0) {
-      console.log(
-        "%c✅ No auth state changes detected",
-        "color: green; font-weight: bold;",
-      );
+      if (import.meta.dev) {
+        console.log(
+          "%c✅ No auth state changes detected",
+          "color: green; font-weight: bold;",
+        );
+      }
       return;
     }
 
-    console.group(
-      "%c⚠️ Auth State Changes Detected",
-      "color: orange; font-weight: bold;",
-    );
-    console.table(changes);
-    console.groupEnd();
+    if (import.meta.dev) {
+      console.group(
+        "%c⚠️ Auth State Changes Detected",
+        "color: orange; font-weight: bold;",
+      );
+      console.table(changes);
+      console.groupEnd();
+    }
 
     return changes;
   };
 
   const verifyUserIdStability = async () => {
-    console.log(
-      "%c🔍 Starting User ID Stability Test",
-      "color: blue; font-weight: bold; font-size: 1.2em;",
-    );
+    if (import.meta.dev) {
+      console.log(
+        "%c🔍 Starting User ID Stability Test",
+        "color: blue; font-weight: bold; font-size: 1.2em;",
+      );
+    }
 
     const measurements = [];
 
     const state1 = await getAuthState();
     measurements.push({ step: "Initial", ...state1 });
-    console.log("Measurement 1 (Initial):", state1);
+    if (import.meta.dev) {
+      console.log("Measurement 1 (Initial):", state1);
+    }
 
     await new Promise((resolve) => setTimeout(resolve, 100));
     const state2 = await getAuthState();
     measurements.push({ step: "After 100ms", ...state2 });
-    console.log("Measurement 2 (After 100ms):", state2);
+    if (import.meta.dev) {
+      console.log("Measurement 2 (After 100ms):", state2);
+    }
 
     await supabase.auth.getSession();
     const state3 = await getAuthState();
     measurements.push({ step: "After getSession()", ...state3 });
-    console.log("Measurement 3 (After getSession):", state3);
+    if (import.meta.dev) {
+      console.log("Measurement 3 (After getSession):", state3);
+    }
 
-    console.group("%c📊 Stability Analysis", "color: blue; font-weight: bold;");
     const areStable =
       state1.authUserId === state2.authUserId &&
       state2.authUserId === state3.authUserId &&
       state1.storeUserId === state2.storeUserId &&
       state2.storeUserId === state3.storeUserId;
 
-    if (areStable) {
-      console.log(
-        "%c✅ User IDs are STABLE across all operations",
-        "color: green; font-weight: bold;",
-      );
-    } else {
-      console.error(
-        "%c❌ User IDs CHANGED during test - this is a bug!",
-        "color: red; font-weight: bold;",
-      );
-      console.table(measurements);
+    if (import.meta.dev) {
+      console.group("%c📊 Stability Analysis", "color: blue; font-weight: bold;");
+      if (areStable) {
+        console.log(
+          "%c✅ User IDs are STABLE across all operations",
+          "color: green; font-weight: bold;",
+        );
+      } else {
+        console.error(
+          "%c❌ User IDs CHANGED during test - this is a bug!",
+          "color: red; font-weight: bold;",
+        );
+        console.table(measurements);
+      }
+      console.groupEnd();
     }
-    console.groupEnd();
 
     return { measurements, areStable };
   };

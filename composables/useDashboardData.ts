@@ -118,7 +118,10 @@ export const useDashboardData = () => {
       error: coachesError,
     } = await supabase
       .from("coaches")
-      .select("*", { count: "exact" })
+      .select(
+        "id, first_name, last_name, role, email, phone, school_id, twitter_handle, instagram_handle, last_contact_date, created_at, updated_at",
+        { count: "exact" },
+      )
       .in("school_id", schoolIds);
 
     if (coachesError) {
@@ -133,7 +136,7 @@ export const useDashboardData = () => {
   /**
    * Fetch interactions for a user
    */
-  const fetchInteractions = async (userId: string): Promise<void> => {
+  const fetchInteractions = async (familyId: string): Promise<void> => {
     const {
       data: interactionsData,
       count: interactionsCount,
@@ -141,7 +144,7 @@ export const useDashboardData = () => {
     } = await supabase
       .from("interactions")
       .select("*", { count: "exact" })
-      .eq("logged_by", userId);
+      .eq("family_unit_id", familyId);
 
     if (interactionsError) {
       logger.error("Error fetching interactions:", interactionsError);
@@ -233,7 +236,7 @@ export const useDashboardData = () => {
       const schoolIds = allSchools.value.map((s) => s.id);
       await Promise.all([
         fetchCoaches(schoolIds),
-        fetchInteractions(userId),
+        fetchInteractions(familyId),
         fetchOffers(userId),
         fetchEvents(userId),
         fetchMetrics(userId),

@@ -30,6 +30,7 @@ describe("useOffers - Critical Offer Creation Flow", () => {
   let userStore: ReturnType<typeof useUserStore>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     setActivePinia(createPinia());
     userStore = useUserStore();
     userStore.user = {
@@ -48,7 +49,6 @@ describe("useOffers - Critical Offer Creation Flow", () => {
     };
 
     mockSupabase.from.mockReturnValue(mockQuery);
-    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -77,12 +77,11 @@ describe("useOffers - Critical Offer Creation Flow", () => {
   describe("Offer Creation", () => {
     it("should create offer with full ride scholarship", async () => {
       const offerData = {
-        school_id: "school-1",
+        school_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         coach_id: null,
         offer_type: "full_ride" as const,
-        offer_date: new Date("2025-01-15"),
-        deadline_date: new Date("2025-02-15"),
-        scholarship_amount: 50000,
+        offer_date: "2025-01-15",
+        deadline_date: "2025-02-15",
         scholarship_percentage: 100,
         conditions: "Maintain 3.0 GPA",
         notes: "Great program",
@@ -101,13 +100,13 @@ describe("useOffers - Critical Offer Creation Flow", () => {
 
     it("should create partial scholarship offer", async () => {
       const offerData = {
-        school_id: "school-2",
+        school_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
         offer_type: "partial" as const,
+        offer_date: "2025-01-15",
         scholarship_amount: 25000,
-        scholarship_percentage: 50,
       };
 
-      const createdOffer = createMockOffer(offerData);
+      const createdOffer = createMockOffer({ ...offerData, scholarship_percentage: 50 });
       mockQuery.single.mockResolvedValue({ data: createdOffer, error: null });
 
       const { createOffer } = useOffers();
@@ -119,13 +118,12 @@ describe("useOffers - Critical Offer Creation Flow", () => {
 
     it("should create walk-on offer with no scholarship", async () => {
       const offerData = {
-        school_id: "school-3",
+        school_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
         offer_type: "preferred_walk_on" as const,
-        scholarship_amount: 0,
-        scholarship_percentage: 0,
+        offer_date: "2025-01-15",
       };
 
-      const createdOffer = createMockOffer(offerData);
+      const createdOffer = createMockOffer({ ...offerData, scholarship_percentage: 0 });
       mockQuery.single.mockResolvedValue({ data: createdOffer, error: null });
 
       const { createOffer } = useOffers();
@@ -137,8 +135,9 @@ describe("useOffers - Critical Offer Creation Flow", () => {
 
     it("should include user_id in created offer", async () => {
       const offerData = {
-        school_id: "school-1",
+        school_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         offer_type: "full_ride" as const,
+        offer_date: "2025-01-15",
       };
 
       mockQuery.single.mockResolvedValue({
@@ -167,9 +166,9 @@ describe("useOffers - Critical Offer Creation Flow", () => {
       // Verify the authentication check exists by calling a create function
       // that would fail if no user was present
       const offerData = {
-        school_id: "school-1",
-        offer_date: new Date("2025-02-15"),
-        deadline_date: new Date("2025-03-15"),
+        school_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        offer_date: "2025-02-15",
+        deadline_date: "2025-03-15",
         offer_type: "full_ride" as const,
       };
 
@@ -223,7 +222,9 @@ describe("useOffers - Critical Offer Creation Flow", () => {
 
       const { createOffer } = useOffers();
 
-      await expect(createOffer({} as any)).rejects.toThrow("Insert failed");
+      await expect(
+        createOffer({ school_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", offer_type: "full_ride" as const, offer_date: "2025-01-15" }),
+      ).rejects.toThrow("Insert failed");
     });
   });
 

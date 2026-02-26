@@ -1,9 +1,12 @@
-import { defineEventHandler } from "h3";
+import { defineEventHandler, createError } from "h3";
 import { requireAuth, getUserRole } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
 import type { Database } from "~/types/database";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "family/code/my-code");
+  try {
   const user = await requireAuth(event);
   const supabase = useSupabaseAdmin();
 
@@ -69,4 +72,9 @@ export default defineEventHandler(async (event) => {
         codeGeneratedAt: m.family_units.code_generated_at,
       })) || [],
   };
+  } catch (err) {
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Failed to fetch family code", err);
+    throw createError({ statusCode: 500, statusMessage: "Failed to fetch family code" });
+  }
 });

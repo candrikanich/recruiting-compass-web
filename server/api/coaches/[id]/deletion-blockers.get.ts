@@ -1,4 +1,4 @@
-import { defineEventHandler, createError, getHeader } from "h3";
+import { defineEventHandler, getHeader, getCookie, createError } from "h3";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
@@ -24,7 +24,13 @@ export default defineEventHandler(async (event) => {
 
   const coachId = requireUuidParam(event, "id");
 
-  const token = getHeader(event, "authorization")?.slice(7) ?? "";
+  const authHeader = getHeader(event, "authorization");
+  const token: string | null = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : getCookie(event, "sb-access-token") || null;
+  if (!token) {
+    throw createError({ statusCode: 401, statusMessage: "Unauthorized - no authentication token" });
+  }
   const client = createServerSupabaseUserClient(token);
   const logger = useLogger(event, "coaches/deletion-blockers");
 

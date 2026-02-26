@@ -4,6 +4,7 @@ import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
 import { useFamilyContext } from "./useFamilyContext";
 import { createClientLogger } from "~/utils/logger";
+import { eventSchema } from "~/utils/validation/schemas";
 import type { Event } from "~/types/models";
 import type { Database } from "~/types/database";
 
@@ -164,12 +165,14 @@ export const useEvents = (): {
     error.value = null;
 
     try {
+      const validated = await eventSchema.parseAsync(eventData);
+
       const { data, error: insertError } =
         (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase.from("events") as any)
           .insert([
             {
-              ...eventData,
+              ...validated,
               user_id: activeFamily.getDataOwnerUserId(),
             },
           ])
@@ -179,7 +182,7 @@ export const useEvents = (): {
 
       if (insertError) throw insertError;
 
-      events.value.push(data);
+      events.value = [data, ...events.value];
       return data;
     } catch (err: unknown) {
       const message =
@@ -207,6 +210,7 @@ export const useEvents = (): {
             updated_at: new Date().toISOString(),
           })
           .eq("id", id)
+          .eq("user_id", userStore.user.id)
           .select()
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .single()) as { data: Event; error: any };
@@ -239,7 +243,8 @@ export const useEvents = (): {
       const { error: deleteError } = await supabase
         .from("events")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .eq("user_id", userStore.user.id);
 
       if (deleteError) throw deleteError;
 

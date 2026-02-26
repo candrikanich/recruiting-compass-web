@@ -8,10 +8,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { useSupabase } from "~/composables/useSupabase";
-import type { User } from "~/types/models";
-import { ref, onMounted } from "vue";
+import { computed, onMounted } from "vue";
+import { useUserById } from "~/composables/useUserById";
 
 interface Props {
   loggedByUserId: string;
@@ -23,9 +21,7 @@ const props = withDefaults(defineProps<Props>(), {
   showRole: false,
 });
 
-const supabase = useSupabase();
-const loggedByUser = ref<User | null>(null);
-const loading = ref(false);
+const { user: loggedByUser, fetchUser } = useUserById(props.loggedByUserId);
 
 const displayName = computed(() => {
   if (props.loggedByUserId === props.currentUserId) {
@@ -60,21 +56,6 @@ onMounted(async () => {
     return; // No need to fetch for "You"
   }
 
-  loading.value = true;
-  try {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", props.loggedByUserId)
-      .single();
-
-    if (!error && data) {
-      loggedByUser.value = data;
-    }
-  } catch (err) {
-    console.error("Failed to fetch logged by user:", err);
-  } finally {
-    loading.value = false;
-  }
+  await fetchUser();
 });
 </script>

@@ -92,7 +92,8 @@ export default defineEventHandler(
         .eq("user_id", user.id);
 
       if (schoolsError) {
-        throw schoolsError;
+        logger.error("Failed to fetch schools for fit score recalculation", schoolsError);
+        throw createError({ statusCode: 500, statusMessage: "Failed to fetch schools" });
       }
 
       // If no schools, return success with 0 updated
@@ -224,7 +225,8 @@ export default defineEventHandler(
       const updateError = results.find((r) => r.error)?.error;
 
       if (updateError) {
-        throw updateError;
+        logger.error("Failed to batch update fit scores", updateError);
+        throw createError({ statusCode: 500, statusMessage: "Failed to update fit scores" });
       }
 
       // Log successful batch update (use first school ID or skip if none)

@@ -370,7 +370,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
       );
 
       // Verify signup
-      expect(signupResult.user).toEqual(mockUser);
+      expect(signupResult.data.user).toEqual(mockUser);
       expect(mockAuth.signUp).toHaveBeenCalledWith({
         email: "new@example.com",
         password: "password123",

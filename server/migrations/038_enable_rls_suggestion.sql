@@ -23,6 +23,8 @@ CREATE POLICY "Service role can insert suggestions"
 -- SELECT: athletes see their own suggestions
 -- ============================================================================
 
+DROP POLICY IF EXISTS "Athletes can view own suggestions" ON public.suggestion;
+
 CREATE POLICY "Athletes can view own suggestions"
   ON public.suggestion
   FOR SELECT
@@ -31,6 +33,8 @@ CREATE POLICY "Athletes can view own suggestions"
 -- ============================================================================
 -- SELECT: parents see suggestions for family members they are linked to
 -- ============================================================================
+
+DROP POLICY IF EXISTS "Parents can view family member suggestions" ON public.suggestion;
 
 CREATE POLICY "Parents can view family member suggestions"
   ON public.suggestion
@@ -49,6 +53,8 @@ CREATE POLICY "Parents can view family member suggestions"
 -- UPDATE: athletes can update their own suggestions (e.g., dismiss them)
 -- ============================================================================
 
+DROP POLICY IF EXISTS "Athletes can update own suggestions" ON public.suggestion;
+
 CREATE POLICY "Athletes can update own suggestions"
   ON public.suggestion
   FOR UPDATE
@@ -57,6 +63,8 @@ CREATE POLICY "Athletes can update own suggestions"
 -- ============================================================================
 -- DELETE: athletes can delete their own suggestions
 -- ============================================================================
+
+DROP POLICY IF EXISTS "Athletes can delete own suggestions" ON public.suggestion;
 
 CREATE POLICY "Athletes can delete own suggestions"
   ON public.suggestion

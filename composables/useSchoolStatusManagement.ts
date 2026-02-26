@@ -35,6 +35,9 @@ export const useSchoolStatusManagement = (schoolId: string) => {
     try {
       const updated = await updateSchool(schoolId, { priority_tier: tier });
       return updated;
+    } catch (err) {
+      logger.error("Failed to update priority:", err);
+      return null;
     } finally {
       priorityUpdating.value = false;
     }

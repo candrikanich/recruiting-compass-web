@@ -188,8 +188,14 @@
           <div class="p-4 border-b border-slate-100">
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-3">
+                <SchoolLogo
+                  v-if="getSchoolById(coach.school_id, schools)"
+                  :school="getSchoolById(coach.school_id, schools)!"
+                  size="md"
+                />
                 <div
-                  class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold"
+                  v-else
+                  class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold"
                 >
                   {{ getInitials(coach) }}
                 </div>
@@ -492,6 +498,7 @@ const DeleteConfirmationModal = defineAsyncComponent(
 );
 import CoachFilters from "~/components/Coach/CoachFilters.vue";
 import ActiveCoachFilterChips from "~/components/Coach/ActiveCoachFilterChips.vue";
+import SchoolLogo from "~/components/School/SchoolLogo.vue";
 import {
   MagnifyingGlassIcon,
   XMarkIcon,

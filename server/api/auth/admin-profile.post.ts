@@ -11,9 +11,9 @@ import { defineEventHandler, readBody, createError } from "h3";
 import { validateAdminToken } from "~/server/utils/adminToken";
 import { createLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { requireAuth } from "~/server/utils/auth";
 
 interface AdminProfileRequest {
-  userId: string;
   email: string;
   fullName: string;
   adminToken: string;
@@ -23,20 +23,21 @@ const logger = createLogger("auth/admin-profile");
 
 export default defineEventHandler(async (event) => {
   try {
+    const authUser = await requireAuth(event);
     const body = await readBody<AdminProfileRequest>(event);
-    const { userId, email, fullName, adminToken } = body;
+    const { email, fullName, adminToken } = body;
 
-    if (!userId || !email) {
+    if (!email) {
       throw createError({
         statusCode: 400,
-        statusMessage: "userId and email are required",
+        statusMessage: "email is required",
       });
     }
 
     // Require a valid admin token — prevents unauthenticated privilege escalation.
     if (!adminToken || typeof adminToken !== "string") {
       logger.warn("Admin profile creation attempted without admin token", {
-        userId,
+        userId: authUser.id,
       });
       throw createError({ statusCode: 403, statusMessage: "Forbidden" });
     }
@@ -44,7 +45,7 @@ export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event);
     if (!validateAdminToken(adminToken, config.adminTokenSecret)) {
       logger.warn("Admin profile creation attempted with invalid admin token", {
-        userId,
+        userId: authUser.id,
       });
       throw createError({ statusCode: 403, statusMessage: "Forbidden" });
     }
@@ -60,7 +61,7 @@ export default defineEventHandler(async (event) => {
         role: "parent",
         is_admin: true,
       })
-      .eq("id", userId);
+      .eq("id", authUser.id);
 
     if (error) {
       logger.error("Failed to create admin profile", error);
@@ -70,7 +71,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    logger.info(`Admin profile created for user ${userId}`);
+    logger.info(`Admin profile created for user ${authUser.id}`);
 
     return { success: true };
   } catch (err) {

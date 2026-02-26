@@ -1068,6 +1068,38 @@ export type Database = {
           },
         ]
       }
+      help_feedback: {
+        Row: {
+          id: string
+          page: string
+          helpful: boolean
+          user_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          page: string
+          helpful: boolean
+          user_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          page?: string
+          helpful?: boolean
+          user_id?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "help_feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interactions: {
         Row: {
           attachments: string[] | null

@@ -7,6 +7,7 @@ import type { Database } from "~/types/database";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/create");
+  try {
   const user = await requireAuth(event);
   const supabase = useSupabaseAdmin();
 
@@ -114,4 +115,9 @@ export default defineEventHandler(async (event) => {
     familyCode: familyCode,
     familyName: newFamily.family_name,
   };
+  } catch (err) {
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Failed to create family", err);
+    throw createError({ statusCode: 500, statusMessage: "Failed to create family" });
+  }
 });

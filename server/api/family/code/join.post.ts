@@ -137,23 +137,5 @@ export default defineEventHandler(async (event) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .catch((err: any) => logger.warn("Failed to log join action", err));
 
-  // Create notification for student (non-blocking, fire-and-forget)
-  const notifPromise = supabase.from("notifications").insert({
-    user_id: family.player_user_id,
-    type: "family_member_joined",
-    title: "New family member joined",
-    message: `${user.email || "A user"} joined your family`,
-    priority: "medium",
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (notifPromise as any)
-    .then(() => {
-      // Success - do nothing
-    })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .catch((err: any) => logger.warn("Notification creation failed", err));
-
   return successResponse;
 });

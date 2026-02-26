@@ -140,6 +140,7 @@
       v-if="coach"
       :coach="coach"
       :is-open="uiState.showEditModal"
+      :update-fn="updateCoach"
       @close="uiState.showEditModal = false"
       @updated="handleCoachUpdated"
     />

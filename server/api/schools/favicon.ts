@@ -7,6 +7,25 @@
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 
+/**
+ * Returns false for IP addresses and domains that could enable SSRF attacks.
+ * Blocks: loopback, private ranges, link-local, domains without dots, domains with ports.
+ */
+function isAllowedDomain(domain: string): boolean {
+  // Reject if port is present (already stripped by normalization but guard against colons)
+  if (domain.includes(":")) return false;
+
+  // Reject if no dot (bare hostnames like "localhost", "metadata", single-label names)
+  if (!domain.includes(".")) return false;
+
+  // Reject IP addresses matching private/loopback/link-local ranges
+  const privateIpPattern =
+    /^(localhost|0\.0\.0\.0|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|::1|fe80:)$/i;
+  if (privateIpPattern.test(domain)) return false;
+
+  return true;
+}
+
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "schools/favicon");
   await requireAuth(event);
@@ -31,6 +50,14 @@ export default defineEventHandler(async (event) => {
       .toLowerCase()
       .replace(/[^a-z0-9.-]+/g, "-")
       .replace(/^-+|-+$/g, "");
+
+    // Reject domains that could be used for SSRF attacks
+    if (!isAllowedDomain(domain)) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Invalid or disallowed school domain",
+      });
+    }
 
     // Try multiple favicon sources in order of preference
     // Prioritize high-resolution icons, fall back to standard favicons
@@ -81,17 +108,6 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // If favicon found and schoolId provided, store in cache
-    if (faviconUrl && schoolId) {
-      try {
-        const _cacheKey = `favicon-${schoolId}`;
-        // Store in memory cache or Redis (basic implementation)
-        // In production, could use Supabase Cache or Redis
-      } catch (cacheError) {
-        logger.warn("Failed to cache favicon", cacheError);
-        // Continue anyway, just log the error
-      }
-    }
 
     return {
       success: true,

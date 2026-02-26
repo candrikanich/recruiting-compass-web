@@ -5,7 +5,7 @@
  */
 
 import { computed } from "vue";
-import type { ComputedRef } from "vue";
+import type { ComputedRef, Ref } from "vue";
 import {
   calculateSchoolSizeBreakdown,
   calculateContactsThisMonth,
@@ -24,11 +24,11 @@ import type {
 } from "~/types/models";
 
 interface DashboardData {
-  allSchools: { value: School[] };
-  allInteractions: { value: Interaction[] };
-  allOffers: { value: Offer[] };
-  allEvents: { value: Event[] };
-  allMetrics: { value: PerformanceMetric[] };
+  allSchools: Ref<School[]>;
+  allInteractions: Ref<Interaction[]>;
+  allOffers: Ref<Offer[]>;
+  allEvents: Ref<Event[]>;
+  allMetrics: Ref<PerformanceMetric[]>;
 }
 
 interface DashboardCalculations {

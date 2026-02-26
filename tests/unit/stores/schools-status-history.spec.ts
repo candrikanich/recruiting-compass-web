@@ -78,6 +78,12 @@ vi.mock("~/stores/user", () => ({
   })),
 }));
 
+vi.mock("~/composables/useFamilyContext", () => ({
+  useFamilyContext: () => ({
+    activeFamilyId: { value: "family-123" },
+  }),
+}));
+
 describe("Schools Store - Status History (Story 3.4)", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -156,13 +162,16 @@ describe("Schools Store - Status History (Story 3.4)", () => {
       expect(result.status).toBe("camp_invite");
     });
 
-    it("should throw error when school not found", async () => {
+    it("should throw error when user is not authenticated", async () => {
+      const { useUserStore } = await import("~/stores/user");
+      vi.mocked(useUserStore).mockReturnValueOnce({ user: null } as any);
+
       const store = useSchoolStore();
       store.schools = [];
 
       await expect(
-        store.updateStatus("non-existent-id", "committed"),
-      ).rejects.toThrow();
+        store.updateStatus("school-1", "committed"),
+      ).rejects.toThrow("User not authenticated");
     });
 
     it("should clear status history cache after update", async () => {

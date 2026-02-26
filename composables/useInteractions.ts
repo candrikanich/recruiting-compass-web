@@ -8,6 +8,7 @@ import type { Database } from "~/types/database";
 import { interactionSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
 import { createClientLogger } from "~/utils/logger";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 
 const logger = createClientLogger("useInteractions");
 
@@ -89,6 +90,7 @@ const useInteractionsInternal = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const { $fetchAuth } = useAuthFetch();
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
 
@@ -214,6 +216,7 @@ const useInteractionsInternal = (): {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch interactions";
+      logger.error("[useInteractions] fetchInteractions error:", err);
       errorRef.value = message;
     } finally {
       loadingRef.value = false;
@@ -318,6 +321,8 @@ const useInteractionsInternal = (): {
 
       if (insertError) throw insertError;
 
+      let updatedData = data;
+
       if (files && files.length > 0) {
         const uploadedPaths = await uploadAttachments(files, data.id);
         if (uploadedPaths.length > 0) {
@@ -326,21 +331,24 @@ const useInteractionsInternal = (): {
             (supabase.from("interactions") as any)
               .update({ attachments: uploadedPaths })
               .eq("id", data.id);
-          if (updateError)
+          if (updateError) {
             logger.error("Failed to update attachment paths:", updateError);
+            throw new Error("Failed to save attachments. Interaction created but files were not linked.");
+          }
+          updatedData = { ...data, attachments: uploadedPaths };
         }
       }
 
-      if (data.direction === "inbound" && userStore.user) {
+      if (updatedData.direction === "inbound" && userStore.user) {
         await createInboundInteractionAlert({
-          interaction: data,
+          interaction: updatedData,
           userId: userStore.user.id,
           supabase,
         });
       }
 
-      interactions.value.unshift(data);
-      return data;
+      interactions.value = [updatedData, ...interactions.value];
+      return updatedData;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to create interaction";
@@ -388,7 +396,7 @@ const useInteractionsInternal = (): {
 
       const index = interactions.value.findIndex((i) => i.id === id);
       if (index !== -1) {
-        interactions.value[index] = data;
+        interactions.value = interactions.value.map((item, i) => (i === index ? data : item));
       }
 
       return data;
@@ -479,15 +487,10 @@ const useInteractionsInternal = (): {
         message.includes("violates foreign key constraint") ||
         message.includes("still referenced")
       ) {
-        const result = await fetch(`/api/interactions/${id}/cascade-delete`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ confirmDelete: true }),
-        });
-        const cascadeResponse = (await result.json()) as Record<
-          string,
-          unknown
-        >;
+        const cascadeResponse = await $fetchAuth<Record<string, unknown>>(
+          `/api/interactions/${id}/cascade-delete`,
+          { method: "POST", body: { confirmDelete: true } },
+        );
         if (cascadeResponse.success) {
           interactions.value = interactions.value.filter((i) => i.id !== id);
           return { cascadeUsed: true };

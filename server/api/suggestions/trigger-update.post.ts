@@ -7,9 +7,11 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 import { triggerSuggestionUpdate } from "~/server/utils/triggerSuggestionUpdate";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "suggestions/trigger-update");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
@@ -48,6 +50,7 @@ export default defineEventHandler(async (event) => {
       throw error;
     }
 
+    logger.error("Failed to trigger suggestion update", error);
     throw createError({
       statusCode: 500,
       message: "Failed to trigger suggestion update",

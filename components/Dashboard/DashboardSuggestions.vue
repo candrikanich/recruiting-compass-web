@@ -84,11 +84,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import type { Suggestion } from "~/types/timeline";
-import type { School } from "~/types/models";
-import { useSupabase } from "~/composables/useSupabase";
 import { useSuggestions } from "~/composables/useSuggestions";
+import { useSchools } from "~/composables/useSchools";
 import { getDeadPeriodMessage } from "~/server/utils/ncaaRecruitingCalendar";
 
 interface Props {
@@ -108,9 +107,8 @@ const emit = defineEmits<{
   dismiss: [id: string];
 }>();
 
-const supabase = useSupabase();
 const suggestionsComposable = useSuggestions();
-const allSchools = ref<School[]>([]);
+const { schools: allSchools } = useSchools();
 const surfacingMore = ref(false);
 
 const deadPeriodMessage = computed(() => {
@@ -147,19 +145,4 @@ const surfaceMoreSuggestions = async () => {
     surfacingMore.value = false;
   }
 };
-
-onMounted(async () => {
-  try {
-    const { data } = await supabase
-      .from("schools")
-      .select(
-        "id, name, location, division, conference, ranking, is_favorite, status, priority_tier, website, user_id, family_unit_id",
-      );
-    if (data) {
-      allSchools.value = data as School[];
-    }
-  } catch (error) {
-    console.error("Error fetching schools for dead period check:", error);
-  }
-});
 </script>

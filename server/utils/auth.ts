@@ -26,6 +26,7 @@ interface CachedRole {
 }
 
 const roleCache = new Map<string, CachedRole>();
+const MAX_ROLE_CACHE_SIZE = 1_000;
 
 /**
  * User role type
@@ -99,9 +100,12 @@ export async function getUserRole(
 ): Promise<UserRole | null> {
   // Check cache first
   const cached = roleCache.get(userId);
-  if (cached && Date.now() < cached.expiresAt) {
-    logger.info(`Role cache hit for user ${userId}`);
-    return cached.role;
+  if (cached) {
+    if (Date.now() < cached.expiresAt) {
+      logger.info(`Role cache hit for user ${userId}`);
+      return cached.role;
+    }
+    roleCache.delete(userId);
   }
 
   try {
@@ -132,6 +136,12 @@ export async function getUserRole(
       role,
       expiresAt: Date.now() + 5 * 60 * 1000,
     };
+    if (roleCache.size >= MAX_ROLE_CACHE_SIZE) {
+      const firstKey = roleCache.keys().next().value;
+      if (firstKey !== undefined) {
+        roleCache.delete(firstKey);
+      }
+    }
     roleCache.set(userId, cacheEntry);
 
     return role || null;
@@ -240,4 +250,12 @@ export async function assertNotParent(
         "Parents cannot perform this action. This is a read-only view.",
     });
   }
+}
+
+/**
+ * Clears the role cache — for testing only
+ * @internal
+ */
+export function clearRoleCacheForTesting(): void {
+  roleCache.clear();
 }

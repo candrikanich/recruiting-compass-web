@@ -23,7 +23,7 @@
     >
       <!-- Parent Context Banner -->
       <ParentContextBanner
-        :is-viewing-as-parent="activeFamily.isViewingAsParent.value"
+        :is-viewing-as-parent="isViewingAsParent"
         :athlete-name="activeAthleteName"
       />
 
@@ -37,9 +37,9 @@
       <section aria-labelledby="stats-heading">
         <h2 id="stats-heading" class="sr-only">Statistics Overview</h2>
         <DashboardStatsCards
-          :coach-count="dashboardData.coachCount.value"
-          :school-count="dashboardData.schoolCount.value"
-          :interaction-count="dashboardData.interactionCount.value"
+          :coach-count="coachCount"
+          :school-count="schoolCount"
+          :interaction-count="interactionCount"
           :total-offers="totalOffers"
           :accepted-offers="acceptedOffers"
           :a-tier-school-count="aTierSchoolCount"
@@ -47,102 +47,120 @@
         />
       </section>
 
-      <!-- Suggestions Section -->
-      <section aria-labelledby="suggestions-heading">
-        <h2 id="suggestions-heading" class="sr-only">Recommended Actions</h2>
-        <DashboardSuggestions
-          :suggestions="suggestionsComposable?.dashboardSuggestions.value || []"
-          :is-viewing-as-parent="activeFamily.isViewingAsParent.value || false"
-          :athlete-name="activeAthleteName"
-          @dismiss="handleSuggestionDismiss"
-        />
-      </section>
+      <!-- Main content + persistent sidebar -->
+      <div class="grid grid-cols-1 lg:grid-cols-6 gap-6">
+        <!-- Left: main content (4 cols) -->
+        <div class="lg:col-span-4 space-y-6">
+          <!-- Action Items -->
+          <section aria-labelledby="suggestions-heading">
+            <h2 id="suggestions-heading" class="sr-only">Recommended Actions</h2>
+            <DashboardSuggestions
+              :suggestions="dashboardSuggestions || []"
+              :is-viewing-as-parent="isViewingAsParent || false"
+              :athlete-name="activeAthleteName"
+              @dismiss="handleSuggestionDismiss"
+            />
+          </section>
 
-      <!-- Charts & Analytics Section -->
-      <section aria-labelledby="charts-heading">
-        <h2 id="charts-heading" class="sr-only">Charts & Analytics</h2>
-        <Suspense>
-          <DashboardChartsSection
-            :schools="dashboardData.allSchools.value"
-            :interactions="dashboardData.allInteractions.value"
-            :school-size-breakdown="schoolSizeBreakdown"
-            :school-count="dashboardData.schoolCount.value"
+          <!-- Charts (2 + 2) -->
+          <section aria-labelledby="charts-heading">
+            <h2 id="charts-heading" class="sr-only">Charts & Analytics</h2>
+            <Suspense>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <DashboardInteractionTrendChart :interactions="allInteractions" />
+                <DashboardSchoolInterestChart :schools="allSchools" />
+              </div>
+              <template #fallback>
+                <div class="grid grid-cols-2 gap-6">
+                  <div class="animate-pulse bg-gray-200 h-80 rounded-lg"></div>
+                  <div class="animate-pulse bg-gray-200 h-80 rounded-lg"></div>
+                </div>
+              </template>
+            </Suspense>
+          </section>
+
+          <!-- School Map (full width) -->
+          <section aria-labelledby="map-heading">
+            <h2 id="map-heading" class="sr-only">School Map</h2>
+            <Suspense>
+              <DashboardSchoolMapWidget :schools="allSchools" />
+              <template #fallback>
+                <div class="animate-pulse bg-gray-200 h-96 rounded-lg"></div>
+              </template>
+            </Suspense>
+          </section>
+
+          <!-- Performance Metrics (full width) -->
+          <section aria-labelledby="metrics-heading">
+            <h2 id="metrics-heading" class="sr-only">Performance Metrics</h2>
+            <DashboardPerformanceMetricsWidget
+              :metrics="allMetrics"
+              :top-metrics="topMetrics"
+              :show-performance="true"
+            />
+          </section>
+
+          <!-- Tasks + Contact Frequency (2 + 2) -->
+          <section aria-labelledby="widgets-heading">
+            <h2 id="widgets-heading" class="sr-only">Dashboard Widgets</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <DashboardQuickTasksWidget
+                :tasks="tasks || []"
+                :show-tasks="true"
+                @add-task="addTask"
+                @toggle-task="toggleTask"
+                @delete-task="deleteTask"
+                @clear-completed="() => userTasksComposable?.clearCompleted()"
+              />
+              <DashboardContactFrequencyWidget
+                :interactions="allInteractions"
+                :schools="allSchools"
+              />
+            </div>
+          </section>
+
+          <!-- Coach Followup (full width) -->
+          <DashboardCoachFollowupWidget />
+
+          <!-- At a Glance (full width) -->
+          <DashboardAtAGlanceSummary
+            :coaches="allCoaches"
+            :schools="allSchools"
+            :interactions="allInteractions"
+            :offers="allOffers"
+          />
+        </div>
+
+        <!-- Right: persistent sidebar (2 cols) -->
+        <aside class="lg:col-span-2 space-y-6" aria-label="Dashboard sidebar">
+          <DashboardRecruitingPacketWidget
             :recruiting-packet-loading="recruitingPacketLoading"
             :recruiting-packet-error="recruitingPacketError"
-            :has-generated-packet="
-              recruitingPacketComposable.hasGeneratedPacket.value
-            "
+            :has-generated-packet="hasGeneratedPacket"
             @generate-packet="handleGeneratePacket"
             @email-packet="handleEmailPacket"
           />
-          <template #fallback>
-            <div class="grid gap-6 md:grid-cols-2">
-              <div class="animate-pulse bg-gray-200 h-80 rounded-lg"></div>
-              <div class="animate-pulse bg-gray-200 h-80 rounded-lg"></div>
-            </div>
-          </template>
-        </Suspense>
-      </section>
-
-      <!-- Performance & Events Section -->
-      <section aria-labelledby="metrics-heading" class="mt-6">
-        <h2 id="metrics-heading" class="sr-only">
-          Performance Metrics & Upcoming Events
-        </h2>
-        <DashboardMetricsSection
-          :metrics="dashboardData.allMetrics.value"
-          :top-metrics="topMetrics"
-          :upcoming-events="upcomingEvents"
-        />
-      </section>
-
-      <!-- Map & Activity Section -->
-      <section aria-labelledby="map-heading" class="mt-6">
-        <h2 id="map-heading" class="sr-only">School Map & Recent Activity</h2>
-        <Suspense>
-          <DashboardMapActivitySection
-            :schools="dashboardData.allSchools.value"
-            :show-widget="showWidget"
+          <DashboardSchoolsBySizeWidget
+            :breakdown="schoolSizeBreakdown"
+            :count="schoolCount"
           />
-          <template #fallback>
-            <div class="animate-pulse bg-gray-200 h-96 rounded-lg"></div>
-          </template>
-        </Suspense>
-      </section>
-
-      <!-- Widgets Section -->
-      <section aria-labelledby="widgets-heading" class="mt-6">
-        <h2 id="widgets-heading" class="sr-only">Dashboard Widgets</h2>
-        <Suspense>
-          <DashboardWidgetsSection
-            :tasks="userTasksComposable?.tasks.value || []"
-            :coaches="dashboardData.allCoaches.value"
-            :schools="dashboardData.allSchools.value"
-            :interactions="dashboardData.allInteractions.value"
-            :offers="dashboardData.allOffers.value"
-            :is-parent="userStore.isParent"
-            :show-widget="showWidget"
-            @add-task="addTask"
-            @toggle-task="toggleTask"
-            @delete-task="deleteTask"
-            @clear-completed="() => userTasksComposable?.clearCompleted()"
+          <DashboardUpcomingEventsWidget
+            :events="upcomingEvents"
+            :show-events="true"
           />
-          <template #fallback>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="animate-pulse bg-gray-200 h-32 rounded"></div>
-              <div class="animate-pulse bg-gray-200 h-32 rounded"></div>
-            </div>
-          </template>
-        </Suspense>
-      </section>
+          <DashboardRecentActivityFeed />
+          <DashboardSocialMediaWidget :show-social="true" />
+          <DashboardAthleteActivityWidget v-if="userStore.isParent" />
+        </aside>
+      </div>
 
       <!-- Email Recruiting Packet Modal -->
       <EmailRecruitingPacketModal
-        :is-open="recruitingPacketComposable.showEmailModal.value"
-        :available-coaches="dashboardData.allCoaches.value"
-        :default-subject="recruitingPacketComposable.defaultEmailSubject.value"
-        :default-body="recruitingPacketComposable.defaultEmailBody.value"
-        @close="recruitingPacketComposable.setShowEmailModal(false)"
+        :is-open="showEmailModal"
+        :available-coaches="allCoaches"
+        :default-subject="defaultEmailSubject"
+        :default-body="defaultEmailBody"
+        @close="setShowEmailModal(false)"
         @send="handleSendEmail"
       />
     </main>
@@ -158,6 +176,7 @@ import {
   defineAsyncComponent,
 } from "vue";
 import { useRouter } from "vue-router";
+import { createClientLogger } from "~/utils/logger";
 import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
 import { useNotifications } from "~/composables/useNotifications";
@@ -173,16 +192,6 @@ import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue"
 import DashboardTimelineCard from "~/components/Dashboard/DashboardTimelineCard.vue";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
-const DashboardChartsSection = defineAsyncComponent(
-  () => import("~/components/Dashboard/DashboardChartsSection.vue"),
-);
-import DashboardMetricsSection from "~/components/Dashboard/DashboardMetricsSection.vue";
-const DashboardMapActivitySection = defineAsyncComponent(
-  () => import("~/components/Dashboard/DashboardMapActivitySection.vue"),
-);
-const DashboardWidgetsSection = defineAsyncComponent(
-  () => import("~/components/Dashboard/DashboardWidgetsSection.vue"),
-);
 const EmailRecruitingPacketModal = defineAsyncComponent(
   () => import("~/components/EmailRecruitingPacketModal.vue"),
 );
@@ -191,6 +200,8 @@ import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 definePageMeta({
   middleware: ["auth", "onboarding"],
 });
+
+const logger = createClientLogger("dashboard");
 
 const { logout } = useAuth();
 const { showToast } = useToast();
@@ -203,7 +214,35 @@ const userTasksComposable = useUserTasks();
 const suggestionsComposable = useSuggestions();
 const viewLoggingComposable = useViewLogging();
 const recruitingPacketComposable = useRecruitingPacket();
+
+// Destructure recruiting packet refs for template auto-unwrapping
+const {
+  hasGeneratedPacket,
+  showEmailModal,
+  defaultEmailSubject,
+  defaultEmailBody,
+  setShowEmailModal,
+} = recruitingPacketComposable;
+
+// Destructure suggestions ref for template auto-unwrapping
+const { dashboardSuggestions } = suggestionsComposable ?? {
+  dashboardSuggestions: ref([]),
+};
+
+// Destructure tasks ref for template auto-unwrapping
+const { tasks } = userTasksComposable ?? { tasks: ref([]) };
+
 const dashboardData = useDashboardData();
+const {
+  coachCount,
+  schoolCount,
+  interactionCount,
+  allSchools,
+  allInteractions,
+  allCoaches,
+  allMetrics,
+  allOffers,
+} = dashboardData;
 
 // Dashboard calculations derived from dashboard data
 const {
@@ -220,8 +259,11 @@ const {
 const activeFamily =
   inject<UseActiveFamilyReturn>("activeFamily") || useFamilyContext();
 
+// Destructure activeFamily refs used in template for auto-unwrapping
+const { isViewingAsParent } = activeFamily;
+
 // Local state
-const user = ref<any>(null);
+const user = computed(() => userStore.user);
 const recruitingPacketLoading = ref(false);
 const recruitingPacketError = ref<string | null>(null);
 
@@ -252,15 +294,6 @@ const userFirstName = computed(() => {
   return firstName.charAt(0).toUpperCase() + firstName.slice(1);
 });
 
-// Helper to check if widget should be shown based on preferences
-// Defaults to showing all widgets when preferences not loaded
-const showWidget = (
-  _widgetKey: string,
-  _section: "statsCards" | "widgets",
-): boolean => {
-  return true;
-};
-
 // Task event handlers
 const addTask = async (taskText: string) => {
   if (taskText.trim() && userTasksComposable) {
@@ -268,7 +301,7 @@ const addTask = async (taskText: string) => {
       await userTasksComposable.addTask(taskText);
       showToast(`Task added!`, "success");
     } catch (err) {
-      console.error("Failed to add task:", err);
+      logger.error("Failed to add task", err);
       showToast("Failed to add task", "error");
     }
   }
@@ -302,13 +335,10 @@ const handleGeneratePacket = async () => {
     await recruitingPacketComposable.openPacketPreview();
     showToast("Recruiting packet generated successfully!", "success");
   } catch (err) {
-    const message =
-      err instanceof Error
-        ? err.message
-        : "Failed to generate recruiting packet";
+    const message = "Failed to generate recruiting packet";
     recruitingPacketError.value = message;
     showToast(message, "error");
-    console.error("Packet generation error:", err);
+    logger.error("Packet generation error", err);
   } finally {
     recruitingPacketLoading.value = false;
   }
@@ -327,11 +357,10 @@ const handleEmailPacket = async () => {
     // Open email modal
     recruitingPacketComposable.setShowEmailModal(true);
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to prepare packet for email";
+    const message = "Failed to prepare packet for email";
     recruitingPacketError.value = message;
     showToast(message, "error");
-    console.error("Packet email prep error:", err);
+    logger.error("Packet email prep error", err);
   } finally {
     recruitingPacketLoading.value = false;
   }
@@ -349,58 +378,65 @@ const handleSendEmail = async (emailData: {
       "success",
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to send email";
+    const message = "Failed to send email";
     recruitingPacketError.value = message;
     showToast(message, "error");
-    console.error("Email sending error:", err);
+    logger.error("Email sending error", err);
   }
 };
 
 // Centralized dashboard refresh logic
+let refreshInFlight = false;
 const refreshDashboard = async () => {
+  if (refreshInFlight) return;
   if (!activeFamily.activeFamilyId.value || !targetUserId.value) {
     return;
   }
 
-  await dashboardData.fetchAll(
-    activeFamily.activeFamilyId.value,
-    targetUserId.value,
-  );
-
-  await suggestionsComposable?.fetchSuggestions("dashboard");
-
-  if (
-    activeFamily.isViewingAsParent.value &&
-    activeFamily.activeAthleteId.value
-  ) {
-    await viewLoggingComposable?.logParentView(
-      "dashboard",
-      activeFamily.activeAthleteId.value,
+  refreshInFlight = true;
+  try {
+    await dashboardData.fetchAll(
+      activeFamily.activeFamilyId.value,
+      targetUserId.value,
     );
+
+    await suggestionsComposable?.fetchSuggestions("dashboard");
+
+    if (
+      activeFamily.isViewingAsParent.value &&
+      activeFamily.activeAthleteId.value
+    ) {
+      await viewLoggingComposable?.logParentView(
+        "dashboard",
+        activeFamily.activeAthleteId.value,
+      );
+    }
+  } finally {
+    refreshInFlight = false;
   }
 };
 
-// Watch for family context to load (fixes hard refresh showing 0s)
+// Consolidated: refresh when family or athlete context changes
 watch(
-  () => activeFamily.activeFamilyId.value,
-  async (newFamilyId, oldFamilyId) => {
-    if (newFamilyId && newFamilyId !== oldFamilyId && targetUserId.value) {
+  () =>
+    [
+      activeFamily.activeFamilyId.value,
+      activeFamily.activeAthleteId.value,
+    ] as const,
+  async ([familyId, athleteId], [prevFamilyId, prevAthleteId]) => {
+    const familyChanged =
+      familyId && familyId !== prevFamilyId && targetUserId.value;
+    const athleteChanged =
+      athleteId &&
+      athleteId !== prevAthleteId &&
+      activeFamily.isViewingAsParent.value;
+    if (familyChanged || athleteChanged) {
       await refreshDashboard();
     }
   },
 );
 
-// Watch for athlete switches
-watch(
-  () => activeFamily.activeAthleteId.value,
-  async (newId, oldId) => {
-    if (newId && newId !== oldId && activeFamily.isViewingAsParent.value) {
-      await refreshDashboard();
-    }
-  },
-);
-
-// Refetch data when returning to dashboard
+// Refetch data when navigating back to dashboard
 watch(
   () => router.currentRoute.value.path,
   async (newPath) => {
@@ -410,11 +446,10 @@ watch(
   },
 );
 
-// Watch for user changes
+// Initialize on user load
 watch(
   () => userStore?.user,
   async (newUser) => {
-    user.value = newUser;
     if (newUser && notificationsComposable) {
       await refreshDashboard();
       await notificationsComposable.fetchNotifications();

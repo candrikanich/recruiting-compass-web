@@ -61,32 +61,10 @@ const handleView = () => {
 
           <div class="flex-1 min-w-0">
             <!-- Header -->
-            <div class="flex items-center gap-2 flex-wrap mb-1">
+            <div class="mb-1">
               <span class="font-semibold text-slate-900">{{
                 formatType(interaction.type)
               }}</span>
-              <span
-                class="px-2 py-0.5 text-xs font-medium rounded-full"
-                :class="
-                  interaction.direction === 'outbound'
-                    ? 'bg-blue-100 text-blue-900'
-                    : 'bg-emerald-100 text-emerald-900'
-                "
-              >
-                {{ formatDirection(interaction.direction) }}
-              </span>
-              <LoggedByBadge
-                v-if="interaction.logged_by"
-                :loggedByUserId="interaction.logged_by"
-                :currentUserId="currentUserId"
-              />
-              <span
-                v-if="interaction.sentiment"
-                class="px-2 py-0.5 text-xs font-medium rounded-full"
-                :class="getSentimentBadgeClass(interaction.sentiment)"
-              >
-                {{ formatSentiment(interaction.sentiment) }}
-              </span>
             </div>
 
             <!-- Subject -->
@@ -131,6 +109,32 @@ const handleView = () => {
               >
                 <PaperClipIcon class="w-3.5 h-3.5" aria-hidden="true" />
                 {{ interaction.attachments.length }} file(s)
+              </span>
+            </div>
+
+            <!-- Badges -->
+            <div class="flex items-center gap-1.5 mt-2">
+              <span
+                class="px-2 py-0.5 text-xs font-medium rounded-full"
+                :class="
+                  interaction.direction === 'outbound'
+                    ? 'bg-blue-100 text-blue-900'
+                    : 'bg-emerald-100 text-emerald-900'
+                "
+              >
+                {{ formatDirection(interaction.direction) }}
+              </span>
+              <LoggedByBadge
+                v-if="interaction.logged_by"
+                :loggedByUserId="interaction.logged_by"
+                :currentUserId="currentUserId"
+              />
+              <span
+                v-if="interaction.sentiment"
+                class="px-2 py-0.5 text-xs font-medium rounded-full"
+                :class="getSentimentBadgeClass(interaction.sentiment)"
+              >
+                {{ formatSentiment(interaction.sentiment) }}
               </span>
             </div>
           </div>

@@ -5,10 +5,13 @@ import {
   getHeader,
   getCookie,
 } from "h3";
+import { z } from "zod";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
+
+const cascadeDeleteSchema = z.object({ confirmDelete: z.boolean().optional() });
 
 /**
  * Cascade delete a school and all related records
@@ -35,15 +38,14 @@ export default defineEventHandler(async (event) => {
   await requireAuth(event);
   const schoolId = requireUuidParam(event, "id");
 
-  let body = {};
+  let body: z.infer<typeof cascadeDeleteSchema>;
   try {
-    body = await readBody(event);
+    body = cascadeDeleteSchema.parse(await readBody(event).catch(() => ({})));
   } catch {
-    // Empty body is OK
+    throw createError({ statusCode: 400, statusMessage: "Invalid request body" });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { confirmDelete } = body as any;
+  const { confirmDelete } = body;
   if (!confirmDelete) {
     throw createError({
       statusCode: 400,
@@ -73,14 +75,15 @@ export default defineEventHandler(async (event) => {
     // Delete all child records in parallel — none of these tables have FK
     // dependencies on each other, only on the parent school row.
     const [
-      { count: historyCount },
-      { count: coachCount },
-      { count: interactionCount },
-      { count: offerCount },
-      { count: postCount },
-      { count: docCount },
-      { count: eventCount },
-      { count: suggestionCount },
+      { count: historyCount, error: historyError },
+      { count: coachCount, error: coachError },
+      { count: interactionCount, error: interactionError },
+      { count: offerCount, error: offerError },
+      { count: postCount, error: postError },
+      { count: docCount, error: docError },
+      { count: eventCount, error: eventError },
+      { count: suggestionCount, error: suggestionError },
+      { count: reminderCount, error: reminderError },
     ] = await Promise.all([
       client.from("school_status_history").delete().eq("school_id", schoolId),
       client.from("coaches").delete().eq("school_id", schoolId),
@@ -90,7 +93,30 @@ export default defineEventHandler(async (event) => {
       client.from("documents").delete().eq("school_id", schoolId),
       client.from("events").delete().eq("school_id", schoolId),
       client.from("suggestion").delete().eq("related_school_id", schoolId),
+      client.from("follow_up_reminders").delete().eq("school_id", schoolId),
     ]);
+
+    const childErrors = [
+      historyError,
+      coachError,
+      interactionError,
+      offerError,
+      postError,
+      docError,
+      eventError,
+      suggestionError,
+      reminderError,
+    ].filter(Boolean);
+    if (childErrors.length > 0) {
+      logger.error("Child record deletion failed during cascade delete", {
+        schoolId,
+        errors: childErrors,
+      });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to delete all related records",
+      });
+    }
 
     if (historyCount) deleted.school_status_history = historyCount;
     if (coachCount) deleted.coaches = coachCount;
@@ -100,6 +126,7 @@ export default defineEventHandler(async (event) => {
     if (docCount) deleted.documents = docCount;
     if (eventCount) deleted.events = eventCount;
     if (suggestionCount) deleted.suggestion = suggestionCount;
+    if (reminderCount) deleted.follow_up_reminders = reminderCount;
 
     // Finally delete the school — must come after all children are removed
     const { count: schoolCount, error: deleteError } = await client

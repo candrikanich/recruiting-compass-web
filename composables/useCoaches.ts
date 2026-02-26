@@ -1,4 +1,4 @@
-import { ref, computed, inject, watch, type ComputedRef } from "vue";
+import { ref, computed, shallowRef, inject, watch, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
@@ -8,11 +8,9 @@ import type { Database } from "~/types/database";
 import { coachSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
 import { createClientLogger } from "~/utils/logger";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 
 const logger = createClientLogger("useCoaches");
-
-// Keyed by schoolId to allow concurrent fetches for different schools
-const fetchInFlight = new Map<string, Promise<void>>();
 
 type CoachesInsert = Database["public"]["Tables"]["coaches"]["Insert"];
 type CoachesUpdate = Database["public"]["Tables"]["coaches"]["Update"];
@@ -67,6 +65,7 @@ export const useCoaches = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const { $fetchAuth } = useAuthFetch();
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
 
@@ -79,7 +78,11 @@ export const useCoaches = (): {
 
   const activeFamily = injectedFamily ?? useFamilyContext();
 
-  const coaches = ref<Coach[]>([]);
+  // Keyed by schoolId to allow concurrent fetches for different schools.
+  // Declared inside the factory so each instance has its own independent map.
+  const fetchInFlight = new Map<string, Promise<void>>();
+
+  const coaches = shallowRef<Coach[]>([]);
   const loadingCount = ref(0);
   const loading = computed(() => loadingCount.value > 0);
   const error = ref<string | null>(null);
@@ -360,7 +363,7 @@ export const useCoaches = (): {
         throw insertError;
       }
 
-      coaches.value.push(data as Coach);
+      coaches.value = [...coaches.value, data as Coach];
       return data as Coach;
     } catch (err: unknown) {
       const message =
@@ -439,7 +442,7 @@ export const useCoaches = (): {
       // Update local state
       const index = coaches.value.findIndex((c) => c.id === id);
       if (index !== -1) {
-        coaches.value[index] = data as Coach;
+        coaches.value = coaches.value.map((c, i) => i === index ? data as Coach : c);
       }
 
       return data as Coach;
@@ -497,15 +500,10 @@ export const useCoaches = (): {
         message.includes("still referenced")
       ) {
         // Try cascade delete via API endpoint
-        const result = await fetch(`/api/coaches/${id}/cascade-delete`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ confirmDelete: true }),
-        });
-        const cascadeResponse = (await result.json()) as Record<
-          string,
-          unknown
-        >;
+        const cascadeResponse = await $fetchAuth<Record<string, unknown>>(
+          `/api/coaches/${id}/cascade-delete`,
+          { method: "POST", body: { confirmDelete: true } },
+        );
         if (cascadeResponse.success) {
           coaches.value = coaches.value.filter((c) => c.id !== id);
           return { cascadeUsed: true };

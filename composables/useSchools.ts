@@ -7,11 +7,9 @@ import type { School } from "~/types/models";
 import { schoolSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
 import { createClientLogger } from "~/utils/logger";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 
 const logger = createClientLogger("useSchools");
-
-// In-flight deduplication: prevents concurrent duplicate Supabase calls
-let fetchInFlight: Promise<void> | null = null;
 
 /**
  * useSchools composable
@@ -57,7 +55,7 @@ const useSchoolsInternal = (): {
   updateSchool: (id: string, updates: Partial<School>) => Promise<School>;
   deleteSchool: (id: string) => Promise<void>;
   smartDelete: (id: string) => Promise<{ cascadeUsed: boolean }>;
-  toggleFavorite: (id: string, isFavorite: boolean) => Promise<School>;
+  toggleFavorite: (id: string, currentFavorite: boolean) => Promise<School>;
   updateRanking: (schools_: School[]) => Promise<void>;
   findDuplicate: (
     schoolData: Partial<School> | Record<string, string | null | undefined>,
@@ -72,6 +70,7 @@ const useSchoolsInternal = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const { $fetchAuth } = useAuthFetch();
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
 
@@ -90,6 +89,9 @@ const useSchoolsInternal = (): {
 
   const loading = computed(() => loadingCount.value > 0);
   const error = computed(() => errorRef.value);
+
+  // In-flight deduplication: prevents concurrent duplicate Supabase calls
+  let fetchInFlight: Promise<void> | null = null;
 
   const favoriteSchools = computed(() =>
     schools.value.filter((s) => s.is_favorite),
@@ -116,6 +118,10 @@ const useSchoolsInternal = (): {
       `[useSchools] Active Family ID: ${activeFamily.activeFamilyId?.value || "null"}`,
     );
 
+    loadingCount.value++;
+    errorRef.value = null;
+
+    try {
     // Ensure we have both user and family context
     if (!userStore.user) {
       logger.debug("[useSchools] No user, skipping fetch");
@@ -130,10 +136,6 @@ const useSchoolsInternal = (): {
     logger.debug(
       `[useSchools] Fetching for family: ${activeFamily.activeFamilyId.value}`,
     );
-    loadingCount.value++;
-    errorRef.value = null;
-
-    try {
       // 🚀 Quick Win: Select only needed columns (2-3x faster, enables index-only scans)
       const schoolsResponse = await supabase
         .from("schools")
@@ -161,7 +163,8 @@ const useSchoolsInternal = (): {
           user_id,
           family_unit_id,
           created_at,
-          updated_at
+          updated_at,
+          academic_info
         `,
         )
         .eq("family_unit_id", activeFamily.activeFamilyId.value)
@@ -411,7 +414,7 @@ const useSchoolsInternal = (): {
       // Update local state
       const index = schools.value.findIndex((s) => s.id === id);
       if (index !== -1) {
-        schools.value[index] = data;
+        schools.value = schools.value.map((s, i) => (i === index ? data : s));
       }
 
       return data;
@@ -478,8 +481,8 @@ const useSchoolsInternal = (): {
     }
   };
 
-  const toggleFavorite = async (id: string, isFavorite: boolean) => {
-    return updateSchool(id, { is_favorite: !isFavorite });
+  const toggleFavorite = async (id: string, currentFavorite: boolean) => {
+    return updateSchool(id, { is_favorite: !currentFavorite });
   };
 
   const updateRanking = async (schools_: School[]) => {
@@ -636,12 +639,10 @@ const useSchoolsInternal = (): {
         message.includes("still referenced")
       ) {
         // Use cascade delete API
-        const result = await fetch(`/api/schools/${id}/cascade-delete`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ confirmDelete: true }),
-        });
-        const response = (await result.json()) as Record<string, unknown>;
+        const response = await $fetchAuth<Record<string, unknown>>(
+          `/api/schools/${id}/cascade-delete`,
+          { method: "POST", body: { confirmDelete: true } },
+        );
 
         if (response.success) {
           // Update local state

@@ -206,6 +206,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, inject } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import { useSchools } from "~/composables/useSchools";
 import { useSchoolLogos } from "~/composables/useSchoolLogos";
 import { useSchoolMatching } from "~/composables/useSchoolMatching";
@@ -244,6 +245,8 @@ interface SchoolFilterValues {
 
 definePageMeta({});
 
+const logger = createClientLogger("schools");
+
 const activeFamily =
   inject<ReturnType<typeof useActiveFamily>>("activeFamily") ||
   useFamilyContext();
@@ -278,11 +281,11 @@ const currentPage = ref(1);
 const paginatedSchools = computed(() => {
   const start = (currentPage.value - 1) * ITEMS_PER_PAGE;
   const end = start + ITEMS_PER_PAGE;
-  return filteredSchools.value.slice(start, end);
+  return sortedFilteredSchools.value.slice(start, end);
 });
 
 const totalPages = computed(() =>
-  Math.ceil(filteredSchools.value.length / ITEMS_PER_PAGE),
+  Math.ceil(sortedFilteredSchools.value.length / ITEMS_PER_PAGE),
 );
 
 const hasNextPage = computed(() => currentPage.value < totalPages.value);
@@ -425,7 +428,11 @@ const filteredSchools = computed(() => {
     });
   }
 
-  const sorted = [...filtered].sort((a, b) => {
+  return filtered;
+});
+
+const sortedFilteredSchools = computed(() => {
+  return [...filteredSchools.value].sort((a, b) => {
     switch (sortBy.value) {
       case "fit-score":
         return (b.fit_score ?? -1) - (a.fit_score ?? -1);
@@ -450,8 +457,6 @@ const filteredSchools = computed(() => {
         return a.name.localeCompare(b.name);
     }
   });
-
-  return sorted;
 });
 
 const handleFilterUpdate = (field: string, value: any) => {
@@ -486,7 +491,7 @@ const confirmDeleteSchool = async () => {
     const message =
       err instanceof Error ? err.message : "Failed to delete school";
     announce(message);
-    console.error("Delete failed:", err);
+    logger.error("Delete failed", err);
   }
 };
 
@@ -496,7 +501,7 @@ const cancelDeleteSchool = () => {
 };
 
 const { handleExportCSV, handleExportPDF } = useSchoolExport({
-  filteredSchools,
+  filteredSchools: sortedFilteredSchools,
   offers,
   allInteractions,
   allCoaches,
@@ -515,7 +520,7 @@ onMounted(async () => {
 
   if (schools.value.length > 0) {
     fetchMultipleLogos(schools.value).catch((err) => {
-      console.warn("Failed to fetch logos:", err);
+      logger.warn("Failed to fetch logos", err);
     });
   }
 });

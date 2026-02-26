@@ -9,8 +9,8 @@
         >
           <img
             src="@/assets/logos/recruiting-compass-horizontal.svg"
-            alt="Recruiting Compass"
-            class="h-32 w-auto"
+            alt="The Recruiting Compass: Find Your Path. Make Your Move."
+            class="h-14 w-auto"
           />
         </NuxtLink>
 
@@ -142,7 +142,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useUserStore } from "~/stores/user";
-import { useSupabase } from "~/composables/useSupabase";
+import { useAuth } from "~/composables/useAuth";
 import AthleteSwitcher from "~/components/AthleteSwitcher.vue";
 import HeaderNav from "~/components/Header/HeaderNav.vue";
 import HeaderProfile from "~/components/Header/HeaderProfile.vue";
@@ -168,9 +168,9 @@ import {
 } from "@heroicons/vue/24/outline";
 
 const route = useRoute();
-const supabase = useSupabase();
+const authComposable = useAuth();
 
-let userStore = useUserStore();
+const userStore = useUserStore();
 const user = computed(() => userStore.user || null);
 const isMobileMenuOpen = ref(false);
 
@@ -238,17 +238,12 @@ const closeMobileMenu = () => {
 const handleLogout = async () => {
   if (!userStore?.user) return;
   closeMobileMenu();
-  await supabase.auth.signOut();
+  await authComposable.logout();
   userStore.logout();
   await navigateTo("/login");
 };
 
 onMounted(() => {
-  try {
-    userStore = useUserStore();
-  } catch (err) {
-    // Pinia may not be ready during certain navigation phases
-    console.debug("Header: Pinia not ready on mount", err);
-  }
+  // Pinia store is guaranteed to be initialized by mount time; no reassignment needed.
 });
 </script>

@@ -2,7 +2,7 @@ import { defineEventHandler, createError, type H3Event } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { createExportDownloadUrl } from "~/server/utils/exportUser";
 import { auditLog, logError } from "~/server/utils/auditLog";
-import { logger } from "~/server/utils/logger";
+import { useLogger } from "~/server/utils/logger";
 
 /**
  * POST /api/user/export
@@ -24,6 +24,7 @@ import { logger } from "~/server/utils/logger";
  * }
  */
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "user/export");
   try {
     // Require authentication
     const user = await requireAuth(event);
@@ -101,6 +102,8 @@ export default defineEventHandler(async (event) => {
       message: `Download link generated. Your export is ready and will expire on ${expiresAt.toLocaleDateString()}.`,
     };
   } catch (error) {
+    if (error instanceof Error && "statusCode" in error) throw error;
+
     const userId = await tryGetUserId(event);
 
     if (userId) {
@@ -117,13 +120,6 @@ export default defineEventHandler(async (event) => {
       userId,
       error: error instanceof Error ? error.message : "Unknown error",
     });
-
-    if (error instanceof Error && error.message.includes("Unauthorized")) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: "Unauthorized",
-      });
-    }
 
     throw createError({
       statusCode: 500,

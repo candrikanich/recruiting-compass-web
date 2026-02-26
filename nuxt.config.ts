@@ -87,11 +87,10 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     adminTokenSecret: process.env.NUXT_ADMIN_TOKEN_SECRET || "",
+    collegeScorecardApiKey: process.env.NUXT_COLLEGE_SCORECARD_API_KEY || "",
     public: {
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || "",
       supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || "",
-      collegeScorecardApiKey:
-        process.env.NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY || "",
       authEnforcementEnabled:
         process.env.NUXT_PUBLIC_AUTH_ENFORCEMENT_ENABLED === "true",
       sentryDsn: process.env.NUXT_PUBLIC_SENTRY_DSN || "",

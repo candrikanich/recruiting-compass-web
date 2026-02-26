@@ -14,6 +14,8 @@ const logger = createLogger("feedback");
 
 export default defineEventHandler(async (event) => {
   try {
+    await requireAuth(event);
+
     // Get current user if authenticated
     const userId = await tryGetUserId(event);
 
@@ -84,7 +86,7 @@ export default defineEventHandler(async (event) => {
     });
 
     if (!response.ok) {
-      const apiError = await response.json();
+      const apiError = await response.json().catch(() => ({ error: "Invalid response" }));
       logger.error("Email service error", apiError);
       const safeError = sanitizeExternalApiError(apiError, "Email service");
       throw createError({
