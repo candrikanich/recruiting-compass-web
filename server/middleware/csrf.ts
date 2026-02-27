@@ -1,3 +1,4 @@
+import { getHeader } from "h3";
 import { requireCsrfToken } from "../utils/csrf";
 
 /**
@@ -6,6 +7,10 @@ import { requireCsrfToken } from "../utils/csrf";
  *
  * POST, PUT, PATCH, DELETE requests must include valid CSRF token
  * GET and HEAD requests are safe and don't require CSRF protection
+ *
+ * Bearer-token requests (e.g. from iOS app) are exempt: CSRF protects against
+ * cross-site requests that piggyback on cookies. Bearer tokens are in headers,
+ * which same-origin policy prevents attackers from reading/setting.
  *
  * @example
  * // Applied globally in nuxt.config.ts
@@ -38,6 +43,10 @@ export default defineEventHandler((event) => {
   if (CSRF_EXEMPT_PREFIXES.some((prefix) => path?.startsWith(prefix))) return;
 
   if (CSRF_EXEMPT_EXACT_PATHS.some((exact) => path === exact)) return;
+
+  // Bearer-token requests (e.g. from iOS app) are exempt — CSRF doesn't apply
+  const authHeader = getHeader(event, "authorization");
+  if (authHeader?.startsWith("Bearer ")) return;
 
   requireCsrfToken(event);
 });
