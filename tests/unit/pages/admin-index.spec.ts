@@ -141,7 +141,7 @@ describe("Admin Dashboard (index.vue)", () => {
 
     await new Promise((r) => setTimeout(r, 100));
     expect(mockFetch).toHaveBeenCalledWith(
-      "/api/admin/users",
+      expect.stringContaining("/api/admin/users"),
       expect.objectContaining({ headers: expect.any(Object) }),
     );
     expect(mockFetch).toHaveBeenCalledWith(

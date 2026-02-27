@@ -108,6 +108,45 @@
           </div>
         </div>
 
+        <!-- Search / Filter Bar -->
+        <div
+          v-if="!loading && !error"
+          class="flex flex-wrap items-center gap-3 mb-5"
+        >
+          <input
+            v-model="searchQuery"
+            type="search"
+            placeholder="Search by email, name, or role…"
+            class="flex-1 min-w-48 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            data-testid="user-search-input"
+          />
+          <select
+            v-model="filterAdmin"
+            class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            data-testid="user-admin-filter"
+          >
+            <option value="all">All accounts</option>
+            <option value="yes">Admins only</option>
+            <option value="no">Non-admins only</option>
+          </select>
+          <button
+            v-if="searchQuery || filterAdmin !== 'all'"
+            type="button"
+            class="text-sm text-slate-500 hover:text-slate-700 underline"
+            @click="clearFilters"
+          >
+            Clear filters
+          </button>
+          <span
+            v-if="searchQuery || filterAdmin !== 'all'"
+            class="text-sm text-slate-500"
+          >
+            {{ filteredUsers.length }} of {{ users.length }} user{{
+              users.length !== 1 ? "s" : ""
+            }}
+          </span>
+        </div>
+
         <!-- Loading State -->
         <div v-if="loading" class="text-center py-12">
           <p class="text-slate-600">Loading users...</p>
@@ -209,21 +248,27 @@
           </table>
 
           <div
-            v-if="users.length === 0"
+            v-if="filteredUsers.length === 0"
             class="text-center py-12 text-slate-500"
           >
-            No users found
+            {{
+              users.length === 0
+                ? "No users found"
+                : "No users match your search"
+            }}
           </div>
 
           <!-- Pagination -->
           <div
-            v-if="users.length > 0"
+            v-if="filteredUsers.length > 0"
             class="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 pt-4"
           >
             <p class="text-sm text-slate-600">
               Showing
               {{ paginationStart }}–{{ paginationEnd }} of
-              {{ users.length }} user{{ users.length !== 1 ? "s" : "" }}
+              {{ filteredUsers.length }} user{{
+                filteredUsers.length !== 1 ? "s" : ""
+              }}
             </p>
             <div class="flex items-center gap-2">
               <label class="text-sm text-slate-600">Per page</label>
@@ -281,6 +326,39 @@
                 Next
               </button>
             </div>
+          </div>
+        </div>
+
+        <!-- Delete by email (handles orphaned auth accounts not shown in the list) -->
+        <div
+          v-if="!loading"
+          class="mt-8 rounded-lg border border-red-200 bg-red-50 p-4"
+        >
+          <h3 class="text-sm font-semibold text-red-900 mb-1">
+            Delete account by email
+          </h3>
+          <p class="text-xs text-red-700 mb-3">
+            Use this to delete accounts that don't appear in the list above
+            (e.g. orphaned auth records where signup didn't complete).
+          </p>
+          <div class="flex gap-2">
+            <input
+              v-model="deleteByEmailInput"
+              type="email"
+              placeholder="user@example.com"
+              class="flex-1 rounded border border-red-300 bg-white px-3 py-1.5 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500"
+              data-testid="delete-by-email-input"
+              @keyup.enter="deleteUserByEmail"
+            />
+            <button
+              type="button"
+              :disabled="!deleteByEmailInput.trim() || !!deleting"
+              class="rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              data-testid="delete-by-email-btn"
+              @click="deleteUserByEmail"
+            >
+              {{ deleting ? "Deleting…" : "Delete" }}
+            </button>
           </div>
         </div>
       </div>
@@ -454,6 +532,7 @@ import {
 import { useAuth } from "~/composables/useAuth";
 import { useSupabase } from "~/composables/useSupabase";
 import { useToast } from "~/composables/useToast";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 const BulkDeleteConfirmModal = defineAsyncComponent(
   () => import("~/components/Admin/BulkDeleteConfirmModal.vue"),
 );
@@ -474,6 +553,7 @@ interface User {
 const { session } = useAuth();
 const supabase = useSupabase();
 const { showToast } = useToast();
+const { $fetchAuth } = useAuthFetch();
 
 // Users state
 const users = ref<User[]>([]);
@@ -528,26 +608,53 @@ const tabs = computed(() => [
   { id: "tools", label: "Tools" },
 ]);
 
+// Search / filter
+const searchQuery = ref("");
+const filterAdmin = ref<"all" | "yes" | "no">("all");
+
+const filteredUsers = computed(() => {
+  let list = users.value;
+  const q = searchQuery.value.trim().toLowerCase();
+  if (q) {
+    list = list.filter(
+      (u) =>
+        u.email.toLowerCase().includes(q) ||
+        (u.full_name ?? "").toLowerCase().includes(q) ||
+        u.role.toLowerCase().includes(q),
+    );
+  }
+  if (filterAdmin.value === "yes") list = list.filter((u) => u.is_admin);
+  else if (filterAdmin.value === "no") list = list.filter((u) => !u.is_admin);
+  return list;
+});
+
+function clearFilters() {
+  searchQuery.value = "";
+  filterAdmin.value = "all";
+}
+
 // Pagination
 const pageSizeOptions = [10, 25, 50, 100];
 const pageSize = ref(25);
 const currentPage = ref(1);
 
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(users.value.length / pageSize.value)),
+  Math.max(1, Math.ceil(filteredUsers.value.length / pageSize.value)),
 );
 
 const paginatedUsers = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
-  return users.value.slice(start, start + pageSize.value);
+  return filteredUsers.value.slice(start, start + pageSize.value);
 });
 
 const paginationStart = computed(() =>
-  users.value.length === 0 ? 0 : (currentPage.value - 1) * pageSize.value + 1,
+  filteredUsers.value.length === 0
+    ? 0
+    : (currentPage.value - 1) * pageSize.value + 1,
 );
 
 const paginationEnd = computed(() =>
-  Math.min(currentPage.value * pageSize.value, users.value.length),
+  Math.min(currentPage.value * pageSize.value, filteredUsers.value.length),
 );
 
 const visiblePageNumbers = computed(() => {
@@ -570,7 +677,7 @@ const currentUserEmailComputed = computed(() => {
 });
 
 const selectableUsers = computed(() =>
-  users.value.filter((u) => u.email !== currentUserEmailComputed.value),
+  filteredUsers.value.filter((u) => u.email !== currentUserEmailComputed.value),
 );
 
 const selectedCount = computed(() => selectedUserEmails.value.size);
@@ -683,12 +790,9 @@ function formatDate(iso: string): string {
 const cancelInvitation = async (id: string) => {
   deletingInvitationId.value = id;
   try {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`/api/admin/pending-invitations/${id}`, {
+    await $fetchAuth(`/api/admin/pending-invitations/${id}`, {
       method: "DELETE",
-      headers,
     });
-    if (!res.ok) throw new Error(`Failed to cancel invitation: ${res.status}`);
     pendingInvitations.value = pendingInvitations.value.filter(
       (inv) => inv.id !== id,
     );
@@ -712,26 +816,29 @@ const loadUsers = async () => {
     const token = sessionData.session?.access_token;
     const userEmail = sessionData.session?.user?.email;
 
-    if (!token) {
-      throw new Error("Not authenticated");
+    if (!token) throw new Error("Not authenticated");
+    if (userEmail) currentUserEmail.value = userEmail;
+
+    const PAGE_SIZE = 100;
+    const all: User[] = [];
+    let offset = 0;
+
+    while (true) {
+      const httpRes = await fetch(
+        `/api/admin/users?limit=${PAGE_SIZE}&offset=${offset}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (!httpRes.ok)
+        throw new Error(`Failed to load users: ${httpRes.status}`);
+      const response = await httpRes.json();
+      const page = (response?.users ?? []) as User[];
+      all.push(...page);
+      if (all.length >= (response?.total ?? 0) || page.length < PAGE_SIZE)
+        break;
+      offset += PAGE_SIZE;
     }
 
-    if (userEmail) {
-      currentUserEmail.value = userEmail;
-    }
-
-    const httpRes = await fetch("/api/admin/users", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!httpRes.ok) throw new Error(`Failed to load users: ${httpRes.status}`);
-    const response = await httpRes.json();
-
-    // Show all users in the list; current user is non-deletable/non-selectable in the UI
-    users.value = (response?.users || []) as User[];
+    users.value = all;
   } catch (err) {
     error.value = err instanceof Error ? err.message : "Failed to load users";
     console.error("[Admin] Error loading users:", error.value, err);
@@ -767,6 +874,15 @@ const toggleSelectAll = () => {
   }
 };
 
+const deleteByEmailInput = ref("");
+
+const deleteUserByEmail = async () => {
+  const email = deleteByEmailInput.value.trim();
+  if (!email) return;
+  await deleteUser(email);
+  if (!error.value) deleteByEmailInput.value = "";
+};
+
 const deleteUser = async (email: string) => {
   if (email === currentUserEmailComputed.value) {
     showToast("Cannot delete your own account", "error");
@@ -784,25 +900,10 @@ const deleteUser = async (email: string) => {
   deleting.value = email;
 
   try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData.session?.access_token;
-
-    if (!token) {
-      throw new Error("Not authenticated");
-    }
-
-    const httpRes = await fetch("/api/admin/delete-user", {
-      method: "POST",
-      body: JSON.stringify({ email }),
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!httpRes.ok)
-      throw new Error(`Failed to delete user: ${httpRes.status}`);
-    const response = await httpRes.json();
+    const response = await $fetchAuth<{ success: boolean }>(
+      "/api/admin/delete-user",
+      { method: "POST", body: { email } },
+    );
 
     if (response.success) {
       users.value = users.value.filter((u) => u.email !== email);
@@ -825,23 +926,16 @@ const bulkDeleteUsers = async () => {
   error.value = null;
 
   try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData.session?.access_token;
-
-    if (!token) throw new Error("Not authenticated");
-
-    const httpRes = await fetch("/api/admin/bulk-delete-users", {
+    const response = await $fetchAuth<{
+      success: number;
+      failed: number;
+      deletedEmails: string[];
+      errors: Array<{ email: string; reason: string }>;
+      message: string;
+    }>("/api/admin/bulk-delete-users", {
       method: "POST",
-      body: JSON.stringify({ emails: Array.from(selectedUserEmails.value) }),
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      body: { emails: Array.from(selectedUserEmails.value) },
     });
-
-    if (!httpRes.ok)
-      throw new Error(`Failed to bulk delete users: ${httpRes.status}`);
-    const response = await httpRes.json();
 
     // Remove deleted users from table
     users.value = users.value.filter(
@@ -884,6 +978,10 @@ watch(totalPages, (total) => {
   if (currentPage.value > total) {
     currentPage.value = total;
   }
+});
+
+watch([searchQuery, filterAdmin], () => {
+  currentPage.value = 1;
 });
 
 onMounted(async () => {
