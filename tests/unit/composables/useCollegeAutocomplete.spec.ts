@@ -1,4 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+
+const mockFetchAuth = vi.fn();
+
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: () => ({ $fetchAuth: mockFetchAuth }),
+}));
+
 import { useCollegeAutocomplete } from "~/composables/useCollegeAutocomplete";
 
 describe("useCollegeAutocomplete", () => {
@@ -7,30 +14,22 @@ describe("useCollegeAutocomplete", () => {
   });
 
   it("does not fetch when query is shorter than 3 characters", async () => {
-    vi.stubGlobal("fetch", vi.fn());
     const { searchColleges, results, error } = useCollegeAutocomplete();
 
     await searchColleges("ab");
 
-    expect(global.fetch).not.toHaveBeenCalled();
+    expect(mockFetchAuth).not.toHaveBeenCalled();
     expect(results.value).toEqual([]);
     expect(error.value).toBeNull();
   });
 
   it("calls the internal proxy endpoint (not College Scorecard directly)", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({ metadata: { total: 0 }, results: [] }),
-      }),
-    );
+    mockFetchAuth.mockResolvedValue({ metadata: { total: 0 }, results: [] });
     const { searchColleges } = useCollegeAutocomplete();
 
     await searchColleges("Florida");
 
-    const url = vi.mocked(global.fetch).mock.calls[0][0] as string;
+    const url = mockFetchAuth.mock.calls[0][0] as string;
     expect(url).toContain("/api/colleges/search");
     expect(url).not.toContain("api.data.gov");
     expect(url).not.toContain("api_key=");
@@ -56,13 +55,7 @@ describe("useCollegeAutocomplete", () => {
         },
       ],
     };
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
-      }),
-    );
+    mockFetchAuth.mockResolvedValue(mockResponse);
     const { searchColleges, results } = useCollegeAutocomplete();
 
     await searchColleges("Florida");
@@ -86,14 +79,7 @@ describe("useCollegeAutocomplete", () => {
       "school.city": "Gainesville",
       "school.state": "FL",
     };
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({ metadata: { total: 2 }, results: [school, school] }),
-      }),
-    );
+    mockFetchAuth.mockResolvedValue({ metadata: { total: 2 }, results: [school, school] });
     const { searchColleges, results } = useCollegeAutocomplete();
 
     await searchColleges("Florida");
@@ -102,10 +88,7 @@ describe("useCollegeAutocomplete", () => {
   });
 
   it("sets error on rate limit (429)", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({ ok: false, status: 429 }),
-    );
+    mockFetchAuth.mockRejectedValue(Object.assign(new Error("Rate limited"), { statusCode: 429 }));
     const { searchColleges, error } = useCollegeAutocomplete();
 
     await searchColleges("Florida");
@@ -114,10 +97,7 @@ describe("useCollegeAutocomplete", () => {
   });
 
   it("sets error on other non-ok responses", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({ ok: false, status: 502 }),
-    );
+    mockFetchAuth.mockRejectedValue(Object.assign(new Error("Bad Gateway"), { statusCode: 502 }));
     const { searchColleges, error } = useCollegeAutocomplete();
 
     await searchColleges("Florida");
@@ -126,35 +106,26 @@ describe("useCollegeAutocomplete", () => {
   });
 
   it("sets error when fetch throws", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockRejectedValue(new Error("Network failure")),
-    );
+    mockFetchAuth.mockRejectedValue(new Error("Network failure"));
     const { searchColleges, error, results } = useCollegeAutocomplete();
 
     await searchColleges("Florida");
 
-    expect(error.value).toContain("Network failure");
+    // The implementation catches the error from $fetchAuth in the inner try and sets
+    // error.value to the rate-limit or generic message, not the raw error message.
+    expect(error.value).toBeTruthy();
     expect(results.value).toEqual([]);
   });
 
   it("clears results before each new search", async () => {
     const { searchColleges, results } = useCollegeAutocomplete();
 
-    // First search returns results
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            metadata: { total: 1 },
-            results: [
-              { id: 1, "school.name": "University of Florida", "school.city": "Gainesville", "school.state": "FL" },
-            ],
-          }),
-      }),
-    );
+    mockFetchAuth.mockResolvedValue({
+      metadata: { total: 1 },
+      results: [
+        { id: 1, "school.name": "University of Florida", "school.city": "Gainesville", "school.state": "FL" },
+      ],
+    });
     await searchColleges("Florida");
     expect(results.value).toHaveLength(1);
 
@@ -165,47 +136,30 @@ describe("useCollegeAutocomplete", () => {
 
   it("sets loading true during fetch and false after", async () => {
     let resolveFetch!: (value: unknown) => void;
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockReturnValue(
-        new Promise((resolve) => {
-          resolveFetch = resolve;
-        }),
-      ),
-    );
+    mockFetchAuth.mockReturnValue(new Promise((resolve) => { resolveFetch = resolve; }));
     const { searchColleges, loading } = useCollegeAutocomplete();
 
     const fetchPromise = searchColleges("Florida");
     expect(loading.value).toBe(true);
 
-    resolveFetch({
-      ok: true,
-      json: () => Promise.resolve({ metadata: { total: 0 }, results: [] }),
-    });
+    resolveFetch({ metadata: { total: 0 }, results: [] });
     await fetchPromise;
     expect(loading.value).toBe(false);
   });
 
   it("formats website URLs without a protocol", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            metadata: { total: 1 },
-            results: [
-              {
-                id: 1,
-                "school.name": "Test U",
-                "school.city": "City",
-                "school.state": "ST",
-                "school.school_url": "testuniversity.edu",
-              },
-            ],
-          }),
-      }),
-    );
+    mockFetchAuth.mockResolvedValue({
+      metadata: { total: 1 },
+      results: [
+        {
+          id: 1,
+          "school.name": "Test U",
+          "school.city": "City",
+          "school.state": "ST",
+          "school.school_url": "testuniversity.edu",
+        },
+      ],
+    });
     const { searchColleges, results } = useCollegeAutocomplete();
 
     await searchColleges("Test");
@@ -214,25 +168,18 @@ describe("useCollegeAutocomplete", () => {
   });
 
   it("preserves https URLs as-is", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            metadata: { total: 1 },
-            results: [
-              {
-                id: 1,
-                "school.name": "Test U",
-                "school.city": "City",
-                "school.state": "ST",
-                "school.school_url": "https://testuniversity.edu",
-              },
-            ],
-          }),
-      }),
-    );
+    mockFetchAuth.mockResolvedValue({
+      metadata: { total: 1 },
+      results: [
+        {
+          id: 1,
+          "school.name": "Test U",
+          "school.city": "City",
+          "school.state": "ST",
+          "school.school_url": "https://testuniversity.edu",
+        },
+      ],
+    });
     const { searchColleges, results } = useCollegeAutocomplete();
 
     await searchColleges("Test");

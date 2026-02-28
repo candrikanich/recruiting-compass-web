@@ -7,7 +7,12 @@ import { useCoaches } from "~/composables/useCoaches";
 import { useInteractions } from "~/composables/useInteractions";
 import type { School, Interaction } from "~/types/models";
 
+const mockFetchAuth = vi.fn();
+
 // Mock dependencies
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: () => ({ $fetchAuth: mockFetchAuth }),
+}));
 vi.mock("~/composables/useSupabase");
 vi.mock("~/stores/user");
 vi.mock("~/composables/useSchools");
@@ -367,8 +372,7 @@ describe("useRecruitingPacket", () => {
 
   describe("emailPacket", () => {
     it("should call API endpoint with email data", async () => {
-      const mockFetch = vi.fn().mockResolvedValue({ ok: true });
-      global.$fetch = mockFetch;
+      mockFetchAuth.mockResolvedValue({ ok: true });
 
       const { generatePacket, emailPacket } = useRecruitingPacket();
 
@@ -380,7 +384,7 @@ describe("useRecruitingPacket", () => {
         body: "Here is my recruiting packet",
       });
 
-      expect(mockFetch).toHaveBeenCalledWith(
+      expect(mockFetchAuth).toHaveBeenCalledWith(
         "/api/recruiting-packet/email",
         expect.objectContaining({
           method: "POST",
@@ -389,10 +393,7 @@ describe("useRecruitingPacket", () => {
     });
 
     it("should handle email errors", async () => {
-      const mockFetch = vi
-        .fn()
-        .mockRejectedValue(new Error("Email send failed"));
-      global.$fetch = mockFetch;
+      mockFetchAuth.mockRejectedValue(new Error("Email send failed"));
 
       const { generatePacket, emailPacket, error } = useRecruitingPacket();
 
@@ -412,8 +413,7 @@ describe("useRecruitingPacket", () => {
     });
 
     it("should close email modal after successful send", async () => {
-      const mockFetch = vi.fn().mockResolvedValue({ ok: true });
-      global.$fetch = mockFetch;
+      mockFetchAuth.mockResolvedValue({ ok: true });
 
       const { generatePacket, emailPacket, showEmailModal, setShowEmailModal } =
         useRecruitingPacket();

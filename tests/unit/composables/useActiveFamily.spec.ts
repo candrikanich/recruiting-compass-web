@@ -5,6 +5,10 @@ import { useUserStore } from "~/stores/user";
 
 const mockFetchFn = vi.fn();
 
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: () => ({ $fetchAuth: mockFetchFn }),
+}));
+
 // Mock useSupabase and useRoute
 vi.mock("~/composables/useSupabase", () => ({
   useSupabase: vi.fn(() => ({
