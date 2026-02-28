@@ -130,6 +130,27 @@
         </div>
       </section>
 
+      <!-- Pending Invitations Section -->
+      <section
+        v-if="pendingInvitations.length > 0"
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+      >
+        <h2 class="text-xl font-bold text-slate-900 mb-4">
+          Pending Invitations
+          <span class="text-sm font-normal text-slate-500 ml-1">
+            ({{ pendingInvitations.length }})
+          </span>
+        </h2>
+        <div class="space-y-3">
+          <FamilyPendingInviteCard
+            v-for="inv in pendingInvitations"
+            :key="inv.id"
+            :invitation="inv"
+            @revoke="revokeInvitation"
+          />
+        </div>
+      </section>
+
       <!-- Empty state if nothing present -->
       <div
         v-if="isParent && parentFamilies.length === 0 && !familyCodeLoading"
@@ -148,11 +169,13 @@
 import { ref, onMounted, computed } from "vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useFamilyCode } from "~/composables/useFamilyCode";
+import { useFamilyInvitations } from "~/composables/useFamilyInvitations";
 import { useUserStore } from "~/stores/user";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import FamilyCodeDisplay from "~/components/Family/FamilyCodeDisplay.vue";
 import FamilyCodeInput from "~/components/Family/FamilyCodeInput.vue";
 import FamilyMemberCard from "~/components/Family/FamilyMemberCard.vue";
+import FamilyPendingInviteCard from "~/components/Family/FamilyPendingInviteCard.vue";
 
 interface User {
   id: string;
@@ -194,6 +217,12 @@ const {
   removeFamilyMember,
 } = useFamilyCode();
 
+const {
+  invitations: pendingInvitations,
+  fetchInvitations,
+  revokeInvitation,
+} = useFamilyInvitations();
+
 const codeGeneratedAt = ref<string | null>(null);
 const error = ref<string | null>(null);
 const familyMembers = ref<FamilyMember[]>([]);
@@ -229,6 +258,8 @@ onMounted(async () => {
   if (isPlayer.value && myFamilyId.value) {
     await fetchFamilyMembers();
   }
+
+  fetchInvitations().catch(() => {});
 });
 
 const handleJoinFamily = async (code: string) => {
