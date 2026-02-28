@@ -3,7 +3,7 @@
     "apps": [],
     "details": [
       {
-        "appID": "TEAMID.com.recruitingcompass.app",
+        "appID": "G374A783RH.com.recruitingcompass.app",
         "paths": ["/join", "/join/*"]
       }
     ]
