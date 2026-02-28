@@ -1,4 +1,4 @@
-import { defineEventHandler, createError } from "h3";
+import { defineEventHandler, createError, setResponseHeader } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
@@ -10,6 +10,9 @@ interface UserDetails {
 }
 
 export default defineEventHandler(async (event) => {
+  setResponseHeader(event, 'Deprecation', 'true');
+  setResponseHeader(event, 'Sunset', '2026-06-01');
+
   const logger = useLogger(event, "family/accessible");
   const user = await requireAuth(event);
   logger.debug("User authenticated", { userId: user.id });
