@@ -153,3 +153,55 @@ export const sendEmail = async (options: SendEmailOptions) => {
     return { success: false, error: errorMessage };
   }
 };
+
+export interface SendInviteEmailOptions {
+  to: string;
+  inviterName: string;
+  familyName: string;
+  role: "player" | "parent";
+  token: string;
+}
+
+export const sendInviteEmail = async (
+  options: SendInviteEmailOptions,
+): Promise<{ success: boolean; messageId?: string; error?: string }> => {
+  const { to, inviterName, familyName, role, token } = options;
+  const baseUrl = process.env.PUBLIC_BASE_URL ?? "https://recruitingcompass.com";
+  const joinUrl = `${baseUrl}/join?token=${encodeURIComponent(token)}`;
+  const roleLabel = role === "player" ? "player" : "parent";
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px;">
+          <h1 style="margin: 0 0 16px 0; font-size: 24px; color: #111827;">
+            \${escapeHtml(familyName)}'s recruiting journey awaits — you're invited!
+          </h1>
+          <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px;">
+            \${escapeHtml(inviterName)} has invited you to join \${escapeHtml(familyName)}'s recruiting profile as a \${escapeHtml(roleLabel)}.
+          </p>
+          <a href="\${sanitizeUrl(joinUrl)}" style="display: inline-block; background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+            Join \${escapeHtml(familyName)}
+          </a>
+          <p style="margin-top: 24px; font-size: 13px; color: #9ca3af;">
+            This link expires in 7 days.
+          </p>
+        </div>
+        <p style="margin-top: 24px; font-size: 12px; color: #9ca3af; text-align: center;">
+          The Recruiting Compass
+        </p>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to,
+    subject: `${familyName}'s recruiting journey awaits — you're invited!`,
+    html: htmlContent,
+  });
+};
