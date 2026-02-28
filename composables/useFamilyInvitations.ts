@@ -21,7 +21,7 @@ export function useFamilyInvitations() {
         "/api/family/invitations",
       );
       invitations.value = data.invitations;
-    } catch (err) {
+    } catch {
       error.value = "Failed to load invitations";
     } finally {
       loading.value = false;

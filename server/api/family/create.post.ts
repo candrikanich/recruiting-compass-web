@@ -91,14 +91,13 @@ export default defineEventHandler(async (event) => {
   }
 
   // Log code generation (fire and forget — call .catch on builder, not awaited value)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (supabase.from("family_code_usage_log").insert({
     family_unit_id: newFamily.id,
     user_id: user.id,
     code_used: familyCode,
     action: "generated",
-  } as Database["public"]["Tables"]["family_code_usage_log"]["Insert"]) as any).catch(
-    (err: any) => logger.warn("Failed to log code generation", err),
+  } as Database["public"]["Tables"]["family_code_usage_log"]["Insert"]) as unknown as Promise<unknown>).catch(
+    (err: unknown) => logger.warn("Failed to log code generation", err),
   );
 
   return {
