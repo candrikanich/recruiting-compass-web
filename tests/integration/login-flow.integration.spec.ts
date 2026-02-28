@@ -378,8 +378,6 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
           data: {
             full_name: "Test User",
             role: "player",
-            family_code: expect.stringMatching(/^FAM-[A-Z0-9]+$/),
-            onboarding_completed: false,
           },
         },
       });

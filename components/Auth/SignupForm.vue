@@ -62,41 +62,6 @@
       @blur="$emit('validateEmail')"
     />
 
-    <!-- Family Code (Parents only) -->
-    <div v-if="userType === 'parent'">
-      <label
-        for="familyCode"
-        class="block text-sm font-medium text-slate-700 mb-2"
-      >
-        Family Code
-        <span class="text-slate-500 font-normal">(optional)</span>
-      </label>
-      <input
-        id="familyCode"
-        :value="familyCode"
-        type="text"
-        aria-describedby="familyCode-help"
-        :aria-invalid="fieldErrors.familyCode ? 'true' : 'false'"
-        :class="[
-          'w-full px-4 py-3 border rounded-lg transition-all focus:ring-2 focus:ring-offset-2 focus:outline-2 focus:border-transparent uppercase',
-          fieldErrors.familyCode
-            ? 'border-red-600 focus:ring-red-500 focus:outline-red-600'
-            : 'border-slate-300 focus:ring-blue-500 focus:outline-blue-600',
-        ]"
-        placeholder="FAM-XXXXXXXX"
-        :disabled="disabled"
-        @input="
-          $emit('update:familyCode', ($event.target as HTMLInputElement).value)
-        "
-        @blur="$emit('validateFamilyCode')"
-      />
-      <p id="familyCode-help" class="text-xs text-slate-500 mt-1">
-        If you have your player's family code, enter it here to link your
-        accounts. You can add it later.
-      </p>
-      <FieldError id="familyCode-error" :error="fieldErrors.familyCode" />
-    </div>
-
     <!-- Password Fields -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <LoginInputField
@@ -273,7 +238,6 @@ const props = defineProps<{
   email: string;
   password: string;
   confirmPassword: string;
-  familyCode: string;
   agreeToTerms: boolean;
   loading: boolean;
   hasErrors: boolean;
@@ -286,12 +250,10 @@ defineEmits<{
   "update:email": [value: string];
   "update:password": [value: string];
   "update:confirmPassword": [value: string];
-  "update:familyCode": [value: string];
   "update:agreeToTerms": [value: boolean];
   submit: [];
   validateEmail: [];
   validatePassword: [];
-  validateFamilyCode: [];
 }>();
 
 const disabled = computed(() => props.loading);

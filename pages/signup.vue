@@ -79,7 +79,6 @@
             :email="email"
             :password="password"
             :confirm-password="confirmPassword"
-            :family-code="familyCode"
             :agree-to-terms="agreeToTerms"
             :loading="loading"
             :has-errors="hasErrors"
@@ -89,12 +88,10 @@
             @update:email="email = $event"
             @update:password="password = $event"
             @update:confirm-password="confirmPassword = $event"
-            @update:family-code="familyCode = $event"
             @update:agree-to-terms="agreeToTerms = $event"
             @submit="handleSignup"
             @validate-email="validateEmail"
             @validate-password="validatePassword"
-            @validate-family-code="validateFamilyCode"
           />
         </div>
       </div>
@@ -127,7 +124,6 @@ const email = ref("");
 const password = ref("");
 const confirmPassword = ref("");
 const role = ref("");
-const familyCode = ref("");
 const userType = ref<"player" | "parent" | null>(null);
 const agreeToTerms = ref(false);
 
@@ -175,13 +171,6 @@ watch(agreeToTerms, (isChecked) => {
   }
 });
 
-const validateFamilyCode = async () => {
-  // Optional field, only validate if provided
-  if (familyCode.value) {
-    // Could add schema validation here if needed
-  }
-};
-
 const handleSignup = async () => {
   // Check passwords match
   if (password.value !== confirmPassword.value) {
@@ -209,7 +198,6 @@ const handleSignup = async () => {
       password: password.value,
       confirmPassword: confirmPassword.value,
       role: role.value,
-      familyCode: familyCode.value,
     },
     signupSchema,
   );
@@ -225,18 +213,11 @@ const handleSignup = async () => {
     let userId: string;
 
     try {
-      // Sign up with Supabase Auth (including role in metadata)
-      const signupOptions = {};
-      if (validated.role === "parent" && validated.familyCode) {
-        Object.assign(signupOptions, { familyCode: validated.familyCode });
-      }
-
       const authData = await signup(
         validated.email,
         validated.password,
         validated.fullName as string,
         validated.role,
-        signupOptions,
       );
 
       if (!authData?.data?.user?.id) {
@@ -287,26 +268,12 @@ const handleSignup = async () => {
       throw upsertError;
     }
 
-    // Determine redirect based on user type
-    let redirectUrl = "";
+    // Create family unit for the new user (both roles)
+    await $fetch("/api/family/create", { method: "POST" });
 
-    if (validated.role === "player") {
-      // Players go to onboarding
-      redirectUrl = "/onboarding";
-    } else if (validated.role === "parent") {
-      // Parents go to family code entry or dashboard
-      if (validated.familyCode) {
-        // Parent has family code - go to dashboard (already linked)
-        redirectUrl = "/dashboard";
-      } else {
-        // Parent without code - go to family code entry screen
-        redirectUrl = "/family-code-entry";
-      }
-    } else {
-      // Fallback for other roles
-      redirectUrl =
-        "/verify-email?email=" + encodeURIComponent(validated.email);
-    }
+    // Redirect to role-specific onboarding
+    const redirectUrl =
+      validated.role === "parent" ? "/onboarding/parent" : "/onboarding";
 
     await navigateTo(redirectUrl);
   } catch (err: unknown) {
