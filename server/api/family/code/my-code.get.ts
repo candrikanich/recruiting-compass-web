@@ -12,24 +12,29 @@ export default defineEventHandler(async (event) => {
 
   const userRole = await getUserRole(user.id, supabase);
 
-  // Students: Get their family code
+  // Players: Get their family code via family_members membership
   if (userRole === "player") {
-    const familyResponse = await supabase
-      .from("family_units")
-      .select("id, family_code, family_name, code_generated_at")
-      .eq("player_user_id", user.id)
+    const memberResponse = await supabase
+      .from("family_members")
+      .select("family_units!inner(id, family_code, family_name, code_generated_at)")
+      .eq("user_id", user.id)
       .maybeSingle();
 
-    const { data: family } = familyResponse as {
-      data: Database["public"]["Tables"]["family_units"]["Row"] | null;
+    const { data: membership } = memberResponse as {
+      data: {
+        family_units: Pick<
+          Database["public"]["Tables"]["family_units"]["Row"],
+          "id" | "family_code" | "family_name" | "code_generated_at"
+        >;
+      } | null;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any;
     };
 
+    const family = membership?.family_units || null;
     return {
       success: true,
       hasFamily: !!family,
-
       familyId: family?.id || null,
       familyCode: family?.family_code || null,
       familyName: family?.family_name || null,

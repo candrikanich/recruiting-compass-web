@@ -127,15 +127,15 @@ export const useActiveFamily = () => {
 
     try {
       if (isPlayer.value) {
-        // For players, fetch their family unit
+        // For players, look up their family unit via family_members
         const response = await supabase
-          .from("family_units")
-          .select("id, family_name")
-          .eq("player_user_id", userStore.user.id)
+          .from("family_members")
+          .select("family_unit_id")
+          .eq("user_id", userStore.user.id)
           .maybeSingle();
 
         const { data, error: fetchError } = response as {
-          data: { id: string; family_name: string | null } | null;
+          data: { family_unit_id: string } | null;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           error: any;
         };
@@ -148,7 +148,7 @@ export const useActiveFamily = () => {
           // Don't throw - just log and continue. Family will be null but we can still proceed.
         }
         if (data) {
-          playerFamilyId.value = data.id;
+          playerFamilyId.value = data.family_unit_id;
         }
       } else if (isParent.value) {
         // For parents, fetch all accessible families via API

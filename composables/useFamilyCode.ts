@@ -41,18 +41,22 @@ export const useFamilyCode = () => {
       }
 
       if (currentUserRole.value === "player") {
-        // Players: Get their family code
-        const familyResponse = await supabase
-          .from("family_units")
-          .select("id, family_code, family_name, code_generated_at")
-          .eq("player_user_id", userStore.user.id)
+        // Players: Get their family code via family_members membership
+        const memberResponse = await supabase
+          .from("family_members")
+          .select(
+            "family_units!inner(id, family_code, family_name, code_generated_at)",
+          )
+          .eq("user_id", userStore.user.id)
           .maybeSingle();
-        const { data: family, error: fetchError } = familyResponse as {
+        const { data: membership, error: fetchError } = memberResponse as {
           data: {
-            id: string;
-            family_code: string | null;
-            family_name: string | null;
-            code_generated_at: string | null;
+            family_units: {
+              id: string;
+              family_code: string | null;
+              family_name: string | null;
+              code_generated_at: string | null;
+            };
           } | null;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           error: any;
@@ -63,6 +67,7 @@ export const useFamilyCode = () => {
           return;
         }
 
+        const family = membership?.family_units || null;
         myFamilyCode.value = family?.family_code || null;
         myFamilyId.value = family?.id || null;
         myFamilyName.value = family?.family_name || null;
