@@ -179,7 +179,8 @@ export const useActiveFamily = () => {
           );
 
           if (response.families) {
-            parentAccessibleFamilies.value = response.families;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            parentAccessibleFamilies.value = response.families as any;
 
             // Set current athlete: route param > localStorage > closest to graduation > first
             const athleteIdFromRoute = route.query.athlete_id as

@@ -38,7 +38,8 @@ onMounted(async () => {
     fetchStatus.value = 'success'
   } catch (err: unknown) {
     fetchStatus.value = 'error'
-    fetchError.value = (err as { statusCode?: number; statusMessage?: string }) ?? { statusCode: 500 }
+    const e = err as { statusCode?: number; statusMessage?: string }
+    fetchError.value = { statusCode: e?.statusCode ?? 500, statusMessage: e?.statusMessage }
   }
 })
 
