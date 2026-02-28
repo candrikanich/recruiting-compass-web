@@ -8,7 +8,10 @@ defineProps<{
   }
 }>()
 
-const emit = defineEmits<{ revoke: [id: string] }>()
+const emit = defineEmits<{
+  revoke: [id: string]
+  resend: [payload: { id: string; email: string; role: 'player' | 'parent' }]
+}>()
 
 function formatExpiry(dateStr: string): string {
   const expires = new Date(dateStr)
@@ -32,12 +35,21 @@ function formatExpiry(dateStr: string): string {
         Invited as {{ invitation.role }} · expires {{ formatExpiry(invitation.expires_at) }}
       </p>
     </div>
-    <button
-      data-testid="revoke-invite-button"
-      class="text-sm font-medium text-red-600 hover:text-red-700 px-3 py-1 rounded-lg hover:bg-red-50 transition-colors"
-      @click="emit('revoke', invitation.id)"
-    >
-      Revoke
-    </button>
+    <div class="flex items-center gap-2">
+      <button
+        data-testid="resend-invite-button"
+        class="text-sm font-medium text-blue-600 hover:text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+        @click="emit('resend', { id: invitation.id, email: invitation.invited_email, role: invitation.role })"
+      >
+        Resend
+      </button>
+      <button
+        data-testid="revoke-invite-button"
+        class="text-sm font-medium text-red-600 hover:text-red-700 px-3 py-1 rounded-lg hover:bg-red-50 transition-colors"
+        @click="emit('revoke', invitation.id)"
+      >
+        Revoke
+      </button>
+    </div>
   </div>
 </template>
