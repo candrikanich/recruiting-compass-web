@@ -40,12 +40,20 @@ export function useFamilyInvitations() {
     email: string,
     role: "player" | "parent",
   ) {
-    await $fetchAuth(`/api/family/invitations/${id}`, { method: "DELETE" });
-    await $fetchAuth("/api/family/invite", {
-      method: "POST",
-      body: { email, role },
-    });
-    await fetchInvitations();
+    loading.value = true;
+    error.value = null;
+    try {
+      await $fetchAuth(`/api/family/invitations/${id}`, { method: "DELETE" });
+      await $fetchAuth("/api/family/invite", {
+        method: "POST",
+        body: { email, role },
+      });
+      await fetchInvitations();
+    } catch {
+      error.value = "Failed to resend invitation";
+    } finally {
+      loading.value = false;
+    }
   }
 
   return {
