@@ -1,4 +1,5 @@
 import { ref } from "vue";
+import { useAuthFetch } from "./useAuthFetch";
 
 export interface PendingInvitation {
   id: string;
@@ -9,6 +10,7 @@ export interface PendingInvitation {
 }
 
 export function useFamilyInvitations() {
+  const { $fetchAuth } = useAuthFetch();
   const invitations = ref<PendingInvitation[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -17,7 +19,7 @@ export function useFamilyInvitations() {
     loading.value = true;
     error.value = null;
     try {
-      const data = await $fetch<{ invitations: PendingInvitation[] }>(
+      const data = await $fetchAuth<{ invitations: PendingInvitation[] }>(
         "/api/family/invitations",
       );
       invitations.value = data.invitations;
@@ -29,9 +31,29 @@ export function useFamilyInvitations() {
   }
 
   async function revokeInvitation(id: string) {
-    await $fetch(`/api/family/invitations/${id}`, { method: "DELETE" });
+    await $fetchAuth(`/api/family/invitations/${id}`, { method: "DELETE" });
     await fetchInvitations();
   }
 
-  return { invitations, loading, error, fetchInvitations, revokeInvitation };
+  async function resendInvitation(
+    id: string,
+    email: string,
+    role: "player" | "parent",
+  ) {
+    await $fetchAuth(`/api/family/invitations/${id}`, { method: "DELETE" });
+    await $fetchAuth("/api/family/invite", {
+      method: "POST",
+      body: { email, role },
+    });
+    await fetchInvitations();
+  }
+
+  return {
+    invitations,
+    loading,
+    error,
+    fetchInvitations,
+    revokeInvitation,
+    resendInvitation,
+  };
 }
