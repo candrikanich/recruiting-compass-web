@@ -185,15 +185,44 @@
           </div>
         </div>
 
-        <!-- Screen 5: Complete (placeholder) -->
-        <div v-if="currentStep === 5" class="space-y-6">
-          <div class="text-center">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">
-              You're All Set!
-            </h2>
-            <p class="text-slate-600 mb-6">
-              Your profile is ready. Would you like to invite a parent?
+        <!-- Screen 5: Invite Parent -->
+        <div v-if="currentStep === 5" class="space-y-6" data-testid="step-5-invite">
+          <div class="text-center mb-4">
+            <h2 class="text-2xl font-bold text-slate-900 mb-2">Invite a parent</h2>
+            <p class="text-slate-600">
+              Add a parent so they can follow your recruiting journey with you.
             </p>
+          </div>
+
+          <div class="space-y-3">
+            <label class="block text-sm font-medium text-slate-700">
+              Parent's email address
+            </label>
+            <input
+              v-model="parentInviteEmail"
+              data-testid="parent-invite-email"
+              type="email"
+              placeholder="parent@example.com"
+              class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          <button
+            data-testid="send-parent-invite-button"
+            :disabled="!parentInviteEmail || inviteLoading"
+            class="w-full px-6 py-3 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            @click="sendParentInvite"
+          >
+            {{ inviteLoading ? 'Sending...' : 'Send invite' }}
+          </button>
+
+          <div class="mt-6 pt-4 border-t border-slate-200">
+            <p class="text-sm text-slate-500 mb-3">Or share your family code</p>
+            <div class="flex items-center gap-3 bg-slate-50 rounded-lg px-4 py-3">
+              <span class="font-mono font-semibold text-slate-900 tracking-widest">
+                {{ myFamilyCode ?? '...' }}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -247,7 +276,7 @@
           >
             {{
               currentStep === 5
-                ? "Complete Onboarding"
+                ? "I'll invite them later"
                 : currentStep === 4
                   ? "Review"
                   : "Next"
@@ -263,6 +292,8 @@
 import { ref, computed, onMounted } from "vue";
 import { useOnboarding } from "~/composables/useOnboarding";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
+import { useFamilyCode } from "~/composables/useFamilyCode";
+import { useFamilyInvite } from "~/composables/useFamilyInvite";
 
 definePageMeta({ layout: "default" });
 
@@ -270,12 +301,15 @@ const { saveOnboardingStep, completeOnboarding, getOnboardingProgress } =
   useOnboarding();
 const { setHomeLocation, setPlayerDetails, loadAllPreferences } =
   usePreferenceManager();
+const { myFamilyCode, fetchMyCode } = useFamilyCode();
+const { sendInvite, loading: inviteLoading } = useFamilyInvite();
 
 const currentStep = ref(1);
 const onboardingData = ref<Record<string, unknown>>({});
 const loading = ref(false);
 const error = ref<string | null>(null);
 const zipCodeError = ref<string | null>(null);
+const parentInviteEmail = ref('');
 
 const totalSteps = 5;
 
@@ -469,6 +503,9 @@ const nextScreen = async () => {
 
       await saveOnboardingStep(currentStep.value, onboardingData.value);
       currentStep.value++;
+      if (currentStep.value === totalSteps) {
+        fetchMyCode().catch(() => {});
+      }
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to save progress";
@@ -497,6 +534,12 @@ const skipStep = async () => {
   }
 };
 
+const sendParentInvite = async () => {
+  if (!parentInviteEmail.value) return;
+  await sendInvite({ email: parentInviteEmail.value, role: 'parent' });
+  await navigateTo('/dashboard');
+};
+
 onMounted(async () => {
   try {
     // Load preferences so partial saves (e.g. step 2 then step 4) merge correctly
@@ -504,6 +547,9 @@ onMounted(async () => {
     const progress = await getOnboardingProgress();
     const step = Math.ceil((progress / 100) * totalSteps) || 1;
     currentStep.value = Math.min(step, totalSteps);
+    if (currentStep.value === totalSteps) {
+      await fetchMyCode();
+    }
   } catch (err) {
     console.error("Failed to restore progress:", err);
   }
