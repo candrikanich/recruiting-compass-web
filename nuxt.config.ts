@@ -75,7 +75,11 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: false,
     },
-
+    routeRules: {
+      '/.well-known/apple-app-site-association': {
+        headers: { 'content-type': 'application/json' },
+      },
+    },
   },
 
   postcss: {
