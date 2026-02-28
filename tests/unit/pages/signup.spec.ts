@@ -4,6 +4,7 @@ import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { useRouter, useRoute } from "vue-router";
 import { useAuth } from "~/composables/useAuth";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useSupabase } from "~/composables/useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useFormValidation } from "~/composables/useFormValidation";
@@ -20,6 +21,7 @@ vi.mock("vue-router", () => ({
 }));
 
 vi.mock("~/composables/useAuth");
+vi.mock("~/composables/useAuthFetch");
 vi.mock("~/composables/useSupabase");
 vi.mock("~/stores/user");
 vi.mock("~/composables/useFormValidation");
@@ -147,6 +149,7 @@ vi.mock("~/components/Auth/SignupForm.vue", () => ({
 
 const mockUseRouter = vi.mocked(useRouter);
 const mockUseAuth = vi.mocked(useAuth);
+const mockUseAuthFetch = vi.mocked(useAuthFetch);
 const mockUseSupabase = vi.mocked(useSupabase);
 const mockUseUserStore = vi.mocked(useUserStore);
 const mockUseFormValidation = vi.mocked(useFormValidation);
@@ -155,6 +158,7 @@ const mockUseLoadingStates = vi.mocked(useLoadingStates);
 describe("signup.vue", () => {
   let mockRouter: any;
   let mockAuth: any;
+  let mockAuthFetch: any;
   let mockSupabase: any;
   let mockUserStore: any;
   let mockValidation: any;
@@ -176,6 +180,11 @@ describe("signup.vue", () => {
       error: { value: null },
     };
     mockUseAuth.mockReturnValue(mockAuth);
+
+    mockAuthFetch = {
+      $fetchAuth: vi.fn().mockResolvedValue({}),
+    };
+    mockUseAuthFetch.mockReturnValue(mockAuthFetch);
 
     mockSupabase = {
       auth: {
@@ -637,7 +646,7 @@ describe("signup.vue", () => {
       await wrapper.find("form").trigger("submit.prevent");
       await wrapper.vm.$nextTick();
 
-      expect(global.$fetch).toHaveBeenCalledWith("/api/family/create", {
+      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith("/api/family/create", {
         method: "POST",
       });
     });
@@ -723,7 +732,7 @@ describe("signup.vue", () => {
       await wrapper.find("form").trigger("submit.prevent");
       await wrapper.vm.$nextTick();
 
-      expect(global.$fetch).toHaveBeenCalledWith("/api/family/create", {
+      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith("/api/family/create", {
         method: "POST",
       });
     });

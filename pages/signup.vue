@@ -104,6 +104,7 @@ definePageMeta({ layout: "public" });
 
 import { ref, watch } from "vue";
 import { useAuth } from "~/composables/useAuth";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useSupabase } from "~/composables/useSupabase";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
@@ -129,6 +130,7 @@ const agreeToTerms = ref(false);
 
 const { loading } = useLoadingStates();
 const { signup } = useAuth();
+const { $fetchAuth } = useAuthFetch();
 const supabase = useSupabase();
 const {
   errors,
@@ -269,7 +271,7 @@ const handleSignup = async () => {
     }
 
     // Create family unit for the new user (both roles)
-    await $fetch("/api/family/create", { method: "POST" });
+    await $fetchAuth("/api/family/create", { method: "POST" });
 
     // Redirect to role-specific onboarding
     const redirectUrl =

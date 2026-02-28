@@ -9,6 +9,11 @@ vi.mock("vue-router", () => ({
   useRoute: vi.fn(() => ({ query: {} })),
 }));
 
+const mockFetchAuth = vi.fn().mockResolvedValue({});
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: vi.fn(() => ({ $fetchAuth: mockFetchAuth })),
+}));
+
 vi.mock("~/composables/useFamilyCode", () => ({
   useFamilyCode: vi.fn(() => ({
     myFamilyCode: ref("FAM-TESTCODE"),
@@ -34,8 +39,6 @@ vi.mock("~/stores/user", () => ({
   })),
 }));
 
-const mockFetch = vi.fn().mockResolvedValue({});
-global.$fetch = mockFetch;
 global.navigateTo = vi.fn();
 
 const createWrapper = () =>
@@ -51,7 +54,7 @@ describe("Parent Onboarding", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
-    mockFetch.mockResolvedValue({});
+    mockFetchAuth.mockResolvedValue({});
     (global.navigateTo as ReturnType<typeof vi.fn>).mockResolvedValue(
       undefined,
     );
@@ -119,7 +122,7 @@ describe("Parent Onboarding", () => {
       await wrapper.find('[data-testid="next-button"]').trigger("click");
       await wrapper.vm.$nextTick();
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/family/player-details", {
+      expect(mockFetchAuth).toHaveBeenCalledWith("/api/family/player-details", {
         method: "POST",
         body: {
           playerName: "Alex Johnson",
@@ -134,7 +137,7 @@ describe("Parent Onboarding", () => {
       const wrapper = createWrapper();
       await wrapper.find('[data-testid="skip-step-1"]').trigger("click");
       await wrapper.vm.$nextTick();
-      expect(mockFetch).not.toHaveBeenCalled();
+      expect(mockFetchAuth).not.toHaveBeenCalled();
     });
   });
 

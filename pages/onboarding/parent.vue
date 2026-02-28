@@ -204,6 +204,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useFamilyInvite } from "~/composables/useFamilyInvite";
 
@@ -220,6 +221,7 @@ const position = ref("");
 
 // Step 2 — Invite
 const inviteEmail = ref("");
+const { $fetchAuth } = useAuthFetch();
 const { myFamilyCode, fetchMyCode } = useFamilyCode();
 const {
   sendInvite,
@@ -231,7 +233,7 @@ onMounted(fetchMyCode);
 
 async function savePlayerDetails() {
   if (playerName.value || graduationYear.value || sport.value || position.value) {
-    await $fetch("/api/family/player-details", {
+    await $fetchAuth("/api/family/player-details", {
       method: "POST",
       body: {
         playerName: playerName.value,
