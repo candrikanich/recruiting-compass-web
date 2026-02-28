@@ -169,6 +169,33 @@ export const useFamilyInvite = () => {
     }
   };
 
+  /**
+   * Send an email invitation via the new /api/family/invite endpoint.
+   * Works for both player and parent roles.
+   */
+  const sendInvite = async ({
+    email,
+    role,
+  }: {
+    email: string;
+    role: "player" | "parent";
+  }): Promise<void> => {
+    loading.value = true;
+    error.value = null;
+    try {
+      await $fetch("/api/family/invite", { method: "POST", body: { email, role } });
+      lastInvitedEmail.value = email;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to send invite";
+      error.value = message;
+      logger.error("Invite error:", err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // State
     loading,
@@ -176,6 +203,7 @@ export const useFamilyInvite = () => {
     lastInvitedEmail,
 
     // Actions
+    sendInvite,
     sendParentInvite,
     linkParentWithCode,
   };
