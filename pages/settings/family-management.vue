@@ -266,7 +266,6 @@ const isParent = computed(() => userStore.user?.role === "parent");
 const {
   myFamilyCode,
   myFamilyId,
-  myFamilyName,
   parentFamilies,
   loading: familyCodeLoading,
   error: familyCodeError,
@@ -300,10 +299,14 @@ async function handleSendInvite() {
   if (!inviteEmail.value) return;
   inviteSuccess.value = null;
   const sentTo = inviteEmail.value;
-  await sendInvite({ email: sentTo, role: inviteRole.value });
-  inviteEmail.value = "";
-  inviteSuccess.value = `Invite sent to ${sentTo}`;
-  await fetchInvitations().catch(() => {});
+  try {
+    await sendInvite({ email: sentTo, role: inviteRole.value });
+    inviteEmail.value = "";
+    inviteSuccess.value = `Invite sent to ${sentTo}`;
+    await fetchInvitations().catch(() => {});
+  } catch {
+    // inviteError ref from useFamilyInvite is already set by the composable
+  }
 }
 
 async function handleResendInvitation(payload: {

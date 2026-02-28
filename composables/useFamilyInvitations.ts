@@ -31,8 +31,16 @@ export function useFamilyInvitations() {
   }
 
   async function revokeInvitation(id: string) {
-    await $fetchAuth(`/api/family/invitations/${id}`, { method: "DELETE" });
-    await fetchInvitations();
+    loading.value = true;
+    error.value = null;
+    try {
+      await $fetchAuth(`/api/family/invitations/${id}`, { method: "DELETE" });
+      await fetchInvitations();
+    } catch {
+      error.value = "Failed to revoke invitation";
+    } finally {
+      loading.value = false;
+    }
   }
 
   async function resendInvitation(
