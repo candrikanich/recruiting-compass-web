@@ -166,7 +166,7 @@ export const sendInviteEmail = async (
   options: SendInviteEmailOptions,
 ): Promise<{ success: boolean; messageId?: string; error?: string }> => {
   const { to, inviterName, familyName, role, token } = options;
-  const baseUrl = process.env.PUBLIC_BASE_URL ?? "https://recruitingcompass.com";
+  const baseUrl = process.env.PUBLIC_BASE_URL ?? "https://therecruitingcompass.com";
   const joinUrl = `${baseUrl}/join?token=${encodeURIComponent(token)}`;
   const roleLabel = role === "player" ? "player" : "parent";
 
