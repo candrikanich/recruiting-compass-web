@@ -42,6 +42,7 @@ const signupAgreeToTerms = ref(false);
 const loading = ref(false);
 const declining = ref(false);
 const signupError = ref<string | null>(null);
+const loginError = ref<string | null>(null);
 
 onMounted(async () => {
   if (!token.value) {
@@ -61,6 +62,7 @@ onMounted(async () => {
 });
 
 async function accept() {
+  loginError.value = null;
   loading.value = true;
   try {
     if (!userStore.isAuthenticated) {
@@ -68,6 +70,8 @@ async function accept() {
     }
     await $fetch(`/api/family/invite/${token.value}/accept`, { method: "POST" });
     await navigateTo("/dashboard");
+  } catch (err: unknown) {
+    loginError.value = err instanceof Error ? err.message : "Login failed. Please check your credentials.";
   } finally {
     loading.value = false;
   }
@@ -89,10 +93,11 @@ async function signupAndConnect() {
 
     if (!authData?.data?.user?.id) throw new Error("Signup failed");
 
-    await (supabase.from("users") as any).upsert(
+    const { error: upsertError } = await (supabase.from("users") as any).upsert(
       [{ id: authData.data.user.id, email: invite.value.email, full_name: fullName, role: invite.value.role, date_of_birth: signupDateOfBirth.value }],
       { onConflict: "id" },
     );
+    if (upsertError) throw new Error("Could not save account details");
 
     await $fetch(`/api/family/invite/${token.value}/accept`, { method: "POST" });
     await navigateTo(invite.value.role === "parent" ? "/onboarding/parent" : "/onboarding");
@@ -177,6 +182,7 @@ async function decline() {
         <!-- Email exists — show login -->
         <div v-if="invite.emailExists">
           <p class="text-sm text-gray-500 mb-4">Log in to connect your account.</p>
+          <p v-if="loginError" class="text-sm text-red-600 mb-3" role="alert">{{ loginError }}</p>
           <DesignSystemInput v-model="loginEmail" data-testid="email-input" label="Email" type="email" :placeholder="invite.email" class="mb-3" />
           <DesignSystemInput v-model="loginPassword" data-testid="password-input" label="Password" type="password" class="mb-4" />
           <div class="flex gap-3">
