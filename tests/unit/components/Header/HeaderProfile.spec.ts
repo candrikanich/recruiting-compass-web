@@ -22,14 +22,6 @@ vi.mock("~/composables/useAuth", () => ({
   useAuth: vi.fn(() => ({ logout: vi.fn() })),
 }));
 
-global.navigateTo = vi.fn();
-global.useUserStore = vi.fn(() => ({ user: mockUser, isAuthenticated: true }));
-global.useFamilyCode = vi.fn(() => ({
-  myFamilyCode: mockFamilyCode,
-  fetchMyCode: mockFetchMyCode,
-  createFamily: vi.fn(),
-}));
-
 const createWrapper = () =>
   mount(HeaderProfile, {
     global: {

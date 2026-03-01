@@ -82,6 +82,7 @@
             >{{ myFamilyCode }}</span>
             <button
               type="button"
+              :aria-label="codeCopied ? 'Copied!' : 'Copy family code'"
               :title="codeCopied ? 'Copied!' : 'Copy'"
               class="text-slate-400 hover:text-slate-600 transition-colors"
               @click.stop="copyFamilyCode"
@@ -157,6 +158,9 @@ import { ref, computed, nextTick, onMounted } from "vue";
 import { useUserStore } from "~/stores/user";
 import { useAuth } from "~/composables/useAuth";
 import { useFamilyCode } from "~/composables/useFamilyCode";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("Header/HeaderProfile");
 
 const userStore = useUserStore();
 const { logout } = useAuth();
@@ -165,7 +169,7 @@ const isOpen = ref(false);
 const codeCopied = ref(false);
 
 onMounted(() => {
-  fetchMyCode().catch(() => {});
+  if (!myFamilyCode.value) fetchMyCode().catch(() => {});
 });
 
 async function copyFamilyCode() {
@@ -252,8 +256,7 @@ const isAdmin = computed(() => {
 });
 
 const handleImageError = () => {
-  // Image failed to load, initials will show as fallback
-  console.error("Failed to load profile photo in header");
+  logger.warn("Failed to load profile photo");
 };
 
 const handleLogout = async () => {
