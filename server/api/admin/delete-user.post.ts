@@ -146,6 +146,10 @@ export default defineEventHandler(
         { table: "schools", columns: ["user_id"] },
         { table: "notifications", columns: ["user_id"] },
         { table: "communication_templates", columns: ["user_id"] },
+        // Family tables must be removed before users (no ON DELETE CASCADE on users FK)
+        { table: "family_invitations", columns: ["invited_by"] },
+        { table: "family_members", columns: ["user_id"] },
+        { table: "family_units", columns: ["created_by_user_id"] },
         { table: "users", columns: ["id"] },
       ];
 
