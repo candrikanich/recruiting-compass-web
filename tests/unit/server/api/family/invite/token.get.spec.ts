@@ -123,4 +123,14 @@ describe("GET /api/family/invite/[token]", () => {
     const result = await handler(mockEvent);
     expect(result.prefill).toBeUndefined();
   });
+
+  it("throws 409 when invitation status is accepted", async () => {
+    (mockState.invitation as Record<string, unknown>).status = "accepted";
+    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 409 });
+  });
+
+  it("throws 409 when invitation status is declined", async () => {
+    (mockState.invitation as Record<string, unknown>).status = "declined";
+    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 409 });
+  });
 });
