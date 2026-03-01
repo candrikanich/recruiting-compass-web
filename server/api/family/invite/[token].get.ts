@@ -10,7 +10,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: "Token is required" });
   }
 
-  // Use service role (admin) to bypass RLS — this is a public endpoint
   const supabase = useSupabaseAdmin();
 
   const { data: invitation } = await supabase
@@ -31,18 +30,36 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 410, statusMessage: "This invitation has expired" });
   }
 
-  // Fetch family name and inviter name in parallel
-  const [{ data: family }, { data: inviter }] = await Promise.all([
-    supabase.from("family_units").select("family_name").eq("id", invitation.family_unit_id).single(),
+  // Fetch family unit (includes pending_player_details), inviter, and email existence in parallel
+  const [{ data: familyUnit }, { data: inviter }, { data: existingUser }] = await Promise.all([
+    supabase
+      .from("family_units")
+      .select("family_name, pending_player_details")
+      .eq("id", invitation.family_unit_id)
+      .single(),
     supabase.from("users").select("full_name").eq("id", invitation.invited_by).single(),
+    supabase.from("users").select("id").eq("email", invitation.invited_email).maybeSingle(),
   ]);
+
+  // Build prefill from parent-entered player details (only for player invitees)
+  let prefill: { firstName: string; lastName: string } | undefined;
+  const pendingDetails = (familyUnit as any)?.pending_player_details;
+  if (invitation.role === "player" && pendingDetails?.playerName) {
+    const parts = (pendingDetails.playerName as string).trim().split(/\s+/);
+    prefill = {
+      firstName: parts[0] ?? "",
+      lastName: parts.slice(1).join(" "),
+    };
+  }
 
   logger.info("Invitation token lookup", { invitationId: invitation.id });
   return {
     invitationId: invitation.id,
     email: invitation.invited_email,
     role: invitation.role,
-    familyName: family?.family_name ?? "My Family",
+    familyName: familyUnit?.family_name ?? "My Family",
     inviterName: inviter?.full_name ?? "A family member",
+    emailExists: !!existingUser,
+    ...(prefill ? { prefill } : {}),
   };
 });
