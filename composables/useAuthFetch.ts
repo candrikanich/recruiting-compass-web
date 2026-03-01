@@ -8,6 +8,7 @@ import type { FetchOptions } from "ofetch";
 import { useSupabase } from "~/composables/useSupabase";
 import { useCsrf } from "~/composables/useCsrf";
 import { useToast } from "~/composables/useToast";
+import { useUserStore } from "~/stores/user";
 import { FetchError } from "ofetch";
 
 const STATE_CHANGING_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
@@ -23,6 +24,7 @@ export const useAuthFetch = () => {
   const { addCsrfHeader } = useCsrf();
   const { showToast } = useToast();
   const supabase = useSupabase();
+  const userStore = useUserStore();
 
   const handleSessionExpired = async () => {
     showToast(
@@ -48,7 +50,9 @@ export const useAuthFetch = () => {
     } = await supabase.auth.getSession();
 
     if (!session?.access_token) {
-      await handleSessionExpired();
+      if (userStore.isAuthenticated) {
+        await handleSessionExpired();
+      }
       throw new SessionExpiredError();
     }
 
@@ -82,7 +86,9 @@ export const useAuthFetch = () => {
     } catch (err) {
       // Handle 401 responses (token expired between getSession and API call)
       if (err instanceof FetchError && err.statusCode === 401) {
-        await handleSessionExpired();
+        if (userStore.isAuthenticated) {
+          await handleSessionExpired();
+        }
         throw new SessionExpiredError();
       }
 

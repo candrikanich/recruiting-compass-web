@@ -215,6 +215,7 @@ const handleImageError = () => {
 const handleLogout = async () => {
   isOpen.value = false;
   await logout();
+  userStore.logout();
   await navigateTo("/login");
 };
 </script>
