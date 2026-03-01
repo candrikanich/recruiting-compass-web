@@ -1,5 +1,7 @@
 <template>
   <div
+    role="region"
+    aria-label="Get started"
     class="flex flex-col items-center justify-center py-16 px-4 text-center bg-white rounded-2xl border border-gray-100 shadow-sm mb-6"
   >
     <div class="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4">
@@ -14,7 +16,7 @@
     </p>
     <NuxtLink
       to="/settings/family-management"
-      class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+      class="px-6 py-2.5 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-600"
     >
       Invite Athlete
     </NuxtLink>
