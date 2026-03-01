@@ -69,6 +69,34 @@
           <p class="text-xs text-slate-500">{{ userEmail }}</p>
         </div>
 
+        <!-- Family Code -->
+        <div
+          v-if="myFamilyCode"
+          class="px-4 py-2 border-b border-slate-200"
+        >
+          <p class="text-xs text-slate-400 mb-1">Family code</p>
+          <div class="flex items-center gap-2">
+            <span
+              data-testid="family-code"
+              class="font-mono text-xs font-semibold text-slate-700 tracking-widest"
+            >{{ myFamilyCode }}</span>
+            <button
+              type="button"
+              :title="codeCopied ? 'Copied!' : 'Copy'"
+              class="text-slate-400 hover:text-slate-600 transition-colors"
+              @click.stop="copyFamilyCode"
+            >
+              <svg v-if="!codeCopied" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
         <!-- Menu Items -->
         <div class="py-1">
           <NuxtLink
@@ -125,13 +153,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from "vue";
+import { ref, computed, nextTick, onMounted } from "vue";
 import { useUserStore } from "~/stores/user";
 import { useAuth } from "~/composables/useAuth";
+import { useFamilyCode } from "~/composables/useFamilyCode";
 
 const userStore = useUserStore();
 const { logout } = useAuth();
+const { myFamilyCode, fetchMyCode } = useFamilyCode();
 const isOpen = ref(false);
+const codeCopied = ref(false);
+
+onMounted(() => {
+  fetchMyCode().catch(() => {});
+});
+
+async function copyFamilyCode() {
+  if (!myFamilyCode.value) return;
+  await navigator.clipboard.writeText(myFamilyCode.value);
+  codeCopied.value = true;
+  setTimeout(() => {
+    codeCopied.value = false;
+  }, 2000);
+}
 const triggerRef = ref<HTMLButtonElement | null>(null);
 const menuRef = ref<HTMLElement | null>(null);
 
