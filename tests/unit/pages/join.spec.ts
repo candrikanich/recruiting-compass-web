@@ -19,9 +19,18 @@ vi.mock("~/stores/user", () => ({
 }));
 
 const mockLogin = vi.fn().mockResolvedValue(undefined);
+const mockSignup = vi.fn();
 
 vi.mock("~/composables/useAuth", () => ({
-  useAuth: vi.fn(() => ({ login: mockLogin })),
+  useAuth: vi.fn(() => ({ login: mockLogin, signup: mockSignup })),
+}));
+
+vi.mock("~/composables/useSupabase", () => ({
+  useSupabase: vi.fn(() => ({
+    from: vi.fn(() => ({
+      upsert: vi.fn(() => Promise.resolve({ error: null })),
+    })),
+  })),
 }));
 
 const mockFetch = vi.fn();
@@ -35,11 +44,19 @@ const createWrapper = () =>
     global: {
       stubs: {
         NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
-        DesignSystemButton: { template: "<button><slot /></button>", props: ["loading", "to", "variant", "color"] },
+        DesignSystemButton: {
+          template: "<button><slot /></button>",
+          props: ["loading", "to", "variant", "color", "type", "fullWidth"],
+        },
         DesignSystemInput: {
           template: '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
           props: ["modelValue", "label", "type", "placeholder"],
           emits: ["update:modelValue"],
+        },
+        InviteSignupForm: {
+          template: '<form data-testid="invite-signup-form" @submit.prevent="$emit(\'submit\')"><slot /></form>',
+          props: ["email", "firstName", "lastName", "dateOfBirth", "password", "confirmPassword", "agreeToTerms", "loading", "prefill"],
+          emits: ["update:firstName", "update:lastName", "update:dateOfBirth", "update:password", "update:confirmPassword", "update:agreeToTerms", "submit"],
         },
       },
     },
@@ -52,6 +69,7 @@ describe("/join page", () => {
     mockUserStore.user.value = null;
     mockUserStore.isAuthenticated = false;
     (global.navigateTo as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    mockSignup.mockResolvedValue({ data: { user: { id: "new-u-1" } } });
   });
 
   describe("loading state", () => {
@@ -71,6 +89,7 @@ describe("/join page", () => {
         role: "player",
         familyName: "The Smiths",
         inviterName: "Jane Smith",
+        emailExists: true,
       });
     });
 
@@ -116,6 +135,7 @@ describe("/join page", () => {
           role: "player",
           familyName: "The Smiths",
           inviterName: "Jane Smith",
+          emailExists: true,
         })
         .mockResolvedValueOnce({ success: true, familyUnitId: "family-1" });
 
@@ -139,6 +159,7 @@ describe("/join page", () => {
           role: "player",
           familyName: "The Smiths",
           inviterName: "Jane Smith",
+          emailExists: true,
         })
         .mockResolvedValueOnce({ success: true, familyUnitId: "family-1" });
 
@@ -175,6 +196,84 @@ describe("/join page", () => {
       const wrapper = createWrapper();
       await flushPromises();
       expect(wrapper.find('[data-testid="error-not-found"]').exists()).toBe(true);
+    });
+  });
+
+  describe("email routing (unauthenticated)", () => {
+    it("shows login form when emailExists is true", async () => {
+      mockFetch.mockResolvedValue({
+        invitationId: "inv-123",
+        email: "player@example.com",
+        role: "player",
+        familyName: "The Smiths",
+        inviterName: "Jane Smith",
+        emailExists: true,
+      });
+      const wrapper = createWrapper();
+      await flushPromises();
+      expect(wrapper.find('[data-testid="email-input"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="invite-signup-form"]').exists()).toBe(false);
+    });
+
+    it("shows signup form when emailExists is false", async () => {
+      mockFetch.mockResolvedValue({
+        invitationId: "inv-123",
+        email: "player@example.com",
+        role: "player",
+        familyName: "The Smiths",
+        inviterName: "Jane Smith",
+        emailExists: false,
+      });
+      const wrapper = createWrapper();
+      await flushPromises();
+      expect(wrapper.find('[data-testid="invite-signup-form"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="email-input"]').exists()).toBe(false);
+    });
+
+    it("calls signup then accept then navigates to player onboarding on signup submit", async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          invitationId: "inv-123",
+          email: "player@example.com",
+          role: "player",
+          familyName: "The Smiths",
+          inviterName: "Jane Smith",
+          emailExists: false,
+        })
+        .mockResolvedValueOnce({ success: true, familyUnitId: "fam-1" });
+
+      const wrapper = createWrapper();
+      await flushPromises();
+      await wrapper.find('[data-testid="invite-signup-form"]').trigger("submit");
+      await flushPromises();
+
+      expect(mockSignup).toHaveBeenCalled();
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/family/invite/valid-token-123/accept",
+        { method: "POST" },
+      );
+      expect(global.navigateTo).toHaveBeenCalledWith("/onboarding");
+    });
+
+    it("navigates to parent onboarding when role is parent on signup submit", async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          invitationId: "inv-123",
+          email: "parent@example.com",
+          role: "parent",
+          familyName: "The Smiths",
+          inviterName: "Alex Smith",
+          emailExists: false,
+        })
+        .mockResolvedValueOnce({ success: true });
+
+      const wrapper = createWrapper();
+      await flushPromises();
+      await wrapper.find('[data-testid="invite-signup-form"]').trigger("submit");
+      await flushPromises();
+
+      expect(mockSignup).toHaveBeenCalled();
+      expect(global.navigateTo).toHaveBeenCalledWith("/onboarding/parent");
     });
   });
 });
