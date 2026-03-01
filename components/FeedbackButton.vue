@@ -215,7 +215,7 @@ const submitFeedback = async () => {
   loading.value = true;
 
   try {
-    const response = await $fetchAuth("/api/feedback", {
+    const response = await $fetchAuth<{ success: boolean }>("/api/feedback", {
       method: "POST",
       body: {
         name: form.name,

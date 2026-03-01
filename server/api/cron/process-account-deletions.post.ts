@@ -78,6 +78,7 @@ export default defineEventHandler(async (event) => {
     try {
       // 1. Delete application data
       for (const { table, column } of DATA_TABLES) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { error } = await (supabase.from(table as any) as any).delete().eq(column, user.id);
         if (error && error.code !== "42P01") {
           logger.warn(`Failed to delete from ${table}.${column}`, { userId: user.id, error });

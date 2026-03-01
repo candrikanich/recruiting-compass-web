@@ -44,6 +44,7 @@ export default defineEventHandler(async (event) => {
 
     // Build prefill from parent-entered player details (only for player invitees)
     let prefill: { firstName: string; lastName: string } | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pendingDetails = (familyUnit as any)?.pending_player_details;
     if (invitation.role === "player" && pendingDetails?.playerName) {
       const parts = (pendingDetails.playerName as string).trim().split(/\s+/);
