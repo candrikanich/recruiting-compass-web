@@ -1,31 +1,89 @@
-import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
-import ParentOnboardingBanner from '~/components/Dashboard/ParentOnboardingBanner.vue'
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { ref } from "vue";
+import { mount, flushPromises } from "@vue/test-utils";
+import ParentOnboardingBanner from "~/components/Dashboard/ParentOnboardingBanner.vue";
 
-const nuxtLinkStub = { template: '<a :href="to"><slot /></a>', props: ['to'] }
+const mockFamilies = ref<unknown[]>([]);
+const mockLoading = ref(false);
 
-describe('ParentOnboardingBanner', () => {
-  it('renders the banner with correct message', () => {
-    const wrapper = mount(ParentOnboardingBanner, {
-      global: { stubs: { NuxtLink: nuxtLinkStub } },
-    })
-    expect(wrapper.text()).toContain("Connect your athlete to get started")
-  })
+vi.mock("~/composables/useFamilyContext", () => ({
+  useFamilyContext: vi.fn(() => ({
+    parentAccessibleFamilies: mockFamilies,
+    loading: mockLoading,
+  })),
+}));
+global.useFamilyContext = vi.fn(() => ({
+  parentAccessibleFamilies: mockFamilies,
+  loading: mockLoading,
+}));
 
-  it('has a link to family management', () => {
-    const wrapper = mount(ParentOnboardingBanner, {
-      global: { stubs: { NuxtLink: nuxtLinkStub } },
-    })
-    const link = wrapper.find('a')
-    expect(link.attributes('href')).toBe('/settings/family-management')
-  })
+const mockUserId = "user-123";
+vi.mock("~/stores/user", () => ({
+  useUserStore: vi.fn(() => ({ user: { id: mockUserId } })),
+}));
+global.useUserStore = vi.fn(() => ({ user: { id: mockUserId } }));
 
-  it('has role="region" with aria-label', () => {
-    const wrapper = mount(ParentOnboardingBanner, {
-      global: { stubs: { NuxtLink: nuxtLinkStub } },
-    })
-    const root = wrapper.find('[role="region"]')
-    expect(root.exists()).toBe(true)
-    expect(root.attributes('aria-label')).toBe('Athlete onboarding')
-  })
-})
+const createWrapper = () =>
+  mount(ParentOnboardingBanner, {
+    global: {
+      stubs: { NuxtLink: { template: "<a><slot /></a>", props: ["to"] } },
+    },
+  });
+
+describe("ParentOnboardingBanner", () => {
+  beforeEach(() => {
+    mockFamilies.value = [];
+    mockLoading.value = false;
+    localStorage.clear();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("shows invite CTA when no family members", async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    expect(wrapper.find('[data-testid="invite-athlete-cta"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="connected-state"]').exists()).toBe(false);
+  });
+
+  it("shows connected state on first view after player joins", async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    mockFamilies.value = [{ id: "fam-1" }];
+    await flushPromises();
+    expect(wrapper.find('[data-testid="connected-state"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="invite-athlete-cta"]').exists()).toBe(false);
+  });
+
+  it("sets localStorage flag when showing connected state", async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    mockFamilies.value = [{ id: "fam-1" }];
+    await flushPromises();
+    expect(localStorage.getItem("family_connected_ack_user-123")).toBe("true");
+  });
+
+  it("hides entirely after connected state timeout", async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+    mockFamilies.value = [{ id: "fam-1" }];
+    await flushPromises();
+    expect(wrapper.find('[data-testid="connected-state"]').exists()).toBe(true);
+    vi.advanceTimersByTime(3000);
+    await flushPromises();
+    expect(wrapper.find('[data-testid="connected-state"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="invite-athlete-cta"]').exists()).toBe(false);
+  });
+
+  it("stays hidden on mount when already acknowledged", async () => {
+    localStorage.setItem("family_connected_ack_user-123", "true");
+    mockFamilies.value = [{ id: "fam-1" }];
+    const wrapper = createWrapper();
+    await flushPromises();
+    expect(wrapper.find('[data-testid="invite-athlete-cta"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="connected-state"]').exists()).toBe(false);
+  });
+});

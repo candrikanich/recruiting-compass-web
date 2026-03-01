@@ -27,8 +27,8 @@
         :athlete-name="activeAthleteName"
       />
 
-      <!-- Parent onboarding banner: shown until athlete connects -->
-      <ParentOnboardingBanner v-if="showParentOnboarding" />
+      <!-- Parent onboarding banner: shown until athlete connects (self-managed) -->
+      <ParentOnboardingBanner v-if="userStore.isParent" />
 
       <!-- Timeline Summary -->
       <section aria-labelledby="timeline-heading">
@@ -267,13 +267,6 @@ const activeFamily =
 
 // Destructure activeFamily refs used in template for auto-unwrapping
 const { isViewingAsParent, parentAccessibleFamilies } = activeFamily;
-
-const showParentOnboarding = computed(
-  () =>
-    userStore.isParent &&
-    !activeFamily.loading.value &&
-    parentAccessibleFamilies.value.length === 0,
-);
 
 // Local state
 const user = computed(() => userStore.user);
