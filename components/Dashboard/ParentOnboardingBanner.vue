@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, inject } from "vue";
+import { ref, computed, watch, onUnmounted, inject } from "vue";
 import { UserPlusIcon, CheckCircleIcon } from "@heroicons/vue/24/solid";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
@@ -51,10 +51,12 @@ const activeFamily =
   inject<UseActiveFamilyReturn>("activeFamily") || useFamilyContext();
 const { parentAccessibleFamilies, loading } = activeFamily;
 
-const acknowledged = ref(false);
-const showConnected = ref(false);
-
 const ackKey = () => `family_connected_ack_${userStore.user?.id}`;
+
+const acknowledged = ref(
+  typeof window !== "undefined" ? !!localStorage.getItem(ackKey()) : false,
+);
+const showConnected = ref(false);
 
 const showInviteCta = computed(
   () =>
@@ -63,18 +65,20 @@ const showInviteCta = computed(
     !acknowledged.value,
 );
 
-onMounted(() => {
-  acknowledged.value = !!localStorage.getItem(ackKey());
-});
+let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 watch(parentAccessibleFamilies, (families) => {
   if (families.length > 0 && !acknowledged.value) {
     showConnected.value = true;
     localStorage.setItem(ackKey(), "true");
     acknowledged.value = true;
-    setTimeout(() => {
+    timeoutId = setTimeout(() => {
       showConnected.value = false;
     }, 3000);
   }
+});
+
+onUnmounted(() => {
+  if (timeoutId !== null) clearTimeout(timeoutId);
 });
 </script>
