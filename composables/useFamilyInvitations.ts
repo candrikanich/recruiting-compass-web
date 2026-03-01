@@ -57,8 +57,9 @@ export function useFamilyInvitations() {
         body: { email, role },
       });
       await fetchInvitations();
-    } catch {
+    } catch (err) {
       error.value = "Failed to resend invitation";
+      throw err;
     } finally {
       loading.value = false;
     }

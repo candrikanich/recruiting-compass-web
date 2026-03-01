@@ -28,13 +28,13 @@ describe('useFamilyInvitations', () => {
       })
     })
 
-    it('sets error when the POST invite call fails', async () => {
+    it('sets error and re-throws when the POST invite call fails', async () => {
       const { resendInvitation, error } = useFamilyInvitations()
       mockFetchAuth
         .mockResolvedValueOnce(undefined) // DELETE succeeds
         .mockRejectedValueOnce(new Error('Server error')) // POST fails
 
-      await resendInvitation('inv-123', 'owen@example.com', 'player')
+      await expect(resendInvitation('inv-123', 'owen@example.com', 'player')).rejects.toThrow('Server error')
 
       expect(error.value).toBe('Failed to resend invitation')
     })

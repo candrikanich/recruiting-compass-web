@@ -232,6 +232,7 @@ import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useFamilyInvitations } from "~/composables/useFamilyInvitations";
 import { useFamilyInvite } from "~/composables/useFamilyInvite";
+import { useToast } from "~/composables/useToast";
 import { useUserStore } from "~/stores/user";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import FamilyCodeDisplay from "~/components/Family/FamilyCodeDisplay.vue";
@@ -262,6 +263,7 @@ definePageMeta({
 const userStore = useUserStore();
 const isPlayer = computed(() => userStore.user?.role === "player");
 const isParent = computed(() => userStore.user?.role === "parent");
+const { showToast } = useToast();
 
 const {
   myFamilyCode,
@@ -314,7 +316,12 @@ async function handleResendInvitation(payload: {
   email: string;
   role: "player" | "parent";
 }) {
-  await resendInvitation(payload.id, payload.email, payload.role);
+  try {
+    await resendInvitation(payload.id, payload.email, payload.role);
+    showToast(`Invite resent to ${payload.email}`, "success");
+  } catch {
+    showToast("Failed to resend invite. Please try again.", "error");
+  }
 }
 
 const codeGeneratedAt = ref<string | null>(null);

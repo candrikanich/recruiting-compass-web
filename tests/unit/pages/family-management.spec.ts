@@ -1,13 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import type { PendingInvitation } from '~/composables/useFamilyInvitations'
 
 const mockSendInvite = vi.fn()
 const mockFetchInvitations = vi.fn().mockResolvedValue(undefined)
 const mockResendInvitation = vi.fn()
 const mockRevokeInvitation = vi.fn()
 const mockFetchMyCode = vi.fn().mockResolvedValue(undefined)
+const mockShowToast = vi.fn()
+
+// useFamilyInvitations is a vi.fn() so individual tests can override its return value
+const mockUseFamilyInvitations = vi.fn()
+
+vi.mock('~/composables/useToast', () => ({
+  useToast: () => ({ showToast: mockShowToast }),
+}))
 
 vi.mock('~/composables/useFamilyInvite', () => ({
   useFamilyInvite: () => ({
@@ -18,14 +27,7 @@ vi.mock('~/composables/useFamilyInvite', () => ({
 }))
 
 vi.mock('~/composables/useFamilyInvitations', () => ({
-  useFamilyInvitations: () => ({
-    invitations: ref([]),
-    loading: ref(false),
-    error: ref(null),
-    fetchInvitations: mockFetchInvitations,
-    revokeInvitation: mockRevokeInvitation,
-    resendInvitation: mockResendInvitation,
-  }),
+  useFamilyInvitations: (...args: unknown[]) => mockUseFamilyInvitations(...args),
 }))
 
 vi.mock('~/composables/useFamilyCode', () => ({
@@ -60,6 +62,18 @@ vi.mock('~/stores/user', () => ({
 
 import FamilyManagementPage from '~/pages/settings/family-management.vue'
 
+function defaultInvitationsReturn(overrides: Partial<{ invitations: ReturnType<typeof ref> }> = {}) {
+  return {
+    invitations: ref<PendingInvitation[]>([]),
+    loading: ref(false),
+    error: ref(null),
+    fetchInvitations: mockFetchInvitations,
+    revokeInvitation: mockRevokeInvitation,
+    resendInvitation: mockResendInvitation,
+    ...overrides,
+  }
+}
+
 function mountPage(role: 'player' | 'parent' = 'player') {
   mockUserStore.user = { id: 'u1', role, email: 'test@example.com' }
   return mount(FamilyManagementPage, {
@@ -80,6 +94,7 @@ describe('family-management invite form', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    mockUseFamilyInvitations.mockReturnValue(defaultInvitationsReturn())
   })
 
   it('renders the invite form for players', () => {
@@ -121,5 +136,61 @@ describe('family-management invite form', () => {
     const wrapper = mountPage('player')
     const button = wrapper.find('[data-testid="send-invite-submit"]')
     expect((button.element as HTMLButtonElement).disabled).toBe(true)
+  })
+})
+
+describe('family-management resend invitation feedback', () => {
+  const pendingInvite: PendingInvitation = {
+    id: 'inv-1',
+    invited_email: 'parent@example.com',
+    role: 'player',
+    expires_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date().toISOString(),
+  }
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+    mockUseFamilyInvitations.mockReturnValue(
+      defaultInvitationsReturn({ invitations: ref([pendingInvite]) }),
+    )
+  })
+
+  function mountPageWithCard(role: 'player' | 'parent' = 'player') {
+    mockUserStore.user = { id: 'u1', role, email: 'test@example.com' }
+    return mount(FamilyManagementPage, {
+      global: {
+        stubs: {
+          FamilyCodeDisplay: true,
+          FamilyCodeInput: true,
+          FamilyMemberCard: true,
+          NuxtLink: true,
+          ArrowLeftIcon: true,
+          // FamilyPendingInviteCard NOT stubbed — renders real card so we can click Resend
+        },
+      },
+    })
+  }
+
+  it('shows a success toast when resend succeeds', async () => {
+    mockResendInvitation.mockResolvedValue(undefined)
+    const wrapper = mountPageWithCard()
+    await wrapper.find('[data-testid="resend-invite-button"]').trigger('click')
+    await flushPromises()
+    expect(mockShowToast).toHaveBeenCalledWith(
+      expect.stringContaining('parent@example.com'),
+      'success',
+    )
+  })
+
+  it('shows an error toast when resend fails', async () => {
+    mockResendInvitation.mockRejectedValue(new Error('network error'))
+    const wrapper = mountPageWithCard()
+    await wrapper.find('[data-testid="resend-invite-button"]').trigger('click')
+    await flushPromises()
+    expect(mockShowToast).toHaveBeenCalledWith(
+      expect.stringContaining('resend'),
+      'error',
+    )
   })
 })

@@ -1,5 +1,7 @@
 <script setup lang="ts">
-defineProps<{
+import { ref } from 'vue'
+
+const props = defineProps<{
   invitation: {
     id: string
     invited_email: string
@@ -12,6 +14,17 @@ const emit = defineEmits<{
   revoke: [id: string]
   resend: [payload: { id: string; email: string; role: 'player' | 'parent' }]
 }>()
+
+const resent = ref(false)
+
+function handleResend() {
+  if (resent.value) return
+  resent.value = true
+  emit('resend', { id: props.invitation.id, email: props.invitation.invited_email, role: props.invitation.role })
+  setTimeout(() => {
+    resent.value = false
+  }, 3000)
+}
 
 function formatExpiry(dateStr: string): string {
   const expires = new Date(dateStr)
@@ -38,10 +51,16 @@ function formatExpiry(dateStr: string): string {
     <div class="flex items-center gap-2">
       <button
         data-testid="resend-invite-button"
-        class="text-sm font-medium text-blue-600 hover:text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
-        @click="emit('resend', { id: invitation.id, email: invitation.invited_email, role: invitation.role })"
+        :disabled="resent"
+        :class="[
+          'text-sm font-medium px-3 py-1 rounded-lg transition-all',
+          resent
+            ? 'text-emerald-600 bg-emerald-50 sent-flash cursor-not-allowed'
+            : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50',
+        ]"
+        @click="handleResend"
       >
-        Resend
+        {{ resent ? 'Sent ✓' : 'Resend' }}
       </button>
       <button
         data-testid="revoke-invite-button"
@@ -53,3 +72,14 @@ function formatExpiry(dateStr: string): string {
     </div>
   </div>
 </template>
+
+<style scoped>
+@keyframes sent-flash {
+  0%   { transform: scale(0.92); }
+  60%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.sent-flash {
+  animation: sent-flash 0.25s ease-out forwards;
+}
+</style>
