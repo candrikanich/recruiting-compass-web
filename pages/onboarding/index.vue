@@ -582,7 +582,20 @@ const sendParentInvite = async () => {
   await navigateTo('/dashboard');
 };
 
+const route = useRoute();
+
 onMounted(async () => {
+  // Pre-populate from parent-entered player details passed as query params
+  if (route.query.graduationYear) {
+    onboardingData.value.graduation_year = Number(route.query.graduationYear);
+  }
+  if (route.query.sport) {
+    onboardingData.value.primary_sport = route.query.sport as string;
+  }
+  if (route.query.position) {
+    onboardingData.value.primary_position = route.query.position as string;
+  }
+
   try {
     // Load preferences so partial saves (e.g. step 2 then step 4) merge correctly
     await loadAllPreferences();

@@ -16,10 +16,12 @@ const TEST_PARENT = {
 const RUN_ID = Date.now();
 const VALID_TOKEN = `e2e-valid-${RUN_ID}`;
 const EXPIRED_TOKEN = `e2e-expired-${RUN_ID}`;
+const DECLINE_TOKEN = `e2e-decline-${RUN_ID}`;
 
 let seedReady = false;
 let validInviteId: string | null = null;
 let expiredInviteId: string | null = null;
+let declineInviteId: string | null = null;
 
 async function loginAs(page: Page, email: string, password: string) {
   await page.goto(`${BASE_URL}/login`);
@@ -83,14 +85,31 @@ test.describe("Family Invite Flow", () => {
         .single();
       expiredInviteId = expired?.id ?? null;
 
-      if (validInviteId && expiredInviteId) seedReady = true;
+      const { data: decline } = await supabase
+        .from("family_invitations")
+        .insert({
+          family_unit_id: familyUnitId,
+          invited_by: playerUser.id,
+          invited_email: "e2e-decline@example.com",
+          role: "parent",
+          token: DECLINE_TOKEN,
+          status: "pending",
+          expires_at: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+        })
+        .select("id")
+        .single();
+      declineInviteId = decline?.id ?? null;
+
+      if (validInviteId && expiredInviteId && declineInviteId) seedReady = true;
     } catch (e) {
       console.warn("⚠️  Family invite E2E seed failed:", e);
     }
   });
 
   test.afterAll(async () => {
-    const ids = [validInviteId, expiredInviteId].filter(
+    const ids = [validInviteId, expiredInviteId, declineInviteId].filter(
       Boolean,
     ) as string[];
     if (ids.length === 0) return;
@@ -173,6 +192,55 @@ test.describe("Family Invite Flow", () => {
       await expect(
         page.locator('[data-testid="login-connect-button"]'),
       ).not.toBeVisible();
+    });
+
+    test("authenticated user can accept invite and is redirected to dashboard", async ({
+      page,
+    }) => {
+      test.skip(!seedReady, "Invite seed not available");
+      await loginAs(page, TEST_PARENT.email, TEST_PARENT.password);
+      await page.goto(`${BASE_URL}/join?token=${VALID_TOKEN}`);
+      await page.waitForLoadState("networkidle");
+
+      await expect(
+        page.locator('[data-testid="connect-button"]'),
+      ).toBeVisible({ timeout: 10000 });
+
+      await page.locator('[data-testid="connect-button"]').click();
+      await page.waitForURL(/\/dashboard/, { timeout: 15000 });
+      await expect(page).toHaveURL(/\/dashboard/);
+    });
+  });
+
+  test.describe("/join page — decline flow", () => {
+    test("authenticated user can decline invite and sees declined state", async ({
+      page,
+    }) => {
+      test.skip(!seedReady, "Invite seed not available");
+      await loginAs(page, TEST_PARENT.email, TEST_PARENT.password);
+      await page.goto(`${BASE_URL}/join?token=${DECLINE_TOKEN}`);
+      await page.waitForLoadState("networkidle");
+
+      await expect(
+        page.locator('[data-testid="decline-button"]'),
+      ).toBeVisible({ timeout: 10000 });
+
+      await page.locator('[data-testid="decline-button"]').click();
+      await expect(
+        page.locator('[data-testid="invite-declined"]'),
+      ).toBeVisible({ timeout: 10000 });
+    });
+
+    test("unauthenticated user sees decline button on valid invite", async ({
+      page,
+    }) => {
+      test.skip(!seedReady, "Invite seed not available");
+      await page.goto(`${BASE_URL}/join?token=${DECLINE_TOKEN}`);
+      await page.waitForLoadState("networkidle");
+
+      await expect(
+        page.locator('[data-testid="decline-button"]'),
+      ).toBeVisible({ timeout: 10000 });
     });
   });
 

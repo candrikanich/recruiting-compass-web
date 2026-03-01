@@ -34,10 +34,13 @@ vi.mock("~/composables/useSupabase", () => ({
 }));
 
 const mockFetch = vi.fn();
+const mockCsrfPost = vi.fn().mockResolvedValue(undefined);
 global.$fetch = mockFetch;
 global.navigateTo = vi.fn();
 global.useRoute = vi.fn(() => ({ query: { token: "valid-token-123" } }));
 global.useUserStore = vi.fn(() => mockUserStore);
+global.useCsrf = vi.fn(() => ({ post: mockCsrfPost }));
+global.useAuthFetch = vi.fn(() => ({ $fetchAuth: mockFetch }));
 
 const createWrapper = () =>
   mount(JoinPage, {
@@ -54,6 +57,11 @@ const createWrapper = () =>
           emits: ["update:modelValue"],
         },
         InviteSignupForm: {
+          template: '<form data-testid="invite-signup-form" @submit.prevent="$emit(\'submit\')"><slot /></form>',
+          props: ["email", "firstName", "lastName", "dateOfBirth", "password", "confirmPassword", "agreeToTerms", "loading", "prefill"],
+          emits: ["update:firstName", "update:lastName", "update:dateOfBirth", "update:password", "update:confirmPassword", "update:agreeToTerms", "submit"],
+        },
+        AuthInviteSignupForm: {
           template: '<form data-testid="invite-signup-form" @submit.prevent="$emit(\'submit\')"><slot /></form>',
           props: ["email", "firstName", "lastName", "dateOfBirth", "password", "confirmPassword", "agreeToTerms", "loading", "prefill"],
           emits: ["update:firstName", "update:lastName", "update:dateOfBirth", "update:password", "update:confirmPassword", "update:agreeToTerms", "submit"],
@@ -199,6 +207,41 @@ describe("/join page", () => {
     });
   });
 
+  describe("decline flow", () => {
+    beforeEach(() => {
+      mockFetch.mockResolvedValue({
+        invitationId: "inv-123",
+        email: "player@example.com",
+        role: "player",
+        familyName: "The Smiths",
+        inviterName: "Jane Smith",
+        emailExists: true,
+      });
+    });
+
+    it("shows decline button when invite is valid", async () => {
+      const wrapper = createWrapper();
+      await flushPromises();
+      expect(wrapper.find('[data-testid="decline-button"]').exists()).toBe(true);
+    });
+
+    it("shows declined state after clicking decline", async () => {
+      const wrapper = createWrapper();
+      await flushPromises();
+      await wrapper.find('[data-testid="decline-button"]').trigger("click");
+      await flushPromises();
+      expect(wrapper.find('[data-testid="invite-declined"]').exists()).toBe(true);
+    });
+
+    it("shows decline button for authenticated user", async () => {
+      mockUserStore.isAuthenticated = true;
+      mockUserStore.user.value = { id: "u-1", email: "player@example.com" };
+      const wrapper = createWrapper();
+      await flushPromises();
+      expect(wrapper.find('[data-testid="decline-button"]').exists()).toBe(true);
+    });
+  });
+
   describe("email routing (unauthenticated)", () => {
     it("shows login form when emailExists is true", async () => {
       mockFetch.mockResolvedValue({
@@ -252,7 +295,32 @@ describe("/join page", () => {
         "/api/family/invite/valid-token-123/accept",
         { method: "POST" },
       );
+      // No prefill data — navigate with plain string path
       expect(global.navigateTo).toHaveBeenCalledWith("/onboarding");
+    });
+
+    it("passes grad year, sport, and position as query params when invite has prefill", async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          invitationId: "inv-123",
+          email: "player@example.com",
+          role: "player",
+          familyName: "The Smiths",
+          inviterName: "Jane Smith",
+          emailExists: false,
+          prefill: { firstName: "Owen", lastName: "Smith", graduationYear: 2027, sport: "Soccer", position: "Midfielder" },
+        })
+        .mockResolvedValueOnce({ success: true, familyUnitId: "fam-1" });
+
+      const wrapper = createWrapper();
+      await flushPromises();
+      await wrapper.find('[data-testid="invite-signup-form"]').trigger("submit");
+      await flushPromises();
+
+      expect(global.navigateTo).toHaveBeenCalledWith({
+        path: "/onboarding",
+        query: { graduationYear: "2027", sport: "Soccer", position: "Midfielder" },
+      });
     });
 
     it("navigates to parent onboarding when role is parent on signup submit", async () => {

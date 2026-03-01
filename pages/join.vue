@@ -12,6 +12,8 @@ const token = computed(() => route.query.token as string);
 const { login, signup } = useAuth();
 const userStore = useUserStore();
 const supabase = useSupabase();
+const { $fetchAuth } = useAuthFetch();
+const { post: csrfPost } = useCsrf();
 
 interface InviteDetails {
   invitationId: string;
@@ -20,7 +22,7 @@ interface InviteDetails {
   familyName: string;
   inviterName: string;
   emailExists: boolean;
-  prefill?: { firstName: string; lastName: string };
+  prefill?: { firstName: string; lastName: string; graduationYear?: number; sport?: string; position?: string };
 }
 
 const invite = ref<InviteDetails | null>(null);
@@ -68,7 +70,7 @@ async function accept() {
     if (!userStore.isAuthenticated) {
       await login(loginEmail.value, loginPassword.value);
     }
-    await $fetch(`/api/family/invite/${token.value}/accept`, { method: "POST" });
+    await $fetchAuth(`/api/family/invite/${token.value}/accept`, { method: "POST" });
     await navigateTo("/dashboard");
   } catch (err: unknown) {
     loginError.value = err instanceof Error ? err.message : "Login failed. Please check your credentials.";
@@ -99,8 +101,16 @@ async function signupAndConnect() {
     );
     if (upsertError) throw new Error("Could not save account details");
 
-    await $fetch(`/api/family/invite/${token.value}/accept`, { method: "POST" });
-    await navigateTo(invite.value.role === "parent" ? "/onboarding/parent" : "/onboarding");
+    await $fetchAuth(`/api/family/invite/${token.value}/accept`, { method: "POST" });
+    if (invite.value.role === "parent") {
+      await navigateTo("/onboarding/parent");
+    } else {
+      const query: Record<string, string> = {};
+      if (invite.value.prefill?.graduationYear) query.graduationYear = String(invite.value.prefill.graduationYear);
+      if (invite.value.prefill?.sport) query.sport = invite.value.prefill.sport;
+      if (invite.value.prefill?.position) query.position = invite.value.prefill.position;
+      await navigateTo(Object.keys(query).length ? { path: "/onboarding", query } : "/onboarding");
+    }
   } catch (err: unknown) {
     signupError.value = err instanceof Error ? err.message : "Could not create account";
     loading.value = false;
@@ -110,7 +120,7 @@ async function signupAndConnect() {
 async function decline() {
   declining.value = true;
   try {
-    await $fetch(`/api/family/invite/${token.value}/decline`, { method: "POST" });
+    await csrfPost(`/api/family/invite/${token.value}/decline`);
     fetchStatus.value = "declined";
   } finally {
     declining.value = false;
@@ -202,7 +212,7 @@ async function decline() {
             <NuxtLink to="/login" class="text-blue-600 hover:underline">log in instead</NuxtLink>.
           </p>
           <p v-if="signupError" class="text-sm text-red-600 mb-3" role="alert">{{ signupError }}</p>
-          <InviteSignupForm
+          <AuthInviteSignupForm
             :email="invite.email"
             :first-name="signupFirstName"
             :last-name="signupLastName"

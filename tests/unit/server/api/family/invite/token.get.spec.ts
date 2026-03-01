@@ -102,10 +102,10 @@ describe("GET /api/family/invite/[token]", () => {
   it("returns prefill when role is player and pending_player_details has playerName", async () => {
     mockState.familyUnit = {
       family_name: "The Smiths",
-      pending_player_details: { playerName: "Alex Johnson", graduationYear: 2026 },
+      pending_player_details: { playerName: "Alex Johnson", graduationYear: 2026, sport: "Soccer", position: "Midfielder" },
     };
     const result = await handler(mockEvent);
-    expect(result.prefill).toEqual({ firstName: "Alex", lastName: "Johnson" });
+    expect(result.prefill).toEqual({ firstName: "Alex", lastName: "Johnson", graduationYear: 2026, sport: "Soccer", position: "Midfielder" });
   });
 
   it("returns no prefill when role is parent", async () => {

@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
     ]);
 
     // Build prefill from parent-entered player details (only for player invitees)
-    let prefill: { firstName: string; lastName: string } | undefined;
+    let prefill: { firstName: string; lastName: string; graduationYear?: number; sport?: string; position?: string } | undefined;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pendingDetails = (familyUnit as any)?.pending_player_details;
     if (invitation.role === "player" && pendingDetails?.playerName) {
@@ -51,6 +51,9 @@ export default defineEventHandler(async (event) => {
       prefill = {
         firstName: parts[0] ?? "",
         lastName: parts.slice(1).join(" "),
+        ...(pendingDetails.graduationYear ? { graduationYear: pendingDetails.graduationYear } : {}),
+        ...(pendingDetails.sport ? { sport: pendingDetails.sport } : {}),
+        ...(pendingDetails.position ? { position: pendingDetails.position } : {}),
       };
     }
 
