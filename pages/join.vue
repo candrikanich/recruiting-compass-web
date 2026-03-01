@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
+import { useToast } from "~/composables/useToast";
 
 definePageMeta({ auth: false });
 
@@ -14,6 +15,7 @@ const userStore = useUserStore();
 const supabase = useSupabase();
 const { $fetchAuth } = useAuthFetch();
 const { post: csrfPost } = useCsrf();
+const { showToast } = useToast();
 
 interface InviteDetails {
   invitationId: string;
@@ -71,6 +73,7 @@ async function accept() {
       await login(loginEmail.value, loginPassword.value);
     }
     await $fetchAuth(`/api/family/invite/${token.value}/accept`, { method: "POST" });
+    showToast("You're connected!", "success");
     await navigateTo("/dashboard");
   } catch (err: unknown) {
     loginError.value = err instanceof Error ? err.message : "Login failed. Please check your credentials.";
@@ -102,6 +105,7 @@ async function signupAndConnect() {
     if (upsertError) throw new Error("Could not save account details");
 
     await $fetchAuth(`/api/family/invite/${token.value}/accept`, { method: "POST" });
+    showToast("You're connected!", "success");
     if (invite.value.role === "parent") {
       await navigateTo("/onboarding/parent");
     } else {

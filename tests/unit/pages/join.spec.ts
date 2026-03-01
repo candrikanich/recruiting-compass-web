@@ -42,6 +42,12 @@ global.useUserStore = vi.fn(() => mockUserStore);
 global.useCsrf = vi.fn(() => ({ post: mockCsrfPost }));
 global.useAuthFetch = vi.fn(() => ({ $fetchAuth: mockFetch }));
 
+const mockShowToast = vi.fn();
+vi.mock("~/composables/useToast", () => ({
+  useToast: vi.fn(() => ({ showToast: mockShowToast })),
+}));
+global.useToast = vi.fn(() => ({ showToast: mockShowToast }));
+
 const createWrapper = () =>
   mount(JoinPage, {
     global: {
@@ -78,6 +84,7 @@ describe("/join page", () => {
     mockUserStore.isAuthenticated = false;
     (global.navigateTo as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
     mockSignup.mockResolvedValue({ data: { user: { id: "new-u-1" } } });
+    mockShowToast.mockReset();
   });
 
   describe("loading state", () => {
@@ -239,6 +246,57 @@ describe("/join page", () => {
       const wrapper = createWrapper();
       await flushPromises();
       expect(wrapper.find('[data-testid="decline-button"]').exists()).toBe(true);
+    });
+  });
+
+  describe("Connection toast", () => {
+    it("shows connected toast when existing user accepts invite", async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          invitationId: "inv-1",
+          email: "parent@example.com",
+          role: "parent",
+          familyName: "Smith",
+          inviterName: "Player",
+          emailExists: true,
+        })
+        .mockResolvedValueOnce({ success: true }); // accept
+
+      mockUserStore.isAuthenticated = true;
+      mockUserStore.user.value = { id: "u1", email: "parent@example.com" };
+
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      await wrapper.find('[data-testid="connect-button"]').trigger("click");
+      await flushPromises();
+
+      expect(mockShowToast).toHaveBeenCalledWith("You're connected!", "success");
+    });
+
+    it("shows connected toast when new user signs up and accepts invite", async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          invitationId: "inv-1",
+          email: "newparent@example.com",
+          role: "parent",
+          familyName: "Jones",
+          inviterName: "Player",
+          emailExists: false,
+        })
+        .mockResolvedValueOnce({ success: true }); // accept
+
+      mockSignup.mockResolvedValueOnce({ data: { user: { id: "u2" } } });
+      mockUserStore.isAuthenticated = false;
+      mockUserStore.user.value = null;
+
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      await wrapper.find('[data-testid="invite-signup-form"]').trigger("submit");
+      await flushPromises();
+
+      expect(mockShowToast).toHaveBeenCalledWith("You're connected!", "success");
     });
   });
 
