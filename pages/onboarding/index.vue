@@ -334,6 +334,7 @@ const { setHomeLocation, setPlayerDetails, loadAllPreferences } =
   usePreferenceManager();
 const { myFamilyCode, fetchMyCode, copyCodeToClipboard } = useFamilyCode();
 const { sendInvite, loading: inviteLoading } = useFamilyInvite();
+const { showToast } = useToast();
 
 const codeCopied = ref(false);
 
@@ -578,8 +579,24 @@ const skipStep = async () => {
 
 const sendParentInvite = async () => {
   if (!parentInviteEmail.value) return;
-  await sendInvite({ email: parentInviteEmail.value, role: 'parent' });
-  await navigateTo('/dashboard');
+  loading.value = true;
+  try {
+    await sendInvite({ email: parentInviteEmail.value, role: 'parent' });
+    const assessment = {
+      hasHighlightVideo: false,
+      hasContactedCoaches: false,
+      hasTargetSchools: false,
+      hasRegisteredEligibility: false,
+      hasTakenTestScores: false,
+    };
+    await completeOnboarding(assessment);
+    showToast('Invite sent! Taking you to your dashboard.', 'success');
+    await navigateTo('/dashboard');
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to send invite';
+  } finally {
+    loading.value = false;
+  }
 };
 
 const route = useRoute();
