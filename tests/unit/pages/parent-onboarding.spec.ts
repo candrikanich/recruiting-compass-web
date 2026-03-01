@@ -84,8 +84,10 @@ describe("Parent Onboarding", () => {
       expect(wrapper.find('[data-testid="sport"]').exists()).toBe(true);
     });
 
-    it("shows input for position", () => {
+    it("shows input for position after sport is selected", async () => {
       const wrapper = createWrapper();
+      expect(wrapper.find('[data-testid="position"]').exists()).toBe(false);
+      await wrapper.find('[data-testid="sport"]').setValue("Baseball");
       expect(wrapper.find('[data-testid="position"]').exists()).toBe(true);
     });
 

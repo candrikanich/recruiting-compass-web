@@ -24,7 +24,7 @@
 
 import { ref, computed } from "vue";
 import { createClientLogger } from "~/utils/logger";
-import { useSupabase } from "~/composables/useSupabase";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 
 export type PreferenceCategory =
   | "session"
@@ -43,7 +43,7 @@ interface UserPreferencesState {
 const logger = createClientLogger("useUserPreferencesV2");
 
 export function useUserPreferencesV2(category: PreferenceCategory) {
-  const supabase = useSupabase();
+  const { $fetchAuth } = useAuthFetch();
   // State
   const preferences = ref<Record<string, unknown>>({});
   const state = ref<UserPreferencesState>({
@@ -69,32 +69,11 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
     state.value.error = null;
 
     try {
-      // Get auth token
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      if (!token) {
-        throw new Error("No authentication token available");
-      }
-
-      const res = await fetch(`/api/user/preferences/${category}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error(`Failed to load preferences: ${res.status}`);
-      }
-
-      const response = (await res.json()) as {
+      const response = await $fetchAuth<{
         data?: Record<string, unknown>;
         category?: string;
         exists?: boolean;
-      };
+      }>(`/api/user/preferences/${category}`, { method: "GET" });
 
       if (response?.data) {
         preferences.value = response.data;
@@ -132,32 +111,10 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
     state.value.error = null;
 
     try {
-      // Get auth token
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      if (!token) {
-        throw new Error("No authentication token available");
-      }
-
-      const res = await fetch(`/api/user/preferences/${category}`, {
+      const response = await $fetchAuth(`/api/user/preferences/${category}`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          data: preferences.value,
-        }),
+        body: { data: preferences.value },
       });
-
-      if (!res.ok) {
-        throw new Error(`Failed to save preferences: ${res.status}`);
-      }
-
-      const response = await res.json();
 
       state.value.lastSavedAt = new Date();
       state.value.isDirty = false;
@@ -199,26 +156,9 @@ export function useUserPreferencesV2(category: PreferenceCategory) {
     state.value.error = null;
 
     try {
-      // Get auth token
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      if (!token) {
-        throw new Error("No authentication token available");
-      }
-
-      const res = await fetch(`/api/user/preferences/${category}`, {
+      await $fetchAuth(`/api/user/preferences/${category}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
-
-      if (!res.ok) {
-        throw new Error(`Failed to delete preferences: ${res.status}`);
-      }
 
       preferences.value = {};
       state.value.isDirty = false;

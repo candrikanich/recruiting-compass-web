@@ -6,6 +6,7 @@
 
 import { ref, computed } from "vue";
 import { useSupabase } from "./useSupabase";
+import { useAuthFetch } from "./useAuthFetch";
 import { useUserStore } from "~/stores/user";
 import type { School } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
@@ -105,7 +106,8 @@ export const useSchoolLogos = () => {
       logger.info(
         `[useSchoolLogos] Fetching favicon from API for ${school.name} with domain: ${domain}`,
       );
-      const response = await $fetch("/api/schools/favicon", {
+      const { $fetchAuth } = useAuthFetch();
+      const response = await $fetchAuth<{ faviconUrl: string | null }>("/api/schools/favicon", {
         query: {
           schoolDomain: domain,
           schoolId,

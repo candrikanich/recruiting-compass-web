@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
+import { useAuthFetch } from "./useAuthFetch";
 import { createClientLogger } from "~/utils/logger";
 
 /**
@@ -183,7 +184,8 @@ export const useFamilyInvite = () => {
     loading.value = true;
     error.value = null;
     try {
-      await $fetch("/api/family/invite", { method: "POST", body: { email, role } });
+      const { $fetchAuth } = useAuthFetch();
+      await $fetchAuth("/api/family/invite", { method: "POST", body: { email, role } });
       lastInvitedEmail.value = email;
     } catch (err) {
       const message =

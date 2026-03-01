@@ -90,15 +90,18 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Log code generation (fire and forget — call .catch on builder, not awaited value)
-  (supabase.from("family_code_usage_log").insert({
-    family_unit_id: newFamily.id,
-    user_id: user.id,
-    code_used: familyCode,
-    action: "generated",
-  } as Database["public"]["Tables"]["family_code_usage_log"]["Insert"]) as unknown as Promise<unknown>).catch(
-    (err: unknown) => logger.warn("Failed to log code generation", err),
-  );
+  // Log code generation (fire and forget)
+  void supabase
+    .from("family_code_usage_log")
+    .insert({
+      family_unit_id: newFamily.id,
+      user_id: user.id,
+      code_used: familyCode,
+      action: "generated",
+    } as Database["public"]["Tables"]["family_code_usage_log"]["Insert"])
+    .then(({ error }) => {
+      if (error) logger.warn("Failed to log code generation", error);
+    });
 
   return {
     success: true,

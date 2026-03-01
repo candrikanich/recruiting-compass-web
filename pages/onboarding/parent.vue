@@ -61,14 +61,21 @@
               >
                 Graduation year
               </label>
-              <input
+              <select
                 id="graduationYear"
                 v-model="graduationYear"
                 data-testid="graduation-year"
-                type="text"
-                placeholder="2027"
                 class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              >
+                <option value="">Select graduation year</option>
+                <option
+                  v-for="year in graduationYears"
+                  :key="year"
+                  :value="String(year)"
+                >
+                  {{ year }}
+                </option>
+              </select>
             </div>
 
             <div>
@@ -78,31 +85,42 @@
               >
                 Primary sport
               </label>
-              <input
+              <select
                 id="sport"
                 v-model="sport"
                 data-testid="sport"
-                type="text"
-                placeholder="Baseball"
                 class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+                @change="position = ''"
+              >
+                <option value="">Select sport</option>
+                <option v-for="s in commonSports" :key="s" :value="s">
+                  {{ s }}
+                </option>
+              </select>
             </div>
 
-            <div>
+            <div v-if="sport">
               <label
                 for="position"
                 class="block text-sm font-medium text-slate-700 mb-1"
               >
                 Position
               </label>
-              <input
+              <select
                 id="position"
                 v-model="position"
                 data-testid="position"
-                type="text"
-                placeholder="Pitcher"
                 class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              >
+                <option value="">Select position</option>
+                <option
+                  v-for="pos in availablePositions"
+                  :key="pos"
+                  :value="pos"
+                >
+                  {{ pos }}
+                </option>
+              </select>
             </div>
           </div>
 
@@ -161,7 +179,7 @@
             class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             @click="sendPlayerInvite"
           >
-            {{ inviteLoading ? "Sending…" : "Send invite" }}
+            {{ inviteLoading ? "Sending\u2026" : "Send invite" }}
           </button>
 
           <div v-if="inviteError" class="text-red-600 text-sm">
@@ -178,10 +196,43 @@
             >
               <span
                 data-testid="family-code-display"
-                class="font-mono font-bold text-lg text-slate-900 tracking-wider"
+                class="font-mono font-bold text-lg text-slate-900 tracking-wider flex-1"
               >
-                {{ myFamilyCode ?? "Loading…" }}
+                {{ familyCodeLoading ? "Loading\u2026" : (myFamilyCode ?? "\u2014") }}
               </span>
+              <button
+                v-if="myFamilyCode && !familyCodeLoading"
+                type="button"
+                class="text-slate-400 hover:text-slate-700 transition-colors"
+                :title="codeCopied ? 'Copied!' : 'Copy code'"
+                @click="copyCode"
+              >
+                <svg
+                  v-if="!codeCopied"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path
+                    d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                  />
+                </svg>
+                <svg
+                  v-else
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-5 h-5 text-green-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </button>
             </div>
             <p class="text-xs text-slate-400 mt-1">
               Your player enters this code during their signup.
@@ -203,7 +254,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useFamilyInvite } from "~/composables/useFamilyInvite";
@@ -219,15 +270,80 @@ const graduationYear = ref("");
 const sport = ref("");
 const position = ref("");
 
+const commonSports = [
+  "Baseball",
+  "Basketball",
+  "Football",
+  "Soccer",
+  "Volleyball",
+  "Softball",
+  "Track & Field",
+  "Swimming",
+  "Cross Country",
+  "Tennis",
+  "Golf",
+  "Lacrosse",
+  "Field Hockey",
+  "Ice Hockey",
+  "Wrestling",
+  "Rowing",
+  "Water Polo",
+];
+
+const sportPositions: Record<string, string[]> = {
+  Baseball: ["Pitcher", "Catcher", "Infielder", "Outfielder", "Designated Hitter"],
+  Basketball: ["Point Guard", "Shooting Guard", "Small Forward", "Power Forward", "Center"],
+  Football: ["Quarterback", "Running Back", "Wide Receiver", "Tight End", "Offensive Line", "Linebacker", "Defensive Back", "Defensive Line"],
+  Soccer: ["Goalkeeper", "Defender", "Midfielder", "Forward"],
+  Volleyball: ["Outside Hitter", "Middle Blocker", "Setter", "Libero", "Opposite Hitter"],
+  Softball: ["Pitcher", "Catcher", "Infielder", "Outfielder", "Designated Hitter"],
+  "Track & Field": ["Sprinter", "Distance Runner", "Jumper", "Thrower"],
+  Swimming: ["Freestyle", "Backstroke", "Breaststroke", "Butterfly", "Individual Medley"],
+  "Cross Country": ["Runner"],
+  Tennis: ["Singles", "Doubles"],
+  Golf: ["Golfer"],
+  Lacrosse: ["Attackman", "Midfielder", "Defenseman", "Goalie"],
+  "Field Hockey": ["Forward", "Midfielder", "Defender", "Goalkeeper"],
+  "Ice Hockey": ["Forward", "Defenseman", "Goalie"],
+  Wrestling: ["Wrestler"],
+  Rowing: ["Rower"],
+  "Water Polo": ["Field Player", "Goalkeeper"],
+};
+
+const availablePositions = computed(() =>
+  sport.value ? (sportPositions[sport.value] ?? []) : [],
+);
+
+const graduationYears = computed(() => {
+  const currentYear = new Date().getFullYear();
+  return Array.from({ length: 5 }, (_, i) => currentYear + i);
+});
+
 // Step 2 — Invite
 const inviteEmail = ref("");
 const { $fetchAuth } = useAuthFetch();
-const { myFamilyCode, fetchMyCode } = useFamilyCode();
+const {
+  myFamilyCode,
+  fetchMyCode,
+  loading: familyCodeLoading,
+  copyCodeToClipboard,
+} = useFamilyCode();
 const {
   sendInvite,
   loading: inviteLoading,
   error: inviteError,
 } = useFamilyInvite();
+
+const codeCopied = ref(false);
+
+async function copyCode() {
+  if (!myFamilyCode.value) return;
+  await copyCodeToClipboard(myFamilyCode.value);
+  codeCopied.value = true;
+  setTimeout(() => {
+    codeCopied.value = false;
+  }, 2000);
+}
 
 onMounted(fetchMyCode);
 

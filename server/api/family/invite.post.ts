@@ -94,13 +94,16 @@ export default defineEventHandler(async (event) => {
 
     // Send invite email (non-blocking — don't fail if email fails)
     try {
-      await sendInviteEmail({
+      const emailResult = await sendInviteEmail({
         to: email,
         inviterName: inviterProfile?.full_name ?? "Your family",
         familyName: family?.family_name ?? "My Family",
         role: role as "player" | "parent",
         token,
       });
+      if (!emailResult.success) {
+        logger.warn("Failed to send invite email — invitation created but email not sent", { error: emailResult.error });
+      }
     } catch (err) {
       logger.warn("Failed to send invite email — invitation created but email not sent", err);
     }

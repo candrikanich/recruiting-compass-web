@@ -9,7 +9,7 @@
 
 import { computed } from "vue";
 import { useUserPreferencesV2 } from "./useUserPreferencesV2";
-import { useSupabase } from "./useSupabase";
+import { useAuthFetch } from "./useAuthFetch";
 import { useUserStore } from "~/stores/user";
 import { createClientLogger } from "~/utils/logger";
 import type {
@@ -33,7 +33,7 @@ const logger = createClientLogger("usePreferenceManager");
 
 export function usePreferenceManager() {
   const userStore = useUserStore();
-  const supabase = useSupabase();
+  const { $fetchAuth } = useAuthFetch();
 
   // Initialize V2 preference instances for each category
   // These handle loading/saving to the API
@@ -305,22 +305,9 @@ export function usePreferenceManager() {
 
       if (changedFields.length === 0) return; // No changes to track
 
-      // Get auth token
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      if (!token) {
-        throw new Error("No authentication token available");
-      }
-
       // Call history API to record the change
-      await $fetch("/api/user/preferences/history", {
+      await $fetchAuth("/api/user/preferences/history", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         body: {
           category,
           old_value: oldValue,
@@ -339,26 +326,21 @@ export function usePreferenceManager() {
    */
   const getPreferenceHistory = async (category: string, limit = 50) => {
     try {
-      // Get auth token
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      if (!token) {
-        throw new Error("No authentication token available");
-      }
-
-      const response = await $fetch(
-        `/api/user/preferences/${category}/history`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          query: { limit },
-        },
-      );
+      const response = await $fetchAuth<{
+        data: Array<{
+          id: string;
+          category: string;
+          old_value: unknown;
+          new_value: unknown;
+          changed_fields: string[];
+          changed_by: string;
+          created_at: string;
+        }>;
+        total: number;
+      }>(`/api/user/preferences/${category}/history`, {
+        method: "GET",
+        query: { limit },
+      });
       return response as {
         data: Array<{
           id: string;

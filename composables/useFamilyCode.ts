@@ -112,6 +112,13 @@ export const useFamilyCode = () => {
             familyName: m.family_units.family_name || "",
             codeGeneratedAt: m.family_units.code_generated_at || "",
           })) || [];
+
+        // Populate convenience refs from the first family (for components that use myFamilyCode)
+        if (parentFamilies.value.length > 0) {
+          myFamilyCode.value = parentFamilies.value[0].familyCode || null;
+          myFamilyId.value = parentFamilies.value[0].familyId || null;
+          myFamilyName.value = parentFamilies.value[0].familyName || null;
+        }
       }
     } catch (e) {
       error.value = e instanceof Error ? e.message : "Failed to fetch code";

@@ -5,6 +5,7 @@
  */
 
 import { ref, computed } from "vue";
+import { useAuthFetch } from "./useAuthFetch";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useSchools } from "./useSchools";
@@ -33,6 +34,7 @@ interface PacketGenerationResult {
 const logger = createClientLogger("useRecruitingPacket");
 
 export const useRecruitingPacket = () => {
+  const { $fetchAuth } = useAuthFetch();
   const supabase = useSupabase();
   const userStore = useUserStore();
   const { schools } = useSchools();
@@ -361,7 +363,7 @@ export const useRecruitingPacket = () => {
       );
 
       // Call API endpoint
-      await $fetch("/api/recruiting-packet/email", {
+      await $fetchAuth("/api/recruiting-packet/email", {
         method: "POST",
         body: {
           recipients: emailData.recipients,

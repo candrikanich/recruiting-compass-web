@@ -1,5 +1,6 @@
 import { computed, onMounted, ref, watch, getCurrentInstance } from "vue";
 import { useRoute } from "vue-router";
+import { useAuthFetch } from "./useAuthFetch";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { Database } from "~/types/database";
@@ -32,6 +33,7 @@ interface FamilyContext {
  */
 
 export const useActiveFamily = () => {
+  const { $fetchAuth } = useAuthFetch();
   const supabase = useSupabase();
   const userStore = useUserStore();
   const route = useRoute();
@@ -153,25 +155,15 @@ export const useActiveFamily = () => {
       } else if (isParent.value) {
         // For parents, fetch all accessible families via API
         try {
-          // Get auth session to include token
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
-
-          // Skip API call if no valid session (e.g., during logout)
-          if (!session?.access_token) {
-            logger.debug(
-              "[useActiveFamily] No valid session, skipping API call",
-            );
-            parentAccessibleFamilies.value = [];
-            return;
-          }
-
-          const response = await $fetch("/api/family/accessible", {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          });
+          const response = await $fetchAuth<{
+            families?: Array<{
+              familyUnitId: string;
+              athleteId: string;
+              athleteName: string;
+              graduationYear: number | null;
+              familyName: string;
+            }>;
+          }>("/api/family/accessible");
 
           logger.debug(
             `[useActiveFamily] API response: ${response.families?.length || 0} families`,

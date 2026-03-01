@@ -1,5 +1,6 @@
 import { ref, computed } from "vue";
 import { createClientLogger } from "~/utils/logger";
+import { useAuthFetch } from "./useAuthFetch";
 
 const logger = createClientLogger("useUserExport");
 
@@ -33,6 +34,7 @@ interface ExportState {
  * ```
  */
 export const useUserExport = () => {
+  const { $fetchAuth } = useAuthFetch();
   const state = ref<ExportState>({
     isLoading: false,
     error: null,
@@ -59,12 +61,12 @@ export const useUserExport = () => {
     state.value.success = false;
 
     try {
-      const response = await $fetch("/api/user/export", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await $fetchAuth<{
+        success: boolean;
+        downloadUrl: string;
+        expiresAt: string;
+        message: string;
+      }>("/api/user/export", { method: "POST" });
 
       if (response.success) {
         state.value.downloadUrl = response.downloadUrl;

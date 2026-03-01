@@ -179,7 +179,9 @@
 <script setup lang="ts">
 import { ref, reactive } from "vue";
 import { CheckIcon } from "@heroicons/vue/24/solid";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 
+const { $fetchAuth } = useAuthFetch();
 const isOpen = ref(false);
 const loading = ref(false);
 const error = ref("");
@@ -213,7 +215,7 @@ const submitFeedback = async () => {
   loading.value = true;
 
   try {
-    const response = await $fetch("/api/feedback", {
+    const response = await $fetchAuth("/api/feedback", {
       method: "POST",
       body: {
         name: form.name,

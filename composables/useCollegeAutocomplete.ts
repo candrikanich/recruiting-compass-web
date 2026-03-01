@@ -1,4 +1,5 @@
 import { ref } from "vue";
+import { useAuthFetch } from "./useAuthFetch";
 import type {
   CollegeSearchResult,
   CollegeScorecardResponse,
@@ -72,19 +73,19 @@ export const useCollegeAutocomplete = () => {
 
       const url = `/api/colleges/search?${params.toString()}`;
 
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        if (response.status === 429) {
+      const { $fetchAuth } = useAuthFetch();
+      let data: CollegeScorecardResponse;
+      try {
+        data = await $fetchAuth<CollegeScorecardResponse>(url);
+      } catch (err: unknown) {
+        const status = (err as { statusCode?: number })?.statusCode;
+        if (status === 429) {
           error.value = "Too many requests. Please try again in a moment.";
         } else {
-          error.value =
-            "Unable to search colleges. Please check your connection.";
+          error.value = "Unable to search colleges. Please check your connection.";
         }
         return;
       }
-
-      const data = (await response.json()) as CollegeScorecardResponse;
 
       if (!data.results || data.results.length === 0) {
         error.value = null; // No error, just no results
