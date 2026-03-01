@@ -9,6 +9,7 @@ vi.mock("@heroicons/vue/24/outline", () => ({
   UserIcon: { template: "<svg></svg>" },
   EnvelopeIcon: { template: "<svg></svg>" },
   LockClosedIcon: { template: "<svg></svg>" },
+  CalendarIcon: { template: "<svg></svg>" },
 }));
 
 vi.mock("~/components/Auth/LoginInputField.vue", () => ({
@@ -160,6 +161,7 @@ describe("Auth Form Accessibility", () => {
           firstName: "",
           lastName: "",
           email: "",
+          dateOfBirth: "",
           password: "",
           confirmPassword: "",
           agreeToTerms: false,

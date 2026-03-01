@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { resolveComponent } from "vue";
+
 export type ButtonVariant = "gradient" | "outline" | "solid" | "ghost";
 export type ButtonColor =
   | "blue"
@@ -6,7 +8,8 @@ export type ButtonColor =
   | "emerald"
   | "orange"
   | "indigo"
-  | "slate";
+  | "slate"
+  | "red";
 export type ButtonSize = "sm" | "md" | "lg";
 
 interface Props {
@@ -17,6 +20,7 @@ interface Props {
   disabled?: boolean;
   loading?: boolean;
   type?: "button" | "submit" | "reset";
+  to?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -28,6 +32,10 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   type: "button",
 });
+
+const tag = computed(() =>
+  props.to ? resolveComponent("NuxtLink") : "button",
+);
 
 const emit = defineEmits<{
   click: [event: MouseEvent];
@@ -46,6 +54,7 @@ const focusRingClasses: Record<ButtonColor, string> = {
   orange: "focus:ring-brand-orange-500",
   indigo: "focus:ring-brand-indigo-500",
   slate: "focus:ring-brand-slate-500",
+  red: "focus:ring-red-500",
 };
 
 const colorVariants: Record<ButtonColor, Record<ButtonVariant, string>> = {
@@ -97,6 +106,13 @@ const colorVariants: Record<ButtonColor, Record<ButtonVariant, string>> = {
       "border-2 border-brand-slate-600 text-brand-slate-700 hover:bg-brand-slate-100",
     ghost: "text-brand-slate-700 hover:bg-brand-slate-100",
   },
+  red: {
+    solid: "bg-red-600 text-white hover:bg-red-700",
+    gradient:
+      "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700",
+    outline: "border-2 border-red-500 text-red-600 hover:bg-red-50",
+    ghost: "text-red-600 hover:bg-red-50",
+  },
 };
 
 const buttonClasses = computed(() => {
@@ -122,10 +138,12 @@ function handleClick(event: MouseEvent) {
 </script>
 
 <template>
-  <button
-    :type="type"
+  <component
+    :is="tag"
+    :type="to ? undefined : type"
+    :to="to"
     :class="buttonClasses"
-    :disabled="disabled || loading"
+    :disabled="to ? undefined : (disabled || loading)"
     @click="handleClick"
   >
     <svg
@@ -150,5 +168,5 @@ function handleClick(event: MouseEvent) {
       />
     </svg>
     <slot />
-  </button>
+  </component>
 </template>

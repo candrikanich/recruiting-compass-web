@@ -77,6 +77,7 @@
             :first-name="firstName"
             :last-name="lastName"
             :email="email"
+            :date-of-birth="dateOfBirth"
             :password="password"
             :confirm-password="confirmPassword"
             :agree-to-terms="agreeToTerms"
@@ -86,6 +87,7 @@
             @update:first-name="firstName = $event"
             @update:last-name="lastName = $event"
             @update:email="email = $event"
+            @update:date-of-birth="dateOfBirth = $event"
             @update:password="password = $event"
             @update:confirm-password="confirmPassword = $event"
             @update:agree-to-terms="agreeToTerms = $event"
@@ -122,6 +124,7 @@ import SignupForm from "~/components/Auth/SignupForm.vue";
 const firstName = ref("");
 const lastName = ref("");
 const email = ref("");
+const dateOfBirth = ref("");
 const password = ref("");
 const confirmPassword = ref("");
 const role = ref("");
@@ -190,6 +193,22 @@ const handleSignup = async () => {
     return;
   }
 
+  // COPPA age gate: block users under 13
+  if (dateOfBirth.value) {
+    const dob = new Date(dateOfBirth.value);
+    const today = new Date();
+    const age = today.getFullYear() - dob.getFullYear() -
+      (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate()) ? 1 : 0);
+    if (age < 13) {
+      setErrors([{
+        field: "form",
+        message: "Recruiting Compass is not available for users under 13. If you're a parent, please register with your own information.",
+      }]);
+      await focusErrorSummary();
+      return;
+    }
+  }
+
   const fullName = `${firstName.value} ${lastName.value}`.trim();
 
   // Validate entire form before submission
@@ -197,6 +216,7 @@ const handleSignup = async () => {
     {
       fullName,
       email: email.value,
+      dateOfBirth: dateOfBirth.value,
       password: password.value,
       confirmPassword: confirmPassword.value,
       role: role.value,
@@ -260,6 +280,7 @@ const handleSignup = async () => {
           email: validated.email,
           full_name: validated.fullName,
           role: validated.role,
+          date_of_birth: validated.dateOfBirth,
         },
       ],
       { onConflict: "id" },

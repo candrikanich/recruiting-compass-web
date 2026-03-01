@@ -198,7 +198,7 @@ describe("GET /api/family/invite/[token]", () => {
   it("returns 409 for already-accepted token", async () => {
     state.invitation = { ...state.invitation!, status: "accepted" };
     const { default: handler } = await import("~/server/api/family/invite/[token].get");
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toThrow("already been accepted");
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toThrow("no longer valid");
   });
 });
 

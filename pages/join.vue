@@ -21,11 +21,12 @@ interface InviteDetails {
 
 const invite = ref<InviteDetails | null>(null)
 const fetchError = ref<{ statusCode: number; statusMessage?: string } | null>(null)
-const fetchStatus = ref<'pending' | 'success' | 'error'>('pending')
+const fetchStatus = ref<'pending' | 'success' | 'error' | 'declined'>('pending')
 
 const loginEmail = ref('')
 const loginPassword = ref('')
 const loading = ref(false)
+const declining = ref(false)
 
 onMounted(async () => {
   if (!token.value) {
@@ -55,6 +56,16 @@ async function accept() {
     loading.value = false
   }
 }
+
+async function decline() {
+  declining.value = true
+  try {
+    await $fetch(`/api/family/invite/${token.value}/decline`, { method: 'POST' })
+    fetchStatus.value = 'declined'
+  } finally {
+    declining.value = false
+  }
+}
 </script>
 
 <template>
@@ -62,6 +73,12 @@ async function accept() {
     <!-- Loading -->
     <div v-if="fetchStatus === 'pending'" data-testid="loading">
       Loading invite...
+    </div>
+
+    <!-- Declined -->
+    <div v-else-if="fetchStatus === 'declined'" data-testid="invite-declined">
+      <h1 class="text-xl font-semibold mb-2">Invitation declined</h1>
+      <p class="text-gray-600">You've declined this invitation. No action is needed.</p>
     </div>
 
     <!-- Error: expired -->
@@ -74,7 +91,7 @@ async function accept() {
     <div v-else-if="fetchError?.statusCode === 409" data-testid="error-accepted">
       <h1 class="text-xl font-semibold mb-2">Already connected</h1>
       <p class="text-gray-600">You're already a member of this family.</p>
-      <UButton to="/dashboard" class="mt-4">Go to dashboard</UButton>
+      <DesignSystemButton to="/dashboard" class="mt-4">Go to dashboard</DesignSystemButton>
     </div>
 
     <!-- Error: not found or other -->
@@ -103,13 +120,24 @@ async function accept() {
             (invite was sent to {{ invite.email }})
           </span>
         </p>
-        <UButton
-          data-testid="connect-button"
-          :loading="loading"
-          @click="accept"
-        >
-          Connect to {{ invite.familyName }}
-        </UButton>
+        <div class="flex gap-3">
+          <DesignSystemButton
+            data-testid="connect-button"
+            :loading="loading"
+            @click="accept"
+          >
+            Connect to {{ invite.familyName }}
+          </DesignSystemButton>
+          <DesignSystemButton
+            data-testid="decline-button"
+            variant="outline"
+            color="red"
+            :loading="declining"
+            @click="decline"
+          >
+            Decline
+          </DesignSystemButton>
+        </div>
       </div>
 
       <!-- Not authenticated: login or sign up -->
@@ -118,7 +146,7 @@ async function accept() {
           Log in to connect, or
           <NuxtLink to="/signup" class="text-blue-600 hover:underline">create an account</NuxtLink>.
         </p>
-        <UInput
+        <DesignSystemInput
           v-model="loginEmail"
           data-testid="email-input"
           label="Email"
@@ -126,20 +154,31 @@ async function accept() {
           :placeholder="invite.email"
           class="mb-3"
         />
-        <UInput
+        <DesignSystemInput
           v-model="loginPassword"
           data-testid="password-input"
           label="Password"
           type="password"
           class="mb-4"
         />
-        <UButton
-          data-testid="login-connect-button"
-          :loading="loading"
-          @click="accept"
-        >
-          Log in and connect
-        </UButton>
+        <div class="flex gap-3">
+          <DesignSystemButton
+            data-testid="login-connect-button"
+            :loading="loading"
+            @click="accept"
+          >
+            Log in and connect
+          </DesignSystemButton>
+          <DesignSystemButton
+            data-testid="decline-button"
+            variant="outline"
+            color="red"
+            :loading="declining"
+            @click="decline"
+          >
+            Decline
+          </DesignSystemButton>
+        </div>
       </div>
     </div>
   </div>

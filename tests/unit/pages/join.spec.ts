@@ -35,8 +35,8 @@ const createWrapper = () =>
     global: {
       stubs: {
         NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
-        UButton: { template: "<button><slot /></button>", props: ["loading", "to"] },
-        UInput: {
+        DesignSystemButton: { template: "<button><slot /></button>", props: ["loading", "to", "variant", "color"] },
+        DesignSystemInput: {
           template: '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
           props: ["modelValue", "label", "type", "placeholder"],
           emits: ["update:modelValue"],

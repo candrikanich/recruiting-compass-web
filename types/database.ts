@@ -2424,6 +2424,8 @@ export type Database = {
           act_score: number | null
           created_at: string | null
           current_phase: string | null
+          date_of_birth: string | null
+          deletion_requested_at: string | null
           email: string
           full_name: string | null
           gpa: number | null
@@ -2456,6 +2458,8 @@ export type Database = {
           act_score?: number | null
           created_at?: string | null
           current_phase?: string | null
+          date_of_birth?: string | null
+          deletion_requested_at?: string | null
           email: string
           full_name?: string | null
           gpa?: number | null
@@ -2488,6 +2492,8 @@ export type Database = {
           act_score?: number | null
           created_at?: string | null
           current_phase?: string | null
+          date_of_birth?: string | null
+          deletion_requested_at?: string | null
           email?: string
           full_name?: string | null
           gpa?: number | null

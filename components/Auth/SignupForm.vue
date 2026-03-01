@@ -46,6 +46,45 @@
       />
     </div>
 
+    <!-- Date of Birth -->
+    <div>
+      <label
+        for="dateOfBirth"
+        class="block text-sm font-medium text-slate-700 mb-2"
+      >
+        Date of Birth
+        <span class="text-red-600 ml-1" aria-label="required">*</span>
+      </label>
+      <div class="relative">
+        <CalendarIcon
+          class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+          aria-hidden="true"
+        />
+        <input
+          id="dateOfBirth"
+          :value="dateOfBirth"
+          type="date"
+          required
+          aria-required="true"
+          :aria-invalid="fieldErrors.dateOfBirth ? 'true' : 'false'"
+          :aria-describedby="fieldErrors.dateOfBirth ? 'dateOfBirth-error' : 'dateOfBirth-hint'"
+          :max="maxDateOfBirth"
+          :class="[
+            'w-full pl-10 pr-4 py-3 border rounded-lg transition-all focus:ring-2 focus:ring-offset-2 focus:outline-2 focus:border-transparent',
+            fieldErrors.dateOfBirth
+              ? 'border-red-600 focus:ring-red-500 focus:outline-red-600'
+              : 'border-slate-300 focus:ring-blue-500 focus:outline-blue-600',
+          ]"
+          :disabled="disabled"
+          @input="$emit('update:dateOfBirth', ($event.target as HTMLInputElement).value)"
+        />
+      </div>
+      <p id="dateOfBirth-hint" class="text-xs text-slate-500 mt-1">
+        You must be 13 or older to register.
+      </p>
+      <FieldError id="dateOfBirth-error" :error="fieldErrors.dateOfBirth" />
+    </div>
+
     <!-- Email -->
     <LoginInputField
       id="email"
@@ -226,6 +265,7 @@ import {
   UserIcon,
   EnvelopeIcon,
   LockClosedIcon,
+  CalendarIcon,
 } from "@heroicons/vue/24/outline";
 import LoginInputField from "~/components/Auth/LoginInputField.vue";
 import FieldError from "~/components/DesignSystem/FieldError.vue";
@@ -236,6 +276,7 @@ const props = defineProps<{
   firstName: string;
   lastName: string;
   email: string;
+  dateOfBirth: string;
   password: string;
   confirmPassword: string;
   agreeToTerms: boolean;
@@ -248,6 +289,7 @@ defineEmits<{
   "update:firstName": [value: string];
   "update:lastName": [value: string];
   "update:email": [value: string];
+  "update:dateOfBirth": [value: string];
   "update:password": [value: string];
   "update:confirmPassword": [value: string];
   "update:agreeToTerms": [value: boolean];
@@ -258,12 +300,16 @@ defineEmits<{
 
 const disabled = computed(() => props.loading);
 
+// Max selectable date: today (no future dates)
+const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
+
 const isFormValid = computed(() => {
   return (
     !props.hasErrors &&
     props.firstName.trim() &&
     props.lastName.trim() &&
     props.email.trim() &&
+    props.dateOfBirth.trim() &&
     props.password.trim() &&
     props.confirmPassword.trim() &&
     props.agreeToTerms

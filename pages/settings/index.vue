@@ -121,6 +121,24 @@
           />
         </div>
       </div>
+
+      <!-- Account Section -->
+      <div class="mb-8">
+        <h2
+          class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3"
+        >
+          Account
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <SettingsCard
+            to="/settings/account"
+            icon="⚙️"
+            title="Account Settings"
+            description="Manage your account and request data deletion"
+            variant="gray"
+          />
+        </div>
+      </div>
     </main>
   </div>
 </template>
