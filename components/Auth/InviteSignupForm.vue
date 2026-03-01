@@ -70,8 +70,9 @@ const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+      <label for="invite-email-display" class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
       <input
+        id="invite-email-display"
         data-testid="invite-email"
         type="email"
         :value="email"
