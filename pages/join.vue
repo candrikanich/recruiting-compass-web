@@ -117,6 +117,7 @@ async function signupAndConnect() {
     }
   } catch (err: unknown) {
     signupError.value = err instanceof Error ? err.message : "Could not create account";
+  } finally {
     loading.value = false;
   }
 }

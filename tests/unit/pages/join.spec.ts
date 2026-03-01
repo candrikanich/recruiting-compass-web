@@ -62,11 +62,6 @@ const createWrapper = () =>
           props: ["modelValue", "label", "type", "placeholder"],
           emits: ["update:modelValue"],
         },
-        InviteSignupForm: {
-          template: '<form data-testid="invite-signup-form" @submit.prevent="$emit(\'submit\')"><slot /></form>',
-          props: ["email", "firstName", "lastName", "dateOfBirth", "password", "confirmPassword", "agreeToTerms", "loading", "prefill"],
-          emits: ["update:firstName", "update:lastName", "update:dateOfBirth", "update:password", "update:confirmPassword", "update:agreeToTerms", "submit"],
-        },
         AuthInviteSignupForm: {
           template: '<form data-testid="invite-signup-form" @submit.prevent="$emit(\'submit\')"><slot /></form>',
           props: ["email", "firstName", "lastName", "dateOfBirth", "password", "confirmPassword", "agreeToTerms", "loading", "prefill"],
@@ -84,7 +79,6 @@ describe("/join page", () => {
     mockUserStore.isAuthenticated = false;
     (global.navigateTo as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
     mockSignup.mockResolvedValue({ data: { user: { id: "new-u-1" } } });
-    mockShowToast.mockReset();
   });
 
   describe("loading state", () => {
