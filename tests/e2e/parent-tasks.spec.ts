@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { authFixture } from "./fixtures/auth.fixture";
 
-// TODO: These tests reference test IDs and selectors that need to be verified against actual implementation
+// TODO: pages/tasks.vue does not yet exist in this codebase.
+// These tests are speculative and will need to be rewritten when the tasks feature ships.
+// Test selectors like [data-testid="task-item"], [data-testid="status-filter"] etc. are unverified.
 test.describe.skip("Parent Task Viewing Workflow", () => {
   test.beforeEach(async ({ page }) => {
     // Setup auth first
