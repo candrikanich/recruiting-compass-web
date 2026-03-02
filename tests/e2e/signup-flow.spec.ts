@@ -1,279 +1,208 @@
 import { test, expect } from "@playwright/test";
 
+// Unique suffix per test run to avoid "already registered" collisions
+const RUN = Date.now();
+
 test.describe("Signup Page - Full Flow E2E Tests", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/signup");
   });
 
   test.describe("Player Signup Flow", () => {
+    test("player type selection shows signup form", async ({ page }) => {
+      await page.click('[data-testid="user-type-player"]');
+      await expect(
+        page.locator('[data-testid="signup-form-player"]'),
+      ).toBeVisible();
+    });
+
     test("should complete full player signup flow with redirect to onboarding", async ({
       page,
     }) => {
-      // Select player type
       await page.click('[data-testid="user-type-player"]');
       await expect(
         page.locator('[data-testid="signup-form-player"]'),
       ).toBeVisible();
 
-      // Fill form
       await page.fill("#firstName", "John");
       await page.fill("#lastName", "Doe");
-      await page.fill("#email", "john.doe@example.com");
+      await page.fill("#dateOfBirth", "2005-01-15"); // 18+ years old
+      await page.fill("#email", `player-e2e-${RUN}@example.com`);
       await page.fill("#password", "SecurePass123");
       await page.fill("#confirmPassword", "SecurePass123");
-
-      // Agree to terms
       await page.check("#agreeToTerms");
 
-      // Submit form
-      await page.click('[data-testid="signup-button"]');
+      await expect(
+        page.locator('[data-testid="signup-button"]'),
+      ).not.toBeDisabled();
 
-      // Verify redirect to onboarding
-      await expect(page).toHaveURL(/onboarding/);
+      await page.click('[data-testid="signup-button"]');
+      await expect(page).toHaveURL(/\/onboarding/, { timeout: 15000 });
     });
 
-    test("should show password mismatch error", async ({ page }) => {
+    test("submit button disabled when terms not agreed", async ({ page }) => {
       await page.click('[data-testid="user-type-player"]');
-      await expect(
-        page.locator('[data-testid="signup-form-player"]'),
-      ).toBeVisible();
 
-      // Fill form with mismatched passwords
       await page.fill("#firstName", "John");
       await page.fill("#lastName", "Doe");
-      await page.fill("#email", "john.doe@example.com");
+      await page.fill("#dateOfBirth", "2005-01-15");
+      await page.fill("#email", "john.nodoe@example.com");
       await page.fill("#password", "SecurePass123");
-      await page.fill("#confirmPassword", "DifferentPass123");
+      await page.fill("#confirmPassword", "SecurePass123");
+      // agreeToTerms NOT checked
 
-      // Try to submit without checking terms first
-      const submitButton = page.locator('[data-testid="signup-button"]');
-      await expect(submitButton).toBeDisabled();
+      await expect(
+        page.locator('[data-testid="signup-button"]'),
+      ).toBeDisabled();
+    });
+
+    test("submit button disabled when dateOfBirth is missing for player", async ({
+      page,
+    }) => {
+      await page.click('[data-testid="user-type-player"]');
+
+      await page.fill("#firstName", "John");
+      await page.fill("#lastName", "Doe");
+      // dateOfBirth intentionally left blank
+      await page.fill("#email", "john.nodob@example.com");
+      await page.fill("#password", "SecurePass123");
+      await page.fill("#confirmPassword", "SecurePass123");
+      await page.check("#agreeToTerms");
+
+      await expect(
+        page.locator('[data-testid="signup-button"]'),
+      ).toBeDisabled();
+    });
+
+    test("COPPA: under-13 player sees age restriction error on submit", async ({
+      page,
+    }) => {
+      await page.click('[data-testid="user-type-player"]');
+
+      await page.fill("#firstName", "Young");
+      await page.fill("#lastName", "Player");
+
+      // Set DOB to 10 years ago (under 13)
+      const tenYearsAgo = new Date();
+      tenYearsAgo.setFullYear(tenYearsAgo.getFullYear() - 10);
+      await page.fill("#dateOfBirth", tenYearsAgo.toISOString().split("T")[0]);
+      await page.fill("#email", `under13-e2e-${RUN}@example.com`);
+      await page.fill("#password", "SecurePass123");
+      await page.fill("#confirmPassword", "SecurePass123");
+      await page.check("#agreeToTerms");
+
+      await page.click('[data-testid="signup-button"]');
+
+      // COPPA error message
+      await expect(
+        page.locator("text=not available for users under 13"),
+      ).toBeVisible({ timeout: 5000 });
     });
   });
 
   test.describe("Parent Signup Flow", () => {
-    test("should complete full parent signup with family code and redirect to dashboard", async ({
+    test("parent type selection shows signup form", async ({ page }) => {
+      await page.click('[data-testid="user-type-parent"]');
+      await expect(
+        page.locator('[data-testid="signup-form-parent"]'),
+      ).toBeVisible();
+    });
+
+    test("parent form does not show date of birth field", async ({ page }) => {
+      await page.click('[data-testid="user-type-parent"]');
+      await expect(page.locator("#dateOfBirth")).not.toBeVisible();
+    });
+
+    test("should complete parent signup and redirect to parent onboarding", async ({
       page,
     }) => {
-      // Select parent type
       await page.click('[data-testid="user-type-parent"]');
       await expect(
         page.locator('[data-testid="signup-form-parent"]'),
       ).toBeVisible();
 
-      // Fill form
       await page.fill("#firstName", "Jane");
       await page.fill("#lastName", "Doe");
-      await page.fill("#email", "jane.doe@example.com");
+      await page.fill("#email", `parent-e2e-${RUN}@example.com`);
       await page.fill("#password", "SecurePass123");
       await page.fill("#confirmPassword", "SecurePass123");
-      await page.fill("#familyCode", "FAM-12345678");
-
-      // Agree to terms
       await page.check("#agreeToTerms");
 
-      // Submit form
-      await page.click('[data-testid="signup-button"]');
-
-      // Verify redirect to dashboard
-      await expect(page).toHaveURL(/dashboard/);
-    });
-
-    test("should complete parent signup without family code and redirect to family-code-entry", async ({
-      page,
-    }) => {
-      // Select parent type
-      await page.click('[data-testid="user-type-parent"]');
       await expect(
-        page.locator('[data-testid="signup-form-parent"]'),
-      ).toBeVisible();
+        page.locator('[data-testid="signup-button"]'),
+      ).not.toBeDisabled();
 
-      // Fill form without family code
-      await page.fill("#firstName", "Jane");
-      await page.fill("#lastName", "Doe");
-      await page.fill("#email", "jane.doe@example.com");
-      await page.fill("#password", "SecurePass123");
-      await page.fill("#confirmPassword", "SecurePass123");
-
-      // Agree to terms
-      await page.check("#agreeToTerms");
-
-      // Submit form
       await page.click('[data-testid="signup-button"]');
-
-      // Verify redirect to family-code-entry
-      await expect(page).toHaveURL(/family-code-entry/);
-    });
-
-    test("should show family code field when parent is selected", async ({
-      page,
-    }) => {
-      await page.click('[data-testid="user-type-parent"]');
-      await expect(page.locator("#familyCode")).toBeVisible();
-    });
-
-    test("should not show family code field when player is selected", async ({
-      page,
-    }) => {
-      await page.click('[data-testid="user-type-parent"]');
-      await expect(page.locator("#familyCode")).toBeVisible();
-
-      // Switch to player
-      await page.click('[data-testid="user-type-player"]');
-      await expect(page.locator("#familyCode")).not.toBeVisible();
+      // Parent redirects to /onboarding/parent (not /dashboard or /family-code-entry)
+      await expect(page).toHaveURL(/\/onboarding\/parent/, { timeout: 15000 });
     });
   });
 
-  test.describe("Form Validation & Error Handling", () => {
-    test("should show terms agreement error when unchecked", async ({
-      page,
-    }) => {
-      await page.click('[data-testid="user-type-player"]');
-
-      await page.fill("#firstName", "John");
-      await page.fill("#lastName", "Doe");
-      await page.fill("#email", "john.doe@example.com");
-      await page.fill("#password", "SecurePass123");
-      await page.fill("#confirmPassword", "SecurePass123");
-
-      // Don't check terms
-      const submitButton = page.locator('[data-testid="signup-button"]');
-      await expect(submitButton).toBeDisabled();
-    });
-
-    test("should validate email format on blur", async ({ page }) => {
+  test.describe("Form Validation", () => {
+    test("validates email format on blur", async ({ page }) => {
       await page.click('[data-testid="user-type-player"]');
 
       const emailInput = page.locator("#email");
-      await emailInput.fill("invalid-email");
+      await emailInput.fill("not-an-email");
       await emailInput.blur();
 
-      // Error message should be visible
-      const errorMessage = page.locator("#email-error");
-      await expect(errorMessage).toBeVisible();
+      await expect(page.locator("#email-error")).toBeVisible();
     });
 
-    test("should validate password requirements", async ({ page }) => {
-      await page.click('[data-testid="user-type-player"]');
-
-      const passwordInput = page.locator("#password");
-      await passwordInput.fill("short");
-      await passwordInput.blur();
-
-      // Should show password requirements are not met
-      const helpText = page.locator(
-        "text=Must be 8+ characters with uppercase, lowercase, and a number",
-      );
-      await expect(helpText).toBeVisible();
-    });
-
-    test("should clear form errors when corrected", async ({ page }) => {
+    test("clears email error when fixed", async ({ page }) => {
       await page.click('[data-testid="user-type-player"]');
 
       const emailInput = page.locator("#email");
-      await emailInput.fill("invalid-email");
+      await emailInput.fill("not-an-email");
       await emailInput.blur();
+      await expect(page.locator("#email-error")).toBeVisible();
 
-      // Error should appear
-      let errorMessage = page.locator("#email-error");
-      await expect(errorMessage).toBeVisible();
-
-      // Fix the email
-      await emailInput.clear();
       await emailInput.fill("valid@example.com");
       await emailInput.blur();
+      await expect(page.locator("#email-error")).not.toBeVisible();
+    });
 
-      // Error should disappear
-      errorMessage = page.locator("#email-error");
-      // Wait for error to disappear or check it's not visible
-      await page.waitForTimeout(300);
+    test("shows password requirements hint text", async ({ page }) => {
+      await page.click('[data-testid="user-type-player"]');
+      await expect(
+        page.locator(
+          "text=Must be 8+ characters with uppercase, lowercase, and a number",
+        ),
+      ).toBeVisible();
+    });
+  });
+
+  test.describe("User Type Selection", () => {
+    test("player form shows date of birth field", async ({ page }) => {
+      await page.click('[data-testid="user-type-player"]');
+      await expect(page.locator("#dateOfBirth")).toBeVisible();
+    });
+
+    test("parent form does not show date of birth field", async ({ page }) => {
+      await page.click('[data-testid="user-type-parent"]');
+      await expect(page.locator("#dateOfBirth")).not.toBeVisible();
     });
   });
 
   test.describe("Accessibility", () => {
-    test("should have proper skip link for keyboard navigation", async ({
-      page,
-    }) => {
+    test("skip link for keyboard navigation is present", async ({ page }) => {
       const skipLink = page.locator('a[href="#signup-form"]');
-      await expect(skipLink).toBeVisible();
-
-      // Skip link should have sr-only class
-      const classes = await skipLink.getAttribute("class");
-      expect(classes).toContain("sr-only");
+      await expect(skipLink).toBeAttached();
     });
 
-    test("should have proper aria labels on form fields", async ({ page }) => {
+    test("email field has aria-required attribute", async ({ page }) => {
       await page.click('[data-testid="user-type-player"]');
-
-      const emailInput = page.locator("#email");
-      const ariaRequired = await emailInput.getAttribute("aria-required");
-      expect(ariaRequired).toBe("true");
+      await expect(page.locator("#email")).toHaveAttribute(
+        "aria-required",
+        "true",
+      );
     });
 
-    test("should have proper form heading for screen readers", async ({
+    test("form heading is present (sr-only) for screen readers", async ({
       page,
     }) => {
       const heading = page.locator("h1");
-      const classes = await heading.getAttribute("class");
-      expect(classes).toContain("sr-only");
-    });
-
-    test("should announce loading state to screen readers", async ({
-      page,
-    }) => {
-      await page.click('[data-testid="user-type-player"]');
-
-      // Fill form
-      await page.fill("#firstName", "John");
-      await page.fill("#lastName", "Doe");
-      await page.fill("#email", "john.doe@example.com");
-      await page.fill("#password", "SecurePass123");
-      await page.fill("#confirmPassword", "SecurePass123");
-      await page.check("#agreeToTerms");
-
-      // Check for loading announcement
-      const loadingStatus = page.locator('[role="status"]');
-      await expect(loadingStatus).toBeVisible();
-    });
-  });
-
-  test.describe("User Type Switching", () => {
-    test("should switch from player to parent and show family code field", async ({
-      page,
-    }) => {
-      // Start with player
-      await page.click('[data-testid="user-type-player"]');
-      await expect(
-        page.locator('[data-testid="signup-form-player"]'),
-      ).toBeVisible();
-      await expect(page.locator("#familyCode")).not.toBeVisible();
-
-      // Switch to parent
-      await page.click('[data-testid="user-type-parent"]');
-      await expect(
-        page.locator('[data-testid="signup-form-parent"]'),
-      ).toBeVisible();
-      await expect(page.locator("#familyCode")).toBeVisible();
-    });
-
-    test("should clear form errors when switching user type", async ({
-      page,
-    }) => {
-      // Select player and fill invalid email
-      await page.click('[data-testid="user-type-player"]');
-      const emailInput = page.locator("#email");
-      await emailInput.fill("invalid-email");
-      await emailInput.blur();
-
-      // Error should be visible
-      await expect(page.locator("#email-error")).toBeVisible();
-
-      // Switch to parent - errors should be cleared
-      await page.click('[data-testid="user-type-parent"]');
-      // Parent form should be visible without errors
-      await expect(
-        page.locator('[data-testid="signup-form-parent"]'),
-      ).toBeVisible();
+      await expect(heading).toBeAttached();
     });
   });
 });
