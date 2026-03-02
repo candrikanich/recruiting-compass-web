@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to timeline (assumes user is authenticated)
-    await page.goto("http://localhost:3003/timeline");
+    await page.goto("/timeline");
     await page.waitForLoadState("networkidle");
   });
 
@@ -186,7 +186,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
   test("Scenario 9: Timeline loads in under 1 second", async ({ page }) => {
     const startTime = Date.now();
 
-    await page.goto("http://localhost:3003/timeline");
+    await page.goto("/timeline");
 
     // Wait for main content (phase cards) to load
     await page.waitForSelector('[class*="space-y-6"]', { timeout: 5000 });

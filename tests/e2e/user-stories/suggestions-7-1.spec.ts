@@ -1,11 +1,9 @@
 import { test, expect } from "@playwright/test";
 
-const BASE_URL = "http://localhost:3003";
-
 test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to app
-    await page.goto(`${BASE_URL}`);
+    await page.goto("/");
 
     // Check if already logged in
     const loginForm = await page.$('input[name="email"]').catch(() => null);
@@ -19,7 +17,7 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
     page,
   }) => {
     // Given I log into my account
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto("/dashboard");
 
     // When I view the dashboard
     const suggestionsSection = await page
@@ -56,7 +54,7 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
   }) => {
     // This test would require test data setup with grade_level = 10
     // Given my athlete is a sophomore
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto("/dashboard");
 
     // When I view suggestions
     const suggestionCards = await page.locator(
@@ -104,7 +102,7 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
   }) => {
     // This test would require test data setup with grade_level = 11
     // Given my athlete is a junior
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto("/dashboard");
 
     // When I view suggestions
     const suggestionCards = await page.locator(
@@ -146,7 +144,7 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
 
   test("Scenario 4: Suggestion links to action", async ({ page }) => {
     // Given I see a suggestion with an action button
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto("/dashboard");
 
     const suggestionCard = await page
       .locator('[data-testid="suggestion-card"]')
@@ -176,7 +174,7 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
 
   test("Acceptance: Dismiss functionality works", async ({ page }) => {
     // Given there are suggestions on the dashboard
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto("/dashboard");
 
     const initialCards = await page
       .locator('[data-testid="suggestion-card"]')
@@ -204,7 +202,7 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
 
   test("Acceptance: Show more functionality works", async ({ page }) => {
     // Given there are more than 3 pending suggestions
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto("/dashboard");
 
     // Check if "Show more" button is visible
     const showMoreButton = await page.locator('text="Show more"').isVisible();
@@ -230,7 +228,7 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
 
   test("Acceptance: Learn More button opens help modal", async ({ page }) => {
     // Given I see a suggestion
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto("/dashboard");
 
     const suggestionCard = await page
       .locator('[data-testid="suggestion-card"]')
@@ -259,7 +257,7 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
 
   test("Dashboard displays urgency-based styling", async ({ page }) => {
     // Given suggestions are on the dashboard
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto("/dashboard");
 
     const suggestionCards = await page.locator(
       '[data-testid="suggestion-card"]',
@@ -288,7 +286,7 @@ test.describe("User Story 7.1: Parent Receives Actionable Suggestions", () => {
     await page.setViewportSize({ width: 375, height: 667 });
 
     // Given I'm viewing on mobile
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto("/dashboard");
 
     // When I view suggestions
     const suggestionCards = await page.locator(

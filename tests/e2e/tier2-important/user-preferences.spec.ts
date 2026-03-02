@@ -5,8 +5,6 @@ import { test, expect } from "@playwright/test";
  * Validates server-side preference storage functionality
  */
 
-const baseURL = "http://localhost:3003";
-
 test.describe("User Preferences API - Phase 2", () => {
   // These tests validate that the preferences API is properly set up
   // Full integration tests (with auth) should run after migration is complete
@@ -19,7 +17,7 @@ test.describe("User Preferences API - Phase 2", () => {
 
     for (const category of categories) {
       const response = await request.get(
-        `${baseURL}/api/user/preferences/${category}`,
+        `/api/user/preferences/${category}`,
         {
           headers: {
             authorization: "Bearer invalid-token",
@@ -35,7 +33,7 @@ test.describe("User Preferences API - Phase 2", () => {
 
   test("should reject POST without auth", async ({ request }) => {
     const response = await request.post(
-      `${baseURL}/api/user/preferences/filters`,
+      `/api/user/preferences/filters`,
       {
         data: {
           data: {
@@ -54,7 +52,7 @@ test.describe("User Preferences API - Phase 2", () => {
 
   test("should reject DELETE without auth", async ({ request }) => {
     const response = await request.delete(
-      `${baseURL}/api/user/preferences/session`,
+      `/api/user/preferences/session`,
       {
         headers: {
           authorization: "Bearer invalid-token",

@@ -8,7 +8,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
 
   test.beforeEach(async ({ page }) => {
     // Login first
-    await page.goto("http://localhost:3003");
+    await page.goto("/");
     // Assuming auth is required, wait for redirect or check if logged in
     // Adjust based on actual auth flow
     await page.waitForLoadState("networkidle");
@@ -19,7 +19,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
   }) => {
     // Navigate to a school with interactions
     await page.goto(
-      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+      `/schools/${testSchoolId}/interactions`,
     );
 
     // Wait for the interactions to load
@@ -56,7 +56,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
   test("Scenario 2: Parent views coach-specific timeline", async ({ page }) => {
     // Navigate to coach communications page
     await page.goto(
-      `http://localhost:3003/coaches/${testCoachId}/communications`,
+      `/coaches/${testCoachId}/communications`,
     );
 
     // Wait for page to load
@@ -86,7 +86,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
   }) => {
     // Navigate to school interactions page
     await page.goto(
-      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+      `/schools/${testSchoolId}/interactions`,
     );
 
     // Wait for metrics to load
@@ -139,7 +139,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
   }) => {
     // Navigate to school interactions page
     await page.goto(
-      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+      `/schools/${testSchoolId}/interactions`,
     );
 
     // Wait for filters to be visible
@@ -185,7 +185,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
   }) => {
     // Navigate to school interactions page
     await page.goto(
-      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+      `/schools/${testSchoolId}/interactions`,
     );
 
     // Wait for filters
@@ -215,7 +215,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
   }) => {
     // Navigate to school interactions page
     await page.goto(
-      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+      `/schools/${testSchoolId}/interactions`,
     );
 
     // Wait for interactions
@@ -249,7 +249,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
 
     // Navigate to school interactions page
     await page.goto(
-      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+      `/schools/${testSchoolId}/interactions`,
     );
 
     // Wait for the timeline section to be visible
@@ -268,7 +268,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
   }) => {
     // Navigate to school interactions page
     await page.goto(
-      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+      `/schools/${testSchoolId}/interactions`,
     );
 
     // Wait for filters
@@ -309,7 +309,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
   }) => {
     // Navigate to coach communications page
     await page.goto(
-      `http://localhost:3003/coaches/${testCoachId}/communications`,
+      `/coaches/${testCoachId}/communications`,
     );
 
     await page.waitForLoadState("networkidle");
@@ -351,7 +351,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
   }) => {
     // Navigate to school interactions page
     await page.goto(
-      `http://localhost:3003/schools/${testSchoolId}/interactions`,
+      `/schools/${testSchoolId}/interactions`,
     );
 
     // Wait for filters
