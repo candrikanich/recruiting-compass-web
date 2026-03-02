@@ -15,11 +15,15 @@ const RUN_ID = Date.now();
 const VALID_TOKEN = `e2e-valid-${RUN_ID}`;
 const EXPIRED_TOKEN = `e2e-expired-${RUN_ID}`;
 const DECLINE_TOKEN = `e2e-decline-${RUN_ID}`;
+const LOGIN_CONNECT_TOKEN = `e2e-login-connect-${RUN_ID}`;
+const REVOKE_TOKEN = `e2e-revoke-${RUN_ID}`;
 
 let seedReady = false;
 let validInviteId: string | null = null;
 let expiredInviteId: string | null = null;
 let declineInviteId: string | null = null;
+let loginConnectInviteId: string | null = null;
+let revokeInviteId: string | null = null;
 
 async function loginAs(page: Page, email: string, password: string) {
   await page.goto("/login");
@@ -100,16 +104,61 @@ test.describe("Family Invite Flow", () => {
         .single();
       declineInviteId = decline?.id ?? null;
 
-      if (validInviteId && expiredInviteId && declineInviteId) seedReady = true;
+      const { data: loginConnect } = await supabase
+        .from("family_invitations")
+        .insert({
+          family_unit_id: familyUnitId,
+          invited_by: playerUser.id,
+          invited_email: TEST_PARENT.email, // existing user — triggers login form path
+          role: "parent",
+          token: LOGIN_CONNECT_TOKEN,
+          status: "pending",
+          expires_at: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+        })
+        .select("id")
+        .single();
+      loginConnectInviteId = loginConnect?.id ?? null;
+
+      const { data: revoke } = await supabase
+        .from("family_invitations")
+        .insert({
+          family_unit_id: familyUnitId,
+          invited_by: playerUser.id,
+          invited_email: "e2e-revoke@example.com",
+          role: "parent",
+          token: REVOKE_TOKEN,
+          status: "pending",
+          expires_at: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+        })
+        .select("id")
+        .single();
+      revokeInviteId = revoke?.id ?? null;
+
+      if (
+        validInviteId &&
+        expiredInviteId &&
+        declineInviteId &&
+        loginConnectInviteId &&
+        revokeInviteId
+      )
+        seedReady = true;
     } catch (e) {
       console.warn("⚠️  Family invite E2E seed failed:", e);
     }
   });
 
   test.afterAll(async () => {
-    const ids = [validInviteId, expiredInviteId, declineInviteId].filter(
-      Boolean,
-    ) as string[];
+    const ids = [
+      validInviteId,
+      expiredInviteId,
+      declineInviteId,
+      loginConnectInviteId,
+      revokeInviteId,
+    ].filter(Boolean) as string[];
     if (ids.length === 0) return;
     try {
       const supabase = getSupabaseAdmin();
@@ -239,6 +288,67 @@ test.describe("Family Invite Flow", () => {
       await expect(
         page.locator('[data-testid="decline-button"]'),
       ).toBeVisible({ timeout: 10000 });
+    });
+  });
+
+  test.describe("/join page — unauthenticated login+connect", () => {
+    test("existing user can fill password and click login-connect to accept invite", async ({
+      page,
+    }) => {
+      test.skip(!seedReady, "Invite seed not available");
+      // Visit join page unauthenticated — invite email matches TEST_PARENT (existing user)
+      await page.goto(`/join?token=${LOGIN_CONNECT_TOKEN}`);
+      await page.waitForLoadState("networkidle");
+
+      // Should show login form (emailExists=true for TEST_PARENT)
+      await expect(
+        page.locator('[data-testid="login-connect-button"]'),
+      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('[data-testid="email-input"]')).toBeVisible();
+      await expect(page.locator('[data-testid="password-input"]')).toBeVisible();
+
+      // Fill password (email is pre-filled from invite)
+      await page
+        .locator('[data-testid="password-input"]')
+        .fill(TEST_PARENT.password);
+
+      // Click "Log in and connect"
+      await page.locator('[data-testid="login-connect-button"]').click();
+
+      // Should redirect to dashboard after accepting invite
+      await page.waitForURL(/\/dashboard/, { timeout: 20000 });
+      await expect(page).toHaveURL(/\/dashboard/);
+    });
+  });
+
+  test.describe("family management — invite revocation", () => {
+    test("player can click revoke and pending invite disappears", async ({
+      page,
+    }) => {
+      test.skip(!seedReady, "Invite seed not available");
+      await loginAs(page, TEST_PLAYER.email, TEST_PLAYER.password);
+      await page.goto("/settings/family-management");
+      await page.waitForLoadState("networkidle");
+
+      // Should have at least one pending invite (the REVOKE_TOKEN one)
+      await expect(
+        page.locator('[data-testid="pending-invite-card"]').first(),
+      ).toBeVisible({ timeout: 10000 });
+
+      const countBefore = await page
+        .locator('[data-testid="pending-invite-card"]')
+        .count();
+
+      // Click the first revoke button
+      await page.locator('[data-testid="revoke-invite-button"]').first().click();
+
+      // Wait for the list to update
+      await page.waitForTimeout(1500);
+
+      const countAfter = await page
+        .locator('[data-testid="pending-invite-card"]')
+        .count();
+      expect(countAfter).toBeLessThan(countBefore);
     });
   });
 
