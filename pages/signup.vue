@@ -273,18 +273,14 @@ const handleSignup = async () => {
 
     // Create or update user profile in public.users table
     // Use upsert to handle idempotent signup (retry safety)
-    const upsertResponse = await (supabase.from("users") as any).upsert(
-      [
-        {
-          id: userId,
-          email: validated.email,
-          full_name: validated.fullName,
-          role: validated.role,
-          date_of_birth: validated.dateOfBirth,
-        },
-      ],
-      { onConflict: "id" },
-    );
+    const userRecord: Record<string, unknown> = {
+      id: userId,
+      email: validated.email,
+      full_name: validated.fullName,
+      role: validated.role,
+    };
+    if (validated.dateOfBirth) userRecord.date_of_birth = validated.dateOfBirth;
+    const upsertResponse = await (supabase.from("users") as any).upsert([userRecord], { onConflict: "id" });
     const { error: upsertError } = upsertResponse as { error: any };
 
     if (upsertError) {

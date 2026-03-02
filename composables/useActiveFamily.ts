@@ -45,8 +45,8 @@ export const useActiveFamily = () => {
   const parentAccessibleFamilies = ref<
     Array<{
       familyUnitId: string;
-      athleteId: string;
-      athleteName: string;
+      athleteId: string | null;
+      athleteName: string | null;
       graduationYear: number | null;
       familyName: string;
     }>
@@ -63,12 +63,17 @@ export const useActiveFamily = () => {
       return playerFamilyId.value;
     }
 
-    // For parents, find family of currently viewed athlete
-    if (isParent.value && currentAthleteId.value) {
-      const family = parentAccessibleFamilies.value.find(
-        (f) => f.athleteId === currentAthleteId.value,
-      );
-      return family?.familyUnitId || null;
+    if (isParent.value) {
+      if (currentAthleteId.value) {
+        // Find the family for the currently selected athlete
+        const family = parentAccessibleFamilies.value.find(
+          (f) => f.athleteId === currentAthleteId.value,
+        );
+        return family?.familyUnitId || null;
+      }
+      // No athlete selected yet — fall back to first available family unit
+      // (parent who hasn't connected a player can still use their family)
+      return parentAccessibleFamilies.value[0]?.familyUnitId || null;
     }
 
     return null;
@@ -81,7 +86,8 @@ export const useActiveFamily = () => {
     }
 
     if (isParent.value) {
-      return currentAthleteId.value;
+      // Return selected athlete, or parent's own ID if no player has joined yet
+      return currentAthleteId.value ?? userStore.user?.id ?? null;
     }
 
     return null;
@@ -101,12 +107,12 @@ export const useActiveFamily = () => {
     if (parentAccessibleFamilies.value.length === 0) return null;
 
     const athletesWithYear = parentAccessibleFamilies.value.filter(
-      (f) => f.graduationYear !== null,
+      (f) => f.athleteId !== null && f.graduationYear !== null,
     );
 
     if (athletesWithYear.length === 0) {
-      // All null years, return first
-      return parentAccessibleFamilies.value[0].athleteId;
+      // All null years, return first athlete (if any)
+      return parentAccessibleFamilies.value.find((f) => f.athleteId !== null)?.athleteId ?? null;
     }
 
     // Sort by graduation year ascending (earliest first)
@@ -252,7 +258,7 @@ export const useActiveFamily = () => {
     if (!isParent.value) return;
 
     if (
-      !parentAccessibleFamilies.value.some((f) => f.athleteId === athleteId)
+      !parentAccessibleFamilies.value.some((f) => f.athleteId !== null && f.athleteId === athleteId)
     ) {
       error.value = "No access to this athlete";
       return;
@@ -275,10 +281,12 @@ export const useActiveFamily = () => {
     await fetchFamilyMembers();
   };
 
-  // Get accessible athletes (for parents)
+  // Get accessible athletes (for parents) — only returns families with a connected athlete
   const getAccessibleAthletes = () => {
     if (!isParent.value) return [];
-    return parentAccessibleFamilies.value;
+    return parentAccessibleFamilies.value.filter(
+      (f): f is typeof f & { athleteId: string; athleteName: string } => f.athleteId !== null,
+    );
   };
 
   // Get display context (for UI)

@@ -4,6 +4,7 @@ import { computed } from "vue";
 const props = withDefaults(
   defineProps<{
     email: string;
+    role?: "player" | "parent";
     firstName?: string;
     lastName?: string;
     dateOfBirth?: string;
@@ -52,9 +53,10 @@ const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
       />
     </div>
 
-    <div>
+    <!-- Date of Birth (players only — COPPA compliance) -->
+    <div v-if="role === 'player'">
       <label for="invite-dob" class="block text-sm font-medium text-slate-700 mb-1.5">
-        Date of Birth <span class="text-red-600">*</span>
+        Player Date of Birth <span class="text-red-600">*</span>
       </label>
       <input
         id="invite-dob"
@@ -67,6 +69,7 @@ const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
         class="w-full px-3 py-2 text-base border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
         @input="emit('update:dateOfBirth', ($event.target as HTMLInputElement).value)"
       />
+      <p class="mt-1 text-xs text-slate-500">Players must be 13 or older to register.</p>
     </div>
 
     <div>

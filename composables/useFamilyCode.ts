@@ -135,10 +135,6 @@ export const useFamilyCode = () => {
    * Creates a new family (players only) - calls API endpoint with auth
    */
   const createFamily = async () => {
-    if (currentUserRole.value !== "player") {
-      error.value = "Only players can create families";
-      return false;
-    }
 
     loading.value = true;
     error.value = null;

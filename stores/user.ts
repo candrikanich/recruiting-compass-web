@@ -95,11 +95,9 @@ export const useUserStore = defineStore("user", {
             .from("users")
             .select("*")
             .eq("id", session.user.id)
-            .single();
+            .maybeSingle();
 
-          // Handle fetch errors (but not "not found")
-          if (fetchError && fetchError.code !== "PGRST116") {
-            // PGRST116 = "not found", which is expected if profile doesn't exist
+          if (fetchError) {
             logger.error(
               "[initializeUser] Unexpected fetch error:",
               fetchError,
@@ -167,15 +165,14 @@ export const useUserStore = defineStore("user", {
           .from("users")
           .select("id")
           .eq("id", userId)
-          .single();
+          .maybeSingle();
 
         if (existing) {
           logger.debug("[createUserProfile] Profile already exists, skipping");
           return true; // Already exists, treat as success
         }
 
-        // Check for unexpected errors (not "not found")
-        if (checkError && checkError.code !== "PGRST116") {
+        if (checkError) {
           throw new Error(
             `[createUserProfile] Check failed: ${checkError.message}`,
           );
@@ -204,14 +201,15 @@ export const useUserStore = defineStore("user", {
         const { error, data: _data } = response;
 
         if (error) {
-          // Check if it's a duplicate key error (email or id already exists)
-          if (error.code === "23505") {
+          // Duplicate key — profile already exists despite maybeSingle returning null (race or RLS)
+          if (error.code === "23505" || (error as { status?: number }).status === 409) {
             logger.debug(
               "[createUserProfile] Profile exists (duplicate key), treating as success",
             );
-            return true; // It exists, treat as success
+            return true;
           }
-          throw error;
+          logger.error("[createUserProfile] Insert failed:", { code: error.code, message: error.message });
+          throw new Error(error.message ?? "Insert failed");
         }
 
         logger.debug("[createUserProfile] Profile created successfully");

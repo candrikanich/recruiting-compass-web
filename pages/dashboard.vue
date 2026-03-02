@@ -283,9 +283,8 @@ const targetUserId = computed(() => {
 // Get active athlete name for parent context banner
 const activeAthleteName = computed(() => {
   return activeFamily.parentAccessibleFamilies.value.find(
-    (f: { athleteId: string }) =>
-      f.athleteId === activeFamily.activeAthleteId.value,
-  )?.athleteName;
+    (f) => f.athleteId !== null && f.athleteId === activeFamily.activeAthleteId.value,
+  )?.athleteName ?? undefined;
 });
 
 // User first name for greeting

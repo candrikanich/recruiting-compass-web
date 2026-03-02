@@ -32,7 +32,7 @@
             </h2>
             <p class="text-slate-500 text-sm">
               We'll pre-fill their profile so they can hit the ground running.
-              All fields are optional.
+              Name, sport, and position are optional.
             </p>
           </div>
 
@@ -52,6 +52,29 @@
                 placeholder="First Last"
                 class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+            </div>
+
+            <!-- Player DOB — required for COPPA age gate -->
+            <div>
+              <label
+                for="playerDob"
+                class="block text-sm font-medium text-slate-700 mb-1"
+              >
+                Player's date of birth <span class="text-red-600">*</span>
+              </label>
+              <input
+                id="playerDob"
+                v-model="playerDob"
+                data-testid="player-dob"
+                type="date"
+                :max="today"
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                :class="playerTooYoung ? 'border-red-400' : 'border-slate-300'"
+              />
+              <p class="text-xs text-slate-500 mt-1">Players must be 13 or older to create an account.</p>
+              <p v-if="playerTooYoung" data-testid="age-error" class="text-sm text-red-600 mt-1">
+                Your player must be 13 or older to use Recruiting Compass. Players under 13 cannot create an account.
+              </p>
             </div>
 
             <div>
@@ -124,19 +147,12 @@
             </div>
           </div>
 
-          <div class="flex gap-3 pt-2">
-            <button
-              data-testid="skip-step-1"
-              type="button"
-              class="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors"
-              @click="step = 2"
-            >
-              Skip for now
-            </button>
+          <div class="pt-2">
             <button
               data-testid="next-button"
               type="button"
-              class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              :disabled="!playerDob || playerTooYoung"
+              class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               @click="savePlayerDetails"
             >
               Next
@@ -254,10 +270,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, inject } from "vue";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useFamilyInvite } from "~/composables/useFamilyInvite";
+import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 definePageMeta({ layout: "default", middleware: "auth" });
 
@@ -266,9 +283,20 @@ const totalSteps = 2;
 
 // Step 1 — Player details
 const playerName = ref("");
+const playerDob = ref("");
 const graduationYear = ref("");
 const sport = ref("");
 const position = ref("");
+
+const today = new Date().toISOString().split("T")[0];
+
+const playerTooYoung = computed(() => {
+  if (!playerDob.value) return false;
+  const dob = new Date(playerDob.value);
+  const age = new Date().getFullYear() - dob.getFullYear()
+    - (new Date() < new Date(new Date().getFullYear(), dob.getMonth(), dob.getDate()) ? 1 : 0);
+  return age < 13;
+});
 
 const commonSports = [
   "Baseball",
@@ -322,9 +350,11 @@ const graduationYears = computed(() => {
 // Step 2 — Invite
 const inviteEmail = ref("");
 const { $fetchAuth } = useAuthFetch();
+const activeFamilyCtx = inject<UseActiveFamilyReturn>("activeFamily");
 const {
   myFamilyCode,
   fetchMyCode,
+  createFamily,
   loading: familyCodeLoading,
   copyCodeToClipboard,
 } = useFamilyCode();
@@ -345,20 +375,27 @@ async function copyCode() {
   }, 2000);
 }
 
-onMounted(fetchMyCode);
+onMounted(async () => {
+  await fetchMyCode();
+  if (!myFamilyCode.value) {
+    await createFamily();
+    // Refresh the app-level family context so pages loaded after onboarding
+    // (e.g. /schools/new) have a valid activeFamilyId immediately.
+    await activeFamilyCtx?.refetchFamilies();
+  }
+});
 
 async function savePlayerDetails() {
-  if (playerName.value || graduationYear.value || sport.value || position.value) {
-    await $fetchAuth("/api/family/player-details", {
-      method: "POST",
-      body: {
-        playerName: playerName.value,
-        graduationYear: graduationYear.value,
-        sport: sport.value,
-        position: position.value,
-      },
-    });
-  }
+  await $fetchAuth("/api/family/player-details", {
+    method: "POST",
+    body: {
+      playerName: playerName.value,
+      playerDob: playerDob.value,
+      graduationYear: graduationYear.value,
+      sport: sport.value,
+      position: position.value,
+    },
+  });
   step.value = 2;
 }
 

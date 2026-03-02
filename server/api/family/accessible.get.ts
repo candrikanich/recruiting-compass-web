@@ -66,36 +66,44 @@ export default defineEventHandler(async (event) => {
 
     logger.debug("Found player members", { count: playerMembers?.length ?? 0 });
 
-    // If no families have a connected player, parent has nothing to view yet
-    if (!playerMembers || playerMembers.length === 0) {
-      return { success: true, families: [] };
-    }
-
-    // Fetch family unit details for families that have players
-    const familiesWithPlayers = [...new Set(playerMembers.map((pm) => pm.family_unit_id))];
+    // Fetch all family unit details (including those without a connected player)
     const { data: families, error: familiesError } = await supabase
       .from("family_units")
       .select("id, family_name")
-      .in("id", familiesWithPlayers);
+      .in("id", familyUnitIds);
 
     if (familiesError) {
       logger.error("Failed to fetch family units", familiesError);
       throw createError({ statusCode: 500, statusMessage: "Failed to fetch accessible families" });
     }
 
-    logger.debug("Fetched families with players", { familyCount: families?.length ?? 0 });
+    logger.debug("Fetched parent families", { familyCount: families?.length ?? 0 });
 
-    // Map each family to its connected player
+    type PlayerMemberRow = {
+      family_unit_id: string;
+      user_id: string;
+      users: { id: string; full_name: string | null; email: string | null };
+    };
+    const typedPlayerMembers = (playerMembers ?? []) as PlayerMemberRow[];
+
+    // Map families: include player info when available, null athlete when not yet connected
     const accessibleFamilies = (families || []).flatMap((family) => {
-      const players = (playerMembers as Array<{
-        family_unit_id: string;
-        user_id: string;
-        users: { id: string; full_name: string | null; email: string | null };
-      }>).filter((pm) => pm.family_unit_id === family.id);
+      const players = typedPlayerMembers.filter((pm) => pm.family_unit_id === family.id);
+
+      if (players.length === 0) {
+        // No player connected yet — parent can still use the family
+        return [{
+          familyUnitId: family.id,
+          athleteId: null as string | null,
+          athleteName: null as string | null,
+          graduationYear: null as number | null,
+          familyName: family.family_name || "Family",
+        }];
+      }
 
       return players.map((pm) => ({
         familyUnitId: family.id,
-        athleteId: pm.user_id,
+        athleteId: pm.user_id as string | null,
         athleteName: pm.users.full_name || pm.users.email || "Unknown Athlete",
         graduationYear: null as number | null,
         familyName: family.family_name || "Family",

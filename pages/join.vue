@@ -98,10 +98,9 @@ async function signupAndConnect() {
 
     if (!authData?.data?.user?.id) throw new Error("Signup failed");
 
-    const { error: upsertError } = await (supabase.from("users") as any).upsert(
-      [{ id: authData.data.user.id, email: invite.value.email, full_name: fullName, role: invite.value.role, date_of_birth: signupDateOfBirth.value }],
-      { onConflict: "id" },
-    );
+    const userRecord: Record<string, unknown> = { id: authData.data.user.id, email: invite.value.email, full_name: fullName, role: invite.value.role };
+    if (invite.value.role === "player" && signupDateOfBirth.value) userRecord.date_of_birth = signupDateOfBirth.value;
+    const { error: upsertError } = await (supabase.from("users") as any).upsert([userRecord], { onConflict: "id" });
     if (upsertError) throw new Error("Could not save account details");
 
     // Initialize the user store so role is available on the next page
@@ -222,6 +221,7 @@ async function decline() {
           <p v-if="signupError" class="text-sm text-red-600 mb-3" role="alert">{{ signupError }}</p>
           <AuthInviteSignupForm
             :email="invite.email"
+            :role="invite.role"
             :first-name="signupFirstName"
             :last-name="signupLastName"
             :date-of-birth="signupDateOfBirth"

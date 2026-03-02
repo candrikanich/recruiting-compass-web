@@ -46,13 +46,13 @@
       />
     </div>
 
-    <!-- Date of Birth -->
-    <div>
+    <!-- Date of Birth (players only — COPPA compliance) -->
+    <div v-if="userType === 'player'">
       <label
         for="dateOfBirth"
         class="block text-sm font-medium text-slate-700 mb-2"
       >
-        Date of Birth
+        Player Date of Birth
         <span class="text-red-600 ml-1" aria-label="required">*</span>
       </label>
       <div class="relative">
@@ -80,7 +80,7 @@
         />
       </div>
       <p id="dateOfBirth-hint" class="text-xs text-slate-500 mt-1">
-        You must be 13 or older to register.
+        Players must be 13 or older to register.
       </p>
       <FieldError id="dateOfBirth-error" :error="fieldErrors.dateOfBirth" />
     </div>
@@ -309,7 +309,7 @@ const isFormValid = computed(() => {
     props.firstName.trim() &&
     props.lastName.trim() &&
     props.email.trim() &&
-    props.dateOfBirth.trim() &&
+    (props.userType === "parent" || props.dateOfBirth.trim()) &&
     props.password.trim() &&
     props.confirmPassword.trim() &&
     props.agreeToTerms

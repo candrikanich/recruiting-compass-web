@@ -42,15 +42,16 @@ export const signupSchema = z
     password: strongPasswordSchema,
     confirmPassword: z.string(),
     role: z.enum(["parent", "player"]),
-    dateOfBirth: z
-      .string()
-      .min(1, "Date of birth is required")
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
+    dateOfBirth: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
-  });
+  })
+  .refine(
+    (data) => data.role !== "player" || (!!data.dateOfBirth && /^\d{4}-\d{2}-\d{2}$/.test(data.dateOfBirth)),
+    { message: "Date of birth is required", path: ["dateOfBirth"] },
+  );
 
 export const adminSignupSchema = z
   .object({
