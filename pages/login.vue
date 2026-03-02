@@ -186,8 +186,13 @@ const handleLogin = async () => {
     // Reinitialize user store now that session is established
     await userStore.initializeUser();
 
-    // Navigate to dashboard
-    await navigateTo("/dashboard");
+    // Navigate to originally requested page, or dashboard as fallback
+    const redirectPath =
+      typeof route.query.redirect === "string" &&
+      route.query.redirect.startsWith("/")
+        ? route.query.redirect
+        : "/dashboard";
+    await navigateTo(redirectPath);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Login failed";
     // Set auth error at form level

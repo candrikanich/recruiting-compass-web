@@ -197,10 +197,7 @@ test.describe("Tier 1: Authentication - Critical User Flows", () => {
     await authPage.expectURL("/dashboard");
   });
 
-  // The auth middleware sets ?redirect=<path> when redirecting unauthenticated users to /login,
-  // but login.vue always calls navigateTo("/dashboard") and never reads the redirect param.
-  // Until login.vue is updated to honor the redirect query param, this test is expected to fail.
-  test.fixme(
+  test(
     "should redirect back to originally requested protected page after login",
     async ({ page }) => {
       authPage = new AuthPage(page);
