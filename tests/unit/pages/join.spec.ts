@@ -12,6 +12,7 @@ vi.mock("vue-router", () => ({
 const mockUserStore = {
   user: ref<{ id: string; email: string } | null>(null),
   isAuthenticated: false,
+  initializeUser: vi.fn().mockResolvedValue(undefined),
 };
 
 vi.mock("~/stores/user", () => ({

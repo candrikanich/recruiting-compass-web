@@ -104,6 +104,9 @@ async function signupAndConnect() {
     );
     if (upsertError) throw new Error("Could not save account details");
 
+    // Initialize the user store so role is available on the next page
+    await userStore.initializeUser();
+
     await $fetchAuth(`/api/family/invite/${token.value}/accept`, { method: "POST" });
     showToast("You're connected!", "success");
     if (invite.value.role === "parent") {
