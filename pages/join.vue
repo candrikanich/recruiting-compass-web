@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, inject } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
 import { useToast } from "~/composables/useToast";
+import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 definePageMeta({ auth: false });
 
@@ -16,6 +17,7 @@ const supabase = useSupabase();
 const { $fetchAuth } = useAuthFetch();
 const { post: csrfPost } = useCsrf();
 const { showToast } = useToast();
+const activeFamilyCtx = inject<UseActiveFamilyReturn>("activeFamily");
 
 interface InviteDetails {
   invitationId: string;
@@ -73,6 +75,7 @@ async function accept() {
       await login(loginEmail.value, loginPassword.value);
     }
     await $fetchAuth(`/api/family/invite/${token.value}/accept`, { method: "POST" });
+    await activeFamilyCtx?.refetchFamilies();
     showToast("You're connected!", "success");
     await navigateTo("/dashboard");
   } catch (err: unknown) {
@@ -107,9 +110,11 @@ async function signupAndConnect() {
     await userStore.initializeUser();
 
     await $fetchAuth(`/api/family/invite/${token.value}/accept`, { method: "POST" });
+    await activeFamilyCtx?.refetchFamilies();
     showToast("You're connected!", "success");
     if (invite.value.role === "parent") {
-      await navigateTo("/onboarding/parent");
+      // Player already connected — parent onboarding is not needed
+      await navigateTo("/dashboard");
     } else {
       const query: Record<string, string> = {};
       if (invite.value.prefill?.graduationYear) query.graduationYear = String(invite.value.prefill.graduationYear);

@@ -58,17 +58,21 @@ const acknowledged = ref(
 );
 const showConnected = ref(false);
 
+const hasConnectedPlayer = computed(() =>
+  parentAccessibleFamilies.value.some((f) => f.athleteId !== null),
+);
+
 const showInviteCta = computed(
   () =>
     !loading.value &&
-    parentAccessibleFamilies.value.length === 0 &&
+    !hasConnectedPlayer.value &&
     !acknowledged.value,
 );
 
 let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-watch(parentAccessibleFamilies, (families) => {
-  if (families.length > 0 && !acknowledged.value) {
+watch(hasConnectedPlayer, (connected) => {
+  if (connected && !acknowledged.value) {
     showConnected.value = true;
     localStorage.setItem(ackKey(), "true");
     acknowledged.value = true;

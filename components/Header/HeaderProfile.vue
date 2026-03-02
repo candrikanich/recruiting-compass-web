@@ -154,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted } from "vue";
+import { ref, computed, nextTick, onMounted, watch } from "vue";
 import { useUserStore } from "~/stores/user";
 import { useAuth } from "~/composables/useAuth";
 import { useFamilyCode } from "~/composables/useFamilyCode";
@@ -169,8 +169,17 @@ const isOpen = ref(false);
 const codeCopied = ref(false);
 
 onMounted(() => {
-  if (!myFamilyCode.value) fetchMyCode().catch(() => {});
+  if (userStore.user?.id && !myFamilyCode.value) fetchMyCode().catch(() => {});
 });
+
+// Retry when user store finishes initializing (covers the race where
+// onMounted fired before initializeUser completed)
+watch(
+  () => userStore.user?.id,
+  (newId) => {
+    if (newId && !myFamilyCode.value) fetchMyCode().catch(() => {});
+  },
+);
 
 async function copyFamilyCode() {
   if (!myFamilyCode.value) return;
