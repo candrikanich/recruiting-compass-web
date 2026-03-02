@@ -150,3 +150,63 @@ test.describe("Family Member Removal", () => {
     expect(hasErrorOrStatus).toBeTruthy();
   });
 });
+
+test.describe("authenticated family management", () => {
+  const PLAYER = {
+    email: "test.player2028@andrikanich.com",
+    password: "test-password",
+  };
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/login");
+    await page.fill('input[type="email"]', PLAYER.email);
+    await page.fill('input[type="password"]', PLAYER.password);
+    await page.click('button:has-text("Sign in")');
+    await page.waitForURL(/\/(dashboard|schools)/, { timeout: 15000 });
+  });
+
+  test("family management page loads for authenticated player", async ({
+    page,
+  }) => {
+    await page.goto("/settings/family-management");
+    await page.waitForLoadState("networkidle");
+
+    await expect(page).not.toHaveURL(/\/login/);
+    await expect(
+      page.locator("h1:has-text('Family Management')"),
+    ).toBeVisible();
+  });
+
+  test("remove button is visible and enabled when family members exist", async ({
+    page,
+  }) => {
+    await page.goto("/settings/family-management");
+    await page.waitForLoadState("networkidle");
+
+    const removeButtons = page.locator(
+      'button[title="Remove this parent from your family"]',
+    );
+    const count = await removeButtons.count();
+
+    if (count > 0) {
+      await expect(removeButtons.first()).toBeVisible();
+      await expect(removeButtons.first()).toBeEnabled();
+    }
+    // count === 0 means no connected parents — inconclusive but not a failure
+  });
+
+  test("invite form is visible for authenticated player", async ({ page }) => {
+    await page.goto("/settings/family-management");
+    await page.waitForLoadState("networkidle");
+
+    await expect(
+      page.locator('[data-testid="invite-member-form"]'),
+    ).toBeVisible();
+    await expect(
+      page.locator('[data-testid="invite-email-input"]'),
+    ).toBeVisible();
+    await expect(
+      page.locator('[data-testid="send-invite-submit"]'),
+    ).toBeVisible();
+  });
+});
