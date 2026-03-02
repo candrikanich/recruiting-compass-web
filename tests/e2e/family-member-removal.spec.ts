@@ -121,33 +121,14 @@ test.describe("Family Member Removal", () => {
   test("API endpoint returns proper error for invalid member ID", async ({
     page,
   }) => {
-    // Test the API directly
-    const invalidResponse = await page
-      .evaluate(async () => {
-        try {
-          const response = await fetch(
-            "http://localhost:3003/api/family/members/invalid-id",
-            {
-              method: "DELETE",
-            },
-          );
-          return {
-            status: response.status,
-            ok: response.ok,
-          };
-        } catch (e) {
-          return {
-            error: (e as Error).message,
-          };
-        }
-      })
-      .catch(() => ({ error: "fetch failed" }));
+    // Test the API directly using page.request (respects playwright baseURL)
+    const response = await page.request.delete(
+      "/api/family/members/invalid-id",
+    );
 
-    // API endpoint should either return an error or have a status code
-    const hasErrorOrStatus =
-      invalidResponse.error !== undefined ||
-      (invalidResponse.status !== undefined && !invalidResponse.ok);
-    expect(hasErrorOrStatus).toBeTruthy();
+    // API endpoint should return an error status (not 2xx)
+    expect(response.ok()).toBe(false);
+    expect(response.status()).toBeGreaterThanOrEqual(400);
   });
 });
 
