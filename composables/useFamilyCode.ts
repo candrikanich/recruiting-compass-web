@@ -18,6 +18,7 @@ export const useFamilyCode = () => {
   const myFamilyCode = ref<string | null>(null);
   const myFamilyId = ref<string | null>(null);
   const myFamilyName = ref<string | null>(null);
+  const isPlayerFamilyCreator = ref(false);
   const parentFamilies = ref<FamilyCodeData[]>([]);
 
   const loading = ref(false);
@@ -45,7 +46,7 @@ export const useFamilyCode = () => {
         const memberResponse = await supabase
           .from("family_members")
           .select(
-            "family_units!inner(id, family_code, family_name, code_generated_at)",
+            "family_units!inner(id, family_code, family_name, code_generated_at, created_by_user_id)",
           )
           .eq("user_id", userStore.user.id)
           .maybeSingle();
@@ -56,6 +57,7 @@ export const useFamilyCode = () => {
               family_code: string | null;
               family_name: string | null;
               code_generated_at: string | null;
+              created_by_user_id: string | null;
             };
           } | null;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -71,6 +73,7 @@ export const useFamilyCode = () => {
         myFamilyCode.value = family?.family_code || null;
         myFamilyId.value = family?.id || null;
         myFamilyName.value = family?.family_name || null;
+        isPlayerFamilyCreator.value = family?.created_by_user_id === userStore.user.id;
       } else {
         // Parents: Get codes for families they belong to
         const membershipsResponse = await supabase
@@ -157,6 +160,7 @@ export const useFamilyCode = () => {
       myFamilyCode.value = response.familyCode;
       myFamilyId.value = response.familyId;
       myFamilyName.value = response.familyName;
+      isPlayerFamilyCreator.value = true;
       successMessage.value = "Family created! Share your code with parents.";
 
       return true;
@@ -315,6 +319,7 @@ export const useFamilyCode = () => {
     myFamilyCode,
     myFamilyId,
     myFamilyName,
+    isPlayerFamilyCreator,
     parentFamilies,
     loading,
     error,
