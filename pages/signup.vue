@@ -108,6 +108,7 @@ import { ref, watch } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useSupabase } from "~/composables/useSupabase";
+import { useUserStore } from "~/stores/user";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
 import { signupSchema } from "~/utils/validation/schemas";
@@ -135,6 +136,7 @@ const { loading } = useLoadingStates();
 const { signup } = useAuth();
 const { $fetchAuth } = useAuthFetch();
 const supabase = useSupabase();
+const userStore = useUserStore();
 const {
   errors,
   fieldErrors,
@@ -289,6 +291,9 @@ const handleSignup = async () => {
 
     // Create family unit for the new user (both roles)
     await $fetchAuth("/api/family/create", { method: "POST" });
+
+    // Sync auth state so the middleware sees isAuthenticated=true before navigation
+    await userStore.initializeUser();
 
     // Redirect to role-specific onboarding
     const redirectUrl =

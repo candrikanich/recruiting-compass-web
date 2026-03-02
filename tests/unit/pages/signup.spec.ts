@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ref } from "vue";
-import { mount } from "@vue/test-utils";
+import { mount, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { useRouter, useRoute } from "vue-router";
 import { useAuth } from "~/composables/useAuth";
@@ -667,7 +667,7 @@ describe("signup.vue", () => {
       await wrapper.find("#agreeToTerms").setValue(true);
 
       await wrapper.find("form").trigger("submit.prevent");
-      await wrapper.vm.$nextTick();
+      await flushPromises();
 
       expect(global.navigateTo).toHaveBeenCalledWith("/onboarding");
     });
@@ -761,7 +761,7 @@ describe("signup.vue", () => {
       await wrapper.find("#agreeToTerms").setValue(true);
 
       await wrapper.find("form").trigger("submit.prevent");
-      await wrapper.vm.$nextTick();
+      await flushPromises();
 
       expect(global.navigateTo).toHaveBeenCalledWith("/onboarding/parent");
     });
