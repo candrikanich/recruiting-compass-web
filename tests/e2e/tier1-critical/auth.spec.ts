@@ -196,4 +196,37 @@ test.describe("Tier 1: Authentication - Critical User Flows", () => {
 
     await authPage.expectURL("/dashboard");
   });
+
+  // The auth middleware sets ?redirect=<path> when redirecting unauthenticated users to /login,
+  // but login.vue always calls navigateTo("/dashboard") and never reads the redirect param.
+  // Until login.vue is updated to honor the redirect query param, this test is expected to fail.
+  test.fixme(
+    "should redirect back to originally requested protected page after login",
+    async ({ page }) => {
+      authPage = new AuthPage(page);
+
+      // Create unique user for this test
+      const uniqueEmail = `test-return-redirect-${Date.now()}@example.com`;
+      const password = "TestPassword123!";
+      const displayName = "Test Return Redirect User";
+
+      // Signup and immediately logout so we have a valid account to log back in with
+      await authPage.signup(uniqueEmail, password, displayName);
+      await authPage.logout();
+      await authPage.expectLoginPage();
+
+      // Visit a protected page while logged out — middleware should redirect to /login?redirect=/coaches
+      await page.goto("/coaches");
+      await page.waitForURL(/\/login\?redirect=/, { timeout: 10000 });
+
+      const loginUrl = new URL(page.url());
+      expect(loginUrl.pathname).toBe("/login");
+      expect(loginUrl.searchParams.get("redirect")).toBe("/coaches");
+
+      // Log in — should land on /coaches, not /dashboard
+      await authPage.login(uniqueEmail, password);
+      await page.waitForURL("/coaches", { timeout: 15000 });
+      expect(page.url()).toContain("/coaches");
+    },
+  );
 });
