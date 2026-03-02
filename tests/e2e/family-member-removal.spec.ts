@@ -1,7 +1,5 @@
 import { test, expect } from "@playwright/test";
 
-const BASE_URL = "http://localhost:3003";
-
 // Test data from documentation
 const TEST_ACCOUNTS = {
   player: {
@@ -19,7 +17,7 @@ test.describe("Family Member Removal", () => {
     page,
   }) => {
     // Navigate directly to family management (assumes user is logged in)
-    await page.goto(`${BASE_URL}/settings/family-management`);
+    await page.goto("/settings/family-management");
 
     // Handle redirect to login if not authenticated
     const loginUrl = page.url();
@@ -37,7 +35,7 @@ test.describe("Family Member Removal", () => {
 
   test("family member card component renders correctly", async ({ page }) => {
     // Test the component structure by navigating to family management
-    await page.goto(`${BASE_URL}/settings/family-management`);
+    await page.goto("/settings/family-management");
 
     // Check if page redirects to login (expected for unauthenticated users)
     const url = page.url();
@@ -56,7 +54,7 @@ test.describe("Family Member Removal", () => {
 
   test("remove member button has correct attributes", async ({ page }) => {
     // Navigate to family management
-    await page.goto(`${BASE_URL}/settings/family-management`);
+    await page.goto("/settings/family-management");
 
     // Look for any remove button
     const removeButtons = page.locator('button:has-text("Remove")');
@@ -82,7 +80,7 @@ test.describe("Family Member Removal", () => {
     page,
   }) => {
     // Navigate to family management
-    await page.goto(`${BASE_URL}/settings/family-management`);
+    await page.goto("/settings/family-management");
 
     // Look for blue border cards (player cards)
     const playerCards = page.locator('[class*="border-blue-200"]');
@@ -103,7 +101,7 @@ test.describe("Family Member Removal", () => {
     page,
   }) => {
     // Navigate to family management
-    await page.goto(`${BASE_URL}/settings/family-management`);
+    await page.goto("/settings/family-management");
 
     // Look for green border cards (parent cards)
     const parentCards = page.locator('[class*="border-green-200"]');
@@ -123,32 +121,73 @@ test.describe("Family Member Removal", () => {
   test("API endpoint returns proper error for invalid member ID", async ({
     page,
   }) => {
-    // Test the API directly
-    const invalidResponse = await page
-      .evaluate(async () => {
-        try {
-          const response = await fetch(
-            `${BASE_URL}/api/family/members/invalid-id`,
-            {
-              method: "DELETE",
-            },
-          );
-          return {
-            status: response.status,
-            ok: response.ok,
-          };
-        } catch (e) {
-          return {
-            error: (e as Error).message,
-          };
-        }
-      })
-      .catch(() => ({ error: "fetch failed" }));
+    // Test the API directly using page.request (respects playwright baseURL)
+    const response = await page.request.delete(
+      "/api/family/members/invalid-id",
+    );
 
-    // API endpoint should either return an error or have a status code
-    const hasErrorOrStatus =
-      invalidResponse.error !== undefined ||
-      (invalidResponse.status !== undefined && !invalidResponse.ok);
-    expect(hasErrorOrStatus).toBeTruthy();
+    // API endpoint should return an error status (not 2xx)
+    expect(response.ok()).toBe(false);
+    expect(response.status()).toBeGreaterThanOrEqual(400);
+  });
+});
+
+test.describe("authenticated family management", () => {
+  const PLAYER = {
+    email: "test.player2028@andrikanich.com",
+    password: "test-password",
+  };
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/login");
+    await page.fill('input[type="email"]', PLAYER.email);
+    await page.fill('input[type="password"]', PLAYER.password);
+    await page.click('button:has-text("Sign in")');
+    await page.waitForURL(/\/(dashboard|schools)/, { timeout: 15000 });
+  });
+
+  test("family management page loads for authenticated player", async ({
+    page,
+  }) => {
+    await page.goto("/settings/family-management");
+    await page.waitForLoadState("networkidle");
+
+    await expect(page).not.toHaveURL(/\/login/);
+    await expect(
+      page.locator("h1:has-text('Family Management')"),
+    ).toBeVisible();
+  });
+
+  test("remove button is visible and enabled when family members exist", async ({
+    page,
+  }) => {
+    await page.goto("/settings/family-management");
+    await page.waitForLoadState("networkidle");
+
+    const removeButtons = page.locator(
+      'button[title="Remove this parent from your family"]',
+    );
+    const count = await removeButtons.count();
+
+    if (count > 0) {
+      await expect(removeButtons.first()).toBeVisible();
+      await expect(removeButtons.first()).toBeEnabled();
+    }
+    // count === 0 means no connected parents — inconclusive but not a failure
+  });
+
+  test("invite form is visible for authenticated player", async ({ page }) => {
+    await page.goto("/settings/family-management");
+    await page.waitForLoadState("networkidle");
+
+    await expect(
+      page.locator('[data-testid="invite-member-form"]'),
+    ).toBeVisible();
+    await expect(
+      page.locator('[data-testid="invite-email-input"]'),
+    ).toBeVisible();
+    await expect(
+      page.locator('[data-testid="send-invite-submit"]'),
+    ).toBeVisible();
   });
 });

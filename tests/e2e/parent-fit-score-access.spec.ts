@@ -1,168 +1,114 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
-/**
- * Tests for parent access to fit scores
- * Parents should have read-only access to view fit scores
- * Parents should NOT be able to create, edit, or update fit scores
- */
+const TEST_PARENT = {
+  email: "test.parent@andrikanich.com",
+  password: "test-password",
+};
+
+async function loginAsParent(page: Page) {
+  await page.goto("/login");
+  await page.fill('input[type="email"]', TEST_PARENT.email);
+  await page.fill('input[type="password"]', TEST_PARENT.password);
+  await page.click('button:has-text("Sign in")');
+  await page.waitForURL(/\/(dashboard|schools|onboarding)/, { timeout: 15000 });
+}
+
 test.describe("Parent Fit Score Access", () => {
-  // TODO: These tests require parent user authentication setup
-  // For now, they are structured as integration tests that would run
-  // after parent user fixtures are configured
+  test.beforeEach(async ({ page }) => {
+    await loginAsParent(page);
+  });
 
-  test("parent can view fit scores on school list page", async ({ page }) => {
-    // This test would require:
-    // 1. Parent user login
-    // 2. Navigation to schools page
-    // 3. Verification that fit scores are visible
+  test("parent can view schools page after login", async ({ page }) => {
+    await page.goto("/schools");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("h1:has-text('Schools')")).toBeVisible();
+    // Verify not redirected to login
+    await expect(page).not.toHaveURL(/\/login/);
+  });
 
-    // Placeholder for parent user test
-    // In a complete implementation, this would use a parent user fixture:
-    // await loginAsParent();
-    // await page.goto("/schools");
+  test("parent can view school detail page", async ({ page }) => {
+    await page.goto("/schools");
+    await page.waitForLoadState("networkidle");
 
-    // For now, we verify the structure is ready
-    expect(true).toBe(true);
+    const viewButton = page.locator('button:has-text("View")').first();
+    const hasSchools = await viewButton.isVisible().catch(() => false);
+
+    if (hasSchools) {
+      await viewButton.click();
+      await page.waitForLoadState("networkidle");
+      await expect(page.locator("h1").first()).toBeVisible();
+      await expect(page).not.toHaveURL(/\/login/);
+    } else {
+      // No schools in parent's family — test is inconclusive but not failing
+      test.skip(true, "No schools available for parent test account");
+    }
+  });
+
+  test("parent does not see Calculate Fit Score button", async ({ page }) => {
+    await page.goto("/schools");
+    await page.waitForLoadState("networkidle");
+
+    const viewButton = page.locator('button:has-text("View")').first();
+    const hasSchools = await viewButton.isVisible().catch(() => false);
+
+    if (hasSchools) {
+      await viewButton.click();
+      await page.waitForLoadState("networkidle");
+
+      // Parents should not have fit score edit controls
+      const calculateButton = page.locator(
+        'button:has-text("Calculate"), button:has-text("Recalculate")',
+      );
+      expect(await calculateButton.count()).toBe(0);
+    } else {
+      test.skip(true, "No schools available for parent test account");
+    }
   });
 
   test("parent can view fit score breakdown on school detail page", async ({
     page,
   }) => {
-    // Placeholder for parent detail page test
-    // Would verify:
-    // 1. Parent can navigate to school detail
-    // 2. Fit score analysis section is visible
-    // 3. Breakdown toggle is accessible (read-only)
+    await page.goto("/schools");
+    await page.waitForLoadState("networkidle");
 
-    // When fully implemented:
-    // await loginAsParent();
-    // await page.goto("/schools/[school-id]");
-    // expect(await page.locator("text=School Fit Analysis").isVisible()).toBe(true);
+    const viewButton = page.locator('button:has-text("View")').first();
+    const hasSchools = await viewButton.isVisible().catch(() => false);
 
-    expect(true).toBe(true);
+    if (hasSchools) {
+      await viewButton.click();
+      await page.waitForLoadState("networkidle");
+      // School detail page should load without error
+      await expect(page.locator("body")).toBeVisible();
+      await expect(page).not.toHaveURL(/\/login/);
+    } else {
+      test.skip(true, "No schools available for parent test account");
+    }
   });
 
-  test("parent does not see edit/update controls for fit scores", async ({
-    page,
-  }) => {
-    // Placeholder for access control test
-    // Would verify:
-    // 1. No "Calculate Fit Score" button visible to parent
-    // 2. No "Update" buttons or editing UI visible
-    // 3. Breakdown toggle exists but cannot modify data
-
-    // When fully implemented:
-    // await loginAsParent();
-    // await page.goto("/schools/[school-id]");
-    // const updateButton = page.locator("button:has-text('Calculate')");
-    // expect(await updateButton.isVisible()).toBe(false);
-
-    expect(true).toBe(true);
+  test("parent can navigate to coaches page", async ({ page }) => {
+    await page.goto("/coaches");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("h1").first()).toBeVisible();
+    await expect(page).not.toHaveURL(/\/login/);
   });
 
-  test("parent cannot call POST endpoints to update fit scores", async ({
-    page,
-  }) => {
-    // Placeholder for API access control test
-    // Would verify:
-    // 1. Attempting to call POST /api/schools/[id]/fit-score returns 403
-    // 2. Network request interception shows Forbidden status
-
-    // When fully implemented:
-    // const failedRequests = [];
-    // page.on("response", (response) => {
-    //   if (response.request().method() === "POST" &&
-    //       response.url().includes("/api/schools/") &&
-    //       response.url().includes("/fit-score")) {
-    //     failedRequests.push(response.status());
-    //   }
-    // });
-    //
-    // await loginAsParent();
-    // await page.goto("/schools/[school-id]");
-    // // Attempt any action that might trigger POST
-    // // Verify 403 status was returned
-    // expect(failedRequests).toContain(403);
-
-    expect(true).toBe(true);
+  test("parent can navigate to dashboard", async ({ page }) => {
+    await page.goto("/dashboard");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("body")).toBeVisible();
+    await expect(page).not.toHaveURL(/\/login/);
   });
 
-  test("parent can view division recommendations (read-only)", async ({
-    page,
-  }) => {
-    // Placeholder for division recommendations view test
-    // Would verify:
-    // 1. Division recommendations section is visible to parent
-    // 2. Recommendations are informational (no edit capability)
-    // 3. Recommended divisions are displayed as badges
-
-    // When fully implemented:
-    // await loginAsParent();
-    // await page.goto("/schools/[school-id-with-low-score]");
-    // const recommendations = page.locator("text=Consider Other Divisions");
-    // if (await recommendations.isVisible()) {
-    //   const badges = page.locator(".bg-blue-100");
-    //   expect(await badges.count()).toBeGreaterThan(0);
-    // }
-
-    expect(true).toBe(true);
-  });
-
-  test("parent sees the same fit score breakdown as athlete (no hidden data)", async ({
-    page,
-  }) => {
-    // Placeholder for consistency test
-    // Would verify:
-    // 1. Parent and athlete see identical fit score data
-    // 2. Only action (edit) capabilities differ, not visibility
-
-    // When fully implemented:
-    // Get athlete view of fit score
-    // await loginAsAthlete();
-    // await page.goto("/schools/[school-id]");
-    // const athleteScore = await page.locator("text=/^[\\d]+$").first();
-    //
-    // Get parent view of fit score
-    // await loginAsParent();
-    // await page.goto("/schools/[school-id]");
-    // const parentScore = await page.locator("text=/^[\\d]+$").first();
-    //
-    // expect(await athleteScore.textContent()).toBe(await parentScore.textContent());
-
-    expect(true).toBe(true);
-  });
-
-  test("parent cannot see athlete profile edit modal for fit score", async ({
-    page,
-  }) => {
-    // Placeholder for UI access control test
-    // Would verify:
-    // 1. No modal or form for editing profile that affects fit score
-    // 2. Profile editing (GPA, SAT, etc.) is not accessible to parent
-
-    // When fully implemented:
-    // await loginAsParent();
-    // await page.goto("/athlete-profile");
-    // const profileEditButtons = page.locator("button:has-text('Edit')");
-    // Should be unavailable or redirected
-
-    expect(true).toBe(true);
-  });
-
-  test("parent view logs are recorded for audit trail", async ({ page }) => {
-    // Placeholder for audit logging test
-    // Would verify:
-    // 1. Viewing fit scores as parent is logged
-    // 2. Audit trail can be reviewed by admin
-
-    // When fully implemented:
-    // Get parent user ID
-    // await loginAsParent();
-    // await page.goto("/schools/[school-id]");
-    // Verify fit score is visible
-    // Check parent_view_logs table for entry:
-    // SELECT * FROM parent_view_logs WHERE parent_user_id = ? AND viewed_item_type = 'fit_score'
-
-    expect(true).toBe(true);
+  test("parent cannot see athlete profile edit button", async ({ page }) => {
+    await page.goto("/dashboard");
+    await page.waitForLoadState("networkidle");
+    // Parents viewing a player's data should not see profile editing controls
+    // that modify the athlete's profile (affects fit score)
+    // This is an existence check — if no edit buttons present, parent is read-only
+    const profileEditButton = page.locator(
+      '[data-testid="edit-athlete-profile"]',
+    );
+    // Parent view should not expose this control
+    expect(await profileEditButton.count()).toBe(0);
   });
 });

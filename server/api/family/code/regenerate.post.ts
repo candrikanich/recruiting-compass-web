@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   // Verify user is student owner of this family
   const familyResponse = await supabase
     .from("family_units")
-    .select("id, player_user_id")
+    .select("id, created_by_user_id")
     .eq("id", familyId)
     .single();
 
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     error: any;
   };
 
-  if (!family || family.player_user_id !== user.id) {
+  if (!family || family.created_by_user_id !== user.id) {
     throw createError({
       statusCode: 403,
       message: "Only the family owner can regenerate the code",

@@ -1,13 +1,11 @@
 import { test, expect } from "@playwright/test";
 
-const BASE_URL = "http://localhost:3003";
-
 test.describe("Story 3.4: School Status Tracking", () => {
   let schoolId: string;
 
   test.beforeEach(async ({ page }) => {
     // Navigate to schools list
-    await page.goto(`${BASE_URL}/schools`);
+    await page.goto("/schools");
 
     // Wait for page to load
     await page.waitForSelector('[data-testid="school-card"]', {

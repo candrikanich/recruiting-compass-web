@@ -44,29 +44,31 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
     const legend = page.locator("legend:has-text('I\\'m a:')");
     expect(legend).toBeTruthy();
 
-    // Buttons should have aria-pressed
-    const playerButton = page.locator("#user-type-player");
-    const parentButton = page.locator("#user-type-parent");
+    // Radio inputs are identified by data-testid (IDs are dynamic via useId())
+    const playerRadio = page.locator('[data-testid="user-type-player"]');
+    const parentRadio = page.locator('[data-testid="user-type-parent"]');
 
-    await expect(playerButton).toHaveAttribute("aria-pressed", "false");
-    await expect(parentButton).toHaveAttribute("aria-pressed", "false");
+    // Both should be unchecked initially
+    await expect(playerRadio).not.toBeChecked();
+    await expect(parentRadio).not.toBeChecked();
 
-    // Click player button
-    await playerButton.click();
+    // Click player radio
+    await playerRadio.click();
 
-    // After selection, aria-pressed should update
-    await expect(playerButton).toHaveAttribute("aria-pressed", "true");
-    await expect(parentButton).toHaveAttribute("aria-pressed", "false");
+    // After selection, player radio should be checked
+    await expect(playerRadio).toBeChecked();
+    await expect(parentRadio).not.toBeChecked();
 
-    // Visual state should show selected
-    const playerClass = await playerButton.getAttribute("class");
-    expect(playerClass).toContain("bg-blue-50");
-    expect(playerClass).toContain("border-blue-500");
+    // Visual state: the label wrapping the player radio should show selected styles
+    const playerLabel = page.locator('label:has([data-testid="user-type-player"])');
+    const labelClass = await playerLabel.getAttribute("class");
+    expect(labelClass).toContain("bg-blue-50");
+    expect(labelClass).toContain("border-blue-500");
   });
 
   test("should have required field indicators", async ({ page }) => {
     // Wait for form to appear after user type selection
-    await page.locator("#user-type-player").click();
+    await page.locator('[data-testid="user-type-player"]').click();
     await page.waitForSelector("form");
 
     // Check for required field indicator text
@@ -87,7 +89,7 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
 
   test("should hide decorative icons from screen readers", async ({ page }) => {
     // Wait for form to appear
-    await page.locator("#user-type-player").click();
+    await page.locator('[data-testid="user-type-player"]').click();
     await page.waitForSelector("form");
 
     // All decorative icons should have aria-hidden
@@ -107,7 +109,7 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
     page,
   }) => {
     // Wait for form to appear
-    await page.locator("#user-type-player").click();
+    await page.locator('[data-testid="user-type-player"]').click();
     await page.waitForSelector("form");
 
     // Try to submit empty form
@@ -130,7 +132,7 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
 
   test("should announce loading state to screen readers", async ({ page }) => {
     // Wait for form to appear
-    await page.locator("#user-type-player").click();
+    await page.locator('[data-testid="user-type-player"]').click();
     await page.waitForSelector("form");
 
     // Fill in valid form data
@@ -169,7 +171,7 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
     page,
   }) => {
     // Wait for form to appear
-    await page.locator("#user-type-player").click();
+    await page.locator('[data-testid="user-type-player"]').click();
     await page.waitForSelector("form");
 
     // Try to submit empty form
@@ -205,7 +207,7 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
 
   test("should have terms checkbox properly labeled", async ({ page }) => {
     // Wait for form to appear
-    await page.locator("#user-type-player").click();
+    await page.locator('[data-testid="user-type-player"]').click();
     await page.waitForSelector("form");
 
     // Checkbox should have id
@@ -230,7 +232,7 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
     page,
   }) => {
     // Wait for form to appear
-    await page.locator("#user-type-player").click();
+    await page.locator('[data-testid="user-type-player"]').click();
     await page.waitForSelector("form");
 
     // Check password input has aria-describedby linking to requirements
@@ -246,48 +248,42 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
   });
 
   test("should have proper keyboard navigation order", async ({ page }) => {
-    // User type buttons should be keyboard accessible
-    const playerButton = page.locator("#user-type-player");
-    await playerButton.focus();
-    expect(playerButton).toBeFocused();
+    // User type radio inputs should be keyboard accessible (IDs are dynamic, use data-testid)
+    const playerRadio = page.locator('[data-testid="user-type-player"]');
+    await playerRadio.focus();
+    await expect(playerRadio).toBeFocused();
 
-    // Should be able to tab through button group
+    // Should be able to tab to the parent radio input
     await page.keyboard.press("Tab");
-    const parentButton = page.locator("#user-type-parent");
-    expect(parentButton).toBeFocused();
+    const parentRadio = page.locator('[data-testid="user-type-parent"]');
+    await expect(parentRadio).toBeFocused();
   });
 
-  test("should communicate optional vs required fields clearly", async ({
+  test("should show date of birth for players but not parents", async ({
     page,
   }) => {
-    // Wait for form to appear
-    await page.locator("#user-type-parent").click(); // Parent role has optional family code
+    // Parent form should not have a date of birth field
+    await page.locator('[data-testid="user-type-parent"]').click();
     await page.waitForSelector("form");
 
-    // Check required field intro text
-    const requiredText = page.locator(
-      'p:has-text("Indicates a required field")',
-    );
-    await expect(requiredText).toBeVisible();
+    const parentDobField = page.locator("#dateOfBirth");
+    await expect(parentDobField).not.toBeVisible();
 
-    // Family code should be optional (parents only)
-    const familyCodeLabel = page.locator("label:has-text('Family Code')");
-    const labelText = await familyCodeLabel.textContent();
-    // Should say optional but not required
-    expect(labelText).toContain("optional");
-    expect(labelText).not.toContain("*"); // No required asterisk
+    // Navigate back and select player — DOB should appear
+    await page.goto("/signup");
+    await page.locator('[data-testid="user-type-player"]').click();
+    await page.waitForSelector("form");
 
-    // Input should not have aria-required
-    const familyCodeInput = page.locator("#familyCode");
-    const ariaRequired = await familyCodeInput.getAttribute("aria-required");
-    expect(ariaRequired).toBeNull(); // Not required
+    const playerDobField = page.locator("#dateOfBirth");
+    await expect(playerDobField).toBeVisible();
+    await expect(playerDobField).toHaveAttribute("aria-required", "true");
   });
 
   test("form inputs should have proper autocomplete attributes", async ({
     page,
   }) => {
     // Wait for form to appear
-    await page.locator("#user-type-player").click();
+    await page.locator('[data-testid="user-type-player"]').click();
     await page.waitForSelector("form");
 
     // Check autocomplete attributes for password managers

@@ -68,9 +68,9 @@ test.describe("School Fit Score Display", () => {
     const schoolCards = await page.locator(".bg-white.rounded-xl").all();
     expect(schoolCards.length).toBeGreaterThan(0);
 
-    // Verify structure - some may not have fit scores
-    // This test passes if the page renders without errors
-    expect(true).toBe(true);
+    // Fit score badges should not appear on every card — only those with scores
+    const fitScoreBadges = await page.locator("text=/^Fit:/").all();
+    expect(fitScoreBadges.length).toBeLessThanOrEqual(schoolCards.length);
   });
 
   test("should navigate to school detail and show fit score analysis", async ({

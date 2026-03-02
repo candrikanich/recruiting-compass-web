@@ -41,6 +41,10 @@ jobs:
 
       - name: Build application
         run: npm run build
+        env:
+          # Override Vercel preset so nuxi preview can serve a standard Node.js
+          # server in CI. Production builds use the Vercel preset (nuxt.config.ts).
+          NITRO_PRESET: node-server
 
       - name: Run E2E tests
         run: npm run test:e2e

@@ -84,6 +84,7 @@ describe("signupSchema - Extended", () => {
       password: "SecurePass123",
       confirmPassword: "SecurePass123",
       role: "parent",
+      dateOfBirth: "1990-05-15",
     };
     const result = signupSchema.parse(data);
     expect(result.role).toBe("parent");
@@ -96,6 +97,7 @@ describe("signupSchema - Extended", () => {
       password: "SecurePass123",
       confirmPassword: "SecurePass123",
       role: "player",
+      dateOfBirth: "2008-03-20",
     };
     const result = signupSchema.parse(data);
     expect(result.role).toBe("player");
@@ -108,6 +110,7 @@ describe("signupSchema - Extended", () => {
       password: "SecurePass123",
       confirmPassword: "SecurePass123",
       role: "invalid",
+      dateOfBirth: "1995-01-01",
     };
     expect(() => signupSchema.parse(data)).toThrow();
   });
@@ -119,6 +122,7 @@ describe("signupSchema - Extended", () => {
       password: "securepass123",
       confirmPassword: "securepass123",
       role: "parent",
+      dateOfBirth: "1990-05-15",
     };
     expect(() => signupSchema.parse(data)).toThrow();
   });
@@ -130,6 +134,7 @@ describe("signupSchema - Extended", () => {
       password: "SECUREPASS123",
       confirmPassword: "SECUREPASS123",
       role: "parent",
+      dateOfBirth: "1990-05-15",
     };
     expect(() => signupSchema.parse(data)).toThrow();
   });
@@ -141,6 +146,7 @@ describe("signupSchema - Extended", () => {
       password: "SecurePass",
       confirmPassword: "SecurePass",
       role: "parent",
+      dateOfBirth: "1990-05-15",
     };
     expect(() => signupSchema.parse(data)).toThrow();
   });
@@ -152,6 +158,7 @@ describe("signupSchema - Extended", () => {
       password: "SecurePass123",
       confirmPassword: "SecurePass123",
       role: "parent",
+      dateOfBirth: "1990-05-15",
     };
     const result = signupSchema.parse(data);
     expect(result.fullName).not.toContain("script");
@@ -164,6 +171,7 @@ describe("signupSchema - Extended", () => {
       password: "SecurePass123",
       confirmPassword: "SecurePass123",
       role: "parent",
+      dateOfBirth: "1990-05-15",
     };
     expect(() => signupSchema.parse(data)).toThrow();
   });

@@ -26,6 +26,8 @@ const CSRF_EXEMPT_PREFIXES = [
   "/api/csrf-token",
   "/api/health",
   "/api/auth",
+  // iOS app uses Bearer auth only (no cookie/CSRF). Auth still enforced via requireAuth.
+  "/api/family/",
 ] as const;
 
 // Exact full paths that are CSRF-exempt
@@ -45,8 +47,11 @@ export default defineEventHandler((event) => {
   if (CSRF_EXEMPT_EXACT_PATHS.some((exact) => path === exact)) return;
 
   // Bearer-token requests (e.g. from iOS app) are exempt — CSRF doesn't apply
-  const authHeader = getHeader(event, "authorization");
-  if (authHeader?.startsWith("Bearer ")) return;
+  const authHeader =
+    getHeader(event, "authorization") ??
+    (event.node.req.headers["authorization"] as string | undefined) ??
+    (event.node.req.headers["Authorization"] as string | undefined);
+  if (authHeader?.trimStart().startsWith("Bearer ")) return;
 
   requireCsrfToken(event);
 });

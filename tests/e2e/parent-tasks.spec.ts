@@ -1,19 +1,21 @@
 import { test, expect } from "@playwright/test";
 import { authFixture } from "./fixtures/auth.fixture";
 
-// TODO: These tests reference test IDs and selectors that need to be verified against actual implementation
+// TODO: pages/tasks.vue does not yet exist in this codebase.
+// These tests are speculative and will need to be rewritten when the tasks feature ships.
+// Test selectors like [data-testid="task-item"], [data-testid="status-filter"] etc. are unverified.
 test.describe.skip("Parent Task Viewing Workflow", () => {
   test.beforeEach(async ({ page }) => {
     // Setup auth first
     await authFixture.ensureLoggedIn(page);
     // Then navigate to the app
-    await page.goto("http://localhost:3003");
+    await page.goto("/");
   });
 
   test("parent can view athlete task list", async ({ page }) => {
     // Navigate to tasks page with parent viewing context
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Verify parent context banner is displayed
@@ -24,7 +26,7 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
 
   test("parent sees progress summary", async ({ page }) => {
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Wait for tasks to load
@@ -43,7 +45,7 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
     page,
   }) => {
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Wait for deadline badges to load
@@ -73,7 +75,7 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
 
   test("parent can filter tasks by status", async ({ page }) => {
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Wait for filter select to be available
@@ -92,7 +94,7 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
 
   test("parent can filter tasks by urgency", async ({ page }) => {
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Wait for filter select to be available
@@ -110,7 +112,7 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
 
   test("parent sees filter controls", async ({ page }) => {
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Verify status filter is visible
@@ -131,7 +133,7 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
 
   test("parent cannot toggle task checkboxes", async ({ page }) => {
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Wait for task checkboxes to load
@@ -161,7 +163,7 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
 
   test("parent sees read-only tooltip on checkboxes", async ({ page }) => {
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Wait for checkbox to load
@@ -180,7 +182,7 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
     page,
   }) => {
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Wait for athlete switcher to load
@@ -195,7 +197,7 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
 
   test("parent can switch between athletes", async ({ page }) => {
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Wait for athlete switcher
@@ -225,7 +227,7 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
 
   test("parent sees tasks sorted by deadline urgency", async ({ page }) => {
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Wait for tasks to load
@@ -269,7 +271,7 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
 
   test("parent can expand task details", async ({ page }) => {
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Wait for task to load
@@ -291,7 +293,7 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
     page,
   }) => {
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Wait for tasks to load
@@ -304,7 +306,7 @@ test.describe.skip("Parent Task Viewing Workflow", () => {
 
   test("parent task page header reflects viewing context", async ({ page }) => {
     await page.goto(
-      "http://localhost:3003/tasks?parent_view=true&athlete_id=athlete-123",
+      "/tasks?parent_view=true&athlete_id=athlete-123",
     );
 
     // Wait for header to load

@@ -108,6 +108,17 @@ const useSchoolsInternal = (): {
     },
   );
 
+  // Fetch when family context first becomes available (covers the race where
+  // activeAthleteId was already set but activeFamilyId wasn't ready yet)
+  watch(
+    () => activeFamily.activeFamilyId?.value,
+    async (newId, oldId) => {
+      if (newId && !oldId) {
+        await fetchSchools();
+      }
+    },
+  );
+
   const fetchSchools = (): Promise<void> => {
     if (fetchInFlight) return fetchInFlight;
 

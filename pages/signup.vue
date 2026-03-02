@@ -77,9 +77,9 @@
             :first-name="firstName"
             :last-name="lastName"
             :email="email"
+            :date-of-birth="dateOfBirth"
             :password="password"
             :confirm-password="confirmPassword"
-            :family-code="familyCode"
             :agree-to-terms="agreeToTerms"
             :loading="loading"
             :has-errors="hasErrors"
@@ -87,14 +87,13 @@
             @update:first-name="firstName = $event"
             @update:last-name="lastName = $event"
             @update:email="email = $event"
+            @update:date-of-birth="dateOfBirth = $event"
             @update:password="password = $event"
             @update:confirm-password="confirmPassword = $event"
-            @update:family-code="familyCode = $event"
             @update:agree-to-terms="agreeToTerms = $event"
             @submit="handleSignup"
             @validate-email="validateEmail"
             @validate-password="validatePassword"
-            @validate-family-code="validateFamilyCode"
           />
         </div>
       </div>
@@ -107,7 +106,9 @@ definePageMeta({ layout: "public" });
 
 import { ref, watch } from "vue";
 import { useAuth } from "~/composables/useAuth";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useSupabase } from "~/composables/useSupabase";
+import { useUserStore } from "~/stores/user";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
 import { signupSchema } from "~/utils/validation/schemas";
@@ -124,16 +125,18 @@ import SignupForm from "~/components/Auth/SignupForm.vue";
 const firstName = ref("");
 const lastName = ref("");
 const email = ref("");
+const dateOfBirth = ref("");
 const password = ref("");
 const confirmPassword = ref("");
 const role = ref("");
-const familyCode = ref("");
 const userType = ref<"player" | "parent" | null>(null);
 const agreeToTerms = ref(false);
 
 const { loading } = useLoadingStates();
 const { signup } = useAuth();
+const { $fetchAuth } = useAuthFetch();
 const supabase = useSupabase();
+const userStore = useUserStore();
 const {
   errors,
   fieldErrors,
@@ -175,13 +178,6 @@ watch(agreeToTerms, (isChecked) => {
   }
 });
 
-const validateFamilyCode = async () => {
-  // Optional field, only validate if provided
-  if (familyCode.value) {
-    // Could add schema validation here if needed
-  }
-};
-
 const handleSignup = async () => {
   // Check passwords match
   if (password.value !== confirmPassword.value) {
@@ -199,6 +195,22 @@ const handleSignup = async () => {
     return;
   }
 
+  // COPPA age gate: block users under 13
+  if (dateOfBirth.value) {
+    const dob = new Date(dateOfBirth.value);
+    const today = new Date();
+    const age = today.getFullYear() - dob.getFullYear() -
+      (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate()) ? 1 : 0);
+    if (age < 13) {
+      setErrors([{
+        field: "form",
+        message: "Recruiting Compass is not available for users under 13. If you're a parent, please register with your own information.",
+      }]);
+      await focusErrorSummary();
+      return;
+    }
+  }
+
   const fullName = `${firstName.value} ${lastName.value}`.trim();
 
   // Validate entire form before submission
@@ -206,10 +218,10 @@ const handleSignup = async () => {
     {
       fullName,
       email: email.value,
+      dateOfBirth: dateOfBirth.value,
       password: password.value,
       confirmPassword: confirmPassword.value,
       role: role.value,
-      familyCode: familyCode.value,
     },
     signupSchema,
   );
@@ -225,18 +237,11 @@ const handleSignup = async () => {
     let userId: string;
 
     try {
-      // Sign up with Supabase Auth (including role in metadata)
-      const signupOptions = {};
-      if (validated.role === "parent" && validated.familyCode) {
-        Object.assign(signupOptions, { familyCode: validated.familyCode });
-      }
-
       const authData = await signup(
         validated.email,
         validated.password,
         validated.fullName as string,
         validated.role,
-        signupOptions,
       );
 
       if (!authData?.data?.user?.id) {
@@ -270,43 +275,29 @@ const handleSignup = async () => {
 
     // Create or update user profile in public.users table
     // Use upsert to handle idempotent signup (retry safety)
-    const upsertResponse = await (supabase.from("users") as any).upsert(
-      [
-        {
-          id: userId,
-          email: validated.email,
-          full_name: validated.fullName,
-          role: validated.role,
-        },
-      ],
-      { onConflict: "id" },
-    );
+    const userRecord: Record<string, unknown> = {
+      id: userId,
+      email: validated.email,
+      full_name: validated.fullName,
+      role: validated.role,
+    };
+    if (validated.dateOfBirth) userRecord.date_of_birth = validated.dateOfBirth;
+    const upsertResponse = await (supabase.from("users") as any).upsert([userRecord], { onConflict: "id" });
     const { error: upsertError } = upsertResponse as { error: any };
 
     if (upsertError) {
       throw upsertError;
     }
 
-    // Determine redirect based on user type
-    let redirectUrl = "";
+    // Create family unit for the new user (both roles)
+    await $fetchAuth("/api/family/create", { method: "POST" });
 
-    if (validated.role === "player") {
-      // Players go to onboarding
-      redirectUrl = "/onboarding";
-    } else if (validated.role === "parent") {
-      // Parents go to family code entry or dashboard
-      if (validated.familyCode) {
-        // Parent has family code - go to dashboard (already linked)
-        redirectUrl = "/dashboard";
-      } else {
-        // Parent without code - go to family code entry screen
-        redirectUrl = "/family-code-entry";
-      }
-    } else {
-      // Fallback for other roles
-      redirectUrl =
-        "/verify-email?email=" + encodeURIComponent(validated.email);
-    }
+    // Sync auth state so the middleware sees isAuthenticated=true before navigation
+    await userStore.initializeUser();
+
+    // Redirect to role-specific onboarding
+    const redirectUrl =
+      validated.role === "parent" ? "/onboarding/parent" : "/onboarding";
 
     await navigateTo(redirectUrl);
   } catch (err: unknown) {

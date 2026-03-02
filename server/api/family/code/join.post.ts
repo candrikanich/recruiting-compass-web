@@ -19,14 +19,8 @@ export default defineEventHandler(async (event) => {
   const { familyCode } = body;
   const supabase = useSupabaseAdmin();
 
-  // Get user role from database
+  // Both players and parents can join families via code
   const userRole = await getUserRole(user.id, supabase);
-  if (userRole !== "parent") {
-    throw createError({
-      statusCode: 403,
-      message: "Only parents can join families using codes",
-    });
-  }
 
   // Rate limiting
   const ip = getRequestIP(event) || "unknown";
@@ -48,7 +42,7 @@ export default defineEventHandler(async (event) => {
   // Find family by code
   const familyResponse = await supabase
     .from("family_units")
-    .select("id, family_name, player_user_id")
+    .select("id, family_name, created_by_user_id")
     .eq("family_code", familyCode)
     .single();
 
@@ -66,7 +60,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Prevent joining own family
-  if (family.player_user_id === user.id) {
+  if (family.created_by_user_id === user.id) {
     throw createError({
       statusCode: 400,
       message: "You cannot join your own family",
@@ -95,11 +89,11 @@ export default defineEventHandler(async (event) => {
     };
   }
 
-  // Add parent to family_members
+  // Add user to family_members with their actual role
   const memberResponse = await supabase.from("family_members").insert({
     family_unit_id: family.id,
     user_id: user.id,
-    role: "parent",
+    role: userRole ?? "player",
   } as Database["public"]["Tables"]["family_members"]["Insert"]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -130,7 +124,6 @@ export default defineEventHandler(async (event) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (logPromise as any)
-
     .then(() => {
       // Success - do nothing
     })

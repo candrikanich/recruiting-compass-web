@@ -42,7 +42,7 @@ const showSwitcher = computed(() => {
 });
 
 const accessibleAthletes = computed(
-  () => activeFamily.parentAccessibleFamilies.value,
+  () => activeFamily.getAccessibleAthletes(),
 );
 
 const selectedId = ref("");

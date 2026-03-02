@@ -27,6 +27,9 @@
         :athlete-name="activeAthleteName"
       />
 
+      <!-- Parent onboarding banner: shown until athlete connects (self-managed) -->
+      <ParentOnboardingBanner v-if="userStore.isParent" />
+
       <!-- Timeline Summary -->
       <section aria-labelledby="timeline-heading">
         <h2 id="timeline-heading" class="sr-only">Timeline Summary</h2>
@@ -40,9 +43,9 @@
           :coach-count="coachCount"
           :school-count="schoolCount"
           :interaction-count="interactionCount"
+          :event-count="eventCount"
           :total-offers="totalOffers"
           :accepted-offers="acceptedOffers"
-          :a-tier-school-count="aTierSchoolCount"
           :contacts-this-month="contactsThisMonth"
         />
       </section>
@@ -189,6 +192,7 @@ import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
+import ParentOnboardingBanner from "~/components/Dashboard/ParentOnboardingBanner.vue";
 import DashboardTimelineCard from "~/components/Dashboard/DashboardTimelineCard.vue";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
@@ -242,6 +246,7 @@ const {
   allCoaches,
   allMetrics,
   allOffers,
+  allEvents,
 } = dashboardData;
 
 // Dashboard calculations derived from dashboard data
@@ -250,17 +255,18 @@ const {
   contactsThisMonth,
   totalOffers,
   acceptedOffers,
-  aTierSchoolCount,
   upcomingEvents,
   topMetrics,
 } = useDashboardCalculations(dashboardData);
+
+const eventCount = computed(() => allEvents.value.length);
 
 // Inject family context provided at app.vue level (with singleton fallback)
 const activeFamily =
   inject<UseActiveFamilyReturn>("activeFamily") || useFamilyContext();
 
 // Destructure activeFamily refs used in template for auto-unwrapping
-const { isViewingAsParent } = activeFamily;
+const { isViewingAsParent, parentAccessibleFamilies } = activeFamily;
 
 // Local state
 const user = computed(() => userStore.user);
@@ -277,9 +283,8 @@ const targetUserId = computed(() => {
 // Get active athlete name for parent context banner
 const activeAthleteName = computed(() => {
   return activeFamily.parentAccessibleFamilies.value.find(
-    (f: { athleteId: string }) =>
-      f.athleteId === activeFamily.activeAthleteId.value,
-  )?.athleteName;
+    (f) => f.athleteId !== null && f.athleteId === activeFamily.activeAthleteId.value,
+  )?.athleteName ?? undefined;
 });
 
 // User first name for greeting

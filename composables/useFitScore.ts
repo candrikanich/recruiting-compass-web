@@ -4,6 +4,7 @@
  */
 
 import { ref, shallowRef, computed } from "vue";
+import { useAuthFetch } from "./useAuthFetch";
 import type { School } from "~/types/models";
 import type {
   FitScoreResult,
@@ -67,6 +68,7 @@ export const useFitScore = (): {
   getFitScore: (schoolId: string) => FitScoreResult | undefined;
   clearCache: () => void;
 } => {
+  const { $fetchAuth } = useAuthFetch();
   const schoolFitScoresRef = shallowRef<Map<string, FitScoreResult>>(new Map());
   const portfolioHealthRef = ref<PortfolioHealth | null>(null);
   const loadingRef = ref(false);
@@ -299,20 +301,12 @@ export const useFitScore = (): {
     errorRef.value = null;
 
     try {
-      const res = await fetch("/api/athlete/fit-scores/recalculate-all", {
-        method: "POST",
-      });
-
-      if (!res.ok) {
-        throw new Error(`Failed to recalculate fit scores: ${res.status}`);
-      }
-
-      const response = (await res.json()) as {
+      const response = await $fetchAuth<{
         success: boolean;
         updated: number;
         failed: number;
         message: string;
-      };
+      }>("/api/athlete/fit-scores/recalculate-all", { method: "POST" });
 
       if (!response?.success) {
         throw new Error(response?.message || "Recalculation failed");

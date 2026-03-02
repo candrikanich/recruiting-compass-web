@@ -1,4 +1,5 @@
 import { ref } from "vue";
+import { useAuthFetch } from "./useAuthFetch";
 import { createClientLogger } from "~/utils/logger";
 import type { CollegeScorecardResponse } from "~/types/api";
 import { collegeScorecardResponseSchema } from "~/utils/validation/schemas";
@@ -212,20 +213,19 @@ export const useCollegeData = () => {
       });
 
       const url = `/api/colleges/search?${params.toString()}`;
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          error.value = "College Scorecard API key is invalid";
-        } else if (response.status === 429) {
+      const { $fetchAuth } = useAuthFetch();
+      let apiData: CollegeScorecardResponse;
+      try {
+        apiData = await $fetchAuth<CollegeScorecardResponse>(url);
+      } catch (err: unknown) {
+        const status = (err as { statusCode?: number })?.statusCode;
+        if (status === 429) {
           error.value = "Too many requests to College Scorecard API";
         } else {
           error.value = "Unable to fetch college data";
         }
         return null;
       }
-
-      const apiData = (await response.json()) as CollegeScorecardResponse;
 
       // Validate API response structure
       try {
@@ -288,14 +288,14 @@ export const useCollegeData = () => {
       });
 
       const url = `/api/colleges/search?${params.toString()}`;
-      const response = await fetch(url);
-
-      if (!response.ok) {
+      const { $fetchAuth } = useAuthFetch();
+      let apiData: CollegeScorecardResponse;
+      try {
+        apiData = await $fetchAuth<CollegeScorecardResponse>(url);
+      } catch {
         error.value = "Unable to fetch college data";
         return null;
       }
-
-      const apiData = (await response.json()) as CollegeScorecardResponse;
 
       // Validate API response structure
       try {

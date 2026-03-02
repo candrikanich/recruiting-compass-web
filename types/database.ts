@@ -908,6 +908,60 @@ export type Database = {
           },
         ]
       }
+      family_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          expires_at: string
+          family_unit_id: string
+          id: string
+          invited_by: string
+          invited_email: string
+          role: string
+          status: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          expires_at?: string
+          family_unit_id: string
+          id?: string
+          invited_by: string
+          invited_email: string
+          role: string
+          status?: string
+          token: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          expires_at?: string
+          family_unit_id?: string
+          id?: string
+          invited_by?: string
+          invited_email?: string
+          role?: string
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_invitations_family_unit_id_fkey"
+            columns: ["family_unit_id"]
+            isOneToOne: false
+            referencedRelation: "family_units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       family_members: {
         Row: {
           added_at: string | null
@@ -951,35 +1005,38 @@ export type Database = {
         Row: {
           code_generated_at: string | null
           created_at: string | null
+          created_by_user_id: string
           family_code: string | null
           family_name: string | null
           id: string
-          player_user_id: string
+          pending_player_details: Json | null
           updated_at: string | null
         }
         Insert: {
           code_generated_at?: string | null
           created_at?: string | null
+          created_by_user_id: string
           family_code?: string | null
           family_name?: string | null
           id?: string
-          player_user_id: string
+          pending_player_details?: Json | null
           updated_at?: string | null
         }
         Update: {
           code_generated_at?: string | null
           created_at?: string | null
+          created_by_user_id?: string
           family_code?: string | null
           family_name?: string | null
           id?: string
-          player_user_id?: string
+          pending_player_details?: Json | null
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "family_units_student_user_id_fkey"
-            columns: ["player_user_id"]
-            isOneToOne: true
+            foreignKeyName: "family_units_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -1070,35 +1127,27 @@ export type Database = {
       }
       help_feedback: {
         Row: {
+          created_at: string | null
+          helpful: boolean
           id: string
           page: string
-          helpful: boolean
           user_id: string | null
-          created_at: string
         }
         Insert: {
+          created_at?: string | null
+          helpful: boolean
           id?: string
           page: string
-          helpful: boolean
           user_id?: string | null
-          created_at?: string
         }
         Update: {
+          created_at?: string | null
+          helpful?: boolean
           id?: string
           page?: string
-          helpful?: boolean
           user_id?: string | null
-          created_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "help_feedback_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       interactions: {
         Row: {
@@ -1746,6 +1795,7 @@ export type Database = {
         Row: {
           academic_info: Json | null
           amenities: Json | null
+          city: string | null
           coaching_philosophy: string | null
           coaching_style: string | null
           communication_style: string | null
@@ -1771,6 +1821,7 @@ export type Database = {
           pros: string[] | null
           ranking: number | null
           recruiting_approach: string | null
+          state: string | null
           status: Database["public"]["Enums"]["school_status"] | null
           status_changed_at: string | null
           success_metrics: string | null
@@ -1783,6 +1834,7 @@ export type Database = {
         Insert: {
           academic_info?: Json | null
           amenities?: Json | null
+          city?: string | null
           coaching_philosophy?: string | null
           coaching_style?: string | null
           communication_style?: string | null
@@ -1808,6 +1860,7 @@ export type Database = {
           pros?: string[] | null
           ranking?: number | null
           recruiting_approach?: string | null
+          state?: string | null
           status?: Database["public"]["Enums"]["school_status"] | null
           status_changed_at?: string | null
           success_metrics?: string | null
@@ -1820,6 +1873,7 @@ export type Database = {
         Update: {
           academic_info?: Json | null
           amenities?: Json | null
+          city?: string | null
           coaching_philosophy?: string | null
           coaching_style?: string | null
           communication_style?: string | null
@@ -1845,6 +1899,7 @@ export type Database = {
           pros?: string[] | null
           ranking?: number | null
           recruiting_approach?: string | null
+          state?: string | null
           status?: Database["public"]["Enums"]["school_status"] | null
           status_changed_at?: string | null
           success_metrics?: string | null
@@ -2104,12 +2159,15 @@ export type Database = {
           athlete_id: string
           completed: boolean | null
           completed_at: string | null
+          condition_snapshot: Json | null
           created_at: string | null
           dismissed: boolean | null
           dismissed_at: string | null
           id: string
           message: string
           pending_surface: boolean | null
+          previous_suggestion_id: string | null
+          reappeared: boolean | null
           related_school_id: string | null
           related_task_id: string | null
           rule_type: string
@@ -2122,12 +2180,15 @@ export type Database = {
           athlete_id: string
           completed?: boolean | null
           completed_at?: string | null
+          condition_snapshot?: Json | null
           created_at?: string | null
           dismissed?: boolean | null
           dismissed_at?: string | null
           id?: string
           message: string
           pending_surface?: boolean | null
+          previous_suggestion_id?: string | null
+          reappeared?: boolean | null
           related_school_id?: string | null
           related_task_id?: string | null
           rule_type: string
@@ -2140,12 +2201,15 @@ export type Database = {
           athlete_id?: string
           completed?: boolean | null
           completed_at?: string | null
+          condition_snapshot?: Json | null
           created_at?: string | null
           dismissed?: boolean | null
           dismissed_at?: string | null
           id?: string
           message?: string
           pending_surface?: boolean | null
+          previous_suggestion_id?: string | null
+          reappeared?: boolean | null
           related_school_id?: string | null
           related_task_id?: string | null
           rule_type?: string
@@ -2159,6 +2223,13 @@ export type Database = {
             columns: ["athlete_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suggestion_previous_suggestion_id_fkey"
+            columns: ["previous_suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "suggestion"
             referencedColumns: ["id"]
           },
           {
@@ -2353,6 +2424,8 @@ export type Database = {
           act_score: number | null
           created_at: string | null
           current_phase: string | null
+          date_of_birth: string | null
+          deletion_requested_at: string | null
           email: string
           full_name: string | null
           gpa: number | null
@@ -2385,6 +2458,8 @@ export type Database = {
           act_score?: number | null
           created_at?: string | null
           current_phase?: string | null
+          date_of_birth?: string | null
+          deletion_requested_at?: string | null
           email: string
           full_name?: string | null
           gpa?: number | null
@@ -2417,6 +2492,8 @@ export type Database = {
           act_score?: number | null
           created_at?: string | null
           current_phase?: string | null
+          date_of_birth?: string | null
+          deletion_requested_at?: string | null
           email?: string
           full_name?: string | null
           gpa?: number | null

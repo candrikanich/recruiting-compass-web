@@ -1,15 +1,13 @@
-import { defineEventHandler, createError } from "h3";
+import { defineEventHandler, createError, setResponseHeader } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 
-interface UserDetails {
-  id: string;
-  full_name: string | null;
-  graduation_year: number | null;
-}
 
 export default defineEventHandler(async (event) => {
+  setResponseHeader(event, 'Deprecation', 'true');
+  setResponseHeader(event, 'Sunset', '2026-06-01');
+
   const logger = useLogger(event, "family/accessible");
   const user = await requireAuth(event);
   logger.debug("User authenticated", { userId: user.id });
@@ -54,10 +52,24 @@ export default defineEventHandler(async (event) => {
     const familyUnitIds = familyMembers.map((fm) => fm.family_unit_id);
     logger.debug("Family unit IDs", { familyUnitIds });
 
-    // Fetch family unit details
+    // Fetch player members of these families (only families with a connected player count)
+    const { data: playerMembers, error: playerMembersError } = await supabase
+      .from("family_members")
+      .select("family_unit_id, user_id, users!inner(id, full_name, email)")
+      .in("family_unit_id", familyUnitIds)
+      .eq("role", "player");
+
+    if (playerMembersError) {
+      logger.error("Failed to fetch player members", playerMembersError);
+      throw createError({ statusCode: 500, statusMessage: "Failed to fetch accessible families" });
+    }
+
+    logger.debug("Found player members", { count: playerMembers?.length ?? 0 });
+
+    // Fetch all family unit details (including those without a connected player)
     const { data: families, error: familiesError } = await supabase
       .from("family_units")
-      .select("id, player_user_id, family_name")
+      .select("id, family_name")
       .in("id", familyUnitIds);
 
     if (familiesError) {
@@ -65,42 +77,37 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 500, statusMessage: "Failed to fetch accessible families" });
     }
 
-    // Get player user IDs and fetch user details separately
-    const playerUserIds = families?.map((f) => f.player_user_id) || [];
-    const { data: users, error: usersError } = await supabase
-      .from("users")
-      .select("id, full_name, graduation_year")
-      .in("id", playerUserIds);
+    logger.debug("Fetched parent families", { familyCount: families?.length ?? 0 });
 
-    if (usersError) {
-      logger.error("Failed to fetch user details", usersError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to fetch accessible families" });
-    }
+    type PlayerMemberRow = {
+      family_unit_id: string;
+      user_id: string;
+      users: { id: string; full_name: string | null; email: string | null };
+    };
+    const typedPlayerMembers = (playerMembers ?? []) as PlayerMemberRow[];
 
-    // Create a map of user details
-    const usersMap = (users || []).reduce(
-      (map, user) => {
-        map[user.id] = user;
-        return map;
-      },
-      {} as Record<string, UserDetails>,
-    );
+    // Map families: include player info when available, null athlete when not yet connected
+    const accessibleFamilies = (families || []).flatMap((family) => {
+      const players = typedPlayerMembers.filter((pm) => pm.family_unit_id === family.id);
 
-    logger.debug("Fetched families and users", {
-      familyCount: families?.length ?? 0,
-      userCount: users?.length ?? 0,
-    });
+      if (players.length === 0) {
+        // No player connected yet — parent can still use the family
+        return [{
+          familyUnitId: family.id,
+          athleteId: null as string | null,
+          athleteName: null as string | null,
+          graduationYear: null as number | null,
+          familyName: family.family_name || "Family",
+        }];
+      }
 
-    // Map to response format
-    const accessibleFamilies = (families || []).map((family) => {
-      const userDetails = usersMap[family.player_user_id];
-      return {
+      return players.map((pm) => ({
         familyUnitId: family.id,
-        athleteId: family.player_user_id,
-        athleteName: userDetails?.full_name || "Unknown Athlete",
-        graduationYear: userDetails?.graduation_year || null,
+        athleteId: pm.user_id as string | null,
+        athleteName: pm.users.full_name || pm.users.email || "Unknown Athlete",
+        graduationYear: null as number | null,
         familyName: family.family_name || "Family",
-      };
+      }));
     });
 
     logger.debug("Returning accessible families", {

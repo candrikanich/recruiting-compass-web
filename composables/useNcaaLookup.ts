@@ -34,7 +34,7 @@ const normalizeSchoolName = (name: string): string => {
     name
       .toLowerCase()
       // Remove campuses and locations
-      .replace(/\s+main\s+campus\b/i, "")
+      .replace(/[-\s]+main\s+campus\b/i, "")
       .replace(/\s+at\s+.+$/i, "") // "Kent State at Kent" -> "kent state"
       .replace(/\s+\(.+\)$/i, "") // "School (Location)" -> "school"
       // Remove common suffixes

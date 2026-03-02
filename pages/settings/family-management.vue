@@ -130,6 +130,88 @@
         </div>
       </section>
 
+      <!-- Invite a Family Member -->
+      <section
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+        data-testid="invite-member-form"
+      >
+        <h2 class="text-xl font-bold text-slate-900 mb-4">
+          Invite a Family Member
+        </h2>
+        <div class="space-y-4">
+          <div>
+            <label
+              for="inviteMemberEmail"
+              class="block text-sm font-medium text-slate-700 mb-1"
+            >
+              Email address
+            </label>
+            <input
+              id="inviteMemberEmail"
+              v-model="inviteEmail"
+              data-testid="invite-email-input"
+              type="email"
+              placeholder="family@example.com"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label
+              for="inviteMemberRole"
+              class="block text-sm font-medium text-slate-700 mb-1"
+            >
+              Role
+            </label>
+            <select
+              id="inviteMemberRole"
+              v-model="inviteRole"
+              data-testid="invite-role-select"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="player">Player</option>
+              <option value="parent">Parent</option>
+            </select>
+          </div>
+          <button
+            data-testid="send-invite-submit"
+            type="button"
+            :disabled="!inviteEmail || inviteLoading"
+            class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="handleSendInvite"
+          >
+            {{ inviteLoading ? "Sending\u2026" : "Send invite" }}
+          </button>
+          <p v-if="inviteError" class="text-sm text-red-600">
+            {{ inviteError }}
+          </p>
+          <p v-if="inviteSuccess" class="text-sm text-green-600">
+            {{ inviteSuccess }}
+          </p>
+        </div>
+      </section>
+
+      <!-- Pending Invitations Section -->
+      <section
+        v-if="pendingInvitations.length > 0"
+        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+      >
+        <h2 class="text-xl font-bold text-slate-900 mb-4">
+          Pending Invitations
+          <span class="text-sm font-normal text-slate-500 ml-1">
+            ({{ pendingInvitations.length }})
+          </span>
+        </h2>
+        <div class="space-y-3">
+          <FamilyPendingInviteCard
+            v-for="inv in pendingInvitations"
+            :key="inv.id"
+            :invitation="inv"
+            @revoke="revokeInvitation"
+            @resend="handleResendInvitation"
+          />
+        </div>
+      </section>
+
       <!-- Empty state if nothing present -->
       <div
         v-if="isParent && parentFamilies.length === 0 && !familyCodeLoading"
@@ -148,11 +230,15 @@
 import { ref, onMounted, computed } from "vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useFamilyCode } from "~/composables/useFamilyCode";
+import { useFamilyInvitations } from "~/composables/useFamilyInvitations";
+import { useFamilyInvite } from "~/composables/useFamilyInvite";
+import { useToast } from "~/composables/useToast";
 import { useUserStore } from "~/stores/user";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import FamilyCodeDisplay from "~/components/Family/FamilyCodeDisplay.vue";
 import FamilyCodeInput from "~/components/Family/FamilyCodeInput.vue";
 import FamilyMemberCard from "~/components/Family/FamilyMemberCard.vue";
+import FamilyPendingInviteCard from "~/components/Family/FamilyPendingInviteCard.vue";
 
 interface User {
   id: string;
@@ -177,11 +263,11 @@ definePageMeta({
 const userStore = useUserStore();
 const isPlayer = computed(() => userStore.user?.role === "player");
 const isParent = computed(() => userStore.user?.role === "parent");
+const { showToast } = useToast();
 
 const {
   myFamilyCode,
   myFamilyId,
-  myFamilyName,
   parentFamilies,
   loading: familyCodeLoading,
   error: familyCodeError,
@@ -193,6 +279,50 @@ const {
   copyCodeToClipboard,
   removeFamilyMember,
 } = useFamilyCode();
+
+const {
+  invitations: pendingInvitations,
+  fetchInvitations,
+  revokeInvitation,
+  resendInvitation,
+} = useFamilyInvitations();
+
+const inviteEmail = ref("");
+const inviteRole = ref<"player" | "parent">("player");
+const inviteSuccess = ref<string | null>(null);
+
+const {
+  sendInvite,
+  loading: inviteLoading,
+  error: inviteError,
+} = useFamilyInvite();
+
+async function handleSendInvite() {
+  if (!inviteEmail.value) return;
+  inviteSuccess.value = null;
+  const sentTo = inviteEmail.value;
+  try {
+    await sendInvite({ email: sentTo, role: inviteRole.value });
+    inviteEmail.value = "";
+    inviteSuccess.value = `Invite sent to ${sentTo}`;
+    await fetchInvitations().catch(() => {});
+  } catch {
+    // inviteError ref from useFamilyInvite is already set by the composable
+  }
+}
+
+async function handleResendInvitation(payload: {
+  id: string;
+  email: string;
+  role: "player" | "parent";
+}) {
+  try {
+    await resendInvitation(payload.id, payload.email, payload.role);
+    showToast(`Invite resent to ${payload.email}`, "success");
+  } catch {
+    showToast("Failed to resend invite. Please try again.", "error");
+  }
+}
 
 const codeGeneratedAt = ref<string | null>(null);
 const error = ref<string | null>(null);
@@ -229,6 +359,8 @@ onMounted(async () => {
   if (isPlayer.value && myFamilyId.value) {
     await fetchFamilyMembers();
   }
+
+  fetchInvitations().catch(() => {});
 });
 
 const handleJoinFamily = async (code: string) => {

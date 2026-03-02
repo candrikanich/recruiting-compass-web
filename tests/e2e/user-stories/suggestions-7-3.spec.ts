@@ -10,12 +10,10 @@
 
 import { test, expect } from "@playwright/test";
 
-const BASE_URL = "http://localhost:3003";
-
 test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to login
-    await page.goto(`${BASE_URL}/login`);
+    await page.goto("/login");
   });
 
   test("should update suggestions within 1 second after GPA profile change", async ({
@@ -27,11 +25,11 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     await page.click('button:has-text("Sign In")');
 
     // Wait for dashboard to load
-    await page.waitForURL(`${BASE_URL}/dashboard`, { timeout: 10000 });
+    await page.waitForURL("/dashboard", { timeout: 10000 });
 
     // Navigate to settings to update profile
     await page.click('a[href*="/settings"]');
-    await page.waitForURL(`${BASE_URL}/settings`, { timeout: 5000 });
+    await page.waitForURL("/settings", { timeout: 5000 });
 
     // Go to player details section
     await page.click('button:has-text("Player Details")');
@@ -58,7 +56,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     );
 
     // Navigate back to dashboard
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto("/dashboard");
 
     // Wait 1-2 seconds for suggestions to update
     await page.waitForTimeout(1500);
@@ -82,7 +80,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     await page.click('button:has-text("Sign In")');
 
     // Wait for dashboard
-    await page.waitForURL(`${BASE_URL}/dashboard`, { timeout: 10000 });
+    await page.waitForURL("/dashboard", { timeout: 10000 });
 
     // Verify suggestion exists: "You haven't contacted Coach A in 21 days"
     const suggestion = page.locator(
@@ -92,7 +90,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
 
     // Navigate to schools page
     await page.click('a[href*="/schools"]');
-    await page.waitForURL(`${BASE_URL}/schools`, { timeout: 5000 });
+    await page.waitForURL("/schools", { timeout: 5000 });
 
     // Open a school (e.g., Arizona State)
     await page.click('a:has-text("Arizona State")');
@@ -117,7 +115,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     });
 
     // Navigate back to dashboard
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto("/dashboard");
 
     // Wait for suggestion update (1-2 seconds)
     await page.waitForTimeout(1500);
@@ -138,7 +136,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     await page.click('button:has-text("Sign In")');
 
     // Wait for dashboard
-    await page.waitForURL(`${BASE_URL}/dashboard`, { timeout: 10000 });
+    await page.waitForURL("/dashboard", { timeout: 10000 });
 
     // Get initial suggestion count
     const initialCount = await page
@@ -155,7 +153,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     await page.click('button:has-text("Save")');
 
     // Go back to dashboard
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto("/dashboard");
     await page.waitForTimeout(2000);
 
     // Check for toast notification
@@ -174,7 +172,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     await page.click('button:has-text("Sign In")');
 
     // Wait for dashboard
-    await page.waitForURL(`${BASE_URL}/dashboard`, { timeout: 10000 });
+    await page.waitForURL("/dashboard", { timeout: 10000 });
 
     // Update profile to trigger suggestion generation
     await page.click('a[href*="/settings"]');
@@ -193,7 +191,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     ).toBeVisible();
 
     // Go back to dashboard
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto("/dashboard");
     await page.waitForTimeout(2000);
 
     // Verify suggestions are surfaced (up to 3 shown)
@@ -214,7 +212,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     await page.click('button:has-text("Sign In")');
 
     // Wait for dashboard
-    await page.waitForURL(`${BASE_URL}/dashboard`, { timeout: 10000 });
+    await page.waitForURL("/dashboard", { timeout: 10000 });
 
     // Find first suggestion
     const firstSuggestion = page
@@ -244,7 +242,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     await page.click('button:has-text("Sign In")');
 
     // Wait for dashboard
-    await page.waitForURL(`${BASE_URL}/dashboard`, { timeout: 10000 });
+    await page.waitForURL("/dashboard", { timeout: 10000 });
 
     // Check for "More Suggestions" indicator
     const moreCount = page.locator('[data-testid="more-suggestions-count"]');
@@ -273,7 +271,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
     const cronSecret = process.env.CRON_SECRET || "test-secret";
 
     const response = await page.request.post(
-      `${BASE_URL}/api/cron/daily-suggestions`,
+      `/api/cron/daily-suggestions`,
       {
         headers: {
           "x-cron-secret": cronSecret,
