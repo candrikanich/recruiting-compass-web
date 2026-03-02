@@ -1,7 +1,5 @@
 import { test, expect } from "@playwright/test";
 
-const BASE_URL = "http://localhost:3003";
-
 // Test data from documentation
 const TEST_ACCOUNTS = {
   player: {
@@ -19,7 +17,7 @@ test.describe("Family Member Removal", () => {
     page,
   }) => {
     // Navigate directly to family management (assumes user is logged in)
-    await page.goto(`${BASE_URL}/settings/family-management`);
+    await page.goto("/settings/family-management");
 
     // Handle redirect to login if not authenticated
     const loginUrl = page.url();
@@ -37,7 +35,7 @@ test.describe("Family Member Removal", () => {
 
   test("family member card component renders correctly", async ({ page }) => {
     // Test the component structure by navigating to family management
-    await page.goto(`${BASE_URL}/settings/family-management`);
+    await page.goto("/settings/family-management");
 
     // Check if page redirects to login (expected for unauthenticated users)
     const url = page.url();
@@ -56,7 +54,7 @@ test.describe("Family Member Removal", () => {
 
   test("remove member button has correct attributes", async ({ page }) => {
     // Navigate to family management
-    await page.goto(`${BASE_URL}/settings/family-management`);
+    await page.goto("/settings/family-management");
 
     // Look for any remove button
     const removeButtons = page.locator('button:has-text("Remove")');
@@ -82,7 +80,7 @@ test.describe("Family Member Removal", () => {
     page,
   }) => {
     // Navigate to family management
-    await page.goto(`${BASE_URL}/settings/family-management`);
+    await page.goto("/settings/family-management");
 
     // Look for blue border cards (player cards)
     const playerCards = page.locator('[class*="border-blue-200"]');
@@ -103,7 +101,7 @@ test.describe("Family Member Removal", () => {
     page,
   }) => {
     // Navigate to family management
-    await page.goto(`${BASE_URL}/settings/family-management`);
+    await page.goto("/settings/family-management");
 
     // Look for green border cards (parent cards)
     const parentCards = page.locator('[class*="border-green-200"]');
@@ -128,7 +126,7 @@ test.describe("Family Member Removal", () => {
       .evaluate(async () => {
         try {
           const response = await fetch(
-            `${BASE_URL}/api/family/members/invalid-id`,
+            "http://localhost:3003/api/family/members/invalid-id",
             {
               method: "DELETE",
             },

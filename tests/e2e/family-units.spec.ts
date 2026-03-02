@@ -1,7 +1,5 @@
 import { test, expect } from "@playwright/test";
 
-const BASE_URL = "http://localhost:3003";
-
 // Test data from documentation
 const TEST_ACCOUNTS = {
   player1: {
@@ -20,7 +18,7 @@ const TEST_ACCOUNTS = {
 
 test.describe("Family Units", () => {
   test("parent can view school list", async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
+    await page.goto("/login");
 
     // Login as parent
     await page.fill('input[type="email"]', TEST_ACCOUNTS.parent.email);
@@ -31,7 +29,7 @@ test.describe("Family Units", () => {
     await page.waitForURL(/\/(dashboard|schools)/);
 
     // Navigate to schools
-    await page.goto(`${BASE_URL}/schools`);
+    await page.goto("/schools");
     await page.waitForLoadState("networkidle");
 
     // Check schools page loads
@@ -39,7 +37,7 @@ test.describe("Family Units", () => {
   });
 
   test("parent can switch between athletes", async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
+    await page.goto("/login");
 
     // Login as parent
     await page.fill('input[type="email"]', TEST_ACCOUNTS.parent.email);
@@ -50,7 +48,7 @@ test.describe("Family Units", () => {
     await page.waitForURL(/\/(dashboard|schools)/);
 
     // Navigate to schools
-    await page.goto(`${BASE_URL}/schools`);
+    await page.goto("/schools");
     await page.waitForLoadState("networkidle");
 
     // Look for athlete selector (should be visible for parents)
@@ -77,7 +75,7 @@ test.describe("Family Units", () => {
   });
 
   test("player can view their own schools", async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
+    await page.goto("/login");
 
     // Login as player
     await page.fill('input[type="email"]', TEST_ACCOUNTS.player1.email);
@@ -88,7 +86,7 @@ test.describe("Family Units", () => {
     await page.waitForURL(/\/(dashboard|schools)/);
 
     // Navigate to schools
-    await page.goto(`${BASE_URL}/schools`);
+    await page.goto("/schools");
     await page.waitForLoadState("networkidle");
 
     // Check schools page loads with data
@@ -101,7 +99,7 @@ test.describe("Family Units", () => {
   });
 
   test("player cannot see athlete selector", async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
+    await page.goto("/login");
 
     // Login as player
     await page.fill('input[type="email"]', TEST_ACCOUNTS.player1.email);
@@ -112,7 +110,7 @@ test.describe("Family Units", () => {
     await page.waitForURL(/\/(dashboard|schools)/);
 
     // Navigate to schools
-    await page.goto(`${BASE_URL}/schools`);
+    await page.goto("/schools");
     await page.waitForLoadState("networkidle");
 
     // Check that athlete selector is not visible (player should not see it)
@@ -127,7 +125,7 @@ test.describe("Family Units", () => {
   });
 
   test("private notes can be added to schools", async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
+    await page.goto("/login");
 
     // Login as player
     await page.fill('input[type="email"]', TEST_ACCOUNTS.player1.email);
@@ -138,7 +136,7 @@ test.describe("Family Units", () => {
     await page.waitForURL(/\/(dashboard|schools)/);
 
     // Navigate to schools
-    await page.goto(`${BASE_URL}/schools`);
+    await page.goto("/schools");
     await page.waitForLoadState("networkidle");
 
     // Look for private notes card (with lock emoji and "Your Private Notes" text)
@@ -178,7 +176,7 @@ test.describe("Family Units", () => {
   });
 
   test("schools page displays school data correctly", async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
+    await page.goto("/login");
 
     // Login as player with existing data
     await page.fill('input[type="email"]', TEST_ACCOUNTS.player1.email);
@@ -189,7 +187,7 @@ test.describe("Family Units", () => {
     await page.waitForURL(/\/(dashboard|schools)/);
 
     // Navigate to schools
-    await page.goto(`${BASE_URL}/schools`);
+    await page.goto("/schools");
     await page.waitForLoadState("networkidle");
 
     // Verify key page elements
@@ -206,7 +204,7 @@ test.describe("Family Units", () => {
   });
 
   test("family context is maintained across pages", async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
+    await page.goto("/login");
 
     // Login as parent
     await page.fill('input[type="email"]', TEST_ACCOUNTS.parent.email);
@@ -217,16 +215,16 @@ test.describe("Family Units", () => {
     await page.waitForURL(/\/(dashboard|schools)/);
 
     // Navigate to schools
-    await page.goto(`${BASE_URL}/schools`);
+    await page.goto("/schools");
     await page.waitForLoadState("networkidle");
 
     // Verify we can navigate and return
-    await page.goto(`${BASE_URL}/coaches`);
+    await page.goto("/coaches");
     await page.waitForLoadState("networkidle");
     await expect(page.locator("h1").first()).toBeVisible();
 
     // Navigate back to schools
-    await page.goto(`${BASE_URL}/schools`);
+    await page.goto("/schools");
     await page.waitForLoadState("networkidle");
     await expect(page.locator("h1:has-text('Schools')")).toBeVisible();
   });

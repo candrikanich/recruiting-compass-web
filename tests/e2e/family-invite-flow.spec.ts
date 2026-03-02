@@ -1,8 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { getSupabaseAdmin } from "./seed/helpers/supabase-admin";
 
-const BASE_URL = "http://localhost:3003";
-
 const TEST_PLAYER = {
   email: "test.player2028@andrikanich.com",
   password: "test-password",
@@ -24,7 +22,7 @@ let expiredInviteId: string | null = null;
 let declineInviteId: string | null = null;
 
 async function loginAs(page: Page, email: string, password: string) {
-  await page.goto(`${BASE_URL}/login`);
+  await page.goto("/login");
   await page.fill('input[type="email"]', email);
   await page.fill('input[type="password"]', password);
   await page.click('button:has-text("Sign in")');
@@ -123,14 +121,14 @@ test.describe("Family Invite Flow", () => {
 
   test.describe("/join page — error states", () => {
     test("no token shows not-found error", async ({ page }) => {
-      await page.goto(`${BASE_URL}/join`);
+      await page.goto("/join");
       await expect(
         page.locator('[data-testid="error-not-found"]'),
       ).toBeVisible({ timeout: 10000 });
     });
 
     test("invalid token shows not-found error", async ({ page }) => {
-      await page.goto(`${BASE_URL}/join?token=invalid-token-xyz-e2e`);
+      await page.goto("/join?token=invalid-token-xyz-e2e");
       await page.waitForLoadState("networkidle");
       await expect(
         page.locator('[data-testid="error-not-found"]'),
@@ -139,7 +137,7 @@ test.describe("Family Invite Flow", () => {
 
     test("expired token shows expired error", async ({ page }) => {
       test.skip(!seedReady, "Invite seed not available");
-      await page.goto(`${BASE_URL}/join?token=${EXPIRED_TOKEN}`);
+      await page.goto(`/join?token=${EXPIRED_TOKEN}`);
       await page.waitForLoadState("networkidle");
       await expect(
         page.locator('[data-testid="error-expired"]'),
@@ -153,7 +151,7 @@ test.describe("Family Invite Flow", () => {
   test.describe("/join page — valid invite (unauthenticated)", () => {
     test("shows invite details and login form", async ({ page }) => {
       test.skip(!seedReady, "Invite seed not available");
-      await page.goto(`${BASE_URL}/join?token=${VALID_TOKEN}`);
+      await page.goto(`/join?token=${VALID_TOKEN}`);
       await page.waitForLoadState("networkidle");
 
       await expect(
@@ -183,7 +181,7 @@ test.describe("Family Invite Flow", () => {
     }) => {
       test.skip(!seedReady, "Invite seed not available");
       await loginAs(page, TEST_PARENT.email, TEST_PARENT.password);
-      await page.goto(`${BASE_URL}/join?token=${VALID_TOKEN}`);
+      await page.goto(`/join?token=${VALID_TOKEN}`);
       await page.waitForLoadState("networkidle");
 
       await expect(
@@ -199,7 +197,7 @@ test.describe("Family Invite Flow", () => {
     }) => {
       test.skip(!seedReady, "Invite seed not available");
       await loginAs(page, TEST_PARENT.email, TEST_PARENT.password);
-      await page.goto(`${BASE_URL}/join?token=${VALID_TOKEN}`);
+      await page.goto(`/join?token=${VALID_TOKEN}`);
       await page.waitForLoadState("networkidle");
 
       await expect(
@@ -218,7 +216,7 @@ test.describe("Family Invite Flow", () => {
     }) => {
       test.skip(!seedReady, "Invite seed not available");
       await loginAs(page, TEST_PARENT.email, TEST_PARENT.password);
-      await page.goto(`${BASE_URL}/join?token=${DECLINE_TOKEN}`);
+      await page.goto(`/join?token=${DECLINE_TOKEN}`);
       await page.waitForLoadState("networkidle");
 
       await expect(
@@ -235,7 +233,7 @@ test.describe("Family Invite Flow", () => {
       page,
     }) => {
       test.skip(!seedReady, "Invite seed not available");
-      await page.goto(`${BASE_URL}/join?token=${DECLINE_TOKEN}`);
+      await page.goto(`/join?token=${DECLINE_TOKEN}`);
       await page.waitForLoadState("networkidle");
 
       await expect(
@@ -250,7 +248,7 @@ test.describe("Family Invite Flow", () => {
     }) => {
       test.skip(!seedReady, "Invite seed not available");
       await loginAs(page, TEST_PLAYER.email, TEST_PLAYER.password);
-      await page.goto(`${BASE_URL}/settings/family-management`);
+      await page.goto("/settings/family-management");
       await page.waitForLoadState("networkidle");
 
       await expect(
@@ -261,7 +259,7 @@ test.describe("Family Invite Flow", () => {
     test("revoke button present on pending invite card", async ({ page }) => {
       test.skip(!seedReady, "Invite seed not available");
       await loginAs(page, TEST_PLAYER.email, TEST_PLAYER.password);
-      await page.goto(`${BASE_URL}/settings/family-management`);
+      await page.goto("/settings/family-management");
       await page.waitForLoadState("networkidle");
 
       await expect(
