@@ -394,7 +394,7 @@ describe("/join page", () => {
       await flushPromises();
 
       expect(mockSignup).toHaveBeenCalled();
-      expect(global.navigateTo).toHaveBeenCalledWith("/onboarding/parent");
+      expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
     });
   });
 });

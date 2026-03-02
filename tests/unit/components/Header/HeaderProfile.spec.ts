@@ -16,7 +16,7 @@ vi.mock("~/composables/useFamilyCode", () => ({
 
 const mockUser = ref({ id: "u1", email: "test@example.com", full_name: "Test User", role: "player" });
 vi.mock("~/stores/user", () => ({
-  useUserStore: vi.fn(() => ({ user: mockUser, isAuthenticated: true })),
+  useUserStore: vi.fn(() => ({ user: mockUser.value, isAuthenticated: true })),
 }));
 vi.mock("~/composables/useAuth", () => ({
   useAuth: vi.fn(() => ({ logout: vi.fn() })),

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ref } from "vue";
-import { mount } from "@vue/test-utils";
+import { mount, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import ParentOnboarding from "~/pages/onboarding/parent.vue";
 
@@ -21,6 +21,8 @@ vi.mock("~/composables/useFamilyCode", () => ({
     loading: ref(false),
     error: ref(null),
     fetchMyCode: vi.fn().mockResolvedValue(undefined),
+    createFamily: vi.fn().mockResolvedValue(true),
+    copyCodeToClipboard: vi.fn().mockResolvedValue(undefined),
   })),
 }));
 
@@ -49,6 +51,14 @@ const createWrapper = () =>
       },
     },
   });
+
+const setDob = async (wrapper: ReturnType<typeof mount>, dob = "2005-06-15") => {
+  const dobInput = wrapper.find('[data-testid="player-dob"]');
+  (dobInput.element as HTMLInputElement).value = dob;
+  await dobInput.trigger("input");
+  await dobInput.trigger("change");
+  await flushPromises();
+};
 
 describe("Parent Onboarding", () => {
   beforeEach(() => {
@@ -97,19 +107,27 @@ describe("Parent Onboarding", () => {
       expect(wrapper.text()).toContain("2");
     });
 
+    it("Next button is disabled without a date of birth", () => {
+      const wrapper = createWrapper();
+      const btn = wrapper.find('[data-testid="next-button"]');
+      expect(btn.attributes("disabled")).toBeDefined();
+    });
+
     it("proceeds to step 2 when Next is clicked", async () => {
       const wrapper = createWrapper();
+      await setDob(wrapper);
       await wrapper.find('[data-testid="next-button"]').trigger("click");
+      await flushPromises();
       await wrapper.vm.$nextTick();
       expect(wrapper.find('[data-testid="step-2"]').exists()).toBe(true);
       expect(wrapper.find('[data-testid="step-1"]').exists()).toBe(false);
     });
 
-    it("proceeds to step 2 when Skip is clicked", async () => {
+    it("does not call the API when the Next button is disabled", async () => {
       const wrapper = createWrapper();
-      await wrapper.find('[data-testid="skip-step-1"]').trigger("click");
-      await wrapper.vm.$nextTick();
-      expect(wrapper.find('[data-testid="step-2"]').exists()).toBe(true);
+      const btn = wrapper.find('[data-testid="next-button"]');
+      expect(btn.attributes("disabled")).toBeDefined();
+      expect(mockFetchAuth).not.toHaveBeenCalled();
     });
 
     it("calls POST /api/family/player-details when Next is clicked with data", async () => {
@@ -121,6 +139,7 @@ describe("Parent Onboarding", () => {
       await wrapper.find('[data-testid="graduation-year"]').setValue("2027");
       await wrapper.find('[data-testid="sport"]').setValue("Baseball");
       await wrapper.find('[data-testid="position"]').setValue("Pitcher");
+      await setDob(wrapper);
       await wrapper.find('[data-testid="next-button"]').trigger("click");
       await wrapper.vm.$nextTick();
 
@@ -128,24 +147,20 @@ describe("Parent Onboarding", () => {
         method: "POST",
         body: {
           playerName: "Alex Johnson",
+          playerDob: "2005-06-15",
           graduationYear: "2027",
           sport: "Baseball",
           position: "Pitcher",
         },
       });
     });
-
-    it("skips API call when Skip is clicked", async () => {
-      const wrapper = createWrapper();
-      await wrapper.find('[data-testid="skip-step-1"]').trigger("click");
-      await wrapper.vm.$nextTick();
-      expect(mockFetchAuth).not.toHaveBeenCalled();
-    });
   });
 
   describe("Step 2: Invite Player", () => {
     const goToStep2 = async (wrapper: ReturnType<typeof mount>) => {
-      await wrapper.find('[data-testid="skip-step-1"]').trigger("click");
+      await setDob(wrapper);
+      await wrapper.find('[data-testid="next-button"]').trigger("click");
+      await flushPromises();
       await wrapper.vm.$nextTick();
     };
 

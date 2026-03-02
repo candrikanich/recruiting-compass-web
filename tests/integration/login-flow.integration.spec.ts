@@ -81,12 +81,14 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
 
     const mockEq = vi.fn().mockImplementation(() => ({
       single: mockSingle,
+      maybeSingle: mockSingle,
       eq: mockEq,
     }));
 
     const mockSelect = vi.fn().mockImplementation(() => ({
       eq: mockEq,
       select: mockSelect,
+      maybeSingle: mockSingle,
     }));
 
     const mockInsert = vi.fn().mockImplementation(() => ({

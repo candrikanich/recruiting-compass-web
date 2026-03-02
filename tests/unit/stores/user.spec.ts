@@ -41,11 +41,15 @@ describe("useUserStore", () => {
 
   const getMockSupabase = () => {
     const mockSingle = vi.fn();
-    const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
+    const mockEq = vi
+      .fn()
+      .mockReturnValue({ single: mockSingle, maybeSingle: mockSingle });
     const mockSelect = vi
       .fn()
-      .mockReturnValue({ eq: mockEq, single: mockSingle });
-    const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
+      .mockReturnValue({ eq: mockEq, single: mockSingle, maybeSingle: mockSingle });
+    const mockInsert = vi.fn().mockReturnValue({
+      select: vi.fn().mockResolvedValue({ data: [], error: null }),
+    });
 
     const mockQuery = {
       select: mockSelect,
