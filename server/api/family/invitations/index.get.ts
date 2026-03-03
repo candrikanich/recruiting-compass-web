@@ -9,20 +9,21 @@ export default defineEventHandler(async (event) => {
     const user = await requireAuth(event);
     const supabase = useSupabaseAdmin();
 
-    const { data: membership } = await supabase
+    const { data: memberships, error: membershipError } = await supabase
       .from("family_members")
       .select("family_unit_id")
-      .eq("user_id", user.id)
-      .single();
+      .eq("user_id", user.id);
 
-    if (!membership) {
+    if (membershipError || !memberships?.length) {
       return { invitations: [] };
     }
+
+    const familyIds = memberships.map((m) => m.family_unit_id);
 
     const { data: invitations, error } = await supabase
       .from("family_invitations")
       .select("id, invited_email, role, status, expires_at, created_at, invited_by")
-      .eq("family_unit_id", membership.family_unit_id)
+      .in("family_unit_id", familyIds)
       .eq("status", "pending")
       .order("created_at", { ascending: false });
 

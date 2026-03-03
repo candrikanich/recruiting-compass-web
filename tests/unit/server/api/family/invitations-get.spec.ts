@@ -21,16 +21,18 @@ vi.mock("~/server/utils/supabase", () => ({
       if (table === "family_members") {
         return {
           select: () => ({
-            eq: () => ({
-              single: () => Promise.resolve({ data: mockState.membership }),
-            }),
+            eq: () =>
+              Promise.resolve({
+                data: mockState.membership ? [mockState.membership] : [],
+                error: null,
+              }),
           }),
         };
       }
       if (table === "family_invitations") {
         return {
           select: () => ({
-            eq: () => ({
+            in: () => ({
               eq: () => ({
                 order: () =>
                   Promise.resolve({ data: mockState.invitations, error: mockState.invitationsError }),

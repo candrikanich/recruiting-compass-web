@@ -50,6 +50,11 @@ jobs:
         run: npm run test:e2e
         env:
           CI: true
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NUXT_ADMIN_TOKEN_SECRET: ${{ secrets.NUXT_ADMIN_TOKEN_SECRET }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
 
       - name: Upload Playwright report
         if: always()
