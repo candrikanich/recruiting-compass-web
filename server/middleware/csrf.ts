@@ -1,4 +1,4 @@
-import { getHeader } from "h3";
+import { getHeader, getCookie } from "h3";
 import { requireCsrfToken } from "../utils/csrf";
 
 /**
@@ -26,8 +26,6 @@ const CSRF_EXEMPT_PREFIXES = [
   "/api/csrf-token",
   "/api/health",
   "/api/auth",
-  // iOS app uses Bearer auth only (no cookie/CSRF). Auth still enforced via requireAuth.
-  "/api/family/",
 ] as const;
 
 // Exact full paths that are CSRF-exempt
@@ -46,12 +44,18 @@ export default defineEventHandler((event) => {
 
   if (CSRF_EXEMPT_EXACT_PATHS.some((exact) => path === exact)) return;
 
-  // Bearer-token requests (e.g. from iOS app) are exempt — CSRF doesn't apply
+  // iOS app sends only Bearer tokens (no cookies). Web browsers send both a Bearer token
+  // (injected by useAuthFetch) and the sb-access-token cookie set by the Supabase SDK.
+  // Only exempt when there is a Bearer token AND no Supabase cookie — that combination
+  // uniquely identifies a native iOS client where CSRF is not applicable.
   const authHeader =
     getHeader(event, "authorization") ??
     (event.node.req.headers["authorization"] as string | undefined) ??
     (event.node.req.headers["Authorization"] as string | undefined);
-  if (authHeader?.trimStart().startsWith("Bearer ")) return;
+  const isBearerOnly =
+    authHeader?.trimStart().startsWith("Bearer ") &&
+    !getCookie(event, "sb-access-token");
+  if (isBearerOnly) return;
 
   requireCsrfToken(event);
 });
