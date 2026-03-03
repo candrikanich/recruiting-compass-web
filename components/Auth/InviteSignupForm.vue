@@ -18,6 +18,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
+  "update:email": [value: string];
   "update:firstName": [value: string];
   "update:lastName": [value: string];
   "update:dateOfBirth": [value: string];
@@ -72,18 +73,16 @@ const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
       <p class="mt-1 text-xs text-slate-500">Players must be 13 or older to register.</p>
     </div>
 
-    <div>
-      <label for="invite-email-display" class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
-      <input
-        id="invite-email-display"
-        data-testid="invite-email"
-        type="email"
-        :value="email"
-        disabled
-        class="w-full px-3 py-2 text-base border border-slate-300 rounded-lg bg-slate-100 text-slate-500 cursor-not-allowed"
-      />
-      <p class="mt-1 text-xs text-slate-500">This is the email address your invitation was sent to.</p>
-    </div>
+    <DesignSystemInput
+      id="invite-email"
+      data-testid="invite-email"
+      label="Email"
+      type="email"
+      placeholder="Your email address"
+      :model-value="email"
+      :disabled="loading"
+      @update:model-value="emit('update:email', $event as string)"
+    />
 
     <DesignSystemInput
       id="password"

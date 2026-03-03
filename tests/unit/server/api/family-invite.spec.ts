@@ -192,10 +192,13 @@ describe("GET /api/family/invite/[token]", () => {
     };
   });
 
-  it("returns family info for valid pending token", async () => {
+  it("returns family info for valid pending token without PII", async () => {
     const { default: handler } = await import("~/server/api/family/invite/[token].get");
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result).toMatchObject({ role: "parent", email: "invited@example.com" });
+    expect(result).toMatchObject({ invitationId: "invite-abc", role: "parent" });
+    expect(result).not.toHaveProperty("email");
+    expect(result).not.toHaveProperty("emailExists");
+    expect(result).not.toHaveProperty("inviterName");
   });
 
   it("returns 404 for unknown token", async () => {

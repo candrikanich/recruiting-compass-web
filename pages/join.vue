@@ -21,11 +21,8 @@ const activeFamilyCtx = inject<UseActiveFamilyReturn>("activeFamily");
 
 interface InviteDetails {
   invitationId: string;
-  email: string;
   role: "player" | "parent";
   familyName: string;
-  inviterName: string;
-  emailExists: boolean;
   prefill?: { firstName: string; lastName: string; graduationYear?: number; sport?: string; position?: string };
 }
 
@@ -38,6 +35,7 @@ const loginEmail = ref("");
 const loginPassword = ref("");
 
 // Signup form state
+const signupEmail = ref("");
 const signupFirstName = ref("");
 const signupLastName = ref("");
 const signupDateOfBirth = ref("");
@@ -59,7 +57,6 @@ onMounted(async () => {
   try {
     invite.value = await $fetch<InviteDetails>(`/api/family/invite/${token.value}`);
     fetchStatus.value = "success";
-    loginEmail.value = invite.value.email;
   } catch (err: unknown) {
     fetchStatus.value = "error";
     const e = err as { statusCode?: number; statusMessage?: string };
@@ -97,11 +94,11 @@ async function signupAndConnect() {
   loading.value = true;
   try {
     const fullName = `${signupFirstName.value} ${signupLastName.value}`.trim();
-    const authData = await signup(invite.value.email, signupPassword.value, fullName, invite.value.role);
+    const authData = await signup(signupEmail.value, signupPassword.value, fullName, invite.value.role);
 
     if (!authData?.data?.user?.id) throw new Error("Signup failed");
 
-    const userRecord: Record<string, unknown> = { id: authData.data.user.id, email: invite.value.email, full_name: fullName, role: invite.value.role };
+    const userRecord: Record<string, unknown> = { id: authData.data.user.id, email: signupEmail.value, full_name: fullName, role: invite.value.role };
     if (invite.value.role === "player" && signupDateOfBirth.value) userRecord.date_of_birth = signupDateOfBirth.value;
     const { error: upsertError } = await (supabase.from("users") as any).upsert([userRecord], { onConflict: "id" });
     if (upsertError) throw new Error("Could not save account details");
@@ -156,7 +153,7 @@ async function decline() {
     <!-- Error: expired -->
     <div v-else-if="fetchError?.statusCode === 410" data-testid="error-expired">
       <h1 class="text-xl font-semibold mb-2">This invite has expired</h1>
-      <p class="text-gray-600">Ask {{ invite?.inviterName ?? "the sender" }} to send a new invite.</p>
+      <p class="text-gray-600">Ask a family member to send a new invite.</p>
     </div>
 
     <!-- Error: already accepted -->
@@ -178,16 +175,13 @@ async function decline() {
         You're invited to join {{ invite.familyName }}'s recruiting journey
       </h1>
       <p class="text-gray-600 mb-6">
-        {{ invite.inviterName }} has invited you as a {{ invite.role }}.
+        A family member has invited you as a {{ invite.role }}.
       </p>
 
       <!-- Already authenticated: just confirm -->
       <div v-if="userStore.isAuthenticated">
         <p class="text-sm text-gray-500 mb-4">
           Connecting as {{ userStore.user?.email }}
-          <span v-if="userStore.user?.email !== invite.email" class="text-amber-600 ml-1">
-            (invite was sent to {{ invite.email }})
-          </span>
         </p>
         <div class="flex gap-3">
           <DesignSystemButton data-testid="connect-button" :loading="loading" @click="accept">
@@ -201,11 +195,11 @@ async function decline() {
 
       <!-- Not authenticated -->
       <div v-else>
-        <!-- Email exists — show login -->
-        <div v-if="invite.emailExists">
+        <!-- Login form -->
+        <div data-testid="login-section">
           <p class="text-sm text-gray-500 mb-4">Log in to connect your account.</p>
           <p v-if="loginError" class="text-sm text-red-600 mb-3" role="alert">{{ loginError }}</p>
-          <DesignSystemInput v-model="loginEmail" data-testid="email-input" label="Email" type="email" :placeholder="invite.email" class="mb-3" />
+          <DesignSystemInput v-model="loginEmail" data-testid="email-input" label="Email" type="email" class="mb-3" />
           <DesignSystemInput v-model="loginPassword" data-testid="password-input" label="Password" type="password" class="mb-4" />
           <div class="flex gap-3">
             <DesignSystemButton data-testid="login-connect-button" :loading="loading" @click="accept">
@@ -217,15 +211,15 @@ async function decline() {
           </div>
         </div>
 
-        <!-- No account yet — show signup -->
-        <div v-else>
+        <!-- Signup option -->
+        <div class="mt-8" data-testid="signup-section">
           <p class="text-sm text-gray-500 mb-4">
-            Create an account to connect, or
-            <NuxtLink to="/login" class="text-blue-600 hover:underline">log in instead</NuxtLink>.
+            Don't have an account?
+            <NuxtLink to="/signup" class="text-blue-600 hover:underline">Create one instead</NuxtLink>.
           </p>
           <p v-if="signupError" class="text-sm text-red-600 mb-3" role="alert">{{ signupError }}</p>
           <AuthInviteSignupForm
-            :email="invite.email"
+            :email="signupEmail"
             :role="invite.role"
             :first-name="signupFirstName"
             :last-name="signupLastName"
@@ -235,6 +229,7 @@ async function decline() {
             :agree-to-terms="signupAgreeToTerms"
             :loading="loading"
             :prefill="invite.prefill"
+            @update:email="signupEmail = $event"
             @update:first-name="signupFirstName = $event"
             @update:last-name="signupLastName = $event"
             @update:date-of-birth="signupDateOfBirth = $event"
