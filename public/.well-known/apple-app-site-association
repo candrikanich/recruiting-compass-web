@@ -3,8 +3,8 @@
     "apps": [],
     "details": [
       {
-        "appID": "G374A783RH.com.recruitingcompass.app",
-        "paths": ["/join", "/join/*"]
+        "appID": "G374A783RH.com.chrisandrikanich.TheRecruitingCompass",
+        "paths": ["/invite/*", "/join"]
       }
     ]
   }
