@@ -89,7 +89,7 @@ export default defineEventHandler(
         // This handles cases where user was deleted from public.users but auth record remains
         try {
           const { data: authUserData, error: authSearchError } =
-            await supabaseAdmin.auth.admin.listUsers({ filter: targetEmail });
+            await supabaseAdmin.auth.admin.listUsers();
 
           if (authSearchError) {
             throw authSearchError;
