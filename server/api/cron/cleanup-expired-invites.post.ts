@@ -11,6 +11,7 @@
 import { defineEventHandler, createError, getHeader } from "h3";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { createLogger } from "~/server/utils/logger";
+import { verifySharedSecret } from "~/server/utils/secrets";
 
 const logger = createLogger("cron/cleanup-expired-invites");
 
@@ -18,10 +19,12 @@ export default defineEventHandler(async (event) => {
   const authHeader = getHeader(event, "authorization");
   const cronSecretHeader = getHeader(event, "x-cron-secret");
   const cronSecret = process.env.CRON_SECRET;
+  const bearerSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
 
   const isAuthorized =
-    (authHeader && cronSecret && authHeader === `Bearer ${cronSecret}`) ||
-    (cronSecretHeader && cronSecret && cronSecretHeader === cronSecret);
+    cronSecret &&
+    ((bearerSecret && verifySharedSecret(bearerSecret, cronSecret)) ||
+      (cronSecretHeader && verifySharedSecret(cronSecretHeader, cronSecret)));
 
   if (!isAuthorized) {
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });

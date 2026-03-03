@@ -5,6 +5,7 @@
 
 import { defineEventHandler, getHeader, createError } from "h3";
 import { createClient } from "@supabase/supabase-js";
+import { verifySharedSecret } from "~/server/utils/secrets";
 import { TwitterService } from "~/server/utils/twitterService";
 import { InstagramService } from "~/server/utils/instagramService";
 import { analyzeSentiment } from "~/utils/sentimentAnalysis";
@@ -32,7 +33,8 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
       statusMessage: "SYNC_API_KEY not configured — endpoint disabled",
     });
   }
-  if (authHeader !== `Bearer ${syncApiKey}`) {
+  const bearerSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+  if (!bearerSecret || !verifySharedSecret(bearerSecret, syncApiKey)) {
     throw createError({
       statusCode: 401,
       statusMessage: "Invalid API key",
