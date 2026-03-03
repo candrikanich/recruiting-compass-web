@@ -1,10 +1,12 @@
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
+import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/invite/decline");
   try {
+    await requireAuth(event);
     const token = getRouterParam(event, "token");
 
     if (!token) {

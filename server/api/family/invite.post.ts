@@ -1,23 +1,31 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { randomUUID } from "crypto";
+import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { sendInviteEmail } from "~/server/utils/emailService";
 
+const inviteBodySchema = z.object({
+  email: z.string().email("A valid email address is required").toLowerCase(),
+  role: z.enum(["player", "parent"], {
+    errorMap: () => ({ message: "role must be player or parent" }),
+  }),
+});
+
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/invite");
   try {
     const user = await requireAuth(event);
-    const body = await readBody(event);
-    const { email, role } = body as { email: string; role: string };
-
-    if (!email || !role || !["player", "parent"].includes(role)) {
+    const rawBody = await readBody(event);
+    const parseResult = inviteBodySchema.safeParse(rawBody);
+    if (!parseResult.success) {
       throw createError({
         statusCode: 400,
-        statusMessage: "email and role (player|parent) are required",
+        statusMessage: parseResult.error.issues[0]?.message ?? "Invalid request body",
       });
     }
+    const { email, role } = parseResult.data;
 
     const supabase = useSupabaseAdmin();
 

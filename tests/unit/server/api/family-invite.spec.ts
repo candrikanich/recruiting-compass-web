@@ -13,6 +13,8 @@ const state = {
   insertError: null as object | null,
   // For token lookup
   invitation: null as Record<string, unknown> | null,
+  // Overridable request body
+  requestBody: { email: "invited@example.com", role: "parent" } as Record<string, unknown>,
 };
 
 vi.mock("~/server/utils/auth", () => ({
@@ -115,7 +117,7 @@ vi.mock("h3", async (importOriginal) => {
   return {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
-    readBody: vi.fn(async () => ({ email: "invited@example.com", role: "parent" })),
+    readBody: vi.fn(async () => state.requestBody),
     getRouterParam: vi.fn((_, key: string) => (key === "token" ? "test-token" : "invite-abc")),
     createError: (config: { statusCode: number; statusMessage?: string; message?: string }) => {
       const err = new Error(config.statusMessage ?? config.message) as Error & { statusCode: number };
@@ -134,6 +136,7 @@ describe("POST /api/family/invite", () => {
     state.existingMember = null;
     state.insertedInvitation = { id: "invite-abc" };
     state.insertError = null;
+    state.requestBody = { email: "invited@example.com", role: "parent" };
   });
 
   it("creates an invitation and returns token", async () => {
@@ -157,6 +160,18 @@ describe("POST /api/family/invite", () => {
     await expect(handler({} as Parameters<typeof handler>[0])).rejects.toThrow(
       "This person is already a member of your family",
     );
+  });
+
+  it("returns 400 for an invalid email address", async () => {
+    state.requestBody = { email: "not-an-email", role: "parent" };
+    const { default: handler } = await import("~/server/api/family/invite.post");
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("returns 400 for an invalid role", async () => {
+    state.requestBody = { email: "invited@example.com", role: "coach" };
+    const { default: handler } = await import("~/server/api/family/invite.post");
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 400 });
   });
 });
 
