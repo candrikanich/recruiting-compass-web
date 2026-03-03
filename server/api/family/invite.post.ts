@@ -9,9 +9,7 @@ import { emailSchema } from "~/utils/validation/validators";
 
 const inviteBodySchema = z.object({
   email: emailSchema,
-  role: z.enum(["player", "parent"], {
-    errorMap: () => ({ message: "role must be player or parent" }),
-  }),
+  role: z.enum(["player", "parent"], "role must be player or parent"),
 });
 
 export default defineEventHandler(async (event) => {
