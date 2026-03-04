@@ -74,6 +74,8 @@ async function accept() {
     await $fetchAuth(`/api/family/invite/${token.value}/accept`, { method: "POST" });
     await activeFamilyCtx?.refetchFamilies();
     showToast("You're connected!", "success");
+    const { $posthog } = useNuxtApp();
+    $posthog?.capture("family_invite_accepted");
     await navigateTo("/dashboard");
   } catch (err: unknown) {
     loginError.value = err instanceof Error ? err.message : "Login failed. Please check your credentials.";
@@ -109,6 +111,8 @@ async function signupAndConnect() {
     await $fetchAuth(`/api/family/invite/${token.value}/accept`, { method: "POST" });
     await activeFamilyCtx?.refetchFamilies();
     showToast("You're connected!", "success");
+    const { $posthog: $posthogSignup } = useNuxtApp();
+    $posthogSignup?.capture("family_invite_accepted");
     if (invite.value.role === "parent") {
       // Player already connected — parent onboarding is not needed
       await navigateTo("/dashboard");

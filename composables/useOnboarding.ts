@@ -151,6 +151,9 @@ export const useOnboarding = () => {
 
       isOnboardingComplete.value = true;
 
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("onboarding_step_completed", { step: currentStep.value });
+
       return {
         assessment,
         completedTaskIds: tasksToComplete,

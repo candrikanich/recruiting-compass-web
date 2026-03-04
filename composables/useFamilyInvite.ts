@@ -187,6 +187,8 @@ export const useFamilyInvite = () => {
       const { $fetchAuth } = useAuthFetch();
       await $fetchAuth("/api/family/invite", { method: "POST", body: { email, role } });
       lastInvitedEmail.value = email;
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("family_invite_sent", { method: "email" });
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to send invite";

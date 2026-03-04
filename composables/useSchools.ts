@@ -351,6 +351,9 @@ const useSchoolsInternal = (): {
 
       schools.value = [...schools.value, data];
 
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("school_added", { school_type: schoolData.schoolType ?? null });
+
       // Fetch logo asynchronously (don't block school creation)
       // Use dynamic import to avoid circular dependency
       try {

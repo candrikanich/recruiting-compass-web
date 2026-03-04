@@ -13,6 +13,11 @@ global.useState = vi.fn();
 global.useFetch = vi.fn();
 global.useAsyncData = vi.fn();
 global.definePageMeta = vi.fn();
+
+// Shared vi.fn() so both auto-import (global) and #app import resolve to the same mock
+const _useNuxtAppMock = vi.fn(() => ({} as ReturnType<typeof import("#app").useNuxtApp>));
+global.useNuxtApp = _useNuxtAppMock;
+export { _useNuxtAppMock as useNuxtAppMock };
 global.useLoadingStates = vi.fn(() => ({
   loading: ref(false),
   validating: ref(false),
@@ -149,6 +154,7 @@ vi.mock("#app", () => ({
   }),
   useCookie: () => ref(null),
   navigateTo: vi.fn(),
+  useNuxtApp: _useNuxtAppMock,
 }));
 
 // Mock useAuthFetch so composables that use it don't require CSRF/session setup

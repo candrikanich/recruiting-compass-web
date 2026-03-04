@@ -3,6 +3,7 @@ import { useCoaches } from "~/composables/useCoaches";
 import { setActivePinia, createPinia } from "pinia";
 import { useUserStore } from "~/stores/user";
 import type { Coach } from "~/types/models";
+import { useNuxtApp } from "#app";
 
 // Mock useSupabase
 const mockSupabase = {
@@ -299,6 +300,31 @@ describe("useCoaches", () => {
       ]);
 
       expect(mockSupabase.from).toHaveBeenCalledTimes(1);
+    });
+
+    it("captures coach_added event on success", async () => {
+      const mockCapture = vi.fn();
+      vi.mocked(useNuxtApp).mockReturnValue({ $posthog: { capture: mockCapture } } as ReturnType<typeof useNuxtApp>);
+
+      const createdCoach = createMockCoach({ id: "new-coach-id" });
+      mockQuery.single.mockResolvedValue({ data: createdCoach, error: null });
+
+      const newCoachData = {
+        role: "assistant" as const,
+        first_name: "Jane",
+        last_name: "Doe",
+        email: "jane.doe@university.edu",
+        phone: "555-567-8901",
+        twitter_handle: "coachdoe",
+        instagram_handle: "coachdoe",
+        notes: "Assistant coach",
+        responsiveness_score: 90,
+        last_contact_date: "2024-02-01",
+      };
+      const { createCoach } = useCoaches();
+      await createCoach("school-123", newCoachData as any);
+
+      expect(mockCapture).toHaveBeenCalledWith("coach_added");
     });
 
     it("should handle null values in coach data", async () => {

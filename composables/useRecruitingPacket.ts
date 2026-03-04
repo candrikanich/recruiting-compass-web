@@ -257,6 +257,9 @@ export const useRecruitingPacket = () => {
         packetData.athlete.full_name || "athlete",
       );
 
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("recruiting_packet_generated");
+
       return {
         html,
         filename,
