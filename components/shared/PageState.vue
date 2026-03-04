@@ -4,7 +4,7 @@
     v-if="loading"
     role="status"
     aria-live="polite"
-    class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+    class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
   >
     <div
       class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
@@ -26,7 +26,7 @@
   <div
     v-else-if="isEmpty"
     role="status"
-    class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+    class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
   >
     <component
       v-if="emptyIcon"

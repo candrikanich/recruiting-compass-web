@@ -26,7 +26,7 @@ const paddingClasses: Record<CardPadding, string> = {
 
 const cardClasses = computed(() => {
   const base = "rounded-xl bg-white text-slate-900 border border-slate-200";
-  const shadow = "shadow-sm";
+  const shadow = "shadow-xs";
   const padding = paddingClasses[props.padding];
   const hoverEffect = props.hover
     ? "transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"

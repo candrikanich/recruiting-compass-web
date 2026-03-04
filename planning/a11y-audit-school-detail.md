@@ -53,7 +53,7 @@ The school detail page demonstrates good foundational accessibility patterns inc
 <!-- SchoolSidebar.vue, line 14-20 (Send Email button) -->
 <button
   @click="emit('open-email-modal')"
-  class="block w-full px-4 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 transition text-center flex items-center justify-center gap-2"
+  class="block w-full px-4 py-2.5 bg-linear-to-r from-purple-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 transition text-center flex items-center justify-center gap-2"
 >
   <EnvelopeIcon class="w-4 h-4" />
   Send Email
@@ -63,7 +63,7 @@ The school detail page demonstrates good foundational accessibility patterns inc
 <a
   v-if="coach.email"
   :href="`mailto:${coach.email}`"
-  class="p-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"
+  class="p-1.5 bg-blue-100 text-blue-700 rounded-sm hover:bg-blue-200 transition"
   title="Email"
 >
   <EnvelopeIcon class="w-3.5 h-3.5" />
@@ -95,7 +95,7 @@ Use `aria-label` for icon-only buttons and ensure text alternatives are present:
 <button
   @click="emit('open-email-modal')"
   aria-label="Send email to school"
-  class="block w-full px-4 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 transition text-center flex items-center justify-center gap-2"
+  class="block w-full px-4 py-2.5 bg-linear-to-r from-purple-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 transition text-center flex items-center justify-center gap-2"
 >
   <EnvelopeIcon class="w-4 h-4" aria-hidden="true" />
   Send Email
@@ -106,7 +106,7 @@ Use `aria-label` for icon-only buttons and ensure text alternatives are present:
   v-if="coach.email"
   :href="`mailto:${coach.email}`"
   :aria-label="`Send email to ${coach.first_name} ${coach.last_name}`"
-  class="p-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"
+  class="p-1.5 bg-blue-100 text-blue-700 rounded-sm hover:bg-blue-200 transition"
 >
   <EnvelopeIcon class="w-3.5 h-3.5" aria-hidden="true" />
 </a>
@@ -133,7 +133,7 @@ Use `aria-label` for icon-only buttons and ensure text alternatives are present:
 <textarea
   v-model="localNotes"
   rows="4"
-  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
   placeholder="Add notes about this school..."
 />
 
@@ -141,7 +141,7 @@ Use `aria-label` for icon-only buttons and ensure text alternatives are present:
 <textarea
   v-model="localPrivateNotes"
   rows="4"
-  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
   placeholder="Add your private thoughts..."
 />
 ```
@@ -167,7 +167,7 @@ Add `<label>` elements with proper `for` attributes and `id` references:
     id="notes-textarea"
     v-model="localNotes"
     rows="4"
-    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
     aria-describedby="notes-hint"
   />
   <p id="notes-hint" class="text-xs text-slate-500">
@@ -184,7 +184,7 @@ Add `<label>` elements with proper `for` attributes and `id` references:
     id="private-notes-textarea"
     v-model="localPrivateNotes"
     rows="4"
-    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
     aria-describedby="private-note-hint"
   />
   <p id="private-note-hint" class="text-xs text-slate-500">
@@ -293,13 +293,13 @@ Add explicit context to button labels:
 
 **Required Fix:**
 
-Add visible focus states using focus:ring utilities:
+Add visible focus states using focus:ring-3 utilities:
 
 ```vue
 <!-- SchoolDocumentsCard.vue -->
 <NuxtLink
   :to="`/documents/${doc.id}`"
-  class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+  class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 >
   View
 </NuxtLink>
@@ -375,7 +375,7 @@ Consider using an outline instead for better visibility:
     @change="handleStatusChange"
     :disabled="statusUpdating"
     :aria-busy="statusUpdating"
-    class="px-2 py-1 text-xs font-medium rounded-full border-2 border-transparent cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+    class="px-2 py-1 text-xs font-medium rounded-full border-2 border-transparent cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
     :class="[
       getStatusBadgeColor(school.status),
       statusUpdating ? 'opacity-50 cursor-not-allowed' : '',
@@ -461,7 +461,7 @@ Consider using an outline instead for better visibility:
 <a
   v-if="coach.email"
   :href="`mailto:${coach.email}`"
-  class="p-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"
+  class="p-1.5 bg-blue-100 text-blue-700 rounded-sm hover:bg-blue-200 transition"
   title="Email"
 >
   <EnvelopeIcon class="w-3.5 h-3.5" />
@@ -470,7 +470,7 @@ Consider using an outline instead for better visibility:
 <a
   v-if="coach.phone"
   :href="`sms:${coach.phone}`"
-  class="p-1.5 bg-green-100 text-green-700 rounded hover:bg-green-200 transition"
+  class="p-1.5 bg-green-100 text-green-700 rounded-sm hover:bg-green-200 transition"
   title="Text"
 >
   <ChatBubbleLeftIcon class="w-3.5 h-3.5" />
@@ -479,7 +479,7 @@ Consider using an outline instead for better visibility:
 <a
   v-if="coach.phone"
   :href="`tel:${coach.phone}`"
-  class="p-1.5 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition"
+  class="p-1.5 bg-purple-100 text-purple-700 rounded-sm hover:bg-purple-200 transition"
   title="Call"
 >
   <PhoneIcon class="w-3.5 h-3.5" />
@@ -507,7 +507,7 @@ Increase contrast by using darker icons or lighter backgrounds:
   v-if="coach.email"
   :href="`mailto:${coach.email}`"
   :aria-label="`Send email to ${coach.first_name} ${coach.last_name}`"
-  class="p-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+  class="p-1.5 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 >
   <EnvelopeIcon class="w-3.5 h-3.5" aria-hidden="true" />
 </a>
@@ -516,7 +516,7 @@ Increase contrast by using darker icons or lighter backgrounds:
   v-if="coach.phone"
   :href="`sms:${coach.phone}`"
   :aria-label="`Send text message to ${coach.first_name} ${coach.last_name}`"
-  class="p-1.5 bg-green-600 text-white rounded hover:bg-green-700 transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+  class="p-1.5 bg-green-600 text-white rounded-sm hover:bg-green-700 transition focus:outline-hidden focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
 >
   <ChatBubbleLeftIcon class="w-3.5 h-3.5" aria-hidden="true" />
 </a>
@@ -525,7 +525,7 @@ Increase contrast by using darker icons or lighter backgrounds:
   v-if="coach.phone"
   :href="`tel:${coach.phone}`"
   :aria-label="`Call ${coach.first_name} ${coach.last_name}`"
-  class="p-1.5 bg-purple-600 text-white rounded hover:bg-purple-700 transition focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+  class="p-1.5 bg-purple-600 text-white rounded-sm hover:bg-purple-700 transition focus:outline-hidden focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
 >
   <PhoneIcon class="w-3.5 h-3.5" aria-hidden="true" />
 </a>
@@ -570,7 +570,7 @@ Increase contrast by using darker icons or lighter backgrounds:
 <NuxtLink
   :to="`/schools/${schoolId}/coaches`"
   aria-label="Manage coaches for this school"
-  class="text-sm text-blue-600 hover:text-blue-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+  class="text-sm text-blue-600 hover:text-blue-700 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
 >
   Manage <span aria-hidden="true">&rarr;</span>
 </NuxtLink>
@@ -581,7 +581,7 @@ Or better yet, make the text explicit:
 ```vue
 <NuxtLink
   :to="`/schools/${schoolId}/coaches`"
-  class="text-sm text-blue-600 hover:text-blue-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+  class="text-sm text-blue-600 hover:text-blue-700 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
 >
   Manage Coaches <span aria-hidden="true">&rarr;</span>
 </NuxtLink>
@@ -794,7 +794,7 @@ Or use `<aside>` landmark for sidebar:
   type="text"
   :aria-describedby="titleError ? 'title-error' : undefined"
   :aria-invalid="!!titleError"
-  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
 />
 <p v-if="titleError" id="title-error" class="mt-1 text-sm text-red-600">
   {{ titleError }}
@@ -927,7 +927,7 @@ const { announcement, announce, liveRegionAttrs } = useLiveRegion();
     school.is_favorite ? 'Remove from favorites' : 'Add to favorites'
   "
   :aria-pressed="school.is_favorite"
-  class="flex-shrink-0 transition-all"
+  class="shrink-0 transition-all"
   :class="
     school.is_favorite
       ? 'text-yellow-500'

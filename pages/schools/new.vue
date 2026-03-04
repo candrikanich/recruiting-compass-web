@@ -12,7 +12,7 @@
         <input
           v-model="useAutocomplete"
           type="checkbox"
-          class="w-5 h-5 text-blue-600 border-2 border-blue-300 rounded focus:ring-2 focus:ring-blue-500"
+          class="w-5 h-5 text-blue-600 border-2 border-blue-300 rounded-sm focus:ring-2 focus:ring-blue-500"
         />
         <span
           class="text-slate-700 font-medium group-hover:text-blue-600 transition-colors"
@@ -45,7 +45,7 @@
             <span>College data and map coordinates loaded</span>
           </div>
         </div>
-        <div v-if="schoolLogo" class="flex-shrink-0">
+        <div v-if="schoolLogo" class="shrink-0">
           <img
             :src="schoolLogo"
             :alt="`${selectedCollege.name} logo`"
@@ -56,7 +56,7 @@
         <button
           type="button"
           @click="clearSelection"
-          class="flex-shrink-0 text-xs text-green-600 hover:text-green-700 font-medium hover:underline"
+          class="shrink-0 text-xs text-green-600 hover:text-green-700 font-medium hover:underline"
         >
           Clear
         </button>

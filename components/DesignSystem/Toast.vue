@@ -36,7 +36,7 @@
               <button
                 @click="removeToast(toast.id)"
                 :aria-label="`Dismiss ${toast.type} notification: ${toast.message}`"
-                class="hover:opacity-70 transition focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+                class="hover:opacity-70 transition focus:outline-hidden focus:ring-2 focus:ring-white focus:ring-offset-2"
               >
                 <XMarkIcon class="w-5 h-5" aria-hidden="true" />
               </button>

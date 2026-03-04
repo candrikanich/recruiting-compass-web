@@ -7,7 +7,7 @@ defineProps<{
 
 <template>
   <header
-    class="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200"
+    class="bg-linear-to-r from-slate-50 to-blue-50 border-b border-slate-200"
     role="banner"
   >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">

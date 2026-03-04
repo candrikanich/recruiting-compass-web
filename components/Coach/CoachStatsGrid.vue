@@ -4,7 +4,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Total Interactions -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <h3
           id="stat-interactions"
           class="text-sm text-slate-500 mb-1 font-medium"
@@ -20,7 +20,7 @@
       </div>
 
       <!-- Days Since Contact -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <h3
           id="stat-days-since-contact"
           class="text-sm text-slate-500 mb-1 font-medium"
@@ -42,7 +42,7 @@
       </div>
 
       <!-- Preferred Response Method -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <h3
           id="stat-response-method"
           class="text-sm text-slate-500 mb-1 font-medium"

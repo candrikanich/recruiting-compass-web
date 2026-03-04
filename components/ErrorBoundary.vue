@@ -33,7 +33,7 @@ const SlotWrapper = defineComponent({
     <p class="mt-1 text-sm text-gray-500">{{ error.message }}</p>
     <button
       data-testid="error-retry"
-      class="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      class="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       @click="retry"
     >
       Try again

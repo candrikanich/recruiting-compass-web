@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
     <PageHeader title="Documents" description="Manage videos, transcripts, and other recruiting documents">
       <template #actions>
         <NuxtLink
           to="/documents/add"
-          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
         >
           <PlusIcon class="w-4 h-4" />
           + Add Document
@@ -15,21 +15,21 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Statistics Row -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-lg shadow p-4">
+        <div class="bg-white rounded-lg shadow-sm p-4">
           <p class="text-sm text-gray-600 mb-1">Total Documents</p>
           <p class="text-2xl font-bold text-blue-600">{{ documents.length }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow p-4">
+        <div class="bg-white rounded-lg shadow-sm p-4">
           <p class="text-sm text-gray-600 mb-1">Shared Documents</p>
           <p class="text-2xl font-bold text-green-600">
             {{ sharedDocumentsCount }}
           </p>
         </div>
-        <div class="bg-white rounded-lg shadow p-4">
+        <div class="bg-white rounded-lg shadow-sm p-4">
           <p class="text-sm text-gray-600 mb-1">Most Common Type</p>
           <p class="text-2xl font-bold text-purple-600">{{ mostCommonType }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow p-4">
+        <div class="bg-white rounded-lg shadow-sm p-4">
           <p class="text-sm text-gray-600 mb-1">Total Storage</p>
           <p class="text-lg font-bold text-orange-600">Phase 5</p>
         </div>
@@ -52,7 +52,7 @@
         </template>
 
         <template #filter>
-          <div class="bg-white p-4 rounded-lg shadow">
+          <div class="bg-white p-4 rounded-lg shadow-sm">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <!-- Search -->
               <div>
@@ -196,7 +196,7 @@
       <!-- Empty State -->
       <div
         v-else-if="documents.length === 0"
-        class="bg-white rounded-lg shadow p-12 text-center"
+        class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <p class="text-gray-600 mb-2">No documents yet</p>
         <p class="text-sm text-gray-500">
@@ -225,7 +225,7 @@
           <div
             v-for="doc in sortedAndFilteredDocuments"
             :key="doc.id"
-            class="bg-white rounded-lg shadow p-4 hover:shadow-md transition flex items-center justify-between"
+            class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition flex items-center justify-between"
           >
             <div class="flex-1">
               <div class="flex items-center gap-3">
@@ -246,7 +246,7 @@
             <div class="flex items-center gap-3">
               <span
                 v-if="(doc.shared_with_schools || []).length > 0"
-                class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded"
+                class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-sm"
               >
                 Shared: {{ (doc.shared_with_schools || []).length }}
               </span>

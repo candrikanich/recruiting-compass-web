@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-xl font-bold text-slate-900">📄 Recent Documents</h2>
@@ -44,13 +44,13 @@
           <div class="flex gap-2">
             <span
               v-if="(doc.shared_with_schools || []).length > 0"
-              class="text-xs px-2 py-1 rounded bg-emerald-100 text-emerald-700"
+              class="text-xs px-2 py-1 rounded-sm bg-emerald-100 text-emerald-700"
             >
               Shared: {{ (doc.shared_with_schools || []).length }}
             </span>
             <NuxtLink
               :to="`/documents/${doc.id}`"
-              class="text-xs px-3 py-1 rounded transition bg-blue-100 text-blue-700 hover:bg-blue-200"
+              class="text-xs px-3 py-1 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200"
             >
               View
             </NuxtLink>

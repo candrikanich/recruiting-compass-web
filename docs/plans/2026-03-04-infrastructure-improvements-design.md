@@ -63,7 +63,7 @@ Upgrade from Tailwind v3 to v4 as a prerequisite for Nuxt UI v3.
 - `tailwindcss` PostCSS plugin → `@tailwindcss/postcss`
 - `@tailwind base/components/utilities` → `@import "tailwindcss"` in CSS
 - Custom config (colors, spacing, screens) migrates from `tailwind.config.js` → CSS `@theme {}` block in `main.css`
-- Some utility class renames (`shadow-sm` → `shadow-xs`, etc.)
+- Some utility class renames (`shadow-xs` → `shadow-2xs`, etc.)
 - `tailwind.config.js` is deprecated (but still works in v4 for compatibility)
 
 ### Approach

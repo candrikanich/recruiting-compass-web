@@ -77,7 +77,7 @@ Modal lacks focus trap, aria-modal attribute, and proper close button labeling.
 - Add `aria-label="Close edit coach dialog"` to close button
 - Implement focus trap
 - Handle Escape key
-- Add focus:ring styling to close button
+- Add focus:ring-3 styling to close button
 
 **File:** `/components/EditCoachModal.vue` (lines 1-20)
 
@@ -247,7 +247,7 @@ Modal lacks focus trap, aria-modal attribute, and proper close button labeling.
 **Required Fix:**
 
 - Add `aria-label="Close [context]"` to all close buttons
-- Add focus:ring styling
+- Add focus:ring-3 styling
 - Consider adding visible text label
 
 **Files:**
@@ -271,8 +271,8 @@ Modal lacks focus trap, aria-modal attribute, and proper close button labeling.
 ### 10. Link Focus Styling
 
 **File:** `/pages/coaches/[id].vue` (line 16)
-**Issue:** "Back to Coaches" link lacks focus:ring styling
-**Fix:** Add `focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`
+**Issue:** "Back to Coaches" link lacks focus:ring-3 styling
+**Fix:** Add `focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`
 
 ---
 
@@ -330,7 +330,7 @@ Modal lacks focus trap, aria-modal attribute, and proper close button labeling.
 **✓ Field Errors** - Use aria-describedby properly
 **✓ DeleteConfirmationModal** - Native `<dialog>` with proper ARIA
 **✓ Stats Section** - Semantic structure with aria-labelledby
-**✓ Focus Rings** - Consistent use of Tailwind focus:ring pattern
+**✓ Focus Rings** - Consistent use of Tailwind focus:ring-3 pattern
 **✓ Icon Accessibility** - Use of aria-hidden on decorative icons
 
 ---

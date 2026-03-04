@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <h2 class="text-xl font-bold mb-6 text-slate-900">📊 Recent Performance</h2>
 
@@ -33,7 +33,7 @@
             }}</span>
             <span
               v-if="getTrend(metric.metric_type)"
-              class="text-xs font-bold px-1.5 py-0.5 rounded"
+              class="text-xs font-bold px-1.5 py-0.5 rounded-sm"
               :class="{
                 'bg-emerald-100 text-emerald-700':
                   getTrendDirection(metric.metric_type) === 'up',
@@ -68,7 +68,7 @@
           <div
             v-for="metric in recentMetrics.slice(0, 3)"
             :key="metric.id"
-            class="flex items-center justify-between p-2 rounded transition bg-slate-50 hover:bg-slate-100"
+            class="flex items-center justify-between p-2 rounded-sm transition bg-slate-50 hover:bg-slate-100"
           >
             <div class="flex-1">
               <p class="text-sm font-medium text-slate-900">

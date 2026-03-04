@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
@@ -8,7 +8,7 @@
         <div class="flex justify-between items-start mb-3">
           <NuxtLink
             to="/settings"
-            class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <ArrowLeftIcon class="w-4 h-4" />
             Back to Settings
@@ -31,7 +31,7 @@
       <!-- Loading State -->
       <div
         v-if="isLoading"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <div
           class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
@@ -54,7 +54,7 @@
           class="mb-6 rounded-lg bg-amber-50 border-l-4 border-amber-400 p-4"
         >
           <div class="flex">
-            <div class="flex-shrink-0">
+            <div class="shrink-0">
               <ExclamationCircleIcon class="h-5 w-5 text-amber-400" />
             </div>
             <div class="ml-3">
@@ -71,7 +71,7 @@
 
         <!-- Profile Photo Section -->
         <div
-          class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
+          class="bg-white rounded-xl border border-slate-200 shadow-xs p-6"
           data-testid="profile-photo-section"
         >
           <h2 class="text-lg font-semibold text-slate-900 mb-4">
@@ -82,7 +82,7 @@
 
         <!-- Basic Info -->
         <div
-          class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
+          class="bg-white rounded-xl border border-slate-200 shadow-xs p-6"
           data-testid="basic-info-section"
         >
           <h2 class="text-lg font-semibold text-slate-900 mb-4">
@@ -185,7 +185,7 @@
         </div>
 
         <!-- Primary Sport & Position -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-lg font-semibold text-slate-900 mb-4">
             Athletic Profile
           </h2>
@@ -286,7 +286,7 @@
         </div>
 
         <!-- Physical & Athletic -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-xl font-bold text-gray-900 mb-6">Physical Profile</h2>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -398,7 +398,7 @@
         </div>
 
         <!-- Academics -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-xl font-bold text-gray-900 mb-6">Academics</h2>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -455,7 +455,7 @@
         </div>
 
         <!-- External IDs -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-xl font-bold text-gray-900 mb-6">
             External Profiles
           </h2>
@@ -506,7 +506,7 @@
         </div>
 
         <!-- Social Media -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-xl font-bold text-gray-900 mb-6">Social Media</h2>
           <p class="text-sm text-gray-600 mb-4">
             Add your social media accounts for coaches to follow
@@ -583,7 +583,7 @@
         </div>
 
         <!-- Contact Information -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-xl font-bold text-gray-900 mb-6">
             Contact Information
           </h2>
@@ -635,7 +635,7 @@
                     v-model="form.allow_share_phone"
                     :disabled="isParentRole"
                     type="checkbox"
-                    class="w-4 h-4 text-blue-600 rounded disabled:cursor-not-allowed"
+                    class="w-4 h-4 text-blue-600 rounded-sm disabled:cursor-not-allowed"
                   />
                   <span
                     :class="[
@@ -655,7 +655,7 @@
                     v-model="form.allow_share_email"
                     :disabled="isParentRole"
                     type="checkbox"
-                    class="w-4 h-4 text-blue-600 rounded disabled:cursor-not-allowed"
+                    class="w-4 h-4 text-blue-600 rounded-sm disabled:cursor-not-allowed"
                   />
                   <span
                     :class="[
@@ -671,7 +671,7 @@
         </div>
 
         <!-- High School Team Levels -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-xl font-bold text-gray-900 mb-6">
             High School Team Levels
           </h2>
@@ -815,7 +815,7 @@
         </div>
 
         <!-- Travel Team -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-xl font-bold text-gray-900 mb-6">Travel Team</h2>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

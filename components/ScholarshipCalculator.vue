@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-lg shadow p-6 bg-white">
+  <div class="rounded-lg shadow-sm p-6 bg-white">
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-2xl font-bold text-slate-900">Scholarship Calculator</h2>
       <button

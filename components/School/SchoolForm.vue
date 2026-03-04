@@ -190,7 +190,7 @@
         type="submit"
         :aria-busy="loading"
         :disabled="loading || hasErrors || !formData.name"
-        class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50"
+        class="flex-1 px-4 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50"
       >
         {{ loading ? "Adding..." : "Add School" }}
       </button>

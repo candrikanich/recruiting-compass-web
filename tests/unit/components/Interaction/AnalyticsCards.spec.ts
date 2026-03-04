@@ -155,7 +155,7 @@ describe("AnalyticsCards", () => {
     const wrapper = mount(AnalyticsCards);
 
     const cards = wrapper.findAll(
-      ".bg-white.rounded-xl.border.border-slate-200.shadow-sm.p-4",
+      ".bg-white.rounded-xl.border.border-slate-200.shadow-xs.p-4",
     );
     expect(cards).toHaveLength(4);
 

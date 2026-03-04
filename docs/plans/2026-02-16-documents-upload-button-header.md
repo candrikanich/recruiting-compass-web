@@ -24,7 +24,7 @@ Locate the PageHeader component (line 3) and add the `#actions` template slot:
   <template #actions>
     <button
       @click="showUploadForm = !showUploadForm"
-      class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+      class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
     >
       <PlusIcon class="w-4 h-4" />
       {{ showUploadForm ? "Hide Form" : "+ Add Document" }}

@@ -1262,11 +1262,11 @@ If still not visible:
 ```html
 <!-- CORRECT -->
 <input
-  class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+  class="focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
 />
 
 <!-- WRONG - removes focus -->
-<input class="focus:outline-none" />
+<input class="focus:outline-hidden" />
 
 <!-- WRONG - no offset, hard to see -->
 <input class="focus:ring-1 focus:ring-gray-300" />

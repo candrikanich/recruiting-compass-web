@@ -15,7 +15,7 @@
         <div class="mb-6">
           <NuxtLink
             to="/"
-            class="text-white hover:text-white/80 transition-colors flex items-center gap-2 rounded px-2 py-1 focus:outline-2 focus:outline-offset-2 focus:outline-white"
+            class="text-white hover:text-white/80 transition-colors flex items-center gap-2 rounded-sm px-2 py-1 focus:outline-2 focus:outline-offset-2 focus:outline-white"
           >
             <ArrowLeftIcon class="w-4 h-4" aria-hidden="true" />
             Back to Welcome
@@ -24,7 +24,7 @@
 
         <!-- Signup Card -->
         <div
-          class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20"
+          class="bg-white/95 backdrop-blur-xs rounded-2xl shadow-2xl p-8 border border-white/20"
         >
           <!-- Heading (hidden but available for screen readers) -->
           <h1 class="sr-only">Sign Up</h1>

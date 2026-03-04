@@ -450,7 +450,7 @@ describe("InteractionTimelineItem Component", () => {
       expect(wrapper.html()).toContain("bg-white");
       expect(wrapper.html()).toContain("rounded-xl");
       expect(wrapper.html()).toContain("border");
-      expect(wrapper.html()).toContain("shadow-sm");
+      expect(wrapper.html()).toContain("shadow-xs");
     });
 
     it("should have hover effect classes", () => {

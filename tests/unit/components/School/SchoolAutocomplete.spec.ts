@@ -333,8 +333,8 @@ describe("SchoolAutocomplete", () => {
     });
   });
 
-  describe("blur behavior", () => {
-    it("closes dropdown after blur delay", async () => {
+  describe("blur-sm behavior", () => {
+    it("closes dropdown after blur-sm delay", async () => {
       vi.useFakeTimers();
       mockResults.value = sampleResults;
       const wrapper = mountComponent();

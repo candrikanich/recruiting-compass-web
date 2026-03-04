@@ -1,7 +1,7 @@
 <template>
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
     <!-- Total -->
-    <div class="rounded-lg shadow p-6 bg-white">
+    <div class="rounded-lg shadow-sm p-6 bg-white">
       <h3 class="text-sm font-medium mb-2 text-slate-600">
         Total Interactions
       </h3>
@@ -9,7 +9,7 @@
     </div>
 
     <!-- By Direction -->
-    <div class="rounded-lg shadow p-6 bg-white">
+    <div class="rounded-lg shadow-sm p-6 bg-white">
       <h3 class="text-sm font-medium mb-2 text-slate-600">Direction</h3>
       <div class="space-y-2">
         <p class="text-sm">
@@ -24,7 +24,7 @@
     </div>
 
     <!-- Most Common Type -->
-    <div class="rounded-lg shadow p-6 bg-white">
+    <div class="rounded-lg shadow-sm p-6 bg-white">
       <h3 class="text-sm font-medium mb-2 text-slate-600">Most Used Type</h3>
       <p class="text-2xl font-bold text-slate-900">{{ getMostCommonType() }}</p>
       <p class="text-xs mt-1 text-slate-600">
@@ -33,7 +33,7 @@
     </div>
 
     <!-- Sentiment Distribution -->
-    <div class="rounded-lg shadow p-6 bg-white">
+    <div class="rounded-lg shadow-sm p-6 bg-white">
       <h3 class="text-sm font-medium mb-2 text-slate-600">Sentiment</h3>
       <div class="space-y-1 text-xs">
         <p>
@@ -53,7 +53,7 @@
   </div>
 
   <!-- Type Distribution Chart -->
-  <div class="rounded-lg shadow p-6 mb-8 bg-white">
+  <div class="rounded-lg shadow-sm p-6 mb-8 bg-white">
     <h3 class="font-bold text-lg mb-4 text-slate-900">Interactions by Type</h3>
     <div class="space-y-2">
       <div

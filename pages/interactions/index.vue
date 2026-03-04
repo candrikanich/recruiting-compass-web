@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Skip Link -->
     <a
@@ -35,7 +35,7 @@
         <NuxtLink
           to="/interactions/add"
           data-testid="log-interaction-button"
-          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
+          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
         >
           <PlusIcon class="w-4 h-4" aria-hidden="true" />
           Log Interaction
@@ -56,7 +56,7 @@
       <!-- Filter Bar -->
       <h2 class="sr-only">Filter Options</h2>
       <div
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 mb-6"
       >
         <InteractionFilters
           :filter-values="filterValues"
@@ -91,7 +91,7 @@
         <!-- No Results State (filtered but no matches) -->
         <div
           role="status"
-          class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+          class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         >
           <MagnifyingGlassIcon class="w-12 h-12 text-slate-300 mx-auto mb-4" />
           <p class="text-slate-900 font-medium mb-2">

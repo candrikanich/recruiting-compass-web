@@ -1398,7 +1398,7 @@ const emit = defineEmits<{ revoke: [id: string] }>()
 </script>
 
 <template>
-  <div class="flex items-center justify-between rounded border p-3">
+  <div class="flex items-center justify-between rounded-sm border p-3">
     <div>
       <p class="font-medium">{{ invitation.invited_email }}</p>
       <p class="text-sm text-gray-500">

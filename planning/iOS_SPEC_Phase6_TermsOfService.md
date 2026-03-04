@@ -504,7 +504,7 @@ Error State:
     <!-- Content -->
     <div class="max-w-4xl mx-auto px-6 py-12">
       <div
-        class="bg-white rounded-lg shadow-sm p-8 prose prose-slate max-w-none"
+        class="bg-white rounded-lg shadow-xs p-8 prose prose-slate max-w-none"
       >
         <p class="text-slate-600 mb-8">
           <strong>Last Updated:</strong> {{ lastUpdated }}

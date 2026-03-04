@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-lg shadow p-6">
+  <div class="bg-white rounded-lg shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
         <svg
@@ -74,7 +74,7 @@
           @change="updateFilter('schools', 'verified', getInputChecked($event))"
           type="checkbox"
           id="schools-verified"
-          class="h-4 w-4 text-blue-600 rounded"
+          class="h-4 w-4 text-blue-600 rounded-sm"
         />
         <label
           for="schools-verified"
@@ -136,7 +136,7 @@
           @change="updateFilter('coaches', 'verified', getInputChecked($event))"
           type="checkbox"
           id="coaches-verified"
-          class="h-4 w-4 text-blue-600 rounded"
+          class="h-4 w-4 text-blue-600 rounded-sm"
         />
         <label
           for="coaches-verified"

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Global Navigation -->
 
@@ -19,7 +19,7 @@
         <button
           data-testid="log-offer-button"
           @click="showAddForm = !showAddForm"
-          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
         >
           <PlusIcon class="w-4 h-4" />
           {{ showAddForm ? "Cancel" : "Log Offer" }}
@@ -30,7 +30,7 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Summary Cards -->
       <div class="grid grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
           <div class="flex items-center gap-3">
             <div
               class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center"
@@ -45,7 +45,7 @@
             </div>
           </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
           <div class="flex items-center gap-3">
             <div
               class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center"
@@ -60,7 +60,7 @@
             </div>
           </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
           <div class="flex items-center gap-3">
             <div
               class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center"
@@ -80,7 +80,7 @@
       <!-- Add Offer Form -->
       <div
         v-if="showAddForm"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
       >
         <h2 class="text-lg font-semibold text-slate-900 mb-4">Log New Offer</h2>
         <form @submit.prevent="handleAddOffer" class="space-y-4">
@@ -92,7 +92,7 @@
               <select
                 v-model="newOffer.school_id"
                 required
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select School</option>
                 <option
@@ -111,7 +111,7 @@
               <select
                 v-model="newOffer.offer_type"
                 required
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select Type</option>
                 <option value="full_ride">Full Ride</option>
@@ -128,7 +128,7 @@
               <select
                 v-model="newOffer.status"
                 required
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               >
                 <option value="pending">Pending</option>
                 <option value="accepted">Accepted</option>
@@ -146,7 +146,7 @@
                 min="0"
                 max="100"
                 placeholder="0-100"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
@@ -158,7 +158,7 @@
                 type="number"
                 min="0"
                 placeholder="0"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
@@ -169,7 +169,7 @@
                 v-model="newOffer.offer_date"
                 type="date"
                 required
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
@@ -179,7 +179,7 @@
               <input
                 v-model="newOffer.deadline_date"
                 type="date"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -191,7 +191,7 @@
               v-model="newOffer.notes"
               rows="2"
               placeholder="Additional notes..."
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div class="flex gap-3">
@@ -215,7 +215,7 @@
 
       <!-- Filter Bar -->
       <div
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 mb-6"
       >
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
@@ -230,7 +230,7 @@
                 v-model="filters.schoolSearch"
                 type="text"
                 placeholder="School name..."
-                class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -240,7 +240,7 @@
             >
             <select
               v-model="filters.status"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="">-- All --</option>
               <option value="pending">Pending</option>
@@ -255,7 +255,7 @@
             >
             <select
               v-model="filters.offerType"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="">-- All --</option>
               <option value="full_ride">Full Ride</option>
@@ -271,7 +271,7 @@
             >
             <select
               v-model="filters.sortBy"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="offer_date">Offer Date</option>
               <option value="deadline_date">Deadline</option>
@@ -285,7 +285,7 @@
             >
             <select
               v-model="filters.sortDirection"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="desc">Newest First</option>
               <option value="asc">Oldest First</option>
@@ -297,7 +297,7 @@
       <!-- Loading State -->
       <div
         v-if="loading && offers.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <div
           class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
@@ -308,7 +308,7 @@
       <!-- Empty State -->
       <div
         v-else-if="offers.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <GiftIcon class="w-12 h-12 text-slate-300 mx-auto mb-4" />
         <p class="text-slate-900 font-medium mb-2">No offers logged yet</p>
@@ -320,7 +320,7 @@
       <!-- No Results State -->
       <div
         v-else-if="filteredOffers.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <MagnifyingGlassIcon class="w-12 h-12 text-slate-300 mx-auto mb-4" />
         <p class="text-slate-900 font-medium mb-2">
@@ -334,7 +334,7 @@
         <div
           v-for="offer in filteredOffers"
           :key="offer.id"
-          class="bg-white rounded-xl border shadow-sm hover:shadow-md transition overflow-hidden"
+          class="bg-white rounded-xl border shadow-xs hover:shadow-md transition overflow-hidden"
           :class="[
             isOfferSelected(offer.id)
               ? 'border-blue-400 ring-2 ring-blue-100'
@@ -350,7 +350,7 @@
                   type="checkbox"
                   :checked="isOfferSelected(offer.id)"
                   @change="toggleOfferSelection(offer.id)"
-                  class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+                  class="w-4 h-4 text-blue-600 border-slate-300 rounded-sm focus:ring-blue-500 cursor-pointer"
                 />
               </div>
 
@@ -373,7 +373,7 @@
                       {{ getOfferTypeLabel(offer.offer_type) }}
                     </p>
                   </div>
-                  <div class="flex items-center gap-2 flex-shrink-0">
+                  <div class="flex items-center gap-2 shrink-0">
                     <NuxtLink
                       :to="`/offers/${offer.id}`"
                       class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition"

@@ -9,7 +9,7 @@ Standardize all page headers to match the Dashboard/Timeline style using a share
 
 ## Decisions
 
-- **Gradient background on all pages** — `bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200`
+- **Gradient background on all pages** — `bg-linear-to-r from-slate-50 to-blue-50 border-b border-slate-200`
 - **Buttons stay as buttons** — card badges only for data display (e.g., Timeline phase/status)
 - **Description-only subtitles** — remove count subtitles; counts live in content area
 - **Shared component** — `PageHeader.vue` with props + `#actions` slot to prevent drift
@@ -27,7 +27,7 @@ Standardize all page headers to match the Dashboard/Timeline style using a share
 
 **Markup:**
 ```html
-<header class="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200" role="banner">
+<header class="bg-linear-to-r from-slate-50 to-blue-50 border-b border-slate-200" role="banner">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
     <div class="flex items-start justify-between">
       <div>
@@ -63,7 +63,7 @@ Standardize all page headers to match the Dashboard/Timeline style using a share
 
 1. Replace existing header markup with `<PageHeader title="..." description="...">`
 2. Move right-side buttons/badges into `<template #actions>`
-3. Ensure page background is `bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100`
+3. Ensure page background is `bg-linear-to-br from-slate-50 via-blue-50 to-slate-100`
 4. Add skip link if missing
 5. Remove count subtitles
 

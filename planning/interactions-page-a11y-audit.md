@@ -45,8 +45,8 @@ The Interactions page (`/pages/interactions/index.vue`) and its components imple
 **Current State:**
 
 - Buttons lack visible focus rings
-- Form inputs have `focus:outline-none focus:ring-2 focus:ring-blue-500` (TailwindCSS) but:
-  - `outline-none` removes browser default (risky)
+- Form inputs have `focus:outline-hidden focus:ring-2 focus:ring-blue-500` (TailwindCSS) but:
+  - `outline-hidden` removes browser default (risky)
   - Ring classes may not meet 3:1 contrast against backgrounds
   - No focus indicators on custom components (filter chips, interaction cards)
 
@@ -112,7 +112,7 @@ The Interactions page (`/pages/interactions/index.vue`) and its components imple
     type="text"
     :value="filterValues.get('search') || ''"
     placeholder="Subject, content..."
-    class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+    class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
   />
 </div>
 ```
@@ -228,7 +228,7 @@ The Interactions page (`/pages/interactions/index.vue`) and its components imple
 
 ```vue
 <!-- Filter Bar -->
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6">
+<div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 mb-6">
   <InteractionFilters
     :filter-values="filterValues"
     :is-parent="userStore.isParent"
@@ -298,7 +298,7 @@ const filterChangeAnnouncement = computed(() => {
 <!-- Loading State -->
 <div
   v-if="loading && allInteractions.length === 0"
-  class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+  class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
 >
   <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
   <p class="text-slate-600">Loading interactions...</p>  <!-- Only visual -->
@@ -316,7 +316,7 @@ const filterChangeAnnouncement = computed(() => {
   role="status"
   aria-live="polite"
   aria-atomic="true"
-  class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+  class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
 >
   <div
     class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
@@ -342,7 +342,7 @@ const filterChangeAnnouncement = computed(() => {
   role="status"
   aria-live="polite"
   aria-atomic="true"
-  class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+  class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
 >
   <ChatBubbleLeftRightIcon
     class="w-12 h-12 text-slate-300 mx-auto mb-4"
@@ -363,7 +363,7 @@ const filterChangeAnnouncement = computed(() => {
   role="status"
   aria-live="polite"
   aria-atomic="true"
-  class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+  class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
 >
   <MagnifyingGlassIcon
     class="w-12 h-12 text-slate-300 mx-auto mb-4"
@@ -415,7 +415,7 @@ const filterChangeAnnouncement = computed(() => {
 <!-- InteractionCard.vue line 139 -->
 <button
   @click="handleView"
-  class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition flex-shrink-0"
+  class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition shrink-0"
 >
   View
 </button>
@@ -435,13 +435,13 @@ const filterChangeAnnouncement = computed(() => {
 <button
   @click="handleView"
   :aria-label="`View ${formatType(interaction.type)} interaction with ${schoolName}`"
-  class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-2 focus:outline-blue-600 focus:outline-offset-1 flex-shrink-0"
+  class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-2 focus:outline-blue-600 focus:outline-offset-1 shrink-0"
 >
   View
 </button>
 
 <!-- AnalyticsCards.vue - Add aria-label to metric containers -->
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+<div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
   <div class="flex items-center gap-3" role="img" :aria-label="`Total interactions: ${totalCount}`">
     <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
       <ChatBubbleLeftRightIcon class="w-5 h-5 text-blue-600" aria-hidden="true" />
@@ -454,7 +454,7 @@ const filterChangeAnnouncement = computed(() => {
 </div>
 
 <!-- OR simpler approach: Add heading to analytics cards -->
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+<div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
   <h3 class="text-xs font-semibold text-slate-500 uppercase mb-2">Total Interactions</h3>
   <div class="flex items-center gap-3">
     <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
@@ -638,7 +638,7 @@ Apply same pattern to all filter chips:
 <button
   @click="handleClearAll"
   aria-label="Clear all active filters"
-  class="text-xs text-slate-500 hover:text-slate-700 underline ml-2 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1 rounded"
+  class="text-xs text-slate-500 hover:text-slate-700 underline ml-2 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1 rounded-sm"
 >
   Clear all
 </button>
@@ -1046,7 +1046,7 @@ If more visual structure desired, add visible section headings.
 ```vue
 <NuxtLink
   to="/interactions/add"
-  class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+  class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
 >
   <PlusIcon class="w-4 h-4" />
   Log Interaction
@@ -1123,7 +1123,7 @@ The components use proper semantic HTML:
 
 - [ ] **Add focus visible indicators** to all interactive elements
   - Files: InteractionFilters.vue, InteractionCard.vue, ActiveFilterChips.vue, index.vue
-  - Change: `focus:outline-none` → `focus:outline-2 focus:outline-blue-600 focus:outline-offset-1`
+  - Change: `focus:outline-hidden` → `focus:outline-2 focus:outline-blue-600 focus:outline-offset-1`
   - Estimated time: 15 minutes
 
 - [ ] **Associate all form labels with inputs**

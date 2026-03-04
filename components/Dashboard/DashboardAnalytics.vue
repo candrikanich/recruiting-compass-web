@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <!-- Recruiting Packet Actions -->
     <div
-      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+      class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
     >
       <h3 class="text-slate-900 font-semibold mb-4">Recruiting Packet</h3>
       <div class="space-y-2">
@@ -13,7 +13,7 @@
           :class="
             recruitingPacketLoading
               ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
-              : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow-md'
+              : 'bg-linear-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-xs hover:shadow-md'
           "
         >
           <svg
@@ -60,7 +60,7 @@
           :class="
             !hasGeneratedPacket || recruitingPacketLoading
               ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
-              : 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 shadow-sm hover:shadow-md'
+              : 'bg-linear-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 shadow-xs hover:shadow-md'
           "
         >
           <svg
@@ -90,7 +90,7 @@
     <!-- Schools by Size -->
     <div
       v-if="schoolCount > 0"
-      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+      class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
     >
       <h3 class="text-slate-900 font-semibold mb-4">Schools by Size</h3>
       <div class="space-y-3">
@@ -128,7 +128,7 @@
     <!-- Upcoming Events -->
     <div
       v-if="showEvents"
-      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+      class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
     >
       <div class="flex items-center justify-between mb-5">
         <div class="flex items-center gap-3">
@@ -187,12 +187,12 @@
     <!-- Quick Tasks -->
     <div
       v-if="showTasks"
-      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+      class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
     >
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-3">
           <div
-            class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-md"
+            class="w-10 h-10 bg-linear-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-md"
           >
             <CheckIcon class="w-5 h-5 text-white" />
           </div>
@@ -208,7 +208,7 @@
         </div>
         <button
           @click="showTaskForm = !showTaskForm"
-          class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-brand-blue-500 to-brand-blue-600 text-white rounded-lg text-sm font-medium hover:from-brand-blue-600 hover:to-brand-blue-700 transition-all"
+          class="flex items-center gap-2 px-3 py-1.5 bg-linear-to-r from-brand-blue-500 to-brand-blue-600 text-white rounded-lg text-sm font-medium hover:from-brand-blue-600 hover:to-brand-blue-700 transition-all"
         >
           <PlusIcon class="w-4 h-4" />
           Add Task
@@ -224,20 +224,20 @@
           v-model="newTask"
           type="text"
           placeholder="Enter task..."
-          class="w-full bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400 mb-2"
+          class="w-full bg-transparent border-none outline-hidden text-sm text-slate-700 placeholder:text-slate-400 mb-2"
           @keyup.enter="handleAddTask"
           autofocus
         />
         <div class="flex gap-2 justify-end">
           <button
             @click="handleAddTask"
-            class="px-3 py-1.5 text-blue-600 hover:text-blue-700 font-medium hover:bg-blue-100 rounded transition-colors"
+            class="px-3 py-1.5 text-blue-600 hover:text-blue-700 font-medium hover:bg-blue-100 rounded-sm transition-colors"
           >
             <CheckIcon class="w-4 h-4" />
           </button>
           <button
             @click="showTaskForm = false"
-            class="px-3 py-1.5 text-slate-500 hover:text-slate-700 font-medium hover:bg-slate-200 rounded transition-colors"
+            class="px-3 py-1.5 text-slate-500 hover:text-slate-700 font-medium hover:bg-slate-200 rounded-sm transition-colors"
           >
             <XMarkIcon class="w-4 h-4" />
           </button>
@@ -259,7 +259,7 @@
           <button
             @click="$emit('toggle-task', task.id)"
             :class="[
-              'w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0',
+              'w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0',
               task.completed
                 ? 'bg-blue-500 border-blue-500'
                 : 'border-slate-300 hover:border-blue-400',
@@ -277,7 +277,7 @@
           </span>
           <button
             @click="$emit('delete-task', task.id)"
-            class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-600 transition-all p-1 hover:bg-red-50 rounded"
+            class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-600 transition-all p-1 hover:bg-red-50 rounded-sm"
           >
             <XMarkIcon class="w-4 h-4" />
           </button>
@@ -303,7 +303,7 @@
     <!-- Recent Activity / Notifications -->
     <div
       v-if="showNotifications"
-      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+      class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
     >
       <div class="flex items-center justify-between mb-5">
         <div class="flex items-center gap-3">
@@ -359,7 +359,7 @@
     <!-- Social Media -->
     <div
       v-if="showSocial"
-      class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6 mt-6"
+      class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6 mt-6"
     >
       <div class="flex items-center gap-3 mb-5">
         <div class="p-2 bg-slate-100 rounded-lg">

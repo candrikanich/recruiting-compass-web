@@ -175,7 +175,7 @@ describe("Auth Flow with Onboarding Integration", () => {
       expect(true).toBe(true); // Code input accepted
     });
 
-    it("should: 5. Validate family code format on form blur", () => {
+    it("should: 5. Validate family code format on form blur-sm", () => {
       expect(true).toBe(true); // Inline validation
     });
 

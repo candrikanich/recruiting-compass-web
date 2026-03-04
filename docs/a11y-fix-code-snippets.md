@@ -16,11 +16,11 @@ Copy and paste these code blocks directly into your components.
     <button
       data-testid="profile-menu"
       @click="isOpen = !isOpen"
-      class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-all"
+      class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white shadow-xs hover:bg-slate-50 hover:border-slate-300 transition-all"
     >
       <!-- Avatar -->
       <div
-        class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center"
+        class="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-linear-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center"
       >
         <img
           v-if="profilePhotoUrl"
@@ -63,11 +63,11 @@ Copy and paste these code blocks directly into your components.
       :aria-label="`User menu for ${userName}, currently ${isOpen ? 'open' : 'closed'}`"
       :aria-expanded="isOpen"
       aria-haspopup="true"
-      class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white shadow-xs hover:bg-slate-50 hover:border-slate-300 transition-all focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
     >
       <!-- Avatar -->
       <div
-        class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center"
+        class="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-linear-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center"
       >
         <img
           v-if="profilePhotoUrl"
@@ -125,7 +125,7 @@ Copy and paste these code blocks directly into your components.
           <NuxtLink
             to="/settings"
             role="menuitem"
-            class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors focus:outline-none focus:bg-slate-50"
+            class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors focus:outline-hidden focus:bg-slate-50"
             @click="isOpen = false"
           >
             Settings
@@ -134,7 +134,7 @@ Copy and paste these code blocks directly into your components.
             v-if="isAdmin"
             to="/admin"
             role="menuitem"
-            class="block px-4 py-2 text-sm text-brand-blue-600 hover:bg-blue-50 transition-colors font-medium focus:outline-none focus:bg-blue-50"
+            class="block px-4 py-2 text-sm text-brand-blue-600 hover:bg-blue-50 transition-colors font-medium focus:outline-hidden focus:bg-blue-50"
             @click="isOpen = false"
           >
             Admin Dashboard
@@ -143,7 +143,7 @@ Copy and paste these code blocks directly into your components.
             data-testid="logout-button"
             role="menuitem"
             @click="handleLogout"
-            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors focus:outline-none focus:bg-red-50"
+            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors focus:outline-hidden focus:bg-red-50"
           >
             Logout
           </button>
@@ -189,7 +189,7 @@ Copy and paste these code blocks directly into your components.
   :aria-expanded="isMobileMenuOpen"
   aria-haspopup="menu"
   aria-controls="mobile-menu"
-  class="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+  class="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 >
   <Bars3Icon v-if="!isMobileMenuOpen" class="w-6 h-6" aria-hidden="true" />
   <XMarkIcon v-else class="w-6 h-6" aria-hidden="true" />
@@ -246,7 +246,7 @@ Copy and paste these code blocks directly into your components.
   to="/search"
   aria-label="Search coaches and schools"
   title="Search"
-  class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+  class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
   data-testid="nav-search-button"
 >
   <MagnifyingGlassIcon class="w-5 h-5" aria-hidden="true" />
@@ -273,7 +273,7 @@ Copy and paste these code blocks directly into your components.
     v-if="coach.email"
     @click="emit('email', coach)"
     title="Send email"
-    class="p-2 rounded transition bg-blue-100 text-blue-700 hover:bg-blue-200"
+    class="p-2 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200"
   >
     Email
   </button>
@@ -283,7 +283,7 @@ Copy and paste these code blocks directly into your components.
     v-if="coach.phone"
     @click="emit('text', coach)"
     title="Send text"
-    class="p-2 rounded transition bg-green-100 text-green-700 hover:bg-green-200"
+    class="p-2 rounded-sm transition bg-green-100 text-green-700 hover:bg-green-200"
   >
     Text
   </button>
@@ -299,7 +299,7 @@ Copy and paste these code blocks directly into your components.
     @click="emit('email', coach)"
     :aria-label="`Send email to ${coach.first_name} ${coach.last_name}`"
     title="Send email"
-    class="px-3 py-2 rounded transition bg-blue-100 text-blue-700 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+    class="px-3 py-2 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
   >
     Email
   </button>
@@ -310,7 +310,7 @@ Copy and paste these code blocks directly into your components.
     @click="emit('text', coach)"
     :aria-label="`Send text to ${coach.phone}`"
     title="Send text"
-    class="px-3 py-2 rounded transition bg-green-100 text-green-700 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+    class="px-3 py-2 rounded-sm transition bg-green-100 text-green-700 hover:bg-green-200 focus:outline-hidden focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
   >
     Text
   </button>
@@ -343,7 +343,7 @@ Copy and paste these code blocks directly into your components.
           : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
       ]"
     >
-      <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+      <component :is="item.icon" class="w-5 h-5 shrink-0" />
       <span>{{ item.label }}</span>
     </NuxtLink>
     <HeaderNavMore />
@@ -363,13 +363,13 @@ Copy and paste these code blocks directly into your components.
       :data-testid="`nav-${item.to.replace('/', '')}`"
       :class="[
         'flex items-center gap-2 px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-        'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue-600',
+        'focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue-600',
         isActive(item.to)
           ? 'bg-brand-blue-100 text-brand-blue-700'
           : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
       ]"
     >
-      <component :is="item.icon" class="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+      <component :is="item.icon" class="w-5 h-5 shrink-0" aria-hidden="true" />
       <span>{{ item.label }}</span>
     </NuxtLink>
     <HeaderNavMore />
@@ -421,7 +421,7 @@ Copy and paste these code blocks directly into your components.
     :to="item.to"
     :aria-current="isActive(item.to) ? 'page' : undefined"
     :data-testid="`mobile-nav-${item.to.replace('/', '')}`"
-    class="flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+    class="flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
     :class="
       isActive(item.to)
         ? 'bg-blue-50 text-blue-600'
@@ -537,7 +537,7 @@ Use this pattern for ANY icon-only button in the app:
 <button
   :aria-label="labelText"  <!-- REQUIRED for accessibility -->
   :title="labelText"        <!-- Optional: appears on hover -->
-  class="p-2 rounded transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+  class="p-2 rounded-sm transition hover:bg-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 >
   <IconComponent class="w-5 h-5" aria-hidden="true" />  <!-- aria-hidden required -->
 </button>
@@ -558,7 +558,7 @@ Use this everywhere you have a skip link:
 ```vue
 <a
   href="#main-content"
-  class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-slate-900 focus:text-white focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
+  class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-slate-900 focus:text-white focus:rounded-lg focus:shadow-lg focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-white"
 >
   Skip to main content
 </a>
@@ -615,7 +615,7 @@ Replace all inline skip link definitions with a single component call:
 +   :aria-label="descriptiveLabel"
 +   :aria-expanded="isOpen ? 'true' : 'false'" <!-- if toggle -->
     class="...
-+   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
++   focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
     ..."
   >
     <Icon aria-hidden="true" />
@@ -645,7 +645,7 @@ Replace all inline skip link definitions with a single component call:
     :to="path"
 +   :aria-current="isActive ? 'page' : undefined"
     class="...
-+   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
++   focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
     ..."
   >
     <Icon aria-hidden="true" />

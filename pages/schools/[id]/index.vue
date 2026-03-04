@@ -1,13 +1,13 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/schools"
-          class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+          class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
         >
           <ArrowLeftIcon class="w-4 h-4" aria-hidden="true" />
           Back to Schools
@@ -19,7 +19,7 @@
       <!-- Loading State -->
       <div
         v-if="loading"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         role="status"
         aria-live="polite"
       >
@@ -127,7 +127,7 @@
       <!-- Not Found -->
       <div
         v-else
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <p class="text-slate-600 mb-4">School not found</p>
         <NuxtLink

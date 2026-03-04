@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="!statusLoading"
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6"
   >
     <!-- Header with Status Badge -->
     <div class="flex items-center justify-between mb-6">
@@ -110,7 +110,7 @@
           :key="idx"
           class="flex gap-2 text-sm text-slate-700"
         >
-          <span class="text-slate-400 flex-shrink-0">{{ idx + 1 }}.</span>
+          <span class="text-slate-400 shrink-0">{{ idx + 1 }}.</span>
           <span>{{ action }}</span>
         </li>
       </ul>

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
     <PageHeader
@@ -40,8 +40,8 @@
 
       <!-- Loading State -->
       <div v-if="loading" class="space-y-8">
-        <div class="bg-white rounded-lg shadow p-6 h-96 animate-pulse"></div>
-        <div class="bg-white rounded-lg shadow p-6 h-96 animate-pulse"></div>
+        <div class="bg-white rounded-lg shadow-sm p-6 h-96 animate-pulse"></div>
+        <div class="bg-white rounded-lg shadow-sm p-6 h-96 animate-pulse"></div>
       </div>
 
       <!-- Charts -->

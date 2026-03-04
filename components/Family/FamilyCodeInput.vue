@@ -16,7 +16,7 @@
           type="text"
           placeholder="FAM-XXXXXX"
           maxlength="10"
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-lg uppercase"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-mono text-lg uppercase"
           @input="handleInput"
         />
         <p v-if="validationError" class="mt-1 text-sm text-red-600">

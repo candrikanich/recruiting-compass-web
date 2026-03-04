@@ -1,6 +1,6 @@
 <template>
   <div
-    class="rounded-lg p-4 bg-gradient-to-br from-blue-100 to-blue-50 border border-blue-200"
+    class="rounded-lg p-4 bg-linear-to-br from-blue-100 to-blue-50 border border-blue-200"
   >
     <p class="text-xs font-semibold uppercase tracking-wider text-slate-600">
       {{ label }}

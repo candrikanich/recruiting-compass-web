@@ -56,7 +56,7 @@
               <div class="flex items-start gap-2">
                 <BellIcon
                   v-if="notification.type === 'follow_up_reminder'"
-                  class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                  class="w-5 h-5 text-blue-600 shrink-0 mt-0.5"
                 />
                 <span v-else class="text-lg">{{
                   getNotificationEmoji(notification.type)

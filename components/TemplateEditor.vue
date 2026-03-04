@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-lg shadow p-6 bg-white">
+  <div class="rounded-lg shadow-sm p-6 bg-white">
     <!-- Header -->
     <h2 class="text-2xl font-bold mb-6 text-slate-900">
       {{ isEditing ? "Edit Template" : "Create Template" }}
@@ -77,7 +77,7 @@
           <summary class="cursor-pointer font-medium transition text-blue-600">
             Available Variables
           </summary>
-          <div class="mt-3 p-3 rounded border bg-slate-50 border-slate-300">
+          <div class="mt-3 p-3 rounded-sm border bg-slate-50 border-slate-300">
             <div
               v-for="variable in availableVariables"
               :key="variable.key"
@@ -98,7 +98,7 @@
           >Preview</label
         >
         <div
-          class="p-4 rounded border text-sm whitespace-pre-wrap break-words max-h-40 overflow-y-auto bg-slate-50 border-slate-300 text-slate-900"
+          class="p-4 rounded-sm border text-sm whitespace-pre-wrap wrap-break-word max-h-40 overflow-y-auto bg-slate-50 border-slate-300 text-slate-900"
         >
           {{ preview }}
         </div>

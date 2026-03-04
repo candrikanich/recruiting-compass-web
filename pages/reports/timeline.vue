@@ -30,7 +30,7 @@
       </div>
 
       <!-- Controls -->
-      <div class="bg-white rounded-lg shadow p-4 mb-6">
+      <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
         <div class="flex flex-wrap items-center gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -66,26 +66,26 @@
           </div>
           <div class="flex items-end gap-2">
             <label class="flex items-center gap-2 cursor-pointer">
-              <input v-model="showEvents" type="checkbox" class="rounded" />
+              <input v-model="showEvents" type="checkbox" class="rounded-sm" />
               <span class="text-sm text-gray-700">Events</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
               <input
                 v-model="showInteractions"
                 type="checkbox"
-                class="rounded"
+                class="rounded-sm"
               />
               <span class="text-sm text-gray-700">Interactions</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
-              <input v-model="showOffers" type="checkbox" class="rounded" />
+              <input v-model="showOffers" type="checkbox" class="rounded-sm" />
               <span class="text-sm text-gray-700">Offers</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
               <input
                 v-model="showStatusChanges"
                 type="checkbox"
-                class="rounded"
+                class="rounded-sm"
               />
               <span class="text-sm text-gray-700">Status Changes</span>
             </label>
@@ -101,7 +101,7 @@
       <!-- Empty State -->
       <div
         v-else-if="timelineItems.length === 0"
-        class="bg-white rounded-lg shadow p-12 text-center"
+        class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <p class="text-gray-600 mb-2">No timeline data available</p>
         <p class="text-sm text-gray-500">
@@ -110,14 +110,14 @@
       </div>
 
       <!-- Timeline View -->
-      <div v-else class="bg-white rounded-lg shadow">
+      <div v-else class="bg-white rounded-lg shadow-sm">
         <!-- Month Headers -->
         <div class="border-b border-gray-200 px-4 py-3">
           <div class="flex items-center gap-4 overflow-x-auto">
             <div
               v-for="month in visibleMonths"
               :key="month.key"
-              class="flex-shrink-0 text-center min-w-32"
+              class="shrink-0 text-center min-w-32"
             >
               <div class="font-semibold text-gray-900">{{ month.label }}</div>
               <div class="text-xs text-gray-500">{{ month.year }}</div>
@@ -176,7 +176,7 @@
                 v-for="item in swimlane.items"
                 :key="item.id"
                 :class="[
-                  'absolute h-8 rounded px-2 flex items-center text-xs font-medium cursor-pointer transition-all hover:ring-2 hover:shadow-lg hover:scale-110',
+                  'absolute h-8 rounded-sm px-2 flex items-center text-xs font-medium cursor-pointer transition-all hover:ring-2 hover:shadow-lg hover:scale-110',
                   getItemClass(item.type),
                 ]"
                 :style="getItemStyle(item)"
@@ -193,15 +193,15 @@
         <div class="border-t border-gray-200 px-4 py-3">
           <div class="flex items-center gap-6 text-sm">
             <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-blue-500 rounded" />
+              <div class="w-4 h-4 bg-blue-500 rounded-sm" />
               <span class="text-gray-600">Events</span>
             </div>
             <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-green-500 rounded" />
+              <div class="w-4 h-4 bg-green-500 rounded-sm" />
               <span class="text-gray-600">Interactions</span>
             </div>
             <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-yellow-500 rounded" />
+              <div class="w-4 h-4 bg-yellow-500 rounded-sm" />
               <span class="text-gray-600">Offers</span>
             </div>
             <div class="flex items-center gap-2">
@@ -213,7 +213,7 @@
       </div>
 
       <!-- Timeline List View -->
-      <div class="mt-8 bg-white rounded-lg shadow">
+      <div class="mt-8 bg-white rounded-lg shadow-sm">
         <div class="border-b border-gray-200 px-4 py-3">
           <h2 class="font-semibold text-gray-900">Timeline List</h2>
         </div>
@@ -245,7 +245,7 @@
             </div>
             <div
               :class="[
-                'px-2 py-1 rounded text-xs font-medium transition-all hover:shadow-md',
+                'px-2 py-1 rounded-sm text-xs font-medium transition-all hover:shadow-md',
                 getItemBadgeClass(item.type),
               ]"
             >

@@ -37,7 +37,7 @@ const handleClose = () => {
         @click.stop
       >
         <div
-          class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white"
+          class="bg-linear-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white"
         >
           <h2 class="text-xl font-bold">Other Coach</h2>
           <p class="mt-1 text-sm text-white/90">
@@ -59,7 +59,7 @@ const handleClose = () => {
                 v-model="coachName"
                 type="text"
                 placeholder="e.g., John Smith"
-                class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
               />
             </div>
 

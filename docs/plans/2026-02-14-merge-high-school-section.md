@@ -133,7 +133,7 @@ Remove lines 630-690 (the entire standalone section including the wrapper div):
 ```vue
 <!-- DELETE THIS ENTIRE SECTION (lines 630-690) -->
 <!-- School Information -->
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+<div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
   <h2 class="text-xl font-bold text-gray-900 mb-6">
     Current High School
   </h2>

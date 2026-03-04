@@ -44,13 +44,13 @@
         >
           <NuxtLink
             to="/login"
-            class="min-w-[200px] px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 transition-all text-lg"
+            class="min-w-[200px] px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 transition-all text-lg"
           >
             Sign In
           </NuxtLink>
           <NuxtLink
             to="/signup"
-            class="min-w-[200px] px-8 py-4 bg-white text-slate-900 font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 transition-all text-lg"
+            class="min-w-[200px] px-8 py-4 bg-white text-slate-900 font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-slate-800 hover:text-white focus:outline-hidden focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 transition-all text-lg"
           >
             Create Account
           </NuxtLink>
@@ -60,7 +60,7 @@
         <h2 class="sr-only">Features</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
           <div
-            class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
+            class="bg-white/10 backdrop-blur-xs rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
           >
             <div class="w-12 h-12 mx-auto mb-3">
               <svg
@@ -85,7 +85,7 @@
           </div>
 
           <div
-            class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
+            class="bg-white/10 backdrop-blur-xs rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
           >
             <div class="w-12 h-12 mx-auto mb-3">
               <svg
@@ -112,7 +112,7 @@
           </div>
 
           <div
-            class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
+            class="bg-white/10 backdrop-blur-xs rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
           >
             <div class="w-12 h-12 mx-auto mb-3">
               <svg

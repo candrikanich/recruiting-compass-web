@@ -688,7 +688,7 @@ describe("ActiveFilterChips", () => {
       });
     });
 
-    it("has no focus:outline-none classes", () => {
+    it("has no focus:outline-hidden classes", () => {
       const filterValues = new Map<string, string | null>([
         ["search", "test"],
         ["type", "email"],
@@ -703,7 +703,7 @@ describe("ActiveFilterChips", () => {
 
       const buttons = wrapper.findAll("button");
       buttons.forEach((button) => {
-        expect(button.classes()).not.toContain("focus:outline-none");
+        expect(button.classes()).not.toContain("focus:outline-hidden");
       });
     });
   });

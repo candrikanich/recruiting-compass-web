@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-xl border border-slate-200 shadow-sm p-6 bg-white">
+  <div class="rounded-xl border border-slate-200 shadow-xs p-6 bg-white">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-lg font-semibold text-slate-900">
@@ -138,7 +138,7 @@
                 >
                 <select
                   v-model="selectedEmailTemplate"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
                   <option value="">Custom message</option>
                   <option v-for="t in emailTemplates" :key="t.id" :value="t.id">
@@ -155,7 +155,7 @@
                 <input
                   v-model="emailComposer.subject"
                   type="text"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   placeholder="Email subject..."
                 />
               </div>
@@ -168,7 +168,7 @@
                 <textarea
                   v-model="emailComposer.body"
                   rows="6"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   placeholder="Your message..."
                 />
               </div>
@@ -194,7 +194,7 @@
                   id="emailLogInteraction"
                   v-model="shouldLogInteraction"
                   type="checkbox"
-                  class="w-4 h-4 rounded border-slate-300 text-blue-600"
+                  class="w-4 h-4 rounded-sm border-slate-300 text-blue-600"
                 />
                 <label for="emailLogInteraction" class="text-sm text-slate-700">
                   Log this interaction in coach history
@@ -205,7 +205,7 @@
             <div class="p-6 border-t border-slate-200 flex gap-3">
               <button
                 @click="sendEmail"
-                class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm"
+                class="flex-1 px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm"
               >
                 Send Email
               </button>
@@ -262,7 +262,7 @@
                 >
                 <select
                   v-model="selectedTextTemplate"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
                   <option value="">Custom message</option>
                   <option
@@ -289,7 +289,7 @@
                   v-model="textComposer.body"
                   rows="4"
                   maxlength="160"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   placeholder="Your message..."
                 />
                 <p class="text-xs text-slate-500 mt-2">
@@ -303,7 +303,7 @@
                   id="textLogInteraction"
                   v-model="shouldLogInteraction"
                   type="checkbox"
-                  class="w-4 h-4 rounded border-slate-300 text-blue-600"
+                  class="w-4 h-4 rounded-sm border-slate-300 text-blue-600"
                 />
                 <label for="textLogInteraction" class="text-sm text-slate-700">
                   Log this interaction in coach history
@@ -314,7 +314,7 @@
             <div class="p-6 border-t border-slate-200 flex gap-3">
               <button
                 @click="sendText"
-                class="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition text-sm"
+                class="flex-1 px-4 py-2 bg-linear-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition text-sm"
               >
                 Send Text
               </button>

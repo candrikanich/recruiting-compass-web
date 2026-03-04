@@ -141,7 +141,7 @@ describe("NotesHistory", () => {
 
       // Footer close button
       const footerBtn = wrapper.find(
-        ".bg-gradient-to-r.from-blue-500.to-blue-600",
+        ".bg-linear-to-r.from-blue-500.to-blue-600",
       );
       await footerBtn.trigger("click");
 

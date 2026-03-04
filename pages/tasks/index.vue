@@ -265,7 +265,7 @@ const onUrgencyFilterChange = () => {
 
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Parent Context Banner -->
     <div v-if="isViewingAsParent" class="bg-blue-50 border-b-2 border-blue-200">
@@ -278,7 +278,7 @@ const onUrgencyFilterChange = () => {
 
     <!-- Header -->
     <div
-      class="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200"
+      class="bg-linear-to-r from-slate-50 to-blue-50 border-b border-slate-200"
     >
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         <h1 class="text-3xl font-bold text-slate-900 mb-2">
@@ -313,7 +313,7 @@ const onUrgencyFilterChange = () => {
     <!-- Progress Counter -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
       <div
-        class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm mb-4"
+        class="bg-white border border-slate-200 rounded-xl p-6 shadow-xs mb-4"
       >
         <div class="text-lg font-semibold text-slate-900 mb-3">
           {{
@@ -333,7 +333,7 @@ const onUrgencyFilterChange = () => {
       </div>
 
       <!-- Filter Controls -->
-      <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+      <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
         <div class="grid grid-cols-2 gap-4">
           <!-- Status Filter -->
           <div>
@@ -347,7 +347,7 @@ const onUrgencyFilterChange = () => {
               id="status-filter"
               v-model="statusFilter"
               @change="onStatusFilterChange"
-              class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+              class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-xs focus:outline-hidden focus:ring-blue-500 focus:border-blue-500 text-sm"
               data-testid="status-filter"
             >
               <option value="all">All</option>
@@ -369,7 +369,7 @@ const onUrgencyFilterChange = () => {
               id="urgency-filter"
               v-model="urgencyFilter"
               @change="onUrgencyFilterChange"
-              class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+              class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-xs focus:outline-hidden focus:ring-blue-500 focus:border-blue-500 text-sm"
               data-testid="urgency-filter"
             >
               <option value="all">All</option>
@@ -453,7 +453,7 @@ const onUrgencyFilterChange = () => {
                   )
                 "
                 :class="[
-                  'mt-1 w-5 h-5 text-blue-600 rounded flex-shrink-0',
+                  'mt-1 w-5 h-5 text-blue-600 rounded-sm shrink-0',
                   isViewingAsParent || isTaskLocked(task.id)
                     ? 'opacity-50 cursor-not-allowed'
                     : 'cursor-pointer',
@@ -491,13 +491,13 @@ const onUrgencyFilterChange = () => {
                     </h3>
                     <span
                       v-if="isTaskLocked(task.id)"
-                      class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full flex-shrink-0"
+                      class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full shrink-0"
                     >
                       🔒 Locked
                     </span>
                     <span
                       v-if="task.required"
-                      class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full flex-shrink-0"
+                      class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full shrink-0"
                     >
                       Required
                     </span>
@@ -513,7 +513,7 @@ const onUrgencyFilterChange = () => {
 
               <!-- Status Badge -->
               <div
-                class="text-xs px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0"
+                class="text-xs px-2 py-1 rounded-full whitespace-nowrap shrink-0"
                 :class="{
                   'bg-green-100 text-green-700':
                     task.athlete_task?.status === 'completed',
@@ -563,7 +563,7 @@ const onUrgencyFilterChange = () => {
                 </div>
                 <div
                   v-if="isTaskLocked(task.id)"
-                  class="bg-red-50 border border-red-200 rounded p-3"
+                  class="bg-red-50 border border-red-200 rounded-sm p-3"
                 >
                   <h4 class="font-semibold text-sm text-red-900 mb-2">
                     🔒 Complete These First
@@ -584,7 +584,7 @@ const onUrgencyFilterChange = () => {
                 </div>
                 <div
                   v-else-if="task.has_incomplete_prerequisites"
-                  class="bg-amber-50 border border-amber-200 rounded p-3"
+                  class="bg-amber-50 border border-amber-200 rounded-sm p-3"
                 >
                   <h4 class="font-semibold text-sm text-amber-900 mb-1">
                     Prerequisites

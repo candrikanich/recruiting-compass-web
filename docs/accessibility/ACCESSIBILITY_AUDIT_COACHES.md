@@ -79,7 +79,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
       <button
         @click="showPanel = false"
         aria-label="Close Quick Communication dialog"
-        class="text-slate-400 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        class="text-slate-400 hover:text-slate-600 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
       >
         <XMarkIcon class="w-6 h-6" aria-hidden="true" />
       </button>
@@ -152,7 +152,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
           @click="$emit('cancel')"
           :disabled="isLoading"
           aria-label="Cancel deletion"
-          class="px-4 py-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          class="px-4 py-2 rounded-sm border border-gray-300 hover:bg-gray-50 disabled:opacity-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
         >
           Cancel
         </button>
@@ -160,7 +160,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
           @click="$emit('confirm')"
           :disabled="isLoading"
           aria-label="Confirm permanent deletion"
-          class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+          class="px-4 py-2 rounded-sm bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
         >
           <span v-if="isLoading" aria-live="polite">Deleting...</span>
           <span v-else>Delete</span>
@@ -215,7 +215,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
   v-if="coach.email"
   @click="handleCoachAction('email', coach)"
   aria-label="Send email to {{ coach.first_name }} {{ coach.last_name }}"
-  class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+  class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 >
   <EnvelopeIcon class="w-5 h-5" aria-hidden="true" />
 </button>
@@ -225,7 +225,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
   v-if="coach.phone"
   @click="handleCoachAction('text', coach)"
   aria-label="Send text message to {{ coach.first_name }} {{ coach.last_name }}"
-  class="p-2 text-slate-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+  class="p-2 text-slate-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
 >
   <ChatBubbleLeftIcon class="w-5 h-5" aria-hidden="true" />
 </button>
@@ -235,7 +235,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
   v-if="coach.twitter_handle"
   @click="handleCoachAction('tweet', coach)"
   aria-label="View {{ coach.first_name }}'s Twitter profile"
-  class="p-2 text-slate-600 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+  class="p-2 text-slate-600 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
 >
   <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
     <!-- SVG path -->
@@ -247,7 +247,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
   @click="openDeleteModal(coach)"
   data-test="coach-delete-btn"
   aria-label="Delete {{ coach.first_name }} {{ coach.last_name }}"
-  class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+  class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
 >
   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
     <!-- SVG path -->
@@ -276,7 +276,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
 <!-- Loading State -->
 <div
   v-if="loading && allCoaches.length === 0"
-  class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+  class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
 >
   <div
     class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
@@ -298,7 +298,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
 ```vue
 <div
   v-if="loading && allCoaches.length === 0"
-  class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+  class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
   role="status"
   aria-live="polite"
   aria-busy="true"
@@ -345,7 +345,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
   >
   <select
     v-model="selectedType"
-    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
   >
 ```
 
@@ -368,7 +368,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
   <select
     id="communication-type-filter"
     v-model="selectedType"
-    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
   >
     <option value="">All Types</option>
     <!-- options -->
@@ -411,7 +411,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
       :value="filterValues.get('search') || ''"
       @input="handleFilterUpdate('search', ($event.target as HTMLInputElement).value)"
       placeholder="Name, email, phone..."
-      class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
     />
   </div>
 </div>
@@ -446,7 +446,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
       @input="handleFilterUpdate('search', ($event.target as HTMLInputElement).value)"
       aria-describedby="coaches-search-hint"
       placeholder="Name, email, phone..."
-      class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
     />
   </div>
   <p id="coaches-search-hint" class="mt-1 text-xs text-slate-500">
@@ -555,7 +555,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
   <div
     v-for="coach in filteredCoaches"
     :key="coach.id"
-    class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition overflow-hidden"
+    class="bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition overflow-hidden"
   >
 ```
 
@@ -589,7 +589,7 @@ The coaches pages demonstrate a **mixed accessibility maturity**. Strong foundat
   <li
     v-for="coach in filteredCoaches"
     :key="coach.id"
-    class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition overflow-hidden"
+    class="bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition overflow-hidden"
   >
     <!-- Card content -->
   </li>
@@ -678,7 +678,7 @@ if (days === 0) return 'today'; if (days === 1) return '1 day ago'; return
 ```vue
 <div
   v-else-if="allCoaches.length === 0"
-  class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+  class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
 >
   <UserGroupIcon class="w-12 h-12 text-slate-300 mx-auto mb-4" />
   <p class="text-slate-900 font-medium mb-2">No coaches found</p>
@@ -699,7 +699,7 @@ if (days === 0) return 'today'; if (days === 1) return '1 day ago'; return
 ```vue
 <div
   v-else-if="allCoaches.length === 0"
-  class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+  class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
   role="status"
 >
   <UserGroupIcon class="w-12 h-12 text-slate-400 mx-auto mb-4" aria-hidden="true" />
@@ -717,7 +717,7 @@ if (days === 0) return 'today'; if (days === 1) return '1 day ago'; return
   aria-live="assertive"
 >
   <div class="flex items-start gap-3">
-    <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" aria-hidden="true">
+    <svg class="w-5 h-5 text-red-600 shrink-0 mt-0.5" aria-hidden="true">
       <!-- Alert icon -->
     </svg>
     <div>
@@ -759,7 +759,7 @@ if (days === 0) return 'today'; if (days === 1) return '1 day ago'; return
           type="checkbox"
           :checked="getDayAvailability(day)?.available"
           @change="toggleDayEdit(day)"
-          class="w-4 h-4 rounded border-gray-300"
+          class="w-4 h-4 rounded-sm border-gray-300"
         />
 ```
 
@@ -788,7 +788,7 @@ if (days === 0) return 'today'; if (days === 1) return '1 day ago'; return
           type="checkbox"
           :checked="getDayAvailability(day)?.available"
           @change="toggleDayEdit(day)"
-          class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+          class="w-4 h-4 rounded-sm border-gray-300 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
         />
         <span class="font-semibold text-gray-900 capitalize">{{ day }}</span>
       </label>
@@ -808,7 +808,7 @@ if (days === 0) return 'today'; if (days === 1) return '1 day ago'; return
           :value="getDayAvailability(day)?.start_time"
           @input="updateDayTime(day, 'start_time', $event)"
           required
-          class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
+          class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
         />
       </div>
 
@@ -822,7 +822,7 @@ if (days === 0) return 'today'; if (days === 1) return '1 day ago'; return
           :value="getDayAvailability(day)?.end_time"
           @input="updateDayTime(day, 'end_time', $event)"
           required
-          class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
+          class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
         />
       </div>
     </div>
@@ -895,14 +895,14 @@ Add to every coaches page (typically in Header or Nuxt layout):
 
 ```vue
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <p class="text-sm text-slate-500 mb-1">Total Interactions</p>
     <p class="text-3xl font-bold text-slate-900">{{ stats.totalInteractions }}</p>
   </div>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <p class="text-sm text-slate-500 mb-1">Days Since Contact</p>
   </div>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <p class="text-sm text-slate-500 mb-1">Response Method</p>
   </div>
 </div>
@@ -921,7 +921,7 @@ Add to every coaches page (typically in Header or Nuxt layout):
   <h2 id="coach-stats-heading" class="sr-only">Coach Statistics</h2>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
       <h3 id="stat-interactions" class="text-sm font-medium text-slate-700 mb-2">
         Total Interactions
       </h3>
@@ -1048,7 +1048,7 @@ const getSentimentIcon = (sentiment: string): string => {
       v-if="filterValues.get('search')"
       @click="handleFilterUpdate('search', null)"
       aria-label="Remove search filter: {{ filterValues.get('search') }}"
-      class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
     >
       Search: {{ filterValues.get("search") }}
       <XMarkIcon class="w-3 h-3" aria-hidden="true" />
@@ -1059,7 +1059,7 @@ const getSentimentIcon = (sentiment: string): string => {
     <button
       @click="clearFilters"
       aria-label="Clear all active filters"
-      class="text-xs text-slate-600 hover:text-slate-900 underline ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+      class="text-xs text-slate-600 hover:text-slate-900 underline ml-2 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
     >
       Clear all
     </button>
@@ -1140,7 +1140,7 @@ const getSentimentIcon = (sentiment: string): string => {
       v-if="errors.school"
       id="school-error"
       role="alert"
-      class="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm"
+      class="mt-2 p-2 bg-red-50 border border-red-200 rounded-sm text-red-700 text-sm"
     >
       {{ errors.school }}
     </div>
@@ -1248,7 +1248,7 @@ const getSentimentIcon = (sentiment: string): string => {
 ```vue
 <div
   v-if="trendData.length > 0"
-  class="h-64 bg-gray-50 rounded p-4 flex items-end gap-1"
+  class="h-64 bg-gray-50 rounded-sm p-4 flex items-end gap-1"
 >
   <div
     v-for="(point, idx) in trendData"
@@ -1267,7 +1267,7 @@ const getSentimentIcon = (sentiment: string): string => {
 **Required Fix:**
 
 ```vue
-<div class="bg-white rounded-lg shadow p-6">
+<div class="bg-white rounded-lg shadow-sm p-6">
   <div class="mb-6">
     <h2 id="trend-chart-title" class="text-2xl font-bold text-gray-900">
       Responsiveness Trend
@@ -1279,7 +1279,7 @@ const getSentimentIcon = (sentiment: string): string => {
   <div
     role="region"
     aria-labelledby="trend-chart-title"
-    class="mb-6 p-4 bg-gray-50 rounded border border-gray-200"
+    class="mb-6 p-4 bg-gray-50 rounded-sm border border-gray-200"
   >
     <h3 class="text-sm font-medium text-gray-700 mb-3">Trend Data</h3>
     <dl class="space-y-2">
@@ -1305,7 +1305,7 @@ const getSentimentIcon = (sentiment: string): string => {
   <!-- Visual Chart -->
   <div
     v-if="trendData.length > 0"
-    class="h-64 bg-gray-50 rounded p-4 flex items-end gap-1"
+    class="h-64 bg-gray-50 rounded-sm p-4 flex items-end gap-1"
     aria-hidden="true"
     role="presentation"
   >
@@ -1376,7 +1376,7 @@ const getSentimentIcon = (sentiment: string): string => {
 <div v-if="recentInteractions.length > 10" class="text-center pt-4">
   <button
     aria-label="View all {{ recentInteractions.length }} interactions"
-    class="text-blue-600 hover:text-blue-700 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-2 py-1"
+    class="text-blue-600 hover:text-blue-700 font-semibold text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-2 py-1"
   >
     View All {{ recentInteractions.length }} Interactions
     <span aria-hidden="true">→</span>
@@ -1416,7 +1416,7 @@ exportLoading.value = false; } };
   :disabled="exportLoading"
   aria-busy="exportLoading"
   aria-label="Export coaches to CSV"
-  class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+  class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
 >
   <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
   {{ exportLoading ? "Exporting..." : "CSV" }}
@@ -1538,7 +1538,7 @@ exportLoading.value = false; } };
   target="_blank"
   rel="noopener noreferrer"
   aria-label="View {{ coach.first_name }}'s Twitter profile (opens in new window)"
-  class="text-blue-600 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
+  class="text-blue-600 hover:text-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-1"
 >
   {{ coach.twitter_handle }}
   <span aria-hidden="true" class="ml-1 inline-block">↗</span>

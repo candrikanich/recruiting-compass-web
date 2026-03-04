@@ -440,7 +440,7 @@ async function handleResendInvitation(payload: { id: string; email: string; role
 ```html
 <!-- Invite a Family Member -->
 <section
-  class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+  class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
   data-testid="invite-member-form"
 >
   <h2 class="text-xl font-bold text-slate-900 mb-4">Invite a Family Member</h2>

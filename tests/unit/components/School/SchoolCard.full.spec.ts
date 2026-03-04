@@ -209,7 +209,7 @@ describe("SchoolCard", () => {
       expect(wrapper.text()).toContain("\u2B50");
     });
 
-    it("shows outline star when not favorite", () => {
+    it("shows outline-solid star when not favorite", () => {
       const wrapper = mountCard();
       expect(wrapper.text()).toContain("\u2606");
     });

@@ -1,13 +1,13 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
@@ -25,7 +25,7 @@
       <!-- Loading State -->
       <div
         v-if="isLoading"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <div
           class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
@@ -35,7 +35,7 @@
 
       <div v-else class="space-y-8">
         <!-- Templates -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-xl font-bold text-gray-900 mb-4">
             Start from a Template
           </h2>
@@ -65,7 +65,7 @@
         </div>
 
         <!-- Preferences List -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
               <h2 class="text-xl font-bold text-gray-900">Your Preferences</h2>
@@ -141,7 +141,7 @@
                   }}</span>
                   <span
                     v-if="pref.is_dealbreaker"
-                    class="px-2 py-0.5 text-xs font-medium rounded bg-red-100 text-red-800"
+                    class="px-2 py-0.5 text-xs font-medium rounded-sm bg-red-100 text-red-800"
                   >
                     Dealbreaker
                   </span>
@@ -156,7 +156,7 @@
                 <button
                   @click="toggleDealbreaker(index)"
                   :class="[
-                    'px-3 py-1 text-xs font-medium rounded transition',
+                    'px-3 py-1 text-xs font-medium rounded-sm transition',
                     pref.is_dealbreaker
                       ? 'bg-red-100 text-red-800 hover:bg-red-200'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
@@ -277,7 +277,7 @@
                     :key="div"
                     @click="toggleArrayValue(div)"
                     :class="[
-                      'px-3 py-1 rounded font-medium text-sm transition border',
+                      'px-3 py-1 rounded-sm font-medium text-sm transition border',
                       (newPreference.value || []).includes(div)
                         ? 'bg-blue-600 text-white border-blue-600'
                         : 'bg-white text-gray-700 border-gray-300',
@@ -297,7 +297,7 @@
                     :key="conf"
                     @click="toggleArrayValue(conf)"
                     :class="[
-                      'px-3 py-1 rounded font-medium text-sm transition border',
+                      'px-3 py-1 rounded-sm font-medium text-sm transition border',
                       (newPreference.value || []).includes(conf)
                         ? 'bg-blue-600 text-white border-blue-600'
                         : 'bg-white text-gray-700 border-gray-300',
@@ -367,7 +367,7 @@
                     :key="region"
                     @click="toggleArrayValue(region)"
                     :class="[
-                      'px-3 py-1 rounded font-medium text-sm transition border',
+                      'px-3 py-1 rounded-sm font-medium text-sm transition border',
                       (newPreference.value || []).includes(region)
                         ? 'bg-blue-600 text-white border-blue-600'
                         : 'bg-white text-gray-700 border-gray-300',
@@ -393,7 +393,7 @@
                   <input
                     type="checkbox"
                     v-model="newPreference.is_dealbreaker"
-                    class="w-4 h-4 rounded border-gray-300"
+                    class="w-4 h-4 rounded-sm border-gray-300"
                   />
                   <span class="text-sm text-gray-700">
                     Mark as dealbreaker (schools without this will show a

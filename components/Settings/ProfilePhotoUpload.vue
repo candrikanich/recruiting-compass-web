@@ -2,7 +2,7 @@
   <div data-testid="profile-photo-upload" class="space-y-4">
     <!-- Current Photo Display -->
     <div class="flex items-center gap-4">
-      <div class="flex-shrink-0">
+      <div class="shrink-0">
         <div
           v-if="hasProfilePhoto && profilePhotoUrl"
           class="relative w-24 h-24 rounded-full overflow-hidden bg-slate-200"
@@ -17,7 +17,7 @@
         </div>
         <div
           v-else
-          class="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-2xl"
+          class="w-24 h-24 rounded-full bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-2xl"
         >
           {{ userInitials }}
         </div>

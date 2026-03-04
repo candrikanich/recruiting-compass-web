@@ -153,7 +153,7 @@ describe("pages/index.vue (Landing Page)", () => {
 
       buttons.forEach((button) => {
         const classes = button.classes().join(" ");
-        expect(classes).toContain("focus:outline-none");
+        expect(classes).toContain("focus:outline-hidden");
         expect(classes).toContain("focus:ring-2");
       });
     });
@@ -215,9 +215,9 @@ describe("pages/index.vue (Landing Page)", () => {
       expect(background.exists()).toBe(true);
     });
 
-    it("has backdrop blur on feature cards", () => {
+    it("has backdrop blur-sm on feature cards", () => {
       const wrapper = mountPage();
-      const featureCards = wrapper.findAll(".backdrop-blur-sm");
+      const featureCards = wrapper.findAll(".backdrop-blur-xs");
       expect(featureCards.length).toBeGreaterThan(0);
     });
 

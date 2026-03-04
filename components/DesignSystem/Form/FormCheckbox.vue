@@ -30,7 +30,7 @@ function handleChange(event: Event) {
       type="checkbox"
       :checked="modelValue"
       :disabled="disabled"
-      class="w-4 h-4 border-2 border-slate-300 rounded text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      class="w-4 h-4 border-2 border-slate-300 rounded-sm text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
       @change="handleChange"
     />
     <label

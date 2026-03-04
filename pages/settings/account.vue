@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
@@ -16,7 +16,7 @@
 
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <!-- Account Info -->
-      <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <section class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <h2 class="text-lg font-semibold text-slate-900 mb-4">Account Information</h2>
         <div class="space-y-2 text-sm text-slate-600">
           <p><span class="font-medium text-slate-800">Email:</span> {{ userStore.user?.email }}</p>
@@ -25,7 +25,7 @@
       </section>
 
       <!-- Delete Account -->
-      <section class="bg-white rounded-xl border border-red-200 shadow-sm p-6">
+      <section class="bg-white rounded-xl border border-red-200 shadow-xs p-6">
         <h2 class="text-lg font-semibold text-red-700 mb-2">Delete Account</h2>
 
         <!-- Pending deletion state -->

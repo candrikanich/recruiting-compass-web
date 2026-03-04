@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <h2 class="text-xl font-bold mb-6 text-slate-900">
       ⏰ Upcoming Events & Deadlines
@@ -34,7 +34,7 @@
                 </p>
               </div>
               <span
-                class="text-xs font-bold px-2 py-1 rounded"
+                class="text-xs font-bold px-2 py-1 rounded-sm"
                 :class="
                   daysUntilDeadline(offer.deadline_date) <= 7
                     ? 'bg-red-100 text-red-600'
@@ -76,7 +76,7 @@
                 </p>
               </div>
               <span
-                class="text-xs font-bold px-2 py-1 rounded bg-emerald-100 text-emerald-700"
+                class="text-xs font-bold px-2 py-1 rounded-sm bg-emerald-100 text-emerald-700"
               >
                 {{ daysUntilDate(event.start_date) }}d
               </span>

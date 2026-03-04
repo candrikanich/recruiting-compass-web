@@ -129,7 +129,7 @@ describe('FormSelect', () => {
     expect(select.classes()).toContain('disabled:cursor-not-allowed');
   });
 
-  it('emits blur event when select loses focus', async () => {
+  it('emits blur-sm event when select loses focus', async () => {
     const wrapper = mount(FormSelect, {
       props: {
         modelValue: '',

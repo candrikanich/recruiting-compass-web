@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-2xl p-6"
+    class="bg-linear-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-2xl p-6"
   >
     <div v-if="loading" class="flex items-center justify-center py-8">
       <div
@@ -13,7 +13,7 @@
     </div>
 
     <div v-else class="flex items-start gap-4">
-      <div class="flex-shrink-0 mt-1">
+      <div class="shrink-0 mt-1">
         <LightBulbIcon class="w-6 h-6 text-indigo-600" />
       </div>
       <div class="flex-1">

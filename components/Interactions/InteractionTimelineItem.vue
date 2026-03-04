@@ -1,13 +1,13 @@
 <template>
   <div
-    class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition overflow-hidden"
+    class="bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition overflow-hidden"
   >
     <div class="p-5">
       <div class="flex items-start justify-between gap-4">
         <div class="flex items-start gap-4 flex-1 min-w-0">
           <!-- Type Icon -->
           <div
-            class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+            class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
             :class="getTypeIconBg(interaction.type)"
           >
             <component
@@ -82,7 +82,7 @@
         <!-- Delete Button -->
         <button
           @click="$emit('delete', interaction.id)"
-          class="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0"
+          class="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition shrink-0"
         >
           Delete
         </button>

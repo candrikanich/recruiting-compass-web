@@ -96,7 +96,7 @@
 Add to `tailwind.config.js` or create global style:
 ```css
 @layer utilities {
-  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue-500;
+  @apply focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue-500;
 }
 ```
 
@@ -109,7 +109,7 @@ Apply to navigation links in `/components/Header/HeaderNav.vue`:
 -     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
 - ]"
 + :class="[
-+   'flex items-center... focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue-600',
++   'flex items-center... focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue-600',
 +   isActive(item.to)
 +     ? 'bg-brand-blue-100 text-brand-blue-700'
 +     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -179,7 +179,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 <template>
   <a
     :href="to"
-    class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-slate-900 focus:text-white focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
+    class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-slate-900 focus:text-white focus:rounded-lg focus:shadow-lg focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-white"
   >
     {{ text }}
   </a>
@@ -276,7 +276,7 @@ Apply to all pages (they currently have inline skip links).
 <button
   :aria-label="labelText"
   :title="labelText"
-  class="p-2 rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+  class="p-2 rounded-sm transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 >
   <IconComponent class="w-5 h-5" aria-hidden="true" />
 </button>

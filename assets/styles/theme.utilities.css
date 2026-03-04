@@ -1,0 +1,120 @@
+@utility card {
+  /* Card Components */
+  @apply rounded-lg p-4;
+  background-color: var(--card);
+  color: var(--card-foreground);
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+
+  &:hover {
+    @apply -translate-y-0.5;
+    box-shadow: var(--shadow-card-hover);
+  }
+}
+
+@utility input-field {
+  /* Form Inputs */
+  @apply w-full px-3 py-2 rounded-lg;
+  border: 1px solid var(--border);
+  background-color: var(--input-background);
+  color: var(--foreground);
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    @apply outline-hidden;
+    border-color: var(--brand-blue-500);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}
+
+@utility btn {
+  /* Buttons */
+  @apply px-4 py-2 rounded-lg font-medium transition;
+  cursor: pointer;
+}
+
+@utility btn-primary {
+  @apply btn text-white;
+  background-color: var(--brand-blue-600);
+
+  &:hover:not(:disabled) {
+    background-color: var(--brand-blue-700);
+  }
+
+  &:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+}
+
+@utility btn-secondary {
+  @apply btn;
+  border: 1px solid var(--border);
+  color: var(--foreground);
+
+  &:hover:not(:disabled) {
+    background-color: var(--muted);
+  }
+}
+
+@utility badge {
+  /* Badges */
+  @apply inline-block px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+@utility badge-primary {
+  @apply badge;
+  background-color: var(--brand-blue-100);
+  color: var(--brand-blue-700);
+}
+
+@utility badge-success {
+  @apply badge;
+  background-color: var(--brand-emerald-100);
+  color: var(--brand-emerald-700);
+}
+
+@utility badge-warning {
+  @apply badge;
+  background-color: var(--brand-orange-100);
+  color: var(--brand-orange-700);
+}
+
+@utility badge-danger {
+  @apply badge;
+  background-color: rgba(212, 24, 61, 0.1);
+  color: var(--destructive);
+}
+
+@utility search-btn {
+  /* Search/Filter Buttons */
+  @apply px-6 py-3 font-semibold rounded-lg transition;
+  background-color: var(--brand-blue-600);
+  color: white;
+
+  &:hover:not(:disabled) {
+    background-color: var(--brand-blue-700);
+  }
+
+  &:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+}
+
+@utility filter-type-btn {
+  @apply px-3 py-1 rounded-sm text-xs font-medium transition;
+}
+
+@utility filter-type-btn-active {
+  @apply filter-type-btn text-white;
+  background-color: var(--brand-blue-600);
+}
+
+@utility filter-type-btn-inactive {
+  @apply filter-type-btn;
+  background-color: var(--muted);
+  color: var(--foreground);
+
+  &:hover {
+    background-color: var(--accent);
+  }
+}

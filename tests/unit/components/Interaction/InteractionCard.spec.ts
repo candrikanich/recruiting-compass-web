@@ -565,7 +565,7 @@ describe("InteractionCard", () => {
       expect(viewButton.classes()).toContain("focus:outline-2");
       expect(viewButton.classes()).toContain("focus:outline-blue-600");
       expect(viewButton.classes()).toContain("focus:outline-offset-1");
-      expect(viewButton.classes()).not.toContain("focus:outline-none");
+      expect(viewButton.classes()).not.toContain("focus:outline-hidden");
     });
 
     it("has accessible name on View button with subject", () => {

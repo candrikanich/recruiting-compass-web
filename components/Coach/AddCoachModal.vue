@@ -77,7 +77,7 @@ const handleClose = () => {
         @click.stop
       >
         <div
-          class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white"
+          class="bg-linear-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white"
         >
           <h2 class="text-xl font-bold">Add New Coach</h2>
           <p class="mt-1 text-sm text-white/90">Add a coach for this school</p>
@@ -106,7 +106,7 @@ const handleClose = () => {
                   type="text"
                   required
                   :disabled="loading"
-                  class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+                  class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                 />
               </div>
 
@@ -123,7 +123,7 @@ const handleClose = () => {
                   type="text"
                   required
                   :disabled="loading"
-                  class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+                  class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                 />
               </div>
 
@@ -138,7 +138,7 @@ const handleClose = () => {
                   id="role"
                   v-model="role"
                   :disabled="loading"
-                  class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+                  class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                 >
                   <option value="head">Head Coach</option>
                   <option value="assistant">Assistant Coach</option>

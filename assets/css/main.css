@@ -1,43 +1,129 @@
-@import "leaflet/dist/leaflet.css";
-@import "../styles/theme.css";
-@import "../styles/transitions.css";
+@import 'leaflet/dist/leaflet.css' layer(base);
+@import '../styles/theme.css' layer(base);
+@import '../styles/theme.utilities.css';
+@import '../styles/transitions.css' layer(base);
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-html {
-  scroll-behavior: smooth;
+@theme {
+  --color-brand-blue-50: #eff6ff;
+  --color-brand-blue-100: #dbeafe;
+  --color-brand-blue-200: #bfdbfe;
+  --color-brand-blue-300: #93c5fd;
+  --color-brand-blue-400: #60a5fa;
+  --color-brand-blue-500: #3b82f6;
+  --color-brand-blue-600: #2563eb;
+  --color-brand-blue-700: #1d4ed8;
+  --color-brand-blue-800: #1e40af;
+  --color-brand-blue-900: #1e3a8a;
+
+  --color-brand-emerald-50: #f0fdf4;
+  --color-brand-emerald-100: #dcfce7;
+  --color-brand-emerald-200: #bbf7d0;
+  --color-brand-emerald-300: #86efac;
+  --color-brand-emerald-400: #4ade80;
+  --color-brand-emerald-500: #10b981;
+  --color-brand-emerald-600: #059669;
+  --color-brand-emerald-700: #047857;
+  --color-brand-emerald-800: #065f46;
+  --color-brand-emerald-900: #064e3b;
+
+  --color-brand-purple-50: #faf5ff;
+  --color-brand-purple-100: #f3e8ff;
+  --color-brand-purple-200: #e9d5ff;
+  --color-brand-purple-300: #d8b4fe;
+  --color-brand-purple-400: #c084fc;
+  --color-brand-purple-500: #a855f7;
+  --color-brand-purple-600: #9333ea;
+  --color-brand-purple-700: #7e22ce;
+  --color-brand-purple-800: #6b21a8;
+  --color-brand-purple-900: #581c87;
+
+  --color-brand-orange-50: #fff7ed;
+  --color-brand-orange-100: #ffedd5;
+  --color-brand-orange-200: #fed7aa;
+  --color-brand-orange-300: #fdba74;
+  --color-brand-orange-400: #fb923c;
+  --color-brand-orange-500: #f97316;
+  --color-brand-orange-600: #ea580c;
+  --color-brand-orange-700: #c2410c;
+  --color-brand-orange-800: #9a3412;
+  --color-brand-orange-900: #7c2d12;
+
+  --color-brand-slate-50: #f8fafc;
+  --color-brand-slate-100: #f1f5f9;
+  --color-brand-slate-200: #e2e8f0;
+  --color-brand-slate-300: #cbd5e1;
+  --color-brand-slate-400: #94a3b8;
+  --color-brand-slate-500: #64748b;
+  --color-brand-slate-600: #475569;
+  --color-brand-slate-700: #334155;
+  --color-brand-slate-800: #1e293b;
+  --color-brand-slate-900: #0f172a;
+
+  --color-brand-red-50: #fef2f2;
+  --color-brand-red-100: #fee2e2;
+  --color-brand-red-200: #fecaca;
+  --color-brand-red-300: #fca5a5;
+  --color-brand-red-400: #f87171;
+  --color-brand-red-500: #ef4444;
+  --color-brand-red-600: #dc2626;
+  --color-brand-red-700: #b91c1c;
+  --color-brand-red-800: #991b1b;
+  --color-brand-red-900: #7f1d1d;
 }
 
-/* Respect user's motion preferences for accessibility */
-@media (prefers-reduced-motion: reduce) {
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
   *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
   }
 }
 
-/* Skip link accessibility */
-.sr-only:not(:focus):not(:focus-within) {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
+@utility focus-visible-ring {
+  @apply focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
 }
 
-/* Enhanced focus indicators for accessibility */
 @layer utilities {
-  .focus-visible-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
+  html {
+    scroll-behavior: smooth;
   }
+
+  /* Respect user's motion preferences for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Skip link accessibility */
+  .sr-only:not(:focus):not(:focus-within) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Enhanced focus indicators for accessibility */
 }

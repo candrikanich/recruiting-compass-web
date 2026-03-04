@@ -1,12 +1,12 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center gap-3">
         <div
-          class="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-md"
+          class="w-10 h-10 bg-linear-to-br from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-md"
         >
           <span class="text-lg" aria-hidden="true">📈</span>
         </div>

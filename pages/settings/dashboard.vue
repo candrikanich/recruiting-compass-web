@@ -1,13 +1,13 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
@@ -23,7 +23,7 @@
 
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <!-- Content -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs">
         <div class="p-6 border-b border-gray-200">
           <!-- Stats Cards Section -->
           <div class="mb-8">
@@ -55,7 +55,7 @@
                 <input
                   v-model="localLayout.statsCards.coaches"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="flex-1">
                   <span class="font-medium text-gray-900">👥 Coaches</span>
@@ -71,7 +71,7 @@
                 <input
                   v-model="localLayout.statsCards.schools"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="flex-1">
                   <span class="font-medium text-gray-900">🏫 Schools</span>
@@ -85,7 +85,7 @@
                 <input
                   v-model="localLayout.statsCards.interactions"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="flex-1">
                   <span class="font-medium text-gray-900">💬 Interactions</span>
@@ -101,7 +101,7 @@
                 <input
                   v-model="localLayout.statsCards.offers"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="flex-1">
                   <span class="font-medium text-gray-900">📝 Offers</span>
@@ -117,7 +117,7 @@
                 <input
                   v-model="localLayout.statsCards.events"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="flex-1">
                   <span class="font-medium text-gray-900">📅 Events</span>
@@ -133,7 +133,7 @@
                 <input
                   v-model="localLayout.statsCards.performance"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="flex-1">
                   <span class="font-medium text-gray-900">📊 Performance</span>
@@ -149,7 +149,7 @@
                 <input
                   v-model="localLayout.statsCards.notifications"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="flex-1">
                   <span
@@ -170,7 +170,7 @@
                 <input
                   v-model="localLayout.statsCards.socialMedia"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="flex-1">
                   <span class="font-medium text-gray-900">📱 Social Media</span>
@@ -212,7 +212,7 @@
                 <input
                   v-model="localLayout.widgets.atAGlanceSummary"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >At a Glance Summary</span
@@ -225,7 +225,7 @@
                 <input
                   v-model="localLayout.widgets.offerStatusOverview"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >Offer Status Overview</span
@@ -238,7 +238,7 @@
                 <input
                   v-model="localLayout.widgets.interactionTrendChart"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >Interaction Trends</span
@@ -251,7 +251,7 @@
                 <input
                   v-model="localLayout.widgets.schoolInterestChart"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >School Interest Chart</span
@@ -264,7 +264,7 @@
                 <input
                   v-model="localLayout.widgets.schoolMapWidget"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >School Map</span
@@ -277,7 +277,7 @@
                 <input
                   v-model="localLayout.widgets.coachFollowupWidget"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >Coach Followup</span
@@ -290,7 +290,7 @@
                 <input
                   v-model="localLayout.widgets.eventsSummary"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >Events Summary</span
@@ -303,7 +303,7 @@
                 <input
                   v-model="localLayout.widgets.performanceSummary"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >Performance Summary</span
@@ -316,7 +316,7 @@
                 <input
                   v-model="localLayout.widgets.recentDocuments"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >Recent Documents</span
@@ -329,7 +329,7 @@
                 <input
                   v-model="localLayout.widgets.interactionStats"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >Interaction Statistics</span
@@ -342,7 +342,7 @@
                 <input
                   v-model="localLayout.widgets.schoolStatusOverview"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >School Status Overview</span
@@ -355,7 +355,7 @@
                 <input
                   v-model="localLayout.widgets.coachResponsiveness"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >Coach Responsiveness</span
@@ -368,7 +368,7 @@
                 <input
                   v-model="localLayout.widgets.upcomingDeadlines"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >Upcoming Deadlines</span
@@ -381,7 +381,7 @@
                 <input
                   v-model="localLayout.widgets.recentNotifications"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >Recent Notifications</span
@@ -394,7 +394,7 @@
                 <input
                   v-model="localLayout.widgets.linkedAccounts"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >Linked Accounts</span
@@ -407,7 +407,7 @@
                 <input
                   v-model="localLayout.widgets.recruitingCalendar"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >Recruiting Calendar</span
@@ -420,7 +420,7 @@
                 <input
                   v-model="localLayout.widgets.quickTasks"
                   type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <span class="text-sm font-medium text-gray-900"
                   >Quick Tasks</span

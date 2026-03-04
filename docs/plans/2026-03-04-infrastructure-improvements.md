@@ -348,7 +348,7 @@ git diff --stat
 Review each changed file carefully. Common things to verify:
 - `nuxt.config.ts` postcss config now uses `@tailwindcss/postcss`
 - `assets/css/main.css` now starts with `@import "tailwindcss"` (not `@tailwind` directives)
-- Any renamed classes (check the diff for `shadow-sm`, `ring-*`, `blur-sm` etc. — these renamed in v4)
+- Any renamed classes (check the diff for `shadow-xs`, `ring-*`, `blur-xs` etc. — these renamed in v4)
 
 **Step 3: Run type-check and tests**
 

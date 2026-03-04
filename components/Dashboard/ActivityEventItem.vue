@@ -10,7 +10,7 @@
     @click="handleClick"
   >
     <div class="flex items-start gap-3">
-      <div class="text-2xl flex-shrink-0 mt-0.5">{{ event.icon }}</div>
+      <div class="text-2xl shrink-0 mt-0.5">{{ event.icon }}</div>
 
       <div class="flex-1 min-w-0">
         <div class="text-slate-900 font-medium text-sm truncate">

@@ -38,7 +38,7 @@
         <CoachAnalyticsMetrics :metrics="metrics" />
 
         <!-- Trend Section -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="mb-6">
             <h2 class="text-2xl font-bold text-gray-900">
               Responsiveness Trend
@@ -54,7 +54,7 @@
                 :key="days"
                 @click="selectedTrendDays = days"
                 :class="[
-                  'px-3 py-1 rounded text-sm font-medium transition',
+                  'px-3 py-1 rounded-sm text-sm font-medium transition',
                   selectedTrendDays === days
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
@@ -101,7 +101,7 @@
           <!-- Trend Chart -->
           <div
             v-if="trendData.length > 0"
-            class="h-64 bg-gray-50 rounded p-4 flex items-end gap-1"
+            class="h-64 bg-gray-50 rounded-sm p-4 flex items-end gap-1"
             aria-hidden="true"
           >
             <div
@@ -133,7 +133,7 @@
         <!-- Comparison Section -->
         <div v-if="comparison" class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Coach Ranking -->
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <h3 class="text-lg font-bold text-gray-900 mb-4">School Ranking</h3>
             <div class="space-y-4">
               <div>
@@ -168,7 +168,7 @@
               <div class="pt-4 border-t border-gray-200">
                 <div
                   :class="[
-                    'p-3 rounded text-sm font-medium text-center',
+                    'p-3 rounded-sm text-sm font-medium text-center',
                     comparison.coach.responsiveness >=
                     comparison.schoolAverage.responsiveness
                       ? 'bg-green-100 text-green-800'
@@ -187,7 +187,7 @@
           </div>
 
           <!-- Communication Preferences -->
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <h3 class="text-lg font-bold text-gray-900 mb-4">
               Communication Profile
             </h3>
@@ -291,7 +291,7 @@
         </div>
 
         <!-- Insights Section -->
-        <div v-if="insights.length > 0" class="bg-white rounded-lg shadow p-6">
+        <div v-if="insights.length > 0" class="bg-white rounded-lg shadow-sm p-6">
           <h3 class="text-lg font-bold text-gray-900 mb-4">
             Insights & Recommendations
           </h3>
@@ -299,7 +299,7 @@
             <div
               v-for="(insight, idx) in insights"
               :key="idx"
-              class="flex items-start gap-3 p-3 bg-blue-50 rounded"
+              class="flex items-start gap-3 p-3 bg-blue-50 rounded-sm"
             >
               <span class="text-xl">💡</span>
               <p class="text-sm text-blue-900">{{ insight }}</p>

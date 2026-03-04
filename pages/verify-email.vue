@@ -13,7 +13,7 @@
         <nav aria-label="Page navigation" class="mb-6">
           <NuxtLink
             to="/"
-            class="text-white hover:text-white/80 transition-colors flex items-center gap-2 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+            class="text-white hover:text-white/80 transition-colors flex items-center gap-2 rounded-sm px-2 py-1 focus:outline-hidden focus:ring-2 focus:ring-white focus:ring-offset-2"
           >
             <ArrowLeftIcon class="w-4 h-4" aria-hidden="true" />
             Back to Home
@@ -23,7 +23,7 @@
         <!-- Verify Email Card -->
         <div
           id="verify-card"
-          class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20"
+          class="bg-white/95 backdrop-blur-xs rounded-2xl shadow-2xl p-8 border border-white/20"
         >
           <!-- Status Icon & Header -->
           <div class="text-center mb-8">
@@ -187,7 +187,7 @@
               :disabled="emailVerification.loading.value || resendCooldown > 0"
               :aria-busy="emailVerification.loading.value"
               :aria-label="resendButtonLabel"
-              class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               <span v-if="emailVerification.loading.value">Sending...</span>
               <span v-else-if="resendCooldown > 0">
@@ -201,7 +201,7 @@
               v-if="isVerified"
               ref="dashboardButtonRef"
               @click="goToDashboard"
-              class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+              class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
             >
               Go to Dashboard
             </button>

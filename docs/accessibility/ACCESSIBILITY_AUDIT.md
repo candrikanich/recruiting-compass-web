@@ -128,7 +128,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
       <input
         v-model="useAutocomplete"
         type="checkbox"
-        class="w-5 h-5 text-blue-600 border-2 border-blue-300 rounded focus:ring-2 focus:ring-blue-500"
+        class="w-5 h-5 text-blue-600 border-2 border-blue-300 rounded-sm focus:ring-2 focus:ring-blue-500"
         aria-describedby="autocomplete-desc"
       />
       <span
@@ -195,7 +195,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
   <button
     type="button"
     @click="clearSelection"
-    class="flex-shrink-0 text-xs text-green-600 hover:text-green-700 font-medium hover:underline"
+    class="shrink-0 text-xs text-green-600 hover:text-green-700 font-medium hover:underline"
   >
     Clear
   </button>
@@ -208,7 +208,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
     type="button"
     @click="clearSelection"
     aria-label="Clear selected college and reload form"
-    class="flex-shrink-0 text-xs text-green-600 hover:text-green-700 font-medium hover:underline"
+    class="shrink-0 text-xs text-green-600 hover:text-green-700 font-medium hover:underline"
   >
     Clear
   </button>
@@ -262,7 +262,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
   <button
     type="submit"
     :disabled="loading || hasErrors || !formData.name"
-    class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50"
+    class="flex-1 px-4 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50"
   >
     {{ loading ? "Adding..." : "Add School" }}
   </button>
@@ -276,7 +276,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
     :disabled="loading || hasErrors || !formData.name"
     :aria-busy="loading"
     aria-label="Add School"
-    class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50"
+    class="flex-1 px-4 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50"
   >
     {{ loading ? "Adding..." : "Add School" }}
   </button>
@@ -311,7 +311,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
       <select
         id="division"
         v-model="formData.division"
-        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none cursor-pointer disabled:opacity-50 pr-10"
+        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none cursor-pointer disabled:opacity-50 pr-10"
       >
         <!-- options -->
       </select>
@@ -396,7 +396,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
     class="mt-1 text-sm text-red-600 flex items-start gap-1"
   >
     <ExclamationCircleIcon
-      class="w-4 h-4 mt-0.5 flex-shrink-0"
+      class="w-4 h-4 mt-0.5 shrink-0"
       aria-hidden="true"
     />
     <span>{{ error }}</span>
@@ -473,13 +473,13 @@ The three add/form pages demonstrate solid foundational accessibility practices 
 - **Current State:**
   ```html
   <input
-    class="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    class="focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
   />
   ```
 - **Required Fix:** Ensure focus outline has minimum 2px and high contrast
   ```html
   <input
-    class="focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 focus:outline-none"
+    class="focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 focus:outline-hidden"
   />
   <!-- Add to global CSS for consistency -->
   /* Ensure outline is visible */ input:focus, select:focus, textarea:focus {
@@ -632,7 +632,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
 - **Required Fix:** Use full opacity and higher contrast
   ```html
   <select
-    class="focus:ring-2 focus:ring-blue-600 focus:border-transparent focus:outline-none"
+    class="focus:ring-2 focus:ring-blue-600 focus:border-transparent focus:outline-hidden"
   />
   ```
 - **Testing Confirmation:** Tab through form; blue focus ring should be clearly visible
@@ -931,7 +931,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
       @click.self="handleClose"
     >
       <div class="w-full max-w-md ... bg-white ...">
-        <div class="bg-gradient-to-r ... px-6 py-4">
+        <div class="bg-linear-to-r ... px-6 py-4">
           <h2 class="text-xl font-bold">Add New Coach</h2>
         </div>
       </div>
@@ -1003,7 +1003,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
           @click.stop
         >
           <div
-            class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white"
+            class="bg-linear-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white"
           >
             <h2 id="modal-title" class="text-xl font-bold">Add New Coach</h2>
             <p class="mt-1 text-sm text-white/90">
@@ -1095,7 +1095,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
     data-testid="log-interaction-submit-button"
     type="submit"
     :disabled="loading || !isFormValid"
-    class="flex-1 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 px-4 py-3 font-semibold text-white transition hover:from-indigo-600 hover:to-indigo-700 disabled:opacity-50"
+    class="flex-1 rounded-xl bg-linear-to-r from-indigo-500 to-indigo-600 px-4 py-3 font-semibold text-white transition hover:from-indigo-600 hover:to-indigo-700 disabled:opacity-50"
   >
     {{ loading ? "Logging..." : "Log Interaction" }}
   </button>
@@ -1304,7 +1304,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
     v-if="!form.school_id"
     role="status"
     aria-live="polite"
-    class="p-4 bg-blue-50 rounded"
+    class="p-4 bg-blue-50 rounded-sm"
   >
     <p class="text-sm text-slate-700">
       Select a school to begin logging an interaction
@@ -1407,7 +1407,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
       >
         <div class="flex items-start gap-3">
           <ExclamationTriangleIcon
-            class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
+            class="w-5 h-5 text-red-600 shrink-0 mt-0.5"
             aria-hidden="true"
           />
           <div class="flex-1">
@@ -1438,7 +1438,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
             type="button"
             @click="$emit('dismiss')"
             aria-label="Dismiss error summary"
-            class="text-red-600 hover:text-red-800 transition flex-shrink-0 mt-0.5 focus:outline-2 focus:outline-offset-2 focus:outline-red-600"
+            class="text-red-600 hover:text-red-800 transition shrink-0 mt-0.5 focus:outline-2 focus:outline-offset-2 focus:outline-red-600"
           >
             <XMarkIcon class="w-5 h-5" aria-hidden="true" />
           </button>
@@ -1488,7 +1488,7 @@ The three add/form pages demonstrate solid foundational accessibility practices 
         class="mt-1 text-sm text-red-600 flex items-start gap-1"
       >
         <ExclamationCircleIcon
-          class="w-4 h-4 mt-0.5 flex-shrink-0"
+          class="w-4 h-4 mt-0.5 shrink-0"
           aria-hidden="true"
         />
         <span>{{ error }}</span>

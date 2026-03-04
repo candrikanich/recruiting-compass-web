@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
     <PageHeader title="Events" description="Track camps, showcases, visits, and games">
@@ -8,7 +8,7 @@
         <NuxtLink
           to="/events/create"
           data-testid="add-event-button"
-          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-sm"
+          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-xs"
         >
           <PlusIcon class="w-4 h-4" />
           Add Event
@@ -22,7 +22,7 @@
 
       <!-- Filters Card -->
       <div
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
       >
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
           <!-- Search -->
@@ -120,7 +120,7 @@
       <!-- Empty State -->
       <div
         v-else-if="events.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <CalendarIcon class="w-12 h-12 text-slate-400 mx-auto mb-4" />
         <p class="text-slate-600 mb-2">No events yet</p>
@@ -132,7 +132,7 @@
       <div v-else>
         <!-- Calendar View -->
         <div
-          class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+          class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
         >
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-lg font-semibold text-slate-900">Calendar</h2>
@@ -201,7 +201,7 @@
             v-for="event in sortedEvents"
             :key="event.id"
             :id="`event-${event.start_date}`"
-            class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition"
+            class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden hover:shadow-md transition"
           >
             <!-- Event Header -->
             <div class="p-6">
@@ -291,7 +291,7 @@
         <!-- Empty Filtered State -->
         <div
           v-if="filteredEvents.length === 0 && events.length > 0"
-          class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+          class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         >
           <FunnelIcon class="w-12 h-12 text-slate-400 mx-auto mb-4" />
           <p class="text-slate-600 mb-2">No events match your filters</p>

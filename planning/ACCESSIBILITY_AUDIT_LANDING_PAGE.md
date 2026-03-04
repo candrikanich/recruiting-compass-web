@@ -61,13 +61,13 @@
 ```vue
 <NuxtLink
   to="/login"
-  class="min-w-[200px] px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-blue-700 transition-all text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-blue-600"
+  class="min-w-[200px] px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-blue-700 transition-all text-lg focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-blue-600"
 >
   Sign In
 </NuxtLink>
 <NuxtLink
   to="/signup"
-  class="min-w-[200px] px-8 py-4 bg-white text-slate-900 font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-slate-800 hover:text-white transition-all text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 focus:ring-offset-white"
+  class="min-w-[200px] px-8 py-4 bg-white text-slate-900 font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-slate-800 hover:text-white transition-all text-lg focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 focus:ring-offset-white"
 >
   Create Account
 </NuxtLink>
@@ -195,7 +195,7 @@ onMounted(() => {
 
 ```vue
 <div
-  class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
+  class="bg-white/10 backdrop-blur-xs rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
 >
   <!-- ... icon ... -->
   <h3 class="text-white text-lg font-medium mb-2">Track Schools</h3>
@@ -228,14 +228,14 @@ Option A (Increase opacity):
 Option B (Darker background):
 
 ```vue
-<div class="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30 hover:bg-white/30 transition-colors">
+<div class="bg-white/20 backdrop-blur-xs rounded-2xl p-6 border border-white/30 hover:bg-white/30 transition-colors">
 ```
 
 Option C (Use both — most accessible):
 
 ```vue
 <div
-  class="bg-white/15 backdrop-blur-sm rounded-2xl p-6 border border-white/30 hover:bg-white/25 transition-colors"
+  class="bg-white/15 backdrop-blur-xs rounded-2xl p-6 border border-white/30 hover:bg-white/25 transition-colors"
 >
   <h3 class="text-white text-lg font-medium mb-2">Track Schools</h3>
   <p class="text-white text-sm">  <!-- Full white opacity -->
@@ -419,13 +419,13 @@ Add non-color distinguisher to links:
 ```vue
 <NuxtLink
   to="/login"
-  class="min-w-[200px] px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-blue-700 transition-all text-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-blue-600 underline"
+  class="min-w-[200px] px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-blue-700 transition-all text-lg focus:outline-hidden focus:ring-2 focus:ring-white focus:ring-offset-blue-600 underline"
 >
   Sign In
 </NuxtLink>
 <NuxtLink
   to="/signup"
-  class="min-w-[200px] px-8 py-4 bg-white text-slate-900 font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-slate-800 hover:text-white transition-all text-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-white border-2 border-slate-300"
+  class="min-w-[200px] px-8 py-4 bg-white text-slate-900 font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-slate-800 hover:text-white transition-all text-lg focus:outline-hidden focus:ring-2 focus:ring-blue-600 focus:ring-offset-white border-2 border-slate-300"
 >
   Create Account
 </NuxtLink>
@@ -660,7 +660,7 @@ Or wrap in semantic element:
 
 ```vue
 <div
-  class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
+  class="bg-white/10 backdrop-blur-xs rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
 >
   <!-- Content -->
 </div>
@@ -686,7 +686,7 @@ Or wrap in semantic element:
 ```vue
 <NuxtLink
   to="/features/schools"
-  class="block bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+  class="block bg-white/10 backdrop-blur-xs rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors focus:outline-hidden focus:ring-2 focus:ring-white"
 >
   <div class="w-12 h-12 mx-auto mb-3" aria-hidden="true">
     <!-- SVG icon -->
@@ -702,7 +702,7 @@ Or wrap in semantic element:
 
 ```vue
 <button
-  class="text-left w-full bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+  class="text-left w-full bg-white/10 backdrop-blur-xs rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors focus:outline-hidden focus:ring-2 focus:ring-white"
   @click="handleCardClick('schools')"
 >
   <div class="w-12 h-12 mx-auto mb-3" aria-hidden="true">
@@ -737,7 +737,7 @@ Or wrap in semantic element:
     <!-- Skip link (hidden until focused) -->
     <a
       href="#main-content"
-      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-sm"
     >
       Skip to main content
     </a>
@@ -911,7 +911,7 @@ C. Use more efficient animation (fade instead of pulse):
 
 ```vue
 <div
-  class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
+  class="bg-white/10 backdrop-blur-xs rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
 >
 ```
 
@@ -921,7 +921,7 @@ C. Use more efficient animation (fade instead of pulse):
 
 ```vue
 <div
-  class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 focus-within:bg-white/20 focus-within:ring-2 focus-within:ring-white transition-colors"
+  class="bg-white/10 backdrop-blur-xs rounded-2xl p-6 border border-white/20 hover:bg-white/20 focus-within:bg-white/20 focus-within:ring-2 focus-within:ring-white transition-colors"
 >
 ```
 

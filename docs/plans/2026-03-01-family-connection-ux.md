@@ -469,7 +469,7 @@ Replace the entire file content:
       </div>
       <NuxtLink
         to="/settings/family-management"
-        class="shrink-0 px-4 py-1.5 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-600"
+        class="shrink-0 px-4 py-1.5 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-amber-600"
       >
         Invite Athlete <span aria-hidden="true">→</span>
       </NuxtLink>

@@ -261,7 +261,7 @@ describe("CoachStatsGrid", () => {
       cards.forEach((card) => {
         expect(card.classes()).toContain("border");
         expect(card.classes()).toContain("border-slate-200");
-        expect(card.classes()).toContain("shadow-sm");
+        expect(card.classes()).toContain("shadow-xs");
         expect(card.classes()).toContain("p-6");
       });
     });

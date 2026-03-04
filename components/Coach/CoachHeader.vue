@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <!-- Header with Name and Badge -->
     <div class="flex items-start justify-between mb-6">
       <div>
@@ -79,7 +79,7 @@
             target="_blank"
             rel="noopener noreferrer"
             :aria-label="`View ${coach.first_name}'s Twitter profile (opens in new window)`"
-            class="text-blue-600 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
+            class="text-blue-600 hover:text-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-1"
           >
             {{ coach.twitter_handle }}
             <span aria-hidden="true" class="ml-1 inline-block">↗</span>
@@ -103,7 +103,7 @@
             target="_blank"
             rel="noopener noreferrer"
             :aria-label="`View ${coach.first_name}'s Instagram profile (opens in new window)`"
-            class="text-blue-600 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
+            class="text-blue-600 hover:text-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-1"
           >
             {{ coach.instagram_handle }}
             <span aria-hidden="true" class="ml-1 inline-block">↗</span>
@@ -117,7 +117,7 @@
       <button
         v-if="coach.email"
         @click="$emit('send-email')"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition shadow-sm"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition shadow-xs"
       >
         <EnvelopeIcon class="w-4 h-4" />
         Email
@@ -125,7 +125,7 @@
       <button
         v-if="coach.phone"
         @click="$emit('send-text')"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition shadow-sm"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition shadow-xs"
       >
         <ChatBubbleLeftIcon class="w-4 h-4" />
         Text
@@ -133,7 +133,7 @@
       <button
         v-if="coach.phone"
         @click="$emit('call-coach')"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold rounded-lg hover:from-orange-600 hover:to-orange-700 transition shadow-sm"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold rounded-lg hover:from-orange-600 hover:to-orange-700 transition shadow-xs"
       >
         <PhoneIcon class="w-4 h-4" />
         Call
@@ -141,7 +141,7 @@
       <button
         v-if="coach.twitter_handle"
         @click="$emit('open-twitter')"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-sm font-semibold rounded-lg hover:from-sky-600 hover:to-sky-700 transition shadow-sm"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-sky-500 to-sky-600 text-white text-sm font-semibold rounded-lg hover:from-sky-600 hover:to-sky-700 transition shadow-xs"
       >
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
           <path
@@ -153,7 +153,7 @@
       <button
         v-if="coach.instagram_handle"
         @click="$emit('open-instagram')"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition shadow-sm"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 text-white text-sm font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition shadow-xs"
       >
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
           <path
@@ -164,14 +164,14 @@
       </button>
       <NuxtLink
         :to="`/coaches/${coach.id}/analytics`"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition shadow-sm"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-indigo-500 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition shadow-xs"
       >
         <ChartBarIcon class="w-4 h-4" />
         Analytics
       </NuxtLink>
       <NuxtLink
         :to="`/coaches/${coach.id}/communications`"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-slate-500 to-slate-600 text-white text-sm font-semibold rounded-lg hover:from-slate-600 hover:to-slate-700 transition shadow-sm"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-slate-500 to-slate-600 text-white text-sm font-semibold rounded-lg hover:from-slate-600 hover:to-slate-700 transition shadow-xs"
       >
         <ChatBubbleLeftRightIcon class="w-4 h-4" />
         Messages

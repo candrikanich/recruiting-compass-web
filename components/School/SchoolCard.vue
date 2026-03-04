@@ -5,7 +5,7 @@
   >
     <div class="flex items-start gap-4">
       <!-- School Logo -->
-      <SchoolLogo :school="school" size="lg" class="flex-shrink-0" />
+      <SchoolLogo :school="school" size="lg" class="shrink-0" />
 
       <!-- School Info -->
       <div class="flex-1 min-w-0">
@@ -25,13 +25,13 @@
         >
           <span
             v-if="school.division"
-            class="inline-block px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-700"
+            class="inline-block px-2 py-1 text-xs font-medium rounded-sm bg-blue-100 text-blue-700"
           >
             {{ school.division }}
           </span>
           <span
             v-if="school.priority_tier"
-            class="inline-block px-2 py-1 text-xs font-medium rounded"
+            class="inline-block px-2 py-1 text-xs font-medium rounded-sm"
             :class="priorityTierBadgeClass"
             :data-testid="`priority-tier-badge-${school.priority_tier}`"
             :title="`Priority: ${priorityTierLabel}`"
@@ -40,21 +40,21 @@
           </span>
           <span
             v-if="calculatedSize"
-            class="inline-block px-2 py-1 text-xs font-medium rounded"
+            class="inline-block px-2 py-1 text-xs font-medium rounded-sm"
             :class="sizeColorClass"
           >
             {{ calculatedSize }}
           </span>
           <span
             v-if="school.conference"
-            class="inline-block px-2 py-1 text-xs font-medium rounded bg-emerald-100 text-emerald-700"
+            class="inline-block px-2 py-1 text-xs font-medium rounded-sm bg-emerald-100 text-emerald-700"
           >
             {{ school.conference }}
           </span>
           <!-- Fit Score Badge -->
           <span
             v-if="hasFitScore"
-            class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded"
+            class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-sm"
             :class="fitScoreBadgeClass"
           >
             {{ fitScore }}/100

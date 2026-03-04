@@ -21,7 +21,7 @@
     <!-- Content -->
     <div class="max-w-4xl mx-auto px-6 py-12">
       <div
-        class="bg-white rounded-lg shadow-sm p-8 prose prose-slate max-w-none"
+        class="bg-white rounded-lg shadow-xs p-8 prose prose-slate max-w-none"
       >
         <!-- UPDATE THIS DATE WHENEVER TERMS ARE MODIFIED -->
         <p class="text-slate-600 mb-4">
@@ -390,7 +390,7 @@
             If you have any questions about these Terms and Conditions, please
             contact us:
           </p>
-          <div class="bg-slate-50 p-4 rounded mt-4">
+          <div class="bg-slate-50 p-4 rounded-sm mt-4">
             <p>
               <strong>Recruiting Compass</strong><br />
               <!-- TODO: Replace with registered agent address before public launch -->
