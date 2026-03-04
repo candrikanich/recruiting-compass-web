@@ -12,6 +12,7 @@
  */
 
 import { useLogger } from "~/server/utils/logger";
+import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { forgotPasswordSchema } from "~/utils/validation/schemas";
 
 interface RequestPasswordResetRequest {
@@ -26,6 +27,10 @@ interface RequestPasswordResetResponse {
 export default defineEventHandler(
   async (event): Promise<RequestPasswordResetResponse> => {
     const logger = useLogger(event, "auth/request-password-reset");
+
+    const rateLimitResult = await rateLimitByIp(event, { requests: 5, window: "1 h" });
+    throwIfRateLimited(rateLimitResult);
+
     try {
       // Parse request body
       const body = await readBody<RequestPasswordResetRequest>(event);
