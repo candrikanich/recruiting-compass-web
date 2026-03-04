@@ -89,7 +89,7 @@ describe("useSchools", () => {
       const { createSchool } = useSchools();
       await createSchool({ name: "Test School", city: "Test City", state: "TS", status: "researching" });
 
-      expect(mockCapture).toHaveBeenCalledWith("school_added", { school_type: null });
+      expect(mockCapture).toHaveBeenCalledWith("school_added", { division: null });
     });
   });
 

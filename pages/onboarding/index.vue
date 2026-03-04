@@ -325,6 +325,7 @@ import { useOnboarding } from "~/composables/useOnboarding";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useFamilyInvite } from "~/composables/useFamilyInvite";
+import { useToast } from "~/composables/useToast";
 
 definePageMeta({ layout: "default" });
 
