@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   },
 
   css: ["~/assets/css/main.css"],
-  modules: ["@pinia/nuxt", "@sentry/nuxt/module"],
+  modules: ["@pinia/nuxt", "@sentry/nuxt/module", "@nuxt/ui"],
 
   app: {
     head: {

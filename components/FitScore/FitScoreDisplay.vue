@@ -239,6 +239,8 @@ const recommendation = computed(() => {
 </script>
 
 <style scoped>
+@reference "~/assets/css/main.css";
+
 .fit-score-display {
   @apply w-full;
 }

@@ -311,6 +311,8 @@ const handleSignup = async () => {
 </script>
 
 <style scoped>
+@reference "~/assets/css/main.css";
+
 /* Screen reader only content */
 .sr-only {
   @apply absolute w-1 h-1 p-0 -m-1 overflow-hidden whitespace-nowrap border-0;
