@@ -311,7 +311,7 @@ const handleSignup = async () => {
 </script>
 
 <style scoped>
-@reference "~/assets/css/main.css";
+@reference "tailwindcss";
 
 /* Screen reader only content */
 .sr-only {

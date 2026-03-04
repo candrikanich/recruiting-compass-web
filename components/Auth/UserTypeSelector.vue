@@ -15,6 +15,7 @@
       <!-- Parent Option -->
       <label
         :for="`user-type-parent-${uid}`"
+        data-testid="user-type-parent"
         :class="[
           'flex items-center gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-emerald-500',
           selected === 'parent'
@@ -25,7 +26,6 @@
       >
         <input
           :id="`user-type-parent-${uid}`"
-          data-testid="user-type-parent"
           type="radio"
           name="userType"
           value="parent"
@@ -83,6 +83,7 @@
       <!-- Player Option -->
       <label
         :for="`user-type-player-${uid}`"
+        data-testid="user-type-player"
         :class="[
           'flex items-center gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-emerald-500',
           selected === 'player'
@@ -93,7 +94,6 @@
       >
         <input
           :id="`user-type-player-${uid}`"
-          data-testid="user-type-player"
           type="radio"
           name="userType"
           value="player"

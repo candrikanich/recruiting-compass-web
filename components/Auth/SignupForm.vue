@@ -114,6 +114,7 @@
         :disabled="disabled"
         :icon="LockClosedIcon"
         :required="true"
+        described-by="password-requirements"
         @update:model-value="$emit('update:password', $event)"
         @blur="$emit('validatePassword')"
       />
@@ -318,7 +319,7 @@ const isFormValid = computed(() => {
 </script>
 
 <style scoped>
-@reference "~/assets/css/main.css";
+@reference "tailwindcss";
 
 .sr-only {
   @apply absolute w-1 h-1 p-0 -m-1 overflow-hidden whitespace-nowrap border-0;
