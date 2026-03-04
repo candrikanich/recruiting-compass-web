@@ -6,6 +6,7 @@ import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { sendInviteEmail } from "~/server/utils/emailService";
 import { emailSchema } from "~/utils/validation/validators";
+import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
 
 const inviteBodySchema = z.object({
   email: emailSchema,
@@ -15,7 +16,11 @@ const inviteBodySchema = z.object({
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/invite");
   try {
-    const user = await requireAuth(event);
+    const { id: userId } = await requireAuth(event);
+    const rateLimitResult = await rateLimitByUser(event, userId, { requests: 10, window: "1 h" });
+    throwIfRateLimited(rateLimitResult);
+
+    const user = { id: userId };
     const rawBody = await readBody(event);
     const parseResult = inviteBodySchema.safeParse(rawBody);
     if (!parseResult.success) {

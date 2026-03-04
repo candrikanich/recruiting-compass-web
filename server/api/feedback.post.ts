@@ -8,12 +8,16 @@ import {
 } from "~/server/utils/errorHandler";
 import { auditLog } from "~/server/utils/auditLog";
 import { requireAuth } from "~/server/utils/auth";
+import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
 import type { H3Event } from "h3";
 
 const logger = createLogger("feedback");
 
 export default defineEventHandler(async (event) => {
   try {
+    const rateLimitResult = await rateLimitByIp(event, { requests: 10, window: "1 h" });
+    throwIfRateLimited(rateLimitResult);
+
     await requireAuth(event);
 
     // Get current user if authenticated
@@ -113,6 +117,7 @@ export default defineEventHandler(async (event) => {
 
     return { success: true, message: "Thank you for your feedback!" };
   } catch (error: unknown) {
+    if (error instanceof Error && "statusCode" in error) throw error;
     const userId = await tryGetUserId(event);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";

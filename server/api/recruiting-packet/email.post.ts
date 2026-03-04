@@ -8,6 +8,7 @@ import { z } from "zod";
 import { Resend } from "resend";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
+import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
 
 // Email validation schema
 const emailPacketSchema = z.object({
@@ -27,39 +28,6 @@ const emailPacketSchema = z.object({
 });
 
 type EmailPacketRequest = z.infer<typeof emailPacketSchema>;
-
-/**
- * Rate limiting store (in-memory, resets on server restart)
- * In production, use Redis or database for persistence
- */
-const emailRateLimitStore = new Map<
-  string,
-  { count: number; resetTime: number }
->();
-
-/**
- * Check if user has exceeded daily email limit
- */
-const checkRateLimit = (userId: string, maxEmails: number = 20): boolean => {
-  const now = Date.now();
-  const entry = emailRateLimitStore.get(userId);
-
-  if (!entry || entry.resetTime < now) {
-    // Reset limit
-    emailRateLimitStore.set(userId, {
-      count: 0,
-      resetTime: now + 24 * 60 * 60 * 1000, // 24 hours
-    });
-    return true;
-  }
-
-  if (entry.count < maxEmails) {
-    entry.count++;
-    return true;
-  }
-
-  return false;
-};
 
 /**
  * Escape HTML special characters to prevent XSS in email body
@@ -121,8 +89,10 @@ const formatEmailHtml = (
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "recruiting-packet/email");
   // Authenticate user and get verified user ID
-  const user = await requireAuth(event);
-  const userId = user.id;
+  const { id: userId } = await requireAuth(event);
+
+  const rateLimitResult = await rateLimitByUser(event, userId, { requests: 5, window: "24 h" });
+  throwIfRateLimited(rateLimitResult);
 
   // Parse and validate request body
   let body: EmailPacketRequest;
@@ -141,14 +111,6 @@ export default defineEventHandler(async (event) => {
     throw createError({
       statusCode: 400,
       statusMessage: "Invalid request body",
-    });
-  }
-
-  // Check rate limit
-  if (!checkRateLimit(userId, 20)) {
-    throw createError({
-      statusCode: 429,
-      statusMessage: "Rate limit exceeded: Maximum 20 emails per day",
     });
   }
 

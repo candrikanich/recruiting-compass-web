@@ -4,11 +4,15 @@ import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { createSafeErrorResponse } from "~/server/utils/errorHandler";
 import { helpFeedbackSchema } from "~/utils/validation/schemas";
+import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "help/feedback");
 
   try {
+    const rateLimitResult = await rateLimitByIp(event, { requests: 10, window: "1 h" });
+    throwIfRateLimited(rateLimitResult);
+
     const user = await requireAuth(event);
     const body = await validateBody(event, helpFeedbackSchema);
     const supabase = useSupabaseAdmin();

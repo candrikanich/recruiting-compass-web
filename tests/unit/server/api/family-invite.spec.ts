@@ -17,6 +17,11 @@ const state = {
   requestBody: { email: "invited@example.com", role: "parent" } as Record<string, unknown>,
 };
 
+vi.mock("~/server/utils/rateLimit", () => ({
+  rateLimitByUser: vi.fn(async () => ({ success: true, limit: 10, remaining: 9, reset: Date.now() + 3_600_000 })),
+  throwIfRateLimited: vi.fn(),
+}));
+
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(async () => ({ id: state.userId, email: state.userEmail })),
 }));

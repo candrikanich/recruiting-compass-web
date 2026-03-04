@@ -12,6 +12,10 @@ vi.stubGlobal("createError", (opts: { statusCode: number; statusMessage: string 
   return err;
 });
 
+vi.mock("~/server/utils/rateLimit", () => ({
+  rateLimitByIp: vi.fn(async () => ({ success: true, limit: 10, remaining: 9, reset: Date.now() + 3_600_000 })),
+  throwIfRateLimited: vi.fn(),
+}));
 vi.mock("~/server/utils/logger", () => ({
   useLogger: vi.fn(() => mockLogger),
 }));
