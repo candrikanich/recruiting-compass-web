@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Recruiting Compass — User Journey & Data Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0d0f14;
+    --bg2:       #13161d;
+    --bg3:       #1a1e28;
+    --border:    #252b3b;
+    --muted:     #4a5268;
+    --text:      #c8d0e8;
+    --text-dim:  #6b7491;
+
+    /* Role colours */
+    --athlete:   #3b82f6;  /* blue */
+    --athlete-d: #1d4ed8;
+    --athlete-g: #1e3a5f;
+    --parent:    #a855f7;  /* purple */
+    --parent-d:  #7e22ce;
+    --parent-g:  #3b1f5e;
+    --coach:     #10b981;  /* green */
+    --coach-d:   #047857;
+    --coach-g:   #0d3b2e;
+    --system:    #f59e0b;  /* amber */
+    --system-g:  #3b2a0a;
+
+    --radius:    10px;
+    --radius-lg: 16px;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #0d0f14 0%, #13161d 50%, #0a0c10 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 48px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 10% 50%, rgba(59,130,246,.06) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 70% at 90% 30%, rgba(168,85,247,.05) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 50% 100%, rgba(16,185,129,.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-inner { position: relative; max-width: 1600px; margin: 0 auto; }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+    background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header p { color: var(--text-dim); margin-top: 6px; font-size: 13px; }
+
+  .legend {
+    display: flex;
+    gap: 24px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-dim);
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Tab Nav ── */
+  .tab-nav {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 48px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+  }
+  .tab-nav::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .2s, border-color .2s;
+    letter-spacing: .01em;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: #fff; border-bottom-color: var(--athlete); }
+  .tab-btn[data-tab="1"].active { border-bottom-color: var(--athlete); }
+  .tab-btn[data-tab="2"].active { border-bottom-color: var(--parent); }
+  .tab-btn[data-tab="3"].active { border-bottom-color: var(--coach); }
+  .tab-btn[data-tab="4"].active { border-bottom-color: var(--system); }
+  .tab-btn[data-tab="5"].active { border-bottom-color: #64748b; }
+
+  /* ── Main ── */
+  .main {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 40px 48px;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Section title ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+  }
+
+  /* ── Flow grid ── */
+  .flow-grid {
+    display: grid;
+    gap: 32px;
+  }
+  .flow-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .flow-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* ── Flow card ── */
+  .flow-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .flow-card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .flow-card-header h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+  .flow-card-header p {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 1px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .badge-athlete { background: rgba(59,130,246,.15); color: #60a5fa; }
+  .badge-parent  { background: rgba(168,85,247,.15);  color: #c084fc; }
+  .badge-coach   { background: rgba(16,185,129,.15);  color: #34d399; }
+  .badge-system  { background: rgba(245,158,11,.15);  color: #fbbf24; }
+
+  .flow-body { padding: 20px; }
+
+  /* ── Step flow ── */
+  .step-flow { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: flex;
+    gap: 12px;
+    position: relative;
+  }
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 30px;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .step-num-athlete { background: var(--athlete-g); color: var(--athlete); border: 1.5px solid var(--athlete-d); }
+  .step-num-parent  { background: var(--parent-g);  color: var(--parent);  border: 1.5px solid var(--parent-d); }
+  .step-num-coach   { background: var(--coach-g);   color: var(--coach);   border: 1.5px solid var(--coach-d); }
+  .step-num-system  { background: var(--system-g);  color: var(--system);  border: 1.5px solid #92400e; }
+
+  .step-content { flex: 1; padding-bottom: 20px; }
+  .step-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e2e8f0;
+    line-height: 1.4;
+  }
+  .step-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+  .step-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .step-tag {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 2px 6px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-dim);
+  }
+
+  /* ── Swimlane diagram ── */
+  .swimlane-wrap { overflow-x: auto; }
+  .swimlane { min-width: 860px; }
+
+  .lane-header-row {
+    display: grid;
+    gap: 2px;
+    margin-bottom: 8px;
+  }
+  .lane-header {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .lane-header-athlete { background: var(--athlete-g); color: var(--athlete); }
+  .lane-header-parent  { background: var(--parent-g);  color: var(--parent); }
+  .lane-header-system  { background: var(--system-g);  color: var(--system); }
+
+  .lane-body-row {
+    display: grid;
+    gap: 2px;
+    position: relative;
+  }
+
+  .lane-col {
+    min-height: 100px;
+    padding: 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .lane-node {
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    position: relative;
+  }
+  .lane-node-athlete { background: rgba(59,130,246,.12); border: 1px solid rgba(59,130,246,.3); color: #93c5fd; }
+  .lane-node-parent  { background: rgba(168,85,247,.12); border: 1px solid rgba(168,85,247,.3); color: #d8b4fe; }
+  .lane-node-system  { background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.3); color: #fcd34d; }
+  .lane-node-ghost   { background: transparent; border: none; min-height: 40px; }
+
+  /* ── Phase pipeline ── */
+  .pipeline {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    overflow-x: auto;
+  }
+  .pipeline::-webkit-scrollbar { height: 4px; }
+  .pipeline::-webkit-scrollbar-track { background: var(--border); border-radius: 2px; }
+  .pipeline::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+
+  .phase-card {
+    flex: 1;
+    min-width: 180px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-right: none;
+    padding: 16px 14px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .phase-card:first-child { border-radius: 10px 0 0 10px; }
+  .phase-card:last-child  { border-right: 1px solid var(--border); border-radius: 0 10px 10px 0; }
+  .phase-num {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .phase-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #e2e8f0;
+    line-height: 1.3;
+  }
+  .phase-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .phase-actions {
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .phase-action {
+    font-size: 10px;
+    color: var(--text-dim);
+    padding: 3px 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .phase-action::before {
+    content: '›';
+    color: var(--athlete);
+    font-size: 12px;
+    line-height: 1;
+  }
+  .phase-arrow {
+    width: 16px;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 14px;
+    flex-shrink: 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── State badges ── */
+  .state-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .state-item {
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid;
+  }
+  .state-sent     { background: rgba(100,116,139,.08); border-color: rgba(100,116,139,.3); }
+  .state-received { background: rgba(59,130,246,.08);  border-color: rgba(59,130,246,.3); }
+  .state-pending  { background: rgba(245,158,11,.08);  border-color: rgba(245,158,11,.3); }
+  .state-complete { background: rgba(16,185,129,.08);  border-color: rgba(16,185,129,.3); }
+
+  .state-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .state-sent     .state-label { color: #94a3b8; }
+  .state-received .state-label { color: #60a5fa; }
+  .state-pending  .state-label { color: #fbbf24; }
+  .state-complete .state-label { color: #34d399; }
+
+  .state-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+
+  /* ── Architecture data flow ── */
+  .arch-layer {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .arch-layer-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    width: 90px;
+    flex-shrink: 0;
+  }
+  .arch-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+  }
+  .arch-chip {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+  }
+  .arch-chip-page   { background: rgba(59,130,246,.12);  color: #93c5fd;  border: 1px solid rgba(59,130,246,.25); }
+  .arch-chip-comp   { background: rgba(99,102,241,.12);  color: #a5b4fc;  border: 1px solid rgba(99,102,241,.25); }
+  .arch-chip-use    { background: rgba(236,72,153,.12);  color: #f9a8d4;  border: 1px solid rgba(236,72,153,.25); }
+  .arch-chip-store  { background: rgba(245,158,11,.12);  color: #fcd34d;  border: 1px solid rgba(245,158,11,.25); }
+  .arch-chip-api    { background: rgba(16,185,129,.12);  color: #6ee7b7;  border: 1px solid rgba(16,185,129,.25); }
+  .arch-chip-db     { background: rgba(168,85,247,.12);  color: #d8b4fe;  border: 1px solid rgba(168,85,247,.25); }
+
+  .arch-arrow {
+    text-align: center;
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1;
+    padding: 2px 0;
+  }
+
+  /* ── Invite flow (special swimlane) ── */
+  .invite-timeline {
+    position: relative;
+    padding: 8px 0;
+  }
+  .invite-row {
+    display: grid;
+    grid-template-columns: 90px 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: start;
+  }
+  .invite-step-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding-top: 8px;
+  }
+  .invite-cell {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    font-size: 11px;
+    line-height: 1.4;
+    min-height: 44px;
+  }
+  .invite-cell-athlete { background: rgba(59,130,246,.1); border-color: rgba(59,130,246,.25); color: #93c5fd; }
+  .invite-cell-system  { background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.25); color: #fcd34d; }
+  .invite-cell-parent  { background: rgba(168,85,247,.1); border-color: rgba(168,85,247,.25); color: #d8b4fe; }
+  .invite-cell-empty   { background: transparent; border-color: transparent; }
+  .invite-cell strong  { display: block; font-weight: 600; margin-bottom: 2px; }
+
+  .invite-col-header {
+    display: grid;
+    grid-template-columns: 90px 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .invite-col-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 6px;
+    border-radius: 6px;
+  }
+  .invite-col-title.athlete { background: var(--athlete-g); color: var(--athlete); }
+  .invite-col-title.system  { background: var(--system-g);  color: var(--system); }
+  .invite-col-title.parent  { background: var(--parent-g);  color: var(--parent); }
+
+  /* ── Fit score section ── */
+  .fitscore-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 8px;
+  }
+  .fitscore-factor {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .fitscore-factor-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 4px;
+  }
+  .fitscore-bar-wrap {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 6px;
+    overflow: hidden;
+  }
+  .fitscore-bar { height: 100%; border-radius: 2px; background: var(--athlete); }
+  .fitscore-sub { font-size: 10px; color: var(--text-dim); }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .header, .tab-nav, .main { padding-left: 20px; padding-right: 20px; }
+    .flow-grid.cols-2, .flow-grid.cols-3 { grid-template-columns: 1fr; }
+  }
+
+  /* ── Divider ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 32px 0;
+  }
+
+  /* ── Inline SVG arrows ── */
+  .connector-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 4px 0;
+  }
+  .connector-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 20px;
+    width: 28px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="header">
+  <div class="header-inner">
+    <h1>The Recruiting Compass</h1>
+    <p>User Journey &amp; Data Flow Diagram &nbsp;·&nbsp; Nuxt 3 / Vue 3 / Supabase &nbsp;·&nbsp; March 2026</p>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--athlete)"></div>
+        Athlete
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--parent)"></div>
+        Parent / Guardian
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--coach)"></div>
+        Coach
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--system)"></div>
+        System / Automated
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TABS ── -->
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="1">Athlete Onboarding</button>
+  <button class="tab-btn" data-tab="2">Family Invitation Flow</button>
+  <button class="tab-btn" data-tab="3">School Research Pipeline</button>
+  <button class="tab-btn" data-tab="4">Recruiting Phase Journey</button>
+  <button class="tab-btn" data-tab="5">Architecture Data Flow</button>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 1 — ATHLETE ONBOARDING
+════════════════════════════════════════════ -->
+<div class="main">
+
+<div class="tab-panel active" id="tab-1">
+  <div class="section-label">Athlete Onboarding Journey</div>
+
+  <div class="flow-grid cols-2">
+
+    <!-- Left: Step-by-step onboarding -->
+    <div class="flow-card">
+      <div class="flow-card-header">
+        <span class="badge badge-athlete">Athlete</span>
+        <div>
+          <h3>Account Creation &amp; Profile Setup</h3>
+          <p>pages/signup.vue → pages/onboarding/index.vue</p>
+        </div>
+      </div>
+      <div class="flow-body">
+        <div class="step-flow">
+
+          <div class="step">
+            <div class="step-num step-num-athlete">1</div>
+            <div class="step-content">
+              <div class="step-title">Land on Homepage</div>
+              <div class="step-sub">Marketing CTA → click "Get Started"</div>
+              <div class="step-tags">
+                <span class="step-tag">pages/index.vue</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num step-num-athlete">2</div>
+            <div class="step-content">
+              <div class="step-title">Create Account</div>
+              <div class="step-sub">Email + password via Supabase Auth. Triggers email verification.</div>
+              <div class="step-tags">
+                <span class="step-tag">pages/signup.vue</span>
+                <span class="step-tag">useAuth.ts</span>
+                <span class="step-tag">POST /api/auth/*</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num step-num-system">✉</div>
+            <div class="step-content">
+              <div class="step-title">Verify Email</div>
+              <div class="step-sub">Supabase sends verification link. User clicks to confirm.</div>
+              <div class="step-tags">
+                <span class="step-tag">pages/verify-email.vue</span>
+                <span class="step-tag">useEmailVerification.ts</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num step-num-athlete">3</div>
+            <div class="step-content">
+              <div class="step-title">Onboarding Wizard — Step 1: Sport &amp; Position</div>
+              <div class="step-sub">Select sport, position, graduation year. Sets recruiting context.</div>
+              <div class="step-tags">
+                <span class="step-tag">pages/onboarding/index.vue</span>
+                <span class="step-tag">useSportsPositionLookup.ts</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num step-num-athlete">4</div>
+            <div class="step-content">
+              <div class="step-title">Step 2: Academic Profile</div>
+              <div class="step-sub">GPA, test scores, intended major. Used in school fit scoring.</div>
+              <div class="step-tags">
+                <span class="step-tag">useAthleteProfile.ts</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num step-num-athlete">5</div>
+            <div class="step-content">
+              <div class="step-title">Step 3: Athletic Stats</div>
+              <div class="step-sub">Performance metrics, highlights, awards. Powers fit-score engine.</div>
+              <div class="step-tags">
+                <span class="step-tag">usePerformance.ts</span>
+                <span class="step-tag">POST /api/athlete/status</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num step-num-athlete">6</div>
+            <div class="step-content">
+              <div class="step-title">Step 4: School Preferences</div>
+              <div class="step-sub">Region, division, size, distance. Seeds school recommendations.</div>
+              <div class="step-tags">
+                <span class="step-tag">settings/school-preferences.vue</span>
+                <span class="step-tag">useDivisionRecommendations.ts</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num step-num-athlete">7</div>
+            <div class="step-content">
+              <div class="step-title">Step 5: Invite Parent</div>
+              <div class="step-sub">Optional — enter parent email to send family invitation. Creates family unit if not yet created.</div>
+              <div class="step-tags">
+                <span class="step-tag">useFamilyInvite.ts</span>
+                <span class="step-tag">POST /api/family/invite</span>
+                <span class="step-tag">Resend email</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num step-num-system">✓</div>
+            <div class="step-content">
+              <div class="step-title">Dashboard — Recruiting HQ</div>
+              <div class="step-sub">Schools list, pipeline phases, tasks, and activity feed now visible.</div>
+              <div class="step-tags">
+                <span class="step-tag">pages/dashboard.vue</span>
+                <span class="step-tag">useDashboardData.ts</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Profile completeness + dashboard -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+
+      <div class="flow-card">
+        <div class="flow-card-header">
+          <span class="badge badge-system">System</span>
+          <div>
+            <h3>Profile Completeness Engine</h3>
+            <p>useProfileCompleteness.ts</p>
+          </div>
+        </div>
+        <div class="flow-body">
+          <div class="fitscore-grid">
+            <div class="fitscore-factor">
+              <div class="fitscore-factor-name">Basic Info</div>
+              <div class="fitscore-bar-wrap"><div class="fitscore-bar" style="width:100%"></div></div>
+              <div class="fitscore-sub">Name, sport, grad year</div>
+            </div>
+            <div class="fitscore-factor">
+              <div class="fitscore-factor-name">Academic</div>
+              <div class="fitscore-bar-wrap"><div class="fitscore-bar" style="width:80%; background: var(--coach)"></div></div>
+              <div class="fitscore-sub">GPA, SAT/ACT, major</div>
+            </div>
+            <div class="fitscore-factor">
+              <div class="fitscore-factor-name">Athletics</div>
+              <div class="fitscore-bar-wrap"><div class="fitscore-bar" style="width:65%; background: var(--parent)"></div></div>
+              <div class="fitscore-sub">Stats, highlights</div>
+            </div>
+            <div class="fitscore-factor">
+              <div class="fitscore-factor-name">Preferences</div>
+              <div class="fitscore-bar-wrap"><div class="fitscore-bar" style="width:50%; background: var(--system)"></div></div>
+              <div class="fitscore-sub">Location, division, size</div>
+            </div>
+            <div class="fitscore-factor">
+              <div class="fitscore-factor-name">Schools Added</div>
+              <div class="fitscore-bar-wrap"><div class="fitscore-bar" style="width:40%; background: #64748b"></div></div>
+              <div class="fitscore-sub">Target list populated</div>
+            </div>
+            <div class="fitscore-factor">
+              <div class="fitscore-factor-name">Family Linked</div>
+              <div class="fitscore-bar-wrap"><div class="fitscore-bar" style="width:20%; background: var(--parent)"></div></div>
+              <div class="fitscore-sub">Parent joined unit</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-card">
+        <div class="flow-card-header">
+          <span class="badge badge-athlete">Athlete</span>
+          <div>
+            <h3>Dashboard Quick Actions</h3>
+            <p>pages/dashboard.vue — post-onboarding</p>
+          </div>
+        </div>
+        <div class="flow-body">
+          <div class="step-flow">
+            <div class="step">
+              <div class="step-num step-num-athlete">A</div>
+              <div class="step-content">
+                <div class="step-title">Search &amp; Add Schools</div>
+                <div class="step-sub">College Scorecard API + NCAA database search</div>
+                <div class="step-tags"><span class="step-tag">pages/search/</span><span class="step-tag">useCollegeData.ts</span></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num step-num-athlete">B</div>
+              <div class="step-content">
+                <div class="step-title">Log Coach Interactions</div>
+                <div class="step-sub">Email, call, campus visit — timestamped activity log</div>
+                <div class="step-tags"><span class="step-tag">pages/interactions/add.vue</span></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num step-num-athlete">C</div>
+              <div class="step-content">
+                <div class="step-title">Manage Tasks</div>
+                <div class="step-sub">Deadlines, reminders, recruiting checklist</div>
+                <div class="step-tags"><span class="step-tag">pages/tasks/</span><span class="step-tag">useTasks.ts</span></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num step-num-athlete">D</div>
+              <div class="step-content">
+                <div class="step-title">Upload Documents</div>
+                <div class="step-sub">Transcripts, highlights, recommendation letters</div>
+                <div class="step-tags"><span class="step-tag">pages/documents/</span><span class="step-tag">useDocumentUpload.ts</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 2 — FAMILY INVITATION FLOW
+════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-2">
+  <div class="section-label">Family Invitation Flow — Athlete ↔ Parent</div>
+
+  <div class="flow-card" style="margin-bottom: 32px;">
+    <div class="flow-card-header">
+      <span class="badge badge-system">Multi-party</span>
+      <div>
+        <h3>Family Unit Symmetric Invitation System</h3>
+        <p>Newly built feature — athlete invites parent via secure token email link</p>
+      </div>
+    </div>
+    <div class="flow-body">
+
+      <!-- Column headers -->
+      <div class="invite-col-header">
+        <div></div>
+        <div class="invite-col-title athlete">Athlete</div>
+        <div class="invite-col-title system">System</div>
+        <div class="invite-col-title parent">Parent</div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="invite-row">
+        <div class="invite-step-label">Step 1</div>
+        <div class="invite-cell invite-cell-athlete">
+          <strong>Send Invitation</strong>
+          Enters parent's email in onboarding Step 5 or Settings → Family Management
+          <br><span style="font-size:10px; margin-top:4px; display:block; opacity:.7;">useFamilyInvite.ts</span>
+        </div>
+        <div class="invite-cell invite-cell-empty"></div>
+        <div class="invite-cell invite-cell-empty"></div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="invite-row">
+        <div class="invite-step-label">Step 2</div>
+        <div class="invite-cell invite-cell-empty"></div>
+        <div class="invite-cell invite-cell-system">
+          <strong>API Creates Invite Record</strong>
+          POST /api/family/invite — generates secure UUID token, stores in family_invitations table with status = 'pending'
+          <br><span style="font-size:10px; margin-top:4px; display:block; opacity:.7;">server/api/family/invite.post.ts</span>
+        </div>
+        <div class="invite-cell invite-cell-empty"></div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="invite-row">
+        <div class="invite-step-label">Step 3</div>
+        <div class="invite-cell invite-cell-empty"></div>
+        <div class="invite-cell invite-cell-system">
+          <strong>Send Email via Resend</strong>
+          Transactional email with magic link:<br>
+          /join?token=&lt;uuid&gt;<br>
+          Link expires in 7 days
+          <br><span style="font-size:10px; margin-top:4px; display:block; opacity:.7;">server/utils/emailService.ts → sendInviteEmail()</span>
+        </div>
+        <div class="invite-cell invite-cell-parent">
+          <strong>Receives Email</strong>
+          "You've been invited to join [Athlete]'s recruiting journey on The Recruiting Compass"
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="invite-row">
+        <div class="invite-step-label">Step 4</div>
+        <div class="invite-cell invite-cell-empty"></div>
+        <div class="invite-cell invite-cell-system">
+          <strong>Token Validated</strong>
+          GET /api/family/invite/[token] — looks up invitation, checks expiry, returns athlete name + family_unit_id
+          <br><span style="font-size:10px; margin-top:4px; display:block; opacity:.7;">server/api/family/invite/[token].get.ts</span>
+        </div>
+        <div class="invite-cell invite-cell-parent">
+          <strong>Clicks Magic Link</strong>
+          Lands on pages/join.vue — sees athlete's name and invitation details
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="invite-row">
+        <div class="invite-step-label">Step 5</div>
+        <div class="invite-cell invite-cell-empty"></div>
+        <div class="invite-cell invite-cell-empty"></div>
+        <div class="invite-cell invite-cell-parent">
+          <strong>Create Account or Log In</strong>
+          New parent: redirected to /signup?inviteToken=…<br>
+          Existing user: accepts directly via join page
+          <br><span style="font-size:10px; margin-top:4px; display:block; opacity:.7;">pages/join.vue</span>
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="invite-row">
+        <div class="invite-step-label">Step 6</div>
+        <div class="invite-cell invite-cell-empty"></div>
+        <div class="invite-cell invite-cell-system">
+          <strong>Join Family Unit</strong>
+          POST /api/family/invite/[token] — links parent's user_id to family_unit_id, sets invitation status = 'accepted', adds to family_members
+          <br><span style="font-size:10px; margin-top:4px; display:block; opacity:.7;">server/api/family/invite/[token]/</span>
+        </div>
+        <div class="invite-cell invite-cell-parent">
+          <strong>Submits Acceptance</strong>
+          POST with their user_id. Token consumed — single use.
+        </div>
+      </div>
+
+      <!-- Step 7 -->
+      <div class="invite-row">
+        <div class="invite-step-label">Step 7</div>
+        <div class="invite-cell invite-cell-athlete">
+          <strong>Sees Parent Joined</strong>
+          Settings → Family Management now shows parent as active member. Both share same recruiting data view.
+        </div>
+        <div class="invite-cell invite-cell-empty"></div>
+        <div class="invite-cell invite-cell-parent">
+          <strong>Parent Dashboard</strong>
+          Redirected to /dashboard — sees athlete's school list, interactions, fit scores via shared family_unit_id
+          <br><span style="font-size:10px; margin-top:4px; display:block; opacity:.7;">pages/onboarding/parent.vue</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Multi-step workflow states -->
+  <div class="flow-grid cols-2">
+    <div class="flow-card">
+      <div class="flow-card-header">
+        <span class="badge badge-system">State Machine</span>
+        <div>
+          <h3>Invitation Workflow States</h3>
+          <p>Multi-step item tracking pattern</p>
+        </div>
+      </div>
+      <div class="flow-body">
+        <div class="state-grid">
+          <div class="state-item state-sent">
+            <div class="state-label">sentItems</div>
+            <div class="state-desc">Athlete sent invitation — waiting for parent to accept. Shown in Settings → Sent Invitations (gray)</div>
+          </div>
+          <div class="state-item state-received">
+            <div class="state-label">receivedItems</div>
+            <div class="state-desc">Parent received invite — sees call to action on join page. Shown as Received Invitations (blue)</div>
+          </div>
+          <div class="state-item state-pending">
+            <div class="state-label">pendingItems</div>
+            <div class="state-desc">Token validated, account creation in progress. Awaiting final confirmation step (amber)</div>
+          </div>
+          <div class="state-item state-complete">
+            <div class="state-label">completedItems</div>
+            <div class="state-desc">Parent joined family unit successfully. Both can now view and collaborate on recruiting data (green)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-card">
+      <div class="flow-card-header">
+        <span class="badge badge-parent">Parent</span>
+        <div>
+          <h3>Parent Experience Post-Join</h3>
+          <p>useParentContext.ts / useParentPreviewMode.ts</p>
+        </div>
+      </div>
+      <div class="flow-body">
+        <div class="step-flow">
+          <div class="step">
+            <div class="step-num step-num-parent">1</div>
+            <div class="step-content">
+              <div class="step-title">Complete Parent Profile</div>
+              <div class="step-sub">Name, contact details, relationship to athlete</div>
+              <div class="step-tags"><span class="step-tag">pages/onboarding/parent.vue</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num step-num-parent">2</div>
+            <div class="step-content">
+              <div class="step-title">View Athlete's School List</div>
+              <div class="step-sub">Read-only view of all schools, fit scores, and status. Parent cannot add schools.</div>
+              <div class="step-tags"><span class="step-tag">useActiveFamily.ts</span><span class="step-tag">useFamilyContext.ts</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num step-num-parent">3</div>
+            <div class="step-content">
+              <div class="step-title">Monitor Interactions</div>
+              <div class="step-sub">See all coach communications, visit dates, and recruiting activity</div>
+              <div class="step-tags"><span class="step-tag">useInteractions.ts</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num step-num-parent">4</div>
+            <div class="step-content">
+              <div class="step-title">View Recruiting Pipeline</div>
+              <div class="step-sub">Phase progress, tasks due, offer tracking — full recruiting overview</div>
+              <div class="step-tags"><span class="step-tag">usePhaseCalculation.ts</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 3 — SCHOOL RESEARCH PIPELINE
+════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-3">
+  <div class="section-label">School Research &amp; Management Pipeline</div>
+
+  <div class="flow-grid cols-2" style="margin-bottom: 32px;">
+
+    <div class="flow-card">
+      <div class="flow-card-header">
+        <span class="badge badge-athlete">Athlete</span>
+        <div>
+          <h3>Discover &amp; Add Schools</h3>
+          <p>pages/search/ → pages/schools/</p>
+        </div>
+      </div>
+      <div class="flow-body">
+        <div class="step-flow">
+          <div class="step">
+            <div class="step-num step-num-athlete">1</div>
+            <div class="step-content">
+              <div class="step-title">Search Schools</div>
+              <div class="step-sub">Filter by division, region, size, sport program, distance from home</div>
+              <div class="step-tags"><span class="step-tag">pages/search/</span><span class="step-tag">useSearch.ts</span><span class="step-tag">useCollegeData.ts</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num step-num-system">⚡</div>
+            <div class="step-content">
+              <div class="step-title">College Scorecard API</div>
+              <div class="step-sub">Live college data: enrollment, cost, acceptance rate, majors. Cached via useCollegeScorecardCache.ts</div>
+              <div class="step-tags"><span class="step-tag">GET /api/colleges/*</span><span class="step-tag">useNcaaLookup.ts</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num step-num-athlete">2</div>
+            <div class="step-content">
+              <div class="step-title">View School Detail</div>
+              <div class="step-sub">Fit score breakdown, pros/cons, coaches at the school, distance, program info</div>
+              <div class="step-tags"><span class="step-tag">pages/schools/index.vue</span><span class="step-tag">useFitScore.ts</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num step-num-athlete">3</div>
+            <div class="step-content">
+              <div class="step-title">Add to My List</div>
+              <div class="step-sub">School added to recruiting list. Initial status: "Researching"</div>
+              <div class="step-tags"><span class="step-tag">pages/schools/new.vue</span><span class="step-tag">useSchools.ts</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num step-num-athlete">4</div>
+            <div class="step-content">
+              <div class="step-title">Add Coaches</div>
+              <div class="step-sub">Find coaches at the school, add to contact list with role and contact info</div>
+              <div class="step-tags"><span class="step-tag">school-[id]-coaches.vue</span><span class="step-tag">useCoaches.ts</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-card">
+      <div class="flow-card-header">
+        <span class="badge badge-system">System</span>
+        <div>
+          <h3>Fit Score Calculation</h3>
+          <p>useFitScore.ts → GET /api/schools/:id/fit-score</p>
+        </div>
+      </div>
+      <div class="flow-body">
+        <div class="fitscore-grid" style="margin-bottom: 16px;">
+          <div class="fitscore-factor">
+            <div class="fitscore-factor-name">Academic Match</div>
+            <div class="fitscore-bar-wrap"><div class="fitscore-bar" style="width:88%"></div></div>
+            <div class="fitscore-sub">GPA vs. school avg</div>
+          </div>
+          <div class="fitscore-factor">
+            <div class="fitscore-factor-name">Division Fit</div>
+            <div class="fitscore-bar-wrap"><div class="fitscore-bar" style="width:92%; background:var(--coach)"></div></div>
+            <div class="fitscore-sub">NCAA D1/D2/D3 alignment</div>
+          </div>
+          <div class="fitscore-factor">
+            <div class="fitscore-factor-name">Location Pref</div>
+            <div class="fitscore-bar-wrap"><div class="fitscore-bar" style="width:60%; background:var(--parent)"></div></div>
+            <div class="fitscore-sub">Distance from home</div>
+          </div>
+          <div class="fitscore-factor">
+            <div class="fitscore-factor-name">School Size</div>
+            <div class="fitscore-bar-wrap"><div class="fitscore-bar" style="width:75%; background:var(--system)"></div></div>
+            <div class="fitscore-sub">Enrollment preference</div>
+          </div>
+          <div class="fitscore-factor">
+            <div class="fitscore-factor-name">Major Avail.</div>
+            <div class="fitscore-bar-wrap"><div class="fitscore-bar" style="width:100%; background:var(--coach)"></div></div>
+            <div class="fitscore-sub">Program offered</div>
+          </div>
+          <div class="fitscore-factor">
+            <div class="fitscore-factor-name">Interact. Score</div>
+            <div class="fitscore-bar-wrap"><div class="fitscore-bar" style="width:45%; background:var(--athlete)"></div></div>
+            <div class="fitscore-sub">Coach engagement level</div>
+          </div>
+        </div>
+        <div style="background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px;">
+          <div class="step-tag" style="display:inline-block; margin-bottom:6px;">Recalculation Triggers</div>
+          <div style="font-size:11px; color:var(--text-dim); line-height:1.7;">
+            · Profile updated (GPA, test scores, preferences)<br>
+            · New interaction logged with this school<br>
+            · School data refreshed from Scorecard API<br>
+            · Manual recalc via useFitScoreRecalculation.ts
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-card">
+    <div class="flow-card-header">
+      <span class="badge badge-athlete">Athlete</span>
+      <div>
+        <h3>Interaction Logging — Coach Communication Tracking</h3>
+        <p>pages/interactions/ → useInteractions.ts</p>
+      </div>
+    </div>
+    <div class="flow-body">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+
+        <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; font-weight:700; color:#60a5fa; margin-bottom:8px; letter-spacing:.04em;">EMAIL</div>
+          <div style="font-size:11px; color:var(--text-dim); line-height:1.6;">
+            Log emails sent/received with coaches. Attach files. Note sentiment and coach interest level.
+          </div>
+          <div class="step-tags" style="margin-top:8px;">
+            <span class="step-tag">useInteractionNotes.ts</span>
+          </div>
+        </div>
+
+        <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; font-weight:700; color:#34d399; margin-bottom:8px; letter-spacing:.04em;">PHONE / ZOOM</div>
+          <div style="font-size:11px; color:var(--text-dim); line-height:1.6;">
+            Record calls and video meetings. Duration, key takeaways, follow-up actions created as tasks.
+          </div>
+          <div class="step-tags" style="margin-top:8px;">
+            <span class="step-tag">useInteractionReminders.ts</span>
+          </div>
+        </div>
+
+        <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; font-weight:700; color:#c084fc; margin-bottom:8px; letter-spacing:.04em;">CAMPUS VISIT</div>
+          <div style="font-size:11px; color:var(--text-dim); line-height:1.6;">
+            Official / unofficial visit tracking. Date, who attended, observations, pros/cons added.
+          </div>
+          <div class="step-tags" style="margin-top:8px;">
+            <span class="step-tag">useSchoolProsCons.ts</span>
+          </div>
+        </div>
+
+        <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; font-weight:700; color:#fbbf24; margin-bottom:8px; letter-spacing:.04em;">OFFER / SCHOLARSHIP</div>
+          <div style="font-size:11px; color:var(--text-dim); line-height:1.6;">
+            Track scholarship offers, amounts, deadlines. Compare across schools in offers dashboard.
+          </div>
+          <div class="step-tags" style="margin-top:8px;">
+            <span class="step-tag">pages/offers/</span><span class="step-tag">useOffers.ts</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 4 — RECRUITING PHASE JOURNEY
+════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-4">
+  <div class="section-label">Recruiting Phase Journey &amp; Pipeline</div>
+
+  <div class="flow-card" style="margin-bottom: 32px;">
+    <div class="flow-card-header">
+      <span class="badge badge-athlete">Athlete</span>
+      <div>
+        <h3>Recruiting Phase Pipeline</h3>
+        <p>usePhaseCalculation.ts → GET /api/athlete/phase</p>
+      </div>
+    </div>
+    <div class="flow-body">
+      <div class="swimlane-wrap">
+        <div class="pipeline">
+
+          <div class="phase-card">
+            <div class="phase-num">Phase 1</div>
+            <div class="phase-name">Early Research</div>
+            <div class="phase-desc">Building school list, completing profile, understanding the landscape</div>
+            <div class="phase-actions">
+              <div class="phase-action">Add 5+ schools to list</div>
+              <div class="phase-action">Complete 60%+ profile</div>
+              <div class="phase-action">Set school preferences</div>
+              <div class="phase-action">Review fit scores</div>
+            </div>
+          </div>
+
+          <div class="phase-arrow">›</div>
+
+          <div class="phase-card">
+            <div class="phase-num">Phase 2</div>
+            <div class="phase-name">Active Outreach</div>
+            <div class="phase-desc">Initiating contact with coaches, sending recruiting packets, attending events</div>
+            <div class="phase-actions">
+              <div class="phase-action">Log first coach contact</div>
+              <div class="phase-action">Send recruiting packet</div>
+              <div class="phase-action">Attend showcase / camp</div>
+              <div class="phase-action">Add coaches to list</div>
+            </div>
+          </div>
+
+          <div class="phase-arrow">›</div>
+
+          <div class="phase-card">
+            <div class="phase-num">Phase 3</div>
+            <div class="phase-name">Building Relationships</div>
+            <div class="phase-desc">Regular communication established, coaches expressing interest, narrowing list</div>
+            <div class="phase-actions">
+              <div class="phase-action">3+ interactions per school</div>
+              <div class="phase-action">Official interest shown</div>
+              <div class="phase-action">Narrow to 8–12 schools</div>
+              <div class="phase-action">Track scholarship convos</div>
+            </div>
+          </div>
+
+          <div class="phase-arrow">›</div>
+
+          <div class="phase-card">
+            <div class="phase-num">Phase 4</div>
+            <div class="phase-name">Campus Visits</div>
+            <div class="phase-desc">Official and unofficial visits, meeting teams, evaluating culture and fit</div>
+            <div class="phase-actions">
+              <div class="phase-action">Log official visits</div>
+              <div class="phase-action">Record visit notes</div>
+              <div class="phase-action">Add pros &amp; cons</div>
+              <div class="phase-action">Narrow to top 3–5</div>
+            </div>
+          </div>
+
+          <div class="phase-arrow">›</div>
+
+          <div class="phase-card">
+            <div class="phase-num">Phase 5</div>
+            <div class="phase-name">Offers &amp; Decisions</div>
+            <div class="phase-desc">Receiving scholarship offers, comparing packages, making final decision</div>
+            <div class="phase-actions">
+              <div class="phase-action">Track all offers</div>
+              <div class="phase-action">Compare financials</div>
+              <div class="phase-action">NLI deadline tracking</div>
+              <div class="phase-action">Notify coaches</div>
+            </div>
+          </div>
+
+          <div class="phase-arrow">›</div>
+
+          <div class="phase-card" style="border-right: 1px solid var(--border); border-color: rgba(16,185,129,.3); background: var(--coach-g);">
+            <div class="phase-num" style="color: var(--coach);">Phase 6</div>
+            <div class="phase-name" style="color: #6ee7b7;">Committed!</div>
+            <div class="phase-desc" style="color: rgba(110,231,183,.7);">Verbal or signed commitment. Journey celebrated, archive begins.</div>
+            <div class="phase-actions">
+              <div class="phase-action">Mark committed school</div>
+              <div class="phase-action">Notify other coaches</div>
+              <div class="phase-action">Archive inactive schools</div>
+              <div class="phase-action">Share announcement</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-grid cols-2">
+
+    <div class="flow-card">
+      <div class="flow-card-header">
+        <span class="badge badge-system">System</span>
+        <div>
+          <h3>Phase Advancement Logic</h3>
+          <p>POST /api/athlete/phase/advance</p>
+        </div>
+      </div>
+      <div class="flow-body">
+        <div class="step-flow">
+          <div class="step">
+            <div class="step-num step-num-system">1</div>
+            <div class="step-content">
+              <div class="step-title">Auto-Detect Phase Readiness</div>
+              <div class="step-sub">System evaluates profile completeness, interaction count, school list size against phase thresholds</div>
+              <div class="step-tags"><span class="step-tag">usePhaseCalculation.ts</span><span class="step-tag">GET /api/athlete/phase</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num step-num-system">2</div>
+            <div class="step-content">
+              <div class="step-title">Suggest Phase Advancement</div>
+              <div class="step-sub">Dashboard shows "You're ready for Phase X" prompt with checklist of completed criteria</div>
+              <div class="step-tags"><span class="step-tag">useDashboardCalculations.ts</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num step-num-athlete">3</div>
+            <div class="step-content">
+              <div class="step-title">Athlete Confirms Advance</div>
+              <div class="step-sub">Manual confirmation required — prevents accidental phase skipping</div>
+              <div class="step-tags"><span class="step-tag">POST /api/athlete/phase/advance</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num step-num-system">4</div>
+            <div class="step-content">
+              <div class="step-title">New Phase Tasks Generated</div>
+              <div class="step-sub">Phase-appropriate tasks automatically added to task list. Parent notified of milestone.</div>
+              <div class="step-tags"><span class="step-tag">useNotifications.ts</span><span class="step-tag">useTasks.ts</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-card">
+      <div class="flow-card-header">
+        <span class="badge badge-athlete">Athlete</span>
+        <div>
+          <h3>Per-School Status Tracking</h3>
+          <p>useSchoolStatus.ts / useSchoolStatusManagement.ts</p>
+        </div>
+      </div>
+      <div class="flow-body">
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; gap:8px; align-items:center; padding:9px 12px; background:rgba(100,116,139,.08); border:1px solid rgba(100,116,139,.2); border-radius:7px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#64748b;flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#94a3b8;">Researching</div>
+              <div style="font-size:10px;color:var(--text-dim);">Added to list, gathering info, no contact yet</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; padding:9px 12px; background:rgba(59,130,246,.08); border:1px solid rgba(59,130,246,.2); border-radius:7px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--athlete);flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#60a5fa;">Contacting</div>
+              <div style="font-size:10px;color:var(--text-dim);">Active outreach initiated — emails, calls logged</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; padding:9px 12px; background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.2); border-radius:7px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--system);flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#fbbf24;">Interested</div>
+              <div style="font-size:10px;color:var(--text-dim);">Coach expressed mutual interest, regular contact</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; padding:9px 12px; background:rgba(168,85,247,.08); border:1px solid rgba(168,85,247,.2); border-radius:7px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--parent);flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#c084fc;">Visiting</div>
+              <div style="font-size:10px;color:var(--text-dim);">Official or unofficial campus visit scheduled/completed</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; padding:9px 12px; background:rgba(16,185,129,.08); border:1px solid rgba(16,185,129,.2); border-radius:7px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--coach);flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#34d399;">Offered</div>
+              <div style="font-size:10px;color:var(--text-dim);">Scholarship or walk-on offer received and logged</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; padding:9px 12px; background:rgba(16,185,129,.15); border:1px solid rgba(16,185,129,.4); border-radius:7px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#6ee7b7;flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#6ee7b7;">Committed ★</div>
+              <div style="font-size:10px;color:var(--text-dim);">Verbal or signed — the final destination</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; padding:9px 12px; background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.2); border-radius:7px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#fca5a5;">Not Pursuing</div>
+              <div style="font-size:10px;color:var(--text-dim);">Removed from active consideration, archived</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 5 — ARCHITECTURE DATA FLOW
+════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-5">
+  <div class="section-label">Architecture &amp; Data Flow</div>
+
+  <div class="flow-grid cols-2" style="margin-bottom: 32px;">
+
+    <div class="flow-card">
+      <div class="flow-card-header">
+        <span class="badge badge-system">Architecture</span>
+        <div>
+          <h3>Request Data Flow</h3>
+          <p>Page → Composable → Store → API → Supabase</p>
+        </div>
+      </div>
+      <div class="flow-body">
+        <div class="arch-layer">
+          <div class="arch-layer-label">Pages</div>
+          <div class="arch-items">
+            <span class="arch-chip arch-chip-page">dashboard.vue</span>
+            <span class="arch-chip arch-chip-page">schools/index.vue</span>
+            <span class="arch-chip arch-chip-page">interactions/</span>
+            <span class="arch-chip arch-chip-page">join.vue</span>
+            <span class="arch-chip arch-chip-page">onboarding/</span>
+          </div>
+        </div>
+        <div class="arch-arrow">↓ call composable</div>
+        <div class="arch-layer">
+          <div class="arch-layer-label">Composables</div>
+          <div class="arch-items">
+            <span class="arch-chip arch-chip-use">useSchools</span>
+            <span class="arch-chip arch-chip-use">useInteractions</span>
+            <span class="arch-chip arch-chip-use">useFitScore</span>
+            <span class="arch-chip arch-chip-use">useFamilyInvite</span>
+            <span class="arch-chip arch-chip-use">useAuth</span>
+            <span class="arch-chip arch-chip-use">useDashboardData</span>
+          </div>
+        </div>
+        <div class="arch-arrow">↓ read/write state</div>
+        <div class="arch-layer">
+          <div class="arch-layer-label">Stores</div>
+          <div class="arch-items">
+            <span class="arch-chip arch-chip-store">Pinia stores</span>
+            <span class="arch-chip arch-chip-store">schools state</span>
+            <span class="arch-chip arch-chip-store">auth state</span>
+            <span class="arch-chip arch-chip-store">family state</span>
+          </div>
+        </div>
+        <div class="arch-arrow">↓ $fetch via useAuthFetch</div>
+        <div class="arch-layer">
+          <div class="arch-layer-label">Nitro API</div>
+          <div class="arch-items">
+            <span class="arch-chip arch-chip-api">/api/schools/*</span>
+            <span class="arch-chip arch-chip-api">/api/family/invite</span>
+            <span class="arch-chip arch-chip-api">/api/athlete/phase</span>
+            <span class="arch-chip arch-chip-api">/api/interactions</span>
+            <span class="arch-chip arch-chip-api">/api/coaches/*</span>
+          </div>
+        </div>
+        <div class="arch-arrow">↓ useSupabaseAdmin()</div>
+        <div class="arch-layer">
+          <div class="arch-layer-label">Supabase</div>
+          <div class="arch-items">
+            <span class="arch-chip arch-chip-db">schools</span>
+            <span class="arch-chip arch-chip-db">coaches</span>
+            <span class="arch-chip arch-chip-db">interactions</span>
+            <span class="arch-chip arch-chip-db">family_units</span>
+            <span class="arch-chip arch-chip-db">family_members</span>
+            <span class="arch-chip arch-chip-db">family_invitations</span>
+            <span class="arch-chip arch-chip-db">athlete_profiles</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <div class="flow-card">
+        <div class="flow-card-header">
+          <span class="badge badge-system">Security</span>
+          <div>
+            <h3>Auth &amp; Request Pipeline</h3>
+            <p>Every API request goes through this chain</p>
+          </div>
+        </div>
+        <div class="flow-body">
+          <div class="step-flow">
+            <div class="step">
+              <div class="step-num step-num-system">1</div>
+              <div class="step-content">
+                <div class="step-title">useAuthFetch (client)</div>
+                <div class="step-sub">Auto-injects session JWT and X-Request-ID correlation header into every $fetch call</div>
+                <div class="step-tags"><span class="step-tag">composables/useAuthFetch.ts</span></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num step-num-system">2</div>
+              <div class="step-content">
+                <div class="step-title">Correlation Middleware</div>
+                <div class="step-sub">Reads X-Request-ID, attaches to all log entries for end-to-end request tracing</div>
+                <div class="step-tags"><span class="step-tag">server/middleware/</span></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num step-num-system">3</div>
+              <div class="step-content">
+                <div class="step-title">requireAuth() + CSRF</div>
+                <div class="step-sub">Validates Supabase JWT. Mutation endpoints require CSRF token (double-submit cookie pattern)</div>
+                <div class="step-tags"><span class="step-tag">server/utils/auth.ts</span><span class="step-tag">useCsrf.ts</span></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num step-num-system">4</div>
+              <div class="step-content">
+                <div class="step-title">useLogger(event, context)</div>
+                <div class="step-sub">Structured logging with correlation ID. Levels: error, warn, info, debug. Never exposes raw error messages.</div>
+                <div class="step-tags"><span class="step-tag">server/utils/logger.ts</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-card">
+        <div class="flow-card-header">
+          <span class="badge badge-system">External</span>
+          <div>
+            <h3>External Integrations</h3>
+            <p>Third-party services consumed by the app</p>
+          </div>
+        </div>
+        <div class="flow-body">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:12px;">
+              <div style="font-size:11px; font-weight:700; color:#fbbf24; margin-bottom:4px;">Resend</div>
+              <div style="font-size:10px; color:var(--text-dim); line-height:1.5;">Transactional email. Family invitations, email verification, password reset</div>
+            </div>
+            <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:12px;">
+              <div style="font-size:11px; font-weight:700; color:#60a5fa; margin-bottom:4px;">College Scorecard</div>
+              <div style="font-size:10px; color:var(--text-dim); line-height:1.5;">US Dept of Education API. Institution data, programs, cost, enrollment</div>
+            </div>
+            <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:12px;">
+              <div style="font-size:11px; font-weight:700; color:#a5b4fc; margin-bottom:4px;">Supabase</div>
+              <div style="font-size:10px; color:var(--text-dim); line-height:1.5;">PostgreSQL DB + Auth + Storage. Service role for server-side, anon key blocked</div>
+            </div>
+            <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:12px;">
+              <div style="font-size:11px; font-weight:700; color:#34d399; margin-bottom:4px;">Vercel</div>
+              <div style="font-size:10px; color:var(--text-dim); line-height:1.5;">Deploy from main. Serverless Nitro functions. QA auto-deploys from develop</div>
+            </div>
+            <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:12px;">
+              <div style="font-size:11px; font-weight:700; color:#f9a8d4; margin-bottom:4px;">PostHog</div>
+              <div style="font-size:10px; color:var(--text-dim); line-height:1.5;">Product analytics. Session recording, feature flags, funnel analysis</div>
+            </div>
+            <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:12px;">
+              <div style="font-size:11px; font-weight:700; color:#d8b4fe; margin-bottom:4px;">NCAA Database</div>
+              <div style="font-size:10px; color:var(--text-dim); line-height:1.5;">Local data via ncaaDatabase.ts + useNcaaLookup. Division, eligibility rules</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Family unit DB schema -->
+  <div class="flow-card">
+    <div class="flow-card-header">
+      <span class="badge badge-system">Database</span>
+      <div>
+        <h3>Family Unit Data Model</h3>
+        <p>Supabase PostgreSQL schema — core recruiting data relationships</p>
+      </div>
+    </div>
+    <div class="flow-body">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+
+        <div style="background:var(--bg3); border:1px solid rgba(168,85,247,.3); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; font-weight:700; color:#d8b4fe; margin-bottom:8px; font-family:'JetBrains Mono',monospace;">family_units</div>
+          <div style="font-size:10px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; line-height:2;">
+            id uuid PK<br>
+            created_at timestamptz<br>
+            athlete_user_id uuid FK<br>
+            name text
+          </div>
+        </div>
+
+        <div style="background:var(--bg3); border:1px solid rgba(168,85,247,.3); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; font-weight:700; color:#d8b4fe; margin-bottom:8px; font-family:'JetBrains Mono',monospace;">family_members</div>
+          <div style="font-size:10px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; line-height:2;">
+            id uuid PK<br>
+            family_unit_id uuid FK<br>
+            user_id uuid FK<br>
+            role text (athlete|parent)<br>
+            joined_at timestamptz
+          </div>
+        </div>
+
+        <div style="background:var(--bg3); border:1px solid rgba(245,158,11,.3); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; font-weight:700; color:#fcd34d; margin-bottom:8px; font-family:'JetBrains Mono',monospace;">family_invitations</div>
+          <div style="font-size:10px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; line-height:2;">
+            id uuid PK<br>
+            token uuid UNIQUE<br>
+            family_unit_id uuid FK<br>
+            invited_email text<br>
+            created_by_user_id uuid FK<br>
+            status text (pending|accepted|expired)<br>
+            expires_at timestamptz
+          </div>
+        </div>
+
+        <div style="background:var(--bg3); border:1px solid rgba(59,130,246,.3); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; font-weight:700; color:#93c5fd; margin-bottom:8px; font-family:'JetBrains Mono',monospace;">schools</div>
+          <div style="font-size:10px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; line-height:2;">
+            id uuid PK<br>
+            family_unit_id uuid FK<br>
+            name text<br>
+            status text<br>
+            fit_score numeric<br>
+            division text<br>
+            notes text
+          </div>
+        </div>
+
+        <div style="background:var(--bg3); border:1px solid rgba(16,185,129,.3); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; font-weight:700; color:#6ee7b7; margin-bottom:8px; font-family:'JetBrains Mono',monospace;">interactions</div>
+          <div style="font-size:10px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; line-height:2;">
+            id uuid PK<br>
+            family_unit_id uuid FK<br>
+            school_id uuid FK<br>
+            coach_id uuid FK?<br>
+            type text<br>
+            occurred_at timestamptz<br>
+            notes text
+          </div>
+        </div>
+
+        <div style="background:var(--bg3); border:1px solid rgba(99,102,241,.3); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; font-weight:700; color:#a5b4fc; margin-bottom:8px; font-family:'JetBrains Mono',monospace;">coaches</div>
+          <div style="font-size:10px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; line-height:2;">
+            id uuid PK<br>
+            family_unit_id uuid FK<br>
+            school_id uuid FK<br>
+            name text<br>
+            role text<br>
+            email text<br>
+            phone text
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- /main -->
+
+<script>
+  // Tab switching
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+
+      btn.classList.add('active');
+      document.getElementById('tab-' + target).classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Recruiting Compass — Architecture Overview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0d1117;
+      --surface:     #161b22;
+      --surface2:    #1c2333;
+      --border:      #30363d;
+      --border-hi:   #484f58;
+
+      --blue:        #58a6ff;
+      --blue-dim:    #1f3a5f;
+      --green:       #3fb950;
+      --green-dim:   #1a3a24;
+      --purple:      #a371f7;
+      --purple-dim:  #2d2060;
+      --orange:      #f0883e;
+      --orange-dim:  #3d2308;
+      --teal:        #39d353;
+      --cyan:        #56d3db;
+      --cyan-dim:    #0d2e33;
+      --yellow:      #e3b341;
+      --yellow-dim:  #3a2c08;
+      --red:         #f85149;
+      --red-dim:     #3a0a0a;
+      --pink:        #f778ba;
+      --pink-dim:    #3a1028;
+
+      --text-primary:   #e6edf3;
+      --text-secondary: #8b949e;
+      --text-muted:     #484f58;
+
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --radius-sm: 6px;
+      --radius:    10px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 32px 48px 24px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #0d1117 0%, #0d1117 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 120% at 50% -20%, rgba(88,166,255,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 20px rgba(88,166,255,0.3);
+      flex-shrink: 0;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text-primary);
+    }
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+    .header-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+    .badge-blue   { color: var(--blue);   border-color: var(--blue);   background: var(--blue-dim); }
+    .badge-green  { color: var(--green);  border-color: var(--green);  background: var(--green-dim); }
+    .badge-purple { color: var(--purple); border-color: var(--purple); background: var(--purple-dim); }
+    .badge-orange { color: var(--orange); border-color: var(--orange); background: var(--orange-dim); }
+    .badge-cyan   { color: var(--cyan);   border-color: var(--cyan);   background: var(--cyan-dim); }
+    .badge-yellow { color: var(--yellow); border-color: var(--yellow); background: var(--yellow-dim); }
+
+    /* ── LAYOUT ── */
+    main {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 36px 48px 64px;
+    }
+
+    /* ── SECTION LABELS ── */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    /* ── LAYER GRID ── */
+    .arch-diagram {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    /* ── LAYER ROW ── */
+    .layer {
+      display: flex;
+      align-items: stretch;
+      gap: 2px;
+      position: relative;
+    }
+    .layer-label-col {
+      width: 120px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 16px;
+    }
+    .layer-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: right;
+      line-height: 1.4;
+    }
+    .layer-content {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      position: relative;
+      transition: border-color 0.2s;
+      animation: fadeSlideIn 0.5s ease both;
+    }
+    .layer-content:hover {
+      border-color: var(--border-hi);
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* staggered animation */
+    .layer:nth-child(1)  .layer-content { animation-delay: 0.05s; }
+    .layer:nth-child(2)  .layer-content { animation-delay: 0.10s; }
+    .layer:nth-child(3)  .layer-content { animation-delay: 0.15s; }
+    .layer:nth-child(4)  .layer-content { animation-delay: 0.20s; }
+    .layer:nth-child(5)  .layer-content { animation-delay: 0.25s; }
+    .layer:nth-child(6)  .layer-content { animation-delay: 0.30s; }
+    .layer:nth-child(7)  .layer-content { animation-delay: 0.35s; }
+    .layer:nth-child(8)  .layer-content { animation-delay: 0.40s; }
+    .layer:nth-child(9)  .layer-content { animation-delay: 0.45s; }
+    .layer:nth-child(10) .layer-content { animation-delay: 0.50s; }
+
+    /* ── CONNECTOR ARROWS ── */
+    .connector-row {
+      display: flex;
+      align-items: center;
+      height: 28px;
+    }
+    .connector-spacer {
+      width: 120px;
+      flex-shrink: 0;
+    }
+    .connector-line {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .connector-line svg {
+      display: block;
+    }
+    .conn-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+    }
+
+    /* ── CHIP / NODE ── */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: default;
+      transition: transform 0.15s, box-shadow 0.15s;
+      white-space: nowrap;
+    }
+    .chip:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .chip-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .chip-mono {
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    /* chip color variants */
+    .chip-blue   { color: var(--blue);   border-color: rgba(88,166,255,0.35);   background: rgba(31,58,95,0.6); }
+    .chip-blue   .chip-dot { background: var(--blue); }
+    .chip-green  { color: var(--green);  border-color: rgba(63,185,80,0.35);    background: rgba(26,58,36,0.6); }
+    .chip-green  .chip-dot { background: var(--green); }
+    .chip-purple { color: var(--purple); border-color: rgba(163,113,247,0.35);  background: rgba(45,32,96,0.6); }
+    .chip-purple .chip-dot { background: var(--purple); }
+    .chip-orange { color: var(--orange); border-color: rgba(240,136,62,0.35);   background: rgba(61,35,8,0.6); }
+    .chip-orange .chip-dot { background: var(--orange); }
+    .chip-cyan   { color: var(--cyan);   border-color: rgba(86,211,219,0.35);   background: rgba(13,46,51,0.6); }
+    .chip-cyan   .chip-dot { background: var(--cyan); }
+    .chip-yellow { color: var(--yellow); border-color: rgba(227,179,65,0.35);   background: rgba(58,44,8,0.6); }
+    .chip-yellow .chip-dot { background: var(--yellow); }
+    .chip-pink   { color: var(--pink);   border-color: rgba(247,120,186,0.35);  background: rgba(58,16,40,0.6); }
+    .chip-pink   .chip-dot { background: var(--pink); }
+    .chip-red    { color: var(--red);    border-color: rgba(248,81,73,0.35);    background: rgba(58,10,10,0.6); }
+    .chip-red    .chip-dot { background: var(--red); }
+
+    /* ── ROLE CARDS ── */
+    .roles-row {
+      display: flex;
+      gap: 12px;
+    }
+    .role-card {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: fadeSlideIn 0.5s ease both;
+    }
+    .role-card:nth-child(1) { animation-delay: 0.55s; }
+    .role-card:nth-child(2) { animation-delay: 0.60s; }
+    .role-card:nth-child(3) { animation-delay: 0.65s; }
+    .role-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    }
+    .role-icon {
+      font-size: 28px;
+      line-height: 1;
+    }
+    .role-name {
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .role-desc {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .role-card.athlete { border-color: rgba(86,211,219,0.4); }
+    .role-card.parent  { border-color: rgba(163,113,247,0.4); }
+    .role-card.coach   { border-color: rgba(63,185,80,0.4); }
+
+    /* ── DOMAIN FLOW ── */
+    .domain-section {
+      margin-top: 48px;
+    }
+    .domain-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: -0.2px;
+    }
+    .domain-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+    .domain-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .domain-flow {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      animation: fadeSlideIn 0.5s ease both;
+    }
+    .domain-flow:nth-child(1) { animation-delay: 0.7s; }
+    .domain-flow:nth-child(2) { animation-delay: 0.75s; }
+    .domain-flow:nth-child(3) { animation-delay: 0.80s; }
+    .domain-flow-header {
+      padding: 14px 18px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .domain-flow-icon {
+      font-size: 18px;
+    }
+    .domain-flow-title {
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .domain-flow-body {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .flow-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+    }
+    .flow-step:hover {
+      background: var(--surface2);
+      border-color: var(--border);
+    }
+    .flow-step-num {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      width: 16px;
+      flex-shrink: 0;
+    }
+    .flow-step-content {
+      flex: 1;
+    }
+    .flow-step-type {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .flow-step-name {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+    .flow-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-left: 26px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    /* ── AUTH FLOW ── */
+    .auth-section {
+      margin-top: 48px;
+    }
+    .auth-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .auth-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      animation: fadeSlideIn 0.5s ease both;
+    }
+    .auth-card:nth-child(1) { animation-delay: 0.85s; }
+    .auth-card:nth-child(2) { animation-delay: 0.90s; }
+    .auth-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .auth-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .auth-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .auth-step-num {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--blue-dim);
+      border: 1px solid var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--blue);
+      flex-shrink: 0;
+    }
+    .auth-step-text {
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+    .auth-step-text strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .auth-step-text code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--bg);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: var(--cyan);
+    }
+
+    /* ── LOGGING SECTION ── */
+    .logging-row {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .log-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      animation: fadeSlideIn 0.5s ease both;
+    }
+    .log-card:nth-child(1) { animation-delay: 0.95s; }
+    .log-card:nth-child(2) { animation-delay: 1.00s; }
+    .log-title {
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .log-entry {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+    }
+    .log-entry .level-error { color: var(--red); }
+    .log-entry .level-warn  { color: var(--yellow); }
+    .log-entry .level-info  { color: var(--green); }
+    .log-entry .level-debug { color: var(--text-muted); }
+
+    /* ── LEGEND ── */
+    .legend {
+      margin-top: 48px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      animation: fadeSlideIn 0.5s ease both;
+      animation-delay: 1.05s;
+    }
+    .legend-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+    }
+    .legend-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px 32px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .legend-swatch {
+      width: 28px; height: 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 24px 48px 32px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── GLOW PULSE on key layers ── */
+    @keyframes borderPulse {
+      0%, 100% { box-shadow: 0 0 0 0 transparent; }
+      50%       { box-shadow: 0 0 0 3px rgba(88,166,255,0.12); }
+    }
+    .layer.highlight .layer-content {
+      border-color: rgba(88,166,255,0.4);
+      animation: fadeSlideIn 0.5s ease both, borderPulse 3s ease-in-out 1s infinite;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-hi); }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<header>
+  <div class="header-inner">
+    <div class="logo-wrap">
+      <div class="logo-icon">🧭</div>
+      <div>
+        <h1>The Recruiting Compass</h1>
+        <div class="subtitle">Architecture Overview — Nuxt 3 Web Application</div>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span class="badge badge-blue">Nuxt 3</span>
+      <span class="badge badge-green">Vue 3</span>
+      <span class="badge badge-purple">TypeScript</span>
+      <span class="badge badge-orange">Pinia</span>
+      <span class="badge badge-cyan">Supabase</span>
+      <span class="badge badge-yellow">Vercel</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════ MAIN ══════════ -->
+<main>
+
+  <!-- ── USER ROLES ── -->
+  <div class="section-label">User Roles</div>
+  <div class="roles-row" style="margin-bottom: 36px;">
+    <div class="role-card athlete">
+      <div class="role-icon">🏃</div>
+      <div>
+        <div class="role-name" style="color: var(--cyan)">Athlete</div>
+        <div class="role-desc">Tracks recruitment journey, manages school list, completes tasks, invites parents</div>
+      </div>
+    </div>
+    <div class="role-card parent">
+      <div class="role-icon">👨‍👩‍👧</div>
+      <div>
+        <div class="role-name" style="color: var(--purple)">Parent</div>
+        <div class="role-desc">Joins family unit, monitors athlete progress, coordinates with coaches</div>
+      </div>
+    </div>
+    <div class="role-card coach">
+      <div class="role-icon">📋</div>
+      <div>
+        <div class="role-name" style="color: var(--green)">Coach</div>
+        <div class="role-desc">Manages interactions with athletes, tracks recruiting pipeline</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ARCHITECTURE LAYERS ── -->
+  <div class="section-label">Layered Architecture</div>
+  <div class="arch-diagram">
+
+    <!-- LAYER: Browser / Client -->
+    <div class="layer">
+      <div class="layer-label-col">
+        <div class="layer-label" style="color: var(--cyan)">Browser<br/>Client</div>
+      </div>
+      <div class="layer-content" style="border-color: rgba(86,211,219,0.4); background: linear-gradient(90deg, rgba(13,46,51,0.4) 0%, var(--surface) 100%);">
+        <span class="chip chip-cyan chip-mono"><span class="chip-dot"></span>Nuxt App Shell</span>
+        <span class="chip chip-cyan chip-mono"><span class="chip-dot"></span>Vue Router</span>
+        <span class="chip chip-cyan chip-mono"><span class="chip-dot"></span>TailwindCSS</span>
+        <span class="chip chip-cyan chip-mono"><span class="chip-dot"></span>Supabase Auth Session</span>
+        <span class="chip chip-cyan chip-mono"><span class="chip-dot"></span>PostHog Analytics</span>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div class="connector-row">
+      <div class="connector-spacer"></div>
+      <div class="connector-line">
+        <svg width="16" height="28" viewBox="0 0 16 28">
+          <line x1="8" y1="0" x2="8" y2="20" stroke="#484f58" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <polygon points="4,18 8,26 12,18" fill="#484f58"/>
+        </svg>
+        <span class="conn-label">file-based routing · SSR/SSG hydration</span>
+      </div>
+    </div>
+
+    <!-- LAYER: Pages -->
+    <div class="layer">
+      <div class="layer-label-col">
+        <div class="layer-label" style="color: var(--blue)">Pages<br/><span style="font-size:9px;color:var(--text-muted)">pages/</span></div>
+      </div>
+      <div class="layer-content" style="border-color: rgba(88,166,255,0.4);">
+        <span class="chip chip-blue chip-mono"><span class="chip-dot"></span>index.vue</span>
+        <span class="chip chip-blue chip-mono"><span class="chip-dot"></span>schools/index.vue</span>
+        <span class="chip chip-blue chip-mono"><span class="chip-dot"></span>schools/[id].vue</span>
+        <span class="chip chip-blue chip-mono"><span class="chip-dot"></span>athletes/[id].vue</span>
+        <span class="chip chip-blue chip-mono"><span class="chip-dot"></span>onboarding/*.vue</span>
+        <span class="chip chip-blue chip-mono"><span class="chip-dot"></span>join.vue</span>
+        <span class="chip chip-blue chip-mono"><span class="chip-dot"></span>settings.vue</span>
+        <span class="chip chip-blue chip-mono"><span class="chip-dot"></span>tasks/index.vue</span>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div class="connector-row">
+      <div class="connector-spacer"></div>
+      <div class="connector-line">
+        <svg width="16" height="28" viewBox="0 0 16 28">
+          <line x1="8" y1="0" x2="8" y2="20" stroke="#484f58" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <polygon points="4,18 8,26 12,18" fill="#484f58"/>
+        </svg>
+        <span class="conn-label">auto-imported · no explicit import needed</span>
+      </div>
+    </div>
+
+    <!-- LAYER: Components -->
+    <div class="layer">
+      <div class="layer-label-col">
+        <div class="layer-label" style="color: var(--purple)">Components<br/><span style="font-size:9px;color:var(--text-muted)">components/</span></div>
+      </div>
+      <div class="layer-content" style="border-color: rgba(163,113,247,0.4);">
+        <span class="chip chip-purple chip-mono"><span class="chip-dot"></span>SchoolCard.vue</span>
+        <span class="chip chip-purple chip-mono"><span class="chip-dot"></span>FitScoreBadge.vue</span>
+        <span class="chip chip-purple chip-mono"><span class="chip-dot"></span>CoachList.vue</span>
+        <span class="chip chip-purple chip-mono"><span class="chip-dot"></span>InteractionLog.vue</span>
+        <span class="chip chip-purple chip-mono"><span class="chip-dot"></span>NotificationBell.vue</span>
+        <span class="chip chip-purple chip-mono"><span class="chip-dot"></span>FamilyInviteCard.vue</span>
+        <span class="chip chip-purple chip-mono"><span class="chip-dot"></span>TaskChecklist.vue</span>
+        <span class="chip chip-purple chip-mono"><span class="chip-dot"></span>OnboardingWizard.vue</span>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div class="connector-row">
+      <div class="connector-spacer"></div>
+      <div class="connector-line">
+        <svg width="16" height="28" viewBox="0 0 16 28">
+          <line x1="8" y1="0" x2="8" y2="20" stroke="#484f58" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <polygon points="4,18 8,26 12,18" fill="#484f58"/>
+        </svg>
+        <span class="conn-label">useXxx() composables · reactive refs / computed</span>
+      </div>
+    </div>
+
+    <!-- LAYER: Composables -->
+    <div class="layer highlight">
+      <div class="layer-label-col">
+        <div class="layer-label" style="color: var(--green)">Composables<br/><span style="font-size:9px;color:var(--text-muted)">composables/</span></div>
+      </div>
+      <div class="layer-content">
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>useSchools</span>
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>useCoaches</span>
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>useInteractions</span>
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>useFamilyInvite</span>
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>useTasks</span>
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>useNotifications</span>
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>useAthleteProfile</span>
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>useAuthFetch</span>
+        <span class="chip chip-green chip-mono" style="opacity:.6;font-size:10px">{ data, loading, error, fetchData }</span>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div class="connector-row">
+      <div class="connector-spacer"></div>
+      <div class="connector-line">
+        <svg width="16" height="28" viewBox="0 0 16 28">
+          <line x1="8" y1="0" x2="8" y2="20" stroke="#484f58" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <polygon points="4,18 8,26 12,18" fill="#484f58"/>
+        </svg>
+        <span class="conn-label">state reads · actions dispatch</span>
+      </div>
+    </div>
+
+    <!-- LAYER: Pinia Stores -->
+    <div class="layer">
+      <div class="layer-label-col">
+        <div class="layer-label" style="color: var(--orange)">Pinia Stores<br/><span style="font-size:9px;color:var(--text-muted)">stores/</span></div>
+      </div>
+      <div class="layer-content" style="border-color: rgba(240,136,62,0.4);">
+        <span class="chip chip-orange chip-mono"><span class="chip-dot"></span>useSchoolsStore</span>
+        <span class="chip chip-orange chip-mono"><span class="chip-dot"></span>useCoachesStore</span>
+        <span class="chip chip-orange chip-mono"><span class="chip-dot"></span>useInteractionsStore</span>
+        <span class="chip chip-orange chip-mono"><span class="chip-dot"></span>useFamilyStore</span>
+        <span class="chip chip-orange chip-mono"><span class="chip-dot"></span>useTasksStore</span>
+        <span class="chip chip-orange chip-mono"><span class="chip-dot"></span>useNotificationsStore</span>
+        <span class="chip chip-orange chip-mono"><span class="chip-dot"></span>useAuthStore</span>
+      </div>
+    </div>
+
+    <!-- CONNECTOR: dual path -->
+    <div class="connector-row">
+      <div class="connector-spacer"></div>
+      <div class="connector-line">
+        <svg width="16" height="28" viewBox="0 0 16 28">
+          <line x1="8" y1="0" x2="8" y2="20" stroke="#484f58" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <polygon points="4,18 8,26 12,18" fill="#484f58"/>
+        </svg>
+        <span class="conn-label">$fetch('/api/…') via useAuthFetch · X-Request-ID header injected</span>
+      </div>
+    </div>
+
+    <!-- LAYER: Nitro API -->
+    <div class="layer">
+      <div class="layer-label-col">
+        <div class="layer-label" style="color: var(--yellow)">Nitro API<br/><span style="font-size:9px;color:var(--text-muted)">server/api/</span></div>
+      </div>
+      <div class="layer-content" style="border-color: rgba(227,179,65,0.4);">
+        <span class="chip chip-yellow chip-mono"><span class="chip-dot"></span>schools/[id]/fit-score.get.ts</span>
+        <span class="chip chip-yellow chip-mono"><span class="chip-dot"></span>schools/[id].delete.ts</span>
+        <span class="chip chip-yellow chip-mono"><span class="chip-dot"></span>family/invite.post.ts</span>
+        <span class="chip chip-yellow chip-mono"><span class="chip-dot"></span>family/accept.post.ts</span>
+        <span class="chip chip-yellow chip-mono"><span class="chip-dot"></span>athlete/phase/advance.post.ts</span>
+        <span class="chip chip-yellow chip-mono"><span class="chip-dot"></span>tasks/[id].patch.ts</span>
+        <span class="chip chip-yellow chip-mono"><span class="chip-dot"></span>notifications/[id].patch.ts</span>
+        <span class="chip chip-yellow chip-mono"><span class="chip-dot"></span>player/details.post.ts</span>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div class="connector-row">
+      <div class="connector-spacer"></div>
+      <div class="connector-line">
+        <svg width="16" height="28" viewBox="0 0 16 28">
+          <line x1="8" y1="0" x2="8" y2="20" stroke="#484f58" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <polygon points="4,18 8,26 12,18" fill="#484f58"/>
+        </svg>
+        <span class="conn-label">useSupabaseAdmin() · service role · requireAuth()</span>
+      </div>
+    </div>
+
+    <!-- LAYER: Server Utilities -->
+    <div class="layer">
+      <div class="layer-label-col">
+        <div class="layer-label" style="color: var(--pink)">Server Utils<br/><span style="font-size:9px;color:var(--text-muted)">server/utils/</span></div>
+      </div>
+      <div class="layer-content" style="border-color: rgba(247,120,186,0.35);">
+        <span class="chip chip-pink chip-mono"><span class="chip-dot"></span>auth.ts · requireAuth()</span>
+        <span class="chip chip-pink chip-mono"><span class="chip-dot"></span>logger.ts · useLogger(event)</span>
+        <span class="chip chip-pink chip-mono"><span class="chip-dot"></span>emailService.ts · sendInviteEmail()</span>
+        <span class="chip chip-pink chip-mono"><span class="chip-dot"></span>supabaseAdmin.ts</span>
+        <span class="chip chip-pink chip-mono"><span class="chip-dot"></span>correlation middleware</span>
+        <span class="chip chip-pink chip-mono"><span class="chip-dot"></span>validators (Zod)</span>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div class="connector-row">
+      <div class="connector-spacer"></div>
+      <div class="connector-line">
+        <svg width="16" height="28" viewBox="0 0 16 28">
+          <line x1="8" y1="0" x2="8" y2="20" stroke="#484f58" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <polygon points="4,18 8,26 12,18" fill="#484f58"/>
+        </svg>
+        <span class="conn-label">PostgreSQL queries · row-level security · Supabase Storage</span>
+      </div>
+    </div>
+
+    <!-- LAYER: Supabase -->
+    <div class="layer">
+      <div class="layer-label-col">
+        <div class="layer-label" style="color: var(--green)">Supabase<br/><span style="font-size:9px;color:var(--text-muted)">Cloud</span></div>
+      </div>
+      <div class="layer-content" style="border-color: rgba(63,185,80,0.4); background: linear-gradient(90deg, rgba(26,58,36,0.4) 0%, var(--surface) 100%);">
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>PostgreSQL (RLS)</span>
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>Supabase Auth</span>
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>Storage (avatars)</span>
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>Realtime</span>
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>Edge Functions</span>
+        <span class="chip chip-green chip-mono"><span class="chip-dot"></span>Migrations</span>
+      </div>
+    </div>
+
+  </div><!-- /arch-diagram -->
+
+  <!-- ── DOMAIN FLOWS ── -->
+  <div class="domain-section">
+    <div class="domain-title">Domain Data Flows</div>
+    <div class="domain-subtitle">Composable → Store → API relationships for three key domains</div>
+    <div class="domain-grid">
+
+      <!-- Schools Domain -->
+      <div class="domain-flow" style="border-color: rgba(88,166,255,0.3);">
+        <div class="domain-flow-header" style="background: rgba(31,58,95,0.3);">
+          <span class="domain-flow-icon">🏫</span>
+          <span class="domain-flow-title" style="color: var(--blue)">Schools Domain</span>
+        </div>
+        <div class="domain-flow-body">
+          <div class="flow-step">
+            <span class="flow-step-num">1</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Page</div>
+              <div class="flow-step-name" style="color: var(--blue)">pages/schools/index.vue</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">2</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Composable</div>
+              <div class="flow-step-name" style="color: var(--green)">useSchools()</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">3</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Pinia Store</div>
+              <div class="flow-step-name" style="color: var(--orange)">useSchoolsStore</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">4</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">API Route</div>
+              <div class="flow-step-name" style="color: var(--yellow)">GET /api/schools</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">5</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Side Route</div>
+              <div class="flow-step-name" style="color: var(--yellow)">GET /api/schools/:id/fit-score</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">6</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Database</div>
+              <div class="flow-step-name" style="color: var(--green)">schools · school_athletes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Family Domain -->
+      <div class="domain-flow" style="border-color: rgba(163,113,247,0.3);">
+        <div class="domain-flow-header" style="background: rgba(45,32,96,0.3);">
+          <span class="domain-flow-icon">👨‍👩‍👧</span>
+          <span class="domain-flow-title" style="color: var(--purple)">Family Units Domain</span>
+        </div>
+        <div class="domain-flow-body">
+          <div class="flow-step">
+            <span class="flow-step-num">1</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Page</div>
+              <div class="flow-step-name" style="color: var(--blue)">pages/onboarding/step5.vue</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">2</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Composable</div>
+              <div class="flow-step-name" style="color: var(--green)">useFamilyInvite()</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">3</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Pinia Store</div>
+              <div class="flow-step-name" style="color: var(--orange)">useFamilyStore</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">4</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">API Route</div>
+              <div class="flow-step-name" style="color: var(--yellow)">POST /api/family/invite</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">5</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Server Util</div>
+              <div class="flow-step-name" style="color: var(--pink)">sendInviteEmail() · Resend</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">6</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Database</div>
+              <div class="flow-step-name" style="color: var(--green)">family_units · family_invitations</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications Domain -->
+      <div class="domain-flow" style="border-color: rgba(86,211,219,0.3);">
+        <div class="domain-flow-header" style="background: rgba(13,46,51,0.3);">
+          <span class="domain-flow-icon">🔔</span>
+          <span class="domain-flow-title" style="color: var(--cyan)">Notifications Domain</span>
+        </div>
+        <div class="domain-flow-body">
+          <div class="flow-step">
+            <span class="flow-step-num">1</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Component</div>
+              <div class="flow-step-name" style="color: var(--purple)">NotificationBell.vue</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">2</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Composable</div>
+              <div class="flow-step-name" style="color: var(--green)">useNotifications()</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">3</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Pinia Store</div>
+              <div class="flow-step-name" style="color: var(--orange)">useNotificationsStore</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">4</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">API Routes</div>
+              <div class="flow-step-name" style="color: var(--yellow)">GET /api/notifications</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">5</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Mark Read</div>
+              <div class="flow-step-name" style="color: var(--yellow)">PATCH /api/notifications/:id</div>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-step-num">6</span>
+            <div class="flow-step-content">
+              <div class="flow-step-type">Database</div>
+              <div class="flow-step-name" style="color: var(--green)">notifications (priority: HIGH/MED)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /domain-section -->
+
+  <!-- ── AUTH + LOGGING ── -->
+  <div class="auth-section">
+    <div class="domain-title">Auth Flow &amp; Logging Strategy</div>
+    <div class="domain-subtitle">Authentication pipeline and structured logging across all layers</div>
+    <div class="auth-grid">
+
+      <div class="auth-card" style="border-color: rgba(86,211,219,0.3);">
+        <div class="auth-card-title">
+          <span>🔐</span>
+          <span style="color: var(--cyan)">Authentication Flow</span>
+        </div>
+        <div class="auth-steps">
+          <div class="auth-step">
+            <div class="auth-step-num">1</div>
+            <div class="auth-step-text"><strong>Supabase Auth</strong> — user signs in via magic link or OAuth. Session JWT stored in browser.</div>
+          </div>
+          <div class="auth-step">
+            <div class="auth-step-num">2</div>
+            <div class="auth-step-text"><strong>useAuthFetch</strong> composable — wraps <code>$fetch</code>, auto-injects <code>Authorization</code> + <code>X-Request-ID</code> headers on every API call.</div>
+          </div>
+          <div class="auth-step">
+            <div class="auth-step-num">3</div>
+            <div class="auth-step-text"><strong>requireAuth()</strong> server util — validates JWT, returns <code>{ id, email }</code>. Throws 401 if missing or expired.</div>
+          </div>
+          <div class="auth-step">
+            <div class="auth-step-num">4</div>
+            <div class="auth-step-text"><strong>family_unit_id resolution</strong> — server queries <code>family_unit_members</code> to derive the family context for RLS and access control.</div>
+          </div>
+          <div class="auth-step">
+            <div class="auth-step-num">5</div>
+            <div class="auth-step-text"><strong>Role-based routing</strong> — Nuxt middleware checks <code>user.role</code> (athlete / parent / coach) and redirects to appropriate onboarding or dashboard.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-card" style="border-color: rgba(240,136,62,0.3);">
+        <div class="auth-card-title">
+          <span>📊</span>
+          <span style="color: var(--orange)">Structured Logging</span>
+        </div>
+        <div class="auth-steps">
+          <div class="auth-step">
+            <div class="auth-step-num" style="background: var(--orange-dim); border-color: var(--orange); color: var(--orange);">S</div>
+            <div class="auth-step-text"><strong>Server routes:</strong> <code>useLogger(event, "context")</code> — auto-captures correlation ID from <code>X-Request-ID</code> header.</div>
+          </div>
+          <div class="auth-step">
+            <div class="auth-step-num" style="background: var(--orange-dim); border-color: var(--orange); color: var(--orange);">C</div>
+            <div class="auth-step-text"><strong>Client utils:</strong> <code>createClientLogger("context")</code> — consistent prefix format for browser DevTools.</div>
+          </div>
+          <div class="auth-step">
+            <div class="auth-step-num" style="background: var(--orange-dim); border-color: var(--orange); color: var(--orange);">B</div>
+            <div class="auth-step-text"><strong>Background jobs:</strong> <code>createLogger("cron/job-name")</code> — no H3Event available; module-level instantiation.</div>
+          </div>
+        </div>
+        <div class="logging-row">
+          <div class="log-card">
+            <div class="log-title"><span>📟</span> <span style="color: var(--text-secondary)">Server Log Levels</span></div>
+            <div class="log-entry"><span class="level-error">error</span> — DB failures, unhandled exceptions</div>
+            <div class="log-entry"><span class="level-warn">warn</span>  — data not found, business rule blocks</div>
+            <div class="log-entry"><span class="level-info">info</span>  — request processed, action completed</div>
+            <div class="log-entry"><span class="level-debug">debug</span> — verbose, dev-only context</div>
+          </div>
+          <div class="log-card">
+            <div class="log-title"><span>🔗</span> <span style="color: var(--text-secondary)">Correlation Flow</span></div>
+            <div class="log-entry">client session  →  X-Request-ID</div>
+            <div class="log-entry">useAuthFetch    →  header injection</div>
+            <div class="log-entry">correlation mw  →  reads + attaches</div>
+            <div class="log-entry">useLogger(evt)  →  every entry tagged</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── LEGEND ── -->
+  <div class="legend">
+    <div class="legend-title">Legend</div>
+    <div class="legend-grid">
+      <div class="legend-item">
+        <div class="legend-swatch" style="background: var(--cyan);"></div>
+        Browser / Client shell
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background: var(--blue);"></div>
+        Pages (file-based routing)
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background: var(--purple);"></div>
+        Components (auto-imported)
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background: var(--green);"></div>
+        Composables (useXxx)
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background: var(--orange);"></div>
+        Pinia Stores (state)
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background: var(--yellow);"></div>
+        Nitro API Routes (server/api/)
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background: var(--pink);"></div>
+        Server Utilities (auth / logging / email)
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background: linear-gradient(90deg, var(--green), var(--cyan));"></div>
+        Supabase (PostgreSQL + Auth + Storage)
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background: var(--border-hi); border: 1px dashed var(--border-hi);"></div>
+        Dashed arrow = async data flow
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  The Recruiting Compass · Architecture Overview · Nuxt 3 / Vue 3 / TypeScript / Pinia / Supabase / Vercel · 2026
+</footer>
+
+</body>
+</html>
