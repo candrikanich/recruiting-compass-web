@@ -73,4 +73,18 @@ describe("posthog plugin", () => {
     hook({ name: "dashboard" })
     expect(mockCapture).toHaveBeenCalledWith("page_view", { route_name: "dashboard" })
   })
+
+  it("does not capture page_view when route name is null", async () => {
+    vi.mocked(useRuntimeConfig).mockReturnValue({
+      public: { posthogKey: "phc_test123", posthogHost: "https://us.i.posthog.com" },
+    } as ReturnType<typeof useRuntimeConfig>)
+    vi.mocked(useRouter).mockReturnValue({ afterEach: mockAfterEach } as ReturnType<typeof useRouter>)
+
+    const { default: plugin } = await import("~/plugins/posthog.client")
+    plugin({ provide: vi.fn() } as never)
+
+    const hook = mockAfterEach.mock.calls[0][0]
+    hook({ name: null })
+    expect(mockCapture).not.toHaveBeenCalled()
+  })
 })

@@ -15,7 +15,9 @@ export default defineNuxtPlugin(() => {
 
   const router = useRouter()
   router.afterEach((to) => {
-    posthog.capture("page_view", { route_name: to.name })
+    if (to.name) {
+      posthog.capture("page_view", { route_name: to.name })
+    }
   })
 
   return {
