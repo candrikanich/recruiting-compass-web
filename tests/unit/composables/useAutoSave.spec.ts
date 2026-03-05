@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useAutoSave } from "~/composables/useAutoSave";
 
-// Mock useToast at module level
-vi.mock("~/composables/useToast", () => ({
-  useToast: () => ({
+// Mock useAppToast at module level
+vi.mock("~/composables/useAppToast", () => ({
+  useAppToast: () => ({
     showToast: vi.fn(),
   }),
 }));

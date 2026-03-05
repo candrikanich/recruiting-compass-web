@@ -3,7 +3,7 @@ import { ref, computed, onMounted, inject } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
-import { useToast } from "~/composables/useToast";
+import { useAppToast } from "~/composables/useAppToast";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 definePageMeta({ auth: false });
@@ -16,7 +16,7 @@ const userStore = useUserStore();
 const supabase = useSupabase();
 const { $fetchAuth } = useAuthFetch();
 const { post: csrfPost } = useCsrf();
-const { showToast } = useToast();
+const { showToast } = useAppToast();
 const activeFamilyCtx = inject<UseActiveFamilyReturn>("activeFamily");
 
 interface InviteDetails {

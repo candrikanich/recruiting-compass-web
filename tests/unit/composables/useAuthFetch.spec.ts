@@ -33,10 +33,10 @@ vi.mock("~/composables/useCsrf", () => ({
   }),
 }));
 
-// useToast — named showToast so tests can assert on it
+// useAppToast — named showToast so tests can assert on it
 const mockShowToast = vi.fn();
-vi.mock("~/composables/useToast", () => ({
-  useToast: () => ({ showToast: mockShowToast }),
+vi.mock("~/composables/useAppToast", () => ({
+  useAppToast: () => ({ showToast: mockShowToast }),
 }));
 
 const VALID_SESSION = {

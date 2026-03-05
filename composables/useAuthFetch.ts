@@ -7,7 +7,7 @@
 import type { FetchOptions } from "ofetch";
 import { useSupabase } from "~/composables/useSupabase";
 import { useCsrf } from "~/composables/useCsrf";
-import { useToast } from "~/composables/useToast";
+import { useAppToast } from "~/composables/useAppToast";
 import { useUserStore } from "~/stores/user";
 import { FetchError } from "ofetch";
 
@@ -22,7 +22,7 @@ export class SessionExpiredError extends Error {
 
 export const useAuthFetch = () => {
   const { addCsrfHeader } = useCsrf();
-  const { showToast } = useToast();
+  const { showToast } = useAppToast();
   const supabase = useSupabase();
   const userStore = useUserStore();
 

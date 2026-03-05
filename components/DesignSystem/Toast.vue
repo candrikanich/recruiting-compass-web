@@ -49,11 +49,11 @@
 </template>
 
 <script setup lang="ts">
-import { useToast } from "~/composables/useToast";
+import { useAppToast } from "~/composables/useAppToast";
 import { XMarkIcon, CheckIcon } from "@heroicons/vue/24/solid";
 import type { ToastType } from "~/types/toast";
 
-const { toasts, removeToast } = useToast();
+const { toasts, removeToast } = useAppToast();
 
 const toastClass = (type: ToastType): string => {
   const colors: Record<ToastType, string> = {

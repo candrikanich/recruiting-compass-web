@@ -457,7 +457,7 @@
 import { ref, onMounted } from "vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { useToast } from "~/composables/useToast";
+import { useAppToast } from "~/composables/useAppToast";
 import type { SchoolPreference, SchoolPreferences } from "~/types/models";
 
 definePageMeta({
@@ -466,7 +466,7 @@ definePageMeta({
 
 const { isLoading, error, getSchoolPreferences, setSchoolPreferences } =
   usePreferenceManager();
-const { showToast } = useToast();
+const { showToast } = useAppToast();
 
 const CATEGORIES = [
   { value: "location", label: "Location" },

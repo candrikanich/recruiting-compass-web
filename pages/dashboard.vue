@@ -183,7 +183,7 @@ import { createClientLogger } from "~/utils/logger";
 import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
 import { useNotifications } from "~/composables/useNotifications";
-import { useToast } from "~/composables/useToast";
+import { useAppToast } from "~/composables/useAppToast";
 import { useUserTasks } from "~/composables/useUserTasks";
 import { useSuggestions } from "~/composables/useSuggestions";
 import { useFamilyContext } from "~/composables/useFamilyContext";
@@ -208,7 +208,7 @@ definePageMeta({
 const logger = createClientLogger("dashboard");
 
 const { logout } = useAuth();
-const { showToast } = useToast();
+const { showToast } = useAppToast();
 const router = useRouter();
 
 // Store-dependent composables

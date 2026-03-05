@@ -127,8 +127,8 @@ describe("useInteractions - Advanced Lifecycle", () => {
       }),
     }));
 
-    vi.doMock("~/composables/useToast", () => ({
-      useToast: () => ({
+    vi.doMock("~/composables/useAppToast", () => ({
+      useAppToast: () => ({
         showToast: vi.fn(),
       }),
     }));
@@ -332,8 +332,8 @@ describe("useInteractions - Advanced Lifecycle", () => {
         }),
       }));
 
-      vi.doMock("~/composables/useToast", () => ({
-        useToast: () => ({
+      vi.doMock("~/composables/useAppToast", () => ({
+        useAppToast: () => ({
           showToast: vi.fn(),
         }),
       }));

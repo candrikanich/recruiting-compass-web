@@ -138,18 +138,16 @@
     </Transition>
 
     <!-- Backdrop -->
-    <Teleport to="body">
-      <Transition
-        enter-active-class="transition ease-out duration-100"
-        enter-from-class="opacity-0"
-        enter-to-class="opacity-100"
-        leave-active-class="transition ease-in duration-75"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
-        <div v-if="isOpen" class="fixed inset-0 z-40" @click="isOpen = false" />
-      </Transition>
-    </Teleport>
+    <Transition
+      enter-active-class="transition ease-out duration-100"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition ease-in duration-75"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="isOpen" class="fixed inset-0 z-40" @click="isOpen = false" />
+    </Transition>
   </div>
 </template>
 

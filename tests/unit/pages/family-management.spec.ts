@@ -14,8 +14,8 @@ const mockShowToast = vi.fn()
 // useFamilyInvitations is a vi.fn() so individual tests can override its return value
 const mockUseFamilyInvitations = vi.fn()
 
-vi.mock('~/composables/useToast', () => ({
-  useToast: () => ({ showToast: mockShowToast }),
+vi.mock('~/composables/useAppToast', () => ({
+  useAppToast: () => ({ showToast: mockShowToast }),
 }))
 
 vi.mock('~/composables/useFamilyInvite', () => ({

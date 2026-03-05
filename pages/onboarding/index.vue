@@ -325,7 +325,7 @@ import { useOnboarding } from "~/composables/useOnboarding";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useFamilyInvite } from "~/composables/useFamilyInvite";
-import { useToast } from "~/composables/useToast";
+import { useAppToast } from "~/composables/useAppToast";
 
 definePageMeta({ layout: "default" });
 
@@ -335,7 +335,7 @@ const { setHomeLocation, setPlayerDetails, loadAllPreferences } =
   usePreferenceManager();
 const { myFamilyCode, fetchMyCode, copyCodeToClipboard } = useFamilyCode();
 const { sendInvite, loading: inviteLoading } = useFamilyInvite();
-const { showToast } = useToast();
+const { showToast } = useAppToast();
 
 const codeCopied = ref(false);
 

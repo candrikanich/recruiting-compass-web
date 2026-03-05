@@ -1,22 +1,22 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { useToast } from "~/composables/useToast";
+import { useAppToast } from "~/composables/useAppToast";
 
-describe("useToast", () => {
+describe("useAppToast", () => {
   beforeEach(() => {
     vi.clearAllTimers();
     // Reset shared singleton state between tests
-    const { clearAll } = useToast();
+    const { clearAll } = useAppToast();
     clearAll();
   });
 
   it("should initialize with empty toasts", () => {
-    const { toasts } = useToast();
+    const { toasts } = useAppToast();
     expect(toasts.value).toEqual([]);
   });
 
   describe("showToast", () => {
     it("should add toast with default type (info)", () => {
-      const { toasts, showToast } = useToast();
+      const { toasts, showToast } = useAppToast();
       showToast("Hello");
 
       expect(toasts.value).toHaveLength(1);
@@ -25,14 +25,14 @@ describe("useToast", () => {
     });
 
     it("should add toast with custom type", () => {
-      const { toasts, showToast } = useToast();
+      const { toasts, showToast } = useAppToast();
       showToast("Error message", "error");
 
       expect(toasts.value[0].type).toBe("error");
     });
 
     it("should support success, warning, error types", () => {
-      const { toasts, showToast } = useToast();
+      const { toasts, showToast } = useAppToast();
 
       showToast("Success", "success");
       showToast("Warning", "warning");
@@ -44,7 +44,7 @@ describe("useToast", () => {
     });
 
     it("should generate unique IDs for each toast", () => {
-      const { toasts, showToast } = useToast();
+      const { toasts, showToast } = useAppToast();
       showToast("Toast 1");
       showToast("Toast 2");
 
@@ -52,7 +52,7 @@ describe("useToast", () => {
     });
 
     it("should return toast ID", () => {
-      const { showToast } = useToast();
+      const { showToast } = useAppToast();
       const id = showToast("Message");
 
       expect(typeof id).toBe("string");
@@ -61,7 +61,7 @@ describe("useToast", () => {
 
     it("should auto-remove toast after default duration (5000ms)", () => {
       vi.useFakeTimers();
-      const { toasts, showToast } = useToast();
+      const { toasts, showToast } = useAppToast();
 
       showToast("Auto-remove toast");
       expect(toasts.value).toHaveLength(1);
@@ -74,7 +74,7 @@ describe("useToast", () => {
 
     it("should auto-remove toast after custom duration", () => {
       vi.useFakeTimers();
-      const { toasts, showToast } = useToast();
+      const { toasts, showToast } = useAppToast();
 
       showToast("Quick toast", "info", 2000);
       expect(toasts.value).toHaveLength(1);
@@ -87,7 +87,7 @@ describe("useToast", () => {
 
     it("should not auto-remove toast when duration is 0", () => {
       vi.useFakeTimers();
-      const { toasts, showToast } = useToast();
+      const { toasts, showToast } = useAppToast();
 
       showToast("Persistent toast", "info", 0);
       expect(toasts.value).toHaveLength(1);
@@ -100,7 +100,7 @@ describe("useToast", () => {
 
     it("should not auto-remove toast when duration is negative", () => {
       vi.useFakeTimers();
-      const { toasts, showToast } = useToast();
+      const { toasts, showToast } = useAppToast();
 
       showToast("Persistent toast", "info", -1);
       expect(toasts.value).toHaveLength(1);
@@ -113,7 +113,7 @@ describe("useToast", () => {
 
     it("should handle multiple toasts with different durations", () => {
       vi.useFakeTimers();
-      const { toasts, showToast } = useToast();
+      const { toasts, showToast } = useAppToast();
 
       showToast("Toast 1", "info", 1000);
       showToast("Toast 2", "info", 3000);
@@ -133,7 +133,7 @@ describe("useToast", () => {
 
   describe("removeToast", () => {
     it("should remove toast by ID", () => {
-      const { toasts, showToast, removeToast } = useToast();
+      const { toasts, showToast, removeToast } = useAppToast();
       const id = showToast("Message");
 
       expect(toasts.value).toHaveLength(1);
@@ -142,7 +142,7 @@ describe("useToast", () => {
     });
 
     it("should only remove specific toast", () => {
-      const { toasts, showToast, removeToast } = useToast();
+      const { toasts, showToast, removeToast } = useAppToast();
       const id1 = showToast("Toast 1");
       const id2 = showToast("Toast 2");
 
@@ -153,7 +153,7 @@ describe("useToast", () => {
     });
 
     it("should not error when removing non-existent toast", () => {
-      const { toasts, removeToast } = useToast();
+      const { toasts, removeToast } = useAppToast();
 
       expect(() => {
         removeToast("non-existent-id");
@@ -163,7 +163,7 @@ describe("useToast", () => {
     });
 
     it("should handle removing from multiple toasts", () => {
-      const { toasts, showToast, removeToast } = useToast();
+      const { toasts, showToast, removeToast } = useAppToast();
       const id1 = showToast("Toast 1");
       const id2 = showToast("Toast 2");
       const id3 = showToast("Toast 3");
@@ -180,7 +180,7 @@ describe("useToast", () => {
 
   describe("clearAll", () => {
     it("should remove all toasts", () => {
-      const { toasts, showToast, clearAll } = useToast();
+      const { toasts, showToast, clearAll } = useAppToast();
 
       showToast("Toast 1");
       showToast("Toast 2");
@@ -192,7 +192,7 @@ describe("useToast", () => {
     });
 
     it("should work when no toasts exist", () => {
-      const { toasts, clearAll } = useToast();
+      const { toasts, clearAll } = useAppToast();
 
       expect(() => {
         clearAll();
@@ -202,7 +202,7 @@ describe("useToast", () => {
     });
 
     it("should clear toasts added after initial creation", () => {
-      const { toasts, showToast, clearAll } = useToast();
+      const { toasts, showToast, clearAll } = useAppToast();
 
       showToast("Toast");
       expect(toasts.value).toHaveLength(1);
@@ -220,7 +220,7 @@ describe("useToast", () => {
 
   describe("reactive updates", () => {
     it("should reactively update toasts array", () => {
-      const { toasts, showToast } = useToast();
+      const { toasts, showToast } = useAppToast();
 
       // Use the computed value to track changes
       let callCount = 0;
@@ -234,7 +234,7 @@ describe("useToast", () => {
     });
 
     it("should maintain computed readonly access", () => {
-      const { toasts, showToast } = useToast();
+      const { toasts, showToast } = useAppToast();
       showToast("Test");
 
       // toasts should be computed (read-only at Vue level)
@@ -244,7 +244,7 @@ describe("useToast", () => {
 
   describe("integration scenarios", () => {
     it("should handle rapid toast creation", () => {
-      const { toasts, showToast } = useToast();
+      const { toasts, showToast } = useAppToast();
 
       for (let i = 1; i <= 10; i++) {
         showToast(`Toast ${i}`);
@@ -256,7 +256,7 @@ describe("useToast", () => {
     });
 
     it("should handle toast management workflow", () => {
-      const { toasts, showToast, removeToast, clearAll } = useToast();
+      const { toasts, showToast, removeToast, clearAll } = useAppToast();
 
       // Add toasts
       const id1 = showToast("Important", "error", 0);

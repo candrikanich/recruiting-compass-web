@@ -909,7 +909,7 @@ import {
   ArrowLeftIcon,
 } from "@heroicons/vue/24/outline";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { useToast } from "~/composables/useToast";
+import { useAppToast } from "~/composables/useAppToast";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFitScoreRecalculation } from "~/composables/useFitScoreRecalculation";
 import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
@@ -927,7 +927,7 @@ definePageMeta({
 const userStore = useUserStore();
 const { isLoading, getPlayerDetails, setPlayerDetails, loadAllPreferences } =
   usePreferenceManager();
-const { showToast } = useToast();
+const { showToast } = useAppToast();
 const { recalculateAllFitScores, loading: recalculating } =
   useFitScoreRecalculation();
 const { errors, fieldErrors, clearErrors, hasErrors } = useFormValidation();

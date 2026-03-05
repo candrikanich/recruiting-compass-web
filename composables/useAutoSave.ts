@@ -1,7 +1,7 @@
 // composables/useAutoSave.ts
 import { ref, onBeforeUnmount } from "vue";
 import { debounce } from "~/utils/debounce";
-import { useToast } from "./useToast";
+import { useAppToast } from "./useAppToast";
 
 export interface AutoSaveOptions {
   debounceMs?: number;
@@ -15,7 +15,7 @@ export const useAutoSave = (options: AutoSaveOptions) => {
   onBeforeUnmount(() => {
     isMounted = false;
   });
-  const { showToast } = useToast();
+  const { showToast } = useAppToast();
 
   const isSaving = ref(false);
   const lastSaveTime = ref<Date | null>(null);

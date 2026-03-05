@@ -44,10 +44,10 @@ global.useCsrf = vi.fn(() => ({ post: mockCsrfPost }));
 global.useAuthFetch = vi.fn(() => ({ $fetchAuth: mockFetch }));
 
 const mockShowToast = vi.fn();
-vi.mock("~/composables/useToast", () => ({
-  useToast: vi.fn(() => ({ showToast: mockShowToast })),
+vi.mock("~/composables/useAppToast", () => ({
+  useAppToast: vi.fn(() => ({ showToast: mockShowToast })),
 }));
-global.useToast = vi.fn(() => ({ showToast: mockShowToast }));
+global.useAppToast = vi.fn(() => ({ showToast: mockShowToast }));
 
 const createWrapper = () =>
   mount(JoinPage, {

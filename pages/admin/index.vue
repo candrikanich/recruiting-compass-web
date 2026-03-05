@@ -531,7 +531,7 @@ import {
 } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useSupabase } from "~/composables/useSupabase";
-import { useToast } from "~/composables/useToast";
+import { useAppToast } from "~/composables/useAppToast";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 const BulkDeleteConfirmModal = defineAsyncComponent(
   () => import("~/components/Admin/BulkDeleteConfirmModal.vue"),
@@ -552,7 +552,7 @@ interface User {
 
 const { session } = useAuth();
 const supabase = useSupabase();
-const { showToast } = useToast();
+const { showToast } = useAppToast();
 const { $fetchAuth } = useAuthFetch();
 
 // Users state

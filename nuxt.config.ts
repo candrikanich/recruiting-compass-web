@@ -39,7 +39,6 @@ export default defineNuxtConfig({
     // Pre-bundle frequently used dependencies
     optimizeDeps: {
       include: [
-        "vue",
         "@pinia/nuxt",
         "@supabase/supabase-js",
         "chart.js",
