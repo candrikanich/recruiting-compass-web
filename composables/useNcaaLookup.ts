@@ -8,6 +8,7 @@
 import { ref } from "vue";
 import { DIVISION_SCHOOLS } from "./ncaaDatabase";
 import type { NcaaDivision, SchoolInfo } from "./ncaaDatabase";
+import ncaaMetadata from "~/data/ncaa_metadata.json";
 
 /**
  * NCAA Lookup Result with caching
@@ -19,8 +20,20 @@ export interface NcaaLookupResult {
 }
 
 /**
+ * Metadata from ncaa_metadata.json
+ */
+interface MetadataEntry {
+  name: string;
+  division: string;
+  conference: string;
+  ncaa_logo_slug?: string;
+}
+
+const METADATA: Record<string, MetadataEntry> = ncaaMetadata as Record<string, MetadataEntry>;
+
+/**
  * Session-based cache for NCAA lookups
- * Key: normalized school name, Value: lookup result
+ * Key: normalized school name or ID, Value: lookup result
  */
 let lookupCache: Map<string, NcaaLookupResult> | null = null;
 
@@ -210,6 +223,27 @@ export const useNcaaLookup = () => {
   };
 
   /**
+   * Lookup school by IPEDS ID
+   * Most accurate method
+   */
+  const lookupById = (id: string): NcaaLookupResult | null => {
+    if (!id || !METADATA[id]) return null;
+
+    const entry = METADATA[id];
+    const result: NcaaLookupResult = {
+      division: entry.division as "D1" | "D2" | "D3",
+      conference: entry.conference,
+    };
+
+    if (entry.ncaa_logo_slug) {
+      const firstLetter = entry.ncaa_logo_slug.charAt(0);
+      result.logo = `https://www.ncaa.com/sites/default/files/images/logos/schools/${firstLetter}/${entry.ncaa_logo_slug}.svg`;
+    }
+
+    return result;
+  };
+
+  /**
    * Search for a school across NCAA divisions
    * Returns division and conference if found
    * Uses session cache to avoid duplicate lookups
@@ -217,7 +251,13 @@ export const useNcaaLookup = () => {
    */
   const lookupSchool = async (
     schoolName: string,
+    id?: string,
   ): Promise<NcaaLookupResult | null> => {
+    if (id) {
+      const result = lookupById(id);
+      if (result) return result;
+    }
+
     if (!schoolName || schoolName.trim().length === 0) {
       return null;
     }

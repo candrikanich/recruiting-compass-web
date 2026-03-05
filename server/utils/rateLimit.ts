@@ -17,9 +17,12 @@ export interface RateLimitResult {
 
 const BYPASS_RESULT: RateLimitResult = { success: true, limit: 0, remaining: 0, reset: 0 }
 
-function createLimiter(options: RateLimitOptions): Ratelimit {
+function createLimiter(options: RateLimitOptions): Ratelimit | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
   return new Ratelimit({
-    redis: Redis.fromEnv(),
+    redis: new Redis({ url, token }),
     limiter: Ratelimit.slidingWindow(options.requests, options.window),
   })
 }
@@ -27,11 +30,8 @@ function createLimiter(options: RateLimitOptions): Ratelimit {
 async function safeLimit(fn: () => Promise<RateLimitResult>): Promise<RateLimitResult> {
   try {
     return await fn()
-  } catch (err) {
-    if (err instanceof TypeError && (err as TypeError).message.includes("Invalid URL")) {
-      return BYPASS_RESULT
-    }
-    throw err
+  } catch {
+    return BYPASS_RESULT
   }
 }
 
@@ -39,8 +39,10 @@ export async function rateLimitByIp(
   event: H3Event,
   options: RateLimitOptions,
 ): Promise<RateLimitResult> {
+  const limiter = createLimiter(options);
+  if (!limiter) return BYPASS_RESULT;
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? "unknown"
-  return safeLimit(() => createLimiter(options).limit(ip))
+  return safeLimit(() => limiter.limit(ip))
 }
 
 export async function rateLimitByUser(
@@ -48,7 +50,9 @@ export async function rateLimitByUser(
   userId: string,
   options: RateLimitOptions,
 ): Promise<RateLimitResult> {
-  return safeLimit(() => createLimiter(options).limit(userId))
+  const limiter = createLimiter(options);
+  if (!limiter) return BYPASS_RESULT;
+  return safeLimit(() => limiter.limit(userId))
 }
 
 export function throwIfRateLimited(result: Pick<RateLimitResult, "success" | "reset">): void {

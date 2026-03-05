@@ -15,9 +15,7 @@ vi.mock("@upstash/ratelimit", () => {
 })
 
 vi.mock("@upstash/redis", () => ({
-  Redis: {
-    fromEnv: vi.fn().mockReturnValue({}),
-  },
+  Redis: vi.fn(),
 }))
 
 vi.mock("h3", async (importOriginal) => {
@@ -36,6 +34,8 @@ describe("rateLimitByIp", () => {
   beforeEach(() => {
     mockLimit.mockClear()
     vi.mocked(getRequestIP).mockReturnValue("127.0.0.1")
+    process.env.UPSTASH_REDIS_REST_URL = "https://test.upstash.io"
+    process.env.UPSTASH_REDIS_REST_TOKEN = "test-token"
   })
 
   it("returns success result when under limit", async () => {
@@ -69,6 +69,8 @@ describe("rateLimitByIp", () => {
 describe("rateLimitByUser", () => {
   beforeEach(() => {
     mockLimit.mockClear()
+    process.env.UPSTASH_REDIS_REST_URL = "https://test.upstash.io"
+    process.env.UPSTASH_REDIS_REST_TOKEN = "test-token"
   })
 
   it("uses userId as rate limit key", async () => {
