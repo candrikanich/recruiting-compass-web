@@ -5,7 +5,7 @@
 
 import { defineEventHandler } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
-import { requireAuth } from "~/server/utils/auth";
+import { requireAuth, getUserRole } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import type { AthleteAPI } from "~/types/api/athlete";
 import type { Phase } from "~/types/timeline";
@@ -33,11 +33,40 @@ export default defineEventHandler(async (event) => {
   const supabase = createServerSupabaseClient();
 
   try {
+    // Resolve the athlete ID: parents view their linked player's data
+    let athleteId = user.id;
+    const role = await getUserRole(user.id, supabase);
+    if (role === "parent") {
+      const { data: familyMembership } = await supabase
+        .from("family_members")
+        .select("family_unit_id")
+        .eq("user_id", user.id)
+        .eq("role", "parent")
+        .maybeSingle();
+
+      if (familyMembership) {
+        const { data: playerMember } = await supabase
+          .from("family_members")
+          .select("user_id")
+          .eq("family_unit_id", familyMembership.family_unit_id)
+          .eq("role", "player")
+          .maybeSingle();
+
+        if (playerMember?.user_id) {
+          athleteId = playerMember.user_id;
+          logger.info("Parent viewing linked player's phase", {
+            parentId: user.id,
+            athleteId,
+          });
+        }
+      }
+    }
+
     // Fetch graduation year from user_preferences (player category)
     const { data: prefData, error: prefError } = await supabase
       .from("user_preferences")
       .select("data")
-      .eq("user_id", user.id)
+      .eq("user_id", athleteId)
       .eq("category", "player")
       .single();
 
@@ -54,7 +83,7 @@ export default defineEventHandler(async (event) => {
     const { data: athleteTasksData, error: tasksError } = await supabase
       .from("athlete_task")
       .select("task_id, status")
-      .eq("athlete_id", user.id)
+      .eq("athlete_id", athleteId)
       .eq("status", "completed");
 
     if (tasksError) {

@@ -5,7 +5,7 @@
 
 import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
-import { requireAuth } from "~/server/utils/auth";
+import { requireAuth, getUserRole } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { calculatePortfolioHealth } from "~/utils/fitScoreCalculation";
 
@@ -15,11 +15,36 @@ export default defineEventHandler(async (event) => {
   const supabase = createServerSupabaseClient();
 
   try {
+    // Resolve the athlete ID: parents view their linked player's data
+    let athleteId = user.id;
+    const role = await getUserRole(user.id, supabase);
+    if (role === "parent") {
+      const { data: familyMembership } = await supabase
+        .from("family_members")
+        .select("family_unit_id")
+        .eq("user_id", user.id)
+        .eq("role", "parent")
+        .maybeSingle();
+
+      if (familyMembership) {
+        const { data: playerMember } = await supabase
+          .from("family_members")
+          .select("user_id")
+          .eq("family_unit_id", familyMembership.family_unit_id)
+          .eq("role", "player")
+          .maybeSingle();
+
+        if (playerMember?.user_id) {
+          athleteId = playerMember.user_id;
+        }
+      }
+    }
+
     // Get all schools for this user with fit score data
     const { data: schools, error: schoolsError } = await supabase
       .from("schools")
       .select("id, name, fit_score, fit_score_data")
-      .eq("user_id", user.id)
+      .eq("user_id", athleteId)
       .order("created_at", { ascending: false });
 
     if (schoolsError) {
