@@ -7,9 +7,7 @@
 import { defineEventHandler, createError } from "h3";
 import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { createLogger } from "~/server/utils/logger";
-
-const logger = createLogger("admin/stats");
+import { useLogger } from "~/server/utils/logger";
 
 export interface AdminStatsResponse {
   users: number;
@@ -21,6 +19,7 @@ export interface AdminStatsResponse {
 
 export default defineEventHandler(
   async (event): Promise<AdminStatsResponse> => {
+    const logger = useLogger(event, "admin/stats");
     try {
       await requireAdmin(event);
       const supabaseAdmin = useSupabaseAdmin();

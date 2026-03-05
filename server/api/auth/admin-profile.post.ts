@@ -9,7 +9,7 @@
 
 import { defineEventHandler, readBody, createError } from "h3";
 import { validateAdminToken } from "~/server/utils/adminToken";
-import { createLogger } from "~/server/utils/logger";
+import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 
@@ -19,9 +19,8 @@ interface AdminProfileRequest {
   adminToken: string;
 }
 
-const logger = createLogger("auth/admin-profile");
-
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "auth/admin-profile");
   try {
     const authUser = await requireAuth(event);
     const body = await readBody<AdminProfileRequest>(event);

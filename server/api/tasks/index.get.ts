@@ -32,8 +32,10 @@ export default defineEventHandler(async (event) => {
     // Try to get from cache first
     const cached = getCached<Task[]>(cacheKey);
     if (cached) {
+      logger.debug("Tasks served from cache", { cacheKey });
       return cached;
     }
+    logger.debug("Tasks cache miss", { cacheKey });
 
     let request = supabase
       .from("task")

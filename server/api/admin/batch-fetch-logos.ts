@@ -9,15 +9,14 @@
 import { defineEventHandler } from "h3";
 import { batchFetchLogos } from "~/server/utils/batchFetchLogos";
 import { requireAdmin } from "~/server/utils/auth";
-import { createLogger } from "~/server/utils/logger";
-
-const logger = createLogger("admin/batch-fetch-logos");
+import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "admin/batch-fetch-logos");
   try {
     const user = await requireAdmin(event);
 
-    logger.info("Batch fetch logos endpoint called");
+    logger.info("Batch fetch logos initiated");
 
     return await batchFetchLogos(user.id);
   } catch (error) {

@@ -122,6 +122,11 @@ export default defineEventHandler(async (event) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .catch((err: any) => logger.warn("Failed to log removal action", err));
 
+  logger.info("Family member removed", {
+    memberId,
+    familyId: family.id,
+    removedUserId: member.user_id,
+  });
   return {
     success: true,
     message: "Member removed successfully",

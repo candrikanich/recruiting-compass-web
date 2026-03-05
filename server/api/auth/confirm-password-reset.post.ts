@@ -109,6 +109,7 @@ export default defineEventHandler(
         });
       }
 
+      logger.info("Password reset confirmed", { userId: session.user.id });
       return {
         success: true,
         message:

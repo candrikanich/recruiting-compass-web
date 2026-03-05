@@ -1,3 +1,5 @@
+import { SENSITIVE_FIELDS } from "~/utils/loggerConstants";
+
 type LogLevel = "debug" | "info" | "warn" | "error";
 
 interface Logger {
@@ -14,20 +16,6 @@ const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
   error: 3,
 };
 
-const SENSITIVE_FIELDS = new Set([
-  "password",
-  "password_hash",
-  "token",
-  "access_token",
-  "refresh_token",
-  "api_key",
-  "secret",
-  "credit_card",
-  "ssn",
-  "authorization",
-  "cookie",
-]);
-
 function sanitizeData(data: unknown): unknown {
   if (data === null || data === undefined) return data;
 
@@ -41,9 +29,7 @@ function sanitizeData(data: unknown): unknown {
 
   if (typeof data === "object") {
     const sanitized: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(
-      data as Record<string, unknown>,
-    )) {
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
       const lower = key.toLowerCase();
       if (SENSITIVE_FIELDS.has(lower) || lower.includes("password")) {
         sanitized[key] = "[REDACTED]";

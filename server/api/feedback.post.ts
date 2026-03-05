@@ -1,7 +1,7 @@
 import { feedbackSchema } from "~/utils/validation/schemas";
 import { validateBody } from "~/server/utils/validation";
 import { escapeHtml } from "~/utils/validation/sanitize";
-import { createLogger } from "~/server/utils/logger";
+import { useLogger } from "~/server/utils/logger";
 import {
   sanitizeExternalApiError,
   createSafeErrorResponse,
@@ -11,9 +11,8 @@ import { requireAuth } from "~/server/utils/auth";
 import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
 import type { H3Event } from "h3";
 
-const logger = createLogger("feedback");
-
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "feedback");
   try {
     const rateLimitResult = await rateLimitByIp(event, { requests: 10, window: "1 h" });
     throwIfRateLimited(rateLimitResult);
@@ -115,6 +114,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    logger.info("Feedback submitted", { feedbackType: validated.feedbackType });
     return { success: true, message: "Thank you for your feedback!" };
   } catch (error: unknown) {
     if (error instanceof Error && "statusCode" in error) throw error;

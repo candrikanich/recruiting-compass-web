@@ -100,6 +100,7 @@ export default defineEventHandler(
       }
 
       // Always return success message for security (prevent email enumeration)
+      logger.info("Password reset request processed");
       return {
         success: true,
         message:

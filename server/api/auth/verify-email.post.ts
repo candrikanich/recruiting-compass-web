@@ -68,12 +68,14 @@ export default defineEventHandler(
       }
 
       if (data.user.email_confirmed_at) {
+        logger.info("Email already verified", { userId: data.user.id });
         return {
           success: true,
           message: "Your email is already verified.",
         };
       }
 
+      logger.info("Email verified", { userId: data.user.id });
       return {
         success: true,
         message: "Email verified successfully!",

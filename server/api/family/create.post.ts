@@ -29,6 +29,7 @@ export default defineEventHandler(async (event) => {
   };
 
   if (existingFamily) {
+    logger.info("Family already exists", { familyId: existingFamily.id });
     return {
       success: true,
       familyId: existingFamily.id,
@@ -103,6 +104,7 @@ export default defineEventHandler(async (event) => {
       if (error) logger.warn("Failed to log code generation", error);
     });
 
+  logger.info("Family created", { familyId: newFamily.id, familyCode });
   return {
     success: true,
     familyId: newFamily.id,

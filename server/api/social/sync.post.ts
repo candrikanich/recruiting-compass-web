@@ -11,10 +11,8 @@ import { InstagramService } from "~/server/utils/instagramService";
 import { analyzeSentiment } from "~/utils/sentimentAnalysis";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
 import { filterValidHandles } from "~/server/utils/socialMediaValidator";
-import { createLogger } from "~/server/utils/logger";
+import { useLogger } from "~/server/utils/logger";
 import { auditLog } from "~/server/utils/auditLog";
-
-const logger = createLogger("social/sync");
 
 interface SyncSummary {
   success: boolean;
@@ -59,6 +57,7 @@ const findEntityByHandle = (
 };
 
 export default defineEventHandler(async (event): Promise<SyncSummary> => {
+  const logger = useLogger(event, "social/sync");
   try {
     // Check authentication
     const user = await requireAuth(event);
@@ -258,6 +257,12 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
       }
     }
 
+    logger.info("Social media sync completed", {
+      twitterFetched,
+      twitterNew,
+      instagramFetched,
+      instagramNew,
+    });
     // Log successful sync
     await auditLog(event, {
       userId: user.id,

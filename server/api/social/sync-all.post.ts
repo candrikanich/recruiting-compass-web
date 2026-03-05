@@ -9,9 +9,7 @@ import { verifySharedSecret } from "~/server/utils/secrets";
 import { TwitterService } from "~/server/utils/twitterService";
 import { InstagramService } from "~/server/utils/instagramService";
 import { analyzeSentiment } from "~/utils/sentimentAnalysis";
-import { createLogger } from "~/server/utils/logger";
-
-const logger = createLogger("social/sync-all");
+import { useLogger } from "~/server/utils/logger";
 
 interface SyncStats {
   totalUsers: number;
@@ -23,6 +21,7 @@ interface SyncStats {
 }
 
 export default defineEventHandler(async (event): Promise<SyncStats> => {
+  const logger = useLogger(event, "social/sync-all");
   // Auth checks run before the try/catch so errors propagate with correct status codes
   const authHeader = getHeader(event, "authorization");
   const syncApiKey = process.env.SYNC_API_KEY;
@@ -194,8 +193,12 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
       }
     }
 
-    // Log results
-    logger.info("Social media sync completed");
+    logger.info("Social media sync-all completed", {
+      totalUsers: stats.totalUsers,
+      successfulUsers: stats.successfulUsers,
+      failedUsers: stats.failedUsers,
+      totalPostsInserted: stats.totalPostsInserted,
+    });
 
     return stats;
   } catch (error) {

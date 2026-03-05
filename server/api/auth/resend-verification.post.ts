@@ -86,6 +86,7 @@ export default defineEventHandler(
         });
       }
 
+      logger.info("Verification email resent");
       return {
         success: true,
         message: "Verification email sent successfully.",
