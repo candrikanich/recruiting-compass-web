@@ -1,42 +1,84 @@
 <template>
   <div
     class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
+    :class="{'pb-32 sm:pb-20': true}"
   >
-    <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-        <div class="flex justify-between items-start mb-3">
+    <!-- Sticky Status Header (Offsets global header which is top-0) -->
+    <div class="sticky top-16 z-30 bg-white/90 backdrop-blur-lg border-b border-slate-200">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-3">
           <NuxtLink
             to="/settings"
-            class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition"
+            title="Back to Settings"
           >
-            <ArrowLeftIcon class="w-4 h-4" />
-            Back to Settings
+            <ArrowLeftIcon class="w-5 h-5" />
           </NuxtLink>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm font-bold text-slate-900 hidden sm:block">Player Details</h1>
+            <div v-if="saving || isSaving" class="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-blue-600 font-bold">
+              <div class="w-2.5 h-2.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              Saving
+            </div>
+            <div v-else class="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-emerald-600 font-bold">
+              <CheckCircleIcon class="w-3 h-3" />
+              Saved
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
           <SettingsProfileEditHistory />
         </div>
-        <h1
-          data-testid="page-title"
-          class="text-2xl font-semibold text-slate-900"
-        >
-          Player Details
-        </h1>
-        <p class="text-slate-600">
-          Athletic profile information for recruiting
-        </p>
       </div>
     </div>
 
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+      <!-- Profile Completeness Hero -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8">
+        <ProfileCompleteness />
+      </div>
+
+      <!-- Desktop Tab Navigation (Hidden on Mobile) -->
+      <nav class="hidden sm:flex p-1 bg-slate-200/50 rounded-xl mb-8 gap-1">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          @click="currentTab = tab.id"
+          :class="[
+            'flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all',
+            currentTab === tab.id
+              ? 'bg-white text-blue-600 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+          ]"
+        >
+          <component :is="tab.icon" class="w-4 h-4" />
+          <span>{{ tab.name }}</span>
+        </button>
+      </nav>
+
+      <!-- Mobile Tab Bar (Sticky Bottom, iOS Style) -->
+      <nav class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)]">
+        <div class="flex justify-around items-center h-16">
+          <button
+            v-for="tab in tabs"
+            :key="tab.id"
+            @click="currentTab = tab.id"
+            class="flex flex-col items-center justify-center flex-1 gap-1"
+            :class="currentTab === tab.id ? 'text-blue-600' : 'text-slate-400'"
+          >
+            <component :is="tab.icon" class="w-6 h-6" :class="currentTab === tab.id ? 'fill-blue-50' : ''" />
+            <span class="text-[10px] font-bold uppercase tracking-tighter">{{ tab.name }}</span>
+          </button>
+        </div>
+      </nav>
+
       <!-- Loading State -->
       <div
         v-if="isLoading"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <div
-          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
-        ></div>
-        <p class="text-slate-600">Loading player details...</p>
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p class="text-slate-600 font-medium">Loading your profile...</p>
       </div>
 
       <!-- Error summary -->
@@ -46,856 +88,350 @@
         @dismiss="clearErrors"
       />
 
-      <!-- Form -->
-      <form v-if="!isLoading" @submit.prevent="handleSave" class="space-y-8">
-        <!-- Read-only Warning Banner for Parents -->
-        <div
-          v-if="isParentRole"
-          class="mb-6 rounded-lg bg-amber-50 border-l-4 border-amber-400 p-4"
-        >
-          <div class="flex">
-            <div class="shrink-0">
-              <ExclamationCircleIcon class="h-5 w-5 text-amber-400" />
+      <!-- Read-only Warning Banner -->
+      <div
+        v-if="isParentRole && !isLoading"
+        class="mb-8 rounded-xl bg-amber-50 border border-amber-200 p-4 flex gap-3 shadow-sm"
+      >
+        <ExclamationCircleIcon class="h-5 w-5 text-amber-500 shrink-0" />
+        <div>
+          <h3 class="text-sm font-bold text-amber-900">Read-only view</h3>
+          <p class="text-xs text-amber-700 mt-0.5 font-medium leading-relaxed">
+            You\'re viewing this profile as a parent. Your athlete is the primary owner of this data.
+          </p>
+        </div>
+      </div>
+
+      <div v-if="!isLoading" class="space-y-6">
+        <!-- TAB: BASICS -->
+        <div v-show="currentTab === 'basics'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+              <h2 class="text-base font-bold text-slate-900">Essential Info</h2>
+              <p class="text-xs text-slate-500 font-medium">The core details recruiters see first.</p>
             </div>
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-amber-800">Read-only view</h3>
-              <div class="mt-2 text-sm text-amber-700">
-                <p>
-                  You're viewing this profile as a parent. Contact your athlete
-                  to make changes.
-                </p>
+            
+            <div class="p-6 space-y-8">
+              <!-- Profile Photo -->
+              <div class="flex flex-col sm:flex-row gap-8 items-center sm:items-start">
+                <SettingsProfilePhotoUpload />
+                <div class="flex-1 space-y-5 w-full">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
+                        Graduation Year <span class="text-red-500">*</span>
+                      </label>
+                      <select
+                        v-model="form.graduation_year"
+                        :disabled="isParentRole"
+                        @change="triggerSave"
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 appearance-none font-medium text-slate-700"
+                      >
+                        <option :value="undefined">Select Year</option>
+                        <option v-for="year in graduationYears" :key="year" :value="year">{{ year }}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Primary Sport</label>
+                      <select
+                        v-model="form.primary_sport"
+                        :disabled="isParentRole"
+                        @change="triggerSave"
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 appearance-none font-medium text-slate-700"
+                      >
+                        <option :value="undefined">Select Sport</option>
+                        <option v-for="sport in commonSports" :key="sport" :value="sport">{{ sport }}</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- School Info -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-slate-100">
+                <div class="md:col-span-2">
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">High School Name</label>
+                  <input
+                    v-model="form.school_name"
+                    :disabled="isParentRole"
+                    type="text"
+                    placeholder="e.g., Lincoln High School"
+                    @blur="triggerSave"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">School City</label>
+                  <input
+                    v-model="form.school_city"
+                    :disabled="isParentRole"
+                    type="text"
+                    placeholder="Atlanta"
+                    @blur="triggerSave"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">School State</label>
+                  <input
+                    v-model="form.school_state"
+                    :disabled="isParentRole"
+                    type="text"
+                    placeholder="GA"
+                    maxlength="2"
+                    @blur="triggerSave"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 uppercase transition font-medium text-slate-700"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Profile Photo Section -->
-        <div
-          class="bg-white rounded-xl border border-slate-200 shadow-xs p-6"
-          data-testid="profile-photo-section"
-        >
-          <h2 class="text-lg font-semibold text-slate-900 mb-4">
-            Profile Photo
-          </h2>
-          <SettingsProfilePhotoUpload />
-        </div>
+        <!-- TAB: ATHLETICS -->
+        <div v-show="currentTab === 'athletics'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <!-- Physical Stats -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <BoltIcon class="w-5 h-5 text-blue-600" />
+              Physical Profile
+            </h2>
 
-        <!-- Basic Info -->
-        <div
-          class="bg-white rounded-xl border border-slate-200 shadow-xs p-6"
-          data-testid="basic-info-section"
-        >
-          <h2 class="text-lg font-semibold text-slate-900 mb-4">
-            Basic Information
-          </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Height/Weight Row -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Height</label>
+                  <div class="flex gap-2">
+                    <select v-model="heightFeet" :disabled="isParentRole" @change="triggerSave" class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+                      <option v-for="ft in [4, 5, 6, 7]" :key="ft" :value="ft">{{ ft }}\'</option>
+                    </select>
+                    <select v-model="heightInches" :disabled="isParentRole" @change="triggerSave" class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+                      <option v-for="i in 12" :key="i - 1" :value="i - 1">{{ i - 1 }}"</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Weight (lbs)</label>
+                  <input
+                    v-model.number="form.weight_lbs"
+                    :disabled="isParentRole"
+                    type="number"
+                    @blur="triggerSave"
+                    placeholder="185"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700"
+                  />
+                </div>
+              </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Graduation Year <span class="text-red-600">*</span>
-              </label>
-              <select
-                v-model="form.graduation_year"
-                :disabled="isParentRole"
-                @blur="triggerSave"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              >
-                <option :value="undefined">Select Year</option>
-                <option
-                  v-for="year in graduationYears"
-                  :key="year"
-                  :value="year"
-                >
-                  {{ year }}
-                </option>
-              </select>
+              <!-- Bats/Throws (Sport Specific) -->
+              <div v-if="isBaseballOrSoftball" class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Bats</label>
+                  <div class="flex p-1 bg-slate-100 rounded-xl">
+                    <button 
+                      v-for="opt in BATS_OPTIONS" 
+                      :key="opt.value"
+                      type="button"
+                      @click="form.bats = opt.value; triggerSave()"
+                      :class="[
+                        'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
+                        form.bats === opt.value ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                      ]"
+                    >
+                      {{ opt.label }}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Throws</label>
+                  <div class="flex p-1 bg-slate-100 rounded-xl">
+                    <button 
+                      v-for="opt in THROWS_OPTIONS" 
+                      :key="opt.value"
+                      type="button"
+                      @click="form.throws = opt.value; triggerSave()"
+                      :class="[
+                        'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
+                        form.throws === opt.value ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                      ]"
+                    >
+                      {{ opt.label }}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >School Name</label
-              >
-              <input
-                v-model="form.school_name"
-                :disabled="isParentRole"
-                type="text"
-                placeholder="e.g., Lincoln High School"
-                @blur="triggerSave"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >School City</label
-              >
-              <input
-                v-model="form.school_city"
-                :disabled="isParentRole"
-                type="text"
-                placeholder="e.g., Atlanta"
-                @blur="triggerSave"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >School State</label
-              >
-              <input
-                v-model="form.school_state"
-                :disabled="isParentRole"
-                type="text"
-                placeholder="e.g., GA"
-                maxlength="2"
-                @blur="triggerSave"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >School Address</label
-              >
-              <input
-                v-model="form.school_address"
-                :disabled="isParentRole"
-                type="text"
-                placeholder="e.g., 123 Main St"
-                @blur="triggerSave"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Club/Travel Team</label
-              >
-              <input
-                v-model="form.club_team"
-                :disabled="isParentRole"
-                type="text"
-                placeholder="e.g., East Coast Sox"
-                @blur="triggerSave"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Primary Sport & Position -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <h2 class="text-lg font-semibold text-slate-900 mb-4">
-            Athletic Profile
-          </h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <!-- Primary Sport -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Primary Sport
-              </label>
-              <select
-                v-model="form.primary_sport"
-                :disabled="isParentRole"
-                @blur="triggerSave"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              >
-                <option :value="undefined">Select Sport</option>
-                <option
-                  v-for="sport in commonSports"
-                  :key="sport"
-                  :value="sport"
-                >
-                  {{ sport }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Primary Position -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Primary Position
-              </label>
-              <select
-                v-if="availablePositions.length > 0"
-                v-model="form.primary_position"
-                :disabled="isParentRole"
-                @blur="triggerSave"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              >
-                <option :value="undefined">Select Position</option>
-                <option
+            <!-- Positions -->
+            <div class="mt-8 pt-8 border-t border-slate-100">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1">Positions You Play</label>
+              <div v-if="availablePositions.length > 0" class="flex flex-wrap gap-2">
+                <button
                   v-for="pos in availablePositions"
                   :key="pos"
-                  :value="pos"
+                  type="button"
+                  :disabled="isParentRole"
+                  @click="togglePosition(pos); triggerSave()"
+                  :class="[
+                    'px-4 py-2.5 rounded-xl text-xs font-bold transition-all border-2',
+                    isPositionSelected(pos)
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-105 z-10'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'
+                  ]"
                 >
                   {{ pos }}
-                </option>
-              </select>
-              <select
-                v-else
-                disabled
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
-              >
-                <option>Select sport first</option>
-              </select>
+                </button>
+              </div>
+              <p v-else class="text-sm text-slate-400 italic">Select a sport on the Basics tab to see positions.</p>
             </div>
           </div>
 
-          <!-- Additional Positions -->
-          <div>
-            <h3 class="text-sm font-medium text-gray-700 mb-3">
-              All Positions You Play
-            </h3>
-            <p class="text-xs text-gray-600 mb-4">
-              Select additional positions you play (primary position above is
-              pre-selected)
-            </p>
-
-            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-              <button
-                v-for="pos in availablePositions"
-                :key="pos"
-                type="button"
-                :disabled="isParentRole"
-                @click="togglePosition(pos)"
-                @blur="triggerSave"
-                :class="[
-                  'px-4 py-3 rounded-lg font-medium text-sm transition border-2 disabled:opacity-50 disabled:cursor-not-allowed',
-                  isPositionSelected(pos)
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400',
-                ]"
-              >
-                {{ pos }}
-              </button>
-            </div>
-
-            <div
-              v-if="form.positions && form.positions.length > 0"
-              class="mt-4"
-            >
-              <p class="text-sm text-gray-600">
-                Selected:
-                <span class="font-medium">{{ form.positions.join(", ") }}</span>
-              </p>
+          <!-- External IDs -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-slate-900 mb-6">Recruiting Database IDs</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">NCAA ID</label>
+                <input v-model="form.ncaa_id" @blur="triggerSave" placeholder="ID Number" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+              </div>
+              <template v-if="isBaseballOrSoftball">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Perfect Game ID</label>
+                  <input v-model="form.perfect_game_id" @blur="triggerSave" placeholder="ID Number" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Prep Baseball ID</label>
+                  <input v-model="form.prep_baseball_id" @blur="triggerSave" placeholder="ID Number" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+                </div>
+              </template>
             </div>
           </div>
         </div>
 
-        <!-- Physical & Athletic -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-6">Physical Profile</h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Bats</label
-              >
-              <div class="flex gap-4">
-                <label
-                  v-for="opt in BATS_OPTIONS"
-                  :key="opt.value"
-                  :class="[
-                    'flex items-center gap-2',
-                    isParentRole ? '' : 'cursor-pointer',
-                  ]"
-                >
-                  <input
-                    type="radio"
-                    :value="opt.value"
-                    v-model="form.bats"
-                    :disabled="isParentRole"
-                    class="w-4 h-4 text-blue-600 disabled:cursor-not-allowed"
-                  />
-                  <span
-                    :class="[
-                      'text-gray-700',
-                      isParentRole ? 'text-gray-500' : '',
-                    ]"
-                    >{{ opt.label }}</span
-                  >
-                </label>
+        <!-- TAB: ACADEMICS & SOCIAL -->
+        <div v-show="currentTab === 'academics'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <!-- Academics -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <AcademicCapIcon class="w-5 h-5 text-blue-600" />
+              Academic Standing
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">GPA</label>
+                <input v-model.number="form.gpa" type="number" step="0.01" @blur="triggerSave" placeholder="e.g. 3.85" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
               </div>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Throws</label
-              >
-              <div class="flex gap-4">
-                <label
-                  v-for="opt in THROWS_OPTIONS"
-                  :key="opt.value"
-                  :class="[
-                    'flex items-center gap-2',
-                    isParentRole ? '' : 'cursor-pointer',
-                  ]"
-                >
-                  <input
-                    type="radio"
-                    :value="opt.value"
-                    v-model="form.throws"
-                    :disabled="isParentRole"
-                    class="w-4 h-4 text-blue-600 disabled:cursor-not-allowed"
-                  />
-                  <span
-                    :class="[
-                      'text-gray-700',
-                      isParentRole ? 'text-gray-500' : '',
-                    ]"
-                    >{{ opt.label }}</span
-                  >
-                </label>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">SAT Score</label>
+                <input v-model.number="form.sat_score" type="number" @blur="triggerSave" placeholder="1200" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
               </div>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Height</label
-              >
-              <div class="flex gap-2">
-                <select
-                  v-model="heightFeet"
-                  :disabled="isParentRole"
-                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                >
-                  <option :value="undefined">Feet</option>
-                  <option v-for="ft in [4, 5, 6, 7]" :key="ft" :value="ft">
-                    {{ ft }}'
-                  </option>
-                </select>
-                <select
-                  v-model="heightInches"
-                  :disabled="isParentRole"
-                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                >
-                  <option :value="undefined">Inches</option>
-                  <option v-for="i in 12" :key="i - 1" :value="i - 1">
-                    {{ i - 1 }}"
-                  </option>
-                </select>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ACT Score</label>
+                <input v-model.number="form.act_score" type="number" @blur="triggerSave" placeholder="28" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
               </div>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Weight (lbs)</label
-              >
-              <input
-                v-model.number="form.weight_lbs"
-                :disabled="isParentRole"
-                type="number"
-                min="100"
-                max="400"
-                placeholder="e.g., 185"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
             </div>
           </div>
-        </div>
 
-        <!-- Academics -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-6">Academics</h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >GPA</label
-              >
-              <input
-                v-model.number="form.gpa"
-                data-testid="gpa-input"
-                :disabled="isParentRole"
-                type="number"
-                step="0.01"
-                min="0"
-                max="5"
-                placeholder="e.g., 3.75"
-                @blur="triggerSave"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >SAT Score</label
-              >
-              <input
-                v-model.number="form.sat_score"
-                :disabled="isParentRole"
-                type="number"
-                min="400"
-                max="1600"
-                placeholder="e.g., 1200"
-                @blur="triggerSave"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >ACT Score</label
-              >
-              <input
-                v-model.number="form.act_score"
-                :disabled="isParentRole"
-                type="number"
-                min="1"
-                max="36"
-                placeholder="e.g., 28"
-                @blur="triggerSave"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- External IDs -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-6">
-            External Profiles
-          </h2>
-          <p class="text-sm text-gray-600 mb-4">
-            Link your profiles from recruiting databases
-          </p>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >NCAA ID</label
-              >
-              <input
-                v-model="form.ncaa_id"
-                :disabled="isParentRole"
-                type="text"
-                placeholder="NCAA Eligibility ID"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Perfect Game ID</label
-              >
-              <input
-                v-model="form.perfect_game_id"
-                :disabled="isParentRole"
-                type="text"
-                placeholder="Perfect Game Player ID"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Prep Baseball ID</label
-              >
-              <input
-                v-model="form.prep_baseball_id"
-                :disabled="isParentRole"
-                type="text"
-                placeholder="Prep Baseball Report ID"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Social Media -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-6">Social Media</h2>
-          <p class="text-sm text-gray-600 mb-4">
-            Add your social media accounts for coaches to follow
-          </p>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label
-                class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
-              >
-                <ShareIcon class="w-4 h-4" />
-                <span>Twitter Handle</span>
-              </label>
-              <div class="flex items-center gap-2">
-                <span class="text-gray-500">@</span>
-                <input
-                  v-model="form.twitter_handle"
-                  :disabled="isParentRole"
-                  type="text"
-                  placeholder="username"
-                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label
-                class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
-              >
-                <PhotoIcon class="w-4 h-4" />
-                <span>Instagram Handle</span>
-              </label>
-              <div class="flex items-center gap-2">
-                <span class="text-gray-500">@</span>
-                <input
-                  v-model="form.instagram_handle"
-                  :disabled="isParentRole"
-                  type="text"
-                  placeholder="username"
-                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >🎵 TikTok Handle</label
-              >
-              <div class="flex items-center gap-2">
-                <span class="text-gray-500">@</span>
-                <input
-                  v-model="form.tiktok_handle"
-                  :disabled="isParentRole"
-                  type="text"
-                  placeholder="username"
-                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >f Facebook Profile</label
-              >
-              <input
-                v-model="form.facebook_url"
-                :disabled="isParentRole"
-                type="url"
-                placeholder="https://facebook.com/..."
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Contact Information -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-6">
-            Contact Information
-          </h2>
-          <p class="text-sm text-gray-600 mb-4">
-            Coaches can use this to contact you about recruiting opportunities
-          </p>
-
-          <div class="space-y-6">
+          <!-- Social Media -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-slate-900 mb-6">Social Handles</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Phone</label
-                >
-                <input
-                  v-model="form.phone"
-                  :disabled="isParentRole"
-                  type="tel"
-                  placeholder="(123) 456-7890"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Email</label
-                >
-                <input
-                  v-model="form.email"
-                  :disabled="isParentRole"
-                  type="email"
-                  placeholder="your.email@example.com"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                />
-              </div>
-            </div>
-
-            <div class="border-t border-gray-200 pt-6">
-              <p class="text-sm font-medium text-gray-700 mb-4">
-                Sharing Permissions
-              </p>
-              <div class="space-y-3">
-                <label
-                  :class="[
-                    'flex items-center gap-3',
-                    isParentRole ? '' : 'cursor-pointer',
-                  ]"
-                >
+              <div v-for="social in socialInputs" :key="social.key" class="relative">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{{ social.label }}</label>
+                <div class="flex items-center">
+                  <span v-if="social.prefix" class="absolute left-4 text-slate-400 font-bold">{{ social.prefix }}</span>
                   <input
-                    v-model="form.allow_share_phone"
-                    :disabled="isParentRole"
-                    type="checkbox"
-                    class="w-4 h-4 text-blue-600 rounded-sm disabled:cursor-not-allowed"
-                  />
-                  <span
+                    v-model="form[social.key]"
+                    type="text"
+                    @blur="triggerSave"
+                    :placeholder="social.placeholder"
                     :class="[
-                      'text-gray-700',
-                      isParentRole ? 'text-gray-500' : '',
+                      'w-full py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700',
+                      social.prefix ? 'pl-9 pr-4' : 'px-4'
                     ]"
-                    >Allow coaches to see my phone number</span
-                  >
-                </label>
-                <label
-                  :class="[
-                    'flex items-center gap-3',
-                    isParentRole ? '' : 'cursor-pointer',
-                  ]"
-                >
-                  <input
-                    v-model="form.allow_share_email"
-                    :disabled="isParentRole"
-                    type="checkbox"
-                    class="w-4 h-4 text-blue-600 rounded-sm disabled:cursor-not-allowed"
-                  />
-                  <span
-                    :class="[
-                      'text-gray-700',
-                      isParentRole ? 'text-gray-500' : '',
-                    ]"
-                    >Allow coaches to see my email</span
-                  >
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- High School Team Levels -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-6">
-            High School Team Levels
-          </h2>
-          <p class="text-sm text-gray-600 mb-6">
-            Add your team assignment and coach for each grade level
-          </p>
-
-          <div class="space-y-6">
-            <!-- 9th Grade -->
-            <div class="pb-6 border-b border-gray-200">
-              <h3 class="text-sm font-semibold text-gray-900 mb-3">
-                9th Grade (Freshman)
-              </h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Team</label
-                  >
-                  <input
-                    v-model="form.ninth_grade_team"
-                    :disabled="isParentRole"
-                    type="text"
-                    placeholder="e.g., Freshman Team"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Head Coach</label
-                  >
-                  <input
-                    v-model="form.ninth_grade_coach"
-                    :disabled="isParentRole"
-                    type="text"
-                    placeholder="Coach name"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- 10th Grade -->
-            <div class="pb-6 border-b border-gray-200">
-              <h3 class="text-sm font-semibold text-gray-900 mb-3">
-                10th Grade (Sophomore)
-              </h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Team</label
-                  >
-                  <input
-                    v-model="form.tenth_grade_team"
-                    :disabled="isParentRole"
-                    type="text"
-                    placeholder="e.g., Junior Varsity"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Head Coach</label
-                  >
-                  <input
-                    v-model="form.tenth_grade_coach"
-                    :disabled="isParentRole"
-                    type="text"
-                    placeholder="Coach name"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- 11th Grade -->
-            <div class="pb-6 border-b border-gray-200">
-              <h3 class="text-sm font-semibold text-gray-900 mb-3">
-                11th Grade (Junior)
-              </h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Team</label
-                  >
-                  <input
-                    v-model="form.eleventh_grade_team"
-                    :disabled="isParentRole"
-                    type="text"
-                    placeholder="e.g., Varsity"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Head Coach</label
-                  >
-                  <input
-                    v-model="form.eleventh_grade_coach"
-                    :disabled="isParentRole"
-                    type="text"
-                    placeholder="Coach name"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- 12th Grade -->
-            <div>
-              <h3 class="text-sm font-semibold text-gray-900 mb-3">
-                12th Grade (Senior)
-              </h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Team</label
-                  >
-                  <input
-                    v-model="form.twelfth_grade_team"
-                    :disabled="isParentRole"
-                    type="text"
-                    placeholder="e.g., Varsity"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Head Coach</label
-                  >
-                  <input
-                    v-model="form.twelfth_grade_coach"
-                    :disabled="isParentRole"
-                    type="text"
-                    placeholder="Coach name"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Travel Team -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-6">Travel Team</h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Year</label
-              >
-              <input
-                v-model.number="form.travel_team_year"
-                :disabled="isParentRole"
-                type="number"
-                :min="new Date().getFullYear()"
-                :max="new Date().getFullYear() + 5"
-                placeholder="e.g., 2024"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
+          <!-- Contact -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-slate-900 mb-6">Contact & Privacy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Phone Number</label>
+                <input v-model="form.phone" type="tel" @blur="triggerSave" placeholder="(555) 000-0000" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Public Email</label>
+                <input v-model="form.email" type="email" @blur="triggerSave" placeholder="athlete@example.com" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+              </div>
             </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Team Name</label
-              >
-              <input
-                v-model="form.travel_team_name"
-                :disabled="isParentRole"
-                type="text"
-                placeholder="e.g., East Coast Sox"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Head Coach</label
-              >
-              <input
-                v-model="form.travel_team_coach"
-                :disabled="isParentRole"
-                type="text"
-                placeholder="Coach name"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
+            
+            <div class="bg-slate-50 rounded-2xl p-4 space-y-4">
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <div class="relative flex items-center">
+                  <input v-model="form.allow_share_phone" type="checkbox" @change="triggerSave" class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 transition-all shadow-sm" />
+                  <CheckIcon class="absolute h-4 w-4 text-white opacity-0 peer-checked:opacity-100 left-1 top-1 pointer-events-none stroke-[3]" />
+                </div>
+                <span class="text-sm font-bold text-slate-600 group-hover:text-slate-900 transition">Show phone number to verified coaches</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <div class="relative flex items-center">
+                  <input v-model="form.allow_share_email" type="checkbox" @change="triggerSave" class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 transition-all shadow-sm" />
+                  <CheckIcon class="absolute h-4 w-4 text-white opacity-0 peer-checked:opacity-100 left-1 top-1 pointer-events-none stroke-[3]" />
+                </div>
+                <span class="text-sm font-bold text-slate-600 group-hover:text-slate-900 transition">Show email to verified coaches</span>
+              </label>
             </div>
           </div>
         </div>
 
-        <!-- Error Message -->
-        <div
-          v-if="errors.length > 0"
-          class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700"
-        >
-          {{ errors[0]?.message || "Validation error" }}
-        </div>
+        <!-- TAB: HISTORY -->
+        <div v-show="currentTab === 'history'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <ClockIcon class="w-5 h-5 text-blue-600" />
+              High School Career
+            </h2>
+            <div class="space-y-6">
+              <div v-for="grade in gradeLevels" :key="grade.key" class="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-5">{{ grade.label }}</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Team Level</label>
+                    <input v-model="form[grade.teamKey]" @blur="triggerSave" placeholder="e.g. Varsity" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium shadow-xs" />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Head Coach</label>
+                    <input v-model="form[grade.coachKey]" @blur="triggerSave" placeholder="Coach Name" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium shadow-xs" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-        <!-- Save Button -->
-        <div class="flex justify-end gap-4">
-          <NuxtLink
-            to="/settings"
-            class="px-6 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition"
-          >
-            Cancel
-          </NuxtLink>
-          <button
-            data-testid="save-player-details-button"
-            type="submit"
-            :disabled="saving || isParentRole"
-            class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-          >
-            {{
-              isParentRole
-                ? "Read-only view"
-                : saving
-                  ? recalculating
-                    ? "Recalculating fit scores..."
-                    : "Saving..."
-                  : "Save Player Details"
-            }}
-          </button>
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-slate-900 mb-6">Latest Travel Team</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Season Year</label>
+                <input v-model.number="form.travel_team_year" type="number" @blur="triggerSave" placeholder="2024" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Organization</label>
+                <input v-model="form.travel_team_name" @blur="triggerSave" placeholder="Team Name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Head Coach</label>
+                <input v-model="form.travel_team_coach" @blur="triggerSave" placeholder="Coach Name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+              </div>
+            </div>
+          </div>
         </div>
-      </form>
+      </div>
     </main>
   </div>
 </template>
@@ -904,9 +440,13 @@
 import { ref, computed, onMounted, watch } from "vue";
 import {
   ExclamationCircleIcon,
-  ShareIcon,
-  PhotoIcon,
   ArrowLeftIcon,
+  IdentificationIcon,
+  BoltIcon,
+  AcademicCapIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  CheckIcon,
 } from "@heroicons/vue/24/outline";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useAppToast } from "~/composables/useAppToast";
@@ -915,9 +455,9 @@ import { useFitScoreRecalculation } from "~/composables/useFitScoreRecalculation
 import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
 import { useAutoSave } from "~/composables/useAutoSave";
 import { useUserStore } from "~/stores/user";
-import { playerDetailsSchema } from "~/utils/validation/schemas";
-import { BASEBALL_POSITIONS, normalizePositions } from "~/utils/positions";
+import { normalizePositions } from "~/utils/positions";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
+import ProfileCompleteness from "~/components/ProfileCompleteness.vue";
 import type { PlayerDetails } from "~/types/models";
 
 definePageMeta({
@@ -928,13 +468,19 @@ const userStore = useUserStore();
 const { isLoading, getPlayerDetails, setPlayerDetails, loadAllPreferences } =
   usePreferenceManager();
 const { showToast } = useAppToast();
-const { recalculateAllFitScores, loading: recalculating } =
+const { recalculateAllFitScores } =
   useFitScoreRecalculation();
-const { errors, fieldErrors, clearErrors, hasErrors } = useFormValidation();
+const { errors, clearErrors, hasErrors } = useFormValidation();
 
 const isParentRole = computed(() => userStore.user?.role === "parent");
 
-const POSITIONS = BASEBALL_POSITIONS;
+const currentTab = ref("basics");
+const tabs = [
+  { id: "basics", name: "Basics", icon: IdentificationIcon },
+  { id: "athletics", name: "Athletics", icon: BoltIcon },
+  { id: "academics", name: "Academics & Social", icon: AcademicCapIcon },
+  { id: "history", name: "History", icon: ClockIcon },
+];
 
 const BATS_OPTIONS = [
   { value: "R", label: "Right" },
@@ -965,22 +511,18 @@ const form = ref<PlayerDetails>({
   ncaa_id: "",
   perfect_game_id: "",
   prep_baseball_id: "",
-  // Social Media
   twitter_handle: "",
   instagram_handle: "",
   tiktok_handle: "",
   facebook_url: "",
-  // Contact Info
   phone: "",
   email: "",
   allow_share_phone: false,
   allow_share_email: false,
-  // School Info
   school_name: "",
   school_address: "",
   school_city: "",
   school_state: "",
-  // High School Team Levels
   ninth_grade_team: "",
   ninth_grade_coach: "",
   tenth_grade_team: "",
@@ -989,64 +531,58 @@ const form = ref<PlayerDetails>({
   eleventh_grade_coach: "",
   twelfth_grade_team: "",
   twelfth_grade_coach: "",
-  // Travel Team
   travel_team_year: undefined,
   travel_team_name: "",
   travel_team_coach: "",
 });
 
-// Sport/Position Management
 const { commonSports, getPositionsBySport } = useSportsPositionLookup();
 const availablePositions = ref<string[]>([]);
 
-// Auto-save configuration
+const isBaseballOrSoftball = computed(() => {
+  return form.value.primary_sport === "Baseball" || form.value.primary_sport === "Softball";
+});
+
 const { isSaving, triggerSave } = useAutoSave({
-  debounceMs: 500,
+  debounceMs: 1000,
   onSave: async () => {
-    await setPlayerDetails(form.value);
+    try {
+      const detailsToSave = {
+        ...form.value,
+        positions: normalizePositions(form.value.positions),
+      };
+      await setPlayerDetails(detailsToSave);
+    } catch (err) {
+      console.error("Auto-save failed:", err);
+    }
   },
 });
 
-// Watch for sport changes to update available positions
 watch(
   () => form.value.primary_sport,
   (sport) => {
     if (sport) {
       availablePositions.value = getPositionsBySport(sport);
-      // If selected position is not in new sport's positions, clear it
-      if (
-        !availablePositions.value.includes(form.value.primary_position || "")
-      ) {
+      if (!availablePositions.value.includes(form.value.primary_position || "")) {
         form.value.primary_position = undefined;
       }
     } else {
       availablePositions.value = [];
-      form.value.primary_position = undefined;
     }
   },
 );
 
 const graduationYears = computed(() => {
   const currentYear = new Date().getFullYear();
-  return [
-    currentYear,
-    currentYear + 1,
-    currentYear + 2,
-    currentYear + 3,
-    currentYear + 4,
-  ];
+  return Array.from({ length: 6 }, (_, i) => currentYear + i);
 });
 
-// Sync height fields
 watch([heightFeet, heightInches], ([feet, inches]) => {
-  if (feet !== undefined && inches !== undefined) {
-    form.value.height_inches = feet * 12 + inches;
-  } else {
-    form.value.height_inches = undefined;
+  if (feet !== undefined) {
+    form.value.height_inches = feet * 12 + (inches || 0);
   }
 });
 
-// Initialize height from total inches
 const initializeHeight = (totalInches: number | undefined) => {
   if (totalInches) {
     heightFeet.value = Math.floor(totalInches / 12);
@@ -1054,73 +590,70 @@ const initializeHeight = (totalInches: number | undefined) => {
   }
 };
 
-const isPositionSelected = (pos: string) => {
-  return form.value.positions?.includes(pos) || false;
-};
+const isPositionSelected = (pos: string) => form.value.positions?.includes(pos) || false;
 
 const togglePosition = (pos: string) => {
-  if (!form.value.positions) {
-    form.value.positions = [];
-  }
+  if (!form.value.positions) form.value.positions = [];
   const idx = form.value.positions.indexOf(pos);
-  if (idx >= 0) {
-    form.value.positions.splice(idx, 1);
-  } else {
-    form.value.positions.push(pos);
-  }
+  if (idx >= 0) form.value.positions.splice(idx, 1);
+  else form.value.positions.push(pos);
 };
 
-const handleSave = async () => {
-  saving.value = true;
-  try {
-    // Normalize positions before saving to ensure canonical format
-    const detailsToSave = {
-      ...form.value,
-      positions: normalizePositions(form.value.positions),
-    };
+const socialInputs = [
+  { key: "twitter_handle", label: "Twitter / X", prefix: "@", placeholder: "username" },
+  { key: "instagram_handle", label: "Instagram", prefix: "@", placeholder: "username" },
+  { key: "tiktok_handle", label: "TikTok", prefix: "@", placeholder: "username" },
+  { key: "facebook_url", label: "Facebook URL", placeholder: "https://facebook.com/..." },
+] as const;
 
-    // Save player details
-    await setPlayerDetails(detailsToSave);
-
-    // Trigger fit score recalculation (blocking)
-    try {
-      await recalculateAllFitScores();
-      showToast(
-        "Player details saved and fit scores updated successfully",
-        "success",
-      );
-    } catch (recalcError) {
-      console.error("Fit score recalculation failed:", recalcError);
-      showToast(
-        "Player details saved, but fit score update failed. Try refreshing.",
-        "warning",
-      );
-    }
-  } catch (err) {
-    console.error("Failed to save player details:", err);
-    showToast("Failed to save player details", "error");
-  } finally {
-    saving.value = false;
-  }
-};
+const gradeLevels = [
+  { key: "9", label: "9th Grade (Freshman)", teamKey: "ninth_grade_team", coachKey: "ninth_grade_coach" },
+  { key: "10", label: "10th Grade (Sophomore)", teamKey: "tenth_grade_team", coachKey: "tenth_grade_coach" },
+  { key: "11", label: "11th Grade (Junior)", teamKey: "eleventh_grade_team", coachKey: "eleventh_grade_coach" },
+  { key: "12", label: "12th Grade (Senior)", teamKey: "twelfth_grade_team", coachKey: "twelfth_grade_coach" },
+] as const;
 
 onMounted(async () => {
   await loadAllPreferences();
   const playerDetails = getPlayerDetails();
   if (playerDetails) {
-    // Data migration: copy high_school to school_name if school_name is empty
-    // This handles legacy data from before the field rename
     if (playerDetails.high_school && !playerDetails.school_name) {
       playerDetails.school_name = playerDetails.high_school;
     }
-
-    // Normalize positions to ensure consistency
-    const normalizedDetails = {
-      ...playerDetails,
-      positions: normalizePositions(playerDetails.positions),
-    };
-    form.value = { ...form.value, ...normalizedDetails };
+    form.value = { ...form.value, ...playerDetails, positions: normalizePositions(playerDetails.positions) };
     initializeHeight(playerDetails.height_inches);
+    if (form.value.primary_sport) {
+      availablePositions.value = getPositionsBySport(form.value.primary_sport);
+    }
   }
 });
+
+// Trigger one final recalculation when leaving the page or finishing major edits
+const handleFinalSave = async () => {
+  saving.value = true;
+  try {
+    await recalculateAllFitScores();
+    showToast("Profile updated and fit scores recalculated", "success");
+  } finally {
+    saving.value = false;
+  }
+};
 </script>
+
+<style scoped>
+.animate-in {
+  animation: animate-in 0.3s ease-out;
+}
+@keyframes animate-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
+
+
