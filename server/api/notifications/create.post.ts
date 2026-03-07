@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
     const parsed = createNotificationSchema.safeParse(body);
     if (!parsed.success) {
       throw createError({
-        statusCode: 400,
+        statusCode: 422,
         statusMessage: "Invalid request body",
       });
     }

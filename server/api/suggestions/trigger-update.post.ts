@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
       )
     ) {
       throw createError({
-        statusCode: 400,
+        statusCode: 422,
         message: "Invalid trigger reason",
       });
     }

@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
 
   if (q && String(q).length < 3) {
     throw createError({
-      statusCode: 400,
+      statusCode: 422,
       statusMessage: "q must be at least 3 characters",
     });
   }

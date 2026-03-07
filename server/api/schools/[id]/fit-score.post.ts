@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
       body.athleticFit > 40)
   ) {
     throw createError({
-      statusCode: 400,
+      statusCode: 422,
       statusMessage: "athleticFit must be a number between 0 and 40",
     });
   }
@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
       body.academicFit > 25)
   ) {
     throw createError({
-      statusCode: 400,
+      statusCode: 422,
       statusMessage: "academicFit must be a number between 0 and 25",
     });
   }
@@ -65,7 +65,7 @@ export default defineEventHandler(async (event) => {
       body.opportunityFit > 20)
   ) {
     throw createError({
-      statusCode: 400,
+      statusCode: 422,
       statusMessage: "opportunityFit must be a number between 0 and 20",
     });
   }
@@ -77,7 +77,7 @@ export default defineEventHandler(async (event) => {
       body.personalFit > 15)
   ) {
     throw createError({
-      statusCode: 400,
+      statusCode: 422,
       statusMessage: "personalFit must be a number between 0 and 15",
     });
   }
