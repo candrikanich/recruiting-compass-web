@@ -2,6 +2,8 @@ import { vi, beforeEach, afterEach } from "vitest";
 import { nextTick, ref } from "vue";
 import { createPinia, setActivePinia } from "pinia";
 import { config } from "@vue/test-utils";
+import * as axeMatchers from "vitest-axe/matchers";
+expect.extend(axeMatchers);
 
 // Set up environment for Pinia
 if (typeof process !== "undefined") {
