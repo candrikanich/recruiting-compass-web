@@ -486,12 +486,12 @@ const BATS_OPTIONS = [
   { value: "R", label: "Right" },
   { value: "L", label: "Left" },
   { value: "S", label: "Switch" },
-];
+] as const;
 
 const THROWS_OPTIONS = [
   { value: "R", label: "Right" },
   { value: "L", label: "Left" },
-];
+] as const;
 
 const saving = ref(false);
 const heightFeet = ref<number | undefined>(undefined);
@@ -599,12 +599,12 @@ const togglePosition = (pos: string) => {
   else form.value.positions.push(pos);
 };
 
-const socialInputs = [
+const socialInputs: { key: keyof PlayerDetails; label: string; prefix?: string; placeholder: string }[] = [
   { key: "twitter_handle", label: "Twitter / X", prefix: "@", placeholder: "username" },
   { key: "instagram_handle", label: "Instagram", prefix: "@", placeholder: "username" },
   { key: "tiktok_handle", label: "TikTok", prefix: "@", placeholder: "username" },
   { key: "facebook_url", label: "Facebook URL", placeholder: "https://facebook.com/..." },
-] as const;
+];
 
 const gradeLevels = [
   { key: "9", label: "9th Grade (Freshman)", teamKey: "ninth_grade_team", coachKey: "ninth_grade_coach" },
