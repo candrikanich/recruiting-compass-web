@@ -77,7 +77,7 @@
       type="url"
       :disabled="loading"
       :auto-filled="isAutoFilled('website')"
-      placeholder="https://example.com or www.example.com"
+      placeholder="example.com or https://example.com"
       :error="fieldErrors.website"
       @blur="validateWebsite"
     />

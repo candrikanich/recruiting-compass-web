@@ -14,15 +14,27 @@ export const emailSchema = z
 
 /**
  * URL schema with protocol validation
- * Rejects javascript:, data:, and other dangerous protocols
+ * Accepts bare domains (e.g. "stanford.edu") and normalizes them to https://.
+ * Rejects javascript:, data:, and other dangerous protocols.
  */
-export const urlSchema = z
-  .string()
-  .url("Please enter a valid URL")
-  .refine((url) => {
-    const sanitized = sanitizeUrl(url);
-    return sanitized !== null;
-  }, "URL must start with http:// or https://");
+export const urlSchema = z.preprocess(
+  (val) => {
+    if (typeof val !== "string" || !val.trim()) return val;
+    const trimmed = val.trim();
+    // Only prepend https:// if no scheme is present (scheme = letter(s) then colon)
+    if (!/^[a-zA-Z][a-zA-Z0-9+\-.]*:/.test(trimmed)) {
+      return `https://${trimmed}`;
+    }
+    return trimmed;
+  },
+  z
+    .string()
+    .url("Please enter a valid URL")
+    .refine((url) => {
+      const sanitized = sanitizeUrl(url);
+      return sanitized !== null;
+    }, "URL must start with http:// or https://"),
+);
 
 /**
  * Phone number schema with flexible format validation
