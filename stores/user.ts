@@ -275,5 +275,16 @@ export const useUserStore = defineStore("user", {
         this.user.profile_photo_url = photoUrl;
       }
     },
+
+    updateProfileFields(
+      fields: Partial<Pick<User, "full_name">> & {
+        phone?: string | null;
+        date_of_birth?: string | null;
+      },
+    ) {
+      if (this.user) {
+        this.user = { ...this.user, ...fields } as User;
+      }
+    },
   },
 });
