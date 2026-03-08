@@ -110,11 +110,17 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useUserStore } from "~/stores/user";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 
 definePageMeta({ middleware: "auth" });
+
+const router = useRouter();
+onMounted(() => {
+  router.replace("/settings/profile");
+});
 
 const userStore = useUserStore();
 const { $fetchAuth } = useAuthFetch();
