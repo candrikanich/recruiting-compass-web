@@ -6,7 +6,11 @@ import { sendEmail } from "~/server/utils/emailService"
 
 const FEEDBACK_EMAIL = "info@therecruitingcompass.com"
 
-const subjectLabels: Record<string, string> = {
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+}
+
+const subjectLabels: Record<"bug" | "feature" | "question" | "general", string> = {
   bug: "Bug Report",
   feature: "Feature Request",
   question: "Question",
@@ -32,7 +36,7 @@ export default defineEventHandler(async (event) => {
 
     const { subject, message } = parsed.data
     const subjectLabel = subjectLabels[subject]
-    const senderInfo = user.email ? ` from ${user.email}` : ""
+    const senderInfo = user.email ? ` from ${escapeHtml(user.email)}` : ""
 
     const html = `
       <!DOCTYPE html>
@@ -43,7 +47,7 @@ export default defineEventHandler(async (event) => {
           <p><strong>From:</strong> User ${user.id}${senderInfo}</p>
           <p><strong>Category:</strong> ${subjectLabel}</p>
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 16px 0;">
-          <p style="white-space: pre-wrap;">${message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+          <p style="white-space: pre-wrap;">${escapeHtml(message)}</p>
         </body>
       </html>
     `

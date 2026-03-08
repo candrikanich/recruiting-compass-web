@@ -32,6 +32,7 @@ const { default: handler } = await import("~/server/api/feedback.post")
 
 describe("POST /api/feedback", () => {
   beforeEach(() => {
+    mockState.userId = "user-123"
     mockState.sendEmailResult = { success: true }
     mockState.userEmail = "athlete@example.com"
   })
@@ -73,5 +74,11 @@ describe("POST /api/feedback", () => {
     await expect(
       handler(makeEvent({ subject: "question", message: "How do phases work?" }))
     ).rejects.toMatchObject({ statusCode: 500 })
+  })
+
+  it("returns { success: true } when user has no email", async () => {
+    mockState.userEmail = ""
+    const result = await handler(makeEvent({ subject: "general", message: "No email user feedback." }))
+    expect(result).toEqual({ success: true })
   })
 })
