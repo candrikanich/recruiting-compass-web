@@ -462,11 +462,75 @@ export interface DashboardWidgetVisibility {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Dashboard Layout v2 — ordered, drag-and-drop layout
+// ---------------------------------------------------------------------------
+
+export type WidgetId =
+  | "interactionTrendChart"
+  | "schoolInterestChart"
+  | "schoolMapWidget"
+  | "performanceSummary"
+  | "quickTasks"
+  | "coachFollowupWidget"
+  | "atAGlanceSummary"
+  | "schoolStatusOverview"
+  | "eventsSummary"
+  | "recentNotifications"
+  | "linkedAccounts";
+
+export type WidgetSize = "4/6" | "2/6";
+
+export const WIDGET_SIZES: Record<WidgetId, WidgetSize> = {
+  interactionTrendChart: "2/6",
+  schoolInterestChart: "2/6",
+  schoolMapWidget: "4/6",
+  performanceSummary: "4/6",
+  quickTasks: "2/6",
+  coachFollowupWidget: "4/6",
+  atAGlanceSummary: "4/6",
+  schoolStatusOverview: "2/6",
+  eventsSummary: "2/6",
+  recentNotifications: "2/6",
+  linkedAccounts: "2/6",
+} as const;
+
+export const WIDGET_LABELS: Record<WidgetId, string> = {
+  interactionTrendChart: "Interaction Trends",
+  schoolInterestChart: "School Interest Chart",
+  schoolMapWidget: "School Map",
+  performanceSummary: "Performance Summary",
+  quickTasks: "Quick Tasks",
+  coachFollowupWidget: "Coach Followup",
+  atAGlanceSummary: "At a Glance",
+  schoolStatusOverview: "Schools by Size",
+  eventsSummary: "Upcoming Events",
+  recentNotifications: "Recent Activity",
+  linkedAccounts: "Linked Accounts",
+} as const;
+
+export interface WidgetEntry {
+  id: WidgetId;
+  visible: boolean;
+}
+
+export interface DashboardLayout {
+  statsCards: {
+    coaches: boolean;
+    schools: boolean;
+    interactions: boolean;
+    offers: boolean;
+    events: boolean;
+  };
+  leftColumn: WidgetEntry[]; // 4/6 and 2/6 widgets, user-ordered
+  rightColumn: WidgetEntry[]; // 2/6 widgets only, user-ordered
+}
+
 export interface UserPreferences {
   user_id: string;
   notification_settings: NotificationSettings;
   communication_templates?: Record<string, unknown>;
-  dashboard_layout?: DashboardWidgetVisibility;
+  dashboard_layout?: DashboardLayout;
   home_location?: HomeLocation;
   player_details?: PlayerDetails;
   school_preferences?: SchoolPreferences;
