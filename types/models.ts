@@ -481,7 +481,7 @@ export type WidgetId =
 
 export type WidgetSize = "4/6" | "2/6";
 
-export const WIDGET_SIZES: Record<WidgetId, WidgetSize> = {
+export const WIDGET_SIZES = {
   interactionTrendChart: "2/6",
   schoolInterestChart: "2/6",
   schoolMapWidget: "4/6",
@@ -493,9 +493,9 @@ export const WIDGET_SIZES: Record<WidgetId, WidgetSize> = {
   eventsSummary: "2/6",
   recentNotifications: "2/6",
   linkedAccounts: "2/6",
-} as const;
+} as const satisfies Record<WidgetId, WidgetSize>;
 
-export const WIDGET_LABELS: Record<WidgetId, string> = {
+export const WIDGET_LABELS = {
   interactionTrendChart: "Interaction Trends",
   schoolInterestChart: "School Interest Chart",
   schoolMapWidget: "School Map",
@@ -507,7 +507,7 @@ export const WIDGET_LABELS: Record<WidgetId, string> = {
   eventsSummary: "Upcoming Events",
   recentNotifications: "Recent Activity",
   linkedAccounts: "Linked Accounts",
-} as const;
+} as const satisfies Record<WidgetId, string>;
 
 export interface WidgetEntry {
   id: WidgetId;
