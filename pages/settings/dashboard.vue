@@ -128,15 +128,18 @@
               </label>
 
               <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
+                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 opacity-60 cursor-not-allowed"
               >
                 <input
-                  v-model="localLayout.statsCards.performance"
                   type="checkbox"
                   class="w-4 h-4 text-blue-600 rounded-sm"
+                  disabled
                 />
                 <span class="flex-1">
-                  <span class="font-medium text-gray-900">📊 Performance</span>
+                  <span class="font-medium text-gray-900 flex items-center gap-2">
+                    📊 Performance
+                    <span class="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Coming soon</span>
+                  </span>
                   <p class="text-xs text-gray-600">
                     Recorded metrics and stats
                   </p>
@@ -144,12 +147,12 @@
               </label>
 
               <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
+                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 opacity-60 cursor-not-allowed"
               >
                 <input
-                  v-model="localLayout.statsCards.notifications"
                   type="checkbox"
                   class="w-4 h-4 text-blue-600 rounded-sm"
+                  disabled
                 />
                 <span class="flex-1">
                   <span
@@ -157,6 +160,7 @@
                   >
                     <BellIcon class="w-5 h-5" />
                     <span>Notifications</span>
+                    <span class="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Coming soon</span>
                   </span>
                   <p class="text-xs text-gray-600">
                     Pending alerts and reminders
@@ -165,15 +169,18 @@
               </label>
 
               <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
+                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 opacity-60 cursor-not-allowed"
               >
                 <input
-                  v-model="localLayout.statsCards.socialMedia"
                   type="checkbox"
                   class="w-4 h-4 text-blue-600 rounded-sm"
+                  disabled
                 />
                 <span class="flex-1">
-                  <span class="font-medium text-gray-900">📱 Social Media</span>
+                  <span class="font-medium text-gray-900 flex items-center gap-2">
+                    📱 Social Media
+                    <span class="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Coming soon</span>
+                  </span>
                   <p class="text-xs text-gray-600">
                     Linked accounts and followers
                   </p>
@@ -220,15 +227,16 @@
               </label>
 
               <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
+                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 opacity-60 cursor-not-allowed"
               >
                 <input
-                  v-model="localLayout.widgets.offerStatusOverview"
                   type="checkbox"
                   class="w-4 h-4 text-blue-600 rounded-sm"
+                  disabled
                 />
-                <span class="text-sm font-medium text-gray-900"
-                  >Offer Status Overview</span
+                <span class="text-sm font-medium text-gray-900 flex items-center gap-2"
+                  >Offer Status Overview
+                  <span class="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Coming soon</span></span
                 >
               </label>
 
@@ -311,28 +319,30 @@
               </label>
 
               <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
+                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 opacity-60 cursor-not-allowed"
               >
                 <input
-                  v-model="localLayout.widgets.recentDocuments"
                   type="checkbox"
                   class="w-4 h-4 text-blue-600 rounded-sm"
+                  disabled
                 />
-                <span class="text-sm font-medium text-gray-900"
-                  >Recent Documents</span
+                <span class="text-sm font-medium text-gray-900 flex items-center gap-2"
+                  >Recent Documents
+                  <span class="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Coming soon</span></span
                 >
               </label>
 
               <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
+                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 opacity-60 cursor-not-allowed"
               >
                 <input
-                  v-model="localLayout.widgets.interactionStats"
                   type="checkbox"
                   class="w-4 h-4 text-blue-600 rounded-sm"
+                  disabled
                 />
-                <span class="text-sm font-medium text-gray-900"
-                  >Interaction Statistics</span
+                <span class="text-sm font-medium text-gray-900 flex items-center gap-2"
+                  >Interaction Statistics
+                  <span class="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Coming soon</span></span
                 >
               </label>
 
@@ -350,28 +360,30 @@
               </label>
 
               <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
+                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 opacity-60 cursor-not-allowed"
               >
                 <input
-                  v-model="localLayout.widgets.coachResponsiveness"
                   type="checkbox"
                   class="w-4 h-4 text-blue-600 rounded-sm"
+                  disabled
                 />
-                <span class="text-sm font-medium text-gray-900"
-                  >Coach Responsiveness</span
+                <span class="text-sm font-medium text-gray-900 flex items-center gap-2"
+                  >Coach Responsiveness
+                  <span class="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Coming soon</span></span
                 >
               </label>
 
               <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
+                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 opacity-60 cursor-not-allowed"
               >
                 <input
-                  v-model="localLayout.widgets.upcomingDeadlines"
                   type="checkbox"
                   class="w-4 h-4 text-blue-600 rounded-sm"
+                  disabled
                 />
-                <span class="text-sm font-medium text-gray-900"
-                  >Upcoming Deadlines</span
+                <span class="text-sm font-medium text-gray-900 flex items-center gap-2"
+                  >Upcoming Deadlines
+                  <span class="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Coming soon</span></span
                 >
               </label>
 
@@ -402,15 +414,16 @@
               </label>
 
               <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
+                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 opacity-60 cursor-not-allowed"
               >
                 <input
-                  v-model="localLayout.widgets.recruitingCalendar"
                   type="checkbox"
                   class="w-4 h-4 text-blue-600 rounded-sm"
+                  disabled
                 />
-                <span class="text-sm font-medium text-gray-900"
-                  >Recruiting Calendar</span
+                <span class="text-sm font-medium text-gray-900 flex items-center gap-2"
+                  >Recruiting Calendar
+                  <span class="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Coming soon</span></span
                 >
               </label>
 

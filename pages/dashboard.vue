@@ -47,6 +47,11 @@
           :total-offers="totalOffers"
           :accepted-offers="acceptedOffers"
           :contacts-this-month="contactsThisMonth"
+          :show-coaches="dashboardLayout.statsCards.coaches"
+          :show-schools="dashboardLayout.statsCards.schools"
+          :show-interactions="dashboardLayout.statsCards.interactions"
+          :show-offers="dashboardLayout.statsCards.offers"
+          :show-events="dashboardLayout.statsCards.events"
         />
       </section>
 
@@ -70,8 +75,8 @@
             <h2 id="charts-heading" class="sr-only">Charts & Analytics</h2>
             <Suspense>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <DashboardInteractionTrendChart :interactions="allInteractions" />
-                <DashboardSchoolInterestChart :schools="allSchools" />
+                <DashboardInteractionTrendChart v-if="dashboardLayout.widgets.interactionTrendChart" :interactions="allInteractions" />
+                <DashboardSchoolInterestChart v-if="dashboardLayout.widgets.schoolInterestChart" :schools="allSchools" />
               </div>
               <template #fallback>
                 <div class="grid grid-cols-2 gap-6">
@@ -83,7 +88,7 @@
           </section>
 
           <!-- School Map (full width) -->
-          <section aria-labelledby="map-heading">
+          <section v-if="dashboardLayout.widgets.schoolMapWidget" aria-labelledby="map-heading">
             <h2 id="map-heading" class="sr-only">School Map</h2>
             <Suspense>
               <DashboardSchoolMapWidget :schools="allSchools" />
@@ -94,7 +99,7 @@
           </section>
 
           <!-- Performance Metrics (full width) -->
-          <section aria-labelledby="metrics-heading">
+          <section v-if="dashboardLayout.widgets.performanceSummary" aria-labelledby="metrics-heading">
             <h2 id="metrics-heading" class="sr-only">Performance Metrics</h2>
             <DashboardPerformanceMetricsWidget
               :metrics="allMetrics"
@@ -108,6 +113,7 @@
             <h2 id="widgets-heading" class="sr-only">Dashboard Widgets</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <DashboardQuickTasksWidget
+                v-if="dashboardLayout.widgets.quickTasks"
                 :tasks="tasks || []"
                 :show-tasks="true"
                 @add-task="addTask"
@@ -123,10 +129,11 @@
           </section>
 
           <!-- Coach Followup (full width) -->
-          <DashboardCoachFollowupWidget />
+          <DashboardCoachFollowupWidget v-if="dashboardLayout.widgets.coachFollowupWidget" />
 
           <!-- At a Glance (full width) -->
           <DashboardAtAGlanceSummary
+            v-if="dashboardLayout.widgets.atAGlanceSummary"
             :coaches="allCoaches"
             :schools="allSchools"
             :interactions="allInteractions"
@@ -144,15 +151,17 @@
             @email-packet="handleEmailPacket"
           />
           <DashboardSchoolsBySizeWidget
+            v-if="dashboardLayout.widgets.schoolStatusOverview"
             :breakdown="schoolSizeBreakdown"
             :count="schoolCount"
           />
           <DashboardUpcomingEventsWidget
+            v-if="dashboardLayout.widgets.eventsSummary"
             :events="upcomingEvents"
             :show-events="true"
           />
-          <DashboardRecentActivityFeed />
-          <DashboardSocialMediaWidget :show-social="true" />
+          <DashboardRecentActivityFeed v-if="dashboardLayout.widgets.recentNotifications" />
+          <DashboardSocialMediaWidget v-if="dashboardLayout.widgets.linkedAccounts" :show-social="true" />
           <DashboardAthleteActivityWidget v-if="userStore.isParent" />
         </aside>
       </div>
@@ -177,6 +186,7 @@ import {
   computed,
   inject,
   defineAsyncComponent,
+  onMounted,
 } from "vue";
 import { useRouter } from "vue-router";
 import { createClientLogger } from "~/utils/logger";
@@ -191,6 +201,7 @@ import { useViewLogging } from "~/composables/useViewLogging";
 import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
 import ParentOnboardingBanner from "~/components/Dashboard/ParentOnboardingBanner.vue";
 import DashboardTimelineCard from "~/components/Dashboard/DashboardTimelineCard.vue";
@@ -206,6 +217,9 @@ definePageMeta({
 });
 
 const logger = createClientLogger("dashboard");
+
+const { getDashboardLayout, dashboardPrefs } = usePreferenceManager();
+const dashboardLayout = computed(() => getDashboardLayout());
 
 const { logout } = useAuth();
 const { showToast } = useAppToast();
@@ -462,4 +476,8 @@ watch(
   },
   { immediate: true },
 );
+
+onMounted(async () => {
+  await dashboardPrefs.loadPreferences();
+});
 </script>
