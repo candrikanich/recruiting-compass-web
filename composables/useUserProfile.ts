@@ -2,6 +2,9 @@ import { ref, computed } from "vue";
 import { useUserStore } from "~/stores/user";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 
+// Module-level singleton — persists across remounts within the same browser session
+const emailChangePending = ref(false);
+
 export function useUserProfile() {
   const store = useUserStore();
   const { $fetchAuth } = useAuthFetch();
@@ -19,7 +22,6 @@ export function useUserProfile() {
   // Email section state
   const emailLoading = ref(false);
   const emailError = ref<string | null>(null);
-  const emailChangePending = ref(false);
 
   const isAthlete = computed(() => store.isAthlete);
 

@@ -45,6 +45,7 @@ const mismatchError = computed(() => newPass.value && confirm.value && newPass.v
 
 async function handleSubmit() {
   if (mismatchError.value) return;
+  if (!current.value || !newPass.value || !confirm.value) return;
   const ok = await changePassword(current.value, newPass.value);
   if (ok) {
     current.value = "";
