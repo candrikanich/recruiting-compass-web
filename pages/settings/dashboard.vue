@@ -71,19 +71,18 @@
             v-model="layout.leftColumn"
             :group="leftGroup"
             handle=".drag-handle"
-            item-key="id"
             class="min-h-24 space-y-2"
             ghost-class="opacity-40"
             @end="scheduleSave"
           >
-            <template #item="{ element }">
-              <DashboardWidgetCard
-                :id="element.id"
-                :visible="element.visible"
-                :data-size="widgetSize(element.id)"
-                @toggle="toggleWidget(layout.leftColumn, element.id)"
-              />
-            </template>
+            <DashboardWidgetCard
+              v-for="element in layout.leftColumn"
+              :key="element.id"
+              :id="element.id"
+              :visible="element.visible"
+              :data-size="widgetSize(element.id)"
+              @toggle="toggleWidget(layout.leftColumn, element.id)"
+            />
           </VueDraggable>
 
           <p
@@ -107,19 +106,18 @@
             v-model="layout.rightColumn"
             :group="rightGroup"
             handle=".drag-handle"
-            item-key="id"
             class="min-h-24 space-y-2"
             ghost-class="opacity-40"
             @end="scheduleSave"
           >
-            <template #item="{ element }">
-              <DashboardWidgetCard
-                :id="element.id"
-                :visible="element.visible"
-                :data-size="widgetSize(element.id)"
-                @toggle="toggleWidget(layout.rightColumn, element.id)"
-              />
-            </template>
+            <DashboardWidgetCard
+              v-for="element in layout.rightColumn"
+              :key="element.id"
+              :id="element.id"
+              :visible="element.visible"
+              :data-size="widgetSize(element.id)"
+              @toggle="toggleWidget(layout.rightColumn, element.id)"
+            />
           </VueDraggable>
 
           <p
