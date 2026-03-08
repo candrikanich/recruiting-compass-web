@@ -343,8 +343,7 @@ describe("interactionGapRule", () => {
     });
 
     it("should include days count in message", async () => {
-      const thirtyfiveDaysAgo = new Date();
-      thirtyfiveDaysAgo.setDate(thirtyfiveDaysAgo.getDate() - 35);
+      const thirtyfiveDaysAgo = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000);
 
       mockContext.schools = [
         {
@@ -404,8 +403,7 @@ describe("interactionGapRule", () => {
     });
 
     it("should correctly calculate days_since_contact", async () => {
-      const twentyDaysAgo = new Date();
-      twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);
+      const twentyDaysAgo = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000);
 
       mockContext.schools = [
         {
@@ -517,10 +515,8 @@ describe("interactionGapRule", () => {
     });
 
     it("returns true if gap increased by 14+ days", async () => {
-      const dismissedDate = new Date();
-      dismissedDate.setDate(dismissedDate.getDate() - 21); // Dismissed 21 days ago
-      const thirtyfiveDaysAgo = new Date();
-      thirtyfiveDaysAgo.setDate(thirtyfiveDaysAgo.getDate() - 35); // Now 35 days gap
+      const dismissedDate = new Date(Date.now() - 21 * 24 * 60 * 60 * 1000); // Dismissed 21 days ago
+      const thirtyfiveDaysAgo = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000); // Now 35 days gap
 
       mockContext.schools = [
         {

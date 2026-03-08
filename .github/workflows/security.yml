@@ -142,11 +142,29 @@ jobs:
           head: ${{ github.event.pull_request.head.sha }}
           extra_args: --only-verified
 
-      - name: TruffleHog Secret Scan (full history)
-        if: github.event_name != 'pull_request' || steps.sha-check.outputs.has_diff == 'false'
+      - name: Skip scan (PR has no new commits)
+        if: github.event_name == 'pull_request' && steps.sha-check.outputs.has_diff == 'false'
+        run: echo "PR base and head are the same commit — nothing new to scan."
+
+      - name: Get scan base commit (scheduled/manual)
+        if: github.event_name != 'pull_request'
+        id: scan-base
+        run: |
+          # Scan commits from the last 7 days; fall back to first commit for new repos
+          LOOKBACK=$(git log --before="7 days ago" --format="%H" -1)
+          if [ -z "$LOOKBACK" ]; then
+            LOOKBACK=$(git rev-list --max-parents=0 HEAD)
+          fi
+          echo "sha=$LOOKBACK" >> $GITHUB_OUTPUT
+          echo "Scanning from $LOOKBACK to HEAD"
+
+      - name: TruffleHog Secret Scan (scheduled/manual)
+        if: github.event_name != 'pull_request'
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
+          base: ${{ steps.scan-base.outputs.sha }}
+          head: ${{ github.sha }}
           extra_args: --only-verified
 
   # Job 4: License compliance check
