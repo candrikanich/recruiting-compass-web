@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
@@ -13,29 +14,31 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "auth/change-password");
   try {
     const user = await requireAuth(event);
-    const body = await readBody(event);
+    const body = await readBody<{ currentPassword: string; newPassword: string }>(event);
 
     const parsed = changePasswordSchema.safeParse(body);
     if (!parsed.success) {
-      const firstError = parsed.error.issues?.[0]?.message ?? parsed.error.message ?? "Invalid request";
-      throw createError({
-        statusCode: 400,
-        statusMessage: firstError,
-      });
+      logger.warn("Validation failed for change-password", parsed.error.issues);
+      throw createError({ statusCode: 400, statusMessage: "Invalid request" });
     }
 
     const { currentPassword, newPassword } = parsed.data;
 
     if (!user.email) {
-      throw createError({ statusCode: 400, statusMessage: "User account has no email address" });
+      throw createError({ statusCode: 401, statusMessage: "User account has no email address" });
     }
 
-    const supabase = useSupabaseAdmin();
+    const anonClient = createClient(
+      process.env.NUXT_PUBLIC_SUPABASE_URL!,
+      process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { error: signInError } = await anonClient.auth.signInWithPassword({
       email: user.email,
       password: currentPassword,
     });
+
+    const supabase = useSupabaseAdmin();
 
     if (signInError) {
       throw createError({ statusCode: 401, statusMessage: "Current password is incorrect" });

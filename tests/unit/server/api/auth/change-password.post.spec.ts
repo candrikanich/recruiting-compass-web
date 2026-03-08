@@ -14,10 +14,17 @@ vi.mock("~/server/utils/auth", () => ({
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
     auth: {
-      signInWithPassword: vi.fn(async () => ({ error: mockState.signInError })),
       admin: {
         updateUserById: vi.fn(async () => ({ error: mockState.updateError })),
       },
+    },
+  })),
+}))
+
+vi.mock("@supabase/supabase-js", () => ({
+  createClient: vi.fn(() => ({
+    auth: {
+      signInWithPassword: vi.fn(async () => ({ error: mockState.signInError })),
     },
   })),
 }))
@@ -41,6 +48,7 @@ describe("POST /api/auth/change-password", () => {
   beforeEach(() => {
     mockState.signInError = null
     mockState.updateError = null
+    mockState.userEmail = "user@example.com"
   })
 
   function makeEvent(body: unknown) {
@@ -65,5 +73,21 @@ describe("POST /api/auth/change-password", () => {
     await expect(
       handler(makeEvent({ currentPassword: "OldPass1!", newPassword: "short" })),
     ).rejects.toMatchObject({ statusCode: 400 })
+  })
+
+  it("throws 500 when password update fails", async () => {
+    mockState.updateError = { message: "DB error" }
+
+    await expect(
+      handler(makeEvent({ currentPassword: "OldPass123!", newPassword: "NewPass456!" })),
+    ).rejects.toMatchObject({ statusCode: 500 })
+  })
+
+  it("throws 401 when user has no email", async () => {
+    mockState.userEmail = ""
+
+    await expect(
+      handler(makeEvent({ currentPassword: "OldPass123!", newPassword: "NewPass456!" })),
+    ).rejects.toMatchObject({ statusCode: 401 })
   })
 })
