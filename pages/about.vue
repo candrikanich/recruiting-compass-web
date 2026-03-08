@@ -115,6 +115,7 @@ async function submitFeedback() {
     submitted.value = true
     form.subject = ""
     form.message = ""
+    setTimeout(() => (submitted.value = false), 5000)
   } catch {
     errorMessage.value = "Something went wrong. Please try again or email us directly."
   } finally {
