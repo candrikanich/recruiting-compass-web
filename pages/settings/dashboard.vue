@@ -505,6 +505,7 @@ import Header from "~/components/Header.vue";
 const { isSaving, getDashboardLayout, setDashboardLayout } =
   usePreferenceManager();
 
+// @ts-ignore — page will be rewritten in Task 6 with DashboardLayout type
 const localLayout = ref<DashboardWidgetVisibility>(getDefaultDashboardLayout());
 
 const successMessage = ref<string | null>(null);

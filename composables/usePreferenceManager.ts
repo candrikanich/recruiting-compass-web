@@ -251,6 +251,7 @@ export function usePreferenceManager() {
    */
   const getDashboardLayout = (): DashboardWidgetVisibility => {
     const validated = validateDashboardLayout(dashboardPrefs.preferences.value);
+    // @ts-ignore — return type will be updated to DashboardLayout in Task 3
     return validated || getDefaultDashboardLayout();
   };
 
