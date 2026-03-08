@@ -277,13 +277,10 @@ export const useUserStore = defineStore("user", {
     },
 
     updateProfileFields(
-      fields: Partial<Pick<User, "full_name">> & {
-        phone?: string | null;
-        date_of_birth?: string | null;
-      },
+      fields: Partial<Pick<User, "full_name" | "phone" | "date_of_birth">>,
     ) {
       if (this.user) {
-        this.user = { ...this.user, ...fields } as User;
+        this.user = { ...this.user, ...fields };
       }
     },
   },
