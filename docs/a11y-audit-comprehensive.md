@@ -139,7 +139,7 @@ The Recruiting Compass demonstrates a **solid commitment to accessibility** with
   to="/search"
   aria-label="Search coaches and schools"
   title="Search"
-  class="p-2 text-slate-600 hover:text-slate-900 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+  class="p-2 text-slate-600 hover:text-slate-900 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-blue-500"
   data-testid="nav-search-button"
 >
   <MagnifyingGlassIcon class="w-5 h-5" aria-hidden="true" />
@@ -175,7 +175,7 @@ The Recruiting Compass demonstrates a **solid commitment to accessibility** with
   v-if="coach.email"
   @click="emit('email', coach)"
   :aria-label="`Send email to ${coach.email}`"
-  class="p-2 rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+  class="p-2 rounded-sm transition focus:outline-hidden focus:ring-2 focus:ring-blue-500"
 >
   Email
 </button>
@@ -257,7 +257,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 <NuxtLink
   :class="[
     'flex items-center gap-2 px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue-600', <!-- Add explicit focus ring with offset -->
+    'focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue-600', <!-- Add explicit focus ring with offset -->
     isActive(item.to)
       ? 'bg-brand-blue-100 text-brand-blue-700'
       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -265,7 +265,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 >
 ```
 
-**Best Practice:** Add `:focus-visible { outline: 3px solid; outline-offset: 2px; }` as a base utility in Tailwind or global styles. Minimum 3:1 contrast ratio required (WCAG 2.4.7 for visual focus indicator).
+**Best Practice:** Add `:focus-visible { outline-solid: 3px solid; outline-offset: 2px; }` as a base utility in Tailwind or global styles. Minimum 3:1 contrast ratio required (WCAG 2.4.7 for visual focus indicator).
 
 ---
 
@@ -472,7 +472,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 <template>
   <a
     :href="to"
-    class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-slate-900 focus:text-white focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
+    class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-slate-900 focus:text-white focus:rounded-lg focus:shadow-lg focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-white"
   >
     {{ text }}
   </a>

@@ -10,7 +10,7 @@
       v-for="stat in stats"
       :key="stat.label"
       :data-testid="stat.testId"
-      class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 hover:shadow-md transition"
+      class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 hover:shadow-md transition"
     >
       <div class="flex items-center gap-3">
         <div

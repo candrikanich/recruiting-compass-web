@@ -355,8 +355,8 @@ describe("SchoolForm", () => {
     });
   });
 
-  describe("field validation on blur", () => {
-    it("validates name field on blur", async () => {
+  describe("field validation on blur-sm", () => {
+    it("validates name field on blur-sm", async () => {
       const wrapper = mountForm({ useAutocomplete: false });
       await wrapper.find("#schoolname").setValue("Test");
       await wrapper.find("#schoolname").trigger("blur");
@@ -365,7 +365,7 @@ describe("SchoolForm", () => {
       expect(mockValidateField).toHaveBeenCalled();
     });
 
-    it("validates location field on blur", async () => {
+    it("validates location field on blur-sm", async () => {
       const wrapper = mountForm();
       await wrapper.find("#location").trigger("blur");
       await flushPromises();
@@ -373,7 +373,7 @@ describe("SchoolForm", () => {
       expect(mockValidateField).toHaveBeenCalled();
     });
 
-    it("validates website field on blur", async () => {
+    it("validates website field on blur-sm", async () => {
       const wrapper = mountForm();
       await wrapper.find("#schoolwebsite").trigger("blur");
       await flushPromises();

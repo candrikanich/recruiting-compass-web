@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-bold text-slate-900">
@@ -44,7 +44,7 @@
             v-if="coach.email"
             @click="handleEmail(coach)"
             :title="`Email ${coach.email}`"
-            class="p-2 rounded transition bg-blue-100 text-blue-700 hover:bg-blue-200"
+            class="p-2 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200"
           >
             ✉️
           </button>
@@ -54,7 +54,7 @@
             v-if="coach.phone"
             @click="handleText(coach)"
             :title="`Text ${coach.phone}`"
-            class="p-2 rounded transition bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+            class="p-2 rounded-sm transition bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
           >
             💬
           </button>
@@ -63,7 +63,7 @@
           <NuxtLink
             :to="`/coaches/${coach.id}`"
             title="View full profile"
-            class="p-2 rounded transition bg-blue-100 text-blue-700 hover:bg-blue-200"
+            class="p-2 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200"
           >
             👁️
           </NuxtLink>

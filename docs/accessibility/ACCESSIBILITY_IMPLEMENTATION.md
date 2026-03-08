@@ -161,13 +161,13 @@ npm run test:a11y:pa11y        # Run pa11y-ci tests
 ```html
 <!-- Added to all interactive elements -->
 <input
-  class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+  class="focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
 />
 <button
-  class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+  class="focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
 >
   <a
-    class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+    class="focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
   ></a>
 </button>
 ```

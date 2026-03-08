@@ -265,7 +265,7 @@ Find the "Positions" section (line 141-172) and replace it with:
 
 ```vue
 <!-- Primary Sport & Position -->
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+<div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
   <h2 class="text-lg font-semibold text-slate-900 mb-4">
     Athletic Profile
   </h2>
@@ -444,7 +444,7 @@ Expected: No errors
 
 ```bash
 git add pages/settings/player-details.vue
-git commit -m "feat: add auto-save to academic fields on blur"
+git commit -m "feat: add auto-save to academic fields on blur-sm"
 ```
 
 ---
@@ -746,7 +746,7 @@ test.describe("Player Details Auto-Save", () => {
     expect(gpaValue).toBeTruthy();
   });
 
-  test("should auto-save graduation year on blur", async ({ page }) => {
+  test("should auto-save graduation year on blur-sm", async ({ page }) => {
     const gradYearSelect = page.locator("select").first();
     const currentValue = await gradYearSelect.inputValue();
 

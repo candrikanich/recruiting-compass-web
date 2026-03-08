@@ -2,51 +2,25 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 
 const mockState = {
   invitation: null as Record<string, unknown> | null,
-  inviter: null as Record<string, unknown> | null,
-  userByEmail: null as Record<string, unknown> | null,
   familyUnit: null as Record<string, unknown> | null,
 };
-
-// Mock Supabase admin — chainable builder pattern
-function makeChain(resolveWith: () => Promise<{ data: unknown }>) {
-  const chain: Record<string, unknown> = {};
-  chain.select = () => chain;
-  chain.eq = () => chain;
-  chain.single = resolveWith;
-  chain.maybeSingle = resolveWith;
-  return chain;
-}
 
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
     from: (table: string) => ({
       select: (_cols: string) => ({
-        eq: (col: string, val: string) => {
-          // family_invitations lookup by token
+        eq: (_col: string, _val: string) => {
           if (table === "family_invitations") {
             return {
               single: () => Promise.resolve({ data: mockState.invitation }),
             };
           }
-          // family_units lookup by id
           if (table === "family_units") {
             return {
               single: () => Promise.resolve({ data: mockState.familyUnit }),
             };
           }
-          // users lookup — by id (inviter) or by email (existence check)
-          if (table === "users") {
-            if (col === "id") {
-              return {
-                single: () => Promise.resolve({ data: mockState.inviter }),
-              };
-            }
-            // email check
-            return {
-              maybeSingle: () => Promise.resolve({ data: mockState.userByEmail }),
-            };
-          }
-          return { single: () => Promise.resolve({ data: null }), maybeSingle: () => Promise.resolve({ data: null }) };
+          return { single: () => Promise.resolve({ data: null }) };
         },
       }),
     }),
@@ -75,28 +49,22 @@ describe("GET /api/family/invite/[token]", () => {
     vi.clearAllMocks();
     mockState.invitation = {
       id: "inv-1",
-      invited_email: "player@example.com",
       role: "player",
       status: "pending",
       expires_at: new Date(Date.now() + 86_400_000).toISOString(),
       family_unit_id: "fam-1",
-      invited_by: "user-1",
     };
     mockState.familyUnit = { family_name: "The Smiths", pending_player_details: null };
-    mockState.inviter = { full_name: "Jane Smith" };
-    mockState.userByEmail = null;
   });
 
-  it("returns emailExists false when email not in users table", async () => {
-    mockState.userByEmail = null;
+  it("returns invitationId, role, and familyName — no email or emailExists", async () => {
     const result = await handler(mockEvent);
-    expect(result.emailExists).toBe(false);
-  });
-
-  it("returns emailExists true when email found in users table", async () => {
-    mockState.userByEmail = { id: "u-existing" };
-    const result = await handler(mockEvent);
-    expect(result.emailExists).toBe(true);
+    expect(result.invitationId).toBe("inv-1");
+    expect(result.role).toBe("player");
+    expect(result.familyName).toBe("The Smiths");
+    expect(result).not.toHaveProperty("email");
+    expect(result).not.toHaveProperty("emailExists");
+    expect(result).not.toHaveProperty("inviterName");
   });
 
   it("returns prefill when role is player and pending_player_details has playerName", async () => {

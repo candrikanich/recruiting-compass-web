@@ -4,7 +4,19 @@ const mockState = {
   token: "valid-token" as string,
   invitation: null as Record<string, unknown> | null,
   updateError: null as object | null,
+  authUserId: "auth-user-id" as string | null,
 };
+
+vi.mock("~/server/utils/auth", () => ({
+  requireAuth: vi.fn(async () => {
+    if (!mockState.authUserId) {
+      const err = new Error("Unauthorized") as Error & { statusCode: number };
+      err.statusCode = 401;
+      throw err;
+    }
+    return { id: mockState.authUserId };
+  }),
+}));
 
 vi.mock("~/server/utils/logger", () => ({
   useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
@@ -54,11 +66,17 @@ describe("POST /api/family/invite/[token]/decline", () => {
     mockState.token = "valid-token";
     mockState.invitation = { id: "invite-abc", status: "pending", expires_at: futureDate };
     mockState.updateError = null;
+    mockState.authUserId = "auth-user-id";
   });
 
   it("declines a pending invitation", async () => {
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toMatchObject({ success: true });
+  });
+
+  it("returns 401 when unauthenticated", async () => {
+    mockState.authUserId = null;
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 401 });
   });
 
   it("returns 404 for unknown token", async () => {

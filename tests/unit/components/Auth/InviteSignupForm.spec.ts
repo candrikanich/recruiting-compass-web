@@ -27,12 +27,18 @@ const createWrapper = (props: Record<string, unknown> = {}) =>
   });
 
 describe("InviteSignupForm", () => {
-  it("renders a locked email field with the invited email", () => {
+  it("renders an editable email field with the initial email value", () => {
     const wrapper = createWrapper({ email: "test@example.com" });
     const emailInput = wrapper.find('[data-testid="invite-email"]');
     expect(emailInput.exists()).toBe(true);
-    expect(emailInput.attributes("disabled")).toBeDefined();
+    expect(emailInput.attributes("disabled")).toBeUndefined();
     expect((emailInput.element as HTMLInputElement).value).toBe("test@example.com");
+  });
+
+  it("emits update:email when the email input changes", async () => {
+    const wrapper = createWrapper({ email: "" });
+    await wrapper.find('[data-testid="invite-email"]').setValue("newuser@example.com");
+    expect(wrapper.emitted("update:email")).toEqual([["newuser@example.com"]]);
   });
 
   it("pre-fills firstName and lastName inputs from prefill prop", async () => {

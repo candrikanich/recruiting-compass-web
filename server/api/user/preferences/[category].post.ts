@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
 
   if (!ALLOWED_CATEGORIES.includes(category as (typeof ALLOWED_CATEGORIES)[number])) {
     throw createError({
-      statusCode: 400,
+      statusCode: 422,
       statusMessage: "Invalid category",
     });
   }
@@ -88,7 +88,7 @@ export default defineEventHandler(async (event) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const errors = (err as any).errors as Array<{ message: string }>;
       throw createError({
-        statusCode: 400,
+        statusCode: 422,
         statusMessage: "Invalid preference data: " + errors[0]?.message,
       });
     }

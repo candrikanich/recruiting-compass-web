@@ -44,25 +44,25 @@
 
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <p class="text-sm font-medium text-gray-600">Total Posts</p>
           <p class="text-3xl font-bold text-gray-900 mt-2">
             {{ allPosts.length }}
           </p>
         </div>
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <p class="text-sm font-medium text-gray-600">Twitter/X Posts</p>
           <p class="text-3xl font-bold text-blue-600 mt-2">
             {{ twitterCount }}
           </p>
         </div>
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <p class="text-sm font-medium text-gray-600">Instagram Posts</p>
           <p class="text-3xl font-bold text-pink-600 mt-2">
             {{ instagramCount }}
           </p>
         </div>
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <p class="text-sm font-medium text-gray-600">Flagged for Review</p>
           <p class="text-3xl font-bold text-amber-600 mt-2">
             {{ flaggedCount }}
@@ -71,7 +71,7 @@
       </div>
 
       <!-- Search & Filters -->
-      <div class="bg-white rounded-lg shadow p-6 mb-8">
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
         <!-- Search Bar -->
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-2"
@@ -173,7 +173,7 @@
       <!-- Empty State -->
       <div
         v-else-if="filteredPosts.length === 0"
-        class="bg-white rounded-lg shadow p-12 text-center"
+        class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <p class="text-gray-600 mb-2">No posts found</p>
         <p class="text-sm text-gray-500">

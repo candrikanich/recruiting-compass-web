@@ -75,6 +75,7 @@ export default defineEventHandler(async (event) => {
     (err: any) => logger.warn("Failed to log regeneration", err),
   );
 
+  logger.info("Family code regenerated", { familyId, userId: user.id });
   return {
     success: true,
     familyCode: newCode,

@@ -161,7 +161,7 @@ Practical testing guide covering:
 
 1. Add aria-labels to 5+ icon-only buttons
 2. Add `<label>` elements to 2 textareas
-3. Add focus:ring classes to links
+3. Add focus:ring-3 classes to links
 4. Add aria-busy and sr-only text to status dropdown
 
 **Files to modify:**

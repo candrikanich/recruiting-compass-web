@@ -10,11 +10,11 @@
       :aria-expanded="isOpen"
       aria-haspopup="menu"
       aria-controls="profile-dropdown-menu"
-      class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-all focus:outline-none focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
+      class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white shadow-xs hover:bg-slate-50 hover:border-slate-300 transition-all focus:outline-hidden focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
     >
       <!-- Avatar -->
       <div
-        class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center"
+        class="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-linear-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center"
       >
         <img
           v-if="profilePhotoUrl"
@@ -103,7 +103,7 @@
           <NuxtLink
             to="/settings"
             role="menuitem"
-            class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors focus:outline-none focus:bg-slate-50"
+            class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors focus:outline-hidden focus:bg-slate-50"
             @click="isOpen = false"
           >
             Settings
@@ -111,7 +111,7 @@
           <NuxtLink
             to="/help"
             role="menuitem"
-            class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors focus:outline-none focus:bg-slate-50"
+            class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors focus:outline-hidden focus:bg-slate-50"
             @click="isOpen = false"
           >
             Help Center
@@ -120,7 +120,7 @@
             v-if="isAdmin"
             to="/admin"
             role="menuitem"
-            class="block px-4 py-2 text-sm text-brand-blue-600 hover:bg-blue-50 transition-colors font-medium focus:outline-none focus:bg-blue-50"
+            class="block px-4 py-2 text-sm text-brand-blue-600 hover:bg-blue-50 transition-colors font-medium focus:outline-hidden focus:bg-blue-50"
             @click="isOpen = false"
           >
             Admin Dashboard
@@ -129,7 +129,7 @@
             data-testid="logout-button"
             role="menuitem"
             @click="handleLogout"
-            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors focus:outline-none focus:bg-red-50"
+            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors focus:outline-hidden focus:bg-red-50"
           >
             Logout
           </button>
@@ -138,18 +138,16 @@
     </Transition>
 
     <!-- Backdrop -->
-    <Teleport to="body">
-      <Transition
-        enter-active-class="transition ease-out duration-100"
-        enter-from-class="opacity-0"
-        enter-to-class="opacity-100"
-        leave-active-class="transition ease-in duration-75"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
-        <div v-if="isOpen" class="fixed inset-0 z-40" @click="isOpen = false" />
-      </Transition>
-    </Teleport>
+    <Transition
+      enter-active-class="transition ease-out duration-100"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition ease-in duration-75"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="isOpen" class="fixed inset-0 z-40" @click="isOpen = false" />
+    </Transition>
   </div>
 </template>
 

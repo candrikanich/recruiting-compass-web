@@ -11,7 +11,7 @@
 
 import { defineEventHandler, readBody, createError } from "h3";
 import { validateAdminToken } from "~/server/utils/adminToken";
-import { createLogger } from "~/server/utils/logger";
+import { useLogger } from "~/server/utils/logger";
 
 interface ValidateAdminTokenRequest {
   token: string;
@@ -22,10 +22,9 @@ interface ValidateAdminTokenResponse {
   message?: string;
 }
 
-const logger = createLogger("auth/validate-admin-token");
-
 export default defineEventHandler(
   async (event): Promise<ValidateAdminTokenResponse> => {
+    const logger = useLogger(event, "auth/validate-admin-token");
     try {
       const body = await readBody<ValidateAdminTokenRequest>(event);
       const { token } = body;

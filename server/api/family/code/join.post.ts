@@ -106,6 +106,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  logger.info("Joined family via code", { familyId: family.id, userId: user.id });
   // Return success immediately - other operations run in background
   const successResponse = {
     success: true,

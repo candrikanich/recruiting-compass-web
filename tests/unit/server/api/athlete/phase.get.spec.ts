@@ -8,6 +8,7 @@ vi.mock("~/server/utils/supabase", () => ({
 
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(),
+  getUserRole: vi.fn().mockResolvedValue("player"),
 }));
 
 function createMockSupabase(graduationYear: number | null) {

@@ -364,6 +364,8 @@ export const useCoaches = (): {
       }
 
       coaches.value = [...coaches.value, data as Coach];
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("coach_added");
       return data as Coach;
     } catch (err: unknown) {
       const message =

@@ -12,8 +12,8 @@ export const authFixture = {
    * Clear all auth state from browser
    */
   async clearAuthState(page: Page) {
-    // Navigate to a page first to establish context
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    // Navigate to login page to establish context (avoids Pinia errors on homepage)
+    await page.goto("/login", { waitUntil: "domcontentloaded" });
 
     await page.evaluate(() => {
       // Clear all storage

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12"
+    class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 px-4 py-12"
   >
     <div class="max-w-xl mx-auto">
       <!-- Step indicator -->

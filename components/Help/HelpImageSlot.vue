@@ -2,7 +2,7 @@
   <figure class="my-6">
     <div
       v-if="src"
-      class="overflow-hidden rounded-xl border border-gray-200 shadow-sm"
+      class="overflow-hidden rounded-xl border border-gray-200 shadow-xs"
     >
       <img
         :src="src"

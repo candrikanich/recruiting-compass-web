@@ -14,11 +14,7 @@ import { requireAuth } from "~/server/utils/auth";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 
 export default defineEventHandler(async (event) => {
-  // Debug endpoint — disabled in production unless explicitly enabled via env var
-  const debugEnabled =
-    process.env.NODE_ENV !== "production" ||
-    process.env.ENABLE_DEBUG_ENDPOINTS === "true";
-  if (!debugEnabled) {
+  if (process.env.NODE_ENV === "production") {
     throw createError({ statusCode: 404, statusMessage: "Not found" });
   }
 

@@ -399,7 +399,7 @@ describe("pages/reset-password.vue", () => {
       expect(submitButton.attributes("disabled")).toBeUndefined();
     });
 
-    it("validates password on blur", async () => {
+    it("validates password on blur-sm", async () => {
       const wrapper = mountPage();
       await nextTick();
 
@@ -410,7 +410,7 @@ describe("pages/reset-password.vue", () => {
       expect(mockValidateField).toHaveBeenCalled();
     });
 
-    it("validates confirm password on blur", async () => {
+    it("validates confirm password on blur-sm", async () => {
       const wrapper = mountPage();
       await nextTick();
 

@@ -15,7 +15,7 @@
           <input
             type="checkbox"
             v-model="showTrendLine"
-            class="w-4 h-4 rounded accent-blue-600"
+            class="w-4 h-4 rounded-sm accent-blue-600"
           />
           <span class="ml-2 text-sm font-medium text-slate-900"
             >Trend Line</span
@@ -25,7 +25,7 @@
           <input
             type="checkbox"
             v-model="showQuadrants"
-            class="w-4 h-4 rounded accent-blue-600"
+            class="w-4 h-4 rounded-sm accent-blue-600"
           />
           <span class="ml-2 text-sm font-medium text-slate-900">Quadrants</span>
         </label>

@@ -13,9 +13,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 const headerGradientClass = computed(() => {
   const gradients = {
-    blue: "bg-gradient-to-r from-blue-600 to-blue-700",
-    indigo: "bg-gradient-to-r from-indigo-600 to-indigo-700",
-    green: "bg-gradient-to-r from-green-600 to-green-700",
+    blue: "bg-linear-to-r from-blue-600 to-blue-700",
+    indigo: "bg-linear-to-r from-indigo-600 to-indigo-700",
+    green: "bg-linear-to-r from-green-600 to-green-700",
   };
   return gradients[props.headerColor];
 });

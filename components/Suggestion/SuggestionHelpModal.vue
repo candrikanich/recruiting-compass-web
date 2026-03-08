@@ -63,7 +63,7 @@
                 class="flex gap-3 text-slate-700"
               >
                 <span
-                  class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-sm font-semibold"
+                  class="shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-sm font-semibold"
                 >
                   {{ index + 1 }}
                 </span>

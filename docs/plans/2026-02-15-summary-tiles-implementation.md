@@ -127,7 +127,7 @@ npm test tests/components/shared/StatsTiles.test.ts
       v-for="(stat, index) in stats"
       :key="index"
       :data-testid="stat.testId"
-      class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition"
+      class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 hover:shadow-md transition"
     >
       <div class="flex items-center justify-between mb-3">
         <component

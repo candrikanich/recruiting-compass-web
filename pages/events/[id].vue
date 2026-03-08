@@ -27,7 +27,7 @@
       <!-- Event Not Found -->
       <div
         v-else-if="!event"
-        class="bg-white rounded-lg shadow p-12 text-center"
+        class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <p class="text-gray-600 mb-2">Event not found</p>
         <NuxtLink
@@ -41,7 +41,7 @@
       <!-- Event Detail -->
       <div v-else class="space-y-8">
         <!-- Event Header -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-start justify-between mb-4">
             <div>
               <div class="flex items-center gap-3 mb-2">
@@ -62,19 +62,19 @@
               <button
                 v-if="!event.attended"
                 @click="markAsAttended"
-                class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition text-sm font-semibold"
+                class="px-3 py-1 bg-green-100 text-green-700 rounded-sm hover:bg-green-200 transition text-sm font-semibold"
               >
                 ✓ Mark Attended
               </button>
               <button
                 @click="openEditForm"
-                class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm font-semibold"
+                class="px-3 py-1 bg-blue-100 text-blue-700 rounded-sm hover:bg-blue-200 transition text-sm font-semibold"
               >
                 Edit
               </button>
               <button
                 @click="deleteEvent"
-                class="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-sm font-semibold"
+                class="px-3 py-1 bg-red-100 text-red-700 rounded-sm hover:bg-red-200 transition text-sm font-semibold"
               >
                 Delete
               </button>
@@ -132,7 +132,7 @@
               <button
                 v-if="event.address || event.city"
                 @click="openDirections"
-                class="mt-2 px-3 py-1 bg-green-100 text-green-700 text-sm font-semibold rounded hover:bg-green-200 transition"
+                class="mt-2 px-3 py-1 bg-green-100 text-green-700 text-sm font-semibold rounded-sm hover:bg-green-200 transition"
               >
                 🗺️ Get Directions
               </button>
@@ -173,7 +173,7 @@
         <!-- Metrics Recorded at This Event -->
         <div
           v-if="eventMetrics.length > 0"
-          class="bg-white rounded-lg shadow p-6"
+          class="bg-white rounded-lg shadow-sm p-6"
         >
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-bold text-gray-900">
@@ -214,7 +214,7 @@
         </div>
 
         <!-- Coaches Present Section -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-2xl font-bold text-gray-900">Coaches Present</h2>
             <button
@@ -314,7 +314,7 @@
         </div>
 
         <!-- Log Performance Metric -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-bold text-gray-900">
               Log Performance Metric
@@ -401,7 +401,7 @@
                 <input
                   v-model="newMetric.verified"
                   type="checkbox"
-                  class="w-4 h-4 rounded"
+                  class="w-4 h-4 rounded-sm"
                 />
                 <label class="ml-2 text-sm text-gray-700"
                   >Verified by third party</label
@@ -647,7 +647,7 @@
                 </label>
                 <select
                   v-model="quickLogData.type"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="in_person_visit">In-Person Meeting</option>
                   <option value="phone_call">Phone Call</option>
@@ -663,7 +663,7 @@
                 </label>
                 <select
                   v-model="quickLogData.direction"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="inbound">Coach contacted us</option>
                   <option value="outbound">We contacted coach</option>
@@ -680,7 +680,7 @@
                   rows="3"
                   required
                   placeholder="Brief notes about the interaction..."
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 ></textarea>
               </div>
 
@@ -691,7 +691,7 @@
                 </label>
                 <select
                   v-model="quickLogData.sentiment"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="very_positive">Very Positive</option>
                   <option value="positive">Positive</option>
@@ -704,7 +704,7 @@
               <div class="flex gap-3 pt-2">
                 <button
                   type="submit"
-                  class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+                  class="flex-1 px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
                 >
                   Log Interaction
                 </button>

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
     <PageHeader
@@ -52,7 +52,7 @@
       <!-- Metric Charts -->
       <div
         v-if="metrics.length > 0"
-        class="bg-white rounded-lg shadow p-6 mb-8"
+        class="bg-white rounded-lg shadow-sm p-6 mb-8"
       >
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-bold text-gray-900">Performance Trends</h2>
@@ -65,7 +65,7 @@
               :key="type"
               @click="selectedMetricType = type"
               :class="[
-                'px-3 py-1 rounded text-sm font-semibold transition',
+                'px-3 py-1 rounded-sm text-sm font-semibold transition',
                 selectedMetricType === type
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
@@ -91,7 +91,7 @@
       <!-- Metric Trends -->
       <div
         v-if="metrics.length > 1"
-        class="bg-white rounded-lg shadow p-6 mb-8"
+        class="bg-white rounded-lg shadow-sm p-6 mb-8"
       >
         <h2 class="text-2xl font-bold text-gray-900 mb-6">Metric Trends</h2>
         <div v-if="metricTrends.length > 0" class="space-y-6">
@@ -106,7 +106,7 @@
               </h3>
               <span
                 :class="[
-                  'text-sm font-semibold px-2 py-1 rounded',
+                  'text-sm font-semibold px-2 py-1 rounded-sm',
                   trend.trend === 'improving'
                     ? 'bg-green-100 text-green-800'
                     : trend.trend === 'declining'
@@ -152,7 +152,7 @@
         <div
           v-for="(metric, key) in latestMetricsByType"
           :key="key"
-          class="bg-white rounded-lg shadow p-6"
+          class="bg-white rounded-lg shadow-sm p-6"
         >
           <p class="text-sm font-medium text-gray-600 mb-2">
             {{ getMetricLabel(key) }}
@@ -166,7 +166,7 @@
           </p>
           <div v-if="metric.verified" class="mt-2">
             <span
-              class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-green-100 text-green-800 rounded"
+              class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-green-100 text-green-800 rounded-sm"
             >
               <CheckIcon class="w-3 h-3" />
               <span>Verified</span>
@@ -183,7 +183,7 @@
       <!-- Empty State -->
       <div
         v-else-if="metrics.length === 0"
-        class="bg-white rounded-lg shadow p-12 text-center"
+        class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <p class="text-gray-600 mb-2">No metrics logged yet</p>
         <p class="text-sm text-gray-500">
@@ -199,7 +199,7 @@
         <div
           v-for="metric in sortedMetrics"
           :key="metric.id"
-          class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition"
+          class="bg-white rounded-lg shadow-sm p-6 hover:shadow-lg transition"
         >
           <div class="flex items-start justify-between mb-3">
             <div>
@@ -213,13 +213,13 @@
             <div class="flex gap-2">
               <button
                 @click="openEditForm(metric)"
-                class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm font-semibold"
+                class="px-3 py-1 bg-blue-100 text-blue-700 rounded-sm hover:bg-blue-200 transition text-sm font-semibold"
               >
                 Edit
               </button>
               <button
                 @click="deleteMetric(metric.id)"
-                class="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-sm font-semibold"
+                class="px-3 py-1 bg-red-100 text-red-700 rounded-sm hover:bg-red-200 transition text-sm font-semibold"
               >
                 Delete
               </button>
@@ -354,7 +354,7 @@
                 <input
                   v-model="editingMetric.verified"
                   type="checkbox"
-                  class="w-4 h-4 rounded"
+                  class="w-4 h-4 rounded-sm"
                 />
                 <label class="ml-2 text-sm text-gray-700"
                   >Verified by third party</label

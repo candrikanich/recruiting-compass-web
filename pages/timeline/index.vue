@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Header -->
 
@@ -10,7 +10,7 @@
         <!-- Current Phase Badge -->
         <div
           v-if="!phaseLoading"
-          class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm"
+          class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-xs"
         >
           <div class="text-sm text-slate-600 mb-1">Current Phase</div>
           <div class="text-lg font-bold text-slate-900">
@@ -21,7 +21,7 @@
         <!-- Status Indicator -->
         <div
           v-if="!statusLoading"
-          class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm"
+          class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-xs"
         >
           <div class="text-sm text-slate-600 mb-1">Status</div>
           <div class="flex items-center gap-2">

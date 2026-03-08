@@ -74,7 +74,7 @@ describe("GET /api/colleges/search", () => {
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 400 });
   });
 
-  it("returns 400 when q is shorter than 3 characters", async () => {
+  it("returns 422 when q is shorter than 3 characters", async () => {
     const { requireAuth } = await import("~/server/utils/auth");
     const h3 = await import("h3");
     vi.mocked(requireAuth).mockResolvedValue(undefined);
@@ -83,7 +83,7 @@ describe("GET /api/colleges/search", () => {
     const { default: handler } = await import(
       "~/server/api/colleges/search.get"
     );
-    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 400 });
+    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 422 });
   });
 
   it("returns College Scorecard results when query is valid", async () => {

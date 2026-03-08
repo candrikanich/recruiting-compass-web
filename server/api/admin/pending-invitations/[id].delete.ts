@@ -11,9 +11,7 @@
 import { defineEventHandler, createError, getRouterParam } from "h3";
 import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { createLogger } from "~/server/utils/logger";
-
-const logger = createLogger("admin/delete-invitation");
+import { useLogger } from "~/server/utils/logger";
 
 interface DeleteInvitationResponse {
   success: boolean;
@@ -21,6 +19,7 @@ interface DeleteInvitationResponse {
 
 export default defineEventHandler(
   async (event): Promise<DeleteInvitationResponse> => {
+    const logger = useLogger(event, "admin/delete-invitation");
     try {
       // Verify user is an authenticated admin (atomic check via requireAdmin)
       const user = await requireAdmin(event);

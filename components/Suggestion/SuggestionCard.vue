@@ -1,9 +1,9 @@
 <template>
-  <div class="bg-white border rounded-xl p-4 shadow-sm" :class="urgencyClasses">
+  <div class="bg-white border rounded-xl p-4 shadow-xs" :class="urgencyClasses">
     <div class="flex items-start gap-3">
       <!-- Urgency icon -->
       <div
-        class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+        class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
         :class="iconClasses"
       >
         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -23,7 +23,7 @@
           </p>
           <span
             v-if="suggestion.reappeared"
-            class="inline-flex px-2 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded whitespace-nowrap"
+            class="inline-flex px-2 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-sm whitespace-nowrap"
             title="This suggestion has returned because conditions have worsened"
           >
             Returned

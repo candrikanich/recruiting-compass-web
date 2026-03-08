@@ -26,15 +26,15 @@
 
     <!-- Skeleton -->
     <div v-else-if="variant === 'skeleton'" class="space-y-3 w-full max-w-md">
-      <div class="h-4 bg-slate-200 rounded animate-pulse" />
-      <div class="h-4 bg-slate-200 rounded animate-pulse" />
-      <div class="h-4 bg-slate-200 rounded w-2/3 animate-pulse" />
+      <div class="h-4 bg-slate-200 rounded-sm animate-pulse" />
+      <div class="h-4 bg-slate-200 rounded-sm animate-pulse" />
+      <div class="h-4 bg-slate-200 rounded-sm w-2/3 animate-pulse" />
     </div>
 
     <!-- Shimmer -->
     <div v-else-if="variant === 'shimmer'" class="w-full max-w-md">
       <div
-        class="h-20 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 rounded"
+        class="h-20 bg-linear-to-r from-slate-200 via-slate-100 to-slate-200 rounded-sm"
         style="background-size: 200% 100%; animation: shimmer 2s infinite"
       />
     </div>

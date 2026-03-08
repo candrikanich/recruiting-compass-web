@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border border-blue-200 shadow-sm p-6"
+    class="bg-linear-to-br from-blue-50 to-blue-100 rounded-2xl border border-blue-200 shadow-xs p-6"
   >
     <div
       data-testid="guidance-header"
@@ -45,7 +45,7 @@
       >
         <div class="flex items-start gap-3">
           <div
-            class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold mt-0.5 group-hover:bg-blue-600 transition"
+            class="shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold mt-0.5 group-hover:bg-blue-600 transition"
           >
             {{ index + 1 }}
           </div>
@@ -60,7 +60,7 @@
             </div>
           </div>
           <div
-            class="flex-shrink-0 text-slate-400 group-hover:text-blue-500 transition"
+            class="shrink-0 text-slate-400 group-hover:text-blue-500 transition"
           >
             →
           </div>

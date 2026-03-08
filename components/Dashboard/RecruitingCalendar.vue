@@ -1,12 +1,12 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center gap-3">
         <div
-          class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-md"
+          class="w-10 h-10 bg-linear-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-md"
         >
           <span class="text-lg">📆</span>
         </div>
@@ -18,7 +18,7 @@
     <!-- Current Period Highlight -->
     <div
       v-if="currentPeriod"
-      class="rounded-xl p-4 mb-6 bg-gradient-to-r from-blue-100 to-indigo-100 border border-blue-200"
+      class="rounded-xl p-4 mb-6 bg-linear-to-r from-blue-100 to-indigo-100 border border-blue-200"
     >
       <div class="flex items-center gap-3 mb-2">
         <div class="w-3 h-3 rounded-full animate-pulse bg-blue-500" />

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Global Navigation -->
 
@@ -27,8 +27,8 @@
           <SettingsCard
             to="/settings/player-details"
             icon="👤"
-            title="Player Details"
-            description="Graduation year, positions, stats, and athletic profile"
+            title="Athlete Profile"
+            description="Positions, stats, academics, and social handles for recruiting"
             :status="hasPlayerDetails ? 'complete' : 'incomplete'"
             variant="green"
           />
@@ -127,14 +127,32 @@
         <h2
           class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3"
         >
-          Account
+          Account &amp; Profile
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <SettingsCard
-            to="/settings/account"
-            icon="⚙️"
-            title="Account Settings"
-            description="Manage your account and request data deletion"
+            to="/settings/profile"
+            icon="👤"
+            title="My Profile"
+            description="Photo, name, email, password, and account settings"
+            variant="blue"
+          />
+        </div>
+      </div>
+
+      <!-- App Section -->
+      <div class="mb-8">
+        <h2
+          class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3"
+        >
+          App
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <SettingsCard
+            to="/about"
+            icon="💬"
+            title="About & Feedback"
+            description="Our mission, and a way to send us feedback or report issues"
             variant="gray"
           />
         </div>

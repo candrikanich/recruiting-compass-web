@@ -1,4 +1,7 @@
 import type { NotificationPriority } from "~/types/models";
+import { createLogger } from "~/server/utils/logger";
+
+const logger = createLogger("email");
 
 function escapeHtml(str: string): string {
   return str
@@ -45,7 +48,7 @@ export const sendNotificationEmail = async (
 
   // Check if Resend API key is available
   if (!process.env.RESEND_API_KEY) {
-    console.warn("RESEND_API_KEY not configured, email notifications disabled");
+    logger.warn("RESEND_API_KEY not configured, email notifications disabled");
     return { success: false, error: "Email service not configured" };
   }
 
@@ -100,14 +103,14 @@ export const sendNotificationEmail = async (
 
     if (!response.ok) {
       const error = await response.json();
-      console.error("Resend API error:", error);
+      logger.error("Resend API error:", error);
       return { success: false, error: error.message };
     }
 
     const data = await response.json();
     return { success: true, messageId: data.id };
   } catch (err) {
-    console.error("Failed to send email:", err);
+    logger.error("Failed to send email:", err);
     const errorMessage =
       err instanceof Error ? err.message : "Unknown error sending email";
     return { success: false, error: errorMessage };
@@ -119,7 +122,7 @@ export const sendEmail = async (options: SendEmailOptions) => {
 
   // Check if Resend API key is available
   if (!process.env.RESEND_API_KEY) {
-    console.warn("RESEND_API_KEY not configured, email notifications disabled");
+    logger.warn("RESEND_API_KEY not configured, email notifications disabled");
     return { success: false, error: "Email service not configured" };
   }
 
@@ -140,14 +143,14 @@ export const sendEmail = async (options: SendEmailOptions) => {
 
     if (!response.ok) {
       const error = await response.json();
-      console.error("Resend API error:", error);
+      logger.error("Resend API error:", error);
       return { success: false, error: error.message };
     }
 
     const data = await response.json();
     return { success: true, messageId: data.id };
   } catch (err) {
-    console.error("Failed to send email:", err);
+    logger.error("Failed to send email:", err);
     const errorMessage =
       err instanceof Error ? err.message : "Unknown error sending email";
     return { success: false, error: errorMessage };

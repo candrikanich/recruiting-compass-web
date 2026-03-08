@@ -1,6 +1,6 @@
 <template>
   <div
-    class="rounded-lg shadow p-6 hover:shadow-lg transition flex flex-col bg-white"
+    class="rounded-lg shadow-sm p-6 hover:shadow-lg transition flex flex-col bg-white"
   >
     <!-- Document Icon/Preview -->
     <div
@@ -55,14 +55,14 @@
           path: '/documents/view',
           query: { id: document.id },
         }"
-        class="flex-1 text-center px-3 py-2 text-sm font-semibold rounded transition bg-blue-100 text-blue-700 hover:bg-blue-200"
+        class="flex-1 text-center px-3 py-2 text-sm font-semibold rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200"
       >
         View Details →
       </NuxtLink>
       <button
         v-if="showActions"
         @click="handleDelete"
-        class="flex-1 px-3 py-2 text-sm font-semibold rounded transition bg-red-600 text-white hover:opacity-90"
+        class="flex-1 px-3 py-2 text-sm font-semibold rounded-sm transition bg-red-600 text-white hover:opacity-90"
       >
         Delete
       </button>

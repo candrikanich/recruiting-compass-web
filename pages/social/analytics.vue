@@ -10,7 +10,7 @@
       </div>
 
       <!-- Time Range Selector -->
-      <div class="bg-white rounded-lg shadow p-4 mb-8">
+      <div class="bg-white rounded-lg shadow-sm p-4 mb-8">
         <div class="flex gap-2">
           <button
             v-for="range in timeRanges"
@@ -36,14 +36,14 @@
       <template v-else>
         <!-- Summary Stats -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <p class="text-sm font-medium text-gray-600">Total Posts</p>
             <p class="text-3xl font-bold text-gray-900 mt-2">
               {{ totalPosts }}
             </p>
             <p class="text-xs text-gray-500 mt-1">in selected period</p>
           </div>
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <p class="text-sm font-medium text-gray-600">Recruiting Posts</p>
             <p class="text-3xl font-bold text-green-600 mt-2">
               {{ recruitingPosts }}
@@ -52,7 +52,7 @@
               {{ recruitingPercentage }}% of total
             </p>
           </div>
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <p class="text-sm font-medium text-gray-600">Positive Sentiment</p>
             <p class="text-3xl font-bold text-blue-600 mt-2">
               {{ positivePosts }}
@@ -61,7 +61,7 @@
               {{ positivePercentage }}% of analyzed
             </p>
           </div>
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <p class="text-sm font-medium text-gray-600">Active Schools</p>
             <p class="text-3xl font-bold text-purple-600 mt-2">
               {{ activeSchools }}
@@ -73,7 +73,7 @@
         <!-- Charts Row -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <!-- Sentiment Distribution -->
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">
               Sentiment Distribution
             </h3>
@@ -103,7 +103,7 @@
           </div>
 
           <!-- Platform Distribution -->
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">
               Platform Distribution
             </h3>
@@ -127,7 +127,7 @@
         </div>
 
         <!-- Activity by Day -->
-        <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">
             Activity by Day
           </h3>
@@ -145,7 +145,7 @@
                 }"
               />
               <div
-                class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none"
+                class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded-sm opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none"
               >
                 {{ day.label }}: {{ day.count }} posts
               </div>
@@ -160,7 +160,7 @@
         </div>
 
         <!-- Top Schools by Posts -->
-        <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">
             Most Active Schools
           </h3>
@@ -193,7 +193,7 @@
         </div>
 
         <!-- Recent Recruiting Posts -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-gray-900">
               Recent Recruiting Posts

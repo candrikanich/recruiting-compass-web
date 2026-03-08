@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <div class="flex items-center justify-between mb-6">
       <h3 class="text-lg font-bold text-slate-900">🗺️ School Locations</h3>

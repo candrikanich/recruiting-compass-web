@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   try {
     const { data: invitation } = await supabase
       .from("family_invitations")
-      .select("id, invited_email, role, status, expires_at, family_unit_id, invited_by")
+      .select("id, role, status, expires_at, family_unit_id")
       .eq("token", token)
       .single();
 
@@ -31,16 +31,11 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 410, statusMessage: "This invitation has expired" });
     }
 
-    // Fetch family unit (includes pending_player_details), inviter, and email existence in parallel
-    const [{ data: familyUnit }, { data: inviter }, { data: existingUser }] = await Promise.all([
-      supabase
-        .from("family_units")
-        .select("family_name, pending_player_details")
-        .eq("id", invitation.family_unit_id)
-        .single(),
-      supabase.from("users").select("full_name").eq("id", invitation.invited_by).single(),
-      supabase.from("users").select("id").eq("email", invitation.invited_email).maybeSingle(),
-    ]);
+    const { data: familyUnit } = await supabase
+      .from("family_units")
+      .select("family_name, pending_player_details")
+      .eq("id", invitation.family_unit_id)
+      .single();
 
     // Build prefill from parent-entered player details (only for player invitees)
     let prefill: { firstName: string; lastName: string; graduationYear?: number; sport?: string; position?: string } | undefined;
@@ -60,11 +55,8 @@ export default defineEventHandler(async (event) => {
     logger.info("Invitation token lookup", { invitationId: invitation.id });
     return {
       invitationId: invitation.id,
-      email: invitation.invited_email,
       role: invitation.role,
       familyName: familyUnit?.family_name ?? "My Family",
-      inviterName: inviter?.full_name ?? "A family member",
-      emailExists: !!existingUser,
       ...(prefill ? { prefill } : {}),
     };
   } catch (err) {

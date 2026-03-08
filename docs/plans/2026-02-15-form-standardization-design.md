@@ -79,7 +79,7 @@ Plus existing:
 
 ### Focus States
 
-- All interactive elements: `focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`
+- All interactive elements: `focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent`
 
 ---
 
@@ -283,7 +283,7 @@ components/
 
 ```vue
 <div class="max-w-2xl mx-auto px-4 py-8">
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <h1 class="text-2xl font-bold mb-6">Add New Event</h1>
     <EventForm
       :loading="loading"
@@ -297,7 +297,7 @@ components/
 **3. Inline Card**
 
 ```vue
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+<div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
   <h2 class="text-xl font-semibold mb-6">Add Event</h2>
   <EventForm
     :loading="loading"

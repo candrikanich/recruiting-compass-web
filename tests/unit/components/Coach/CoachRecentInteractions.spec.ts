@@ -442,7 +442,7 @@ describe("CoachRecentInteractions", () => {
       });
 
       const button = wrapper.find("button");
-      expect(button.classes()).toContain("focus:outline-none");
+      expect(button.classes()).toContain("focus:outline-hidden");
       expect(button.classes()).toContain("focus:ring-2");
     });
   });

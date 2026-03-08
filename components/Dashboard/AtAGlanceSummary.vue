@@ -1,13 +1,13 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <h2 class="text-xl font-bold mb-6 text-slate-900">👁️ At a Glance</h2>
 
     <!-- Summary Metrics Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <!-- Schools with Offers -->
-      <div class="rounded-lg p-4 bg-gradient-to-br from-emerald-50 to-white">
+      <div class="rounded-lg p-4 bg-linear-to-br from-emerald-50 to-white">
         <div class="flex items-start justify-between mb-2">
           <span class="text-2xl">🎯</span>
           <span class="text-xs font-bold text-emerald-700"
@@ -21,11 +21,11 @@
       </div>
 
       <!-- Coach Responsiveness -->
-      <div class="rounded-lg p-4 bg-gradient-to-br from-blue-50 to-white">
+      <div class="rounded-lg p-4 bg-linear-to-br from-blue-50 to-white">
         <div class="flex items-start justify-between mb-2">
           <span class="text-2xl">💬</span>
           <span
-            class="text-xs font-bold px-2 py-1 rounded"
+            class="text-xs font-bold px-2 py-1 rounded-sm"
             :class="[
               avgResponsiveness >= 75
                 ? 'bg-emerald-100 text-emerald-700'
@@ -46,7 +46,7 @@
       </div>
 
       <!-- Interactions This Month -->
-      <div class="rounded-lg p-4 bg-gradient-to-br from-purple-50 to-white">
+      <div class="rounded-lg p-4 bg-linear-to-br from-purple-50 to-white">
         <div class="flex items-start justify-between mb-2">
           <span class="text-2xl">📧</span>
           <span class="text-xs font-bold text-purple-700">{{
@@ -62,7 +62,7 @@
       </div>
 
       <!-- Days Until Graduation -->
-      <div class="rounded-lg p-4 bg-gradient-to-br from-orange-50 to-white">
+      <div class="rounded-lg p-4 bg-linear-to-br from-orange-50 to-white">
         <div class="flex items-start justify-between mb-2">
           <span class="text-2xl">🎓</span>
           <span class="text-xs font-bold text-orange-700"

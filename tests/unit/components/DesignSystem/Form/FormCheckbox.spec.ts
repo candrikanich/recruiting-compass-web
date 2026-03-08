@@ -83,7 +83,7 @@ describe('FormCheckbox', () => {
     expect(input.classes()).toContain('h-4')
     expect(input.classes()).toContain('border-2')
     expect(input.classes()).toContain('border-slate-300')
-    expect(input.classes()).toContain('rounded')
+    expect(input.classes()).toContain('rounded-sm')
     expect(input.classes()).toContain('text-blue-600')
   })
 

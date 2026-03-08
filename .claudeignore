@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Nuxt build output
+.nuxt/
+.output/
+dist/
+
+# Lock files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Generated files
+types/database.ts
+
+# Test output
+coverage/
+test-results/
+playwright-report/
+
+# Playwright screenshots
+.playwright-mcp/
+
+# Planning assets (images only)
+planning/**/*.png
+planning/**/*.jpg
+planning/**/*.jpeg
+
+# Misc
+.DS_Store
+*.log

@@ -1,13 +1,13 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
@@ -46,7 +46,7 @@
       <!-- Family Code Section for Students -->
       <section
         v-if="isPlayer && myFamilyCode"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
       >
         <FamilyCodeDisplay
           :family-code="myFamilyCode"
@@ -59,7 +59,7 @@
       <!-- Family Members Section for Students -->
       <section
         v-if="isPlayer && myFamilyCode && familyMembers.length > 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
       >
         <h2 class="text-xl font-bold text-gray-900 mb-4">
           Family Members
@@ -86,7 +86,7 @@
       <!-- Join Family Section for Parents -->
       <section
         v-if="isParent"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
       >
         <FamilyCodeInput
           :loading="familyCodeLoading"
@@ -97,7 +97,7 @@
       <!-- Joined Families for Parents -->
       <section
         v-if="isParent && parentFamilies.length > 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
       >
         <h2 class="text-xl font-bold text-gray-900 mb-4">
           My Families
@@ -121,7 +121,7 @@
                 </p>
               </div>
               <span
-                class="px-2 py-1 bg-green-200 text-green-800 rounded text-xs"
+                class="px-2 py-1 bg-green-200 text-green-800 rounded-sm text-xs"
               >
                 ✓ Joined
               </span>
@@ -132,7 +132,7 @@
 
       <!-- Invite a Family Member -->
       <section
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
         data-testid="invite-member-form"
       >
         <h2 class="text-xl font-bold text-slate-900 mb-4">
@@ -193,7 +193,7 @@
       <!-- Pending Invitations Section -->
       <section
         v-if="pendingInvitations.length > 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
       >
         <h2 class="text-xl font-bold text-slate-900 mb-4">
           Pending Invitations
@@ -215,7 +215,7 @@
       <!-- Empty state if nothing present -->
       <div
         v-if="isParent && parentFamilies.length === 0 && !familyCodeLoading"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <p class="text-gray-500 mb-2">No families joined yet</p>
         <p class="text-sm text-gray-400">
@@ -232,7 +232,7 @@ import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useFamilyInvitations } from "~/composables/useFamilyInvitations";
 import { useFamilyInvite } from "~/composables/useFamilyInvite";
-import { useToast } from "~/composables/useToast";
+import { useAppToast } from "~/composables/useAppToast";
 import { useUserStore } from "~/stores/user";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import FamilyCodeDisplay from "~/components/Family/FamilyCodeDisplay.vue";
@@ -263,7 +263,7 @@ definePageMeta({
 const userStore = useUserStore();
 const isPlayer = computed(() => userStore.user?.role === "player");
 const isParent = computed(() => userStore.user?.role === "parent");
-const { showToast } = useToast();
+const { showToast } = useAppToast();
 
 const {
   myFamilyCode,

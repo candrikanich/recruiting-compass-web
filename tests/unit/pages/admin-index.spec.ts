@@ -25,8 +25,8 @@ vi.mock("~/composables/useSupabase", () => ({
   })),
 }));
 
-vi.mock("~/composables/useToast", () => ({
-  useToast: vi.fn(() => ({ showToast: vi.fn() })),
+vi.mock("~/composables/useAppToast", () => ({
+  useAppToast: vi.fn(() => ({ showToast: vi.fn() })),
 }));
 
 const BulkDeleteConfirmModalStub = {

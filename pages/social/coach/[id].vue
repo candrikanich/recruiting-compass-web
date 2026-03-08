@@ -27,7 +27,7 @@
       <!-- Coach Not Found -->
       <div
         v-if="!loading && !coach"
-        class="bg-white rounded-lg shadow p-8 text-center"
+        class="bg-white rounded-lg shadow-sm p-8 text-center"
       >
         <p class="text-gray-600">Coach not found</p>
       </div>
@@ -35,7 +35,7 @@
       <!-- Coach Header & Content -->
       <div v-if="!loading && coach" class="space-y-6">
         <!-- Coach Header Card -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-start justify-between mb-4">
             <div>
               <h1 class="text-4xl font-bold text-gray-900">
@@ -98,25 +98,25 @@
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <p class="text-sm font-medium text-gray-600">Total Posts</p>
             <p class="text-3xl font-bold text-gray-900 mt-2">
               {{ coachPosts.length }}
             </p>
           </div>
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <p class="text-sm font-medium text-gray-600">Twitter/X Posts</p>
             <p class="text-3xl font-bold text-blue-600 mt-2">
               {{ coachTwitterCount }}
             </p>
           </div>
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <p class="text-sm font-medium text-gray-600">Instagram Posts</p>
             <p class="text-3xl font-bold text-pink-600 mt-2">
               {{ coachInstagramCount }}
             </p>
           </div>
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <p class="text-sm font-medium text-gray-600">Flagged for Review</p>
             <p class="text-3xl font-bold text-amber-600 mt-2">
               {{ coachFlaggedCount }}
@@ -127,7 +127,7 @@
         <!-- Posts List -->
         <div
           v-if="coachPosts.length === 0"
-          class="bg-white rounded-lg shadow p-12 text-center"
+          class="bg-white rounded-lg shadow-sm p-12 text-center"
         >
           <p class="text-gray-600 mb-2">No posts from this coach</p>
           <p class="text-sm text-gray-500">

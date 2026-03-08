@@ -13,7 +13,14 @@ const state = {
   insertError: null as object | null,
   // For token lookup
   invitation: null as Record<string, unknown> | null,
+  // Overridable request body
+  requestBody: { email: "invited@example.com", role: "parent" } as Record<string, unknown>,
 };
+
+vi.mock("~/server/utils/rateLimit", () => ({
+  rateLimitByUser: vi.fn(async () => ({ success: true, limit: 10, remaining: 9, reset: Date.now() + 3_600_000 })),
+  throwIfRateLimited: vi.fn(),
+}));
 
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(async () => ({ id: state.userId, email: state.userEmail })),
@@ -115,7 +122,7 @@ vi.mock("h3", async (importOriginal) => {
   return {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
-    readBody: vi.fn(async () => ({ email: "invited@example.com", role: "parent" })),
+    readBody: vi.fn(async () => state.requestBody),
     getRouterParam: vi.fn((_, key: string) => (key === "token" ? "test-token" : "invite-abc")),
     createError: (config: { statusCode: number; statusMessage?: string; message?: string }) => {
       const err = new Error(config.statusMessage ?? config.message) as Error & { statusCode: number };
@@ -134,6 +141,7 @@ describe("POST /api/family/invite", () => {
     state.existingMember = null;
     state.insertedInvitation = { id: "invite-abc" };
     state.insertError = null;
+    state.requestBody = { email: "invited@example.com", role: "parent" };
   });
 
   it("creates an invitation and returns token", async () => {
@@ -158,6 +166,18 @@ describe("POST /api/family/invite", () => {
       "This person is already a member of your family",
     );
   });
+
+  it("returns 400 for an invalid email address", async () => {
+    state.requestBody = { email: "not-an-email", role: "parent" };
+    const { default: handler } = await import("~/server/api/family/invite.post");
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("returns 400 for an invalid role", async () => {
+    state.requestBody = { email: "invited@example.com", role: "coach" };
+    const { default: handler } = await import("~/server/api/family/invite.post");
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 400 });
+  });
 });
 
 // ─── GET /api/family/invite/[token] ──────────────────────────────────────────
@@ -177,10 +197,13 @@ describe("GET /api/family/invite/[token]", () => {
     };
   });
 
-  it("returns family info for valid pending token", async () => {
+  it("returns family info for valid pending token without PII", async () => {
     const { default: handler } = await import("~/server/api/family/invite/[token].get");
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result).toMatchObject({ role: "parent", email: "invited@example.com" });
+    expect(result).toMatchObject({ invitationId: "invite-abc", role: "parent" });
+    expect(result).not.toHaveProperty("email");
+    expect(result).not.toHaveProperty("emailExists");
+    expect(result).not.toHaveProperty("inviterName");
   });
 
   it("returns 404 for unknown token", async () => {

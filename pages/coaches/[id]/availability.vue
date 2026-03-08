@@ -34,21 +34,21 @@
       <div v-if="!loading" class="space-y-8">
         <!-- Quick Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <p class="text-gray-600 text-sm mb-2">Availability Status</p>
             <p class="text-2xl font-bold text-gray-900">
               {{ availabilitySummary }}
             </p>
           </div>
 
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <p class="text-gray-600 text-sm mb-2">Timezone</p>
             <p class="text-2xl font-bold text-gray-900">
               {{ availability?.timezone }}
             </p>
           </div>
 
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow-sm p-6">
             <p class="text-gray-600 text-sm mb-2">Next Available</p>
             <p class="text-2xl font-bold text-gray-900">
               {{ nextAvailableText }}
@@ -57,7 +57,7 @@
         </div>
 
         <!-- Weekly Schedule -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-bold text-gray-900">Weekly Schedule</h2>
             <button
@@ -84,7 +84,7 @@
                 class="text-center flex-1"
               >
                 <span
-                  class="inline-block px-3 py-1 rounded text-sm font-medium bg-green-100 text-green-800"
+                  class="inline-block px-3 py-1 rounded-sm text-sm font-medium bg-green-100 text-green-800"
                 >
                   {{ getDayAvailability(day)?.start_time }} -
                   {{ getDayAvailability(day)?.end_time }}
@@ -93,7 +93,7 @@
 
               <div v-else class="text-center flex-1">
                 <span
-                  class="inline-block px-3 py-1 rounded text-sm font-medium bg-gray-200 text-gray-600"
+                  class="inline-block px-3 py-1 rounded-sm text-sm font-medium bg-gray-200 text-gray-600"
                 >
                   Not Available
                 </span>
@@ -117,7 +117,7 @@
                     type="checkbox"
                     :checked="getDayAvailability(day)?.available"
                     @change="toggleDayEdit(day)"
-                    class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+                    class="w-4 h-4 rounded-sm border-gray-300 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
                   />
                   <span class="font-semibold text-gray-900 capitalize">
                     {{ day }}
@@ -143,7 +143,7 @@
                     :value="getDayAvailability(day)?.start_time"
                     @input="updateDayTime(day, 'start_time', $event)"
                     required
-                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
+                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
                   />
                 </div>
 
@@ -161,7 +161,7 @@
                     :value="getDayAvailability(day)?.end_time"
                     @input="updateDayTime(day, 'end_time', $event)"
                     required
-                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
+                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
                   />
                 </div>
               </div>
@@ -178,7 +178,7 @@
         </div>
 
         <!-- Blackout Dates -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-bold text-gray-900">Blackout Dates</h2>
             <button
@@ -206,7 +206,7 @@
                   id="blackout-date"
                   v-model="newBlackoutDate"
                   type="date"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -222,7 +222,7 @@
                   v-model="blackoutReason"
                   type="text"
                   placeholder="e.g., Away, Vacation"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -270,7 +270,7 @@
         </div>
 
         <!-- Mini Calendar Preview -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <h2 class="text-2xl font-bold text-gray-900 mb-6">Next 30 Days</h2>
 
           <div class="grid grid-cols-7 gap-2">
@@ -318,21 +318,21 @@
           <div class="mt-6 flex items-center gap-6">
             <div class="flex items-center gap-2">
               <div
-                class="w-4 h-4 rounded bg-green-100 border border-green-300"
+                class="w-4 h-4 rounded-sm bg-green-100 border border-green-300"
               ></div>
               <p class="text-sm text-gray-600">Available</p>
             </div>
 
             <div class="flex items-center gap-2">
               <div
-                class="w-4 h-4 rounded bg-gray-100 border border-gray-300"
+                class="w-4 h-4 rounded-sm bg-gray-100 border border-gray-300"
               ></div>
               <p class="text-sm text-gray-600">Not Available</p>
             </div>
 
             <div class="flex items-center gap-2">
               <div
-                class="w-4 h-4 rounded bg-red-100 border border-red-300"
+                class="w-4 h-4 rounded-sm bg-red-100 border border-red-300"
               ></div>
               <p class="text-sm text-gray-600">Blackout Date</p>
             </div>

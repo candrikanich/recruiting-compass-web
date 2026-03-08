@@ -14,6 +14,8 @@
     <!-- Fallback icon when no favicon available -->
     <div
       v-else
+      role="img"
+      :aria-label="`${school.name} logo`"
       class="logo-fallback"
       :style="{
         fontSize: fallbackFontSize,

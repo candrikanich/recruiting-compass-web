@@ -56,6 +56,7 @@ export default defineEventHandler(async (event) => {
       description: "Dismissed suggestion",
     });
 
+    logger.info("Suggestion dismissed", { suggestionId, userId: user.id });
     return { success: true };
   } catch (error: unknown) {
     if (error instanceof Error && "statusCode" in error) throw error;

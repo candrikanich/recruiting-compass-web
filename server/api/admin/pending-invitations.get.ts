@@ -8,9 +8,7 @@
 import { defineEventHandler, createError } from "h3";
 import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { createLogger } from "~/server/utils/logger";
-
-const logger = createLogger("admin/pending-invitations");
+import { useLogger } from "~/server/utils/logger";
 
 export interface PendingInvitation {
   id: string;
@@ -27,6 +25,7 @@ export interface PendingInvitationsResponse {
 
 export default defineEventHandler(
   async (event): Promise<PendingInvitationsResponse> => {
+    const logger = useLogger(event, "admin/pending-invitations");
     try {
       await requireAdmin(event);
       const supabaseAdmin = useSupabaseAdmin();

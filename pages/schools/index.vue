@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Athlete Selector (for parents) -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4" v-if="isParent">
@@ -28,7 +28,7 @@
         </button>
         <NuxtLink
           to="/schools/new"
-          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
         >
           <PlusIcon class="w-4 h-4" />
           Add School
@@ -95,7 +95,7 @@
         class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6"
       >
         <div class="flex items-start gap-3">
-          <div class="flex-shrink-0 mt-0.5">
+          <div class="shrink-0 mt-0.5">
             <svg
               class="h-5 w-5 text-amber-600"
               fill="currentColor"
@@ -123,7 +123,7 @@
       <!-- Empty State -->
       <div
         v-if="!loading && filteredSchools.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <MagnifyingGlassIcon class="w-16 h-16 text-slate-300 mx-auto mb-4" />
         <h3 class="text-lg font-semibold text-slate-900 mb-2">
@@ -135,14 +135,14 @@
         <button
           v-if="hasActiveFilters"
           @click="clearFilters"
-          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
         >
           Clear Filters
         </button>
         <NuxtLink
           v-else
           to="/schools/new"
-          class="inline-block px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+          class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
         >
           Add Your First School
         </NuxtLink>

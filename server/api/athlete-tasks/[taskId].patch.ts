@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
     ];
     if (!validStatuses.includes(body.status)) {
       throw createError({
-        statusCode: 400,
+        statusCode: 422,
         statusMessage: "Invalid status value",
       });
     }
@@ -112,7 +112,7 @@ export default defineEventHandler(async (event) => {
         // If any prerequisites incomplete, reject
         if (incompletePrerequisites.length > 0) {
           throw createError({
-            statusCode: 400,
+            statusCode: 422,
             statusMessage: `Cannot complete task. Please complete these prerequisites first: ${incompletePrerequisites.join(", ")}`,
           });
         }

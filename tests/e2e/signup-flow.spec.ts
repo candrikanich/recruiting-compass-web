@@ -139,7 +139,7 @@ test.describe("Signup Page - Full Flow E2E Tests", () => {
   });
 
   test.describe("Form Validation", () => {
-    test("validates email format on blur", async ({ page }) => {
+    test("validates email format on blur-sm", async ({ page }) => {
       await page.click('[data-testid="user-type-player"]');
 
       const emailInput = page.locator("#email");

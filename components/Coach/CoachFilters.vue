@@ -22,7 +22,7 @@
           "
           aria-describedby="coaches-search-hint"
           placeholder="Name, email, phone..."
-          class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
       <p id="coaches-search-hint" class="mt-1 text-xs text-slate-500">
@@ -42,7 +42,7 @@
             ($event.target as HTMLSelectElement).value || null,
           )
         "
-        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="">-- All --</option>
         <option value="head">Head Coach</option>
@@ -64,7 +64,7 @@
             ($event.target as HTMLSelectElement).value || null,
           )
         "
-        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="">-- All --</option>
         <option value="7">Last 7 days</option>
@@ -88,7 +88,7 @@
             ($event.target as HTMLSelectElement).value || null,
           )
         "
-        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="">-- All --</option>
         <option value="high">High (75%+)</option>
@@ -107,7 +107,7 @@
         @change="
           emit('update:sort', ($event.target as HTMLSelectElement).value)
         "
-        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="name">Last Name (A-Z)</option>
         <option value="school">School (A-Z)</option>

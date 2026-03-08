@@ -20,7 +20,7 @@ vi.mock("~/server/utils/supabase", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  createLogger: () => ({
+  useLogger: () => ({
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),

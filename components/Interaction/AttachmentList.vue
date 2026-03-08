@@ -39,7 +39,7 @@ const getFileTypeLabel = (url: string): string => {
 
 <template>
   <section aria-labelledby="attachments-heading">
-    <div class="bg-white rounded-lg shadow p-6">
+    <div class="bg-white rounded-lg shadow-sm p-6">
       <h2 id="attachments-heading" class="text-xl font-bold mb-4">
         Attachments ({{ attachments.length }})
       </h2>
@@ -51,7 +51,7 @@ const getFileTypeLabel = (url: string): string => {
           target="_blank"
           rel="noopener noreferrer"
           :aria-label="`Download ${extractFilename(url)} (${getFileTypeLabel(url)}). Opens in new window`"
-          class="p-4 border rounded-lg hover:bg-gray-50 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="p-4 border rounded-lg hover:bg-gray-50 transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <div class="flex items-start gap-2">
             <span aria-hidden="true" class="text-lg">📎</span>
@@ -65,7 +65,7 @@ const getFileTypeLabel = (url: string): string => {
             </div>
             <svg
               aria-hidden="true"
-              class="w-4 h-4 text-gray-400 flex-shrink-0"
+              class="w-4 h-4 text-gray-400 shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

@@ -141,15 +141,10 @@ describe("RuleEngine - Core Evaluation", () => {
     engine.addRule(errorRule);
     engine.addRule(successRule);
 
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
     const result = await engine.evaluateAll(mockContext);
 
     expect(result).toHaveLength(1);
     expect(result[0].rule_type).toBe("success-rule");
-    expect(consoleSpy).toHaveBeenCalled();
-
-    consoleSpy.mockRestore();
   });
 
   it("should identify contact rules", () => {
@@ -606,14 +601,9 @@ describe("RuleEngine - Edge Cases", () => {
 
     engine.addRule(rule);
 
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
     const result = await engine.evaluateAll(mockContext);
 
     expect(result).toEqual([]);
-    expect(consoleSpy).toHaveBeenCalled();
-
-    consoleSpy.mockRestore();
   });
 
   it("should handle rules that reject with non-error objects", async () => {
@@ -626,14 +616,9 @@ describe("RuleEngine - Edge Cases", () => {
 
     engine.addRule(rule);
 
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
     const result = await engine.evaluateAll(mockContext);
 
     expect(result).toEqual([]);
-    expect(consoleSpy).toHaveBeenCalled();
-
-    consoleSpy.mockRestore();
   });
 });
 

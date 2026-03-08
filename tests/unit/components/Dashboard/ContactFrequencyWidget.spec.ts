@@ -17,11 +17,8 @@ const createMockInteraction = (
   ...overrides,
 });
 
-const daysAgo = (days: number): Date => {
-  const date = new Date();
-  date.setDate(date.getDate() - days);
-  return date;
-};
+const daysAgo = (days: number): Date =>
+  new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
 const hoursAgo = (hours: number): Date => {
   const date = new Date();

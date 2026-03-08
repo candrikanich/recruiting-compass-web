@@ -6,7 +6,7 @@
         <span class="text-sm font-medium text-slate-700">Viewing:</span>
         <select
           v-model="selectedId"
-          class="px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
+          class="px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
           @change="handleSwitch"
         >
           <option

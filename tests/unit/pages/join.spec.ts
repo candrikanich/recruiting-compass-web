@@ -44,10 +44,10 @@ global.useCsrf = vi.fn(() => ({ post: mockCsrfPost }));
 global.useAuthFetch = vi.fn(() => ({ $fetchAuth: mockFetch }));
 
 const mockShowToast = vi.fn();
-vi.mock("~/composables/useToast", () => ({
-  useToast: vi.fn(() => ({ showToast: mockShowToast })),
+vi.mock("~/composables/useAppToast", () => ({
+  useAppToast: vi.fn(() => ({ showToast: mockShowToast })),
 }));
-global.useToast = vi.fn(() => ({ showToast: mockShowToast }));
+global.useAppToast = vi.fn(() => ({ showToast: mockShowToast }));
 
 const createWrapper = () =>
   mount(JoinPage, {
@@ -65,12 +65,18 @@ const createWrapper = () =>
         },
         AuthInviteSignupForm: {
           template: '<form data-testid="invite-signup-form" @submit.prevent="$emit(\'submit\')"><slot /></form>',
-          props: ["email", "firstName", "lastName", "dateOfBirth", "password", "confirmPassword", "agreeToTerms", "loading", "prefill"],
-          emits: ["update:firstName", "update:lastName", "update:dateOfBirth", "update:password", "update:confirmPassword", "update:agreeToTerms", "submit"],
+          props: ["email", "firstName", "lastName", "dateOfBirth", "password", "confirmPassword", "agreeToTerms", "loading", "prefill", "role"],
+          emits: ["update:email", "update:firstName", "update:lastName", "update:dateOfBirth", "update:password", "update:confirmPassword", "update:agreeToTerms", "submit"],
         },
       },
     },
   });
+
+const validInviteResponse = {
+  invitationId: "inv-123",
+  role: "player",
+  familyName: "The Smiths",
+};
 
 describe("/join page", () => {
   beforeEach(() => {
@@ -93,21 +99,19 @@ describe("/join page", () => {
 
   describe("valid invite", () => {
     beforeEach(() => {
-      mockFetch.mockResolvedValue({
-        invitationId: "inv-123",
-        email: "player@example.com",
-        role: "player",
-        familyName: "The Smiths",
-        inviterName: "Jane Smith",
-        emailExists: true,
-      });
+      mockFetch.mockResolvedValue(validInviteResponse);
     });
 
-    it("shows family and inviter info for valid token", async () => {
+    it("shows family name for valid token", async () => {
       const wrapper = createWrapper();
       await flushPromises();
       expect(wrapper.text()).toContain("The Smiths");
-      expect(wrapper.text()).toContain("Jane Smith");
+    });
+
+    it("shows hardcoded 'A family member' invite copy", async () => {
+      const wrapper = createWrapper();
+      await flushPromises();
+      expect(wrapper.text()).toContain("A family member");
     });
 
     it("shows login form when user is not authenticated", async () => {
@@ -115,6 +119,12 @@ describe("/join page", () => {
       await flushPromises();
       expect(wrapper.find('[data-testid="email-input"]').exists()).toBe(true);
       expect(wrapper.find('[data-testid="password-input"]').exists()).toBe(true);
+    });
+
+    it("shows signup form when user is not authenticated", async () => {
+      const wrapper = createWrapper();
+      await flushPromises();
+      expect(wrapper.find('[data-testid="invite-signup-form"]').exists()).toBe(true);
     });
 
     it("shows connect button when user is authenticated", async () => {
@@ -126,27 +136,11 @@ describe("/join page", () => {
       expect(wrapper.find('[data-testid="email-input"]').exists()).toBe(false);
     });
 
-    it("shows email mismatch warning when authenticated user email differs", async () => {
-      mockUserStore.isAuthenticated = true;
-      mockUserStore.user.value = { id: "u-1", email: "other@example.com" };
-      const wrapper = createWrapper();
-      await flushPromises();
-      expect(wrapper.text()).toContain("player@example.com");
-    });
-
     it("calls accept endpoint and navigates to dashboard when authenticated user connects", async () => {
       mockUserStore.isAuthenticated = true;
       mockUserStore.user.value = { id: "u-1", email: "player@example.com" };
-      // First call: GET invite, second: POST accept
       mockFetch
-        .mockResolvedValueOnce({
-          invitationId: "inv-123",
-          email: "player@example.com",
-          role: "player",
-          familyName: "The Smiths",
-          inviterName: "Jane Smith",
-          emailExists: true,
-        })
+        .mockResolvedValueOnce(validInviteResponse)
         .mockResolvedValueOnce({ success: true, familyUnitId: "family-1" });
 
       const wrapper = createWrapper();
@@ -163,14 +157,7 @@ describe("/join page", () => {
 
     it("logs in then accepts when unauthenticated user submits login form", async () => {
       mockFetch
-        .mockResolvedValueOnce({
-          invitationId: "inv-123",
-          email: "player@example.com",
-          role: "player",
-          familyName: "The Smiths",
-          inviterName: "Jane Smith",
-          emailExists: true,
-        })
+        .mockResolvedValueOnce(validInviteResponse)
         .mockResolvedValueOnce({ success: true, familyUnitId: "family-1" });
 
       const wrapper = createWrapper();
@@ -211,14 +198,7 @@ describe("/join page", () => {
 
   describe("decline flow", () => {
     beforeEach(() => {
-      mockFetch.mockResolvedValue({
-        invitationId: "inv-123",
-        email: "player@example.com",
-        role: "player",
-        familyName: "The Smiths",
-        inviterName: "Jane Smith",
-        emailExists: true,
-      });
+      mockFetch.mockResolvedValue(validInviteResponse);
     });
 
     it("shows decline button when invite is valid", async () => {
@@ -247,14 +227,7 @@ describe("/join page", () => {
   describe("Connection toast", () => {
     it("shows connected toast when existing user accepts invite", async () => {
       mockFetch
-        .mockResolvedValueOnce({
-          invitationId: "inv-1",
-          email: "parent@example.com",
-          role: "parent",
-          familyName: "Smith",
-          inviterName: "Player",
-          emailExists: true,
-        })
+        .mockResolvedValueOnce({ invitationId: "inv-1", role: "parent", familyName: "Smith" })
         .mockResolvedValueOnce({ success: true }); // accept
 
       mockUserStore.isAuthenticated = true;
@@ -271,14 +244,7 @@ describe("/join page", () => {
 
     it("shows connected toast when new user signs up and accepts invite", async () => {
       mockFetch
-        .mockResolvedValueOnce({
-          invitationId: "inv-1",
-          email: "newparent@example.com",
-          role: "parent",
-          familyName: "Jones",
-          inviterName: "Player",
-          emailExists: false,
-        })
+        .mockResolvedValueOnce({ invitationId: "inv-1", role: "parent", familyName: "Jones" })
         .mockResolvedValueOnce({ success: true }); // accept
 
       mockSignup.mockResolvedValueOnce({ data: { user: { id: "u2" } } });
@@ -295,47 +261,10 @@ describe("/join page", () => {
     });
   });
 
-  describe("email routing (unauthenticated)", () => {
-    it("shows login form when emailExists is true", async () => {
-      mockFetch.mockResolvedValue({
-        invitationId: "inv-123",
-        email: "player@example.com",
-        role: "player",
-        familyName: "The Smiths",
-        inviterName: "Jane Smith",
-        emailExists: true,
-      });
-      const wrapper = createWrapper();
-      await flushPromises();
-      expect(wrapper.find('[data-testid="email-input"]').exists()).toBe(true);
-      expect(wrapper.find('[data-testid="invite-signup-form"]').exists()).toBe(false);
-    });
-
-    it("shows signup form when emailExists is false", async () => {
-      mockFetch.mockResolvedValue({
-        invitationId: "inv-123",
-        email: "player@example.com",
-        role: "player",
-        familyName: "The Smiths",
-        inviterName: "Jane Smith",
-        emailExists: false,
-      });
-      const wrapper = createWrapper();
-      await flushPromises();
-      expect(wrapper.find('[data-testid="invite-signup-form"]').exists()).toBe(true);
-      expect(wrapper.find('[data-testid="email-input"]').exists()).toBe(false);
-    });
-
+  describe("signup flow (unauthenticated)", () => {
     it("calls signup then accept then navigates to player onboarding on signup submit", async () => {
       mockFetch
-        .mockResolvedValueOnce({
-          invitationId: "inv-123",
-          email: "player@example.com",
-          role: "player",
-          familyName: "The Smiths",
-          inviterName: "Jane Smith",
-          emailExists: false,
-        })
+        .mockResolvedValueOnce({ invitationId: "inv-123", role: "player", familyName: "The Smiths" })
         .mockResolvedValueOnce({ success: true, familyUnitId: "fam-1" });
 
       const wrapper = createWrapper();
@@ -356,11 +285,8 @@ describe("/join page", () => {
       mockFetch
         .mockResolvedValueOnce({
           invitationId: "inv-123",
-          email: "player@example.com",
           role: "player",
           familyName: "The Smiths",
-          inviterName: "Jane Smith",
-          emailExists: false,
           prefill: { firstName: "Owen", lastName: "Smith", graduationYear: 2027, sport: "Soccer", position: "Midfielder" },
         })
         .mockResolvedValueOnce({ success: true, familyUnitId: "fam-1" });
@@ -376,16 +302,9 @@ describe("/join page", () => {
       });
     });
 
-    it("navigates to parent onboarding when role is parent on signup submit", async () => {
+    it("navigates to dashboard when role is parent on signup submit", async () => {
       mockFetch
-        .mockResolvedValueOnce({
-          invitationId: "inv-123",
-          email: "parent@example.com",
-          role: "parent",
-          familyName: "The Smiths",
-          inviterName: "Alex Smith",
-          emailExists: false,
-        })
+        .mockResolvedValueOnce({ invitationId: "inv-123", role: "parent", familyName: "The Smiths" })
         .mockResolvedValueOnce({ success: true });
 
       const wrapper = createWrapper();

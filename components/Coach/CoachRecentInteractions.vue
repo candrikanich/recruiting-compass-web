@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <h3
       id="recent-interactions-heading"
       class="text-lg font-semibold text-slate-900 mb-4"
@@ -55,7 +55,7 @@
             v-if="interaction.sentiment"
             role="status"
             :aria-label="`Sentiment: ${interaction.sentiment}`"
-            class="px-2 py-1 text-xs font-semibold rounded"
+            class="px-2 py-1 text-xs font-semibold rounded-sm"
             :class="getSentimentColor(interaction.sentiment)"
           >
             {{ interaction.sentiment }}
@@ -74,7 +74,7 @@
     <div v-if="hasMoreInteractions" class="text-center pt-4">
       <button
         :aria-label="viewAllAriaLabel"
-        class="text-blue-600 hover:text-blue-700 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-2 py-1"
+        class="text-blue-600 hover:text-blue-700 font-semibold text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-2 py-1"
       >
         View All {{ interactions.length }} Interactions →
       </button>

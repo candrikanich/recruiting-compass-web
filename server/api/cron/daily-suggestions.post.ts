@@ -11,6 +11,7 @@ import { defineEventHandler, createError, getHeader } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { triggerSuggestionUpdate } from "~/server/utils/triggerSuggestionUpdate";
+import { verifySharedSecret } from "~/server/utils/secrets";
 
 interface CronResult {
   total: number;
@@ -32,7 +33,7 @@ export default defineEventHandler(async (event) => {
       : undefined;
     const providedSecret = bearerSecret ?? legacyHeader;
 
-    if (!expectedSecret || providedSecret !== expectedSecret) {
+    if (!expectedSecret || !providedSecret || !verifySharedSecret(providedSecret, expectedSecret)) {
       throw createError({
         statusCode: 401,
         message: "Unauthorized: Invalid cron secret",

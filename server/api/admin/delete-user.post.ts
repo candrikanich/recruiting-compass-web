@@ -28,12 +28,11 @@ interface DeleteUserResponse {
 import { defineEventHandler, readBody, createError } from "h3";
 import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { createLogger } from "~/server/utils/logger";
-
-const logger = createLogger("admin/delete-user");
+import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(
   async (event): Promise<DeleteUserResponse> => {
+    const logger = useLogger(event, "admin/delete-user");
     try {
       // 1. Verify user is an authenticated admin
       const user = await requireAdmin(event);
@@ -88,17 +87,15 @@ export default defineEventHandler(
         // If not in public.users, try to find in auth system
         // This handles cases where user was deleted from public.users but auth record remains
         try {
-          const {
-            data: { users },
-            error: authSearchError,
-          } = await supabaseAdmin.auth.admin.listUsers();
+          const { data: authUserData, error: authSearchError } =
+            await supabaseAdmin.auth.admin.listUsers();
 
           if (authSearchError) {
             throw authSearchError;
           }
 
-          const authUser = users?.find(
-            (u) => u.email?.toLowerCase() === targetEmail.toLowerCase(),
+          const authUser = authUserData?.users?.find(
+            (u) => u.email === targetEmail,
           );
 
           if (!authUser?.id) {

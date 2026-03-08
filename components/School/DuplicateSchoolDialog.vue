@@ -73,7 +73,7 @@
                 >Match Type</span
               >
               <span
-                class="inline-block px-2 py-1 rounded text-xs font-medium"
+                class="inline-block px-2 py-1 rounded-sm text-xs font-medium"
                 :class="getMatchBadgeClass(matchType)"
               >
                 {{ getMatchTypeLabel(matchType) }}
@@ -219,7 +219,7 @@ const getMatchTypeLabel = (
 const getMatchBadgeClass = (
   matchType: "name" | "domain" | "ncaa_id" | null,
 ): string => {
-  const baseClass = "inline-block px-2 py-1 rounded text-xs font-medium";
+  const baseClass = "inline-block px-2 py-1 rounded-sm text-xs font-medium";
   const classes: Record<string, string> = {
     name: `${baseClass} bg-red-100 text-red-800`,
     domain: `${baseClass} bg-yellow-100 text-yellow-800`,

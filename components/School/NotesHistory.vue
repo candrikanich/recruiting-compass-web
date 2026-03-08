@@ -4,7 +4,7 @@
     <button
       @click="isOpen = true"
       :disabled="!hasHistory || loading"
-      class="mt-2 px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition disabled:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed"
+      class="mt-2 px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-sm transition disabled:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed"
     >
       {{ hasHistory ? `View History (${history.length})` : "No history" }}
     </button>
@@ -58,7 +58,7 @@
           <!-- Error State -->
           <div
             v-else-if="error"
-            class="bg-red-50 border border-red-200 rounded p-3 text-red-700 text-sm"
+            class="bg-red-50 border border-red-200 rounded-sm p-3 text-red-700 text-sm"
           >
             {{ error }}
           </div>
@@ -87,7 +87,7 @@
                 </div>
                 <span
                   v-if="index === 0"
-                  class="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium"
+                  class="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded-sm text-xs font-medium"
                 >
                   Current
                 </span>
@@ -120,13 +120,13 @@
                 <!-- Expanded Content -->
                 <div
                   v-if="expandedIds.includes(entry.id) && entry.previousContent"
-                  class="mt-2 p-3 bg-slate-50 rounded border border-slate-200 max-h-40 overflow-y-auto"
+                  class="mt-2 p-3 bg-slate-50 rounded-sm border border-slate-200 max-h-40 overflow-y-auto"
                 >
                   <p class="text-xs font-medium text-slate-700 mb-1">
                     Previous content:
                   </p>
                   <p
-                    class="text-sm text-slate-600 whitespace-pre-wrap break-words"
+                    class="text-sm text-slate-600 whitespace-pre-wrap wrap-break-word"
                   >
                     {{ entry.previousContent }}
                   </p>
@@ -136,13 +136,13 @@
               <!-- Current Content Preview -->
               <div
                 v-if="entry.currentContent && index === 0"
-                class="mt-2 p-3 bg-blue-50 rounded border border-blue-200 max-h-40 overflow-y-auto"
+                class="mt-2 p-3 bg-blue-50 rounded-sm border border-blue-200 max-h-40 overflow-y-auto"
               >
                 <p class="text-xs font-medium text-blue-700 mb-1">
                   Current content:
                 </p>
                 <p
-                  class="text-sm text-slate-700 whitespace-pre-wrap break-words"
+                  class="text-sm text-slate-700 whitespace-pre-wrap wrap-break-word"
                 >
                   {{ truncateText(entry.currentContent, 200) }}
                 </p>
@@ -155,7 +155,7 @@
         <div class="px-6 py-3 border-t border-slate-200 bg-slate-50 rounded-b">
           <button
             @click="isOpen = false"
-            class="w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded hover:from-blue-600 hover:to-blue-700 transition"
+            class="w-full px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-sm hover:from-blue-600 hover:to-blue-700 transition"
           >
             Close
           </button>

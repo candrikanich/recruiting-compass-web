@@ -111,7 +111,7 @@ Implemented all critical, high, and medium priority accessibility fixes identifi
 - Improved focus indicators on status dropdown:
   - Changed to `border-2 border-transparent`
   - Added `focus:ring-2 focus:ring-offset-2 focus:ring-blue-600`
-  - Added `focus:outline-none`
+  - Added `focus:outline-hidden`
 - Added cursor feedback: `statusUpdating ? 'cursor-not-allowed' : ''`
 - Added screen reader announcement during updates:
   ```vue
@@ -344,7 +344,7 @@ These patterns should be replicated throughout the application:
 ### 4. Focus Indicators
 
 ```css
-focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
 ```
 
 ### 5. Decorative Icons

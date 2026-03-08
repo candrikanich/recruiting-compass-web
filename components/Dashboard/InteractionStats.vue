@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <h2 class="text-xl font-bold mb-6 text-slate-900">📊 Interaction Stats</h2>
 

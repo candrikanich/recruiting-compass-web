@@ -562,7 +562,7 @@ test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
 
     // Verify long content is displayed without breaking layout
     await expect(page.locator("text=Content")).toBeVisible();
-    const contentSection = page.locator(".bg-white.rounded-lg.shadow");
+    const contentSection = page.locator(".bg-white.rounded-lg.shadow-sm");
     await expect(contentSection.first()).toBeVisible();
 
     // Verify scrolling works if content is truncated

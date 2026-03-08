@@ -4,7 +4,7 @@
     <div class="absolute inset-0">
       <!-- Grass texture with gradient -->
       <div
-        class="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700"
+        class="absolute inset-0 bg-linear-to-br from-emerald-500 via-emerald-600 to-emerald-700"
       ></div>
 
       <!-- Subtle pattern overlay -->
@@ -40,7 +40,7 @@
 
         <!-- Admin Signup Card -->
         <div
-          class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20"
+          class="bg-white/95 backdrop-blur-xs rounded-2xl shadow-2xl p-8 border border-white/20"
         >
           <!-- Header -->
           <div class="text-center mb-8">
@@ -69,7 +69,7 @@
           <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <div class="flex gap-3">
               <ExclamationCircleIcon
-                class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
+                class="w-5 h-5 text-red-600 shrink-0 mt-0.5"
               />
               <div class="text-sm text-red-800">
                 <p class="font-medium mb-1">Administrator Account</p>
@@ -243,7 +243,7 @@
                 <input
                   v-model="agreeToTerms"
                   type="checkbox"
-                  class="mt-1 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  class="mt-1 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
                 <span class="text-slate-700 text-sm">
                   I agree to the
@@ -267,7 +267,7 @@
               data-testid="admin-signup-button"
               type="submit"
               :disabled="loading || hasErrors"
-              class="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-lg hover:from-red-600 hover:to-red-700 transition disabled:opacity-50 shadow-lg"
+              class="w-full px-6 py-3 bg-linear-to-r from-red-500 to-red-600 text-white font-semibold rounded-lg hover:from-red-600 hover:to-red-700 transition disabled:opacity-50 shadow-lg"
             >
               {{
                 loading ? "Creating admin account..." : "Create Admin Account"

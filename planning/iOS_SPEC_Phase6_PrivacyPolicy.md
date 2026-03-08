@@ -532,7 +532,7 @@ Error State:
     <!-- Content -->
     <div class="max-w-4xl mx-auto px-6 py-12">
       <div
-        class="bg-white rounded-lg shadow-sm p-8 prose prose-slate max-w-none"
+        class="bg-white rounded-lg shadow-xs p-8 prose prose-slate max-w-none"
       >
         <p class="text-slate-600 mb-8">
           <strong>Last Updated:</strong> {{ lastUpdated }}
@@ -572,7 +572,7 @@ Error State:
             If you have questions about this Privacy Policy or our privacy
             practices, please contact us at:
           </p>
-          <div class="bg-slate-50 p-4 rounded mt-4">
+          <div class="bg-slate-50 p-4 rounded-sm mt-4">
             <p>
               <strong>Recruiting Compass</strong><br />
               Email: privacy@recruitingcompass.com<br />

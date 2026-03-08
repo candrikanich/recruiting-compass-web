@@ -64,6 +64,7 @@ export default defineEventHandler(async (event) => {
       description: "Marked suggestion as complete",
     });
 
+    logger.info("Suggestion completed", { suggestionId, userId: user.id });
     return { success: true };
   } catch (error: unknown) {
     if (error instanceof Error && "statusCode" in error) throw error;

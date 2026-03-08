@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <div class="flex items-start gap-4">
       <SchoolLogo :school="school" size="lg" fetch-on-mount />
       <div class="flex-1 min-w-0">
@@ -25,7 +25,7 @@
               @change="handleStatusChange"
               :disabled="statusUpdating"
               :aria-busy="statusUpdating"
-              class="px-2 py-1 text-xs font-medium rounded-full border-2 border-transparent cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+              class="px-2 py-1 text-xs font-medium rounded-full border-2 border-transparent cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
               :class="[
                 getStatusBadgeColor(school.status),
                 statusUpdating ? 'opacity-50 cursor-not-allowed' : '',
@@ -67,7 +67,7 @@
           school.is_favorite ? 'Remove from favorites' : 'Add to favorites'
         "
         :aria-pressed="school.is_favorite"
-        class="flex-shrink-0 transition-all rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="shrink-0 transition-all rounded-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         :class="
           school.is_favorite
             ? 'text-yellow-500'

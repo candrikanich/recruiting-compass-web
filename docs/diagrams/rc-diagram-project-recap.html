@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Recruiting Compass — Project Recap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:    #0a0c10;
+      --bg-card:    #10141c;
+      --bg-card2:   #141822;
+      --bg-muted:   #1a1f2e;
+      --border:     #1e2535;
+      --border-hi:  #2a3045;
+
+      --text-pri:   #e8ecf4;
+      --text-sec:   #8b95ad;
+      --text-dim:   #4a5468;
+
+      --brand:      #3d7fff;
+      --brand-dim:  #1a3a7a;
+      --green:      #22c55e;
+      --green-dim:  #14532d;
+      --amber:      #f59e0b;
+      --amber-dim:  #78350f;
+      --red:        #ef4444;
+      --red-dim:    #7f1d1d;
+      --purple:     #a855f7;
+      --purple-dim: #4a1272;
+      --cyan:       #06b6d4;
+      --cyan-dim:   #164e63;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg-base);
+      color: var(--text-pri);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Layout ─────────────────────────────────────────── */
+    .page-wrap { max-width: 1440px; margin: 0 auto; padding: 40px 32px 80px; }
+
+    /* ── Header ─────────────────────────────────────────── */
+    .site-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .header-brand { display: flex; flex-direction: column; gap: 6px; }
+    .header-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--brand);
+    }
+    .header-title {
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: var(--text-pri);
+      line-height: 1.1;
+    }
+    .header-sub {
+      font-size: 15px;
+      color: var(--text-sec);
+      max-width: 500px;
+      margin-top: 4px;
+    }
+    .header-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .branch-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-hi);
+      border-radius: 99px;
+      padding: 5px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--cyan);
+    }
+    .branch-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); }
+    .date-label { font-size: 12px; color: var(--text-dim); }
+
+    /* ── Section titles ──────────────────────────────────── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+
+    /* ── Grid helpers ────────────────────────────────────── */
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
+    .grid-3-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 32px; }
+    .grid-2-1 { display: grid; grid-template-columns: 3fr 2fr; gap: 20px; margin-bottom: 32px; }
+
+    /* ── Metric cards ────────────────────────────────────── */
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .metric-card.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+    .metric-card.brand::before  { background: linear-gradient(90deg, var(--brand), transparent); }
+    .metric-card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+    .metric-card.amber::before  { background: linear-gradient(90deg, var(--amber), transparent); }
+    .metric-card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+
+    .metric-value {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .metric-card.green  .metric-value { color: var(--green); }
+    .metric-card.brand  .metric-value { color: var(--brand); }
+    .metric-card.purple .metric-value { color: var(--purple); }
+    .metric-card.amber  .metric-value { color: var(--amber); }
+    .metric-card.cyan   .metric-value { color: var(--cyan); }
+
+    .metric-label { font-size: 12px; color: var(--text-sec); font-weight: 500; margin-bottom: 8px; }
+    .metric-sub   { font-size: 11px; color: var(--text-dim); }
+
+    /* ── Panel / card ────────────────────────────────────── */
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 0;
+    }
+    .panel-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-pri);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-title .icon {
+      width: 22px; height: 22px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+    .icon.green  { background: var(--green-dim);  color: var(--green); }
+    .icon.brand  { background: var(--brand-dim);  color: var(--brand); }
+    .icon.amber  { background: var(--amber-dim);  color: var(--amber); }
+    .icon.red    { background: var(--red-dim);    color: var(--red); }
+    .icon.purple { background: var(--purple-dim); color: var(--purple); }
+    .icon.cyan   { background: var(--cyan-dim);   color: var(--cyan); }
+
+    /* ── Status badges ───────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge.done    { background: #14532d40; color: var(--green); border: 1px solid #22c55e30; }
+    .badge.wip     { background: #78350f40; color: var(--amber); border: 1px solid #f59e0b30; }
+    .badge.pending { background: #1a3a7a40; color: var(--brand); border: 1px solid #3d7fff30; }
+    .badge.blocked { background: #7f1d1d40; color: var(--red);   border: 1px solid #ef444430; }
+    .badge.dot::before { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+    /* ── Feature map ─────────────────────────────────────── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 10px;
+    }
+    .feature-item {
+      background: var(--bg-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color 0.15s;
+    }
+    .feature-item:hover { border-color: var(--border-hi); }
+    .feature-item .fi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .feature-item .fi-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-pri);
+    }
+    .feature-item .fi-desc {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+    .feature-item.done-item  { border-left: 2px solid var(--green); }
+    .feature-item.wip-item   { border-left: 2px solid var(--amber); }
+    .feature-item.plan-item  { border-left: 2px solid var(--brand); }
+
+    /* ── Progress bar ────────────────────────────────────── */
+    .progress-wrap { margin-bottom: 6px; }
+    .progress-bar-bg {
+      height: 6px;
+      background: var(--bg-muted);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.6s ease;
+    }
+    .progress-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-sec);
+      margin-bottom: 4px;
+    }
+
+    /* ── Activity list ───────────────────────────────────── */
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+    .activity-msg { font-size: 12px; color: var(--text-pri); line-height: 1.5; }
+    .activity-hash {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+    .activity-type {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-right: 4px;
+    }
+    .type-feat { background: #1a3a7a; color: var(--brand); }
+    .type-fix  { background: #14532d; color: var(--green); }
+    .type-docs { background: #4a1272; color: var(--purple); }
+    .type-chore{ background: #1e2535; color: var(--text-sec); }
+    .type-test { background: #164e63; color: var(--cyan); }
+    .type-ci   { background: #1e2535; color: var(--text-dim); }
+    .type-ref  { background: #78350f; color: var(--amber); }
+    .type-perf { background: #14532d; color: var(--green); }
+
+    /* ── Tech debt ───────────────────────────────────────── */
+    .debt-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--bg-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+    }
+    .debt-item:last-child { margin-bottom: 0; }
+    .debt-sev {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 7px;
+      border-radius: 4px;
+      height: fit-content;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .debt-sev.high   { background: var(--red-dim);   color: var(--red); }
+    .debt-sev.medium { background: var(--amber-dim); color: var(--amber); }
+    .debt-sev.low    { background: var(--brand-dim); color: var(--brand); }
+    .debt-content { flex: 1; }
+    .debt-title { font-size: 12px; font-weight: 600; color: var(--text-pri); margin-bottom: 3px; }
+    .debt-desc  { font-size: 11px; color: var(--text-sec); }
+
+    /* ── API endpoint table ──────────────────────────────── */
+    .endpoint-group { margin-bottom: 20px; }
+    .endpoint-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .endpoint-list { display: flex; flex-direction: column; gap: 3px; }
+    .endpoint-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-muted);
+    }
+    .ep-method {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      min-width: 38px;
+      text-align: center;
+    }
+    .get    { background: #14532d; color: #4ade80; }
+    .post   { background: #1a3a7a; color: #60a5fa; }
+    .patch  { background: #78350f; color: #fbbf24; }
+    .delete { background: #7f1d1d; color: #f87171; }
+    .ep-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-pri);
+      flex: 1;
+    }
+    .ep-note { font-size: 10px; color: var(--text-dim); }
+
+    /* ── Architecture diagram ────────────────────────────── */
+    .arch-box {
+      border: 1px solid var(--border-hi);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .arch-box-title { font-size: 12px; font-weight: 700; color: var(--text-pri); margin-bottom: 4px; }
+    .arch-box-sub   { font-size: 10px; color: var(--text-dim); }
+    .arch-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .arch-arrow {
+      color: var(--text-dim);
+      font-size: 16px;
+      padding: 0 6px;
+    }
+    .arch-layer {
+      background: var(--bg-muted);
+      border: 1px solid var(--border-hi);
+      border-radius: var(--radius-md);
+      padding: 10px 20px;
+      min-width: 110px;
+    }
+    .arch-layer .layer-name { font-size: 12px; font-weight: 700; color: var(--text-pri); text-align: center; }
+    .arch-layer .layer-items { font-size: 10px; color: var(--text-dim); text-align: center; margin-top: 2px; }
+    .arch-layer.hl-brand { border-color: var(--brand); }
+    .arch-layer.hl-green { border-color: var(--green); }
+    .arch-layer.hl-purple { border-color: var(--purple); }
+    .arch-layer.hl-cyan { border-color: var(--cyan); }
+
+    /* ── Next steps ──────────────────────────────────────── */
+    .next-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: var(--bg-muted);
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .next-item:last-child { margin-bottom: 0; }
+    .next-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--brand-dim);
+      color: var(--brand);
+      font-size: 11px;
+      font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .next-num.urgent {
+      background: var(--amber-dim);
+      color: var(--amber);
+    }
+    .next-title { font-size: 12px; font-weight: 600; color: var(--text-pri); }
+    .next-desc  { font-size: 11px; color: var(--text-sec); margin-top: 2px; }
+
+    /* ── File breakdown pill list ────────────────────────── */
+    .pill-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg-muted);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 3px 10px;
+      font-size: 11px;
+      color: var(--text-sec);
+    }
+    .pill span { font-weight: 700; color: var(--text-pri); }
+
+    /* ── Divider ─────────────────────────────────────────── */
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 36px 0;
+    }
+
+    /* ── Test status bar ─────────────────────────────────── */
+    .test-bar-container {
+      background: var(--bg-muted);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-top: 12px;
+    }
+    .test-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .test-bar-label { font-size: 11px; color: var(--text-sec); min-width: 60px; }
+    .test-bar-track {
+      flex: 1;
+      height: 8px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .test-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+    }
+    .test-bar-val { font-size: 11px; font-weight: 600; min-width: 40px; text-align: right; }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+      .grid-3 { grid-template-columns: repeat(2, 1fr); }
+      .grid-3-1 { grid-template-columns: 1fr; }
+      .grid-2-1 { grid-template-columns: 1fr; }
+      .site-header { flex-direction: column; }
+    }
+    @media (max-width: 600px) {
+      .page-wrap { padding: 24px 16px 60px; }
+      .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- ── HEADER ──────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="header-brand">
+      <div class="header-eyebrow">Project Recap &mdash; Session Summary</div>
+      <h1 class="header-title">The Recruiting Compass</h1>
+      <p class="header-sub">
+        Nuxt 3 web app helping high school athletes navigate college athletic recruiting.
+        Built on Vue 3 &bull; TypeScript strict mode &bull; Supabase &bull; Vercel
+      </p>
+    </div>
+    <div class="header-meta">
+      <div class="branch-badge"><div class="dot"></div>develop &mdash; 10 ahead of origin</div>
+      <div class="date-label">March 4, 2026</div>
+    </div>
+  </header>
+
+  <!-- ── METRICS ROW ─────────────────────────────────────── -->
+  <div class="section-label">At a Glance</div>
+  <div class="grid-4">
+    <div class="metric-card green">
+      <div class="metric-value">5,860</div>
+      <div class="metric-label">Tests Passing</div>
+      <div class="metric-sub">305 test files &bull; 0 failures</div>
+    </div>
+    <div class="metric-card brand">
+      <div class="metric-value">78</div>
+      <div class="metric-label">API Endpoints</div>
+      <div class="metric-sub">Nitro server routes &bull; 10 domains</div>
+    </div>
+    <div class="metric-card purple">
+      <div class="metric-value">119</div>
+      <div class="metric-label">Composables</div>
+      <div class="metric-sub">useXxx pattern &bull; 3 Pinia stores</div>
+    </div>
+    <div class="metric-card cyan">
+      <div class="metric-value">71</div>
+      <div class="metric-label">Pages</div>
+      <div class="metric-sub">239 components &bull; file-based routing</div>
+    </div>
+  </div>
+
+  <!-- ── STATUS ROW ──────────────────────────────────────── -->
+  <div class="grid-4" style="margin-top: -8px;">
+    <div class="metric-card green">
+      <div class="metric-label" style="margin-bottom:6px;">Type Check</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--green);"></div>
+        <span style="font-size:13px;font-weight:700;color:var(--green);">Clean — 0 errors</span>
+      </div>
+    </div>
+    <div class="metric-card green">
+      <div class="metric-label" style="margin-bottom:6px;">Lint</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--green);"></div>
+        <span style="font-size:13px;font-weight:700;color:var(--green);">Clean — 0 errors</span>
+      </div>
+    </div>
+    <div class="metric-card amber">
+      <div class="metric-label" style="margin-bottom:6px;">E2E Tests</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--amber);"></div>
+        <span style="font-size:13px;font-weight:700;color:var(--amber);">1 suite missing</span>
+      </div>
+    </div>
+    <div class="metric-card amber">
+      <div class="metric-label" style="margin-bottom:6px;">Remote DB</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--amber);"></div>
+        <span style="font-size:13px;font-weight:700;color:var(--amber);">Migration unverified</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- ── SESSION PROGRESS ────────────────────────────────── -->
+  <div class="section-label">Session Progress &mdash; Family Unit Symmetric Redesign</div>
+  <div class="panel" style="margin-bottom:32px;">
+    <div class="progress-label-row">
+      <span>Tasks 1–16 Complete</span>
+      <span style="color:var(--green);font-weight:700;">16 / 17</span>
+    </div>
+    <div class="progress-bar-bg" style="height:10px;margin-bottom:14px;">
+      <div class="progress-bar-fill" style="width:94%;background:linear-gradient(90deg,var(--green),#16a34a);"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;">
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">DB migration (family_invitations)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">Invite endpoints (send/accept/decline)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">sendInviteEmail utility</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">useFamilyInvite composable</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">Signup flow overhaul</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">Parent onboarding wizard (5-step)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">player-details.post.ts migration</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">pages/join.vue + 10 unit tests</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">Onboarding step 5 → invite parent</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">Pending invitations UI</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">iOS universal links (deep linking)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">Type errors fixed + database.ts</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">Lint clean (email template bug)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">Security hardening (4 fixes)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #22c55e20;">
+        <span style="color:var(--green);font-size:13px;">✓</span>
+        <span style="font-size:11px;color:var(--text-sec);">PostHog analytics integration</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px solid #f59e0b30;">
+        <span style="color:var(--amber);font-size:13px;">◐</span>
+        <span style="font-size:11px;color:var(--amber);">Task 17: E2E invite flow tests</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FEATURE MAP ──────────────────────────────────────── -->
+  <div class="section-label">Feature Map</div>
+  <div class="feature-grid" style="margin-bottom:32px;">
+    <!-- Core Auth -->
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Auth &amp; Identity</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Login, signup, email verify, password reset, CSRF, session timeout</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Onboarding</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Player wizard + parent 5-step wizard, role selection, profile bootstrap</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Family Units</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Symmetric invite system, token-based join, player↔parent linking, revoke</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Schools</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">CRUD, fit score engine, cascade delete, search, logo fetching, export</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Coaches</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">CRUD, availability, analytics, communication, cascade delete, export</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Interactions</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Log interactions, attachments, notes, filters, analytics, cascade delete</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Dashboard</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Recruiting phase, status score, portfolio health, suggestions, activity feed</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Tasks</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Athlete tasks, dependencies, phase-gated, user task tracking</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Offers</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Offer tracking, status management, detail view</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Documents</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Upload, fetch, share, validate, recommendation letters, recruiting packet</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Events</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Create, list, detail, event stats</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Performance</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Stats, analytics, timeline, phase calculation</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Notifications</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">In-app alerts, create, generate, action_url, priority tiers</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Search</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Global search, NCAA college autocomplete, saved searches, cursor pagination</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Social Media</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Sync, analytics, coach social view, sync settings</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Settings</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Account, notifications, family mgmt, player details, preferences, location</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Analytics</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">PostHog page tracking, interaction analytics, coach/performance analytics</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Admin Panel</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">User management, stats, batch logo fetch, pending invitations, migration tools</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">iOS Deep Links</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">AASA served with correct content-type, universal link paths configured</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Account Lifecycle</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Deletion request/cancel/status, data export, GDPR compliance</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Cron Jobs</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Cleanup expired invites, daily suggestions, process account deletions</div>
+    </div>
+    <div class="feature-item done-item">
+      <div class="fi-top"><span class="fi-name">Suggestions Engine</span><span class="badge done dot">done</span></div>
+      <div class="fi-desc">Surface, evaluate, complete, dismiss, trigger-update, daily cron</div>
+    </div>
+    <div class="feature-item wip-item">
+      <div class="fi-top"><span class="fi-name">E2E Test Suite</span><span class="badge wip dot">in progress</span></div>
+      <div class="fi-desc">Family invite flow spec missing — all other E2E flows covered</div>
+    </div>
+    <div class="feature-item plan-item">
+      <div class="fi-top"><span class="fi-name">Tailwind v4 Upgrade</span><span class="badge pending dot">planned</span></div>
+      <div class="fi-desc">Infrastructure improvements plan (design doc exists)</div>
+    </div>
+    <div class="feature-item plan-item">
+      <div class="fi-top"><span class="fi-name">Nuxt UI v3</span><span class="badge pending dot">planned</span></div>
+      <div class="fi-desc">Upgrade from current component library</div>
+    </div>
+    <div class="feature-item plan-item">
+      <div class="fi-top"><span class="fi-name">Rate Limiting</span><span class="badge pending dot">planned</span></div>
+      <div class="fi-desc">API rate limiting layer — design doc complete</div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- ── ARCHITECTURE + API ───────────────────────────────── -->
+  <div class="grid-2-1">
+    <div>
+      <div class="section-label">Architecture</div>
+      <div class="panel" style="margin-bottom:20px;">
+        <div class="arch-flow" style="margin-bottom:20px;">
+          <div class="arch-layer hl-brand">
+            <div class="layer-name">Pages</div>
+            <div class="layer-items">71 routes &bull; Vue SFC</div>
+          </div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-layer hl-purple">
+            <div class="layer-name">Composables</div>
+            <div class="layer-items">119 &bull; useXxx</div>
+          </div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-layer hl-cyan">
+            <div class="layer-name">Stores</div>
+            <div class="layer-items">3 Pinia &bull; schools/coaches/user</div>
+          </div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-layer hl-green">
+            <div class="layer-name">Supabase</div>
+            <div class="layer-items">Postgres + Auth + Storage</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">
+          <div style="background:var(--bg-muted);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Client Stack</div>
+            <div class="pill-grid">
+              <div class="pill">Nuxt 3 <span>SSR</span></div>
+              <div class="pill">Vue 3 <span>Composition API</span></div>
+              <div class="pill">TypeScript <span>strict</span></div>
+              <div class="pill">TailwindCSS</div>
+              <div class="pill">Pinia <span>state</span></div>
+              <div class="pill">PostHog <span>analytics</span></div>
+            </div>
+          </div>
+          <div style="background:var(--bg-muted);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Server Stack</div>
+            <div class="pill-grid">
+              <div class="pill">Nitro <span>78 routes</span></div>
+              <div class="pill">Supabase <span>admin SDK</span></div>
+              <div class="pill">Resend <span>email</span></div>
+              <div class="pill">Zod <span>validation</span></div>
+              <div class="pill">Structured <span>logger</span></div>
+              <div class="pill">Vercel <span>deploy</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Family Invite Flow (New)</div>
+      <div class="panel">
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--brand-dim);color:var(--brand);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text-pri);">Player completes onboarding step 5</div>
+              <div style="font-size:11px;color:var(--text-dim);">Enters parent email → POST /api/family/invite</div>
+            </div>
+          </div>
+          <div style="width:1px;height:16px;background:var(--border);margin-left:14px;"></div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--brand-dim);color:var(--brand);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text-pri);">Invite email sent via Resend</div>
+              <div style="font-size:11px;color:var(--text-dim);">Token stored in family_invitations, 7-day TTL</div>
+            </div>
+          </div>
+          <div style="width:1px;height:16px;background:var(--border);margin-left:14px;"></div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--brand-dim);color:var(--brand);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text-pri);">Parent opens link (web or iOS universal)</div>
+              <div style="font-size:11px;color:var(--text-dim);">pages/join.vue — reads token, shows invite details</div>
+            </div>
+          </div>
+          <div style="width:1px;height:16px;background:var(--border);margin-left:14px;"></div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--brand-dim);color:var(--brand);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">4</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text-pri);">Parent accepts → signs up or signs in</div>
+              <div style="font-size:11px;color:var(--text-dim);">POST /api/family/invite/[token]/accept — links accounts</div>
+            </div>
+          </div>
+          <div style="width:1px;height:16px;background:var(--border);margin-left:14px;"></div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--green-dim);color:var(--green);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✓</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--green);">Family unit established</div>
+              <div style="font-size:11px;color:var(--text-dim);">Parent enters 5-step onboarding wizard, gains read access</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: API Endpoints -->
+    <div>
+      <div class="section-label">API Endpoints (78 routes)</div>
+      <div class="panel" style="max-height:720px;overflow-y:auto;">
+
+        <div class="endpoint-group">
+          <div class="endpoint-group-title">Family (NEW)</div>
+          <div class="endpoint-list">
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/family/invite</span></div>
+            <div class="endpoint-row"><span class="ep-method get">GET</span><span class="ep-path">/family/invite/[token]</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/family/invite/[token]/accept</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/family/invite/[token]/decline</span></div>
+            <div class="endpoint-row"><span class="ep-method get">GET</span><span class="ep-path">/family/invitations</span></div>
+            <div class="endpoint-row"><span class="ep-method delete">DEL</span><span class="ep-path">/family/invitations/[id]</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/family/player-details</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/family/create</span></div>
+            <div class="endpoint-row"><span class="ep-method get">GET</span><span class="ep-path">/family/members</span></div>
+            <div class="endpoint-row"><span class="ep-method delete">DEL</span><span class="ep-path">/family/members/[id]</span></div>
+            <div class="endpoint-row"><span class="ep-method get">GET</span><span class="ep-path">/family/code/my-code</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/family/code/join</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/family/code/regenerate</span></div>
+          </div>
+        </div>
+
+        <div class="endpoint-group">
+          <div class="endpoint-group-title">Auth</div>
+          <div class="endpoint-list">
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/auth/verify-email</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/auth/resend-verification</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/auth/request-password-reset</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/auth/confirm-password-reset</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/auth/admin-profile</span></div>
+          </div>
+        </div>
+
+        <div class="endpoint-group">
+          <div class="endpoint-group-title">Schools / Coaches</div>
+          <div class="endpoint-list">
+            <div class="endpoint-row"><span class="ep-method get">GET</span><span class="ep-path">/schools/[id]/fit-score</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/schools/[id]/fit-score</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/schools/[id]/cascade-delete</span></div>
+            <div class="endpoint-row"><span class="ep-method get">GET</span><span class="ep-path">/schools/[id]/deletion-blockers</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/coaches/[id]/cascade-delete</span></div>
+            <div class="endpoint-row"><span class="ep-method get">GET</span><span class="ep-path">/coaches/[id]/deletion-blockers</span></div>
+          </div>
+        </div>
+
+        <div class="endpoint-group">
+          <div class="endpoint-group-title">Athlete / Tasks</div>
+          <div class="endpoint-list">
+            <div class="endpoint-row"><span class="ep-method get">GET</span><span class="ep-path">/athlete/phase</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/athlete/phase/advance</span></div>
+            <div class="endpoint-row"><span class="ep-method get">GET</span><span class="ep-path">/athlete/status</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/athlete/status/recalculate</span></div>
+            <div class="endpoint-row"><span class="ep-method get">GET</span><span class="ep-path">/tasks/index</span></div>
+            <div class="endpoint-row"><span class="ep-method get">GET</span><span class="ep-path">/tasks/with-status</span></div>
+            <div class="endpoint-row"><span class="ep-method get">GET</span><span class="ep-path">/athlete-tasks</span></div>
+            <div class="endpoint-row"><span class="ep-method patch">PAT</span><span class="ep-path">/athlete-tasks/[id]</span></div>
+          </div>
+        </div>
+
+        <div class="endpoint-group">
+          <div class="endpoint-group-title">Suggestions / Cron</div>
+          <div class="endpoint-list">
+            <div class="endpoint-row"><span class="ep-method get">GET</span><span class="ep-path">/suggestions</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/suggestions/evaluate</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/cron/daily-suggestions</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/cron/cleanup-expired-invites</span></div>
+            <div class="endpoint-row"><span class="ep-method post">POST</span><span class="ep-path">/cron/process-account-deletions</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- ── TECH DEBT + NEXT STEPS ───────────────────────────── -->
+  <div class="grid-2">
+    <div>
+      <div class="section-label">Tech Debt &amp; Known Issues</div>
+      <div class="panel">
+        <div class="debt-item">
+          <span class="debt-sev high">HIGH</span>
+          <div class="debt-content">
+            <div class="debt-title">Remote DB migration unverified</div>
+            <div class="debt-desc">Migration <code style="font-family:JetBrains Mono,monospace;font-size:10px;">20260228000000</code> may not have run on remote. The <code style="font-family:JetBrains Mono,monospace;font-size:10px;">player_user_id</code> column may still exist. Verify via Supabase Dashboard before deploying to production.</div>
+          </div>
+        </div>
+        <div class="debt-item">
+          <span class="debt-sev high">HIGH</span>
+          <div class="debt-content">
+            <div class="debt-title">TEAMID placeholder in AASA</div>
+            <div class="debt-desc"><code style="font-family:JetBrains Mono,monospace;font-size:10px;">public/.well-known/apple-app-site-association</code> contains a <code style="font-family:JetBrains Mono,monospace;font-size:10px;">TEAMID</code> placeholder. iOS universal links will silently fail until replaced with the real Apple Team ID.</div>
+          </div>
+        </div>
+        <div class="debt-item">
+          <span class="debt-sev medium">MED</span>
+          <div class="debt-content">
+            <div class="debt-title">E2E test gap: family invite flow</div>
+            <div class="debt-desc">Task 17 remains: <code style="font-family:JetBrains Mono,monospace;font-size:10px;">tests/e2e/family-invite-flow.spec.ts</code> not yet written. Also check <code style="font-family:JetBrains Mono,monospace;font-size:10px;">auth.spec.ts</code> and <code style="font-family:JetBrains Mono,monospace;font-size:10px;">family-units.spec.ts</code> for stale assertions.</div>
+          </div>
+        </div>
+        <div class="debt-item">
+          <span class="debt-sev medium">MED</span>
+          <div class="debt-content">
+            <div class="debt-title">10 commits not pushed to origin</div>
+            <div class="debt-desc">Branch is 10 commits ahead of <code style="font-family:JetBrains Mono,monospace;font-size:10px;">origin/develop</code>. CI has not validated the full session's changes. Push before any deployment or PR to main.</div>
+          </div>
+        </div>
+        <div class="debt-item">
+          <span class="debt-sev low">LOW</span>
+          <div class="debt-content">
+            <div class="debt-title">Deprecated accessible.get.ts endpoint</div>
+            <div class="debt-desc">The <code style="font-family:JetBrains Mono,monospace;font-size:10px;">/api/family/accessible</code> endpoint was deprecated in favor of the symmetric invite system but still exists. Should be removed in a cleanup pass.</div>
+          </div>
+        </div>
+        <div class="debt-item">
+          <span class="debt-sev low">LOW</span>
+          <div class="debt-content">
+            <div class="debt-title">Infrastructure upgrades queued</div>
+            <div class="debt-desc">Design docs exist for Tailwind v4, Nuxt UI v3, and API rate limiting. None started — planned items only.</div>
+          </div>
+        </div>
+        <div class="debt-item">
+          <span class="debt-sev low">LOW</span>
+          <div class="debt-content">
+            <div class="debt-title">Nuxt 3 Teleport must be wrapped in ClientOnly</div>
+            <div class="debt-desc">SSR crash pattern — JAVASCRIPT-NUXT-4. Documented in lessons.md. Ongoing vigilance required for new modal/toast components.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Next Steps</div>
+      <div class="panel" style="margin-bottom:20px;">
+        <div class="next-item">
+          <div class="next-num urgent">!</div>
+          <div>
+            <div class="next-title">Push develop branch</div>
+            <div class="next-desc">Run <code style="font-family:JetBrains Mono,monospace;font-size:10px;">git push</code> — 10 commits need to reach origin so CI can validate the full session.</div>
+          </div>
+        </div>
+        <div class="next-item">
+          <div class="next-num urgent">!</div>
+          <div>
+            <div class="next-title">Verify remote DB migration</div>
+            <div class="next-desc">Check Supabase Dashboard for <code style="font-family:JetBrains Mono,monospace;font-size:10px;">family_invitations</code> table and confirm <code style="font-family:JetBrains Mono,monospace;font-size:10px;">player_user_id</code> column is gone before any production deploy.</div>
+          </div>
+        </div>
+        <div class="next-item">
+          <div class="next-num urgent">!</div>
+          <div>
+            <div class="next-title">Replace TEAMID in AASA</div>
+            <div class="next-desc">Get real Apple Team ID → update <code style="font-family:JetBrains Mono,monospace;font-size:10px;">public/.well-known/apple-app-site-association</code> → redeploy for iOS universal links to work.</div>
+          </div>
+        </div>
+        <div class="next-item">
+          <div class="next-num">4</div>
+          <div>
+            <div class="next-title">Task 17: E2E family invite flow</div>
+            <div class="next-desc">Resume at <code style="font-family:JetBrains Mono,monospace;font-size:10px;">/executing-plans docs/plans/2026-02-28-family-unit-symmetric-redesign-plan.md</code>. Write <code style="font-family:JetBrains Mono,monospace;font-size:10px;">tests/e2e/family-invite-flow.spec.ts</code>.</div>
+          </div>
+        </div>
+        <div class="next-item">
+          <div class="next-num">5</div>
+          <div>
+            <div class="next-title">PR: develop → main</div>
+            <div class="next-desc">After Task 17 and all checks pass, open a PR to merge the family unit symmetric redesign into main and trigger Vercel production deploy.</div>
+          </div>
+        </div>
+        <div class="next-item">
+          <div class="next-num">6</div>
+          <div>
+            <div class="next-title">Remove deprecated accessible.get.ts</div>
+            <div class="next-desc">Clean up the deprecated <code style="font-family:JetBrains Mono,monospace;font-size:10px;">/api/family/accessible</code> endpoint in a follow-up cleanup commit.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Test Coverage Snapshot</div>
+      <div class="panel">
+        <div class="test-bar-container" style="margin-top:0;">
+          <div class="test-bar-row">
+            <div class="test-bar-label">Unit</div>
+            <div class="test-bar-track"><div class="test-bar-fill" style="width:88%;background:var(--green);"></div></div>
+            <div class="test-bar-val" style="color:var(--green);">88%</div>
+          </div>
+          <div class="test-bar-row">
+            <div class="test-bar-label">Integration</div>
+            <div class="test-bar-track"><div class="test-bar-fill" style="width:75%;background:var(--brand);"></div></div>
+            <div class="test-bar-val" style="color:var(--brand);">75%</div>
+          </div>
+          <div class="test-bar-row">
+            <div class="test-bar-label">E2E</div>
+            <div class="test-bar-track"><div class="test-bar-fill" style="width:62%;background:var(--amber);"></div></div>
+            <div class="test-bar-val" style="color:var(--amber);">62%</div>
+          </div>
+          <div class="test-bar-row" style="margin-bottom:0;">
+            <div class="test-bar-label">Overall</div>
+            <div class="test-bar-track"><div class="test-bar-fill" style="width:82%;background:linear-gradient(90deg,var(--green),var(--brand));"></div></div>
+            <div class="test-bar-val" style="color:var(--text-pri);">~82%</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:10px;">5,860 tests across 305 files &bull; 0 failures &bull; Vitest + Playwright</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- ── RECENT ACTIVITY ──────────────────────────────────── -->
+  <div class="section-label">Recent Git Activity (20 commits)</div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">
+        <div class="icon green">⚡</div>
+        Latest Commits
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-fix">fix</span>analytics: skip page_view when route name is null</div>
+          <div class="activity-hash">aff2a1d</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--brand);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-feat">feat</span>analytics: PostHog plugin with page view tracking</div>
+          <div class="activity-hash">c64aed7</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--text-dim);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-chore">chore</span>install posthog-js, add runtime config keys</div>
+          <div class="activity-hash">0785597</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--purple);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-docs">docs</span>add infrastructure improvements implementation plan</div>
+          <div class="activity-hash">725cfe3</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--purple);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-docs">docs</span>infrastructure improvements design (PostHog, Tailwind v4, rate limiting)</div>
+          <div class="activity-hash">864e72c</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--text-dim);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-ci">ci</span>fix TruffleHog failure when PR base and head SHAs are identical</div>
+          <div class="activity-hash">3527b7c</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-fix">fix</span>types: remove invalid filter param from listUsers in delete-user</div>
+          <div class="activity-hash">256d009</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-fix">fix</span>types: replace getUserByEmail with listUsers, fix Zod v4 errorMap</div>
+          <div class="activity-hash">07b63e5</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--amber);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-ref">refactor</span>family: shared emailSchema, parallelize invite queries</div>
+          <div class="activity-hash">63bdf21</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-fix">fix</span>security: remove debug env escape hatch, migrate to structured logger</div>
+          <div class="activity-hash">d11b81f</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        <div class="icon amber">⚠</div>
+        Older Commits (security &amp; family)
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-fix">fix</span>security: remove PII from unauthenticated invite token lookup</div>
+          <div class="activity-hash">cfcbc55</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-fix">fix</span>security: add auth to invite decline, Zod email validation</div>
+          <div class="activity-hash">58564ae</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-fix">fix</span>security: timing-safe comparison for shared secrets in cron/sync</div>
+          <div class="activity-hash">7146cae</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-fix">fix</span>csrf: exempt only cookie-less Bearer requests</div>
+          <div class="activity-hash">8a3120c</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-fix">fix</span>deep-link: serve AASA with application/json content-type via Vercel</div>
+          <div class="activity-hash">6ac7671</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-fix">fix</span>email: use correct production domain in invite link fallback</div>
+          <div class="activity-hash">df25e36</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--brand);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-feat">feat</span>family invite system — core implementation</div>
+          <div class="activity-hash">00230b5</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-fix">fix</span>update AASA appID/paths, fix invitations-get test mocks</div>
+          <div class="activity-hash">15fbe04</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--text-dim);"></div>
+        <div>
+          <div class="activity-msg">
+            <span style="font-family:JetBrains Mono,monospace;font-size:10px;background:#14532d;color:#4ade80;padding:1px 6px;border-radius:4px;margin-right:4px;">sec</span>
+            4 security fixes landed this cycle — auth, CSRF, PII removal, timing-safe compare
+          </div>
+          <div class="activity-hash">multiple commits</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--cyan);"></div>
+        <div>
+          <div class="activity-msg"><span class="activity-type type-test">test</span>E2E suite improvements — family mgmt, invite revocation, redirect flows</div>
+          <div class="activity-hash">prior sessions</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- ── FILE INVENTORY ──────────────────────────────────── -->
+  <div class="section-label">Codebase Inventory</div>
+  <div class="grid-3" style="margin-bottom:0;">
+    <div class="panel">
+      <div class="panel-title"><div class="icon brand">P</div>Pages (71)</div>
+      <div class="pill-grid">
+        <div class="pill">dashboard <span>1</span></div>
+        <div class="pill">schools <span>5</span></div>
+        <div class="pill">coaches <span>5</span></div>
+        <div class="pill">interactions <span>3</span></div>
+        <div class="pill">settings <span>9</span></div>
+        <div class="pill">onboarding <span>2</span></div>
+        <div class="pill">offers <span>2</span></div>
+        <div class="pill">documents <span>4</span></div>
+        <div class="pill">events <span>3</span></div>
+        <div class="pill">tasks <span>1</span></div>
+        <div class="pill">performance <span>2</span></div>
+        <div class="pill">social <span>3</span></div>
+        <div class="pill">admin <span>4</span></div>
+        <div class="pill">help <span>5</span></div>
+        <div class="pill">auth <span>6</span></div>
+        <div class="pill">join <span>1</span></div>
+        <div class="pill">search <span>1</span></div>
+        <div class="pill">reports <span>2</span></div>
+        <div class="pill">timeline <span>1</span></div>
+        <div class="pill">analytics <span>1</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><div class="icon purple">C</div>Composables (119)</div>
+      <div class="pill-grid">
+        <div class="pill">school domain <span>11</span></div>
+        <div class="pill">coach domain <span>7</span></div>
+        <div class="pill">family <span>6</span></div>
+        <div class="pill">auth/session <span>5</span></div>
+        <div class="pill">documents <span>5</span></div>
+        <div class="pill">performance <span>4</span></div>
+        <div class="pill">search <span>4</span></div>
+        <div class="pill">profile <span>4</span></div>
+        <div class="pill">notifications <span>2</span></div>
+        <div class="pill">interaction <span>6</span></div>
+        <div class="pill">onboarding <span>2</span></div>
+        <div class="pill">social <span>2</span></div>
+        <div class="pill">tasks <span>2</span></div>
+        <div class="pill">NCAA data <span>4</span></div>
+        <div class="pill">utilities <span>16</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><div class="icon cyan">S</div>Server / Tests</div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text-sec);margin-bottom:6px;">API Domains</div>
+        <div class="pill-grid">
+          <div class="pill">family <span>13</span></div>
+          <div class="pill">auth <span>5</span></div>
+          <div class="pill">athlete <span>5</span></div>
+          <div class="pill">schools <span>4</span></div>
+          <div class="pill">coaches <span>2</span></div>
+          <div class="pill">tasks <span>3</span></div>
+          <div class="pill">suggestions <span>6</span></div>
+          <div class="pill">admin <span>7</span></div>
+          <div class="pill">cron <span>3</span></div>
+          <div class="pill">account <span>3</span></div>
+          <div class="pill">user/prefs <span>6</span></div>
+          <div class="pill">social <span>2</span></div>
+          <div class="pill">other <span>9</span></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-sec);margin-bottom:6px;">Test Files</div>
+        <div class="pill-grid">
+          <div class="pill">total <span>447</span></div>
+          <div class="pill">unit <span>305+</span></div>
+          <div class="pill">e2e <span>Playwright</span></div>
+          <div class="pill">iOS ViewModel <span>2</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ─────────────────────────────────────────── -->
+  <div style="margin-top:48px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div style="font-size:11px;color:var(--text-dim);">
+      The Recruiting Compass &bull; Nuxt 3 + Vue 3 + TypeScript + Supabase &bull; Branch: <span style="font-family:JetBrains Mono,monospace;color:var(--cyan);">develop</span>
+    </div>
+    <div style="font-size:11px;color:var(--text-dim);">
+      Generated March 4, 2026 &bull; Session: Family Unit Symmetric Redesign (Tasks 1–16)
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

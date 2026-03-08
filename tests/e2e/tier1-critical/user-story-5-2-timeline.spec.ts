@@ -321,7 +321,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     await expect(statsGrid).toBeVisible();
 
     // Should have 4 metric cards: Total Messages, Sent, Received, Avg Response Time
-    const statCards = statsGrid.locator(".bg-white.rounded-lg.shadow");
+    const statCards = statsGrid.locator(".bg-white.rounded-lg.shadow-sm");
     const cardCount = await statCards.count();
     expect(cardCount).toBe(4);
 

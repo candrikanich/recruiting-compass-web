@@ -1,23 +1,35 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { randomUUID } from "crypto";
+import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { sendInviteEmail } from "~/server/utils/emailService";
+import { emailSchema } from "~/utils/validation/validators";
+import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
+
+const inviteBodySchema = z.object({
+  email: emailSchema,
+  role: z.enum(["player", "parent"], "role must be player or parent"),
+});
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/invite");
   try {
-    const user = await requireAuth(event);
-    const body = await readBody(event);
-    const { email, role } = body as { email: string; role: string };
+    const { id: userId } = await requireAuth(event);
+    const rateLimitResult = await rateLimitByUser(event, userId, { requests: 10, window: "1 h" });
+    throwIfRateLimited(rateLimitResult);
 
-    if (!email || !role || !["player", "parent"].includes(role)) {
+    const user = { id: userId };
+    const rawBody = await readBody(event);
+    const parseResult = inviteBodySchema.safeParse(rawBody);
+    if (!parseResult.success) {
       throw createError({
         statusCode: 400,
-        statusMessage: "email and role (player|parent) are required",
+        statusMessage: parseResult.error.issues[0]?.message ?? "Invalid request body",
       });
     }
+    const { email, role } = parseResult.data;
 
     const supabase = useSupabaseAdmin();
 
@@ -41,7 +53,7 @@ export default defineEventHandler(async (event) => {
     const { data: existingUser } = await supabase
       .from("users")
       .select("id")
-      .eq("email", email.toLowerCase().trim())
+      .eq("email", email)
       .maybeSingle();
 
     if (existingUser) {
@@ -60,18 +72,11 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Get inviter name and family name for the email
-    const { data: inviterProfile } = await supabase
-      .from("users")
-      .select("full_name")
-      .eq("id", user.id)
-      .single();
-
-    const { data: family } = await supabase
-      .from("family_units")
-      .select("family_name")
-      .eq("id", familyUnitId)
-      .single();
+    // Get inviter name and family name for the email (parallel)
+    const [{ data: inviterProfile }, { data: family }] = await Promise.all([
+      supabase.from("users").select("full_name").eq("id", user.id).single(),
+      supabase.from("family_units").select("family_name").eq("id", familyUnitId).single(),
+    ]);
 
     const token = randomUUID();
 
@@ -80,7 +85,7 @@ export default defineEventHandler(async (event) => {
       .insert({
         family_unit_id: familyUnitId,
         invited_by: user.id,
-        invited_email: email.toLowerCase().trim(),
+        invited_email: email,
         role: role as "player" | "parent",
         token,
       })

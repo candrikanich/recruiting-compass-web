@@ -110,7 +110,7 @@ This directory contains a comprehensive WCAG 2.1 AA accessibility audit of the C
 ### Medium Priority Issues (Reduced usability - Next sprint)
 
 9. **Button clarity** - "Edit" vs "Edit Coach"
-10. **Link focus styling** - Missing focus:ring utilities
+10. **Link focus styling** - Missing focus:ring-3 utilities
 11. **Form validation** - Missing aria-invalid attributes
 12. **Skip link** - Needs testing/enhancement
 13. **Dynamic states** - Missing aria-live regions

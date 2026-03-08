@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <!-- Screen reader announcements -->
     <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
       {{ announcement }}

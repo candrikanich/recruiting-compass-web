@@ -204,7 +204,7 @@ await supabase
       v-if="isParent"
       v-model="selectedAthleteId"
       @change="handleSwitch"
-      class="px-3 py-2 border rounded"
+      class="px-3 py-2 border rounded-sm"
     >
       <option
         v-for="athlete in accessibleAthletes"
@@ -252,7 +252,7 @@ onMounted(() => {
 <template>
   <div
     v-if="showCard"
-    class="border-l-4 border-blue-500 bg-blue-50 p-4 rounded"
+    class="border-l-4 border-blue-500 bg-blue-50 p-4 rounded-sm"
   >
     <div class="flex items-center justify-between">
       <h3 class="text-sm font-semibold text-blue-900">Your Private Notes</h3>
@@ -272,7 +272,7 @@ onMounted(() => {
     <div v-else class="mt-2 space-y-2">
       <textarea
         v-model="editedContent"
-        class="w-full p-2 border rounded text-sm"
+        class="w-full p-2 border rounded-sm text-sm"
         rows="4"
         placeholder="Your private notes..."
       />
@@ -280,13 +280,13 @@ onMounted(() => {
         <button
           @click="saveNote"
           :disabled="saving"
-          class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+          class="px-3 py-1 text-sm bg-blue-600 text-white rounded-sm hover:bg-blue-700"
         >
           {{ saving ? "Saving..." : "Save" }}
         </button>
         <button
           @click="cancelEdit"
-          class="px-3 py-1 text-sm border rounded hover:bg-gray-100"
+          class="px-3 py-1 text-sm border rounded-sm hover:bg-gray-100"
         >
           Cancel
         </button>

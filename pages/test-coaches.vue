@@ -5,12 +5,12 @@
 
       <button
         @click="toggleForm"
-        class="mb-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        class="mb-6 px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700"
       >
         Toggle Form
       </button>
 
-      <div v-show="showForm" class="bg-white p-6 rounded shadow mb-8">
+      <div v-show="showForm" class="bg-white p-6 rounded-sm shadow-sm mb-8">
         <h2 class="text-xl font-bold mb-4">Add Coach</h2>
         <div class="space-y-4">
           <div>
@@ -18,7 +18,7 @@
             <select
               v-model="form.role"
               @change="onFormChange"
-              class="w-full px-3 py-2 border rounded"
+              class="w-full px-3 py-2 border rounded-sm"
             >
               <option value="">Select Role</option>
               <option value="head">Head Coach</option>
@@ -31,7 +31,7 @@
               v-model="form.firstName"
               @input="onFormChange"
               type="text"
-              class="w-full px-3 py-2 border rounded"
+              class="w-full px-3 py-2 border rounded-sm"
             />
           </div>
           <div>
@@ -40,12 +40,12 @@
               v-model="form.lastName"
               @input="onFormChange"
               type="text"
-              class="w-full px-3 py-2 border rounded"
+              class="w-full px-3 py-2 border rounded-sm"
             />
           </div>
           <button
             @click="addCoach"
-            class="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            class="w-full px-4 py-2 bg-green-600 text-white rounded-sm hover:bg-green-700"
           >
             Add Coach
           </button>
@@ -57,13 +57,13 @@
         <div
           v-for="coach in coaches"
           :key="coach.id"
-          class="bg-white p-4 rounded shadow"
+          class="bg-white p-4 rounded-sm shadow-sm"
         >
           <h3 class="font-bold">{{ coach.firstName }} {{ coach.lastName }}</h3>
           <p class="text-sm text-gray-600">{{ coach.role }}</p>
           <button
             @click="deleteCoach(coach.id)"
-            class="mt-2 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+            class="mt-2 px-3 py-1 bg-red-600 text-white text-sm rounded-sm hover:bg-red-700"
           >
             Delete
           </button>

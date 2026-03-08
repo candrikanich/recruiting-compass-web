@@ -149,18 +149,24 @@ describe("server/utils/logger", () => {
         expect(consoleLogSpy).not.toHaveBeenCalled();
       });
 
-      it("should not log warn messages in production", () => {
+      it("should always emit warn messages in production (never silenced)", () => {
         const logger = createLogger("test");
         logger.warn("Test warning");
 
-        expect(consoleWarnSpy).not.toHaveBeenCalled();
+        // warn always emits as structured JSON regardless of LOG_LEVEL
+        expect(consoleLogSpy).toHaveBeenCalled();
+        const parsed = JSON.parse(consoleLogSpy.mock.calls[0][0] as string);
+        expect(parsed.level).toBe("WARN");
       });
 
-      it("should not log error messages in production", () => {
+      it("should always emit error messages in production (never silenced)", () => {
         const logger = createLogger("test");
         logger.error("Test error");
 
-        expect(consoleErrorSpy).not.toHaveBeenCalled();
+        // error always emits as structured JSON regardless of LOG_LEVEL
+        expect(consoleLogSpy).toHaveBeenCalled();
+        const parsed = JSON.parse(consoleLogSpy.mock.calls[0][0] as string);
+        expect(parsed.level).toBe("ERROR");
       });
 
       it("should log in production when LOG_LEVEL is set", () => {
@@ -178,14 +184,15 @@ describe("server/utils/logger", () => {
         expect(parsed.timestamp).toBeDefined();
       });
 
-      it("should suppress logs below configured LOG_LEVEL in production", () => {
+      it("should still emit warn even when LOG_LEVEL=error (warn is never suppressed)", () => {
         process.env.LOG_LEVEL = "error";
         const logger = createLogger("test");
-        logger.warn("This should be suppressed");
+        logger.warn("This should still appear");
 
-        // warn is below error threshold — should not appear
-        expect(consoleWarnSpy).not.toHaveBeenCalled();
-        expect(consoleLogSpy).not.toHaveBeenCalled();
+        // warn always emits — LOG_LEVEL only filters info/debug
+        expect(consoleLogSpy).toHaveBeenCalled();
+        const parsed = JSON.parse(consoleLogSpy.mock.calls[0][0] as string);
+        expect(parsed.level).toBe("WARN");
       });
     });
 

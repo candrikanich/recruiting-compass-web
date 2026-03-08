@@ -27,7 +27,7 @@
       <!-- Offer Not Found -->
       <div
         v-else-if="!offer"
-        class="bg-white rounded-lg shadow p-12 text-center"
+        class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <p class="text-gray-600 mb-2">Offer not found</p>
         <NuxtLink
@@ -41,7 +41,7 @@
       <!-- Offer Detail -->
       <div v-else class="space-y-8">
         <!-- Offer Header -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-start justify-between mb-6">
             <div class="flex-1">
               <div class="flex items-center gap-3 mb-2">
@@ -161,7 +161,7 @@
         </div>
 
         <!-- Scholarship Calculator -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <ScholarshipCalculator
             :initial-amount="offer.scholarship_amount || undefined"
             :initial-percentage="offer.scholarship_percentage || undefined"
@@ -175,7 +175,7 @@
         </div>
 
         <!-- Edit Form -->
-        <div v-if="isEditing" class="bg-white rounded-lg shadow p-6">
+        <div v-if="isEditing" class="bg-white rounded-lg shadow-sm p-6">
           <h2 class="text-2xl font-bold text-gray-900 mb-6">Edit Offer</h2>
           <form @submit.prevent="saveOffer" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

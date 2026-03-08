@@ -44,12 +44,11 @@ interface BulkDeleteUserResponse {
 import { defineEventHandler, readBody, createError } from "h3";
 import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { createLogger } from "~/server/utils/logger";
-
-const logger = createLogger("admin/bulk-delete-users");
+import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(
   async (event): Promise<BulkDeleteUserResponse> => {
+    const logger = useLogger(event, "admin/bulk-delete-users");
     try {
       // 1. Verify user is an authenticated admin
       const user = await requireAdmin(event);

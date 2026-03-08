@@ -78,7 +78,7 @@
               <input
                 type="checkbox"
                 v-model="formatPDF"
-                class="w-4 h-4 rounded accent-blue-600"
+                class="w-4 h-4 rounded-sm accent-blue-600"
               />
               <span class="ml-2 text-sm font-medium text-slate-600"
                 >PDF (Printable)</span
@@ -88,7 +88,7 @@
               <input
                 type="checkbox"
                 v-model="formatText"
-                class="w-4 h-4 rounded accent-blue-600"
+                class="w-4 h-4 rounded-sm accent-blue-600"
               />
               <span class="ml-2 text-sm font-medium text-slate-600"
                 >Text Summary</span
@@ -131,7 +131,7 @@
           <input
             type="checkbox"
             v-model="verifiedOnly"
-            class="w-4 h-4 rounded accent-blue-600"
+            class="w-4 h-4 rounded-sm accent-blue-600"
           />
           <label class="ml-2 text-sm font-medium text-slate-600"
             >Verified Metrics Only</label

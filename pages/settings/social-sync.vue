@@ -1,13 +1,13 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-3xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
@@ -22,7 +22,7 @@
     <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
       <!-- Sync Status Card -->
       <div
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
       >
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Sync Status</h2>
 
@@ -63,7 +63,7 @@
 
       <!-- Auto Sync Settings -->
       <div
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
       >
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Automatic Sync</h2>
 
@@ -72,7 +72,7 @@
             <input
               v-model="autoSyncEnabled"
               type="checkbox"
-              class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+              class="w-5 h-5 text-blue-600 rounded-sm border-gray-300 focus:ring-blue-500"
             />
             <span class="text-gray-700 font-medium">Enable automatic sync</span>
           </label>
@@ -93,7 +93,7 @@
 
       <!-- Tracked Accounts -->
       <div
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
       >
         <h2 class="text-lg font-semibold text-gray-900 mb-4">
           Tracked Accounts
@@ -156,7 +156,7 @@
       </div>
 
       <!-- Notification Settings -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">
           Notification Settings
         </h2>
@@ -166,7 +166,7 @@
             <input
               v-model="notifyOnRecruitingPosts"
               type="checkbox"
-              class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+              class="w-5 h-5 text-blue-600 rounded-sm border-gray-300 focus:ring-blue-500"
             />
             <div>
               <span class="text-gray-700 font-medium"
@@ -182,7 +182,7 @@
             <input
               v-model="notifyOnMentions"
               type="checkbox"
-              class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+              class="w-5 h-5 text-blue-600 rounded-sm border-gray-300 focus:ring-blue-500"
             />
             <div>
               <span class="text-gray-700 font-medium">Position mentions</span>

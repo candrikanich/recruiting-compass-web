@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-lg shadow p-6">
+  <div class="bg-white rounded-lg shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
         <svg
@@ -33,7 +33,7 @@
         @click="$emit('apply-search', search)"
       >
         <svg
-          class="h-4 w-4 text-yellow-600 flex-shrink-0"
+          class="h-4 w-4 text-yellow-600 shrink-0"
           fill="currentColor"
           viewBox="0 0 24 24"
         >
@@ -95,7 +95,7 @@
         @click="$emit('apply-search', search)"
       >
         <svg
-          class="h-4 w-4 text-gray-400 flex-shrink-0"
+          class="h-4 w-4 text-gray-400 shrink-0"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

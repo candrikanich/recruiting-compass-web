@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="linkedAthletes.length > 0"
-    class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"
+    class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden"
   >
     <!-- Header -->
     <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
@@ -39,7 +39,7 @@
         <div class="flex items-start gap-3">
           <!-- Type Icon -->
           <div
-            class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
             :class="getTypeIconBg(interaction.type)"
           >
             <component

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Back Link -->
@@ -28,7 +28,7 @@
           </div>
           <button
             @click="showAddForm = !showAddForm"
-            class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+            class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
           >
             <span v-if="!showAddForm">+</span>
             {{ showAddForm ? "Cancel" : "Log Interaction" }}
@@ -47,7 +47,7 @@
 
       <!-- Summary Metrics -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
           <p class="text-slate-600 text-xs sm:text-sm font-medium">
             Total Interactions
           </p>
@@ -55,19 +55,19 @@
             {{ filteredInteractions.length }}
           </p>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
           <p class="text-slate-600 text-xs sm:text-sm font-medium">Sent</p>
           <p class="text-2xl sm:text-3xl font-bold text-blue-600 mt-1">
             {{ outboundCount }}
           </p>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
           <p class="text-slate-600 text-xs sm:text-sm font-medium">Received</p>
           <p class="text-2xl sm:text-3xl font-bold text-emerald-600 mt-1">
             {{ inboundCount }}
           </p>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
           <p class="text-slate-600 text-xs sm:text-sm font-medium">
             Last Contact
           </p>
@@ -89,7 +89,7 @@
       <!-- Loading State -->
       <div
         v-if="loading && interactions.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         role="status"
         aria-live="polite"
       >
@@ -103,7 +103,7 @@
       <!-- Empty State (No Interactions at All) -->
       <div
         v-if="!loading && interactions.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <ChatBubbleLeftRightIcon
           class="w-12 h-12 text-slate-300 mx-auto mb-4"
@@ -126,7 +126,7 @@
           interactions.length > 0 &&
           filteredInteractions.length === 0
         "
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <ChatBubbleLeftRightIcon
           class="w-12 h-12 text-slate-300 mx-auto mb-4"

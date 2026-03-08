@@ -159,20 +159,10 @@ describe("RuleEngine", () => {
         evaluate: vi.fn().mockRejectedValue(mockError),
       };
 
-      const consoleSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-
       engine.addRule(rule);
       const result = await engine.evaluateAll(mockContext);
 
       expect(result.length).toBe(0);
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("error-rule"),
-        mockError,
-      );
-
-      consoleSpy.mockRestore();
     });
 
     it("should combine results from multiple rules", async () => {

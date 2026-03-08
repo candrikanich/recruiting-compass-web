@@ -52,7 +52,7 @@
           <button
             @click="showPanel = false"
             aria-label="Close communication panel"
-            class="text-slate-400 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded p-1"
+            class="text-slate-400 hover:text-slate-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500 rounded-sm p-1"
           >
             <XMarkIcon class="w-6 h-6" aria-hidden="true" />
           </button>
@@ -66,7 +66,7 @@
 - Added `aria-label="Close communication panel"` to close button
 - Added `@keydown.esc="showPanel = false"` for Escape key support
 - Added `aria-hidden="true"` to icon (text label is sufficient)
-- Added focus:ring styling to close button
+- Added focus:ring-3 styling to close button
 
 **Focus Trap Implementation (add to script):**
 
@@ -133,7 +133,7 @@ watch(showPanel, (isOpen) => {
         <button
           @click="$emit('close')"
           aria-label="Close edit dialog"
-          class="text-slate-500 transition hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded p-1"
+          class="text-slate-500 transition hover:text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 rounded-sm p-1"
         >
           <span aria-hidden="true">×</span>
         </button>
@@ -151,7 +151,7 @@ watch(showPanel, (isOpen) => {
     <h2 id="coach-stats-heading" class="sr-only">Coach Statistics</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Days Since Contact - COLOR ONLY -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <h3 id="stat-days-since-contact" class="text-sm text-slate-500">
           Days Since Contact
         </h3>
@@ -184,7 +184,7 @@ const daysSinceContactColor = computed(() => {
     <h2 id="coach-stats-heading" class="sr-only">Coach Statistics</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Days Since Contact - COLOR + TEXT LABEL -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <h3 id="stat-days-since-contact" class="text-sm text-slate-500">
           Days Since Contact
         </h3>
@@ -199,7 +199,7 @@ const daysSinceContactColor = computed(() => {
           <!-- Text badge with status -->
           <span
             :class="[
-              'text-xs font-semibold px-2 py-1 rounded border border-current',
+              'text-xs font-semibold px-2 py-1 rounded-sm border border-current',
               daysSinceContactBadgeClass,
             ]"
             role="status"
@@ -255,7 +255,7 @@ const daysSinceContactHint = computed(() => {
 
 ```vue
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <h3 class="text-lg font-semibold text-slate-900 mb-4">
       Recent Interactions
     </h3>
@@ -295,7 +295,7 @@ const daysSinceContactHint = computed(() => {
 
 ```vue
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <h2 class="text-lg font-semibold text-slate-900 mb-4">
       Recent Interactions with {{ coachName }}
     </h2>
@@ -317,7 +317,7 @@ const daysSinceContactHint = computed(() => {
         <div class="flex items-center gap-3 flex-1">
           <!-- Icon with aria-label -->
           <div
-            class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+            class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
             :class="getInteractionBgColor(interaction.type)"
             role="img"
             :aria-label="formatInteractionType(interaction.type)"
@@ -342,11 +342,11 @@ const daysSinceContactHint = computed(() => {
         </div>
 
         <!-- Right side info -->
-        <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+        <div class="flex items-center gap-2 shrink-0 ml-2">
           <!-- Sentiment with aria-label -->
           <span
             v-if="interaction.sentiment"
-            class="px-2 py-1 text-xs font-semibold rounded"
+            class="px-2 py-1 text-xs font-semibold rounded-sm"
             :class="getSentimentColor(interaction.sentiment)"
             :aria-label="`Sentiment: ${interaction.sentiment}`"
           >
@@ -386,7 +386,7 @@ const daysSinceContactHint = computed(() => {
 
 ```vue
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-semibold text-slate-900">Notes</h3>
       <button @click="toggleEdit" class="text-sm text-slate-600">
@@ -432,12 +432,12 @@ const daysSinceContactHint = computed(() => {
     }}
   </div>
 
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-semibold text-slate-900">Notes</h3>
       <button
         @click="toggleEdit"
-        class="text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2"
+        class="text-sm text-slate-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500 rounded-sm px-2"
         :aria-label="isEditing ? 'Cancel editing notes' : 'Edit notes'"
       >
         <PencilIcon class="w-4 h-4" aria-hidden="true" />
@@ -542,7 +542,7 @@ const handleSave = async () => {
 <button
   @click="showPanel = false"
   aria-label="Close communication panel"
-  class="text-slate-400 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded p-1"
+  class="text-slate-400 hover:text-slate-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500 rounded-sm p-1"
 >
   <XMarkIcon class="w-6 h-6" aria-hidden="true" />
 </button>
@@ -551,7 +551,7 @@ const handleSave = async () => {
 <button
   @click="$emit('close')"
   aria-label="Close"
-  class="text-slate-500 transition hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded p-1"
+  class="text-slate-500 transition hover:text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 rounded-sm p-1"
 >
   <span aria-hidden="true">×</span>
 </button>
@@ -559,7 +559,7 @@ const handleSave = async () => {
 <!-- Option 3: Visible text + icon (best for clarity) -->
 <button
   @click="$emit('close')"
-  class="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-3 py-1"
+  class="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 rounded-sm px-3 py-1"
 >
   <span>Close</span>
   <XMarkIcon class="w-4 h-4" aria-hidden="true" />
@@ -570,7 +570,7 @@ const handleSave = async () => {
 
 - Added `aria-label` to button explaining its purpose
 - Added `aria-hidden="true"` to icon (text label is sufficient)
-- Added `focus:outline-none focus:ring-2 focus:ring-blue-500` for visible focus
+- Added `focus:outline-hidden focus:ring-2 focus:ring-blue-500` for visible focus
 
 ---
 

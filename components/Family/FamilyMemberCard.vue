@@ -20,7 +20,7 @@
           </h3>
           <span
             :class="[
-              'px-2 py-1 rounded text-xs font-medium',
+              'px-2 py-1 rounded-sm text-xs font-medium',
               member.role === 'player'
                 ? 'bg-blue-200 text-blue-800'
                 : 'bg-green-200 text-green-800',
@@ -52,7 +52,7 @@
       <button
         v-if="isPlayer && member.role === 'parent'"
         @click="$emit('remove', member.id)"
-        class="ml-4 px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-100 rounded transition-colors"
+        class="ml-4 px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-100 rounded-sm transition-colors"
         title="Remove this parent from your family"
       >
         ✕ Remove

@@ -36,7 +36,7 @@
               <button
                 @click="removeToast(toast.id)"
                 :aria-label="`Dismiss ${toast.type} notification: ${toast.message}`"
-                class="hover:opacity-70 transition focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+                class="hover:opacity-70 transition focus:outline-hidden focus:ring-2 focus:ring-white focus:ring-offset-2"
               >
                 <XMarkIcon class="w-5 h-5" aria-hidden="true" />
               </button>
@@ -49,11 +49,11 @@
 </template>
 
 <script setup lang="ts">
-import { useToast } from "~/composables/useToast";
+import { useAppToast } from "~/composables/useAppToast";
 import { XMarkIcon, CheckIcon } from "@heroicons/vue/24/solid";
 import type { ToastType } from "~/types/toast";
 
-const { toasts, removeToast } = useToast();
+const { toasts, removeToast } = useAppToast();
 
 const toastClass = (type: ToastType): string => {
   const colors: Record<ToastType, string> = {

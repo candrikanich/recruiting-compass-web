@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
     <PageHeader title="Recommendation Letters" description="Track recommendation letter requests and submissions" />
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Filters Section -->
-      <div class="bg-white rounded-lg shadow p-6 mb-8">
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <!-- Status Filter -->
           <div>
@@ -60,7 +60,7 @@
       </div>
 
       <!-- Add/Edit Form -->
-      <div v-if="showAddForm" class="bg-white rounded-lg shadow p-6 mb-8">
+      <div v-if="showAddForm" class="bg-white rounded-lg shadow-sm p-6 mb-8">
         <h2 class="text-2xl font-bold text-gray-900 mb-6">
           {{
             editingId
@@ -255,7 +255,7 @@
       <!-- Empty State -->
       <div
         v-else-if="letters.length === 0"
-        class="bg-white rounded-lg shadow p-12 text-center"
+        class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <p class="text-gray-600 mb-2">No recommendation letters tracked yet</p>
         <p class="text-sm text-gray-500">
@@ -266,7 +266,7 @@
       <!-- No Results -->
       <div
         v-else-if="filteredLetters.length === 0"
-        class="bg-white rounded-lg shadow p-12 text-center"
+        class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <p class="text-gray-600 mb-2">No letters match your filters</p>
         <p class="text-sm text-gray-500">
@@ -279,7 +279,7 @@
         <div
           v-for="letter in filteredLetters"
           :key="letter.id"
-          class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition"
+          class="bg-white rounded-lg shadow-sm p-6 hover:shadow-lg transition"
         >
           <div class="flex items-start justify-between mb-4">
             <div class="flex-1">
@@ -309,13 +309,13 @@
             <div class="flex gap-2">
               <button
                 @click="editLetter(letter)"
-                class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"
+                class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-sm hover:bg-blue-200 transition"
               >
                 Edit
               </button>
               <button
                 @click="handleDelete(letter.id)"
-                class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+                class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-sm hover:bg-red-200 transition"
               >
                 Delete
               </button>

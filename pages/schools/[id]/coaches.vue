@@ -13,7 +13,7 @@
 
       <!-- Header with gradient -->
       <div
-        class="bg-gradient-to-r from-slate-900 to-slate-800 text-white px-8 py-8 rounded-2xl shadow-lg mb-8"
+        class="bg-linear-to-r from-slate-900 to-slate-800 text-white px-8 py-8 rounded-2xl shadow-lg mb-8"
       >
         <div class="flex items-center justify-between">
           <div>
@@ -22,7 +22,7 @@
           </div>
           <button
             @click="showAddForm = !showAddForm"
-            class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-indigo-600 hover:to-indigo-700 transition shadow-lg"
+            class="px-6 py-3 bg-linear-to-r from-indigo-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-indigo-600 hover:to-indigo-700 transition shadow-lg"
           >
             {{ showAddForm ? "Cancel" : "+ Add Coach" }}
           </button>
@@ -47,7 +47,7 @@
               v-model="searchQuery"
               type="text"
               placeholder="Name, email, phone..."
-              class="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              class="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             />
           </div>
 
@@ -62,7 +62,7 @@
             <select
               id="roleFilter"
               v-model="filters.role"
-              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
+              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
               :style="selectDropdownStyle"
             >
               <option value="">All Roles</option>
@@ -83,7 +83,7 @@
             <select
               id="sortFilter"
               v-model="sortBy"
-              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
+              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
               :style="selectDropdownStyle"
             >
               <option value="name">Name (A-Z)</option>

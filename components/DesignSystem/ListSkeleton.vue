@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-lg shadow divide-y divide-gray-200">
+  <div class="bg-white rounded-lg shadow-sm divide-y divide-gray-200">
     <div v-for="i in lines" :key="i" class="p-4 space-y-2">
       <div class="flex items-center justify-between">
         <LoadingSkeleton className="h-5 w-1/3" />

@@ -10,12 +10,14 @@ test.describe("Email Verification Flow", () => {
   }) => {
     // Navigate to signup
     await page.goto("/signup");
+    // Select user type first (new signup flow requires this step)
+    await page.locator('[data-testid="user-type-player"]').click();
+    await page.waitForSelector("#firstName");
 
     // Fill signup form
     await page.fill("#firstName", "Email");
     await page.fill("#lastName", "Verification");
     await page.fill("#email", testEmail);
-    await page.selectOption("#role", "player");
     await page.fill("#password", testPassword);
     await page.fill("#confirmPassword", testPassword);
 

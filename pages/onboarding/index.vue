@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12"
+    class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 px-4 py-12"
   >
     <div class="max-w-2xl mx-auto">
       <!-- Header -->
@@ -325,6 +325,7 @@ import { useOnboarding } from "~/composables/useOnboarding";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useFamilyInvite } from "~/composables/useFamilyInvite";
+import { useAppToast } from "~/composables/useAppToast";
 
 definePageMeta({ layout: "default" });
 
@@ -334,7 +335,7 @@ const { setHomeLocation, setPlayerDetails, loadAllPreferences } =
   usePreferenceManager();
 const { myFamilyCode, fetchMyCode, copyCodeToClipboard } = useFamilyCode();
 const { sendInvite, loading: inviteLoading } = useFamilyInvite();
-const { showToast } = useToast();
+const { showToast } = useAppToast();
 
 const codeCopied = ref(false);
 

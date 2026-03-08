@@ -155,7 +155,7 @@ const focusField = (fieldName: string) => {
   class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
 >
   <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
-    <div class="bg-gradient-to-r ... px-6 py-4 text-white">
+    <div class="bg-linear-to-r ... px-6 py-4 text-white">
       <h2 class="text-xl font-bold">Add New Coach</h2>
     </div>
   </div>
@@ -174,7 +174,7 @@ const focusField = (fieldName: string) => {
     aria-modal="true"
     aria-labelledby="modal-title"
   >
-    <div class="bg-gradient-to-r ... px-6 py-4 text-white">
+    <div class="bg-linear-to-r ... px-6 py-4 text-white">
       <h2 id="modal-title" class="text-xl font-bold">Add New Coach</h2>
     </div>
   </div>
@@ -263,7 +263,7 @@ const focusField = (fieldName: string) => {
 
 ```html
 <select
-  class="... focus:ring-2 focus:ring-blue-600 focus:border-transparent focus:outline-none"
+  class="... focus:ring-2 focus:ring-blue-600 focus:border-transparent focus:outline-hidden"
 ></select>
 ```
 

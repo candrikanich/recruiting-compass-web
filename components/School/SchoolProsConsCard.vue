@@ -1,7 +1,7 @@
 <template>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <!-- Pros -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
       <h3 class="font-semibold text-slate-900 mb-4 flex items-center gap-2">
         <div
           class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center"
@@ -33,7 +33,7 @@
           v-model="newProInput"
           type="text"
           placeholder="Add a pro..."
-          class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           @keyup.enter="handleAddPro"
         />
         <button
@@ -47,7 +47,7 @@
     </div>
 
     <!-- Cons -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
       <h3 class="font-semibold text-slate-900 mb-4 flex items-center gap-2">
         <div
           class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center"
@@ -79,7 +79,7 @@
           v-model="newConInput"
           type="text"
           placeholder="Add a con..."
-          class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           @keyup.enter="handleAddCon"
         />
         <button

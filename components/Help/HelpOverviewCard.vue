@@ -1,7 +1,7 @@
 <template>
   <NuxtLink
     :to="`/help/${slug}`"
-    class="group flex flex-col gap-3 rounded-xl border border-gray-200 p-5 transition-all hover:border-primary-300 hover:shadow-sm"
+    class="group flex flex-col gap-3 rounded-xl border border-gray-200 p-5 transition-all hover:border-primary-300 hover:shadow-xs"
   >
     <div class="flex size-10 items-center justify-center rounded-lg bg-primary-50 text-primary-600 transition-colors group-hover:bg-primary-100">
       <UIcon :name="icon" class="size-5" />

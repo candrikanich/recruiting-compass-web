@@ -1,7 +1,7 @@
 <template>
   <div
     data-testid="contact-frequency-widget"
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <div class="flex items-center justify-between mb-5">
       <div class="flex items-center gap-3">
@@ -46,7 +46,7 @@
           <div class="text-xs text-slate-600">Avg/Month</div>
         </div>
         <div
-          class="text-center cursor-pointer hover:bg-slate-100 rounded transition-colors p-1"
+          class="text-center cursor-pointer hover:bg-slate-100 rounded-sm transition-colors p-1"
           data-testid="metric-need-attention"
         >
           <div class="text-lg font-bold text-slate-900">
@@ -84,7 +84,7 @@
             </div>
           </div>
           <div
-            class="ml-2 px-2 py-1 bg-brand-blue-100 text-brand-blue-700 rounded text-xs font-medium whitespace-nowrap"
+            class="ml-2 px-2 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-sm text-xs font-medium whitespace-nowrap"
           >
             {{ contact.contactCount }}
           </div>

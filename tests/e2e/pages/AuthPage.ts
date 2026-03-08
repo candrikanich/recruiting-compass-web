@@ -8,7 +8,11 @@ export class AuthPage extends BasePage {
     await this.page.waitForTimeout(1000);
   }
 
-  async login(email: string, password: string) {
+  async login(
+    email: string,
+    password: string,
+    expectedUrl: string | RegExp = "/dashboard",
+  ) {
     await this.fillAndValidate('input[type="email"]', email);
     await this.fillAndValidate('input[type="password"]', password);
 
@@ -17,17 +21,33 @@ export class AuthPage extends BasePage {
     await this.click('[data-testid="login-button"]');
 
     // Wait for navigation with longer timeout
-    await this.page.waitForURL("/dashboard", { timeout: 15000 });
+    await this.page.waitForURL(expectedUrl, { timeout: 15000 });
   }
 
-  async signup(email: string, password: string, displayName: string) {
+  async signup(
+    email: string,
+    password: string,
+    displayName: string,
+    role: "player" | "parent" = "parent",
+  ) {
     // Click signup link - use more specific selector
     await this.click('a[href="/signup"]');
     await this.waitForURL("/signup");
 
+    // Step 1: Select user type (new signup flow)
+    const userTypeSelector = this.page.locator(
+      `[data-testid="user-type-${role}"]`,
+    );
+    const userTypeSelectorVisible = await userTypeSelector
+      .isVisible()
+      .catch(() => false);
+    if (userTypeSelectorVisible) {
+      await userTypeSelector.click({ timeout: 5000 });
+    }
+
     const [firstName, lastName] = displayName.split(" ");
 
-    // Wait for form to be ready and fill all fields
+    // Wait for form to be ready (shows after user type selection)
     await this.waitForElement("#firstName");
     await this.fillAndValidate("#firstName", firstName || displayName);
 
@@ -36,7 +56,6 @@ export class AuthPage extends BasePage {
     }
 
     await this.fillAndValidate("#email", email);
-    await this.selectOption("#role", "parent"); // Default role
     await this.fillAndValidate("#password", password);
 
     // Make sure confirm password field is ready before filling
@@ -52,8 +71,8 @@ export class AuthPage extends BasePage {
     await this.waitForElementEnabled('[data-testid="signup-button"]');
     await this.click('[data-testid="signup-button"]');
 
-    // Wait for navigation to verify-email page (email verification flow)
-    await this.page.waitForURL(/\/verify-email/, { timeout: 15000 });
+    // Wait for navigation to onboarding (or verify-email for legacy flow)
+    await this.page.waitForURL(/\/(onboarding|verify-email)/, { timeout: 15000 });
   }
 
   async logout() {
@@ -85,10 +104,8 @@ export class AuthPage extends BasePage {
   }
 
   async expectVerifyEmail() {
-    await this.expectURL(/\/verify-email/);
-    // Check for verify email page header
-    const header = this.page.locator("h1:has-text('Verify Your Email')");
-    await header.waitFor({ state: "visible", timeout: 5000 });
+    // Signup now redirects to onboarding or verify-email depending on Supabase config
+    await this.expectURL(/\/(onboarding|verify-email)/);
   }
 
   async expectError(message: string) {

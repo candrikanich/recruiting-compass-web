@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl border border-amber-200 shadow-sm p-6"
+    class="bg-linear-to-br from-amber-50 to-amber-100 rounded-2xl border border-amber-200 shadow-xs p-6"
   >
     <div
       data-testid="guidance-header"

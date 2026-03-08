@@ -12,7 +12,7 @@
 ### 1. No Focus Visible Indicators
 
 **Files:** All components + index.vue
-**Fix:** Change `focus:outline-none` → `focus:outline-2 focus:outline-blue-600 focus:outline-offset-1`
+**Fix:** Change `focus:outline-hidden` → `focus:outline-2 focus:outline-blue-600 focus:outline-offset-1`
 **Impact:** Keyboard users cannot see focused elements
 
 ### 2. Filter Inputs Not Associated with Labels

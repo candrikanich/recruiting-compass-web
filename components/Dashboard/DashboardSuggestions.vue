@@ -22,7 +22,7 @@
       class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-4 rounded-r"
     >
       <div class="flex items-start">
-        <div class="flex-shrink-0">
+        <div class="shrink-0">
           <svg
             class="h-5 w-5 text-amber-400"
             viewBox="0 0 20 20"
@@ -66,7 +66,7 @@
     <!-- Pending Reminders Indicator -->
     <div
       v-if="moreCount > 0"
-      class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded text-center"
+      class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-sm text-center"
     >
       <p class="text-sm text-blue-700 mb-2">
         <span class="font-semibold">{{ moreCount }}</span>

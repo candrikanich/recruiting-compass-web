@@ -171,7 +171,7 @@
                     :checked="allSelected"
                     @change="toggleSelectAll"
                     data-testid="select-all-checkbox"
-                    class="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    class="h-5 w-5 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                   />
                 </th>
                 <th class="text-left py-3 px-4 font-semibold text-slate-900">
@@ -207,14 +207,14 @@
                     :checked="selectedUserEmails.has(user.email)"
                     @change="toggleUserSelection(user.email)"
                     data-testid="user-checkbox"
-                    class="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    class="h-5 w-5 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                   />
                   <span v-else class="text-slate-400 text-xs font-medium"
                     >Current</span
                   >
                 </td>
                 <td class="py-3 px-4">
-                  <code class="text-sm bg-slate-100 px-2 py-1 rounded">{{
+                  <code class="text-sm bg-slate-100 px-2 py-1 rounded-sm">{{
                     user.email
                   }}</code>
                 </td>
@@ -274,7 +274,7 @@
               <label class="text-sm text-slate-600">Per page</label>
               <select
                 v-model.number="pageSize"
-                class="rounded border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                class="rounded-sm border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 @change="currentPage = 1"
               >
                 <option
@@ -290,7 +290,7 @@
               <button
                 type="button"
                 :disabled="currentPage <= 1"
-                class="rounded px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                class="rounded-sm px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                 @click="currentPage = currentPage - 1"
               >
                 Previous
@@ -300,7 +300,7 @@
                   v-if="p !== 'ellipsis'"
                   type="button"
                   :class="[
-                    'min-w-[2.25rem] rounded px-2 py-1.5 text-sm font-medium',
+                    'min-w-9 rounded-sm px-2 py-1.5 text-sm font-medium',
                     p === currentPage
                       ? 'bg-blue-600 text-white'
                       : 'text-slate-700 hover:bg-slate-100',
@@ -320,7 +320,7 @@
               <button
                 type="button"
                 :disabled="currentPage >= totalPages"
-                class="rounded px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                class="rounded-sm px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                 @click="currentPage = currentPage + 1"
               >
                 Next
@@ -346,14 +346,14 @@
               v-model="deleteByEmailInput"
               type="email"
               placeholder="user@example.com"
-              class="flex-1 rounded border border-red-300 bg-white px-3 py-1.5 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500"
+              class="flex-1 rounded-sm border border-red-300 bg-white px-3 py-1.5 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500"
               data-testid="delete-by-email-input"
               @keyup.enter="deleteUserByEmail"
             />
             <button
               type="button"
               :disabled="!deleteByEmailInput.trim() || !!deleting"
-              class="rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              class="rounded-sm bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
               data-testid="delete-by-email-btn"
               @click="deleteUserByEmail"
             >
@@ -414,7 +414,7 @@
                 class="border-b border-slate-100 hover:bg-slate-50"
               >
                 <td class="py-3 px-4">
-                  <code class="text-sm bg-slate-100 px-2 py-1 rounded">{{
+                  <code class="text-sm bg-slate-100 px-2 py-1 rounded-sm">{{
                     inv.invited_email
                   }}</code>
                 </td>
@@ -531,7 +531,7 @@ import {
 } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useSupabase } from "~/composables/useSupabase";
-import { useToast } from "~/composables/useToast";
+import { useAppToast } from "~/composables/useAppToast";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 const BulkDeleteConfirmModal = defineAsyncComponent(
   () => import("~/components/Admin/BulkDeleteConfirmModal.vue"),
@@ -552,7 +552,7 @@ interface User {
 
 const { session } = useAuth();
 const supabase = useSupabase();
-const { showToast } = useToast();
+const { showToast } = useAppToast();
 const { $fetchAuth } = useAuthFetch();
 
 // Users state

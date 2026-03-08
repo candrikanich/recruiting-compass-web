@@ -27,7 +27,7 @@
       <!-- Document Not Found -->
       <div
         v-else-if="!document"
-        class="bg-white rounded-lg shadow p-12 text-center"
+        class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <p class="text-gray-600 mb-2">Document not found</p>
         <NuxtLink
@@ -41,7 +41,7 @@
       <!-- Document Detail -->
       <div v-else class="space-y-8">
         <!-- Document Header -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-start justify-between mb-6">
             <div class="flex-1">
               <div class="flex items-center gap-3 mb-2">
@@ -116,7 +116,7 @@
         </div>
 
         <!-- Document Preview -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <h2 class="text-xl font-bold text-gray-900 mb-4">Preview</h2>
 
           <!-- Video -->
@@ -154,7 +154,7 @@
         </div>
 
         <!-- Version History -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <h2 class="text-xl font-bold text-gray-900 mb-4">Version History</h2>
 
           <div v-if="documentVersions.length > 0" class="space-y-2">
@@ -170,7 +170,7 @@
                   >
                   <span
                     v-if="version.is_current"
-                    class="inline-block px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded"
+                    class="inline-block px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-sm"
                   >
                     Current
                   </span>
@@ -184,14 +184,14 @@
                   :href="version.file_url"
                   target="_blank"
                   rel="noopener"
-                  class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"
+                  class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-sm hover:bg-blue-200 transition"
                 >
                   View
                 </a>
                 <button
                   v-if="!version.is_current"
                   @click="restoreVersion(version.id)"
-                  class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition"
+                  class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-sm hover:bg-gray-200 transition"
                 >
                   Restore
                 </button>
@@ -212,7 +212,7 @@
         </div>
 
         <!-- Edit Form -->
-        <div v-if="isEditing" class="bg-white rounded-lg shadow p-6">
+        <div v-if="isEditing" class="bg-white rounded-lg shadow-sm p-6">
           <h2 class="text-xl font-bold text-gray-900 mb-6">Edit Document</h2>
           <form @submit.prevent="saveDocument" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -318,7 +318,7 @@
               <div
                 v-for="schoolId in document?.shared_with_schools || []"
                 :key="schoolId"
-                class="flex items-center justify-between p-2 bg-blue-50 rounded"
+                class="flex items-center justify-between p-2 bg-blue-50 rounded-sm"
               >
                 <span class="text-sm text-gray-900">{{
                   getSchoolNameById(schoolId)
@@ -342,13 +342,13 @@
               <label
                 v-for="school in availableSchools"
                 :key="school.id"
-                class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-sm cursor-pointer"
               >
                 <input
                   :checked="selectedSchools.includes(school.id)"
                   @change="toggleSchoolSelection(school.id)"
                   type="checkbox"
-                  class="w-4 h-4 rounded"
+                  class="w-4 h-4 rounded-sm"
                 />
                 <span class="text-sm text-gray-900">{{ school.name }}</span>
               </label>

@@ -3,14 +3,14 @@
     <Transition name="fade">
       <div
         v-if="isOpen"
-        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4"
       >
         <div
           class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-slide-up"
         >
           <!-- Header with gradient -->
           <div
-            class="bg-gradient-to-r from-amber-500 to-red-500 text-white px-6 py-8"
+            class="bg-linear-to-r from-amber-500 to-red-500 text-white px-6 py-8"
           >
             <h2 class="text-2xl font-bold mb-2">Let's Get Back on Track 🎯</h2>
             <p class="text-amber-50 text-sm">
@@ -21,7 +21,7 @@
           <!-- Plan Content -->
           <div class="px-6 py-6 space-y-6">
             <!-- Trigger Info -->
-            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded">
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-sm">
               <p class="text-sm text-amber-900 font-medium">{{ plan.title }}</p>
               <p class="text-xs text-amber-700 mt-1">{{ plan.description }}</p>
             </div>
@@ -53,7 +53,7 @@
                   class="flex gap-3"
                 >
                   <span
-                    class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-xs font-bold"
+                    class="shrink-0 w-6 h-6 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-xs font-bold"
                   >
                     {{ idx + 1 }}
                   </span>
@@ -63,7 +63,7 @@
             </div>
 
             <!-- Support Message -->
-            <div class="bg-green-50 rounded p-4 text-center">
+            <div class="bg-green-50 rounded-sm p-4 text-center">
               <p class="text-sm text-green-900">
                 <strong>You've got this!</strong> Many athletes successfully
                 recover from setbacks. Focus on the first step.
@@ -77,7 +77,7 @@
           >
             <button
               @click="handleAcknowledge"
-              class="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 transition"
+              class="w-full px-4 py-3 bg-linear-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 transition"
             >
               Start Recovery Plan
             </button>

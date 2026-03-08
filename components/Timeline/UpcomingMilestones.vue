@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6">
     <div
       data-testid="guidance-header"
       role="button"
@@ -43,7 +43,7 @@
         rel="noopener"
         class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition group cursor-pointer border border-slate-200 hover:border-slate-300"
       >
-        <div class="flex-shrink-0">
+        <div class="shrink-0">
           <div class="text-2xl">{{ getMilestoneIcon(milestone.type) }}</div>
         </div>
         <div class="flex-1 min-w-0">
@@ -59,7 +59,7 @@
         </div>
         <div
           v-if="milestone.url"
-          class="flex-shrink-0 text-slate-400 group-hover:text-slate-600 transition"
+          class="shrink-0 text-slate-400 group-hover:text-slate-600 transition"
         >
           ↗
         </div>

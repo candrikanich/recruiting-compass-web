@@ -1,13 +1,13 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
@@ -85,7 +85,7 @@
         <!-- Empty State -->
         <div
           v-if="filteredTemplates.length === 0"
-          class="bg-white rounded-lg shadow p-8 text-center"
+          class="bg-white rounded-lg shadow-sm p-8 text-center"
         >
           <p class="text-gray-600">No templates found</p>
         </div>
@@ -95,7 +95,7 @@
           <div
             v-for="template in filteredTemplates"
             :key="template.id"
-            class="bg-white rounded-lg shadow p-6 hover:shadow-md transition"
+            class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition"
           >
             <div class="flex items-start justify-between mb-3">
               <div class="flex-1">
@@ -114,7 +114,7 @@
               </div>
               <button
                 @click="editTemplate(template)"
-                class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded hover:bg-blue-100 transition"
+                class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-sm hover:bg-blue-100 transition"
               >
                 Edit
               </button>

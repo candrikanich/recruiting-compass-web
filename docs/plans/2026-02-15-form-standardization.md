@@ -149,7 +149,7 @@ Create component file:
       :aria-describedby="error ? `${inputId}-error` : undefined"
       :class="[
         'w-full px-4 py-3 bg-white border-2 rounded-xl',
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+        'focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent',
         'transition-all placeholder:text-slate-600',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         error ? 'border-red-500' : 'border-slate-300'
@@ -355,7 +355,7 @@ Expected: FAIL with "Cannot find module"
       :aria-describedby="error ? `${selectId}-error` : undefined"
       :class="[
         'w-full px-4 py-3 bg-white border-2 rounded-xl',
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+        'focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent',
         'transition-all appearance-none cursor-pointer',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         error ? 'border-red-500' : 'border-slate-300'
@@ -566,7 +566,7 @@ Expected: FAIL with "Cannot find module"
       :aria-describedby="error ? `${textareaId}-error` : undefined"
       :class="[
         'w-full px-4 py-3 bg-white border-2 rounded-xl',
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+        'focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent',
         'transition-all resize-none placeholder:text-slate-600',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         error ? 'border-red-500' : 'border-slate-300'
@@ -761,10 +761,10 @@ Expected: FAIL with "Cannot find module"
       :aria-busy="loading"
       :class="[
         'flex-1 px-4 py-3 text-white font-semibold rounded-xl transition',
-        'bg-gradient-to-r from-blue-500 to-blue-600',
+        'bg-linear-to-r from-blue-500 to-blue-600',
         'hover:from-blue-600 hover:to-blue-700',
         'disabled:opacity-50 disabled:cursor-not-allowed',
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+        'focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
       ]"
       @click="$emit('submit')"
     >
@@ -777,7 +777,7 @@ Expected: FAIL with "Cannot find module"
         'flex-1 px-4 py-3 bg-white text-slate-700 font-semibold rounded-xl',
         'border-2 border-slate-300 hover:bg-slate-50 transition',
         'disabled:opacity-50 disabled:cursor-not-allowed',
-        'focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2'
+        'focus:outline-hidden focus:ring-2 focus:ring-slate-500 focus:ring-offset-2'
       ]"
       @click="$emit('cancel')"
     >
@@ -910,7 +910,7 @@ Expected: FAIL
       type="checkbox"
       :checked="modelValue"
       :disabled="disabled"
-      class="w-4 h-4 border-2 border-slate-300 rounded text-blue-600 focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed"
+      class="w-4 h-4 border-2 border-slate-300 rounded-sm text-blue-600 focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed"
       @change="$emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
     />
     <span class="ml-2 text-sm text-slate-700">{{ label }}</span>
@@ -1079,7 +1079,7 @@ Expected: FAIL
       :aria-describedby="error ? `${inputId}-error` : undefined"
       :class="[
         'w-full px-4 py-3 bg-white border-2 rounded-xl',
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+        'focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent',
         'transition-all disabled:opacity-50 disabled:cursor-not-allowed',
         error ? 'border-red-500' : 'border-slate-300'
       ]"
@@ -1152,7 +1152,7 @@ const inputId = computed(() => {
       :aria-describedby="error ? `${inputId}-error` : undefined"
       :class="[
         'w-full px-4 py-3 bg-white border-2 rounded-xl',
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+        'focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent',
         'transition-all disabled:opacity-50 disabled:cursor-not-allowed',
         error ? 'border-red-500' : 'border-slate-300'
       ]"
@@ -1317,7 +1317,7 @@ Expected: FAIL
       :disabled="disabled"
       :class="[
         'w-full px-3 py-2 border-2 border-slate-300 rounded-lg',
-        'text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+        'text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
         'disabled:opacity-50 disabled:cursor-not-allowed'
       ]"
       @change="handleChange"
@@ -1823,7 +1823,7 @@ Replace the inline form with EventForm component:
 ```vue
 <!-- pages/events/create.vue -->
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
     <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Back Link -->
       <div class="mb-6">
@@ -1836,7 +1836,7 @@ Replace the inline form with EventForm component:
       </div>
 
       <!-- Page Card -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-8">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-8">
         <h1 class="text-2xl font-bold text-slate-900 mb-6">Add New Event</h1>
 
         <EventForm

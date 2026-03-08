@@ -17,7 +17,7 @@ import type {
   HomeLocation,
   PlayerDetails,
   SchoolPreferences,
-  DashboardWidgetVisibility,
+  DashboardLayout,
 } from "~/types/models";
 import {
   validateNotificationSettings,
@@ -249,7 +249,7 @@ export function usePreferenceManager() {
   /**
    * Get typed dashboard layout with validation
    */
-  const getDashboardLayout = (): DashboardWidgetVisibility => {
+  const getDashboardLayout = (): DashboardLayout => {
     const validated = validateDashboardLayout(dashboardPrefs.preferences.value);
     return validated || getDefaultDashboardLayout();
   };
@@ -257,7 +257,7 @@ export function usePreferenceManager() {
   /**
    * Set dashboard layout and save
    */
-  const setDashboardLayout = async (layout: DashboardWidgetVisibility) => {
+  const setDashboardLayout = async (layout: DashboardLayout) => {
     const oldValue = validateDashboardLayout(dashboardPrefs.preferences.value);
 
     dashboardPrefs.updatePreferences(

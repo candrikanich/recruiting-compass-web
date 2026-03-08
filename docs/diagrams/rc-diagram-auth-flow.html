@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Recruiting Compass — Authentication &amp; Session Flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d1117;
+      --surface:    #161b22;
+      --surface2:   #21262d;
+      --border:     #30363d;
+      --border2:    #484f58;
+
+      --text:       #e6edf3;
+      --text-muted: #8b949e;
+      --text-dim:   #6e7681;
+
+      --green:      #3fb950;
+      --green-dim:  #1a3328;
+      --blue:       #58a6ff;
+      --blue-dim:   #132032;
+      --amber:      #d29922;
+      --amber-dim:  #2d1f00;
+      --red:        #f85149;
+      --red-dim:    #320c0a;
+      --purple:     #bc8cff;
+      --purple-dim: #1e1232;
+      --teal:       #39d0d8;
+      --teal-dim:   #0d2629;
+      --orange:     #e3813c;
+      --orange-dim: #291500;
+
+      --font:       'Inter', system-ui, sans-serif;
+      --mono:       'JetBrains Mono', 'Fira Code', monospace;
+      --radius:     8px;
+      --radius-lg:  12px;
+    }
+
+    html { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; }
+    body { min-width: 1200px; padding: 40px 48px 80px; }
+
+    /* ── Header ── */
+    .header { margin-bottom: 48px; }
+    .header h1 { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+    .header h1 span { color: var(--blue); }
+    .header p { margin-top: 6px; font-size: 13px; color: var(--text-muted); }
+    .header-meta { display: flex; gap: 16px; margin-top: 14px; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500;
+      border: 1px solid;
+    }
+    .badge-blue   { background: var(--blue-dim);   border-color: var(--blue);   color: var(--blue); }
+    .badge-green  { background: var(--green-dim);  border-color: var(--green);  color: var(--green); }
+    .badge-purple { background: var(--purple-dim); border-color: var(--purple); color: var(--purple); }
+    .badge-amber  { background: var(--amber-dim);  border-color: var(--amber);  color: var(--amber); }
+    .badge-teal   { background: var(--teal-dim);   border-color: var(--teal);   color: var(--teal); }
+
+    /* ── Section headings ── */
+    .section { margin-bottom: 48px; }
+    .section-title {
+      font-size: 13px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--text-muted);
+      margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+    }
+    .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .card-sub   { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+
+    /* ── Swimlane layout ── */
+    .swimlane-grid { display: grid; gap: 0; }
+    .lane-header {
+      display: grid;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      overflow: hidden;
+    }
+    .lane-body {
+      display: grid;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      overflow: hidden;
+      min-height: 80px;
+    }
+    .lane-cell {
+      padding: 12px 16px;
+      border-right: 1px solid var(--border);
+      min-height: 40px;
+    }
+    .lane-cell:last-child { border-right: none; }
+    .lane-head-cell {
+      padding: 10px 16px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+      border-right: 1px solid var(--border);
+    }
+    .lane-head-cell:last-child { border-right: none; }
+
+    /* Actor colors */
+    .actor-client   { background: color-mix(in srgb, var(--blue) 8%, var(--surface)); color: var(--blue); }
+    .actor-nuxt     { background: color-mix(in srgb, var(--green) 8%, var(--surface)); color: var(--green); }
+    .actor-server   { background: color-mix(in srgb, var(--purple) 8%, var(--surface)); color: var(--purple); }
+    .actor-supabase { background: color-mix(in srgb, var(--teal) 8%, var(--surface)); color: var(--teal); }
+    .actor-email    { background: color-mix(in srgb, var(--orange) 8%, var(--surface)); color: var(--orange); }
+    .actor-ios      { background: color-mix(in srgb, var(--amber) 8%, var(--surface)); color: var(--amber); }
+    .actor-db       { background: color-mix(in srgb, var(--red) 8%, var(--surface)); color: var(--red); }
+
+    .lane-body-client   { background: color-mix(in srgb, var(--blue) 4%, var(--bg)); }
+    .lane-body-nuxt     { background: color-mix(in srgb, var(--green) 4%, var(--bg)); }
+    .lane-body-server   { background: color-mix(in srgb, var(--purple) 4%, var(--bg)); }
+    .lane-body-supabase { background: color-mix(in srgb, var(--teal) 4%, var(--bg)); }
+    .lane-body-email    { background: color-mix(in srgb, var(--orange) 4%, var(--bg)); }
+    .lane-body-ios      { background: color-mix(in srgb, var(--amber) 4%, var(--bg)); }
+    .lane-body-db       { background: color-mix(in srgb, var(--red) 4%, var(--bg)); }
+
+    /* ── Step nodes ── */
+    .step {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 8px;
+      font-size: 12px;
+      line-height: 1.45;
+      position: relative;
+    }
+    .step:last-child { margin-bottom: 0; }
+    .step-num {
+      flex-shrink: 0; width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; font-family: var(--mono);
+    }
+    .step-body { flex: 1; }
+    .step-label { font-weight: 500; color: var(--text); }
+    .step-detail { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+    .step-code {
+      font-family: var(--mono); font-size: 10px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 4px; padding: 2px 6px; margin-top: 4px; display: inline-block;
+      color: var(--text-muted);
+    }
+
+    .step-blue   { border-left: 3px solid var(--blue);   }
+    .step-green  { border-left: 3px solid var(--green);  }
+    .step-purple { border-left: 3px solid var(--purple); }
+    .step-teal   { border-left: 3px solid var(--teal);   }
+    .step-amber  { border-left: 3px solid var(--amber);  }
+    .step-red    { border-left: 3px solid var(--red);    }
+    .step-orange { border-left: 3px solid var(--orange); }
+
+    .num-blue   { background: var(--blue-dim);   color: var(--blue);   }
+    .num-green  { background: var(--green-dim);  color: var(--green);  }
+    .num-purple { background: var(--purple-dim); color: var(--purple); }
+    .num-teal   { background: var(--teal-dim);   color: var(--teal);   }
+    .num-amber  { background: var(--amber-dim);  color: var(--amber);  }
+    .num-red    { background: var(--red-dim);    color: var(--red);    }
+    .num-orange { background: var(--orange-dim); color: var(--orange); }
+
+    /* ── Arrows / connectors ── */
+    .arrow {
+      display: flex; align-items: center; gap: 8px;
+      margin: 6px 0; color: var(--text-dim); font-size: 11px;
+      padding-left: 4px;
+    }
+    .arrow::before { content: '↓'; font-size: 14px; }
+    .arrow-right { flex-direction: row; }
+    .arrow-right::before { content: '→'; }
+
+    /* ── Flow diagram (sequence style) ── */
+    .flow-row {
+      display: flex; align-items: stretch; gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 2px;
+    }
+    .flow-row:last-child { margin-bottom: 0; }
+    .flow-actor {
+      width: 130px; flex-shrink: 0;
+      padding: 10px 12px;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+      display: flex; align-items: center;
+      border-right: 1px solid var(--border);
+    }
+    .flow-content {
+      flex: 1; padding: 10px 14px;
+      font-size: 12px; color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .flow-content .detail { color: var(--text-muted); font-size: 11px; }
+    .flow-group {
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .flow-group:last-child { margin-bottom: 0; }
+    .flow-group-header {
+      padding: 8px 14px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Security boundary ── */
+    .security-box {
+      border: 2px dashed var(--red);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      background: var(--red-dim);
+      margin: 0;
+    }
+    .security-box-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--red); margin-bottom: 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ── Two-column layout ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+    /* ── Correlation ID diagram ── */
+    .corr-flow {
+      display: flex; align-items: stretch; gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .corr-node {
+      flex: 1; padding: 14px 16px;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .corr-node:last-child { border-right: none; }
+    .corr-node-title { font-size: 11px; font-weight: 600; }
+    .corr-node-detail { font-size: 11px; color: var(--text-muted); }
+    .corr-arrow {
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; flex-shrink: 0;
+      color: var(--text-dim); font-size: 18px;
+      border-right: 1px solid var(--border);
+    }
+
+    /* ── State machine ── */
+    .state-grid { display: flex; flex-direction: column; gap: 4px; }
+    .state-row { display: flex; gap: 4px; align-items: center; }
+    .state-node {
+      flex: 1; padding: 9px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 11px;
+    }
+    .state-node-title { font-weight: 600; }
+    .state-node-detail { color: var(--text-muted); font-size: 10px; margin-top: 1px; }
+    .state-arrow { color: var(--text-dim); font-size: 16px; flex-shrink: 0; padding: 0 2px; }
+
+    /* ── Table ── */
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    thead th {
+      text-align: left; padding: 8px 12px;
+      background: var(--surface2); border: 1px solid var(--border);
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    tbody td {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      color: var(--text); vertical-align: top;
+    }
+    tbody tr:nth-child(even) td { background: var(--surface2); }
+    .mono { font-family: var(--mono); font-size: 11px; color: var(--purple); }
+    .tag {
+      display: inline-block; padding: 1px 6px;
+      border-radius: 4px; font-size: 10px; font-weight: 600;
+    }
+    .tag-green  { background: var(--green-dim);  color: var(--green); }
+    .tag-red    { background: var(--red-dim);    color: var(--red);   }
+    .tag-amber  { background: var(--amber-dim);  color: var(--amber); }
+    .tag-blue   { background: var(--blue-dim);   color: var(--blue);  }
+    .tag-purple { background: var(--purple-dim); color: var(--purple);}
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+    /* ── Token refresh timeline ── */
+    .timeline {
+      display: flex; align-items: stretch; gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .tl-node {
+      flex: 1; padding: 14px 16px;
+      border-right: 1px solid var(--border);
+      font-size: 11px;
+    }
+    .tl-node:last-child { border-right: none; }
+    .tl-node-time { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
+    .tl-node-title { font-weight: 600; margin-bottom: 3px; }
+    .tl-node-detail { color: var(--text-muted); }
+
+    /* ── Icons (Unicode) ── */
+    .icon { font-style: normal; }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════ HEADER ═══════════════════ -->
+  <div class="header">
+    <h1>&#x1F512; <span>The Recruiting Compass</span> — Authentication &amp; Session Flow</h1>
+    <p>Nuxt 3 &middot; Supabase Auth (JWT) &middot; Nitro API &middot; iOS Universal Links</p>
+    <div class="header-meta">
+      <span class="badge badge-blue">Supabase Auth</span>
+      <span class="badge badge-green">Nuxt 3 Middleware</span>
+      <span class="badge badge-purple">requireAuth(event)</span>
+      <span class="badge badge-amber">family_unit_id boundary</span>
+      <span class="badge badge-teal">Correlation ID tracing</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SECTION 1: SIGN-UP FLOWS ═══════════════════ -->
+  <div class="section">
+    <div class="section-title">&#x1F511; Sign-Up Flows</div>
+    <div class="two-col">
+
+      <!-- Athlete sign-up -->
+      <div class="card">
+        <div class="card-title">Flow 1 — Athlete Sign-Up</div>
+        <div class="card-sub">New athlete registers, verifies email, completes onboarding wizard</div>
+
+        <div class="flow-group">
+          <div class="flow-group-header actor-client">&#x1F4BB; Browser / Client</div>
+          <div class="flow-row" style="border:none; border-bottom:1px solid var(--border)">
+            <div class="flow-actor actor-client">Client</div>
+            <div class="flow-content">
+              User submits sign-up form
+              <span class="detail">email, password, fullName, role: "player"</span>
+            </div>
+          </div>
+          <div class="flow-row" style="border:none; border-bottom:1px solid var(--border)">
+            <div class="flow-actor actor-client">useAuth</div>
+            <div class="flow-content">
+              <code class="step-code">supabase.auth.signUp({ email, password, options: { data: { full_name, role } } })</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="arrow"></div>
+
+        <div class="flow-group">
+          <div class="flow-group-header actor-supabase">&#x26A1; Supabase Auth</div>
+          <div class="flow-row" style="border:none; border-bottom:1px solid var(--border)">
+            <div class="flow-actor actor-supabase">Auth</div>
+            <div class="flow-content">Creates user record, sends verification email with OTP token</div>
+          </div>
+          <div class="flow-row" style="border:none">
+            <div class="flow-actor actor-email">Email</div>
+            <div class="flow-content">Verification link delivered <span class="detail">→ /verify-email?token=&lt;OTP&gt;</span></div>
+          </div>
+        </div>
+
+        <div class="arrow"></div>
+
+        <div class="flow-group">
+          <div class="flow-group-header actor-server">&#x1F527; Server (Nitro)</div>
+          <div class="flow-row" style="border:none; border-bottom:1px solid var(--border)">
+            <div class="flow-actor actor-server">POST</div>
+            <div class="flow-content">
+              <code class="step-code">/api/auth/verify-email</code>
+              <span class="detail">supabase.auth.verifyOtp({ token, type: "email" })</span>
+            </div>
+          </div>
+          <div class="flow-row" style="border:none">
+            <div class="flow-actor actor-supabase">Auth</div>
+            <div class="flow-content">Validates OTP, marks email_confirmed_at, issues JWT session</div>
+          </div>
+        </div>
+
+        <div class="arrow"></div>
+
+        <div class="flow-group">
+          <div class="flow-group-header actor-nuxt">&#x1F5FA; Nuxt Routing</div>
+          <div class="flow-row" style="border:none; border-bottom:1px solid var(--border)">
+            <div class="flow-actor actor-nuxt">onboarding.ts</div>
+            <div class="flow-content">
+              Checks <code class="step-code">phase_milestone_data.onboarding_complete</code>
+              <span class="detail">→ false: redirect /onboarding</span>
+            </div>
+          </div>
+          <div class="flow-row" style="border:none">
+            <div class="flow-actor actor-nuxt">Wizard</div>
+            <div class="flow-content">
+              Multi-step onboarding (profile, sport, graduation year…)
+              <span class="detail">Step 5: invite parent via email</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="arrow"></div>
+
+        <div class="step step-green">
+          <span class="step-num num-green">&#x2713;</span>
+          <div class="step-body">
+            <div class="step-label">Dashboard</div>
+            <div class="step-detail">onboarding_complete = true, role-based routing active</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parent via invite -->
+      <div class="card">
+        <div class="card-title">Flow 2 — Parent Sign-Up via Family Invite</div>
+        <div class="card-sub">Athlete sends invite → parent accepts magic link → joins family unit</div>
+
+        <div class="flow-group">
+          <div class="flow-group-header actor-client">&#x1F4BB; Athlete (already authed)</div>
+          <div class="flow-row" style="border:none; border-bottom:1px solid var(--border)">
+            <div class="flow-actor actor-client">useAuthFetch</div>
+            <div class="flow-content">
+              <code class="step-code">POST /api/family/invite</code>
+              <span class="detail">{ email, role: "parent" } + Bearer token + CSRF token</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="arrow"></div>
+
+        <div class="flow-group">
+          <div class="flow-group-header actor-server">&#x1F527; Server — invite.post.ts</div>
+          <div class="flow-row" style="border:none; border-bottom:1px solid var(--border)">
+            <div class="flow-actor actor-server">requireAuth</div>
+            <div class="flow-content">Extracts &amp; verifies Bearer JWT via supabase.auth.getUser(token)</div>
+          </div>
+          <div class="flow-row" style="border:none; border-bottom:1px solid var(--border)">
+            <div class="flow-actor actor-db">DB</div>
+            <div class="flow-content">
+              Lookup <code class="step-code">family_members.family_unit_id</code> by user.id
+              <span class="detail">403 if no family membership</span>
+            </div>
+          </div>
+          <div class="flow-row" style="border:none; border-bottom:1px solid var(--border)">
+            <div class="flow-actor actor-db">DB</div>
+            <div class="flow-content">
+              Insert <code class="step-code">family_invitations</code> row with UUID token
+            </div>
+          </div>
+          <div class="flow-row" style="border:none">
+            <div class="flow-actor actor-email">Resend</div>
+            <div class="flow-content">
+              sendInviteEmail() — non-blocking, warns on failure
+              <span class="detail">Link: /join?token=&lt;UUID&gt;</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="arrow"></div>
+
+        <div class="flow-group">
+          <div class="flow-group-header actor-ios">&#x1F4F1; Parent (email link — web or iOS)</div>
+          <div class="flow-row" style="border:none; border-bottom:1px solid var(--border)">
+            <div class="flow-actor actor-ios">Universal Link</div>
+            <div class="flow-content">
+              <code class="step-code">apple-app-site-association</code>
+              <span class="detail">iOS intercepts → opens native app; web fallback → /join</span>
+            </div>
+          </div>
+          <div class="flow-row" style="border:none; border-bottom:1px solid var(--border)">
+            <div class="flow-actor actor-server">GET</div>
+            <div class="flow-content">
+              <code class="step-code">GET /api/family/invite/[token]</code>
+              <span class="detail">Validates token, returns invitation details</span>
+            </div>
+          </div>
+          <div class="flow-row" style="border:none; border-bottom:1px solid var(--border)">
+            <div class="flow-actor actor-client">pages/join</div>
+            <div class="flow-content">Parent signs up or logs in, then calls accept endpoint</div>
+          </div>
+          <div class="flow-row" style="border:none">
+            <div class="flow-actor actor-server">POST</div>
+            <div class="flow-content">
+              <code class="step-code">POST /api/family/invite/[token]/accept</code>
+              <span class="detail">Creates family_members row → joins family_unit</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="arrow"></div>
+
+        <div class="step step-green">
+          <span class="step-num num-green">&#x2713;</span>
+          <div class="step-body">
+            <div class="step-label">Dashboard (read-only parent view)</div>
+            <div class="step-detail">role = "parent", family_unit_id established, assertNotParent() guards mutations</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SECTION 2: SIGN-IN ═══════════════════ -->
+  <div class="section">
+    <div class="section-title">&#x1F510; Sign-In — Returning User</div>
+    <div class="card">
+      <div class="card-title">Flow 3 — Sign-In, Session Restore &amp; Role Routing</div>
+      <div class="card-sub">useAuth composable orchestrates session state, middleware guards routes</div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+        <div>
+          <div style="font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:.04em;">Login Path</div>
+
+          <div class="state-grid">
+            <div class="state-row">
+              <div class="state-node step-blue">
+                <div class="state-node-title">&#x1F4BB; User submits /login</div>
+                <div class="state-node-detail">email, password, rememberMe checkbox</div>
+              </div>
+            </div>
+            <div class="state-arrow" style="text-align:center">&#x2193;</div>
+            <div class="state-row">
+              <div class="state-node step-teal">
+                <div class="state-node-title">supabase.auth.signInWithPassword()</div>
+                <div class="state-node-detail">Returns { session, user } or AuthError</div>
+              </div>
+            </div>
+            <div class="state-arrow" style="text-align:center">&#x2193;</div>
+            <div class="state-row">
+              <div class="state-node step-purple">
+                <div class="state-node-title">Store session preferences</div>
+                <div class="state-node-detail">localStorage: { rememberMe, lastActivity, expiresAt }<br/>rememberMe=true → 30 days | false → 1 day</div>
+              </div>
+            </div>
+            <div class="state-arrow" style="text-align:center">&#x2193;</div>
+            <div class="state-row">
+              <div class="state-node step-green">
+                <div class="state-node-title">useUserStore.login() → hydrates store</div>
+                <div class="state-node-detail">isAuthenticated = true, user record populated</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:.04em;">Session Restore on Page Load</div>
+
+          <div class="state-grid">
+            <div class="state-row">
+              <div class="state-node step-blue">
+                <div class="state-node-title">restoreSession() called</div>
+                <div class="state-node-detail">Guards: isInitialized flag prevents redundant calls; polling loop prevents concurrent inits</div>
+              </div>
+            </div>
+            <div class="state-arrow" style="text-align:center">&#x2193;</div>
+            <div class="state-row">
+              <div class="state-node step-teal">
+                <div class="state-node-title">supabase.auth.getSession()</div>
+                <div class="state-node-detail">Reads from localStorage / cookie. Supabase auto-refreshes JWT if expired.</div>
+              </div>
+            </div>
+            <div class="state-arrow" style="text-align:center">&#x2193;</div>
+            <div class="state-row">
+              <div class="state-node step-amber">
+                <div class="state-node-title">auth.ts middleware — every navigation</div>
+                <div class="state-node-detail">Check session timeout (30-day activity threshold)<br/>isProtectedRoute() → redirect /login if not authed</div>
+              </div>
+            </div>
+            <div class="state-arrow" style="text-align:center">&#x2193;</div>
+            <div class="state-row">
+              <div class="state-node step-green">
+                <div class="state-node-title">onboarding.ts middleware</div>
+                <div class="state-node-detail">Query phase_milestone_data.onboarding_complete<br/>false → /onboarding | true → allow</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr />
+
+      <div style="font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:12px; text-transform:uppercase; letter-spacing:.04em;">Role-Based Routing After Login</div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <div class="step step-blue" style="flex:1; min-width:200px; margin-bottom:0">
+          <span class="step-num num-blue">A</span>
+          <div class="step-body">
+            <div class="step-label">role = "player" (athlete)</div>
+            <div class="step-detail">Full read/write access to own data. assertNotParent() passes.</div>
+          </div>
+        </div>
+        <div class="step step-amber" style="flex:1; min-width:200px; margin-bottom:0">
+          <span class="step-num num-amber">B</span>
+          <div class="step-body">
+            <div class="step-label">role = "parent"</div>
+            <div class="step-detail">Read-only. viewLogging.global.ts auto-logs every page visit. assertNotParent() throws 403 on mutations.</div>
+          </div>
+        </div>
+        <div class="step step-purple" style="flex:1; min-width:200px; margin-bottom:0">
+          <span class="step-num num-purple">C</span>
+          <div class="step-body">
+            <div class="step-label">is_admin = true</div>
+            <div class="step-detail">requireAdmin() = requireAuth() + DB is_admin check. admin.ts middleware guards /admin/* routes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SECTION 3: PROTECTED API REQUEST ═══════════════════ -->
+  <div class="section">
+    <div class="section-title">&#x1F504; Protected API Request Lifecycle</div>
+    <div class="card">
+      <div class="card-title">Flow 4 — Client → Server Middleware Chain → Handler → DB</div>
+      <div class="card-sub">Every state-changing API call traverses this full pipeline</div>
+
+      <!-- Swimlane headers -->
+      <div style="display:grid; grid-template-columns: 160px 1fr 1fr 1fr 1fr; margin-bottom:1px;">
+        <div class="lane-head-cell actor-client" style="border-radius:8px 0 0 0">Client (useAuthFetch)</div>
+        <div class="lane-head-cell actor-server">Correlation MW</div>
+        <div class="lane-head-cell actor-server">CSRF MW</div>
+        <div class="lane-head-cell actor-server">Rate-Limit MW</div>
+        <div class="lane-head-cell actor-server" style="border-radius:0 8px 0 0">Handler + DB</div>
+      </div>
+
+      <!-- Row 1 -->
+      <div style="display:grid; grid-template-columns: 160px 1fr 1fr 1fr 1fr; border:1px solid var(--border); border-radius:0; overflow:hidden; margin-bottom:1px;">
+        <div class="lane-cell lane-body-client" style="font-size:11px;">
+          <div style="font-weight:600; margin-bottom:4px;">1. Build request</div>
+          <div style="color:var(--text-muted);">Get session token from supabase.auth.getSession()</div>
+          <div class="step-code" style="margin-top:6px;">Authorization: Bearer &lt;JWT&gt;</div>
+          <div class="step-code" style="margin-top:4px;">X-CSRF-Token: &lt;token&gt;</div>
+          <div class="step-code" style="margin-top:4px;">X-Request-ID: &lt;correlation&gt;</div>
+        </div>
+        <div class="lane-cell lane-body-server" style="font-size:11px;">
+          <div style="font-weight:600; margin-bottom:4px;">2. correlation.ts</div>
+          <div style="color:var(--text-muted);">Read X-Request-ID header<br/>Or generate new crypto.randomUUID()</div>
+          <div style="color:var(--text-muted); margin-top:4px;">Store in event.context.requestId<br/>Echo back in response header</div>
+        </div>
+        <div class="lane-cell lane-body-server" style="font-size:11px;">
+          <div style="font-weight:600; margin-bottom:4px;">3. csrf.ts</div>
+          <div style="color:var(--text-muted);">POST/PUT/PATCH/DELETE only</div>
+          <div style="color:var(--text-muted); margin-top:4px;">Exempt: /api/auth/*, /api/csrf-token<br/>iOS Bearer-only: exempt (no cookie)</div>
+          <div style="color:var(--red); margin-top:4px; font-size:10px;">&#x26A0; requireCsrfToken(event)</div>
+        </div>
+        <div class="lane-cell lane-body-server" style="font-size:11px;">
+          <div style="font-weight:600; margin-bottom:4px;">4. rate-limit.ts</div>
+          <div style="color:var(--text-muted);">Per-IP sliding window</div>
+          <div style="color:var(--red); margin-top:4px; font-size:10px;">429 Too Many Requests</div>
+        </div>
+        <div class="lane-cell lane-body-server" style="font-size:11px; border-right:none;">
+          <div style="font-weight:600; margin-bottom:4px;">5. Handler</div>
+          <div class="step-code">const logger = useLogger(event, "ctx")</div>
+          <div class="step-code" style="margin-top:4px;">const user = await requireAuth(event)</div>
+          <div style="color:var(--text-muted); margin-top:4px;">Bearer JWT validated via supabase.auth.getUser()</div>
+        </div>
+      </div>
+
+      <!-- Row 2: requireAuth detail -->
+      <div style="display:grid; grid-template-columns: 160px 1fr; border:1px solid var(--border); border-top:none; overflow:hidden; margin-bottom:0; border-radius:0 0 8px 8px;">
+        <div class="lane-cell lane-body-client" style="font-size:11px; border-radius:0 0 0 8px;">
+          <div style="font-weight:600; color:var(--green);">&#x2713; Response</div>
+          <div style="color:var(--text-muted); margin-top:4px;">X-Request-ID echoed back in response headers for client-side log correlation</div>
+        </div>
+        <div class="lane-cell lane-body-server" style="font-size:11px; border-right:none; border-radius:0 0 8px 0;">
+          <div style="font-weight:600; margin-bottom:6px;">requireAuth(event) internals</div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:180px;">
+              <div style="color:var(--text-muted);">1. Read Authorization header → Bearer token</div>
+              <div style="color:var(--text-muted);">2. Fallback: read sb-access-token cookie</div>
+              <div style="color:var(--red); margin-top:2px;">401 if no token found</div>
+            </div>
+            <div style="flex:1; min-width:180px;">
+              <div style="color:var(--text-muted);">3. supabase.auth.getUser(token) — verifies JWT signature with Supabase</div>
+              <div style="color:var(--red); margin-top:2px;">401 if invalid/expired</div>
+              <div style="color:var(--green); margin-top:2px;">Returns { id, email, user_metadata }</div>
+            </div>
+            <div style="flex:1; min-width:180px;">
+              <div style="color:var(--text-muted);">4. getUserRole(userId, supabase)</div>
+              <div style="color:var(--text-muted);">In-memory cache (5-min TTL, 1000 entry LRU)</div>
+              <div style="color:var(--text-muted); margin-top:2px;">Reads users.role column</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SECTION 4: FAMILY_UNIT SECURITY BOUNDARY ═══════════════════ -->
+  <div class="section">
+    <div class="section-title">&#x1F6E1; family_unit_id Security Boundary</div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Access Control Model</div>
+        <div class="card-sub">All data scoped to family_unit_id — never raw user_id</div>
+
+        <div class="security-box">
+          <div class="security-box-label">&#x1F512; family_unit_id boundary</div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Read</th>
+                <th>Write / Mutate</th>
+                <th>Admin</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="tag tag-blue">player</span></td>
+                <td><span class="tag tag-green">Own family</span></td>
+                <td><span class="tag tag-green">Own data only</span></td>
+                <td><span class="tag tag-red">No</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-amber">parent</span></td>
+                <td><span class="tag tag-green">Linked family</span></td>
+                <td><span class="tag tag-red">403 always</span></td>
+                <td><span class="tag tag-red">No</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-purple">admin</span></td>
+                <td><span class="tag tag-green">All families</span></td>
+                <td><span class="tag tag-green">All data</span></td>
+                <td><span class="tag tag-purple">is_admin=true</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:14px; font-size:12px; color:var(--text-muted);">
+          <strong style="color:var(--text);">Server-side enforcement chain:</strong><br/>
+          <code class="step-code" style="margin-top:6px; display:block;">requireAuth(event) → user.id</code>
+          <code class="step-code" style="margin-top:4px; display:block;">family_members WHERE user_id = user.id → family_unit_id</code>
+          <code class="step-code" style="margin-top:4px; display:block;">All queries scoped: WHERE family_unit_id = $1</code>
+          <code class="step-code" style="margin-top:4px; display:block;">assertNotParent(userId) — throws 403 on mutations</code>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Permission Functions (server/utils/auth.ts)</div>
+        <div class="card-sub">Four permission utilities — called inside API handlers</div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div class="step step-purple">
+            <span class="step-num num-purple">1</span>
+            <div class="step-body">
+              <div class="step-label">requireAuth(event)</div>
+              <div class="step-detail">Bearer header → cookie fallback → supabase.auth.getUser(token). Returns AuthUser or throws 401.</div>
+            </div>
+          </div>
+          <div class="step step-purple">
+            <span class="step-num num-purple">2</span>
+            <div class="step-body">
+              <div class="step-label">getUserRole(userId, supabase)</div>
+              <div class="step-detail">Reads users.role. In-memory cache: 5-min TTL, max 1,000 entries (LRU eviction). Returns "player" | "parent" | null.</div>
+            </div>
+          </div>
+          <div class="step step-red">
+            <span class="step-num num-red">3</span>
+            <div class="step-body">
+              <div class="step-label">assertNotParent(userId, supabase)</div>
+              <div class="step-detail">Throws 403 "Parents cannot perform this action" if role = "parent". Called on all mutation endpoints.</div>
+            </div>
+          </div>
+          <div class="step step-amber">
+            <span class="step-num num-amber">4</span>
+            <div class="step-body">
+              <div class="step-label">canMutateAthleteData(reqUserId, targetUserId, sb)</div>
+              <div class="step-detail">true only if requestingUser === targetAthlete. Parents always false. Cross-user mutations always false.</div>
+            </div>
+          </div>
+          <div class="step step-red">
+            <span class="step-num num-red">5</span>
+            <div class="step-body">
+              <div class="step-label">requireAdmin(event)</div>
+              <div class="step-detail">requireAuth() + DB check users.is_admin = true. 403 if not admin. Logs attempted violations.</div>
+            </div>
+          </div>
+          <div class="step step-teal">
+            <span class="step-num num-teal">6</span>
+            <div class="step-body">
+              <div class="step-label">isParentViewingLinkedAthlete(parentId, athleteId, sb)</div>
+              <div class="step-detail">Checks account_links WHERE status = "verified". Used for read-permission gates.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SECTION 5: CORRELATION ID FLOW ═══════════════════ -->
+  <div class="section">
+    <div class="section-title">&#x1F517; Correlation ID Propagation</div>
+    <div class="card">
+      <div class="card-title">End-to-End Request Tracing</div>
+      <div class="card-sub">Session ID generated client-side, propagated through every log entry</div>
+
+      <div class="corr-flow">
+        <div class="corr-node lane-body-client">
+          <div class="corr-node-title" style="color:var(--blue);">&#x1F4BB; Client Session Init</div>
+          <div class="corr-node-detail">sessionStorage.setItem("correlation-id", crypto.randomUUID())<br/>Generated once per browser tab session</div>
+        </div>
+        <div class="corr-arrow" style="border:none; color:var(--blue);">&#x2192;</div>
+        <div class="corr-node lane-body-client">
+          <div class="corr-node-title" style="color:var(--blue);">useAuthFetch.$fetchAuth()</div>
+          <div class="corr-node-detail">Reads correlation-id from sessionStorage<br/>Injects: <code class="step-code">X-Request-ID: &lt;uuid&gt;</code><br/>Also injects: Bearer token + CSRF token</div>
+        </div>
+        <div class="corr-arrow" style="border:none; color:var(--purple);">&#x2192;</div>
+        <div class="corr-node lane-body-server">
+          <div class="corr-node-title" style="color:var(--purple);">correlation.ts MW</div>
+          <div class="corr-node-detail">getHeader(event, "x-request-id") → use existing<br/>If absent → crypto.randomUUID()<br/>event.context.requestId = id</div>
+        </div>
+        <div class="corr-arrow" style="border:none; color:var(--purple);">&#x2192;</div>
+        <div class="corr-node lane-body-server">
+          <div class="corr-node-title" style="color:var(--purple);">useLogger(event, "ctx")</div>
+          <div class="corr-node-detail">Reads event.context.requestId<br/>Prefixes every log entry:<br/><code class="step-code">[ctx] [req-id-prefix…] message</code></div>
+        </div>
+        <div class="corr-arrow" style="border:none; color:var(--teal);">&#x2192;</div>
+        <div class="corr-node lane-body-supabase" style="border-right:none;">
+          <div class="corr-node-title" style="color:var(--teal);">Response</div>
+          <div class="corr-node-detail">appendResponseHeader(event, "x-request-id", id)<br/>Client receives ID back → correlate client + server logs</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:12px;">
+          <div style="font-size:11px; font-weight:600; color:var(--purple); margin-bottom:6px;">Server Log Format</div>
+          <code style="font-family:var(--mono); font-size:11px; color:var(--text-muted); display:block; line-height:1.7;">
+            [family/invite] [a3f2b1…] Invitation created<br/>
+            [auth] [a3f2b1…] Role cache hit for user xyz<br/>
+            [family/invite] [a3f2b1…] Email sent successfully
+          </code>
+        </div>
+        <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:12px;">
+          <div style="font-size:11px; font-weight:600; color:var(--green); margin-bottom:6px;">Background Jobs (no H3Event)</div>
+          <code style="font-family:var(--mono); font-size:11px; color:var(--text-muted); display:block; line-height:1.7;">
+            // No event available in cron context<br/>
+            const logger = createLogger("cron/job-name")<br/>
+            logger.info("Processing batch…")
+          </code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SECTION 6: TOKEN REFRESH / SESSION EXPIRY ═══════════════════ -->
+  <div class="section">
+    <div class="section-title">&#x23F1; Token Refresh &amp; Session Expiry</div>
+    <div class="card">
+      <div class="card-title">Flow 5 — JWT Lifecycle &amp; Expiry Handling</div>
+      <div class="card-sub">Supabase auto-refreshes tokens; useAuthFetch handles 401s gracefully</div>
+
+      <div class="timeline">
+        <div class="tl-node lane-body-client">
+          <div class="tl-node-time">T=0</div>
+          <div class="tl-node-title" style="color:var(--blue);">Login</div>
+          <div class="tl-node-detail">JWT issued (1-hour expiry default)<br/>Supabase SDK stores access_token + refresh_token</div>
+        </div>
+        <div class="tl-node lane-body-client">
+          <div class="tl-node-time">T &lt; 1hr</div>
+          <div class="tl-node-title" style="color:var(--green);">Active Session</div>
+          <div class="tl-node-detail">getSession() returns valid JWT. All API calls succeed.</div>
+        </div>
+        <div class="tl-node lane-body-supabase">
+          <div class="tl-node-time">T ≈ 1hr</div>
+          <div class="tl-node-title" style="color:var(--teal);">Auto-Refresh</div>
+          <div class="tl-node-detail">Supabase SDK silently refreshes JWT using refresh_token. No user action needed.</div>
+        </div>
+        <div class="tl-node lane-body-server">
+          <div class="tl-node-time">Race condition</div>
+          <div class="tl-node-title" style="color:var(--amber);">401 Between Calls</div>
+          <div class="tl-node-detail">Token valid at getSession() but expired at server by the time requireAuth() runs. useAuthFetch catches FetchError(401).</div>
+        </div>
+        <div class="tl-node lane-body-client">
+          <div class="tl-node-time">On 401</div>
+          <div class="tl-node-title" style="color:var(--orange);">handleSessionExpired()</div>
+          <div class="tl-node-detail">Toast: "Session expired, redirecting…" (1.5s delay) → navigateTo("/login?reason=session_expired")</div>
+        </div>
+        <div class="tl-node lane-body-nuxt">
+          <div class="tl-node-time">On activity timeout</div>
+          <div class="tl-node-title" style="color:var(--green);">auth.ts MW</div>
+          <div class="tl-node-detail">Checks lastActivity in localStorage. &gt;30 days inactive → userStore.logout() → /login?reason=timeout</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+        <div class="step step-amber" style="margin-bottom:0">
+          <span class="step-num num-amber">!</span>
+          <div class="step-body">
+            <div class="step-label">SessionExpiredError</div>
+            <div class="step-detail">Custom error class thrown by useAuthFetch on 401. Caught by calling composable for UX messaging.</div>
+          </div>
+        </div>
+        <div class="step step-teal" style="margin-bottom:0">
+          <span class="step-num num-teal">&#x21BB;</span>
+          <div class="step-body">
+            <div class="step-label">onAuthStateChange listener</div>
+            <div class="step-detail">setupAuthListener() subscribes to Supabase auth events (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED). Tracked for cleanup on component unmount.</div>
+          </div>
+        </div>
+        <div class="step step-purple" style="margin-bottom:0">
+          <span class="step-num num-purple">&#x1F512;</span>
+          <div class="step-body">
+            <div class="step-label">rememberMe preferences</div>
+            <div class="step-detail">true → expiresAt = now + 30d | false → expiresAt = now + 1d. Stored in localStorage as SessionPreferences type.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SECTION 7: IOS UNIVERSAL LINKS ═══════════════════ -->
+  <div class="section">
+    <div class="section-title">&#x1F4F1; iOS Universal Links &amp; Deep Linking</div>
+    <div class="card">
+      <div class="card-title">Apple App Site Association + CSRF Exemption for Native iOS</div>
+      <div class="card-sub">Family invite links work on both web browser and native iOS app</div>
+
+      <div class="two-col">
+        <div>
+          <div class="state-grid">
+            <div class="state-row">
+              <div class="state-node step-amber">
+                <div class="state-node-title">Email invite link</div>
+                <div class="state-node-detail">https://app.recruitingcompass.com/join?token=&lt;UUID&gt;</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:12px; margin-top:4px;">
+              <div style="flex:1; text-align:center; color:var(--text-dim);">&#x2193; iOS device</div>
+              <div style="flex:1; text-align:center; color:var(--text-dim);">&#x2193; Web browser</div>
+            </div>
+            <div class="state-row">
+              <div class="state-node step-amber" style="flex:1;">
+                <div class="state-node-title">&#x1F34E; iOS intercepts</div>
+                <div class="state-node-detail">AASA file at /.well-known/apple-app-site-association routes /join/* to native app. Deep link opens SwiftUI join screen.</div>
+              </div>
+              <div style="width:12px; flex-shrink:0;"></div>
+              <div class="state-node step-blue" style="flex:1;">
+                <div class="state-node-title">&#x1F310; Web fallback</div>
+                <div class="state-node-detail">pages/join.vue renders. Calls GET /api/family/invite/[token] to validate, then POST accept endpoint.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:11px; font-weight:600; color:var(--amber); margin-bottom:10px;">iOS Native API Auth — CSRF Exemption</div>
+          <div style="background:var(--amber-dim); border:1px solid var(--amber); border-radius:var(--radius); padding:14px; font-size:12px;">
+            <div style="font-weight:600; margin-bottom:8px; color:var(--amber);">&#x26A0; Why iOS is exempt from CSRF</div>
+            <div style="color:var(--text-muted); line-height:1.6;">
+              CSRF attacks exploit cookies. The iOS app sends <strong style="color:var(--text);">only a Bearer token</strong> — no sb-access-token cookie.<br/><br/>
+              Detection in csrf.ts:<br/>
+              <code class="step-code" style="display:block; margin-top:4px;">isBearerOnly = hasAuthHeader AND !hasCookie</code>
+              <code class="step-code" style="display:block; margin-top:4px;">if (isBearerOnly) return // skip CSRF check</code>
+              <br/>
+              Web browsers set both Bearer header (useAuthFetch) AND cookie (Supabase SDK) → full CSRF enforcement applies.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SECTION 8: MIDDLEWARE ORDER SUMMARY ═══════════════════ -->
+  <div class="section">
+    <div class="section-title">&#x1F9F1; Middleware Execution Order</div>
+    <div class="two-col">
+
+      <div class="card">
+        <div class="card-title">Nuxt Client Middleware (route navigation)</div>
+        <div class="card-sub">Executed in order on every client-side navigation</div>
+        <table>
+          <thead>
+            <tr><th>#</th><th>File</th><th>Scope</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td class="mono">auth.ts</td>
+              <td><span class="tag tag-blue">named</span></td>
+              <td>Session timeout check + isProtectedRoute() guard</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="mono">onboarding.ts</td>
+              <td><span class="tag tag-blue">named</span></td>
+              <td>Redirect to /onboarding if onboarding incomplete</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="mono">admin.ts</td>
+              <td><span class="tag tag-blue">named</span></td>
+              <td>Guards /admin/* routes — checks isAdmin flag in store</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="mono">viewLogging.global.ts</td>
+              <td><span class="tag tag-amber">global</span></td>
+              <td>Auto-logs parent page views for audit trail (client only)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Nitro Server Middleware (every API request)</div>
+        <div class="card-sub">Executed in order before any API handler</div>
+        <table>
+          <thead>
+            <tr><th>#</th><th>File</th><th>Applies To</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td class="mono">security-headers.ts</td>
+              <td><span class="tag tag-blue">All</span></td>
+              <td>Sets CSP, HSTS, X-Frame-Options, X-Content-Type</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="mono">correlation.ts</td>
+              <td><span class="tag tag-blue">All</span></td>
+              <td>X-Request-ID pass-through or generate new UUID</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="mono">rate-limit.ts</td>
+              <td><span class="tag tag-blue">All</span></td>
+              <td>Per-IP sliding window rate limiting → 429</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="mono">body-size-limit.ts</td>
+              <td><span class="tag tag-blue">POST/PUT</span></td>
+              <td>Rejects oversized request bodies → 413</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="mono">csrf.ts</td>
+              <td><span class="tag tag-amber">Mutations</span></td>
+              <td>CSRF token validation (exempt: /api/auth/*, iOS Bearer-only)</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="mono">onboarding.ts</td>
+              <td><span class="tag tag-purple">API routes</span></td>
+              <td>Server-side onboarding state enforcement</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <div style="text-align:center; color:var(--text-dim); font-size:11px; margin-top:32px; padding-top:24px; border-top:1px solid var(--border);">
+    The Recruiting Compass &mdash; Auth &amp; Session Flow Diagram &mdash; Generated 2026-03-04
+    &bull; Nuxt 3 / Vue 3 / Supabase Auth / Nitro / Vercel
+  </div>
+
+</body>
+</html>

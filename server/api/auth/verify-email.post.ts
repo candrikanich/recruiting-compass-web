@@ -1,5 +1,6 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
+import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 
 type VerifyEmailResponse = {
@@ -10,6 +11,10 @@ type VerifyEmailResponse = {
 export default defineEventHandler(
   async (event): Promise<VerifyEmailResponse> => {
     const logger = useLogger(event, "auth/verify-email");
+
+    const rateLimitResult = await rateLimitByIp(event, { requests: 10, window: "1 h" });
+    throwIfRateLimited(rateLimitResult);
+
     try {
       const body = await readBody<{ token: string }>(event);
       const { token } = body;
@@ -63,12 +68,14 @@ export default defineEventHandler(
       }
 
       if (data.user.email_confirmed_at) {
+        logger.info("Email already verified", { userId: data.user.id });
         return {
           success: true,
           message: "Your email is already verified.",
         };
       }
 
+      logger.info("Email verified", { userId: data.user.id });
       return {
         success: true,
         message: "Email verified successfully!",

@@ -1,7 +1,7 @@
 <template>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
     <!-- Total Interactions -->
-    <div class="rounded-lg shadow p-6 bg-white">
+    <div class="rounded-lg shadow-sm p-6 bg-white">
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-slate-600">Total Interactions</p>
@@ -17,7 +17,7 @@
     </div>
 
     <!-- Response Rate -->
-    <div class="rounded-lg shadow p-6 bg-white">
+    <div class="rounded-lg shadow-sm p-6 bg-white">
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-slate-600">Response Rate</p>
@@ -33,7 +33,7 @@
     </div>
 
     <!-- Avg Response Time -->
-    <div class="rounded-lg shadow p-6 bg-white">
+    <div class="rounded-lg shadow-sm p-6 bg-white">
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-slate-600">Avg Response Time</p>
@@ -47,7 +47,7 @@
     </div>
 
     <!-- Days Since Contact -->
-    <div class="rounded-lg shadow p-6 bg-white">
+    <div class="rounded-lg shadow-sm p-6 bg-white">
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-slate-600">Days Since Contact</p>

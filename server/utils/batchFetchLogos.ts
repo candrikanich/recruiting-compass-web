@@ -4,6 +4,9 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
+import { createLogger } from "~/server/utils/logger";
+
+const logger = createLogger("batch-fetch-logos");
 
 export async function batchFetchLogos(userId?: string): Promise<{
   success: boolean;
@@ -18,7 +21,7 @@ export async function batchFetchLogos(userId?: string): Promise<{
   );
 
   try {
-    console.log("Starting batch favicon fetch for userId:", userId);
+    logger.info("Starting batch favicon fetch for userId:", userId);
 
     // Get all schools
     let query = supabase
@@ -26,19 +29,19 @@ export async function batchFetchLogos(userId?: string): Promise<{
       .select("id, name, website, favicon_url");
 
     if (userId) {
-      console.log("Filtering schools by user_id:", userId);
+      logger.info("Filtering schools by user_id:", userId);
       query = query.eq("user_id", userId);
     }
 
     const { data: schools, error } = await query;
 
     if (error) {
-      console.error("Query error:", error);
+      logger.error("Query error:", error);
       throw error;
     }
 
     if (!schools || schools.length === 0) {
-      console.log("No schools found for userId:", userId);
+      logger.info("No schools found for userId:", userId);
       return {
         success: true,
         processed: 0,
@@ -47,18 +50,18 @@ export async function batchFetchLogos(userId?: string): Promise<{
       };
     }
 
-    console.log(`Found ${schools.length} schools for userId ${userId}`);
+    logger.info(`Found ${schools.length} schools for userId ${userId}`);
 
     // Clear existing favicon_url values to force re-fetch (in case they were invalid)
     // This ensures we always get fresh logos
-    console.log("Clearing existing favicon_url values to force re-fetch...");
+    logger.info("Clearing existing favicon_url values to force re-fetch...");
     await supabase
       .from("schools")
       .update({ favicon_url: null })
       .eq("user_id", userId);
 
     // Fetch logos for all schools
-    console.log(`Fetching favicons for ${schools.length} schools...`);
+    logger.info(`Fetching favicons for ${schools.length} schools...`);
     let successCount = 0;
 
     for (const school of schools) {
@@ -73,27 +76,27 @@ export async function batchFetchLogos(userId?: string): Promise<{
             .eq("id", school.id);
 
           if (updateError) {
-            console.warn(
+            logger.warn(
               `Failed to save logo for ${school.name}:`,
               updateError.message,
             );
           } else {
             successCount++;
-            console.log(`✓ Fetched logo for ${school.name}`);
+            logger.info(`Fetched logo for ${school.name}`);
           }
         } else {
-          console.log(`✗ No logo found for ${school.name}`);
+          logger.info(`No logo found for ${school.name}`);
         }
 
         // Add small delay to avoid rate limiting
         await new Promise((resolve) => setTimeout(resolve, 200));
       } catch (error) {
-        console.error(`Error processing ${school.name}:`, error);
+        logger.error(`Error processing ${school.name}:`, error);
       }
     }
 
-    console.log(
-      `\nBatch fetch complete: ${successCount}/${schools.length} successful`,
+    logger.info(
+      `Batch fetch complete: ${successCount}/${schools.length} successful`,
     );
 
     return {
@@ -103,7 +106,7 @@ export async function batchFetchLogos(userId?: string): Promise<{
       message: `Fetched favicons for ${successCount} out of ${schools.length} schools`,
     };
   } catch (error) {
-    console.error("Batch fetch failed:", error);
+    logger.error("Batch fetch failed:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -180,7 +183,7 @@ async function fetchFaviconForSchool(
 
     return null;
   } catch (error) {
-    console.error(`Error fetching favicon for ${school.name}:`, error);
+    logger.error(`Error fetching favicon for ${school.name}:`, error);
     return null;
   }
 }

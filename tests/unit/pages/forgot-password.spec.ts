@@ -246,7 +246,7 @@ describe("pages/forgot-password.vue", () => {
       expect(submitButton.attributes("disabled")).toBeDefined();
     });
 
-    it("validates email on blur", async () => {
+    it("validates email on blur-sm", async () => {
       const wrapper = mountPage();
       const emailInput = wrapper.find("#email");
       await emailInput.setValue("test@example.com");

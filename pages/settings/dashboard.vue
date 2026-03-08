@@ -1,13 +1,13 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
@@ -16,573 +16,251 @@
           Dashboard Customization
         </h1>
         <p class="text-slate-600">
-          Show or hide dashboard widgets to customize your experience
+          Drag widgets to reorder. Click the eye to show or hide.
         </p>
       </div>
     </div>
 
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-      <!-- Content -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
-        <div class="p-6 border-b border-gray-200">
-          <!-- Stats Cards Section -->
-          <div class="mb-8">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-semibold text-gray-900">
-                Summary Statistics
-              </h2>
-              <div class="flex gap-2">
-                <button
-                  @click="selectAllStats"
-                  class="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Select All
-                </button>
-                <span class="text-gray-300">|</span>
-                <button
-                  @click="deselectAllStats"
-                  class="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Deselect All
-                </button>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.statsCards.coaches"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="flex-1">
-                  <span class="font-medium text-gray-900">👥 Coaches</span>
-                  <p class="text-xs text-gray-600">
-                    Total coaches in your list
-                  </p>
-                </span>
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.statsCards.schools"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="flex-1">
-                  <span class="font-medium text-gray-900">🏫 Schools</span>
-                  <p class="text-xs text-gray-600">Schools you're tracking</p>
-                </span>
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.statsCards.interactions"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="flex-1">
-                  <span class="font-medium text-gray-900">💬 Interactions</span>
-                  <p class="text-xs text-gray-600">
-                    Emails, calls, and messages
-                  </p>
-                </span>
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.statsCards.offers"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="flex-1">
-                  <span class="font-medium text-gray-900">📝 Offers</span>
-                  <p class="text-xs text-gray-600">
-                    Scholarship offers received
-                  </p>
-                </span>
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.statsCards.events"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="flex-1">
-                  <span class="font-medium text-gray-900">📅 Events</span>
-                  <p class="text-xs text-gray-600">
-                    Camps, showcases, and visits
-                  </p>
-                </span>
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.statsCards.performance"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="flex-1">
-                  <span class="font-medium text-gray-900">📊 Performance</span>
-                  <p class="text-xs text-gray-600">
-                    Recorded metrics and stats
-                  </p>
-                </span>
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.statsCards.notifications"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="flex-1">
-                  <span
-                    class="font-medium text-gray-900 flex items-center gap-2"
-                  >
-                    <BellIcon class="w-5 h-5" />
-                    <span>Notifications</span>
-                  </span>
-                  <p class="text-xs text-gray-600">
-                    Pending alerts and reminders
-                  </p>
-                </span>
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.statsCards.socialMedia"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="flex-1">
-                  <span class="font-medium text-gray-900">📱 Social Media</span>
-                  <p class="text-xs text-gray-600">
-                    Linked accounts and followers
-                  </p>
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Dashboard Widgets Section -->
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-semibold text-gray-900">
-                Dashboard Widgets
-              </h2>
-              <div class="flex gap-2">
-                <button
-                  @click="selectAllWidgets"
-                  class="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Select All
-                </button>
-                <span class="text-gray-300">|</span>
-                <button
-                  @click="deselectAllWidgets"
-                  class="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Deselect All
-                </button>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.atAGlanceSummary"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >At a Glance Summary</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.offerStatusOverview"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >Offer Status Overview</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.interactionTrendChart"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >Interaction Trends</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.schoolInterestChart"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >School Interest Chart</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.schoolMapWidget"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >School Map</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.coachFollowupWidget"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >Coach Followup</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.eventsSummary"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >Events Summary</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.performanceSummary"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >Performance Summary</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.recentDocuments"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >Recent Documents</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.interactionStats"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >Interaction Statistics</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.schoolStatusOverview"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >School Status Overview</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.coachResponsiveness"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >Coach Responsiveness</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.upcomingDeadlines"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >Upcoming Deadlines</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.recentNotifications"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >Recent Notifications</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.linkedAccounts"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >Linked Accounts</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.recruitingCalendar"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >Recruiting Calendar</span
-                >
-              </label>
-
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  v-model="localLayout.widgets.quickTasks"
-                  type="checkbox"
-                  class="w-4 h-4 text-blue-600 rounded"
-                />
-                <span class="text-sm font-medium text-gray-900"
-                  >Quick Tasks</span
-                >
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div
-          class="px-6 py-4 bg-gray-50 rounded-b-lg flex gap-3 justify-between"
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <!-- Stats Bar toggles -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
+        <h2
+          class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4"
         >
-          <button
-            @click="resetToDefaults"
-            class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 text-sm font-medium transition"
+          Summary Statistics
+        </h2>
+        <div class="flex flex-wrap gap-3">
+          <label
+            v-for="card in STAT_CARDS"
+            :key="card.key"
+            class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition select-none"
+            :class="
+              layout.statsCards[card.key] ? 'bg-white' : 'bg-slate-50 opacity-60'
+            "
           >
-            Reset to Defaults
-          </button>
+            <input
+              v-model="layout.statsCards[card.key]"
+              type="checkbox"
+              class="w-4 h-4 text-blue-600 rounded-sm"
+              @change="scheduleSave"
+            />
+            <span class="text-sm font-medium text-slate-800">{{
+              card.label
+            }}</span>
+          </label>
+        </div>
+      </div>
 
-          <div class="flex gap-3">
-            <router-link
-              to="/settings"
-              class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 text-sm font-medium transition"
-            >
-              Cancel
-            </router-link>
+      <!-- Column editor -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left column (4/6 wide on dashboard) -->
+        <div
+          class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-xs p-6"
+        >
+          <h2
+            class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-1"
+          >
+            Main Column
+          </h2>
+          <p class="text-xs text-slate-400 mb-4">
+            Accepts wide (4/6) and narrow (2/6) widgets. Narrow widgets pair
+            side-by-side.
+          </p>
 
-            <button
-              @click="saveChanges"
-              :disabled="loading"
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+          <VueDraggable
+            v-model="layout.leftColumn"
+            :group="leftGroup"
+            handle=".drag-handle"
+            class="min-h-24 space-y-2"
+            ghost-class="opacity-40"
+            @end="scheduleSave"
+          >
+            <DashboardWidgetCard
+              v-for="element in layout.leftColumn"
+              :key="element.id"
+              :id="element.id"
+              :visible="element.visible"
+              :data-size="widgetSize(element.id)"
+              @toggle="toggleWidget(layout.leftColumn, element.id)"
+            />
+          </VueDraggable>
+
+          <p
+            v-if="layout.leftColumn.length === 0"
+            class="text-sm text-slate-400 text-center py-6"
+          >
+            Drag widgets here
+          </p>
+        </div>
+
+        <!-- Right column (2/6 wide on dashboard — sidebar) -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
+          <h2
+            class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-1"
+          >
+            Sidebar
+          </h2>
+          <p class="text-xs text-slate-400 mb-4">Narrow (2/6) widgets only.</p>
+
+          <VueDraggable
+            v-model="layout.rightColumn"
+            :group="rightGroup"
+            handle=".drag-handle"
+            class="min-h-24 space-y-2"
+            ghost-class="opacity-40"
+            @end="scheduleSave"
+          >
+            <DashboardWidgetCard
+              v-for="element in layout.rightColumn"
+              :key="element.id"
+              :id="element.id"
+              :visible="element.visible"
+              :data-size="widgetSize(element.id)"
+              @toggle="toggleWidget(layout.rightColumn, element.id)"
+            />
+          </VueDraggable>
+
+          <p
+            v-if="layout.rightColumn.length === 0"
+            class="text-sm text-slate-400 text-center py-6"
+          >
+            Drag widgets here
+          </p>
+        </div>
+      </div>
+
+      <!-- Coming Soon section -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
+        <h2
+          class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4"
+        >
+          Coming Soon
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div
+            v-for="(label, id) in COMING_SOON_LABELS"
+            :key="id"
+            class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed"
+          >
+            <div class="w-4 h-4 shrink-0" />
+            <span class="flex-1 text-sm font-medium text-slate-800 truncate">{{
+              label
+            }}</span>
+            <span
+              class="text-xs font-medium bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full shrink-0"
             >
-              {{ loading ? "Saving..." : "Save Changes" }}
-            </button>
+              Coming soon
+            </span>
           </div>
         </div>
       </div>
 
-      <!-- Status Messages -->
-      <div
-        v-if="successMessage"
-        class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm flex items-center gap-2"
-      >
-        <CheckIcon class="w-5 h-5" />
-        <span>{{ successMessage }}</span>
-      </div>
-
-      <div
-        v-if="errorMessage"
-        class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2"
-      >
-        <XMarkIcon class="w-5 h-5" />
-        <span>{{ errorMessage }}</span>
+      <!-- Reset + save status -->
+      <div class="flex justify-between items-center">
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-medium text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition"
+          @click="resetToDefaults"
+        >
+          Reset to Defaults
+        </button>
+        <p
+          v-if="saveStatus === 'saved'"
+          class="text-sm text-green-600 font-medium"
+        >
+          ✓ Saved
+        </p>
+        <p
+          v-if="saveStatus === 'error'"
+          class="text-sm text-red-600 font-medium"
+        >
+          Failed to save
+        </p>
       </div>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
-import { CheckIcon, XMarkIcon, BellIcon } from "@heroicons/vue/24/solid";
+import { ref, reactive, onMounted } from "vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
+import { VueDraggable } from "vue-draggable-plus";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { getDefaultDashboardLayout } from "~/utils/preferenceValidation";
-import type { DashboardWidgetVisibility } from "~/types/models";
-import Header from "~/components/Header.vue";
+import { WIDGET_SIZES } from "~/types/models";
+import type { WidgetEntry, DashboardLayout } from "~/types/models";
+import DashboardWidgetCard from "~/components/Settings/DashboardWidgetCard.vue";
 
-const { isSaving, getDashboardLayout, setDashboardLayout } =
+definePageMeta({ middleware: "auth" });
+
+const COMING_SOON_LABELS: Record<string, string> = {
+  offerStatusOverview: "Offer Status Overview",
+  recentDocuments: "Recent Documents",
+  interactionStats: "Interaction Statistics",
+  coachResponsiveness: "Coach Responsiveness",
+  upcomingDeadlines: "Upcoming Deadlines",
+  recruitingCalendar: "Recruiting Calendar",
+};
+
+const STAT_CARDS = [
+  { key: "coaches" as const, label: "👥 Coaches" },
+  { key: "schools" as const, label: "🏫 Schools" },
+  { key: "interactions" as const, label: "💬 Interactions" },
+  { key: "offers" as const, label: "📝 Offers" },
+  { key: "events" as const, label: "📅 Events" },
+];
+
+// SortableJS group config — right column rejects 4/6 widgets
+const leftGroup = { name: "dashboard", pull: true, put: true };
+const rightGroup = {
+  name: "dashboard",
+  pull: true,
+  put: (_to: unknown, _from: unknown, dragEl: HTMLElement) =>
+    dragEl.dataset.size === "2/6",
+};
+
+const { getDashboardLayout, setDashboardLayout, dashboardPrefs } =
   usePreferenceManager();
 
-const localLayout = ref<DashboardWidgetVisibility>(getDefaultDashboardLayout());
+const widgetSize = (id: string): string =>
+  WIDGET_SIZES[id as keyof typeof WIDGET_SIZES] ?? "2/6";
 
-const successMessage = ref<string | null>(null);
-const errorMessage = ref<string | null>(null);
-const loading = computed(() => isSaving.value);
+const layout = reactive<DashboardLayout>(getDefaultDashboardLayout());
+const saveStatus = ref<"idle" | "saved" | "error">("idle");
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
 onMounted(async () => {
-  const layout = getDashboardLayout();
-  localLayout.value = layout;
+  await dashboardPrefs.loadPreferences();
+  const saved = getDashboardLayout();
+  layout.statsCards = saved.statsCards;
+  layout.leftColumn = saved.leftColumn;
+  layout.rightColumn = saved.rightColumn;
 });
 
-const selectAllStats = () => {
-  Object.keys(localLayout.value.statsCards).forEach((key) => {
-    localLayout.value.statsCards[
-      key as keyof typeof localLayout.value.statsCards
-    ] = true;
-  });
+const toggleWidget = (column: WidgetEntry[], id: string) => {
+  const entry = column.find((w) => w.id === id);
+  if (entry) entry.visible = !entry.visible;
+  scheduleSave();
 };
 
-const deselectAllStats = () => {
-  Object.keys(localLayout.value.statsCards).forEach((key) => {
-    localLayout.value.statsCards[
-      key as keyof typeof localLayout.value.statsCards
-    ] = false;
-  });
-};
-
-const selectAllWidgets = () => {
-  Object.keys(localLayout.value.widgets).forEach((key) => {
-    localLayout.value.widgets[key as keyof typeof localLayout.value.widgets] =
-      true;
-  });
-};
-
-const deselectAllWidgets = () => {
-  Object.keys(localLayout.value.widgets).forEach((key) => {
-    localLayout.value.widgets[key as keyof typeof localLayout.value.widgets] =
-      false;
-  });
+const scheduleSave = () => {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      await setDashboardLayout({ ...layout });
+      saveStatus.value = "saved";
+      setTimeout(() => (saveStatus.value = "idle"), 2000);
+    } catch {
+      saveStatus.value = "error";
+    }
+  }, 800);
 };
 
 const resetToDefaults = () => {
-  localLayout.value = {
-    statsCards: {
-      coaches: true,
-      schools: true,
-      interactions: true,
-      offers: true,
-      events: true,
-      performance: true,
-      notifications: true,
-      socialMedia: true,
-    },
-    widgets: {
-      recentNotifications: true,
-      linkedAccounts: true,
-      recruitingCalendar: true,
-      quickTasks: true,
-      atAGlanceSummary: true,
-      offerStatusOverview: true,
-      interactionTrendChart: true,
-      schoolInterestChart: true,
-      schoolMapWidget: true,
-      coachFollowupWidget: true,
-      eventsSummary: true,
-      performanceSummary: true,
-      recentDocuments: true,
-      interactionStats: true,
-      schoolStatusOverview: true,
-      coachResponsiveness: true,
-      upcomingDeadlines: true,
-    },
-  };
-};
-
-const saveChanges = async () => {
-  successMessage.value = null;
-  errorMessage.value = null;
-
-  try {
-    await setDashboardLayout(localLayout.value);
-    successMessage.value = "Dashboard customization saved successfully!";
-    setTimeout(() => {
-      successMessage.value = null;
-    }, 3000);
-  } catch (err) {
-    const errorMsg =
-      err instanceof Error
-        ? err.message
-        : "Failed to save dashboard customization";
-    errorMessage.value = errorMsg;
-  }
+  const defaults = getDefaultDashboardLayout();
+  layout.statsCards = defaults.statsCards;
+  layout.leftColumn = defaults.leftColumn;
+  layout.rightColumn = defaults.rightColumn;
+  scheduleSave();
 };
 </script>

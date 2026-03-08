@@ -145,6 +145,7 @@ export default defineEventHandler(async (event) => {
       (a: number, b: number) => a + b,
       0,
     );
+    logger.info("School cascade deleted", { schoolId, totalDeleted, deleted });
     return {
       success: true,
       schoolId,

@@ -3,7 +3,7 @@ import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
 import { useFamilyContext } from "./useFamilyContext";
-import { useToast } from "~/composables/useToast";
+import { useAppToast } from "~/composables/useAppToast";
 import { createClientLogger } from "~/utils/logger";
 import type { FollowUpReminder } from "~/types/models";
 import type { Database } from "~/types/database";
@@ -20,7 +20,7 @@ export const useInteractionReminders = () => {
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
   const activeFamily = injectedFamily ?? useFamilyContext();
-  const toast = useToast();
+  const toast = useAppToast();
 
   const reminders = shallowRef<FollowUpReminder[]>([]);
   const remindersLoadingRef = ref(false);

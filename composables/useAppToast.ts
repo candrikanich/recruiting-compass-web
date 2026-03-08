@@ -4,7 +4,7 @@ import type { Toast, ToastType } from "~/types/toast";
 // Module-level singleton: all callers share the same toasts array
 const toasts = ref<Toast[]>([]);
 
-export const useToast = () => {
+export const useAppToast = () => {
   const showToast = (
     message: string,
     type: ToastType = "info",

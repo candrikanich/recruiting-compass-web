@@ -9,7 +9,7 @@
       class="mt-1 text-sm text-red-600 flex items-start gap-1"
     >
       <ExclamationCircleIcon
-        class="w-4 h-4 mt-0.5 flex-shrink-0"
+        class="w-4 h-4 mt-0.5 shrink-0"
         aria-hidden="true"
       />
       <span>{{ error }}</span>

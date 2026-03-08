@@ -360,7 +360,7 @@ In template, wrap with Suspense if needed:
 <Suspense>
   <DashboardChartsSection />
   <template #fallback>
-    <div class="animate-pulse bg-gray-200 h-64 rounded"></div>
+    <div class="animate-pulse bg-gray-200 h-64 rounded-sm"></div>
   </template>
 </Suspense>
 ```
@@ -418,7 +418,7 @@ In template:
 <Suspense>
   <DashboardMapActivitySection />
   <template #fallback>
-    <div class="animate-pulse bg-gray-200 h-96 rounded"></div>
+    <div class="animate-pulse bg-gray-200 h-96 rounded-sm"></div>
   </template>
 </Suspense>
 ```
@@ -518,8 +518,8 @@ const DashboardWidgetsSection = defineAsyncComponent(
   <DashboardWidgetsSection />
   <template #fallback>
     <div class="grid grid-cols-2 gap-4">
-      <div class="animate-pulse bg-gray-200 h-32 rounded"></div>
-      <div class="animate-pulse bg-gray-200 h-32 rounded"></div>
+      <div class="animate-pulse bg-gray-200 h-32 rounded-sm"></div>
+      <div class="animate-pulse bg-gray-200 h-32 rounded-sm"></div>
     </div>
   </template>
 </Suspense>

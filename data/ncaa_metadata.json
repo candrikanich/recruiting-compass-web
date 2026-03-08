@@ -1,0 +1,20 @@
+{
+  "100654": {
+    "name": "Alabama A & M University",
+    "division": "D1",
+    "conference": "Southwestern Athletic",
+    "ncaa_logo_slug": "alabama-am"
+  },
+  "100724": {
+    "name": "Alabama State University",
+    "division": "D1",
+    "conference": "Southwestern Athletic",
+    "ncaa_logo_slug": "alabama-st"
+  },
+  "100751": {
+    "name": "The University of Alabama",
+    "division": "D1",
+    "conference": "Southeastern",
+    "ncaa_logo_slug": "alabama"
+  }
+}

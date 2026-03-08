@@ -28,11 +28,11 @@ const paddingClasses: Record<CardPadding, string> = {
 };
 
 const gradientClasses: Record<GradientColor, string> = {
-  blue: "bg-gradient-to-br from-blue-500 to-blue-600",
-  purple: "bg-gradient-to-br from-purple-500 to-purple-600",
-  emerald: "bg-gradient-to-br from-emerald-500 to-emerald-600",
-  orange: "bg-gradient-to-br from-orange-500 to-orange-600",
-  indigo: "bg-gradient-to-br from-indigo-500 to-indigo-600",
+  blue: "bg-linear-to-br from-blue-500 to-blue-600",
+  purple: "bg-linear-to-br from-purple-500 to-purple-600",
+  emerald: "bg-linear-to-br from-emerald-500 to-emerald-600",
+  orange: "bg-linear-to-br from-orange-500 to-orange-600",
+  indigo: "bg-linear-to-br from-indigo-500 to-indigo-600",
 };
 
 const cardClasses = computed(() => {

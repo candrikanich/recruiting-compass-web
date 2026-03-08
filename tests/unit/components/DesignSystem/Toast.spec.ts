@@ -3,8 +3,8 @@ import { mount } from "@vue/test-utils";
 import Toast from "~/components/DesignSystem/Toast.vue";
 
 // Mock the composable
-vi.mock("~/composables/useToast", () => ({
-  useToast: () => ({
+vi.mock("~/composables/useAppToast", () => ({
+  useAppToast: () => ({
     toasts: {
       value: [
         {

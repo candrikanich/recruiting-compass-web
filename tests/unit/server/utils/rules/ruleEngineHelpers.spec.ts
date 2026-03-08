@@ -23,8 +23,7 @@ describe("ruleEngineHelpers", () => {
     });
 
     it("returns true if dismissed exactly 14 days ago", () => {
-      const dismissedDate = new Date();
-      dismissedDate.setDate(dismissedDate.getDate() - 14);
+      const dismissedDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
       const suggestion = createSuggestion({
         dismissed: true,
         dismissed_at: dismissedDate.toISOString(),

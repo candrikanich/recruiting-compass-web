@@ -94,7 +94,7 @@
           :key="type"
           @click="$emit('update:searchType', type)"
           :class="[
-            'px-3 py-1 rounded text-xs font-medium transition',
+            'px-3 py-1 rounded-sm text-xs font-medium transition',
             modelValue === type
               ? 'bg-blue-600 text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300',

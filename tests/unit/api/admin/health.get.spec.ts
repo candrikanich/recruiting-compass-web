@@ -11,7 +11,7 @@ vi.mock("~/server/utils/supabase", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  useLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
 
 describe("GET /api/admin/health", () => {

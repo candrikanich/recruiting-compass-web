@@ -177,7 +177,7 @@ const navItems = [
       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
   ]"
 >
-  <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+  <component :is="item.icon" class="w-5 h-5 shrink-0" />
   <span>{{ item.label }}</span>
 </NuxtLink>
 ```
@@ -198,7 +198,7 @@ Simple tooltip component for hover labels:
     <slot />
     <div
       v-if="showTooltip"
-      class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-50"
+      class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded-sm whitespace-nowrap z-50"
     >
       {{ text }}
     </div>

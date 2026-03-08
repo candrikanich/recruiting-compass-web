@@ -31,7 +31,7 @@ const ctaButtonText = "Sign Up Free";
 
 <template>
   <section
-    class="hero bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20"
+    class="hero bg-linear-to-r from-blue-600 to-blue-800 text-white py-20"
   >
     <div class="container mx-auto px-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -383,7 +383,7 @@ Form Fields:
 
 ```vue
 <template>
-  <section class="py-16 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+  <section class="py-16 bg-linear-to-r from-blue-600 to-blue-800 text-white">
     <div class="container mx-auto px-4">
       <div class="max-w-md mx-auto text-center">
         <h2 class="text-3xl font-bold mb-4">Get Recruiting Tips</h2>
@@ -396,19 +396,19 @@ Form Fields:
             v-model="form.firstName"
             type="text"
             placeholder="First Name"
-            class="w-full px-4 py-3 rounded text-gray-900"
+            class="w-full px-4 py-3 rounded-sm text-gray-900"
             required
           />
           <input
             v-model="form.email"
             type="email"
             placeholder="Your Email"
-            class="w-full px-4 py-3 rounded text-gray-900"
+            class="w-full px-4 py-3 rounded-sm text-gray-900"
             required
           />
           <button
             type="submit"
-            class="w-full bg-white text-blue-600 px-6 py-3 rounded font-bold hover:bg-gray-100 transition"
+            class="w-full bg-white text-blue-600 px-6 py-3 rounded-sm font-bold hover:bg-gray-100 transition"
           >
             Subscribe
           </button>

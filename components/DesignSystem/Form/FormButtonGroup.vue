@@ -48,7 +48,7 @@ const computedSubmitLabel = computed(() => {
     </button>
     <button
       type="submit"
-      class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      class="px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       :disabled="submitDisabled || loading"
       @click.prevent="emit('submit')"
     >

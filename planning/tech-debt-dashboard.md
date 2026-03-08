@@ -271,6 +271,53 @@ Cannot find dependency '@vitest/coverage-v8'
 
 ---
 
+### 11. HTTP Status Code Semantics (400 → 422 for Validation Failures)
+
+**Severity:** LOW | **Effort:** 1-2 hours | **Impact:** API correctness, future API consumers
+
+**Issue:** ~15 endpoints return `400 Bad Request` for content validation failures that should be `422 Unprocessable Entity`. The distinction matters: `400` = malformed/incomplete request; `422` = well-formed request with invalid content.
+
+**Correct as-is (`400` appropriate):**
+- Missing required parameter: `"Token is required"`, `"q or id query parameter required"`, `"Invitation ID is required"`
+- Malformed JSON body: `"Invalid request body"`
+
+**Should be `422`:**
+
+| File | Example message |
+|---|---|
+| `server/api/schools/[id]/fit-score.post.ts` | `"athleticFit must be a number between 0 and 40"` (5 instances) |
+| `server/api/colleges/search.get.ts` | `"q must be at least 3 characters"` |
+| `server/api/user/preferences/[category].post.ts` | Field range/format validations (3 instances) |
+| `server/api/athlete-tasks/[taskId].patch.ts` | Field validation failures (2 instances) |
+| `server/api/notifications/create.post.ts` | Payload validation failure |
+| `server/api/suggestions/trigger-update.post.ts` | Payload validation failure |
+
+**Action Items:**
+
+- [ ] Change `statusCode: 400` → `statusCode: 422` for field-level content validation errors in the files above
+- [ ] Leave `400` untouched for missing params / malformed JSON
+
+---
+
+### 12. Unbounded List Endpoints (Pagination)
+
+**Severity:** ~~LOW~~ RESOLVED | **Effort:** N/A
+
+**Resolution:** After inspection, all list endpoints are either already paginated or naturally bounded by family scope. `getSurfacedSuggestions` (called by `suggestions/index.get.ts`) already hard-limits output to 3 (dashboard) or 2 (school_detail) via `.limit()` at the query level. No action needed.
+
+**Already paginated:** ✅ `admin/users.get.ts`
+
+**Naturally bounded (confirmed, no action needed):**
+- `suggestions/index.get.ts` — staggering logic limits to 3/2 rows at DB level
+- `family/members.get.ts` — max ~5 members per family
+- `family/invitations/index.get.ts` — per-family, small count
+- `tasks/index.get.ts` — finite admin-defined task list
+- `athlete-tasks/index.get.ts` — bounded by task count
+- `tasks/with-status.get.ts` — bounded by task count
+- `admin/pending-invitations.get.ts` — admin-only, manageable
+
+---
+
 ## 📊 Debt by Category
 
 ```
@@ -286,6 +333,8 @@ Outdated Deps            17       ⚠️ MEDIUM   2-4h
 Console Statements       566      📋 LOW      2-3h
 JS Build Scripts         4        📋 LOW      1-2h
 Missing Test Coverage    -        📋 LOW      3-5d
+Wrong HTTP Status Codes  ~15      📋 LOW      1-2h
+Unbounded List Endpoints 1        📋 LOW      2-3h
 ```
 
 ---

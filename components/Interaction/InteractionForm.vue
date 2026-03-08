@@ -234,7 +234,7 @@ const handleCancel = () => {
         type="datetime-local"
         required
         :disabled="loading"
-        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50"
+        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50"
       />
       <p class="mt-1 text-xs text-slate-600">
         Select a date and time using the picker, or enter: YYYY-MM-DD HH:MM
@@ -295,7 +295,7 @@ const handleCancel = () => {
         type="submit"
         :aria-busy="loading"
         :disabled="loading || !isFormValid"
-        class="flex-1 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 font-semibold text-white transition hover:from-blue-600 hover:to-blue-700 disabled:opacity-50"
+        class="flex-1 rounded-xl bg-linear-to-r from-blue-500 to-blue-600 px-4 py-3 font-semibold text-white transition hover:from-blue-600 hover:to-blue-700 disabled:opacity-50"
       >
         {{ loading ? "Logging..." : "Log Interaction" }}
       </button>
