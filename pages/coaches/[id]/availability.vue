@@ -143,7 +143,7 @@
                     :value="getDayAvailability(day)?.start_time"
                     @input="updateDayTime(day, 'start_time', $event)"
                     required
-                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
+                    class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
                   />
                 </div>
 
@@ -161,7 +161,7 @@
                     :value="getDayAvailability(day)?.end_time"
                     @input="updateDayTime(day, 'end_time', $event)"
                     required
-                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
+                    class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
                   />
                 </div>
               </div>
@@ -206,7 +206,7 @@
                   id="blackout-date"
                   v-model="newBlackoutDate"
                   type="date"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -222,7 +222,7 @@
                   v-model="blackoutReason"
                   type="text"
                   placeholder="e.g., Away, Vacation"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 

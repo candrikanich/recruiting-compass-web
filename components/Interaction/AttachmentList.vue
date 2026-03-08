@@ -51,7 +51,7 @@ const getFileTypeLabel = (url: string): string => {
           target="_blank"
           rel="noopener noreferrer"
           :aria-label="`Download ${extractFilename(url)} (${getFileTypeLabel(url)}). Opens in new window`"
-          class="p-4 border rounded-lg hover:bg-gray-50 transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="p-4 border rounded-lg hover:bg-gray-50 transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <div class="flex items-start gap-2">
             <span aria-hidden="true" class="text-lg">📎</span>

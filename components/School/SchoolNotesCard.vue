@@ -27,7 +27,7 @@
           id="notes-textarea"
           v-model="localNotes"
           rows="4"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           placeholder="Add notes about this school..."
         />
         <button
@@ -75,7 +75,7 @@
           id="private-notes-textarea"
           v-model="localPrivateNotes"
           rows="4"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           placeholder="Add your private thoughts..."
         />
         <button

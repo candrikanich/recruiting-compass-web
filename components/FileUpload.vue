@@ -67,7 +67,7 @@ const removeFile = (index: number) => {
       <button
         type="button"
         :disabled="disabled"
-        class="flex w-full items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-white px-6 py-4 text-sm font-medium text-slate-600 transition-colors hover:border-slate-400 hover:text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        class="flex w-full items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-white px-6 py-4 text-sm font-medium text-slate-600 transition-colors hover:border-slate-400 hover:text-slate-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         @click="handleClick"
       >
         <svg

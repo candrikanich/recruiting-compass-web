@@ -25,7 +25,7 @@
         @click="showTaskForm = !showTaskForm"
         :aria-expanded="showTaskForm"
         aria-controls="task-form"
-        class="flex items-center gap-2 px-3 py-1.5 bg-linear-to-r from-brand-blue-500 to-brand-blue-600 text-white rounded-lg text-sm font-medium hover:from-brand-blue-600 hover:to-brand-blue-700 transition-all focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        class="flex items-center gap-2 px-3 py-1.5 bg-linear-to-r from-brand-blue-500 to-brand-blue-600 text-white rounded-lg text-sm font-medium hover:from-brand-blue-600 hover:to-brand-blue-700 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
       >
         <PlusIcon class="w-4 h-4" aria-hidden="true" />
         Add Task
@@ -61,7 +61,7 @@
         <button
           type="submit"
           aria-label="Save task"
-          class="px-3 py-1.5 text-blue-600 hover:text-blue-700 font-medium hover:bg-blue-100 rounded-sm transition-colors focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+          class="px-3 py-1.5 text-blue-600 hover:text-blue-700 font-medium hover:bg-blue-100 rounded-sm transition-colors focus:ring-2 focus:ring-blue-500"
         >
           <CheckIcon class="w-4 h-4" />
         </button>
@@ -69,7 +69,7 @@
           type="button"
           @click="showTaskForm = false"
           aria-label="Cancel adding task"
-          class="px-3 py-1.5 text-slate-500 hover:text-slate-700 font-medium hover:bg-slate-200 rounded-sm transition-colors focus:outline-hidden focus:ring-2 focus:ring-slate-500"
+          class="px-3 py-1.5 text-slate-500 hover:text-slate-700 font-medium hover:bg-slate-200 rounded-sm transition-colors focus:ring-2 focus:ring-slate-500"
         >
           <XMarkIcon class="w-4 h-4" />
         </button>
@@ -114,7 +114,7 @@
         <button
           @click="$emit('delete-task', task.id)"
           :aria-label="`Delete task: ${task.text}`"
-          class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-600 transition-all p-1 hover:bg-red-50 rounded-sm focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:opacity-100"
+          class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-600 transition-all p-1 hover:bg-red-50 rounded-sm focus:ring-2 focus:ring-red-500 focus:opacity-100"
         >
           <XMarkIcon class="w-4 h-4" />
         </button>
@@ -132,7 +132,7 @@
       v-if="completedCount > 0"
       @click="$emit('clear-completed')"
       :aria-label="`Clear ${completedCount} completed tasks`"
-      class="mt-4 w-full py-2 text-slate-500 text-sm hover:text-slate-700 transition focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 rounded-sm"
+      class="mt-4 w-full py-2 text-slate-500 text-sm hover:text-slate-700 transition focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 rounded-sm"
     >
       Clear {{ completedCount }} completed
     </button>

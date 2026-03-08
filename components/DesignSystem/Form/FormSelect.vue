@@ -64,7 +64,7 @@ const handleBlur = () => {
       :aria-invalid="!!error"
       :aria-describedby="error ? `${inputId}-error` : undefined"
       :style="dropdownStyle"
-      class="px-4 py-3 border-2 border-slate-300 rounded-xl bg-white appearance-none cursor-pointer transition-all focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+      class="px-4 py-3 border-2 border-slate-300 rounded-xl bg-white appearance-none cursor-pointer transition-all focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
       :class="{ 'border-red-500': error }"
       @input="handleInput"
       @blur="handleBlur"

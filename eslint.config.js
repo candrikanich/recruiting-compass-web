@@ -3,6 +3,43 @@ import prettier from "eslint-config-prettier";
 import ts from "typescript-eslint";
 import process from "process";
 
+// Architecture rule: composables must not call Supabase directly — use stores instead.
+// Enforces: Page → Composable → Pinia Store → Supabase/API
+const noSupabaseInComposables = {
+  meta: { type: "problem", schema: [] },
+  create(context) {
+    const filename = context.getFilename();
+    if (!filename.includes("/composables/")) return {};
+    // Allow useSupabase.ts — it IS the singleton wrapper
+    if (filename.endsWith("useSupabase.ts")) return {};
+    const forbidden = ["useSupabaseClient", "useSupabaseAdmin"];
+    return {
+      ImportDeclaration(node) {
+        // Allow type-only imports (e.g. `import type { User }`) — types are fine
+        if (node.importKind === "type") return;
+        if (node.source.value.toString().includes("@supabase/supabase-js")) {
+          context.report({
+            node,
+            message:
+              "Composables must not import from @supabase/supabase-js directly. Use a Pinia store instead.",
+          });
+        }
+      },
+      CallExpression(node) {
+        if (
+          node.callee.type === "Identifier" &&
+          forbidden.includes(node.callee.name)
+        ) {
+          context.report({
+            node,
+            message: `Composables must not call ${node.callee.name}() directly. Use a Pinia store instead.`,
+          });
+        }
+      },
+    };
+  },
+};
+
 export default [
   {
     ignores: [
@@ -49,6 +86,13 @@ export default [
           varsIgnorePattern: "^_",
         },
       ],
+    },
+  },
+  {
+    files: ["composables/**/*.ts"],
+    plugins: { local: { rules: { "no-supabase-in-composables": noSupabaseInComposables } } },
+    rules: {
+      "local/no-supabase-in-composables": "error",
     },
   },
   {

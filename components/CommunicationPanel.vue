@@ -138,7 +138,7 @@
                 >
                 <select
                   v-model="selectedEmailTemplate"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
                   <option value="">Custom message</option>
                   <option v-for="t in emailTemplates" :key="t.id" :value="t.id">
@@ -155,7 +155,7 @@
                 <input
                   v-model="emailComposer.subject"
                   type="text"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   placeholder="Email subject..."
                 />
               </div>
@@ -168,7 +168,7 @@
                 <textarea
                   v-model="emailComposer.body"
                   rows="6"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   placeholder="Your message..."
                 />
               </div>
@@ -262,7 +262,7 @@
                 >
                 <select
                   v-model="selectedTextTemplate"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
                   <option value="">Custom message</option>
                   <option
@@ -289,7 +289,7 @@
                   v-model="textComposer.body"
                   rows="4"
                   maxlength="160"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   placeholder="Your message..."
                 />
                 <p class="text-xs text-slate-500 mt-2">

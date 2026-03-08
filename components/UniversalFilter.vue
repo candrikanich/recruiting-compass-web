@@ -28,7 +28,7 @@
               ($event.target as HTMLInputElement).value,
             )
           "
-          class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 text-sm"
+          class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
         />
 
         <!-- Select filter -->
@@ -42,7 +42,7 @@
               ($event.target as HTMLSelectElement).value || null,
             )
           "
-          class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 text-sm"
+          class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
         >
           <option value="">-- All --</option>
           <option
@@ -89,7 +89,7 @@
                   : null,
             )
           "
-          class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 text-sm"
+          class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
         >
           <option value="">-- All --</option>
           <option value="true">Yes</option>
@@ -112,7 +112,7 @@
                 ($event.target as HTMLInputElement).value,
               )
             "
-            class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+            class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:ring-2 focus:ring-blue-500"
           />
           <input
             type="number"
@@ -128,7 +128,7 @@
                 ($event.target as HTMLInputElement).value,
               )
             "
-            class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+            class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -145,7 +145,7 @@
                   ($event.target as HTMLInputElement).value,
                 )
               "
-              class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="date"
@@ -157,7 +157,7 @@
                   ($event.target as HTMLInputElement).value,
                 )
               "
-              class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -281,14 +281,14 @@
           v-model="newPresetName"
           type="text"
           placeholder="Preset name (e.g., 'My Favorites')"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 mb-3"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 mb-3"
           @keyup.enter="doSavePreset"
         />
 
         <textarea
           v-model="newPresetDescription"
           placeholder="Optional description"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 mb-4 text-sm h-20 resize-none"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 mb-4 text-sm h-20 resize-none"
         />
 
         <div class="flex gap-2 justify-end">

@@ -48,7 +48,7 @@
               id="role"
               v-model="newCoach.role"
               required
-              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer disabled:opacity-50"
+              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer disabled:opacity-50"
               :disabled="loading"
               :style="selectDropdownStyle"
             >
@@ -73,7 +73,7 @@
                 v-model="newCoach.first_name"
                 type="text"
                 required
-                class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
+                class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
                 placeholder="e.g., John"
                 :disabled="loading"
               />
@@ -92,7 +92,7 @@
                 v-model="newCoach.last_name"
                 type="text"
                 required
-                class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
+                class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
                 placeholder="e.g., Smith"
                 :disabled="loading"
               />
@@ -111,7 +111,7 @@
               id="email"
               v-model="newCoach.email"
               type="email"
-              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
+              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
               placeholder="john.smith@university.edu"
               :disabled="loading"
             />
@@ -129,7 +129,7 @@
               id="phone"
               v-model="newCoach.phone"
               type="tel"
-              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
+              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
               placeholder="(555) 123-4567"
               :disabled="loading"
             />
@@ -148,7 +148,7 @@
                 id="twitter"
                 v-model="newCoach.twitter_handle"
                 type="text"
-                class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
+                class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
                 placeholder="@handle"
                 :disabled="loading"
               />
@@ -165,7 +165,7 @@
                 id="instagram"
                 v-model="newCoach.instagram_handle"
                 type="text"
-                class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
+                class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
                 placeholder="@handle"
                 :disabled="loading"
               />
@@ -184,7 +184,7 @@
               id="notes"
               v-model="newCoach.notes"
               rows="4"
-              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none placeholder:text-slate-400 disabled:opacity-50"
+              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none placeholder:text-slate-400 disabled:opacity-50"
               placeholder="Any notes about this coach..."
               :disabled="loading"
             />

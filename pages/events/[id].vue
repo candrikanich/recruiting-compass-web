@@ -647,7 +647,7 @@
                 </label>
                 <select
                   v-model="quickLogData.type"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="in_person_visit">In-Person Meeting</option>
                   <option value="phone_call">Phone Call</option>
@@ -663,7 +663,7 @@
                 </label>
                 <select
                   v-model="quickLogData.direction"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="inbound">Coach contacted us</option>
                   <option value="outbound">We contacted coach</option>
@@ -680,7 +680,7 @@
                   rows="3"
                   required
                   placeholder="Brief notes about the interaction..."
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
                 ></textarea>
               </div>
 
@@ -691,7 +691,7 @@
                 </label>
                 <select
                   v-model="quickLogData.sentiment"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="very_positive">Very Positive</option>
                   <option value="positive">Positive</option>

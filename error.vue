@@ -11,7 +11,7 @@
         <div class="mb-8 flex justify-center">
           <NuxtLink
             to="/"
-            class="inline-block focus:outline-hidden focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 rounded-sm"
+            class="inline-block focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 rounded-sm"
             aria-label="The Recruiting Compass — home"
           >
             <img
@@ -57,14 +57,14 @@
           <div class="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               v-if="primaryAction"
-              class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
               @click="handlePrimary"
             >
               {{ primaryAction.label }}
             </button>
             <button
               v-if="secondaryAction"
-              class="px-6 py-3 bg-slate-100 text-slate-700 font-semibold rounded-lg hover:bg-slate-200 focus:outline-hidden focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 transition-colors"
+              class="px-6 py-3 bg-slate-100 text-slate-700 font-semibold rounded-lg hover:bg-slate-200 focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 transition-colors"
               @click="handleSecondary"
             >
               {{ secondaryAction.label }}
@@ -77,7 +77,7 @@
           Need help?
           <a
             href="mailto:support@therecruitingcompass.com"
-            class="text-white underline hover:text-white/80 focus:outline-hidden focus:ring-2 focus:ring-white rounded-sm"
+            class="text-white underline hover:text-white/80 focus:ring-2 focus:ring-white rounded-sm"
           >
             Contact support
           </a>

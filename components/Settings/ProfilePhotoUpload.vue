@@ -9,7 +9,7 @@
         >
           <img
             :src="profilePhotoUrl"
-            :alt="userName"
+            :alt="`${userName}'s profile photo`"
             class="w-full h-full object-cover"
             loading="lazy"
             @error="handleImageError"

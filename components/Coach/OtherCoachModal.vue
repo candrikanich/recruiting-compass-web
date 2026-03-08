@@ -59,7 +59,7 @@ const handleClose = () => {
                 v-model="coachName"
                 type="text"
                 placeholder="e.g., John Smith"
-                class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
+                class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               />
             </div>
 

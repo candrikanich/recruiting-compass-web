@@ -47,7 +47,7 @@
               v-model="searchQuery"
               type="text"
               placeholder="Name, email, phone..."
-              class="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              class="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             />
           </div>
 
@@ -62,7 +62,7 @@
             <select
               id="roleFilter"
               v-model="filters.role"
-              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
+              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
               :style="selectDropdownStyle"
             >
               <option value="">All Roles</option>
@@ -83,7 +83,7 @@
             <select
               id="sortFilter"
               v-model="sortBy"
-              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
+              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
               :style="selectDropdownStyle"
             >
               <option value="name">Name (A-Z)</option>

@@ -16,7 +16,7 @@
     </p>
     <NuxtLink
       to="/settings/family-management"
-      class="px-6 py-2.5 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-amber-600"
+      class="px-6 py-2.5 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition focus:ring-2 focus:ring-offset-2 focus:ring-amber-600"
     >
       Invite Athlete
     </NuxtLink>

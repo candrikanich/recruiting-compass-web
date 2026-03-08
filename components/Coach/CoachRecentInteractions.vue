@@ -74,7 +74,7 @@
     <div v-if="hasMoreInteractions" class="text-center pt-4">
       <button
         :aria-label="viewAllAriaLabel"
-        class="text-blue-600 hover:text-blue-700 font-semibold text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-2 py-1"
+        class="text-blue-600 hover:text-blue-700 font-semibold text-sm focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-2 py-1"
       >
         View All {{ interactions.length }} Interactions →
       </button>

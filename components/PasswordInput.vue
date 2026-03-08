@@ -25,7 +25,7 @@
         "
         :aria-invalid="error ? 'true' : 'false'"
         :class="[
-          'w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:border-transparent transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed',
+          'w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-offset-2 focus:border-transparent transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed',
           error
             ? 'border-red-600 focus:ring-red-500 focus:outline-red-600'
             : 'border-slate-300 focus:ring-blue-500 focus:outline-blue-600',
@@ -40,7 +40,7 @@
         type="button"
         @click="showPassword = !showPassword"
         :aria-label="showPassword ? 'Hide password' : 'Show password'"
-        class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
+        class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
       >
         <component
           :is="showPassword ? EyeSlashIcon : EyeIcon"

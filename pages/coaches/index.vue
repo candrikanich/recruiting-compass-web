@@ -26,7 +26,7 @@
           :disabled="exportLoading"
           :aria-busy="exportLoading"
           aria-label="Export coaches to CSV"
-          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
         >
           <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
           {{ exportLoading ? "Exporting..." : "CSV" }}
@@ -37,7 +37,7 @@
           :disabled="exportLoading"
           :aria-busy="exportLoading"
           aria-label="Export coaches to PDF"
-          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
         >
           <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
           {{ exportLoading ? "Exporting..." : "PDF" }}
@@ -305,7 +305,7 @@
                 v-if="coach.email"
                 @click="handleCoachAction('email', coach)"
                 :aria-label="`Send email to ${coach.first_name} ${coach.last_name}`"
-                class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <EnvelopeIcon class="w-5 h-5" aria-hidden="true" />
               </button>
@@ -313,7 +313,7 @@
                 v-if="coach.phone"
                 @click="handleCoachAction('text', coach)"
                 :aria-label="`Send text message to ${coach.first_name} ${coach.last_name}`"
-                class="p-2 text-slate-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                class="p-2 text-slate-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
               >
                 <ChatBubbleLeftIcon class="w-5 h-5" aria-hidden="true" />
               </button>
@@ -321,7 +321,7 @@
                 v-if="coach.twitter_handle"
                 @click="handleCoachAction('tweet', coach)"
                 :aria-label="`View ${coach.first_name}'s Twitter profile`"
-                class="p-2 text-slate-600 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+                class="p-2 text-slate-600 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
               >
                 <svg
                   class="w-5 h-5"
@@ -338,7 +338,7 @@
                 v-if="coach.instagram_handle"
                 @click="handleCoachAction('instagram', coach)"
                 :aria-label="`View ${coach.first_name}'s Instagram profile`"
-                class="p-2 text-slate-600 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+                class="p-2 text-slate-600 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
               >
                 <svg
                   class="w-5 h-5"
@@ -355,7 +355,7 @@
                 @click="openDeleteModal(coach)"
                       data-test="coach-delete-btn"
                 :aria-label="`Delete ${coach.first_name} ${coach.last_name}`"
-                class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
                 <svg
                   class="w-5 h-5"
@@ -438,7 +438,7 @@
               <button
                 @click="showPanel = false"
                 aria-label="Close Quick Communication dialog"
-                class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 <XMarkIcon class="w-5 h-5" aria-hidden="true" />
               </button>

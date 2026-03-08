@@ -117,7 +117,7 @@ const colorVariants: Record<ButtonColor, Record<ButtonVariant, string>> = {
 
 const buttonClasses = computed(() => {
   const base =
-    "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-offset-2";
+    "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2";
   const size = sizeClasses[props.size];
   const colorVariant = colorVariants[props.color][props.variant];
   const width = props.fullWidth ? "w-full" : "";

@@ -160,9 +160,16 @@ Fix ALL errors in single pass before rebuilding. Batch fixes together.
 
 ## Verification
 
+**Tests passing ≠ code working. Run the thing.**
+
 - [ ] `npm run type-check`, `npm run lint`, `npm run test` pass
-- [ ] Browser test works
+- [ ] For new/changed API routes: `npm run dev` → `curl` the endpoint, check response shape
+- [ ] For UI changes: open in browser → no blank screen, data loads, no console errors
 - [ ] `git push` succeeds (hooks pass)
+
+**TDD red-phase:** Before implementing, confirm the test actually fails for the right reason (missing feature, not a typo). A test that passes immediately proves nothing.
+
+**Convert manual findings:** If manual testing reveals a bug, write a failing test reproducing it before fixing it.
 
 ## Bug-Driven TDD
 

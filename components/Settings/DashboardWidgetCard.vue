@@ -19,6 +19,26 @@
       {{ WIDGET_LABELS[id] }}
     </span>
 
+    <!-- Keyboard move buttons -->
+    <button
+      v-if="!disabled"
+      type="button"
+      :aria-label="`Move ${WIDGET_LABELS[id]} up`"
+      class="shrink-0 p-1 text-slate-400 hover:text-slate-700 transition-colors rounded"
+      @click.stop="$emit('move-up')"
+    >
+      <ChevronUpIcon class="w-3.5 h-3.5" aria-hidden="true" />
+    </button>
+    <button
+      v-if="!disabled"
+      type="button"
+      :aria-label="`Move ${WIDGET_LABELS[id]} down`"
+      class="shrink-0 p-1 text-slate-400 hover:text-slate-700 transition-colors rounded"
+      @click.stop="$emit('move-down')"
+    >
+      <ChevronDownIcon class="w-3.5 h-3.5" aria-hidden="true" />
+    </button>
+
     <!-- Size badge -->
     <span
       class="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full shrink-0"
@@ -50,7 +70,12 @@
 </template>
 
 <script setup lang="ts">
-import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
+import {
+  EyeIcon,
+  EyeSlashIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+} from "@heroicons/vue/24/outline";
 import { Bars3Icon } from "@heroicons/vue/24/solid";
 import { WIDGET_SIZES, WIDGET_LABELS } from "~/types/models";
 import type { WidgetId } from "~/types/models";
@@ -63,5 +88,7 @@ defineProps<{
 
 defineEmits<{
   toggle: [];
+  "move-up": [];
+  "move-down": [];
 }>();
 </script>

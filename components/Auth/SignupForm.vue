@@ -231,7 +231,7 @@
       :disabled="!isFormValid || disabled"
       :aria-busy="loading"
       :aria-label="loading ? 'Creating account, please wait' : 'Create Account'"
-      class="w-full px-6 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition shadow-lg disabled:from-slate-400 disabled:to-slate-400 disabled:cursor-not-allowed focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+      class="w-full px-6 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition shadow-lg disabled:from-slate-400 disabled:to-slate-400 disabled:cursor-not-allowed focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
     >
       {{ loading ? "Creating account..." : "Create Account" }}
     </button>
@@ -252,7 +252,7 @@
     <p class="text-slate-600 text-sm">
       <NuxtLink
         to="/login"
-        class="text-blue-600 hover:text-blue-700 font-medium underline hover:no-underline focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-sm px-1 transition-colors"
+        class="text-blue-600 hover:text-blue-700 font-medium underline hover:no-underline focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-sm px-1 transition-colors"
       >
         Sign in instead
       </NuxtLink>

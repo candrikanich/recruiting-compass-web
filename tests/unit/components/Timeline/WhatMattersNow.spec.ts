@@ -101,7 +101,8 @@ describe("WhatMattersNow Component", () => {
       },
     });
 
-    const button = wrapper.find("button");
+    // The first button is the collapsible header toggle; priority items are subsequent buttons
+    const button = wrapper.findAll("button")[1];
     await button.trigger("click");
 
     expect(wrapper.emitted("priority-click")).toBeTruthy();

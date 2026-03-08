@@ -14,7 +14,7 @@
           id="type"
           v-model="newInteraction.type"
           required
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           :disabled="loading"
         >
           <option value="">Select Type</option>
@@ -46,7 +46,7 @@
           id="direction"
           v-model="newInteraction.direction"
           required
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           :disabled="loading"
         >
           <option value="">Select Direction</option>
@@ -66,7 +66,7 @@
         <select
           id="coach"
           v-model="newInteraction.coach_id"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           :disabled="loading"
         >
           <option value="">Select Coach</option>
@@ -91,7 +91,7 @@
           v-model="newInteraction.subject"
           type="text"
           :maxlength="MAX_SUBJECT_LENGTH"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="e.g., Initial contact, Recruitment conversation"
           :disabled="loading"
         />
@@ -115,7 +115,7 @@
           required
           rows="5"
           :maxlength="MAX_CONTENT_LENGTH"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="Details about the interaction..."
           :disabled="loading"
         />
@@ -150,7 +150,7 @@
             multiple
             accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.txt"
             @change="handleFileSelect"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             :disabled="loading"
           />
         </div>
@@ -198,7 +198,7 @@
         <select
           id="sentiment"
           v-model="newInteraction.sentiment"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           :disabled="loading"
         >
           <option value="">Not specified</option>
@@ -222,7 +222,7 @@
           v-model="newInteraction.occurred_at"
           type="datetime-local"
           required
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           :disabled="loading"
         />
       </div>
@@ -263,7 +263,7 @@
               type="date"
               :min="getTodayDate()"
               required
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               :disabled="loading"
             />
           </div>
@@ -279,7 +279,7 @@
             <select
               id="reminder-type"
               v-model="reminderType"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               :disabled="loading"
             >
               <option value="email">Email Reminder</option>

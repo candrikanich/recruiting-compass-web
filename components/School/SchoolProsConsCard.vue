@@ -33,7 +33,7 @@
           v-model="newProInput"
           type="text"
           placeholder="Add a pro..."
-          class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+          class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           @keyup.enter="handleAddPro"
         />
         <button
@@ -79,7 +79,7 @@
           v-model="newConInput"
           type="text"
           placeholder="Add a con..."
-          class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+          class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           @keyup.enter="handleAddCon"
         />
         <button

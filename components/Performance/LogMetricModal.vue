@@ -184,7 +184,7 @@ watch(
                   ref="firstInputRef"
                   v-model="metricType"
                   required
-                  class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="">Select Metric</option>
                   <option
@@ -207,7 +207,7 @@ watch(
                   type="number"
                   step="0.01"
                   required
-                  class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   placeholder="Enter value"
                 />
               </div>
@@ -222,7 +222,7 @@ watch(
                   v-model="date"
                   type="date"
                   required
-                  class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
@@ -234,7 +234,7 @@ watch(
                   id="unit"
                   v-model="unit"
                   type="text"
-                  class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   placeholder="e.g., mph, seconds, inches"
                 />
               </div>
@@ -248,7 +248,7 @@ watch(
               <select
                 id="event"
                 v-model="eventId"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
                 <option v-if="eventsLoading" value="">Loading events...</option>
                 <option v-else-if="events.length === 0" value="">No events available</option>
@@ -288,7 +288,7 @@ watch(
                 id="notes"
                 v-model="notes"
                 rows="3"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 placeholder="Additional context..."
               ></textarea>
             </div>
