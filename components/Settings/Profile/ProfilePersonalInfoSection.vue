@@ -29,7 +29,7 @@
         />
       </div>
 
-      <div>
+      <div v-if="isAthlete">
         <label class="block text-sm font-medium text-slate-700 mb-1" for="dob">
           Date of Birth <span class="text-slate-400 font-normal">(optional)</span>
         </label>
@@ -61,6 +61,7 @@ const {
   personalInfoLoading: loading,
   personalInfoError: error,
   personalInfoSaved: saved,
+  isAthlete,
 } = useUserProfile();
 
 const form = ref({
