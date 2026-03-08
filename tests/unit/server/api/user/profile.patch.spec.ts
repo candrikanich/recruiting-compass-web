@@ -5,6 +5,8 @@ const mockState = {
   updateError: null as object | null,
 };
 
+const mockEq = vi.fn(() => ({ error: mockState.updateError }));
+
 vi.mock("~/server/utils/logger", () => ({
   useLogger: vi.fn(() => ({
     debug: vi.fn(),
@@ -22,7 +24,7 @@ vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
     from: vi.fn(() => ({
       update: vi.fn(() => ({
-        eq: vi.fn(() => ({ error: mockState.updateError })),
+        eq: mockEq,
       })),
     })),
   })),
@@ -46,15 +48,31 @@ describe("PATCH /api/user/profile", () => {
   beforeEach(() => {
     mockState.userId = "user-123";
     mockState.updateError = null;
+    mockEq.mockClear();
+    mockEq.mockImplementation(() => ({ error: mockState.updateError }));
   });
 
   it("returns { success: true } with valid fields", async () => {
     const result = await handler(makeEvent({ full_name: "Jane Doe", phone: "555-1234" }));
     expect(result).toEqual({ success: true });
+    expect(mockEq).toHaveBeenCalledWith("id", "user-123");
   });
 
   it("throws 400 when full_name is empty string", async () => {
     await expect(handler(makeEvent({ full_name: "" }))).rejects.toMatchObject({
+      statusCode: 400,
+    });
+  });
+
+  it("throws 400 when body is empty object", async () => {
+    await expect(handler(makeEvent({}))).rejects.toMatchObject({
+      statusCode: 400,
+      statusMessage: "At least one field must be provided",
+    });
+  });
+
+  it("throws 400 when date_of_birth has invalid format", async () => {
+    await expect(handler(makeEvent({ date_of_birth: "03/08/2026" }))).rejects.toMatchObject({
       statusCode: 400,
     });
   });

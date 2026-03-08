@@ -7,7 +7,7 @@ import { useSupabaseAdmin } from "~/server/utils/supabase";
 const profileSchema = z.object({
   full_name: z.string().min(1).max(100).optional(),
   phone: z.string().max(30).nullable().optional(),
-  date_of_birth: z.string().nullable().optional(),
+  date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format").nullable().optional(),
 });
 
 export default defineEventHandler(async (event) => {
@@ -23,6 +23,10 @@ export default defineEventHandler(async (event) => {
         statusMessage: "Invalid profile data",
         data: parsed.error.flatten(),
       });
+    }
+
+    if (Object.keys(parsed.data).length === 0) {
+      throw createError({ statusCode: 400, statusMessage: "At least one field must be provided" });
     }
 
     const supabase = useSupabaseAdmin();
