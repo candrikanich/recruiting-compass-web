@@ -82,6 +82,7 @@
     "pa11y-ci": "^4.0.1",
     "prettier": "^3.4.2",
     "supabase": "^2.76.15",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1",
     "vitest": "^4.0.17",
