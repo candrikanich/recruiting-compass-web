@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import type { Coach } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
 import { useSupabase } from "~/composables/useSupabase";
-import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { sanitizeCoachFields } from "~/utils/sanitizers/entitySanitizer";
 import { useUserStore } from "./user";
 
 export interface CoachFilters {
@@ -304,11 +304,7 @@ export const useCoachStore = defineStore("coaches", {
           throw new Error("User not authenticated");
         }
 
-        // Sanitize notes field
-        const sanitized = { ...coachData };
-        if (sanitized.notes) {
-          sanitized.notes = sanitizeHtml(sanitized.notes);
-        }
+        const sanitized = sanitizeCoachFields(coachData);
 
         const insertData = [
           {
@@ -356,11 +352,7 @@ export const useCoachStore = defineStore("coaches", {
           throw new Error("User not authenticated");
         }
 
-        // Sanitize notes field
-        const sanitized = { ...updates };
-        if (sanitized.notes) {
-          sanitized.notes = sanitizeHtml(sanitized.notes);
-        }
+        const sanitized = sanitizeCoachFields(updates);
 
         const updateData = {
           ...sanitized,

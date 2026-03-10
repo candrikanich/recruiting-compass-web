@@ -5,7 +5,7 @@ import { useActiveFamily } from "./useActiveFamily";
 import { useFamilyContext } from "./useFamilyContext";
 import type { School } from "~/types/models";
 import { schoolSchema } from "~/utils/validation/schemas";
-import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { sanitizeSchoolFields } from "~/utils/sanitizers/entitySanitizer";
 import { createClientLogger } from "~/utils/logger";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 
@@ -312,26 +312,13 @@ const useSchoolsInternal = (): {
       // Validate school data with Zod schema
       const validated = await schoolSchema.parseAsync(schoolData);
 
-      // Sanitize text fields to prevent XSS
-      if (validated.notes) {
-        validated.notes = sanitizeHtml(validated.notes);
-      }
-      if (validated.pros && Array.isArray(validated.pros)) {
-        validated.pros = validated.pros.map((p: string | null | undefined) =>
-          p ? sanitizeHtml(p) : p,
-        );
-      }
-      if (validated.cons && Array.isArray(validated.cons)) {
-        validated.cons = validated.cons.map((c: string | null | undefined) =>
-          c ? sanitizeHtml(c) : c,
-        );
-      }
+      const sanitizedData = sanitizeSchoolFields(validated);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const insertResponse = await (supabase.from("schools") as any)
         .insert([
           {
-            ...validated,
+            ...sanitizedData,
             user_id: dataOwnerUserId,
             family_unit_id: activeFamily.activeFamilyId.value,
             created_by: userStore.user.id,
@@ -388,22 +375,7 @@ const useSchoolsInternal = (): {
     errorRef.value = null;
 
     try {
-      // Sanitize text fields to prevent XSS
-      const sanitizedUpdates = { ...updates };
-
-      if (sanitizedUpdates.notes) {
-        sanitizedUpdates.notes = sanitizeHtml(sanitizedUpdates.notes);
-      }
-      if (sanitizedUpdates.pros && Array.isArray(sanitizedUpdates.pros)) {
-        sanitizedUpdates.pros = sanitizedUpdates.pros
-          .filter((p): p is string => !!p)
-          .map((p) => sanitizeHtml(p));
-      }
-      if (sanitizedUpdates.cons && Array.isArray(sanitizedUpdates.cons)) {
-        sanitizedUpdates.cons = sanitizedUpdates.cons
-          .filter((c): c is string => !!c)
-          .map((c) => sanitizeHtml(c));
-      }
+      const sanitizedUpdates = sanitizeSchoolFields(updates);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateResponse = await (supabase.from("schools") as any)
