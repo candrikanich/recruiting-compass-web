@@ -22,19 +22,10 @@ export interface CoachState {
 }
 
 /**
- * Coaches store - Manages coach data and communication tracking
+ * Coaches store — manages coach data and communication tracking.
  *
- * Provides centralized state management for:
- * - Coach CRUD operations
- * - Filtering by school, role, and search
- * - Responsiveness scoring
- * - Coach availability tracking
- *
- * @example
- * const coachStore = useCoachStore()
- * await coachStore.fetchCoaches(schoolId)
- * const responsive = coachStore.coachesByResponsiveness
- * const coaches = responsive.map((c: any) => ({ id: c.id, school_id: c.school_id, first_name: c.first_name, last_name: c.last_name, email: c.email, responsiveness_score: c.responsiveness_score, last_contact_date: c.last_contact_date, role: c.role }))
+ * Provides canonical state for coach CRUD, filtering, and responsiveness scoring.
+ * Use via `useCoaches()` composable for full family-context orchestration.
  */
 const logger = createClientLogger("stores/coaches");
 
@@ -81,7 +72,6 @@ export const useCoachStore = defineStore("coaches", {
 
     /**
      * Get coaches sorted by responsiveness score (highest first)
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
      */
     coachesByResponsiveness: (state) =>
       [...state.coaches].sort((a, b) => {
@@ -105,7 +95,6 @@ export const useCoachStore = defineStore("coaches", {
       }),
 
     /**
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
      * Get coaches by role
      */
     coachesByRole: (state) => (role: Coach["role"]) =>

@@ -200,7 +200,7 @@ const EmailSendModal = defineAsyncComponent(
 import FitScoreDisplay from "~/components/FitScore/FitScoreDisplay.vue";
 import DesignSystemConfirmDialog from "~/components/DesignSystem/ConfirmDialog.vue";
 
-definePageMeta({});
+
 
 const route = useRoute();
 const id = route.params.id as string;

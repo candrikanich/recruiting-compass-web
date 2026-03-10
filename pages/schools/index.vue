@@ -245,7 +245,7 @@ interface SchoolFilterValues {
   show_matches?: boolean;
 }
 
-definePageMeta({});
+
 
 const logger = createClientLogger("schools");
 
