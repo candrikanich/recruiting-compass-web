@@ -227,7 +227,9 @@ export function useFormValidation(): UseFormValidationReturn {
         const existingIndex = errors.value.findIndex((e) => e.field === field);
 
         if (existingIndex >= 0) {
-          errors.value[existingIndex].message = message;
+          errors.value = errors.value.map((e, i) =>
+            i === existingIndex ? { ...e, message } : e,
+          );
         } else {
           errors.value.push({ field, message });
         }
