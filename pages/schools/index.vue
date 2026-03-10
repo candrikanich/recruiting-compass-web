@@ -156,7 +156,7 @@
         <SchoolListCard
           v-for="school in paginatedSchools"
           :key="school.id"
-          v-memo="[school.id, school.name, school.status, school.is_favorite, school.fit_score, school.priority_tier, school.updated_at]"
+          v-memo="[school.id, school.name, school.status, school.is_favorite, school.fit_score, school.priority_tier, school.conference, school.division, school.location, school.notes, school.updated_at]"
           :school="school"
           @toggle-favorite="toggleFavorite"
           @delete="handleDeleteSchool"

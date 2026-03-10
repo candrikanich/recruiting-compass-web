@@ -182,7 +182,7 @@
         <li
           v-for="coach in paginatedCoaches"
           :key="coach.id"
-          v-memo="[coach.id, coach.first_name, coach.last_name, coach.role, coach.school_id, coach.email, coach.phone, coach.twitter_handle, coach.responsiveness_score, coach.last_contact_date]"
+          v-memo="[coach.id, coach.first_name, coach.last_name, coach.role, coach.school_id, coach.email, coach.phone, coach.twitter_handle, coach.instagram_handle, coach.responsiveness_score, coach.last_contact_date]"
           class="bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition overflow-hidden"
         >
           <!-- Coach Header -->
