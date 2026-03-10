@@ -84,7 +84,7 @@ export const useEvents = (): {
     try {
       let query = supabase
         .from("events")
-        .select("*")
+        .select("id, user_id, school_id, type, name, location, address, city, state, start_date, end_date, start_time, end_time, checkin_time, description, url, event_source, coaches_present, performance_notes, stats_recorded, cost, registered, attended, created_by, updated_by, created_at, updated_at")
         .eq("user_id", userStore.user.id);
 
       if (filters?.schoolId) {
@@ -137,7 +137,7 @@ export const useEvents = (): {
     try {
       const { data, error: fetchError } = await supabase
         .from("events")
-        .select("*")
+        .select("id, user_id, school_id, type, name, location, address, city, state, start_date, end_date, start_time, end_time, checkin_time, description, url, event_source, coaches_present, performance_notes, stats_recorded, cost, registered, attended, created_by, updated_by, created_at, updated_at")
         .eq("id", id)
         .eq("user_id", userStore.user.id)
         .single();
