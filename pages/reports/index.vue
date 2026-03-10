@@ -274,7 +274,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useReports } from "~/composables/useReports";
-import Header from "~/components/Header.vue";
 import {
   ChartBarIcon,
   ArrowDownTrayIcon,

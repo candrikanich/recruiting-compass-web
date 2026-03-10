@@ -431,7 +431,6 @@ import { usePerformance } from "~/composables/usePerformance";
 import { CheckIcon, XMarkIcon } from "@heroicons/vue/24/solid";
 import type { PerformanceMetric } from "~/types/models";
 import { Line } from "vue-chartjs";
-import Header from "~/components/Header.vue";
 import ExportButton from "~/components/Performance/ExportButton.vue";
 const ExportModal = defineAsyncComponent(
   () => import("~/components/Performance/ExportModal.vue"),

@@ -456,7 +456,6 @@ import { useSchools } from "~/composables/useSchools";
 import { useActiveFamily } from "~/composables/useActiveFamily";
 import { useFamilyContext } from "~/composables/useFamilyContext";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
-import Header from "~/components/Header.vue";
 import OfferComparison from "~/components/OfferComparison.vue";
 import {
   MagnifyingGlassIcon,

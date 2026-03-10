@@ -492,7 +492,6 @@ import { useCoachListStats } from "~/composables/useCoachListStats";
 import StatsTiles from "~/components/shared/StatsTiles.vue";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
-import Header from "~/components/Header.vue";
 const DeleteConfirmationModal = defineAsyncComponent(
   () => import("~/components/DeleteConfirmationModal.vue"),
 );

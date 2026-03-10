@@ -164,7 +164,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import Header from "~/components/Header.vue";
 import SettingsCard from "~/components/Settings/SettingsCard.vue";
 
 definePageMeta({

@@ -195,7 +195,6 @@ import { ref, reactive, computed, onMounted } from "vue";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useGeocoding } from "~/composables/useGeocoding";
 import { useAutoSave } from "~/composables/useAutoSave";
-import Header from "~/components/Header.vue";
 import {
   ArrowLeftIcon,
   MapPinIcon,
