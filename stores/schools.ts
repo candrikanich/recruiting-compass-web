@@ -288,8 +288,8 @@ export const useSchoolStore = defineStore("schools", {
 
         if (insertError) throw insertError;
 
-        this.schools.unshift(data);
-        return data;
+        this.schools.unshift(data as School);
+        return data as School;
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : "Failed to create school";
@@ -383,10 +383,10 @@ export const useSchoolStore = defineStore("schools", {
         // Update local state
         const index = this.schools.findIndex((s) => s.id === id);
         if (index !== -1) {
-          this.schools[index] = data;
+          this.schools[index] = data as School;
         }
 
-        return data;
+        return data as School;
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : "Failed to update school";
@@ -526,19 +526,19 @@ export const useSchoolStore = defineStore("schools", {
         }
 
         // Fetch current status from DB to avoid stale-cache history corruption
-        const { data: currentSchool, error: selectError } = (await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: currentSchool, error: selectError } = await (supabase as any)
           .from("schools")
           .select("status")
           .eq("id", schoolId)
           .eq("family_unit_id", activeFamily.activeFamilyId.value)
-          .single()) as {
-          data: { status: School["status"] } | null;
-          error: { message: string; code: string } | null;
-        };
+          .single();
 
         if (selectError) throw selectError;
 
-        const previousStatus = currentSchool?.status ?? null;
+        const previousStatus =
+          (currentSchool as { status: School["status"] } | null)?.status ??
+          null;
         const now = new Date().toISOString();
 
         // Update school status and status_changed_at timestamp
@@ -582,13 +582,13 @@ export const useSchoolStore = defineStore("schools", {
         // Update local state
         const index = this.schools.findIndex((s) => s.id === schoolId);
         if (index !== -1) {
-          this.schools[index] = updatedSchool;
+          this.schools[index] = updatedSchool as School;
         }
 
         // Clear status history cache for this school to force refresh
         delete this.statusHistory[schoolId];
 
-        return updatedSchool;
+        return updatedSchool as School;
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : "Failed to update school status";

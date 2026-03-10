@@ -5,7 +5,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
   let interactionId: string;
 
   test.beforeEach(async ({ page }) => {
-    await loginViaForm(page, "test@example.com", "password123", /\/dashboard/);
+    await loginViaForm(page, "player@test.com", "TestPass123!", /\/dashboard/);
 
     // Navigate to interactions list
     await page.goto("/interactions");
@@ -444,7 +444,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
 
 test.describe("Interaction Detail Page - Navigation", () => {
   test("back navigation returns to interactions list", async ({ page }) => {
-    await loginViaForm(page, "test@example.com", "password123", /\/dashboard/);
+    await loginViaForm(page, "player@test.com", "TestPass123!", /\/dashboard/);
 
     // Navigate to interactions list
     await page.goto("/interactions");
@@ -471,7 +471,7 @@ test.describe("Interaction Detail Page - Navigation", () => {
 
 test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
   test.beforeEach(async ({ page }) => {
-    await loginViaForm(page, "test@example.com", "password123", /\/dashboard/);
+    await loginViaForm(page, "player@test.com", "TestPass123!", /\/dashboard/);
   });
 
   test("handles network error gracefully", async ({ page }) => {
@@ -663,7 +663,7 @@ test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
       await page.click('button:has-text("Logout")').catch(() => {});
 
       // Login again
-      await loginViaForm(page, "test@example.com", "password123", /\/dashboard/);
+      await loginViaForm(page, "player@test.com", "TestPass123!", /\/dashboard/);
 
       // Navigate directly to interaction URL
       await page.goto(interactionUrl);

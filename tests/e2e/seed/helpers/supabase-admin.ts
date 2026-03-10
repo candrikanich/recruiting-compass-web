@@ -124,11 +124,21 @@ async function setupTestAccountData(
   }
 
   // Add user as member of family unit
-  await supabase.from("family_members").insert({
-    family_unit_id: familyUnit.id,
-    user_id: userId,
-    role: account.role === "player" ? "player" : "parent",
-  });
+  const { data: familyMember, error: memberError } = await supabase
+    .from("family_members")
+    .insert({
+      family_unit_id: familyUnit.id,
+      user_id: userId,
+      role: account.role === "player" ? "player" : "parent",
+    });
+
+  if (memberError) {
+    console.error(
+      `❌ Failed to add ${userId} as member of family unit ${familyUnit.id} (role: ${account.role}):`,
+      memberError.message,
+    );
+    throw memberError;
+  }
 }
 
 export async function deleteTestAccounts() {

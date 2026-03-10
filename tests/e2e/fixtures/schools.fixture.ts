@@ -224,10 +224,10 @@ export const schoolSelectors = {
   confirmDeleteButton: 'button:has-text("Confirm")',
   cancelButton: 'button:has-text("Cancel")',
 
-  // School detail elements
-  schoolName: "h1",
-  schoolLocation: 'text=*location*, [data-testid="school-location"]',
-  schoolDivision: 'span:has-text("D1"), .division-badge',
+  // School detail elements — selectors match SchoolDetailHeader.vue
+  schoolName: "h1.text-2xl",
+  schoolLocation: "h1.text-2xl + div", // sibling div immediately after h1 contains location
+  schoolDivision: "span.bg-blue-100.text-blue-700", // division badge
   schoolStatus: 'select[name="status"]',
   schoolNotes: '[data-testid="school-notes"], .notes-section',
   schoolPros: '[data-testid="school-pros"], .pros-list',
@@ -439,7 +439,7 @@ export const schoolHelpers = {
    * Wait for school detail page to load completely
    */
   async waitForSchoolDetailLoad(page) {
-    await page.waitForSelector("h1.text-2xl", { timeout: 10000 });
+    await page.waitForSelector(schoolSelectors.schoolName, { timeout: 10000 });
     await page.waitForLoadState("networkidle");
   },
 

@@ -8,6 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 2 : 3,
   reporter: "html",
   globalSetup: "./tests/e2e/global-setup.ts",
+  timeout: 60000, // 60s per test — auth flows include signup + logout + login
 
   use: {
     baseURL: "http://localhost:3003",

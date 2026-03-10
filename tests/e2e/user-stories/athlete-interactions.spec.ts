@@ -6,7 +6,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
   // Athlete Flow Tests
   test.describe("Athlete Flow", () => {
     test.beforeEach(async ({ page }) => {
-      await loginViaForm(page, "test.athlete@example.com", "TestPassword123", /\/dashboard/);
+      await loginViaForm(page, "player@test.com", "TestPass123!", /\/dashboard/);
     });
 
     test("Scenario 1: Athlete navigates to My Interactions page", async ({
@@ -120,7 +120,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
   // Parent Flow Tests
   test.describe("Parent Flow", () => {
     test.beforeEach(async ({ page }) => {
-      await loginViaForm(page, "test.parent@example.com", "TestPassword123", /\/dashboard/);
+      await loginViaForm(page, "parent@test.com", "TestPass123!", /\/dashboard/);
     });
 
     test("Scenario 1: Parent sees Athlete Activity widget on dashboard", async ({
@@ -246,7 +246,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
     }) => {
       // First, have athlete log an interaction
       // Login as athlete
-      await loginViaForm(page, "test.athlete@example.com", "TestPassword123", /\/dashboard/);
+      await loginViaForm(page, "player@test.com", "TestPass123!", /\/dashboard/);
 
       // Log an interaction
       await page.goto("/interactions/add");
@@ -270,7 +270,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
         .catch(() => null);
 
       // Now login as parent
-      await loginViaForm(page, "test.parent@example.com", "TestPassword123", /\/dashboard/);
+      await loginViaForm(page, "parent@test.com", "TestPass123!", /\/dashboard/);
 
       // Navigate to interactions
       await page.goto("/interactions");

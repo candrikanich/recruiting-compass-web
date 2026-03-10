@@ -110,7 +110,11 @@ export const schoolHelpers = {
   },
 
   async navigateToSchool(page: Page, schoolId: string) {
-    await page.goto(`/schools/${schoolId}`);
+    // Avoid redundant navigation if createSchool already landed on this URL
+    // — a fresh page.goto triggers a new API request that can 429 immediately after creation
+    if (!page.url().includes(`/schools/${schoolId}`)) {
+      await page.goto(`/schools/${schoolId}`);
+    }
     await page.waitForLoadState("networkidle");
   },
 

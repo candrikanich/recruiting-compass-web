@@ -9,6 +9,9 @@ import {
 import { loginViaForm } from "../helpers/login";
 
 test.describe("Schools CRUD Operations", () => {
+  // Each test creates real DB records — allow up to 2 minutes
+  test.setTimeout(120000);
+
   test.beforeEach(async ({ page }) => {
     await loginViaForm(page, "player@test.com", "TestPass123!");
   });
