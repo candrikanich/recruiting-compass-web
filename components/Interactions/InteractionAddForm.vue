@@ -384,7 +384,9 @@ const handleFileSelect = (event: Event): void => {
 const removeFile = (index: number): void => {
   selectedFiles.value = selectedFiles.value.filter((_, i) => i !== index);
   if (fileInputRef.value) {
-    fileInputRef.value.value = "";
+    const dt = new DataTransfer();
+    selectedFiles.value.forEach((file) => dt.items.add(file));
+    fileInputRef.value.files = dt.files;
   }
 };
 
