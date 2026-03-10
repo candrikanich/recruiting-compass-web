@@ -326,10 +326,7 @@ export const useCoachStore = defineStore("coaches", {
 
         const { data, error: insertError } = await supabase
           .from("coaches")
-          // useSupabase() returns an untyped client (SupabaseClient<any>), so the
-          // generic row type resolves to never. Cast through any to satisfy the overload.
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .insert(insertData as any)
+          .insert(insertData)
           .select()
           .single();
 
@@ -379,10 +376,7 @@ export const useCoachStore = defineStore("coaches", {
 
         const { data, error: updateError } = await supabase
           .from("coaches")
-          // useSupabase() returns an untyped client (SupabaseClient<any>), so the
-          // generic row type resolves to never. Cast through any to satisfy the overload.
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .update(updateData as any)
+          .update(updateData)
           .eq("id", id)
           .select()
           .single();
