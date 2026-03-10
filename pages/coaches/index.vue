@@ -478,19 +478,17 @@ import {
   ref,
   computed,
   watch,
-  inject,
   defineAsyncComponent,
 } from "vue";
 import { navigateTo } from "#app";
 import { useSupabase } from "~/composables/useSupabase";
 import { useCommunication } from "~/composables/useCommunication";
-import { useFamilyContext } from "~/composables/useFamilyContext";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useCoaches } from "~/composables/useCoaches";
 import { useCoachPageFilters } from "~/composables/useCoachPageFilters";
 import { useCoachExport } from "~/composables/useCoachExport";
 import { useCoachListStats } from "~/composables/useCoachListStats";
 import StatsTiles from "~/components/shared/StatsTiles.vue";
-import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 const DeleteConfirmationModal = defineAsyncComponent(
   () => import("~/components/DeleteConfirmationModal.vue"),
@@ -529,9 +527,7 @@ definePageMeta({
 
 const supabase = useSupabase();
 const userStore = useUserStore();
-// Inject family context provided at app.vue level (with singleton fallback)
-const activeFamily = (inject<UseActiveFamilyReturn>("activeFamily") ||
-  useFamilyContext()) as UseActiveFamilyReturn;
+const activeFamily = useFamilyCtx();
 const { activeFamilyId } = activeFamily;
 const {
   showPanel,

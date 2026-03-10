@@ -205,7 +205,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, inject } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { createClientLogger } from "~/utils/logger";
 import { useSchools } from "~/composables/useSchools";
 import { useSchoolLogos } from "~/composables/useSchoolLogos";
@@ -216,7 +216,7 @@ import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useOffers } from "~/composables/useOffers";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoaches } from "~/composables/useCoaches";
-import { useFamilyContext } from "~/composables/useFamilyContext";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useUserStore } from "~/stores/user";
 import { useUniversalFilter } from "~/composables/useUniversalFilter";
 import { useSchoolExport } from "~/composables/useSchoolExport";
@@ -247,9 +247,7 @@ definePageMeta({});
 
 const logger = createClientLogger("schools");
 
-const activeFamily =
-  inject<ReturnType<typeof useActiveFamily>>("activeFamily") ||
-  useFamilyContext();
+const activeFamily = useFamilyCtx();
 const { activeFamilyId } = activeFamily;
 
 const { schools, loading, error, fetchSchools, toggleFavorite, smartDelete } =

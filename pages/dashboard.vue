@@ -161,7 +161,6 @@ import {
   ref,
   watch,
   computed,
-  inject,
   defineAsyncComponent,
   onMounted,
 } from "vue";
@@ -174,7 +173,7 @@ import { useNotifications } from "~/composables/useNotifications";
 import { useAppToast } from "~/composables/useAppToast";
 import { useUserTasks } from "~/composables/useUserTasks";
 import { useSuggestions } from "~/composables/useSuggestions";
-import { useFamilyContext } from "~/composables/useFamilyContext";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useViewLogging } from "~/composables/useViewLogging";
 import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import { useDashboardData } from "~/composables/useDashboardData";
@@ -193,7 +192,6 @@ import DashboardAthleteActivityWidget from "~/components/Dashboard/AthleteActivi
 const EmailRecruitingPacketModal = defineAsyncComponent(
   () => import("~/components/EmailRecruitingPacketModal.vue"),
 );
-import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 definePageMeta({
   middleware: ["auth", "onboarding"],
@@ -370,9 +368,7 @@ const rightColumnVisible = computed(() =>
   dashboardLayout.value.rightColumn.filter((w) => w.visible),
 );
 
-// Inject family context provided at app.vue level (with singleton fallback)
-const activeFamily =
-  inject<UseActiveFamilyReturn>("activeFamily") || useFamilyContext();
+const activeFamily = useFamilyCtx();
 
 // Destructure activeFamily refs used in template for auto-unwrapping
 const { isViewingAsParent, parentAccessibleFamilies } = activeFamily;

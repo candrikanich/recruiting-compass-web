@@ -147,16 +147,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, inject } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useInteractions } from "~/composables/useInteractions";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useEntityNames } from "~/composables/useEntityNames";
 import { useLinkedAthletes } from "~/composables/useLinkedAthletes";
-import { useFamilyContext } from "~/composables/useFamilyContext";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useInteractionFilters } from "~/composables/useInteractionFilters";
 import { useInteractionAnalytics } from "~/composables/useInteractionAnalytics";
-import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
 import AnalyticsCards from "~/components/Interaction/AnalyticsCards.vue";
 import InteractionFilters from "~/components/Interaction/InteractionFilters.vue";
@@ -181,9 +180,7 @@ definePageMeta({
 });
 
 const userStore = useUserStore();
-// Inject family context provided at app.vue level (with singleton fallback)
-const activeFamily = (inject<UseActiveFamilyReturn>("activeFamily") ||
-  useFamilyContext()) as UseActiveFamilyReturn;
+const activeFamily = useFamilyCtx();
 const { activeFamilyId } = activeFamily;
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { schools, fetchSchools } = useSchools();
