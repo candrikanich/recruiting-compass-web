@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { getSupabaseAdmin } from "./seed/helpers/supabase-admin";
+import { loginViaForm } from "./helpers/login";
 
 const TEST_PLAYER = {
   email: "test.player2028@andrikanich.com",
@@ -26,11 +27,7 @@ let loginConnectInviteId: string | null = null;
 let revokeInviteId: string | null = null;
 
 async function loginAs(page: Page, email: string, password: string) {
-  await page.goto("/login");
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', password);
-  await page.click('button:has-text("Sign in")');
-  await page.waitForURL(/\/(dashboard|schools|onboarding)/, { timeout: 15000 });
+  await loginViaForm(page, email, password, /\/(dashboard|schools|onboarding)/);
 }
 
 test.describe("Family Invite Flow", () => {

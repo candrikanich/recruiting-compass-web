@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { loginViaForm } from "./helpers/login";
 
 const TEST_PARENT = {
   email: "test.parent@andrikanich.com",
@@ -6,11 +7,7 @@ const TEST_PARENT = {
 };
 
 async function loginAsParent(page: Page) {
-  await page.goto("/login");
-  await page.fill('input[type="email"]', TEST_PARENT.email);
-  await page.fill('input[type="password"]', TEST_PARENT.password);
-  await page.click('button:has-text("Sign in")');
-  await page.waitForURL(/\/(dashboard|schools|onboarding)/, { timeout: 15000 });
+  await loginViaForm(page, TEST_PARENT.email, TEST_PARENT.password, /\/(dashboard|schools|onboarding)/);
 }
 
 test.describe("Parent Fit Score Access", () => {

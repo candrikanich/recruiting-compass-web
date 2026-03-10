@@ -1,20 +1,12 @@
 import { test, expect } from "@playwright/test";
+import { loginViaForm } from "../helpers/login";
 
 // User Story 5.3: Athlete Logs Own Interactions
 test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
   // Athlete Flow Tests
   test.describe("Athlete Flow", () => {
     test.beforeEach(async ({ page }) => {
-      // Navigate to app
-      await page.goto("/");
-
-      // Login as athlete (player role)
-      await page.fill('input[type="email"]', "test.athlete@example.com");
-      await page.fill('input[type="password"]', "TestPassword123");
-      await page.click('button:has-text("Login")');
-
-      // Wait for dashboard
-      await page.waitForURL("**/dashboard");
+      await loginViaForm(page, "test.athlete@example.com", "TestPassword123", /\/dashboard/);
     });
 
     test("Scenario 1: Athlete navigates to My Interactions page", async ({
@@ -128,16 +120,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
   // Parent Flow Tests
   test.describe("Parent Flow", () => {
     test.beforeEach(async ({ page }) => {
-      // Navigate to app
-      await page.goto("/");
-
-      // Login as parent
-      await page.fill('input[type="email"]', "test.parent@example.com");
-      await page.fill('input[type="password"]', "TestPassword123");
-      await page.click('button:has-text("Login")');
-
-      // Wait for dashboard
-      await page.waitForURL("**/dashboard");
+      await loginViaForm(page, "test.parent@example.com", "TestPassword123", /\/dashboard/);
     });
 
     test("Scenario 1: Parent sees Athlete Activity widget on dashboard", async ({
@@ -262,13 +245,8 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
       page,
     }) => {
       // First, have athlete log an interaction
-      await page.goto("/");
-
       // Login as athlete
-      await page.fill('input[type="email"]', "test.athlete@example.com");
-      await page.fill('input[type="password"]', "TestPassword123");
-      await page.click('button:has-text("Login")');
-      await page.waitForURL("**/dashboard");
+      await loginViaForm(page, "test.athlete@example.com", "TestPassword123", /\/dashboard/);
 
       // Log an interaction
       await page.goto("/interactions/add");
@@ -292,11 +270,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
         .catch(() => null);
 
       // Now login as parent
-      await page.goto("/");
-      await page.fill('input[type="email"]', "test.parent@example.com");
-      await page.fill('input[type="password"]', "TestPassword123");
-      await page.click('button:has-text("Login")');
-      await page.waitForURL("**/dashboard");
+      await loginViaForm(page, "test.parent@example.com", "TestPassword123", /\/dashboard/);
 
       // Navigate to interactions
       await page.goto("/interactions");

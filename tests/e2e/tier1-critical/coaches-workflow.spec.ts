@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { CoachesPage } from "../pages/CoachesPage";
 import { SchoolsPage } from "../pages/SchoolsPage";
+import { loginViaForm } from "../helpers/login";
 import {
   coachFixtures,
   createCoachData,
@@ -22,11 +23,7 @@ test.describe("Complete Coach Workflow", () => {
     const schoolsPage = new SchoolsPage(page);
 
     // ===== PHASE 1: LOGIN =====
-    await page.goto("/login");
-    await page.fill('input[type="email"]', "test@example.com");
-    await page.fill('input[type="password"]', "password123");
-    await page.click('button:has-text("Sign In")');
-    await page.waitForURL("/dashboard");
+    await loginViaForm(page, "player@test.com", "TestPass123!");
 
     // ===== PHASE 2: CREATE SCHOOL =====
     const schoolName = generateUniqueSchoolName("Workflow Test School");
@@ -214,11 +211,7 @@ test.describe("Complete Coach Workflow", () => {
     const schoolsPage = new SchoolsPage(page);
 
     // Login
-    await page.goto("/login");
-    await page.fill('input[type="email"]', "test@example.com");
-    await page.fill('input[type="password"]', "password123");
-    await page.click('button:has-text("Sign In")');
-    await page.waitForURL("/dashboard");
+    await loginViaForm(page, "player@test.com", "TestPass123!");
 
     // Create school
     const schoolName = generateUniqueSchoolName("Multi Coach Test");
@@ -291,11 +284,7 @@ test.describe("Complete Coach Workflow", () => {
     const schoolsPage = new SchoolsPage(page);
 
     // Login
-    await page.goto("/login");
-    await page.fill('input[type="email"]', "test@example.com");
-    await page.fill('input[type="password"]', "password123");
-    await page.click('button:has-text("Sign In")');
-    await page.waitForURL("/dashboard");
+    await loginViaForm(page, "player@test.com", "TestPass123!");
 
     // Create school and coach
     const schoolName = generateUniqueSchoolName("Quick Actions Test");

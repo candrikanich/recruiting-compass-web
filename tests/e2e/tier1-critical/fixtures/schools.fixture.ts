@@ -72,23 +72,22 @@ export const generateUniqueSchoolName = (prefix: string): string => {
 
 export const schoolSelectors = {
   // List page
-  addSchoolButton: 'button:has-text("Add School"), button[aria-label*="Add"]',
-  // Form fields
-  nameInput: 'input[placeholder*="Name"], input[aria-label*="Name"]',
-  locationInput:
-    'input[placeholder*="Location"], input[aria-label*="Location"]',
-  divisionSelect:
-    'select[aria-label*="Division"], [data-testid="division-select"]',
+  addSchoolButton: ':is(button, a):has-text("Add School"), button[aria-label*="Add"], a[href="/schools/new"]',
+  // Form mode toggle
+  searchCollegeCheckbox: 'input[type="checkbox"]:near(:text("Search college database"))',
+  // Form fields (manual entry mode — after unchecking "Search college database")
+  nameInput: 'input[placeholder*="University of Florida"], input[aria-label*="School Name"], input[placeholder*="School Name"]',
+  locationInput: 'input[placeholder*="Gainesville"], input[placeholder*="Location"], input[aria-label*="Location"]',
+  divisionSelect: 'select[aria-label*="Division"], select:near(:text("Division")), [data-testid="division-select"]',
   statusSelect: 'select[aria-label*="Status"], [data-testid="status-select"]',
-  websiteInput: 'input[placeholder*="Website"], input[aria-label*="Website"]',
-  twitterInput: 'input[placeholder*="Twitter"], input[aria-label*="Twitter"]',
-  instagramInput:
-    'input[placeholder*="Instagram"], input[aria-label*="Instagram"]',
+  websiteInput: 'input[placeholder*="example.com"], input[placeholder*="Website"], input[aria-label*="Website"]',
+  twitterInput: 'input[placeholder*="@handle"]:first-of-type, input[placeholder*="Twitter"], input[aria-label*="Twitter"]',
+  instagramInput: 'input[placeholder*="@handle"]:last-of-type, input[placeholder*="Instagram"], input[aria-label*="Instagram"]',
   // Buttons
   createButton:
-    'button:has-text("Create"), button[type="submit"]:has-text("Create")',
+    'button:has-text("Add School"), button:has-text("Create"), button[type="submit"]',
   updateButton:
-    'button:has-text("Update"), button[type="submit"]:has-text("Update")',
+    'button:has-text("Save"), button:has-text("Update"), button[type="submit"]',
   deleteButton: 'button:has-text("Delete"), button[aria-label*="Delete"]',
   cancelButton: 'button:has-text("Cancel"), button[aria-label*="Cancel"]',
   confirmDeleteButton:
@@ -117,31 +116,48 @@ export const schoolHelpers = {
 
   async fillSchoolForm(page: Page, data: Partial<SchoolData>) {
     if (data.name) {
-      await page.fill(schoolSelectors.nameInput, data.name);
+      // Use getByLabel for robust matching regardless of placeholder text changes
+      const nameField = page.getByLabel("School Name", { exact: false });
+      await nameField.waitFor({ state: "visible" });
+      await nameField.fill(data.name);
     }
 
     if (data.location) {
-      await page.fill(schoolSelectors.locationInput, data.location);
+      const locationField = page.getByLabel("Location", { exact: false }).or(
+        page.getByPlaceholder(/Gainesville|Location/i),
+      );
+      await locationField.first().fill(data.location);
     }
 
     if (data.division) {
-      await page.selectOption(schoolSelectors.divisionSelect, data.division);
+      // FormSelect renders a native <select> element — select by value (D1, D2, D3)
+      const divisionSelect = page.locator("select").filter({
+        has: page.locator('option[value="D1"]'),
+      });
+      await divisionSelect.selectOption(data.division);
     }
 
     if (data.status) {
-      await page.selectOption(schoolSelectors.statusSelect, data.status);
+      // FormSelect for "Initial Status" — select by value (researching, interested, etc.)
+      const statusSelect = page.locator("select").filter({
+        has: page.locator('option[value="researching"]'),
+      });
+      await statusSelect.selectOption(data.status);
     }
 
     if (data.website) {
-      await page.fill(schoolSelectors.websiteInput, data.website);
+      const websiteField = page.getByLabel("School Website", { exact: false }).or(
+        page.getByPlaceholder(/example\.com|Website/i),
+      );
+      await websiteField.first().fill(data.website);
     }
 
     if (data.twitter_handle) {
-      await page.fill(schoolSelectors.twitterInput, data.twitter_handle);
+      await page.getByLabel("Twitter Handle", { exact: false }).fill(data.twitter_handle);
     }
 
     if (data.instagram_handle) {
-      await page.fill(schoolSelectors.instagramInput, data.instagram_handle);
+      await page.getByLabel("Instagram Handle", { exact: false }).fill(data.instagram_handle);
     }
   },
 
@@ -149,6 +165,14 @@ export const schoolHelpers = {
     await schoolHelpers.navigateToSchools(page);
     await page.click(schoolSelectors.addSchoolButton);
     await page.waitForURL("**/schools/new");
+
+    // Uncheck "Search college database" to enable free-text entry for test school names
+    const searchCheckbox = page.locator('input[type="checkbox"]').first();
+    const isChecked = await searchCheckbox.isChecked().catch(() => false);
+    if (isChecked) {
+      await searchCheckbox.uncheck();
+      await page.waitForTimeout(300); // wait for form to switch to text input mode
+    }
 
     await schoolHelpers.fillSchoolForm(page, data);
     await page.click(schoolSelectors.createButton);
