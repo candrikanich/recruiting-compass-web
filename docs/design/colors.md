@@ -52,7 +52,7 @@ type ButtonColor = "blue" | "purple" | "emerald" | "orange" | "indigo" | "slate"
 - Reach fit tier
 - Fit score numeric: ≥ 50 and < 70
 - Fit breakdown: Personal dimension
-- Coach responsiveness: 40–79% (Moderate / Slow)
+- Coach responsiveness: 40–59% (Moderate) and 20–39% (Slow)
 
 **Don't use for:** Errors, completed states, primary actions. Note: positive sentiment uses **blue**, not orange.
 

@@ -64,6 +64,17 @@
   --brand-indigo-600: var(--color-brand-indigo-600);
   --brand-indigo-700: var(--color-brand-indigo-700);
 
+  --brand-red-100: var(--color-brand-red-100);
+  --brand-red-500: var(--color-brand-red-500);
+  --brand-red-600: var(--color-brand-red-600);
+  --brand-red-700: var(--color-brand-red-700);
+
+  --brand-slate-100: var(--color-brand-slate-100);
+  --brand-slate-200: var(--color-brand-slate-200);
+  --brand-slate-500: var(--color-brand-slate-500);
+  --brand-slate-600: var(--color-brand-slate-600);
+  --brand-slate-700: var(--color-brand-slate-700);
+
   /* Background Gradients */
   --gradient-page: linear-gradient(
     135deg,

@@ -98,7 +98,7 @@ These are CSS utility badges, distinct from the `<Badge>` Vue component. Use the
 | `badge-primary` | Blue light |
 | `badge-success` | Emerald light |
 | `badge-warning` | Orange light |
-| `badge-danger` | Destructive red |
+| `badge-danger` | Destructive red (uses `--destructive` semantic token, not brand-red palette) |
 
 ### Input
 
