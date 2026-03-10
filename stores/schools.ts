@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import type { School, SchoolStatusHistory } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
 import { useSupabase } from "~/composables/useSupabase";
-import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { sanitizeSchoolFields } from "~/utils/sanitizers/entitySanitizer";
 import { useUserStore } from "./user";
 
 export interface SchoolFilters {
@@ -228,42 +228,7 @@ export const useSchoolStore = defineStore("schools", {
           throw new Error("User not authenticated");
         }
 
-        // Sanitize text fields to prevent XSS
-        const sanitized = { ...schoolData };
-        if (sanitized.notes) {
-          sanitized.notes = sanitizeHtml(sanitized.notes);
-        }
-        if (sanitized.pros && Array.isArray(sanitized.pros)) {
-          sanitized.pros = sanitized.pros
-            .filter((p: string | undefined): p is string => !!p)
-            .map((p) => sanitizeHtml(p));
-        }
-        if (sanitized.cons && Array.isArray(sanitized.cons)) {
-          sanitized.cons = sanitized.cons
-            .filter((c: string | undefined): c is string => !!c)
-            .map((c) => sanitizeHtml(c));
-        }
-        if (sanitized.coaching_philosophy) {
-          sanitized.coaching_philosophy = sanitizeHtml(
-            sanitized.coaching_philosophy,
-          );
-        }
-        if (sanitized.coaching_style) {
-          sanitized.coaching_style = sanitizeHtml(sanitized.coaching_style);
-        }
-        if (sanitized.recruiting_approach) {
-          sanitized.recruiting_approach = sanitizeHtml(
-            sanitized.recruiting_approach,
-          );
-        }
-        if (sanitized.communication_style) {
-          sanitized.communication_style = sanitizeHtml(
-            sanitized.communication_style,
-          );
-        }
-        if (sanitized.success_metrics) {
-          sanitized.success_metrics = sanitizeHtml(sanitized.success_metrics);
-        }
+        const sanitized = sanitizeSchoolFields({ ...schoolData });
 
         const insertData = [
           {
@@ -319,42 +284,7 @@ export const useSchoolStore = defineStore("schools", {
           throw new Error("No family context");
         }
 
-        // Sanitize text fields
-        const sanitized = { ...updates };
-        if (sanitized.notes) {
-          sanitized.notes = sanitizeHtml(sanitized.notes);
-        }
-        if (sanitized.pros && Array.isArray(sanitized.pros)) {
-          sanitized.pros = sanitized.pros
-            .filter((p): p is string => !!p)
-            .map((p) => sanitizeHtml(p));
-        }
-        if (sanitized.cons && Array.isArray(sanitized.cons)) {
-          sanitized.cons = sanitized.cons
-            .filter((c): c is string => !!c)
-            .map((c) => sanitizeHtml(c));
-        }
-        if (sanitized.coaching_philosophy) {
-          sanitized.coaching_philosophy = sanitizeHtml(
-            sanitized.coaching_philosophy,
-          );
-        }
-        if (sanitized.coaching_style) {
-          sanitized.coaching_style = sanitizeHtml(sanitized.coaching_style);
-        }
-        if (sanitized.recruiting_approach) {
-          sanitized.recruiting_approach = sanitizeHtml(
-            sanitized.recruiting_approach,
-          );
-        }
-        if (sanitized.communication_style) {
-          sanitized.communication_style = sanitizeHtml(
-            sanitized.communication_style,
-          );
-        }
-        if (sanitized.success_metrics) {
-          sanitized.success_metrics = sanitizeHtml(sanitized.success_metrics);
-        }
+        const sanitized = sanitizeSchoolFields({ ...updates });
 
         const updateData = {
           ...sanitized,
