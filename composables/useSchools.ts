@@ -39,35 +39,6 @@ const logger = createClientLogger("useSchools");
  * - Academic and athletic requirements tracking
  */
 export const useSchools = () => {
-  return useSchoolsInternal();
-};
-
-const useSchoolsInternal = (): {
-  schools: ComputedRef<School[]>;
-  favoriteSchools: ComputedRef<School[]>;
-  loading: ComputedRef<boolean>;
-  error: ComputedRef<string | null>;
-  fetchSchools: () => Promise<void>;
-  getSchool: (id: string) => Promise<School | null>;
-  createSchool: (
-    schoolData: Omit<School, "id" | "createdAt" | "updatedAt">,
-  ) => Promise<School>;
-  updateSchool: (id: string, updates: Partial<School>) => Promise<School>;
-  deleteSchool: (id: string) => Promise<void>;
-  smartDelete: (id: string) => Promise<{ cascadeUsed: boolean }>;
-  toggleFavorite: (id: string, currentFavorite: boolean) => Promise<School>;
-  updateRanking: (schools_: School[]) => Promise<void>;
-  findDuplicate: (
-    schoolData: Partial<School> | Record<string, string | null | undefined>,
-  ) => {
-    duplicate: School | null;
-    matchType: "name" | "domain" | "ncaa_id" | null;
-  };
-  hasDuplicate: ComputedRef<(schoolData: Partial<School>) => boolean>;
-  isNameDuplicate: (newName: string | undefined) => School | null;
-  isDomainDuplicate: (website: string | null | undefined) => School | null;
-  isNCAAAIDuplicate: (ncaaId: string | null | undefined) => School | null;
-} => {
   const supabase = useSupabase();
   const userStore = useUserStore();
   const { $fetchAuth } = useAuthFetch();
