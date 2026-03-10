@@ -146,6 +146,7 @@
         <div class="relative">
           <input
             id="attachments"
+            ref="attachments"
             type="file"
             multiple
             accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.txt"
@@ -312,7 +313,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from "vue";
+import { ref, computed, useTemplateRef } from "vue";
 import type { Coach, Interaction } from "~/types/models";
 import { getRoleLabel } from "~/utils/coachLabels";
 
@@ -343,7 +344,7 @@ const emit = defineEmits<{
   cancel: [];
 }>();
 
-const newInteraction = reactive({
+const createInitialForm = () => ({
   type: "",
   direction: "",
   coach_id: "",
@@ -352,19 +353,21 @@ const newInteraction = reactive({
   sentiment: "",
   occurred_at: new Date().toISOString().slice(0, 16),
 });
+const newInteraction = ref(createInitialForm());
 
 const reminderEnabled = ref(false);
 const reminderDate = ref("");
 const reminderType = ref<"email" | "sms" | "phone_call">("email");
 const selectedFiles = ref<File[]>([]);
+const fileInputRef = useTemplateRef<HTMLInputElement>("attachments");
 
 const isFormValid = computed(
   () =>
     !props.loading &&
-    newInteraction.type &&
-    newInteraction.direction &&
-    newInteraction.content &&
-    newInteraction.occurred_at,
+    newInteraction.value.type &&
+    newInteraction.value.direction &&
+    newInteraction.value.content &&
+    newInteraction.value.occurred_at,
 );
 
 const getTodayDate = (): string => {
@@ -380,9 +383,8 @@ const handleFileSelect = (event: Event): void => {
 
 const removeFile = (index: number): void => {
   selectedFiles.value = selectedFiles.value.filter((_, i) => i !== index);
-  const fileInput = document.getElementById("attachments") as HTMLInputElement;
-  if (fileInput) {
-    fileInput.value = "";
+  if (fileInputRef.value) {
+    fileInputRef.value.value = "";
   }
 };
 
@@ -393,32 +395,25 @@ const formatFileSize = (bytes: number): string => {
 };
 
 const resetForm = () => {
-  newInteraction.type = "";
-  newInteraction.direction = "";
-  newInteraction.coach_id = "";
-  newInteraction.subject = "";
-  newInteraction.content = "";
-  newInteraction.sentiment = "";
-  newInteraction.occurred_at = new Date().toISOString().slice(0, 16);
+  newInteraction.value = createInitialForm();
   reminderEnabled.value = false;
   reminderDate.value = "";
   reminderType.value = "email";
   selectedFiles.value = [];
-  const fileInput = document.getElementById("attachments") as HTMLInputElement;
-  if (fileInput) {
-    fileInput.value = "";
+  if (fileInputRef.value) {
+    fileInputRef.value.value = "";
   }
 };
 
 const handleSubmit = () => {
   emit("submit", {
-    type: newInteraction.type,
-    direction: newInteraction.direction,
-    coach_id: newInteraction.coach_id,
-    subject: newInteraction.subject,
-    content: newInteraction.content,
-    sentiment: newInteraction.sentiment,
-    occurred_at: newInteraction.occurred_at,
+    type: newInteraction.value.type,
+    direction: newInteraction.value.direction,
+    coach_id: newInteraction.value.coach_id,
+    subject: newInteraction.value.subject,
+    content: newInteraction.value.content,
+    sentiment: newInteraction.value.sentiment,
+    occurred_at: newInteraction.value.occurred_at,
     selectedFiles: [...selectedFiles.value],
     reminderEnabled: reminderEnabled.value,
     reminderDate: reminderDate.value,
