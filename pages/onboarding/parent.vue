@@ -270,11 +270,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, inject } from "vue";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useFamilyInvite } from "~/composables/useFamilyInvite";
-import { useFamilyCtx } from "~/composables/useFamilyCtx";
+import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 definePageMeta({ layout: "default", middleware: "auth" });
 
@@ -350,7 +350,7 @@ const graduationYears = computed(() => {
 // Step 2 — Invite
 const inviteEmail = ref("");
 const { $fetchAuth } = useAuthFetch();
-const activeFamilyCtx = useFamilyCtx();
+const activeFamilyCtx = inject<UseActiveFamilyReturn>("activeFamily");
 const {
   myFamilyCode,
   fetchMyCode,
