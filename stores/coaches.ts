@@ -324,8 +324,9 @@ export const useCoachStore = defineStore("coaches", {
           },
         ];
 
-        const { data, error: insertError } = await supabase
-          .from("coaches")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error: insertError } = await (supabase as any)
+          .from("coaches") // useSupabase() is untyped (SupabaseClient<any>); typed casts require useSupabase to use Database generic
           .insert(insertData)
           .select()
           .single();
@@ -374,8 +375,9 @@ export const useCoachStore = defineStore("coaches", {
           updated_at: new Date().toISOString(),
         };
 
-        const { data, error: updateError } = await supabase
-          .from("coaches")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error: updateError } = await (supabase as any)
+          .from("coaches") // see above
           .update(updateData)
           .eq("id", id)
           .select()

@@ -1,9 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { useRuntimeConfig } from "#app";
 import { createClientLogger } from "~/utils/logger";
-import type { Database } from "~/types/database";
 
-let supabaseClient: ReturnType<typeof createClient<Database>> | null = null;
+let supabaseClient: ReturnType<typeof createClient> | null = null;
 
 const logger = createClientLogger("useSupabase");
 
@@ -59,7 +58,7 @@ export const useSupabase = () => {
     };
 
     // Create client with session persistence and custom fetch
-    supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -84,5 +83,5 @@ export const useSupabase = () => {
     }
   }
 
-  return supabaseClient as ReturnType<typeof createClient<Database>>;
+  return supabaseClient as ReturnType<typeof createClient>;
 };
