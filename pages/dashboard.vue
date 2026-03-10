@@ -82,7 +82,7 @@
               <Suspense v-for="entry in group.entries" :key="entry.id">
                 <component
                   :is="WIDGET_COMPONENTS[entry.id] || 'div'"
-                  v-bind="getWidgetProps(entry.id)"
+                  v-bind="widgetPropsMap[entry.id] ?? {}"
                 />
                 <template #fallback>
                   <div class="animate-pulse bg-gray-200 h-64 rounded-lg" />
@@ -102,7 +102,7 @@
               <Suspense>
                 <component
                   :is="WIDGET_COMPONENTS[group.entry.id] || 'div'"
-                  v-bind="getWidgetProps(group.entry.id)"
+                  v-bind="widgetPropsMap[group.entry.id] ?? {}"
                 />
                 <template #fallback>
                   <div class="animate-pulse bg-gray-200 h-64 rounded-lg" />
@@ -132,7 +132,7 @@
             <Suspense>
               <component
                 :is="WIDGET_COMPONENTS[entry.id] || 'div'"
-                v-bind="getWidgetProps(entry.id)"
+                v-bind="widgetPropsMap[entry.id] ?? {}"
               />
               <template #fallback>
                 <div class="animate-pulse bg-gray-200 h-40 rounded-lg" />
@@ -310,51 +310,38 @@ const WIDGET_COMPONENTS: Partial<Record<WidgetId, Component>> = {
   ),
 };
 
-// Return props for each widget id
-const getWidgetProps = (id: WidgetId): Record<string, unknown> => {
-  switch (id) {
-    case "interactionTrendChart":
-      return { interactions: allInteractions.value };
-    case "schoolInterestChart":
-      return { schools: allSchools.value };
-    case "schoolMapWidget":
-      return { schools: allSchools.value };
-    case "performanceSummary":
-      return {
-        metrics: allMetrics.value,
-        topMetrics: topMetrics.value,
-        showPerformance: true,
-      };
-    case "quickTasks":
-      return {
-        tasks: tasks.value ?? [],
-        showTasks: true,
-        onAddTask: addTask,
-        onToggleTask: toggleTask,
-        onDeleteTask: deleteTask,
-        onClearCompleted: () => userTasksComposable?.clearCompleted(),
-      };
-    case "coachFollowupWidget":
-      return {};
-    case "atAGlanceSummary":
-      return {
-        coaches: allCoaches.value,
-        schools: allSchools.value,
-        interactions: allInteractions.value,
-        offers: allOffers.value,
-      };
-    case "schoolStatusOverview":
-      return { breakdown: schoolSizeBreakdown.value, count: schoolCount.value };
-    case "eventsSummary":
-      return { events: upcomingEvents.value, showEvents: true };
-    case "recentNotifications":
-      return {};
-    case "linkedAccounts":
-      return { showSocial: true };
-    default:
-      return {};
-  }
-};
+// Memoized widget props computed by reactive dependencies
+const widgetPropsMap = computed(
+  (): Partial<Record<WidgetId, Record<string, unknown>>> => ({
+    interactionTrendChart: { interactions: allInteractions.value },
+    schoolInterestChart: { schools: allSchools.value },
+    schoolMapWidget: { schools: allSchools.value },
+    performanceSummary: {
+      metrics: allMetrics.value,
+      topMetrics: topMetrics.value,
+      showPerformance: true,
+    },
+    quickTasks: {
+      tasks: tasks.value ?? [],
+      showTasks: true,
+      onAddTask: addTask,
+      onToggleTask: toggleTask,
+      onDeleteTask: deleteTask,
+      onClearCompleted: () => userTasksComposable?.clearCompleted(),
+    },
+    coachFollowupWidget: {},
+    atAGlanceSummary: {
+      coaches: allCoaches.value,
+      schools: allSchools.value,
+      interactions: allInteractions.value,
+      offers: allOffers.value,
+    },
+    schoolStatusOverview: { breakdown: schoolSizeBreakdown.value, count: schoolCount.value },
+    eventsSummary: { events: upcomingEvents.value, showEvents: true },
+    recentNotifications: {},
+    linkedAccounts: { showSocial: true },
+  }),
+);
 
 // Group visible left column entries: pair consecutive 2/6 widgets
 type WidgetGroup =
