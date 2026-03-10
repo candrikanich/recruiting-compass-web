@@ -1,6 +1,9 @@
 import { defineStore } from "pinia";
 import type { School, SchoolStatusHistory } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
+import { useSupabase } from "~/composables/useSupabase";
+import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { useUserStore } from "./user";
 
 export interface SchoolFilters {
   division: string;
@@ -130,8 +133,6 @@ export const useSchoolStore = defineStore("schools", {
       this.error = null;
 
       try {
-        const { useSupabase } = await import("~/composables/useSupabase");
-        const { useUserStore } = await import("./user");
         const { useFamilyContext } = await import(
           "~/composables/useFamilyContext"
         );
@@ -171,8 +172,6 @@ export const useSchoolStore = defineStore("schools", {
      * Get a single school by ID
      */
     async getSchool(id: string): Promise<School | null> {
-      const { useSupabase } = await import("~/composables/useSupabase");
-      const { useUserStore } = await import("./user");
       const { useFamilyContext } = await import(
         "~/composables/useFamilyContext"
       );
@@ -218,9 +217,6 @@ export const useSchoolStore = defineStore("schools", {
     async createSchool(
       schoolData: Omit<School, "id" | "created_at" | "updated_at">,
     ) {
-      const { useSupabase } = await import("~/composables/useSupabase");
-      const { sanitizeHtml } = await import("~/utils/validation/sanitize");
-      const { useUserStore } = await import("./user");
       const userStore = useUserStore();
       const supabase = useSupabase();
 
@@ -304,9 +300,6 @@ export const useSchoolStore = defineStore("schools", {
      * Update an existing school
      */
     async updateSchool(id: string, updates: Partial<School>) {
-      const { useSupabase } = await import("~/composables/useSupabase");
-      const { sanitizeHtml } = await import("~/utils/validation/sanitize");
-      const { useUserStore } = await import("./user");
       const { useFamilyContext } = await import(
         "~/composables/useFamilyContext"
       );
@@ -401,8 +394,6 @@ export const useSchoolStore = defineStore("schools", {
      * Delete a school
      */
     async deleteSchool(id: string) {
-      const { useSupabase } = await import("~/composables/useSupabase");
-      const { useUserStore } = await import("./user");
       const { useFamilyContext } = await import(
         "~/composables/useFamilyContext"
       );
@@ -457,8 +448,6 @@ export const useSchoolStore = defineStore("schools", {
      * Much faster than updating individually
      */
     async updateRanking(schools_: School[]) {
-      const { useSupabase } = await import("~/composables/useSupabase");
-      const { useUserStore } = await import("./user");
       const userStore = useUserStore();
       const supabase = useSupabase();
 
@@ -504,8 +493,6 @@ export const useSchoolStore = defineStore("schools", {
       newStatus: School["status"],
       notes?: string,
     ) {
-      const { useSupabase } = await import("~/composables/useSupabase");
-      const { useUserStore } = await import("./user");
       const { useFamilyContext } = await import(
         "~/composables/useFamilyContext"
       );
@@ -604,7 +591,6 @@ export const useSchoolStore = defineStore("schools", {
      * Story 3.4: View status change history and timeline
      */
     async getStatusHistory(schoolId: string) {
-      const { useSupabase } = await import("~/composables/useSupabase");
       const supabase = useSupabase();
 
       try {
