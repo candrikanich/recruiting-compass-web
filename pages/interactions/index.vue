@@ -120,6 +120,7 @@
           <InteractionCard
             v-for="interaction in filteredInteractions"
             :key="interaction.id"
+            v-memo="[interaction.id, interaction.type, interaction.direction, interaction.sentiment, interaction.occurred_at, interaction.school_id, interaction.coach_id]"
             :interaction="interaction"
             :school-name="getSchoolName(interaction.school_id)"
             :coach-name="

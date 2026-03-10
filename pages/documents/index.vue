@@ -225,6 +225,7 @@
           <div
             v-for="doc in sortedAndFilteredDocuments"
             :key="doc.id"
+            v-memo="[doc.id, doc.title, doc.type, doc.version, doc.school_id, doc.created_at, doc.shared_with_schools]"
             class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition flex items-center justify-between"
           >
             <div class="flex-1">
