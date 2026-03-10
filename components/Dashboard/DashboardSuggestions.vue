@@ -6,12 +6,7 @@
         {{
           deadPeriodMessage && suggestions.length === 0
             ? "No action items at this time"
-            : suggestions.length +
-              " item" +
-              (suggestions.length !== 1 ? "s" : "") +
-              " need" +
-              (suggestions.length !== 1 ? "" : "s") +
-              " your attention"
+            : actionItemsText
         }}
       </p>
     </div>
@@ -87,49 +82,35 @@
 import { computed, ref } from "vue";
 import type { Suggestion } from "~/types/timeline";
 import { useSuggestions } from "~/composables/useSuggestions";
-import { useSchools } from "~/composables/useSchools";
-import { getDeadPeriodMessage } from "~/server/utils/ncaaRecruitingCalendar";
+import { createClientLogger } from "~/utils/logger";
 
 interface Props {
   suggestions: Suggestion[];
   isViewingAsParent?: boolean;
   athleteName?: string;
   moreCount?: number;
+  deadPeriodMessage?: string | null;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   isViewingAsParent: false,
   athleteName: undefined,
   moreCount: 0,
+  deadPeriodMessage: null,
 });
 
 const emit = defineEmits<{
   dismiss: [id: string];
 }>();
 
+const logger = createClientLogger("DashboardSuggestions");
 const suggestionsComposable = useSuggestions();
-const { schools: allSchools } = useSchools();
 const surfacingMore = ref(false);
 
-const deadPeriodMessage = computed(() => {
-  if (allSchools.value.length === 0) return null;
-
-  const now = new Date();
-
-  // Check if ALL schools are in a dead period
-  const schoolsInDeadPeriod = allSchools.value.filter((school) => {
-    const division = (school.division as string) || "D1";
-    return getDeadPeriodMessage(now, division as "D1" | "D2" | "D3");
-  });
-
-  if (schoolsInDeadPeriod.length === allSchools.value.length) {
-    return getDeadPeriodMessage(now, "D1");
-  }
-
-  return null;
+const actionItemsText = computed(() => {
+  const n = props.suggestions.length;
+  return `${n} item${n !== 1 ? "s" : ""} need${n === 1 ? "s" : ""} your attention`;
 });
-
-const moreCount = computed(() => suggestionsComposable?.moreCount.value || 0);
 
 const handleDismiss = (id: string) => {
   emit("dismiss", id);
@@ -140,7 +121,7 @@ const surfaceMoreSuggestions = async () => {
   try {
     await suggestionsComposable?.surfaceMoreSuggestions();
   } catch (error) {
-    console.error("Error surfacing more suggestions:", error);
+    logger.error("Error surfacing more suggestions", error);
   } finally {
     surfacingMore.value = false;
   }

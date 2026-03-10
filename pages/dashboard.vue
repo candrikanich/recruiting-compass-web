@@ -66,6 +66,8 @@
               :suggestions="dashboardSuggestions || []"
               :is-viewing-as-parent="isViewingAsParent || false"
               :athlete-name="activeAthleteName"
+              :more-count="suggestionsMoreCount"
+              :dead-period-message="deadPeriodMessage"
               @dismiss="handleSuggestionDismiss"
             />
           </section>
@@ -179,6 +181,7 @@ import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
+import { getDeadPeriodMessage } from "~/server/utils/ncaaRecruitingCalendar";
 import { WIDGET_SIZES } from "~/types/models";
 import type { WidgetId, WidgetEntry } from "~/types/models";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
@@ -243,6 +246,20 @@ const {
   allOffers,
   allEvents,
 } = dashboardData;
+
+const deadPeriodMessage = computed((): string | null => {
+  if (!allSchools.value.length) return null;
+  const now = new Date();
+  const allInDeadPeriod = allSchools.value.every((school) => {
+    const div = (school.division as string) || "D1";
+    return !!getDeadPeriodMessage(now, div as "D1" | "D2" | "D3");
+  });
+  return allInDeadPeriod ? (getDeadPeriodMessage(now, "D1") ?? null) : null;
+});
+
+const suggestionsMoreCount = computed(
+  () => suggestionsComposable?.moreCount.value ?? 0,
+);
 
 // Dashboard calculations derived from dashboard data
 const {
