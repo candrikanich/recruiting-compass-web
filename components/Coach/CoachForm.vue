@@ -125,19 +125,19 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, toRefs, computed } from "vue";
+import { reactive, watch, toRefs } from "vue";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import { useFormValidation } from "~/composables/useFormValidation";
-import { coachSchema } from "~/utils/validation/schemas";
+import { coachSchema, type CoachInput } from "~/utils/validation/schemas";
 import { z } from "zod";
 
 // Role options
-const roleOptions = computed(() => [
+const roleOptions = [
   { value: '', label: 'Select Role' },
   { value: 'head', label: 'Head Coach' },
   { value: 'assistant', label: 'Assistant Coach' },
-  { value: 'recruiting', label: 'Recruiting Coordinator' }
-])
+  { value: 'recruiting', label: 'Recruiting Coordinator' },
+]
 
 const props = defineProps<{
   loading: boolean;
@@ -154,7 +154,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  submit: [data: any];
+  submit: [data: CoachInput];
   cancel: [];
 }>();
 
