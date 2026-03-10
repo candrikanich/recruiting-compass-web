@@ -13,21 +13,19 @@ type SchoolFields = {
   [key: string]: unknown;
 };
 
-export const sanitizeCoachFields = <T extends CoachFields>(data: T): T => {
-  const result = { ...data };
-  if (result.notes) result.notes = sanitizeHtml(result.notes);
-  return result;
-};
+export const sanitizeCoachFields = <T extends CoachFields>(data: T): T => ({
+  ...data,
+  ...(data.notes != null && { notes: sanitizeHtml(data.notes) }),
+});
 
-export const sanitizeSchoolFields = <T extends SchoolFields>(data: T): T => {
-  const result = { ...data };
-  if (result.notes) result.notes = sanitizeHtml(result.notes);
-  if (result.pros) result.pros = result.pros.filter((p): p is string => !!p).map((p) => sanitizeHtml(p));
-  if (result.cons) result.cons = result.cons.filter((c): c is string => !!c).map((c) => sanitizeHtml(c));
-  if (result.coaching_philosophy) result.coaching_philosophy = sanitizeHtml(result.coaching_philosophy);
-  if (result.coaching_style) result.coaching_style = sanitizeHtml(result.coaching_style);
-  if (result.recruiting_approach) result.recruiting_approach = sanitizeHtml(result.recruiting_approach);
-  if (result.communication_style) result.communication_style = sanitizeHtml(result.communication_style);
-  if (result.success_metrics) result.success_metrics = sanitizeHtml(result.success_metrics);
-  return result;
-};
+export const sanitizeSchoolFields = <T extends SchoolFields>(data: T): T => ({
+  ...data,
+  ...(data.notes != null && { notes: sanitizeHtml(data.notes) }),
+  ...(data.pros != null && { pros: data.pros.filter((p): p is string => p != null && p !== "").map(sanitizeHtml) }),
+  ...(data.cons != null && { cons: data.cons.filter((c): c is string => c != null && c !== "").map(sanitizeHtml) }),
+  ...(data.coaching_philosophy != null && { coaching_philosophy: sanitizeHtml(data.coaching_philosophy) }),
+  ...(data.coaching_style != null && { coaching_style: sanitizeHtml(data.coaching_style) }),
+  ...(data.recruiting_approach != null && { recruiting_approach: sanitizeHtml(data.recruiting_approach) }),
+  ...(data.communication_style != null && { communication_style: sanitizeHtml(data.communication_style) }),
+  ...(data.success_metrics != null && { success_metrics: sanitizeHtml(data.success_metrics) }),
+});
