@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import type { User } from "~/types/models";
 import { useSupabase } from "~/composables/useSupabase";
+import { clearAllFilterCaches } from "~/composables/usePageFilters";
 import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("stores/user");
@@ -240,10 +241,7 @@ export const useUserStore = defineStore("user", {
       this.isAuthenticated = false;
       this.isEmailVerified = false;
       // Clear all filter caches on logout to prevent stale filters from showing after login
-      localStorage.removeItem("schools-filters");
-      localStorage.removeItem("coaches-filters");
-      localStorage.removeItem("interactions-filters");
-      localStorage.removeItem("offers-filters");
+      clearAllFilterCaches();
     },
 
     async refreshVerificationStatus() {
