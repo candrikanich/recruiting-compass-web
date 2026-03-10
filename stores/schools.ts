@@ -278,18 +278,13 @@ export const useSchoolStore = defineStore("schools", {
           },
         ];
 
-        const response = (await supabase
+        // useSupabase() returns SupabaseClient<any>; typed casts require the Database generic to be added to useSupabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error: insertError } = await (supabase as any)
           .from("schools")
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .insert(insertData as any)
+          .insert(insertData)
           .select()
-          .single()) as {
-          data: School;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-        const { data, error: insertError } = response;
+          .single();
 
         if (insertError) throw insertError;
 
@@ -375,18 +370,13 @@ export const useSchoolStore = defineStore("schools", {
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response = (await (supabase.from("schools") as any)
+        const { data, error: updateError } = await (supabase as any)
+          .from("schools")
           .update(updateData)
           .eq("id", id)
           .eq("family_unit_id", activeFamily.activeFamilyId.value)
           .select()
-          .single()) as {
-          data: School;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-        const { data, error: updateError } = response;
+          .single();
 
         if (updateError) throw updateError;
 
@@ -488,15 +478,10 @@ export const useSchoolStore = defineStore("schools", {
           updated_at: new Date().toISOString(),
         }));
 
-        const response = (await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: batchError } = await (supabase as any)
           .from("schools")
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .upsert(updates as any, { onConflict: "id" })) as {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-        const { error: batchError } = response;
+          .upsert(updates, { onConflict: "id" });
 
         if (batchError) throw batchError;
 
@@ -565,18 +550,13 @@ export const useSchoolStore = defineStore("schools", {
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response = (await (supabase.from("schools") as any)
+        const { data: updatedSchool, error: schoolError } = await (supabase as any)
+          .from("schools")
           .update(schoolUpdateData)
           .eq("id", schoolId)
           .eq("family_unit_id", activeFamily.activeFamilyId.value)
           .select()
-          .single()) as {
-          data: School;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-        const { data: updatedSchool, error: schoolError } = response;
+          .single();
 
         if (schoolError) throw schoolError;
 
@@ -592,15 +572,10 @@ export const useSchoolStore = defineStore("schools", {
           },
         ];
 
-        const historyResponse = (await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: historyError } = await (supabase as any)
           .from("school_status_history")
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .insert(historyData as any)) as {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-        const { error: historyError } = historyResponse;
+          .insert(historyData);
 
         if (historyError) throw historyError;
 
