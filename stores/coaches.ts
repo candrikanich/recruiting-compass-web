@@ -1,6 +1,9 @@
 import { defineStore } from "pinia";
 import type { Coach } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
+import { useSupabase } from "~/composables/useSupabase";
+import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { useUserStore } from "./user";
 
 export interface CoachFilters {
   schoolId?: string;
@@ -132,7 +135,6 @@ export const useCoachStore = defineStore("coaches", {
       this.error = null;
 
       try {
-        const { useSupabase } = await import("~/composables/useSupabase");
         const supabase = useSupabase();
 
         const { data, error: fetchError } = await supabase
@@ -174,7 +176,6 @@ export const useCoachStore = defineStore("coaches", {
       this.error = null;
 
       try {
-        const { useSupabase } = await import("~/composables/useSupabase");
         const supabase = useSupabase();
 
         let query = supabase.from("coaches").select("*");
@@ -231,7 +232,6 @@ export const useCoachStore = defineStore("coaches", {
       this.error = null;
 
       try {
-        const { useSupabase } = await import("~/composables/useSupabase");
         const supabase = useSupabase();
 
         const { data, error: fetchError } = await supabase
@@ -262,7 +262,6 @@ export const useCoachStore = defineStore("coaches", {
      * Get a single coach by ID
      */
     async getCoach(id: string): Promise<Coach | null> {
-      const { useSupabase } = await import("~/composables/useSupabase");
       const supabase = useSupabase();
 
       this.loading = true;
@@ -294,9 +293,6 @@ export const useCoachStore = defineStore("coaches", {
       schoolId: string,
       coachData: Omit<Coach, "id" | "created_at" | "updated_at">,
     ) {
-      const { useSupabase } = await import("~/composables/useSupabase");
-      const { sanitizeHtml } = await import("~/utils/validation/sanitize");
-      const { useUserStore } = await import("./user");
       const userStore = useUserStore();
       const supabase = useSupabase();
 
@@ -349,9 +345,6 @@ export const useCoachStore = defineStore("coaches", {
      * Update an existing coach
      */
     async updateCoach(id: string, updates: Partial<Coach>) {
-      const { useSupabase } = await import("~/composables/useSupabase");
-      const { sanitizeHtml } = await import("~/utils/validation/sanitize");
-      const { useUserStore } = await import("./user");
       const userStore = useUserStore();
       const supabase = useSupabase();
 
@@ -407,8 +400,6 @@ export const useCoachStore = defineStore("coaches", {
      * Delete a coach
      */
     async deleteCoach(id: string) {
-      const { useSupabase } = await import("~/composables/useSupabase");
-      const { useUserStore } = await import("./user");
       const { useFamilyContext } = await import(
         "~/composables/useFamilyContext"
       );
