@@ -324,23 +324,16 @@ export const useCoachStore = defineStore("coaches", {
           },
         ];
 
-        const response = (await supabase
+        const { data, error: insertError } = await supabase
           .from("coaches")
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .insert(insertData as any)
+          .insert(insertData as unknown as never[])
           .select()
-          .single()) as {
-          data: Coach;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-        const { data, error: insertError } = response;
+          .single();
 
         if (insertError) throw insertError;
 
-        this.coaches.push(data);
-        return data;
+        this.coaches.push(data as Coach);
+        return data as Coach;
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : "Failed to create coach";
@@ -381,28 +374,23 @@ export const useCoachStore = defineStore("coaches", {
           updated_at: new Date().toISOString(),
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response = (await (supabase.from("coaches") as any)
-          .update(updateData)
+        const { data, error: updateError } = await supabase
+          .from("coaches")
+          .update(updateData as unknown as never)
           .eq("id", id)
           .select()
-          .single()) as {
-          data: Coach;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-        const { data, error: updateError } = response;
+          .single();
 
         if (updateError) throw updateError;
 
+        const updated = data as Coach;
         // Update local state
         const index = this.coaches.findIndex((c) => c.id === id);
         if (index !== -1) {
-          this.coaches[index] = data;
+          this.coaches[index] = updated;
         }
 
-        return data;
+        return updated;
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : "Failed to update coach";
