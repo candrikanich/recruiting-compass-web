@@ -225,6 +225,7 @@ import { useSchoolDistance } from "~/composables/useSchoolDistance";
 import { useLiveRegion } from "~/composables/useLiveRegion";
 import type { School } from "~/types";
 import type { FilterValue } from "~/types/filters";
+import type { Interaction, Coach } from "~/types/models";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -268,8 +269,8 @@ const { stats: schoolStats } = useSchoolStats(
   computed(() => schools.value)
 );
 
-const allInteractions = ref<any[]>([]);
-const allCoaches = ref<any[]>([]);
+const allInteractions = computed<Interaction[]>(() => interactionsData.value ?? []);
+const allCoaches = computed<Coach[]>(() => coachesData.value ?? []);
 const priorityTierFilter = ref<("A" | "B" | "C")[] | null>(null);
 const sortBy = ref<string>("a-z");
 
@@ -514,9 +515,6 @@ onMounted(async () => {
     fetchInteractions({}),
     loadAllPreferences(),
   ]);
-  allInteractions.value = interactionsData.value;
-  allCoaches.value = coachesData.value;
-
   if (schools.value.length > 0) {
     fetchMultipleLogos(schools.value).catch((err) => {
       logger.warn("Failed to fetch logos", err);
