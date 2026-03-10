@@ -147,6 +147,19 @@ const filteredTasks = computed(() => {
   });
 });
 
+const taskCheckboxClass = (taskId: string) => [
+  "mt-1 w-5 h-5 text-blue-600 rounded-sm shrink-0",
+  isViewingAsParent.value || isTaskLocked(taskId)
+    ? "opacity-50 cursor-not-allowed"
+    : "cursor-pointer",
+];
+
+const taskCheckboxTitle = (taskId: string): string => {
+  if (isViewingAsParent.value) return "Parents can view tasks but cannot mark them complete";
+  if (isTaskLocked(taskId)) return "Complete prerequisites to unlock this task";
+  return "Mark task complete";
+};
+
 const handleToggleTask = async (taskId: string, currentStatus: string) => {
   if (isViewingAsParent.value) return;
 
@@ -452,19 +465,8 @@ const onUrgencyFilterChange = () => {
                     task.athlete_task?.status || 'not_started',
                   )
                 "
-                :class="[
-                  'mt-1 w-5 h-5 text-blue-600 rounded-sm shrink-0',
-                  isViewingAsParent || isTaskLocked(task.id)
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'cursor-pointer',
-                ]"
-                :title="
-                  isViewingAsParent
-                    ? 'Parents can view tasks but cannot mark them complete'
-                    : isTaskLocked(task.id)
-                      ? 'Complete prerequisites to unlock this task'
-                      : 'Mark task complete'
-                "
+                :class="taskCheckboxClass(task.id)"
+                :title="taskCheckboxTitle(task.id)"
               />
 
               <!-- Task Info -->
