@@ -3,9 +3,18 @@ import { ref, computed } from "vue";
 export const useLoadingCounter = () => {
   const count = ref(0);
   const loading = computed(() => count.value > 0);
-  const startLoading = () => count.value++;
-  const stopLoading = () => {
-    if (count.value > 0) count.value--;
+
+  const increment = () => { count.value++; };
+  const decrement = () => { count.value = Math.max(0, count.value - 1); };
+
+  const wrap = async <T>(fn: () => Promise<T>): Promise<T> => {
+    increment();
+    try {
+      return await fn();
+    } finally {
+      decrement();
+    }
   };
-  return { loading, startLoading, stopLoading };
+
+  return { loading, increment, decrement, wrap };
 };
