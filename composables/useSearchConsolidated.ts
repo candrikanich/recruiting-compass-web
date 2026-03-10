@@ -1,4 +1,5 @@
 import { ref, computed } from "vue";
+import { useDebounceFn } from "@vueuse/core";
 import Fuse from "fuse.js";
 import { querySelect } from "~/utils/supabaseQuery";
 import { useSupabase } from "./useSupabase";
@@ -111,7 +112,6 @@ export const useSearchConsolidated = () => {
     }
   >();
   const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-  let searchTimeoutId: ReturnType<typeof setTimeout>;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // COMPUTED PROPERTIES
@@ -425,6 +425,49 @@ export const useSearchConsolidated = () => {
   // MAIN SEARCH FUNCTION (DEBOUNCED)
   // ═══════════════════════════════════════════════════════════════════════════
 
+  const debouncedExecuteSearch = useDebounceFn(async (searchQuery: string) => {
+    isSearching.value = true;
+    searchError.value = null;
+
+    const cacheKey = getCacheKey();
+
+    try {
+      // Execute searches in parallel based on search type
+      const searches = [];
+
+      if (searchType.value === "all" || searchType.value === "schools") {
+        searches.push(searchSchools(searchQuery));
+      }
+      if (searchType.value === "all" || searchType.value === "coaches") {
+        searches.push(searchCoaches(searchQuery));
+      }
+      if (searchType.value === "all" || searchType.value === "interactions") {
+        searches.push(searchInteractions(searchQuery));
+      }
+      if (searchType.value === "all" || searchType.value === "metrics") {
+        searches.push(searchMetrics(searchQuery));
+      }
+
+      await Promise.all(searches);
+
+      // Cache results
+      searchCache.set(cacheKey, {
+        results: {
+          schools: schoolResults.value,
+          coaches: coachResults.value,
+          interactions: interactionResults.value,
+          metrics: metricsResults.value,
+        },
+        timestamp: Date.now(),
+      });
+    } catch (err) {
+      searchError.value = getErrorMessage(err, { context: "performSearch" });
+      logError(err, { context: "performSearch" });
+    } finally {
+      isSearching.value = false;
+    }
+  }, 300);
+
   /**
    * Perform search with debouncing and caching
    *
@@ -433,9 +476,6 @@ export const useSearchConsolidated = () => {
    * Integrates filter state automatically.
    */
   const performSearch = async (searchQuery: string) => {
-    // Clear any pending searches
-    clearTimeout(searchTimeoutId);
-
     if (!searchQuery.trim()) {
       clearResults();
       return;
@@ -454,48 +494,7 @@ export const useSearchConsolidated = () => {
       return;
     }
 
-    // Debounce actual search execution
-    clearTimeout(searchTimeoutId);
-    searchTimeoutId = setTimeout(async () => {
-      isSearching.value = true;
-      searchError.value = null;
-
-      try {
-        // Execute searches in parallel based on search type
-        const searches = [];
-
-        if (searchType.value === "all" || searchType.value === "schools") {
-          searches.push(searchSchools(searchQuery));
-        }
-        if (searchType.value === "all" || searchType.value === "coaches") {
-          searches.push(searchCoaches(searchQuery));
-        }
-        if (searchType.value === "all" || searchType.value === "interactions") {
-          searches.push(searchInteractions(searchQuery));
-        }
-        if (searchType.value === "all" || searchType.value === "metrics") {
-          searches.push(searchMetrics(searchQuery));
-        }
-
-        await Promise.all(searches);
-
-        // Cache results
-        searchCache.set(cacheKey, {
-          results: {
-            schools: schoolResults.value,
-            coaches: coachResults.value,
-            interactions: interactionResults.value,
-            metrics: metricsResults.value,
-          },
-          timestamp: Date.now(),
-        });
-      } catch (err) {
-        searchError.value = getErrorMessage(err, { context: "performSearch" });
-        logError(err, { context: "performSearch" });
-      } finally {
-        isSearching.value = false;
-      }
-    }, 300);
+    await debouncedExecuteSearch(searchQuery);
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
