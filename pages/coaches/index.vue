@@ -479,18 +479,19 @@ import {
   ref,
   computed,
   watch,
+  onMounted,
   defineAsyncComponent,
 } from "vue";
 import { navigateTo } from "#app";
-import { useSupabase } from "~/composables/useSupabase";
+import { createClientLogger } from "~/utils/logger";
 import { useCommunication } from "~/composables/useCommunication";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useCoaches } from "~/composables/useCoaches";
+import { useSchools } from "~/composables/useSchools";
 import { useCoachPageFilters } from "~/composables/useCoachPageFilters";
 import { useCoachExport } from "~/composables/useCoachExport";
 import { useCoachListStats } from "~/composables/useCoachListStats";
 import StatsTiles from "~/components/shared/StatsTiles.vue";
-import { useUserStore } from "~/stores/user";
 const DeleteConfirmationModal = defineAsyncComponent(
   () => import("~/components/DeleteConfirmationModal.vue"),
 );
@@ -526,8 +527,7 @@ definePageMeta({
   middleware: "auth",
 });
 
-const supabase = useSupabase();
-const userStore = useUserStore();
+const logger = createClientLogger("coaches/index");
 const activeFamily = useFamilyCtx();
 const { activeFamilyId } = activeFamily;
 const {
@@ -537,17 +537,17 @@ const {
   openCommunication,
   handleInteractionLogged,
 } = useCommunication();
-const { smartDelete } = useCoaches();
+const {
+  coaches: allCoaches,
+  loading,
+  fetchCoachesBySchools,
+  smartDelete,
+} = useCoaches();
+const { schools, fetchSchools } = useSchools();
+const error = ref<string | null>(null);
 
 // Summary statistics
-const { stats: coachStats } = useCoachListStats(
-  computed(() => allCoaches.value)
-);
-
-const allCoaches = ref<Coach[]>([]);
-const schools = ref<School[]>([]);
-const loading = ref(true);
-const error = ref<string | null>(null);
+const { stats: coachStats } = useCoachListStats(allCoaches);
 const sortBy = ref("name");
 
 // Pagination
@@ -606,7 +606,7 @@ const selectedCoachSchool = computed(() => {
 
 const handleCoachInteractionLogged = async (interactionData: any) => {
   try {
-    await handleInteractionLogged(interactionData, fetchData);
+    await handleInteractionLogged(interactionData);
   } catch (err) {
     error.value =
       err instanceof Error ? err.message : "Failed to log interaction";
@@ -657,74 +657,34 @@ const deleteCoach = async () => {
   isDeleting.value = true;
   try {
     await smartDelete(selectedDeleteCoach.value.id);
-    // Remove coach from local list
-    allCoaches.value = allCoaches.value.filter(
-      (c) => c.id !== selectedDeleteCoach.value?.id,
-    );
     closeDeleteModal();
   } catch (err: unknown) {
     const message =
       err instanceof Error ? err.message : "Failed to delete coach";
     error.value = message;
-    console.error("Failed to delete coach:", err);
+    logger.error("Failed to delete coach", err);
   } finally {
     isDeleting.value = false;
   }
 };
 
-const fetchData = async () => {
-  if (!userStore.user || !activeFamilyId.value) return;
-
-  loading.value = true;
-  error.value = null;
-
-  try {
-    // Fetch all schools for this family
-    const { data: schoolsData, error: schoolsError } = await supabase
-      .from("schools")
-      .select("*")
-      .eq("family_unit_id", activeFamilyId.value);
-
-    if (schoolsError) throw schoolsError;
-
-    schools.value = schoolsData || [];
-
-    // Fetch coaches for all family's schools
-    if (schools.value.length > 0) {
-      const schoolIds = schools.value.map((s) => s.id);
-      const { data: coachesData, error: coachesError } = await supabase
-        .from("coaches")
-        .select("*")
-        .in("school_id", schoolIds)
-        .order("last_name", { ascending: true });
-
-      if (coachesError) throw coachesError;
-      allCoaches.value = coachesData || [];
-    } else {
-      allCoaches.value = [];
-    }
-  } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Failed to load coaches";
-    error.value = message;
-    console.error("Error loading coaches:", err);
-  } finally {
-    loading.value = false;
+const refreshData = async () => {
+  await fetchSchools();
+  if (schools.value.length > 0) {
+    await fetchCoachesBySchools(schools.value.map((s) => s.id));
   }
 };
+
+onMounted(refreshData);
 
 // Re-fetch coaches when active athlete changes (for parents switching between children)
 watch(
   () => activeFamilyId.value,
   async (newFamilyId) => {
     if (newFamilyId) {
-      console.debug(
-        `[Coaches] Family changed: familyId=${newFamilyId}, re-fetching coaches`,
-      );
-      await fetchData();
+      await refreshData();
     }
   },
-  { immediate: true },
 );
 
 </script>
