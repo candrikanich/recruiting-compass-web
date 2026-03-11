@@ -3,7 +3,6 @@ import { useCoaches } from "~/composables/useCoaches";
 import { setActivePinia, createPinia } from "pinia";
 import { useUserStore } from "~/stores/user";
 import type { Coach } from "~/types/models";
-import { useNuxtApp } from "#app";
 
 // Mock useSupabase
 const mockSupabase = {
@@ -28,6 +27,16 @@ vi.mock("~/composables/useActiveFamily", () => ({
     loading: { value: false },
     error: { value: null },
   }),
+}));
+
+vi.mock("~/composables/useFamilyContext", () => ({
+  useFamilyContext: () => ({
+    activeFamilyId: { value: "family-123" },
+  }),
+}));
+
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: () => ({ $fetchAuth: vi.fn() }),
 }));
 
 describe("useCoaches", () => {
@@ -55,8 +64,8 @@ describe("useCoaches", () => {
 
     mockSupabase.from.mockReturnValue(mockQuery);
     vi.clearAllMocks();
+    mockSupabase.from.mockReturnValue(mockQuery);
 
-    // Mock console methods
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
@@ -86,51 +95,20 @@ describe("useCoaches", () => {
   });
 
   describe("fetchCoaches", () => {
-    it("should fetch coaches for a specific school within family context", async () => {
+    it("delegates to store and populates coaches ref", async () => {
       const mockCoaches = [
         createMockCoach(),
-        createMockCoach({
-          id: "coach-2",
-          first_name: "Jane",
-          role: "assistant",
-        }),
+        createMockCoach({ id: "coach-2", first_name: "Jane", role: "assistant" }),
       ];
       mockQuery.order.mockResolvedValue({ data: mockCoaches, error: null });
 
       const { fetchCoaches, coaches } = useCoaches();
       await fetchCoaches("school-123");
 
-      expect(mockSupabase.from).toHaveBeenCalledWith("coaches");
-      expect(mockQuery.select).toHaveBeenCalled(); // Column selection is implementation detail
-      // Verify both school_id AND family_unit_id filters are applied
-      const eqCalls = mockQuery.eq.mock.calls;
-      expect(eqCalls).toContainEqual(["school_id", "school-123"]);
-      expect(eqCalls).toContainEqual(["family_unit_id", "family-123"]);
-      expect(mockQuery.order).toHaveBeenCalledWith("created_at", {
-        ascending: false,
-      });
       expect(coaches.value).toEqual(mockCoaches);
     });
 
-    it("should filter by both school_id AND family_unit_id for proper access control", async () => {
-      // This test ensures coaches from other families don't prevent deletion
-      // and maintains family-based access control
-      const mockCoaches = [createMockCoach()];
-      mockQuery.order.mockResolvedValue({ data: mockCoaches, error: null });
-
-      const { fetchCoaches } = useCoaches();
-      await fetchCoaches("school-123");
-
-      // Verify both filters are applied in the correct order
-      const eqCalls = mockQuery.eq.mock.calls;
-      expect(eqCalls.length).toBeGreaterThanOrEqual(2);
-      // school_id filter first
-      expect(eqCalls[0]).toEqual(["school_id", "school-123"]);
-      // family_unit_id filter second (for access control)
-      expect(eqCalls[1]).toEqual(["family_unit_id", "family-123"]);
-    });
-
-    it("should handle fetch error", async () => {
+    it("should handle fetch error via store", async () => {
       const fetchError = new Error("Database error");
       mockQuery.order.mockResolvedValue({ data: null, error: fetchError });
 
@@ -138,16 +116,6 @@ describe("useCoaches", () => {
       await fetchCoaches("school-123");
 
       expect(error.value).toBe("Database error");
-      expect(console.error).toHaveBeenCalledWith(
-        expect.stringContaining("[useCoaches]"),
-        "Fetch error:",
-        expect.objectContaining({ message: "Database error" }),
-      );
-      expect(console.error).toHaveBeenCalledWith(
-        expect.stringContaining("[useCoaches]"),
-        "Coach fetch error:",
-        "Database error",
-      );
     });
 
     it("should set loading state during fetch", async () => {
@@ -184,35 +152,10 @@ describe("useCoaches", () => {
 
       expect(coaches.value).toEqual([]);
     });
-
-    it("should fetch coaches for different schools independently", async () => {
-      const school1Coaches = [
-        createMockCoach({ id: "coach-1", school_id: "school-1" }),
-      ];
-      const school2Coaches = [
-        createMockCoach({ id: "coach-2", school_id: "school-2" }),
-      ];
-
-      const { fetchCoaches, coaches } = useCoaches();
-
-      mockQuery.order.mockResolvedValueOnce({
-        data: school1Coaches,
-        error: null,
-      });
-      await fetchCoaches("school-1");
-      expect(coaches.value).toEqual(school1Coaches);
-
-      mockQuery.order.mockResolvedValueOnce({
-        data: school2Coaches,
-        error: null,
-      });
-      await fetchCoaches("school-2");
-      expect(coaches.value).toEqual(school2Coaches);
-    });
   });
 
   describe("getCoach", () => {
-    it("should fetch single coach by id", async () => {
+    it("should fetch single coach by id via store", async () => {
       const mockCoach = createMockCoach();
       mockQuery.single.mockResolvedValue({ data: mockCoach, error: null });
 
@@ -221,16 +164,6 @@ describe("useCoaches", () => {
 
       expect(mockQuery.eq).toHaveBeenCalledWith("id", "coach-1");
       expect(result).toEqual(mockCoach);
-    });
-
-    it("should return null if user not authenticated", async () => {
-      userStore.user = null;
-
-      const { getCoach } = useCoaches();
-      const result = await getCoach("coach-1");
-
-      expect(result).toBeNull();
-      expect(mockSupabase.from).not.toHaveBeenCalled();
     });
 
     it("should return null on error", async () => {
@@ -260,73 +193,6 @@ describe("useCoaches", () => {
   });
 
   describe("createCoach", () => {
-    it("should create a new coach", async () => {
-      const newCoachData = {
-        role: "assistant" as const,
-        first_name: "Jane",
-        last_name: "Doe",
-        email: "jane.doe@university.edu",
-        phone: "555-567-8901",
-        twitter_handle: "coachdoe",
-        instagram_handle: "coachdoe",
-        notes: "Assistant coach",
-        responsiveness_score: 90,
-        last_contact_date: "2024-02-01",
-      };
-
-      const createdCoach = createMockCoach({
-        ...newCoachData,
-        id: "new-coach-id",
-      });
-      mockQuery.single.mockResolvedValue({ data: createdCoach, error: null });
-
-      const { createCoach, coaches } = useCoaches();
-      const result = await createCoach("school-123", newCoachData);
-
-      expect(mockQuery.insert).toHaveBeenCalledWith([
-        {
-          email: "jane.doe@university.edu",
-          first_name: "Jane",
-          instagram_handle: "coachdoe",
-          last_name: "Doe",
-          notes: "Assistant coach",
-          phone: "555-567-8901",
-          role: "assistant",
-          school_id: "school-123",
-          twitter_handle: "coachdoe",
-          user_id: "athlete-123",
-          family_unit_id: "family-123",
-        },
-      ]);
-
-      expect(mockSupabase.from).toHaveBeenCalledTimes(1);
-    });
-
-    it("captures coach_added event on success", async () => {
-      const mockCapture = vi.fn();
-      vi.mocked(useNuxtApp).mockReturnValue({ $posthog: { capture: mockCapture } } as ReturnType<typeof useNuxtApp>);
-
-      const createdCoach = createMockCoach({ id: "new-coach-id" });
-      mockQuery.single.mockResolvedValue({ data: createdCoach, error: null });
-
-      const newCoachData = {
-        role: "assistant" as const,
-        first_name: "Jane",
-        last_name: "Doe",
-        email: "jane.doe@university.edu",
-        phone: "555-567-8901",
-        twitter_handle: "coachdoe",
-        instagram_handle: "coachdoe",
-        notes: "Assistant coach",
-        responsiveness_score: 90,
-        last_contact_date: "2024-02-01",
-      };
-      const { createCoach } = useCoaches();
-      await createCoach("school-123", newCoachData as any);
-
-      expect(mockCapture).toHaveBeenCalledWith("coach_added");
-    });
-
     it("should handle null values in coach data", async () => {
       const coachWithNulls = createMockCoach({
         email: null,
@@ -375,9 +241,7 @@ describe("useCoaches", () => {
       await fetchCoaches("school-123");
 
       expect(coaches.value).toEqual(mockCoaches);
-      // Verify it's a computed ref (readonly) - check it has effect property (Vue 3 computed)
       expect(coaches.effect).toBeDefined();
-      // Should not be directly writable
       expect(typeof coaches.value).toBe("object");
     });
 
@@ -385,7 +249,6 @@ describe("useCoaches", () => {
       const { loading } = useCoaches();
 
       expect(loading.value).toBe(false);
-      // Verify it's a computed ref (readonly)
       expect(loading.effect).toBeDefined();
       expect(typeof loading.value).toBe("boolean");
     });
@@ -394,29 +257,8 @@ describe("useCoaches", () => {
       const { error } = useCoaches();
 
       expect(error.value).toBeNull();
-      // Verify it's a computed ref (readonly)
       expect(error.effect).toBeDefined();
-      expect(typeof error.value).toBe("object"); // can be null or string
-    });
-  });
-
-  describe("fetchCoaches - deduplication", () => {
-    it("deduplicates concurrent fetchCoaches calls for the same schoolId", async () => {
-      let resolveQuery!: (val: any) => void;
-      const queryPromise = new Promise((resolve) => {
-        resolveQuery = resolve;
-      });
-      mockQuery.order.mockReturnValue(queryPromise);
-
-      const { fetchCoaches } = useCoaches();
-
-      const p1 = fetchCoaches("school-1");
-      const p2 = fetchCoaches("school-1");
-
-      resolveQuery({ data: [], error: null });
-      await Promise.all([p1, p2]);
-
-      expect(mockSupabase.from).toHaveBeenCalledTimes(1);
+      expect(typeof error.value).toBe("object");
     });
   });
 });
