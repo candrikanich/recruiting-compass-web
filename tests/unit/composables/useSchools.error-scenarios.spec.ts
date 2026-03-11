@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { setActivePinia, createPinia } from "pinia";
 import { useSchools } from "~/composables/useSchools";
 import * as authFetchModule from "~/composables/useAuthFetch";
 
@@ -62,6 +63,7 @@ vi.mock("~/utils/validation/schemas", () => ({
 describe("useSchools error scenarios", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    setActivePinia(createPinia());
 
     // Reset chain mocks
     mockFrom.mockReturnValue({

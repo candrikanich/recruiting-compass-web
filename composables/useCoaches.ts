@@ -1,20 +1,12 @@
-import { ref, computed, shallowRef, inject, watch, type ComputedRef } from "vue";
-import { useSupabase } from "./useSupabase";
-import { useUserStore } from "~/stores/user";
+import { computed, shallowReadonly, inject, watch, type ComputedRef } from "vue";
 import { useActiveFamily } from "./useActiveFamily";
 import { useFamilyContext } from "./useFamilyContext";
 import type { Coach } from "~/types/models";
-import type { Database } from "~/types/database";
-import { coachSchema } from "~/utils/validation/schemas";
-import { sanitizeHtml } from "~/utils/validation/sanitize";
 import { createClientLogger } from "~/utils/logger";
 import { useAuthFetch } from "~/composables/useAuthFetch";
+import { useCoachStore } from "~/stores/coaches";
 
 const logger = createClientLogger("useCoaches");
-
-type CoachesInsert = Database["public"]["Tables"]["coaches"]["Insert"];
-type CoachesUpdate = Database["public"]["Tables"]["coaches"]["Update"];
-type CoachesRow = Database["public"]["Tables"]["coaches"]["Row"];
 
 /**
  * useCoaches composable
@@ -63,8 +55,7 @@ export const useCoaches = (): {
   deleteCoach: (id: string) => Promise<void>;
   smartDelete: (id: string) => Promise<{ cascadeUsed: boolean }>;
 } => {
-  const supabase = useSupabase();
-  const userStore = useUserStore();
+  const coachStore = useCoachStore();
   const { $fetchAuth } = useAuthFetch();
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
@@ -78,414 +69,46 @@ export const useCoaches = (): {
 
   const activeFamily = injectedFamily ?? useFamilyContext();
 
-  // Keyed by schoolId to allow concurrent fetches for different schools.
-  // Declared inside the factory so each instance has its own independent map.
-  const fetchInFlight = new Map<string, Promise<void>>();
-
-  const coaches = shallowRef<Coach[]>([]);
-  const loadingCount = ref(0);
-  const loading = computed(() => loadingCount.value > 0);
-  const error = ref<string | null>(null);
+  const coaches = shallowReadonly(computed(() => coachStore.coaches));
+  const loading = computed(() => coachStore.loading);
+  const error = computed(() => coachStore.error);
 
   // Auto-invalidate cache when parent switches athlete
   watch(
     () => activeFamily.activeAthleteId?.value,
     async (newId, oldId) => {
       if (newId && newId !== oldId) {
-        coaches.value = [];
-        await fetchAllCoaches();
+        coachStore.$patch({ coaches: [], isFetched: false, isFetchedBySchools: {} });
+        await coachStore.fetchAllCoaches();
       }
     },
   );
 
-  const fetchCoaches = (schoolId: string): Promise<void> => {
-    if (fetchInFlight.has(schoolId)) return fetchInFlight.get(schoolId)!;
+  const fetchCoaches = (schoolId: string): Promise<void> =>
+    coachStore.fetchCoaches(schoolId);
 
-    const promise = (async () => {
-    if (!activeFamily.activeFamilyId.value) {
-      error.value = "No family context";
-      return;
-    }
-
-    loadingCount.value++;
-    error.value = null;
-
-    try {
-      // 🚀 Quick Win: Select only needed columns + use new composite index
-      const { data, error: fetchError } = await supabase
-        .from("coaches")
-        .select(
-          `
-          id,
-          school_id,
-          user_id,
-          role,
-          first_name,
-          last_name,
-          email,
-          phone,
-          twitter_handle,
-          instagram_handle,
-          notes,
-          responsiveness_score,
-          last_contact_date,
-          family_unit_id,
-          created_at,
-          updated_at
-        `,
-        )
-        .eq("school_id", schoolId)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
-        .order("created_at", { ascending: false });
-
-      if (fetchError) {
-        logger.error("Fetch error:", fetchError);
-        throw fetchError;
-      }
-
-      coaches.value = data || [];
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch coaches";
-      error.value = message;
-      logger.error("Coach fetch error:", message);
-    } finally {
-      loadingCount.value--;
-    }
-    })().finally(() => {
-      fetchInFlight.delete(schoolId);
-    });
-
-    fetchInFlight.set(schoolId, promise);
-    return promise;
-  };
-
-  const fetchAllCoaches = async (filters?: {
+  const fetchAllCoaches = (filters?: {
     search?: string;
     role?: string;
     schoolId?: string;
-  }) => {
-    if (!activeFamily.activeFamilyId.value) {
-      error.value = "No family context";
-      return;
-    }
+  }): Promise<void> => coachStore.fetchAllCoaches(filters);
 
-    loadingCount.value++;
-    error.value = null;
+  const fetchCoachesBySchools = (schoolIds: string[]): Promise<void> =>
+    coachStore.fetchCoachesBySchools(schoolIds);
 
-    try {
-      // 🚀 Quick Win: Select only needed columns for list/search views
-      let query = supabase
-        .from("coaches")
-        .select(
-          `
-          id,
-          school_id,
-          role,
-          first_name,
-          last_name,
-          email,
-          phone,
-          twitter_handle,
-          instagram_handle,
-          responsiveness_score,
-          last_contact_date,
-          family_unit_id,
-          created_at
-        `,
-        )
-        .eq("family_unit_id", activeFamily.activeFamilyId.value);
+  const getCoach = (id: string): Promise<Coach | null> =>
+    coachStore.getCoach(id);
 
-      if (filters?.schoolId) {
-        query = query.eq("school_id", filters.schoolId);
-      }
-
-      if (filters?.role) {
-        query = query.eq("role", filters.role);
-      }
-
-      // Use server-side full-text search via textSearch (utilizes GIN index from migration 017)
-      if (filters?.search) {
-        query = query.textSearch("search_vec", filters.search, {
-          type: "websearch",
-          config: "english",
-        });
-      } else {
-        query = query.order("last_name", { ascending: true });
-      }
-
-      const { data, error: fetchError } = await query;
-
-      if (fetchError) {
-        logger.error("Fetch error:", fetchError);
-        throw fetchError;
-      }
-
-      coaches.value = data || [];
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch coaches";
-      error.value = message;
-      logger.error("Coach fetch error:", message);
-    } finally {
-      loadingCount.value--;
-    }
-  };
-
-  const fetchCoachesBySchools = async (schoolIds: string[]) => {
-    if (schoolIds.length === 0 || !activeFamily.activeFamilyId.value) {
-      coaches.value = [];
-      return;
-    }
-
-    loadingCount.value++;
-    error.value = null;
-
-    try {
-      // 🚀 Quick Win: Select only needed columns for batch fetch
-      const { data, error: fetchError } = await supabase
-        .from("coaches")
-        .select(
-          `
-          id,
-          school_id,
-          role,
-          first_name,
-          last_name,
-          email,
-          phone,
-          responsiveness_score,
-          family_unit_id
-        `,
-        )
-        .in("school_id", schoolIds)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
-        .order("school_id", { ascending: true })
-        .order("last_name", { ascending: true });
-
-      if (fetchError) throw fetchError;
-
-      coaches.value = (data || []) as Coach[];
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch coaches";
-      error.value = message;
-    } finally {
-      loadingCount.value--;
-    }
-  };
-
-  const getCoach = async (id: string): Promise<Coach | null> => {
-    if (!userStore.user) return null;
-
-    loadingCount.value++;
-    error.value = null;
-
-    try {
-      // 🚀 Quick Win: Fetch all columns for detail view
-      const { data, error: fetchError } = await supabase
-        .from("coaches")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (fetchError) throw fetchError;
-      return data;
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch coach";
-      error.value = message;
-      return null;
-    } finally {
-      loadingCount.value--;
-    }
-  };
-
-  const createCoach = async (
+  const createCoach = (
     schoolId: string,
     coachData: Omit<Coach, "id" | "created_at" | "updated_at">,
-  ) => {
-    if (!userStore.user || !activeFamily.activeFamilyId.value) {
-      throw new Error("User not authenticated or family not loaded");
-    }
+  ): Promise<Coach> => coachStore.createCoach(schoolId, coachData);
 
-    loadingCount.value++;
-    error.value = null;
+  const updateCoach = (id: string, updates: Partial<Coach>): Promise<Coach> =>
+    coachStore.updateCoach(id, updates);
 
-    try {
-      // Validate coach data with Zod schema
-      const validated = await coachSchema.parseAsync(coachData);
-
-      // Sanitize notes field to prevent XSS
-      if (validated.notes) {
-        validated.notes = sanitizeHtml(validated.notes);
-      }
-
-      // Convert empty strings to null for optional fields
-      const ownerId = activeFamily.getDataOwnerUserId();
-      if (!ownerId) {
-        throw new Error("No data owner ID available");
-      }
-
-      const dataToInsert = {
-        ...validated,
-        school_id: schoolId,
-        user_id: ownerId,
-        family_unit_id: activeFamily.activeFamilyId.value,
-        email: validated.email || null,
-        phone: validated.phone || null,
-        twitter_handle: validated.twitter_handle || null,
-        instagram_handle: validated.instagram_handle || null,
-        notes: validated.notes || null,
-      } as CoachesInsert;
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const insertResponse = await (supabase as any)
-        .from("coaches")
-        .insert([dataToInsert])
-        .select()
-        .single();
-
-      const { data, error: insertError } = insertResponse as {
-        data: CoachesRow;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error: any;
-      };
-
-      if (insertError) {
-        logger.error("Supabase insert error details:", {
-          message: insertError.message,
-          details: insertError.details,
-          hint: insertError.hint,
-          code: insertError.code,
-          dataAttempted: dataToInsert,
-        });
-        throw insertError;
-      }
-
-      coaches.value = [...coaches.value, data as Coach];
-      const { $posthog } = useNuxtApp();
-      $posthog?.capture("coach_added");
-      return data as Coach;
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to create coach";
-      error.value = message;
-      throw err;
-    } finally {
-      loadingCount.value--;
-    }
-  };
-
-  const updateCoach = async (id: string, updates: Partial<Coach>) => {
-    if (!userStore.user || !activeFamily.activeFamilyId.value) {
-      throw new Error("User not authenticated or family not loaded");
-    }
-
-    loadingCount.value++;
-    error.value = null;
-
-    try {
-      // Sanitize notes field to prevent XSS
-      const sanitizedUpdates = { ...updates };
-
-      if (sanitizedUpdates.notes) {
-        sanitizedUpdates.notes = sanitizeHtml(sanitizedUpdates.notes);
-      }
-
-      const updateData: CoachesUpdate = {
-        updated_by: userStore.user.id,
-        updated_at: new Date().toISOString(),
-      };
-
-      // Add only the fields that are being updated
-      if (sanitizedUpdates.first_name !== undefined) {
-        updateData.first_name = sanitizedUpdates.first_name;
-      }
-      if (sanitizedUpdates.last_name !== undefined) {
-        updateData.last_name = sanitizedUpdates.last_name;
-      }
-      if (sanitizedUpdates.email !== undefined) {
-        updateData.email = sanitizedUpdates.email;
-      }
-      if (sanitizedUpdates.phone !== undefined) {
-        updateData.phone = sanitizedUpdates.phone;
-      }
-      if (sanitizedUpdates.role !== undefined) {
-        updateData.role = sanitizedUpdates.role;
-      }
-      if (sanitizedUpdates.notes !== undefined) {
-        updateData.notes = sanitizedUpdates.notes;
-      }
-      if (sanitizedUpdates.twitter_handle !== undefined) {
-        updateData.twitter_handle = sanitizedUpdates.twitter_handle;
-      }
-      if (sanitizedUpdates.instagram_handle !== undefined) {
-        updateData.instagram_handle = sanitizedUpdates.instagram_handle;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updateResponse = await (supabase as any)
-        .from("coaches")
-        .update(updateData)
-        .eq("id", id)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
-        .select()
-        .single();
-
-      const { data, error: updateError } = updateResponse as {
-        data: CoachesRow;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error: any;
-      };
-
-      if (updateError) throw updateError;
-
-      // Update local state
-      const index = coaches.value.findIndex((c) => c.id === id);
-      if (index !== -1) {
-        coaches.value = coaches.value.map((c, i) => i === index ? data as Coach : c);
-      }
-
-      return data as Coach;
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update coach";
-      error.value = message;
-      throw err;
-    } finally {
-      loadingCount.value--;
-    }
-  };
-
-  const deleteCoach = async (id: string) => {
-    if (!userStore.user || !activeFamily.activeFamilyId.value) {
-      throw new Error("User not authenticated or family not loaded");
-    }
-
-    loadingCount.value++;
-    error.value = null;
-
-    try {
-      const { error: deleteError } = await supabase
-        .from("coaches")
-        .delete()
-        .eq("id", id)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value);
-
-      if (deleteError) throw deleteError;
-
-      // Update local state
-      coaches.value = coaches.value.filter((c) => c.id !== id);
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to delete coach";
-      error.value = message;
-      throw err;
-    } finally {
-      loadingCount.value--;
-    }
-  };
+  const deleteCoach = (id: string): Promise<void> =>
+    coachStore.deleteCoach(id);
 
   const smartDelete = async (id: string): Promise<{ cascadeUsed: boolean }> => {
     try {
@@ -507,7 +130,7 @@ export const useCoaches = (): {
           { method: "POST", body: { confirmDelete: true } },
         );
         if (cascadeResponse.success) {
-          coaches.value = coaches.value.filter((c) => c.id !== id);
+          coachStore.coaches = coachStore.coaches.filter((c) => c.id !== id);
           return { cascadeUsed: true };
         }
         throw new Error(
@@ -520,9 +143,9 @@ export const useCoaches = (): {
   };
 
   return {
-    coaches: computed(() => coaches.value),
+    coaches,
     loading,
-    error: computed(() => error.value),
+    error,
     fetchCoaches,
     fetchAllCoaches,
     fetchCoachesBySchools,

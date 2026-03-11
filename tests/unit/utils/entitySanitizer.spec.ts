@@ -24,6 +24,11 @@ describe("sanitizeCoachFields", () => {
     const input = { notes: "test" };
     expect(sanitizeCoachFields(input)).not.toBe(input);
   });
+
+  it("passes null notes through unchanged", () => {
+    const r = sanitizeCoachFields({ notes: null });
+    expect(r.notes).toBeNull();
+  });
 });
 
 describe("sanitizeSchoolFields", () => {
@@ -45,5 +50,42 @@ describe("sanitizeSchoolFields", () => {
   it("returns a new object (immutable)", () => {
     const input = { notes: "test" };
     expect(sanitizeSchoolFields(input)).not.toBe(input);
+  });
+});
+
+describe("sanitizeSchoolFields — additional rich-text fields", () => {
+  it("strips XSS from coaching_philosophy", () => {
+    const r = sanitizeSchoolFields({ coaching_philosophy: "<b>philosophy</b>" });
+    expect(r.coaching_philosophy).toBe("philosophy");
+  });
+
+  it("strips XSS from coaching_style", () => {
+    const r = sanitizeSchoolFields({ coaching_style: "<b>bold</b>" });
+    expect(r.coaching_style).toBe("bold");
+  });
+
+  it("strips XSS from recruiting_approach", () => {
+    const r = sanitizeSchoolFields({ recruiting_approach: "<i>ok</i>" });
+    expect(r.recruiting_approach).toBe("ok");
+  });
+
+  it("strips XSS from communication_style", () => {
+    const r = sanitizeSchoolFields({ communication_style: "<em>em</em>" });
+    expect(r.communication_style).toBe("em");
+  });
+
+  it("strips XSS from success_metrics", () => {
+    const r = sanitizeSchoolFields({ success_metrics: "<mark>mark</mark>" });
+    expect(r.success_metrics).toBe("mark");
+  });
+
+  it("passes null notes through unchanged", () => {
+    const r = sanitizeSchoolFields({ notes: null });
+    expect(r.notes).toBeNull();
+  });
+
+  it("passes empty string notes through without sanitizing", () => {
+    const r = sanitizeSchoolFields({ notes: "" });
+    expect(r.notes).toBe("");
   });
 });
