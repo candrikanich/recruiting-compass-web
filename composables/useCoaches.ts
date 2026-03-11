@@ -78,7 +78,7 @@ export const useCoaches = (): {
     () => activeFamily.activeAthleteId?.value,
     async (newId, oldId) => {
       if (newId && newId !== oldId) {
-        coachStore.coaches = [];
+        coachStore.$patch({ coaches: [], isFetched: false, isFetchedBySchools: {} });
         await coachStore.fetchAllCoaches();
       }
     },
