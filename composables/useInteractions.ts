@@ -1,4 +1,4 @@
-import { ref, computed, shallowRef, inject, watch, type ComputedRef } from "vue";
+import { ref, computed, shallowRef, inject, watch } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
@@ -43,16 +43,6 @@ type _InteractionUpdate = InteractionsTable["Update"];
  * - useInteractionReminders  – follow-up reminder CRUD + computed filters
  * - useInteractionNotes      – note history from audit logs
  */
-type InteractionFilters = {
-  schoolId?: string;
-  coachId?: string;
-  type?: string;
-  direction?: string;
-  sentiment?: string;
-  startDate?: string;
-  endDate?: string;
-  loggedBy?: string;
-};
 
 export const useInteractions = () => {
   const supabase = useSupabase();
