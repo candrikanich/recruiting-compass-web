@@ -120,7 +120,7 @@ export default defineEventHandler(async (event) => {
 
 ## Code Quality
 
-- **TypeScript**: Strict mode, no `any` (except tests), `as const` for enums
+- **TypeScript**: Strict mode, no `any` (except tests), `as const` for enums. When a type fix would cascade to 50+ files, prefer targeted `as SomeType` casts or narrowing at the call site — do not chase the root cause through the entire codebase in a single pass.
 - **Vue**: `<script setup>`, `withDefaults(defineProps<{}>(), {})`, `defineEmits<{}>()`
 - **Styling**: TailwindCSS utilities only, component-scoped `<style scoped>` when needed
 - **Naming**: Composables `useXxx`, Stores `useXxxStore`, Components `PascalCase`, Pages `kebab-case`
@@ -194,6 +194,63 @@ Run full test suite immediately after extracting components. Fix broken element 
 ## iOS / SwiftUI
 
 - Only use APIs and modifiers that actually exist in the target framework version. For SwiftUI, verify any unfamiliar modifier exists before using it. Do not hallucinate APIs like `.accessibilityLiveRegion()`. When unsure, use a Bash command to search Apple documentation or the project's existing usage patterns.
+- **xcconfig files are gitignored — always edit `project.pbxproj`**: Many `.xcconfig` files are gitignored and will never reach CI. Before editing any xcconfig, run `git check-ignore -v <file>`. If gitignored, apply the build setting change to `project.pbxproj` instead. Find the right location with `grep -n "SETTING_NAME" TheRecruitingCompass.xcodeproj/project.pbxproj`.
+- **Always update both Debug and Release configurations**: Build settings in `project.pbxproj` appear in multiple configuration blocks. After any pbxproj change, verify both configs are consistent: `grep -A2 -B2 "YOUR_SETTING" TheRecruitingCompass.xcodeproj/project.pbxproj`. Patching only Debug causes Release (what CI builds) to fail.
+- **Verify Swift feature flag names exactly — never guess**: Wrong flag variant is the #1 cause of multi-round CI fix sessions. Always grep existing project settings first: `grep -r "enable-experimental\|ExperimentalFeature" TheRecruitingCompass.xcodeproj/` before applying any compiler flag fix.
+
+## iOS Simulator Troubleshooting
+
+When the simulator behaves unexpectedly during builds or UI tests, work through this ladder in order:
+
+**Simulator won't boot / shuts down mid-test:**
+```bash
+sudo xcrun simctl shutdown all
+xcrun simctl erase all          # full reset — clears all simulator state
+xcrun simctl boot "iPhone 16"   # boot a known-good device
+```
+
+**SPM resolution failures or DerivedData corruption:**
+```bash
+rm -rf ~/Library/Developer/Xcode/DerivedData
+rm -rf ~/Library/Caches/org.swift.swiftpm
+# Then re-open project and let SPM re-resolve
+```
+
+**`xcodebuild` destination not found:**
+Try destinations in this order until one works:
+```bash
+-destination 'generic/platform=iOS Simulator'
+-destination 'platform=iOS Simulator,name=iPhone 16'
+-destination 'platform=iOS Simulator,name=iPhone 15'
+-destination 'platform=iOS Simulator,OS=latest,name=iPhone 16'
+```
+
+**Password autofill eating characters in UI tests:**
+iOS autofill silently drops characters from `.newPassword` / `.password` fields during `app.typeText()`. Fix:
+```swift
+// In the text field under test — use clipboard paste instead of typeText
+UIPasteboard.general.string = "testPassword123"
+field.tap()
+app.menuItems["Paste"].tap()
+```
+Or set `.textContentType(.none)` on the field in test builds (via `#if DEBUG`).
+
+**UI tests fail locally but pass CI (or vice versa):**
+Check simulator locale and keyboard settings — CI uses a clean simulator with no custom keyboards. Ensure tests don't depend on autocorrect, predictive text, or locale-specific formatting.
+
+## Orient Before Acting
+
+Before starting any feature work — web or iOS — spend 60 seconds orienting:
+
+1. **Confirm the feature exists** — grep both codebases for the feature name:
+   ```bash
+   grep -ril "[feature]" pages/ components/ composables/ server/api/ --include="*.{ts,vue}"
+   grep -ril "[feature]" /Volumes/AlphabetSoup/TheRecruitingCompass/code/recruiting-compass-ios --include="*.swift"
+   ```
+2. **Confirm you have the right one** — if multiple matches, read the most relevant file before proceeding. Do not assume feature identity from the name alone (e.g., "Profile" and "About" are different features).
+3. **Check for a prior spec** — `ls planning/iOS_SPEC_*` before generating a new iOS spec.
+
+This 60-second check prevents the most common wrong-approach failure: starting work on the wrong feature or the already-completed version of a feature.
 
 ## Learnings
 

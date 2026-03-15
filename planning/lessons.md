@@ -67,3 +67,11 @@ Source: https://x.com/bcherny/status/2007179852047335529 (content pasted by user
 - **CLAUDE.md is a living team document**: Every time Claude does something wrong in a PR review, add a correction to CLAUDE.md as part of that PR — use the Claude Code GitHub Action (`/install-github-action`) to tag `@.claude` in review comments and have it update CLAUDE.md automatically.
 - **`.claude/commands/` for team-shared slash commands**: Project-specific slash commands live in `.claude/commands/` (not `~/.claude/skills/`), are checked into git, and can be invoked by Claude itself during a session — not just the human — making them composable building blocks for inner-loop automation.
 - **`--teleport` for terminal-to-web session hand-off**: Background a local Claude Code terminal session with `&` and resume it at `claude.ai/code` using `--teleport` — useful for monitoring long-running tasks on the web UI or continuing work across environments without losing session state.
+
+## Create Agent Skills for Code Review — 2026-03-15
+Source: pasted content (Jen-Hsuan Hsieh / Medium, Feb 14 2026)
+
+- **Progressive disclosure is why skill bodies stay lean**: Skill metadata (name/description) loads every session; the SKILL.md body only loads when the skill is triggered — keep SKILL.md bodies focused because they consume main-context tokens on every invocation, unlike sub-agents which get isolated context.
+- **Skills vs sub-agents — context isolation**: Skills share the main agent's context (no isolation, cheaper for small knowledge injection); sub-agents get their own isolated context + separate tool permissions (better for heavy, contained tasks that should not pollute the main window).
+- **Paired skill + sub-agent pattern for reviews**: For tasks that need both domain standards and isolated execution, trigger both simultaneously in one message: `Skill("standards")` + `Task(subagent_type="specialist-agent")` — using only one of the two is a known failure mode.
+- **Encode mandatory paired-tool rules in memory**: Add explicit "must call X and Y simultaneously" rules to the session memory/CLAUDE.local.md to prevent Claude from accidentally doing only one — the explicit rule overrides default single-tool behavior on every future invocation.
