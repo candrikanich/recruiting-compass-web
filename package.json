@@ -55,6 +55,7 @@
     "chartjs-adapter-date-fns": "^3.0.0",
     "chartjs-plugin-annotation": "^3.1.0",
     "commander": "^13.1.0",
+    "date-fns": "^4.1.0",
     "fuse.js": "^7.1.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.0",
