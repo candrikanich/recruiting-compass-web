@@ -29,7 +29,7 @@
     "@nuxt/ui": "^3.3.7",
     "@nuxtjs/supabase": "^2.0.4",
     "@pinia/nuxt": "^0.11.3",
-    "@sentry/nuxt": "^10.38.0",
+    "@sentry/nuxt": "^10.43.0",
     "@sindresorhus/is": "^7.1.1",
     "@supabase/supabase-js": "^2.98.0",
     "@types/leaflet": "^1.9.21",
