@@ -367,7 +367,7 @@ export const generateSchoolComparisonPDF = (
       <tbody>
         ${schools
           .map(
-            (s, idx) => `
+            (s, _idx) => `
           <tr>
             <td><strong>${s.name}</strong><br><small style="color:#666">${s.location || ""}</small></td>
             <td>${s.division || "-"}</td>
