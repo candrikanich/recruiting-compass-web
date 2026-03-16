@@ -47,7 +47,6 @@
       <!-- Analytics Cards -->
       <h2 class="sr-only">Statistics</h2>
       <AnalyticsCards
-        v-if="allInteractions.length > 0"
         :total-count="allInteractions.length"
         :outbound-count="outboundCount"
         :inbound-count="inboundCount"
@@ -55,29 +54,27 @@
       />
 
       <!-- Filter Bar -->
-      <template v-if="allInteractions.length > 0">
-        <h2 class="sr-only">Filter Options</h2>
-        <div
-          class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 mb-6"
-        >
-          <InteractionFilters
-            :filter-values="filterValues"
-            :is-parent="userStore.isParent"
-            :linked-athletes="linkedAthletes"
-            :current-user-id="userStore.user?.id"
-            @update:filter="handleFilterChange"
-          />
+      <h2 class="sr-only">Filter Options</h2>
+      <div
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 mb-6"
+      >
+        <InteractionFilters
+          :filter-values="filterValues"
+          :is-parent="userStore.isParent"
+          :linked-athletes="linkedAthletes"
+          :current-user-id="userStore.user?.id"
+          @update:filter="handleFilterChange"
+        />
 
-          <!-- Active Filters -->
-          <ActiveFilterChips
-            :filter-values="filterValues"
-            :linked-athletes="linkedAthletes"
-            :current-user-id="userStore.user?.id"
-            @remove:filter="({ field }) => handleFilterUpdate(field, null)"
-            @clear:all="clearFilters"
-          />
-        </div>
-      </template>
+        <!-- Active Filters -->
+        <ActiveFilterChips
+          :filter-values="filterValues"
+          :linked-athletes="linkedAthletes"
+          :current-user-id="userStore.user?.id"
+          @remove:filter="({ field }) => handleFilterUpdate(field, null)"
+          @clear:all="clearFilters"
+        />
+      </div>
 
       <!-- Filter Results Announcement -->
       <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
@@ -87,92 +84,65 @@
         found{{ hasActiveFilters ? " with active filters" : "" }}
       </div>
 
-      <!-- Loading State -->
-      <div
-        v-if="loading && allInteractions.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
-        role="status"
-        aria-live="polite"
+      <!-- Page State (Loading/Error/Empty) -->
+      <template
+        v-if="filteredInteractions.length === 0 && allInteractions.length > 0"
       >
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" aria-hidden="true"></div>
-        <p class="text-slate-600">Loading interactions...</p>
-      </div>
-
-      <!-- Error State -->
-      <div
-        v-else-if="error"
-        class="bg-red-50 border-l-4 border-red-600 p-4 mb-6"
-        role="alert"
-      >
-        <p class="text-red-700">{{ error }}</p>
-      </div>
-
-      <!-- Empty State: No coaches yet -->
-      <div
-        v-else-if="!loading && allInteractions.length === 0 && coaches.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
-        role="status"
-      >
-        <UserGroupIcon class="w-12 h-12 text-slate-400 mx-auto mb-4" aria-hidden="true" />
-        <h2 class="text-slate-900 font-semibold mb-2">Add a coach first</h2>
-        <p class="text-slate-600 mb-6">Interactions are linked to coaches. Visit a school page to add coaches to your list.</p>
-        <NuxtLink
-          to="/schools"
-          class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+        <!-- No Results State (filtered but no matches) -->
+        <div
+          role="status"
+          class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         >
-          Go to Schools
-        </NuxtLink>
-      </div>
+          <MagnifyingGlassIcon class="w-12 h-12 text-slate-300 mx-auto mb-4" />
+          <p class="text-slate-900 font-medium mb-2">
+            No interactions match your filters
+          </p>
+          <p class="text-sm text-slate-500">
+            Try adjusting your search or filters
+          </p>
+        </div>
+      </template>
 
-      <!-- Empty State: Has coaches but no interactions -->
-      <div
-        v-else-if="!loading && allInteractions.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
-        role="status"
-      >
-        <ChatBubbleLeftRightIcon class="w-12 h-12 text-slate-400 mx-auto mb-4" aria-hidden="true" />
-        <h2 class="text-slate-900 font-semibold mb-2">No interactions yet</h2>
-        <p class="text-slate-600 mb-6">Start logging your recruiting conversations with coaches.</p>
-        <NuxtLink
-          to="/interactions/add"
-          class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
-        >
-          Log Your First Interaction
-        </NuxtLink>
-      </div>
-
-      <!-- No Results State (has interactions but filters returned nothing) -->
-      <div
-        v-else-if="filteredInteractions.length === 0 && allInteractions.length > 0"
-        role="status"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
-      >
-        <MagnifyingGlassIcon class="w-12 h-12 text-slate-300 mx-auto mb-4" />
-        <p class="text-slate-900 font-medium mb-2">No interactions match your filters</p>
-        <p class="text-sm text-slate-500">Try adjusting your search or filters</p>
-      </div>
-
-      <!-- Interactions Grid -->
-      <div
+      <!-- Main Content with PageState for Loading/Error/Empty -->
+      <PageState
         v-else
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        :loading="loading && allInteractions.length === 0"
+        :error="error"
+        :isEmpty="allInteractions.length === 0"
+        loading-message="Loading interactions..."
+        empty-title="No interactions yet"
+        empty-message=""
+        :empty-icon="ChatBubbleLeftRightIcon"
       >
-        <InteractionCard
-          v-for="interaction in filteredInteractions"
-          :key="interaction.id"
-          v-memo="[interaction.updated_at ?? interaction.occurred_at]"
-          :interaction="interaction"
-          :school-name="getSchoolName(interaction.school_id)"
-          :coach-name="
-            interaction.coach_id
-              ? getCoachName(interaction.coach_id)
-              : undefined
-          "
-          :current-user-id="userStore.user?.id || ''"
-          :is-parent="userStore.isParent"
-          @view="viewInteraction"
-        />
-      </div>
+        <!-- Interactions Timeline -->
+        <h2 class="sr-only">Interaction Timeline</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <InteractionCard
+            v-for="interaction in filteredInteractions"
+            :key="interaction.id"
+            v-memo="[interaction.updated_at ?? interaction.occurred_at]"
+            :interaction="interaction"
+            :school-name="getSchoolName(interaction.school_id)"
+            :coach-name="
+              interaction.coach_id
+                ? getCoachName(interaction.coach_id)
+                : undefined
+            "
+            :current-user-id="userStore.user?.id || ''"
+            :is-parent="userStore.isParent"
+            @view="viewInteraction"
+          />
+        </div>
+
+        <template #empty-action>
+          <NuxtLink
+            to="/interactions/add"
+            class="text-blue-600 hover:text-blue-700 font-medium underline"
+          >
+            Log your first interaction
+          </NuxtLink>
+        </template>
+      </PageState>
     </main>
   </div>
 </template>
@@ -182,6 +152,7 @@ import { ref, onMounted, watch } from "vue";
 import { useInteractions } from "~/composables/useInteractions";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
+import { useEntityNames } from "~/composables/useEntityNames";
 import { useLinkedAthletes } from "~/composables/useLinkedAthletes";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useInteractionFilters } from "~/composables/useInteractionFilters";
@@ -191,13 +162,13 @@ import AnalyticsCards from "~/components/Interaction/AnalyticsCards.vue";
 import InteractionFilters from "~/components/Interaction/InteractionFilters.vue";
 import ActiveFilterChips from "~/components/Interaction/ActiveFilterChips.vue";
 import InteractionCard from "~/components/Interaction/InteractionCard.vue";
+import PageState from "~/components/shared/PageState.vue";
 import type { Interaction } from "~/types/models";
 import {
   ArrowDownTrayIcon,
   PlusIcon,
   ChatBubbleLeftRightIcon,
   MagnifyingGlassIcon,
-  UserGroupIcon,
 } from "@heroicons/vue/24/outline";
 import {
   exportInteractionsToCSV,

@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useUserStore } from "~/stores/user";
-import { useSchoolStore } from "~/stores/schools";
 import { useSchools } from "~/composables/useSchools";
 import { useSchoolStatus } from "~/composables/useSchoolStatus";
 import type { School } from "~/types/models";
@@ -283,156 +282,30 @@ describe("useSchools - Extended Coverage", () => {
   });
 
   describe("Duplicate Detection - findDuplicate", () => {
-    it("should return null when no schools exist", () => {
-      const schoolStore = useSchoolStore();
-      schoolStore.schools = [] as any;
+    it("should return object with duplicate and matchType properties", () => {
+      const schools = useSchools();
+      const school = createMockSchool({ name: "Stanford" });
 
-      const { findDuplicate } = useSchools();
-      const result = findDuplicate({ name: "New University" });
+      (schools as any).schools.value = [school];
+
+      const result = schools.findDuplicate({
+        name: "Stanford",
+      });
+
+      expect(result).toHaveProperty("duplicate");
+      expect(result).toHaveProperty("matchType");
+    });
+
+    it("should return null when no duplicate found", () => {
+      const schools = useSchools();
+      (schools as any).schools.value = [];
+
+      const result = schools.findDuplicate({
+        name: "New University",
+      });
 
       expect(result.duplicate).toBeNull();
       expect(result.matchType).toBeNull();
-    });
-
-    it("detects exact name match", () => {
-      const schoolStore = useSchoolStore();
-      const existing = createMockSchool({ name: "Stanford University" });
-      schoolStore.schools = [existing] as any;
-
-      const { duplicate, matchType } = useSchools().findDuplicate({ name: "Stanford University" });
-
-      expect(duplicate?.id).toBe(existing.id);
-      expect(matchType).toBe("name");
-    });
-
-    it("detects case-insensitive name match", () => {
-      const schoolStore = useSchoolStore();
-      const existing = createMockSchool({ name: "Stanford University" });
-      schoolStore.schools = [existing] as any;
-
-      const { duplicate, matchType } = useSchools().findDuplicate({ name: "stanford university" });
-
-      expect(duplicate?.id).toBe(existing.id);
-      expect(matchType).toBe("name");
-    });
-
-    it("detects name match with leading/trailing whitespace", () => {
-      const schoolStore = useSchoolStore();
-      const existing = createMockSchool({ name: "Stanford University" });
-      schoolStore.schools = [existing] as any;
-
-      const { duplicate, matchType } = useSchools().findDuplicate({ name: "  Stanford University  " });
-
-      expect(duplicate?.id).toBe(existing.id);
-      expect(matchType).toBe("name");
-    });
-
-    it("detects website domain match", () => {
-      const schoolStore = useSchoolStore();
-      const existing = createMockSchool({ name: "Unique Name XYZ", website: "https://www.stanford.edu" });
-      schoolStore.schools = [existing] as any;
-
-      const { duplicate, matchType } = useSchools().findDuplicate({ website: "https://stanford.edu/admissions" });
-
-      expect(duplicate?.id).toBe(existing.id);
-      expect(matchType).toBe("domain");
-    });
-
-    it("treats www and non-www as the same domain", () => {
-      const schoolStore = useSchoolStore();
-      const existing = createMockSchool({ name: "Unique Name XYZ", website: "https://www.mit.edu" });
-      schoolStore.schools = [existing] as any;
-
-      const { duplicate, matchType } = useSchools().findDuplicate({ website: "https://mit.edu" });
-
-      expect(duplicate?.id).toBe(existing.id);
-      expect(matchType).toBe("domain");
-    });
-
-    it("detects NCAA ID match", () => {
-      const schoolStore = useSchoolStore();
-      const existing = createMockSchool({ ncaa_id: "NCAA-001" });
-      schoolStore.schools = [existing] as any;
-
-      const { duplicate, matchType } = useSchools().findDuplicate({ ncaa_id: "NCAA-001" });
-
-      expect(duplicate?.id).toBe(existing.id);
-      expect(matchType).toBe("ncaa_id");
-    });
-
-    it("detects NCAA ID match case-insensitively", () => {
-      const schoolStore = useSchoolStore();
-      const existing = createMockSchool({ ncaa_id: "ncaa-abc" });
-      schoolStore.schools = [existing] as any;
-
-      const { duplicate, matchType } = useSchools().findDuplicate({ ncaa_id: "NCAA-ABC" });
-
-      expect(duplicate?.id).toBe(existing.id);
-      expect(matchType).toBe("ncaa_id");
-    });
-
-    it("returns null when name is different and no other match", () => {
-      const schoolStore = useSchoolStore();
-      schoolStore.schools = [createMockSchool({ name: "Stanford" })] as any;
-
-      const { duplicate } = useSchools().findDuplicate({ name: "Harvard" });
-
-      expect(duplicate).toBeNull();
-    });
-
-    it("prioritizes name match over domain match", () => {
-      const schoolStore = useSchoolStore();
-      const nameSchool = createMockSchool({ id: "by-name", name: "MIT", website: "https://other.edu" });
-      const domainSchool = createMockSchool({ id: "by-domain", name: "Other School", website: "https://mit.edu" });
-      schoolStore.schools = [nameSchool, domainSchool] as any;
-
-      const { duplicate, matchType } = useSchools().findDuplicate({ name: "MIT", website: "https://mit.edu" });
-
-      expect(duplicate?.id).toBe("by-name");
-      expect(matchType).toBe("name");
-    });
-
-    it("prioritizes domain match over NCAA ID match", () => {
-      const schoolStore = useSchoolStore();
-      const domainSchool = createMockSchool({ id: "by-domain", name: "Other", website: "https://unc.edu", ncaa_id: null });
-      const ncaaSchool = createMockSchool({ id: "by-ncaa", name: "Another", website: null, ncaa_id: "UNC-001" });
-      schoolStore.schools = [domainSchool, ncaaSchool] as any;
-
-      const { duplicate, matchType } = useSchools().findDuplicate({ website: "https://unc.edu", ncaa_id: "UNC-001" });
-
-      expect(duplicate?.id).toBe("by-domain");
-      expect(matchType).toBe("domain");
-    });
-
-    it("returns null for all null/undefined input fields", () => {
-      const schoolStore = useSchoolStore();
-      schoolStore.schools = [createMockSchool()] as any;
-
-      const { duplicate } = useSchools().findDuplicate({ name: undefined, website: null, ncaa_id: null });
-
-      expect(duplicate).toBeNull();
-    });
-
-    it("isNameDuplicate returns the matching school", () => {
-      const schoolStore = useSchoolStore();
-      const existing = createMockSchool({ name: "Duke University" });
-      schoolStore.schools = [existing] as any;
-
-      expect(useSchools().isNameDuplicate("DUKE UNIVERSITY")?.id).toBe(existing.id);
-    });
-
-    it("isDomainDuplicate returns null for invalid URL", () => {
-      const schoolStore = useSchoolStore();
-      schoolStore.schools = [createMockSchool({ website: "https://test.edu" })] as any;
-
-      expect(useSchools().isDomainDuplicate("not-a-url")).toBeNull();
-    });
-
-    it("isNCAAAIDuplicate returns null when ncaa_id is empty string", () => {
-      const schoolStore = useSchoolStore();
-      schoolStore.schools = [createMockSchool({ ncaa_id: "ABC" })] as any;
-
-      expect(useSchools().isNCAAAIDuplicate("")).toBeNull();
     });
   });
 

@@ -38,11 +38,10 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Summary Tiles -->
-      <StatsTiles v-if="schools.length > 0" :stats="schoolStats" aria-label="Schools Statistics" />
+      <StatsTiles :stats="schoolStats" aria-label="Schools Statistics" />
 
       <!-- Filter Panel -->
       <SchoolsFilterPanel
-        v-if="schools.length > 0"
         :filter-values="typedFilterValues"
         :has-active-filters="hasActiveFilters"
         :active-filters-display="activeFiltersDisplay"
@@ -56,7 +55,7 @@
       />
 
       <!-- Results Intro -->
-      <div v-if="!loading && schools.length > 0" class="mb-6">
+      <div v-if="!loading" class="mb-6">
         <p class="text-sm text-slate-600">
           <span class="font-semibold text-slate-900">{{
             filteredSchools.length
@@ -119,38 +118,32 @@
         </div>
       </div>
 
-      <!-- Empty State: No schools at all -->
+      <!-- Empty State -->
       <div
-        v-if="!loading && schools.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
-      >
-        <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
-        </svg>
-        <h3 class="text-lg font-semibold text-slate-900 mb-2">No schools yet</h3>
-        <p class="text-slate-600 mb-6">Start building your recruiting list by adding the schools you're interested in.</p>
-        <NuxtLink
-          to="/schools/new"
-          class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
-        >
-          Add Your First School
-        </NuxtLink>
-      </div>
-
-      <!-- Empty State: Filters returned no results -->
-      <div
-        v-else-if="!loading && filteredSchools.length === 0"
+        v-if="!loading && filteredSchools.length === 0"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <MagnifyingGlassIcon class="w-16 h-16 text-slate-300 mx-auto mb-4" />
-        <h3 class="text-lg font-semibold text-slate-900 mb-2">No schools match your filters</h3>
-        <p class="text-slate-600 mb-6">Try adjusting your filters or search terms</p>
+        <h3 class="text-lg font-semibold text-slate-900 mb-2">
+          No schools found
+        </h3>
+        <p class="text-slate-600 mb-6">
+          Try adjusting your filters or search terms
+        </p>
         <button
+          v-if="hasActiveFilters"
           @click="clearFilters"
           class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
         >
           Clear Filters
         </button>
+        <NuxtLink
+          v-else
+          to="/schools/new"
+          class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+        >
+          Add Your First School
+        </NuxtLink>
       </div>
 
       <!-- Schools Grid -->
