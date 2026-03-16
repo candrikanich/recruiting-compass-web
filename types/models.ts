@@ -98,7 +98,6 @@ export interface School {
   recruiting_approach?: string | null;
   communication_style?: string | null;
   success_metrics?: string | null;
-  fit_score?: number | null;
   fit_tier?: string | null;
   family_unit_id?: string | null;
   created_by?: string;

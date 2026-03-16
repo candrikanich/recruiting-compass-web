@@ -68,7 +68,6 @@ export const useDashboardData = () => {
         notes,
         pros,
         cons,
-        fit_score,
         fit_tier,
         user_id,
         family_unit_id,
@@ -82,7 +81,6 @@ export const useDashboardData = () => {
         communication_style,
         success_metrics,
         offer_details,
-        fit_score_data,
         created_by,
         updated_by
       `,

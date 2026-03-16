@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
     // grade_level is derived from graduation_year in user_preferences
     // (the profiles table was removed — see migration 041).
     const schoolsSelect =
-      "id, name, division, status, priority, fit_score";
+      "id, name, division, status, priority";
     const interactionsSelect =
       "id, school_id, occurred_at, related_event_id";
     const athleteTasksSelect = "task_id, status";
