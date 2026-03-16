@@ -450,6 +450,15 @@ export const useSearchConsolidated = () => {
 
       await Promise.all(searches);
 
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("search_performed", {
+        result_count:
+          schoolResults.value.length +
+          coachResults.value.length +
+          interactionResults.value.length +
+          metricsResults.value.length,
+      });
+
       // Cache results
       searchCache.set(cacheKey, {
         results: {

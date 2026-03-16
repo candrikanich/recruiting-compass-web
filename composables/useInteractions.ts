@@ -305,6 +305,10 @@ export const useInteractions = () => {
       }
 
       interactions.value = [updatedData, ...interactions.value];
+
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("interaction_logged", { type: updatedData.type });
+
       return updatedData;
     } catch (err: unknown) {
       const message =

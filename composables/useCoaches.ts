@@ -99,10 +99,15 @@ export const useCoaches = (): {
   const getCoach = (id: string): Promise<Coach | null> =>
     coachStore.getCoach(id);
 
-  const createCoach = (
+  const createCoach = async (
     schoolId: string,
     coachData: Omit<Coach, "id" | "created_at" | "updated_at">,
-  ): Promise<Coach> => coachStore.createCoach(schoolId, coachData);
+  ): Promise<Coach> => {
+    const coach = await coachStore.createCoach(schoolId, coachData);
+    const { $posthog } = useNuxtApp();
+    $posthog?.capture("coach_added");
+    return coach;
+  };
 
   const updateCoach = (id: string, updates: Partial<Coach>): Promise<Coach> =>
     coachStore.updateCoach(id, updates);

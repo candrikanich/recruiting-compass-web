@@ -183,6 +183,10 @@ export const useEvents = (): {
       if (insertError) throw insertError;
 
       events.value = [data, ...events.value];
+
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("event_created", { event_type: data.type });
+
       return data;
     } catch (err: unknown) {
       const message =
