@@ -107,7 +107,7 @@ export const useSchoolStore = defineStore("schools", () => {
    * Fetch all schools for the current user
    * Guards against redundant fetches with isFetched flag
    */
-  async function fetchSchools() {
+  async function fetchSchools(familyId: string) {
     // Guard: don't refetch if already loaded
     if (isFetched.value && schools.value.length > 0) return;
 
@@ -115,25 +115,21 @@ export const useSchoolStore = defineStore("schools", () => {
     error.value = null;
 
     try {
-      const { useFamilyContext } = await import(
-        "~/composables/useFamilyContext"
-      );
       const userStore = useUserStore();
-      const activeFamily = useFamilyContext();
       const supabase = useSupabase();
 
       if (!userStore.user) {
         throw new Error("User not authenticated");
       }
 
-      if (!activeFamily.activeFamilyId.value) {
+      if (!familyId) {
         throw new Error("No family context");
       }
 
       const { data, error: fetchError } = await supabase
         .from("schools")
         .select("*")
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
+        .eq("family_unit_id", familyId)
         .order("ranking", { ascending: true, nullsFirst: false });
 
       if (fetchError) throw fetchError;
@@ -153,13 +149,8 @@ export const useSchoolStore = defineStore("schools", () => {
   /**
    * Get a single school by ID
    */
-  async function getSchool(id: string): Promise<School | null> {
-    const { useFamilyContext } = await import(
-      "~/composables/useFamilyContext"
-    );
-
+  async function getSchool(id: string, familyId: string): Promise<School | null> {
     const userStore = useUserStore();
-    const activeFamily = useFamilyContext();
     const supabase = useSupabase();
 
     loading.value = true;
@@ -170,7 +161,7 @@ export const useSchoolStore = defineStore("schools", () => {
         throw new Error("User not authenticated");
       }
 
-      if (!activeFamily.activeFamilyId.value) {
+      if (!familyId) {
         throw new Error("No family context");
       }
 
@@ -178,7 +169,7 @@ export const useSchoolStore = defineStore("schools", () => {
         .from("schools")
         .select("*")
         .eq("id", id)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
+        .eq("family_unit_id", familyId)
         .single();
 
       if (fetchError) throw fetchError;
@@ -246,12 +237,8 @@ export const useSchoolStore = defineStore("schools", () => {
   /**
    * Update an existing school
    */
-  async function updateSchool(id: string, updates: Partial<School>) {
-    const { useFamilyContext } = await import(
-      "~/composables/useFamilyContext"
-    );
+  async function updateSchool(id: string, updates: Partial<School>, familyId: string) {
     const userStore = useUserStore();
-    const activeFamily = useFamilyContext();
     const supabase = useSupabase();
 
     loading.value = true;
@@ -262,7 +249,7 @@ export const useSchoolStore = defineStore("schools", () => {
         throw new Error("User not authenticated");
       }
 
-      if (!activeFamily.activeFamilyId.value) {
+      if (!familyId) {
         throw new Error("No family context");
       }
 
@@ -279,7 +266,7 @@ export const useSchoolStore = defineStore("schools", () => {
         .from("schools")
         .update(updateData)
         .eq("id", id)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
+        .eq("family_unit_id", familyId)
         .select()
         .single();
 
@@ -305,12 +292,8 @@ export const useSchoolStore = defineStore("schools", () => {
   /**
    * Delete a school
    */
-  async function deleteSchool(id: string) {
-    const { useFamilyContext } = await import(
-      "~/composables/useFamilyContext"
-    );
+  async function deleteSchool(id: string, familyId: string) {
     const userStore = useUserStore();
-    const activeFamily = useFamilyContext();
     const supabase = useSupabase();
 
     loading.value = true;
@@ -321,7 +304,7 @@ export const useSchoolStore = defineStore("schools", () => {
         throw new Error("User not authenticated");
       }
 
-      if (!activeFamily.activeFamilyId.value) {
+      if (!familyId) {
         throw new Error("No family context");
       }
 
@@ -329,7 +312,7 @@ export const useSchoolStore = defineStore("schools", () => {
         .from("schools")
         .delete()
         .eq("id", id)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value);
+        .eq("family_unit_id", familyId);
 
       if (deleteError) throw deleteError;
 
@@ -351,8 +334,8 @@ export const useSchoolStore = defineStore("schools", () => {
   /**
    * Toggle favorite status of a school
    */
-  async function toggleFavorite(id: string, isFavorite: boolean) {
-    return updateSchool(id, { is_favorite: !isFavorite });
+  async function toggleFavorite(id: string, isFavorite: boolean, familyId: string) {
+    return updateSchool(id, { is_favorite: !isFavorite }, familyId);
   }
 
   /**
@@ -403,13 +386,10 @@ export const useSchoolStore = defineStore("schools", () => {
   async function updateStatus(
     schoolId: string,
     newStatus: School["status"],
+    familyId: string,
     notes?: string,
   ) {
-    const { useFamilyContext } = await import(
-      "~/composables/useFamilyContext"
-    );
     const userStore = useUserStore();
-    const activeFamily = useFamilyContext();
     const supabase = useSupabase();
 
     loading.value = true;
@@ -420,7 +400,7 @@ export const useSchoolStore = defineStore("schools", () => {
         throw new Error("User not authenticated");
       }
 
-      if (!activeFamily.activeFamilyId.value) {
+      if (!familyId) {
         throw new Error("No family context");
       }
 
@@ -430,7 +410,7 @@ export const useSchoolStore = defineStore("schools", () => {
         .from("schools")
         .select("status")
         .eq("id", schoolId)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
+        .eq("family_unit_id", familyId)
         .single();
 
       if (selectError) throw selectError;
@@ -452,7 +432,7 @@ export const useSchoolStore = defineStore("schools", () => {
         .from("schools")
         .update(schoolUpdateData)
         .eq("id", schoolId)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
+        .eq("family_unit_id", familyId)
         .select()
         .single();
 

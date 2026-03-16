@@ -236,7 +236,7 @@ describe("reportExport", () => {
           byStatus: { active: 8, inactive: 2 },
           byDivision: { D1: 5, D2: 5 },
         },
-        coaches: { total: 25, avgResponseRate: 0.75, bySchool: 10 },
+        coaches: { total: 25, bySchool: 10 },
         interactions: {
           total: 50,
           byType: { email: 30, call: 20 },
@@ -286,7 +286,7 @@ describe("reportExport", () => {
         dateRange: { from: "2024-01-01", to: "2024-01-31" },
         generatedAt: "2024-01-31T12:00:00Z",
         schools: { total: 0, byStatus: {}, byDivision: {} },
-        coaches: { total: 20, avgResponseRate: 0.85, bySchool: 10 },
+        coaches: { total: 20, bySchool: 10 },
         interactions: { total: 0, byType: {}, bySentiment: {} },
         metrics: { total: 0, byType: {}, summaries: [] },
       };
@@ -296,8 +296,6 @@ describe("reportExport", () => {
       expect(csv).toContain("Coaches Summary");
       expect(csv).toContain("Total Coaches");
       expect(csv).toContain("20");
-      expect(csv).toContain("Average Response Rate");
-      expect(csv).toContain("0.85");
     });
 
     it("should include interaction statistics in CSV", () => {
