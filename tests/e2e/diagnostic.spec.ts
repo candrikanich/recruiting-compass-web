@@ -4,6 +4,9 @@ import { test, expect } from "@playwright/test";
  * Diagnostic test to verify E2E setup and Supabase connection
  */
 test.describe("Diagnostic Tests", () => {
+  // This spec tests the login/signup UI — must start unauthenticated
+  test.use({ storageState: undefined });
+
   test("should load login page", async ({ page }) => {
     await page.goto("/login");
     await expect(page).toHaveURL("/login");
