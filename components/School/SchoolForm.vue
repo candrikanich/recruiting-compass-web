@@ -293,27 +293,13 @@ watch(
   initialData,
   (newData) => {
     if (newData) {
-      // Name, location, website: use parent value if provided, keep current otherwise
-      formData.name = newData.name ?? formData.name;
-      formData.location = newData.location ?? formData.location;
-      formData.website = newData.website ?? formData.website;
-
-      // Division and conference need special handling:
-      // - Parent sends '' while its async NCAA lookup is in flight (loading state)
-      // - SchoolForm may have already set these via its own direct lookup
-      // - Use || so an empty parent value doesn't overwrite an already-populated field
-      // - But DO clear when the parent clears the entire selection (name also becomes '')
-      if (newData.division) {
-        formData.division = newData.division;
-      } else if (!newData.name) {
-        formData.division = ""; // parent cleared selection — reset
-      }
-
-      if (newData.conference) {
-        formData.conference = newData.conference;
-      } else if (!newData.name) {
-        formData.conference = ""; // parent cleared selection — reset
-      }
+      Object.assign(formData, {
+        name: newData.name ?? formData.name,
+        location: newData.location ?? formData.location,
+        division: newData.division ?? formData.division,
+        conference: newData.conference ?? formData.conference,
+        website: newData.website ?? formData.website,
+      });
     }
   },
   { deep: true },
@@ -328,16 +314,9 @@ watch(
         name: newFields.name ?? autoFilledFields.name,
         location: newFields.location ?? autoFilledFields.location,
         website: newFields.website ?? autoFilledFields.website,
-        // Only flip to true; don't flip back to false while parent NCAA lookup is in flight
-        division: newFields.division || autoFilledFields.division,
-        conference: newFields.conference || autoFilledFields.conference,
+        division: newFields.division ?? autoFilledFields.division,
+        conference: newFields.conference ?? autoFilledFields.conference,
       });
-
-      // Clear auto-filled state when the parent clears the selection (name → false)
-      if (newFields.name === false && !newFields.location && !newFields.website) {
-        autoFilledFields.division = false;
-        autoFilledFields.conference = false;
-      }
     }
   },
   { deep: true },
