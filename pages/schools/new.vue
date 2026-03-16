@@ -6,6 +6,13 @@
     description="Add a school to your recruiting list"
     header-color="blue"
   >
+    <DuplicateSchoolDialog
+      :isOpen="duplicateDialogOpen"
+      :duplicate="detectedDuplicate!"
+      :matchType="detectedMatchType"
+      @confirm="proceedWithDuplicate"
+      @cancel="cancelDuplicate"
+    />
     <!-- Toggle: Autocomplete vs Manual -->
     <div class="mb-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
       <label class="flex items-center gap-3 cursor-pointer group">
@@ -97,10 +104,11 @@ import {
 } from "~/composables/useCollegeData";
 import type { CollegeSearchResult } from "~/types/api";
 import type { School } from "~/types/models";
+import DuplicateSchoolDialog from "~/components/School/DuplicateSchoolDialog.vue";
 
 
 
-const { createSchool, loading, error } = useSchools();
+const { createSchool, findDuplicate, loading, error } = useSchools();
 const { lookupDivision } = useNcaaLookup();
 const {
   fetchByName,
@@ -113,6 +121,12 @@ const selectedCollege = ref<CollegeSearchResult | null>(null);
 const schoolLogo = ref<string | null>(null);
 const collegeScorecardData = ref<CollegeDataResult | null>(null);
 const collegeScorecardFetched = ref(false);
+
+const duplicateDialogOpen = ref(false);
+const detectedDuplicate = ref<School | null>(null);
+const detectedMatchType = ref<"name" | "domain" | "ncaa_id" | null>(null);
+const pendingFormData = ref<any>(null);
+
 const autoFilledFields = reactive({
   name: false,
   location: false,
@@ -194,7 +208,30 @@ const clearSelection = () => {
 };
 
 const handleSchoolFormSubmit = async (formData: any) => {
+  const { duplicate, matchType } = findDuplicate(formData);
+  if (duplicate) {
+    detectedDuplicate.value = duplicate;
+    detectedMatchType.value = matchType;
+    pendingFormData.value = formData;
+    duplicateDialogOpen.value = true;
+    return;
+  }
   await createSchoolWithData(formData);
+};
+
+const proceedWithDuplicate = async () => {
+  duplicateDialogOpen.value = false;
+  if (pendingFormData.value) {
+    await createSchoolWithData(pendingFormData.value);
+  }
+  pendingFormData.value = null;
+};
+
+const cancelDuplicate = () => {
+  duplicateDialogOpen.value = false;
+  detectedDuplicate.value = null;
+  detectedMatchType.value = null;
+  pendingFormData.value = null;
 };
 
 const createSchoolWithData = async (formData: any) => {

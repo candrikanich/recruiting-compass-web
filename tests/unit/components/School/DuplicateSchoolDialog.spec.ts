@@ -1,7 +1,16 @@
 import { describe, it, expect } from "vitest";
-import { mount, flushPromises } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
 import DuplicateSchoolDialog from "~/components/School/DuplicateSchoolDialog.vue";
 import type { School } from "~/types/models";
+
+const mountOptions = {
+  global: {
+    stubs: {
+      Teleport: true,
+      Transition: false,
+    },
+  },
+};
 
 const mockSchool: School = {
   id: "1",
@@ -28,157 +37,217 @@ const mockSchool: School = {
 };
 
 describe("DuplicateSchoolDialog", () => {
-  it("should accept isOpen prop", () => {
-    const wrapper = mount(DuplicateSchoolDialog, {
-      props: {
-        isOpen: false,
-        duplicate: mockSchool,
-        matchType: "name",
-      },
+  describe("visibility", () => {
+    it("renders dialog content when isOpen is true", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "name" },
+      });
+
+      expect(wrapper.find('[role="dialog"]').exists()).toBe(true);
+      expect(wrapper.text()).toContain("Duplicate School Detected");
     });
 
-    expect(wrapper.props("isOpen")).toBe(false);
+    it("hides dialog content when isOpen is false", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: false, duplicate: mockSchool, matchType: "name" },
+      });
+
+      expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
+    });
   });
 
-  it("should accept duplicate prop", () => {
-    const wrapper = mount(DuplicateSchoolDialog, {
-      props: {
-        isOpen: true,
-        duplicate: mockSchool,
-        matchType: "name",
-      },
+  describe("school information display", () => {
+    it("shows the existing school name", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "name" },
+      });
+
+      expect(wrapper.text()).toContain("University of Florida");
     });
 
-    expect(wrapper.props("duplicate")).toEqual(mockSchool);
+    it("shows division and conference when present", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "name" },
+      });
+
+      expect(wrapper.text()).toContain("D1");
+      expect(wrapper.text()).toContain("SEC");
+    });
+
+    it("shows location when present", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "name" },
+      });
+
+      expect(wrapper.text()).toContain("Gainesville, Florida");
+    });
   });
 
-  it("should accept matchType prop", () => {
-    const wrapper = mount(DuplicateSchoolDialog, {
-      props: {
-        isOpen: true,
-        duplicate: mockSchool,
-        matchType: "domain",
-      },
+  describe("match type display", () => {
+    it("shows 'Name Match' label for name match type", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "name" },
+      });
+
+      expect(wrapper.text()).toContain("Name Match");
     });
 
-    expect(wrapper.props("matchType")).toBe("domain");
+    it("shows 'Website Domain' label for domain match type", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "domain" },
+      });
+
+      expect(wrapper.text()).toContain("Website Domain");
+    });
+
+    it("shows 'NCAA ID' label for ncaa_id match type", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "ncaa_id" },
+      });
+
+      expect(wrapper.text()).toContain("NCAA ID");
+    });
+
+    it("shows the website link for domain match type", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "domain" },
+      });
+
+      const link = wrapper.find("a");
+      expect(link.exists()).toBe(true);
+      expect(link.attributes("href")).toBe("https://www.ufl.edu");
+    });
+
+    it("shows the NCAA ID value for ncaa_id match type", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "ncaa_id" },
+      });
+
+      expect(wrapper.text()).toContain("UFL");
+    });
+
+    it("applies red badge styling for name match", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "name" },
+      });
+
+      const badge = wrapper.find(".bg-red-100");
+      expect(badge.exists()).toBe(true);
+    });
+
+    it("applies yellow badge styling for domain match", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "domain" },
+      });
+
+      const badge = wrapper.find(".bg-yellow-100");
+      expect(badge.exists()).toBe(true);
+    });
+
+    it("applies orange badge styling for ncaa_id match", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "ncaa_id" },
+      });
+
+      const badge = wrapper.find(".bg-orange-100");
+      expect(badge.exists()).toBe(true);
+    });
   });
 
-  it("should render component successfully", () => {
-    const wrapper = mount(DuplicateSchoolDialog, {
-      props: {
-        isOpen: true,
-        duplicate: mockSchool,
-        matchType: "name",
-      },
+  describe("user interactions", () => {
+    it("emits confirm when 'Proceed Anyway' is clicked", async () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "name" },
+      });
+
+      const buttons = wrapper.findAll("button");
+      const proceedBtn = buttons.find((b) => b.text().includes("Proceed Anyway"));
+      await proceedBtn!.trigger("click");
+
+      expect(wrapper.emitted("confirm")).toBeTruthy();
+      expect(wrapper.emitted("confirm")).toHaveLength(1);
     });
 
-    expect(wrapper.exists()).toBe(true);
-    expect(wrapper.vm).toBeDefined();
+    it("emits cancel when 'Cancel' button is clicked", async () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "name" },
+      });
+
+      const buttons = wrapper.findAll("button");
+      const cancelBtn = buttons.find((b) => b.text().includes("Cancel"));
+      await cancelBtn!.trigger("click");
+
+      expect(wrapper.emitted("cancel")).toBeTruthy();
+    });
+
+    it("emits cancel when the close (×) button is clicked", async () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: { isOpen: true, duplicate: mockSchool, matchType: "name" },
+      });
+
+      const closeBtn = wrapper.find("button[aria-label='Close dialog']");
+      expect(closeBtn.exists()).toBe(true);
+      await closeBtn.trigger("click");
+
+      expect(wrapper.emitted("cancel")).toBeTruthy();
+    });
   });
 
-  it("should handle mockSchool prop correctly", () => {
-    const wrapper = mount(DuplicateSchoolDialog, {
-      props: {
-        isOpen: true,
-        duplicate: mockSchool,
-        matchType: "name",
-      },
+  describe("graceful handling of missing data", () => {
+    it("hides website link when website is null and match type is domain", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: {
+          isOpen: true,
+          duplicate: { ...mockSchool, website: null },
+          matchType: "domain",
+        },
+      });
+
+      expect(wrapper.find("a").exists()).toBe(false);
     });
 
-    expect(wrapper.props("duplicate")).toEqual(mockSchool);
-    expect(wrapper.props("duplicate").name).toBe("University of Florida");
-  });
+    it("hides NCAA ID section when ncaa_id is undefined and match type is ncaa_id", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: {
+          isOpen: true,
+          duplicate: { ...mockSchool, ncaa_id: undefined },
+          matchType: "ncaa_id",
+        },
+      });
 
-  it("should handle schools without website gracefully", () => {
-    const schoolWithoutWebsite = { ...mockSchool, website: null };
-    const wrapper = mount(DuplicateSchoolDialog, {
-      props: {
-        isOpen: true,
-        duplicate: schoolWithoutWebsite,
-        matchType: "domain",
-      },
+      // The NCAA ID section is conditionally rendered only when ncaa_id has a value
+      expect(wrapper.text()).not.toContain("UFL");
     });
 
-    const link = wrapper.find("a");
-    expect(link.exists()).toBe(false);
-  });
+    it("hides location section when location is null", () => {
+      const wrapper = mount(DuplicateSchoolDialog, {
+        ...mountOptions,
+        props: {
+          isOpen: true,
+          duplicate: { ...mockSchool, location: null },
+          matchType: "name",
+        },
+      });
 
-  it("should handle schools without NCAA ID gracefully", () => {
-    const schoolWithoutNcaaId = { ...mockSchool, ncaa_id: undefined };
-    const wrapper = mount(DuplicateSchoolDialog, {
-      props: {
-        isOpen: true,
-        duplicate: schoolWithoutNcaaId,
-        matchType: "ncaa_id",
-      },
+      expect(wrapper.find('[class*="location"]').exists()).toBe(false);
     });
-
-    expect(wrapper.vm).toBeDefined();
-  });
-
-  it("should handle schools without location gracefully", () => {
-    const schoolWithoutLocation = { ...mockSchool, location: null };
-    const wrapper = mount(DuplicateSchoolDialog, {
-      props: {
-        isOpen: true,
-        duplicate: schoolWithoutLocation,
-        matchType: "name",
-      },
-    });
-
-    expect(wrapper.vm).toBeDefined();
-  });
-
-  it("should use correct badge styling for name match type", async () => {
-    const wrapper = mount(DuplicateSchoolDialog, {
-      props: {
-        isOpen: true,
-        duplicate: mockSchool,
-        matchType: "name",
-      },
-    });
-
-    // Check that the component renders without errors
-    expect(wrapper.exists()).toBe(true);
-  });
-
-  it("should use correct badge styling for domain match type", async () => {
-    const wrapper = mount(DuplicateSchoolDialog, {
-      props: {
-        isOpen: true,
-        duplicate: mockSchool,
-        matchType: "domain",
-      },
-    });
-
-    expect(wrapper.exists()).toBe(true);
-  });
-
-  it("should use correct badge styling for ncaa_id match type", async () => {
-    const wrapper = mount(DuplicateSchoolDialog, {
-      props: {
-        isOpen: true,
-        duplicate: mockSchool,
-        matchType: "ncaa_id",
-      },
-    });
-
-    expect(wrapper.exists()).toBe(true);
-  });
-
-  it("should provide methods for formatting school data", () => {
-    const wrapper = mount(DuplicateSchoolDialog, {
-      props: {
-        isOpen: true,
-        duplicate: mockSchool,
-        matchType: "name",
-      },
-    });
-
-    // Verify the component instance has access to all props
-    expect(wrapper.vm.$props.duplicate).toBeDefined();
-    expect(wrapper.vm.$props.duplicate.name).toBe(mockSchool.name);
-    expect(wrapper.vm.$props.duplicate.division).toBe(mockSchool.division);
   });
 });
