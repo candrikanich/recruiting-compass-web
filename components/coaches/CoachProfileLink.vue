@@ -7,11 +7,6 @@ const props = defineProps<{ coachId: string }>();
 const { $fetchAuth } = useAuthFetch();
 const profileStore = usePlayerProfileStore();
 
-// Ensure profile is loaded so we can show the URL and unpublished warning
-if (!profileStore.profile && !profileStore.loading) {
-  profileStore.fetchProfile();
-}
-
 const link = ref<{
   ref_token: string;
   view_count: number;
@@ -23,6 +18,11 @@ const copied = ref(false);
 const error = ref<string | null>(null);
 
 onMounted(async () => {
+  // Ensure profile store is populated for URL and unpublished warning
+  if (!profileStore.profile && !profileStore.loading) {
+    profileStore.fetchProfile();
+  }
+
   loading.value = true;
   try {
     const data = await $fetchAuth<typeof link.value>(

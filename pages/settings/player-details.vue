@@ -557,7 +557,7 @@
               v-if="playerProfile"
               :settings="playerProfile"
               :player-name="userStore.user?.full_name ?? 'Athlete'"
-              :details="null"
+              :details="(form as unknown as Record<string, unknown>)"
               :schools="[]"
             />
           </div>
