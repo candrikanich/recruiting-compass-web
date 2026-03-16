@@ -22,7 +22,7 @@ describe("SchoolCard", () => {
   });
 
   const defaultProps = {
-    school: { ...defaultSchool, fit_score: 85 },
+    school: defaultSchool,
   };
 
   beforeEach(() => {
@@ -57,7 +57,6 @@ describe("SchoolCard", () => {
       const school = {
         ...createMockSchool(),
         location: undefined,
-        fit_score: null,
       };
       const wrapper = mountCard({ school });
       expect(wrapper.text()).not.toContain("\uD83D\uDCCD");
@@ -78,55 +77,6 @@ describe("SchoolCard", () => {
       expect(wrapper.find('[data-testid="school-logo-stub"]').exists()).toBe(
         true,
       );
-    });
-  });
-
-  describe("fit score badge", () => {
-    it("shows green badge for score >= 70", () => {
-      const wrapper = mountCard();
-      expect(wrapper.text()).toContain("85/100");
-      const scoreSpan = wrapper
-        .findAll("span")
-        .find((s) => s.text() === "85/100");
-      expect(scoreSpan?.classes()).toContain("bg-emerald-100");
-    });
-
-    it("shows orange badge for score 50-69", () => {
-      const school = { ...defaultSchool, fit_score: 55 };
-      const wrapper = mountCard({ school });
-      expect(wrapper.text()).toContain("55/100");
-      const scoreSpan = wrapper
-        .findAll("span")
-        .find((s) => s.text() === "55/100");
-      expect(scoreSpan?.classes()).toContain("bg-orange-100");
-    });
-
-    it("shows red badge for score < 50", () => {
-      const school = { ...defaultSchool, fit_score: 30 };
-      const wrapper = mountCard({ school });
-      expect(wrapper.text()).toContain("30/100");
-      const scoreSpan = wrapper
-        .findAll("span")
-        .find((s) => s.text() === "30/100");
-      expect(scoreSpan?.classes()).toContain("bg-red-100");
-    });
-
-    it("hides fit score when null", () => {
-      const school = { ...defaultSchool, fit_score: null };
-      const wrapper = mountCard({ school });
-      expect(wrapper.text()).not.toContain("/100");
-    });
-
-    it("hides fit score when undefined", () => {
-      const school = { ...defaultSchool, fit_score: undefined };
-      const wrapper = mountCard({ school });
-      expect(wrapper.text()).not.toContain("/100");
-    });
-
-    it("rounds decimal scores", () => {
-      const school = { ...defaultSchool, fit_score: 72.6 };
-      const wrapper = mountCard({ school });
-      expect(wrapper.text()).toContain("73/100");
     });
   });
 
@@ -160,7 +110,6 @@ describe("SchoolCard", () => {
       const school = {
         ...defaultSchool,
         is_favorite: true,
-        fit_score: null,
       };
       const wrapper = mountCard({ school });
       expect(wrapper.text()).toContain("\u2B50");
@@ -204,31 +153,22 @@ describe("SchoolCard", () => {
 
   describe("edge cases", () => {
     it("renders with no division", () => {
-      const school = {
-        ...createMockSchool({ division: undefined }),
-        fit_score: null,
-      };
+      const school = createMockSchool({ division: undefined });
       const wrapper = mountCard({ school });
       expect(wrapper.text()).toContain(school.name);
     });
 
     it("renders with no conference", () => {
-      const school = {
-        ...createMockSchool({ conference: undefined }),
-        fit_score: null,
-      };
+      const school = createMockSchool({ conference: undefined });
       const wrapper = mountCard({ school });
       expect(wrapper.text()).not.toContain("SEC");
     });
 
     it("renders with no badges section when nothing to show", () => {
-      const school = {
-        ...createMockSchool({
-          division: undefined,
-          conference: undefined,
-        }),
-        fit_score: null,
-      };
+      const school = createMockSchool({
+        division: undefined,
+        conference: undefined,
+      });
       const wrapper = mountCard({ school });
       // Card should still render
       expect(wrapper.find(".school-card").exists()).toBe(true);

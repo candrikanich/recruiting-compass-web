@@ -32,60 +32,6 @@
         </div>
       </div>
 
-      <!-- Fit Score Slider -->
-      <div class="w-full lg:w-1/4">
-        <div class="flex items-center justify-between mb-2">
-          <label
-            class="block text-xs font-semibold text-slate-500 uppercase tracking-wide"
-          >
-            Fit Score
-          </label>
-          <span class="text-sm font-semibold text-blue-600">
-            {{ filterValues.fit_score?.min ?? 0 }}–{{
-              filterValues.fit_score?.max ?? 100
-            }}
-          </span>
-        </div>
-        <div class="flex gap-2">
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="5"
-            :value="filterValues.fit_score?.min ?? 0"
-            aria-label="Fit score minimum"
-            :aria-valuenow="filterValues.fit_score?.min ?? 0"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            @input="
-              $emit('update:filter', 'fit_score', {
-                min: parseInt(($event.target as HTMLInputElement).value),
-                max: filterValues.fit_score?.max ?? 100,
-              })
-            "
-            class="flex-1 h-2.5 bg-linear-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 transition-opacity"
-          />
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="5"
-            :value="filterValues.fit_score?.max ?? 100"
-            aria-label="Fit score maximum"
-            :aria-valuenow="filterValues.fit_score?.max ?? 100"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            @input="
-              $emit('update:filter', 'fit_score', {
-                min: filterValues.fit_score?.min ?? 0,
-                max: parseInt(($event.target as HTMLInputElement).value),
-              })
-            "
-            class="flex-1 h-2.5 bg-linear-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 transition-opacity"
-          />
-        </div>
-      </div>
-
       <!-- Distance Slider -->
       <div class="w-full lg:w-1/4">
         <div class="flex items-center justify-between mb-2">
@@ -196,7 +142,6 @@
           @change="$emit('update:sort', $event)"
         >
           <option value="a-z">A-Z</option>
-          <option value="fit-score">Fit Score</option>
           <option value="distance">Distance</option>
           <option value="last-contact">Last Contact</option>
         </SchoolFilterSelect>
@@ -251,7 +196,6 @@ interface SchoolFilterValues {
   status?: string;
   state?: string;
   is_favorite?: boolean;
-  fit_score?: { min: number; max: number };
   distance?: { max: number };
 }
 

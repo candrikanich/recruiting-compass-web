@@ -42,14 +42,6 @@
           >
             {{ school.conference }}
           </span>
-          <!-- Fit Score Badge -->
-          <span
-            v-if="hasFitScore"
-            class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-sm"
-            :class="fitScoreBadgeClass"
-          >
-            {{ fitScore }}/100
-          </span>
         </div>
 
         <!-- Stats -->
@@ -101,12 +93,8 @@ import SchoolLogo from "./SchoolLogo.vue";
 import { getCarnegieSize, getSizeColorClass } from "~/utils/schoolSize";
 import type { School } from "~/types/models";
 
-interface SchoolWithFitScore extends School {
-  fit_score?: number | null;
-}
-
 interface Props {
-  school: SchoolWithFitScore;
+  school: School;
   stats?: {
     coaches: number;
     interactions: number;
@@ -129,35 +117,6 @@ const calculatedSize = computed(() => {
 });
 
 const sizeColorClass = computed(() => getSizeColorClass(calculatedSize.value));
-
-// Fit score support
-const hasFitScore = computed(() => {
-  return (
-    props.school.fit_score !== null && props.school.fit_score !== undefined
-  );
-});
-
-const fitScore = computed(() => {
-  if (
-    hasFitScore.value &&
-    props.school.fit_score !== null &&
-    props.school.fit_score !== undefined
-  ) {
-    return Math.round(props.school.fit_score);
-  }
-  return 0;
-});
-
-const fitScoreBadgeClass = computed(() => {
-  const score = fitScore.value;
-  if (score >= 70) {
-    return "bg-emerald-100 text-emerald-700";
-  } else if (score >= 50) {
-    return "bg-orange-100 text-orange-700";
-  } else {
-    return "bg-red-100 text-red-700";
-  }
-});
 
 const navigate = () => {
   emit("click");

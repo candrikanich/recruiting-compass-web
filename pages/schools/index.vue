@@ -238,7 +238,6 @@ interface SchoolFilterValues {
   status?: string;
   state?: string;
   is_favorite?: boolean;
-  fit_score?: { min: number; max: number };
   distance?: { max: number };
   show_matches?: boolean;
 }
@@ -381,14 +380,6 @@ const activeFiltersDisplay = computed(() => {
           display[key] = "Favorites";
         } else if (key === "name") {
           display[key] = `"${value}"`;
-        } else if (key === "fit_score") {
-          if (typeof value === "object" && value !== null && "min" in value) {
-            const rangeValue = value as { min?: number; max?: number };
-            const min = rangeValue.min ?? 0;
-            const max = rangeValue.max ?? 100;
-            if (min === 0 && max === 100) return;
-            display[key] = `${min} - ${max}`;
-          }
         } else if (key === "distance") {
           if (typeof value === "object" && value !== null && "max" in value) {
             const rangeValue = value as { max?: number };
@@ -422,8 +413,6 @@ const filteredSchools = computed(() => {
 const sortedFilteredSchools = computed(() => {
   return [...filteredSchools.value].sort((a, b) => {
     switch (sortBy.value) {
-      case "fit-score":
-        return (b.fit_score ?? -1) - (a.fit_score ?? -1);
       case "distance": {
         if (
           !userHomeLocation.value?.latitude ||
