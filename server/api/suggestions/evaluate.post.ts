@@ -15,7 +15,6 @@ import { interactionGapRule } from "~/server/utils/rules/interactionGap";
 import { missingVideoRule } from "~/server/utils/rules/missingVideo";
 import { eventFollowUpRule } from "~/server/utils/rules/eventFollowUp";
 import { videoLinkHealthRule } from "~/server/utils/rules/videoLinkHealth";
-import { portfolioHealthRule } from "~/server/utils/rules/portfolioHealth";
 import { prioritySchoolReminderRule } from "~/server/utils/rules/prioritySchoolReminder";
 import { schoolListRule } from "~/server/utils/rules/schoolList";
 import { showcaseAttendanceRule } from "~/server/utils/rules/showcaseAttendance";
@@ -106,7 +105,6 @@ export default defineEventHandler(async (event) => {
       missingVideoRule,
       eventFollowUpRule,
       videoLinkHealthRule,
-      portfolioHealthRule,
       prioritySchoolReminderRule,
     ]);
 

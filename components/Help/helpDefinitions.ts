@@ -57,30 +57,18 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     ],
   },
 
-  // Fit scores
-  fitScore: {
-    id: "fit-score",
-    title: "Fit Score",
-    shortDescription: "How well you match with a school (1-10)",
-    fullDescription: `Your fit score is a number from 1-10 that shows how well you match with a school both athletically and academically. It's calculated using five components: Academic Fit (30%), Athletic Fit (30%), Location Fit (15%), Program Fit (15%), and Financial Fit (10%). A higher score means the school is a better match for you. Reach schools are typically below 5, target schools are 5-8, and safety schools are 8-10.`,
-    relatedLinks: [
-      { label: "Understanding Fit Scores", url: "/docs/fit-scores" },
-      { label: "Video: Fit Scores Explained", url: "/videos/fit-scores" },
-    ],
-  },
+  // Fit signals
+  schoolFitSignals: {
+    id: "school-fit-signals",
+    title: "School Fit Signals",
+    shortDescription: "Independent indicators of personal and academic fit",
+    fullDescription: `School Fit Signals give you two honest, independent views of how well a school matches your profile.
 
-  academicFit: {
-    id: "academic-fit",
-    title: "Academic Fit (30%)",
-    shortDescription: "Your academics vs. school standards",
-    fullDescription: `Academic fit measures how well your GPA, test scores, and academic profile match the school's academic standards. If your GPA and test scores are similar to or above their typical student-athlete standards, you have good academic fit. If they're below, it's harder to get in, which lowers your academic fit score.`,
-  },
+Personal Fit looks at things we know from your profile: your home state (for in-state vs out-of-state), your campus size preference (small/medium/large), and your cost sensitivity. These factors only you can weigh — a stretch on cost might be worth it for the right school.
 
-  athleticFit: {
-    id: "athletic-fit",
-    title: "Athletic Fit (30%)",
-    shortDescription: "Your athletic profile vs. school needs",
-    fullDescription: `Athletic fit compares your performance stats to what the school needs. Are you the type of athlete they recruit? Do your stats match what they're looking for in your position? If you're a pitcher with an ERA of 2.8 and they're looking for pitchers with ERAs around 3.0, you have good athletic fit. This is often the most important component for recruiting.`,
+Academic Fit compares your SAT or ACT scores against that school's typical admitted student range, sourced from the US College Scorecard. If your scores are in-range or above their 25th–75th percentile, you have a realistic academic profile for that school.
+
+We intentionally do not show Athletic Fit or Opportunity Fit because we cannot reliably know what a coach is looking for or what roster spots are available. That information can only come from direct conversations with coaches.`,
   },
 
   locationFit: {
@@ -163,10 +151,8 @@ export const helpCategoryGroups = {
     "junior-phase",
     "senior-phase",
   ],
-  fitScores: [
-    "fit-score",
-    "academic-fit",
-    "athletic-fit",
+  fitSignals: [
+    "school-fit-signals",
     "location-fit",
     "program-fit",
     "financial-fit",

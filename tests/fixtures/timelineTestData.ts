@@ -1336,22 +1336,6 @@ export const testSuggestions = {
     surfaced_at: "2026-01-01T10:00:00Z",
   },
 
-  portfolioHealth: {
-    id: "sugg-portfolio-1",
-    athlete_id: "athlete-behind-1",
-    rule_type: "portfolio_health",
-    urgency: "high",
-    message:
-      "Your current list has mostly reach schools. Consider adding match and safety options to ensure you have realistic opportunities.",
-    action_type: "add_school",
-    related_school_id: null,
-    related_task_id: "task-10-r3",
-    dismissed: false,
-    completed: false,
-    pending_surface: false,
-    surfaced_at: "2026-01-01T10:00:00Z",
-  },
-
   videoLinkBroken: {
     id: "sugg-video-broken-1",
     athlete_id: "athlete-on-track-1",
@@ -1878,84 +1862,6 @@ export const fitScoreTestCases = {
 };
 
 // ============================================================================
-// PORTFOLIO HEALTH FIXTURES
-// ============================================================================
-
-export const portfolioHealthTestCases = {
-  // Healthy portfolio
-  healthy: {
-    schools: [
-      { fit_tier: "reach" },
-      { fit_tier: "reach" },
-      { fit_tier: "match" },
-      { fit_tier: "match" },
-      { fit_tier: "match" },
-      { fit_tier: "safety" },
-      { fit_tier: "safety" },
-    ],
-    expected: {
-      reaches: 2,
-      matches: 3,
-      safeties: 2,
-      warnings: [],
-      status: "healthy",
-    },
-  },
-
-  // All reaches - warning
-  allReaches: {
-    schools: [
-      { fit_tier: "reach" },
-      { fit_tier: "reach" },
-      { fit_tier: "reach" },
-      { fit_tier: "unlikely" },
-      { fit_tier: "unlikely" },
-    ],
-    expected: {
-      reaches: 3,
-      matches: 0,
-      safeties: 0,
-      unlikelies: 2,
-      warnings: [
-        "No match schools",
-        "No safety schools",
-        "Portfolio heavily weighted toward reaches",
-      ],
-      status: "at_risk",
-    },
-  },
-
-  // No safeties - warning
-  noSafeties: {
-    schools: [
-      { fit_tier: "reach" },
-      { fit_tier: "reach" },
-      { fit_tier: "match" },
-      { fit_tier: "match" },
-    ],
-    expected: {
-      reaches: 2,
-      matches: 2,
-      safeties: 0,
-      warnings: ["No safety schools - consider adding backup options"],
-      status: "needs_attention",
-    },
-  },
-
-  // Empty list
-  emptyList: {
-    schools: [],
-    expected: {
-      reaches: 0,
-      matches: 0,
-      safeties: 0,
-      warnings: ["No schools on list - start building your target list"],
-      status: "not_started",
-    },
-  },
-};
-
-// ============================================================================
 // EXPORT ALL FIXTURES
 // ============================================================================
 
@@ -1997,7 +1903,6 @@ export const timelineTestData = {
   testCases: {
     statusScore: statusScoreTestCases,
     fitScore: fitScoreTestCases,
-    portfolioHealth: portfolioHealthTestCases,
   },
 };
 
