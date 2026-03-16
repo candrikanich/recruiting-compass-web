@@ -107,6 +107,39 @@
             @close="showEmailModal = false"
             @confirmed="handleEmailConfirmed"
           />
+
+          <!-- Enrich Match Chooser -->
+          <div
+            v-if="showEnrichModal && enrichMatches.length > 1"
+            class="bg-white rounded-xl border border-amber-200 shadow-xs p-6"
+          >
+            <h3 class="font-semibold text-slate-900 mb-2">
+              Select the Correct School
+            </h3>
+            <p class="text-sm text-slate-600 mb-4">
+              Multiple schools matched. Choose the correct one to import
+              academic data.
+            </p>
+            <div class="space-y-2">
+              <button
+                v-for="match in enrichMatches"
+                :key="match.scorecardId"
+                class="w-full text-left px-4 py-3 border border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition text-sm"
+                @click="confirmEnrich(match.scorecardId)"
+              >
+                <span class="font-medium text-slate-900">{{ match.name }}</span>
+                <span class="text-slate-500 ml-2">
+                  {{ match.city }}, {{ match.state }}
+                </span>
+              </button>
+            </div>
+            <button
+              class="mt-3 text-sm text-slate-500 hover:text-slate-700"
+              @click="showEnrichModal = false"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
 
         <!-- Sidebar - Right Column -->
@@ -114,10 +147,12 @@
           :school-id="id"
           :coaches="schoolCoaches"
           :school="school"
-          :fit-score="fitScore"
+          :personal-fit="fitSignals?.personalFit ?? null"
+          :academic-fit="fitSignals?.academicFit ?? null"
           :division-recommendation="divisionRecommendation"
           @open-email-modal="showEmailModal = true"
           @delete="openDeleteConfirm"
+          @enrich="handleEnrich"
         />
       </div>
 
@@ -165,6 +200,8 @@ import { useFitScore } from "~/composables/useFitScore";
 import { useDivisionRecommendations } from "~/composables/useDivisionRecommendations";
 import { useCollegeData } from "~/composables/useCollegeData";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
+import { useAuthFetch } from "~/composables/useAuthFetch";
+import { useAppToast } from "~/composables/useAppToast";
 import { useUserStore } from "~/stores/user";
 import { useSchoolBasicInfo } from "~/composables/useSchoolBasicInfo";
 import { useSchoolProsCons } from "~/composables/useSchoolProsCons";
@@ -174,13 +211,13 @@ import { useDeleteModal } from "~/composables/useDeleteModal";
 import { useSingleSchoolDistance } from "~/composables/useSchoolDistance";
 import { createUpdateHandler } from "~/utils/updateHandler";
 import { getCarnegieSize } from "~/utils/schoolSize";
-import { calculateFitScore } from "~/utils/fitScoreCalculation";
 import type { Document, AcademicInfo } from "~/types/models";
+import type { DivisionRecommendation } from "~/types/timeline";
 import type {
-  FitScoreResult,
-  DivisionRecommendation,
-  FitScoreInputs,
-} from "~/types/timeline";
+  SchoolFitSignals,
+  SchoolAcademicInfo,
+  AthleteProfileForFit,
+} from "~/types/schoolFit";
 import type { School } from "~/types/models";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import SchoolDetailHeader from "~/components/School/SchoolDetailHeader.vue";
@@ -194,7 +231,6 @@ import SchoolSidebar from "~/components/School/SchoolSidebar.vue";
 const EmailSendModal = defineAsyncComponent(
   () => import("~/components/EmailSendModal.vue"),
 );
-import FitScoreDisplay from "~/components/FitScore/FitScoreDisplay.vue";
 import DesignSystemConfirmDialog from "~/components/DesignSystem/ConfirmDialog.vue";
 
 
@@ -207,14 +243,16 @@ const userStore = useUserStore();
 const { getSchool, updateSchool, smartDelete, loading } = useSchools();
 const { coaches: allCoaches, fetchCoaches } = useCoaches();
 const { documents, fetchDocuments } = useDocumentsConsolidated();
-const { calculateSchoolFitScore, getFitScore } = useFitScore();
+const { calculateSignals, invalidate } = useFitScore();
 const { createInteraction } = useInteractions();
 const {
   fetchByName,
   loading: collegeDataLoading,
   error: collegeDataError,
 } = useCollegeData();
-const { getHomeLocation } = usePreferenceManager();
+const { getPlayerDetails } = usePreferenceManager();
+const { $fetchAuth } = useAuthFetch();
+const { showToast } = useAppToast();
 const { announcement, announce, liveRegionAttrs } = useLiveRegion();
 
 // Feature composables
@@ -237,9 +275,12 @@ const { activeFamilyId } = useFamilyCtx();
 // State
 const school = ref<School | null>(null);
 const isInitializing = ref(true);
-const fitScore = ref<FitScoreResult | null>(null);
 const divisionRecommendation = ref<DivisionRecommendation | null>(null);
 const showEmailModal = ref(false);
+const enrichMatches = ref<
+  Array<{ scorecardId: number; name: string; state: string; city: string }>
+>([]);
+const showEnrichModal = ref(false);
 
 // Delete modal management
 const {
@@ -250,7 +291,30 @@ const {
   confirm: confirmDelete,
 } = useDeleteModal(smartDelete);
 
-// Computed
+// Computed — fit signals
+const athleteProfile = computed<AthleteProfileForFit>(() => {
+  const player = getPlayerDetails();
+  return {
+    school_state: player?.school_state ?? null,
+    gpa: player?.gpa ?? null,
+    sat_score: player?.sat_score ?? null,
+    act_score: player?.act_score ?? null,
+    campus_size_preference: null,
+    cost_sensitivity: null,
+  };
+});
+
+const schoolAcademicInfo = computed<SchoolAcademicInfo>(() => {
+  const info = school.value?.academic_info;
+  return (typeof info === "object" && info !== null ? info : {}) as SchoolAcademicInfo;
+});
+
+const fitSignals = computed<SchoolFitSignals | null>(() => {
+  if (!school.value) return null;
+  return calculateSignals(id, athleteProfile.value, schoolAcademicInfo.value);
+});
+
+// Computed — school data
 const schoolCoaches = computed(() =>
   allCoaches.value.filter((c) => c.school_id === id),
 );
@@ -390,53 +454,53 @@ const handleDocumentUploadSuccess = async () => {
   await fetchDocuments();
 };
 
-const loadFitScore = async () => {
+// Enrich handlers
+async function handleEnrich() {
   if (!school.value) return;
+  showToast("Looking up academic data...", "info");
   try {
-    const { getRecommendedDivisions } = useDivisionRecommendations();
+    const result = await $fetchAuth<{
+      success: boolean;
+      data: {
+        matches: Array<{
+          scorecardId: number;
+          name: string;
+          state: string;
+          city: string;
+        }>;
+      };
+    }>(`/api/schools/${id}/enrich`, {
+      method: "POST",
+      body: { schoolName: school.value.name },
+    });
 
-    // Check if school has fit_score from database (populated by server-side recalculation)
-    const schoolFitScore =
-      "fit_score" in school.value && typeof school.value.fit_score === "number"
-        ? school.value.fit_score
-        : null;
-    const schoolFitScoreData =
-      "fit_score_data" in school.value &&
-      typeof school.value.fit_score_data === "object" &&
-      school.value.fit_score_data !== null
-        ? (school.value.fit_score_data as Partial<FitScoreInputs>)
-        : null;
-
-    if (schoolFitScore !== null && schoolFitScoreData) {
-      // Use fit score from database (most recent, updated by server)
-      fitScore.value = calculateFitScore(schoolFitScoreData);
+    if (result?.data?.matches?.length === 1) {
+      await confirmEnrich(result.data.matches[0].scorecardId);
+    } else if ((result?.data?.matches?.length ?? 0) > 1) {
+      enrichMatches.value = result.data.matches;
+      showEnrichModal.value = true;
     } else {
-      // Fall back to cache or recalculate
-      const cachedScore = getFitScore(id);
-      if (cachedScore) {
-        fitScore.value = cachedScore;
-      } else {
-        const studentSize = school.value.academic_info?.student_size;
-        const numericSize =
-          typeof studentSize === "number" ? studentSize : undefined;
-        fitScore.value = await calculateSchoolFitScore(id, undefined, {
-          campusSize: numericSize,
-          avgGpa: school.value.academic_info?.gpa_requirement ?? undefined,
-          offeredMajors: [],
-        });
-      }
+      showToast("No matching schools found in College Scorecard", "error");
     }
-
-    if (fitScore.value) {
-      divisionRecommendation.value = getRecommendedDivisions(
-        school.value.division,
-        fitScore.value.score,
-      );
-    }
-  } catch (err) {
-    console.error("Failed to load fit score:", err);
+  } catch {
+    showToast("Failed to search College Scorecard", "error");
   }
-};
+}
+
+async function confirmEnrich(scorecardId: number) {
+  try {
+    await $fetchAuth(`/api/schools/${id}/enrich`, {
+      method: "POST",
+      body: { scorecardId, confirmed: true },
+    });
+    showEnrichModal.value = false;
+    school.value = await getSchool(id);
+    invalidate(id);
+    showToast("Academic data updated from College Scorecard", "success");
+  } catch {
+    showToast("Failed to save academic data", "error");
+  }
+}
 
 const lookupCollegeData = async () => {
   if (!school.value) return;
@@ -473,12 +537,16 @@ const lookupCollegeData = async () => {
 };
 
 const loadPageData = async () => {
+  const { getRecommendedDivisions } = useDivisionRecommendations();
   school.value = await getSchool(id);
   if (school.value) {
     initializeForm(school.value);
     await fetchCoaches(id);
     await fetchDocuments();
-    await loadFitScore();
+    divisionRecommendation.value = getRecommendedDivisions(
+      school.value.division,
+      null,
+    );
   }
   isInitializing.value = false;
 };
