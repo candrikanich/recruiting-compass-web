@@ -101,11 +101,11 @@ export const useSchools = () => {
       `[useSchools] Fetching for family: ${activeFamily.activeFamilyId.value}`,
     );
 
-    await schoolStore.fetchSchools();
+    await schoolStore.fetchSchools(activeFamily.activeFamilyId.value);
   };
 
   const getSchool = async (id: string): Promise<School | null> => {
-    return schoolStore.getSchool(id);
+    return schoolStore.getSchool(id, activeFamily.activeFamilyId.value ?? "");
   };
 
   const createSchool = async (
@@ -148,12 +148,12 @@ export const useSchools = () => {
   };
 
   const updateSchool = async (id: string, updates: Partial<School>) => {
-    return schoolStore.updateSchool(id, updates);
+    return schoolStore.updateSchool(id, updates, activeFamily.activeFamilyId.value ?? "");
   };
 
   const deleteSchool = async (id: string) => {
     try {
-      return await schoolStore.deleteSchool(id);
+      return await schoolStore.deleteSchool(id, activeFamily.activeFamilyId.value ?? "");
     } catch (err: unknown) {
       const message =
         err instanceof Error
@@ -175,7 +175,7 @@ export const useSchools = () => {
   };
 
   const toggleFavorite = async (id: string, currentFavorite: boolean) => {
-    return schoolStore.toggleFavorite(id, currentFavorite);
+    return schoolStore.toggleFavorite(id, currentFavorite, activeFamily.activeFamilyId.value ?? "");
   };
 
   const updateRanking = async (schools_: School[]) => {

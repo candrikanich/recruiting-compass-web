@@ -77,11 +77,6 @@ vi.mock("~/stores/user", () => ({
   })),
 }));
 
-vi.mock("~/composables/useFamilyContext", () => ({
-  useFamilyContext: () => ({
-    activeFamilyId: { value: "family-123" },
-  }),
-}));
 
 describe("Schools Store - Status History (Story 3.4)", () => {
   beforeEach(() => {
@@ -124,6 +119,7 @@ describe("Schools Store - Status History (Story 3.4)", () => {
       const result = await store.updateStatus(
         "school-1",
         "committed",
+        "family-123",
         "Good fit after campus visit",
       );
 
@@ -155,7 +151,7 @@ describe("Schools Store - Status History (Story 3.4)", () => {
 
       store.schools = [mockSchool];
 
-      const result = await store.updateStatus("school-1", "camp_invite");
+      const result = await store.updateStatus("school-1", "camp_invite", "family-123");
 
       expect(result).toBeDefined();
       expect(result.status).toBe("camp_invite");
@@ -169,7 +165,7 @@ describe("Schools Store - Status History (Story 3.4)", () => {
       store.schools = [];
 
       await expect(
-        store.updateStatus("school-1", "committed"),
+        store.updateStatus("school-1", "committed", "family-123"),
       ).rejects.toThrow("User not authenticated");
     });
 
@@ -196,7 +192,7 @@ describe("Schools Store - Status History (Story 3.4)", () => {
       store.schools = [mockSchool];
       store.statusHistory["school-1"] = [];
 
-      await store.updateStatus("school-1", "committed");
+      await store.updateStatus("school-1", "committed", "family-123");
 
       expect("school-1" in store.statusHistory).toBe(false);
     });
