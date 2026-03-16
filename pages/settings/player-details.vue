@@ -549,6 +549,20 @@
           </div>
         </div>
 
+        <!-- TAB: PUBLIC PROFILE -->
+        <div v-show="currentTab === 'public-profile'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ProfileSetup />
+            <ProfilePreview
+              v-if="playerProfile"
+              :settings="playerProfile"
+              :player-name="userStore.user?.full_name ?? 'Athlete'"
+              :details="null"
+              :schools="[]"
+            />
+          </div>
+        </div>
+
         <!-- TAB: HISTORY -->
         <div v-show="currentTab === 'history'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
@@ -609,7 +623,9 @@ import {
   CheckIcon,
   XMarkIcon,
   PlusIcon,
+  ShareIcon,
 } from "@heroicons/vue/24/outline";
+import { usePlayerProfile } from "~/composables/usePlayerProfile";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useAppToast } from "~/composables/useAppToast";
 import { useFormValidation } from "~/composables/useFormValidation";
@@ -640,7 +656,10 @@ const tabs = [
   { id: "athletics", name: "Athletics", icon: BoltIcon },
   { id: "academics", name: "Academics & Social", icon: AcademicCapIcon },
   { id: "history", name: "History", icon: ClockIcon },
+  { id: "public-profile", name: "Public Profile", icon: ShareIcon },
 ];
+
+const { profile: playerProfile } = usePlayerProfile();
 
 const BATS_OPTIONS = [
   { value: "R", label: "Right" },
