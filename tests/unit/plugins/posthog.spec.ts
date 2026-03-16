@@ -26,9 +26,9 @@ describe("posthog plugin", () => {
     vi.clearAllMocks()
   })
 
-  it("does not initialize when posthogKey is empty", async () => {
+  it("does not initialize when posthogPublicKey is empty", async () => {
     vi.mocked(useRuntimeConfig).mockReturnValue({
-      public: { posthogKey: "", posthogHost: "https://us.i.posthog.com" },
+      public: { posthogPublicKey: "", posthogHost: "https://us.i.posthog.com" },
     } as ReturnType<typeof useRuntimeConfig>)
     vi.mocked(useRouter).mockReturnValue({ afterEach: mockAfterEach } as ReturnType<typeof useRouter>)
 
@@ -40,7 +40,7 @@ describe("posthog plugin", () => {
 
   it("initializes posthog with correct privacy settings when key is set", async () => {
     vi.mocked(useRuntimeConfig).mockReturnValue({
-      public: { posthogKey: "phc_test123", posthogHost: "https://us.i.posthog.com" },
+      public: { posthogPublicKey: "phc_test123", posthogHost: "https://us.i.posthog.com" },
     } as ReturnType<typeof useRuntimeConfig>)
     vi.mocked(useRouter).mockReturnValue({ afterEach: mockAfterEach } as ReturnType<typeof useRouter>)
 
@@ -60,7 +60,7 @@ describe("posthog plugin", () => {
 
   it("registers router afterEach hook for page tracking", async () => {
     vi.mocked(useRuntimeConfig).mockReturnValue({
-      public: { posthogKey: "phc_test123", posthogHost: "https://us.i.posthog.com" },
+      public: { posthogPublicKey: "phc_test123", posthogHost: "https://us.i.posthog.com" },
     } as ReturnType<typeof useRuntimeConfig>)
     vi.mocked(useRouter).mockReturnValue({ afterEach: mockAfterEach } as ReturnType<typeof useRouter>)
 
@@ -76,7 +76,7 @@ describe("posthog plugin", () => {
 
   it("does not capture page_view when route name is null", async () => {
     vi.mocked(useRuntimeConfig).mockReturnValue({
-      public: { posthogKey: "phc_test123", posthogHost: "https://us.i.posthog.com" },
+      public: { posthogPublicKey: "phc_test123", posthogHost: "https://us.i.posthog.com" },
     } as ReturnType<typeof useRuntimeConfig>)
     vi.mocked(useRouter).mockReturnValue({ afterEach: mockAfterEach } as ReturnType<typeof useRouter>)
 

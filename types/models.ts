@@ -69,7 +69,6 @@ export interface School {
   state?: string | null;
   division: "D1" | "D2" | "D3" | "NAIA" | "JUCO" | null;
   conference: string | null;
-  ranking?: number | null;
   is_favorite: boolean;
   website: string | null;
   favicon_url: string | null;

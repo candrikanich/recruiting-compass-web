@@ -57,7 +57,6 @@ export const useDashboardData = () => {
         location,
         division,
         conference,
-        ranking,
         is_favorite,
         status,
         status_changed_at,
