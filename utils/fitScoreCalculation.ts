@@ -280,37 +280,37 @@ export function getFitTierColor(_tier: FitTier): string {
 }
 
 /** @deprecated — athletic fit is not calculable from available data */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 export function calculateAthleticFit(..._args: unknown[]): number {
   return 0;
 }
 
 /** @deprecated — opportunity fit is not calculable from available data */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 export function calculateOpportunityFit(..._args: unknown[]): number {
   return 0;
 }
 
 /** @deprecated — use calculateAcademicFitSignals instead */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 export function calculateAcademicFit(..._args: unknown[]): number {
   return 0;
 }
 
 /** @deprecated — use calculatePersonalFitSignals instead */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 export function calculatePersonalFit(..._args: unknown[]): number {
   return 0;
 }
 
 /** @deprecated */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 export function getFitScoreRecommendation(..._args: unknown[]): string {
   return "";
 }
 
 /** @deprecated — portfolio health removed */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 export function calculatePortfolioHealth(..._args: unknown[]): {
   reaches: number;
   matches: number;
