@@ -3,7 +3,7 @@
  * Generates professional HTML for recruiter-ready recruiting packets with athlete profile and school information
  */
 
-import type { User, School } from "~/types/models";
+import type { User, School, VideoLink } from "~/types/models";
 
 /**
  * Athlete data aggregated from multiple sources for recruiting packet
@@ -27,12 +27,6 @@ export interface AthletePacketData extends Partial<User> {
   video_links?: VideoLink[];
   social_media?: SocialMediaHandle[];
   core_courses?: string[];
-}
-
-export interface VideoLink {
-  platform: "hudl" | "youtube" | "vimeo";
-  url: string;
-  title?: string;
 }
 
 export interface SocialMediaHandle {
@@ -573,7 +567,6 @@ const renderSchoolsSection = (schools: SchoolGroupedByPriority): string => {
               <th>Division</th>
               <th>Conference</th>
               <th>Status</th>
-              ${tier.some((s) => s.fitScore) ? "<th>Fit Score</th>" : ""}
             </tr>
           </thead>
           <tbody>
@@ -586,7 +579,6 @@ const renderSchoolsSection = (schools: SchoolGroupedByPriority): string => {
                 <td>${school.division || "-"}</td>
                 <td>${school.conference || "-"}</td>
                 <td>${getStatusBadge(school.status || "researching")}</td>
-                ${school.fitScore ? `<td>${school.fitScore}%</td>` : ""}
               </tr>
             `,
               )

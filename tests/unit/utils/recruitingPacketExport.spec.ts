@@ -263,6 +263,11 @@ describe("recruitingPacketExport", () => {
       expect(html).toContain("D1");
     });
 
+    it("does not render a Fit Score column even when fitScore is provided", () => {
+      const html = generateRecruitingPacketHTML(mockData);
+      expect(html).not.toContain("Fit Score");
+    });
+
     it("should include activity summary section", () => {
       const html = generateRecruitingPacketHTML(mockData);
       expect(html).toContain("Activity Summary");
