@@ -1,9 +1,8 @@
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
-import type { Database } from "~/types/database";
 import { createClientLogger } from "~/utils/logger";
-
-type Users = Database["public"]["Tables"]["users"]["Row"];
+import { calculateProfileCompleteness } from "~/utils/profileCompletenessCalculation";
+import { usePreferenceManager } from "./usePreferenceManager";
 
 export interface ContextualPrompt {
   id: string;
@@ -33,7 +32,6 @@ const logger = createClientLogger("useProfileCompleteness");
 
 export const useProfileCompleteness = () => {
   const supabase = useSupabase();
-
   const completeness = ref(0);
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -61,52 +59,17 @@ export const useProfileCompleteness = () => {
   ];
 
   /**
-   * Calculate profile completeness percentage based on user data
-   * Basic implementation checking if user has essential fields filled
-   */
-  const calculateCompleteness = (profile: Partial<Users>): number => {
-    let completed = 0;
-    const total = 3; // Full name, email, created_at
-
-    // Check essential fields
-    if (profile.full_name && profile.full_name.length > 0) completed++;
-    if (profile.email && profile.email.length > 0) completed++;
-    if (profile.created_at) completed++;
-
-    return Math.round((completed / total) * 100);
-  };
-
-  /**
-   * Update profile completeness based on current user profile
+   * Update profile completeness based on saved player preferences
    */
   const updateCompleteness = async (): Promise<void> => {
     loading.value = true;
     error.value = null;
 
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user?.id) {
-        throw new Error("Not authenticated");
-      }
-
-      // Fetch user profile
-      const { data, error: profileError } = (await supabase
-        .from("users")
-        .select("*")
-        .eq("id", session.user.id)
-        .single()) as {
-        data: Partial<Users> | null;
-        error: unknown;
-      };
-
-      if (profileError || !data) {
-        throw profileError || new Error("User profile not found");
-      }
-
-      // Calculate completeness
-      completeness.value = calculateCompleteness(data);
+      const { loadAllPreferences, getPlayerDetails } = usePreferenceManager();
+      await loadAllPreferences();
+      const details = getPlayerDetails();
+      completeness.value = details ? calculateProfileCompleteness(details) : 0;
     } catch (err) {
       const message =
         err instanceof Error
@@ -114,7 +77,6 @@ export const useProfileCompleteness = () => {
           : "Failed to calculate profile completeness";
       error.value = message;
       logger.error("Profile completeness error:", err);
-      throw err;
     } finally {
       loading.value = false;
     }

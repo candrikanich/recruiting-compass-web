@@ -35,7 +35,7 @@
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
       <!-- Profile Completeness Hero -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8">
-        <ProfileCompleteness />
+        <ProfileCompleteness :percentage="profileCompleteness" />
       </div>
 
       <!-- Desktop Tab Navigation (Hidden on Mobile) -->
@@ -507,6 +507,7 @@ import { useUserStore } from "~/stores/user";
 import { normalizePositions } from "~/utils/positions";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import ProfileCompleteness from "~/components/ProfileCompleteness.vue";
+import { calculateProfileCompleteness } from "~/utils/profileCompletenessCalculation";
 import type { PlayerDetails } from "~/types/models";
 
 definePageMeta({
@@ -603,6 +604,8 @@ const availablePositions = ref<string[]>([]);
 const isBaseballOrSoftball = computed(() => {
   return form.value.primary_sport === "Baseball" || form.value.primary_sport === "Softball";
 });
+
+const profileCompleteness = computed(() => calculateProfileCompleteness(form.value));
 
 const { isSaving, triggerSave } = useAutoSave({
   debounceMs: 1000,
