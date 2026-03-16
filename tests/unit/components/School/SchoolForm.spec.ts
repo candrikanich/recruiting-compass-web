@@ -31,6 +31,26 @@ vi.mock("~/composables/useCollegeAutocomplete", () => ({
   }),
 }));
 
+const mockLookupSchool = vi.fn();
+
+vi.mock("~/composables/useNcaaLookup", () => ({
+  useNcaaLookup: () => ({
+    lookupSchool: mockLookupSchool,
+    lookupDivision: mockLookupSchool,
+    loading: ref(false),
+    cacheSize: ref(0),
+    getSchools: vi.fn().mockReturnValue([]),
+    getNcaaDatabase: vi.fn().mockReturnValue({}),
+    getCached: vi.fn().mockReturnValue(null),
+    setCached: vi.fn(),
+    isCached: vi.fn().mockReturnValue(false),
+    clearCache: vi.fn(),
+    invalidateEntry: vi.fn(),
+    getCacheStats: vi.fn().mockReturnValue({ size: 0, entries: [] }),
+    preloadCache: vi.fn(),
+  }),
+}));
+
 vi.mock("~/utils/validation/schemas", () => ({
   schoolSchema: {
     shape: {
@@ -68,6 +88,7 @@ describe("SchoolForm", () => {
     mockErrors.value = {};
     mockFieldErrors.value = {};
     mockHasErrorsRef.value = false;
+    mockLookupSchool.mockResolvedValue(null); // default: no NCAA match
     mockValidate.mockResolvedValue({
       name: "Test School",
       status: "researching",
