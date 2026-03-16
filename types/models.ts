@@ -388,6 +388,8 @@ export interface PlayerDetails {
   school_address?: string;
   school_city?: string;
   school_state?: string;
+  campus_size_preference?: "small" | "medium" | "large";
+  cost_sensitivity?: "high" | "medium" | "low";
   // High School Team Levels
   ninth_grade_team?: string;
   ninth_grade_coach?: string;
