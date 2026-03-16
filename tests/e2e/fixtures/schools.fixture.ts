@@ -245,8 +245,6 @@ export const schoolSelectors = {
 export const notesFixtures = {
   shared:
     "Great coaching staff. Strong academic programs. Beautiful campus located in the mountains.",
-  private:
-    "Concerned about distance from home. Need to discuss financial aid package.",
   long: "Lorem ipsum dolor sit amet. ".repeat(100),
   special: 'Contains "quotes", line\nbreaks, and special chars: @#$%',
 };
@@ -256,13 +254,10 @@ export const notesFixtures = {
  */
 export const notesSelectors = {
   sharedNotesSection: "text=Notes",
-  privateNotesSection: "text=My Private Notes",
   editButton: 'button:has-text("Edit")',
   cancelButton: 'button:has-text("Cancel")',
   saveButton: 'button:has-text("Save Notes")',
   notesTextarea: 'textarea[placeholder*="notes"]',
-  privateNotesTextarea: 'textarea[placeholder*="private"]',
-  privacyHint: "text=Only you can see these notes",
   notesDisplay: ".text-slate-700.text-sm.whitespace-pre-wrap",
 };
 

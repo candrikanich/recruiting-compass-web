@@ -5,7 +5,6 @@ import type { School } from '~/types/models';
 import {
   AcademicCapIcon,
   StarIcon,
-  TrophyIcon,
   MapPinIcon
 } from '@heroicons/vue/24/outline';
 
@@ -24,13 +23,6 @@ export function useSchoolStats(schools: Ref<School[]>) {
       icon: StarIcon,
       color: 'amber' as const,
       testId: 'stat-favorites'
-    },
-    {
-      label: 'Tier A',
-      value: schools.value.filter(s => s.priority_tier === 'A').length,
-      icon: TrophyIcon,
-      color: 'purple' as const,
-      testId: 'stat-tier-a'
     },
     {
       label: 'Visited',

@@ -64,7 +64,6 @@ const createMockSchool = (overrides: Partial<School> = {}): School => ({
   ncaa_id: "test123",
   status: "interested",
   status_changed_at: null,
-  priority_tier: null,
   notes: "Test notes",
   pros: ["Good program"],
   cons: ["Far away"],

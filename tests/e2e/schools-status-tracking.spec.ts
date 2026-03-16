@@ -100,40 +100,6 @@ test.describe("Story 3.4: School Status Tracking", () => {
     expect(statusSelect.inputValue()).toBeTruthy();
   });
 
-  test("should maintain status and priority tier independently", async ({
-    page,
-  }) => {
-    // Navigate to school detail
-    const firstSchoolLink = page.locator('[data-testid="school-card"]').first();
-    await firstSchoolLink.click();
-
-    // Wait for school detail page
-    await page.waitForURL(/\/schools\/[^/]+$/);
-
-    // Set priority tier to A
-    const priorityButtons = page.locator('[data-testid*="priority-selector"]');
-    if ((await priorityButtons.count()) > 0) {
-      const tierAButton = page
-        .locator("button")
-        .filter({ hasText: "A" })
-        .first();
-      await tierAButton.click();
-      await page.waitForTimeout(500);
-    }
-
-    // Change status
-    const statusSelect = page.locator('select[class*="status"]').first();
-    await statusSelect.selectOption("contacted");
-    await page.waitForTimeout(1000);
-
-    // Verify status changed
-    const selectedStatus = await statusSelect.inputValue();
-    expect(selectedStatus).toBe("contacted");
-
-    // Priority tier should still be set (if it was)
-    // This verifies they're independent
-  });
-
   test("should support all status transitions", async ({ page }) => {
     // Navigate to school detail
     const firstSchoolLink = page.locator('[data-testid="school-card"]').first();

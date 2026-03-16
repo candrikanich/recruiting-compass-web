@@ -41,11 +41,6 @@
               Status is updating, please wait
             </span>
           </div>
-          <SchoolPrioritySelector
-            :model-value="school.priority_tier ?? null"
-            @update:model-value="handlePriorityUpdate"
-            :data-testid="`priority-selector-${school.id}`"
-          />
           <span
             v-if="calculatedSize"
             class="px-2 py-1 text-xs font-medium rounded-full"
@@ -90,7 +85,6 @@ import { getStatusBadgeColor } from "~/utils/schoolStatusBadges";
 import { getSizeColorClass } from "~/utils/schoolSize";
 import { MapPinIcon, StarIcon } from "@heroicons/vue/24/outline";
 import SchoolLogo from "~/components/School/SchoolLogo.vue";
-import SchoolPrioritySelector from "~/components/SchoolPrioritySelector.vue";
 
 const props = defineProps<{
   school: School;
@@ -100,16 +94,11 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   "update:status": [status: School["status"]];
-  "update:priority": [tier: "A" | "B" | "C" | null];
   "toggle-favorite": [];
 }>();
 
 const handleStatusChange = (event: Event) => {
   const target = event.target as HTMLSelectElement;
   emit("update:status", target.value as School["status"]);
-};
-
-const handlePriorityUpdate = (tier: "A" | "B" | "C" | null) => {
-  emit("update:priority", tier);
 };
 </script>

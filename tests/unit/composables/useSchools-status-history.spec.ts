@@ -18,7 +18,6 @@ const mockSupabase = {
             name: "Test School",
             status: "committed",
             status_changed_at: "2026-01-25T12:00:00Z",
-            priority_tier: "A",
             division: "D1",
             location: "Boston, MA",
             is_favorite: false,

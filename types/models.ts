@@ -1,10 +1,6 @@
 /**
  * Record type definitions for structured JSON fields
  */
-export interface PrivateNotes {
-  [key: string]: string | number | boolean | string[] | null;
-}
-
 export interface OfferDetails {
   terms?: string;
   start_date?: string;
@@ -85,11 +81,9 @@ export interface School {
     | "committed"
     | "not_pursuing";
   status_changed_at?: string | null;
-  priority_tier?: "A" | "B" | "C" | null;
   notes: string | null;
   pros: string[];
   cons: string[];
-  private_notes?: PrivateNotes | null;
   offer_details?: OfferDetails | null;
   academic_info?: AcademicInfo | null;
   amenities?: Amenities | null;
@@ -130,7 +124,6 @@ export interface Coach {
   twitter_handle: string | null;
   instagram_handle: string | null;
   notes: string | null;
-  private_notes?: PrivateNotes | null;
   responsiveness_score: number;
   last_contact_date: string | null;
   availability?: CoachAvailability | null;

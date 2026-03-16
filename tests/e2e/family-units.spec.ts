@@ -93,49 +93,6 @@ test.describe("Family Units", () => {
     expect(isVisible).toBe(false);
   });
 
-  test("private notes can be added to schools", async ({ page }) => {
-    await loginViaForm(page, TEST_ACCOUNTS.player1.email, TEST_ACCOUNTS.player1.password, /\/(dashboard|schools)/);
-
-    // Navigate to schools
-    await page.goto("/schools");
-    await page.waitForLoadState("networkidle");
-
-    // Look for private notes card (with lock emoji and "Your Private Notes" text)
-    const privateNotesCard = page.locator("text=🔒 Your Private Notes").first();
-
-    if (await privateNotesCard.isVisible().catch(() => false)) {
-      // Find the "Add Notes" or "Edit" button
-      const editButton = privateNotesCard
-        .locator("button:has-text('Add Notes'), button:has-text('Edit')")
-        .first();
-
-      if (await editButton.isVisible().catch(() => false)) {
-        await editButton.click();
-
-        // Fill in the note text
-        const textarea = privateNotesCard.locator("textarea").first();
-        if (await textarea.isVisible().catch(() => false)) {
-          await textarea.fill("Test private note");
-
-          // Save the note
-          const saveButton = privateNotesCard.locator(
-            "button:has-text('Save')",
-          );
-          if (await saveButton.isVisible().catch(() => false)) {
-            await saveButton.click();
-            await page.waitForLoadState("networkidle");
-
-            // Verify note is saved
-            const savedNote = privateNotesCard.locator(
-              "text=Test private note",
-            );
-            expect(await savedNote.isVisible().catch(() => false)).toBeTruthy();
-          }
-        }
-      }
-    }
-  });
-
   test("schools page displays school data correctly", async ({ page }) => {
     await loginViaForm(page, TEST_ACCOUNTS.player1.email, TEST_ACCOUNTS.player1.password, /\/(dashboard|schools)/);
 

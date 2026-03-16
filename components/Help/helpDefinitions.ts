@@ -162,14 +162,6 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     relatedLinks: [{ label: "Recovery Plan Guide", url: "/docs/recovery" }],
   },
 
-  // Priority tiers
-  priorityTiers: {
-    id: "priority-tiers",
-    title: "Priority Tiers",
-    shortDescription: "Organize schools by recruitment likelihood",
-    fullDescription: `Reach schools are harder to get into (your stats are below average). Target schools are realistic matches for you (your stats align with theirs). Safety schools are very likely acceptances (your stats are above average). A balanced list has schools across all tiers so you have realistic options.`,
-    relatedLinks: [{ label: "School Tiering Strategy", url: "/docs/tiering" }],
-  },
 };
 
 export const helpCategoryGroups = {
@@ -189,7 +181,7 @@ export const helpCategoryGroups = {
   ],
   dashboard: ["dashboard-overview", "progress-bar", "suggestions-widget"],
   coaches: ["responsiveness-score", "recovery-plan"],
-  organization: ["task-dependencies", "priority-tiers", "interest-calibration"],
+  organization: ["task-dependencies", "interest-calibration"],
 };
 
 /**

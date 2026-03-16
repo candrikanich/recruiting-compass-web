@@ -26,7 +26,6 @@ describe("School Detail Page - Coaching Philosophy Integration", () => {
       ncaa_id: null,
       status: "interested",
       status_changed_at: null,
-      priority_tier: "A",
       notes: "General notes",
       pros: ["Great program"],
       cons: ["Far away"],
@@ -153,7 +152,6 @@ Line 3: Player development`;
       coaching_philosophy: "Original philosophy",
       coaching_style: "Updated style",
       status: "recruited",
-      priority_tier: "B",
       notes: "New notes",
     };
 
@@ -161,7 +159,6 @@ Line 3: Player development`;
     expect(updated.coaching_philosophy).toBe("Original philosophy");
     expect(updated.coaching_style).toBe("Updated style");
     expect(updated.status).toBe("recruited");
-    expect(updated.priority_tier).toBe("B");
     expect(updated.notes).toBe("New notes");
   });
 

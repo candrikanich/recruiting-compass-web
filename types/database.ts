@@ -234,7 +234,6 @@ export type Database = {
           last_name: string
           notes: string | null
           phone: string | null
-          private_notes: string | null
           responsiveness_score: number | null
           role: Database["public"]["Enums"]["coach_role"]
           school_id: string
@@ -256,7 +255,6 @@ export type Database = {
           last_name: string
           notes?: string | null
           phone?: string | null
-          private_notes?: string | null
           responsiveness_score?: number | null
           role: Database["public"]["Enums"]["coach_role"]
           school_id: string
@@ -278,7 +276,6 @@ export type Database = {
           last_name?: string
           notes?: string | null
           phone?: string | null
-          private_notes?: string | null
           responsiveness_score?: number | null
           role?: Database["public"]["Enums"]["coach_role"]
           school_id?: string
@@ -339,7 +336,6 @@ export type Database = {
           last_name: string | null
           notes: string | null
           phone: string | null
-          private_notes: string | null
           responsiveness_score: number | null
           role: Database["public"]["Enums"]["coach_role"] | null
           school_id: string | null
@@ -361,7 +357,6 @@ export type Database = {
           last_name?: string | null
           notes?: string | null
           phone?: string | null
-          private_notes?: string | null
           responsiveness_score?: number | null
           role?: Database["public"]["Enums"]["coach_role"] | null
           school_id?: string | null
@@ -383,7 +378,6 @@ export type Database = {
           last_name?: string | null
           notes?: string | null
           phone?: string | null
-          private_notes?: string | null
           responsiveness_score?: number | null
           role?: Database["public"]["Enums"]["coach_role"] | null
           school_id?: string | null
@@ -1816,8 +1810,6 @@ export type Database = {
           name: string
           notes: string | null
           offer_details: Json | null
-          priority_tier: string | null
-          private_notes: Json | null
           pros: string[] | null
           ranking: number | null
           recruiting_approach: string | null
@@ -1855,8 +1847,6 @@ export type Database = {
           name: string
           notes?: string | null
           offer_details?: Json | null
-          priority_tier?: string | null
-          private_notes?: Json | null
           pros?: string[] | null
           ranking?: number | null
           recruiting_approach?: string | null
@@ -1894,8 +1884,6 @@ export type Database = {
           name?: string
           notes?: string | null
           offer_details?: Json | null
-          priority_tier?: string | null
-          private_notes?: Json | null
           pros?: string[] | null
           ranking?: number | null
           recruiting_approach?: string | null
@@ -1964,8 +1952,6 @@ export type Database = {
           name: string | null
           notes: string | null
           offer_details: Json | null
-          priority_tier: string | null
-          private_notes: Json | null
           pros: string[] | null
           ranking: number | null
           recruiting_approach: string | null
@@ -2001,8 +1987,6 @@ export type Database = {
           name?: string | null
           notes?: string | null
           offer_details?: Json | null
-          priority_tier?: string | null
-          private_notes?: Json | null
           pros?: string[] | null
           ranking?: number | null
           recruiting_approach?: string | null
@@ -2038,8 +2022,6 @@ export type Database = {
           name?: string | null
           notes?: string | null
           offer_details?: Json | null
-          priority_tier?: string | null
-          private_notes?: Json | null
           pros?: string[] | null
           ranking?: number | null
           recruiting_approach?: string | null

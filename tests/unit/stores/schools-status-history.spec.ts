@@ -24,7 +24,6 @@ vi.mock("~/composables/useSupabase", () => ({
                   name: "Test School",
                   status: lastStatus,
                   status_changed_at: "2026-01-25T12:00:00Z",
-                  priority_tier: "A",
                   division: "D1",
                   location: "Boston, MA",
                   is_favorite: false,
@@ -276,36 +275,4 @@ describe("Schools Store - Status History (Story 3.4)", () => {
     });
   });
 
-  describe("Priority tier independence", () => {
-    it("should allow status and priority tier to change independently", async () => {
-      const store = useSchoolStore();
-      const mockSchool: School = {
-        id: "school-1",
-        user_id: "user-1",
-        name: "Test School",
-        location: "Boston, MA",
-        status: "interested",
-        status_changed_at: null,
-        priority_tier: "A",
-        division: "D1",
-        conference: "Ivy League",
-        is_favorite: false,
-        website: "https://example.com",
-        twitter_handle: "@testschool",
-        instagram_handle: "testschool",
-        notes: "",
-        pros: [],
-        cons: [],
-      };
-
-      store.schools = [mockSchool];
-
-      // Update status only
-      await store.updateStatus("school-1", "committed");
-
-      // Priority tier should remain unchanged
-      expect(store.schools[0].priority_tier).toBe("A");
-      expect(store.schools[0].status).toBe("committed");
-    });
-  });
 });

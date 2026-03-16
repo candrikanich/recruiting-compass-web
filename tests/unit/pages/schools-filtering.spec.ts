@@ -46,7 +46,6 @@ function generateMockSchools(count: number): School[] {
       twitter_handle: `@uni${i}`,
       instagram_handle: `uni${i}`,
       status: statuses[i % statuses.length],
-      priority_tier: (["A", "B", "C"][i % 3] as "A" | "B" | "C") || "B",
       notes: `Notes for school ${i}`,
       pros: ["Good athletics", "Great academics"],
       cons: ["Far away", "Expensive"],

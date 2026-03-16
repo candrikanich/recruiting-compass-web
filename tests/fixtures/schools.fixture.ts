@@ -21,11 +21,9 @@ export function createMockSchool(overrides: Partial<School> = {}): School {
     twitter_handle: overrides.twitter_handle || "@testuniv",
     instagram_handle: overrides.instagram_handle || "testuniv",
     status: overrides.status || "researching",
-    priority_tier: overrides.priority_tier ?? null,
     notes: overrides.notes || "Great program",
     pros: overrides.pros || ["Good facilities", "Strong academics"],
     cons: overrides.cons || ["Far from home"],
-    private_notes: overrides.private_notes ?? null,
     offer_details: overrides.offer_details ?? null,
     academic_info: overrides.academic_info || {
       admission_rate: 0.25,

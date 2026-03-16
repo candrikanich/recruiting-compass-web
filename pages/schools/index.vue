@@ -48,12 +48,10 @@
         :state-options="stateOptions"
         :user-home-location="userHomeLocation"
         :sort-by="sortBy"
-        :priority-tier-filter="priorityTierFilter"
         @update:filter="handleFilterUpdate"
         @remove-filter="handleRemoveFilter"
         @clear-filters="clearFilters"
         @update:sort="sortBy = $event"
-        @update:priority-tier="priorityTierFilter = $event"
       />
 
       <!-- Results Intro -->
@@ -271,7 +269,6 @@ const { stats: schoolStats } = useSchoolStats(
 
 const allInteractions = computed<Interaction[]>(() => interactionsData.value ?? []);
 const allCoaches = computed<Coach[]>(() => coachesData.value ?? []);
-const priorityTierFilter = ref<("A" | "B" | "C")[] | null>(null);
 const sortBy = ref<string>("a-z");
 
 // Pagination
@@ -405,20 +402,11 @@ const activeFiltersDisplay = computed(() => {
       }
     },
   );
-  if (priorityTierFilter.value && priorityTierFilter.value.length > 0) {
-    display["priority_tier"] = priorityTierFilter.value.join(", ");
-  }
   return display;
 });
 
 const filteredSchools = computed(() => {
   let filtered = filteredItems.value as unknown as School[];
-
-  if (priorityTierFilter.value && priorityTierFilter.value.length > 0) {
-    filtered = filtered.filter((s: School) =>
-      priorityTierFilter.value?.includes(s.priority_tier as "A" | "B" | "C"),
-    );
-  }
 
   const showMatches = typedFilterValues.value.show_matches;
   if (showMatches && hasPreferences.value) {
@@ -464,11 +452,7 @@ const handleFilterUpdate = (field: string, value: any) => {
 };
 
 const handleRemoveFilter = (field: string) => {
-  if (field === "priority_tier") {
-    priorityTierFilter.value = null;
-  } else {
-    setFilterValue(field, null);
-  }
+  setFilterValue(field, null);
 };
 
 const handleDeleteSchool = (schoolId: string) => {

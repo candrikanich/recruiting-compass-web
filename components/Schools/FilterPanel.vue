@@ -189,27 +189,6 @@
           <option value="true">Starred</option>
         </SchoolFilterSelect>
 
-        <!-- Priority Tier -->
-        <SchoolFilterSelect
-          label="Tier"
-          :value="
-            priorityTierFilter && priorityTierFilter.length === 1
-              ? priorityTierFilter[0]
-              : ''
-          "
-          @change="
-            $emit(
-              'update:priority-tier',
-              $event ? [$event as 'A' | 'B' | 'C'] : null,
-            )
-          "
-        >
-          <option value="">All</option>
-          <option value="A">A - Top Choice</option>
-          <option value="B">B - Strong Interest</option>
-          <option value="C">C - Fallback</option>
-        </SchoolFilterSelect>
-
         <!-- Sort -->
         <SchoolFilterSelect
           label="Sort"
@@ -283,7 +262,6 @@ defineProps<{
   stateOptions: { value: string; label: string }[];
   userHomeLocation: HomeLocation | null;
   sortBy: string;
-  priorityTierFilter: ("A" | "B" | "C")[] | null;
 }>();
 
 defineEmits<{
@@ -291,7 +269,6 @@ defineEmits<{
   "remove-filter": [field: string];
   "clear-filters": [];
   "update:sort": [value: string];
-  "update:priority-tier": [tiers: ("A" | "B" | "C")[] | null];
 }>();
 </script>
 

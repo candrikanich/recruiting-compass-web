@@ -40,7 +40,6 @@
             :calculated-size="calculatedSize"
             :status-updating="statusUpdating"
             @update:status="handleStatusUpdate"
-            @update:priority="handlePriorityUpdate"
             @toggle-favorite="handleToggleFavorite"
           />
 
@@ -67,11 +66,9 @@
           <!-- Notes Cards -->
           <SchoolNotesCard
             :notes="school.notes"
-            :private-note="myPrivateNote"
             :school-id="id"
             :is-saving="loading"
             @update:notes="handleUpdateNotes"
-            @update:private-notes="handleUpdatePrivateNotes"
           />
 
           <!-- Pros and Cons -->
@@ -173,7 +170,6 @@ import { useSchoolProsCons } from "~/composables/useSchoolProsCons";
 import { useSchoolStatusManagement } from "~/composables/useSchoolStatusManagement";
 import { useLiveRegion } from "~/composables/useLiveRegion";
 import { useDeleteModal } from "~/composables/useDeleteModal";
-import { usePrivateNotes } from "~/composables/usePrivateNotes";
 import { useSingleSchoolDistance } from "~/composables/useSchoolDistance";
 import { createUpdateHandler } from "~/utils/updateHandler";
 import { getCarnegieSize } from "~/utils/schoolSize";
@@ -232,7 +228,7 @@ const {
 
 const { addPro, removePro, addCon, removeCon } = useSchoolProsCons(id);
 
-const { statusUpdating, updateStatus, updatePriority, toggleFavorite } =
+const { statusUpdating, updateStatus, toggleFavorite } =
   useSchoolStatusManagement(id);
 
 // State
@@ -265,12 +261,8 @@ const calculatedSize = computed(() =>
 // Distance calculation using composable
 const calculatedDistanceFromHome = useSingleSchoolDistance(school);
 
-// Private notes using composable
-const myPrivateNote = usePrivateNotes(school);
-
 // Handlers - Status Management (using createUpdateHandler utility)
 const handleStatusUpdate = createUpdateHandler(school, updateStatus);
-const handlePriorityUpdate = createUpdateHandler(school, updatePriority);
 const handleToggleFavorite = async () => {
   if (!school.value) return;
   const updated = await toggleFavorite(school.value);
@@ -299,19 +291,6 @@ const handleUpdateNotes = createUpdateHandler(
   school,
   async (notesValue: string) => {
     return await updateSchool(id, { notes: notesValue });
-  },
-);
-
-const handleUpdatePrivateNotes = createUpdateHandler(
-  school,
-  async (privateNotesValue: string) => {
-    if (!school.value || !userStore.user) return null;
-    return await updateSchool(id, {
-      private_notes: {
-        ...(school.value.private_notes || {}),
-        [userStore.user.id]: privateNotesValue,
-      },
-    });
   },
 );
 

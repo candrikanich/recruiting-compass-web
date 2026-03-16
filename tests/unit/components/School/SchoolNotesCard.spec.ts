@@ -12,12 +12,10 @@ vi.mock("~/components/School/NotesHistory.vue", () => ({
 
 vi.mock("@heroicons/vue/24/outline", () => ({
   PencilIcon: { name: "PencilIcon", template: "<svg />" },
-  DocumentTextIcon: { name: "DocumentTextIcon", template: "<svg />" },
 }));
 
 const defaultProps = {
   notes: "Some school notes",
-  privateNote: "My private thoughts",
   schoolId: "school-123",
   isSaving: false,
 };
@@ -73,55 +71,6 @@ describe("SchoolNotesCard", () => {
       await saveBtn?.trigger("click");
 
       expect(wrapper.findAll("textarea")).toHaveLength(0);
-    });
-  });
-
-  describe("Private notes section", () => {
-    it("renders private notes in display mode", () => {
-      const wrapper = mount(SchoolNotesCard, { props: defaultProps });
-      expect(wrapper.text()).toContain("My private thoughts");
-    });
-
-    it("shows placeholder when private note is empty", () => {
-      const wrapper = mount(SchoolNotesCard, {
-        props: { ...defaultProps, privateNote: "" },
-      });
-      expect(wrapper.text()).toContain("No private notes added yet.");
-    });
-
-    it("shows only-you-can-see message", () => {
-      const wrapper = mount(SchoolNotesCard, { props: defaultProps });
-      expect(wrapper.text()).toContain("Only you can see these notes");
-    });
-
-    it("emits update:private-notes on save", async () => {
-      const wrapper = mount(SchoolNotesCard, { props: defaultProps });
-
-      const privateEditBtn = wrapper
-        .findAll("button")
-        .find(
-          (b) =>
-            b.text() === "Edit" && wrapper.findAll("button").indexOf(b) > 0,
-        );
-
-      // Click the second Edit button (private notes)
-      const editBtns = wrapper
-        .findAll("button")
-        .filter((b) => b.text().includes("Edit"));
-      await editBtns[1].trigger("click");
-
-      const textareas = wrapper.findAll("textarea");
-      await textareas[0].setValue("Updated private notes");
-
-      const saveBtn = wrapper
-        .findAll("button")
-        .find((b) => b.text().includes("Save Notes"));
-      await saveBtn?.trigger("click");
-
-      expect(wrapper.emitted("update:private-notes")).toBeTruthy();
-      expect(wrapper.emitted("update:private-notes")![0]).toEqual([
-        "Updated private notes",
-      ]);
     });
   });
 

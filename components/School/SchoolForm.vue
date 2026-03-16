@@ -441,7 +441,6 @@ const handleSubmit = async () => {
     pros: [],
     cons: [],
     is_favorite: false,
-    private_notes: {},
     user_id: "",
   });
 };

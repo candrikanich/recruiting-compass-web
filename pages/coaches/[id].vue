@@ -71,15 +71,6 @@
           @save="saveNotes"
         />
 
-        <!-- Private Notes Editor Component -->
-        <CoachNotesEditor
-          v-model="privateNotes"
-          title="My Private Notes"
-          subtitle="Only you can see these notes"
-          placeholder="Add your private thoughts about this coach..."
-          @save="savePrivateNotes"
-        />
-
         <!-- Recent Interactions Component -->
         <CoachRecentInteractions
           :interactions="recentInteractions"
@@ -172,7 +163,6 @@ import { useCoachStats } from "~/composables/useCoachStats";
 import { openTwitter, openInstagram } from "~/utils/socialMediaHandlers";
 import { useUserStore } from "~/stores/user";
 import { useDeleteModal } from "~/composables/useDeleteModal";
-import { usePrivateNotes } from "~/composables/usePrivateNotes";
 import { useCommunicationModal } from "~/composables/useCommunicationModal";
 import { ArrowLeftIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
@@ -248,9 +238,6 @@ const notes = computed({
     }
   },
 });
-
-// Private notes using composable
-const privateNotes = usePrivateNotes(coach);
 
 // Communication handlers
 const sendEmail = () => {
@@ -332,16 +319,6 @@ const deleteCoach = async () => {
 const saveNotes = async (value: string) => {
   if (!coach.value) return;
   await updateCoach(coach.value.id, { notes: value });
-};
-
-const savePrivateNotes = async (value: string) => {
-  if (!coach.value || !userStore.user) return;
-  await updateCoach(coach.value.id, {
-    private_notes: {
-      ...(coach.value.private_notes || {}),
-      [userStore.user.id]: value,
-    },
-  });
 };
 
 // Data loading

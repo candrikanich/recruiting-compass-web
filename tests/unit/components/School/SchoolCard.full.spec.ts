@@ -19,7 +19,6 @@ describe("SchoolCard", () => {
     division: "D1",
     conference: "SEC",
     is_favorite: false,
-    priority_tier: "A",
   });
 
   const defaultProps = {
@@ -79,48 +78,6 @@ describe("SchoolCard", () => {
       expect(wrapper.find('[data-testid="school-logo-stub"]').exists()).toBe(
         true,
       );
-    });
-  });
-
-  describe("priority tier badge", () => {
-    it("shows A tier as Top Choice with red styling", () => {
-      const wrapper = mountCard();
-      expect(wrapper.text()).toContain("A - Top Choice");
-      const badge = wrapper.find('[data-testid="priority-tier-badge-A"]');
-      expect(badge.classes()).toContain("bg-red-100");
-    });
-
-    it("shows B tier as Strong Interest with amber styling", () => {
-      const school = {
-        ...createMockSchool({ priority_tier: "B" }),
-        fit_score: null,
-      };
-      const wrapper = mountCard({ school });
-      expect(wrapper.text()).toContain("B - Strong Interest");
-      const badge = wrapper.find('[data-testid="priority-tier-badge-B"]');
-      expect(badge.classes()).toContain("bg-amber-100");
-    });
-
-    it("shows C tier as Fallback with slate styling", () => {
-      const school = {
-        ...createMockSchool({ priority_tier: "C" }),
-        fit_score: null,
-      };
-      const wrapper = mountCard({ school });
-      expect(wrapper.text()).toContain("C - Fallback");
-      const badge = wrapper.find('[data-testid="priority-tier-badge-C"]');
-      expect(badge.classes()).toContain("bg-slate-100");
-    });
-
-    it("hides priority badge when no tier set", () => {
-      const school = {
-        ...createMockSchool({ priority_tier: null }),
-        fit_score: null,
-      };
-      const wrapper = mountCard({ school });
-      expect(wrapper.text()).not.toContain("Top Choice");
-      expect(wrapper.text()).not.toContain("Strong Interest");
-      expect(wrapper.text()).not.toContain("Fallback");
     });
   });
 
@@ -268,7 +225,6 @@ describe("SchoolCard", () => {
       const school = {
         ...createMockSchool({
           division: undefined,
-          priority_tier: null,
           conference: undefined,
         }),
         fit_score: null,

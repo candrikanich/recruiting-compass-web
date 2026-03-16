@@ -61,7 +61,6 @@ export const useDashboardData = () => {
         is_favorite,
         status,
         status_changed_at,
-        priority_tier,
         website,
         favicon_url,
         twitter_handle,
@@ -83,7 +82,6 @@ export const useDashboardData = () => {
         communication_style,
         success_metrics,
         offer_details,
-        private_notes,
         fit_score_data,
         created_by,
         updated_by
