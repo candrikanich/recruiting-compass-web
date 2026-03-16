@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
     <!-- Search -->
     <div>
       <label
@@ -75,28 +75,6 @@
       </select>
     </div>
 
-    <!-- Responsiveness -->
-    <div>
-      <label class="block text-sm font-medium text-slate-700 mb-1">
-        Responsiveness
-      </label>
-      <select
-        :value="filterValues.get('responsiveness') || ''"
-        @change="
-          handleUpdate(
-            'responsiveness',
-            ($event.target as HTMLSelectElement).value || null,
-          )
-        "
-        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-      >
-        <option value="">-- All --</option>
-        <option value="high">High (75%+)</option>
-        <option value="medium">Medium (50-74%)</option>
-        <option value="low">Low (&lt;50%)</option>
-      </select>
-    </div>
-
     <!-- Sort -->
     <div>
       <label class="block text-sm font-medium text-slate-700 mb-1"
@@ -112,7 +90,6 @@
         <option value="name">Last Name (A-Z)</option>
         <option value="school">School (A-Z)</option>
         <option value="last-contacted">Last Contacted</option>
-        <option value="responsiveness">Responsiveness</option>
         <option value="role">Role</option>
       </select>
     </div>

@@ -27,13 +27,6 @@
           No contact recorded yet
         </div>
       </div>
-      <ResponsivenessBadge
-        v-if="
-          coach.responsiveness_score !== undefined &&
-          coach.responsiveness_score !== null
-        "
-        :percentage="coach.responsiveness_score"
-      />
     </div>
 
     <!-- Contact Info Grid -->
@@ -241,7 +234,6 @@ import {
   PencilIcon,
   RssIcon,
 } from "@heroicons/vue/24/outline";
-import ResponsivenessBadge from "~/components/ResponsivenessBadge.vue";
 
 defineProps<{
   coach: Coach;

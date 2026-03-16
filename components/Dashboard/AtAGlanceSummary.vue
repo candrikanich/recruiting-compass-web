@@ -5,7 +5,7 @@
     <h2 class="text-xl font-bold mb-6 text-slate-900">👁️ At a Glance</h2>
 
     <!-- Summary Metrics Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <!-- Schools with Offers -->
       <div class="rounded-lg p-4 bg-linear-to-br from-emerald-50 to-white">
         <div class="flex items-start justify-between mb-2">
@@ -17,31 +17,6 @@
         <p class="text-sm font-semibold text-slate-900">Schools with Offers</p>
         <p class="text-xs mt-1 text-slate-600">
           {{ acceptedOffers }} of {{ totalSchools }}
-        </p>
-      </div>
-
-      <!-- Coach Responsiveness -->
-      <div class="rounded-lg p-4 bg-linear-to-br from-blue-50 to-white">
-        <div class="flex items-start justify-between mb-2">
-          <span class="text-2xl">💬</span>
-          <span
-            class="text-xs font-bold px-2 py-1 rounded-sm"
-            :class="[
-              avgResponsiveness >= 75
-                ? 'bg-emerald-100 text-emerald-700'
-                : avgResponsiveness >= 50
-                  ? 'bg-orange-100 text-orange-700'
-                  : 'bg-red-100 text-red-700',
-            ]"
-          >
-            {{ avgResponsiveness }}%
-          </span>
-        </div>
-        <p class="text-sm font-semibold text-slate-900">
-          Avg Coach Responsiveness
-        </p>
-        <p class="text-xs mt-1 text-slate-600">
-          {{ coachCount }} coaches tracked
         </p>
       </div>
 
@@ -99,17 +74,6 @@ const acceptedOffers = computed(
 const offersPercentage = computed(() => {
   if (totalSchools.value === 0) return 0;
   return Math.round((acceptedOffers.value / totalSchools.value) * 100);
-});
-
-// Coach responsiveness
-const coachCount = computed(() => props.coaches.length);
-const avgResponsiveness = computed(() => {
-  if (coachCount.value === 0) return 0;
-  const total = props.coaches.reduce(
-    (sum, coach) => sum + (coach.responsiveness_score || 0),
-    0,
-  );
-  return Math.round(total / coachCount.value);
 });
 
 // Interactions this month

@@ -15,23 +15,6 @@
           {{ schoolName }}
         </p>
       </div>
-      <div
-        v-if="
-          coach.responsiveness_score !== undefined &&
-          coach.responsiveness_score !== null
-        "
-        class="text-right"
-      >
-        <div
-          class="inline-block px-3 py-1 rounded-full"
-          :class="getResponsivenessLabelClass(coach.responsiveness_score)"
-        >
-          <p class="text-xs font-semibold">
-            {{ coach.responsiveness_score }}% •
-            {{ getResponsivenessLabel(coach.responsiveness_score).label }}
-          </p>
-        </div>
-      </div>
     </div>
 
     <!-- Contact info grid -->
@@ -166,7 +149,6 @@
 import { ShareIcon, PhotoIcon } from "@heroicons/vue/24/outline";
 import { getRoleLabel } from "~/utils/coachLabels";
 import type { Coach } from "~/types/models";
-import { getResponsivenessLabel } from "~/utils/coachResponsiveness";
 
 defineProps<{
   coach: Coach;
@@ -181,18 +163,6 @@ const emit = defineEmits<{
   view: [coach: Coach];
 }>();
 
-const getResponsivenessLabelClass = (score: number): string => {
-  if (score >= 75) {
-    return "bg-emerald-100 text-emerald-800";
-  }
-  if (score >= 50) {
-    return "bg-blue-100 text-blue-700";
-  }
-  if (score >= 25) {
-    return "bg-orange-100 text-orange-800";
-  }
-  return "bg-purple-100 text-purple-800";
-};
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);

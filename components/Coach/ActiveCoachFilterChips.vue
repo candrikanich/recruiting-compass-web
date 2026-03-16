@@ -42,21 +42,6 @@
         <XMarkIcon class="w-3 h-3" aria-hidden="true" />
       </button>
 
-      <!-- Responsiveness chip -->
-      <button
-        v-if="filterValues.get('responsiveness')"
-        @click="emit('remove:filter', 'responsiveness')"
-        :aria-label="`Remove responsiveness filter: ${getResponsivenessFilterLabel(filterValues.get('responsiveness') as string)}`"
-        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-      >
-        {{
-          getResponsivenessFilterLabel(
-            filterValues.get("responsiveness") as string,
-          )
-        }}
-        <XMarkIcon class="w-3 h-3" aria-hidden="true" />
-      </button>
-
       <!-- Clear all button -->
       <button
         @click="emit('clear:all')"
@@ -78,7 +63,6 @@
 <script setup lang="ts">
 import { XMarkIcon } from "@heroicons/vue/24/outline";
 import { getRoleLabel } from "~/utils/coachLabels";
-import { getResponsivenessFilterLabel } from "~/utils/coachFormatters";
 
 interface Props {
   filterValues: Map<string, string | null>;

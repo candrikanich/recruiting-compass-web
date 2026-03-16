@@ -145,14 +145,6 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     fullDescription: `The suggestions widget shows active recommendations based on your profile and interactions. These might be reminders to follow up with coaches, new schools that match your profile, activities you should consider, or milestones you're ready for. Click any suggestion to act on it.`,
   },
 
-  // Responsiveness score
-  responsivenessScore: {
-    id: "responsiveness-score",
-    title: "Responsiveness Score",
-    shortDescription: "How quickly a coach typically responds",
-    fullDescription: `The responsiveness score is a rating from 1-10 for each coach showing how quickly and consistently they respond to your outreach. A coach with a high score responds quickly and regularly. A coach with a low score might take weeks to respond or be less consistent. This helps you prioritize who to reach out to and manage your expectations.`,
-  },
-
   // Recovery plan
   recoveryPlan: {
     id: "recovery-plan",
@@ -180,7 +172,7 @@ export const helpCategoryGroups = {
     "financial-fit",
   ],
   dashboard: ["dashboard-overview", "progress-bar", "suggestions-widget"],
-  coaches: ["responsiveness-score", "recovery-plan"],
+  coaches: ["recovery-plan"],
   organization: ["task-dependencies", "interest-calibration"],
 };
 

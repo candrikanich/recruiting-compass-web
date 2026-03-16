@@ -44,55 +44,6 @@
         <span class="text-slate-600">{{ coach.phone }}</span>
       </div>
 
-      <!-- Responsiveness -->
-      <div class="flex items-center justify-between">
-        <label
-          :for="`coach-responsiveness-${coach.id}`"
-          class="text-sm text-slate-500"
-        >
-          Responsiveness
-        </label>
-        <div class="flex items-center gap-2">
-          <div
-            :id="`coach-responsiveness-${coach.id}`"
-            class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-300"
-            role="progressbar"
-            :aria-valuenow="coach.responsiveness_score || 0"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            :aria-label="`${coach.responsiveness_score || 0}% responsiveness score`"
-          >
-            <div
-              class="h-full rounded-full transition-all relative"
-              :class="getResponsivenessBarClass(coach.responsiveness_score || 0)"
-              :style="{ width: `${coach.responsiveness_score || 0}%` }"
-              aria-hidden="true"
-            >
-              <!-- Pattern for color-blind accessibility -->
-              <div
-                class="h-full opacity-20"
-                style="
-                  background-image: repeating-linear-gradient(
-                    45deg,
-                    transparent,
-                    transparent 2px,
-                    rgba(0, 0, 0, 0.1) 2px,
-                    rgba(0, 0, 0, 0.1) 4px
-                  );
-                "
-              ></div>
-            </div>
-          </div>
-          <span
-            class="text-sm font-medium tabular-nums"
-            :class="getResponsivenessTextClass(coach.responsiveness_score || 0)"
-            aria-hidden="true"
-          >
-            {{ coach.responsiveness_score || 0 }}%
-          </span>
-        </div>
-      </div>
-
       <!-- Last Contact -->
       <div
         v-if="coach.last_contact_date"
@@ -206,8 +157,6 @@ import {
   formatCoachDate,
   getDaysAgoExact,
   getRoleBadgeClass,
-  getResponsivenessBarClass,
-  getResponsivenessTextClass,
 } from "~/utils/coachFormatters";
 import { getInitials } from "~/utils/coachHelpers";
 import type { Coach, School } from "~/types/models";
