@@ -1,8 +1,8 @@
 import { defineEventHandler, readBody, createError } from "h3"
-import { z } from "zod"
 import { useLogger } from "~/server/utils/logger"
 import { requireAuth } from "~/server/utils/auth"
 import { sendEmail } from "~/server/utils/emailService"
+import { feedbackSchema } from "~/utils/validation/schemas"
 
 const FEEDBACK_EMAIL = "info@therecruitingcompass.com"
 
@@ -10,17 +10,11 @@ function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 }
 
-const subjectLabels: Record<"bug" | "feature" | "question" | "general", string> = {
+const feedbackTypeLabels: Record<"bug" | "feature" | "other", string> = {
   bug: "Bug Report",
   feature: "Feature Request",
-  question: "Question",
-  general: "General Feedback",
+  other: "Other Feedback",
 }
-
-const feedbackSchema = z.object({
-  subject: z.enum(["bug", "feature", "question", "general"]),
-  message: z.string().min(1).max(5000),
-})
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "feedback")
@@ -34,27 +28,29 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: "Invalid request" })
     }
 
-    const { subject, message } = parsed.data
-    const subjectLabel = subjectLabels[subject]
-    const senderInfo = user.email ? ` from ${escapeHtml(user.email)}` : ""
+    const { name, email, feedbackType, page, message } = parsed.data
+    const typeLabel = feedbackTypeLabels[feedbackType]
+    const pageInfo = page ? `<p><strong>Page:</strong> ${escapeHtml(page)}</p>` : ""
 
     const html = `
       <!DOCTYPE html>
       <html>
         <head><meta charset="utf-8"></head>
         <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #1e40af;">[Feedback] ${subjectLabel}</h2>
-          <p><strong>From:</strong> User ${user.id}${senderInfo}</p>
-          <p><strong>Category:</strong> ${subjectLabel}</p>
+          <h2 style="color: #1e40af;">[Feedback] ${typeLabel}</h2>
+          <p><strong>From:</strong> ${escapeHtml(name ?? "")} (${escapeHtml(email ?? "")})</p>
+          <p><strong>User ID:</strong> ${user.id}</p>
+          <p><strong>Category:</strong> ${typeLabel}</p>
+          ${pageInfo}
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 16px 0;">
-          <p style="white-space: pre-wrap;">${escapeHtml(message)}</p>
+          <p style="white-space: pre-wrap;">${escapeHtml(message ?? "")}</p>
         </body>
       </html>
     `
 
     const result = await sendEmail({
       to: FEEDBACK_EMAIL,
-      subject: `[Feedback] ${subjectLabel}`,
+      subject: `[Feedback] ${typeLabel} from ${name ?? "unknown"}`,
       html,
     })
 
@@ -63,7 +59,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 500, statusMessage: "Failed to send feedback" })
     }
 
-    logger.info("Feedback submitted", { subject, userId: user.id })
+    logger.info("Feedback submitted", { feedbackType, userId: user.id })
     return { success: true }
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err
