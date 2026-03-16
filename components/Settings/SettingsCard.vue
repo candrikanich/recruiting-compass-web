@@ -1,11 +1,11 @@
 <template>
   <NuxtLink
     :to="to"
-    class="block bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-200 transition p-5"
+    class="block bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md hover:border-blue-200 transition p-5"
   >
     <div class="flex items-start gap-4">
       <div
-        class="flex-shrink-0 w-11 h-11 rounded-lg flex items-center justify-center"
+        class="shrink-0 w-11 h-11 rounded-lg flex items-center justify-center"
         :class="getIconBgClass()"
       >
         <component
@@ -29,7 +29,7 @@
         </div>
         <p class="text-sm text-slate-500 mt-1">{{ description }}</p>
       </div>
-      <div class="flex-shrink-0 text-slate-400">
+      <div class="shrink-0 text-slate-400">
         <ChevronRightIcon class="w-5 h-5" />
       </div>
     </div>

@@ -3,6 +3,9 @@ import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { compressImage, validateImageFile } from "~/utils/image/compressImage";
 import type { UploadResult } from "./useProfile";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useProfilePhoto");
 
 export const useProfilePhoto = (): {
   uploading: Ref<boolean>;
@@ -105,7 +108,7 @@ export const useProfilePhoto = (): {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to upload photo";
       error.value = errorMessage;
-      console.error("Profile photo upload error:", err);
+      logger.error("Profile photo upload error:", err);
 
       return {
         success: false,
@@ -170,7 +173,7 @@ export const useProfilePhoto = (): {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to delete photo";
       error.value = errorMessage;
-      console.error("Profile photo deletion error:", err);
+      logger.error("Profile photo deletion error:", err);
       throw err;
     } finally {
       uploading.value = false;

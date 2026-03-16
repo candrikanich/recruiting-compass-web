@@ -58,11 +58,12 @@ export default [
     },
   },
   {
-    files: ["scripts/**/*.js"],
+    files: ["scripts/**/*.js", "scripts/**/*.mjs"],
     languageOptions: {
       globals: {
         process: "readonly",
         console: "readonly",
+        fetch: "readonly",
         __dirname: "readonly",
         __filename: "readonly",
         Buffer: "readonly",

@@ -9,6 +9,9 @@
  */
 
 import { createHmac, timingSafeEqual } from "crypto";
+import { createLogger } from "~/server/utils/logger";
+
+const logger = createLogger("admin-token");
 
 /**
  * Validates an admin registration token
@@ -18,7 +21,7 @@ import { createHmac, timingSafeEqual } from "crypto";
  */
 export function validateAdminToken(token: string, secret: string): boolean {
   if (!secret) {
-    console.warn(
+    logger.warn(
       "adminTokenSecret not configured - admin registration tokens cannot be validated",
     );
     return false;

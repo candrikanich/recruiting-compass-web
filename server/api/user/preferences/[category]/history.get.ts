@@ -32,11 +32,15 @@ export default defineEventHandler(async (event) => {
     const supabase = useSupabaseAdmin();
 
     // Get total count
-    const { count } = await supabase
+    const { count, error: countError } = await supabase
       .from("preference_history")
       .select("*", { count: "exact", head: true })
       .eq("user_id", user.id)
       .eq("category", category);
+
+    if (countError) {
+      logger.warn("Failed to fetch preference history count, defaulting to 0", countError);
+    }
 
     // Fetch history records
     const { data, error } = await supabase

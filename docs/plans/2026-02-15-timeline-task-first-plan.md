@@ -87,12 +87,12 @@ Expected: FAIL — component doesn't exist yet
 <template>
   <div class="grid grid-cols-3 gap-3 mb-6">
     <!-- Overall Score -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs px-4 py-3">
       <div class="text-xs text-slate-500 mb-1">Status</div>
       <div class="flex items-center gap-2">
         <div
           data-testid="status-dot"
-          class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+          class="w-2.5 h-2.5 rounded-full shrink-0"
           :class="statusDotClass"
         />
         <span class="text-lg font-bold text-slate-900">{{ statusScore }}</span>
@@ -101,7 +101,7 @@ Expected: FAIL — component doesn't exist yet
     </div>
 
     <!-- Task Progress -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs px-4 py-3">
       <div class="text-xs text-slate-500 mb-1">Tasks</div>
       <div class="flex items-center gap-2">
         <span class="text-lg font-bold text-slate-900"
@@ -118,7 +118,7 @@ Expected: FAIL — component doesn't exist yet
     </div>
 
     <!-- Milestone Progress -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs px-4 py-3">
       <div class="text-xs text-slate-500 mb-1">Milestones</div>
       <div class="flex items-center gap-2">
         <span class="text-lg font-bold text-slate-900"

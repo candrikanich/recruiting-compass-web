@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <h2 class="text-xl font-bold mb-6 text-slate-900">📅 Upcoming Events</h2>
 
@@ -73,7 +73,7 @@
               </p>
             </div>
             <span
-              class="text-xs font-bold px-2 py-1 rounded whitespace-nowrap mt-0.5 bg-blue-100 text-blue-700"
+              class="text-xs font-bold px-2 py-1 rounded-sm whitespace-nowrap mt-0.5 bg-blue-100 text-blue-700"
             >
               {{ daysUntilDate(event.start_date) }}d
             </span>

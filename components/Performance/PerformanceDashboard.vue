@@ -3,7 +3,7 @@
     <!-- Summary Statistics Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <div
-        class="rounded-lg p-6 border bg-gradient-to-br from-blue-100 to-blue-50 border-blue-200"
+        class="rounded-lg p-6 border bg-linear-to-br from-blue-100 to-blue-50 border-blue-200"
       >
         <p class="text-sm font-semibold uppercase text-slate-600">
           Total Metrics
@@ -15,7 +15,7 @@
       </div>
 
       <div
-        class="rounded-lg p-6 border bg-gradient-to-br from-emerald-100 to-emerald-50 border-emerald-200"
+        class="rounded-lg p-6 border bg-linear-to-br from-emerald-100 to-emerald-50 border-emerald-200"
       >
         <p class="text-sm font-semibold uppercase text-slate-600">
           Latest Record
@@ -27,7 +27,7 @@
       </div>
 
       <div
-        class="rounded-lg p-6 border bg-gradient-to-br from-purple-100 to-purple-50 border-purple-200"
+        class="rounded-lg p-6 border bg-linear-to-br from-purple-100 to-purple-50 border-purple-200"
       >
         <p class="text-sm font-semibold uppercase text-slate-600">
           Metric Types
@@ -39,7 +39,7 @@
       </div>
 
       <div
-        class="rounded-lg p-6 border bg-gradient-to-br from-orange-100 to-orange-50 border-orange-200"
+        class="rounded-lg p-6 border bg-linear-to-br from-orange-100 to-orange-50 border-orange-200"
       >
         <p class="text-sm font-semibold uppercase text-slate-600">
           Overall Trend
@@ -56,7 +56,7 @@
     <!-- Metric Categories Summary -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Power Metrics Summary -->
-      <div class="rounded-lg shadow p-6 bg-white">
+      <div class="rounded-lg shadow-sm p-6 bg-white">
         <h3 class="text-lg font-semibold mb-4 text-slate-900">Power Metrics</h3>
         <div class="space-y-3">
           <MetricSummaryRow
@@ -73,7 +73,7 @@
       </div>
 
       <!-- Speed Metrics Summary -->
-      <div class="rounded-lg shadow p-6 bg-white">
+      <div class="rounded-lg shadow-sm p-6 bg-white">
         <h3 class="text-lg font-semibold mb-4 text-slate-900">Speed Metrics</h3>
         <div class="space-y-3">
           <MetricSummaryRow
@@ -90,7 +90,7 @@
       </div>
 
       <!-- Hitting Metrics Summary -->
-      <div class="rounded-lg shadow p-6 bg-white">
+      <div class="rounded-lg shadow-sm p-6 bg-white">
         <h3 class="text-lg font-semibold mb-4 text-slate-900">
           Hitting Metrics
         </h3>
@@ -104,7 +104,7 @@
       </div>
 
       <!-- Pitching Metrics Summary -->
-      <div class="rounded-lg shadow p-6 bg-white">
+      <div class="rounded-lg shadow-sm p-6 bg-white">
         <h3 class="text-lg font-semibold mb-4 text-slate-900">
           Pitching Metrics
         </h3>
@@ -124,13 +124,13 @@
     </div>
 
     <!-- Recent Activity -->
-    <div class="rounded-lg shadow p-6 bg-white">
+    <div class="rounded-lg shadow-sm p-6 bg-white">
       <h3 class="text-lg font-semibold mb-4 text-slate-900">Recent Metrics</h3>
       <div v-if="recentMetrics.length > 0" class="space-y-2">
         <div
           v-for="metric in recentMetrics.slice(0, 5)"
           :key="metric.id"
-          class="flex items-center justify-between py-2 px-3 rounded bg-slate-50"
+          class="flex items-center justify-between py-2 px-3 rounded-sm bg-slate-50"
         >
           <div>
             <p class="font-medium text-slate-900">

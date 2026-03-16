@@ -1,4 +1,5 @@
 import { ref, computed, type ComputedRef, type Ref } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import type {
   StatusLabel,
   StatusScoreInputs,
@@ -26,6 +27,9 @@ import { fetchAuth } from "~/utils/authFetch";
  * - Compute status color, advice, and breakdowns
  * - Advance to next phase when milestones are met
  */
+
+const logger = createClientLogger("useRecruitingStatus");
+
 export const useRecruitingStatus = (): {
   // Status State
   statusScore: Ref<number>;
@@ -133,7 +137,7 @@ export const useRecruitingStatus = (): {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to fetch status score";
-      console.error("Error fetching status score:", err);
+      logger.error("Error fetching status score:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -178,7 +182,7 @@ export const useRecruitingStatus = (): {
         const message =
           err instanceof Error ? err.message : "Failed to recalculate status";
         error.value = message;
-        console.error("Error recalculating status:", err);
+        logger.error("Error recalculating status:", err);
         throw err;
       } finally {
         loading.value = false;
@@ -206,7 +210,7 @@ export const useRecruitingStatus = (): {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to fetch phase";
-      console.error("Error fetching phase:", err);
+      logger.error("Error fetching phase:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -235,7 +239,7 @@ export const useRecruitingStatus = (): {
       const message =
         err instanceof Error ? err.message : "Failed to advance phase";
       error.value = message;
-      console.error("Error advancing phase:", err);
+      logger.error("Error advancing phase:", err);
       throw err;
     } finally {
       loading.value = false;

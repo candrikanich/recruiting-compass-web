@@ -5,6 +5,7 @@
  */
 
 import { ref, computed } from "vue";
+import { useAuthFetch } from "./useAuthFetch";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useSchools } from "./useSchools";
@@ -22,6 +23,7 @@ import {
   generatePacketFilename,
 } from "~/utils/recruitingPacketExport";
 import type { School } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
 
 interface PacketGenerationResult {
   html: string;
@@ -29,7 +31,10 @@ interface PacketGenerationResult {
   data: RecruitingPacketData;
 }
 
+const logger = createClientLogger("useRecruitingPacket");
+
 export const useRecruitingPacket = () => {
+  const { $fetchAuth } = useAuthFetch();
   const supabase = useSupabase();
   const userStore = useUserStore();
   const { schools } = useSchools();
@@ -72,7 +77,7 @@ export const useRecruitingPacket = () => {
     };
 
     if (profileError) {
-      console.warn("Profile not found, using basic user data");
+      logger.warn("Profile not found, using basic user data");
     }
 
     const athleteData: AthletePacketData = {
@@ -252,6 +257,9 @@ export const useRecruitingPacket = () => {
         packetData.athlete.full_name || "athlete",
       );
 
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("recruiting_packet_generated");
+
       return {
         html,
         filename,
@@ -263,7 +271,7 @@ export const useRecruitingPacket = () => {
           ? err.message
           : "Failed to generate recruiting packet";
       error.value = message;
-      console.error("Packet generation error:", err);
+      logger.error("Packet generation error:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -291,7 +299,7 @@ export const useRecruitingPacket = () => {
       const message =
         err instanceof Error ? err.message : "Failed to open packet preview";
       error.value = message;
-      console.error("Preview error:", err);
+      logger.error("Preview error:", err);
       throw err;
     }
   };
@@ -330,7 +338,7 @@ export const useRecruitingPacket = () => {
       // For now, return HTML as base64 (actual PDF conversion handled by server)
       return btoa(unescape(encodeURIComponent(generatedHtml.value)));
     } catch (err) {
-      console.error("Base64 encoding error:", err);
+      logger.error("Base64 encoding error:", err);
       throw err;
     }
   };
@@ -358,7 +366,7 @@ export const useRecruitingPacket = () => {
       );
 
       // Call API endpoint
-      await $fetch("/api/recruiting-packet/email", {
+      await $fetchAuth("/api/recruiting-packet/email", {
         method: "POST",
         body: {
           recipients: emailData.recipients,
@@ -376,7 +384,7 @@ export const useRecruitingPacket = () => {
       const message =
         err instanceof Error ? err.message : "Failed to send email";
       error.value = message;
-      console.error("Email error:", err);
+      logger.error("Email error:", err);
       throw err;
     } finally {
       loading.value = false;

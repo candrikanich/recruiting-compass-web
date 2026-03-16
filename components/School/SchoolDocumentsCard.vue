@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-2">
         <DocumentTextIcon class="w-5 h-5 text-slate-400" />
@@ -30,7 +30,7 @@
         </div>
         <NuxtLink
           :to="`/documents/${doc.id}`"
-          class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           View
         </NuxtLink>

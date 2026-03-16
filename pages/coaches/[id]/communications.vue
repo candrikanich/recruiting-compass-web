@@ -26,7 +26,7 @@
       </div>
 
       <!-- Filters -->
-      <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <!-- Type Filter -->
           <div>
@@ -35,7 +35,7 @@
             >
             <select
               v-model="selectedType"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Types</option>
               <option value="email">Email</option>
@@ -55,7 +55,7 @@
             >
             <select
               v-model="selectedDirection"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Both</option>
               <option value="outbound">Sent by Us</option>
@@ -70,7 +70,7 @@
             >
             <select
               v-model="selectedDateRange"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Time</option>
               <option value="7">Last 7 Days</option>
@@ -87,7 +87,7 @@
             >
             <select
               v-model="selectedSentiment"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Sentiments</option>
               <option value="very_positive">Very Positive</option>
@@ -111,21 +111,21 @@
 
       <!-- Summary Stats -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-lg shadow p-4">
+        <div class="bg-white rounded-lg shadow-sm p-4">
           <p class="text-gray-600 text-sm">Total Messages</p>
           <p class="text-2xl font-bold text-gray-900">
             {{ filteredInteractions.length }}
           </p>
         </div>
-        <div class="bg-white rounded-lg shadow p-4">
+        <div class="bg-white rounded-lg shadow-sm p-4">
           <p class="text-gray-600 text-sm">Sent</p>
           <p class="text-2xl font-bold text-blue-600">{{ outboundCount }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow p-4">
+        <div class="bg-white rounded-lg shadow-sm p-4">
           <p class="text-gray-600 text-sm">Received</p>
           <p class="text-2xl font-bold text-green-600">{{ inboundCount }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow p-4">
+        <div class="bg-white rounded-lg shadow-sm p-4">
           <p class="text-gray-600 text-sm">Avg Response Time</p>
           <p class="text-2xl font-bold text-purple-600">
             {{ avgResponseTime }}h
@@ -149,7 +149,7 @@
           v-for="interaction in filteredInteractions"
           :key="interaction.id"
           :class="[
-            'bg-white rounded-lg shadow p-6 border-l-4',
+            'bg-white rounded-lg shadow-sm p-6 border-l-4',
             interaction.direction === 'outbound'
               ? 'border-l-blue-500'
               : 'border-l-green-500',
@@ -161,7 +161,7 @@
               <div class="flex items-center gap-2 mb-1">
                 <span
                   :class="[
-                    'px-2 py-1 rounded text-xs font-semibold',
+                    'px-2 py-1 rounded-sm text-xs font-semibold',
                     interaction.direction === 'outbound'
                       ? 'bg-blue-100 text-blue-800'
                       : 'bg-green-100 text-green-800',
@@ -172,7 +172,7 @@
                   }}
                 </span>
                 <span
-                  class="px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-800"
+                  class="px-2 py-1 rounded-sm text-xs font-semibold bg-gray-100 text-gray-800"
                 >
                   {{ formatInteractionType(interaction.type) }}
                 </span>
@@ -201,7 +201,7 @@
           <!-- Content -->
           <div
             v-if="interaction.content"
-            class="mb-4 text-gray-700 whitespace-pre-wrap break-words"
+            class="mb-4 text-gray-700 whitespace-pre-wrap wrap-break-word"
           >
             {{ interaction.content }}
           </div>
@@ -236,7 +236,7 @@
       <!-- Empty State -->
       <div
         v-if="!loading && filteredInteractions.length === 0"
-        class="bg-white rounded-lg shadow p-12 text-center"
+        class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <p class="text-gray-600 mb-4">No communications match your filters</p>
         <button
@@ -399,12 +399,12 @@ const formatSentimentText = (sentiment: string): string => {
 const getSentimentClass = (sentiment: string): string => {
   const classes: Record<string, string> = {
     very_positive:
-      "px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-800",
+      "px-2 py-1 rounded-sm text-xs font-semibold bg-green-100 text-green-800",
     positive:
-      "px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-800",
+      "px-2 py-1 rounded-sm text-xs font-semibold bg-blue-100 text-blue-800",
     neutral:
-      "px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-800",
-    negative: "px-2 py-1 rounded text-xs font-semibold bg-red-100 text-red-800",
+      "px-2 py-1 rounded-sm text-xs font-semibold bg-gray-100 text-gray-800",
+    negative: "px-2 py-1 rounded-sm text-xs font-semibold bg-red-100 text-red-800",
   };
   return classes[sentiment] || "";
 };
@@ -416,14 +416,12 @@ const clearFilters = () => {
   selectedSentiment.value = "";
 };
 
-const replyToInteraction = (interaction: Interaction) => {
+const replyToInteraction = (_interaction: Interaction) => {
   // Future: Open reply modal
-  console.log("Reply to:", interaction.id);
 };
 
-const forwardInteraction = (interaction: Interaction) => {
+const forwardInteraction = (_interaction: Interaction) => {
   // Future: Open forward modal
-  console.log("Forward:", interaction.id);
 };
 
 onMounted(async () => {

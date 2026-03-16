@@ -1,12 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { useUserStore } from "~/stores/user";
+
+// The global setup.ts mocks useAuthFetch — unmock here to test the real implementation
+vi.unmock("~/composables/useAuthFetch");
+
 import { useAuthFetch, SessionExpiredError } from "~/composables/useAuthFetch";
 
 // $fetch is a Nuxt global — stub it at module level
 const mockFetch = vi.fn();
 vi.stubGlobal("$fetch", mockFetch);
 
-// navigateTo is a Nuxt global
-vi.stubGlobal("navigateTo", vi.fn());
+// navigateTo is a Nuxt global — named so tests can assert on it
+const mockNavigateTo = vi.fn();
+vi.stubGlobal("navigateTo", mockNavigateTo);
 
 // useSupabase is globally mocked in tests/setup.ts, but we need control
 // over getSession per-test, so we override with a module-level vi.mock.
@@ -27,9 +33,10 @@ vi.mock("~/composables/useCsrf", () => ({
   }),
 }));
 
-// useToast — stub showToast so no side effects
-vi.mock("~/composables/useToast", () => ({
-  useToast: () => ({ showToast: vi.fn() }),
+// useAppToast — named showToast so tests can assert on it
+const mockShowToast = vi.fn();
+vi.mock("~/composables/useAppToast", () => ({
+  useAppToast: () => ({ showToast: mockShowToast }),
 }));
 
 const VALID_SESSION = {
@@ -42,6 +49,8 @@ const VALID_SESSION = {
 };
 
 describe("useAuthFetch", () => {
+  let userStore: ReturnType<typeof useUserStore>;
+
   beforeEach(() => {
     vi.clearAllMocks();
     // Default: valid session
@@ -52,6 +61,10 @@ describe("useAuthFetch", () => {
     vi.spyOn(sessionStorage, "getItem").mockReturnValue(null);
     // Default: addCsrfHeader returns headers unchanged
     mockAddCsrfHeader.mockImplementation(async (h) => h);
+    // Get the real Pinia store (set up in global beforeEach via setActivePinia)
+    userStore = useUserStore();
+    // Default: user is authenticated (normal usage)
+    userStore.isAuthenticated = true;
   });
 
   describe("$fetchAuth — auth header injection", () => {
@@ -69,26 +82,67 @@ describe("useAuthFetch", () => {
       );
     });
 
-    it("throws SessionExpiredError and redirects when there is no session", async () => {
+    it("shows session-expired toast and redirects when authenticated user has no session", async () => {
       mockGetSession.mockResolvedValue({ data: { session: null } });
+      userStore.isAuthenticated = true;
       const { $fetchAuth } = useAuthFetch();
 
       await expect($fetchAuth("/api/test")).rejects.toThrow(SessionExpiredError);
+      expect(mockShowToast).toHaveBeenCalledWith(
+        expect.stringContaining("expired"),
+        "warning",
+        expect.any(Number),
+      );
+      expect(mockNavigateTo).toHaveBeenCalledWith(
+        expect.stringContaining("session_expired"),
+      );
     });
 
-    it("throws SessionExpiredError when the API returns 401", async () => {
+    it("throws SessionExpiredError silently when logged-out user has no session", async () => {
+      mockGetSession.mockResolvedValue({ data: { session: null } });
+      userStore.isAuthenticated = false;
+      const { $fetchAuth } = useAuthFetch();
+
+      await expect($fetchAuth("/api/test")).rejects.toThrow(SessionExpiredError);
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(mockNavigateTo).not.toHaveBeenCalled();
+    });
+
+    it("shows session-expired toast and redirects when authenticated user gets 401", async () => {
       const fetchError = Object.assign(new Error("Unauthorized"), {
         statusCode: 401,
       });
-      // make it look like ofetch FetchError
       Object.setPrototypeOf(
         fetchError,
         (await import("ofetch")).FetchError.prototype,
       );
       mockFetch.mockRejectedValue(fetchError);
+      userStore.isAuthenticated = true;
 
       const { $fetchAuth } = useAuthFetch();
       await expect($fetchAuth("/api/test")).rejects.toThrow(SessionExpiredError);
+      expect(mockShowToast).toHaveBeenCalledWith(
+        expect.stringContaining("expired"),
+        "warning",
+        expect.any(Number),
+      );
+    });
+
+    it("throws SessionExpiredError silently when logged-out user gets 401", async () => {
+      const fetchError = Object.assign(new Error("Unauthorized"), {
+        statusCode: 401,
+      });
+      Object.setPrototypeOf(
+        fetchError,
+        (await import("ofetch")).FetchError.prototype,
+      );
+      mockFetch.mockRejectedValue(fetchError);
+      userStore.isAuthenticated = false;
+
+      const { $fetchAuth } = useAuthFetch();
+      await expect($fetchAuth("/api/test")).rejects.toThrow(SessionExpiredError);
+      expect(mockShowToast).not.toHaveBeenCalled();
+      expect(mockNavigateTo).not.toHaveBeenCalled();
     });
   });
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-lg shadow p-6 bg-white">
+  <div class="rounded-lg shadow-sm p-6 bg-white">
     <h2 class="text-2xl font-bold mb-4 text-slate-900">
       Current Performance Snapshot
     </h2>

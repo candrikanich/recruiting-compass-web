@@ -4,10 +4,16 @@ import type { School } from "~/types/models";
 
 // Mock useSchools composable
 const mockUpdateSchool = vi.fn();
-const mockUpdateStatus = vi.fn();
 vi.mock("~/composables/useSchools", () => ({
   useSchools: () => ({
     updateSchool: mockUpdateSchool,
+  }),
+}));
+
+// Mock useSchoolStatus composable
+const mockUpdateStatus = vi.fn();
+vi.mock("~/composables/useSchoolStatus", () => ({
+  useSchoolStatus: () => ({
     updateStatus: mockUpdateStatus,
   }),
 }));
@@ -78,8 +84,9 @@ describe("useSchoolStatusManagement", () => {
       expect(result).toBeNull();
       expect(statusUpdating.value).toBe(false);
       expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("[useSchoolStatusManagement]"),
         "Failed to update status:",
-        expect.any(Error),
+        expect.objectContaining({ message: "Update failed" }),
       );
 
       consoleErrorSpy.mockRestore();

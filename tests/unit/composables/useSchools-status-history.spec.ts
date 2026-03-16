@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { useSchoolStatus } from "~/composables/useSchoolStatus";
 import { useSchools } from "~/composables/useSchools";
 import type { School } from "~/types/models";
 
@@ -55,15 +56,13 @@ vi.mock("~/stores/user", () => ({
 }));
 
 describe("useSchools Composable - updateStatus (Story 3.4)", () => {
-  let composable: ReturnType<typeof useSchools>;
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe("updateStatus method", () => {
-    it("should be available on the composable", () => {
-      const composable = useSchools();
+    it("should be available on the useSchoolStatus composable", () => {
+      const composable = useSchoolStatus();
       expect(composable.updateStatus).toBeDefined();
       expect(typeof composable.updateStatus).toBe("function");
     });
@@ -87,14 +86,14 @@ describe("useSchools Composable - updateStatus (Story 3.4)", () => {
     });
 
     it("should accept optional notes parameter", () => {
-      const composable = useSchools();
+      const composable = useSchoolStatus();
       // Verify the function signature accepts notes as optional parameter
       expect(composable.updateStatus).toBeDefined();
       // The actual implementation is tested in integration tests
     });
 
     it("should be callable without throwing on method access", () => {
-      const composable = useSchools();
+      const composable = useSchoolStatus();
       expect(() => {
         // Just accessing the function shouldn't throw
         const fn = composable.updateStatus;
@@ -105,7 +104,7 @@ describe("useSchools Composable - updateStatus (Story 3.4)", () => {
 
   describe("Status history creation", () => {
     it("should support creating history with notes", () => {
-      const composable = useSchools();
+      const composable = useSchoolStatus();
       // The implementation supports notes parameter
       // Verified through type checking and unit tests on store
       expect(composable.updateStatus).toBeDefined();
@@ -114,7 +113,7 @@ describe("useSchools Composable - updateStatus (Story 3.4)", () => {
 
   describe("Status independence from priority tier", () => {
     it("should only update status, not priority tier", () => {
-      const composable = useSchools();
+      const composable = useSchoolStatus();
       // The updateStatus function only modifies status and related fields
       // Priority tier is managed separately by other functions
       expect(composable.updateStatus).toBeDefined();

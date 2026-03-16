@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ref } from "vue";
-import { mount } from "@vue/test-utils";
+import { mount, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { useRouter, useRoute } from "vue-router";
 import { useAuth } from "~/composables/useAuth";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useSupabase } from "~/composables/useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useFormValidation } from "~/composables/useFormValidation";
@@ -20,6 +21,7 @@ vi.mock("vue-router", () => ({
 }));
 
 vi.mock("~/composables/useAuth");
+vi.mock("~/composables/useAuthFetch");
 vi.mock("~/composables/useSupabase");
 vi.mock("~/stores/user");
 vi.mock("~/composables/useFormValidation");
@@ -102,10 +104,6 @@ vi.mock("~/components/Auth/SignupForm.vue", () => ({
           <label for="email">Email</label>
           <input id="email" type="email" :value="email" @input="$emit('update:email', $event.target.value)" @blur="$emit('validateEmail')" />
         </div>
-        <div v-if="userType === 'parent'">
-          <label for="familyCode">Family Code</label>
-          <input id="familyCode" :value="familyCode" @input="$emit('update:familyCode', $event.target.value)" @blur="$emit('validateFamilyCode')" />
-        </div>
         <div>
           <label for="password">Password</label>
           <input id="password" type="password" :value="password" @input="$emit('update:password', $event.target.value)" @blur="$emit('validatePassword')" />
@@ -130,7 +128,6 @@ vi.mock("~/components/Auth/SignupForm.vue", () => ({
       "email",
       "password",
       "confirmPassword",
-      "familyCode",
       "agreeToTerms",
       "loading",
       "hasErrors",
@@ -142,18 +139,17 @@ vi.mock("~/components/Auth/SignupForm.vue", () => ({
       "update:email",
       "update:password",
       "update:confirmPassword",
-      "update:familyCode",
       "update:agreeToTerms",
       "submit",
       "validateEmail",
       "validatePassword",
-      "validateFamilyCode",
     ],
   },
 }));
 
 const mockUseRouter = vi.mocked(useRouter);
 const mockUseAuth = vi.mocked(useAuth);
+const mockUseAuthFetch = vi.mocked(useAuthFetch);
 const mockUseSupabase = vi.mocked(useSupabase);
 const mockUseUserStore = vi.mocked(useUserStore);
 const mockUseFormValidation = vi.mocked(useFormValidation);
@@ -162,6 +158,7 @@ const mockUseLoadingStates = vi.mocked(useLoadingStates);
 describe("signup.vue", () => {
   let mockRouter: any;
   let mockAuth: any;
+  let mockAuthFetch: any;
   let mockSupabase: any;
   let mockUserStore: any;
   let mockValidation: any;
@@ -183,6 +180,11 @@ describe("signup.vue", () => {
       error: { value: null },
     };
     mockUseAuth.mockReturnValue(mockAuth);
+
+    mockAuthFetch = {
+      $fetchAuth: vi.fn().mockResolvedValue({}),
+    };
+    mockUseAuthFetch.mockReturnValue(mockAuthFetch);
 
     mockSupabase = {
       auth: {
@@ -222,6 +224,7 @@ describe("signup.vue", () => {
     mockUseLoadingStates.mockReturnValue(mockLoadingStates);
 
     global.navigateTo = vi.fn();
+    global.$fetch = vi.fn().mockResolvedValue({});
   });
 
   const createWrapper = () => {
@@ -457,7 +460,7 @@ describe("signup.vue", () => {
       expect(form.exists()).toBe(true);
     });
 
-    it("should prompt for family code in parent signup", async () => {
+    it("should NOT show family code in parent signup", async () => {
       const wrapper = createWrapper();
       const parentRadio = wrapper.find('[data-testid="user-type-parent"]');
 
@@ -466,10 +469,10 @@ describe("signup.vue", () => {
       await wrapper.vm.$nextTick();
 
       const form = wrapper.find('[data-testid="signup-form-parent"]');
-      expect(form.text()).toContain("Family Code");
+      expect(form.text()).not.toContain("Family Code");
     });
 
-    it("should accept optional family code for parent", async () => {
+    it("should show parent signup form without family code field", async () => {
       const wrapper = createWrapper();
       const parentRadio = wrapper.find('[data-testid="user-type-parent"]');
 
@@ -477,10 +480,9 @@ describe("signup.vue", () => {
       await parentRadio.trigger("change");
       await wrapper.vm.$nextTick();
 
-      // Parent form should be visible and contain family code field
       const form = wrapper.find('[data-testid="signup-form-parent"]');
       expect(form.exists()).toBe(true);
-      expect(form.text()).toContain("Family Code");
+      expect(form.find("#familyCode").exists()).toBe(false);
     });
   });
 
@@ -520,10 +522,9 @@ describe("signup.vue", () => {
       await parentRadio.trigger("change");
       await wrapper.vm.$nextTick();
 
-      // Form should contain family code field and submit button
       const form = wrapper.find('[data-testid="signup-form-parent"]');
       expect(form.exists()).toBe(true);
-      expect(form.text()).toContain("Family Code");
+      expect(form.find("#familyCode").exists()).toBe(false);
     });
 
     it("should verify player and parent forms are distinct", async () => {
@@ -591,27 +592,24 @@ describe("signup.vue", () => {
         password: "Password123", // pragma: allowlist secret
         confirmPassword: "Password123",
         role: "player",
-        familyCode: "",
       });
       mockAuth.signup.mockResolvedValue({
-        user: { id: "user-123" },
-        session: null,
+        data: { user: { id: "user-123" }, session: null },
+        error: null,
       });
       mockSupabase.from.mockReturnValue({
         upsert: vi.fn().mockResolvedValue({ error: null }),
       });
     });
 
-    it("should submit player signup successfully", async () => {
+    it("should submit player signup with correct role", async () => {
       const wrapper = createWrapper();
 
-      // Select player
       const playerRadio = wrapper.find('[data-testid="user-type-player"]');
       await playerRadio.setValue(true);
       await playerRadio.trigger("change");
       await wrapper.vm.$nextTick();
 
-      // Fill form
       await wrapper.find("#firstName").setValue("Test");
       await wrapper.find("#lastName").setValue("User");
       await wrapper.find("#email").setValue("test@example.com");
@@ -619,7 +617,6 @@ describe("signup.vue", () => {
       await wrapper.find("#confirmPassword").setValue("Password123");
       await wrapper.find("#agreeToTerms").setValue(true);
 
-      // Submit
       await wrapper.find("form").trigger("submit.prevent");
       await wrapper.vm.$nextTick();
 
@@ -628,11 +625,10 @@ describe("signup.vue", () => {
         "Password123",
         "Test User",
         "player",
-        {},
       );
     });
 
-    it("should navigate to onboarding after player signup", async () => {
+    it("should call POST /api/family/create after player signup", async () => {
       const wrapper = createWrapper();
 
       const playerRadio = wrapper.find('[data-testid="user-type-player"]');
@@ -650,17 +646,39 @@ describe("signup.vue", () => {
       await wrapper.find("form").trigger("submit.prevent");
       await wrapper.vm.$nextTick();
 
+      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith("/api/family/create", {
+        method: "POST",
+      });
+    });
+
+    it("should navigate to /onboarding after player signup", async () => {
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#firstName").setValue("Test");
+      await wrapper.find("#lastName").setValue("User");
+      await wrapper.find("#email").setValue("test@example.com");
+      await wrapper.find("#password").setValue("Password123");
+      await wrapper.find("#confirmPassword").setValue("Password123");
+      await wrapper.find("#agreeToTerms").setValue(true);
+
+      await wrapper.find("form").trigger("submit.prevent");
+      await flushPromises();
+
       expect(global.navigateTo).toHaveBeenCalledWith("/onboarding");
     });
 
-    it("should submit parent signup with family code", async () => {
+    it("should submit parent signup with correct role", async () => {
       mockValidation.validate.mockResolvedValue({
         fullName: "Parent User",
         email: "parent@example.com",
         password: "Password123", // pragma: allowlist secret
         confirmPassword: "Password123",
         role: "parent",
-        familyCode: "FAM123",
       });
 
       const wrapper = createWrapper();
@@ -675,7 +693,6 @@ describe("signup.vue", () => {
       await wrapper.find("#email").setValue("parent@example.com");
       await wrapper.find("#password").setValue("Password123");
       await wrapper.find("#confirmPassword").setValue("Password123");
-      await wrapper.find("#familyCode").setValue("FAM123");
       await wrapper.find("#agreeToTerms").setValue(true);
 
       await wrapper.find("form").trigger("submit.prevent");
@@ -686,18 +703,16 @@ describe("signup.vue", () => {
         "Password123",
         "Parent User",
         "parent",
-        { familyCode: "FAM123" },
       );
     });
 
-    it("should navigate to dashboard when parent has family code", async () => {
+    it("should call POST /api/family/create after parent signup", async () => {
       mockValidation.validate.mockResolvedValue({
         fullName: "Parent User",
         email: "parent@example.com",
         password: "Password123", // pragma: allowlist secret
         confirmPassword: "Password123",
         role: "parent",
-        familyCode: "FAM123",
       });
 
       const wrapper = createWrapper();
@@ -712,23 +727,23 @@ describe("signup.vue", () => {
       await wrapper.find("#email").setValue("parent@example.com");
       await wrapper.find("#password").setValue("Password123");
       await wrapper.find("#confirmPassword").setValue("Password123");
-      await wrapper.find("#familyCode").setValue("FAM123");
       await wrapper.find("#agreeToTerms").setValue(true);
 
       await wrapper.find("form").trigger("submit.prevent");
       await wrapper.vm.$nextTick();
 
-      expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
+      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith("/api/family/create", {
+        method: "POST",
+      });
     });
 
-    it("should navigate to family code entry when parent has no code", async () => {
+    it("should navigate to /onboarding/parent after parent signup", async () => {
       mockValidation.validate.mockResolvedValue({
         fullName: "Parent User",
         email: "parent@example.com",
         password: "Password123", // pragma: allowlist secret
         confirmPassword: "Password123",
         role: "parent",
-        familyCode: "",
       });
 
       const wrapper = createWrapper();
@@ -746,9 +761,9 @@ describe("signup.vue", () => {
       await wrapper.find("#agreeToTerms").setValue(true);
 
       await wrapper.find("form").trigger("submit.prevent");
-      await wrapper.vm.$nextTick();
+      await flushPromises();
 
-      expect(global.navigateTo).toHaveBeenCalledWith("/family-code-entry");
+      expect(global.navigateTo).toHaveBeenCalledWith("/onboarding/parent");
     });
   });
 
@@ -806,7 +821,6 @@ describe("signup.vue", () => {
         password: "Password123", // pragma: allowlist secret
         confirmPassword: "Password123",
         role: "player",
-        familyCode: "",
       });
       mockAuth.signup.mockRejectedValue(new Error("Email already exists"));
 
@@ -839,7 +853,6 @@ describe("signup.vue", () => {
         password: "Password123", // pragma: allowlist secret
         confirmPassword: "Password123",
         role: "player",
-        familyCode: "",
       });
       mockAuth.signup.mockRejectedValue(new Error("User already registered"));
       mockSupabase.auth.getSession.mockResolvedValue({
@@ -899,7 +912,6 @@ describe("signup.vue", () => {
         password: "Password123", // pragma: allowlist secret
         confirmPassword: "Password123",
         role: "player",
-        familyCode: "",
       });
       mockAuth.signup.mockImplementation(() => new Promise(() => {})); // Never resolves
 

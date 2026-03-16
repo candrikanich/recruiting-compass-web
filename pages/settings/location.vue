@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Global Navigation -->
 
@@ -9,7 +9,7 @@
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
@@ -24,7 +24,7 @@
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <div
         v-if="isLoading"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <div
           class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
@@ -34,7 +34,7 @@
 
       <div v-else class="space-y-6">
         <!-- Address Section -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-lg font-semibold text-slate-900 mb-4">Address</h2>
           <div class="space-y-4">
             <div>
@@ -45,7 +45,7 @@
                 v-model="localLocation.address"
                 type="text"
                 placeholder="123 Main Street"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
 
@@ -58,7 +58,7 @@
                   v-model="localLocation.city"
                   type="text"
                   placeholder="Chicago"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
@@ -70,7 +70,7 @@
                   type="text"
                   placeholder="IL"
                   maxlength="2"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 uppercase"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 uppercase"
                 />
               </div>
               <div>
@@ -83,7 +83,7 @@
                   placeholder="60601"
                   maxlength="10"
                   @blur="triggerSave"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
@@ -91,7 +91,7 @@
         </div>
 
         <!-- Coordinates Section -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <div class="flex items-center justify-between mb-4">
             <div>
               <h2 class="text-lg font-semibold text-slate-900">Coordinates</h2>
@@ -126,7 +126,7 @@
                 type="number"
                 step="0.000001"
                 placeholder="41.8781"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
@@ -138,7 +138,7 @@
                 type="number"
                 step="0.000001"
                 placeholder="-87.6298"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
@@ -202,6 +202,9 @@ import {
   CheckCircleIcon,
 } from "@heroicons/vue/24/outline";
 import type { HomeLocation } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("settings/location");
 
 definePageMeta({ middleware: "auth" });
 
@@ -294,7 +297,7 @@ const handleSave = async () => {
     saveSuccess.value = true;
     setTimeout(() => (saveSuccess.value = false), 3000);
   } catch (err) {
-    console.error("Failed to save home location:", err);
+    logger.error("Failed to save home location", err);
   } finally {
     saving.value = false;
   }

@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-8">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-8">
     <h2 class="text-xl font-semibold text-slate-900 mb-6">
       Log New Interaction
     </h2>
@@ -14,7 +14,7 @@
           id="type"
           v-model="newInteraction.type"
           required
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           :disabled="loading"
         >
           <option value="">Select Type</option>
@@ -46,7 +46,7 @@
           id="direction"
           v-model="newInteraction.direction"
           required
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           :disabled="loading"
         >
           <option value="">Select Direction</option>
@@ -66,7 +66,7 @@
         <select
           id="coach"
           v-model="newInteraction.coach_id"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           :disabled="loading"
         >
           <option value="">Select Coach</option>
@@ -91,7 +91,7 @@
           v-model="newInteraction.subject"
           type="text"
           :maxlength="MAX_SUBJECT_LENGTH"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="e.g., Initial contact, Recruitment conversation"
           :disabled="loading"
         />
@@ -115,7 +115,7 @@
           required
           rows="5"
           :maxlength="MAX_CONTENT_LENGTH"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="Details about the interaction..."
           :disabled="loading"
         />
@@ -150,7 +150,7 @@
             multiple
             accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.txt"
             @change="handleFileSelect"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             :disabled="loading"
           />
         </div>
@@ -162,11 +162,11 @@
           </p>
           <div
             v-for="(file, idx) in selectedFiles"
-            :key="idx"
-            class="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200"
+            :key="file.name + file.size"
+            class="flex items-center justify-between bg-slate-50 p-2 rounded-sm border border-slate-200"
           >
             <div class="flex items-center gap-2 min-w-0">
-              <span class="text-lg flex-shrink-0">📎</span>
+              <span class="text-lg shrink-0">📎</span>
               <div class="min-w-0">
                 <p class="text-sm text-slate-700 truncate">
                   {{ file.name }}
@@ -179,7 +179,7 @@
             <button
               type="button"
               @click="removeFile(idx)"
-              class="text-red-600 hover:text-red-700 text-sm font-medium flex-shrink-0 ml-2"
+              class="text-red-600 hover:text-red-700 text-sm font-medium shrink-0 ml-2"
             >
               Remove
             </button>
@@ -198,7 +198,7 @@
         <select
           id="sentiment"
           v-model="newInteraction.sentiment"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           :disabled="loading"
         >
           <option value="">Not specified</option>
@@ -222,7 +222,7 @@
           v-model="newInteraction.occurred_at"
           type="datetime-local"
           required
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           :disabled="loading"
         />
       </div>
@@ -234,7 +234,7 @@
             id="reminder-enabled"
             v-model="reminderEnabled"
             type="checkbox"
-            class="w-4 h-4 border border-slate-300 rounded text-blue-600 focus:ring-2 focus:ring-blue-500"
+            class="w-4 h-4 border border-slate-300 rounded-sm text-blue-600 focus:ring-2 focus:ring-blue-500"
             :disabled="loading"
           />
           <label
@@ -263,7 +263,7 @@
               type="date"
               :min="getTodayDate()"
               required
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               :disabled="loading"
             />
           </div>
@@ -279,7 +279,7 @@
             <select
               id="reminder-type"
               v-model="reminderType"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               :disabled="loading"
             >
               <option value="email">Email Reminder</option>
@@ -295,7 +295,7 @@
         <button
           type="submit"
           :disabled="!isFormValid"
-          class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          class="flex-1 px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {{ loading ? "Logging..." : "Log Interaction" }}
         </button>

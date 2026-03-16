@@ -1,4 +1,5 @@
 import { useLogger } from "~/server/utils/logger";
+import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 
 type ResendVerificationResponse = {
@@ -9,6 +10,10 @@ type ResendVerificationResponse = {
 export default defineEventHandler(
   async (event): Promise<ResendVerificationResponse> => {
     const logger = useLogger(event, "auth/resend-verification");
+
+    const rateLimitResult = await rateLimitByIp(event, { requests: 5, window: "1 h" });
+    throwIfRateLimited(rateLimitResult);
+
     try {
       const body = await readBody<{ email: string }>(event);
       const { email } = body;
@@ -81,6 +86,7 @@ export default defineEventHandler(
         });
       }
 
+      logger.info("Verification email resent");
       return {
         success: true,
         message: "Verification email sent successfully.",

@@ -26,7 +26,7 @@ withDefaults(defineProps<AnalyticsCardsProps>(), {
     aria-label="Interaction statistics"
     class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
   >
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
       <div class="flex items-center gap-3">
         <div
           class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center"
@@ -44,7 +44,7 @@ withDefaults(defineProps<AnalyticsCardsProps>(), {
         </div>
       </div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
       <div class="flex items-center gap-3">
         <div
           class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center"
@@ -59,7 +59,7 @@ withDefaults(defineProps<AnalyticsCardsProps>(), {
         </div>
       </div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
       <div class="flex items-center gap-3">
         <div
           class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center"
@@ -74,7 +74,7 @@ withDefaults(defineProps<AnalyticsCardsProps>(), {
         </div>
       </div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
       <div class="flex items-center gap-3">
         <div
           class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center"

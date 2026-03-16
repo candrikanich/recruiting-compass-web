@@ -7,6 +7,7 @@
 
 import { defineEventHandler, getQuery } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { getCached } from "~/server/utils/cache";
 import type { Task } from "~/types/timeline";
@@ -14,6 +15,8 @@ import type { Task } from "~/types/timeline";
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "tasks");
   try {
+    await requireAuth(event);
+
     const supabase = createServerSupabaseClient();
 
     const query = getQuery(event);
@@ -29,10 +32,16 @@ export default defineEventHandler(async (event) => {
     // Try to get from cache first
     const cached = getCached<Task[]>(cacheKey);
     if (cached) {
+      logger.debug("Tasks served from cache", { cacheKey });
       return cached;
     }
+    logger.debug("Tasks cache miss", { cacheKey });
 
-    let request = supabase.from("task").select("*");
+    let request = supabase
+      .from("task")
+      .select(
+        "id, category, grade_level, title, description, required, dependency_task_ids, why_it_matters, failure_risk, division_applicability, created_at, updated_at",
+      );
 
     // Apply filters
     if (gradeLevel) {

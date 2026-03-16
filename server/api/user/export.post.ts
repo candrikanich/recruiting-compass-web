@@ -116,7 +116,10 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    logger.error("Failed to generate user export", error);
+    logger.error("Error generating user export", {
+      userId,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
 
     throw createError({
       statusCode: 500,

@@ -1,8 +1,11 @@
 import { ref, computed, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
 import type { PerformanceMetric } from "~/types/models";
 import type { Database } from "~/types/database";
+
+const logger = createClientLogger("usePerformance");
 
 // Type aliases for Supabase casting
 type _PerformanceMetricInsert =
@@ -89,7 +92,7 @@ export const usePerformance = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch metrics";
       error.value = message;
-      console.error("Metric fetch error:", message);
+      logger.error("Metric fetch error:", message);
     } finally {
       loading.value = false;
     }

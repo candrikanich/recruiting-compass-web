@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="linkedAthletes.length > 0"
-    class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"
+    class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden"
   >
     <!-- Header -->
     <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
@@ -39,7 +39,7 @@
         <div class="flex items-start gap-3">
           <!-- Type Icon -->
           <div
-            class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
             :class="getTypeIconBg(interaction.type)"
           >
             <component
@@ -107,13 +107,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useSupabase } from "~/composables/useSupabase";
+import { computed, onMounted } from "vue";
 import { useUserStore } from "~/stores/user";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useAthleteActivity } from "~/composables/useAthleteActivity";
-import type { Interaction, User } from "~/types/models";
 import { ChatBubbleLeftRightIcon } from "@heroicons/vue/24/outline";
 import {
   getTypeIcon,
@@ -122,7 +120,6 @@ import {
   formatType,
 } from "~/utils/interactionFormatters";
 
-const supabase = useSupabase();
 const userStore = useUserStore();
 const { schools: schoolsData } = useSchools();
 const { coaches: coachesData } = useCoaches();

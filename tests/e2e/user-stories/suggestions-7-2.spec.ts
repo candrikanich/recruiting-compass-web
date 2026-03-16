@@ -65,7 +65,7 @@ test.describe("User Story 7.2 - Dismissed Suggestions Re-evaluation", () => {
     // Manually trigger suggestion re-evaluation (simulating daily check)
     // This would normally be done via API call to /api/suggestions/evaluate
     const evaluateResponse = await page.request.post(
-      "http://localhost:3003/api/suggestions/evaluate",
+      "/api/suggestions/evaluate",
     );
     expect([200, 401]).toContain(evaluateResponse.status()); // 401 if not authenticated
 

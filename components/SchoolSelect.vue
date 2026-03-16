@@ -56,7 +56,7 @@ const hasSchools = computed(() => schools.value.length > 0);
       :aria-invalid="!!error"
       :aria-describedby="error ? 'school-select-error' : undefined"
       :aria-required="required"
-      class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+      class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs transition-colors focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
       :class="{
         'border-red-500 focus:border-red-500 focus:ring-red-500': !!error,
       }"

@@ -1,4 +1,5 @@
 import { ref, computed } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import {
   querySelect,
   querySingle,
@@ -39,6 +40,9 @@ import type { Document } from "~/types/models";
  *
  * @returns Combined object with all document operations
  */
+
+const logger = createClientLogger("useDocumentsConsolidated");
+
 export const useDocumentsConsolidated = () => {
   const supabase = useSupabase();
   const userStore = useUserStore();
@@ -268,7 +272,7 @@ export const useDocumentsConsolidated = () => {
         try {
           await supabase.storage.from("documents").remove([doc.file_url]);
         } catch (storageErr) {
-          console.warn("Storage deletion failed:", storageErr);
+          logger.warn("Storage deletion failed:", storageErr);
           // Continue - don't want orphaned DB records
         }
       }

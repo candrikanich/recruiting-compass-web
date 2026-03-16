@@ -3,10 +3,11 @@
  * Fetch task dependencies and completion status
  */
 
-import { defineEventHandler } from "h3";
+import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
+import { requireUuidParam } from "~/server/utils/validation";
 import type { Task } from "~/types/timeline";
 
 interface DependenciesResponse {
@@ -14,6 +15,11 @@ interface DependenciesResponse {
   prerequisites: Task[];
   incompletePrerequisites: Task[];
 }
+
+const TASK_COLUMNS =
+  "id, category, grade_level, title, description, required, dependency_task_ids, why_it_matters, failure_risk, division_applicability, created_at, updated_at";
+
+const ATHLETE_TASK_COLUMNS = "task_id, status";
 
 // Helper to safely get dependency task IDs
 function getDependencyTaskIds(task: unknown): string[] {
@@ -37,20 +43,13 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "tasks/dependencies");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
-  const taskId = event.context.params?.taskId as string;
-
-  if (!taskId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Task ID is required",
-    });
-  }
+  const taskId = requireUuidParam(event, "taskId");
 
   try {
     // Fetch the task to get its dependencies
     const { data: taskData, error: taskError } = await supabase
       .from("task")
-      .select("*")
+      .select(TASK_COLUMNS)
       .eq("id", taskId)
       .single();
 
@@ -73,7 +72,10 @@ export default defineEventHandler(async (event) => {
 
     // Fetch prerequisite tasks
     const { data: prerequisitesData, error: prerequisitesError } =
-      await supabase.from("task").select("*").in("id", dependencyIds);
+      await supabase
+        .from("task")
+        .select(TASK_COLUMNS)
+        .in("id", dependencyIds);
 
     if (prerequisitesError) {
       logger.error("Error fetching task prerequisites", prerequisitesError);
@@ -86,7 +88,7 @@ export default defineEventHandler(async (event) => {
     // Fetch athlete's completion status for prerequisites
     const { data: athleteTasksData, error: athleteTasksError } = await supabase
       .from("athlete_task")
-      .select("*")
+      .select(ATHLETE_TASK_COLUMNS)
       .eq("athlete_id", user.id)
       .in("task_id", dependencyIds);
 

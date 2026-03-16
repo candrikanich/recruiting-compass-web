@@ -41,11 +41,15 @@ describe("useUserStore", () => {
 
   const getMockSupabase = () => {
     const mockSingle = vi.fn();
-    const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
+    const mockEq = vi
+      .fn()
+      .mockReturnValue({ single: mockSingle, maybeSingle: mockSingle });
     const mockSelect = vi
       .fn()
-      .mockReturnValue({ eq: mockEq, single: mockSingle });
-    const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
+      .mockReturnValue({ eq: mockEq, single: mockSingle, maybeSingle: mockSingle });
+    const mockInsert = vi.fn().mockReturnValue({
+      select: vi.fn().mockResolvedValue({ data: [], error: null }),
+    });
 
     const mockQuery = {
       select: mockSelect,
@@ -253,8 +257,9 @@ describe("useUserStore", () => {
       await store.initializeUser();
 
       expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("[stores/user]"),
         "[initializeUser] Unexpected error:",
-        expect.any(Error),
+        expect.objectContaining({ message: "Session error" }),
       );
       expect(store.user).toBeNull();
       expect(store.isAuthenticated).toBe(false);

@@ -3,7 +3,9 @@
     <SkipLink to="#main-content" text="Skip to main content" />
     <Header />
     <main id="main-content">
-      <slot />
+      <ErrorBoundary>
+        <slot />
+      </ErrorBoundary>
     </main>
     <SpeedInsights />
   </div>

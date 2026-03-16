@@ -32,7 +32,7 @@ const CoachesPage = defineComponent({
         <div
           v-for="coach in coaches"
           :key="coach.id"
-          class="bg-white rounded-xl border border-slate-200 shadow-sm"
+          class="bg-white rounded-xl border border-slate-200 shadow-xs"
         >
           <!-- Coach Header -->
           <div class="p-4 border-b border-slate-100">

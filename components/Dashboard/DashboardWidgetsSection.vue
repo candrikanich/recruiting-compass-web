@@ -17,16 +17,9 @@
 
   <!-- Row 5: Full-width widgets -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-    <CoachFollowupWidget
-      v-if="showWidget('coachFollowupWidget', 'widgets')"
-      class="lg:col-span-2"
-    />
-    <AthleteActivityWidget
-      v-if="isParent && showWidget('athleteActivity', 'widgets')"
-      class="lg:col-span-1"
-    />
+    <CoachFollowupWidget class="lg:col-span-2" />
+    <AthleteActivityWidget v-if="isParent" class="lg:col-span-1" />
     <AtAGlanceSummary
-      v-if="showWidget('atAGlanceSummary', 'widgets')"
       :coaches="coaches"
       :schools="schools"
       :interactions="interactions"
@@ -53,7 +46,6 @@ defineProps<{
   interactions: Interaction[];
   offers: Offer[];
   isParent: boolean;
-  showWidget: (widgetKey: string, section: "statsCards" | "widgets") => boolean;
 }>();
 
 defineEmits<{

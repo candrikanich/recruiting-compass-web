@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+    class="bg-white rounded-2xl shadow-xs hover:shadow-md transition-shadow"
     :class="[
       isCompleted
         ? 'border border-emerald-200 opacity-60'
@@ -19,7 +19,7 @@
         <!-- Right: Completion icon + stats + chevron -->
         <div class="flex items-center gap-4">
           <!-- Completion status icon -->
-          <div class="w-8 h-8 flex-shrink-0">
+          <div class="w-8 h-8 shrink-0">
             <svg
               v-if="percentComplete === 100"
               class="w-8 h-8 text-emerald-500"
@@ -70,7 +70,7 @@
           <!-- Expand chevron -->
           <svg
             :class="{ 'rotate-180': expanded }"
-            class="w-6 h-6 text-slate-400 transition-transform flex-shrink-0 mt-1"
+            class="w-6 h-6 text-slate-400 transition-transform shrink-0 mt-1"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -91,7 +91,7 @@
           class="h-full transition-all duration-300"
           :class="
             isCurrentPhase
-              ? 'bg-gradient-to-r from-blue-500 to-emerald-500'
+              ? 'bg-linear-to-r from-blue-500 to-emerald-500'
               : 'bg-slate-300'
           "
           :style="{ width: `${percentComplete}%` }"

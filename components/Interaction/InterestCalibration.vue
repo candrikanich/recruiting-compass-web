@@ -23,7 +23,7 @@
           :id="`calibration-q${idx}`"
           v-model="answers[idx]"
           @change="updateScore"
-          class="w-5 h-5 mt-0.5 text-indigo-600 border-2 border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 cursor-pointer flex-shrink-0"
+          class="w-5 h-5 mt-0.5 text-indigo-600 border-2 border-slate-300 rounded-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer shrink-0"
         />
         <label
           :for="`calibration-q${idx}`"
@@ -46,7 +46,7 @@
     >
       <div class="flex items-center gap-3">
         <div
-          class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+          class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
           :class="[
             interestLevel === 'high' ? 'bg-green-200 text-green-700' : '',
             interestLevel === 'medium' ? 'bg-amber-200 text-amber-700' : '',

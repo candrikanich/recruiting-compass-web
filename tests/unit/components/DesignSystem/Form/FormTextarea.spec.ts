@@ -100,7 +100,7 @@ describe('FormTextarea', () => {
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['New text content'])
   })
 
-  it('emits blur on textarea blur', async () => {
+  it('emits blur-sm on textarea blur-sm', async () => {
     const wrapper = mount(FormTextarea, {
       props: {
         modelValue: '',

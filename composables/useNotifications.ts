@@ -1,6 +1,7 @@
-import { ref, computed, type ComputedRef } from "vue";
+import { ref, shallowRef, computed, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
 import type { Notification } from "~/types/models";
 import type { Database } from "~/types/database";
 
@@ -9,6 +10,8 @@ type _NotificationInsert =
   Database["public"]["Tables"]["notifications"]["Insert"];
 type _NotificationUpdate =
   Database["public"]["Tables"]["notifications"]["Update"];
+
+const logger = createClientLogger("useNotifications");
 
 export const useNotifications = (): {
   notifications: ComputedRef<Notification[]>;
@@ -40,7 +43,7 @@ export const useNotifications = (): {
     return userStore;
   };
 
-  const notifications = ref<Notification[]>([]);
+  const notifications = shallowRef<Notification[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -87,7 +90,7 @@ export const useNotifications = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch notifications";
       error.value = message;
-      console.error("Notification fetch error:", message);
+      logger.error("Notification fetch error:", message);
     } finally {
       loading.value = false;
     }
@@ -143,6 +146,7 @@ export const useNotifications = (): {
         (supabase.from("notifications") as any)
           .update({ read_at: new Date().toISOString() })
           .eq("id", id)
+          .eq("user_id", store.user.id)
           .select()
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .single()) as { data: Notification; error: any };
@@ -214,7 +218,8 @@ export const useNotifications = (): {
       const { error: deleteError } = await supabase
         .from("notifications")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .eq("user_id", store.user.id);
 
       if (deleteError) throw deleteError;
 

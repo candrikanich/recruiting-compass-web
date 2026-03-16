@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type { Coach } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
 
 export interface CoachFilters {
   schoolId?: string;
@@ -12,6 +13,7 @@ export interface CoachState {
   loading: boolean;
   error: string | null;
   isFetched: boolean;
+  lastFetchedWithFilters: boolean;
   isFetchedBySchools: Record<string, boolean>; // Track which schools' coaches have been fetched
   filters: CoachFilters;
 }
@@ -31,12 +33,15 @@ export interface CoachState {
  * const responsive = coachStore.coachesByResponsiveness
  * const coaches = responsive.map((c: any) => ({ id: c.id, school_id: c.school_id, first_name: c.first_name, last_name: c.last_name, email: c.email, responsiveness_score: c.responsiveness_score, last_contact_date: c.last_contact_date, role: c.role }))
  */
+const logger = createClientLogger("stores/coaches");
+
 export const useCoachStore = defineStore("coaches", {
   state: (): CoachState => ({
     coaches: [],
     loading: false,
     error: null,
     isFetched: false,
+    lastFetchedWithFilters: false as boolean,
     isFetchedBySchools: {},
     filters: {
       schoolId: undefined,
@@ -149,10 +154,9 @@ export const useCoachStore = defineStore("coaches", {
         this.coaches.push(...newCoaches);
         this.isFetchedBySchools[schoolId] = true;
       } catch (err: unknown) {
-        const message =
+        this.error =
           err instanceof Error ? err.message : "Failed to fetch coaches";
-        this.error = message;
-        console.error(message);
+        logger.error("Failed to fetch coaches", err);
       } finally {
         this.loading = false;
       }
@@ -163,7 +167,8 @@ export const useCoachStore = defineStore("coaches", {
      */
     async fetchAllCoaches(filters?: CoachFilters) {
       // Guard: don't refetch if already loaded
-      if (this.isFetched && this.coaches.length > 0 && !filters) return;
+      // Only return cache if it was populated without filters
+      if (this.isFetched && this.coaches.length > 0 && !filters && !this.lastFetchedWithFilters) return;
 
       this.loading = true;
       this.error = null;
@@ -203,11 +208,11 @@ export const useCoachStore = defineStore("coaches", {
 
         this.coaches = result;
         this.isFetched = true;
+        this.lastFetchedWithFilters = !!filters;
       } catch (err: unknown) {
-        const message =
+        this.error =
           err instanceof Error ? err.message : "Failed to fetch coaches";
-        this.error = message;
-        console.error(message);
+        logger.error("Failed to fetch all coaches", err);
       } finally {
         this.loading = false;
       }
@@ -245,10 +250,9 @@ export const useCoachStore = defineStore("coaches", {
           this.isFetchedBySchools[id] = true;
         });
       } catch (err: unknown) {
-        const message =
+        this.error =
           err instanceof Error ? err.message : "Failed to fetch coaches";
-        this.error = message;
-        console.error(message);
+        logger.error("Failed to fetch coaches by schools", err);
       } finally {
         this.loading = false;
       }
@@ -414,16 +418,31 @@ export const useCoachStore = defineStore("coaches", {
      */
     async deleteCoach(id: string) {
       const { useSupabase } = await import("~/composables/useSupabase");
+      const { useUserStore } = await import("./user");
+      const { useFamilyContext } = await import(
+        "~/composables/useFamilyContext"
+      );
+      const userStore = useUserStore();
+      const activeFamily = useFamilyContext();
       const supabase = useSupabase();
 
       this.loading = true;
       this.error = null;
 
       try {
+        if (!userStore.user) {
+          throw new Error("User not authenticated");
+        }
+
+        if (!activeFamily.activeFamilyId.value) {
+          throw new Error("No family context");
+        }
+
         const { error: deleteError } = await supabase
           .from("coaches")
           .delete()
-          .eq("id", id);
+          .eq("id", id)
+          .eq("family_unit_id", activeFamily.activeFamilyId.value);
 
         if (deleteError) throw deleteError;
 

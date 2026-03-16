@@ -69,7 +69,7 @@
       <!-- Empty State -->
       <div
         v-else-if="filteredNotifications.length === 0"
-        class="bg-white rounded-lg shadow p-12 text-center"
+        class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <p class="text-gray-600 mb-2">No notifications</p>
         <p class="text-sm text-gray-500">You're all caught up!</p>
@@ -81,7 +81,7 @@
           v-for="notification in filteredNotifications"
           :key="notification.id"
           :class="[
-            'bg-white rounded-lg shadow p-4 hover:shadow-lg transition cursor-pointer border-l-4 flex items-start justify-between',
+            'bg-white rounded-lg shadow-sm p-4 hover:shadow-lg transition cursor-pointer border-l-4 flex items-start justify-between',
             notification.read_at
               ? 'border-gray-300'
               : 'border-blue-500 bg-blue-50',
@@ -109,19 +109,19 @@
               </h3>
               <span
                 v-if="notification.priority === 'high'"
-                class="px-2 py-1 text-xs font-bold bg-red-100 text-red-700 rounded"
+                class="px-2 py-1 text-xs font-bold bg-red-100 text-red-700 rounded-sm"
               >
                 HIGH
               </span>
               <span
                 v-else-if="notification.priority === 'normal'"
-                class="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded"
+                class="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-sm"
               >
                 NORMAL
               </span>
               <span
                 v-else
-                class="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-700 rounded"
+                class="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-700 rounded-sm"
               >
                 LOW
               </span>

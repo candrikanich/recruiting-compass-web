@@ -1,14 +1,27 @@
 export default defineNuxtConfig({
   compatibilityDate: "2024-04-03",
   devtools: { enabled: false },
+  // CSR-only: app is auth-gated with heavy client-side state, real-time data, and complex interactive UI
   ssr: false,
+
+  // Exclude heavy PDF/export utils from Nuxt's auto-import scanning so they don't get pulled
+  // into the entry bundle. These files use dynamic import() for jspdf/html2canvas internally,
+  // but Nuxt's auto-import barrel creates a static re-export that forces vendor-pdf and
+  // vendor-charts into the entry chunk on every page. All usages have explicit import
+  // statements, so excluding them from auto-imports is safe.
+  ignore: [
+    "utils/exportUtils.ts",
+    "utils/pdfHelpers.ts",
+    "utils/performanceExport.ts",
+    "utils/reportGenerators.ts",
+  ],
 
   devServer: {
     port: 3003,
   },
 
   css: ["~/assets/css/main.css"],
-  modules: ["@pinia/nuxt", "@sentry/nuxt/module"],
+  modules: ["@pinia/nuxt", "@sentry/nuxt/module", "@nuxt/ui"],
 
   app: {
     head: {
@@ -26,17 +39,15 @@ export default defineNuxtConfig({
     // Pre-bundle frequently used dependencies
     optimizeDeps: {
       include: [
-        "vue",
         "@pinia/nuxt",
         "@supabase/supabase-js",
         "chart.js",
         "fuse.js",
         "leaflet",
         "@vueuse/core",
-        "date-fns",
       ],
       exclude: [
-        // These are heavy or change often; exclude for rebunding on change
+        // Exclude PDF libs from pre-bundling: they're only used in lazy export pages
         "html2canvas",
         "jspdf",
         "jspdf-autotable",
@@ -52,9 +63,14 @@ export default defineNuxtConfig({
           entryFileNames: "_nuxt/[name]-[hash].js",
           assetFileNames: "_nuxt/[name]-[hash][extname]",
 
-          // Manual vendor chunking for better caching
+          // Manual vendor chunking for better caching.
+          // NOTE: vendor-pdf (jspdf/html2canvas) is intentionally NOT listed here.
+          // When listed as a manualChunk, Rollup places the Vite __vitePreload helper
+          // inside vendor-pdf, which forces the browser to fetch all 589 KB of PDF
+          // libraries before the entry chunk can execute — even on pages that never use PDF.
+          // Without a manualChunk entry, jspdf/html2canvas are bundled only into the
+          // ExportModal page chunks and load lazily when the user first triggers export.
           manualChunks: {
-            "vendor-pdf": ["jspdf", "jspdf-autotable", "html2canvas"],
             "vendor-charts": [
               "chart.js",
               "vue-chartjs",
@@ -75,37 +91,30 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: false,
     },
-
+    routeRules: {
+      '/.well-known/apple-app-site-association': {
+        headers: { 'content-type': 'application/json' },
+      },
+    },
   },
 
   postcss: {
     plugins: {
-      tailwindcss: {},
-      autoprefixer: {},
+      "@tailwindcss/postcss": {},
     },
   },
 
   runtimeConfig: {
     adminTokenSecret: process.env.NUXT_ADMIN_TOKEN_SECRET || "",
+    collegeScorecardApiKey: process.env.NUXT_COLLEGE_SCORECARD_API_KEY || "",
     public: {
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || "",
       supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || "",
-      collegeScorecardApiKey:
-        process.env.NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY || "",
       authEnforcementEnabled:
         process.env.NUXT_PUBLIC_AUTH_ENFORCEMENT_ENABLED === "true",
-      useConsolidatedComposables:
-        process.env.NUXT_PUBLIC_USE_CONSOLIDATED_COMPOSABLES === "true",
-      serverSidePreferences:
-        process.env.NUXT_PUBLIC_SERVER_SIDE_PREFERENCES === "true",
-      // Phase 3: Composable Consolidation feature flags
-      useConsolidatedFiles:
-        process.env.NUXT_PUBLIC_USE_CONSOLIDATED_FILES !== "false",
-      useConsolidatedPerformance:
-        process.env.NUXT_PUBLIC_USE_CONSOLIDATED_PERFORMANCE !== "false",
-      useConsolidatedInteractions:
-        process.env.NUXT_PUBLIC_USE_CONSOLIDATED_INTERACTIONS !== "false",
       sentryDsn: process.env.NUXT_PUBLIC_SENTRY_DSN || "",
+      posthogKey: process.env.NUXT_PUBLIC_POSTHOG_KEY || "",
+      posthogHost: process.env.NUXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com",
     },
   },
 

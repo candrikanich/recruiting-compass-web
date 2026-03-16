@@ -239,6 +239,8 @@ const recommendation = computed(() => {
 </script>
 
 <style scoped>
+@reference "tailwindcss";
+
 .fit-score-display {
   @apply w-full;
 }

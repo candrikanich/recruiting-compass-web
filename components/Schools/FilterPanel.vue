@@ -27,7 +27,7 @@
               )
             "
             placeholder="Search by name or location..."
-            class="w-full pl-12 pr-4 py-3 text-slate-700 placeholder-slate-400 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300"
+            class="w-full pl-12 pr-4 py-3 text-slate-700 placeholder-slate-400 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300"
           />
         </div>
       </div>
@@ -63,7 +63,7 @@
                 max: filterValues.fit_score?.max ?? 100,
               })
             "
-            class="flex-1 h-2.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 transition-opacity"
+            class="flex-1 h-2.5 bg-linear-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 transition-opacity"
           />
           <input
             type="range"
@@ -81,7 +81,7 @@
                 max: parseInt(($event.target as HTMLInputElement).value),
               })
             "
-            class="flex-1 h-2.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 transition-opacity"
+            class="flex-1 h-2.5 bg-linear-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 transition-opacity"
           />
         </div>
       </div>
@@ -117,11 +117,11 @@
           :disabled="
             !userHomeLocation?.latitude || !userHomeLocation?.longitude
           "
-          class="w-full h-2.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+          class="w-full h-2.5 bg-linear-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
         />
         <p
           v-if="!userHomeLocation?.latitude || !userHomeLocation?.longitude"
-          class="text-xs text-amber-700 mt-1 px-2 py-0.5 bg-amber-50 rounded border border-amber-200"
+          class="text-xs text-amber-700 mt-1 px-2 py-0.5 bg-amber-50 rounded-sm border border-amber-200"
         >
           Set home location
         </p>

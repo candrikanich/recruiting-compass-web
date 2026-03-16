@@ -33,9 +33,6 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     const { logParentView } = useViewLogging();
     const { familyMembers } = useActiveFamily();
 
-    // Only log for parents
-    if (userStore.user?.role !== "parent") return;
-
     // Get family members from active family
     if (!familyMembers.value || !Array.isArray(familyMembers.value)) return;
 

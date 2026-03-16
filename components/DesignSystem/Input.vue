@@ -53,7 +53,7 @@ const inputClasses = computed(() => {
   const border = props.error
     ? "border-red-500 focus:border-red-500"
     : "border-slate-300 focus:border-blue-500";
-  const focus = "focus:outline-none focus:ring-2 focus:ring-offset-0";
+  const focus = "focus:outline-hidden focus:ring-2 focus:ring-offset-0";
   const focusRing = props.error
     ? "focus:ring-red-500/20"
     : "focus:ring-blue-500/20";

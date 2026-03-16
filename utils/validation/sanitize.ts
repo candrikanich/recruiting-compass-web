@@ -1,8 +1,108 @@
-import sanitizeHtmlLib from "sanitize-html";
+import type { default as SanitizeHtmlFn } from "sanitize-html";
+
+const DEFAULT_ALLOWED_TAGS = [
+  "p",
+  "br",
+  "strong",
+  "em",
+  "u",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "ul",
+  "ol",
+  "li",
+  "blockquote",
+  "code",
+  "pre",
+  "a",
+];
+
+const DEFAULT_ALLOWED_ATTRIBUTES: Record<string, string[]> = {
+  a: ["href", "title", "target"],
+};
+
+// Tags whose entire content (not just the tag) must be discarded
+const DISCARD_TAGS = new Set([
+  "script",
+  "style",
+  "iframe",
+  "object",
+  "embed",
+  "form",
+  "input",
+  "textarea",
+  "button",
+  "select",
+]);
+
+// Attributes that hold URLs and must be validated
+const URL_ATTRIBUTES = new Set(["href", "src", "action", "formaction"]);
+
+const SAFE_URL_RE = /^(https?:|mailto:|tel:|ftp:|\/|#)/i;
+
+function isSafeUrl(value: string): boolean {
+  const trimmed = value.trim();
+  // Relative URLs (no colon before first slash or hash) are safe
+  if (!trimmed.includes(":")) return true;
+  return SAFE_URL_RE.test(trimmed);
+}
+
+function sanitizeWithDOMParser(
+  dirty: string,
+  allowedTags: string[],
+  allowedAttributes: Record<string, string[]>,
+): string {
+  const doc = new DOMParser().parseFromString(dirty, "text/html");
+
+  function processNode(node: Node): Node | null {
+    if (node.nodeType === Node.TEXT_NODE) return node.cloneNode();
+    if (node.nodeType !== Node.ELEMENT_NODE) return null;
+
+    const el = node as Element;
+    const tagName = el.tagName.toLowerCase();
+
+    // Completely discard dangerous tags and all their content
+    if (DISCARD_TAGS.has(tagName)) return null;
+
+    if (!allowedTags.includes(tagName)) {
+      // Unwrap: keep children, drop the tag itself
+      const frag = document.createDocumentFragment();
+      for (const child of Array.from(el.childNodes)) {
+        const processed = processNode(child);
+        if (processed) frag.appendChild(processed);
+      }
+      return frag;
+    }
+
+    const newEl = document.createElement(tagName);
+    const allowedAttrs = allowedAttributes[tagName] ?? [];
+    for (const attr of Array.from(el.attributes)) {
+      if (!allowedAttrs.includes(attr.name)) continue;
+      if (URL_ATTRIBUTES.has(attr.name) && !isSafeUrl(attr.value)) continue;
+      newEl.setAttribute(attr.name, attr.value);
+    }
+    for (const child of Array.from(el.childNodes)) {
+      const processed = processNode(child);
+      if (processed) newEl.appendChild(processed);
+    }
+    return newEl;
+  }
+
+  const wrapper = document.createElement("div");
+  for (const child of Array.from(doc.body.childNodes)) {
+    const processed = processNode(child);
+    if (processed) wrapper.appendChild(processed);
+  }
+  return wrapper.innerHTML;
+}
 
 /**
  * Sanitizes HTML content to prevent XSS attacks.
- * Removes dangerous scripts, event handlers, and potentially malicious attributes.
+ * Server: uses sanitize-html (full parser). Client: uses native DOMParser (browser sandbox).
  */
 export const sanitizeHtml = (
   dirty: string | null | undefined,
@@ -10,36 +110,22 @@ export const sanitizeHtml = (
 ): string => {
   if (!dirty) return "";
 
-  return sanitizeHtmlLib(dirty, {
-    allowedTags: allowedTags || [
-      "p",
-      "br",
-      "strong",
-      "em",
-      "u",
-      "h1",
-      "h2",
-      "h3",
-      "h4",
-      "h5",
-      "h6",
-      "ul",
-      "ol",
-      "li",
-      "blockquote",
-      "code",
-      "pre",
-      "a",
-    ],
-    allowedAttributes: {
-      a: ["href", "title", "target"],
-    },
-  });
+  const tags = allowedTags ?? DEFAULT_ALLOWED_TAGS;
+
+  if (import.meta.server) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const lib = require("sanitize-html") as typeof SanitizeHtmlFn;
+    return lib(dirty, {
+      allowedTags: tags,
+      allowedAttributes: DEFAULT_ALLOWED_ATTRIBUTES,
+    });
+  }
+
+  return sanitizeWithDOMParser(dirty, tags, DEFAULT_ALLOWED_ATTRIBUTES);
 };
 
 /**
  * Sanitizes URLs to prevent javascript: and data: URIs.
- * Validates that URLs only use safe protocols.
  */
 export const sanitizeUrl = (url: string | null | undefined): string | null => {
   if (!url) return null;
@@ -47,7 +133,6 @@ export const sanitizeUrl = (url: string | null | undefined): string | null => {
   try {
     const trimmed = url.trim().toLowerCase();
 
-    // Reject dangerous protocols
     if (
       trimmed.startsWith("javascript:") ||
       trimmed.startsWith("data:") ||
@@ -57,12 +142,10 @@ export const sanitizeUrl = (url: string | null | undefined): string | null => {
       return null;
     }
 
-    // Only allow http and https
     if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
       return null;
     }
 
-    // Test if it's a valid URL
     new URL(url);
     return url;
   } catch {
@@ -72,7 +155,6 @@ export const sanitizeUrl = (url: string | null | undefined): string | null => {
 
 /**
  * Strips all HTML tags and returns plain text.
- * Useful for fields that should only contain text.
  */
 export const stripHtml = (html: string | null | undefined): string => {
   if (!html) return "";
@@ -81,7 +163,6 @@ export const stripHtml = (html: string | null | undefined): string => {
 
 /**
  * Recursively sanitizes specified fields in an object.
- * Useful for sanitizing API responses or form data before storage.
  */
 export const sanitizeObject = <T extends Record<string, unknown>>(
   obj: T,
@@ -101,7 +182,6 @@ export const sanitizeObject = <T extends Record<string, unknown>>(
         typeof item === "string" ? sanitizeHtml(item) : item,
       );
     } else if (typeof value === "object" && value !== null) {
-      // Recursively sanitize nested objects
       sanitized[field as string] = sanitizeObject(
         value as Record<string, unknown>,
         [],
@@ -114,7 +194,6 @@ export const sanitizeObject = <T extends Record<string, unknown>>(
 
 /**
  * Escapes HTML entities to prevent XSS when content must be rendered as HTML.
- * Alternative to sanitizeHtml when you need to preserve the original text with entities.
  */
 export const escapeHtml = (text: string | null | undefined): string => {
   if (!text) return "";

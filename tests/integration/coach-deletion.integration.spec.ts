@@ -3,6 +3,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { useCoaches } from "~/composables/useCoaches";
 import { useUserStore } from "~/stores/user";
 import type { Coach } from "~/types/models";
+import * as authFetchModule from "~/composables/useAuthFetch";
 
 // Mock useSupabase
 const mockSupabase = {
@@ -27,9 +28,6 @@ vi.mock("~/composables/useFamilyContext", () => ({
 vi.mock("~/utils/validation/sanitize", () => ({
   sanitizeHtml: (html: string) => html.replace(/<[^>]*>/g, ""),
 }));
-
-// Mock fetch for cascade delete
-global.fetch = vi.fn();
 
 describe("Coach Deletion Integration", () => {
   let userStore: ReturnType<typeof useUserStore>;
@@ -157,7 +155,12 @@ describe("Coach Deletion Integration", () => {
     });
 
     it("should attempt cascade delete on FK constraint error", async () => {
-      const { smartDelete } = useCoaches();
+      const mockFetchAuth = vi.fn();
+      vi.spyOn(authFetchModule, "useAuthFetch").mockReturnValue({
+        $fetchAuth: mockFetchAuth,
+      });
+
+      mockFetchAuth.mockResolvedValueOnce({ success: true, message: "Deleted" });
 
       // Setup mock to return FK constraint error
       const mockQuery: any = {
@@ -173,14 +176,17 @@ describe("Coach Deletion Integration", () => {
 
       mockSupabase.from.mockReturnValue(mockQuery);
 
-      // Mock cascade delete endpoint
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({ success: true, message: "Deleted" }),
-      });
-
+      const { smartDelete } = useCoaches();
       const result = await smartDelete("coach-123");
 
       expect(result.cascadeUsed).toBe(true);
+      expect(mockFetchAuth).toHaveBeenCalledWith(
+        "/api/coaches/coach-123/cascade-delete",
+        expect.objectContaining({
+          method: "POST",
+          body: { confirmDelete: true },
+        }),
+      );
     });
   });
 

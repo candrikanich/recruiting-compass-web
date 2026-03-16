@@ -1,5 +1,12 @@
-import { defineEventHandler, getRouterParam, createError } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import {
+  defineEventHandler,
+  getRouterParam,
+  createError,
+  getHeader,
+  getCookie,
+} from "h3";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 
 interface BlockerInfo {
@@ -27,8 +34,16 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const client = createServerSupabaseClient();
   const logger = useLogger(event, "schools/deletion-blockers");
+  await requireAuth(event);
+  const authHeader = getHeader(event, "authorization");
+  const token: string | null = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : getCookie(event, "sb-access-token") || null;
+  if (!token) {
+    throw createError({ statusCode: 401, statusMessage: "Unauthorized - no authentication token" });
+  }
+  const client = createServerSupabaseUserClient(token);
 
   const blockers: BlockerInfo[] = [];
 

@@ -46,7 +46,7 @@ test.describe("Password Reset Flow", () => {
       ).toBeVisible();
     });
 
-    test("should validate email on blur", async ({ page }) => {
+    test("should validate email on blur-sm", async ({ page }) => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
@@ -293,7 +293,7 @@ test.describe("Password Reset Flow", () => {
       await expect(submitButton).toBeEnabled();
     });
 
-    test("should validate on blur", async ({ page }) => {
+    test("should validate on blur-sm", async ({ page }) => {
       await page.goto("/reset-password?token=mock-token");
 
       const passwordInput = page.getByLabel(/new password/i);

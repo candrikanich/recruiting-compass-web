@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group flex flex-col h-full"
+    class="bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow overflow-hidden group flex flex-col h-full"
   >
     <div class="p-5 flex-1 flex flex-col">
       <div class="flex items-start gap-4 mb-4">
@@ -27,7 +27,7 @@
           "
           :aria-pressed="school.is_favorite"
           :class="[
-            'flex-shrink-0 transition-all',
+            'shrink-0 transition-all',
             school.is_favorite
               ? 'text-yellow-500'
               : 'text-slate-300 hover:text-yellow-400',
@@ -83,7 +83,7 @@
       <NuxtLink
         :to="`/schools/${school.id}`"
         :aria-label="`View ${school.name}`"
-        class="flex-1 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-center flex items-center justify-center gap-2"
+        class="flex-1 px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-center flex items-center justify-center gap-2"
       >
         <EyeIcon class="w-4 h-4" aria-hidden="true" />
         View

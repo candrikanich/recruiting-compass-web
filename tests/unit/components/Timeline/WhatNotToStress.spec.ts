@@ -99,7 +99,7 @@ describe("WhatNotToStress Component", () => {
     });
 
     const root = wrapper.find("div");
-    expect(root.classes()).toContain("bg-gradient-to-br");
+    expect(root.classes()).toContain("bg-linear-to-br");
     expect(root.classes()).toContain("from-emerald-50");
   });
 

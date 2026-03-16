@@ -1,4 +1,6 @@
 import { ref } from "vue";
+import { useAuthFetch } from "./useAuthFetch";
+import { createClientLogger } from "~/utils/logger";
 import type { CollegeScorecardResponse } from "~/types/api";
 import { collegeScorecardResponseSchema } from "~/utils/validation/schemas";
 import { sanitizeUrl } from "~/utils/validation/sanitize";
@@ -26,14 +28,13 @@ export interface CollegeDataResult {
  */
 let scoreboardCache: Map<string, CollegeDataResult> | null = null;
 
+const logger = createClientLogger("useCollegeData");
+
 export const useCollegeData = () => {
   const data = ref<CollegeDataResult | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
   const cacheSize = ref(0);
-
-  const config = useRuntimeConfig();
-  const apiKey = config.public.collegeScorecardApiKey as string;
 
   /**
    * Initialize cache if not already done
@@ -191,11 +192,6 @@ export const useCollegeData = () => {
       return null;
     }
 
-    if (!apiKey) {
-      error.value = "College Scorecard API not configured";
-      return null;
-    }
-
     // Check cache first
     const normalizedName = schoolName.toLowerCase().trim();
     if (isCached(normalizedName)) {
@@ -210,20 +206,20 @@ export const useCollegeData = () => {
 
     try {
       const params = new URLSearchParams({
-        api_key: apiKey,
-        "school.name": schoolName,
+        q: schoolName,
         fields:
           "id,school.name,school.city,school.state,school.school_url,location.lat,location.lon,latest.admissions.admission_rate.overall,latest.student.size,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state",
         per_page: "1",
       });
 
-      const url = `https://api.data.gov/ed/collegescorecard/v1/schools?${params.toString()}`;
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          error.value = "College Scorecard API key is invalid";
-        } else if (response.status === 429) {
+      const url = `/api/colleges/search?${params.toString()}`;
+      const { $fetchAuth } = useAuthFetch();
+      let apiData: CollegeScorecardResponse;
+      try {
+        apiData = await $fetchAuth<CollegeScorecardResponse>(url);
+      } catch (err: unknown) {
+        const status = (err as { statusCode?: number })?.statusCode;
+        if (status === 429) {
           error.value = "Too many requests to College Scorecard API";
         } else {
           error.value = "Unable to fetch college data";
@@ -231,14 +227,12 @@ export const useCollegeData = () => {
         return null;
       }
 
-      const apiData = (await response.json()) as CollegeScorecardResponse;
-
       // Validate API response structure
       try {
         await collegeScorecardResponseSchema.parseAsync(apiData);
       } catch (validationError) {
         error.value = "Invalid response from College Scorecard API";
-        console.error("API response validation failed:", validationError);
+        logger.error("API response validation failed:", validationError);
         return null;
       }
 
@@ -274,11 +268,6 @@ export const useCollegeData = () => {
       return null;
     }
 
-    if (!apiKey) {
-      error.value = "College Scorecard API not configured";
-      return null;
-    }
-
     // Check cache first using ID as key
     const cacheKey = `id:${scoreId}`;
     if (isCached(cacheKey)) {
@@ -293,28 +282,27 @@ export const useCollegeData = () => {
 
     try {
       const params = new URLSearchParams({
-        api_key: apiKey,
         id: scoreId,
         fields:
           "id,school.name,school.city,school.state,school.school_url,location.lat,location.lon,latest.admissions.admission_rate.overall,latest.student.size,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state",
       });
 
-      const url = `https://api.data.gov/ed/collegescorecard/v1/schools?${params.toString()}`;
-      const response = await fetch(url);
-
-      if (!response.ok) {
+      const url = `/api/colleges/search?${params.toString()}`;
+      const { $fetchAuth } = useAuthFetch();
+      let apiData: CollegeScorecardResponse;
+      try {
+        apiData = await $fetchAuth<CollegeScorecardResponse>(url);
+      } catch {
         error.value = "Unable to fetch college data";
         return null;
       }
-
-      const apiData = (await response.json()) as CollegeScorecardResponse;
 
       // Validate API response structure
       try {
         await collegeScorecardResponseSchema.parseAsync(apiData);
       } catch (validationError) {
         error.value = "Invalid response from College Scorecard API";
-        console.error("API response validation failed:", validationError);
+        logger.error("API response validation failed:", validationError);
         return null;
       }
 

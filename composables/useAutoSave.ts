@@ -1,7 +1,7 @@
 // composables/useAutoSave.ts
-import { ref } from "vue";
-import { useDebounceFn } from "@vueuse/core";
-import { useToast } from "./useToast";
+import { ref, onBeforeUnmount } from "vue";
+import { debounce } from "~/utils/debounce";
+import { useAppToast } from "./useAppToast";
 
 export interface AutoSaveOptions {
   debounceMs?: number;
@@ -11,14 +11,19 @@ export interface AutoSaveOptions {
 
 export const useAutoSave = (options: AutoSaveOptions) => {
   const { debounceMs = 500, onSave, onError } = options;
-  const { showToast } = useToast();
+  let isMounted = true;
+  onBeforeUnmount(() => {
+    isMounted = false;
+  });
+  const { showToast } = useAppToast();
 
   const isSaving = ref(false);
   const lastSaveTime = ref<Date | null>(null);
   const saveError = ref<Error | null>(null);
 
   // Debounced save function
-  const performSave = useDebounceFn(async () => {
+  const performSave = debounce(async () => {
+    if (!isMounted) return;
     isSaving.value = true;
     saveError.value = null;
 

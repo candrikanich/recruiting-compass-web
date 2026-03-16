@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6">
     <!-- Header -->
     <div class="flex items-center gap-3 mb-5">
       <div class="p-2 bg-slate-100 rounded-lg">
@@ -25,7 +25,7 @@
       <div
         v-for="i in 3"
         :key="i"
-        class="h-6 bg-slate-100 rounded animate-pulse"
+        class="h-6 bg-slate-100 rounded-sm animate-pulse"
       />
     </div>
 

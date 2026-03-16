@@ -3,7 +3,7 @@
     <Transition name="fade">
       <div
         v-if="isOpen"
-        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end z-[1001] p-4"
+        class="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-end z-1001 p-4"
       >
         <div
           class="bg-white rounded-t-2xl w-full max-w-md shadow-2xl overflow-hidden animate-slide-up"
@@ -12,7 +12,7 @@
           <div v-if="step === 'preview'" class="flex flex-col max-h-[90vh]">
             <!-- Header -->
             <div
-              class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-6"
+              class="bg-linear-to-r from-blue-600 to-blue-700 text-white px-6 py-6"
             >
               <h2 class="text-xl font-bold mb-1">Send Email</h2>
               <p class="text-blue-100 text-sm">
@@ -65,7 +65,7 @@
               </div>
 
               <!-- Info Box -->
-              <div class="bg-blue-50 border-l-4 border-blue-600 p-3 rounded">
+              <div class="bg-blue-50 border-l-4 border-blue-600 p-3 rounded-sm">
                 <p class="text-xs text-blue-900">
                   <strong>Next:</strong> Click "Send via Email" to open your
                   email client. The email content will be pre-filled. After
@@ -80,7 +80,7 @@
             >
               <button
                 @click="handleSendClick"
-                class="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition"
+                class="w-full px-4 py-3 bg-linear-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition"
               >
                 📧 Send via Email Client
               </button>
@@ -97,7 +97,7 @@
           <div v-if="step === 'confirmation'" class="flex flex-col">
             <!-- Header -->
             <div
-              class="bg-gradient-to-r from-amber-600 to-amber-700 text-white px-6 py-6"
+              class="bg-linear-to-r from-amber-600 to-amber-700 text-white px-6 py-6"
             >
               <h2 class="text-xl font-bold mb-1">Confirm Email Sent</h2>
               <p class="text-amber-100 text-sm">
@@ -107,7 +107,7 @@
 
             <!-- Content -->
             <div class="px-6 py-6 space-y-4">
-              <div class="bg-amber-50 border-l-4 border-amber-600 p-4 rounded">
+              <div class="bg-amber-50 border-l-4 border-amber-600 p-4 rounded-sm">
                 <p class="text-sm text-amber-900">
                   Your email client should have opened with the message
                   pre-filled. Send it, then confirm below so we can record this
@@ -122,7 +122,7 @@
             >
               <button
                 @click="confirmAndClose"
-                class="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-xl hover:from-green-700 hover:to-green-800 transition"
+                class="w-full px-4 py-3 bg-linear-to-r from-green-600 to-green-700 text-white font-semibold rounded-xl hover:from-green-700 hover:to-green-800 transition"
               >
                 ✓ Yes, Email Sent
               </button>

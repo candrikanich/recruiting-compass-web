@@ -19,7 +19,7 @@
       class="px-4 py-3 bg-white border-2 rounded-xl"
       :class="[
         error ? 'border-red-500' : 'border-slate-300',
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+        'focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent',
         'transition-all placeholder:text-slate-600',
         'disabled:opacity-50 disabled:cursor-not-allowed'
       ]"

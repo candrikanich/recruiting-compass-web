@@ -1,5 +1,8 @@
 import type { Rule, RuleContext } from "./rules/index";
-import { isDuplicateSuggestion } from "./rules/index";
+import { createLogger } from "~/server/utils/logger";
+
+const logger = createLogger("rule-engine");
+import { findExistingSuggestion } from "./rules/index";
 import type { SuggestionData, Suggestion, Urgency } from "~/types/timeline";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isDeadPeriod } from "./ncaaRecruitingCalendar";
@@ -51,7 +54,7 @@ export class RuleEngine {
             schoolsInDeadPeriod.length > 0 &&
             schoolsInDeadPeriod.length === context.schools.length
           ) {
-            console.log(
+            logger.info(
               `Skipping ${rule.id} rule - dead period active for all schools`,
             );
             continue;
@@ -67,7 +70,7 @@ export class RuleEngine {
           }
         }
       } catch (error) {
-        console.error(`Rule ${rule.id} failed:`, error);
+        logger.error(`Rule ${rule.id} failed:`, error);
       }
     }
 
@@ -94,7 +97,7 @@ export class RuleEngine {
       );
 
     if (fetchError || !dismissedSuggestions) {
-      console.error("Failed to fetch dismissed suggestions:", fetchError);
+      logger.error("Failed to fetch dismissed suggestions:", fetchError);
       return [];
     }
 
@@ -166,7 +169,7 @@ export class RuleEngine {
             }
           }
         } catch (error) {
-          console.error(
+          logger.error(
             `Re-evaluation failed for dismissed suggestion ${dismissedSuggestion.id}:`,
             error,
           );
@@ -197,13 +200,9 @@ export class RuleEngine {
     const insertedIds: string[] = [];
 
     for (const suggestion of allSuggestions) {
-      const isDuplicate = await isDuplicateSuggestion(
-        supabase,
-        athleteId,
-        suggestion,
-      );
+      const existing = await findExistingSuggestion(supabase, athleteId, suggestion);
 
-      if (!isDuplicate) {
+      if (!existing) {
         const { data, error } = await supabase
           .from("suggestion")
           .insert({
@@ -217,7 +216,17 @@ export class RuleEngine {
         if (!error && data?.id) {
           insertedIds.push(data.id);
         } else {
-          console.error("Failed to insert suggestion:", error);
+          logger.error("Failed to insert suggestion:", error);
+        }
+      } else if (suggestion.message && existing.message !== suggestion.message) {
+        // Suggestion already exists but count/context has changed — update the message in place
+        const { error } = await supabase
+          .from("suggestion")
+          .update({ message: suggestion.message })
+          .eq("id", existing.id);
+
+        if (error) {
+          logger.error("Failed to update suggestion message:", error);
         }
       }
     }

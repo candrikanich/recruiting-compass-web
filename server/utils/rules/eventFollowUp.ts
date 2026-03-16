@@ -11,7 +11,7 @@ interface Event {
 
 interface Interaction {
   id: string;
-  interaction_date: string;
+  occurred_at: string;
   related_event_id?: string;
 }
 
@@ -37,7 +37,7 @@ export const eventFollowUpRule: Rule = {
       const event = eventRecord as Event;
       const hasFollowUp = context.interactions.some((i) => {
         const interaction = i as Interaction;
-        const interactionDate = new Date(interaction.interaction_date);
+        const interactionDate = new Date(interaction.occurred_at);
         const eventDate = new Date(event.event_date);
         return (
           interaction.related_event_id === event.id ||

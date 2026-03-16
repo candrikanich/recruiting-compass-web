@@ -2,6 +2,9 @@ import { ref, computed } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { SavedSearch, SearchHistory } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useSavedSearches");
 
 // Type aliases for Supabase casting (tables not yet in database.ts)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,7 +69,7 @@ export const useSavedSearches = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to load saved searches";
-      console.error("Load saved searches error:", err);
+      logger.error("Load saved searches error:", err);
     } finally {
       isLoading.value = false;
     }
@@ -98,7 +101,7 @@ export const useSavedSearches = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to load search history";
-      console.error("Load search history error:", err);
+      logger.error("Load search history error:", err);
     } finally {
       isLoading.value = false;
     }
@@ -146,7 +149,7 @@ export const useSavedSearches = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to save search";
-      console.error("Save search error:", err);
+      logger.error("Save search error:", err);
       return null;
     }
   };
@@ -174,7 +177,7 @@ export const useSavedSearches = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to delete saved search";
-      console.error("Delete saved search error:", err);
+      logger.error("Delete saved search error:", err);
       return false;
     }
   };
@@ -202,7 +205,7 @@ export const useSavedSearches = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to update search";
-      console.error("Toggle favorite error:", err);
+      logger.error("Toggle favorite error:", err);
       return false;
     }
   };
@@ -237,7 +240,7 @@ export const useSavedSearches = () => {
       // Reload history
       await loadSearchHistory();
     } catch (err) {
-      console.error("Record search error:", err);
+      logger.error("Record search error:", err);
     }
   };
 
@@ -259,7 +262,7 @@ export const useSavedSearches = () => {
 
       search.use_count += 1;
     } catch (err) {
-      console.error("Increment use count error:", err);
+      logger.error("Increment use count error:", err);
     }
   };
 
@@ -285,7 +288,7 @@ export const useSavedSearches = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to clear history";
-      console.error("Clear history error:", err);
+      logger.error("Clear history error:", err);
       return false;
     }
   };

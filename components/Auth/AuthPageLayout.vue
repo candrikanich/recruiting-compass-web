@@ -10,7 +10,7 @@
         <nav v-if="backLink" aria-label="Page navigation" class="mb-6">
           <NuxtLink
             :to="backLink.to"
-            class="text-white hover:text-white/80 transition-colors flex items-center gap-2 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+            class="text-white hover:text-white/80 transition-colors flex items-center gap-2 rounded-sm px-2 py-1 focus:outline-hidden focus:ring-2 focus:ring-white focus:ring-offset-2"
           >
             <ArrowLeftIcon class="w-4 h-4" aria-hidden="true" />
             {{ backLink.text }}
@@ -19,7 +19,7 @@
 
         <!-- Card -->
         <div
-          class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20"
+          class="bg-white/95 backdrop-blur-xs rounded-2xl shadow-2xl p-8 border border-white/20"
         >
           <slot />
         </div>

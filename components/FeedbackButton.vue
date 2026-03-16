@@ -179,53 +179,66 @@
 <script setup lang="ts">
 import { ref, reactive } from "vue";
 import { CheckIcon } from "@heroicons/vue/24/solid";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 
+const { $fetchAuth } = useAuthFetch();
 const isOpen = ref(false);
+const loading = ref(false);
+const error = ref("");
 const success = ref(false);
-
-const { loading, error, submitFeedback: submitFeedbackApi } = useFeedback();
 
 const form = reactive({
   name: "",
   email: "",
-  feedbackType: "" as "bug" | "feature" | "other" | "",
+  feedbackType: "",
   page: "",
   message: "",
 });
 
 const closeModal = () => {
   isOpen.value = false;
+  // Reset form after modal closes
   setTimeout(() => {
     form.name = "";
     form.email = "";
     form.feedbackType = "";
     form.page = "";
     form.message = "";
-    error.value = null;
+    error.value = "";
     success.value = false;
   }, 300);
 };
 
 const submitFeedback = async () => {
+  error.value = "";
   success.value = false;
+  loading.value = true;
 
   try {
-    const response = await submitFeedbackApi({
-      name: form.name,
-      email: form.email,
-      feedbackType: form.feedbackType as "bug" | "feature" | "other",
-      page: form.page || undefined,
-      message: form.message,
+    const response = await $fetchAuth<{ success: boolean }>("/api/feedback", {
+      method: "POST",
+      body: {
+        name: form.name,
+        email: form.email,
+        feedbackType: form.feedbackType,
+        page: form.page,
+        message: form.message,
+      },
     });
 
     if (response.success) {
       success.value = true;
+      // Close modal after 2 seconds
       setTimeout(() => {
         closeModal();
       }, 2000);
     }
-  } catch {
-    // error ref is populated by useFeedback
+  } catch (err: any) {
+    error.value =
+      err.data?.message || "Failed to send feedback. Please try again.";
+    console.error("Feedback submission error:", err);
+  } finally {
+    loading.value = false;
   }
 };
 </script>

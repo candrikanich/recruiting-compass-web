@@ -1,12 +1,12 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center gap-3">
         <div
-          class="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-md"
+          class="w-10 h-10 bg-linear-to-br from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-md"
         >
           <span class="text-lg" aria-hidden="true">📈</span>
         </div>
@@ -79,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -93,7 +93,10 @@ import {
   Filler,
 } from "chart.js";
 import { ChatBubbleLeftRightIcon } from "@heroicons/vue/24/outline";
+import { createClientLogger } from "~/utils/logger";
 import type { Interaction } from "~/types/models";
+
+const logger = createClientLogger("dashboard/interaction-trend-chart");
 
 interface Props {
   interactions: Interaction[];
@@ -262,7 +265,7 @@ const initializeChart = () => {
       },
     });
   } catch (error) {
-    console.error("[InteractionTrendChart] Error:", error);
+    logger.error("Chart initialization failed", error);
   }
 };
 
@@ -270,15 +273,26 @@ onMounted(() => {
   initializeChart();
 });
 
-watch(chartData, (newData) => {
-  if (chartInstance && newData) {
-    // Update existing chart data instead of recreating
-    chartInstance.data.labels = newData.labels;
-    chartInstance.data.datasets[0].data = newData.data;
-    chartInstance.update("none"); // Update without animation
-  } else {
-    // No existing chart - create new one
-    initializeChart();
+onUnmounted(() => {
+  if (chartInstance) {
+    chartInstance.destroy();
+    chartInstance = null;
   }
 });
+
+watch(
+  chartData,
+  (newData) => {
+    if (chartInstance && newData) {
+      // Update existing chart data instead of recreating
+      chartInstance.data.labels = newData.labels;
+      chartInstance.data.datasets[0].data = newData.data;
+      chartInstance.update("none"); // Update without animation
+    } else {
+      // No existing chart - create new one (runs after v-if renders canvas)
+      initializeChart();
+    }
+  },
+  { flush: "post" },
+);
 </script>

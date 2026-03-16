@@ -22,7 +22,7 @@
       class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-4 rounded-r"
     >
       <div class="flex items-start">
-        <div class="flex-shrink-0">
+        <div class="shrink-0">
           <svg
             class="h-5 w-5 text-amber-400"
             viewBox="0 0 20 20"
@@ -66,7 +66,7 @@
     <!-- Pending Reminders Indicator -->
     <div
       v-if="moreCount > 0"
-      class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded text-center"
+      class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-sm text-center"
     >
       <p class="text-sm text-blue-700 mb-2">
         <span class="font-semibold">{{ moreCount }}</span>
@@ -84,11 +84,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import type { Suggestion } from "~/types/timeline";
-import type { School } from "~/types/models";
-import { useSupabase } from "~/composables/useSupabase";
 import { useSuggestions } from "~/composables/useSuggestions";
+import { useSchools } from "~/composables/useSchools";
 import { getDeadPeriodMessage } from "~/server/utils/ncaaRecruitingCalendar";
 
 interface Props {
@@ -108,9 +107,8 @@ const emit = defineEmits<{
   dismiss: [id: string];
 }>();
 
-const supabase = useSupabase();
 const suggestionsComposable = useSuggestions();
-const allSchools = ref<School[]>([]);
+const { schools: allSchools } = useSchools();
 const surfacingMore = ref(false);
 
 const deadPeriodMessage = computed(() => {
@@ -147,19 +145,4 @@ const surfaceMoreSuggestions = async () => {
     surfacingMore.value = false;
   }
 };
-
-onMounted(async () => {
-  try {
-    const { data } = await supabase
-      .from("schools")
-      .select(
-        "id, name, location, division, conference, ranking, is_favorite, status, priority_tier, website, user_id, family_unit_id",
-      );
-    if (data) {
-      allSchools.value = data as School[];
-    }
-  } catch (error) {
-    console.error("Error fetching schools for dead period check:", error);
-  }
-});
 </script>

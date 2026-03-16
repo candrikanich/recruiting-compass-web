@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-lg shadow p-6 bg-white">
+  <div class="rounded-lg shadow-sm p-6 bg-white">
     <div
       class="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4"
     >
@@ -16,7 +16,7 @@
             type="checkbox"
             :checked="visibleMetrics.includes(type)"
             @change="toggleMetric(type)"
-            class="w-4 h-4 rounded accent-blue-600"
+            class="w-4 h-4 rounded-sm accent-blue-600"
           />
           <span class="ml-2 text-sm font-medium text-slate-600">{{
             getMetricLabel(type)

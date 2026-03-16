@@ -2,6 +2,7 @@ import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { Document } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
 
 /**
  * Composable for document sharing operations
@@ -26,9 +27,11 @@ import type { Document } from "~/types/models";
  *
  * @returns Object with sharing methods and state
  */
+const logger = createClientLogger("useDocumentSharing");
+
 export const useDocumentSharing = () => {
   if (process.env.NODE_ENV === "development") {
-    console.warn(
+    logger.warn(
       "[DEPRECATED] useDocumentSharing is deprecated as of Phase 4. " +
         "Use useDocumentsConsolidated() instead.\n" +
         "Migration guide: See DEPRECATION_AUDIT.md",

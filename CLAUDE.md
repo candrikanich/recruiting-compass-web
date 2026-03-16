@@ -135,7 +135,7 @@ export default defineEventHandler(async (event) => {
 
 ### Cascade-Delete Pattern
 
-1. Try simple delete (fast path) 2. Catch FK errors ("Cannot delete", "violates foreign key") 3. Fall back to `/api/[entity]/[id]/cascade-delete` (children first, `confirmDelete: true`) 4. Return `{ cascadeUsed: boolean }` for UX messaging 5. CSRF bypass (check `/server/middleware/csrf.ts`)
+1. Try simple delete (fast path) 2. Catch FK errors ("Cannot delete", "violates foreign key") 3. Fall back to `/api/[entity]/[id]/cascade-delete` (children first, `confirmDelete: true`) 4. Return `{ cascadeUsed: boolean }` for UX messaging 5. CSRF token required (ensure client uses `useAuthFetch` which auto-injects the token)
 
 **Security:** Use `family_unit_id` for access control (not `user_id`)
 
@@ -167,6 +167,10 @@ Fix ALL errors in single pass before rebuilding. Batch fixes together.
 ## Bug-Driven TDD
 
 Write failing test → Fix code (minimal) → Verify passes. Prevents regression, increases coverage.
+
+## Testing Philosophy
+
+Never write tests that verify what the TypeScript type system already guarantees. Test runtime behavior, business logic, and edge cases — not type constraints.
 
 ## Testing After Refactoring
 

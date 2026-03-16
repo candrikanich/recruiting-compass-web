@@ -2,6 +2,8 @@ import { vi, beforeEach, afterEach } from "vitest";
 import { nextTick, ref } from "vue";
 import { createPinia, setActivePinia } from "pinia";
 import { config } from "@vue/test-utils";
+import * as axeMatchers from "vitest-axe/matchers";
+expect.extend(axeMatchers);
 
 // Set up environment for Pinia
 if (typeof process !== "undefined") {
@@ -13,6 +15,11 @@ global.useState = vi.fn();
 global.useFetch = vi.fn();
 global.useAsyncData = vi.fn();
 global.definePageMeta = vi.fn();
+
+// Shared vi.fn() so both auto-import (global) and #app import resolve to the same mock
+const _useNuxtAppMock = vi.fn(() => ({} as ReturnType<typeof import("#app").useNuxtApp>));
+global.useNuxtApp = _useNuxtAppMock;
+export { _useNuxtAppMock as useNuxtAppMock };
 global.useLoadingStates = vi.fn(() => ({
   loading: ref(false),
   validating: ref(false),
@@ -147,6 +154,22 @@ vi.mock("#app", () => ({
     back: vi.fn(),
     go: vi.fn(),
   }),
+  useCookie: () => ref(null),
+  navigateTo: vi.fn(),
+  useNuxtApp: _useNuxtAppMock,
+}));
+
+// Mock useAuthFetch so composables that use it don't require CSRF/session setup
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: () => ({
+    $fetchAuth: vi.fn().mockResolvedValue({ success: true }),
+  }),
+  SessionExpiredError: class SessionExpiredError extends Error {
+    constructor() {
+      super("Your session has expired. Please sign in again.");
+      this.name = "SessionExpiredError";
+    }
+  },
 }));
 
 // Global component stubs to prevent resolution errors

@@ -3,9 +3,12 @@ import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { Document } from "~/types/models";
 import type { Database } from "~/types/database";
+import { createClientLogger } from "~/utils/logger";
 
 // Type aliases for Supabase casting
 type _DocumentInsert = Database["public"]["Tables"]["documents"]["Insert"];
+
+const logger = createClientLogger("useDocumentUpload");
 
 // File validation constants
 const ALLOWED_MIME_TYPES = {
@@ -101,7 +104,7 @@ const validateFile = (
  */
 export const useDocumentUpload = () => {
   if (process.env.NODE_ENV === "development") {
-    console.warn(
+    logger.warn(
       "[DEPRECATED] useDocumentUpload is deprecated as of Phase 4. " +
         "Use useDocumentsConsolidated() instead.\n" +
         "Migration guide: See DEPRECATION_AUDIT.md",
@@ -148,8 +151,7 @@ export const useDocumentUpload = () => {
           .upload(fileName, file);
 
         if (uploadError) {
-          console.warn("Storage upload failed:", uploadError);
-          fileUrl = fileName;
+          throw new Error("File upload failed. Please try again.");
         } else if (uploadData) {
           fileUrl = uploadData.path;
         }

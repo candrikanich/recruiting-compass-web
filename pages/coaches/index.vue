@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Skip Link -->
     <a
@@ -15,7 +15,7 @@
       <template #actions>
         <NuxtLink
           to="/coaches/new"
-          class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-sm"
+          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-xs"
         >
           <PlusIcon class="w-4 h-4" />
           Add Coach
@@ -26,7 +26,7 @@
           :disabled="exportLoading"
           :aria-busy="exportLoading"
           aria-label="Export coaches to CSV"
-          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
         >
           <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
           {{ exportLoading ? "Exporting..." : "CSV" }}
@@ -37,7 +37,7 @@
           :disabled="exportLoading"
           :aria-busy="exportLoading"
           aria-label="Export coaches to PDF"
-          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
         >
           <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
           {{ exportLoading ? "Exporting..." : "PDF" }}
@@ -63,7 +63,7 @@
 
       <!-- Filter Bar -->
       <div
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 mb-6"
       >
         <CoachFilters
           :filter-values="filterValues"
@@ -85,7 +85,7 @@
       <!-- Loading State -->
       <div
         v-if="loading && allCoaches.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         role="status"
         aria-live="polite"
         aria-busy="true"
@@ -106,7 +106,7 @@
       >
         <div class="flex items-start gap-3">
           <svg
-            class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
+            class="w-5 h-5 text-red-600 shrink-0 mt-0.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -131,7 +131,7 @@
       <!-- Empty State -->
       <div
         v-else-if="allCoaches.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         role="status"
       >
         <UserGroupIcon
@@ -145,7 +145,7 @@
       <!-- No Results State -->
       <div
         v-else-if="filteredCoaches.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         role="status"
       >
         <MagnifyingGlassIcon
@@ -182,14 +182,20 @@
         <li
           v-for="coach in paginatedCoaches"
           :key="coach.id"
-          class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition overflow-hidden"
+          class="bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition overflow-hidden"
         >
           <!-- Coach Header -->
           <div class="p-4 border-b border-slate-100">
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-3">
+                <SchoolLogo
+                  v-if="getSchoolById(coach.school_id, schools)"
+                  :school="getSchoolById(coach.school_id, schools)!"
+                  size="md"
+                />
                 <div
-                  class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold"
+                  v-else
+                  class="w-12 h-12 rounded-lg bg-linear-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold"
                 >
                   {{ getInitials(coach) }}
                 </div>
@@ -299,7 +305,7 @@
                 v-if="coach.email"
                 @click="handleCoachAction('email', coach)"
                 :aria-label="`Send email to ${coach.first_name} ${coach.last_name}`"
-                class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <EnvelopeIcon class="w-5 h-5" aria-hidden="true" />
               </button>
@@ -307,7 +313,7 @@
                 v-if="coach.phone"
                 @click="handleCoachAction('text', coach)"
                 :aria-label="`Send text message to ${coach.first_name} ${coach.last_name}`"
-                class="p-2 text-slate-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                class="p-2 text-slate-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
               >
                 <ChatBubbleLeftIcon class="w-5 h-5" aria-hidden="true" />
               </button>
@@ -315,7 +321,7 @@
                 v-if="coach.twitter_handle"
                 @click="handleCoachAction('tweet', coach)"
                 :aria-label="`View ${coach.first_name}'s Twitter profile`"
-                class="p-2 text-slate-600 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+                class="p-2 text-slate-600 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
               >
                 <svg
                   class="w-5 h-5"
@@ -332,7 +338,7 @@
                 v-if="coach.instagram_handle"
                 @click="handleCoachAction('instagram', coach)"
                 :aria-label="`View ${coach.first_name}'s Instagram profile`"
-                class="p-2 text-slate-600 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+                class="p-2 text-slate-600 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
               >
                 <svg
                   class="w-5 h-5"
@@ -349,7 +355,7 @@
                 @click="openDeleteModal(coach)"
                       data-test="coach-delete-btn"
                 :aria-label="`Delete ${coach.first_name} ${coach.last_name}`"
-                class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
                 <svg
                   class="w-5 h-5"
@@ -432,7 +438,7 @@
               <button
                 @click="showPanel = false"
                 aria-label="Close Quick Communication dialog"
-                class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 <XMarkIcon class="w-5 h-5" aria-hidden="true" />
               </button>
@@ -471,7 +477,6 @@
 import {
   ref,
   computed,
-  onMounted,
   watch,
   inject,
   defineAsyncComponent,
@@ -493,6 +498,7 @@ const DeleteConfirmationModal = defineAsyncComponent(
 );
 import CoachFilters from "~/components/Coach/CoachFilters.vue";
 import ActiveCoachFilterChips from "~/components/Coach/ActiveCoachFilterChips.vue";
+import SchoolLogo from "~/components/School/SchoolLogo.vue";
 import {
   MagnifyingGlassIcon,
   XMarkIcon,
@@ -725,9 +731,6 @@ watch(
   { immediate: true },
 );
 
-onMounted(async () => {
-  await fetchData();
-});
 </script>
 
 <style scoped>

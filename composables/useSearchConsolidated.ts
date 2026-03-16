@@ -455,6 +455,7 @@ export const useSearchConsolidated = () => {
     }
 
     // Debounce actual search execution
+    clearTimeout(searchTimeoutId);
     searchTimeoutId = setTimeout(async () => {
       isSearching.value = true;
       searchError.value = null;
@@ -644,23 +645,15 @@ export const useSearchConsolidated = () => {
     // Clear on short queries
     if (query.length < 3) return [];
 
-    const config = useRuntimeConfig();
-    const apiKey = config.public.collegeScorecardApiKey as string;
-
-    if (!apiKey) {
-      return [];
-    }
-
     try {
       const params = new URLSearchParams({
-        api_key: apiKey,
-        "school.name": query,
+        q: query,
         fields:
           "id,school.name,school.city,school.state,location.lat,location.lon",
         per_page: "10",
       });
 
-      const url = `https://api.data.gov/ed/collegescorecard/v1/schools?${params.toString()}`;
+      const url = `/api/colleges/search?${params.toString()}`;
       const response = await fetch(url);
 
       if (!response.ok) {

@@ -1,6 +1,17 @@
-import { defineEventHandler, getRouterParam, createError, readBody } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import {
+  defineEventHandler,
+  createError,
+  readBody,
+  getHeader,
+  getCookie,
+} from "h3";
+import { z } from "zod";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
+import { requireUuidParam } from "~/server/utils/validation";
+
+const cascadeDeleteSchema = z.object({ confirmDelete: z.boolean().optional() });
 
 /**
  * Cascade delete an interaction and all related records
@@ -22,24 +33,19 @@ import { useLogger } from "~/server/utils/logger";
  */
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "interactions/cascade-delete");
-  const interactionId = getRouterParam(event, "id");
 
-  if (!interactionId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Interaction ID is required",
-    });
-  }
+  // Auth first, then validate inputs
+  await requireAuth(event);
+  const interactionId = requireUuidParam(event, "id");
 
-  let body = {};
+  let body: z.infer<typeof cascadeDeleteSchema>;
   try {
-    body = await readBody(event);
+    body = cascadeDeleteSchema.parse(await readBody(event).catch(() => ({})));
   } catch {
-    // Empty body is OK
+    throw createError({ statusCode: 400, statusMessage: "Invalid request body" });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { confirmDelete } = body as any;
+  const { confirmDelete } = body;
   if (!confirmDelete) {
     throw createError({
       statusCode: 400,
@@ -48,16 +54,31 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const client = createServerSupabaseClient();
+  const authHeader = getHeader(event, "authorization");
+  const token: string | null = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : getCookie(event, "sb-access-token") || null;
+  if (!token) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Unauthorized - no authentication token",
+    });
+  }
+  const client = createServerSupabaseUserClient(token);
   const deleted: Record<string, number> = {};
 
   try {
     // Delete in dependency order (careful of FK constraints)
 
-    // Currently no known FK blockers for interactions
-    // (follow_up_reminders is runtime-managed, no formal FK)
+    // 1. Delete follow-up reminders (follow_up_reminders_interaction_id_fkey)
+    const { count: reminderCount, error: reminderError } = await client
+      .from("follow_up_reminders")
+      .delete()
+      .eq("interaction_id", interactionId);
+    if (reminderError) throw reminderError;
+    if (reminderCount) deleted.follow_up_reminders = reminderCount;
 
-    // Delete the interaction
+    // 2. Delete the interaction
     const { count: interactionCount, error: deleteError } = await client
       .from("interactions")
       .delete()

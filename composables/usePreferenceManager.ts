@@ -9,14 +9,15 @@
 
 import { computed } from "vue";
 import { useUserPreferencesV2 } from "./useUserPreferencesV2";
-import { useSupabase } from "./useSupabase";
+import { useAuthFetch } from "./useAuthFetch";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
 import type {
   NotificationSettings,
   HomeLocation,
   PlayerDetails,
   SchoolPreferences,
-  DashboardWidgetVisibility,
+  DashboardLayout,
 } from "~/types/models";
 import {
   validateNotificationSettings,
@@ -28,9 +29,11 @@ import {
   getDefaultDashboardLayout,
 } from "~/utils/preferenceValidation";
 
+const logger = createClientLogger("usePreferenceManager");
+
 export function usePreferenceManager() {
   const userStore = useUserStore();
-  const supabase = useSupabase();
+  const { $fetchAuth } = useAuthFetch();
 
   // Initialize V2 preference instances for each category
   // These handle loading/saving to the API
@@ -88,10 +91,7 @@ export function usePreferenceManager() {
         dashboardPrefs.loadPreferences(),
       ]);
     } catch (err) {
-      console.error(
-        "[usePreferenceManager] Failed to load all preferences:",
-        err,
-      );
+      logger.error("Failed to load all preferences:", err);
       throw err;
     }
   };
@@ -124,7 +124,7 @@ export function usePreferenceManager() {
         await Promise.all(promises);
       }
     } catch (err) {
-      console.error("[usePreferenceManager] Failed to save preferences:", err);
+      logger.error("Failed to save preferences:", err);
       throw err;
     }
   };
@@ -249,7 +249,7 @@ export function usePreferenceManager() {
   /**
    * Get typed dashboard layout with validation
    */
-  const getDashboardLayout = (): DashboardWidgetVisibility => {
+  const getDashboardLayout = (): DashboardLayout => {
     const validated = validateDashboardLayout(dashboardPrefs.preferences.value);
     return validated || getDefaultDashboardLayout();
   };
@@ -257,7 +257,7 @@ export function usePreferenceManager() {
   /**
    * Set dashboard layout and save
    */
-  const setDashboardLayout = async (layout: DashboardWidgetVisibility) => {
+  const setDashboardLayout = async (layout: DashboardLayout) => {
     const oldValue = validateDashboardLayout(dashboardPrefs.preferences.value);
 
     dashboardPrefs.updatePreferences(
@@ -305,22 +305,9 @@ export function usePreferenceManager() {
 
       if (changedFields.length === 0) return; // No changes to track
 
-      // Get auth token
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      if (!token) {
-        throw new Error("No authentication token available");
-      }
-
       // Call history API to record the change
-      await $fetch("/api/user/preferences/history", {
+      await $fetchAuth("/api/user/preferences/history", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         body: {
           category,
           old_value: oldValue,
@@ -329,10 +316,7 @@ export function usePreferenceManager() {
         },
       });
     } catch (err) {
-      console.warn(
-        "[usePreferenceManager] Failed to track preference change:",
-        err,
-      );
+      logger.warn("Failed to track preference change:", err);
       // Don't throw - history tracking failure shouldn't break the save
     }
   };
@@ -342,26 +326,21 @@ export function usePreferenceManager() {
    */
   const getPreferenceHistory = async (category: string, limit = 50) => {
     try {
-      // Get auth token
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      if (!token) {
-        throw new Error("No authentication token available");
-      }
-
-      const response = await $fetch(
-        `/api/user/preferences/${category}/history`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          query: { limit },
-        },
-      );
+      const response = await $fetchAuth<{
+        data: Array<{
+          id: string;
+          category: string;
+          old_value: unknown;
+          new_value: unknown;
+          changed_fields: string[];
+          changed_by: string;
+          created_at: string;
+        }>;
+        total: number;
+      }>(`/api/user/preferences/${category}/history`, {
+        method: "GET",
+        query: { limit },
+      });
       return response as {
         data: Array<{
           id: string;
@@ -375,10 +354,7 @@ export function usePreferenceManager() {
         total: number;
       };
     } catch (err) {
-      console.error(
-        `[usePreferenceManager] Failed to fetch history for ${category}:`,
-        err,
-      );
+      logger.error(`Failed to fetch history for ${category}:`, err);
       return { data: [], total: 0 };
     }
   };

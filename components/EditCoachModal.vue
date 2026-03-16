@@ -45,7 +45,7 @@
                   v-model="form.first_name"
                   type="text"
                   required
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
               <div>
@@ -60,7 +60,7 @@
                   v-model="form.last_name"
                   type="text"
                   required
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
             </div>
@@ -78,7 +78,7 @@
                   id="email"
                   v-model="form.email"
                   type="email"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
               <div>
@@ -92,7 +92,7 @@
                   id="phone"
                   v-model="form.phone"
                   type="tel"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
             </div>
@@ -111,7 +111,7 @@
                   v-model="form.twitter_handle"
                   type="text"
                   placeholder="@username"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
               <div>
@@ -126,7 +126,7 @@
                   v-model="form.instagram_handle"
                   type="text"
                   placeholder="@username"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
             </div>
@@ -143,7 +143,7 @@
                 id="role"
                 v-model="form.role"
                 required
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
               >
                 <option value="">Select Role</option>
                 <option value="head">Head Coach</option>
@@ -165,7 +165,7 @@
                 v-model="form.notes"
                 rows="4"
                 placeholder="Additional notes about this coach..."
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
@@ -195,13 +195,13 @@
 
 <script setup lang="ts">
 import { reactive, ref, watch, toRefs, nextTick } from "vue";
-import { useCoaches } from "~/composables/useCoaches";
 import { useFocusTrap } from "~/composables/useFocusTrap";
 import type { Coach } from "~/types/models";
 
 interface Props {
   coach: Coach;
   isOpen: boolean;
+  updateFn: (id: string, data: Partial<Coach>) => Promise<Coach>;
 }
 
 const props = defineProps<Props>();
@@ -211,7 +211,6 @@ const emit = defineEmits<{
   updated: [coach: Coach];
 }>();
 
-const { updateCoach } = useCoaches();
 const loading = ref(false);
 
 const dialogRef = ref<HTMLElement | null>(null);
@@ -258,7 +257,7 @@ watch(
 const handleSubmit = async () => {
   loading.value = true;
   try {
-    const updated = await updateCoach(props.coach.id, form);
+    const updated = await props.updateFn(props.coach.id, form);
     emit("updated", updated);
     handleClose();
   } catch (err) {

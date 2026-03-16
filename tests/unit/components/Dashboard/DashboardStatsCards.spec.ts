@@ -9,7 +9,7 @@ describe("DashboardStatsCards", () => {
     interactionCount: 42,
     totalOffers: 5,
     acceptedOffers: 2,
-    aTierSchoolCount: 3,
+    eventCount: 3,
     contactsThisMonth: 18,
   };
 
@@ -18,11 +18,11 @@ describe("DashboardStatsCards", () => {
       props: defaultProps,
     });
 
-    expect(wrapper.text()).toContain("Coaches");
     expect(wrapper.text()).toContain("Schools");
+    expect(wrapper.text()).toContain("Coaches");
     expect(wrapper.text()).toContain("Interactions");
+    expect(wrapper.text()).toContain("Events");
     expect(wrapper.text()).toContain("Offers");
-    expect(wrapper.text()).toContain("A-tier");
     expect(wrapper.text()).toContain("Contacts");
   });
 
@@ -39,15 +39,15 @@ describe("DashboardStatsCards", () => {
     expect(wrapper.text()).toContain("18");
   });
 
-  it("renders A-tier card with correct data-testid", () => {
+  it("renders Events card with correct data-testid", () => {
     const wrapper = mount(DashboardStatsCards, {
       props: defaultProps,
     });
 
-    const aTierCard = wrapper.find('[data-testid="stat-card-a-tier"]');
-    expect(aTierCard.exists()).toBe(true);
-    expect(aTierCard.text()).toContain("A-tier");
-    expect(aTierCard.text()).toContain("Priority schools");
+    const eventsCard = wrapper.find('[data-testid="stat-card-events"]');
+    expect(eventsCard.exists()).toBe(true);
+    expect(eventsCard.text()).toContain("Events");
+    expect(eventsCard.text()).toContain("Entered events");
   });
 
   it("renders monthly contacts card with correct data-testid", () => {
@@ -98,12 +98,12 @@ describe("DashboardStatsCards", () => {
     expect(wrapper.text()).not.toContain("Offers");
   });
 
-  it("hides A-tier card when showATier is false", () => {
+  it("hides Events card when showEvents is false", () => {
     const wrapper = mount(DashboardStatsCards, {
-      props: { ...defaultProps, showATier: false },
+      props: { ...defaultProps, showEvents: false },
     });
 
-    expect(wrapper.text()).not.toContain("A-tier");
+    expect(wrapper.text()).not.toContain("Events");
   });
 
   it("hides monthly contacts card when showMonthlyContacts is false", () => {
@@ -179,7 +179,7 @@ describe("DashboardStatsCards", () => {
     expect(offersLink?.attributes("href")).toBe("/offers");
   });
 
-  it("links A-tier card to /schools?tier=A", () => {
+  it("links Events card to /events", () => {
     const wrapper = mount(DashboardStatsCards, {
       props: defaultProps,
       global: {
@@ -189,8 +189,8 @@ describe("DashboardStatsCards", () => {
       },
     });
 
-    const aTierLink = wrapper.find('[data-testid="stat-card-a-tier"]');
-    expect(aTierLink.attributes("href")).toBe("/schools?tier=A");
+    const eventsLink = wrapper.find('[data-testid="stat-card-events"]');
+    expect(eventsLink.attributes("href")).toBe("/events");
   });
 
   it("links monthly contacts card to /interactions", () => {
@@ -225,7 +225,7 @@ describe("DashboardStatsCards", () => {
         interactionCount: 0,
         totalOffers: 0,
         acceptedOffers: 0,
-        aTierSchoolCount: 0,
+        eventCount: 0,
         contactsThisMonth: 0,
       },
     });
@@ -241,7 +241,7 @@ describe("DashboardStatsCards", () => {
         interactionCount: 5000,
         totalOffers: 100,
         acceptedOffers: 50,
-        aTierSchoolCount: 200,
+        eventCount: 200,
         contactsThisMonth: 500,
       },
     });

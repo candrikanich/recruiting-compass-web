@@ -141,10 +141,11 @@ describe("useAuth", () => {
 
       expect(auth.loading.value).toBe(false);
       expect(auth.error.value).toEqual(sessionError);
-      expect(auth.isInitialized.value).toBe(false);
+      expect(auth.isInitialized.value).toBe(true);
       expect(auth.session.value).toBe(null);
       expect(result).toBe(null);
       expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("[useAuth]"),
         "[useAuth] Session restoration failed:",
         "Session fetch failed",
       );
@@ -395,7 +396,7 @@ describe("useAuth", () => {
       });
       expect(auth.loading.value).toBe(false);
       expect(auth.error.value).toBe(null);
-      expect(result).toEqual(signupData);
+      expect(result).toEqual({ data: signupData, error: null });
     });
 
     it("should signup with full name and role", async () => {
@@ -422,7 +423,7 @@ describe("useAuth", () => {
           },
         },
       });
-      expect(result).toEqual(signupData);
+      expect(result).toEqual({ data: signupData, error: null });
     });
 
     it("should trim email during signup", async () => {
@@ -654,8 +655,8 @@ describe("useAuth", () => {
   });
 
   describe("signup with role (onboarding)", () => {
-    it("should generate family_code for player signup", async () => {
-      const { mockSupabase, mockAuth } = getMockSupabase();
+    it("should include role in metadata for player signup", async () => {
+      const { mockAuth } = getMockSupabase();
 
       const signupData = { user: mockUser, session: mockSession };
       mockAuth.signUp.mockResolvedValue({ data: signupData, error: null });
@@ -675,45 +676,14 @@ describe("useAuth", () => {
           data: {
             full_name: "Jane Player",
             role: "player",
-            family_code: expect.stringMatching(/^[A-Z0-9\-]+$/),
-            onboarding_completed: false,
           },
         },
       });
-      expect(result).toEqual(signupData);
+      expect(result).toEqual({ data: signupData, error: null });
     });
 
-    it("should accept family_code for parent signup", async () => {
-      const { mockSupabase, mockAuth } = getMockSupabase();
-
-      const signupData = { user: mockUser, session: mockSession };
-      mockAuth.signUp.mockResolvedValue({ data: signupData, error: null });
-
-      const auth = useAuth();
-      const result = await auth.signup(
-        "parent@example.com",
-        "password123",
-        "John Parent",
-        "parent",
-        { familyCode: "FAM-ABC123" },
-      );
-
-      expect(mockAuth.signUp).toHaveBeenCalledWith({
-        email: "parent@example.com",
-        password: "password123",
-        options: {
-          data: {
-            full_name: "John Parent",
-            role: "parent",
-            family_code: "FAM-ABC123",
-          },
-        },
-      });
-      expect(result).toEqual(signupData);
-    });
-
-    it("should handle parent signup without family_code", async () => {
-      const { mockSupabase, mockAuth } = getMockSupabase();
+    it("should include role in metadata for parent signup", async () => {
+      const { mockAuth } = getMockSupabase();
 
       const signupData = { user: mockUser, session: mockSession };
       mockAuth.signUp.mockResolvedValue({ data: signupData, error: null });
@@ -736,23 +706,7 @@ describe("useAuth", () => {
           },
         },
       });
-      expect(result).toEqual(signupData);
-    });
-
-    it("should handle invalid family_code for parent signup", async () => {
-      const { mockSupabase, mockAuth } = getMockSupabase();
-
-      const auth = useAuth();
-
-      await expect(
-        auth.signup(
-          "parent@example.com",
-          "password123",
-          "John Parent",
-          "parent",
-          { familyCode: "INVALID" },
-        ),
-      ).rejects.toThrow("Invalid family code format");
+      expect(result).toEqual({ data: signupData, error: null });
     });
   });
 });

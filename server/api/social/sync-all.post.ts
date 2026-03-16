@@ -3,13 +3,13 @@
  * Admin endpoint for syncing all users' social media posts (used by background jobs)
  */
 
+import { defineEventHandler, getHeader, createError } from "h3";
 import { createClient } from "@supabase/supabase-js";
+import { verifySharedSecret } from "~/server/utils/secrets";
 import { TwitterService } from "~/server/utils/twitterService";
 import { InstagramService } from "~/server/utils/instagramService";
 import { analyzeSentiment } from "~/utils/sentimentAnalysis";
-import { createLogger } from "~/server/utils/logger";
-
-const logger = createLogger("social/sync-all");
+import { useLogger } from "~/server/utils/logger";
 
 interface SyncStats {
   totalUsers: number;
@@ -21,33 +21,39 @@ interface SyncStats {
 }
 
 export default defineEventHandler(async (event): Promise<SyncStats> => {
+  const logger = useLogger(event, "social/sync-all");
+  // Auth checks run before the try/catch so errors propagate with correct status codes
+  const authHeader = getHeader(event, "authorization");
+  const syncApiKey = process.env.SYNC_API_KEY;
+
+  if (!syncApiKey) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: "SYNC_API_KEY not configured — endpoint disabled",
+    });
+  }
+  const bearerSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+  if (!bearerSecret || !verifySharedSecret(bearerSecret, syncApiKey)) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Invalid API key",
+    });
+  }
+
   try {
-    // Verify authorization (check for API key in header)
-    const authHeader = getHeader(event, "authorization");
     const config = useRuntimeConfig();
-    const syncApiKey = process.env.SYNC_API_KEY;
-
-    if (syncApiKey && authHeader !== `Bearer ${syncApiKey}`) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: "Invalid API key",
-      });
-    }
-
     const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!supabaseUrl || !supabaseKey) {
       throw new Error("Missing Supabase credentials");
     }
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Initialize services
-    const twitterService = new TwitterService(
-      config.twitterBearerToken as string,
-    );
-    const instagramService = new InstagramService(
-      config.instagramAccessToken as string,
-    );
+    const twitterBearerToken = config.twitterBearerToken as string | undefined;
+    const instagramAccessToken = config.instagramAccessToken as string | undefined;
+    const twitterService = new TwitterService(twitterBearerToken ?? "");
+    const instagramService = new InstagramService(instagramAccessToken ?? "");
 
     // Get all users
     const { data: users, error: usersError } = await supabase
@@ -82,7 +88,8 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
 
         const { data: coaches } = await supabase
           .from("coaches")
-          .select("id, name, twitter_handle, instagram_handle");
+          .select("id, first_name, last_name, twitter_handle, instagram_handle")
+          .eq("user_id", user.id);
 
         if (schoolsError) {
           stats.failedUsers++;
@@ -111,28 +118,44 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
 
         let postsInserted = 0;
 
-        // Fetch Twitter posts
-        if (twitterHandles.length > 0) {
-          const twitterPosts =
-            await twitterService.fetchTweetsForHandles(twitterHandles);
-          stats.totalPostsFetched += twitterPosts.length;
+        // Gather all posts upfront
+        const twitterPosts =
+          twitterHandles.length > 0
+            ? await twitterService.fetchTweetsForHandles(twitterHandles)
+            : [];
+        const instagramPosts =
+          instagramHandles.length > 0
+            ? await instagramService.fetchMediaForHandles(instagramHandles)
+            : [];
 
-          for (const post of twitterPosts) {
-            const { data: existing } = await supabase
-              .from("social_media_posts")
-              .select("id")
-              .eq("post_url", post.post_url)
-              .single();
+        stats.totalPostsFetched += twitterPosts.length + instagramPosts.length;
 
-            if (!existing) {
+        const allPosts = [...twitterPosts, ...instagramPosts];
+        if (allPosts.length > 0) {
+          // Batch-check for existing posts in one query instead of N+1
+          const allPostUrls = allPosts.map((p) => p.post_url);
+          const { data: existingPosts } = await supabase
+            .from("social_media_posts")
+            .select("post_url")
+            .in("post_url", allPostUrls);
+
+          const existingUrlSet = new Set(
+            (existingPosts || []).map((p) => p.post_url),
+          );
+
+          for (const post of allPosts) {
+            if (!existingUrlSet.has(post.post_url)) {
               const school = schools?.find(
-                (s) => s.twitter_handle === post.author_handle,
+                (s) =>
+                  s.twitter_handle === post.author_handle ||
+                  s.instagram_handle === post.author_handle,
               );
               const coach = coaches?.find(
-                (c) => c.twitter_handle === post.author_handle,
+                (c) =>
+                  c.twitter_handle === post.author_handle ||
+                  c.instagram_handle === post.author_handle,
               );
 
-              // Analyze sentiment
               const sentimentResult = analyzeSentiment(post.post_content);
 
               const { error: insertError } = await supabase
@@ -153,53 +176,8 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
 
               if (!insertError) {
                 postsInserted++;
-              }
-            }
-          }
-        }
-
-        // Fetch Instagram posts
-        if (instagramHandles.length > 0) {
-          const instagramPosts =
-            await instagramService.fetchMediaForHandles(instagramHandles);
-          stats.totalPostsFetched += instagramPosts.length;
-
-          for (const post of instagramPosts) {
-            const { data: existing } = await supabase
-              .from("social_media_posts")
-              .select("id")
-              .eq("post_url", post.post_url)
-              .single();
-
-            if (!existing) {
-              const school = schools?.find(
-                (s) => s.instagram_handle === post.author_handle,
-              );
-              const coach = coaches?.find(
-                (c) => c.instagram_handle === post.author_handle,
-              );
-
-              // Analyze sentiment
-              const sentimentResult = analyzeSentiment(post.post_content);
-
-              const { error: insertError } = await supabase
-                .from("social_media_posts")
-                .insert({
-                  school_id: school?.id || null,
-                  coach_id: coach?.id || null,
-                  platform: post.platform,
-                  post_url: post.post_url,
-                  post_content: post.post_content,
-                  post_date: post.post_date,
-                  author_name: post.author_name,
-                  author_handle: post.author_handle,
-                  engagement_count: post.engagement_count,
-                  is_recruiting_related: post.is_recruiting_related,
-                  sentiment: sentimentResult.sentiment,
-                });
-
-              if (!insertError) {
-                postsInserted++;
+              } else {
+                logger.warn("Failed to insert post", { post_url: post.post_url, error: insertError });
               }
             }
           }
@@ -215,15 +193,21 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
       }
     }
 
-    // Log results
-    logger.info("Social media sync completed");
+    logger.info("Social media sync-all completed", {
+      totalUsers: stats.totalUsers,
+      successfulUsers: stats.successfulUsers,
+      failedUsers: stats.failedUsers,
+      totalPostsInserted: stats.totalPostsInserted,
+    });
 
     return stats;
   } catch (error) {
+    if (error instanceof Error && "statusCode" in error) throw error;
+
     logger.error("Social media sync failed", error);
     throw createError({
       statusCode: 500,
-      statusMessage: error instanceof Error ? error.message : "Sync failed",
+      statusMessage: "Sync failed",
     });
   }
 });

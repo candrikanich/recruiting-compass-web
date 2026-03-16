@@ -1,10 +1,10 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
     <div
-      class="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200"
+      class="bg-linear-to-r from-slate-50 to-blue-50 border-b border-slate-200"
     >
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         <div class="flex items-center gap-3">
@@ -29,7 +29,7 @@
             >
             <select
               v-model="selectedType"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-700 text-sm focus:outline-hidden focus:ring-2 focus:ring-brand-blue-500"
             >
               <option value="">All Types</option>
               <option value="interaction">Interactions</option>
@@ -47,7 +47,7 @@
             >
             <select
               v-model="selectedDateRange"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-700 text-sm focus:outline-hidden focus:ring-2 focus:ring-brand-blue-500"
             >
               <option value="all">All Time</option>
               <option value="week">Last 7 Days</option>
@@ -65,7 +65,7 @@
               v-model="searchQuery"
               type="text"
               placeholder="Search activities..."
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-brand-blue-500"
             />
           </div>
         </div>

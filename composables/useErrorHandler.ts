@@ -4,6 +4,9 @@
  */
 
 import { isRecord, isString } from "~/utils/typeGuards";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useErrorHandler");
 
 export interface ErrorContext {
   context?: string;
@@ -39,7 +42,7 @@ export const useErrorHandler = (): UseErrorHandlerReturn => {
 
   function logError(err: unknown, ctx?: ErrorContext): void {
     const message = getErrorMessage(err, ctx);
-    console.error(`[${ctx?.context || "Error"}]`, message, ctx?.details);
+    logger.error(message, ctx?.details);
   }
 
   return { getErrorMessage, logError };

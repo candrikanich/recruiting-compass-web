@@ -12,7 +12,7 @@
         <input
           v-model="useAutocomplete"
           type="checkbox"
-          class="w-5 h-5 text-blue-600 border-2 border-blue-300 rounded focus:ring-2 focus:ring-blue-500"
+          class="w-5 h-5 text-blue-600 border-2 border-blue-300 rounded-sm focus:ring-2 focus:ring-blue-500"
         />
         <span
           class="text-slate-700 font-medium group-hover:text-blue-600 transition-colors"
@@ -45,7 +45,7 @@
             <span>College data and map coordinates loaded</span>
           </div>
         </div>
-        <div v-if="schoolLogo" class="flex-shrink-0">
+        <div v-if="schoolLogo" class="shrink-0">
           <img
             :src="schoolLogo"
             :alt="`${selectedCollege.name} logo`"
@@ -56,7 +56,7 @@
         <button
           type="button"
           @click="clearSelection"
-          class="flex-shrink-0 text-xs text-green-600 hover:text-green-700 font-medium hover:underline"
+          class="shrink-0 text-xs text-green-600 hover:text-green-700 font-medium hover:underline"
         >
           Clear
         </button>
@@ -121,6 +121,8 @@ const autoFilledFields = reactive({
   conference: false,
 });
 
+import { getSchoolLogo } from "~/utils/school-logo";
+
 const handleCollegeSelect = async (college: CollegeSearchResult) => {
   selectedCollege.value = college;
 
@@ -131,7 +133,8 @@ const handleCollegeSelect = async (college: CollegeSearchResult) => {
   // Fetch all data in parallel: NCAA lookup + College Scorecard
   const [ncaaResult, scorecardResult] = await Promise.all([
     // NCAA lookup for division, conference, logo
-    lookupDivision(college.name).catch((err) => {
+    // Pass the ID (UnitID) for 100% accuracy if it's in our metadata
+    lookupDivision(college.name, college.id).catch((err) => {
       console.debug("NCAA lookup failed for:", college.name, err);
       return null;
     }),
@@ -154,15 +157,27 @@ const handleCollegeSelect = async (college: CollegeSearchResult) => {
     autoFilledFields.division = true;
     autoFilledFields.conference = !!ncaaResult.conference;
 
-    if (ncaaResult.logo) {
-      schoolLogo.value = ncaaResult.logo;
-    }
+    // Set logo from NCAA lookup result or fallback to our utility
+    schoolLogo.value = ncaaResult.logo || getSchoolLogo(college.name, college.website);
+  } else {
+    // Fallback logo if no NCAA record found
+    schoolLogo.value = getSchoolLogo(college.name, college.website);
   }
 
   // Apply College Scorecard data (includes lat/lng for map)
   if (scorecardResult) {
     collegeScorecardData.value = scorecardResult;
     collegeScorecardFetched.value = true;
+    
+    // Update website if scorecard has a better one
+    if (scorecardResult.website && !selectedCollege.value.website) {
+      selectedCollege.value.website = scorecardResult.website;
+      autoFilledFields.website = true;
+      // Re-run logo utility with website if we didn't have it before
+      if (!schoolLogo.value || schoolLogo.value.includes('ui-avatars')) {
+        schoolLogo.value = getSchoolLogo(college.name, scorecardResult.website);
+      }
+    }
   }
 };
 

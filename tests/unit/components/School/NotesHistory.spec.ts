@@ -9,8 +9,8 @@ const mockNoteHistoryLoading = ref(false);
 const mockNoteHistoryError = ref<string | null>(null);
 const mockFetchNoteHistory = vi.fn();
 
-vi.mock("~/composables/useInteractions", () => ({
-  useInteractions: () => ({
+vi.mock("~/composables/useInteractionNotes", () => ({
+  useInteractionNotes: () => ({
     noteHistory: mockNoteHistory,
     formattedNoteHistory: mockFormattedNoteHistory,
     noteHistoryLoading: mockNoteHistoryLoading,
@@ -141,7 +141,7 @@ describe("NotesHistory", () => {
 
       // Footer close button
       const footerBtn = wrapper.find(
-        ".bg-gradient-to-r.from-blue-500.to-blue-600",
+        ".bg-linear-to-r.from-blue-500.to-blue-600",
       );
       await footerBtn.trigger("click");
 

@@ -4,6 +4,9 @@
  */
 
 import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { createLogger } from "~/server/utils/logger";
+
+const logger = createLogger("twitter");
 
 interface TwitterTweet {
   id: string;
@@ -58,7 +61,7 @@ export class TwitterService {
     maxResults: number = 10,
   ): Promise<SocialMediaPostData[]> {
     if (!this.bearerToken) {
-      console.warn("Twitter Bearer Token not configured");
+      logger.warn("Twitter Bearer Token not configured");
       return [];
     }
 
@@ -75,11 +78,11 @@ export class TwitterService {
 
       if (!userResponse.ok) {
         if (userResponse.status === 404) {
-          console.warn(`Twitter user not found: ${username}`);
+          logger.warn(`Twitter user not found: ${username}`);
           return [];
         }
         if (userResponse.status === 429) {
-          console.error("Twitter API rate limit exceeded");
+          logger.error("Twitter API rate limit exceeded");
           return [];
         }
         throw new Error(`Twitter user lookup failed: ${userResponse.status}`);
@@ -106,7 +109,7 @@ export class TwitterService {
 
       if (!tweetsResponse.ok) {
         if (tweetsResponse.status === 429) {
-          console.error("Twitter API rate limit exceeded");
+          logger.error("Twitter API rate limit exceeded");
           return [];
         }
         throw new Error(
@@ -137,7 +140,7 @@ export class TwitterService {
         is_recruiting_related: this.isRecruitingRelated(tweet.text),
       }));
     } catch (error) {
-      console.error(`Error fetching tweets for ${username}:`, error);
+      logger.error(`Error fetching tweets for ${username}:`, error);
       return [];
     }
   }

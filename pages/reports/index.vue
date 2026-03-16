@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Global Navigation -->
 
@@ -24,7 +24,7 @@
         <div class="lg:col-span-2 space-y-6">
           <!-- Generate Report Card -->
           <div
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
+            class="bg-white rounded-xl border border-slate-200 shadow-xs p-6"
           >
             <h2 class="text-lg font-semibold text-slate-900 mb-4">
               Generate Report
@@ -57,7 +57,7 @@
                   <input
                     v-model="fromDate"
                     type="date"
-                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div>
@@ -67,7 +67,7 @@
                   <input
                     v-model="toDate"
                     type="date"
-                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -76,7 +76,7 @@
               <button
                 @click="handleGenerateReport"
                 :disabled="isGenerating || !fromDate || !toDate"
-                class="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+                class="w-full px-4 py-2.5 bg-linear-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
               >
                 <div
                   v-if="isGenerating"
@@ -99,7 +99,7 @@
           <!-- Report Results -->
           <div
             v-if="currentReport"
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
+            class="bg-white rounded-xl border border-slate-200 shadow-xs p-6"
           >
             <div class="flex items-center justify-between mb-6">
               <h2 class="text-lg font-semibold text-slate-900">
@@ -247,7 +247,7 @@
           </div>
 
           <div
-            class="bg-white rounded-xl border border-slate-200 shadow-sm p-5"
+            class="bg-white rounded-xl border border-slate-200 shadow-xs p-5"
           >
             <h3 class="font-semibold text-slate-900 mb-3">Export Options</h3>
             <p class="text-sm text-slate-600 mb-4">

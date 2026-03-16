@@ -1,5 +1,7 @@
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
+import { useAuthFetch } from "./useAuthFetch";
+import { createClientLogger } from "~/utils/logger";
 
 /**
  * Composable for managing family invitations
@@ -12,6 +14,8 @@ import { useSupabase } from "./useSupabase";
  * await sendParentInvite('parent@example.com')
  * const playerData = await linkParentWithCode('FAM-ABC123')
  */
+const logger = createClientLogger("useFamilyInvite");
+
 export const useFamilyInvite = () => {
   const supabase = useSupabase();
 
@@ -76,7 +80,7 @@ export const useFamilyInvite = () => {
       )) as { data: unknown; error: unknown };
 
       if (emailError) {
-        throw emailError;
+        throw new Error(emailError instanceof Error ? emailError.message : String(emailError));
       }
 
       // Track last invited email
@@ -85,7 +89,7 @@ export const useFamilyInvite = () => {
       const message =
         err instanceof Error ? err.message : "Failed to send parent invite";
       error.value = message;
-      console.error("Parent invite error:", err);
+      logger.error("Parent invite error:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -147,8 +151,11 @@ export const useFamilyInvite = () => {
       ).insert(linkData)) as { error: unknown };
 
       if (linkError) {
-        console.error("Link creation failed (non-blocking):", linkError);
-        // Don't throw - link may already exist
+        // Non-blocking: a link record may already exist if the parent previously
+        // used this family code. The player data is still returned so the UI
+        // can proceed. If duplicate-link errors should be treated as fatal in
+        // the future, throw linkError here instead.
+        logger.warn("Account link creation failed (non-blocking):", linkError);
       }
 
       return playerUser;
@@ -156,7 +163,37 @@ export const useFamilyInvite = () => {
       const message =
         err instanceof Error ? err.message : "Failed to link with family code";
       error.value = message;
-      console.error("Family link error:", err);
+      logger.error("Family link error:", err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  /**
+   * Send an email invitation via the new /api/family/invite endpoint.
+   * Works for both player and parent roles.
+   */
+  const sendInvite = async ({
+    email,
+    role,
+  }: {
+    email: string;
+    role: "player" | "parent";
+  }): Promise<void> => {
+    loading.value = true;
+    error.value = null;
+    try {
+      const { $fetchAuth } = useAuthFetch();
+      await $fetchAuth("/api/family/invite", { method: "POST", body: { email, role } });
+      lastInvitedEmail.value = email;
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("family_invite_sent", { method: "email" });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to send invite";
+      error.value = message;
+      logger.error("Invite error:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -170,6 +207,7 @@ export const useFamilyInvite = () => {
     lastInvitedEmail,
 
     // Actions
+    sendInvite,
     sendParentInvite,
     linkParentWithCode,
   };

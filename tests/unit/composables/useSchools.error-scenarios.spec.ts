@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useSchools } from "~/composables/useSchools";
+import * as authFetchModule from "~/composables/useAuthFetch";
 
 const mockSelect = vi.fn().mockReturnThis();
 const mockEq = vi.fn().mockReturnThis();
@@ -226,13 +227,13 @@ describe("useSchools error scenarios", () => {
 
   describe("smartDelete error handling", () => {
     it("falls back to cascade on FK constraint error", async () => {
-      // Mock fetch for cascade delete before creating composable
-      const originalFetch = global.fetch;
-      global.fetch = vi.fn().mockResolvedValue({
-        json: () => Promise.resolve({ success: true }),
+      const mockFetchAuth = vi
+        .fn()
+        .mockResolvedValue({ success: true });
+      vi.spyOn(authFetchModule, "useAuthFetch").mockReturnValue({
+        $fetchAuth: mockFetchAuth,
       });
 
-      // Set up Supabase delete to return FK constraint error
       const fkError = {
         message: "violates foreign key constraint on coaches",
       };
@@ -246,15 +247,13 @@ describe("useSchools error scenarios", () => {
       const result = await smartDelete("school-1");
 
       expect(result.cascadeUsed).toBe(true);
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(mockFetchAuth).toHaveBeenCalledWith(
         "/api/schools/school-1/cascade-delete",
         expect.objectContaining({
           method: "POST",
-          body: JSON.stringify({ confirmDelete: true }),
+          body: { confirmDelete: true },
         }),
       );
-
-      global.fetch = originalFetch;
     });
 
     it("throws when cascade delete also fails", async () => {
@@ -266,21 +265,15 @@ describe("useSchools error scenarios", () => {
       });
       mockDelete.mockReturnValue({ eq: mockEq });
 
-      const originalFetch = global.fetch;
-      global.fetch = vi.fn().mockResolvedValue({
-        json: () =>
-          Promise.resolve({
-            success: false,
-            message: "Cascade failed",
-          }),
+      vi.spyOn(authFetchModule, "useAuthFetch").mockReturnValue({
+        $fetchAuth: vi
+          .fn()
+          .mockResolvedValue({ success: false, message: "Cascade failed" }),
       });
 
       const { smartDelete } = getComposable();
 
-      // smartDelete should throw some error when cascade also fails
       await expect(smartDelete("school-1")).rejects.toBeDefined();
-
-      global.fetch = originalFetch;
     });
 
     it("re-throws non-FK errors without cascade attempt", async () => {
@@ -290,15 +283,15 @@ describe("useSchools error scenarios", () => {
       });
       mockDelete.mockReturnValue({ eq: mockEq });
 
-      const originalFetch = global.fetch;
-      global.fetch = vi.fn();
+      const mockFetchAuth = vi.fn();
+      vi.spyOn(authFetchModule, "useAuthFetch").mockReturnValue({
+        $fetchAuth: mockFetchAuth,
+      });
 
       const { smartDelete } = getComposable();
 
       await expect(smartDelete("school-1")).rejects.toBeDefined();
-      expect(global.fetch).not.toHaveBeenCalled();
-
-      global.fetch = originalFetch;
+      expect(mockFetchAuth).not.toHaveBeenCalled();
     });
   });
 

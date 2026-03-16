@@ -28,17 +28,22 @@ test.describe("Diagnostic Tests", () => {
 
     await expect(page).toHaveURL("/signup");
 
-    // Check for signup form elements
+    // Step 1: User type selection is shown first
+    const playerOption = page.locator('[data-testid="user-type-player"]');
+    await expect(playerOption).toBeAttached();
+
+    // Select player role to proceed to the form
+    await page.locator('[data-testid="user-type-player"]').click();
+
+    // Step 2: Form fields should now be visible
     const firstNameInput = page.locator("#firstName");
     const emailInput = page.locator("#email");
-    const roleSelect = page.locator("#role");
     const passwordInput = page.locator("#password");
     const termsCheckbox = page.locator('input[type="checkbox"]');
-    const createButton = page.locator('button:has-text("Create Account")');
+    const createButton = page.locator('[data-testid="signup-button"]');
 
     await expect(firstNameInput).toBeVisible();
     await expect(emailInput).toBeVisible();
-    await expect(roleSelect).toBeVisible();
     await expect(passwordInput).toBeVisible();
     await expect(termsCheckbox).toBeVisible();
     await expect(createButton).toBeVisible();
@@ -47,7 +52,10 @@ test.describe("Diagnostic Tests", () => {
   test("should validate email field", async ({ page }) => {
     await page.goto("/signup");
 
-    // Email input should be visible
+    // Select user type first (required step in new signup flow)
+    await page.locator('[data-testid="user-type-player"]').click();
+
+    // Email input should now be visible
     const emailInput = page.locator("#email");
     await expect(emailInput).toBeVisible();
 
@@ -60,7 +68,10 @@ test.describe("Diagnostic Tests", () => {
   test("should validate password field", async ({ page }) => {
     await page.goto("/signup");
 
-    // Password input should be visible
+    // Select user type first (required step in new signup flow)
+    await page.locator('[data-testid="user-type-player"]').click();
+
+    // Password input should now be visible
     const passwordInput = page.locator("#password");
     await expect(passwordInput).toBeVisible();
 

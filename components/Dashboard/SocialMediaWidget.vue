@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="showSocial"
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <div class="flex items-center gap-3 mb-5">
       <div class="p-2 bg-slate-100 rounded-lg">

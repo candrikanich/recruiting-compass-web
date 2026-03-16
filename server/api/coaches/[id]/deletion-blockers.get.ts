@@ -1,6 +1,8 @@
-import { defineEventHandler, getRouterParam, createError } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { defineEventHandler, getHeader, getCookie, createError } from "h3";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
+import { requireUuidParam } from "~/server/utils/validation";
+import { requireAuth } from "~/server/utils/auth";
 
 interface BlockerInfo {
   table: string;
@@ -18,16 +20,18 @@ interface BlockerInfo {
  * - message: User-friendly message explaining what's blocking deletion
  */
 export default defineEventHandler(async (event) => {
-  const coachId = getRouterParam(event, "id");
+  await requireAuth(event);
 
-  if (!coachId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Coach ID is required",
-    });
+  const coachId = requireUuidParam(event, "id");
+
+  const authHeader = getHeader(event, "authorization");
+  const token: string | null = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : getCookie(event, "sb-access-token") || null;
+  if (!token) {
+    throw createError({ statusCode: 401, statusMessage: "Unauthorized - no authentication token" });
   }
-
-  const client = createServerSupabaseClient();
+  const client = createServerSupabaseUserClient(token);
   const logger = useLogger(event, "coaches/deletion-blockers");
 
   const blockers: BlockerInfo[] = [];

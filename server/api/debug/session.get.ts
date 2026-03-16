@@ -9,12 +9,16 @@
  * - Sample data queries with counts
  */
 
-import { defineEventHandler, getHeader, getCookie } from "h3";
+import { defineEventHandler, getHeader, getCookie, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(async (event) => {
+  if (process.env.NODE_ENV === "production") {
+    throw createError({ statusCode: 404, statusMessage: "Not found" });
+  }
+
   const logger = useLogger(event, "debug/session");
   try {
     // Verify user is authenticated

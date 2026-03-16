@@ -111,7 +111,7 @@ describe('FormInput', () => {
     expect(input.attributes('disabled')).toBeDefined()
   })
 
-  it('emits blur event when input loses focus', async () => {
+  it('emits blur-sm event when input loses focus', async () => {
     const wrapper = mount(FormInput, {
       props: {
         modelValue: '',

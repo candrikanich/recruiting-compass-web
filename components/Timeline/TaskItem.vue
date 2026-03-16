@@ -10,7 +10,7 @@
       :disabled="isViewingAsParent.value || isLocked"
       @change="$emit('toggle-complete', task.id)"
       :class="[
-        'mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 flex-shrink-0 transition',
+        'mt-1 w-4 h-4 rounded-sm border-slate-300 text-blue-600 shrink-0 transition',
         isViewingAsParent.value || isLocked
           ? 'opacity-50 cursor-not-allowed'
           : 'cursor-pointer',
@@ -42,7 +42,7 @@
         <!-- Lock badge -->
         <span
           v-if="isLocked"
-          class="inline-block px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-700 flex-shrink-0"
+          class="inline-block px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-700 shrink-0"
         >
           🔒 Locked
         </span>
@@ -56,7 +56,7 @@
         <!-- Recovery task indicator -->
         <span
           v-if="task.athlete_task?.is_recovery_task"
-          class="inline-block px-2 py-0.5 text-xs rounded-full bg-orange-100 text-orange-700 flex-shrink-0"
+          class="inline-block px-2 py-0.5 text-xs rounded-full bg-orange-100 text-orange-700 shrink-0"
         >
           Recovery
         </span>
@@ -64,7 +64,7 @@
         <!-- Category badge -->
         <span
           v-if="showCategory"
-          class="inline-block px-2 py-0.5 text-xs rounded-full flex-shrink-0"
+          class="inline-block px-2 py-0.5 text-xs rounded-full shrink-0"
           :class="getCategoryColor(task.category)"
         >
           {{ formatCategory(task.category) }}
@@ -73,7 +73,7 @@
         <!-- Required indicator -->
         <span
           v-if="task.required"
-          class="inline-block px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-700 flex-shrink-0"
+          class="inline-block px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-700 shrink-0"
         >
           Required
         </span>
@@ -81,7 +81,7 @@
         <!-- Completed badge -->
         <span
           v-if="isCompleted"
-          class="inline-block px-2 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700 flex-shrink-0"
+          class="inline-block px-2 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700 shrink-0"
         >
           ✓ Done
         </span>
@@ -90,7 +90,7 @@
         <button
           v-if="expandable && task.has_incomplete_prerequisites"
           @click="expanded = !expanded"
-          class="p-1 hover:bg-slate-200 rounded transition flex-shrink-0"
+          class="p-1 hover:bg-slate-200 rounded-sm transition shrink-0"
           :title="expanded ? 'Collapse details' : 'Expand details'"
         >
           <svg

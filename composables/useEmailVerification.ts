@@ -1,5 +1,8 @@
 import { ref, readonly } from "vue";
 import { useSupabase } from "~/composables/useSupabase";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useEmailVerification");
 
 export const useEmailVerification = () => {
   const supabase = useSupabase();
@@ -19,7 +22,7 @@ export const useEmailVerification = () => {
       return await operation();
     } catch (err: unknown) {
       error.value = err instanceof Error ? err.message : fallbackMessage;
-      console.error(`${fallbackMessage}:`, err);
+      logger.error(`${fallbackMessage}:`, err);
       return null;
     } finally {
       loading.value = false;

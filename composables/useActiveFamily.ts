@@ -1,8 +1,12 @@
 import { computed, onMounted, ref, watch, getCurrentInstance } from "vue";
 import { useRoute } from "vue-router";
+import { useAuthFetch } from "./useAuthFetch";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { Database } from "~/types/database";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useActiveFamily");
 
 type FamilyMember = Database["public"]["Tables"]["family_members"]["Row"];
 
@@ -29,6 +33,7 @@ interface FamilyContext {
  */
 
 export const useActiveFamily = () => {
+  const { $fetchAuth } = useAuthFetch();
   const supabase = useSupabase();
   const userStore = useUserStore();
   const route = useRoute();
@@ -40,8 +45,8 @@ export const useActiveFamily = () => {
   const parentAccessibleFamilies = ref<
     Array<{
       familyUnitId: string;
-      athleteId: string;
-      athleteName: string;
+      athleteId: string | null;
+      athleteName: string | null;
       graduationYear: number | null;
       familyName: string;
     }>
@@ -58,12 +63,17 @@ export const useActiveFamily = () => {
       return playerFamilyId.value;
     }
 
-    // For parents, find family of currently viewed athlete
-    if (isParent.value && currentAthleteId.value) {
-      const family = parentAccessibleFamilies.value.find(
-        (f) => f.athleteId === currentAthleteId.value,
-      );
-      return family?.familyUnitId || null;
+    if (isParent.value) {
+      if (currentAthleteId.value) {
+        // Find the family for the currently selected athlete
+        const family = parentAccessibleFamilies.value.find(
+          (f) => f.athleteId === currentAthleteId.value,
+        );
+        return family?.familyUnitId || null;
+      }
+      // No athlete selected yet — fall back to first available family unit
+      // (parent who hasn't connected a player can still use their family)
+      return parentAccessibleFamilies.value[0]?.familyUnitId || null;
     }
 
     return null;
@@ -76,7 +86,8 @@ export const useActiveFamily = () => {
     }
 
     if (isParent.value) {
-      return currentAthleteId.value;
+      // Return selected athlete, or parent's own ID if no player has joined yet
+      return currentAthleteId.value ?? userStore.user?.id ?? null;
     }
 
     return null;
@@ -96,12 +107,12 @@ export const useActiveFamily = () => {
     if (parentAccessibleFamilies.value.length === 0) return null;
 
     const athletesWithYear = parentAccessibleFamilies.value.filter(
-      (f) => f.graduationYear !== null,
+      (f) => f.athleteId !== null && f.graduationYear !== null,
     );
 
     if (athletesWithYear.length === 0) {
-      // All null years, return first
-      return parentAccessibleFamilies.value[0].athleteId;
+      // All null years, return first athlete (if any)
+      return parentAccessibleFamilies.value.find((f) => f.athleteId !== null)?.athleteId ?? null;
     }
 
     // Sort by graduation year ascending (earliest first)
@@ -124,59 +135,50 @@ export const useActiveFamily = () => {
 
     try {
       if (isPlayer.value) {
-        // For players, fetch their family unit
+        // For players, look up their family unit via family_members
         const response = await supabase
-          .from("family_units")
-          .select("id, family_name")
-          .eq("player_user_id", userStore.user.id)
+          .from("family_members")
+          .select("family_unit_id")
+          .eq("user_id", userStore.user.id)
           .maybeSingle();
 
         const { data, error: fetchError } = response as {
-          data: { id: string; family_name: string | null } | null;
+          data: { family_unit_id: string } | null;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           error: any;
         };
 
         if (fetchError) {
-          console.error(
+          logger.error(
             "[useActiveFamily] Error fetching player family unit:",
             fetchError,
           );
           // Don't throw - just log and continue. Family will be null but we can still proceed.
         }
         if (data) {
-          playerFamilyId.value = data.id;
+          playerFamilyId.value = data.family_unit_id;
         }
       } else if (isParent.value) {
         // For parents, fetch all accessible families via API
         try {
-          // Get auth session to include token
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
+          const response = await $fetchAuth<{
+            families?: Array<{
+              familyUnitId: string;
+              athleteId: string;
+              athleteName: string;
+              graduationYear: number | null;
+              familyName: string;
+            }>;
+          }>("/api/family/accessible");
 
-          // Skip API call if no valid session (e.g., during logout)
-          if (!session?.access_token) {
-            console.debug(
-              "[useActiveFamily] No valid session, skipping API call",
-            );
-            parentAccessibleFamilies.value = [];
-            return;
-          }
-
-          const response = await $fetch("/api/family/accessible", {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          });
-
-          console.debug(
+          logger.debug(
             `[useActiveFamily] API response: ${response.families?.length || 0} families`,
             response.families,
           );
 
           if (response.families) {
-            parentAccessibleFamilies.value = response.families;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            parentAccessibleFamilies.value = response.families as any;
 
             // Set current athlete: route param > localStorage > closest to graduation > first
             const athleteIdFromRoute = route.query.athlete_id as
@@ -217,7 +219,7 @@ export const useActiveFamily = () => {
           // If API call fails, log the error for debugging
           const errMsg =
             err instanceof Error ? err.message : JSON.stringify(err);
-          console.debug("[useActiveFamily] API call failed:", errMsg);
+          logger.debug("[useActiveFamily] API call failed:", errMsg);
           parentAccessibleFamilies.value = [];
         }
       }
@@ -225,7 +227,7 @@ export const useActiveFamily = () => {
       const message =
         err instanceof Error ? err.message : "Failed to load family info";
       error.value = message;
-      console.error("[useActiveFamily] Error:", message);
+      logger.error("[useActiveFamily] Error:", message);
     } finally {
       loading.value = false;
     }
@@ -247,7 +249,7 @@ export const useActiveFamily = () => {
       if (fetchError) throw fetchError;
       familyMembers.value = data || [];
     } catch (err: unknown) {
-      console.error("[useActiveFamily] Error fetching family members:", err);
+      logger.error("[useActiveFamily] Error fetching family members:", err);
     }
   };
 
@@ -256,7 +258,7 @@ export const useActiveFamily = () => {
     if (!isParent.value) return;
 
     if (
-      !parentAccessibleFamilies.value.some((f) => f.athleteId === athleteId)
+      !parentAccessibleFamilies.value.some((f) => f.athleteId !== null && f.athleteId === athleteId)
     ) {
       error.value = "No access to this athlete";
       return;
@@ -265,7 +267,7 @@ export const useActiveFamily = () => {
     const previousAthleteId = currentAthleteId.value;
     currentAthleteId.value = athleteId;
 
-    console.debug(
+    logger.debug(
       `[useActiveFamily] Athlete switched: ${previousAthleteId} → ${athleteId}, ` +
         `instance: ${_debugInstanceId}, family: ${activeFamilyId.value}`,
     );
@@ -279,10 +281,12 @@ export const useActiveFamily = () => {
     await fetchFamilyMembers();
   };
 
-  // Get accessible athletes (for parents)
+  // Get accessible athletes (for parents) — only returns families with a connected athlete
   const getAccessibleAthletes = () => {
     if (!isParent.value) return [];
-    return parentAccessibleFamilies.value;
+    return parentAccessibleFamilies.value.filter(
+      (f): f is typeof f & { athleteId: string; athleteName: string } => f.athleteId !== null,
+    );
   };
 
   // Get display context (for UI)
@@ -309,7 +313,7 @@ export const useActiveFamily = () => {
     // If not in component context (e.g., in middleware), initialize immediately
     // without awaiting to avoid blocking
     initializeFamily().catch((err) =>
-      console.warn("Failed to initialize family context:", err),
+      logger.warn("Failed to initialize family context:", err),
     );
   }
 
@@ -318,7 +322,7 @@ export const useActiveFamily = () => {
     () => userStore.user?.role,
     async (newRole) => {
       if (newRole) {
-        console.debug(
+        logger.debug(
           `[useActiveFamily] User role changed to "${newRole}", reinitializing...`,
         );
         await initializeFamily();

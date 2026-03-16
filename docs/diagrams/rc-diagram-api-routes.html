@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Recruiting Compass — API Route Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #0d1117;
+      --surface:      #161b22;
+      --surface2:     #1c2128;
+      --border:       #30363d;
+      --border-soft:  #21262d;
+      --text:         #e6edf3;
+      --text-muted:   #7d8590;
+      --text-dim:     #484f58;
+
+      --get:          #388bfd;
+      --get-bg:       #0d2340;
+      --post:         #3fb950;
+      --post-bg:      #0d2d1a;
+      --delete:       #f85149;
+      --delete-bg:    #3d0d0d;
+      --patch:        #d29922;
+      --patch-bg:     #2d2200;
+
+      --accent:       #58a6ff;
+      --accent2:      #bc8cff;
+
+      --radius:       8px;
+      --radius-sm:    5px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #58a6ff 0%, #bc8cff 100%);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: #0d1117;
+      flex-shrink: 0;
+    }
+
+    header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    header .subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .header-meta {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      background: var(--surface2);
+    }
+
+    .pill.accent { border-color: #58a6ff44; color: var(--accent); background: #0d2340; }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      grid-template-rows: auto 1fr;
+      gap: 0;
+      min-height: calc(100vh - 77px);
+    }
+
+    .main-content {
+      padding: 28px 28px 40px 32px;
+      overflow-y: auto;
+    }
+
+    .sidebar {
+      border-left: 1px solid var(--border);
+      padding: 24px 20px;
+      position: sticky;
+      top: 77px;
+      height: calc(100vh - 77px);
+      overflow-y: auto;
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+    }
+
+    /* ── Domain groups ── */
+    .domains-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 16px;
+    }
+
+    .domain-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .domain-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .domain-icon {
+      font-size: 16px;
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .domain-name {
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text);
+    }
+
+    .domain-prefix {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      margin-left: auto;
+      background: var(--bg);
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid var(--border-soft);
+    }
+
+    .domain-routes {
+      padding: 8px 0;
+    }
+
+    .route-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 7px 16px;
+      transition: background 0.1s;
+    }
+
+    .route-row:hover {
+      background: var(--surface2);
+    }
+
+    .method-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      letter-spacing: 0.04em;
+      min-width: 54px;
+      text-align: center;
+    }
+
+    .method-GET    { background: var(--get-bg);    color: var(--get);    border: 1px solid #388bfd40; }
+    .method-POST   { background: var(--post-bg);   color: var(--post);   border: 1px solid #3fb95040; }
+    .method-DELETE { background: var(--delete-bg); color: var(--delete); border: 1px solid #f8514940; }
+    .method-PATCH  { background: var(--patch-bg);  color: var(--patch);  border: 1px solid #d2992240; }
+    .method-ANY    { background: #1c2128; color: #7d8590; border: 1px solid #30363d; }
+
+    .route-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      flex: 1;
+      word-break: break-all;
+    }
+
+    .route-path .param {
+      color: var(--accent2);
+    }
+
+    .route-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .route-info {
+      flex: 1;
+    }
+
+    /* ── Route count badge ── */
+    .count-badge {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--text-muted);
+      border: 1px solid var(--border-soft);
+      margin-left: 6px;
+    }
+
+    /* ── File mapping box ── */
+    .file-mapping {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+
+    .file-mapping-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .file-mapping-row:last-child { border-bottom: none; }
+
+    .mapping-file {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .mapping-arrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .mapping-url {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    /* ── Lifecycle diagram ── */
+    .lifecycle {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+
+    .lifecycle-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 6px 0;
+      position: relative;
+    }
+
+    .lifecycle-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 12px;
+      top: 28px;
+      bottom: -4px;
+      width: 1px;
+      background: var(--border);
+    }
+
+    .step-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      z-index: 1;
+      position: relative;
+    }
+
+    .step-content { flex: 1; padding-top: 2px; }
+
+    .step-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .step-detail {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 1px;
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .stat-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+    }
+
+    .stat-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    .stat-num {
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Nav TOC ── */
+    .toc {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .toc-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .toc-item:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .toc-icon { font-size: 13px; }
+    .toc-count { margin-left: auto; font-size: 10px; color: var(--text-dim); }
+
+    /* ── Response pattern ── */
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      line-height: 1.7;
+      color: var(--text-muted);
+    }
+
+    .code-block .kw  { color: #ff7b72; }
+    .code-block .str { color: #a5d6ff; }
+    .code-block .key { color: var(--accent); }
+    .code-block .cmt { color: var(--text-dim); font-style: italic; }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 4px 0;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; border-left: none; border-top: 1px solid var(--border); }
+      .domains-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-logo">RC</div>
+  <div>
+    <h1>The Recruiting Compass</h1>
+    <div class="subtitle">server/api/ — Nitro Route Map</div>
+  </div>
+  <div class="header-meta">
+    <span class="pill accent">Nuxt 3 / Nitro</span>
+    <span class="pill">TypeScript strict</span>
+    <span class="pill">Supabase</span>
+    <span class="pill">Vercel</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ══════════════════════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════════════════════ -->
+  <div class="main-content">
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-chip">
+        <div class="stat-dot" style="background:#7d8590"></div>
+        <span class="stat-num">80</span>
+        <span class="stat-lbl">Total Routes</span>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-dot" style="background:var(--get)"></div>
+        <span class="stat-num" style="color:var(--get)">24</span>
+        <span class="stat-lbl">GET</span>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-dot" style="background:var(--post)"></div>
+        <span class="stat-num" style="color:var(--post)">43</span>
+        <span class="stat-lbl">POST</span>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-dot" style="background:var(--delete)"></div>
+        <span class="stat-num" style="color:var(--delete)">7</span>
+        <span class="stat-lbl">DELETE</span>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-dot" style="background:var(--patch)"></div>
+        <span class="stat-num" style="color:var(--patch)">4</span>
+        <span class="stat-lbl">PATCH</span>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-dot" style="background:#7d8590"></div>
+        <span class="stat-num">2</span>
+        <span class="stat-lbl">ANY</span>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-dot" style="background:var(--accent2)"></div>
+        <span class="stat-num" style="color:var(--accent2)">14</span>
+        <span class="stat-lbl">Domains</span>
+      </div>
+    </div>
+
+    <div class="domains-grid">
+
+      <!-- ──────────────── AUTH ──────────────── -->
+      <div class="domain-card" id="domain-auth">
+        <div class="domain-header">
+          <div class="domain-icon">🔐</div>
+          <span class="domain-name">auth</span>
+          <span class="domain-prefix">/api/auth/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/auth/verify-email</div>
+              <div class="route-desc">Verify email token from signup link</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/auth/resend-verification</div>
+              <div class="route-desc">Resend email verification link</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/auth/request-password-reset</div>
+              <div class="route-desc">Trigger password reset email</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/auth/confirm-password-reset</div>
+              <div class="route-desc">Apply new password with reset token</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/auth/validate-admin-token</div>
+              <div class="route-desc">Validate admin invitation token</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/auth/admin-profile</div>
+              <div class="route-desc">Create admin profile after token validation</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── FAMILY ──────────────── -->
+      <div class="domain-card" id="domain-family">
+        <div class="domain-header">
+          <div class="domain-icon">👨‍👩‍👧</div>
+          <span class="domain-name">family</span>
+          <span class="domain-prefix">/api/family/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/create</div>
+              <div class="route-desc">Create a new family unit</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/members</div>
+              <div class="route-desc">List all members in the family unit</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-DELETE">DELETE</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/members/<span class="param">:memberId</span></div>
+              <div class="route-desc">Remove a member from the family unit</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/accessible</div>
+              <div class="route-desc">Get accessible family data (deprecated)</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/player-details</div>
+              <div class="route-desc">Submit player profile details</div>
+            </div>
+          </div>
+          <hr class="divider" />
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/invite</div>
+              <div class="route-desc">Send email invitation to join family unit</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/invite/<span class="param">:token</span></div>
+              <div class="route-desc">Lookup invitation by token</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/invite/<span class="param">:token</span>/accept</div>
+              <div class="route-desc">Accept a family invitation</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/invite/<span class="param">:token</span>/decline</div>
+              <div class="route-desc">Decline a family invitation</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/invitations</div>
+              <div class="route-desc">List pending invitations for family unit</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-DELETE">DELETE</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/invitations/<span class="param">:id</span></div>
+              <div class="route-desc">Revoke a pending invitation</div>
+            </div>
+          </div>
+          <hr class="divider" />
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/code/my-code</div>
+              <div class="route-desc">Get current family join code</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/code/join</div>
+              <div class="route-desc">Join family unit via code</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/family/code/regenerate</div>
+              <div class="route-desc">Regenerate family join code</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── SCHOOLS ──────────────── -->
+      <div class="domain-card" id="domain-schools">
+        <div class="domain-header">
+          <div class="domain-icon">🏫</div>
+          <span class="domain-name">schools</span>
+          <span class="domain-prefix">/api/schools/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/schools/<span class="param">:id</span>/fit-score</div>
+              <div class="route-desc">Get cached fit score for a school</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/schools/<span class="param">:id</span>/fit-score</div>
+              <div class="route-desc">Calculate &amp; persist fit score</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/schools/<span class="param">:id</span>/deletion-blockers</div>
+              <div class="route-desc">Check what blocks school deletion</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/schools/<span class="param">:id</span>/cascade-delete</div>
+              <div class="route-desc">Delete school &amp; all child records</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-ANY">ANY</span>
+            <div class="route-info">
+              <div class="route-path">/api/schools/favicon</div>
+              <div class="route-desc">Proxy school favicon images</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── COACHES ──────────────── -->
+      <div class="domain-card" id="domain-coaches">
+        <div class="domain-header">
+          <div class="domain-icon">🏃</div>
+          <span class="domain-name">coaches</span>
+          <span class="domain-prefix">/api/coaches/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/coaches/<span class="param">:id</span>/deletion-blockers</div>
+              <div class="route-desc">Check what blocks coach deletion</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/coaches/<span class="param">:id</span>/cascade-delete</div>
+              <div class="route-desc">Delete coach &amp; all child records</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── ATHLETE ──────────────── -->
+      <div class="domain-card" id="domain-athlete">
+        <div class="domain-header">
+          <div class="domain-icon">⚡</div>
+          <span class="domain-name">athlete</span>
+          <span class="domain-prefix">/api/athlete/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/athlete/status</div>
+              <div class="route-desc">Get athlete's current recruiting status</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/athlete/status/recalculate</div>
+              <div class="route-desc">Recalculate and persist athlete status</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/athlete/phase</div>
+              <div class="route-desc">Get current recruiting phase</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/athlete/phase/advance</div>
+              <div class="route-desc">Advance athlete to next recruiting phase</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/athlete/portfolio-health</div>
+              <div class="route-desc">Compute portfolio health score</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/athlete/fit-scores/recalculate-all</div>
+              <div class="route-desc">Recalculate fit scores for all schools</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── TASKS ──────────────── -->
+      <div class="domain-card" id="domain-tasks">
+        <div class="domain-header">
+          <div class="domain-icon">✅</div>
+          <span class="domain-name">tasks / athlete-tasks</span>
+          <span class="domain-prefix">/api/tasks/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/tasks</div>
+              <div class="route-desc">List all tasks</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/tasks/with-status</div>
+              <div class="route-desc">Tasks with completion status for athlete</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/tasks/<span class="param">:taskId</span>/dependencies</div>
+              <div class="route-desc">Get task prerequisite chain</div>
+            </div>
+          </div>
+          <hr class="divider" />
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/athlete-tasks</div>
+              <div class="route-desc">List athlete's task completion records</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-PATCH">PATCH</span>
+            <div class="route-info">
+              <div class="route-path">/api/athlete-tasks/<span class="param">:taskId</span></div>
+              <div class="route-desc">Update task completion status</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── SUGGESTIONS ──────────────── -->
+      <div class="domain-card" id="domain-suggestions">
+        <div class="domain-header">
+          <div class="domain-icon">💡</div>
+          <span class="domain-name">suggestions</span>
+          <span class="domain-prefix">/api/suggestions/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/suggestions</div>
+              <div class="route-desc">List active suggestions for athlete</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/suggestions/surface</div>
+              <div class="route-desc">Surface contextual suggestions</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/suggestions/evaluate</div>
+              <div class="route-desc">Evaluate &amp; score candidate suggestions</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/suggestions/trigger-update</div>
+              <div class="route-desc">Manually trigger suggestion refresh</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-PATCH">PATCH</span>
+            <div class="route-info">
+              <div class="route-path">/api/suggestions/<span class="param">:id</span>/dismiss</div>
+              <div class="route-desc">Dismiss a suggestion</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-PATCH">PATCH</span>
+            <div class="route-info">
+              <div class="route-path">/api/suggestions/<span class="param">:id</span>/complete</div>
+              <div class="route-desc">Mark suggestion as completed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── NOTIFICATIONS ──────────────── -->
+      <div class="domain-card" id="domain-notifications">
+        <div class="domain-header">
+          <div class="domain-icon">🔔</div>
+          <span class="domain-name">notifications</span>
+          <span class="domain-prefix">/api/notifications/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/notifications/create</div>
+              <div class="route-desc">Create a new notification</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/notifications/generate</div>
+              <div class="route-desc">Generate bulk notifications from events</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── INTERACTIONS ──────────────── -->
+      <div class="domain-card" id="domain-interactions">
+        <div class="domain-header">
+          <div class="domain-icon">💬</div>
+          <span class="domain-name">interactions</span>
+          <span class="domain-prefix">/api/interactions/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/interactions/<span class="param">:id</span>/deletion-blockers</div>
+              <div class="route-desc">Check what blocks interaction deletion</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/interactions/<span class="param">:id</span>/cascade-delete</div>
+              <div class="route-desc">Delete interaction &amp; child records</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── USER ──────────────── -->
+      <div class="domain-card" id="domain-user">
+        <div class="domain-header">
+          <div class="domain-icon">👤</div>
+          <span class="domain-name">user</span>
+          <span class="domain-prefix">/api/user/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/user/preferences/<span class="param">:category</span></div>
+              <div class="route-desc">Get preferences for a category</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/user/preferences/<span class="param">:category</span></div>
+              <div class="route-desc">Set preferences for a category</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-DELETE">DELETE</span>
+            <div class="route-info">
+              <div class="route-path">/api/user/preferences/<span class="param">:category</span></div>
+              <div class="route-desc">Clear preferences for a category</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-PATCH">PATCH</span>
+            <div class="route-info">
+              <div class="route-path">/api/user/preferences/player-details</div>
+              <div class="route-desc">Patch player profile details</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/user/preferences/<span class="param">:category</span>/history</div>
+              <div class="route-desc">Get preference change history</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/user/preferences/history</div>
+              <div class="route-desc">Bulk-record preference history entries</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/user/export</div>
+              <div class="route-desc">Export all user data (GDPR)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── ACCOUNT ──────────────── -->
+      <div class="domain-card" id="domain-account">
+        <div class="domain-header">
+          <div class="domain-icon">🗑️</div>
+          <span class="domain-name">account</span>
+          <span class="domain-prefix">/api/account/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/account/deletion-status</div>
+              <div class="route-desc">Check scheduled deletion status</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/account/request-deletion</div>
+              <div class="route-desc">Schedule account for deletion</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/account/cancel-deletion</div>
+              <div class="route-desc">Cancel a pending deletion request</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── SOCIAL ──────────────── -->
+      <div class="domain-card" id="domain-social">
+        <div class="domain-header">
+          <div class="domain-icon">🔗</div>
+          <span class="domain-name">social</span>
+          <span class="domain-prefix">/api/social/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/social/sync</div>
+              <div class="route-desc">Sync a single social profile</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/social/sync-all</div>
+              <div class="route-desc">Sync all connected social profiles</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── ADMIN ──────────────── -->
+      <div class="domain-card" id="domain-admin">
+        <div class="domain-header">
+          <div class="domain-icon">🛡️</div>
+          <span class="domain-name">admin</span>
+          <span class="domain-prefix">/api/admin/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/admin/health</div>
+              <div class="route-desc">Admin system health check</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/admin/stats</div>
+              <div class="route-desc">Platform-wide statistics</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/admin/users</div>
+              <div class="route-desc">List all users with metadata</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/admin/delete-user</div>
+              <div class="route-desc">Delete a specific user account</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/admin/bulk-delete-users</div>
+              <div class="route-desc">Delete multiple user accounts</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/admin/pending-invitations</div>
+              <div class="route-desc">List pending admin invitations</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-DELETE">DELETE</span>
+            <div class="route-info">
+              <div class="route-path">/api/admin/pending-invitations/<span class="param">:id</span></div>
+              <div class="route-desc">Revoke a pending admin invitation</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/admin/migrate-school-sizes</div>
+              <div class="route-desc">Backfill school size data migration</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-ANY">ANY</span>
+            <div class="route-info">
+              <div class="route-path">/api/admin/batch-fetch-logos</div>
+              <div class="route-desc">Batch fetch &amp; cache school logos</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── CRON ──────────────── -->
+      <div class="domain-card" id="domain-cron">
+        <div class="domain-header">
+          <div class="domain-icon">⏰</div>
+          <span class="domain-name">cron</span>
+          <span class="domain-prefix">/api/cron/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/cron/daily-suggestions</div>
+              <div class="route-desc">Daily suggestion generation job</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/cron/cleanup-expired-invites</div>
+              <div class="route-desc">Purge expired family invitations</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/cron/process-account-deletions</div>
+              <div class="route-desc">Process scheduled account deletions</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────── MISC ──────────────── -->
+      <div class="domain-card" id="domain-misc">
+        <div class="domain-header">
+          <div class="domain-icon">🔧</div>
+          <span class="domain-name">misc</span>
+          <span class="domain-prefix">/api/</span>
+        </div>
+        <div class="domain-routes">
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/csrf-token</div>
+              <div class="route-desc">Issue CSRF token for session</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/colleges/search</div>
+              <div class="route-desc">Search college database</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/recruiting-packet/email</div>
+              <div class="route-desc">Email recruiting packet to coaches</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/help/feedback</div>
+              <div class="route-desc">Submit in-app help feedback</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-POST">POST</span>
+            <div class="route-info">
+              <div class="route-path">/api/feedback</div>
+              <div class="route-desc">Submit general user feedback</div>
+            </div>
+          </div>
+          <div class="route-row">
+            <span class="method-badge method-GET">GET</span>
+            <div class="route-info">
+              <div class="route-path">/api/debug/session</div>
+              <div class="route-desc">Inspect current session (dev only)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /domains-grid -->
+  </div><!-- /main-content -->
+
+  <!-- ══════════════════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════════════════ -->
+  <div class="sidebar">
+
+    <!-- Request lifecycle -->
+    <div>
+      <div class="section-title">Request Lifecycle</div>
+      <div class="lifecycle">
+        <div class="lifecycle-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-label">Client Call</div>
+            <div class="step-detail">useAuthFetch('/api/…')</div>
+          </div>
+        </div>
+        <div class="lifecycle-step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-label">Headers Injected</div>
+            <div class="step-detail">X-Request-ID + Bearer token</div>
+          </div>
+        </div>
+        <div class="lifecycle-step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-label">Correlation Middleware</div>
+            <div class="step-detail">Reads X-Request-ID → propagates</div>
+          </div>
+        </div>
+        <div class="lifecycle-step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-label">Auth Guard</div>
+            <div class="step-detail">requireAuth(event)</div>
+          </div>
+        </div>
+        <div class="lifecycle-step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <div class="step-label">Structured Logging</div>
+            <div class="step-detail">useLogger(event, 'context')</div>
+          </div>
+        </div>
+        <div class="lifecycle-step">
+          <div class="step-num">6</div>
+          <div class="step-content">
+            <div class="step-label">DB Operation</div>
+            <div class="step-detail">useSupabaseAdmin()</div>
+          </div>
+        </div>
+        <div class="lifecycle-step">
+          <div class="step-num">7</div>
+          <div class="step-content">
+            <div class="step-label">Response</div>
+            <div class="step-detail">&#123; data, error, meta &#125;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- File → URL mapping -->
+    <div>
+      <div class="section-title">File → URL Mapping</div>
+      <div class="file-mapping">
+        <div class="file-mapping-row">
+          <div class="mapping-file">schools/[id]/fit-score.get.ts</div>
+          <div class="mapping-arrow">
+            <span>→</span>
+            <span class="mapping-url">GET /api/schools/:id/fit-score</span>
+          </div>
+        </div>
+        <div class="file-mapping-row">
+          <div class="mapping-file">athlete/phase/advance.post.ts</div>
+          <div class="mapping-arrow">
+            <span>→</span>
+            <span class="mapping-url">POST /api/athlete/phase/advance</span>
+          </div>
+        </div>
+        <div class="file-mapping-row">
+          <div class="mapping-file">family/invite/[token]/accept.post.ts</div>
+          <div class="mapping-arrow">
+            <span>→</span>
+            <span class="mapping-url">POST /api/family/invite/:token/accept</span>
+          </div>
+        </div>
+        <div class="file-mapping-row">
+          <div class="mapping-file">suggestions/[id]/dismiss.patch.ts</div>
+          <div class="mapping-arrow">
+            <span>→</span>
+            <span class="mapping-url">PATCH /api/suggestions/:id/dismiss</span>
+          </div>
+        </div>
+        <div class="file-mapping-row">
+          <div class="mapping-file">admin/pending-invitations/[id].delete.ts</div>
+          <div class="mapping-arrow">
+            <span>→</span>
+            <span class="mapping-url">DELETE /api/admin/pending-invitations/:id</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Response shape -->
+    <div>
+      <div class="section-title">Standard Response Shape</div>
+      <div class="code-block">
+<span class="kw">return</span> {
+  <span class="key">data</span>: result,
+  <span class="cmt">// null on error</span>
+  <span class="key">error</span>: <span class="kw">null</span>,
+  <span class="cmt">// 500 on throw</span>
+  <span class="key">meta</span>: {
+    <span class="key">requestId</span>: correlationId,
+    <span class="key">timestamp</span>: <span class="str">new Date()</span>,
+  }
+}
+      </div>
+    </div>
+
+    <!-- TOC nav -->
+    <div>
+      <div class="section-title">Domains</div>
+      <nav class="toc">
+        <a class="toc-item" href="#domain-auth"><span class="toc-icon">🔐</span> auth <span class="toc-count">6</span></a>
+        <a class="toc-item" href="#domain-family"><span class="toc-icon">👨‍👩‍👧</span> family <span class="toc-count">14</span></a>
+        <a class="toc-item" href="#domain-schools"><span class="toc-icon">🏫</span> schools <span class="toc-count">5</span></a>
+        <a class="toc-item" href="#domain-coaches"><span class="toc-icon">🏃</span> coaches <span class="toc-count">2</span></a>
+        <a class="toc-item" href="#domain-athlete"><span class="toc-icon">⚡</span> athlete <span class="toc-count">6</span></a>
+        <a class="toc-item" href="#domain-tasks"><span class="toc-icon">✅</span> tasks / athlete-tasks <span class="toc-count">5</span></a>
+        <a class="toc-item" href="#domain-suggestions"><span class="toc-icon">💡</span> suggestions <span class="toc-count">6</span></a>
+        <a class="toc-item" href="#domain-notifications"><span class="toc-icon">🔔</span> notifications <span class="toc-count">2</span></a>
+        <a class="toc-item" href="#domain-interactions"><span class="toc-icon">💬</span> interactions <span class="toc-count">2</span></a>
+        <a class="toc-item" href="#domain-user"><span class="toc-icon">👤</span> user <span class="toc-count">7</span></a>
+        <a class="toc-item" href="#domain-account"><span class="toc-icon">🗑️</span> account <span class="toc-count">3</span></a>
+        <a class="toc-item" href="#domain-social"><span class="toc-icon">🔗</span> social <span class="toc-count">2</span></a>
+        <a class="toc-item" href="#domain-admin"><span class="toc-icon">🛡️</span> admin <span class="toc-count">9</span></a>
+        <a class="toc-item" href="#domain-cron"><span class="toc-icon">⏰</span> cron <span class="toc-count">3</span></a>
+        <a class="toc-item" href="#domain-misc"><span class="toc-icon">🔧</span> misc <span class="toc-count">6</span></a>
+      </nav>
+    </div>
+
+  </div><!-- /sidebar -->
+
+</div><!-- /layout -->
+
+</body>
+</html>

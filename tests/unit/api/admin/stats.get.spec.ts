@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn().mockResolvedValue({ id: "admin-user-id" }),
+  requireAdmin: vi.fn().mockResolvedValue({ id: "admin-user-id" }),
 }));
 
 const mockFrom = vi.fn();
@@ -10,7 +11,7 @@ vi.mock("~/server/utils/supabase", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  useLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
 
 describe("GET /api/admin/stats", () => {

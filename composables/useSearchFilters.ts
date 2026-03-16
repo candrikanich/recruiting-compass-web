@@ -1,4 +1,7 @@
 import { ref, computed } from "vue";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useSearchFilters");
 
 /**
  * Composable for search filter management
@@ -26,7 +29,7 @@ import { ref, computed } from "vue";
  */
 export const useSearchFilters = () => {
   if (process.env.NODE_ENV === "development") {
-    console.warn(
+    logger.warn(
       "[DEPRECATED] useSearchFilters is deprecated as of Phase 4. " +
         "Use useSearchConsolidated() instead.\n" +
         "Migration guide: See DEPRECATION_AUDIT.md",

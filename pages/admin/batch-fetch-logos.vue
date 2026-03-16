@@ -12,7 +12,7 @@
       </div>
 
       <!-- Status Card -->
-      <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <!-- Idle State -->
         <div v-if="status === 'idle'" class="space-y-4">
           <p class="text-gray-600">
@@ -43,7 +43,7 @@
             >
           </div>
           <p class="text-gray-600">{{ statusMessage }}</p>
-          <div class="bg-gray-100 rounded h-2 overflow-hidden">
+          <div class="bg-gray-100 rounded-sm h-2 overflow-hidden">
             <div
               class="bg-blue-600 h-full transition-all duration-300"
               :style="{ width: `${progress}%` }"
@@ -81,7 +81,7 @@
           <div
             class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-2"
           >
-            <XMarkIcon class="w-5 h-5 text-red-800 flex-shrink-0 mt-0.5" />
+            <XMarkIcon class="w-5 h-5 text-red-800 shrink-0 mt-0.5" />
             <div>
               <p class="text-sm text-red-800 font-medium">
                 Error during batch fetch
@@ -99,28 +99,28 @@
       </div>
 
       <!-- Info Section -->
-      <div class="bg-white rounded-lg shadow p-6 space-y-4">
+      <div class="bg-white rounded-lg shadow-sm p-6 space-y-4">
         <h2 class="text-lg font-semibold text-gray-900">How it works</h2>
         <ol class="space-y-2 text-sm text-gray-600">
           <li class="flex gap-3">
-            <span class="font-medium text-gray-900 flex-shrink-0">1.</span>
+            <span class="font-medium text-gray-900 shrink-0">1.</span>
             <span>Fetches all schools from your database</span>
           </li>
           <li class="flex gap-3">
-            <span class="font-medium text-gray-900 flex-shrink-0">2.</span>
+            <span class="font-medium text-gray-900 shrink-0">2.</span>
             <span
               >For each school without a favicon URL, attempts to fetch from
               their website</span
             >
           </li>
           <li class="flex gap-3">
-            <span class="font-medium text-gray-900 flex-shrink-0">3.</span>
+            <span class="font-medium text-gray-900 shrink-0">3.</span>
             <span
               >Tries multiple sources (favicon.ico, DuckDuckGo, Google)</span
             >
           </li>
           <li class="flex gap-3">
-            <span class="font-medium text-gray-900 flex-shrink-0">4.</span>
+            <span class="font-medium text-gray-900 shrink-0">4.</span>
             <span>Saves found favicons to the database</span>
           </li>
         </ol>

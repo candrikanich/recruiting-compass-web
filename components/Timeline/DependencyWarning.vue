@@ -3,7 +3,7 @@
     <!-- Warning header -->
     <div class="flex items-start gap-2 mb-2">
       <svg
-        class="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5"
+        class="w-4 h-4 text-yellow-600 shrink-0 mt-0.5"
         fill="currentColor"
         viewBox="0 0 20 20"
       >
@@ -44,14 +44,14 @@
       <button
         v-if="hasCompletePrerequisiteOption"
         @click="$emit('complete-prerequisite', incompletePrerequisites[0]?.id)"
-        class="px-3 py-1 text-xs rounded bg-yellow-200 text-yellow-900 hover:bg-yellow-300 transition font-medium"
+        class="px-3 py-1 text-xs rounded-sm bg-yellow-200 text-yellow-900 hover:bg-yellow-300 transition font-medium"
       >
         Complete Prerequisite
       </button>
       <button
         v-if="showContinueOption"
         @click="$emit('continue-anyway')"
-        class="px-3 py-1 text-xs rounded border border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition font-medium"
+        class="px-3 py-1 text-xs rounded-sm border border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition font-medium"
       >
         Continue Anyway
       </button>

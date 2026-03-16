@@ -97,7 +97,7 @@ describe("InteractionActions", () => {
       const exportButton = wrapper.findAll("button")[0];
       expect(exportButton.classes()).toContain("px-4");
       expect(exportButton.classes()).toContain("py-2");
-      expect(exportButton.classes()).toContain("rounded");
+      expect(exportButton.classes()).toContain("rounded-sm");
       expect(exportButton.classes()).toContain("transition");
     });
 
@@ -116,7 +116,7 @@ describe("InteractionActions", () => {
       const deleteButton = wrapper.findAll("button")[1];
       expect(deleteButton.classes()).toContain("px-4");
       expect(deleteButton.classes()).toContain("py-2");
-      expect(deleteButton.classes()).toContain("rounded");
+      expect(deleteButton.classes()).toContain("rounded-sm");
       expect(deleteButton.classes()).toContain("transition");
     });
 

@@ -3,7 +3,7 @@
   <div class="absolute inset-0">
     <!-- Grass texture with gradient -->
     <div
-      class="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700"
+      class="absolute inset-0 bg-linear-to-br from-emerald-500 via-emerald-600 to-emerald-700"
     ></div>
 
     <!-- Multi-Sport Field markings -->

@@ -5,6 +5,7 @@
  */
 
 import { ref, computed, isRef, type Ref, type ComputedRef } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import type {
   FilterConfig,
   FilterValue,
@@ -12,6 +13,8 @@ import type {
   FilterPreset,
   UseUniversalFilterOptions,
 } from "~/types/filters";
+
+const logger = createClientLogger("useUniversalFilter");
 
 /**
  * Composable for managing universal filters across list pages
@@ -82,7 +85,7 @@ export const useUniversalFilter = <T extends Record<string, unknown>>(
         if (storedPresets) presets.value = storedPresets;
       }
     } catch (error) {
-      console.warn("Failed to load filters from storage:", error);
+      logger.warn("Failed to load filters from storage:", error);
     }
   };
 
@@ -99,7 +102,7 @@ export const useUniversalFilter = <T extends Record<string, unknown>>(
         }),
       );
     } catch (error) {
-      console.warn("Failed to save filters to storage:", error);
+      logger.warn("Failed to save filters to storage:", error);
     }
   };
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-lg font-semibold text-slate-900">Information</h2>
       <div class="flex gap-2">
@@ -58,7 +58,7 @@
             v-model="editedBasicInfo.address"
             type="text"
             placeholder="Main campus address..."
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
@@ -69,7 +69,7 @@
             v-model="editedBasicInfo.baseball_facility_address"
             type="text"
             placeholder="Stadium address..."
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
@@ -80,7 +80,7 @@
             v-model="editedBasicInfo.mascot"
             type="text"
             placeholder="School mascot..."
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
@@ -91,7 +91,7 @@
             v-model="editedBasicInfo.undergrad_size"
             type="text"
             placeholder="e.g., 5,000-8,000..."
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
@@ -102,7 +102,7 @@
             v-model="editedBasicInfo.website"
             type="url"
             placeholder="https://..."
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
@@ -113,7 +113,7 @@
             v-model="editedBasicInfo.twitter_handle"
             type="text"
             placeholder="@handle..."
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -215,7 +215,7 @@
         <div class="grid grid-cols-2 gap-2 text-sm">
           <div
             v-if="getAcademicInfo(school, 'student_size')"
-            class="flex justify-between p-2 bg-slate-50 rounded"
+            class="flex justify-between p-2 bg-slate-50 rounded-sm"
           >
             <span class="text-slate-600">Students</span>
             <span class="font-medium text-slate-900">{{
@@ -226,7 +226,7 @@
           </div>
           <div
             v-if="getAcademicInfo(school, 'tuition_in_state')"
-            class="flex justify-between p-2 bg-slate-50 rounded"
+            class="flex justify-between p-2 bg-slate-50 rounded-sm"
           >
             <span class="text-slate-600">Tuition (In-State)</span>
             <span class="font-medium text-slate-900"
@@ -239,7 +239,7 @@
           </div>
           <div
             v-if="getAcademicInfo(school, 'tuition_out_of_state')"
-            class="flex justify-between p-2 bg-slate-50 rounded"
+            class="flex justify-between p-2 bg-slate-50 rounded-sm"
           >
             <span class="text-slate-600">Tuition (Out-of-State)</span>
             <span class="font-medium text-slate-900"
@@ -252,7 +252,7 @@
           </div>
           <div
             v-if="getAcademicInfo(school, 'admission_rate')"
-            class="flex justify-between p-2 bg-slate-50 rounded"
+            class="flex justify-between p-2 bg-slate-50 rounded-sm"
           >
             <span class="text-slate-600">Admission Rate</span>
             <span class="font-medium text-slate-900"

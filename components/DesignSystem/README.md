@@ -96,7 +96,7 @@ Flexible button component with multiple variants, colors, and sizes.
 
 | Prop        | Type                                                                 | Default    | Description                |
 | ----------- | -------------------------------------------------------------------- | ---------- | -------------------------- |
-| `variant`   | `'gradient' \| 'outline' \| 'solid' \| 'ghost'`                      | `'solid'`  | Visual style               |
+| `variant`   | `'gradient' \| 'outline-solid' \| 'solid' \| 'ghost'`                      | `'solid'`  | Visual style               |
 | `color`     | `'blue' \| 'purple' \| 'emerald' \| 'orange' \| 'indigo' \| 'slate'` | `'blue'`   | Color theme                |
 | `size`      | `'sm' \| 'md' \| 'lg'`                                               | `'md'`     | Button size                |
 | `fullWidth` | `boolean`                                                            | `false`    | Stretch to container width |

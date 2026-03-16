@@ -562,7 +562,7 @@ test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
 
     // Verify long content is displayed without breaking layout
     await expect(page.locator("text=Content")).toBeVisible();
-    const contentSection = page.locator(".bg-white.rounded-lg.shadow");
+    const contentSection = page.locator(".bg-white.rounded-lg.shadow-sm");
     await expect(contentSection.first()).toBeVisible();
 
     // Verify scrolling works if content is truncated
@@ -570,8 +570,9 @@ test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
       (await page.evaluate(() => document.body.scrollHeight)) >
       (await page.evaluate(() => window.innerHeight));
 
-    // Either displays all content or is scrollable
-    expect(true).toBe(true); // Content rendered successfully
+    // Either the full long content is rendered inline or the page is scrollable to show it
+    const bodyText = await page.textContent("body");
+    expect(bodyText?.includes("AAAA") || hasScrollbar).toBe(true);
   });
 
   test("handles special characters in content", async ({ page }) => {

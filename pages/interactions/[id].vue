@@ -21,7 +21,7 @@
 
       <!-- Main Content -->
       <section aria-labelledby="content-heading">
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow-sm p-6">
           <h2 id="content-heading" class="text-xl font-bold mb-4">Content</h2>
           <p class="text-gray-700 whitespace-pre-wrap">
             {{ interaction.content }}

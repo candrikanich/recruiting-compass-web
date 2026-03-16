@@ -96,7 +96,7 @@ describe("formalOutreachRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: fortyFiveDaysAgo.toISOString(),
+          occurred_at: fortyFiveDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -115,7 +115,7 @@ describe("formalOutreachRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: twentyDaysAgo.toISOString(),
+          occurred_at: twentyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -137,12 +137,12 @@ describe("formalOutreachRule", () => {
         {
           id: "int-1",
           school_id: "school-2", // Other school has recent contact
-          interaction_date: new Date().toISOString(),
+          occurred_at: new Date().toISOString(),
         },
         {
           id: "int-2",
           school_id: "school-1", // This school has old contact
-          interaction_date: fiftyDaysAgo.toISOString(),
+          occurred_at: fiftyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -204,12 +204,12 @@ describe("formalOutreachRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: tenDaysAgo.toISOString(),
+          occurred_at: tenDaysAgo.toISOString(),
         },
         {
           id: "int-2",
           school_id: "school-2",
-          interaction_date: fortyFiveDaysAgo.toISOString(),
+          occurred_at: fortyFiveDaysAgo.toISOString(),
         },
       ] as unknown[];
 

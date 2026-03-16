@@ -1,20 +1,24 @@
 {
   "runners": ["axe"],
-  "standard": "WCAG2AA",
+  "standard": "WCAG22AA",
   "timeout": 10000,
   "wait": 2000,
   "chromeLaunchConfig": {
     "args": ["--no-sandbox", "--disable-setuid-sandbox"]
   },
   "urls": [
+    "http://localhost:3000/",
     "http://localhost:3000/login",
     "http://localhost:3000/signup",
+    "http://localhost:3000/forgot-password",
+    "http://localhost:3000/join",
     "http://localhost:3000/dashboard",
     "http://localhost:3000/settings"
   ],
-  "rules": ["wcag2aa"],
+  "rules": ["wcag22aa"],
   "reporters": ["json", "cli"],
   "level": "error",
   "ignore": [],
-  "threshold": 0
+  "threshold": 0,
+  "_note": "Auth-gated pages (schools, coaches, interactions) redirect to /login in CI — not scanned here. Use Playwright E2E for authenticated a11y checks."
 }

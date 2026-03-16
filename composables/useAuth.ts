@@ -2,6 +2,9 @@ import { ref, readonly, onBeforeUnmount, getCurrentInstance } from "vue";
 import type { User, Session } from "@supabase/supabase-js";
 import { useSupabase } from "~/composables/useSupabase";
 import type { SessionPreferences } from "~/types/session";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useAuth");
 
 /**
  * Composable for authentication operations
@@ -17,10 +20,6 @@ import type { SessionPreferences } from "~/types/session";
  *
  * @returns Object with auth actions and readonly state
  */
-interface SignupOptions {
-  familyCode?: string;
-}
-
 interface _AuthActions {
   restoreSession: () => Promise<Session | null>;
   login: (
@@ -37,33 +36,11 @@ interface _AuthActions {
     password: string,
     fullName?: string,
     role?: string,
-    options?: SignupOptions,
   ) => Promise<{
     data: { user: User | null; session: Session | null } | null;
     error: { message: string; status?: number } | null;
   }>;
   setupAuthListener: (callback: (user: User | null) => void) => () => void;
-}
-
-/**
- * Generate a random family code for player signups
- * Format: FAM-XXXXXXXX (uppercase alphanumeric)
- */
-function generateFamilyCode(): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let code = "";
-  for (let i = 0; i < 8; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return `FAM-${code}`;
-}
-
-/**
- * Validate family code format
- * Must be FAM-XXXXXXXX or similar pattern
- */
-function validateFamilyCodeFormat(code: string): boolean {
-  return /^FAM-[A-Z0-9]+$/.test(code.toUpperCase());
 }
 
 export const useAuth = () => {
@@ -85,7 +62,7 @@ export const useAuth = () => {
   const restoreSession = async (): Promise<Session | null> => {
     // Guard: already initialized, return current session
     if (isInitialized.value) {
-      console.debug(
+      logger.debug(
         "[useAuth] Session already initialized, returning cached session",
       );
       return session.value;
@@ -93,7 +70,7 @@ export const useAuth = () => {
 
     // Guard: initialization already in progress, wait for it
     if (initializationAttempt.value) {
-      console.debug("[useAuth] Session initialization in progress, waiting...");
+      logger.debug("[useAuth] Session initialization in progress, waiting...");
       // Wait for initialization to complete
       while (initializationAttempt.value && !isInitialized.value) {
         await new Promise((resolve) => setTimeout(resolve, 50));
@@ -118,7 +95,7 @@ export const useAuth = () => {
       if (sessionData?.user) {
         session.value = sessionData;
         isInitialized.value = true;
-        console.debug(
+        logger.debug(
           "[useAuth] Session restored successfully for user:",
           sessionData.user.email,
         );
@@ -128,13 +105,14 @@ export const useAuth = () => {
 
       session.value = null;
       isInitialized.value = true;
-      console.debug("[useAuth] No active session found");
+      logger.debug("[useAuth] No active session found");
       return null;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to restore session";
       error.value = err instanceof Error ? err : new Error(message);
-      console.error("[useAuth] Session restoration failed:", message);
+      isInitialized.value = true;
+      logger.error("[useAuth] Session restoration failed:", message);
       return null;
     } finally {
       loading.value = false;
@@ -169,7 +147,7 @@ export const useAuth = () => {
       // Store initialization is handled by caller
       if (data.session?.user) {
         session.value = data.session;
-        console.debug(
+        logger.debug(
           "[useAuth] Login successful for user:",
           data.session.user.email,
         );
@@ -187,10 +165,10 @@ export const useAuth = () => {
             "session_preferences",
             JSON.stringify(preferences),
           );
-          console.debug("[useAuth] Session preferences stored");
+          logger.debug("[useAuth] Session preferences stored");
         }
       } else {
-        console.warn("[useAuth] Login returned but no session in data");
+        logger.warn("[useAuth] Login returned but no session in data");
       }
 
       return { data, error: null };
@@ -236,16 +214,13 @@ export const useAuth = () => {
   };
 
   /**
-   * Sign up new user with optional full name, role, and onboarding options
-   * For players: Generates family_code, sets onboarding_completed=false
-   * For parents: Accepts optional familyCode, validates format
+   * Sign up new user with optional full name and role
    */
   const signup = async (
     email: string,
     password: string,
     fullName?: string,
     role?: string,
-    options?: SignupOptions,
   ) => {
     loading.value = true;
     error.value = null;
@@ -273,20 +248,6 @@ export const useAuth = () => {
 
       if (role) {
         metadata.role = role;
-
-        // For player signup: generate family code and set onboarding flag
-        if (role === "player") {
-          metadata.family_code = generateFamilyCode();
-          metadata.onboarding_completed = false;
-        }
-        // For parent signup: use provided family code if given
-        else if (role === "parent" && options?.familyCode) {
-          // Validate family code format
-          if (!validateFamilyCodeFormat(options.familyCode)) {
-            throw new Error("Invalid family code format");
-          }
-          metadata.family_code = options.familyCode.toUpperCase();
-        }
       }
 
       // Add metadata if any values present
@@ -306,7 +267,7 @@ export const useAuth = () => {
 
       // Store initialization is handled by caller
 
-      return data;
+      return { data, error: null };
     } catch (err: unknown) {
       const authError = err instanceof Error ? err : new Error("Signup failed");
       error.value = authError;
@@ -439,34 +400,36 @@ export const useAuth = () => {
   const logAuthState = async () => {
     const state = await getAuthState();
 
-    console.group(
-      `%c[Auth Debug] ${state.isConsistent ? "✅ CONSISTENT" : "❌ ISSUES DETECTED"}`,
-      `color: ${state.isConsistent ? "green" : "red"}; font-weight: bold;`,
-    );
-
-    console.table({
-      "Auth User ID": state.authUserId || "(empty)",
-      "Auth Email": state.authEmail || "(empty)",
-      "Session User ID": state.sessionUserId || "(empty)",
-      "Session Email": state.sessionEmail || "(empty)",
-      "Store User ID": state.storeUserId || "(empty)",
-      "Store Email": state.storeEmail || "(empty)",
-      "Store Authenticated": state.storeAuthenticated,
-      "Store Loading": state.storeLoading,
-    });
-
-    if (state.issues.length > 0) {
+    if (import.meta.dev) {
       console.group(
-        "%c⚠️ Issues Detected",
-        "color: orange; font-weight: bold;",
+        `%c[Auth Debug] ${state.isConsistent ? "✅ CONSISTENT" : "❌ ISSUES DETECTED"}`,
+        `color: ${state.isConsistent ? "green" : "red"}; font-weight: bold;`,
       );
-      state.issues.forEach((issue) => {
-        console.warn(`• ${issue}`);
+
+      console.table({
+        "Auth User ID": state.authUserId || "(empty)",
+        "Auth Email": state.authEmail || "(empty)",
+        "Session User ID": state.sessionUserId || "(empty)",
+        "Session Email": state.sessionEmail || "(empty)",
+        "Store User ID": state.storeUserId || "(empty)",
+        "Store Email": state.storeEmail || "(empty)",
+        "Store Authenticated": state.storeAuthenticated,
+        "Store Loading": state.storeLoading,
       });
+
+      if (state.issues.length > 0) {
+        console.group(
+          "%c⚠️ Issues Detected",
+          "color: orange; font-weight: bold;",
+        );
+        state.issues.forEach((issue) => {
+          console.warn(`• ${issue}`);
+        });
+        console.groupEnd();
+      }
+
       console.groupEnd();
     }
-
-    console.groupEnd();
 
     return state;
   };
@@ -503,65 +466,79 @@ export const useAuth = () => {
     }
 
     if (Object.keys(changes).length === 0) {
-      console.log(
-        "%c✅ No auth state changes detected",
-        "color: green; font-weight: bold;",
-      );
+      if (import.meta.dev) {
+        console.log(
+          "%c✅ No auth state changes detected",
+          "color: green; font-weight: bold;",
+        );
+      }
       return;
     }
 
-    console.group(
-      "%c⚠️ Auth State Changes Detected",
-      "color: orange; font-weight: bold;",
-    );
-    console.table(changes);
-    console.groupEnd();
+    if (import.meta.dev) {
+      console.group(
+        "%c⚠️ Auth State Changes Detected",
+        "color: orange; font-weight: bold;",
+      );
+      console.table(changes);
+      console.groupEnd();
+    }
 
     return changes;
   };
 
   const verifyUserIdStability = async () => {
-    console.log(
-      "%c🔍 Starting User ID Stability Test",
-      "color: blue; font-weight: bold; font-size: 1.2em;",
-    );
+    if (import.meta.dev) {
+      console.log(
+        "%c🔍 Starting User ID Stability Test",
+        "color: blue; font-weight: bold; font-size: 1.2em;",
+      );
+    }
 
     const measurements = [];
 
     const state1 = await getAuthState();
     measurements.push({ step: "Initial", ...state1 });
-    console.log("Measurement 1 (Initial):", state1);
+    if (import.meta.dev) {
+      console.log("Measurement 1 (Initial):", state1);
+    }
 
     await new Promise((resolve) => setTimeout(resolve, 100));
     const state2 = await getAuthState();
     measurements.push({ step: "After 100ms", ...state2 });
-    console.log("Measurement 2 (After 100ms):", state2);
+    if (import.meta.dev) {
+      console.log("Measurement 2 (After 100ms):", state2);
+    }
 
     await supabase.auth.getSession();
     const state3 = await getAuthState();
     measurements.push({ step: "After getSession()", ...state3 });
-    console.log("Measurement 3 (After getSession):", state3);
+    if (import.meta.dev) {
+      console.log("Measurement 3 (After getSession):", state3);
+    }
 
-    console.group("%c📊 Stability Analysis", "color: blue; font-weight: bold;");
     const areStable =
       state1.authUserId === state2.authUserId &&
       state2.authUserId === state3.authUserId &&
       state1.storeUserId === state2.storeUserId &&
       state2.storeUserId === state3.storeUserId;
 
-    if (areStable) {
-      console.log(
-        "%c✅ User IDs are STABLE across all operations",
-        "color: green; font-weight: bold;",
-      );
-    } else {
-      console.error(
-        "%c❌ User IDs CHANGED during test - this is a bug!",
-        "color: red; font-weight: bold;",
-      );
-      console.table(measurements);
+    if (import.meta.dev) {
+      console.group("%c📊 Stability Analysis", "color: blue; font-weight: bold;");
+      if (areStable) {
+        console.log(
+          "%c✅ User IDs are STABLE across all operations",
+          "color: green; font-weight: bold;",
+        );
+      } else {
+        console.error(
+          "%c❌ User IDs CHANGED during test - this is a bug!",
+          "color: red; font-weight: bold;",
+        );
+        console.table(measurements);
+      }
+      console.groupEnd();
     }
-    console.groupEnd();
 
     return { measurements, areStable };
   };

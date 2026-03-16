@@ -1,13 +1,13 @@
 <template>
   <div
     v-if="!phaseLoading"
-    class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-8"
+    class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-8"
   >
     <div
       class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6"
     >
       <!-- Phase Badge -->
-      <div class="flex items-center gap-3 flex-shrink-0">
+      <div class="flex items-center gap-3 shrink-0">
         <div
           class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold"
           :class="phaseBadgeClass"
@@ -17,9 +17,9 @@
       </div>
 
       <!-- Status Score -->
-      <div class="flex items-center gap-2 flex-shrink-0">
+      <div class="flex items-center gap-2 shrink-0">
         <span
-          class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+          class="w-2.5 h-2.5 rounded-full shrink-0"
           :class="scoreDotClass"
         />
         <span class="text-lg font-bold text-slate-900 tabular-nums">
@@ -43,7 +43,7 @@
       <!-- Timeline Link -->
       <NuxtLink
         to="/timeline"
-        class="flex-shrink-0 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition whitespace-nowrap"
+        class="shrink-0 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition whitespace-nowrap"
       >
         View timeline &rarr;
       </NuxtLink>

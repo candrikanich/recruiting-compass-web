@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-semibold text-slate-900">Status History</h3>
       <div
@@ -41,7 +41,7 @@
             {{ formatStatus(entry.previous_status) }}
           </span>
           <span v-else class="text-xs text-slate-400">Initial</span>
-          <ArrowRightIcon class="w-4 h-4 text-slate-400 flex-shrink-0" />
+          <ArrowRightIcon class="w-4 h-4 text-slate-400 shrink-0" />
           <span
             class="px-2 py-1 text-xs font-medium rounded-full"
             :class="getStatusColor(entry.new_status)"
@@ -56,7 +56,7 @@
             <p class="text-sm text-slate-600">
               {{ formatUserName(entry.changed_by) }}
             </p>
-            <p class="text-xs text-slate-400 flex-shrink-0">
+            <p class="text-xs text-slate-400 shrink-0">
               {{ formatDate(entry.changed_at) }}
             </p>
           </div>

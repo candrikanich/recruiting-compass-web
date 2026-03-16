@@ -1,8 +1,9 @@
-import { defineEventHandler, getRouterParam, createError } from "h3";
+import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
-import { logCRUD, logError } from "~/server/utils/auditLog";
 import { useLogger } from "~/server/utils/logger";
+import { logCRUD, logError } from "~/server/utils/auditLog";
+import { requireUuidParam } from "~/server/utils/validation";
 
 interface CompleteUpdateData {
   completed: boolean;
@@ -12,30 +13,25 @@ interface CompleteUpdateData {
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "suggestions/complete");
+  const user = await requireAuth(event);
+  const supabase = createServerSupabaseClient();
+  const suggestionId = requireUuidParam(event, "id");
+
   try {
-    const user = await requireAuth(event);
-    const supabase = createServerSupabaseClient();
-    const suggestionId = getRouterParam(event, "id");
-
-    if (!suggestionId) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: "Suggestion ID is required",
-      });
-    }
-
     const updateData: CompleteUpdateData = {
       completed: true,
       completed_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from("suggestion")
       .update(updateData)
       .eq("id", suggestionId)
-      .eq("athlete_id", user.id);
+      .eq("athlete_id", user.id)
+      .select("id");
 
     if (error) {
+      // Log failed completion
       await logError(event, {
         userId: user.id,
         action: "UPDATE",
@@ -51,6 +47,14 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    if (!updated || updated.length === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Suggestion not found or not authorized",
+      });
+    }
+
+    // Log successful completion
     await logCRUD(event, {
       userId: user.id,
       action: "UPDATE",
@@ -60,15 +64,11 @@ export default defineEventHandler(async (event) => {
       description: "Marked suggestion as complete",
     });
 
-    logger.info("Suggestion marked complete", { suggestionId });
-
+    logger.info("Suggestion completed", { suggestionId, userId: user.id });
     return { success: true };
-  } catch (err) {
-    if (err instanceof Error && "statusCode" in err) throw err;
-    logger.error("Failed to complete suggestion", err);
-    throw createError({
-      statusCode: 500,
-      statusMessage: "Failed to complete suggestion",
-    });
+  } catch (error: unknown) {
+    if (error instanceof Error && "statusCode" in error) throw error;
+    logger.error("Failed to complete suggestion", error);
+    throw createError({ statusCode: 500, statusMessage: "Failed to complete suggestion" });
   }
 });

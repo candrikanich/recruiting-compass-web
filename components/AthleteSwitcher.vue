@@ -6,7 +6,7 @@
         <span class="text-sm font-medium text-slate-700">Viewing:</span>
         <select
           v-model="selectedId"
-          class="px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
+          class="px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
           @change="handleSwitch"
         >
           <option
@@ -32,26 +32,17 @@ import { useFamilyContext } from "~/composables/useFamilyContext";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 const injected = inject<UseActiveFamilyReturn>("activeFamily");
-console.debug("[AthleteSwitcher] Injection result:", { injected: !!injected });
-
 const activeFamily = injected || useFamilyContext();
 
 // Show switcher only if parent has multiple children
 const showSwitcher = computed(() => {
   const isParent = activeFamily.isParent.value;
   const familiesCount = activeFamily.parentAccessibleFamilies.value.length;
-  const show = isParent && familiesCount > 1;
-
-  console.debug(
-    `[AthleteSwitcher] isParent=${isParent}, familiesCount=${familiesCount}, show=${show}`,
-    activeFamily.parentAccessibleFamilies.value,
-  );
-
-  return show;
+  return isParent && familiesCount > 1;
 });
 
 const accessibleAthletes = computed(
-  () => activeFamily.parentAccessibleFamilies.value,
+  () => activeFamily.getAccessibleAthletes(),
 );
 
 const selectedId = ref("");

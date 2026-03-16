@@ -29,7 +29,7 @@ vi.mock("~/composables/useSupabase");
 vi.mock("~/composables/useAuth");
 vi.mock("~/composables/useNotifications");
 vi.mock("~/composables/useDocuments");
-vi.mock("~/composables/useToast");
+vi.mock("~/composables/useAppToast");
 vi.mock("~/composables/useUserTasks");
 vi.mock("~/composables/useUserPreferences");
 vi.mock("~/composables/useSuggestions");

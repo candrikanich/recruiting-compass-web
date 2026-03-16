@@ -43,10 +43,12 @@ export function createServerSupabaseUserClient(
     throw new Error("Missing Supabase configuration (URL or anon key)");
   }
 
-  const client = createClient<Database>(supabaseUrl, supabaseAnonKey);
-  // Set user session to enforce RLS policies
-  void client.auth.setSession({ access_token: userToken, refresh_token: "" });
-  return client;
+  // Pass JWT via global headers — synchronous, ensures every query uses the user's auth context
+  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    global: {
+      headers: { Authorization: `Bearer ${userToken}` },
+    },
+  });
 }
 
 /**

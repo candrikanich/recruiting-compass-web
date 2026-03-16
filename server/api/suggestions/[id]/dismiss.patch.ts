@@ -1,8 +1,9 @@
-import { defineEventHandler, getRouterParam, createError } from "h3";
+import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
-import { logCRUD, logError } from "~/server/utils/auditLog";
 import { useLogger } from "~/server/utils/logger";
+import { logCRUD, logError } from "~/server/utils/auditLog";
+import { requireUuidParam } from "~/server/utils/validation";
 
 interface DismissUpdateData {
   dismissed: boolean;
@@ -12,18 +13,11 @@ interface DismissUpdateData {
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "suggestions/dismiss");
+  const user = await requireAuth(event);
+  const supabase = createServerSupabaseClient();
+  const suggestionId = requireUuidParam(event, "id");
+
   try {
-    const user = await requireAuth(event);
-    const supabase = createServerSupabaseClient();
-    const suggestionId = getRouterParam(event, "id");
-
-    if (!suggestionId) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: "Suggestion ID is required",
-      });
-    }
-
     const updateData: DismissUpdateData = {
       dismissed: true,
       dismissed_at: new Date().toISOString(),
@@ -36,6 +30,7 @@ export default defineEventHandler(async (event) => {
       .eq("athlete_id", user.id);
 
     if (error) {
+      // Log failed dismissal
       await logError(event, {
         userId: user.id,
         action: "UPDATE",
@@ -51,6 +46,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // Log successful dismissal
     await logCRUD(event, {
       userId: user.id,
       action: "UPDATE",
@@ -60,15 +56,11 @@ export default defineEventHandler(async (event) => {
       description: "Dismissed suggestion",
     });
 
-    logger.info("Suggestion dismissed", { suggestionId });
-
+    logger.info("Suggestion dismissed", { suggestionId, userId: user.id });
     return { success: true };
-  } catch (err) {
-    if (err instanceof Error && "statusCode" in err) throw err;
-    logger.error("Failed to dismiss suggestion", err);
-    throw createError({
-      statusCode: 500,
-      statusMessage: "Failed to dismiss suggestion",
-    });
+  } catch (error: unknown) {
+    if (error instanceof Error && "statusCode" in error) throw error;
+    logger.error("Failed to dismiss suggestion", error);
+    throw createError({ statusCode: 500, statusMessage: "Failed to dismiss suggestion" });
   }
 });

@@ -1,4 +1,5 @@
 import { useCookie } from "#app";
+import { createClientLogger } from "~/utils/logger";
 
 const CSRF_COOKIE_NAME = "csrf-token";
 const CSRF_HEADER_NAME = "x-csrf-token";
@@ -11,6 +12,8 @@ interface FetchOptions {
   headers?: Record<string, string>;
   [key: string]: unknown;
 }
+
+const logger = createClientLogger("useCsrf");
 
 /**
  * Composable for CSRF token management.
@@ -71,7 +74,7 @@ export function useCsrf(): {
 
       throw new Error("No token in response");
     } catch (error) {
-      console.error("Failed to fetch CSRF token:", error);
+      logger.error("Failed to fetch CSRF token:", error);
       throw new Error("Failed to initialize CSRF protection");
     }
   };

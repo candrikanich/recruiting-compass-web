@@ -48,17 +48,17 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-a",
-          interaction_date: new Date(thirtyDaysAgo).toISOString(),
+          occurred_at: new Date(thirtyDaysAgo).toISOString(),
         },
         {
           id: "int-2",
           school_id: "school-b",
-          interaction_date: new Date(thirtyDaysAgo).toISOString(),
+          occurred_at: new Date(thirtyDaysAgo).toISOString(),
         },
         {
           id: "int-3",
           school_id: "school-c",
-          interaction_date: new Date(thirtyDaysAgo).toISOString(),
+          occurred_at: new Date(thirtyDaysAgo).toISOString(),
         },
       ] as unknown[];
 
@@ -97,17 +97,17 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
         {
           id: "int-2",
           school_id: "school-2",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
         {
           id: "int-3",
           school_id: "school-3",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -136,7 +136,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: twentyTwoDaysAgo.toISOString(),
+          occurred_at: twentyTwoDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -162,7 +162,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: twentyDaysAgo.toISOString(),
+          occurred_at: twentyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -213,17 +213,17 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
         {
           id: "int-2",
           school_id: "school-2",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
         {
           id: "int-3",
           school_id: "school-3",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -249,7 +249,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -276,7 +276,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: twentyFiveDaysAgo.toISOString(),
+          occurred_at: twentyFiveDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -303,7 +303,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyfiveDaysAgo.toISOString(),
+          occurred_at: thirtyfiveDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -332,7 +332,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -343,8 +343,7 @@ describe("interactionGapRule", () => {
     });
 
     it("should include days count in message", async () => {
-      const thirtyfiveDaysAgo = new Date();
-      thirtyfiveDaysAgo.setDate(thirtyfiveDaysAgo.getDate() - 35);
+      const thirtyfiveDaysAgo = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000);
 
       mockContext.schools = [
         {
@@ -359,7 +358,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyfiveDaysAgo.toISOString(),
+          occurred_at: thirtyfiveDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -388,7 +387,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -404,8 +403,7 @@ describe("interactionGapRule", () => {
     });
 
     it("should correctly calculate days_since_contact", async () => {
-      const twentyDaysAgo = new Date();
-      twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);
+      const twentyDaysAgo = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000);
 
       mockContext.schools = [
         {
@@ -420,7 +418,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: twentyDaysAgo.toISOString(),
+          occurred_at: twentyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -449,7 +447,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -482,7 +480,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -517,10 +515,8 @@ describe("interactionGapRule", () => {
     });
 
     it("returns true if gap increased by 14+ days", async () => {
-      const dismissedDate = new Date();
-      dismissedDate.setDate(dismissedDate.getDate() - 21); // Dismissed 21 days ago
-      const thirtyfiveDaysAgo = new Date();
-      thirtyfiveDaysAgo.setDate(thirtyfiveDaysAgo.getDate() - 35); // Now 35 days gap
+      const dismissedDate = new Date(Date.now() - 21 * 24 * 60 * 60 * 1000); // Dismissed 21 days ago
+      const thirtyfiveDaysAgo = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000); // Now 35 days gap
 
       mockContext.schools = [
         {
@@ -535,7 +531,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyfiveDaysAgo.toISOString(),
+          occurred_at: thirtyfiveDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -588,7 +584,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 
@@ -641,7 +637,7 @@ describe("interactionGapRule", () => {
         {
           id: "int-1",
           school_id: "school-1",
-          interaction_date: thirtyDaysAgo.toISOString(),
+          occurred_at: thirtyDaysAgo.toISOString(),
         },
       ] as unknown[];
 

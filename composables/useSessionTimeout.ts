@@ -8,8 +8,10 @@ export const useSessionTimeout = () => {
 
   let checkInterval: ReturnType<typeof setInterval> | null = null;
   let warningInterval: ReturnType<typeof setInterval> | null = null;
+  let isLoggingOut = false;
   let _lastActivityTime = Date.now();
   let activityThrottleTimeout: ReturnType<typeof setTimeout> | null = null;
+  let boundActivityHandler: (() => void) | null = null;
 
   const getSessionPreferences = (): SessionPreferences | null => {
     try {
@@ -67,11 +69,13 @@ export const useSessionTimeout = () => {
     if (warningInterval) clearInterval(warningInterval);
 
     warningInterval = setInterval(() => {
-      secondsUntilLogout.value -= 1;
+      secondsUntilLogout.value = Math.max(0, secondsUntilLogout.value - 1);
 
       if (secondsUntilLogout.value <= 0) {
         clearInterval(warningInterval as ReturnType<typeof setInterval>);
         warningInterval = null;
+        if (isLoggingOut) return;
+        isLoggingOut = true;
         handleTimeout();
       }
     }, 1000);
@@ -124,9 +128,11 @@ export const useSessionTimeout = () => {
       DEFAULT_TIMEOUT_CONFIG.inactivityThresholdMs - timeSinceActivity;
     const warningWindow = DEFAULT_TIMEOUT_CONFIG.warningBeforeLogoutMs;
 
-    // Session expired
+    // Session expired — log the user out
     if (timeUntilTimeout <= 0) {
-      localStorage.removeItem("session_preferences");
+      if (isLoggingOut) return;
+      isLoggingOut = true;
+      handleTimeout();
       return;
     }
 
@@ -152,12 +158,12 @@ export const useSessionTimeout = () => {
     if (!prefs || !prefs.rememberMe) return;
 
     // Add activity event listeners
-    const eventHandler = () => {
+    boundActivityHandler = () => {
       handleActivity();
     };
 
     DEFAULT_TIMEOUT_CONFIG.activityEvents.forEach((event) => {
-      document.addEventListener(event, eventHandler, true);
+      document.addEventListener(event, boundActivityHandler!, true);
     });
 
     // Start checking for timeout every 30 seconds
@@ -188,13 +194,12 @@ export const useSessionTimeout = () => {
     }
 
     // Remove event listeners
-    const eventHandler = () => {
-      handleActivity();
-    };
-
-    DEFAULT_TIMEOUT_CONFIG.activityEvents.forEach((event) => {
-      document.removeEventListener(event, eventHandler, true);
-    });
+    if (boundActivityHandler) {
+      DEFAULT_TIMEOUT_CONFIG.activityEvents.forEach((event) => {
+        document.removeEventListener(event, boundActivityHandler!, true);
+      });
+      boundActivityHandler = null;
+    }
   };
 
   onMounted(() => {

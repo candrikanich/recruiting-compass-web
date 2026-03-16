@@ -6,6 +6,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createError, getCookie, getHeader, type H3Event } from "h3";
 import type { Database } from "~/types/database";
 import { createLogger } from "./logger";
+import { useSupabaseAdmin } from "./supabase";
 
 const logger = createLogger("auth");
 
@@ -25,6 +26,7 @@ interface CachedRole {
 }
 
 const roleCache = new Map<string, CachedRole>();
+const MAX_ROLE_CACHE_SIZE = 1_000;
 
 /**
  * User role type
@@ -98,9 +100,12 @@ export async function getUserRole(
 ): Promise<UserRole | null> {
   // Check cache first
   const cached = roleCache.get(userId);
-  if (cached && Date.now() < cached.expiresAt) {
-    logger.info(`Role cache hit for user ${userId}`);
-    return cached.role;
+  if (cached) {
+    if (Date.now() < cached.expiresAt) {
+      logger.info(`Role cache hit for user ${userId}`);
+      return cached.role;
+    }
+    roleCache.delete(userId);
   }
 
   try {
@@ -131,6 +136,12 @@ export async function getUserRole(
       role,
       expiresAt: Date.now() + 5 * 60 * 1000,
     };
+    if (roleCache.size >= MAX_ROLE_CACHE_SIZE) {
+      const firstKey = roleCache.keys().next().value;
+      if (firstKey !== undefined) {
+        roleCache.delete(firstKey);
+      }
+    }
     roleCache.set(userId, cacheEntry);
 
     return role || null;
@@ -197,6 +208,32 @@ export async function canMutateAthleteData(
 }
 
 /**
+ * Requires the caller to be an authenticated admin.
+ * Combines requireAuth + is_admin check in one call.
+ * Use at the top of all admin-only endpoints.
+ */
+export async function requireAdmin(event: H3Event): Promise<AuthUser> {
+  const user = await requireAuth(event);
+  const supabaseAdmin = useSupabaseAdmin();
+
+  const { data } = await supabaseAdmin
+    .from("users")
+    .select("is_admin")
+    .eq("id", user.id)
+    .single();
+
+  if (!data?.is_admin) {
+    logger.warn(`Non-admin user ${user.id} attempted an admin operation`);
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Forbidden",
+    });
+  }
+
+  return user;
+}
+
+/**
  * Asserts that user is not a parent (parents cannot perform mutations)
  * Throws 403 error if user is a parent
  */
@@ -213,4 +250,12 @@ export async function assertNotParent(
         "Parents cannot perform this action. This is a read-only view.",
     });
   }
+}
+
+/**
+ * Clears the role cache — for testing only
+ * @internal
+ */
+export function clearRoleCacheForTesting(): void {
+  roleCache.clear();
 }

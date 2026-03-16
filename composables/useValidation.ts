@@ -1,5 +1,8 @@
 import { ref, computed, type Ref, type ComputedRef } from "vue";
 import { z } from "zod";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useValidation");
 
 export interface ValidationError {
   field: string;
@@ -39,7 +42,7 @@ export function useValidation<T>(
 ): UseValidationReturn<T> {
   // Deprecation warning: prefer useFormValidation()
   if (process.env.NODE_ENV !== "test") {
-    console.warn(
+    logger.warn(
       "[DEPRECATED] `useValidation()` is deprecated. Please migrate to `useFormValidation()` from `~/composables/useFormValidation`.",
     );
   }

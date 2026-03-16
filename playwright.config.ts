@@ -5,7 +5,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : 3,
   reporter: "html",
   globalSetup: "./tests/e2e/global-setup.ts",
 
@@ -37,9 +37,10 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: "npm run dev",
+    command: process.env.CI ? "npm run preview" : "npm run dev",
     url: "http://localhost:3003",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
+    env: process.env.CI ? { PORT: "3003" } : {},
   },
 });

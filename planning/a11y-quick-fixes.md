@@ -39,7 +39,7 @@ This guide provides copy-paste ready code fixes for the most critical accessibil
 <textarea
   v-model="localNotes"
   rows="4"
-  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
   placeholder="Add notes about this school..."
 />
 ```
@@ -55,7 +55,7 @@ This guide provides copy-paste ready code fixes for the most critical accessibil
     id="notes-textarea"
     v-model="localNotes"
     rows="4"
-    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
     placeholder="Add notes about this school..."
   />
 </div>
@@ -112,7 +112,7 @@ Apply the same pattern to the private notes textarea.
 ```vue
 <NuxtLink
   :to="`/documents/${doc.id}`"
-  class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+  class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 >
   View
 </NuxtLink>
@@ -150,7 +150,7 @@ Apply the same pattern to the private notes textarea.
     @change="handleStatusChange"
     :disabled="statusUpdating"
     :aria-busy="statusUpdating"
-    class="px-2 py-1 text-xs font-medium rounded-full border-2 border-transparent cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+    class="px-2 py-1 text-xs font-medium rounded-full border-2 border-transparent cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
     :class="[
       getStatusBadgeColor(school.status),
       statusUpdating ? 'opacity-50 cursor-not-allowed' : '',
@@ -204,7 +204,7 @@ Apply the same pattern to the private notes textarea.
 <a
   v-if="coach.email"
   :href="`mailto:${coach.email}`"
-  class="p-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"
+  class="p-1.5 bg-blue-100 text-blue-700 rounded-sm hover:bg-blue-200 transition"
   title="Email"
 >
   <EnvelopeIcon class="w-3.5 h-3.5" />
@@ -218,7 +218,7 @@ Apply the same pattern to the private notes textarea.
   v-if="coach.email"
   :href="`mailto:${coach.email}`"
   :aria-label="`Send email to ${coach.first_name} ${coach.last_name}`"
-  class="p-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+  class="p-1.5 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 >
   <EnvelopeIcon class="w-3.5 h-3.5" aria-hidden="true" />
 </a>
@@ -246,7 +246,7 @@ Apply same pattern to SMS and phone links (using green-600 and purple-600 respec
 ```vue
 <NuxtLink
   :to="`/schools/${schoolId}/coaches`"
-  class="text-sm text-blue-600 hover:text-blue-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+  class="text-sm text-blue-600 hover:text-blue-700 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
 >
   Manage Coaches <span aria-hidden="true">&rarr;</span>
 </NuxtLink>
@@ -276,14 +276,14 @@ Verify your DesignSystemConfirmDialog component includes:
     <div class="mt-6 flex gap-3 justify-end">
       <button
         @click="$emit('cancel')"
-        class="px-4 py-2 text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+        class="px-4 py-2 text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-hidden focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
       >
         {{ cancelText }}
       </button>
       <button
         @click="$emit('confirm')"
         :class="variantClasses"
-        class="px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2"
+        class="px-4 py-2 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-offset-2"
       >
         {{ confirmText }}
       </button>

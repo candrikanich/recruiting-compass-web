@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import type { Database } from "~/types/database";
+import { createClientLogger } from "~/utils/logger";
 
 type Users = Database["public"]["Tables"]["users"]["Row"];
 
@@ -28,6 +29,8 @@ export interface DismissedPrompt {
  * const prompt = await getNextPrompt()
  * await dismissPrompt('gpa', 7) // Dismiss for 7 days
  */
+const logger = createClientLogger("useProfileCompleteness");
+
 export const useProfileCompleteness = () => {
   const supabase = useSupabase();
 
@@ -110,7 +113,7 @@ export const useProfileCompleteness = () => {
           ? err.message
           : "Failed to calculate profile completeness";
       error.value = message;
-      console.error("Profile completeness error:", err);
+      logger.error("Profile completeness error:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -139,7 +142,7 @@ export const useProfileCompleteness = () => {
           try {
             dismissedPrompts = JSON.parse(stored);
           } catch (e) {
-            console.error("Failed to parse stored dismissed prompts:", e);
+            logger.error("Failed to parse stored dismissed prompts:", e);
             dismissedPrompts = [];
           }
         }
@@ -160,7 +163,7 @@ export const useProfileCompleteness = () => {
       // In future, could add logic to select based on user data
       return availablePrompts.length > 0 ? availablePrompts[0] : null;
     } catch (err) {
-      console.error("Error getting next prompt:", err);
+      logger.error("Error getting next prompt:", err);
       return null;
     }
   };
@@ -198,7 +201,7 @@ export const useProfileCompleteness = () => {
           try {
             dismissed = JSON.parse(stored);
           } catch (e) {
-            console.error("Failed to parse stored dismissed prompts:", e);
+            logger.error("Failed to parse stored dismissed prompts:", e);
             dismissed = [];
           }
         }
@@ -215,7 +218,7 @@ export const useProfileCompleteness = () => {
       const message =
         err instanceof Error ? err.message : "Failed to dismiss prompt";
       error.value = message;
-      console.error("Prompt dismiss error:", err);
+      logger.error("Prompt dismiss error:", err);
       throw err;
     } finally {
       loading.value = false;

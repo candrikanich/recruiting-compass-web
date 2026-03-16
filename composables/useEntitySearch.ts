@@ -2,12 +2,15 @@ import { ref, computed } from "vue";
 import Fuse from "fuse.js";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
 import type {
   School,
   Coach,
   Interaction,
   PerformanceMetric,
 } from "~/types/models";
+
+const logger = createClientLogger("useEntitySearch");
 
 /**
  * Composable for entity search operations
@@ -37,8 +40,8 @@ type _SearchFilters = Record<string, unknown>;
 
 export const useEntitySearch = () => {
   if (process.env.NODE_ENV === "development") {
-    console.warn(
-      "[DEPRECATED] useEntitySearch is deprecated as of Phase 4. " +
+    logger.warn(
+      "useEntitySearch is deprecated as of Phase 4. " +
         "Use useSearchConsolidated() instead.\n" +
         "Migration guide: See DEPRECATION_AUDIT.md",
     );
@@ -147,7 +150,7 @@ export const useEntitySearch = () => {
         "state",
       ]);
     } catch (error) {
-      console.error("School search error:", error);
+      logger.error("School search error:", error);
       schoolResults.value = [];
     }
   };
@@ -209,7 +212,7 @@ export const useEntitySearch = () => {
         "phone",
       ]);
     } catch (error) {
-      console.error("Coach search error:", error);
+      logger.error("Coach search error:", error);
       coachResults.value = [];
     }
   };
@@ -270,7 +273,7 @@ export const useEntitySearch = () => {
       if (error) throw error;
       interactionResults.value = data || [];
     } catch (error) {
-      console.error("Interaction search error:", error);
+      logger.error("Interaction search error:", error);
       interactionResults.value = [];
     }
   };
@@ -329,7 +332,7 @@ export const useEntitySearch = () => {
           m.notes.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     } catch (error) {
-      console.error("Metrics search error:", error);
+      logger.error("Metrics search error:", error);
       metricsResults.value = [];
     }
   };
@@ -369,7 +372,7 @@ export const useEntitySearch = () => {
     } catch (error) {
       searchError.value =
         error instanceof Error ? error.message : "Search failed";
-      console.error("Search error:", error);
+      logger.error("Search error:", error);
     } finally {
       isSearching.value = false;
     }

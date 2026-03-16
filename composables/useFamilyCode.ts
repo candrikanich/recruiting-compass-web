@@ -1,4 +1,5 @@
 import { ref, computed } from "vue";
+import { createClientLogger } from "~/utils/logger";
 import { useFamilyContext } from "~/composables/useFamilyContext";
 
 export interface FamilyCodeData {
@@ -8,6 +9,8 @@ export interface FamilyCodeData {
   codeGeneratedAt: string;
 }
 
+const logger = createClientLogger("useFamilyCode");
+
 export const useFamilyCode = () => {
   const userStore = useUserStore();
   const supabase = useSupabase();
@@ -15,6 +18,7 @@ export const useFamilyCode = () => {
   const myFamilyCode = ref<string | null>(null);
   const myFamilyId = ref<string | null>(null);
   const myFamilyName = ref<string | null>(null);
+  const isPlayerFamilyCreator = ref(false);
   const parentFamilies = ref<FamilyCodeData[]>([]);
 
   const loading = ref(false);
@@ -38,18 +42,23 @@ export const useFamilyCode = () => {
       }
 
       if (currentUserRole.value === "player") {
-        // Players: Get their family code
-        const familyResponse = await supabase
-          .from("family_units")
-          .select("id, family_code, family_name, code_generated_at")
-          .eq("player_user_id", userStore.user.id)
+        // Players: Get their family code via family_members membership
+        const memberResponse = await supabase
+          .from("family_members")
+          .select(
+            "family_units!inner(id, family_code, family_name, code_generated_at, created_by_user_id)",
+          )
+          .eq("user_id", userStore.user.id)
           .maybeSingle();
-        const { data: family, error: fetchError } = familyResponse as {
+        const { data: membership, error: fetchError } = memberResponse as {
           data: {
-            id: string;
-            family_code: string | null;
-            family_name: string | null;
-            code_generated_at: string | null;
+            family_units: {
+              id: string;
+              family_code: string | null;
+              family_name: string | null;
+              code_generated_at: string | null;
+              created_by_user_id: string | null;
+            };
           } | null;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           error: any;
@@ -60,9 +69,11 @@ export const useFamilyCode = () => {
           return;
         }
 
+        const family = membership?.family_units || null;
         myFamilyCode.value = family?.family_code || null;
         myFamilyId.value = family?.id || null;
         myFamilyName.value = family?.family_name || null;
+        isPlayerFamilyCreator.value = family?.created_by_user_id === userStore.user.id;
       } else {
         // Parents: Get codes for families they belong to
         const membershipsResponse = await supabase
@@ -104,10 +115,17 @@ export const useFamilyCode = () => {
             familyName: m.family_units.family_name || "",
             codeGeneratedAt: m.family_units.code_generated_at || "",
           })) || [];
+
+        // Populate convenience refs from the first family (for components that use myFamilyCode)
+        if (parentFamilies.value.length > 0) {
+          myFamilyCode.value = parentFamilies.value[0].familyCode || null;
+          myFamilyId.value = parentFamilies.value[0].familyId || null;
+          myFamilyName.value = parentFamilies.value[0].familyName || null;
+        }
       }
     } catch (e) {
       error.value = e instanceof Error ? e.message : "Failed to fetch code";
-      console.error("fetchMyCode error:", e);
+      logger.error("fetchMyCode error:", e);
     } finally {
       loading.value = false;
     }
@@ -117,10 +135,6 @@ export const useFamilyCode = () => {
    * Creates a new family (players only) - calls API endpoint with auth
    */
   const createFamily = async () => {
-    if (currentUserRole.value !== "player") {
-      error.value = "Only players can create families";
-      return false;
-    }
 
     loading.value = true;
     error.value = null;
@@ -142,6 +156,7 @@ export const useFamilyCode = () => {
       myFamilyCode.value = response.familyCode;
       myFamilyId.value = response.familyId;
       myFamilyName.value = response.familyName;
+      isPlayerFamilyCreator.value = true;
       successMessage.value = "Family created! Share your code with parents.";
 
       return true;
@@ -151,7 +166,7 @@ export const useFamilyCode = () => {
         (errorData?.data as Record<string, unknown> | undefined)?.message ||
         (err instanceof Error ? err.message : "Failed to create family");
       error.value = String(errorMessage);
-      console.error("createFamily error:", err);
+      logger.error("createFamily error:", err);
       return false;
     } finally {
       loading.value = false;
@@ -204,7 +219,7 @@ export const useFamilyCode = () => {
           ((errorData.data as Record<string, unknown>)?.message as string) ||
           (err instanceof Error ? err.message : "Failed to join family");
       }
-      console.error("joinByCode error:", err);
+      logger.error("joinByCode error:", err);
       return false;
     } finally {
       loading.value = false;
@@ -242,7 +257,7 @@ export const useFamilyCode = () => {
           ?.message ||
         (err instanceof Error ? err.message : "Failed to regenerate code");
       error.value = errorMessage as string;
-      console.error("regenerateCode error:", err);
+      logger.error("regenerateCode error:", err);
       return false;
     } finally {
       loading.value = false;
@@ -288,7 +303,7 @@ export const useFamilyCode = () => {
         ((errorData.data as Record<string, unknown>)?.message as string) ||
         (err instanceof Error ? err.message : "Failed to remove member");
       error.value = message;
-      console.error("removeFamilyMember error:", err);
+      logger.error("removeFamilyMember error:", err);
       return false;
     } finally {
       loading.value = false;
@@ -300,6 +315,7 @@ export const useFamilyCode = () => {
     myFamilyCode,
     myFamilyId,
     myFamilyName,
+    isPlayerFamilyCreator,
     parentFamilies,
     loading,
     error,

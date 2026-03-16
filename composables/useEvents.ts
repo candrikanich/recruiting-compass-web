@@ -3,8 +3,12 @@ import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
 import { useFamilyContext } from "./useFamilyContext";
+import { createClientLogger } from "~/utils/logger";
+import { eventSchema } from "~/utils/validation/schemas";
 import type { Event } from "~/types/models";
 import type { Database } from "~/types/database";
+
+const logger = createClientLogger("useEvents");
 
 // Type aliases for Supabase casting
 type _EventInsert = Database["public"]["Tables"]["events"]["Insert"];
@@ -56,8 +60,8 @@ export const useEvents = (): {
   const activeFamily = injectedFamily || useFamilyContext();
 
   if (!injectedFamily) {
-    console.warn(
-      "[useEvents] activeFamily injection failed, using singleton fallback. " +
+    logger.warn(
+      "activeFamily injection failed, using singleton fallback. " +
         "This may cause data sync issues when parent switches athletes.",
     );
   }
@@ -117,7 +121,7 @@ export const useEvents = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch events";
       error.value = message;
-      console.error("Event fetch error:", message);
+      logger.error("Event fetch error:", message);
     } finally {
       loading.value = false;
     }
@@ -145,7 +149,7 @@ export const useEvents = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch event";
       error.value = message;
-      console.error("Event fetch error:", message);
+      logger.error("Event fetch error:", message);
       return null;
     } finally {
       loading.value = false;
@@ -161,12 +165,14 @@ export const useEvents = (): {
     error.value = null;
 
     try {
+      const validated = await eventSchema.parseAsync(eventData);
+
       const { data, error: insertError } =
         (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase.from("events") as any)
           .insert([
             {
-              ...eventData,
+              ...validated,
               user_id: activeFamily.getDataOwnerUserId(),
             },
           ])
@@ -176,7 +182,7 @@ export const useEvents = (): {
 
       if (insertError) throw insertError;
 
-      events.value.push(data);
+      events.value = [data, ...events.value];
       return data;
     } catch (err: unknown) {
       const message =
@@ -204,6 +210,7 @@ export const useEvents = (): {
             updated_at: new Date().toISOString(),
           })
           .eq("id", id)
+          .eq("user_id", userStore.user.id)
           .select()
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .single()) as { data: Event; error: any };
@@ -236,7 +243,8 @@ export const useEvents = (): {
       const { error: deleteError } = await supabase
         .from("events")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .eq("user_id", userStore.user.id);
 
       if (deleteError) throw deleteError;
 

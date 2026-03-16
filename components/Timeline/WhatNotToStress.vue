@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl border border-emerald-200 shadow-sm p-6"
+    class="bg-linear-to-br from-emerald-50 to-emerald-100 rounded-2xl border border-emerald-200 shadow-xs p-6"
   >
     <div
       data-testid="guidance-header"
@@ -43,7 +43,7 @@
         class="bg-white rounded-lg border border-emerald-100 p-3 hover:border-emerald-200 transition"
       >
         <div class="flex items-start gap-3">
-          <div class="flex-shrink-0 text-lg">{{ msg.icon }}</div>
+          <div class="shrink-0 text-lg">{{ msg.icon }}</div>
           <div class="flex-1 min-w-0">
             <div class="font-medium text-slate-900">{{ msg.title }}</div>
             <div class="text-sm text-slate-600 mt-1 leading-relaxed">

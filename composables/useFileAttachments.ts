@@ -1,6 +1,9 @@
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useFileAttachments");
 
 /**
  * Unified file attachment composable
@@ -63,7 +66,7 @@ export const useFileAttachments = () => {
 
         // Validate file
         if (!isValidFile(file)) {
-          console.error(`File ${file.name} is not supported`);
+          logger.error(`File ${file.name} is not supported`);
           continue;
         }
 
@@ -82,7 +85,7 @@ export const useFileAttachments = () => {
           });
 
         if (error) {
-          console.error(`Failed to upload ${file.name}: ${error.message}`);
+          logger.error(`Failed to upload ${file.name}: ${error.message}`);
           continue;
         }
 
@@ -129,7 +132,7 @@ export const useFileAttachments = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Failed to download attachment:", err);
+      logger.error("Failed to download attachment:", err);
     }
   };
 
@@ -159,7 +162,7 @@ export const useFileAttachments = () => {
 
       return true;
     } catch (err) {
-      console.error("Error deleting attachment:", err);
+      logger.error("Error deleting attachment:", err);
       return false;
     }
   };

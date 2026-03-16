@@ -50,10 +50,10 @@ import type { FilterConfig, FilterValues } from "~/types/filters";
 
 interface Props {
   configs: FilterConfig[];
-  filterValues: Record<string, any>;
+  filterValues: FilterValues;
   hasActiveFilters: boolean;
   activeFilterCount: number;
-  getDisplayValue: (field: string, value: any) => string;
+  getDisplayValue: (field: string, value: unknown) => string;
 }
 
 interface Emits {

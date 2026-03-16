@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
     <PageHeader title="Recommendation Letters" description="Track recommendation letter requests and submissions" />
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Filters Section -->
-      <div class="bg-white rounded-lg shadow p-6 mb-8">
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <!-- Status Filter -->
           <div>
@@ -60,7 +60,7 @@
       </div>
 
       <!-- Add/Edit Form -->
-      <div v-if="showAddForm" class="bg-white rounded-lg shadow p-6 mb-8">
+      <div v-if="showAddForm" class="bg-white rounded-lg shadow-sm p-6 mb-8">
         <h2 class="text-2xl font-bold text-gray-900 mb-6">
           {{
             editingId
@@ -255,7 +255,7 @@
       <!-- Empty State -->
       <div
         v-else-if="letters.length === 0"
-        class="bg-white rounded-lg shadow p-12 text-center"
+        class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <p class="text-gray-600 mb-2">No recommendation letters tracked yet</p>
         <p class="text-sm text-gray-500">
@@ -266,7 +266,7 @@
       <!-- No Results -->
       <div
         v-else-if="filteredLetters.length === 0"
-        class="bg-white rounded-lg shadow p-12 text-center"
+        class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <p class="text-gray-600 mb-2">No letters match your filters</p>
         <p class="text-sm text-gray-500">
@@ -279,7 +279,7 @@
         <div
           v-for="letter in filteredLetters"
           :key="letter.id"
-          class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition"
+          class="bg-white rounded-lg shadow-sm p-6 hover:shadow-lg transition"
         >
           <div class="flex items-start justify-between mb-4">
             <div class="flex-1">
@@ -309,13 +309,13 @@
             <div class="flex gap-2">
               <button
                 @click="editLetter(letter)"
-                class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"
+                class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-sm hover:bg-blue-200 transition"
               >
                 Edit
               </button>
               <button
-                @click="deleteLetter(letter.id)"
-                class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+                @click="handleDelete(letter.id)"
+                class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-sm hover:bg-red-200 transition"
               >
                 Delete
               </button>
@@ -363,8 +363,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { useSchools } from "~/composables/useSchools";
-import { useUserStore } from "~/stores/user";
+import { useRecommendationLetters } from "~/composables/useRecommendationLetters";
 import type { Database } from "~/types/database";
 
 definePageMeta({
@@ -374,12 +373,9 @@ definePageMeta({
 type RecommendationLetter =
   Database["public"]["Tables"]["recommendation_letters"]["Row"];
 
-const userStore = useUserStore();
-const supabase = useSupabase();
+const { letters, loading, error, fetchLetters, saveLetter, deleteLetter } =
+  useRecommendationLetters();
 
-// Data
-const letters = ref<RecommendationLetter[]>([]);
-const loading = ref(false);
 const showAddForm = ref(false);
 const editingId = ref<string | null>(null);
 
@@ -515,79 +511,17 @@ const cancelEdit = () => {
 };
 
 const handleSave = async () => {
-  try {
-    loading.value = true;
-
-    if (editingId.value) {
-      const updateResponse = await (
-        supabase.from("recommendation_letters") as any
-      )
-        .update(formData.value)
-        .eq("id", editingId.value);
-      const { error } = updateResponse as { data: any; error: any };
-
-      if (error) throw error;
-    } else {
-      const insertResponse = await (
-        supabase.from("recommendation_letters") as any
-      ).insert([{ ...formData.value, user_id: userStore.user?.id }]);
-      const { error } = insertResponse as { data: any; error: any };
-
-      if (error) throw error;
-    }
-
-    await loadLetters();
-    cancelEdit();
-  } catch (err) {
-    console.error("Error saving letter:", err);
-  } finally {
-    loading.value = false;
-  }
+  await saveLetter(formData.value, editingId.value);
+  if (!error.value) cancelEdit();
 };
 
-const deleteLetter = async (id: string) => {
+const handleDelete = async (id: string) => {
   if (confirm("Delete this recommendation letter record?")) {
-    try {
-      const { error } = await supabase
-        .from("recommendation_letters")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
-      await loadLetters();
-    } catch (err) {
-      console.error("Error deleting letter:", err);
-    }
+    await deleteLetter(id);
   }
 };
 
-const loadLetters = async () => {
-  try {
-    loading.value = true;
-    const response = await supabase
-      .from("recommendation_letters")
-      .select("*")
-      .eq("user_id", userStore.user?.id ?? "")
-      .order("requested_date", { ascending: false });
-
-    const { data, error } = response as {
-      data: RecommendationLetter[];
-      error: any;
-    };
-    if (error) throw error;
-    letters.value = data || [];
-  } catch (err) {
-    console.error("Error loading letters:", err);
-  } finally {
-    loading.value = false;
-  }
-};
-
-onMounted(async () => {
-  if (!userStore.user) return;
-  try {
-    await loadLetters();
-  } catch (err) {
-    console.error("Error loading data:", err);
-  }
+onMounted(() => {
+  fetchLetters();
 });
 </script>

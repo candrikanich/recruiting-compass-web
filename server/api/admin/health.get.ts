@@ -5,7 +5,7 @@
  */
 
 import { defineEventHandler, createError } from "h3";
-import { requireAuth } from "~/server/utils/auth";
+import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 
@@ -24,22 +24,8 @@ export default defineEventHandler(
   async (event): Promise<AdminHealthResponse> => {
     const logger = useLogger(event, "admin/health");
     try {
-      const user = await requireAuth(event);
+      await requireAdmin(event);
       const supabaseAdmin = useSupabaseAdmin();
-
-      const { data: adminCheck } = await supabaseAdmin
-        .from("users")
-        .select("is_admin")
-        .eq("id", user.id)
-        .single();
-
-      if (!adminCheck?.is_admin) {
-        logger.warn(`Non-admin user ${user.id} attempted to access health`);
-        throw createError({
-          statusCode: 403,
-          statusMessage: "Only administrators can view health",
-        });
-      }
 
       const checks: AdminHealthResponse["checks"] = [];
 
@@ -55,17 +41,19 @@ export default defineEventHandler(
           dbStatus = "ok";
           checks.push({ name: "Database", status: "ok" });
         } else {
+          logger.error("Database health check failed", error);
           checks.push({
             name: "Database",
             status: "error",
-            message: error.message,
+            message: "Database connection failed",
           });
         }
       } catch (e) {
+        logger.error("Database health check exception", e);
         checks.push({
           name: "Database",
           status: "error",
-          message: e instanceof Error ? e.message : "Connection failed",
+          message: "Database connection failed",
         });
       }
 

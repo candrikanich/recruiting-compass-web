@@ -1,30 +1,52 @@
 /**
  * POST /api/auth/admin-profile
- * Creates or updates an admin user profile
- * Uses service role credentials to bypass RLS
+ * Creates or updates an admin user profile during the admin signup flow.
+ *
+ * Security: requires a valid adminToken in the request body — the same token
+ * validated by /api/auth/validate-admin-token earlier in the signup flow.
+ * This prevents unauthenticated callers from escalating any account to admin.
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
+import { validateAdminToken } from "~/server/utils/adminToken";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { requireAuth } from "~/server/utils/auth";
 
 interface AdminProfileRequest {
-  userId: string;
   email: string;
   fullName: string;
+  adminToken: string;
 }
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "auth/admin-profile");
   try {
+    const authUser = await requireAuth(event);
     const body = await readBody<AdminProfileRequest>(event);
-    const { userId, email, fullName } = body;
+    const { email, fullName, adminToken } = body;
 
-    if (!userId || !email) {
+    if (!email) {
       throw createError({
         statusCode: 400,
-        statusMessage: "userId and email are required",
+        statusMessage: "email is required",
       });
+    }
+
+    // Require a valid admin token — prevents unauthenticated privilege escalation.
+    if (!adminToken || typeof adminToken !== "string") {
+      logger.warn("Admin profile creation attempted without admin token", {
+        userId: authUser.id,
+      });
+      throw createError({ statusCode: 403, statusMessage: "Forbidden" });
+    }
+
+    const config = useRuntimeConfig(event);
+    if (!validateAdminToken(adminToken, config.adminTokenSecret)) {
+      logger.warn("Admin profile creation attempted with invalid admin token", {
+        userId: authUser.id,
+      });
+      throw createError({ statusCode: 403, statusMessage: "Forbidden" });
     }
 
     // Use admin client to bypass RLS
@@ -38,7 +60,7 @@ export default defineEventHandler(async (event) => {
         role: "parent",
         is_admin: true,
       })
-      .eq("id", userId);
+      .eq("id", authUser.id);
 
     if (error) {
       logger.error("Failed to create admin profile", error);
@@ -48,7 +70,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    logger.info(`Admin profile created for user ${userId}`);
+    logger.info(`Admin profile created for user ${authUser.id}`);
 
     return { success: true };
   } catch (err) {
@@ -60,7 +82,7 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 500,
-      statusMessage: "Failed to create admin profile",
+      statusMessage: "Profile creation failed",
     });
   }
 });

@@ -446,8 +446,7 @@ describe("useCoachAnalytics", () => {
 
   describe("generateInsights", () => {
     it("should generate alert for no recent contact", () => {
-      const thirtyOneDaysAgo = new Date();
-      thirtyOneDaysAgo.setDate(thirtyOneDaysAgo.getDate() - 31);
+      const thirtyOneDaysAgo = new Date(Date.now() - 31 * 24 * 60 * 60 * 1000);
 
       mockInteractions.value = [
         createMockInteraction({

@@ -8,6 +8,7 @@ import { z } from "zod";
 import { Resend } from "resend";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
+import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
 
 // Email validation schema
 const emailPacketSchema = z.object({
@@ -29,37 +30,15 @@ const emailPacketSchema = z.object({
 type EmailPacketRequest = z.infer<typeof emailPacketSchema>;
 
 /**
- * Rate limiting store (in-memory, resets on server restart)
- * In production, use Redis or database for persistence
+ * Escape HTML special characters to prevent XSS in email body
  */
-const emailRateLimitStore = new Map<
-  string,
-  { count: number; resetTime: number }
->();
-
-/**
- * Check if user has exceeded daily email limit
- */
-const checkRateLimit = (userId: string, maxEmails: number = 20): boolean => {
-  const now = Date.now();
-  const entry = emailRateLimitStore.get(userId);
-
-  if (!entry || entry.resetTime < now) {
-    // Reset limit
-    emailRateLimitStore.set(userId, {
-      count: 0,
-      resetTime: now + 24 * 60 * 60 * 1000, // 24 hours
-    });
-    return true;
-  }
-
-  if (entry.count < maxEmails) {
-    entry.count++;
-    return true;
-  }
-
-  return false;
-};
+const escapeHtml = (str: string): string =>
+  str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
 
 /**
  * Format professional email template
@@ -68,6 +47,8 @@ const formatEmailHtml = (
   body: string,
   athleteName: string | undefined,
 ): string => {
+  const safeName = escapeHtml(athleteName || "Athlete");
+  const safeBody = escapeHtml(body);
   return `
     <!DOCTYPE html>
     <html>
@@ -88,10 +69,10 @@ const formatEmailHtml = (
       <body>
         <div class="container">
           <div class="header">
-            <h2>${athleteName || "Athlete"} - Recruiting Profile</h2>
+            <h2>${safeName} - Recruiting Profile</h2>
           </div>
           <div class="content">
-            <div class="message">${body}</div>
+            <div class="message">${safeBody}</div>
             <div class="attachment-note">
               📎 Recruiting packet PDF is attached to this email.
             </div>
@@ -108,8 +89,10 @@ const formatEmailHtml = (
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "recruiting-packet/email");
   // Authenticate user and get verified user ID
-  const user = await requireAuth(event);
-  const userId = user.id;
+  const { id: userId } = await requireAuth(event);
+
+  const rateLimitResult = await rateLimitByUser(event, userId, { requests: 5, window: "24 h" });
+  throwIfRateLimited(rateLimitResult);
 
   // Parse and validate request body
   let body: EmailPacketRequest;
@@ -131,15 +114,13 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Check rate limit
-  if (!checkRateLimit(userId, 20)) {
+  // Initialize Resend client
+  if (!process.env.RESEND_API_KEY) {
     throw createError({
-      statusCode: 429,
-      statusMessage: "Rate limit exceeded: Maximum 20 emails per day",
+      statusCode: 500,
+      statusMessage: "Email service not configured",
     });
   }
-
-  // Initialize Resend client
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {

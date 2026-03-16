@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
     <PageHeader title="Advanced Search" description="Search across schools, coaches, interactions, and performance metrics" />
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -324,9 +324,8 @@ const handleFilterChange = async (updatedFilters: any) => {
   }
 };
 
-const onSearchSaved = (savedSearch: SavedSearch) => {
+const onSearchSaved = (_savedSearch: SavedSearch) => {
   // Toast notification could go here
-  console.log("Search saved:", savedSearch.name);
 };
 
 const applySavedSearch = async (savedSearch: SavedSearch) => {

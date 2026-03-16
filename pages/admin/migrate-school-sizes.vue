@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-slate-50 py-8">
     <div class="max-w-4xl mx-auto px-4">
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-6">
         <h1 class="text-2xl font-bold text-slate-900 mb-4">
           Migrate School Sizes
         </h1>
@@ -54,7 +54,7 @@
               <div
                 v-for="(error, index) in result.errors"
                 :key="index"
-                class="p-3 bg-red-50 text-red-800 rounded text-sm"
+                class="p-3 bg-red-50 text-red-800 rounded-sm text-sm"
               >
                 <p><strong>School ID:</strong> {{ error.schoolId }}</p>
                 <p><strong>Error:</strong> {{ error.error }}</p>

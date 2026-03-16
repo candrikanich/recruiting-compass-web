@@ -3,6 +3,7 @@ import { useCoaches } from "~/composables/useCoaches";
 import { setActivePinia, createPinia } from "pinia";
 import { useUserStore } from "~/stores/user";
 import type { Coach } from "~/types/models";
+import { useNuxtApp } from "#app";
 
 // Mock useSupabase
 const mockSupabase = {
@@ -137,8 +138,13 @@ describe("useCoaches", () => {
       await fetchCoaches("school-123");
 
       expect(error.value).toBe("Database error");
-      expect(console.error).toHaveBeenCalledWith("Fetch error:", fetchError);
       expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("[useCoaches]"),
+        "Fetch error:",
+        expect.objectContaining({ message: "Database error" }),
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("[useCoaches]"),
         "Coach fetch error:",
         "Database error",
       );
@@ -296,6 +302,31 @@ describe("useCoaches", () => {
       expect(mockSupabase.from).toHaveBeenCalledTimes(1);
     });
 
+    it("captures coach_added event on success", async () => {
+      const mockCapture = vi.fn();
+      vi.mocked(useNuxtApp).mockReturnValue({ $posthog: { capture: mockCapture } } as ReturnType<typeof useNuxtApp>);
+
+      const createdCoach = createMockCoach({ id: "new-coach-id" });
+      mockQuery.single.mockResolvedValue({ data: createdCoach, error: null });
+
+      const newCoachData = {
+        role: "assistant" as const,
+        first_name: "Jane",
+        last_name: "Doe",
+        email: "jane.doe@university.edu",
+        phone: "555-567-8901",
+        twitter_handle: "coachdoe",
+        instagram_handle: "coachdoe",
+        notes: "Assistant coach",
+        responsiveness_score: 90,
+        last_contact_date: "2024-02-01",
+      };
+      const { createCoach } = useCoaches();
+      await createCoach("school-123", newCoachData as any);
+
+      expect(mockCapture).toHaveBeenCalledWith("coach_added");
+    });
+
     it("should handle null values in coach data", async () => {
       const coachWithNulls = createMockCoach({
         email: null,
@@ -366,6 +397,26 @@ describe("useCoaches", () => {
       // Verify it's a computed ref (readonly)
       expect(error.effect).toBeDefined();
       expect(typeof error.value).toBe("object"); // can be null or string
+    });
+  });
+
+  describe("fetchCoaches - deduplication", () => {
+    it("deduplicates concurrent fetchCoaches calls for the same schoolId", async () => {
+      let resolveQuery!: (val: any) => void;
+      const queryPromise = new Promise((resolve) => {
+        resolveQuery = resolve;
+      });
+      mockQuery.order.mockReturnValue(queryPromise);
+
+      const { fetchCoaches } = useCoaches();
+
+      const p1 = fetchCoaches("school-1");
+      const p2 = fetchCoaches("school-1");
+
+      resolveQuery({ data: [], error: null });
+      await Promise.all([p1, p2]);
+
+      expect(mockSupabase.from).toHaveBeenCalledTimes(1);
     });
   });
 });

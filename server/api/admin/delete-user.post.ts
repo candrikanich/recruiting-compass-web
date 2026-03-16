@@ -26,7 +26,7 @@ interface DeleteUserResponse {
 }
 
 import { defineEventHandler, readBody, createError } from "h3";
-import { requireAuth } from "~/server/utils/auth";
+import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 
@@ -34,25 +34,11 @@ export default defineEventHandler(
   async (event): Promise<DeleteUserResponse> => {
     const logger = useLogger(event, "admin/delete-user");
     try {
-      // 1. Verify user is authenticated
-      const user = await requireAuth(event);
+      // 1. Verify user is an authenticated admin
+      const user = await requireAdmin(event);
 
       // Create admin client with service role
       const supabaseAdmin = useSupabaseAdmin();
-
-      const { data: userData } = await supabaseAdmin
-        .from("users")
-        .select("is_admin")
-        .eq("id", user.id)
-        .single();
-
-      if (!userData?.is_admin) {
-        logger.warn(`Non-admin user ${user.id} attempted to delete a user`);
-        throw createError({
-          statusCode: 403,
-          statusMessage: "Only administrators can delete users",
-        });
-      }
 
       // 2. Parse and validate request body
       const body = await readBody<DeleteUserRequest>(event);
@@ -101,17 +87,15 @@ export default defineEventHandler(
         // If not in public.users, try to find in auth system
         // This handles cases where user was deleted from public.users but auth record remains
         try {
-          const {
-            data: { users },
-            error: authSearchError,
-          } = await supabaseAdmin.auth.admin.listUsers();
+          const { data: authUserData, error: authSearchError } =
+            await supabaseAdmin.auth.admin.listUsers();
 
           if (authSearchError) {
             throw authSearchError;
           }
 
-          const authUser = users?.find(
-            (u) => u.email?.toLowerCase() === targetEmail.toLowerCase(),
+          const authUser = authUserData?.users?.find(
+            (u) => u.email === targetEmail,
           );
 
           if (!authUser?.id) {
@@ -159,6 +143,10 @@ export default defineEventHandler(
         { table: "schools", columns: ["user_id"] },
         { table: "notifications", columns: ["user_id"] },
         { table: "communication_templates", columns: ["user_id"] },
+        // Family tables must be removed before users (no ON DELETE CASCADE on users FK)
+        { table: "family_invitations", columns: ["invited_by"] },
+        { table: "family_members", columns: ["user_id"] },
+        { table: "family_units", columns: ["created_by_user_id"] },
         { table: "users", columns: ["id"] },
       ];
 

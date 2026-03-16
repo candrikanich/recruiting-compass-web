@@ -9,6 +9,7 @@ vi.mock("@heroicons/vue/24/outline", () => ({
   UserIcon: { template: "<svg></svg>" },
   EnvelopeIcon: { template: "<svg></svg>" },
   LockClosedIcon: { template: "<svg></svg>" },
+  CalendarIcon: { template: "<svg></svg>" },
 }));
 
 vi.mock("~/components/Auth/LoginInputField.vue", () => ({
@@ -160,9 +161,9 @@ describe("Auth Form Accessibility", () => {
           firstName: "",
           lastName: "",
           email: "",
+          dateOfBirth: "",
           password: "",
           confirmPassword: "",
-          familyCode: "",
           agreeToTerms: false,
           loading: false,
           hasErrors: false,
@@ -334,7 +335,6 @@ describe("Auth Form Accessibility", () => {
           email: "",
           password: "",
           confirmPassword: "",
-          familyCode: "",
           agreeToTerms: false,
           loading: false,
           hasErrors: false,
@@ -391,7 +391,7 @@ describe("Auth Form Accessibility", () => {
       wrapper.unmount();
     });
 
-    it("should show family code field only for parent user type", () => {
+    it("should not show family code field for either user type", () => {
       const playerWrapper = mount(SignupForm, {
         props: {
           userType: "player",
@@ -400,7 +400,6 @@ describe("Auth Form Accessibility", () => {
           email: "",
           password: "",
           confirmPassword: "",
-          familyCode: "",
           agreeToTerms: false,
           loading: false,
           hasErrors: false,
@@ -420,7 +419,6 @@ describe("Auth Form Accessibility", () => {
           email: "",
           password: "",
           confirmPassword: "",
-          familyCode: "",
           agreeToTerms: false,
           loading: false,
           hasErrors: false,
@@ -430,7 +428,7 @@ describe("Auth Form Accessibility", () => {
           stubs: { NuxtLink: { template: '<a href="/"><slot /></a>' } },
         },
       });
-      expect(parentWrapper.find("#familyCode").exists()).toBe(true);
+      expect(parentWrapper.find("#familyCode").exists()).toBe(false);
 
       playerWrapper.unmount();
       parentWrapper.unmount();

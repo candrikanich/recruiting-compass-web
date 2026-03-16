@@ -42,12 +42,16 @@ export const signupSchema = z
     password: strongPasswordSchema,
     confirmPassword: z.string(),
     role: z.enum(["parent", "player"]),
-    familyCode: z.string().optional().default(""),
+    dateOfBirth: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
-  });
+  })
+  .refine(
+    (data) => data.role !== "player" || (!!data.dateOfBirth && /^\d{4}-\d{2}-\d{2}$/.test(data.dateOfBirth)),
+    { message: "Date of birth is required", path: ["dateOfBirth"] },
+  );
 
 export const adminSignupSchema = z
   .object({
@@ -416,3 +420,14 @@ export type PlayerDetailsInput = z.infer<typeof playerDetailsSchema>;
 export type FeedbackInput = z.infer<typeof feedbackSchema>;
 export type DocumentInput = z.infer<typeof documentSchema>;
 export type SocialMediaPostInput = z.infer<typeof socialMediaPostSchema>;
+
+// ============================================================================
+// HELP FEEDBACK SCHEMA
+// ============================================================================
+
+export const helpFeedbackSchema = z.object({
+  page: z.string().min(1).max(200).startsWith("/"),
+  helpful: z.boolean(),
+});
+
+export type HelpFeedbackInput = z.infer<typeof helpFeedbackSchema>;

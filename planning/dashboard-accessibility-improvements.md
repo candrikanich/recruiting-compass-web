@@ -60,7 +60,7 @@ Comprehensive accessibility improvements to the dashboard page and components, a
 
 **Changes:**
 
-- Added `focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-{color}-500` to all cards
+- Added `focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-{color}-500` to all cards
 - Added descriptive `aria-label` to each card
 - Added `aria-hidden="true"` to decorative icons
 - Added `aria-live="polite"` to count displays

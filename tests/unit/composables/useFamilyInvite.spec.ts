@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useFamilyInvite } from "~/composables/useFamilyInvite";
+import { useNuxtApp } from "#app";
+
+const mockFetchAuth = vi.fn();
+
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: () => ({ $fetchAuth: mockFetchAuth }),
+}));
 
 // Mock Supabase
 vi.mock("~/composables/useSupabase", () => ({
@@ -37,6 +44,47 @@ describe("useFamilyInvite", () => {
 
       expect(typeof invite.sendParentInvite).toBe("function");
       expect(typeof invite.linkParentWithCode).toBe("function");
+      expect(typeof invite.sendInvite).toBe("function");
+    });
+  });
+
+  describe("sendInvite", () => {
+    it("posts to /api/family/invite with email and role", async () => {
+      mockFetchAuth.mockResolvedValue({ success: true });
+
+      const invite = useFamilyInvite();
+      await invite.sendInvite({ email: "parent@example.com", role: "parent" });
+
+      expect(mockFetchAuth).toHaveBeenCalledWith("/api/family/invite", {
+        method: "POST",
+        body: { email: "parent@example.com", role: "parent" },
+      });
+      expect(invite.lastInvitedEmail.value).toBe("parent@example.com");
+    });
+
+    it("starts with loading false", () => {
+      const invite = useFamilyInvite();
+      expect(invite.loading.value).toBe(false);
+    });
+
+    it("sets error state on failure", async () => {
+      mockFetchAuth.mockRejectedValue(new Error("Network error"));
+
+      const invite = useFamilyInvite();
+      await expect(invite.sendInvite({ email: "x@y.com", role: "player" })).rejects.toThrow();
+      expect(invite.error.value).toBe("Network error");
+    });
+
+    it("captures family_invite_sent event on success", async () => {
+      const mockCapture = vi.fn();
+      vi.mocked(useNuxtApp).mockReturnValue({ $posthog: { capture: mockCapture } } as ReturnType<typeof useNuxtApp>);
+
+      mockFetchAuth.mockResolvedValue({ success: true });
+
+      const invite = useFamilyInvite();
+      await invite.sendInvite({ email: "parent@example.com", role: "parent" });
+
+      expect(mockCapture).toHaveBeenCalledWith("family_invite_sent", expect.objectContaining({ method: "email" }));
     });
   });
 

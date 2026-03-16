@@ -34,7 +34,7 @@ const shouldRender = computed<boolean>(() => {
 
 const badgeClasses = computed<string>(() => {
   const baseClasses =
-    "inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium";
+    "inline-flex items-center gap-1 px-2 py-1 rounded-sm text-xs font-medium";
 
   switch (deadlineInfo.value.urgency) {
     case "critical":

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useUserStore } from "~/stores/user";
 import { useSchools } from "~/composables/useSchools";
+import { useNuxtApp } from "#app";
 
 // Mock useSupabase
 const mockSupabase = {
@@ -75,6 +76,21 @@ describe("useSchools", () => {
       expect(mockQuery.insert).toHaveBeenCalled();
       expect(result).toEqual({ id: "school-1", name: "Test School" });
     });
+
+    it("captures school_added event on success", async () => {
+      const mockCapture = vi.fn();
+      vi.mocked(useNuxtApp).mockReturnValue({ $posthog: { capture: mockCapture } } as ReturnType<typeof useNuxtApp>);
+
+      mockQuery.single.mockResolvedValue({
+        data: { id: "school-1", name: "Test School" },
+        error: null,
+      });
+
+      const { createSchool } = useSchools();
+      await createSchool({ name: "Test School", city: "Test City", state: "TS", status: "researching" });
+
+      expect(mockCapture).toHaveBeenCalledWith("school_added", { division: null });
+    });
   });
 
   describe("deleteSchool", () => {
@@ -140,6 +156,24 @@ describe("useSchools", () => {
         (s) => s.name === "Baldwin Wallace",
       );
       expect(baldwinWallaces).toHaveLength(1);
+    });
+
+    it("deduplicates concurrent fetchSchools calls - only one Supabase query fires", async () => {
+      let resolveQuery!: (val: any) => void;
+      const queryPromise = new Promise((resolve) => {
+        resolveQuery = resolve;
+      });
+      mockQuery.order.mockReturnValue(queryPromise);
+
+      const { fetchSchools } = useSchools();
+
+      const p1 = fetchSchools();
+      const p2 = fetchSchools();
+
+      resolveQuery({ data: [], error: null });
+      await Promise.all([p1, p2]);
+
+      expect(mockSupabase.from).toHaveBeenCalledTimes(1);
     });
   });
 });

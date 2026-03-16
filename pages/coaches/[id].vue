@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Skip Link -->
     <a
@@ -40,7 +40,7 @@
       <!-- Coach Not Found -->
       <div
         v-if="!loading && !coach"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-8 text-center"
       >
         <p class="text-slate-600">Coach not found</p>
       </div>
@@ -140,6 +140,7 @@
       v-if="coach"
       :coach="coach"
       :is-open="uiState.showEditModal"
+      :update-fn="updateCoach"
       @close="uiState.showEditModal = false"
       @updated="handleCoachUpdated"
     />

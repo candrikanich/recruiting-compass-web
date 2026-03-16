@@ -338,7 +338,7 @@ describe("login.vue", () => {
   });
 
   describe("Form Validation", () => {
-    it("should validate email field on blur", async () => {
+    it("should validate email field on blur-sm", async () => {
       const wrapper = createWrapper();
       const emailInput = wrapper.find('input[type="email"]');
 
@@ -352,7 +352,7 @@ describe("login.vue", () => {
       );
     });
 
-    it("should validate password field on blur", async () => {
+    it("should validate password field on blur-sm", async () => {
       const wrapper = createWrapper();
       const passwordInput = wrapper.find('input[type="password"]');
 

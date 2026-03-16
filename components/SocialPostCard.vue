@@ -1,6 +1,6 @@
 <template>
   <div
-    class="rounded-lg shadow hover:shadow-lg transition p-6 border-l-4"
+    class="rounded-lg shadow-sm hover:shadow-lg transition p-6 border-l-4"
     :class="[
       post.flagged_for_review
         ? 'bg-orange-50 border-l-orange-400'
@@ -28,7 +28,7 @@
         <button
           @click="toggleFlag"
           :class="[
-            'px-3 py-1 text-xs font-semibold rounded transition',
+            'px-3 py-1 text-xs font-semibold rounded-sm transition',
             post.flagged_for_review
               ? 'bg-orange-200 text-orange-800 hover:opacity-80'
               : 'bg-slate-50 text-slate-900 hover:opacity-80',
@@ -42,14 +42,14 @@
           :href="post.post_url"
           target="_blank"
           rel="noopener noreferrer"
-          class="px-3 py-1 text-xs font-semibold rounded transition bg-blue-100 text-blue-700 hover:bg-blue-200"
+          class="px-3 py-1 text-xs font-semibold rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200"
         >
           View
         </a>
 
         <button
           @click="deletePost"
-          class="px-3 py-1 text-xs font-semibold rounded transition bg-red-600 text-white hover:opacity-90"
+          class="px-3 py-1 text-xs font-semibold rounded-sm transition bg-red-600 text-white hover:opacity-90"
         >
           Delete
         </button>
@@ -60,13 +60,13 @@
     <div class="flex gap-2 mb-3 flex-wrap">
       <span
         v-if="post.is_recruiting_related"
-        class="inline-block px-2 py-1 text-xs font-semibold rounded bg-emerald-100 text-emerald-800"
+        class="inline-block px-2 py-1 text-xs font-semibold rounded-sm bg-emerald-100 text-emerald-800"
       >
         🎯 Recruiting
       </span>
       <span
         v-if="post.sentiment"
-        class="inline-block px-2 py-1 text-xs font-semibold rounded"
+        class="inline-block px-2 py-1 text-xs font-semibold rounded-sm"
         :class="getSentimentClass()"
       >
         {{ sentimentEmoji }} {{ sentimentLabel }}
@@ -113,13 +113,13 @@
       <div class="flex gap-2 mt-2">
         <button
           @click="saveNotes"
-          class="flex-1 px-3 py-1 text-xs font-semibold rounded transition bg-blue-600 text-white hover:bg-blue-700"
+          class="flex-1 px-3 py-1 text-xs font-semibold rounded-sm transition bg-blue-600 text-white hover:bg-blue-700"
         >
           Save Notes
         </button>
         <button
           @click="showNotes = false"
-          class="flex-1 px-3 py-1 text-xs font-semibold rounded transition bg-slate-50 text-slate-900 hover:bg-slate-100"
+          class="flex-1 px-3 py-1 text-xs font-semibold rounded-sm transition bg-slate-50 text-slate-900 hover:bg-slate-100"
         >
           Cancel
         </button>

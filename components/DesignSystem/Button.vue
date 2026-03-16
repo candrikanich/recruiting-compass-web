@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { resolveComponent } from "vue";
+
 export type ButtonVariant = "gradient" | "outline" | "solid" | "ghost";
 export type ButtonColor =
   | "blue"
@@ -6,7 +8,8 @@ export type ButtonColor =
   | "emerald"
   | "orange"
   | "indigo"
-  | "slate";
+  | "slate"
+  | "red";
 export type ButtonSize = "sm" | "md" | "lg";
 
 interface Props {
@@ -17,6 +20,7 @@ interface Props {
   disabled?: boolean;
   loading?: boolean;
   type?: "button" | "submit" | "reset";
+  to?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -28,6 +32,10 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   type: "button",
 });
+
+const tag = computed(() =>
+  props.to ? resolveComponent("NuxtLink") : "button",
+);
 
 const emit = defineEmits<{
   click: [event: MouseEvent];
@@ -46,13 +54,14 @@ const focusRingClasses: Record<ButtonColor, string> = {
   orange: "focus:ring-brand-orange-500",
   indigo: "focus:ring-brand-indigo-500",
   slate: "focus:ring-brand-slate-500",
+  red: "focus:ring-red-500",
 };
 
 const colorVariants: Record<ButtonColor, Record<ButtonVariant, string>> = {
   blue: {
     solid: "bg-brand-blue-600 text-white hover:bg-brand-blue-700",
     gradient:
-      "bg-gradient-to-r from-brand-blue-500 to-brand-blue-600 text-white hover:from-brand-blue-600 hover:to-brand-blue-700",
+      "bg-linear-to-r from-brand-blue-500 to-brand-blue-600 text-white hover:from-brand-blue-600 hover:to-brand-blue-700",
     outline:
       "border-2 border-brand-blue-500 text-brand-blue-600 hover:bg-brand-blue-100",
     ghost: "text-brand-blue-600 hover:bg-brand-blue-100",
@@ -60,7 +69,7 @@ const colorVariants: Record<ButtonColor, Record<ButtonVariant, string>> = {
   purple: {
     solid: "bg-brand-purple-600 text-white hover:bg-brand-purple-700",
     gradient:
-      "bg-gradient-to-r from-brand-purple-500 to-brand-purple-600 text-white hover:from-brand-purple-600 hover:to-brand-purple-700",
+      "bg-linear-to-r from-brand-purple-500 to-brand-purple-600 text-white hover:from-brand-purple-600 hover:to-brand-purple-700",
     outline:
       "border-2 border-brand-purple-500 text-brand-purple-600 hover:bg-brand-purple-100",
     ghost: "text-brand-purple-600 hover:bg-brand-purple-100",
@@ -68,7 +77,7 @@ const colorVariants: Record<ButtonColor, Record<ButtonVariant, string>> = {
   emerald: {
     solid: "bg-brand-emerald-600 text-white hover:bg-brand-emerald-700",
     gradient:
-      "bg-gradient-to-r from-brand-emerald-500 to-brand-emerald-600 text-white hover:from-brand-emerald-600 hover:to-brand-emerald-700",
+      "bg-linear-to-r from-brand-emerald-500 to-brand-emerald-600 text-white hover:from-brand-emerald-600 hover:to-brand-emerald-700",
     outline:
       "border-2 border-brand-emerald-500 text-brand-emerald-600 hover:bg-brand-emerald-100",
     ghost: "text-brand-emerald-600 hover:bg-brand-emerald-100",
@@ -76,32 +85,39 @@ const colorVariants: Record<ButtonColor, Record<ButtonVariant, string>> = {
   orange: {
     solid: "bg-brand-orange-600 text-white hover:bg-brand-orange-700",
     gradient:
-      "bg-gradient-to-r from-brand-orange-500 to-brand-orange-600 text-white hover:from-brand-orange-600 hover:to-brand-orange-700",
+      "bg-linear-to-r from-brand-orange-500 to-brand-orange-600 text-white hover:from-brand-orange-600 hover:to-brand-orange-700",
     outline:
       "border-2 border-brand-orange-500 text-brand-orange-600 hover:bg-brand-orange-100",
     ghost: "text-brand-orange-600 hover:bg-brand-orange-100",
   },
   indigo: {
-    solid: "bg-brand-indigo-600 text-white hover:bg-brand-indigo-600",
+    solid: "bg-brand-indigo-600 text-white hover:bg-brand-indigo-700",
     gradient:
-      "bg-gradient-to-r from-brand-indigo-500 to-brand-indigo-600 text-white hover:from-brand-indigo-600 hover:to-brand-indigo-600",
+      "bg-linear-to-r from-brand-indigo-500 to-brand-indigo-600 text-white hover:from-brand-indigo-600 hover:to-brand-indigo-700",
     outline:
       "border-2 border-brand-indigo-500 text-brand-indigo-600 hover:bg-brand-indigo-100",
     ghost: "text-brand-indigo-600 hover:bg-brand-indigo-100",
   },
   slate: {
-    solid: "bg-brand-slate-700 text-white hover:bg-brand-slate-700",
+    solid: "bg-brand-slate-700 text-white hover:bg-brand-slate-800",
     gradient:
-      "bg-gradient-to-r from-brand-slate-700 to-brand-slate-700 text-white hover:from-brand-slate-700 hover:to-brand-slate-700",
+      "bg-linear-to-r from-brand-slate-700 to-brand-slate-700 text-white hover:from-brand-slate-700 hover:to-brand-slate-800",
     outline:
       "border-2 border-brand-slate-600 text-brand-slate-700 hover:bg-brand-slate-100",
     ghost: "text-brand-slate-700 hover:bg-brand-slate-100",
+  },
+  red: {
+    solid: "bg-red-600 text-white hover:bg-red-700",
+    gradient:
+      "bg-linear-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700",
+    outline: "border-2 border-red-500 text-red-600 hover:bg-red-50",
+    ghost: "text-red-600 hover:bg-red-50",
   },
 };
 
 const buttonClasses = computed(() => {
   const base =
-    "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2";
+    "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-offset-2";
   const size = sizeClasses[props.size];
   const colorVariant = colorVariants[props.color][props.variant];
   const width = props.fullWidth ? "w-full" : "";
@@ -122,10 +138,12 @@ function handleClick(event: MouseEvent) {
 </script>
 
 <template>
-  <button
-    :type="type"
+  <component
+    :is="tag"
+    :type="to ? undefined : type"
+    :to="to"
     :class="buttonClasses"
-    :disabled="disabled || loading"
+    :disabled="to ? undefined : (disabled || loading)"
     @click="handleClick"
   >
     <svg
@@ -150,5 +168,5 @@ function handleClick(event: MouseEvent) {
       />
     </svg>
     <slot />
-  </button>
+  </component>
 </template>

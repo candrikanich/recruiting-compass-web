@@ -9,6 +9,7 @@ interface CacheEntry<T> {
   expiresAt: number;
 }
 
+const MAX_CACHE_SIZE = 10_000;
 const cache = new Map<string, CacheEntry<unknown>>();
 
 /**
@@ -39,6 +40,12 @@ export function setCached<T>(
   data: T,
   ttlSeconds: number = 3600,
 ): void {
+  if (cache.size >= MAX_CACHE_SIZE) {
+    const firstKey = cache.keys().next().value;
+    if (firstKey !== undefined) {
+      cache.delete(firstKey);
+    }
+  }
   cache.set(key, {
     data,
     expiresAt: Date.now() + ttlSeconds * 1000,

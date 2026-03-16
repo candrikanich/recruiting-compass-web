@@ -121,7 +121,7 @@ const handleClose = () => {
         @click.stop
       >
         <!-- Header -->
-        <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white">
+        <div class="bg-linear-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white">
           <h2 class="text-xl font-bold">Log Performance Metric</h2>
           <p class="mt-1 text-sm text-white/90">Record your athletic performance</p>
         </div>
@@ -324,7 +324,7 @@ onMounted(() => {
         @click.stop
       >
         <!-- Header -->
-        <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white sticky top-0">
+        <div class="bg-linear-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white sticky top-0">
           <h2 class="text-xl font-bold">Log Performance Metric</h2>
           <p class="mt-1 text-sm text-white/90">Record your athletic performance</p>
         </div>
@@ -414,7 +414,7 @@ onMounted(() => {
               <input
                 v-model="verified"
                 type="checkbox"
-                class="w-4 h-4 rounded"
+                class="w-4 h-4 rounded-sm"
               />
               <label class="ml-2 text-sm text-gray-700">
                 Verified by third party
@@ -694,7 +694,7 @@ watch(() => props.show, async (newVal) => {
         @click.stop
       >
         <!-- Header -->
-        <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white sticky top-0">
+        <div class="bg-linear-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white sticky top-0">
           <h2 class="text-xl font-bold">Log Performance Metric</h2>
           <p class="mt-1 text-sm text-white/90">Record your athletic performance</p>
         </div>
@@ -809,7 +809,7 @@ watch(() => props.show, async (newVal) => {
               <input
                 v-model="verified"
                 type="checkbox"
-                class="w-4 h-4 rounded"
+                class="w-4 h-4 rounded-sm"
               />
               <label class="ml-2 text-sm text-gray-700">
                 Verified by third party
@@ -1581,7 +1581,7 @@ onBeforeUnmount(() => {
         @click.stop
       >
         <!-- Header -->
-        <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white sticky top-0">
+        <div class="bg-linear-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white sticky top-0">
           <h2 id="modal-title" class="text-xl font-bold">Log Performance Metric</h2>
           <p class="mt-1 text-sm text-white/90">Record your athletic performance</p>
         </div>

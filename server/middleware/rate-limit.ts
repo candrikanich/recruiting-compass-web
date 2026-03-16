@@ -162,10 +162,10 @@ export default defineEventHandler((event) => {
   const config = getEndpointConfig(path);
 
   // Use authenticated user ID if available for more accurate rate limiting
-  // Falls back to IP + path for anonymous requests
-  const userId = getCookie(event, "sb-access-token")
-    ? `user:${ip}`
-    : `ip:${ip}`;
+  // Uses the last 20 chars of the token as a per-user identifier without
+  // the cost of JWT decoding. Falls back to IP for anonymous requests.
+  const token = getCookie(event, "sb-access-token");
+  const userId = token ? `user:${token.slice(-20)}` : `ip:${ip}`;
   const key = `${userId}:${path}`;
 
   const result = rateLimitCache.isAllowed(key, config.limit, config.windowMs);

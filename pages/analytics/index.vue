@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
     <PageHeader title="Analytics" description="Comprehensive recruiting metrics and performance insights" />
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -105,7 +105,7 @@
       </div>
 
       <!-- Export Actions -->
-      <div class="bg-white rounded-lg shadow p-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
         <div
           class="flex flex-col md:flex-row items-center justify-between gap-4"
         >

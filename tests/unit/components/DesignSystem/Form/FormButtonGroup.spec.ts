@@ -98,7 +98,7 @@ describe('FormButtonGroup', () => {
 
     expect(cancelBtn.classes()).toContain('bg-white')
     expect(cancelBtn.classes()).toContain('border-slate-300')
-    expect(submitBtn.classes()).toContain('bg-gradient-to-r')
+    expect(submitBtn.classes()).toContain('bg-linear-to-r')
     expect(submitBtn.classes()).toContain('from-blue-500')
     expect(submitBtn.classes()).toContain('to-blue-600')
   })

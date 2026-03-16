@@ -5,6 +5,10 @@
 
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
+import { useAuthFetch } from "~/composables/useAuthFetch";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useOnboarding");
 
 export interface OnboardingAssessment {
   hasHighlightVideo: boolean;
@@ -34,6 +38,7 @@ const ONBOARDING_TASK_MAPPING = {
 
 export const useOnboarding = () => {
   const supabase = useSupabase();
+  const { $fetchAuth } = useAuthFetch();
   const loading = ref(false);
   const error = ref<string | null>(null);
   const isOnboardingComplete = ref(false);
@@ -109,16 +114,20 @@ export const useOnboarding = () => {
 
       // Auto-complete tasks
       if (tasksToComplete.length > 0) {
+        const taskErrors: string[] = [];
         for (const taskId of tasksToComplete) {
           try {
-            await $fetch(`/api/athlete-tasks/${taskId}`, {
+            await $fetchAuth(`/api/athlete-tasks/${taskId}`, {
               method: "PATCH",
               body: { status: "completed" },
             });
           } catch (err) {
-            // Log error but continue - task might not exist for this user
-            console.error(`Failed to complete task ${taskId}:`, err);
+            logger.error(`Failed to complete task ${taskId}:`, err);
+            taskErrors.push(taskId);
           }
+        }
+        if (taskErrors.length > 0) {
+          throw new Error(`Failed to complete ${taskErrors.length} task(s). Please try again.`);
         }
       }
 
@@ -142,6 +151,9 @@ export const useOnboarding = () => {
 
       isOnboardingComplete.value = true;
 
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("onboarding_step_completed", { step: currentStep.value });
+
       return {
         assessment,
         completedTaskIds: tasksToComplete,
@@ -150,7 +162,7 @@ export const useOnboarding = () => {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Onboarding failed";
       error.value = message;
-      console.error("Onboarding error:", err);
+      logger.error("Onboarding error:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -184,7 +196,7 @@ export const useOnboarding = () => {
       };
 
       if (error) {
-        console.error("Failed to check onboarding status:", error);
+        logger.error("Failed to check onboarding status:", error);
         return false;
       }
 
@@ -193,7 +205,7 @@ export const useOnboarding = () => {
       isOnboardingComplete.value = isComplete;
       return isComplete;
     } catch (err) {
-      console.error("Error checking onboarding status:", err);
+      logger.error("Error checking onboarding status:", err);
       return false;
     }
   };
@@ -236,7 +248,7 @@ export const useOnboarding = () => {
       const message =
         err instanceof Error ? err.message : "Failed to save onboarding step";
       error.value = message;
-      console.error("Onboarding step save error:", err);
+      logger.error("Onboarding step save error:", err);
       throw err;
     } finally {
       loading.value = false;
@@ -267,7 +279,7 @@ export const useOnboarding = () => {
             const parsed = JSON.parse(stored);
             currentStep = parsed.current_step || 0;
           } catch (e) {
-            console.error("Failed to parse stored onboarding progress:", e);
+            logger.error("Failed to parse stored onboarding progress:", e);
           }
         }
       }
@@ -280,7 +292,7 @@ export const useOnboarding = () => {
       );
       return progress;
     } catch (err) {
-      console.error("Error getting onboarding progress:", err);
+      logger.error("Error getting onboarding progress:", err);
       return 0;
     }
   };

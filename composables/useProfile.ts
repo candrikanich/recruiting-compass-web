@@ -1,6 +1,7 @@
 import { ref, computed, type ComputedRef, type Ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
 import { compressImage, validateImageFile } from "~/utils/image/compressImage";
 import type { PreferenceHistoryEntry } from "~/types/models";
 
@@ -61,6 +62,8 @@ const FIELD_LABELS: Record<string, string> = {
   travel_team_name: "Travel Team Name",
   travel_team_coach: "Travel Team Coach",
 };
+
+const logger = createClientLogger("useProfile");
 
 /**
  * useProfile composable
@@ -210,7 +213,7 @@ export const useProfile = (): {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to upload photo";
       photoError.value = errorMessage;
-      console.error("Profile photo upload error:", err);
+      logger.error("Profile photo upload error:", err);
 
       return {
         success: false,
@@ -274,7 +277,7 @@ export const useProfile = (): {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to delete photo";
       photoError.value = errorMessage;
-      console.error("Profile photo deletion error:", err);
+      logger.error("Profile photo deletion error:", err);
       throw err;
     } finally {
       uploading.value = false;
@@ -333,7 +336,7 @@ export const useProfile = (): {
     } catch (err) {
       historyError.value =
         err instanceof Error ? err.message : "Failed to load edit history";
-      console.error("Error fetching edit history:", err);
+      logger.error("Error fetching edit history:", err);
     } finally {
       historyLoading.value = false;
     }

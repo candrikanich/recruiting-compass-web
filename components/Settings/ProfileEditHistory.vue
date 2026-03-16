@@ -60,7 +60,7 @@
               class="absolute left-0 top-0 bottom-0 flex flex-col items-center"
             >
               <div
-                class="w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow"
+                class="w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow-sm"
               ></div>
               <div
                 v-if="index < history.length - 1"
@@ -77,7 +77,7 @@
                 </time>
                 <span
                   v-if="index === 0"
-                  class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded"
+                  class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-sm"
                 >
                   Most Recent
                 </span>
@@ -94,7 +94,7 @@
                     <p class="font-medium text-gray-700 mb-1">
                       {{ change.fieldLabel }}
                     </p>
-                    <div class="bg-white rounded p-2 border border-gray-200">
+                    <div class="bg-white rounded-sm p-2 border border-gray-200">
                       <span class="text-gray-500">Before:</span>
                       <span class="ml-2 text-gray-900">
                         {{ formatValue(change.old_value) }}
@@ -103,7 +103,7 @@
                   </div>
                   <div>
                     <p class="font-medium text-gray-700 mb-1">&nbsp;</p>
-                    <div class="bg-white rounded p-2 border border-green-200">
+                    <div class="bg-white rounded-sm p-2 border border-green-200">
                       <span class="text-green-600">After:</span>
                       <span class="ml-2 text-gray-900 font-medium">
                         {{ formatValue(change.new_value) }}

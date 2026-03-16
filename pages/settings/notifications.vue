@@ -1,13 +1,13 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
@@ -24,7 +24,7 @@
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <div
         v-if="isLoading"
-        class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
         <div
           class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
@@ -34,7 +34,7 @@
 
       <div v-else class="space-y-6">
         <!-- In-App Notifications Section -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-xl font-semibold text-gray-900 mb-4">
             In-App Notifications
           </h2>
@@ -46,7 +46,7 @@
                   <input
                     type="checkbox"
                     v-model="localSettings.enableFollowUpReminders"
-                    class="w-4 h-4 text-blue-600 rounded"
+                    class="w-4 h-4 text-blue-600 rounded-sm"
                   />
                   <span class="ml-3 text-sm font-medium text-gray-900"
                     >Coach Follow-Up Reminders</span
@@ -65,7 +65,7 @@
                   v-model.number="localSettings.followUpReminderDays"
                   min="1"
                   max="90"
-                  class="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                  class="w-16 px-2 py-1 border border-gray-300 rounded-sm text-sm"
                 />
                 <span class="text-sm text-gray-600 whitespace-nowrap"
                   >days</span
@@ -79,7 +79,7 @@
                 <input
                   type="checkbox"
                   v-model="localSettings.enableDeadlineAlerts"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <div class="ml-3">
                   <span class="text-sm font-medium text-gray-900"
@@ -98,7 +98,7 @@
                 <input
                   type="checkbox"
                   v-model="localSettings.enableDailyDigest"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <div class="ml-3">
                   <span class="text-sm font-medium text-gray-900"
@@ -117,7 +117,7 @@
                 <input
                   type="checkbox"
                   v-model="localSettings.enableInboundInteractionAlerts"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <div class="ml-3">
                   <span class="text-sm font-medium text-gray-900"
@@ -133,7 +133,7 @@
         </div>
 
         <!-- Email Notifications Section -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-xl font-semibold text-gray-900 mb-4">
             Email Notifications
           </h2>
@@ -143,7 +143,7 @@
                 <input
                   type="checkbox"
                   v-model="localSettings.enableEmailNotifications"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <div class="ml-3">
                   <span class="text-sm font-medium text-gray-900"
@@ -164,7 +164,7 @@
                 <input
                   type="checkbox"
                   v-model="localSettings.emailOnlyHighPriority"
-                  class="w-4 h-4 text-blue-600 rounded"
+                  class="w-4 h-4 text-blue-600 rounded-sm"
                 />
                 <div class="ml-3">
                   <span class="text-sm font-medium text-gray-900"
@@ -220,6 +220,9 @@ import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { getDefaultNotificationSettings } from "~/utils/preferenceValidation";
 import type { NotificationSettings } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("settings/notifications");
 
 definePageMeta({ middleware: "auth" });
 
@@ -242,7 +245,7 @@ const handleSave = async () => {
     saveSuccess.value = true;
     setTimeout(() => (saveSuccess.value = false), 3000);
   } catch (err) {
-    console.error("Failed to save notification settings:", err);
+    logger.error("Failed to save notification settings", err);
   } finally {
     saving.value = false;
   }

@@ -3,6 +3,7 @@ import {
   useOnboarding,
   type OnboardingAssessment,
 } from "~/composables/useOnboarding";
+import { useNuxtApp } from "#app";
 
 // Mock Supabase
 vi.mock("~/composables/useSupabase", () => ({
@@ -403,6 +404,42 @@ describe("useOnboarding", () => {
       const result = await completeOnboarding(assessment);
       expect(result.phase).toBeDefined();
       expect(["freshman", "sophomore", "junior"]).toContain(result.phase);
+    });
+
+    it("captures onboarding_step_completed event on success", async () => {
+      const mockCapture = vi.fn();
+      vi.mocked(useNuxtApp).mockReturnValue({ $posthog: { capture: mockCapture } } as ReturnType<typeof useNuxtApp>);
+
+      const { useSupabase } = await import("~/composables/useSupabase");
+      const mockSupabase = {
+        from: vi.fn(() => ({
+          update: vi.fn(() => ({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          })),
+        })),
+        auth: {
+          getSession: vi.fn().mockResolvedValue({
+            data: { session: { user: { id: "test-user" } } },
+          }),
+        },
+      };
+      vi.mocked(useSupabase).mockReturnValue(mockSupabase);
+
+      const { completeOnboarding } = useOnboarding();
+      const assessment: OnboardingAssessment = {
+        hasHighlightVideo: false,
+        hasContactedCoaches: false,
+        hasTargetSchools: false,
+        hasRegisteredEligibility: false,
+        hasTakenTestScores: false,
+      };
+
+      await completeOnboarding(assessment);
+
+      expect(mockCapture).toHaveBeenCalledWith(
+        "onboarding_step_completed",
+        expect.objectContaining({ step: expect.anything() }),
+      );
     });
   });
 });

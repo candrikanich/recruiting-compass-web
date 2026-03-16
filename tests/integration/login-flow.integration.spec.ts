@@ -81,12 +81,14 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
 
     const mockEq = vi.fn().mockImplementation(() => ({
       single: mockSingle,
+      maybeSingle: mockSingle,
       eq: mockEq,
     }));
 
     const mockSelect = vi.fn().mockImplementation(() => ({
       eq: mockEq,
       select: mockSelect,
+      maybeSingle: mockSingle,
     }));
 
     const mockInsert = vi.fn().mockImplementation(() => ({
@@ -370,7 +372,7 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
       );
 
       // Verify signup
-      expect(signupResult.user).toEqual(mockUser);
+      expect(signupResult.data.user).toEqual(mockUser);
       expect(mockAuth.signUp).toHaveBeenCalledWith({
         email: "new@example.com",
         password: "password123",
@@ -378,8 +380,6 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
           data: {
             full_name: "Test User",
             role: "player",
-            family_code: expect.stringMatching(/^FAM-[A-Z0-9]+$/),
-            onboarding_completed: false,
           },
         },
       });

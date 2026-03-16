@@ -7,22 +7,16 @@
  */
 
 import { defineEventHandler } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { batchFetchLogos } from "~/server/utils/batchFetchLogos";
-import { requireAuth, assertNotParent } from "~/server/utils/auth";
-import { createLogger } from "~/server/utils/logger";
-
-const logger = createLogger("admin/batch-fetch-logos");
+import { requireAdmin } from "~/server/utils/auth";
+import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "admin/batch-fetch-logos");
   try {
-    const user = await requireAuth(event);
-    const supabase = createServerSupabaseClient();
+    const user = await requireAdmin(event);
 
-    // Ensure requesting user is not a parent (admin operation)
-    await assertNotParent(user.id, supabase);
-
-    logger.info("Batch fetch logos endpoint called");
+    logger.info("Batch fetch logos initiated");
 
     return await batchFetchLogos(user.id);
   } catch (error) {
@@ -32,8 +26,7 @@ export default defineEventHandler(async (event) => {
     }
     throw createError({
       statusCode: 500,
-      statusMessage:
-        error instanceof Error ? error.message : "Failed to batch fetch logos",
+      statusMessage: "Failed to batch fetch logos",
     });
   }
 });

@@ -3,12 +3,15 @@ import { useSchools } from "./useSchools";
 import { useCoaches } from "./useCoaches";
 import { useInteractions } from "./useInteractions";
 import { usePerformance } from "./usePerformance";
+import { createClientLogger } from "~/utils/logger";
 import {
   generateReportData,
   exportReportToCSV,
   downloadReport,
   type ReportData,
 } from "~/utils/reportExport";
+
+const logger = createClientLogger("useReports");
 
 export const useReports = () => {
   const { schools } = useSchools();
@@ -36,7 +39,7 @@ export const useReports = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to generate report";
-      console.error("Generate report error:", err);
+      logger.error("Generate report error:", err);
     } finally {
       isGenerating.value = false;
     }
@@ -54,7 +57,7 @@ export const useReports = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to export report";
-      console.error("Export report error:", err);
+      logger.error("Export report error:", err);
     }
   };
 

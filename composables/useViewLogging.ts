@@ -1,5 +1,8 @@
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useViewLogging");
 
 /**
  * Composable for logging parent views of athlete data
@@ -57,11 +60,11 @@ export const useViewLogging = () => {
       )) as { error: any };
 
       if (error) {
-        console.debug("View logging error:", error.message);
+        logger.debug("View logging error:", error.message);
       }
     } catch (err) {
       // Silent fail - logging is non-critical and shouldn't break navigation
-      console.debug(
+      logger.debug(
         "View logging failed:",
         err instanceof Error ? err.message : "Unknown error",
       );
@@ -86,13 +89,13 @@ export const useViewLogging = () => {
         .limit(limit);
 
       if (error) {
-        console.debug("Failed to fetch view logs:", error.message);
+        logger.debug("Failed to fetch view logs:", error.message);
         return [];
       }
 
       return data || [];
     } catch (err) {
-      console.debug(
+      logger.debug(
         "Error fetching view logs:",
         err instanceof Error ? err.message : "Unknown error",
       );
@@ -124,13 +127,13 @@ export const useViewLogging = () => {
       const { count, error } = await query;
 
       if (error) {
-        console.debug("Failed to check view status:", error.message);
+        logger.debug("Failed to check view status:", error.message);
         return false;
       }
 
       return count ? count > 0 : false;
     } catch (err) {
-      console.debug(
+      logger.debug(
         "Error checking view status:",
         err instanceof Error ? err.message : "Unknown error",
       );
@@ -152,13 +155,13 @@ export const useViewLogging = () => {
         .eq("athlete_id", store.user.id);
 
       if (error) {
-        console.debug("Failed to get view count:", error.message);
+        logger.debug("Failed to get view count:", error.message);
         return 0;
       }
 
       return count || 0;
     } catch (err) {
-      console.debug(
+      logger.debug(
         "Error getting view count:",
         err instanceof Error ? err.message : "Unknown error",
       );
@@ -187,13 +190,13 @@ export const useViewLogging = () => {
           // No rows returned - normal case
           return null;
         }
-        console.debug("Failed to get last view:", error.message);
+        logger.debug("Failed to get last view:", error.message);
         return null;
       }
 
       return data;
     } catch (err) {
-      console.debug(
+      logger.debug(
         "Error getting last view:",
         err instanceof Error ? err.message : "Unknown error",
       );

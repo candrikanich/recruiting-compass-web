@@ -10,8 +10,11 @@ import type {
   HomeLocation,
   PlayerDetails,
   SchoolPreferences,
-  DashboardWidgetVisibility,
+  DashboardLayout,
+  WidgetEntry,
+  WidgetId,
 } from "~/types/models";
+import { WIDGET_SIZES } from "~/types/models";
 import { normalizePositions } from "./positions";
 
 /**
@@ -162,22 +165,40 @@ export function validateSchoolPreferences(
   };
 }
 
+const VALID_WIDGET_IDS = new Set<string>(Object.keys(WIDGET_SIZES));
+
 /**
- * Validates and extracts dashboard layout
- * Returns null if empty/missing
+ * Validates and extracts dashboard layout (v2 ordered format)
+ * Returns null if empty, old boolean format, or missing required columns
  */
-export function validateDashboardLayout(
-  data: unknown,
-): DashboardWidgetVisibility | null {
+export function validateDashboardLayout(data: unknown): DashboardLayout | null {
   if (!data || typeof data !== "object") return null;
 
   const obj = data as Record<string, unknown>;
 
-  // Return default if layout is empty
+  // Empty object → use defaults
   if (Object.keys(obj).length === 0) return null;
 
+  // Old boolean format (has 'widgets' key) → use defaults
+  if ("widgets" in obj) return null;
+
+  // Requires both column arrays
+  if (!Array.isArray(obj.leftColumn) || !Array.isArray(obj.rightColumn))
+    return null;
+
   const statsCards = (obj.statsCards || {}) as Record<string, unknown>;
-  const widgets = (obj.widgets || {}) as Record<string, unknown>;
+
+  const parseColumn = (arr: unknown[]): WidgetEntry[] =>
+    arr
+      .filter(
+        (item): item is Record<string, unknown> =>
+          !!item && typeof item === "object",
+      )
+      .filter((item) => VALID_WIDGET_IDS.has(String(item.id)))
+      .map((item) => ({
+        id: String(item.id) as WidgetId,
+        visible: toBoolean(item.visible, true),
+      }));
 
   return {
     statsCards: {
@@ -186,29 +207,9 @@ export function validateDashboardLayout(
       interactions: toBoolean(statsCards.interactions, true),
       offers: toBoolean(statsCards.offers, true),
       events: toBoolean(statsCards.events, true),
-      performance: toBoolean(statsCards.performance, true),
-      notifications: toBoolean(statsCards.notifications, true),
-      socialMedia: toBoolean(statsCards.socialMedia, true),
     },
-    widgets: {
-      recentNotifications: toBoolean(widgets.recentNotifications, true),
-      linkedAccounts: toBoolean(widgets.linkedAccounts, true),
-      recruitingCalendar: toBoolean(widgets.recruitingCalendar, true),
-      quickTasks: toBoolean(widgets.quickTasks, true),
-      atAGlanceSummary: toBoolean(widgets.atAGlanceSummary, true),
-      offerStatusOverview: toBoolean(widgets.offerStatusOverview, true),
-      interactionTrendChart: toBoolean(widgets.interactionTrendChart, true),
-      schoolInterestChart: toBoolean(widgets.schoolInterestChart, true),
-      schoolMapWidget: toBoolean(widgets.schoolMapWidget, true),
-      coachFollowupWidget: toBoolean(widgets.coachFollowupWidget, true),
-      eventsSummary: toBoolean(widgets.eventsSummary, true),
-      performanceSummary: toBoolean(widgets.performanceSummary, true),
-      recentDocuments: toBoolean(widgets.recentDocuments, true),
-      interactionStats: toBoolean(widgets.interactionStats, true),
-      schoolStatusOverview: toBoolean(widgets.schoolStatusOverview, true),
-      coachResponsiveness: toBoolean(widgets.coachResponsiveness, true),
-      upcomingDeadlines: toBoolean(widgets.upcomingDeadlines, true),
-    },
+    leftColumn: parseColumn(obj.leftColumn as unknown[]),
+    rightColumn: parseColumn(obj.rightColumn as unknown[]),
   };
 }
 
@@ -297,38 +298,29 @@ export function getDefaultSchoolPreferences(): SchoolPreferences {
   };
 }
 
-export function getDefaultDashboardLayout(): DashboardWidgetVisibility {
-  const defaultVisibility = true;
-
+export function getDefaultDashboardLayout(): DashboardLayout {
   return {
     statsCards: {
-      coaches: defaultVisibility,
-      schools: defaultVisibility,
-      interactions: defaultVisibility,
-      offers: defaultVisibility,
-      events: defaultVisibility,
-      performance: defaultVisibility,
-      notifications: defaultVisibility,
-      socialMedia: defaultVisibility,
+      coaches: true,
+      schools: true,
+      interactions: true,
+      offers: true,
+      events: true,
     },
-    widgets: {
-      recentNotifications: defaultVisibility,
-      linkedAccounts: defaultVisibility,
-      recruitingCalendar: defaultVisibility,
-      quickTasks: defaultVisibility,
-      atAGlanceSummary: defaultVisibility,
-      offerStatusOverview: defaultVisibility,
-      interactionTrendChart: defaultVisibility,
-      schoolInterestChart: defaultVisibility,
-      schoolMapWidget: defaultVisibility,
-      coachFollowupWidget: defaultVisibility,
-      eventsSummary: defaultVisibility,
-      performanceSummary: defaultVisibility,
-      recentDocuments: defaultVisibility,
-      interactionStats: defaultVisibility,
-      schoolStatusOverview: defaultVisibility,
-      coachResponsiveness: defaultVisibility,
-      upcomingDeadlines: defaultVisibility,
-    },
+    leftColumn: [
+      { id: "interactionTrendChart", visible: true },
+      { id: "schoolInterestChart", visible: true },
+      { id: "schoolMapWidget", visible: true },
+      { id: "performanceSummary", visible: true },
+      { id: "quickTasks", visible: true },
+      { id: "coachFollowupWidget", visible: true },
+      { id: "atAGlanceSummary", visible: true },
+    ],
+    rightColumn: [
+      { id: "schoolStatusOverview", visible: true },
+      { id: "eventsSummary", visible: true },
+      { id: "recentNotifications", visible: true },
+      { id: "linkedAccounts", visible: true },
+    ],
   };
 }

@@ -142,7 +142,7 @@ const handleSubmit = () => {
           <select
             v-model="formData.graduationYear"
             @change="handleGraduationYearChange"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             required
           >
             <option value="">Select your graduation year</option>
@@ -167,7 +167,7 @@ const handleSubmit = () => {
           </label>
           <select
             v-model="formData.primarySport"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             required
           >
             <option value="">Select a sport</option>
@@ -185,7 +185,7 @@ const handleSubmit = () => {
           <select
             v-if="primarySportHasPositions"
             v-model="formData.primaryPosition"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             required
           >
             <option value="">Select a position</option>
@@ -202,7 +202,7 @@ const handleSubmit = () => {
             v-model="formData.primaryPositionCustom"
             type="text"
             placeholder="Enter your position"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             required
           />
         </div>
@@ -214,7 +214,7 @@ const handleSubmit = () => {
           </label>
           <select
             v-model="formData.secondarySport"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select a secondary sport</option>
             <option v-for="sport in sports" :key="sport.id" :value="sport.id">
@@ -231,7 +231,7 @@ const handleSubmit = () => {
           <select
             v-if="secondarySportHasPositions"
             v-model="formData.secondaryPosition"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select a position</option>
             <option
@@ -247,7 +247,7 @@ const handleSubmit = () => {
             v-model="formData.secondaryPositionCustom"
             type="text"
             placeholder="Enter your position"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           />
         </div>
 

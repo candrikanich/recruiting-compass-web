@@ -105,7 +105,7 @@ defineProps<{
 
 <template>
   <header
-    class="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200"
+    class="bg-linear-to-r from-slate-50 to-blue-50 border-b border-slate-200"
     role="banner"
   >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
@@ -179,7 +179,7 @@ git commit -m "refactor: use PageHeader component on Dashboard page"
 
 **Step 1: Replace header markup**
 
-Replace lines 8-50 (the `<div class="bg-gradient-to-r ...">` header block) with:
+Replace lines 8-50 (the `<div class="bg-linear-to-r ...">` header block) with:
 
 ```vue
 <PageHeader title="Recruiting Timeline" description="Track your 4-year recruiting journey">
@@ -187,7 +187,7 @@ Replace lines 8-50 (the `<div class="bg-gradient-to-r ...">` header block) with:
     <!-- Current Phase Badge -->
     <div
       v-if="!phaseLoading"
-      class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm"
+      class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-xs"
     >
       <div class="text-sm text-slate-600 mb-1">Current Phase</div>
       <div class="text-lg font-bold text-slate-900">
@@ -198,7 +198,7 @@ Replace lines 8-50 (the `<div class="bg-gradient-to-r ...">` header block) with:
     <!-- Status Indicator -->
     <div
       v-if="!statusLoading"
-      class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm"
+      class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-xs"
     >
       <div class="text-sm text-slate-600 mb-1">Status</div>
       <div class="flex items-center gap-2">
@@ -243,7 +243,7 @@ Replace the `<div class="bg-white border-b border-slate-200">` header block (fro
   <template #actions>
     <NuxtLink
       to="/coaches/new"
-      class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-sm"
+      class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-xs"
     >
       <PlusIcon class="w-4 h-4" />
       Add Coach
@@ -254,7 +254,7 @@ Replace the `<div class="bg-white border-b border-slate-200">` header block (fro
       :disabled="exportLoading"
       :aria-busy="exportLoading"
       aria-label="Export coaches to CSV"
-      class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+      class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
     >
       <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
       {{ exportLoading ? "Exporting..." : "CSV" }}
@@ -265,7 +265,7 @@ Replace the `<div class="bg-white border-b border-slate-200">` header block (fro
       :disabled="exportLoading"
       :aria-busy="exportLoading"
       aria-label="Export coaches to PDF"
-      class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+      class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
     >
       <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
       {{ exportLoading ? "Exporting..." : "PDF" }}
@@ -328,7 +328,7 @@ Replace the `<div class="bg-white border-b border-slate-200">` header block with
     </button>
     <NuxtLink
       to="/schools/new"
-      class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+      class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
     >
       <PlusIcon class="w-4 h-4" />
       Add School
@@ -385,7 +385,7 @@ Replace the `<div class="bg-white border-b border-slate-200">` header block with
     <NuxtLink
       to="/interactions/add"
       data-testid="log-interaction-button"
-      class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
+      class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
     >
       <PlusIcon class="w-4 h-4" aria-hidden="true" />
       Log Interaction
@@ -425,7 +425,7 @@ The Events page header is currently broken (description inside `justify-between`
     <NuxtLink
       to="/events/create"
       data-testid="add-event-button"
-      class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-sm"
+      class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-xs"
     >
       <PlusIcon class="w-4 h-4" />
       Add Event
@@ -474,7 +474,7 @@ Replace the `<div class="bg-white border-b border-slate-200">` header block with
     <button
       data-testid="log-offer-button"
       @click="showAddForm = !showAddForm"
-      class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+      class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
     >
       <PlusIcon class="w-4 h-4" />
       {{ showAddForm ? "Cancel" : "Log Offer" }}
@@ -506,7 +506,7 @@ git commit -m "refactor: use PageHeader component on Offers page"
 
 The Documents page has a fundamentally different layout (`bg-gray-50`, no dedicated header section). Changes needed:
 
-1. Change root div from `bg-gray-50` to `bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100`
+1. Change root div from `bg-gray-50` to `bg-linear-to-br from-slate-50 via-blue-50 to-slate-100`
 2. Add `<PageHeader>` before the content container
 3. Remove the old inline header (`<div class="mb-8">...</div>` with h1/description)
 4. Keep the statistics row in the main content
@@ -515,7 +515,7 @@ Replace the page structure so it starts with:
 
 ```vue
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
     <PageHeader title="Documents" description="Manage videos, transcripts, and other recruiting documents" />
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -548,13 +548,13 @@ git commit -m "refactor: use PageHeader component on Documents page"
 
 Same structural change as Documents:
 
-1. Change root div from `bg-gray-50` to `bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100`
+1. Change root div from `bg-gray-50` to `bg-linear-to-br from-slate-50 via-blue-50 to-slate-100`
 2. Add `<PageHeader>` before the content
 3. Remove old inline header
 
 ```vue
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
     <PageHeader title="Recommendation Letters" description="Track recommendation letter requests and submissions" />
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -585,13 +585,13 @@ git commit -m "refactor: use PageHeader component on Recommendations page"
 
 **Step 1: Replace header and update page background**
 
-1. Change root div from `bg-gray-50` to `bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100`
+1. Change root div from `bg-gray-50` to `bg-linear-to-br from-slate-50 via-blue-50 to-slate-100`
 2. Add `<PageHeader>` before the content
 3. Remove old inline header
 
 ```vue
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
     <PageHeader title="Advanced Search" description="Search across schools, coaches, interactions, and performance metrics" />
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -622,12 +622,12 @@ git commit -m "refactor: use PageHeader component on Search page"
 
 **Step 1: Replace header and update page background**
 
-1. Change root div from `bg-gray-50` to `bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100`
+1. Change root div from `bg-gray-50` to `bg-linear-to-br from-slate-50 via-blue-50 to-slate-100`
 2. Replace the `<div class="bg-white border-b border-gray-200">` header block with `<PageHeader>`
 
 ```vue
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
     <PageHeader title="Analytics" description="Comprehensive recruiting metrics and performance insights" />
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">

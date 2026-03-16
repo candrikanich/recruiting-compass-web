@@ -23,7 +23,7 @@ All interactive elements lack visible focus rings when using keyboard navigation
 
 ```vue
 <!-- All inputs currently have: -->
-<input class="... focus:outline-none focus:ring-2 focus:ring-blue-500 ..." />
+<input class="... focus:outline-hidden focus:ring-2 focus:ring-blue-500 ..." />
 
 <!-- All buttons currently have no focus styling -->
 <button class="px-3 py-2 ...">CSV</button>
@@ -50,7 +50,7 @@ All interactive elements lack visible focus rings when using keyboard navigation
 <!-- Links: Add visible outline -->
 <NuxtLink
   to="/interactions/add"
-  class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
+  class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
 >
   <PlusIcon class="w-4 h-4" aria-hidden="true" />
   Log Interaction
@@ -61,7 +61,7 @@ All interactive elements lack visible focus rings when using keyboard navigation
 
 | Before                             | After                                                                      |
 | ---------------------------------- | -------------------------------------------------------------------------- |
-| `focus:outline-none`               | REMOVED (removes browser outline)                                          |
+| `focus:outline-hidden`               | REMOVED (removes browser outline)                                          |
 | `focus:ring-2 focus:ring-blue-500` | Changed to `focus:outline-2 focus:outline-blue-600 focus:outline-offset-1` |
 | No focus styling on buttons        | Added consistent focus outline                                             |
 
@@ -275,7 +275,7 @@ Keyboard users must tab through header navigation (~10+ tabs) before reaching ma
 ```vue
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Global Navigation -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
@@ -301,7 +301,7 @@ Keyboard users must tab through header navigation (~10+ tabs) before reaching ma
 ```vue
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100"
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- SKIP LINK: Appears on Tab, hidden by default -->
     <a
@@ -381,7 +381,7 @@ When user changes a filter, the interaction list updates but screen reader users
 ### Current Code (WRONG)
 
 ```vue
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6">
+<div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 mb-6">
   <InteractionFilters ... />
   <ActiveFilterChips ... />
 </div>
@@ -397,7 +397,7 @@ When user changes a filter, the interaction list updates but screen reader users
 ### Fixed Code (RIGHT)
 
 ```vue
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6">
+<div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 mb-6">
   <!-- LIVE REGION: Announces filter changes -->
   <div
     role="status"
@@ -515,7 +515,7 @@ Loading state appears but screen reader users don't know data is loading. Same f
   role="status"
   aria-live="polite"
   aria-atomic="true"
-  class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+  class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
 >
   <div
     class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
@@ -541,7 +541,7 @@ Loading state appears but screen reader users don't know data is loading. Same f
   role="status"
   aria-live="polite"
   aria-atomic="true"
-  class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+  class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
 >
   <ChatBubbleLeftRightIcon
     class="w-12 h-12 text-slate-300 mx-auto mb-4"
@@ -562,7 +562,7 @@ Loading state appears but screen reader users don't know data is loading. Same f
   role="status"
   aria-live="polite"
   aria-atomic="true"
-  class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center"
+  class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
 >
   <MagnifyingGlassIcon
     class="w-12 h-12 text-slate-300 mx-auto mb-4"
@@ -633,7 +633,7 @@ Buttons don't have clear accessible names. Screen readers don't describe what th
 ```vue
 <button
   @click="handleView"
-  class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition flex-shrink-0"
+  class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition shrink-0"
 >
   View
 </button>
@@ -646,7 +646,7 @@ Buttons don't have clear accessible names. Screen readers don't describe what th
 <button
   @click="handleView"
   :aria-label="`View ${formatType(interaction.type)} interaction with ${schoolName || 'Unknown'}`"
-  class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-2 focus:outline-blue-600 focus:outline-offset-1 flex-shrink-0"
+  class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-2 focus:outline-blue-600 focus:outline-offset-1 shrink-0"
 >
   View
 </button>
@@ -658,7 +658,7 @@ Buttons don't have clear accessible names. Screen readers don't describe what th
 **Current (WRONG):**
 
 ```vue
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+<div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
   <div class="flex items-center gap-3">
     <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
       <ChatBubbleLeftRightIcon class="w-5 h-5 text-blue-600" />
@@ -675,7 +675,7 @@ Buttons don't have clear accessible names. Screen readers don't describe what th
 **Fixed (RIGHT):**
 
 ```vue
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+<div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
   <div class="flex items-center gap-3" role="img" :aria-label="`Total interactions: ${totalCount}`">
     <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
       <ChatBubbleLeftRightIcon class="w-5 h-5 text-blue-600" aria-hidden="true" />

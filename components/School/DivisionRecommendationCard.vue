@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-blue-50 rounded-xl border border-blue-200 shadow-sm p-6">
+  <div class="bg-blue-50 rounded-xl border border-blue-200 shadow-xs p-6">
     <div class="flex items-start gap-3">
-      <div class="flex-shrink-0 mt-0.5">
+      <div class="shrink-0 mt-0.5">
         <svg
           class="h-6 w-6 text-blue-600"
           fill="none"

@@ -486,11 +486,11 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
       expect(focused).toBeTruthy();
     });
 
-    test("no focus outline suppression", async ({ page }) => {
+    test("no focus outline-solid suppression", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
       await page.waitForLoadState("networkidle");
 
-      // Check that focus:outline-none is not used globally
+      // Check that focus:outline-hidden is not used globally
       const bodyOutline = await page.evaluate(() => {
         const styles = window.getComputedStyle(document.body);
         return styles.outline;

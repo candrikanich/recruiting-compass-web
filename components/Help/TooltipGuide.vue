@@ -46,7 +46,7 @@ const arrowClasses = {
     <div
       v-show="showTooltip"
       :class="[positionClasses[position], props.maxWidth]"
-      class="absolute z-50 bg-slate-700 text-white text-sm px-3 py-2 rounded shadow-lg pointer-events-none"
+      class="absolute z-50 bg-slate-700 text-white text-sm px-3 py-2 rounded-sm shadow-lg pointer-events-none"
     >
       <div class="font-semibold mb-1">{{ helpDefinition.title }}</div>
       <div>{{ helpDefinition.shortDescription }}</div>

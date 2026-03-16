@@ -48,20 +48,27 @@ export interface Rule {
   ) => Record<string, unknown>;
 }
 
-export async function isDuplicateSuggestion(
+/**
+ * Checks for an existing active (non-dismissed, non-completed) suggestion within the dedup
+ * window. Returns the existing suggestion's id and message when found, or null when not found.
+ * Callers can use the returned id to update a stale message rather than inserting a duplicate.
+ */
+export async function findExistingSuggestion(
   supabase: SupabaseClient<Database>,
   athleteId: string,
   suggestion: SuggestionData,
   daysWindow: number = 7,
-): Promise<boolean> {
+): Promise<{ id: string; message: string | null } | null> {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - daysWindow);
 
   let query = supabase
     .from("suggestion")
-    .select("id")
+    .select("id, message")
     .eq("athlete_id", athleteId)
     .eq("rule_type", suggestion.rule_type)
+    .eq("dismissed", false)
+    .eq("completed", false)
     .gte("created_at", cutoffDate.toISOString());
 
   // For school-related rules, check per-school to allow multiple reminders simultaneously
@@ -71,5 +78,22 @@ export async function isDuplicateSuggestion(
 
   const { data, error } = await query.limit(1);
 
-  return !error && data && data.length > 0;
+  if (error || !data || data.length === 0) return null;
+  return { id: data[0].id, message: data[0].message };
+}
+
+/** @deprecated Use findExistingSuggestion instead */
+export async function isDuplicateSuggestion(
+  supabase: SupabaseClient<Database>,
+  athleteId: string,
+  suggestion: SuggestionData,
+  daysWindow: number = 7,
+): Promise<boolean> {
+  const existing = await findExistingSuggestion(
+    supabase,
+    athleteId,
+    suggestion,
+    daysWindow,
+  );
+  return existing !== null;
 }

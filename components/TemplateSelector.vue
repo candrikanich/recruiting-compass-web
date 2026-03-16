@@ -80,13 +80,13 @@
                   </h3>
                   <span
                     v-if="item.template.is_predefined"
-                    class="px-2 py-0.5 text-xs rounded bg-blue-100 text-blue-700 font-medium"
+                    class="px-2 py-0.5 text-xs rounded-sm bg-blue-100 text-blue-700 font-medium"
                   >
                     Suggested
                   </span>
                   <span
                     v-if="!item.unlocked"
-                    class="px-2 py-0.5 text-xs rounded bg-slate-200 text-slate-600"
+                    class="px-2 py-0.5 text-xs rounded-sm bg-slate-200 text-slate-600"
                   >
                     Locked
                   </span>
@@ -134,7 +134,7 @@
 
               <CheckCircleIcon
                 v-if="item.unlocked"
-                class="w-5 h-5 text-green-500 flex-shrink-0 mt-1"
+                class="w-5 h-5 text-green-500 shrink-0 mt-1"
               />
             </div>
           </button>

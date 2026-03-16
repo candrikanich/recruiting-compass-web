@@ -2,6 +2,9 @@ import { ref, computed } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import type { SharedRecord, RecordComment, TeamMember } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useCollaboration");
 
 export const useCollaboration = () => {
   const supabase = useSupabase();
@@ -49,7 +52,7 @@ export const useCollaboration = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to load shared records";
-      console.error("Load shared records error:", err);
+      logger.error("Load shared records error:", err);
     } finally {
       isLoading.value = false;
     }
@@ -95,7 +98,7 @@ export const useCollaboration = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to share record";
-      console.error("Share record error:", err);
+      logger.error("Share record error:", err);
       return null;
     }
   };
@@ -119,7 +122,7 @@ export const useCollaboration = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to revoke access";
-      console.error("Revoke access error:", err);
+      logger.error("Revoke access error:", err);
       return false;
     }
   };
@@ -159,7 +162,7 @@ export const useCollaboration = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to update access level";
-      console.error("Update access level error:", err);
+      logger.error("Update access level error:", err);
       return false;
     }
   };
@@ -185,7 +188,7 @@ export const useCollaboration = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to load comments";
-      console.error("Load comments error:", err);
+      logger.error("Load comments error:", err);
     } finally {
       isLoading.value = false;
     }
@@ -233,7 +236,7 @@ export const useCollaboration = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to add comment";
-      console.error("Add comment error:", err);
+      logger.error("Add comment error:", err);
       return null;
     }
   };
@@ -265,7 +268,7 @@ export const useCollaboration = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to delete comment";
-      console.error("Delete comment error:", err);
+      logger.error("Delete comment error:", err);
       return false;
     }
   };

@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <!-- Notes Card -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-semibold text-slate-900">Notes</h2>
         <div class="flex items-center gap-2">
@@ -27,7 +27,7 @@
           id="notes-textarea"
           v-model="localNotes"
           rows="4"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           placeholder="Add notes about this school..."
         />
         <button
@@ -44,7 +44,7 @@
     </div>
 
     <!-- Private Notes Card -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
       <div class="flex items-center justify-between mb-2">
         <div class="flex items-center gap-2">
           <DocumentTextIcon class="w-5 h-5 text-slate-400" />
@@ -75,7 +75,7 @@
           id="private-notes-textarea"
           v-model="localPrivateNotes"
           rows="4"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           placeholder="Add your private thoughts..."
         />
         <button

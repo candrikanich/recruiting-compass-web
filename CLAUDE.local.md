@@ -4,42 +4,43 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 ## Current Session
 
-**Status:** Clean - all work complete
-**Branch:** develop
-**Build:** ✅ Clean
-**Tests:** ✅ Passing (5486 tests)
+**Status:** NEARLY DONE — family unit symmetric redesign, Tasks 1–16 done (1 remains)
+**Branch:** develop (10 commits ahead of origin — NOT YET PUSHED)
+**Build:** not explicitly run this session
+**Tests:** ✅ 5860 passing (305 files)
+**Lint:** ✅ Clean (0 errors)
+**Type-check:** ✅ Clean (0 errors)
+**Handoff:** `planning/2026-02-28-family-unit-symmetric-handoff.md`
 
-## Completed
+## Action Required
 
-- **Structured Logging with Request Correlation** (2026-02-14)
-  - Fixed temporal dead zone error in logger initialization
-  - Added LOG_LEVEL environment variable support with production controls
-  - Implemented request correlation middleware for distributed tracing
-  - Added client-side correlation ID plugin
-  - Implemented data sanitization for sensitive fields
-  - Files modified/created:
-    - `server/utils/logger.ts` (enhanced)
-    - `server/middleware/correlation.ts` (new)
-    - `plugins/correlation.client.ts` (new)
-  - All test suites passing (5486 tests)
-  - Type checking: ✅ PASS
-  - Commit: `fe47537` feat: add structured logging with request correlation
+1. **Push branch first:** `git push`
+2. **Verify Supabase migration on remote:** The remote DB may still have `player_user_id` (migration `20260228000000` may have failed silently). Check via Supabase Dashboard before deploying.
+3. **Replace `TEAMID`** in `public/.well-known/apple-app-site-association` with real Apple Team ID
 
-- **High School Section Merge** (2026-02-14)
-  - Merged "Current High School" section into "Basic Info" section
-  - Added data migration for legacy `high_school` field
-  - Files modified:
-    - `/pages/settings/player-details.vue` (UI and migration logic)
-    - `/utils/recruitingPacketExport.ts` (prefer school_name over high_school)
-  - Tests updated: `/tests/e2e/player-details-autosave.spec.ts`
-  - Manual browser testing: ✅ PASS
-  - All test suites passing (5486 tests)
-  - Type checking: ✅ PASS
-  - Linting: ✅ PASS
-  - Commits:
-    - `580cefd` refactor: add detailed school fields to Basic Info section
-    - `bfc1b7d` refactor: remove standalone Current High School section
-    - `a32b349` test: update player-details tests for merged sections
-    - `dda4503` fix: add data migration for high_school to school_name
+## Resume at Task 17
+
+```
+/executing-plans docs/plans/2026-02-28-family-unit-symmetric-redesign-plan.md
+```
+→ Only Task 17 (E2E tests) remains
+
+## Tasks Remaining (17 only)
+
+17. E2E tests — create `tests/e2e/family-invite-flow.spec.ts`, check auth.spec.ts + family-units.spec.ts for stale assertions
+
+## Recently Completed (this session)
+
+- **Task 8:** `player-details.post.ts` + migration `20260228000001`
+- **Task 9:** `pages/join.vue` + 10 unit tests
+- **Task 10:** Player onboarding step 5 → invite parent UI
+- **Tasks 12–14:** Pending invitations UI, iOS universal links, deprecate accessible.get.ts
+- **Task 15:** Fixed all type errors (updated database.ts manually for `family_invitations` + `created_by_user_id`)
+- **Task 16:** Lint clean — fixed `\${...}` email template bug, unused vars
+
+## Prior Sessions
+
+- **Tasks 1–5, 11** (session 1): DB migration, invite endpoints, sendInviteEmail, useFamilyInvite
+- **Tasks 6–7** (session 2): Signup flow overhaul, parent onboarding wizard
 
 See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full history.

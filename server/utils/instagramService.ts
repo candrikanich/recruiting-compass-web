@@ -4,6 +4,9 @@
  */
 
 import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { createLogger } from "~/server/utils/logger";
+
+const logger = createLogger("instagram");
 
 interface InstagramMedia {
   id: string;
@@ -42,7 +45,7 @@ export class InstagramService {
     limit: number = 10,
   ): Promise<SocialMediaPostData[]> {
     if (!this.accessToken) {
-      console.warn("Instagram Access Token not configured");
+      logger.warn("Instagram Access Token not configured");
       return [];
     }
 
@@ -55,15 +58,15 @@ export class InstagramService {
 
       if (!userResponse.ok) {
         if (userResponse.status === 404) {
-          console.warn(`Instagram user not found: ${username}`);
+          logger.warn(`Instagram user not found: ${username}`);
           return [];
         }
         if (userResponse.status === 429) {
-          console.error("Instagram API rate limit exceeded");
+          logger.error("Instagram API rate limit exceeded");
           return [];
         }
         if (userResponse.status === 400) {
-          console.warn(`Invalid Instagram user: ${username}`);
+          logger.warn(`Invalid Instagram user: ${username}`);
           return [];
         }
         throw new Error(`Instagram user lookup failed: ${userResponse.status}`);
@@ -74,7 +77,7 @@ export class InstagramService {
       };
 
       if (!userData.data || userData.data.length === 0) {
-        console.warn(`Instagram user not found: ${username}`);
+        logger.warn(`Instagram user not found: ${username}`);
         return [];
       }
 
@@ -88,7 +91,7 @@ export class InstagramService {
 
       if (!mediaResponse.ok) {
         if (mediaResponse.status === 429) {
-          console.error("Instagram API rate limit exceeded");
+          logger.error("Instagram API rate limit exceeded");
           return [];
         }
         throw new Error(
@@ -117,7 +120,7 @@ export class InstagramService {
         is_recruiting_related: this.isRecruitingRelated(media.caption || ""),
       }));
     } catch (error) {
-      console.error(`Error fetching media for ${username}:`, error);
+      logger.error(`Error fetching media for ${username}:`, error);
       return [];
     }
   }

@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+
+vi.stubGlobal("navigateTo", vi.fn());
 import { useSessionTimeout } from "~/composables/useSessionTimeout";
 import type { SessionPreferences } from "~/types/session";
 

@@ -16,6 +16,12 @@ vi.mock("~/utils/validation/sanitize", () => ({
   sanitizeHtml: (html: string) => html.replace(/<[^>]*>/g, ""),
 }))
 
+vi.mock("~/composables/useFamilyContext", () => ({
+  useFamilyContext: () => ({
+    activeFamilyId: { value: "family-123" },
+  }),
+}))
+
 describe("Priority Tier Management", () => {
   let schoolStore: ReturnType<typeof useSchoolStore>
   let userStore: ReturnType<typeof useUserStore>

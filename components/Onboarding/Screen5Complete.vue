@@ -23,7 +23,7 @@ const progressBarWidth = computed(() => {
 
 <template>
   <div
-    class="flex flex-col min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 px-4 py-8"
+    class="flex flex-col min-h-screen bg-linear-to-br from-green-50 to-emerald-100 px-4 py-8"
   >
     <div class="max-w-2xl mx-auto w-full space-y-8 text-center">
       <!-- Icon -->
@@ -51,7 +51,7 @@ const progressBarWidth = computed(() => {
       <h1 class="text-3xl font-bold text-slate-900">You're all set!</h1>
 
       <!-- Profile Completeness Card -->
-      <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+      <div class="bg-white rounded-xl p-6 shadow-xs border border-slate-200">
         <div class="space-y-4">
           <div>
             <p class="text-sm font-medium text-slate-600 mb-2">

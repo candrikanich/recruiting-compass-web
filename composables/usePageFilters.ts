@@ -34,7 +34,7 @@ export const usePageFilters = <T extends string = string>(options?: {
   const sortBy = ref<string>(options?.defaultSort || "");
 
   // Load from localStorage on init if key provided
-  if (options?.storageKey) {
+  if (options?.storageKey && import.meta.client) {
     const stored = localStorage.getItem(options.storageKey);
     if (stored) {
       try {
@@ -53,6 +53,7 @@ export const usePageFilters = <T extends string = string>(options?: {
     watch(
       [searchQuery, filters, sortBy],
       () => {
+        if (!import.meta.client) return;
         localStorage.setItem(
           options.storageKey!,
           JSON.stringify({

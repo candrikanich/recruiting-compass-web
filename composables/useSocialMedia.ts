@@ -4,6 +4,9 @@ import { useUserStore } from "~/stores/user";
 
 import { socialMediaPostSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml, sanitizeUrl } from "~/utils/validation/sanitize";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useSocialMedia");
 
 export interface SocialPost {
   id: string;
@@ -76,7 +79,7 @@ export const useSocialMedia = () => {
       const message =
         err instanceof Error ? err.message : "Failed to fetch social posts";
       error.value = message;
-      console.error("Social posts fetch error:", message);
+      logger.error("Social posts fetch error:", message);
     } finally {
       loading.value = false;
     }

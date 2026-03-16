@@ -53,7 +53,7 @@
             type="checkbox"
             :checked="verifiedOnly"
             @change="handleVerifiedChange"
-            class="w-4 h-4 rounded accent-blue-600"
+            class="w-4 h-4 rounded-sm accent-blue-600"
           />
           <span class="ml-2 text-sm font-medium text-slate-900"
             >Verified Only</span

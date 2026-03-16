@@ -6,6 +6,7 @@
  */
 
 import type { H3Event } from "h3";
+import { SENSITIVE_FIELDS } from "~/utils/loggerConstants";
 
 type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -50,11 +51,12 @@ export function createLogger(context: string, options?: LoggerOptions): Logger {
   const isDevelopment =
     process.env.NODE_ENV === "development" || !process.env.NODE_ENV;
 
-  // In production, only log if LOG_LEVEL is explicitly set
-  // In development, default to "info"
-  const shouldLog = isDevelopment || process.env.LOG_LEVEL !== undefined;
+  // Level-controlled logging:
+  // - error and warn always emit (regardless of env or LOG_LEVEL)
+  // - info and debug: respect LOG_LEVEL (defaults to "info" in dev, silenced in prod unless set)
   const configuredLevel = (process.env.LOG_LEVEL as LogLevel) || "info";
   const minLevelPriority = LOG_LEVEL_PRIORITY[configuredLevel];
+  const verboseLoggingEnabled = isDevelopment || process.env.LOG_LEVEL !== undefined;
 
   // Extract request context if event provided
   const requestContext = options?.event
@@ -67,14 +69,14 @@ export function createLogger(context: string, options?: LoggerOptions): Logger {
     : undefined;
 
   const log = (level: LogLevel, message: string, data?: unknown) => {
-    // Skip if logging is disabled (production without explicit LOG_LEVEL)
-    if (!shouldLog) {
-      return;
-    }
+    const levelPriority = LOG_LEVEL_PRIORITY[level];
 
-    // Skip if below configured level
-    if (LOG_LEVEL_PRIORITY[level] < minLevelPriority) {
-      return;
+    // error and warn always emit — never silenced
+    if (levelPriority < LOG_LEVEL_PRIORITY["warn"]) {
+      // info and debug: skip if verbose logging is not enabled
+      if (!verboseLoggingEnabled) return;
+      // Skip if below configured level
+      if (levelPriority < minLevelPriority) return;
     }
 
     const timestamp = new Date().toISOString();
@@ -178,24 +180,10 @@ function sanitizeLogData(data: unknown): unknown {
 
   // Handle objects
   if (typeof data === "object") {
-    const sensitiveFields = new Set([
-      "password",
-      "password_hash",
-      "token",
-      "access_token",
-      "refresh_token",
-      "api_key",
-      "secret",
-      "credit_card",
-      "ssn",
-      "authorization",
-      "cookie",
-    ]);
-
     const sanitized: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
       const lowerKey = key.toLowerCase();
-      if (sensitiveFields.has(lowerKey) || lowerKey.includes("password")) {
+      if (SENSITIVE_FIELDS.has(lowerKey) || lowerKey.includes("password")) {
         sanitized[key] = "[REDACTED]";
       } else if (typeof value === "object" && value !== null) {
         sanitized[key] = sanitizeLogData(value);

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6"
+    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
   >
     <h3 class="text-slate-900 font-semibold mb-4">Recruiting Packet</h3>
     <div class="space-y-2">
@@ -11,7 +11,7 @@
         :class="
           recruitingPacketLoading
             ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
-            : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow-md'
+            : 'bg-linear-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-xs hover:shadow-md'
         "
       >
         <svg
@@ -58,7 +58,7 @@
         :class="
           !hasGeneratedPacket || recruitingPacketLoading
             ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
-            : 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 shadow-sm hover:shadow-md'
+            : 'bg-linear-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 shadow-xs hover:shadow-md'
         "
       >
         <svg

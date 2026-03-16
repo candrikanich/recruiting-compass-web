@@ -1,13 +1,24 @@
-import { defineEventHandler, getRouterParam, createError, readBody } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import {
+  defineEventHandler,
+  createError,
+  readBody,
+  getHeader,
+  getCookie,
+} from "h3";
+import { z } from "zod";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
+import { requireUuidParam } from "~/server/utils/validation";
+
+const cascadeDeleteSchema = z.object({ confirmDelete: z.boolean().optional() });
 
 /**
  * Cascade delete a school and all related records
  * POST /api/schools/[id]/cascade-delete
  *
  * This endpoint safely deletes a school by:
- * 1. Deleting all related records (coaches, interactions, offers, etc.)
+ * 1. Deleting all related records (coaches, interactions, offers, etc.) in parallel
  * 2. Finally deleting the school itself
  *
  * Body (optional):
@@ -22,24 +33,19 @@ import { useLogger } from "~/server/utils/logger";
  */
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "schools/cascade-delete");
-  const schoolId = getRouterParam(event, "id");
 
-  if (!schoolId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "School ID is required",
-    });
-  }
+  // Auth first, then validate inputs
+  await requireAuth(event);
+  const schoolId = requireUuidParam(event, "id");
 
-  let body = {};
+  let body: z.infer<typeof cascadeDeleteSchema>;
   try {
-    body = await readBody(event);
+    body = cascadeDeleteSchema.parse(await readBody(event).catch(() => ({})));
   } catch {
-    // Empty body is OK
+    throw createError({ statusCode: 400, statusMessage: "Invalid request body" });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { confirmDelete } = body as any;
+  const { confirmDelete } = body;
   if (!confirmDelete) {
     throw createError({
       statusCode: 400,
@@ -48,69 +54,81 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const client = createServerSupabaseClient();
+  // Get user's access token for RLS-respecting client
+  const authHeader = getHeader(event, "authorization");
+  const token: string | null = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : getCookie(event, "sb-access-token") || null;
+
+  if (!token) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Unauthorized - no authentication token",
+    });
+  }
+
+  // Use authenticated client to respect RLS policies
+  const client = createServerSupabaseUserClient(token);
   const deleted: Record<string, number> = {};
 
   try {
-    // Delete in dependency order (careful of cascade constraints)
+    // Delete all child records in parallel — none of these tables have FK
+    // dependencies on each other, only on the parent school row.
+    const [
+      { count: historyCount, error: historyError },
+      { count: coachCount, error: coachError },
+      { count: interactionCount, error: interactionError },
+      { count: offerCount, error: offerError },
+      { count: postCount, error: postError },
+      { count: docCount, error: docError },
+      { count: eventCount, error: eventError },
+      { count: suggestionCount, error: suggestionError },
+      { count: reminderCount, error: reminderError },
+    ] = await Promise.all([
+      client.from("school_status_history").delete().eq("school_id", schoolId),
+      client.from("coaches").delete().eq("school_id", schoolId),
+      client.from("interactions").delete().eq("school_id", schoolId),
+      client.from("offers").delete().eq("school_id", schoolId),
+      client.from("social_media_posts").delete().eq("school_id", schoolId),
+      client.from("documents").delete().eq("school_id", schoolId),
+      client.from("events").delete().eq("school_id", schoolId),
+      client.from("suggestion").delete().eq("related_school_id", schoolId),
+      client.from("follow_up_reminders").delete().eq("school_id", schoolId),
+    ]);
 
-    // 1. Delete audit logs
-    const { count: historyCount } = await client
-      .from("school_status_history")
-      .delete()
-      .eq("school_id", schoolId);
+    const childErrors = [
+      historyError,
+      coachError,
+      interactionError,
+      offerError,
+      postError,
+      docError,
+      eventError,
+      suggestionError,
+      reminderError,
+    ].filter(Boolean);
+    if (childErrors.length > 0) {
+      logger.error("Child record deletion failed during cascade delete", {
+        schoolId,
+        errors: childErrors,
+      });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to delete all related records",
+      });
+    }
+
     if (historyCount) deleted.school_status_history = historyCount;
-
-    // 2. Delete coaches (has FK constraint)
-    const { count: coachCount } = await client
-      .from("coaches")
-      .delete()
-      .eq("school_id", schoolId);
     if (coachCount) deleted.coaches = coachCount;
-
-    // 3. Delete interactions (has FK constraint)
-    const { count: interactionCount } = await client
-      .from("interactions")
-      .delete()
-      .eq("school_id", schoolId);
     if (interactionCount) deleted.interactions = interactionCount;
-
-    // 4. Delete offers (has FK constraint)
-    const { count: offerCount } = await client
-      .from("offers")
-      .delete()
-      .eq("school_id", schoolId);
     if (offerCount) deleted.offers = offerCount;
-
-    // 5. Delete social media posts (has FK constraint)
-    const { count: postCount } = await client
-      .from("social_media_posts")
-      .delete()
-      .eq("school_id", schoolId);
     if (postCount) deleted.social_media_posts = postCount;
-
-    // 6. Delete documents (optional FK)
-    const { count: docCount } = await client
-      .from("documents")
-      .delete()
-      .eq("school_id", schoolId);
     if (docCount) deleted.documents = docCount;
-
-    // 7. Delete events (optional FK)
-    const { count: eventCount } = await client
-      .from("events")
-      .delete()
-      .eq("school_id", schoolId);
     if (eventCount) deleted.events = eventCount;
-
-    // 8. Delete suggestions (optional FK)
-    const { count: suggestionCount } = await client
-      .from("suggestion")
-      .delete()
-      .eq("related_school_id", schoolId);
     if (suggestionCount) deleted.suggestion = suggestionCount;
+    if (reminderCount) deleted.follow_up_reminders = reminderCount;
 
-    // 9. Finally delete the school
+    // Finally delete the school — must come after all children are removed
     const { count: schoolCount, error: deleteError } = await client
       .from("schools")
       .delete()
@@ -127,6 +145,7 @@ export default defineEventHandler(async (event) => {
       (a: number, b: number) => a + b,
       0,
     );
+    logger.info("School cascade deleted", { schoolId, totalDeleted, deleted });
     return {
       success: true,
       schoolId,

@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "G374A783RH.com.chrisandrikanich.TheRecruitingCompass",
+        "paths": ["/invite/*", "/join"]
+      }
+    ]
+  }
+}

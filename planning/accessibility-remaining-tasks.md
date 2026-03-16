@@ -101,7 +101,7 @@
   <h2 id="coach-stats-heading" class="sr-only">Coach Statistics</h2>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
       <h3 id="stat-interactions" class="text-sm font-medium text-slate-700 mb-2">
         Total Interactions
       </h3>
@@ -122,7 +122,7 @@
   target="_blank"
   rel="noopener noreferrer"
   :aria-label="`View ${coach.first_name}'s Twitter profile (opens in new window)`"
-  class="text-blue-600 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
+  class="text-blue-600 hover:text-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-1"
 >
   {{ coach.twitter_handle }}
   <span aria-hidden="true" class="ml-1 inline-block">↗</span>

@@ -6,6 +6,7 @@
 
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
+import { createClientLogger } from "~/utils/logger";
 import type {
   Coach,
   School,
@@ -14,6 +15,8 @@ import type {
   Event,
   PerformanceMetric,
 } from "~/types/models";
+
+const logger = createClientLogger("useDashboardData");
 
 export interface DashboardCounts {
   coaches: number;
@@ -89,6 +92,7 @@ export const useDashboardData = () => {
       .eq("family_unit_id", familyId);
 
     if (schoolsError) {
+      logger.error("Error fetching schools:", schoolsError);
       throw schoolsError;
     }
 
@@ -114,10 +118,14 @@ export const useDashboardData = () => {
       error: coachesError,
     } = await supabase
       .from("coaches")
-      .select("*", { count: "exact" })
+      .select(
+        "id, first_name, last_name, role, email, phone, school_id, twitter_handle, instagram_handle, last_contact_date, created_at, updated_at",
+        { count: "exact" },
+      )
       .in("school_id", schoolIds);
 
     if (coachesError) {
+      logger.error("Error fetching coaches:", coachesError);
       throw coachesError;
     }
 
@@ -128,7 +136,7 @@ export const useDashboardData = () => {
   /**
    * Fetch interactions for a user
    */
-  const fetchInteractions = async (userId: string): Promise<void> => {
+  const fetchInteractions = async (familyId: string): Promise<void> => {
     const {
       data: interactionsData,
       count: interactionsCount,
@@ -136,9 +144,10 @@ export const useDashboardData = () => {
     } = await supabase
       .from("interactions")
       .select("*", { count: "exact" })
-      .eq("logged_by", userId);
+      .eq("family_unit_id", familyId);
 
     if (interactionsError) {
+      logger.error("Error fetching interactions:", interactionsError);
       throw interactionsError;
     }
 
@@ -161,7 +170,8 @@ export const useDashboardData = () => {
       if (!offersError && offersData) {
         allOffers.value = offersData;
       }
-    } catch {
+    } catch (err) {
+      logger.error("Error fetching offers:", err);
       allOffers.value = [];
     }
   };
@@ -179,7 +189,8 @@ export const useDashboardData = () => {
       if (!eventsError && eventsData) {
         allEvents.value = eventsData;
       }
-    } catch {
+    } catch (err) {
+      logger.error("Error fetching events:", err);
       allEvents.value = [];
     }
   };
@@ -197,7 +208,8 @@ export const useDashboardData = () => {
       if (!metricsError && metricsData) {
         allMetrics.value = metricsData;
       }
-    } catch {
+    } catch (err) {
+      logger.error("Error fetching metrics:", err);
       allMetrics.value = [];
     }
   };
@@ -209,6 +221,7 @@ export const useDashboardData = () => {
    */
   const fetchAll = async (familyId: string, userId: string): Promise<void> => {
     if (!familyId) {
+      logger.warn("No family ID provided, skipping data fetch");
       return;
     }
 
@@ -223,7 +236,7 @@ export const useDashboardData = () => {
       const schoolIds = allSchools.value.map((s) => s.id);
       await Promise.all([
         fetchCoaches(schoolIds),
-        fetchInteractions(userId),
+        fetchInteractions(familyId),
         fetchOffers(userId),
         fetchEvents(userId),
         fetchMetrics(userId),
@@ -231,6 +244,7 @@ export const useDashboardData = () => {
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to fetch dashboard data";
+      logger.error("Dashboard data fetch error:", err);
       throw err;
     } finally {
       loading.value = false;

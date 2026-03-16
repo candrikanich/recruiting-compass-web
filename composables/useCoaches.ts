@@ -1,4 +1,4 @@
-import { ref, computed, inject, type ComputedRef } from "vue";
+import { ref, computed, shallowRef, inject, watch, type ComputedRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
@@ -7,6 +7,10 @@ import type { Coach } from "~/types/models";
 import type { Database } from "~/types/database";
 import { coachSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
+import { createClientLogger } from "~/utils/logger";
+import { useAuthFetch } from "~/composables/useAuthFetch";
+
+const logger = createClientLogger("useCoaches");
 
 type CoachesInsert = Database["public"]["Tables"]["coaches"]["Insert"];
 type CoachesUpdate = Database["public"]["Tables"]["coaches"]["Update"];
@@ -61,29 +65,49 @@ export const useCoaches = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
-  // Try to get the provided family context (from page), fall back to singleton
+  const { $fetchAuth } = useAuthFetch();
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
-  const activeFamily = injectedFamily || useFamilyContext();
 
   if (!injectedFamily) {
-    console.warn(
+    logger.warn(
       "[useCoaches] activeFamily injection failed, using singleton fallback. " +
         "This may cause data sync issues when parent switches athletes.",
     );
   }
 
-  const coaches = ref<Coach[]>([]);
-  const loading = ref(false);
+  const activeFamily = injectedFamily ?? useFamilyContext();
+
+  // Keyed by schoolId to allow concurrent fetches for different schools.
+  // Declared inside the factory so each instance has its own independent map.
+  const fetchInFlight = new Map<string, Promise<void>>();
+
+  const coaches = shallowRef<Coach[]>([]);
+  const loadingCount = ref(0);
+  const loading = computed(() => loadingCount.value > 0);
   const error = ref<string | null>(null);
 
-  const fetchCoaches = async (schoolId: string) => {
+  // Auto-invalidate cache when parent switches athlete
+  watch(
+    () => activeFamily.activeAthleteId?.value,
+    async (newId, oldId) => {
+      if (newId && newId !== oldId) {
+        coaches.value = [];
+        await fetchAllCoaches();
+      }
+    },
+  );
+
+  const fetchCoaches = (schoolId: string): Promise<void> => {
+    if (fetchInFlight.has(schoolId)) return fetchInFlight.get(schoolId)!;
+
+    const promise = (async () => {
     if (!activeFamily.activeFamilyId.value) {
       error.value = "No family context";
       return;
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -115,7 +139,7 @@ export const useCoaches = (): {
         .order("created_at", { ascending: false });
 
       if (fetchError) {
-        console.error("Fetch error:", fetchError);
+        logger.error("Fetch error:", fetchError);
         throw fetchError;
       }
 
@@ -124,10 +148,16 @@ export const useCoaches = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch coaches";
       error.value = message;
-      console.error("Coach fetch error:", message);
+      logger.error("Coach fetch error:", message);
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
+    })().finally(() => {
+      fetchInFlight.delete(schoolId);
+    });
+
+    fetchInFlight.set(schoolId, promise);
+    return promise;
   };
 
   const fetchAllCoaches = async (filters?: {
@@ -140,7 +170,7 @@ export const useCoaches = (): {
       return;
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -187,7 +217,7 @@ export const useCoaches = (): {
       const { data, error: fetchError } = await query;
 
       if (fetchError) {
-        console.error("Fetch error:", fetchError);
+        logger.error("Fetch error:", fetchError);
         throw fetchError;
       }
 
@@ -196,9 +226,9 @@ export const useCoaches = (): {
       const message =
         err instanceof Error ? err.message : "Failed to fetch coaches";
       error.value = message;
-      console.error("Coach fetch error:", message);
+      logger.error("Coach fetch error:", message);
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -208,7 +238,7 @@ export const useCoaches = (): {
       return;
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -241,14 +271,14 @@ export const useCoaches = (): {
         err instanceof Error ? err.message : "Failed to fetch coaches";
       error.value = message;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
   const getCoach = async (id: string): Promise<Coach | null> => {
     if (!userStore.user) return null;
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -267,7 +297,7 @@ export const useCoaches = (): {
       error.value = message;
       return null;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -279,7 +309,7 @@ export const useCoaches = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -323,7 +353,7 @@ export const useCoaches = (): {
       };
 
       if (insertError) {
-        console.error("Supabase insert error details:", {
+        logger.error("Supabase insert error details:", {
           message: insertError.message,
           details: insertError.details,
           hint: insertError.hint,
@@ -333,7 +363,9 @@ export const useCoaches = (): {
         throw insertError;
       }
 
-      coaches.value.push(data as Coach);
+      coaches.value = [...coaches.value, data as Coach];
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("coach_added");
       return data as Coach;
     } catch (err: unknown) {
       const message =
@@ -341,7 +373,7 @@ export const useCoaches = (): {
       error.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -350,7 +382,7 @@ export const useCoaches = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -412,7 +444,7 @@ export const useCoaches = (): {
       // Update local state
       const index = coaches.value.findIndex((c) => c.id === id);
       if (index !== -1) {
-        coaches.value[index] = data as Coach;
+        coaches.value = coaches.value.map((c, i) => i === index ? data as Coach : c);
       }
 
       return data as Coach;
@@ -422,7 +454,7 @@ export const useCoaches = (): {
       error.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -431,7 +463,7 @@ export const useCoaches = (): {
       throw new Error("User not authenticated or family not loaded");
     }
 
-    loading.value = true;
+    loadingCount.value++;
     error.value = null;
 
     try {
@@ -451,7 +483,7 @@ export const useCoaches = (): {
       error.value = message;
       throw err;
     } finally {
-      loading.value = false;
+      loadingCount.value--;
     }
   };
 
@@ -470,15 +502,10 @@ export const useCoaches = (): {
         message.includes("still referenced")
       ) {
         // Try cascade delete via API endpoint
-        const result = await fetch(`/api/coaches/${id}/cascade-delete`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ confirmDelete: true }),
-        });
-        const cascadeResponse = (await result.json()) as Record<
-          string,
-          unknown
-        >;
+        const cascadeResponse = await $fetchAuth<Record<string, unknown>>(
+          `/api/coaches/${id}/cascade-delete`,
+          { method: "POST", body: { confirmDelete: true } },
+        );
         if (cascadeResponse.success) {
           coaches.value = coaches.value.filter((c) => c.id !== id);
           return { cascadeUsed: true };
@@ -494,7 +521,7 @@ export const useCoaches = (): {
 
   return {
     coaches: computed(() => coaches.value),
-    loading: computed(() => loading.value),
+    loading,
     error: computed(() => error.value),
     fetchCoaches,
     fetchAllCoaches,

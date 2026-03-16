@@ -8,7 +8,7 @@
 import { defineEventHandler } from "h3";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
-import { requireAuth } from "~/server/utils/auth";
+import { requireAuth, getUserRole } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import type { Database } from "~/types/database";
 
@@ -66,8 +66,33 @@ export default defineEventHandler(async (event) => {
   const supabase = createServerSupabaseClient();
 
   try {
+    // Resolve the athlete ID: parents view their linked player's data
+    let athleteId = user.id;
+    const role = await getUserRole(user.id, supabase);
+    if (role === "parent") {
+      const { data: familyMembership } = await supabase
+        .from("family_members")
+        .select("family_unit_id")
+        .eq("user_id", user.id)
+        .eq("role", "parent")
+        .maybeSingle();
+
+      if (familyMembership) {
+        const { data: playerMember } = await supabase
+          .from("family_members")
+          .select("user_id")
+          .eq("family_unit_id", familyMembership.family_unit_id)
+          .eq("role", "player")
+          .maybeSingle();
+
+        if (playerMember?.user_id) {
+          athleteId = playerMember.user_id;
+        }
+      }
+    }
+
     // Call optimized RPC function instead of 6 sequential queries
-    const { data, error } = await callGetAthleteStatusRpc(supabase, user.id);
+    const { data, error } = await callGetAthleteStatusRpc(supabase, athleteId);
 
     if (error) {
       logger.error("Error calling get_athlete_status RPC", error);

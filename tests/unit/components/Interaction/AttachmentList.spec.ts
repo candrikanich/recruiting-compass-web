@@ -149,7 +149,7 @@ describe("AttachmentList", () => {
       const container = wrapper.find("div.bg-white");
       expect(container.classes()).toContain("bg-white");
       expect(container.classes()).toContain("rounded-lg");
-      expect(container.classes()).toContain("shadow");
+      expect(container.classes()).toContain("shadow-sm");
       expect(container.classes()).toContain("p-6");
     });
 
