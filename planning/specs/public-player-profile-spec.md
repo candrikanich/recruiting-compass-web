@@ -121,7 +121,7 @@ No auto-pause on inactivity.
 **`player_profiles`**
 ```sql
 id              uuid PK
-player_id       uuid FK → players.id
+user_id         uuid FK → users.id         -- FK to users table (players ARE users with role='player')
 family_unit_id  uuid FK → family_units.id  -- access control
 hash_slug       text UNIQUE NOT NULL       -- system-generated, e.g. 'k7x9m2'
 vanity_slug     text UNIQUE NULLABLE       -- player-chosen
@@ -134,6 +134,8 @@ show_schools    boolean DEFAULT true
 created_at      timestamptz
 updated_at      timestamptz
 ```
+
+> **Design Note:** There is no separate `players` table. Players ARE users with `role = 'player'`. The `user_id` FK enforces this relationship directly at the database level.
 
 **`profile_tracking_links`**
 ```sql
@@ -169,7 +171,7 @@ user_agent          text NULLABLE
 | `GET` | `/api/public/profile/[slug]` | None | Returns public profile data |
 | `POST` | `/api/public/profile/[slug]/view` | None | Logs a view (with optional `ref` token) |
 | `PUT` | `/api/player/profile` | Required | Update profile settings (visibility toggles, bio, slug) |
-| `POST` | `/api/player/profile/tracking-links` | Required | Generate tracking link for a coach |
+| `POST` | `/api/player/profile/tracking-links/[coachId]` | Required | Generate tracking link for a coach (idempotent) |
 | `GET` | `/api/player/profile/tracking-links/[coachId]` | Required | Fetch link + view stats for a specific coach |
 
 ### Slug Resolution
