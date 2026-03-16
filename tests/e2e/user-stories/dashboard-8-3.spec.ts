@@ -27,7 +27,8 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
     const activityItems = page.locator('[data-testid="activity-event-item"]');
     const count = await activityItems.count();
 
-    // Should show 10 or fewer (depending on how many activities exist)
+    // waitForSelector above guarantees at least 1 item; cap is 10
+    expect(count).toBeGreaterThanOrEqual(1);
     expect(count).toBeLessThanOrEqual(10);
   });
 

@@ -282,6 +282,7 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     const initialCards = await page
       .locator("[data-testid='school-card']")
       .count();
+    expect(initialCards).toBeGreaterThan(0);
 
     // Apply fit score filter
     const fitScoreMin = page.locator('input[placeholder="Min"]').first();

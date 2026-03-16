@@ -215,10 +215,9 @@ test.describe("Schools Sorting", () => {
       await divisionSelect.selectOption("D1");
       await page.waitForTimeout(300);
 
-      // Verify schools are still sorted
+      // Verify schools are still sorted (filtering reduces or maintains count)
       let filteredSchools = await page.locator("h3").all();
       expect(filteredSchools.length).toBeLessThanOrEqual(initialCount);
-      expect(filteredSchools.length).toBeGreaterThanOrEqual(0);
     }
   });
 

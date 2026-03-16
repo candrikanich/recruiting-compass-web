@@ -85,14 +85,11 @@ test.describe("Diagnostic Tests", () => {
     // This will fail if Supabase isn't configured
     await page.goto("/login");
 
-    // If page loads without errors, Supabase is connected
-    const isLoaded = await page.evaluate(() => {
-      return (
-        (window as any).__NUXT__?.ready === true ||
-        document.body.textContent.length > 0
-      );
+    // Supabase is connected when Nuxt has fully hydrated
+    const isNuxtReady = await page.evaluate(() => {
+      return (window as any).__NUXT__?.ready === true;
     });
 
-    expect(isLoaded).toBe(true);
+    expect(isNuxtReady).toBe(true);
   });
 });
