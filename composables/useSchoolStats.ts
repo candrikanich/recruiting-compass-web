@@ -5,7 +5,8 @@ import type { School } from '~/types/models';
 import {
   AcademicCapIcon,
   StarIcon,
-  MapPinIcon
+  MapPinIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/vue/24/outline';
 
 export function useSchoolStats(schools: Ref<School[]>) {
@@ -32,6 +33,13 @@ export function useSchoolStats(schools: Ref<School[]>) {
       icon: MapPinIcon,
       color: 'green' as const,
       testId: 'stat-visited'
+    },
+    {
+      label: 'Contacted',
+      value: schools.value.filter(s => s.status === 'contacted').length,
+      icon: ChatBubbleLeftRightIcon,
+      color: 'purple' as const,
+      testId: 'stat-contacted'
     }
   ]);
 
