@@ -451,7 +451,6 @@ import {
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useAppToast } from "~/composables/useAppToast";
 import { useFormValidation } from "~/composables/useFormValidation";
-import { useFitScoreRecalculation } from "~/composables/useFitScoreRecalculation";
 import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
 import { useAutoSave } from "~/composables/useAutoSave";
 import { useUserStore } from "~/stores/user";
@@ -468,8 +467,6 @@ const userStore = useUserStore();
 const { isLoading, getPlayerDetails, setPlayerDetails, loadAllPreferences } =
   usePreferenceManager();
 const { showToast } = useAppToast();
-const { recalculateAllFitScores } =
-  useFitScoreRecalculation();
 const { errors, clearErrors, hasErrors } = useFormValidation();
 
 const isParentRole = computed(() => userStore.user?.role === "parent");
@@ -628,16 +625,6 @@ onMounted(async () => {
   }
 });
 
-// Trigger one final recalculation when leaving the page or finishing major edits
-const handleFinalSave = async () => {
-  saving.value = true;
-  try {
-    await recalculateAllFitScores();
-    showToast("Profile updated and fit scores recalculated", "success");
-  } finally {
-    saving.value = false;
-  }
-};
 </script>
 
 <style scoped>
