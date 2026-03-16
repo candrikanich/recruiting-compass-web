@@ -247,7 +247,9 @@ const {
 } = useDeleteModal(smartDelete);
 
 // Computed
-const schoolCoaches = computed(() => allCoaches.value);
+const schoolCoaches = computed(() =>
+  allCoaches.value.filter((c) => c.school_id === id),
+);
 const schoolDocuments = computed(() =>
   documents.value.filter((doc: Document) =>
     (doc.shared_with_schools as string[] | undefined)?.includes(id),
