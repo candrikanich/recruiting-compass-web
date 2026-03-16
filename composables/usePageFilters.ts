@@ -12,7 +12,7 @@ import type { Ref } from "vue";
  *
  * Example:
  * ```typescript
- * type SchoolSortOption = "name" | "status" | "rankingScore";
+ * type SchoolSortOption = "name" | "status" | "distance";
  *
  * const { searchQuery, filters, sortBy, clearFilters } = usePageFilters<SchoolSortOption>({
  *   defaultSort: "name",

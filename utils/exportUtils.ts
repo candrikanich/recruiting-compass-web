@@ -107,7 +107,6 @@ export const exportSchoolComparisonToCSV = (
     "Location",
     "Distance (mi)",
     "Status",
-    "Ranking",
     "Coaches",
     "Interactions",
     "Offer Type",
@@ -125,7 +124,6 @@ export const exportSchoolComparisonToCSV = (
     s.location || "",
     s.distance ? Math.round(s.distance) : "",
     formatStatus(s.status),
-    s.ranking || "",
     s.coachCount || 0,
     s.interactionCount || 0,
     s.offer ? formatOfferType(s.offer.offer_type) : "",
@@ -358,7 +356,6 @@ export const generateSchoolComparisonPDF = (
     <table>
       <thead>
         <tr>
-          <th>Rank</th>
           <th>School</th>
           <th>Division</th>
           <th>Distance</th>
@@ -372,7 +369,6 @@ export const generateSchoolComparisonPDF = (
           .map(
             (s, idx) => `
           <tr>
-            <td>${s.ranking || idx + 1}</td>
             <td><strong>${s.name}</strong><br><small style="color:#666">${s.location || ""}</small></td>
             <td>${s.division || "-"}</td>
             <td>${s.distance ? `${Math.round(s.distance)} mi` : "-"}</td>

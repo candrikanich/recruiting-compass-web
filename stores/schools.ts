@@ -130,7 +130,7 @@ export const useSchoolStore = defineStore("schools", () => {
         .from("schools")
         .select("*")
         .eq("family_unit_id", familyId)
-        .order("ranking", { ascending: true, nullsFirst: false });
+        .order("name", { ascending: true });
 
       if (fetchError) throw fetchError;
 
@@ -339,47 +339,6 @@ export const useSchoolStore = defineStore("schools", () => {
   }
 
   /**
-   * Update school rankings (batch operation)
-   * Much faster than updating individually
-   */
-  async function updateRanking(schools_: School[]) {
-    const userStore = useUserStore();
-    const supabase = useSupabase();
-
-    loading.value = true;
-    error.value = null;
-
-    try {
-      if (!userStore.user) {
-        throw new Error("User not authenticated");
-      }
-
-      // Batch update all rankings in a single operation
-      const updates = schools_.map((school, index) => ({
-        id: school.id,
-        ranking: index + 1,
-        updated_by: userStore.user!.id,
-        updated_at: new Date().toISOString(),
-      }));
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: batchError } = await (supabase as any)
-        .from("schools")
-        .upsert(updates, { onConflict: "id" });
-
-      if (batchError) throw batchError;
-
-      schools.value = schools_;
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update ranking";
-      error.value = message;
-    } finally {
-      loading.value = false;
-    }
-  }
-
-  /**
    * Update school status and create a history entry
    * Story 3.4: Status change timestamped and tracked in history
    */
@@ -566,7 +525,6 @@ export const useSchoolStore = defineStore("schools", () => {
     updateSchool,
     deleteSchool,
     toggleFavorite,
-    updateRanking,
     updateStatus,
     getStatusHistory,
     setSelectedSchool,

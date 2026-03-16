@@ -87,15 +87,6 @@
       </div>
     </div>
 
-    <!-- Ranking -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-      <h3 class="font-semibold text-slate-900 mb-4">Ranking</h3>
-      <div class="text-center py-4">
-        <div class="w-16 h-1 bg-blue-500 mx-auto mb-2 rounded-full"></div>
-        <p class="text-slate-600 text-sm">Current ranking</p>
-      </div>
-    </div>
-
     <!-- Fit Signals Card -->
     <div
       v-if="personalFit || academicFit"

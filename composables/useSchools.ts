@@ -178,11 +178,6 @@ export const useSchools = () => {
     return schoolStore.toggleFavorite(id, currentFavorite, activeFamily.activeFamilyId.value ?? "");
   };
 
-  const updateRanking = async (schools_: School[]) => {
-    if (!userStore.user) throw new Error("User not authenticated");
-    return schoolStore.updateRanking(schools_);
-  };
-
   /**
    * Extract domain from URL (helper for duplicate detection)
    */
@@ -327,7 +322,6 @@ export const useSchools = () => {
     deleteSchool,
     smartDelete,
     toggleFavorite,
-    updateRanking,
     findDuplicate,
     hasDuplicate,
     isNameDuplicate,

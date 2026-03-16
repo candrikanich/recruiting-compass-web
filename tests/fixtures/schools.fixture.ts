@@ -14,7 +14,6 @@ export function createMockSchool(overrides: Partial<School> = {}): School {
     state: overrides.state || "MA",
     division: overrides.division || "D1",
     conference: overrides.conference || "ACC",
-    ranking: overrides.ranking ?? null,
     is_favorite: overrides.is_favorite ?? false,
     website: overrides.website || "https://test.edu",
     favicon_url: overrides.favicon_url ?? null,
