@@ -254,7 +254,7 @@
                   <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Height</label>
                   <div class="flex gap-2">
                     <select v-model="heightFeet" :disabled="isParentRole" @change="triggerSave" class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
-                      <option v-for="ft in [4, 5, 6, 7]" :key="ft" :value="ft">{{ ft }}\'</option>
+                      <option v-for="ft in [4, 5, 6, 7]" :key="ft" :value="ft">{{ ft }}'</option>
                     </select>
                     <select v-model="heightInches" :disabled="isParentRole" @change="triggerSave" class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
                       <option v-for="i in 12" :key="i - 1" :value="i - 1">{{ i - 1 }}"</option>
