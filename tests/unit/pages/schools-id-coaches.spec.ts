@@ -826,4 +826,66 @@ describe("pages/schools/[id]/coaches.vue", () => {
       expect(wrapper.text()).toContain("No coaches match your filters");
     });
   });
+
+  describe("Cross-school isolation (regression)", () => {
+    it("should not show coaches belonging to a different school", async () => {
+      // Simulate the store accumulating coaches from two schools
+      mockCoaches.value = [
+        createMockCoach({ id: "coach-1", school_id: "school-123" }),
+        createMockCoach({
+          id: "coach-2",
+          school_id: "other-school",
+          first_name: "Other",
+        }),
+        createMockCoach({ id: "coach-3", school_id: "school-123", first_name: "Jane" }),
+      ];
+
+      const wrapper = mount(SchoolCoachesPage);
+      await flushPromises();
+
+      expect(wrapper.vm.schoolCoaches).toHaveLength(2);
+      expect(
+        wrapper.vm.schoolCoaches.every(
+          (c: { school_id: string }) => c.school_id === "school-123",
+        ),
+      ).toBe(true);
+    });
+
+    it("should return empty list when store only has coaches from other schools", async () => {
+      mockCoaches.value = [
+        createMockCoach({ id: "coach-1", school_id: "other-school" }),
+      ];
+
+      const wrapper = mount(SchoolCoachesPage);
+      await flushPromises();
+
+      expect(wrapper.vm.schoolCoaches).toHaveLength(0);
+    });
+
+    it("filteredCoaches should only include coaches for the current school", async () => {
+      mockCoaches.value = [
+        createMockCoach({
+          id: "coach-1",
+          school_id: "school-123",
+          first_name: "John",
+        }),
+        createMockCoach({
+          id: "coach-2",
+          school_id: "other-school",
+          first_name: "John",
+        }),
+      ];
+
+      const wrapper = mount(SchoolCoachesPage);
+      await flushPromises();
+
+      // Even when searching for a name that matches coaches on both schools,
+      // only the current school's coach appears
+      await wrapper.find("#search").setValue("John");
+      await flushPromises();
+
+      expect(wrapper.vm.filteredCoaches).toHaveLength(1);
+      expect(wrapper.vm.filteredCoaches[0].school_id).toBe("school-123");
+    });
+  });
 });

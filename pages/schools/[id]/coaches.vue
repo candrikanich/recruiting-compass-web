@@ -121,26 +121,26 @@
       </div>
 
       <!-- Results Summary -->
-      <div v-if="coaches.length > 0" class="mb-6">
+      <div v-if="schoolCoaches.length > 0" class="mb-6">
         <p class="text-sm text-slate-600">
           Showing
           <span class="font-semibold">{{ filteredCoaches.length }}</span> of
-          <span class="font-semibold">{{ coaches.length }}</span>
-          {{ coaches.length === 1 ? "coach" : "coaches" }}
+          <span class="font-semibold">{{ schoolCoaches.length }}</span>
+          {{ schoolCoaches.length === 1 ? "coach" : "coaches" }}
         </p>
       </div>
 
       <!-- Page State: Loading / Error / Empty -->
       <PageState
-        :loading="loading && coaches.length === 0"
-        :isEmpty="!loading && coaches.length === 0"
+        :loading="loading && schoolCoaches.length === 0"
+        :isEmpty="!loading && schoolCoaches.length === 0"
         loading-message="Loading coaches..."
         empty-title="No coaches added yet"
         empty-message="Add your first coach to get started"
       >
         <!-- No Results State (separate from empty) -->
         <div
-          v-if="coaches.length > 0 && filteredCoaches.length === 0"
+          v-if="schoolCoaches.length > 0 && filteredCoaches.length === 0"
           class="bg-white rounded-2xl shadow-lg p-8 text-center border border-slate-200"
         >
           <p class="text-slate-600">No coaches match your filters</p>
@@ -302,9 +302,13 @@ const school = computed((): School | undefined => {
 
 const { applyFiltersAndSort } = useCoachFilters();
 
+const schoolCoaches = computed(() =>
+  coaches.value.filter((c) => c.school_id === id),
+);
+
 const filteredCoaches = computed(() =>
   applyFiltersAndSort(
-    coaches.value,
+    schoolCoaches.value,
     searchQuery.value,
     (filters.value.role as string) || "",
     sortBy.value as CoachSortOption,
@@ -403,6 +407,7 @@ defineExpose({
   searchQuery,
   filters,
   sortBy,
+  schoolCoaches,
   filteredCoaches,
   handleCoachFormSubmit,
   isDeleteDialogOpen,
