@@ -1,13 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useProfileCompleteness } from "~/composables/useProfileCompleteness";
 
-// Mock Supabase
+// Mock Supabase (used by getNextPrompt / dismissPrompt)
 vi.mock("~/composables/useSupabase", () => ({
   useSupabase: vi.fn(() => ({
     auth: {
       getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
     },
     from: vi.fn(),
+  })),
+}));
+
+// Mock PreferenceManager (used by updateCompleteness)
+vi.mock("~/composables/usePreferenceManager", () => ({
+  usePreferenceManager: vi.fn(() => ({
+    loadAllPreferences: vi.fn().mockResolvedValue(undefined),
+    getPlayerDetails: vi.fn().mockReturnValue(null),
   })),
 }));
 
@@ -82,47 +90,38 @@ describe("useProfileCompleteness", () => {
       expect(completeness.completeness.value).toBeLessThanOrEqual(100);
     });
 
-    it("should handle calculation errors", async () => {
-      const { useSupabase } = await import("~/composables/useSupabase");
-      const mockSupabase = {
-        from: vi.fn(() => ({
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
-                data: null,
-                error: new Error("Profile not found"),
-              }),
-            })),
-          })),
-        })),
-        auth: {
-          getSession: vi.fn().mockResolvedValue({
-            data: { session: { user: { id: "test-user" } } },
-          }),
-        },
-      };
-      vi.mocked(useSupabase).mockReturnValue(mockSupabase);
+    it("should handle calculation errors gracefully", async () => {
+      const { usePreferenceManager } = await import(
+        "~/composables/usePreferenceManager"
+      );
+      vi.mocked(usePreferenceManager).mockReturnValue({
+        loadAllPreferences: vi
+          .fn()
+          .mockRejectedValue(new Error("Failed to load preferences")),
+        getPlayerDetails: vi.fn().mockReturnValue(null),
+      } as any);
 
       const completeness = useProfileCompleteness();
-      await expect(completeness.updateCompleteness()).rejects.toThrow();
+      await completeness.updateCompleteness();
+
+      expect(completeness.error.value).toBe("Failed to load preferences");
+      expect(completeness.loading.value).toBe(false);
     });
 
-    it("should handle unauthenticated user", async () => {
-      const { useSupabase } = await import("~/composables/useSupabase");
-      const mockSupabase = {
-        from: vi.fn(),
-        auth: {
-          getSession: vi.fn().mockResolvedValue({
-            data: { session: null },
-          }),
-        },
-      };
-      vi.mocked(useSupabase).mockReturnValue(mockSupabase);
+    it("should set completeness to 0 when no player details found", async () => {
+      const { usePreferenceManager } = await import(
+        "~/composables/usePreferenceManager"
+      );
+      vi.mocked(usePreferenceManager).mockReturnValue({
+        loadAllPreferences: vi.fn().mockResolvedValue(undefined),
+        getPlayerDetails: vi.fn().mockReturnValue(null),
+      } as any);
 
       const completeness = useProfileCompleteness();
-      await expect(completeness.updateCompleteness()).rejects.toThrow(
-        "Not authenticated",
-      );
+      await completeness.updateCompleteness();
+
+      expect(completeness.completeness.value).toBe(0);
+      expect(completeness.error.value).toBeNull();
     });
   });
 
