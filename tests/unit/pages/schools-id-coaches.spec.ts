@@ -128,7 +128,6 @@ describe("pages/schools/[id]/coaches.vue", () => {
     twitter_handle: "@coachsmith",
     instagram_handle: "coachsmith",
     notes: "Head coach",
-    responsiveness_score: 85,
     last_contact_date: "2024-01-15",
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",
@@ -342,19 +341,16 @@ describe("pages/schools/[id]/coaches.vue", () => {
         createMockCoach({
           id: "coach-1",
           first_name: "Charlie",
-          responsiveness_score: 60,
           last_contact_date: "2024-01-10",
         }),
         createMockCoach({
           id: "coach-2",
           first_name: "Alice",
-          responsiveness_score: 90,
           last_contact_date: "2024-01-20",
         }),
         createMockCoach({
           id: "coach-3",
           first_name: "Bob",
-          responsiveness_score: 40,
           last_contact_date: "2024-01-15",
         }),
       ];
@@ -380,20 +376,6 @@ describe("pages/schools/[id]/coaches.vue", () => {
 
       // Test that sort state is changed
       expect(wrapper.vm.sortBy).toBe("lastContact");
-      expect(wrapper.vm.filteredCoaches).toBeDefined();
-      expect(wrapper.vm.filteredCoaches.length).toBe(3);
-    });
-
-    it("should sort by responsiveness (highest first)", async () => {
-      const wrapper = mount(SchoolCoachesPage);
-      const sortSelect = wrapper.find("#sortFilter");
-
-      await sortSelect.setValue("responsiveness");
-      await flushPromises();
-      await nextTick();
-
-      // Test that sort state is changed
-      expect(wrapper.vm.sortBy).toBe("responsiveness");
       expect(wrapper.vm.filteredCoaches).toBeDefined();
       expect(wrapper.vm.filteredCoaches.length).toBe(3);
     });

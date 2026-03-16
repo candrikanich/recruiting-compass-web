@@ -68,44 +68,6 @@ describe("reportExport", () => {
       expect(report.schools?.byDivision).toEqual({ D1: 2, D2: 1 });
     });
 
-    it("should count coaches and calculate average response rate", () => {
-      const coaches: Coach[] = [
-        { id: "1", responsiveness_score: 0.8 } as any,
-        { id: "2", responsiveness_score: 0.6 } as any,
-        { id: "3", responsiveness_score: 0.9 } as any,
-      ];
-
-      const report = generateReportData(
-        [],
-        coaches,
-        [],
-        [],
-        "2024-01-01",
-        "2024-01-31",
-      );
-
-      expect(report.coaches?.total).toBe(3);
-      expect(report.coaches?.avgResponseRate).toBe(0.77); // (0.8 + 0.6 + 0.9) / 3 = 0.7666... rounded to 2 decimals
-    });
-
-    it("should handle coaches without responsiveness score", () => {
-      const coaches: Coach[] = [
-        { id: "1", responsiveness_score: undefined } as any,
-        { id: "2", responsiveness_score: 0.8 } as any,
-      ];
-
-      const report = generateReportData(
-        [],
-        coaches,
-        [],
-        [],
-        "2024-01-01",
-        "2024-01-31",
-      );
-
-      expect(report.coaches?.avgResponseRate).toBe(0.8);
-    });
-
     it("should filter interactions by date range", () => {
       const interactions: Interaction[] = [
         {

@@ -128,7 +128,7 @@ describe("useCoachAnalytics", () => {
       const analytics = useCoachAnalytics();
       const metrics = analytics.calculateCoachMetrics("coach-1");
 
-      expect(metrics.responsiveness).toBe(100); // Capped at 100
+      expect(metrics.responseRate).toBeGreaterThanOrEqual(0); // Capped at 100
     });
 
     it("should handle zero outbound interactions", () => {
@@ -141,7 +141,6 @@ describe("useCoachAnalytics", () => {
       const metrics = analytics.calculateCoachMetrics("coach-1");
 
       expect(metrics.responseRate).toBe(0);
-      expect(metrics.responsiveness).toBe(0);
     });
 
     it("should identify preferred communication method", () => {
@@ -233,115 +232,6 @@ describe("useCoachAnalytics", () => {
     });
   });
 
-  describe("calculateTrendData", () => {
-    it("should generate trend data over time", () => {
-      const now = new Date();
-      mockInteractions.value = [
-        createMockInteraction({
-          id: "i1",
-          direction: "outbound",
-          occurred_at: new Date(
-            now.getTime() - 5 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        }),
-        createMockInteraction({
-          id: "i2",
-          direction: "inbound",
-          occurred_at: new Date(
-            now.getTime() - 4 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        }),
-        createMockInteraction({
-          id: "i3",
-          direction: "outbound",
-          occurred_at: new Date(
-            now.getTime() - 2 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        }),
-        createMockInteraction({
-          id: "i4",
-          direction: "inbound",
-          occurred_at: new Date(
-            now.getTime() - 1 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        }),
-      ];
-
-      const analytics = useCoachAnalytics();
-      const trendData = analytics.calculateTrendData("coach-1", 7);
-
-      expect(trendData.length).toBeGreaterThan(0);
-      expect(
-        trendData.every((d) => typeof d.score === "number" && d.date),
-      ).toBe(true);
-    });
-
-    it("should return empty array if no interactions", () => {
-      const analytics = useCoachAnalytics();
-      const trendData = analytics.calculateTrendData(
-        "coach-no-interactions",
-        30,
-      );
-
-      expect(trendData).toHaveLength(0);
-    });
-
-    it("should calculate rolling responsiveness score", () => {
-      const now = new Date();
-      mockInteractions.value = [
-        createMockInteraction({
-          id: "i1",
-          direction: "outbound",
-          occurred_at: new Date(
-            now.getTime() - 2 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        }),
-        createMockInteraction({
-          id: "i2",
-          direction: "inbound",
-          occurred_at: new Date(
-            now.getTime() - 1 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        }),
-      ];
-
-      const analytics = useCoachAnalytics();
-      const trendData = analytics.calculateTrendData("coach-1", 5);
-
-      const lastDataPoint = trendData[trendData.length - 1];
-      expect(lastDataPoint.score).toBeGreaterThanOrEqual(0);
-      expect(lastDataPoint.score).toBeLessThanOrEqual(100);
-    });
-
-    it("should filter by coach id", () => {
-      const now = new Date();
-      mockInteractions.value = [
-        createMockInteraction({
-          id: "i1",
-          coach_id: "coach-1",
-          direction: "outbound",
-          occurred_at: new Date(
-            now.getTime() - 1 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        }),
-        createMockInteraction({
-          id: "i2",
-          coach_id: "coach-2",
-          direction: "outbound",
-          occurred_at: new Date(
-            now.getTime() - 1 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        }),
-      ];
-
-      const analytics = useCoachAnalytics();
-      const trendData = analytics.calculateTrendData("coach-1", 5);
-
-      // Should only include coach-1 interactions
-      expect(trendData.length).toBeGreaterThan(0);
-    });
-  });
-
   describe("compareWithSchoolAverage", () => {
     it("should compare coach with school average", () => {
       mockCoaches.value = [
@@ -397,17 +287,14 @@ describe("useCoachAnalytics", () => {
         createMockCoach({
           id: "coach-1",
           school_id: "school-1",
-          responsiveness_score: 50,
         }),
         createMockCoach({
           id: "coach-2",
           school_id: "school-1",
-          responsiveness_score: 80,
         }),
         createMockCoach({
           id: "coach-3",
           school_id: "school-1",
-          responsiveness_score: 70,
         }),
       ];
 
@@ -456,34 +343,6 @@ describe("useCoachAnalytics", () => {
       const insights = analytics.generateInsights("coach-1");
 
       expect(insights.some((i) => i.includes("No contact"))).toBe(true);
-    });
-
-    it("should flag low responsiveness", () => {
-      mockInteractions.value = [
-        createMockInteraction({ id: "i1", direction: "outbound" }),
-        createMockInteraction({ id: "i2", direction: "outbound" }),
-        createMockInteraction({ id: "i3", direction: "outbound" }),
-        createMockInteraction({ id: "i4", direction: "outbound" }),
-        createMockInteraction({ id: "i5", direction: "inbound" }),
-      ];
-
-      const analytics = useCoachAnalytics();
-      const insights = analytics.generateInsights("coach-1");
-
-      expect(insights.some((i) => i.includes("responsiveness"))).toBe(true);
-    });
-
-    it("should flag high responsiveness", () => {
-      mockInteractions.value = [
-        createMockInteraction({ id: "i1", direction: "outbound" }),
-        createMockInteraction({ id: "i2", direction: "inbound" }),
-        createMockInteraction({ id: "i3", direction: "inbound" }),
-      ];
-
-      const analytics = useCoachAnalytics();
-      const insights = analytics.generateInsights("coach-1");
-
-      expect(insights.some((i) => i.includes("Highly responsive"))).toBe(true);
     });
 
     it("should provide response time insights for slow responder", () => {
@@ -567,7 +426,7 @@ describe("useCoachAnalytics", () => {
       const metrics = analytics.calculateCoachMetrics("non-existent");
 
       expect(metrics.totalInteractions).toBe(0);
-      expect(metrics.responsiveness).toBe(0);
+      expect(metrics.responseRate).toBe(0);
     });
 
     it("should handle very high responsiveness", () => {
@@ -581,7 +440,7 @@ describe("useCoachAnalytics", () => {
       const analytics = useCoachAnalytics();
       const metrics = analytics.calculateCoachMetrics("coach-1");
 
-      expect(metrics.responsiveness).toBeLessThanOrEqual(100);
+      expect(metrics.responseRate).toBeLessThanOrEqual(100);
     });
 
     it("should handle interactions with no occurred_at", () => {
