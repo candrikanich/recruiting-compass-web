@@ -275,10 +275,11 @@ describe("useRecruitingPacket", () => {
       expect(mockCapture).toHaveBeenCalledWith("recruiting_packet_generated");
     });
 
-    it("sets loading state during generation", async () => {
+    it("sets loading state to true during generation and false after", async () => {
       const { generatePacket, loading } = useRecruitingPacket();
-
+      expect(loading.value).toBe(false);
       const promise = generatePacket();
+      expect(loading.value).toBe(true);
       await promise;
       expect(loading.value).toBe(false);
     });
@@ -469,7 +470,11 @@ describe("useRecruitingPacket", () => {
       const data = await aggregateAthleteData();
 
       const breakdown = data.activitySummary.interactionBreakdown;
-      expect(breakdown.emails + breakdown.calls + breakdown.camps).toBeGreaterThan(0);
+      expect(breakdown.emails).toBe(1);
+      expect(breakdown.calls).toBe(1);
+      expect(breakdown.camps).toBe(1);
+      expect(breakdown.visits).toBe(0);
+      expect(breakdown.other).toBe(0);
     });
   });
 

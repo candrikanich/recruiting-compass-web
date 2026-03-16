@@ -53,7 +53,7 @@ export const useRecruitingPacket = () => {
   const hasGeneratedPacket = computed(() => !!generatedHtml.value);
 
   const formatHeight = (inches: number | undefined): string | undefined => {
-    if (!inches) return undefined;
+    if (inches == null) return undefined;
     const feet = Math.floor(inches / 12);
     const remainingInches = inches % 12;
     return `${feet}'${remainingInches}"`;
@@ -174,7 +174,7 @@ export const useRecruitingPacket = () => {
       camps: interactions.value.filter(
         (i) => i.type === "camp" || i.type === "showcase",
       ).length,
-      visits: interactions.value.filter((i) => i.type.includes("visit")).length,
+      visits: interactions.value.filter((i) => i.type.includes("visit") || i.type === "virtual_meeting").length,
       other: interactions.value.filter(
         (i) =>
           ![
@@ -212,7 +212,7 @@ export const useRecruitingPacket = () => {
    */
   const aggregateAthleteData = async (): Promise<RecruitingPacketData> => {
     // Fetch in parallel
-    const [athleteData] = await Promise.all([fetchAthleteData()]);
+    const athleteData = await fetchAthleteData();
 
     const groupedSchools = groupSchoolsByTier(schools.value);
     const activitySummary = calculateActivitySummary();
