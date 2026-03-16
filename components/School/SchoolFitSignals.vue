@@ -25,7 +25,7 @@
       </div>
 
       <div v-else class="space-y-4">
-        <FitSignalRow
+        <SchoolFitSignalRow
           v-for="signal in personalSignals"
           :key="signal.label"
           :signal="signal"
@@ -54,7 +54,7 @@
       </div>
 
       <div v-else class="space-y-4">
-        <FitSignalRow
+        <SchoolFitSignalRow
           v-for="signal in academicSignals"
           :key="signal.label"
           :signal="signal"
