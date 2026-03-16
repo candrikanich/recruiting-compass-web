@@ -18,7 +18,7 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Loading State -->
       <div
-        v-if="loading"
+        v-if="isInitializing || loading"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         role="status"
         aria-live="polite"
@@ -154,10 +154,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, defineAsyncComponent } from "vue";
+import { ref, onMounted, computed, watch, defineAsyncComponent } from "vue";
 import { useRoute } from "vue-router";
 import { navigateTo } from "#app";
 import { useSchools } from "~/composables/useSchools";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useCoaches } from "~/composables/useCoaches";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import { useFitScore } from "~/composables/useFitScore";
@@ -231,8 +232,11 @@ const { addPro, removePro, addCon, removeCon } = useSchoolProsCons(id);
 const { statusUpdating, updateStatus, toggleFavorite } =
   useSchoolStatusManagement(id);
 
+const { activeFamilyId } = useFamilyCtx();
+
 // State
 const school = ref<School | null>(null);
+const isInitializing = ref(true);
 const fitScore = ref<FitScoreResult | null>(null);
 const divisionRecommendation = ref<DivisionRecommendation | null>(null);
 const showEmailModal = ref(false);
@@ -468,13 +472,28 @@ const lookupCollegeData = async () => {
   }
 };
 
-onMounted(async () => {
+const loadPageData = async () => {
   school.value = await getSchool(id);
   if (school.value) {
     initializeForm(school.value);
     await fetchCoaches(id);
     await fetchDocuments();
     await loadFitScore();
+  }
+  isInitializing.value = false;
+};
+
+onMounted(() => {
+  if (activeFamilyId.value) {
+    loadPageData();
+  } else {
+    // Family context not ready yet (e.g. hard refresh) — wait for it
+    const stop = watch(activeFamilyId, (familyId) => {
+      if (familyId) {
+        stop();
+        loadPageData();
+      }
+    });
   }
 });
 </script>
