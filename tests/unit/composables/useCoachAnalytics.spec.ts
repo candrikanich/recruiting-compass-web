@@ -32,7 +32,6 @@ describe("useCoachAnalytics", () => {
     twitter_handle: "@coach",
     instagram_handle: "coach",
     notes: "",
-    responsiveness_score: 75,
     last_contact_date: new Date().toISOString(),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -103,7 +102,6 @@ describe("useCoachAnalytics", () => {
       expect(metrics.outboundCount).toBe(2);
       expect(metrics.inboundCount).toBe(2);
       expect(metrics.responseRate).toBe(100); // 2 inbound / 2 outbound
-      expect(metrics.responsiveness).toBe(100);
     });
 
     it("should calculate response rate correctly", () => {
@@ -118,7 +116,6 @@ describe("useCoachAnalytics", () => {
       const metrics = analytics.calculateCoachMetrics("coach-1");
 
       expect(metrics.responseRate).toBe(33); // 1 inbound / 3 outbound = 33.33%
-      expect(metrics.responsiveness).toBe(33);
     });
 
     it("should cap responsiveness at 100", () => {

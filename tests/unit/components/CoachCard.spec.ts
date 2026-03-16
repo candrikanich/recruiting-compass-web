@@ -16,7 +16,6 @@ describe("CoachCard.vue", () => {
     twitter_handle: "@coachsmith",
     instagram_handle: "coachsmith",
     notes: "Great head coach",
-    responsiveness_score: 85,
     last_contact_date: "2024-01-15T12:00:00Z",
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",
@@ -80,90 +79,6 @@ describe("CoachCard.vue", () => {
 
       const schoolElements = wrapper.findAll(".text-xs.text-gray-400");
       expect(schoolElements).toHaveLength(0);
-    });
-  });
-
-  describe("Responsiveness Display", () => {
-    it("should display responsiveness score and label", () => {
-      const coach = createMockCoach({ responsiveness_score: 85 });
-      const wrapper = mount(CoachCard, {
-        props: { coach },
-      });
-
-      expect(wrapper.text()).toContain("85%");
-      expect(wrapper.text()).toContain("Highly Responsive");
-    });
-
-    it("should apply emerald color class for highly responsive coach (75+)", () => {
-      const coach = createMockCoach({ responsiveness_score: 90 });
-      const wrapper = mount(CoachCard, {
-        props: { coach },
-      });
-
-      const badge = wrapper.find(".bg-emerald-100");
-      expect(badge.exists()).toBe(true);
-      expect(badge.classes()).toContain("text-emerald-800");
-    });
-
-    it("should apply blue color class for responsive coach (50-74)", () => {
-      const coach = createMockCoach({ responsiveness_score: 60 });
-      const wrapper = mount(CoachCard, {
-        props: { coach },
-      });
-
-      const badge = wrapper.find(".bg-blue-100");
-      expect(badge.exists()).toBe(true);
-      expect(badge.classes()).toContain("text-blue-700");
-    });
-
-    it("should apply orange color class for moderately responsive coach (25-49)", () => {
-      const coach = createMockCoach({ responsiveness_score: 35 });
-      const wrapper = mount(CoachCard, {
-        props: { coach },
-      });
-
-      const badge = wrapper.find(".bg-orange-100");
-      expect(badge.exists()).toBe(true);
-      expect(badge.classes()).toContain("text-orange-800");
-    });
-
-    it("should apply purple color class for low responsiveness coach (0-24)", () => {
-      const coach = createMockCoach({ responsiveness_score: 10 });
-      const wrapper = mount(CoachCard, {
-        props: { coach },
-      });
-
-      const badge = wrapper.find(".bg-purple-100");
-      expect(badge.exists()).toBe(true);
-      expect(badge.classes()).toContain("text-purple-800");
-    });
-
-    it("should not display responsiveness when score is undefined", () => {
-      const coach = createMockCoach({ responsiveness_score: undefined as any });
-      const wrapper = mount(CoachCard, {
-        props: { coach },
-      });
-
-      expect(wrapper.text()).not.toContain("Responsive");
-    });
-
-    it("should not display responsiveness when score is null", () => {
-      const coach = createMockCoach({ responsiveness_score: null as any });
-      const wrapper = mount(CoachCard, {
-        props: { coach },
-      });
-
-      expect(wrapper.text()).not.toContain("Responsive");
-    });
-
-    it("should display responsiveness when score is 0", () => {
-      const coach = createMockCoach({ responsiveness_score: 0 });
-      const wrapper = mount(CoachCard, {
-        props: { coach },
-      });
-
-      expect(wrapper.text()).toContain("0%");
-      expect(wrapper.text()).toContain("Low Responsiveness");
     });
   });
 
@@ -544,16 +459,5 @@ describe("CoachCard.vue", () => {
       expect(wrapper.text()).toContain("(555) 123-4567 ext. 890");
     });
 
-    it("should handle responsiveness score boundaries", () => {
-      const scores = [0, 25, 50, 75, 100];
-      scores.forEach((score) => {
-        const coach = createMockCoach({ responsiveness_score: score });
-        const wrapper = mount(CoachCard, {
-          props: { coach },
-        });
-
-        expect(wrapper.text()).toContain(`${score}%`);
-      });
-    });
   });
 });

@@ -15,7 +15,6 @@ describe("composables/useCoachFilters", () => {
     twitter_handle: "@coach",
     instagram_handle: "coach",
     notes: null,
-    responsiveness_score: 85,
     last_contact_date: "2024-01-15",
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",
@@ -227,31 +226,6 @@ describe("composables/useCoachFilters", () => {
       expect(result[2].id).toBe("coach-2"); // Null date (treated as 0)
     });
 
-    it("should sort by responsiveness (highest first)", () => {
-      const coaches = [
-        createMockCoach({ id: "coach-1", responsiveness_score: 60 }),
-        createMockCoach({ id: "coach-2", responsiveness_score: 90 }),
-        createMockCoach({ id: "coach-3", responsiveness_score: 40 }),
-      ];
-      const result = sortCoaches(coaches, "responsiveness");
-
-      expect(result[0].responsiveness_score).toBe(90);
-      expect(result[1].responsiveness_score).toBe(60);
-      expect(result[2].responsiveness_score).toBe(40);
-    });
-
-    it("should handle null responsiveness_score", () => {
-      const coaches = [
-        createMockCoach({ id: "coach-1", responsiveness_score: 60 }),
-        createMockCoach({ id: "coach-2", responsiveness_score: null }),
-        createMockCoach({ id: "coach-3", responsiveness_score: 90 }),
-      ];
-      const result = sortCoaches(coaches, "responsiveness");
-
-      expect(result[0].id).toBe("coach-3"); // Highest score
-      expect(result[1].id).toBe("coach-1"); // Middle score
-      expect(result[2].id).toBe("coach-2"); // Null (treated as 0)
-    });
   });
 
   describe("applyFiltersAndSort", () => {
@@ -262,21 +236,18 @@ describe("composables/useCoachFilters", () => {
           first_name: "John",
           email: "john@test.edu",
           role: "head",
-          responsiveness_score: 80,
         }),
         createMockCoach({
           id: "coach-2",
           first_name: "Jane",
           email: "jane@test.edu",
           role: "assistant",
-          responsiveness_score: 90,
         }),
         createMockCoach({
           id: "coach-3",
           first_name: "Bob",
           email: "bob@test.edu",
           role: "head",
-          responsiveness_score: 70,
         }),
       ];
 
