@@ -45,7 +45,6 @@ describe("Coach Deletion Integration", () => {
     twitter_handle: "@coach",
     instagram_handle: "coach",
     notes: "Head coach",
-    responsiveness_score: 85,
     last_contact_date: "2024-01-01",
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",

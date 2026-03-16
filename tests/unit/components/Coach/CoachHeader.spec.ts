@@ -20,15 +20,6 @@ vi.mock("~/utils/dateFormatters", () => ({
   daysAgo: vi.fn((date: string) => 5),
 }));
 
-// Mock ResponsivenessBadge component
-vi.mock("~/components/ResponsivenessBadge.vue", () => ({
-  default: {
-    name: "ResponsivenessBadge",
-    props: ["percentage"],
-    template: '<div data-test="responsiveness-badge">{{ percentage }}%</div>',
-  },
-}));
-
 // Mock Heroicons
 vi.mock("@heroicons/vue/24/outline", () => ({
   EnvelopeIcon: { name: "EnvelopeIcon", template: "<svg />" },
@@ -55,7 +46,6 @@ describe("CoachHeader", () => {
     phone: "555-1234",
     twitter_handle: "@johndoe",
     instagram_handle: "@johndoe_coach",
-    responsiveness_score: 85,
     last_contact_date: "2026-01-15",
     notes: "",
     created_at: new Date().toISOString(),
@@ -119,27 +109,6 @@ describe("CoachHeader", () => {
       expect(wrapper.text()).toContain("No contact recorded yet");
     });
 
-    it("displays responsiveness badge when score is available", () => {
-      const wrapper = mount(CoachHeader, {
-        props: { coach: mockCoach },
-        global: { stubs: { NuxtLink: { template: "<a><slot /></a>" } } },
-      });
-
-      const badge = wrapper.find('[data-test="responsiveness-badge"]');
-      expect(badge.exists()).toBe(true);
-      expect(badge.text()).toContain("85%");
-    });
-
-    it("hides responsiveness badge when score is undefined", () => {
-      const coachNoScore = { ...mockCoach, responsiveness_score: undefined };
-      const wrapper = mount(CoachHeader, {
-        props: { coach: coachNoScore },
-        global: { stubs: { NuxtLink: { template: "<a><slot /></a>" } } },
-      });
-
-      const badge = wrapper.find('[data-test="responsiveness-badge"]');
-      expect(badge.exists()).toBe(false);
-    });
   });
 
   describe("Contact Information", () => {

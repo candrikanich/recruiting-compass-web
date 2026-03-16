@@ -14,7 +14,6 @@ export function createMockCoach(overrides: Partial<Coach> = {}): Coach {
     twitter_handle: "@coachsmith",
     instagram_handle: "coachsmith",
     notes: "Head coach",
-    responsiveness_score: 85,
     last_contact_date: generateTimestamp(7),
     created_at: generateTimestamp(30),
     updated_at: generateTimestamp(0),
