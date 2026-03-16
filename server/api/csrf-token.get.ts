@@ -1,4 +1,6 @@
+import { defineEventHandler, createError } from "h3";
 import { setCsrfToken } from "../utils/csrf";
+import { useLogger } from "~/server/utils/logger";
 
 /**
  * GET /api/csrf-token
@@ -10,9 +12,19 @@ import { setCsrfToken } from "../utils/csrf";
  * @returns { token: string } CSRF token for client use
  */
 export default defineEventHandler((event) => {
-  const token = setCsrfToken(event);
-
-  return {
-    token,
-  };
+  const logger = useLogger(event, "csrf-token");
+  try {
+    const token = setCsrfToken(event);
+    logger.debug("CSRF token issued");
+    return {
+      token,
+    };
+  } catch (err) {
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Failed to issue CSRF token", err);
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to generate CSRF token",
+    });
+  }
 });

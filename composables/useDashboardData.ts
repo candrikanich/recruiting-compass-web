@@ -237,9 +237,8 @@ export const useDashboardData = () => {
         fetchMetrics(userId),
       ]);
     } catch (err) {
-      const message =
+      error.value =
         err instanceof Error ? err.message : "Failed to fetch dashboard data";
-      error.value = message;
       logger.error("Dashboard data fetch error:", err);
       throw err;
     } finally {

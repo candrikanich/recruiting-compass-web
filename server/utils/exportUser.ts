@@ -1,7 +1,15 @@
 import JSZip from "jszip";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { logger } from "./logger";
 import { createServerSupabaseClient } from "./supabase";
+
+// profiles is not in the generated Database types — define its shape here
+interface ProfileRow {
+  id: string;
+  user_id: string;
+  [key: string]: unknown;
+}
 
 interface ExportData {
   profile: Record<string, unknown>;
@@ -26,6 +34,10 @@ export async function gatherUserData(userId: string): Promise<ExportData> {
   const supabase = createServerSupabaseClient();
 
   try {
+    // profiles is not in the generated Database schema, so use an untyped client
+    // for that query only. All other tables are fully typed via Database.
+    const untypedSupabase = supabase as unknown as SupabaseClient;
+
     // Fetch all user data in parallel
     const [
       profileRes,
@@ -38,53 +50,43 @@ export async function gatherUserData(userId: string): Promise<ExportData> {
       offersRes,
       auditRes,
     ] = await Promise.all([
-      supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from("profiles" as any)
+      (untypedSupabase
+        .from("profiles")
         .select("*")
         .eq("user_id", userId)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .single() as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      supabase.from("schools").select("*").eq("user_id", userId) as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      supabase.from("coaches").select("*").eq("user_id", userId) as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      supabase.from("interactions").select("*").eq("user_id", userId) as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      supabase.from("events").select("*").eq("user_id", userId) as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      supabase.from("documents").select("*").eq("user_id", userId) as any,
-      supabase
-        .from("performance_metrics")
-        .select("*")
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .eq("user_id", userId) as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      supabase.from("offers").select("*").eq("user_id", userId) as any,
+        .single() as unknown) as Promise<{
+        data: ProfileRow | null;
+        error: unknown;
+      }>,
+      supabase.from("schools").select("*").eq("user_id", userId),
+      supabase.from("coaches").select("*").eq("user_id", userId),
+      supabase.from("interactions").select("*").eq("user_id", userId),
+      supabase.from("events").select("*").eq("user_id", userId),
+      supabase.from("documents").select("*").eq("user_id", userId),
+      supabase.from("performance_metrics").select("*").eq("user_id", userId),
+      supabase.from("offers").select("*").eq("user_id", userId),
       supabase
         .from("audit_logs")
         .select("*")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .limit(1000) as any, // Limit audit logs to 1000 recent entries
+        .limit(1000), // Limit audit logs to 1000 recent entries
     ]);
 
     return {
-      profile: profileRes.data || {},
-      schools: schoolsRes.data || [],
-      coaches: coachesRes.data || [],
-      interactions: interactionsRes.data || [],
-      events: eventsRes.data || [],
+      profile: (profileRes.data as Record<string, unknown>) || {},
+      schools: (schoolsRes.data as Record<string, unknown>[]) || [],
+      coaches: (coachesRes.data as Record<string, unknown>[]) || [],
+      interactions: (interactionsRes.data as Record<string, unknown>[]) || [],
+      events: (eventsRes.data as Record<string, unknown>[]) || [],
       documents: await fetchDocumentContent(
         supabase,
         documentsRes.data || [],
         userId,
       ),
-      performanceMetrics: metricsRes.data || [],
-      offers: offersRes.data || [],
-      auditLogs: auditRes.data || [],
+      performanceMetrics: (metricsRes.data as Record<string, unknown>[]) || [],
+      offers: (offersRes.data as Record<string, unknown>[]) || [],
+      auditLogs: (auditRes.data as Record<string, unknown>[]) || [],
     };
   } catch (error) {
     logger.error("Error gathering user data for export", {
@@ -98,17 +100,12 @@ export async function gatherUserData(userId: string): Promise<ExportData> {
 /**
  * Fetch document content from storage
  */
+type DocumentRow =
+  import("~/types/database").Database["public"]["Tables"]["documents"]["Row"];
+
 async function fetchDocumentContent(
   supabase: ReturnType<typeof createServerSupabaseClient>,
-  documents: Array<{
-    id: string;
-    name: string;
-    type: string;
-    created_at: string;
-    updated_at: string;
-    school_id?: string;
-    storage_path?: string;
-  }>,
+  documents: DocumentRow[],
   userId: string,
 ): Promise<Array<{ metadata: Record<string, unknown>; content?: Buffer }>> {
   const result: Array<{ metadata: Record<string, unknown>; content?: Buffer }> =
@@ -119,20 +116,19 @@ async function fetchDocumentContent(
       // Get document metadata
       const docMetadata = {
         id: doc.id,
-        name: doc.name,
+        name: doc.title,
         type: doc.type,
         created_at: doc.created_at,
         updated_at: doc.updated_at,
-
         school_id: doc.school_id,
       };
 
       // Try to fetch file content from storage
-      if (doc.storage_path) {
+      if (doc.file_url) {
         try {
           const { data, error } = await supabase.storage
             .from("documents")
-            .download(`${userId}/${doc.storage_path}`);
+            .download(`${userId}/${doc.file_url}`);
 
           if (!error && data) {
             result.push({
