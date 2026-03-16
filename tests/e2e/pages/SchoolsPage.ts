@@ -27,7 +27,7 @@ export class SchoolsPage extends BasePage {
     if (await autocompleteCheckbox.isVisible()) {
       // Uncheck autocomplete to use manual entry for testing
       await autocompleteCheckbox.uncheck();
-      await this.page.waitForTimeout(500);
+      await this.page.locator("#name").waitFor({ state: "visible" });
     }
 
     // Now the form should be in manual mode
@@ -86,7 +86,7 @@ export class SchoolsPage extends BasePage {
       )
       .first();
     await searchInput.fill(query);
-    await this.page.waitForTimeout(1000); // Wait for search to process
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   }
 
   async filterByDivision(division: string) {
@@ -96,7 +96,7 @@ export class SchoolsPage extends BasePage {
       .first();
     if (await filterButton.isVisible()) {
       await filterButton.click();
-      await this.page.waitForTimeout(500);
+      await this.page.locator('select:has-text("Division"), select[name*="division"]').waitFor({ state: "visible" });
     }
     // Look for division select
     await this.selectOption(
@@ -166,7 +166,7 @@ export class SchoolsPage extends BasePage {
         .first();
       await searchInput.fill("");
     }
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   }
 
   async getActiveFilterCount(): Promise<number> {
@@ -179,6 +179,6 @@ export class SchoolsPage extends BasePage {
 
   async clearAllFilters() {
     await this.click('button:has-text("Clear"), button:has-text("Reset")');
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   }
 }

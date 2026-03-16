@@ -346,7 +346,7 @@ export const coachHelpers = {
   async searchCoaches(page, searchTerm) {
     const searchInput = await page.locator(coachSelectors.searchInput).first();
     await searchInput.fill(searchTerm);
-    await page.waitForTimeout(500); // Wait for search to process
+    await page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   },
 
   /**
@@ -354,7 +354,7 @@ export const coachHelpers = {
    */
   async filterByRole(page, role) {
     await page.selectOption(coachSelectors.roleFilter, role);
-    await page.waitForTimeout(500);
+    await page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   },
 
   /**
@@ -366,7 +366,7 @@ export const coachHelpers = {
       .first();
     if (await clearButton.isVisible()) {
       await clearButton.click();
-      await page.waitForTimeout(500);
+      await page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
     }
   },
 
@@ -401,7 +401,6 @@ export const coachHelpers = {
    */
   async clickEmailAction(page) {
     await page.click(coachSelectors.emailAction);
-    await page.waitForTimeout(500);
   },
 
   /**
@@ -409,7 +408,6 @@ export const coachHelpers = {
    */
   async clickTextAction(page) {
     await page.click(coachSelectors.textAction);
-    await page.waitForTimeout(500);
   },
 
   /**

@@ -463,8 +463,7 @@ export const schoolHelpers = {
 
     const statusSelect = page.locator(schoolSelectors.statusSelect).first();
     await statusSelect.selectOption(newStatus);
-
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("networkidle");
   },
 
   /**
