@@ -400,6 +400,9 @@ export const useDocumentsConsolidated = () => {
       const doc = Array.isArray(docData) ? docData[0] : docData;
       documents.value.unshift(doc);
 
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("document_uploaded", { document_type: type });
+
       return { success: true, data: doc };
     } catch (err) {
       const message = getErrorMessage(err, { context: "uploadDocument" });

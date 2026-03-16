@@ -22,7 +22,7 @@
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-gray-900">
-          Responsiveness Analytics
+          Coach Analytics
         </h1>
         <p class="text-gray-600 mt-2">{{ coachName }} - {{ schoolName }}</p>
       </div>
@@ -36,99 +36,6 @@
       <div v-if="!loading && metrics" class="space-y-8">
         <!-- Metrics Cards -->
         <CoachAnalyticsMetrics :metrics="metrics" />
-
-        <!-- Trend Section -->
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <div class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">
-              Responsiveness Trend
-            </h2>
-            <p class="text-gray-600 text-sm mt-1">
-              Last {{ selectedTrendDays }} days
-            </p>
-
-            <!-- Trend Period Selector -->
-            <div class="flex gap-2 mt-4">
-              <button
-                v-for="days in [30, 60, 90, 180]"
-                :key="days"
-                @click="selectedTrendDays = days"
-                :class="[
-                  'px-3 py-1 rounded-sm text-sm font-medium transition',
-                  selectedTrendDays === days
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
-                ]"
-              >
-                {{ days }}d
-              </button>
-            </div>
-          </div>
-
-          <!-- Accessible Data Summary -->
-          <div
-            v-if="trendData.length > 0"
-            class="mb-4 p-4 bg-blue-50 rounded-lg"
-          >
-            <p class="text-sm font-medium text-gray-900 mb-2">Trend Summary</p>
-            <dl class="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <dt class="text-gray-600">Highest</dt>
-                <dd class="text-lg font-bold text-green-700">
-                  {{ Math.max(...trendData.map((p) => p.score)) }}%
-                </dd>
-              </div>
-              <div>
-                <dt class="text-gray-600">Average</dt>
-                <dd class="text-lg font-bold text-blue-700">
-                  {{
-                    Math.round(
-                      trendData.reduce((sum, p) => sum + p.score, 0) /
-                        trendData.length,
-                    )
-                  }}%
-                </dd>
-              </div>
-              <div>
-                <dt class="text-gray-600">Lowest</dt>
-                <dd class="text-lg font-bold text-red-700">
-                  {{ Math.min(...trendData.map((p) => p.score)) }}%
-                </dd>
-              </div>
-            </dl>
-          </div>
-
-          <!-- Trend Chart -->
-          <div
-            v-if="trendData.length > 0"
-            class="h-64 bg-gray-50 rounded-sm p-4 flex items-end gap-1"
-            aria-hidden="true"
-          >
-            <div
-              v-for="(point, idx) in trendData"
-              :key="idx"
-              class="flex-1 flex flex-col items-center"
-              :title="`${point.date}: ${point.score}%`"
-            >
-              <div class="text-xs text-gray-500 mb-1">{{ point.score }}%</div>
-              <div
-                class="w-full rounded-t transition-colors hover:opacity-80"
-                :style="{
-                  height: `${(point.score / 100) * 100}%`,
-                  backgroundColor: getScoreColor(point.score),
-                  minHeight: point.score > 0 ? '4px' : '0px',
-                }"
-              />
-              <div class="text-xs text-gray-400 mt-2">
-                {{ formatDateShort(point.date) }}
-              </div>
-            </div>
-          </div>
-
-          <div v-else class="text-center py-8 text-gray-500">
-            <p>Not enough data for trend analysis</p>
-          </div>
-        </div>
 
         <!-- Comparison Section -->
         <div v-if="comparison" class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -151,15 +58,15 @@
               <div class="pt-4 border-t border-gray-200">
                 <div class="grid grid-cols-2 gap-4">
                   <div>
-                    <p class="text-gray-600 text-sm">Your Responsiveness</p>
+                    <p class="text-gray-600 text-sm">Your Response Rate</p>
                     <p class="text-2xl font-bold text-gray-900">
-                      {{ comparison.coach.responsiveness }}%
+                      {{ comparison.coach.responseRate }}%
                     </p>
                   </div>
                   <div>
                     <p class="text-gray-600 text-sm">School Average</p>
                     <p class="text-2xl font-bold text-gray-900">
-                      {{ comparison.schoolAverage.responsiveness }}%
+                      {{ comparison.schoolAverage.responseRate }}%
                     </p>
                   </div>
                 </div>
@@ -169,15 +76,15 @@
                 <div
                   :class="[
                     'p-3 rounded-sm text-sm font-medium text-center',
-                    comparison.coach.responsiveness >=
-                    comparison.schoolAverage.responsiveness
+                    comparison.coach.responseRate >=
+                    comparison.schoolAverage.responseRate
                       ? 'bg-green-100 text-green-800'
                       : 'bg-yellow-100 text-yellow-800',
                   ]"
                 >
                   {{
-                    comparison.coach.responsiveness >=
-                    comparison.schoolAverage.responsiveness
+                    comparison.coach.responseRate >=
+                    comparison.schoolAverage.responseRate
                       ? "Above school average"
                       : "Below school average"
                   }}
@@ -331,7 +238,6 @@ const { getSchool } = useSchools();
 const { fetchInteractions } = useInteractions();
 const {
   calculateCoachMetrics,
-  calculateTrendData,
   compareWithSchoolAverage,
   generateInsights,
 } = useCoachAnalytics();
@@ -339,26 +245,10 @@ const {
 const coachName = ref("");
 const schoolName = ref("");
 const loading = ref(false);
-const selectedTrendDays = ref(90);
 
 const metrics = computed(() => calculateCoachMetrics(coachId));
-const trendData = computed(() =>
-  calculateTrendData(coachId, selectedTrendDays.value),
-);
 const insights = computed(() => generateInsights(coachId));
 const comparison = ref<any>(null);
-
-const getScoreColor = (score: number): string => {
-  if (score >= 75) return "#10b981"; // green
-  if (score >= 50) return "#3b82f6"; // blue
-  if (score >= 25) return "#f59e0b"; // amber
-  return "#ef4444"; // red
-};
-
-const formatDateShort = (dateStr: string): string => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-};
 
 const getBarWidth = (value: number, total: number): string => {
   if (total === 0) return "0%";

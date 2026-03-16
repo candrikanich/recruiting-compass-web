@@ -65,7 +65,7 @@ const isApproachingLimit = computed(() => {
       :maxlength="maxlength"
       :aria-invalid="error ? 'true' : undefined"
       :aria-describedby="error ? `${id}-error` : undefined"
-      class="w-full px-4 py-3 bg-white border-2 rounded-xl resize-none focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+      class="w-full px-4 py-3 bg-white border-2 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
       :class="error ? 'border-red-500' : 'border-slate-300'"
       @input="handleInput"
       @blur="handleBlur"

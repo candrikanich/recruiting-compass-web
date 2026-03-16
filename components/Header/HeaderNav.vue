@@ -8,7 +8,7 @@
       :data-testid="`nav-${item.to.replace('/', '')}`"
       :class="[
         'flex items-center gap-2 px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-        'focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue-600',
+        'focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue-600',
         isActive(item.to)
           ? 'bg-brand-blue-100 text-brand-blue-700'
           : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',

@@ -16,7 +16,6 @@ import { interactionGapRule } from "./rules/interactionGap";
 import { missingVideoRule } from "./rules/missingVideo";
 import { eventFollowUpRule } from "./rules/eventFollowUp";
 import { videoLinkHealthRule } from "./rules/videoLinkHealth";
-import { portfolioHealthRule } from "./rules/portfolioHealth";
 import { prioritySchoolReminderRule } from "./rules/prioritySchoolReminder";
 import { schoolListRule } from "./rules/schoolList";
 import { showcaseAttendanceRule } from "./rules/showcaseAttendance";
@@ -109,7 +108,6 @@ export async function triggerSuggestionUpdate(
       missingVideoRule,
       eventFollowUpRule,
       videoLinkHealthRule,
-      portfolioHealthRule,
       prioritySchoolReminderRule,
     ]);
 

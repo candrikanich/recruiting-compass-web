@@ -200,6 +200,7 @@
           <div
             v-for="event in sortedEvents"
             :key="event.id"
+            v-memo="[event.updated_at ?? event.start_date]"
             :id="`event-${event.start_date}`"
             class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden hover:shadow-md transition"
           >

@@ -34,23 +34,6 @@ test.describe("School Detail - Notes Management", () => {
     expect(editButtonCount).toBeGreaterThan(0);
   });
 
-  test("should display private notes section with privacy hint", async ({
-    page,
-  }) => {
-    const privateNotesHeading = page.locator(
-      notesSelectors.privateNotesSection,
-    );
-    await expect(privateNotesHeading).toBeVisible();
-
-    const privacyHint = page.locator(notesSelectors.privacyHint);
-    await expect(privacyHint).toBeVisible();
-    await expect(privacyHint).toContainText("Only you can see these notes");
-
-    const editButtons = page.locator(notesSelectors.editButton);
-    const editButtonCount = await editButtons.count();
-    expect(editButtonCount).toBeGreaterThanOrEqual(2);
-  });
-
   test("should edit and save shared notes", async ({ page }) => {
     const newNotes = notesFixtures.shared;
 
@@ -94,46 +77,6 @@ test.describe("School Detail - Notes Management", () => {
     const displayText = await notesDisplay.textContent();
 
     expect(displayText).not.toContain("Changed content that should not save");
-  });
-
-  test("should edit and save private notes separately from shared", async ({
-    page,
-  }) => {
-    const sharedNotes = "Shared notes content";
-    const privateNotes = notesFixtures.private;
-
-    const editButtons = page.locator(notesSelectors.editButton);
-    await editButtons.first().click();
-
-    const sharedTextarea = page.locator(notesSelectors.notesTextarea).first();
-    await sharedTextarea.fill(sharedNotes);
-
-    const saveButton = page.locator(notesSelectors.saveButton).first();
-    await saveButton.click();
-
-    await page.waitForTimeout(1000);
-
-    await editButtons.nth(1).click();
-
-    const privateTextarea = page
-      .locator(notesSelectors.privateNotesTextarea)
-      .first();
-    await privateTextarea.fill(privateNotes);
-
-    const privateSaveButton = page.locator(notesSelectors.saveButton).nth(1);
-    await privateSaveButton.click();
-
-    await page.waitForTimeout(1000);
-
-    await page.reload();
-    await page.waitForLoadState("networkidle");
-
-    const notesDisplays = page.locator(notesSelectors.notesDisplay);
-    const firstDisplay = await notesDisplays.first().textContent();
-    const secondDisplay = await notesDisplays.nth(1).textContent();
-
-    expect(firstDisplay).toContain(sharedNotes);
-    expect(secondDisplay).toContain(privateNotes);
   });
 
   test("should handle saving state correctly", async ({ page }) => {

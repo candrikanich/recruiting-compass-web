@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
+import { ref, computed } from "vue";
 import type { User } from "~/types/models";
 import { useSupabase } from "~/composables/useSupabase";
+import { clearAllFilterCaches } from "~/composables/usePageFilters";
 import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("stores/user");
@@ -12,276 +14,245 @@ export interface UserState {
   isEmailVerified: boolean;
 }
 
-export const useUserStore = defineStore("user", {
-  state: (): UserState => ({
-    user: null,
-    loading: false,
-    isAuthenticated: false,
-    isEmailVerified: false,
-  }),
+export const useUserStore = defineStore("user", () => {
+  const user = ref<User | null>(null);
+  const loading = ref(false);
+  const isAuthenticated = ref(false);
+  const isEmailVerified = ref(false);
 
-  getters: {
-    currentUser: (state) => state.user,
-    userRole: (state) => state.user?.role,
-    isLoggedIn: (state) => state.isAuthenticated,
-    emailVerified: (state) => state.isEmailVerified,
-    isAthlete: (state) => state.user?.role === "player",
-    isParent: (state) => state.user?.role === "parent",
-    isAdmin: (state) => state.user?.role === "admin",
-  },
+  const currentUser = computed(() => user.value);
+  const userRole = computed(() => user.value?.role);
+  const isLoggedIn = computed(() => isAuthenticated.value);
+  const emailVerified = computed(() => isEmailVerified.value);
+  const isAthlete = computed(() => user.value?.role === "player");
+  const isParent = computed(() => user.value?.role === "parent");
+  const isAdmin = computed(() => user.value?.role === "admin");
 
-  actions: {
-    async initializeUser() {
-      const supabase = useSupabase();
+  async function initializeUser() {
+    const supabase = useSupabase();
 
-      this.loading = true;
+    loading.value = true;
 
-      try {
-        // Get current session with retry for post-login timing
-        let session = null;
-        let attempts = 0;
-        const maxAttempts = 10;
-        const retryDelay = 50;
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-        while (!session && attempts < maxAttempts) {
-          const attemptNum = attempts + 1;
-          const {
-            data: { session: currentSession },
-            error: sessionError,
-          } = await supabase.auth.getSession();
-
-          if (sessionError) {
-            logger.error(
-              `[initializeUser] Attempt ${attemptNum}: Error getting session:`,
-              sessionError,
-            );
-          } else if (currentSession) {
-            logger.debug(
-              `[initializeUser] Attempt ${attemptNum}: Session found!`,
-            );
-            session = currentSession;
-            break;
-          } else {
-            logger.debug(
-              `[initializeUser] Attempt ${attemptNum}: No session yet`,
-            );
-          }
-
-          if (!session && attempts < maxAttempts - 1) {
-            // Wait before retrying
-            await new Promise((resolve) => setTimeout(resolve, retryDelay));
-          }
-          attempts++;
-        }
-
-        if (session?.user) {
-          // Set isAuthenticated immediately but defer this.user until the real
-          // profile is loaded — prevents a race window where role === "player"
-          // for parent/admin users while the DB fetch is in flight.
-          this.isAuthenticated = true;
-
-          // Check email verification status
-          this.isEmailVerified =
-            session.user.email_confirmed_at !== null &&
-            session.user.email_confirmed_at !== undefined;
-
-          logger.debug(
-            "[initializeUser] User authenticated:",
-            session.user.email,
-          );
-
-          // Try to fetch full profile from users table (includes is_admin)
-          const { data: profile, error: fetchError } = await supabase
-            .from("users")
-            .select("*")
-            .eq("id", session.user.id)
-            .maybeSingle();
-
-          if (fetchError) {
-            logger.error(
-              "[initializeUser] Unexpected fetch error:",
-              fetchError,
-            );
-          }
-
-          if (profile) {
-            // Profile exists, use it (has the correct role)
-            this.user = profile;
-            logger.debug("[initializeUser] Existing profile loaded");
-          } else {
-            // Profile doesn't exist, try to create it
-            logger.debug(
-              "[initializeUser] No profile found, attempting creation",
-            );
-            const created = await this.createUserProfile(
-              session.user.id,
-              session.user.email || "",
-              session.user.user_metadata?.full_name || "",
-            );
-
-            if (!created) {
-              // Creation failed — fall back to minimal user from auth session
-              logger.warn(
-                "[initializeUser] Failed to create profile for user:",
-                session.user.id,
-              );
-              this.user = {
-                id: session.user.id,
-                email: session.user.email || "",
-                full_name: session.user.user_metadata?.full_name || "",
-                role: "player",
-              };
-            }
-          }
-        } else {
-          this.user = null;
-          this.isAuthenticated = false;
-          logger.debug("[initializeUser] No active session");
-        }
-      } catch (error) {
-        logger.error("[initializeUser] Unexpected error:", error);
-        this.user = null;
-        this.isAuthenticated = false;
-      } finally {
-        this.loading = false;
+      if (sessionError) {
+        logger.error("[initializeUser] Error getting session:", sessionError);
       }
-    },
 
-    async createUserProfile(
-      userId: string,
-      email: string,
-      fullName: string,
-    ): Promise<boolean> {
-      const supabase = useSupabase();
+      if (session?.user) {
+        isAuthenticated.value = true;
 
-      try {
+        isEmailVerified.value =
+          session.user.email_confirmed_at !== null &&
+          session.user.email_confirmed_at !== undefined;
+
         logger.debug(
-          "[createUserProfile] Attempting to create profile for:",
-          email,
+          "[initializeUser] User authenticated:",
+          session.user.email,
         );
 
-        // First, check if profile already exists
-        const { data: existing, error: checkError } = await supabase
+        const { data: profile, error: fetchError } = await supabase
           .from("users")
-          .select("id")
-          .eq("id", userId)
+          .select("*")
+          .eq("id", session.user.id)
           .maybeSingle();
 
-        if (existing) {
-          logger.debug("[createUserProfile] Profile already exists, skipping");
-          return true; // Already exists, treat as success
-        }
-
-        if (checkError) {
-          throw new Error(
-            `[createUserProfile] Check failed: ${checkError.message}`,
+        if (fetchError) {
+          logger.error(
+            "[initializeUser] Unexpected fetch error:",
+            fetchError,
           );
         }
 
-        // Profile doesn't exist, create it
-        const userData = [
-          {
-            id: userId,
-            email,
-            full_name: fullName || email.split("@")[0],
-            role: "player",
-          },
-        ];
+        if (profile) {
+          user.value = profile;
+          logger.debug("[initializeUser] Existing profile loaded");
+        } else {
+          logger.debug(
+            "[initializeUser] No profile found, attempting creation",
+          );
+          const created = await createUserProfile(
+            session.user.id,
+            session.user.email || "",
+            session.user.user_metadata?.full_name || "",
+          );
 
-        const response = (await supabase
-          .from("users")
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .insert(userData as any)
-          .select()) as {
-          data: User[] | null;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          error: any;
-        };
-
-        const { error, data: _data } = response;
-
-        if (error) {
-          // Duplicate key — profile already exists despite maybeSingle returning null (race or RLS)
-          if (error.code === "23505" || (error as { status?: number }).status === 409) {
-            logger.debug(
-              "[createUserProfile] Profile exists (duplicate key), treating as success",
+          if (!created) {
+            logger.warn(
+              "[initializeUser] Failed to create profile for user:",
+              session.user.id,
             );
-            return true;
+            user.value = {
+              id: session.user.id,
+              email: session.user.email || "",
+              full_name: session.user.user_metadata?.full_name || "",
+              role: "player",
+            };
           }
-          logger.error("[createUserProfile] Insert failed:", { code: error.code, message: error.message });
-          throw new Error(error.message ?? "Insert failed");
         }
+      } else {
+        user.value = null;
+        isAuthenticated.value = false;
+        logger.debug("[initializeUser] No active session");
+      }
+    } catch (error) {
+      logger.error("[initializeUser] Unexpected error:", error);
+      user.value = null;
+      isAuthenticated.value = false;
+    } finally {
+      loading.value = false;
+    }
+  }
 
-        logger.debug("[createUserProfile] Profile created successfully");
+  async function createUserProfile(
+    userId: string,
+    email: string,
+    fullName: string,
+  ): Promise<boolean> {
+    const supabase = useSupabase();
 
-        // Update local state
-        this.user = {
+    try {
+      logger.debug(
+        "[createUserProfile] Attempting to create profile for:",
+        email,
+      );
+
+      const { data: existing, error: checkError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (existing) {
+        logger.debug("[createUserProfile] Profile already exists, skipping");
+        return true;
+      }
+
+      if (checkError) {
+        throw new Error(
+          `[createUserProfile] Check failed: ${checkError.message}`,
+        );
+      }
+
+      const userData = [
+        {
           id: userId,
           email,
           full_name: fullName || email.split("@")[0],
           role: "player",
-        };
+        },
+      ];
 
-        return true; // Success
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Unknown error";
-        logger.error("[createUserProfile] Failed:", message);
-        return false; // Failure
-      }
-    },
+      const response = (await supabase
+        .from("users")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .insert(userData as any)
+        .select()) as {
+        data: User[] | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any;
+      };
 
-    setUser(user: User | null) {
-      this.user = user;
-      this.isAuthenticated = !!user;
-    },
+      const { error, data: _data } = response;
 
-    logout() {
-      this.user = null;
-      this.isAuthenticated = false;
-      this.isEmailVerified = false;
-      // Clear all filter caches on logout to prevent stale filters from showing after login
-      localStorage.removeItem("schools-filters");
-      localStorage.removeItem("coaches-filters");
-      localStorage.removeItem("interactions-filters");
-      localStorage.removeItem("offers-filters");
-    },
-
-    async refreshVerificationStatus() {
-      const supabase = useSupabase();
-
-      try {
-        // Get current user from auth
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser();
-
-        if (error || !user) {
-          logger.error("Error fetching verification status:", error);
-          return;
+      if (error) {
+        if (error.code === "23505" || (error as { status?: number }).status === 409) {
+          logger.debug(
+            "[createUserProfile] Profile exists (duplicate key), treating as success",
+          );
+          return true;
         }
-
-        // Update email verification status
-        this.isEmailVerified =
-          user.email_confirmed_at !== null &&
-          user.email_confirmed_at !== undefined;
-      } catch (err) {
-        logger.error("Error refreshing verification status:", err);
+        logger.error("[createUserProfile] Insert failed:", { code: error.code, message: error.message });
+        throw new Error(error.message ?? "Insert failed");
       }
-    },
 
-    setProfilePhotoUrl(photoUrl: string | null) {
-      if (this.user) {
-        this.user.profile_photo_url = photoUrl;
-      }
-    },
+      logger.debug("[createUserProfile] Profile created successfully");
 
-    updateProfileFields(
-      fields: Partial<Pick<User, "full_name" | "phone" | "date_of_birth">>,
-    ) {
-      if (this.user) {
-        this.user = { ...this.user, ...fields };
+      user.value = {
+        id: userId,
+        email,
+        full_name: fullName || email.split("@")[0],
+        role: "player",
+      };
+
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      logger.error("[createUserProfile] Failed:", message);
+      return false;
+    }
+  }
+
+  function setUser(newUser: User | null) {
+    user.value = newUser;
+    isAuthenticated.value = !!newUser;
+  }
+
+  function logout() {
+    user.value = null;
+    isAuthenticated.value = false;
+    isEmailVerified.value = false;
+    clearAllFilterCaches();
+  }
+
+  async function refreshVerificationStatus() {
+    const supabase = useSupabase();
+
+    try {
+      const {
+        data: { user: authUser },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (error || !authUser) {
+        logger.error("Error fetching verification status:", error);
+        return;
       }
-    },
-  },
+
+      isEmailVerified.value =
+        authUser.email_confirmed_at !== null &&
+        authUser.email_confirmed_at !== undefined;
+    } catch (err) {
+      logger.error("Error refreshing verification status:", err);
+    }
+  }
+
+  function setProfilePhotoUrl(photoUrl: string | null) {
+    if (user.value) {
+      user.value.profile_photo_url = photoUrl;
+    }
+  }
+
+  function updateProfileFields(
+    fields: Partial<Pick<User, "full_name" | "phone" | "date_of_birth">>,
+  ) {
+    if (user.value) {
+      user.value = { ...user.value, ...fields };
+    }
+  }
+
+  return {
+    user,
+    loading,
+    isAuthenticated,
+    isEmailVerified,
+    currentUser,
+    userRole,
+    isLoggedIn,
+    emailVerified,
+    isAthlete,
+    isParent,
+    isAdmin,
+    initializeUser,
+    createUserProfile,
+    setUser,
+    logout,
+    refreshVerificationStatus,
+    setProfilePhotoUrl,
+    updateProfileFields,
+  };
 });

@@ -67,13 +67,6 @@ export const calculateAcceptedOffers = (offers: Offer[]): number => {
 };
 
 /**
- * Calculate A-tier school count
- */
-export const calculateATierSchoolCount = (schools: School[]): number => {
-  return schools.filter((school) => school.priority_tier === "A").length;
-};
-
-/**
  * Get upcoming events (sorted by date, limited to 5)
  */
 export const getUpcomingEvents = <T extends { start_date: string }>(

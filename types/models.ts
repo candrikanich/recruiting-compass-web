@@ -1,10 +1,6 @@
 /**
  * Record type definitions for structured JSON fields
  */
-export interface PrivateNotes {
-  [key: string]: string | number | boolean | string[] | null;
-}
-
 export interface OfferDetails {
   terms?: string;
   start_date?: string;
@@ -24,6 +20,12 @@ export interface AcademicInfo {
   state?: string;
   latitude?: number;
   longitude?: number;
+  student_size?: number | null;
+  admission_rate?: number | null;
+  tuition_in_state?: number | null;
+  tuition_out_of_state?: number | null;
+  avg_net_price?: number | null;
+  graduation_rate?: number | null;
   [key: string]: number | string | string[] | null | undefined;
 }
 
@@ -67,7 +69,6 @@ export interface School {
   state?: string | null;
   division: "D1" | "D2" | "D3" | "NAIA" | "JUCO" | null;
   conference: string | null;
-  ranking?: number | null;
   is_favorite: boolean;
   website: string | null;
   favicon_url: string | null;
@@ -85,11 +86,9 @@ export interface School {
     | "committed"
     | "not_pursuing";
   status_changed_at?: string | null;
-  priority_tier?: "A" | "B" | "C" | null;
   notes: string | null;
   pros: string[];
   cons: string[];
-  private_notes?: PrivateNotes | null;
   offer_details?: OfferDetails | null;
   academic_info?: AcademicInfo | null;
   amenities?: Amenities | null;
@@ -98,7 +97,6 @@ export interface School {
   recruiting_approach?: string | null;
   communication_style?: string | null;
   success_metrics?: string | null;
-  fit_score?: number | null;
   fit_tier?: string | null;
   family_unit_id?: string | null;
   created_by?: string;
@@ -130,8 +128,6 @@ export interface Coach {
   twitter_handle: string | null;
   instagram_handle: string | null;
   notes: string | null;
-  private_notes?: PrivateNotes | null;
-  responsiveness_score: number;
   last_contact_date: string | null;
   availability?: CoachAvailability | null;
   created_by?: string;
@@ -390,6 +386,8 @@ export interface PlayerDetails {
   school_address?: string;
   school_city?: string;
   school_state?: string;
+  campus_size_preference?: "small" | "medium" | "large";
+  cost_sensitivity?: "high" | "medium" | "low";
   // High School Team Levels
   ninth_grade_team?: string;
   ninth_grade_coach?: string;

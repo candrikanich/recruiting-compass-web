@@ -27,13 +27,6 @@
           No contact recorded yet
         </div>
       </div>
-      <ResponsivenessBadge
-        v-if="
-          coach.responsiveness_score !== undefined &&
-          coach.responsiveness_score !== null
-        "
-        :percentage="coach.responsiveness_score"
-      />
     </div>
 
     <!-- Contact Info Grid -->
@@ -79,7 +72,7 @@
             target="_blank"
             rel="noopener noreferrer"
             :aria-label="`View ${coach.first_name}'s Twitter profile (opens in new window)`"
-            class="text-blue-600 hover:text-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-1"
+            class="text-blue-600 hover:text-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-1"
           >
             {{ coach.twitter_handle }}
             <span aria-hidden="true" class="ml-1 inline-block">↗</span>
@@ -103,7 +96,7 @@
             target="_blank"
             rel="noopener noreferrer"
             :aria-label="`View ${coach.first_name}'s Instagram profile (opens in new window)`"
-            class="text-blue-600 hover:text-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-1"
+            class="text-blue-600 hover:text-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-1"
           >
             {{ coach.instagram_handle }}
             <span aria-hidden="true" class="ml-1 inline-block">↗</span>
@@ -241,7 +234,6 @@ import {
   PencilIcon,
   RssIcon,
 } from "@heroicons/vue/24/outline";
-import ResponsivenessBadge from "~/components/ResponsivenessBadge.vue";
 
 defineProps<{
   coach: Coach;

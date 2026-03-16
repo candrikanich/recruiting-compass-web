@@ -1,4 +1,4 @@
-import { ref, computed, shallowRef, inject, watch, type ComputedRef } from "vue";
+import { ref, computed, shallowRef, inject, watch } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "./useActiveFamily";
@@ -43,51 +43,8 @@ type _InteractionUpdate = InteractionsTable["Update"];
  * - useInteractionReminders  – follow-up reminder CRUD + computed filters
  * - useInteractionNotes      – note history from audit logs
  */
-type InteractionFilters = {
-  schoolId?: string;
-  coachId?: string;
-  type?: string;
-  direction?: string;
-  sentiment?: string;
-  startDate?: string;
-  endDate?: string;
-  loggedBy?: string;
-};
 
 export const useInteractions = () => {
-  return useInteractionsInternal();
-};
-
-const useInteractionsInternal = (): {
-  interactions: ComputedRef<Interaction[]>;
-  loading: ComputedRef<boolean>;
-  error: ComputedRef<string | null>;
-  fetchInteractions: (filters?: InteractionFilters) => Promise<void>;
-  getInteraction: (id: string) => Promise<Interaction | null>;
-  createInteraction: (
-    interactionData: Omit<Interaction, "id" | "created_at">,
-    files?: File[],
-  ) => Promise<Interaction>;
-  updateInteraction: (
-    id: string,
-    updates: Partial<Interaction>,
-  ) => Promise<Interaction>;
-  deleteInteraction: (id: string) => Promise<void>;
-  uploadAttachments: (
-    files: File[],
-    interactionId: string,
-  ) => Promise<string[]>;
-  exportToCSV: () => string;
-  downloadCSV: () => void;
-  fetchMyInteractions: (
-    filters?: Omit<InteractionFilters, "loggedBy">,
-  ) => Promise<void>;
-  fetchAthleteInteractions: (
-    athleteUserId: string,
-    filters?: Omit<InteractionFilters, "loggedBy">,
-  ) => Promise<void>;
-  smartDelete: (id: string) => Promise<{ cascadeUsed: boolean }>;
-} => {
   const supabase = useSupabase();
   const userStore = useUserStore();
   const { $fetchAuth } = useAuthFetch();
@@ -348,6 +305,10 @@ const useInteractionsInternal = (): {
       }
 
       interactions.value = [updatedData, ...interactions.value];
+
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("interaction_logged", { type: updatedData.type });
+
       return updatedData;
     } catch (err: unknown) {
       const message =

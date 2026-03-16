@@ -54,14 +54,14 @@
             <button
               type="button"
               @click="$emit('stay-logged-in')"
-              class="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              class="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Stay Logged In
             </button>
             <button
               type="button"
               @click="$emit('logout-now')"
-              class="flex-1 px-4 py-2 bg-slate-200 text-slate-900 font-medium rounded-lg hover:bg-slate-300 transition focus:outline-hidden focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+              class="flex-1 px-4 py-2 bg-slate-200 text-slate-900 font-medium rounded-lg hover:bg-slate-300 transition focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
             >
               Logout Now
             </button>

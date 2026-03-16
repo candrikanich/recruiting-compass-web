@@ -35,7 +35,7 @@
                 :disabled="isLoading"
                 aria-label="Cancel deletion"
                 data-test="cancel-delete-btn"
-                class="px-4 py-2 rounded-sm border border-gray-300 hover:bg-gray-50 disabled:opacity-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                class="px-4 py-2 rounded-sm border border-gray-300 hover:bg-gray-50 disabled:opacity-50 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
               >
                 Cancel
               </button>
@@ -44,7 +44,7 @@
                 :disabled="isLoading"
                 aria-label="Confirm permanent deletion"
                 data-test="confirm-delete-btn"
-                class="px-4 py-2 rounded-sm bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                class="px-4 py-2 rounded-sm bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >
                 <span v-if="isLoading" aria-live="polite">Deleting...</span>
                 <span v-else>Delete</span>

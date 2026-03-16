@@ -11,6 +11,7 @@ import {
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
+import { loginViaForm } from "../helpers/login";
 
 test.describe("Coach Detail Page - Comprehensive Coverage", () => {
   let coachesPage: CoachesPage;
@@ -20,11 +21,7 @@ test.describe("Coach Detail Page - Comprehensive Coverage", () => {
     coachesPage = new CoachesPage(page);
 
     // Login
-    await page.goto("/login");
-    await page.fill('input[type="email"]', "test@example.com");
-    await page.fill('input[type="password"]', "password123");
-    await page.click('button:has-text("Sign In")');
-    await page.waitForURL("/dashboard");
+    await loginViaForm(page, "player@test.com", "TestPass123!");
 
     // Create a test school
     const schoolName = generateUniqueSchoolName("Detail Test School");
@@ -250,9 +247,8 @@ test.describe("Coach Detail Page - Comprehensive Coverage", () => {
         `${coachData.firstName} ${coachData.lastName}`,
       );
 
-      // Find notes textarea (not private notes)
       const notesSection = page
-        .locator('section:has-text("Notes"):not(:has-text("Private"))')
+        .locator('section:has-text("Notes")')
         .first();
       const notesTextarea = notesSection
         .locator('textarea[placeholder*="notes"]')
@@ -277,7 +273,7 @@ test.describe("Coach Detail Page - Comprehensive Coverage", () => {
 
       // Verify notes persisted
       const reloadedNotesSection = page
-        .locator('section:has-text("Notes"):not(:has-text("Private"))')
+        .locator('section:has-text("Notes")')
         .first();
       const reloadedNotesTextarea = reloadedNotesSection
         .locator("textarea")
@@ -285,69 +281,6 @@ test.describe("Coach Detail Page - Comprehensive Coverage", () => {
       const savedNotes = await reloadedNotesTextarea.inputValue();
 
       expect(savedNotes).toBe(notesText);
-    });
-
-    test("should save private notes separately from regular notes", async ({
-      page,
-    }) => {
-      const coachName = generateUniqueCoachName("Private", "Notes");
-      const coachData = createCoachData({
-        ...coachName,
-        email: generateUniqueCoachEmail("privatenotes"),
-      });
-
-      // Create coach
-      await coachHelpers.navigateToCoaches(page, schoolId);
-      await coachesPage.clickAddCoach();
-      await coachesPage.createCoach(coachData);
-      await coachesPage.viewCoachDetails(
-        `${coachData.firstName} ${coachData.lastName}`,
-      );
-
-      // Fill regular notes
-      const notesSection = page
-        .locator('section:has-text("Notes"):not(:has-text("Private"))')
-        .first();
-      const notesTextarea = notesSection.locator("textarea").first();
-      await notesTextarea.fill("Regular coach notes");
-      const saveNotesButton = notesSection
-        .locator('button:has-text("Save")')
-        .first();
-      await saveNotesButton.click();
-      await page.waitForTimeout(500);
-
-      // Fill private notes
-      const privateNotesSection = page
-        .locator('section:has-text("Private Notes")')
-        .first();
-      const privateNotesTextarea = privateNotesSection
-        .locator("textarea")
-        .first();
-      await privateNotesTextarea.fill("My private thoughts about this coach");
-      const savePrivateButton = privateNotesSection
-        .locator('button:has-text("Save")')
-        .first();
-      await savePrivateButton.click();
-      await page.waitForTimeout(500);
-
-      // Reload page
-      await page.reload();
-      await page.waitForLoadState("networkidle");
-
-      // Verify both sets of notes persisted
-      const reloadedNotes = await page
-        .locator('section:has-text("Notes"):not(:has-text("Private"))')
-        .locator("textarea")
-        .first()
-        .inputValue();
-      const reloadedPrivateNotes = await page
-        .locator('section:has-text("Private Notes")')
-        .locator("textarea")
-        .first()
-        .inputValue();
-
-      expect(reloadedNotes).toBe("Regular coach notes");
-      expect(reloadedPrivateNotes).toBe("My private thoughts about this coach");
     });
 
     test("should clear notes when textarea is emptied", async ({ page }) => {

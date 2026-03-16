@@ -211,10 +211,6 @@ export class CoachesPage extends BasePage {
   }
 
   // Contact Information and Details
-  async getCoachResponsiveness(): Promise<string> {
-    return await this.getText('[data-testid="responsiveness-score"]');
-  }
-
   async getLastContactDate(): Promise<string> {
     return await this.getText('[data-testid="last-contact-date"]');
   }
@@ -297,7 +293,6 @@ export class CoachesPage extends BasePage {
       .first();
     if (await analyticsTab.isVisible()) {
       await analyticsTab.click();
-      await this.expectVisible('[data-testid="responsiveness-chart"]');
     }
   }
 

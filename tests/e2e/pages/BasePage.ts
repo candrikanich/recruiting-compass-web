@@ -84,22 +84,7 @@ export class BasePage {
   }
 
   async waitForElementEnabled(selector: string, timeout = 10000) {
-    await this.page.locator(selector).waitFor({ state: "visible", timeout });
-    const element = this.page.locator(selector);
-    await element.evaluate((el: HTMLElement) => {
-      return new Promise<void>((resolve) => {
-        const checkEnabled = () => {
-          const isDisabled =
-            (el as any).disabled || el.getAttribute("disabled") !== null;
-          if (!isDisabled) {
-            resolve();
-          } else {
-            setTimeout(checkEnabled, 100);
-          }
-        };
-        checkEnabled();
-      });
-    });
+    await expect(this.page.locator(selector)).not.toBeDisabled({ timeout });
   }
 
   async clickWhenEnabled(selector: string) {
@@ -112,6 +97,5 @@ export class BasePage {
     await locator.waitFor({ state: "visible" });
     await locator.fill(value);
     await locator.blur(); // Trigger validation
-    await this.page.waitForTimeout(100); // Brief wait for validation feedback
   }
 }

@@ -143,6 +143,10 @@ export const useOffers = (): {
       if (insertError) throw insertError;
 
       offers.value.unshift(data);
+
+      const { $posthog } = useNuxtApp();
+      $posthog?.capture("offer_added", { status: data.status ?? null });
+
       return data;
     } catch (err: unknown) {
       const message =

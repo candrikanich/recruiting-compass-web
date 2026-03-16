@@ -29,7 +29,6 @@ describe("useDashboardCalculations", () => {
     expect(calculations).toHaveProperty("contactsThisMonth");
     expect(calculations).toHaveProperty("totalOffers");
     expect(calculations).toHaveProperty("acceptedOffers");
-    expect(calculations).toHaveProperty("aTierSchoolCount");
     expect(calculations).toHaveProperty("upcomingEvents");
     expect(calculations).toHaveProperty("topMetrics");
   });
@@ -102,25 +101,6 @@ describe("useDashboardCalculations", () => {
     expect(acceptedOffers.value).toBe(2);
   });
 
-  it("should calculate A-tier school count", () => {
-    const schools: School[] = [
-      { id: "1", priority_tier: "A" } as School,
-      { id: "2", priority_tier: "B" } as School,
-      { id: "3", priority_tier: "A" } as School,
-    ];
-
-    const mockDashboardData = {
-      allSchools: ref(schools),
-      allInteractions: ref<Interaction[]>([]),
-      allOffers: ref<Offer[]>([]),
-      allEvents: ref<Event[]>([]),
-      allMetrics: ref<PerformanceMetric[]>([]),
-    };
-
-    const { aTierSchoolCount } = useDashboardCalculations(mockDashboardData);
-
-    expect(aTierSchoolCount.value).toBe(2);
-  });
 
   it("should get upcoming events sorted by date", () => {
     const now = new Date();

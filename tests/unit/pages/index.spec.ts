@@ -153,7 +153,6 @@ describe("pages/index.vue (Landing Page)", () => {
 
       buttons.forEach((button) => {
         const classes = button.classes().join(" ");
-        expect(classes).toContain("focus:outline-hidden");
         expect(classes).toContain("focus:ring-2");
       });
     });

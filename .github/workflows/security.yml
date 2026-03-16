@@ -155,17 +155,28 @@ jobs:
           if [ -z "$LOOKBACK" ]; then
             LOOKBACK=$(git rev-list --max-parents=0 HEAD)
           fi
-          echo "sha=$LOOKBACK" >> $GITHUB_OUTPUT
-          echo "Scanning from $LOOKBACK to HEAD"
+          HEAD_SHA=$(git rev-parse HEAD)
+          if [ "$LOOKBACK" = "$HEAD_SHA" ]; then
+            echo "has_diff=false" >> $GITHUB_OUTPUT
+            echo "Base and HEAD are the same commit — no new commits to scan."
+          else
+            echo "has_diff=true" >> $GITHUB_OUTPUT
+            echo "sha=$LOOKBACK" >> $GITHUB_OUTPUT
+            echo "Scanning from $LOOKBACK to HEAD"
+          fi
 
       - name: TruffleHog Secret Scan (scheduled/manual)
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.scan-base.outputs.has_diff == 'true'
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
           base: ${{ steps.scan-base.outputs.sha }}
           head: ${{ github.sha }}
           extra_args: --only-verified
+
+      - name: Skip scan (no new commits)
+        if: github.event_name != 'pull_request' && steps.scan-base.outputs.has_diff == 'false'
+        run: echo "No new commits since last scan window — nothing to scan."
 
   # Job 4: License compliance check
   license-check:

@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { loginViaForm } from "./helpers/login";
 
 // Test data from documentation
 const TEST_ACCOUNTS = {
@@ -139,11 +140,7 @@ test.describe("authenticated family management", () => {
   };
 
   test.beforeEach(async ({ page }) => {
-    await page.goto("/login");
-    await page.fill('input[type="email"]', PLAYER.email);
-    await page.fill('input[type="password"]', PLAYER.password);
-    await page.click('button:has-text("Sign in")');
-    await page.waitForURL(/\/(dashboard|schools)/, { timeout: 15000 });
+    await loginViaForm(page, PLAYER.email, PLAYER.password, /\/(dashboard|schools)/);
   });
 
   test("family management page loads for authenticated player", async ({

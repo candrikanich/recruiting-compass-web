@@ -35,7 +35,7 @@
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
       <!-- Profile Completeness Hero -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8">
-        <ProfileCompleteness />
+        <ProfileCompleteness :percentage="profileCompleteness" />
       </div>
 
       <!-- Desktop Tab Navigation (Hidden on Mobile) -->
@@ -184,6 +184,56 @@
                   />
                 </div>
               </div>
+
+              <!-- College Preferences -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-slate-100">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
+                    Campus Size Preference
+                  </label>
+                  <div class="flex p-1 bg-slate-100 rounded-xl">
+                    <button
+                      v-for="opt in CAMPUS_SIZE_OPTIONS"
+                      :key="opt.value"
+                      type="button"
+                      :disabled="isParentRole"
+                      @click="form.campus_size_preference = opt.value; triggerSave()"
+                      :class="[
+                        'flex-1 py-2 text-xs font-bold rounded-lg transition-all',
+                        form.campus_size_preference === opt.value
+                          ? 'bg-white text-blue-600 shadow-sm'
+                          : 'text-slate-500 hover:text-slate-700'
+                      ]"
+                    >
+                      {{ opt.label }}
+                    </button>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1.5 ml-1">Used for personal fit analysis</p>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
+                    Cost Sensitivity
+                  </label>
+                  <div class="flex p-1 bg-slate-100 rounded-xl">
+                    <button
+                      v-for="opt in COST_SENSITIVITY_OPTIONS"
+                      :key="opt.value"
+                      type="button"
+                      :disabled="isParentRole"
+                      @click="form.cost_sensitivity = opt.value; triggerSave()"
+                      :class="[
+                        'flex-1 py-2 text-xs font-bold rounded-lg transition-all',
+                        form.cost_sensitivity === opt.value
+                          ? 'bg-white text-blue-600 shadow-sm'
+                          : 'text-slate-500 hover:text-slate-700'
+                      ]"
+                    >
+                      {{ opt.label }}
+                    </button>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1.5 ml-1">Used for personal fit analysis</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -204,7 +254,7 @@
                   <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Height</label>
                   <div class="flex gap-2">
                     <select v-model="heightFeet" :disabled="isParentRole" @change="triggerSave" class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
-                      <option v-for="ft in [4, 5, 6, 7]" :key="ft" :value="ft">{{ ft }}\'</option>
+                      <option v-for="ft in [4, 5, 6, 7]" :key="ft" :value="ft">{{ ft }}'</option>
                     </select>
                     <select v-model="heightInches" :disabled="isParentRole" @change="triggerSave" class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
                       <option v-for="i in 12" :key="i - 1" :value="i - 1">{{ i - 1 }}"</option>
@@ -451,13 +501,13 @@ import {
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useAppToast } from "~/composables/useAppToast";
 import { useFormValidation } from "~/composables/useFormValidation";
-import { useFitScoreRecalculation } from "~/composables/useFitScoreRecalculation";
 import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
 import { useAutoSave } from "~/composables/useAutoSave";
 import { useUserStore } from "~/stores/user";
 import { normalizePositions } from "~/utils/positions";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import ProfileCompleteness from "~/components/ProfileCompleteness.vue";
+import { calculateProfileCompleteness } from "~/utils/profileCompletenessCalculation";
 import type { PlayerDetails } from "~/types/models";
 
 definePageMeta({
@@ -468,8 +518,6 @@ const userStore = useUserStore();
 const { isLoading, getPlayerDetails, setPlayerDetails, loadAllPreferences } =
   usePreferenceManager();
 const { showToast } = useAppToast();
-const { recalculateAllFitScores } =
-  useFitScoreRecalculation();
 const { errors, clearErrors, hasErrors } = useFormValidation();
 
 const isParentRole = computed(() => userStore.user?.role === "parent");
@@ -492,6 +540,18 @@ const THROWS_OPTIONS = [
   { value: "R", label: "Right" },
   { value: "L", label: "Left" },
 ] as const;
+
+const CAMPUS_SIZE_OPTIONS = [
+  { value: "small" as const, label: "Small" },
+  { value: "medium" as const, label: "Medium" },
+  { value: "large" as const, label: "Large" },
+];
+
+const COST_SENSITIVITY_OPTIONS = [
+  { value: "high" as const, label: "High" },
+  { value: "medium" as const, label: "Medium" },
+  { value: "low" as const, label: "Low" },
+];
 
 const saving = ref(false);
 const heightFeet = ref<number | undefined>(undefined);
@@ -523,6 +583,8 @@ const form = ref<PlayerDetails>({
   school_address: "",
   school_city: "",
   school_state: "",
+  campus_size_preference: undefined,
+  cost_sensitivity: undefined,
   ninth_grade_team: "",
   ninth_grade_coach: "",
   tenth_grade_team: "",
@@ -542,6 +604,8 @@ const availablePositions = ref<string[]>([]);
 const isBaseballOrSoftball = computed(() => {
   return form.value.primary_sport === "Baseball" || form.value.primary_sport === "Softball";
 });
+
+const profileCompleteness = computed(() => calculateProfileCompleteness(form.value));
 
 const { isSaving, triggerSave } = useAutoSave({
   debounceMs: 1000,
@@ -628,16 +692,6 @@ onMounted(async () => {
   }
 });
 
-// Trigger one final recalculation when leaving the page or finishing major edits
-const handleFinalSave = async () => {
-  saving.value = true;
-  try {
-    await recalculateAllFitScores();
-    showToast("Profile updated and fit scores recalculated", "success");
-  } finally {
-    saving.value = false;
-  }
-};
 </script>
 
 <style scoped>

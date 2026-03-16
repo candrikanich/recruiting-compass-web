@@ -653,36 +653,6 @@ describe("Coach Detail Page", () => {
       });
     });
 
-    it("saves private notes for current user", async () => {
-      mockUpdateCoach.mockResolvedValue(undefined);
-
-      const CoachDetailPage = await import("~/pages/coaches/[id].vue").then(
-        (m) => m.default,
-      );
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
-
-      await flushPromises();
-
-      const notesEditors = wrapper.findAll('[data-test="coach-notes-editor"]');
-      const privateNotesEditor = notesEditors[1];
-
-      const input = privateNotesEditor.find('[data-test="notes-input"]');
-      await input.setValue("My private thoughts");
-
-      const saveBtn = privateNotesEditor.find('[data-test="save-notes-btn"]');
-      await saveBtn.trigger("click");
-      await flushPromises();
-
-      expect(mockUpdateCoach).toHaveBeenCalledWith("coach-123", {
-        private_notes: {
-          "user-123": "My private thoughts",
-        },
-      });
-    });
   });
 
   describe("Stats and Interactions", () => {

@@ -25,7 +25,7 @@
               @change="handleStatusChange"
               :disabled="statusUpdating"
               :aria-busy="statusUpdating"
-              class="px-2 py-1 text-xs font-medium rounded-full border-2 border-transparent cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+              class="px-2 py-1 text-xs font-medium rounded-full border-2 border-transparent cursor-pointer focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
               :class="[
                 getStatusBadgeColor(school.status),
                 statusUpdating ? 'opacity-50 cursor-not-allowed' : '',
@@ -41,11 +41,6 @@
               Status is updating, please wait
             </span>
           </div>
-          <SchoolPrioritySelector
-            :model-value="school.priority_tier ?? null"
-            @update:model-value="handlePriorityUpdate"
-            :data-testid="`priority-selector-${school.id}`"
-          />
           <span
             v-if="calculatedSize"
             class="px-2 py-1 text-xs font-medium rounded-full"
@@ -67,7 +62,7 @@
           school.is_favorite ? 'Remove from favorites' : 'Add to favorites'
         "
         :aria-pressed="school.is_favorite"
-        class="shrink-0 transition-all rounded-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="shrink-0 transition-all rounded-sm focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         :class="
           school.is_favorite
             ? 'text-yellow-500'
@@ -90,7 +85,6 @@ import { getStatusBadgeColor } from "~/utils/schoolStatusBadges";
 import { getSizeColorClass } from "~/utils/schoolSize";
 import { MapPinIcon, StarIcon } from "@heroicons/vue/24/outline";
 import SchoolLogo from "~/components/School/SchoolLogo.vue";
-import SchoolPrioritySelector from "~/components/SchoolPrioritySelector.vue";
 
 const props = defineProps<{
   school: School;
@@ -100,16 +94,11 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   "update:status": [status: School["status"]];
-  "update:priority": [tier: "A" | "B" | "C" | null];
   "toggle-favorite": [];
 }>();
 
 const handleStatusChange = (event: Event) => {
   const target = event.target as HTMLSelectElement;
   emit("update:status", target.value as School["status"]);
-};
-
-const handlePriorityUpdate = (tier: "A" | "B" | "C" | null) => {
-  emit("update:priority", tier);
 };
 </script>

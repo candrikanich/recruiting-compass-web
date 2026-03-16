@@ -254,6 +254,11 @@ export const useTasks = (): {
         );
       }
 
+      if (status === "completed") {
+        const { $posthog } = useNuxtApp();
+        $posthog?.capture("task_completed");
+      }
+
       return typedResponse;
     } catch (err) {
       error.value =

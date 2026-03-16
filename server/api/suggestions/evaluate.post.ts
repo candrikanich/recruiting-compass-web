@@ -15,7 +15,6 @@ import { interactionGapRule } from "~/server/utils/rules/interactionGap";
 import { missingVideoRule } from "~/server/utils/rules/missingVideo";
 import { eventFollowUpRule } from "~/server/utils/rules/eventFollowUp";
 import { videoLinkHealthRule } from "~/server/utils/rules/videoLinkHealth";
-import { portfolioHealthRule } from "~/server/utils/rules/portfolioHealth";
 import { prioritySchoolReminderRule } from "~/server/utils/rules/prioritySchoolReminder";
 import { schoolListRule } from "~/server/utils/rules/schoolList";
 import { showcaseAttendanceRule } from "~/server/utils/rules/showcaseAttendance";
@@ -37,7 +36,7 @@ export default defineEventHandler(async (event) => {
     // grade_level is derived from graduation_year in user_preferences
     // (the profiles table was removed — see migration 041).
     const schoolsSelect =
-      "id, name, division, status, priority, priority_tier, fit_score";
+      "id, name, division, status, priority";
     const interactionsSelect =
       "id, school_id, occurred_at, related_event_id";
     const athleteTasksSelect = "task_id, status";
@@ -106,7 +105,6 @@ export default defineEventHandler(async (event) => {
       missingVideoRule,
       eventFollowUpRule,
       videoLinkHealthRule,
-      portfolioHealthRule,
       prioritySchoolReminderRule,
     ]);
 

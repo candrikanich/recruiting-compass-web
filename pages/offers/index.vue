@@ -92,7 +92,7 @@
               <select
                 v-model="newOffer.school_id"
                 required
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select School</option>
                 <option
@@ -111,7 +111,7 @@
               <select
                 v-model="newOffer.offer_type"
                 required
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select Type</option>
                 <option value="full_ride">Full Ride</option>
@@ -128,7 +128,7 @@
               <select
                 v-model="newOffer.status"
                 required
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
               >
                 <option value="pending">Pending</option>
                 <option value="accepted">Accepted</option>
@@ -146,7 +146,7 @@
                 min="0"
                 max="100"
                 placeholder="0-100"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
@@ -158,7 +158,7 @@
                 type="number"
                 min="0"
                 placeholder="0"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
@@ -169,7 +169,7 @@
                 v-model="newOffer.offer_date"
                 type="date"
                 required
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
@@ -179,7 +179,7 @@
               <input
                 v-model="newOffer.deadline_date"
                 type="date"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -191,7 +191,7 @@
               v-model="newOffer.notes"
               rows="2"
               placeholder="Additional notes..."
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div class="flex gap-3">
@@ -230,7 +230,7 @@
                 v-model="filters.schoolSearch"
                 type="text"
                 placeholder="School name..."
-                class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -240,7 +240,7 @@
             >
             <select
               v-model="filters.status"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
             >
               <option value="">-- All --</option>
               <option value="pending">Pending</option>
@@ -255,7 +255,7 @@
             >
             <select
               v-model="filters.offerType"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
             >
               <option value="">-- All --</option>
               <option value="full_ride">Full Ride</option>
@@ -271,7 +271,7 @@
             >
             <select
               v-model="filters.sortBy"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
             >
               <option value="offer_date">Offer Date</option>
               <option value="deadline_date">Deadline</option>
@@ -285,7 +285,7 @@
             >
             <select
               v-model="filters.sortDirection"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
             >
               <option value="desc">Newest First</option>
               <option value="asc">Oldest First</option>
@@ -450,13 +450,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, inject } from "vue";
+import { ref, reactive, computed, watch } from "vue";
 import { useOffers } from "~/composables/useOffers";
 import { useSchools } from "~/composables/useSchools";
-import { useActiveFamily } from "~/composables/useActiveFamily";
-import { useFamilyContext } from "~/composables/useFamilyContext";
-import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
-import Header from "~/components/Header.vue";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import OfferComparison from "~/components/OfferComparison.vue";
 import {
   MagnifyingGlassIcon,
@@ -485,8 +482,7 @@ const {
   daysUntilDeadline,
 } = useOffers();
 const { schools, fetchSchools } = useSchools();
-const activeFamily = (inject<UseActiveFamilyReturn>("activeFamily") ||
-  useFamilyContext()) as UseActiveFamilyReturn;
+const activeFamily = useFamilyCtx();
 
 const showAddForm = ref(false);
 const showComparison = ref(false);

@@ -1,15 +1,11 @@
 import { test, expect } from "@playwright/test";
+import { loginViaForm } from "../helpers/login";
 
 test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
   let interactionId: string;
 
   test.beforeEach(async ({ page }) => {
-    // Login
-    await page.goto("/");
-    await page.fill('input[type="email"]', "test@example.com");
-    await page.fill('input[type="password"]', "password123");
-    await page.click('button:has-text("Login")');
-    await page.waitForURL("**/dashboard");
+    await loginViaForm(page, "test@example.com", "password123", /\/dashboard/);
 
     // Navigate to interactions and get an interaction ID
     await page.goto("/interactions");

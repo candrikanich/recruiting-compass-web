@@ -42,7 +42,6 @@ const handleSubmit = async () => {
       twitter_handle: null,
       instagram_handle: null,
       notes: null,
-      responsiveness_score: 0,
       last_contact_date: null,
     });
 
@@ -106,7 +105,7 @@ const handleClose = () => {
                   type="text"
                   required
                   :disabled="loading"
-                  class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+                  class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                 />
               </div>
 
@@ -123,7 +122,7 @@ const handleClose = () => {
                   type="text"
                   required
                   :disabled="loading"
-                  class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+                  class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                 />
               </div>
 
@@ -138,7 +137,7 @@ const handleClose = () => {
                   id="role"
                   v-model="role"
                   :disabled="loading"
-                  class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+                  class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                 >
                   <option value="head">Head Coach</option>
                   <option value="assistant">Assistant Coach</option>

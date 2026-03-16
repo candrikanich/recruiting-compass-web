@@ -285,24 +285,6 @@ const helpContentMap: Record<string, HelpContentItem> = {
     ],
     timeline: "Maintain throughout junior and senior recruiting season.",
   },
-  "portfolio-health": {
-    title: "Balance Your School Portfolio",
-    whyItMatters:
-      "A healthy portfolio has mix of reach, match, and safety schools. Too many reach schools and you might go without an offer. Too many safety schools and you might miss great opportunities. Balance increases your odds of landing at the right fit.",
-    howToComplete: [
-      "Review your current school list and categorize by fit level (reach/match/safety)",
-      "Add more reach schools if you're underweighting them",
-      "Add more safety schools if you have mostly reach/match schools",
-      "Target: 5-7 reach, 10-15 match, 5-8 safety schools",
-      "Reassess monthly as your athletic profile evolves",
-    ],
-    coachesExpect: [
-      "Realistic assessment of fit from athlete",
-      "Genuine interest across the list, not just top-tier schools",
-    ],
-    timeline:
-      "Build portfolio by end of sophomore year. Refine in junior year.",
-  },
 };
 
 const helpContent = computed(

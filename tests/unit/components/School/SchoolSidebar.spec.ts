@@ -36,9 +36,9 @@ const stubs = {
     template: "<div>Status History</div>",
     props: ["schoolId"],
   },
-  FitScoreDisplay: {
-    template: "<div>Fit Score Display</div>",
-    props: ["fitScore", "showBreakdown"],
+  SchoolFitSignals: {
+    template: "<div>Fit Signals</div>",
+    props: ["personalFit", "academicFit"],
   },
 };
 
@@ -220,48 +220,72 @@ describe("SchoolSidebar", () => {
     });
   });
 
-  describe("Ranking section", () => {
-    it("renders Ranking section", () => {
+  describe("Fit Signals section", () => {
+    const mockPersonalFit = {
+      signals: {
+        location: { label: "Location", value: "In-state", strength: "strong" as const, explanation: "Same state" },
+        campusSize: { label: "Campus Size", value: "Medium", strength: "good" as const, explanation: "Matches preference" },
+        cost: { label: "Cost", value: "$30k", strength: "stretch" as const, explanation: "Above budget" },
+      },
+      availableSignals: 3,
+    };
+    const mockAcademicFit = {
+      signals: {
+        sat: { label: "SAT", athleteValue: 1300, schoolRange: { low: 1200, high: 1450 }, strength: "in-range" as const, explanation: "Within range" },
+        act: { label: "ACT", athleteValue: null, schoolRange: null, strength: "unknown" as const, explanation: "No data" },
+      },
+      admissionRate: 0.35,
+      availableSignals: 1,
+      hasSchoolData: true,
+    };
+
+    it("renders School Fit card when both personalFit and academicFit are provided", () => {
+      const wrapper = mount(SchoolSidebar, {
+        props: { ...defaultProps, personalFit: mockPersonalFit, academicFit: mockAcademicFit },
+        global: { stubs },
+      });
+      expect(wrapper.text()).toContain("School Fit");
+    });
+
+    it("renders School Fit card when only personalFit is provided", () => {
+      const wrapper = mount(SchoolSidebar, {
+        props: { ...defaultProps, personalFit: mockPersonalFit },
+        global: { stubs },
+      });
+      expect(wrapper.text()).toContain("School Fit");
+    });
+
+    it("does not render School Fit card when both props are null", () => {
+      const wrapper = mount(SchoolSidebar, {
+        props: { ...defaultProps, personalFit: null, academicFit: null },
+        global: { stubs },
+      });
+      expect(wrapper.text()).not.toContain("School Fit");
+    });
+
+    it("does not render School Fit card when neither prop is provided", () => {
       const wrapper = mount(SchoolSidebar, {
         props: defaultProps,
         global: { stubs },
       });
-      expect(wrapper.text()).toContain("Ranking");
-      expect(wrapper.text()).toContain("Current ranking");
-    });
-  });
-
-  describe("Fit Score section", () => {
-    it("renders Fit Score section when fitScore is provided", () => {
-      const mockFitScore = {
-        score: 85,
-        breakdown: {
-          academics: { score: 90, weight: 0.3 },
-          athletics: { score: 80, weight: 0.4 },
-          location: { score: 85, weight: 0.3 },
-        },
-      };
-      const wrapper = mount(SchoolSidebar, {
-        props: { ...defaultProps, fitScore: mockFitScore },
-        global: { stubs },
-      });
-      expect(wrapper.text()).toContain("School Fit Analysis");
+      expect(wrapper.text()).not.toContain("School Fit");
     });
 
-    it("does not render Fit Score section when fitScore is null", () => {
+    it("renders SchoolFitSignals component when both props are provided", () => {
       const wrapper = mount(SchoolSidebar, {
-        props: { ...defaultProps, fitScore: null },
+        props: { ...defaultProps, personalFit: mockPersonalFit, academicFit: mockAcademicFit },
         global: { stubs },
       });
-      expect(wrapper.text()).not.toContain("School Fit Analysis");
+      expect(wrapper.text()).toContain("Fit Signals");
     });
 
-    it("does not render Fit Score section when fitScore is undefined", () => {
+    it("includes enrich in declared emits", () => {
       const wrapper = mount(SchoolSidebar, {
-        props: defaultProps,
+        props: { ...defaultProps, personalFit: mockPersonalFit, academicFit: mockAcademicFit },
         global: { stubs },
       });
-      expect(wrapper.text()).not.toContain("School Fit Analysis");
+      // SchoolSidebar declares enrich as an emittable event
+      expect(wrapper.vm.$options.emits).toContain("enrich");
     });
   });
 

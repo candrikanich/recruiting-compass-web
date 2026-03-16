@@ -1,10 +1,9 @@
-import { Page } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 import { BasePage } from "./BasePage";
 
 export class AuthPage extends BasePage {
   async goto() {
     await super.goto("/login");
-    // Wait a moment for any redirects to complete
     await this.page.waitForTimeout(1000);
   }
 
@@ -109,8 +108,9 @@ export class AuthPage extends BasePage {
   }
 
   async expectError(message: string) {
-    await this.expectVisible('[data-testid="error-message"]');
-    await this.expectText('[data-testid="error-message"]', message);
+    // Field errors use FieldError (role="alert"); form errors use FormErrorSummary (data-testid="error-message")
+    const alert = this.page.locator('[role="alert"]').filter({ hasText: message });
+    await expect(alert.first()).toBeVisible({ timeout: 5000 });
   }
 
   async fillInvalidEmail(email: string) {

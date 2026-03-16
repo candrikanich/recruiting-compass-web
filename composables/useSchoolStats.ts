@@ -5,8 +5,8 @@ import type { School } from '~/types/models';
 import {
   AcademicCapIcon,
   StarIcon,
-  TrophyIcon,
-  MapPinIcon
+  MapPinIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/vue/24/outline';
 
 export function useSchoolStats(schools: Ref<School[]>) {
@@ -26,13 +26,6 @@ export function useSchoolStats(schools: Ref<School[]>) {
       testId: 'stat-favorites'
     },
     {
-      label: 'Tier A',
-      value: schools.value.filter(s => s.priority_tier === 'A').length,
-      icon: TrophyIcon,
-      color: 'purple' as const,
-      testId: 'stat-tier-a'
-    },
-    {
       label: 'Visited',
       value: schools.value.filter(s =>
         s.status === 'official_visit_scheduled' || s.status === 'official_visit_invited'
@@ -40,6 +33,13 @@ export function useSchoolStats(schools: Ref<School[]>) {
       icon: MapPinIcon,
       color: 'green' as const,
       testId: 'stat-visited'
+    },
+    {
+      label: 'Contacted',
+      value: schools.value.filter(s => s.status === 'contacted').length,
+      icon: ChatBubbleLeftRightIcon,
+      color: 'purple' as const,
+      testId: 'stat-contacted'
     }
   ]);
 

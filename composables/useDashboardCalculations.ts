@@ -11,7 +11,6 @@ import {
   calculateContactsThisMonth,
   calculateTotalOffers,
   calculateAcceptedOffers,
-  calculateATierSchoolCount,
   getUpcomingEvents,
   getTopMetrics,
 } from "~/utils/dashboardCalculations";
@@ -36,7 +35,6 @@ interface DashboardCalculations {
   contactsThisMonth: ComputedRef<number>;
   totalOffers: ComputedRef<number>;
   acceptedOffers: ComputedRef<number>;
-  aTierSchoolCount: ComputedRef<number>;
   upcomingEvents: ComputedRef<Event[]>;
   topMetrics: ComputedRef<PerformanceMetric[]>;
 }
@@ -65,10 +63,6 @@ export const useDashboardCalculations = (
     calculateAcceptedOffers(dashboardData.allOffers.value),
   );
 
-  const aTierSchoolCount = computed(() =>
-    calculateATierSchoolCount(dashboardData.allSchools.value),
-  );
-
   const upcomingEvents = computed(() =>
     getUpcomingEvents(dashboardData.allEvents.value),
   );
@@ -82,7 +76,6 @@ export const useDashboardCalculations = (
     contactsThisMonth,
     totalOffers,
     acceptedOffers,
-    aTierSchoolCount,
     upcomingEvents,
     topMetrics,
   };

@@ -98,7 +98,7 @@ import {
 import type { CollegeSearchResult } from "~/types/api";
 import type { School } from "~/types/models";
 
-definePageMeta({});
+
 
 const { createSchool, loading, error } = useSchools();
 const { lookupDivision } = useNcaaLookup();

@@ -81,27 +81,6 @@ export function createSchoolFilterConfigs(
     },
     {
       type: "range",
-      field: "fit_score",
-      label: "Fit Score",
-      min: 0,
-      max: 100,
-      step: 5,
-      defaultValue: [0, 100] as [number, number],
-      filterFn: (
-        item: Record<string, unknown>,
-        filterValue: FilterValue,
-      ): boolean => {
-        const school = item as unknown as School;
-        const score = school.fit_score;
-        if (score === null || score === undefined) return true;
-        const rangeValue = filterValue as { min?: number; max?: number } | null;
-        return (
-          score >= (rangeValue?.min ?? 0) && score <= (rangeValue?.max ?? 100)
-        );
-      },
-    },
-    {
-      type: "range",
       field: "distance",
       label: "Distance",
       min: 0,

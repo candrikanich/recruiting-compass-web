@@ -7,7 +7,7 @@
       <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <ArrowLeftIcon class="w-4 h-4" />
           Back to Settings
@@ -16,7 +16,7 @@
           Dashboard Customization
         </h1>
         <p class="text-slate-600">
-          Drag widgets to reorder. Click the eye to show or hide.
+          Drag widgets to reorder, or use the arrow buttons. Click the eye to show or hide.
         </p>
       </div>
     </div>
@@ -82,6 +82,8 @@
               :visible="element.visible"
               :data-size="widgetSize(element.id)"
               @toggle="toggleWidget(layout.leftColumn, element.id)"
+              @move-up="moveWidget(layout.leftColumn, element.id, 'up')"
+              @move-down="moveWidget(layout.leftColumn, element.id, 'down')"
             />
           </VueDraggable>
 
@@ -117,6 +119,8 @@
               :visible="element.visible"
               :data-size="widgetSize(element.id)"
               @toggle="toggleWidget(layout.rightColumn, element.id)"
+              @move-up="moveWidget(layout.rightColumn, element.id, 'up')"
+              @move-down="moveWidget(layout.rightColumn, element.id, 'down')"
             />
           </VueDraggable>
 
@@ -236,6 +240,17 @@ onMounted(async () => {
   layout.leftColumn = saved.leftColumn;
   layout.rightColumn = saved.rightColumn;
 });
+
+const moveWidget = (column: WidgetEntry[], id: string, direction: "up" | "down") => {
+  const index = column.findIndex((w) => w.id === id);
+  if (index === -1) return;
+  const newIndex = direction === "up" ? index - 1 : index + 1;
+  if (newIndex < 0 || newIndex >= column.length) return;
+  const copy = [...column];
+  [copy[index], copy[newIndex]] = [copy[newIndex], copy[index]];
+  column.splice(0, column.length, ...copy);
+  scheduleSave();
+};
 
 const toggleWidget = (column: WidgetEntry[], id: string) => {
   const entry = column.find((w) => w.id === id);

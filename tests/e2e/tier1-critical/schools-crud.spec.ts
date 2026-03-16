@@ -6,15 +6,14 @@ import {
   schoolSelectors,
   schoolHelpers,
 } from "./fixtures/schools.fixture";
+import { loginViaForm } from "../helpers/login";
 
 test.describe("Schools CRUD Operations", () => {
+  // Each test creates real DB records — allow up to 2 minutes
+  test.setTimeout(120000);
+
   test.beforeEach(async ({ page }) => {
-    // Navigate to app and login
-    await page.goto("/login");
-    await page.fill('input[type="email"]', "test@example.com");
-    await page.fill('input[type="password"]', "password123");
-    await page.click('button:has-text("Sign In")');
-    await page.waitForURL("/dashboard");
+    await loginViaForm(page, "player@test.com", "TestPass123!");
   });
 
   // ==================== CREATE TESTS ====================

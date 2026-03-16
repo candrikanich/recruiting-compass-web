@@ -18,7 +18,7 @@
 
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1" for="phone">
-          Phone <span class="text-slate-400 font-normal">(optional)</span>
+          Phone <span class="text-slate-600 font-normal">(optional)</span>
         </label>
         <UInput
           id="phone"
@@ -31,7 +31,7 @@
 
       <div v-if="isAthlete">
         <label class="block text-sm font-medium text-slate-700 mb-1" for="dob">
-          Date of Birth <span class="text-slate-400 font-normal">(optional)</span>
+          Date of Birth <span class="text-slate-600 font-normal">(optional)</span>
         </label>
         <UInput
           id="dob"

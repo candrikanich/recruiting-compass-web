@@ -29,7 +29,7 @@
           data-testid="coaching-style-textarea"
           rows="3"
           placeholder="e.g., High-intensity, Player development focused, Defensive emphasis..."
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -42,7 +42,7 @@
           data-testid="recruiting-approach-textarea"
           rows="3"
           placeholder="e.g., Early recruiting, Late bloomers, All-around athletes..."
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -55,7 +55,7 @@
           data-testid="communication-style-textarea"
           rows="3"
           placeholder="e.g., Regular emails, Phone calls, In-person only, Direct and honest..."
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -68,7 +68,7 @@
           data-testid="success-metrics-textarea"
           rows="3"
           placeholder="e.g., Success with similar athletes, Draft history, MLB placement..."
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -81,7 +81,7 @@
           data-testid="overall-philosophy-textarea"
           rows="3"
           placeholder="General notes about the coaching philosophy and program culture..."
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
         />
       </div>
 

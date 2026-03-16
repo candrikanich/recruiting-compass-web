@@ -18,7 +18,6 @@ const mockSchool: School = {
   instagram_handle: "test_uni",
   status: "interested",
   status_changed_at: "2024-01-15T10:00:00Z",
-  priority_tier: "A",
   notes: "Good school",
   pros: ["Great program"],
   cons: ["Far away"],

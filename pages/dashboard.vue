@@ -66,6 +66,8 @@
               :suggestions="dashboardSuggestions || []"
               :is-viewing-as-parent="isViewingAsParent || false"
               :athlete-name="activeAthleteName"
+              :more-count="suggestionsMoreCount"
+              :dead-period-message="deadPeriodMessage"
               @dismiss="handleSuggestionDismiss"
             />
           </section>
@@ -80,7 +82,7 @@
               <Suspense v-for="entry in group.entries" :key="entry.id">
                 <component
                   :is="WIDGET_COMPONENTS[entry.id] || 'div'"
-                  v-bind="getWidgetProps(entry.id)"
+                  v-bind="widgetPropsMap[entry.id] ?? {}"
                 />
                 <template #fallback>
                   <div class="animate-pulse bg-gray-200 h-64 rounded-lg" />
@@ -100,7 +102,7 @@
               <Suspense>
                 <component
                   :is="WIDGET_COMPONENTS[group.entry.id] || 'div'"
-                  v-bind="getWidgetProps(group.entry.id)"
+                  v-bind="widgetPropsMap[group.entry.id] ?? {}"
                 />
                 <template #fallback>
                   <div class="animate-pulse bg-gray-200 h-64 rounded-lg" />
@@ -130,7 +132,7 @@
             <Suspense>
               <component
                 :is="WIDGET_COMPONENTS[entry.id] || 'div'"
-                v-bind="getWidgetProps(entry.id)"
+                v-bind="widgetPropsMap[entry.id] ?? {}"
               />
               <template #fallback>
                 <div class="animate-pulse bg-gray-200 h-40 rounded-lg" />
@@ -161,7 +163,6 @@ import {
   ref,
   watch,
   computed,
-  inject,
   defineAsyncComponent,
   onMounted,
 } from "vue";
@@ -174,12 +175,13 @@ import { useNotifications } from "~/composables/useNotifications";
 import { useAppToast } from "~/composables/useAppToast";
 import { useUserTasks } from "~/composables/useUserTasks";
 import { useSuggestions } from "~/composables/useSuggestions";
-import { useFamilyContext } from "~/composables/useFamilyContext";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useViewLogging } from "~/composables/useViewLogging";
 import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
+import { getDeadPeriodMessage } from "~/server/utils/ncaaRecruitingCalendar";
 import { WIDGET_SIZES } from "~/types/models";
 import type { WidgetId, WidgetEntry } from "~/types/models";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
@@ -193,7 +195,6 @@ import DashboardAthleteActivityWidget from "~/components/Dashboard/AthleteActivi
 const EmailRecruitingPacketModal = defineAsyncComponent(
   () => import("~/components/EmailRecruitingPacketModal.vue"),
 );
-import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 definePageMeta({
   middleware: ["auth", "onboarding"],
@@ -246,6 +247,20 @@ const {
   allEvents,
 } = dashboardData;
 
+const deadPeriodMessage = computed((): string | null => {
+  if (!allSchools.value.length) return null;
+  const now = new Date();
+  const allInDeadPeriod = allSchools.value.every((school) => {
+    const div = (school.division as string) || "D1";
+    return !!getDeadPeriodMessage(now, div as "D1" | "D2" | "D3");
+  });
+  return allInDeadPeriod ? (getDeadPeriodMessage(now, "D1") ?? null) : null;
+});
+
+const suggestionsMoreCount = computed(
+  () => suggestionsComposable?.moreCount.value ?? 0,
+);
+
 // Dashboard calculations derived from dashboard data
 const {
   schoolSizeBreakdown,
@@ -295,51 +310,38 @@ const WIDGET_COMPONENTS: Partial<Record<WidgetId, Component>> = {
   ),
 };
 
-// Return props for each widget id
-const getWidgetProps = (id: WidgetId): Record<string, unknown> => {
-  switch (id) {
-    case "interactionTrendChart":
-      return { interactions: allInteractions.value };
-    case "schoolInterestChart":
-      return { schools: allSchools.value };
-    case "schoolMapWidget":
-      return { schools: allSchools.value };
-    case "performanceSummary":
-      return {
-        metrics: allMetrics.value,
-        topMetrics: topMetrics.value,
-        showPerformance: true,
-      };
-    case "quickTasks":
-      return {
-        tasks: tasks.value ?? [],
-        showTasks: true,
-        onAddTask: addTask,
-        onToggleTask: toggleTask,
-        onDeleteTask: deleteTask,
-        onClearCompleted: () => userTasksComposable?.clearCompleted(),
-      };
-    case "coachFollowupWidget":
-      return {};
-    case "atAGlanceSummary":
-      return {
-        coaches: allCoaches.value,
-        schools: allSchools.value,
-        interactions: allInteractions.value,
-        offers: allOffers.value,
-      };
-    case "schoolStatusOverview":
-      return { breakdown: schoolSizeBreakdown.value, count: schoolCount.value };
-    case "eventsSummary":
-      return { events: upcomingEvents.value, showEvents: true };
-    case "recentNotifications":
-      return {};
-    case "linkedAccounts":
-      return { showSocial: true };
-    default:
-      return {};
-  }
-};
+// Memoized widget props computed by reactive dependencies
+const widgetPropsMap = computed(
+  (): Partial<Record<WidgetId, Record<string, unknown>>> => ({
+    interactionTrendChart: { interactions: allInteractions.value },
+    schoolInterestChart: { schools: allSchools.value },
+    schoolMapWidget: { schools: allSchools.value },
+    performanceSummary: {
+      metrics: allMetrics.value,
+      topMetrics: topMetrics.value,
+      showPerformance: true,
+    },
+    quickTasks: {
+      tasks: tasks.value ?? [],
+      showTasks: true,
+      onAddTask: addTask,
+      onToggleTask: toggleTask,
+      onDeleteTask: deleteTask,
+      onClearCompleted: () => userTasksComposable?.clearCompleted(),
+    },
+    coachFollowupWidget: {},
+    atAGlanceSummary: {
+      coaches: allCoaches.value,
+      schools: allSchools.value,
+      interactions: allInteractions.value,
+      offers: allOffers.value,
+    },
+    schoolStatusOverview: { breakdown: schoolSizeBreakdown.value, count: schoolCount.value },
+    eventsSummary: { events: upcomingEvents.value, showEvents: true },
+    recentNotifications: {},
+    linkedAccounts: { showSocial: true },
+  }),
+);
 
 // Group visible left column entries: pair consecutive 2/6 widgets
 type WidgetGroup =
@@ -370,9 +372,7 @@ const rightColumnVisible = computed(() =>
   dashboardLayout.value.rightColumn.filter((w) => w.visible),
 );
 
-// Inject family context provided at app.vue level (with singleton fallback)
-const activeFamily =
-  inject<UseActiveFamilyReturn>("activeFamily") || useFamilyContext();
+const activeFamily = useFamilyCtx();
 
 // Destructure activeFamily refs used in template for auto-unwrapping
 const { isViewingAsParent, parentAccessibleFamilies } = activeFamily;

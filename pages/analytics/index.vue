@@ -14,8 +14,6 @@
         <StatCard
           label="Total Schools"
           :value="stats.totalSchools"
-          :trend="5"
-          trend-label="vs last period"
           border-color="#3b82f6"
           icon="🏫"
           :show-icon="true"
@@ -23,8 +21,6 @@
         <StatCard
           label="Total Interactions"
           :value="stats.totalInteractions"
-          :trend="12"
-          trend-label="vs last period"
           border-color="#10b981"
           icon="💬"
           :show-icon="true"
@@ -32,8 +28,6 @@
         <StatCard
           label="Offer Count"
           :value="stats.totalOffers"
-          :trend="-5"
-          trend-label="vs last period"
           border-color="#f59e0b"
           icon="📝"
           :show-icon="true"
@@ -41,7 +35,6 @@
         <StatCard
           label="Commitments"
           :value="stats.commitments"
-          trend-label="locked in"
           border-color="#ef4444"
           icon="✅"
           :show-icon="true"
@@ -140,13 +133,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import DateRangeToolbar from "~/components/Analytics/DateRangeToolbar.vue";
 import StatCard from "~/components/Analytics/StatCard.vue";
 import PieChart from "~/components/Analytics/PieChart.vue";
 import FunnelChart from "~/components/Analytics/FunnelChart.vue";
 import ScatterChart from "~/components/Analytics/ScatterChart.vue";
-import { usePerformanceAnalytics } from "~/composables/usePerformanceAnalytics";
+import { useDashboardData } from "~/composables/useDashboardData";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
+import { useUserStore } from "~/stores/user";
 
 interface DateRange {
   preset: string;
@@ -154,7 +149,18 @@ interface DateRange {
   endDate: string;
 }
 
-const analytics = usePerformanceAnalytics();
+const dashboardData = useDashboardData();
+const activeFamily = useFamilyCtx();
+const userStore = useUserStore();
+
+const { allSchools, allOffers, schoolCount, interactionCount } = dashboardData;
+
+const stats = computed(() => ({
+  totalSchools: schoolCount.value,
+  totalInteractions: interactionCount.value,
+  totalOffers: allOffers.value.length,
+  commitments: allSchools.value.filter((s) => s.status === "committed").length,
+}));
 
 const dateRange = ref<DateRange>({
   preset: "last_30_days",
@@ -162,14 +168,6 @@ const dateRange = ref<DateRange>({
     .toISOString()
     .split("T")[0],
   endDate: new Date().toISOString().split("T")[0],
-});
-
-// Summary Statistics
-const stats = ref({
-  totalSchools: 24,
-  totalInteractions: 87,
-  totalOffers: 15,
-  commitments: 3,
 });
 
 // Chart Data
@@ -242,7 +240,14 @@ const handleExport = (format: "csv" | "excel" | "pdf") => {
   // TODO: Implement export functionality
 };
 
-onMounted(() => {
-  // TODO: Fetch analytics data from API
+onMounted(async () => {
+  const familyId = activeFamily.activeFamilyId?.value;
+  const userId = activeFamily.isViewingAsParent?.value
+    ? (activeFamily.activeAthleteId?.value ?? userStore.user?.id)
+    : userStore.user?.id;
+
+  if (familyId && userId) {
+    await dashboardData.fetchAll(familyId, userId);
+  }
 });
 </script>

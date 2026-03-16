@@ -20,7 +20,6 @@ const mockSchool: School = {
   instagram_handle: "universityofflorida",
   ncaa_id: "UFL",
   status: "researching",
-  priority_tier: "A",
   notes: "Great school",
   pros: ["Good baseball"],
   cons: [],

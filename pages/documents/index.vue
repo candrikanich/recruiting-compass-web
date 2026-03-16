@@ -214,6 +214,7 @@
           <DocumentCard
             v-for="doc in sortedAndFilteredDocuments"
             :key="doc.id"
+            v-memo="[doc.updated_at]"
             :document="doc"
             :school-name="getSchoolName(doc.school_id)"
             @delete="handleDeleteDocument"
@@ -225,6 +226,7 @@
           <div
             v-for="doc in sortedAndFilteredDocuments"
             :key="doc.id"
+            v-memo="[doc.updated_at]"
             class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition flex items-center justify-between"
           >
             <div class="flex-1">

@@ -57,11 +57,9 @@ export const useDashboardData = () => {
         location,
         division,
         conference,
-        ranking,
         is_favorite,
         status,
         status_changed_at,
-        priority_tier,
         website,
         favicon_url,
         twitter_handle,
@@ -69,7 +67,6 @@ export const useDashboardData = () => {
         notes,
         pros,
         cons,
-        fit_score,
         fit_tier,
         user_id,
         family_unit_id,
@@ -83,8 +80,6 @@ export const useDashboardData = () => {
         communication_style,
         success_metrics,
         offer_details,
-        private_notes,
-        fit_score_data,
         created_by,
         updated_by
       `,
@@ -164,7 +159,7 @@ export const useDashboardData = () => {
     try {
       const { data: offersData, error: offersError } = await supabase
         .from("offers")
-        .select("*")
+        .select("id, user_id, school_id, offer_type, status, scholarship_amount, scholarship_percentage, deadline_date, notes, created_at")
         .eq("user_id", userId);
 
       if (!offersError && offersData) {
@@ -183,7 +178,7 @@ export const useDashboardData = () => {
     try {
       const { data: eventsData, error: eventsError } = await supabase
         .from("events")
-        .select("*")
+        .select("id, user_id, school_id, type, name, start_date, end_date, registered, attended, location, created_at")
         .eq("user_id", userId);
 
       if (!eventsError && eventsData) {
@@ -202,7 +197,7 @@ export const useDashboardData = () => {
     try {
       const { data: metricsData, error: metricsError } = await supabase
         .from("performance_metrics")
-        .select("*")
+        .select("id, user_id, metric_type, value, unit, recorded_date, notes, verified, created_at")
         .eq("user_id", userId);
 
       if (!metricsError && metricsData) {

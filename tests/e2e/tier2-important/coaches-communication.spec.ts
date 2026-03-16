@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { CoachesPage } from "../pages/CoachesPage";
 import { SchoolsPage } from "../pages/SchoolsPage";
+import { loginViaForm } from "../helpers/login";
 import {
   coachFixtures,
   createCoachData,
@@ -25,11 +26,7 @@ test.describe("Coach Communication History", () => {
     schoolsPage = new SchoolsPage(page);
 
     // Login
-    await page.goto("/login");
-    await page.fill('input[type="email"]', "test@example.com");
-    await page.fill('input[type="password"]', "password123");
-    await page.click('button:has-text("Sign In")');
-    await page.waitForURL("/dashboard");
+    await loginViaForm(page, "player@test.com", "TestPass123!");
 
     // Create test school
     const schoolName = generateUniqueSchoolName("Comm Test School");

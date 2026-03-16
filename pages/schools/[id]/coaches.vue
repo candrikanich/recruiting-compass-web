@@ -47,7 +47,7 @@
               v-model="searchQuery"
               type="text"
               placeholder="Name, email, phone..."
-              class="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              class="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             />
           </div>
 
@@ -62,7 +62,7 @@
             <select
               id="roleFilter"
               v-model="filters.role"
-              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
+              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
               :style="selectDropdownStyle"
             >
               <option value="">All Roles</option>
@@ -83,12 +83,11 @@
             <select
               id="sortFilter"
               v-model="sortBy"
-              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
+              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
               :style="selectDropdownStyle"
             >
               <option value="name">Name (A-Z)</option>
               <option value="lastContact">Last Contact (Recent)</option>
-              <option value="responsiveness">Responsiveness</option>
             </select>
           </div>
         </div>
@@ -122,26 +121,26 @@
       </div>
 
       <!-- Results Summary -->
-      <div v-if="coaches.length > 0" class="mb-6">
+      <div v-if="schoolCoaches.length > 0" class="mb-6">
         <p class="text-sm text-slate-600">
           Showing
           <span class="font-semibold">{{ filteredCoaches.length }}</span> of
-          <span class="font-semibold">{{ coaches.length }}</span>
-          {{ coaches.length === 1 ? "coach" : "coaches" }}
+          <span class="font-semibold">{{ schoolCoaches.length }}</span>
+          {{ schoolCoaches.length === 1 ? "coach" : "coaches" }}
         </p>
       </div>
 
       <!-- Page State: Loading / Error / Empty -->
       <PageState
-        :loading="loading && coaches.length === 0"
-        :isEmpty="!loading && coaches.length === 0"
+        :loading="loading && schoolCoaches.length === 0"
+        :isEmpty="!loading && schoolCoaches.length === 0"
         loading-message="Loading coaches..."
         empty-title="No coaches added yet"
         empty-message="Add your first coach to get started"
       >
         <!-- No Results State (separate from empty) -->
         <div
-          v-if="coaches.length > 0 && filteredCoaches.length === 0"
+          v-if="schoolCoaches.length > 0 && filteredCoaches.length === 0"
           class="bg-white rounded-2xl shadow-lg p-8 text-center border border-slate-200"
         >
           <p class="text-slate-600">No coaches match your filters</p>
@@ -303,9 +302,13 @@ const school = computed((): School | undefined => {
 
 const { applyFiltersAndSort } = useCoachFilters();
 
+const schoolCoaches = computed(() =>
+  coaches.value.filter((c) => c.school_id === id),
+);
+
 const filteredCoaches = computed(() =>
   applyFiltersAndSort(
-    coaches.value,
+    schoolCoaches.value,
     searchQuery.value,
     (filters.value.role as string) || "",
     sortBy.value as CoachSortOption,
@@ -323,7 +326,6 @@ const handleCoachFormSubmit = async (formData: any) => {
       twitter_handle: formData.twitter_handle || null,
       instagram_handle: formData.instagram_handle || null,
       notes: formData.notes || null,
-      responsiveness_score: 0,
       last_contact_date: null,
     });
 
@@ -405,6 +407,7 @@ defineExpose({
   searchQuery,
   filters,
   sortBy,
+  schoolCoaches,
   filteredCoaches,
   handleCoachFormSubmit,
   isDeleteDialogOpen,

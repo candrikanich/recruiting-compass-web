@@ -217,24 +217,6 @@ export interface FitScoreResult {
   missingDimensions: string[];
 }
 
-export const FIT_WEIGHTS = {
-  athletic: 0.4,
-  academic: 0.25,
-  opportunity: 0.2,
-  personal: 0.15,
-};
-
-// Portfolio Health Types
-export interface PortfolioHealth {
-  reaches: number;
-  matches: number;
-  safeties: number;
-  unlikelies: number;
-  total: number;
-  warnings: string[];
-  status: "healthy" | "needs_attention" | "at_risk" | "not_started";
-}
-
 // Division Recommendation Types
 export interface DivisionRecommendation {
   shouldConsiderOtherDivisions: boolean;

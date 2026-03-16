@@ -27,15 +27,6 @@ vi.mock("~/components/School/SchoolLogo.vue", () => ({
   },
 }));
 
-vi.mock("~/components/SchoolPrioritySelector.vue", () => ({
-  default: {
-    name: "SchoolPrioritySelector",
-    template: "<div>Priority Selector</div>",
-    props: ["model-value", "data-testid"],
-    emits: ["update:model-value"],
-  },
-}));
-
 describe("SchoolDetailHeader", () => {
   const mockSchool: School = {
     id: "school-123",
@@ -43,7 +34,6 @@ describe("SchoolDetailHeader", () => {
     location: "Test City, TX",
     division: "D1",
     status: "researching",
-    priority_tier: "B",
     conference: "Big 12",
     is_favorite: false,
   } as School;
@@ -171,48 +161,6 @@ describe("SchoolDetailHeader", () => {
       const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
       const select = wrapper.find("#school-status");
       expect(select.classes()).toContain("color-researching");
-    });
-  });
-
-  describe("priority selector", () => {
-    it("renders priority selector component", () => {
-      const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
-      const priority = wrapper.findComponent({
-        name: "SchoolPrioritySelector",
-      });
-      expect(priority.exists()).toBe(true);
-    });
-
-    it("passes current priority tier", () => {
-      const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
-      const priority = wrapper.findComponent({
-        name: "SchoolPrioritySelector",
-      });
-      expect(priority.props("modelValue")).toBe("B");
-    });
-
-    it("passes null priority tier when not set", () => {
-      const schoolWithoutPriority = { ...mockSchool, priority_tier: null };
-      const wrapper = mount(SchoolDetailHeader, {
-        props: { ...defaultProps, school: schoolWithoutPriority },
-      });
-      const priority = wrapper.findComponent({
-        name: "SchoolPrioritySelector",
-      });
-      expect(priority.props("modelValue")).toBeNull();
-    });
-
-    it("emits update:priority when changed", async () => {
-      const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
-      const priority = wrapper.findComponent({
-        name: "SchoolPrioritySelector",
-      });
-
-      priority.vm.$emit("update:model-value", "A");
-      await wrapper.vm.$nextTick();
-
-      expect(wrapper.emitted("update:priority")).toBeTruthy();
-      expect(wrapper.emitted("update:priority")?.[0]).toEqual(["A"]);
     });
   });
 

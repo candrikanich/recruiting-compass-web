@@ -5,9 +5,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : 3,
+  workers: process.env.CI ? 2 : 3,
   reporter: "html",
   globalSetup: "./tests/e2e/global-setup.ts",
+  timeout: 60000, // 60s per test — auth flows include signup + logout + login
 
   use: {
     baseURL: "http://localhost:3003",
@@ -21,8 +22,8 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
 
-    // Only run Firefox/WebKit in CI (or with FULL_TESTS=1)
-    ...(process.env.CI || process.env.FULL_TESTS
+    // Only run Firefox/WebKit with FULL_TESTS=1 (not in standard CI — too slow with 1 worker)
+    ...(process.env.FULL_TESTS
       ? [
           {
             name: "firefox",

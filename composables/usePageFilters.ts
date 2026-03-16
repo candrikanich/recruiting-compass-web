@@ -12,7 +12,7 @@ import type { Ref } from "vue";
  *
  * Example:
  * ```typescript
- * type SchoolSortOption = "name" | "status" | "rankingScore";
+ * type SchoolSortOption = "name" | "status" | "distance";
  *
  * const { searchQuery, filters, sortBy, clearFilters } = usePageFilters<SchoolSortOption>({
  *   defaultSort: "name",
@@ -82,4 +82,16 @@ export const usePageFilters = <T extends string = string>(options?: {
     sortBy,
     clearFilters,
   };
+};
+
+const FILTER_STORAGE_KEYS = [
+  "schools-filters",
+  "coaches-filters",
+  "interactions-filters",
+  "offers-filters",
+] as const;
+
+export const clearAllFilterCaches = (): void => {
+  if (!import.meta.client) return;
+  FILTER_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
 };

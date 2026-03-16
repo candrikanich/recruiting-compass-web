@@ -7,7 +7,7 @@
       :aria-expanded="isOpen"
       aria-controls="notifications-dropdown"
       aria-haspopup="menu"
-      class="relative p-2 rounded-lg hover:bg-slate-100 transition-colors focus:outline-hidden focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
+      class="relative p-2 rounded-lg hover:bg-slate-100 transition-colors focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
     >
       <svg
         class="w-6 h-6 text-slate-600"
@@ -57,7 +57,7 @@
           <button
             v-if="notifications.length > 0"
             @click="markAllAsRead"
-            class="text-xs text-blue-600 hover:text-blue-700 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
+            class="text-xs text-blue-600 hover:text-blue-700 font-medium focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
           >
             Mark all read
           </button>
@@ -71,7 +71,7 @@
             role="menuitem"
             @click="handleNotificationClick(notification)"
             :class="[
-              'w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors focus:outline-hidden focus:bg-slate-50',
+              'w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors focus:bg-slate-50',
               !notification.read_at ? 'bg-blue-50' : '',
             ]"
           >

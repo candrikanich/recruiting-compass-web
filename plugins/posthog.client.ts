@@ -4,10 +4,10 @@ import { defineNuxtPlugin, useRuntimeConfig, useRouter } from "#app"
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
 
-  if (!config.public.posthogKey) return
+  if (!config.public.posthogPublicKey) return
 
-  posthog.init(config.public.posthogKey, {
-    api_host: config.public.posthogHost,
+  posthog.init(config.public.posthogPublicKey as string, {
+    api_host: config.public.posthogHost as string,
     autocapture: false,
     disable_session_recording: true,
     capture_pageview: false,

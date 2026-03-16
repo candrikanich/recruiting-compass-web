@@ -118,7 +118,6 @@ const createMockSchool = (overrides = {}): School => ({
   pros: [],
   cons: [],
   notes: "Great baseball program",
-  private_notes: {},
   website: "https://duke.edu",
   twitter_handle: "@DukeBaseball",
   instagram_handle: "dukebaseball",
@@ -236,48 +235,6 @@ describe("School Detail Page - Notes Editing", () => {
       });
 
       expect(result.notes).toBe(specialNote);
-    });
-  });
-
-  describe("Private Notes - User-Specific Storage", () => {
-    it("should store private notes per user", async () => {
-      const schoolWithPrivateNotes = createMockSchool({
-        private_notes: { "user-1": "My private thoughts" },
-      });
-      mockGetSchool.mockResolvedValue(schoolWithPrivateNotes);
-
-      const school = await mockGetSchool("school-123");
-
-      expect(school.private_notes["user-1"]).toBe("My private thoughts");
-    });
-
-    it("should allow multiple users to have private notes", async () => {
-      const schoolWithMultiplePrivateNotes = createMockSchool({
-        private_notes: {
-          "user-1": "Parent notes",
-          "user-2": "Student notes",
-        },
-      });
-      mockGetSchool.mockResolvedValue(schoolWithMultiplePrivateNotes);
-
-      const school = await mockGetSchool("school-123");
-
-      expect(school.private_notes["user-1"]).toBe("Parent notes");
-      expect(school.private_notes["user-2"]).toBe("Student notes");
-    });
-
-    it("should update private notes for specific user", async () => {
-      mockUpdateSchool.mockResolvedValue(
-        createMockSchool({
-          private_notes: { "user-1": "Updated private notes" },
-        }),
-      );
-
-      const result = await mockUpdateSchool("school-123", {
-        private_notes: { "user-1": "Updated private notes" },
-      });
-
-      expect(result.private_notes["user-1"]).toBe("Updated private notes");
     });
   });
 

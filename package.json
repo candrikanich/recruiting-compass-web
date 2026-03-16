@@ -22,7 +22,18 @@
     "db:seed:test": "tsx tests/e2e/seed/seed.ts",
     "db:reset:test": "tsx tests/e2e/seed/reset.ts",
     "analyze": "nuxi build --analyze",
-    "build:check": "npm run build && npm run analyze"
+    "build:check": "npm run build && npm run analyze",
+    "autofix": "bash scripts/autofix.sh",
+    "autofix:security": "bash scripts/autofix.sh --only-security",
+    "autofix:lint": "bash scripts/autofix.sh --only-lint",
+    "autofix:ci": "bash scripts/autofix.sh --only-ci",
+    "ci:heal": "bash scripts/ci-heal.sh",
+    "ci:heal:watch": "bash scripts/ci-heal.sh --watch",
+    "feature": "bash scripts/feature-tdd.sh --scope web",
+    "feature:ios": "bash scripts/feature-tdd.sh --scope ios",
+    "feature:both": "bash scripts/feature-tdd.sh --scope both",
+    "feature:full": "bash scripts/full-stack-feature.sh",
+    "feature:full:web-only": "bash scripts/full-stack-feature.sh --web-only"
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
@@ -35,6 +46,7 @@
     "@types/leaflet": "^1.9.21",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.3",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^1.3.1",
     "@vueuse/core": "^14.2.1",
     "autoprefixer": "^10.4.27",
@@ -43,6 +55,7 @@
     "chartjs-adapter-date-fns": "^3.0.0",
     "chartjs-plugin-annotation": "^3.1.0",
     "commander": "^13.1.0",
+    "date-fns": "^4.1.0",
     "fuse.js": "^7.1.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.0",
@@ -82,6 +95,7 @@
     "pa11y-ci": "^4.1.0",
     "prettier": "^3.4.2",
     "supabase": "^2.76.15",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1",
     "vitest": "^4.0.17",
@@ -100,7 +114,8 @@
     "readdir-glob": {
       "minimatch": "^5.1.7"
     },
-    "ajv": "^6.14.0",
-    "devalue": "^5.6.3"
+    "devalue": "^5.6.3",
+    "yauzl": "^3.2.1",
+    "ajv": "^6.14.0"
   }
 }

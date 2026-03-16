@@ -9,23 +9,15 @@
  */
 
 import { test, expect } from "@playwright/test";
+import { loginViaForm } from "../helpers/login";
 
 test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to login
-    await page.goto("/login");
-  });
+  // Individual tests handle login via loginViaForm
 
   test("should update suggestions within 1 second after GPA profile change", async ({
     page,
   }) => {
-    // Login as athlete
-    await page.fill('input[type="email"]', "athlete@test.com");
-    await page.fill('input[type="password"]', "TestPassword123!");
-    await page.click('button:has-text("Sign In")');
-
-    // Wait for dashboard to load
-    await page.waitForURL("/dashboard", { timeout: 10000 });
+    await loginViaForm(page, "athlete@test.com", "TestPassword123!");
 
     // Navigate to settings to update profile
     await page.click('a[href*="/settings"]');
@@ -74,10 +66,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
   test("should mark suggestion complete and remove from dashboard when interaction logged", async ({
     page,
   }) => {
-    // Login as athlete
-    await page.fill('input[type="email"]', "athlete@test.com");
-    await page.fill('input[type="password"]', "TestPassword123!");
-    await page.click('button:has-text("Sign In")');
+    await loginViaForm(page, "athlete@test.com", "TestPassword123!");
 
     // Wait for dashboard
     await page.waitForURL("/dashboard", { timeout: 10000 });
@@ -130,10 +119,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
   test("should display notification when new suggestions are generated", async ({
     page,
   }) => {
-    // Login as athlete
-    await page.fill('input[type="email"]', "athlete@test.com");
-    await page.fill('input[type="password"]', "TestPassword123!");
-    await page.click('button:has-text("Sign In")');
+    await loginViaForm(page, "athlete@test.com", "TestPassword123!");
 
     // Wait for dashboard
     await page.waitForURL("/dashboard", { timeout: 10000 });
@@ -166,10 +152,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
   test("should surface pending suggestions automatically after generation", async ({
     page,
   }) => {
-    // Login as athlete
-    await page.fill('input[type="email"]', "athlete@test.com");
-    await page.fill('input[type="password"]', "TestPassword123!");
-    await page.click('button:has-text("Sign In")');
+    await loginViaForm(page, "athlete@test.com", "TestPassword123!");
 
     // Wait for dashboard
     await page.waitForURL("/dashboard", { timeout: 10000 });
@@ -206,10 +189,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
   test("should allow dismissing suggestions with dismiss action", async ({
     page,
   }) => {
-    // Login as athlete
-    await page.fill('input[type="email"]', "athlete@test.com");
-    await page.fill('input[type="password"]', "TestPassword123!");
-    await page.click('button:has-text("Sign In")');
+    await loginViaForm(page, "athlete@test.com", "TestPassword123!");
 
     // Wait for dashboard
     await page.waitForURL("/dashboard", { timeout: 10000 });
@@ -236,10 +216,7 @@ test.describe("User Story 7.3 - Dynamic Suggestion Updates", () => {
   test("should show 'More Suggestions' count and allow surfacing more", async ({
     page,
   }) => {
-    // Login as athlete
-    await page.fill('input[type="email"]', "athlete@test.com");
-    await page.fill('input[type="password"]', "TestPassword123!");
-    await page.click('button:has-text("Sign In")');
+    await loginViaForm(page, "athlete@test.com", "TestPassword123!");
 
     // Wait for dashboard
     await page.waitForURL("/dashboard", { timeout: 10000 });

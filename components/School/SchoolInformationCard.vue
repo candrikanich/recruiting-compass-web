@@ -58,7 +58,7 @@
             v-model="editedBasicInfo.address"
             type="text"
             placeholder="Main campus address..."
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
@@ -69,7 +69,7 @@
             v-model="editedBasicInfo.baseball_facility_address"
             type="text"
             placeholder="Stadium address..."
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
@@ -80,7 +80,7 @@
             v-model="editedBasicInfo.mascot"
             type="text"
             placeholder="School mascot..."
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
@@ -91,7 +91,7 @@
             v-model="editedBasicInfo.undergrad_size"
             type="text"
             placeholder="e.g., 5,000-8,000..."
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
@@ -102,7 +102,7 @@
             v-model="editedBasicInfo.website"
             type="url"
             placeholder="https://..."
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
@@ -113,7 +113,7 @@
             v-model="editedBasicInfo.twitter_handle"
             type="text"
             placeholder="@handle..."
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -259,6 +259,32 @@
               >{{
                 (
                   (getAcademicInfo(school, "admission_rate") as number) * 100
+                ).toFixed(0)
+              }}%</span
+            >
+          </div>
+          <div
+            v-if="getAcademicInfo(school, 'avg_net_price')"
+            class="flex justify-between p-2 bg-slate-50 rounded-sm"
+          >
+            <span class="text-slate-600">Avg Net Price</span>
+            <span class="font-medium text-slate-900"
+              >${{
+                (
+                  getAcademicInfo(school, "avg_net_price") as number
+                ).toLocaleString()
+              }}/yr</span
+            >
+          </div>
+          <div
+            v-if="getAcademicInfo(school, 'graduation_rate')"
+            class="flex justify-between p-2 bg-slate-50 rounded-sm"
+          >
+            <span class="text-slate-600">Graduation Rate</span>
+            <span class="font-medium text-slate-900"
+              >{{
+                (
+                  (getAcademicInfo(school, "graduation_rate") as number) * 100
                 ).toFixed(0)
               }}%</span
             >

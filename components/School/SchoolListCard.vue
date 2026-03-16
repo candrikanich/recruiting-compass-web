@@ -54,13 +54,6 @@
           {{ formatSchoolStatus(school.status) }}
         </span>
         <span
-          v-if="school.fit_score !== null && school.fit_score !== undefined"
-          :class="getFitScoreBadgeClass(school.fit_score)"
-          class="px-2 py-0.5 text-xs font-medium rounded-full"
-        >
-          Fit: {{ school.fit_score }}
-        </span>
-        <span
           v-if="carnegieSize"
           :class="getSizeBadgeClass(carnegieSize)"
           class="px-2 py-0.5 text-xs font-medium rounded-full"
@@ -108,7 +101,6 @@ import { getCarnegieSize } from "~/utils/schoolSize";
 import {
   getStatusBadgeClass,
   getSizeBadgeClass,
-  getFitScoreBadgeClass,
   formatSchoolStatus,
 } from "~/utils/schoolBadges";
 

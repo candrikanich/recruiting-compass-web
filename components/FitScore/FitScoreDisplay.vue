@@ -39,36 +39,8 @@
       class="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 mb-3"
     >
       {{ isExpanded ? "Hide" : "View" }} Fit Score Breakdown
-      <svg
-        v-if="!isExpanded"
-        class="w-4 h-4"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M19 14l-7 7m0 0l-7-7m7 7V3"
-        />
-      </svg>
-      <svg
-        v-else
-        class="w-4 h-4"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M5 10l7-7m0 0l7 7m-7-7v18"
-        />
-      </svg>
+      <ChevronUpIcon v-if="isExpanded" class="w-4 h-4" />
+      <ChevronDownIcon v-else class="w-4 h-4" />
     </button>
 
     <!-- Breakdown (Optional) -->
@@ -169,6 +141,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/vue/24/solid";
 import Badge from "~/components/DesignSystem/Badge.vue";
 import type { FitScoreResult, FitTier } from "~/types/timeline";
 import type { BadgeColor } from "~/components/DesignSystem/Badge.vue";

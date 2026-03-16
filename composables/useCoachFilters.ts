@@ -7,7 +7,7 @@
 
 import type { Coach } from "~/types/models";
 
-export type CoachSortOption = "name" | "lastContact" | "responsiveness";
+export type CoachSortOption = "name" | "lastContact";
 
 export const useCoachFilters = () => {
   /**
@@ -57,13 +57,6 @@ export const useCoachFilters = () => {
             ? new Date(b.last_contact_date).getTime()
             : 0;
           return dateB - dateA; // Most recent first
-        });
-
-      case "responsiveness":
-        return result.sort((a, b) => {
-          const scoreA = a.responsiveness_score || 0;
-          const scoreB = b.responsiveness_score || 0;
-          return scoreB - scoreA; // Highest responsiveness first
         });
 
       default:

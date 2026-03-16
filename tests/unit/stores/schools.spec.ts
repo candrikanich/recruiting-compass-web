@@ -18,11 +18,6 @@ vi.mock("~/utils/validation/sanitize", () => ({
   sanitizeHtml: (html: string) => html.replace(/<[^>]*>/g, ""),
 }));
 
-vi.mock("~/composables/useFamilyContext", () => ({
-  useFamilyContext: () => ({
-    activeFamilyId: { value: "family-123" },
-  }),
-}));
 
 describe("useSchoolStore", () => {
   let schoolStore: ReturnType<typeof useSchoolStore>;
@@ -238,7 +233,7 @@ describe("useSchoolStore", () => {
         error: null,
       });
 
-      const result = await schoolStore.updateSchool("existing-school", updates);
+      const result = await schoolStore.updateSchool("existing-school", updates, "family-123");
 
       expect(result).toEqual(updatedSchool);
       expect(schoolStore.schools[0]).toEqual(updatedSchool);
@@ -265,7 +260,7 @@ describe("useSchoolStore", () => {
         error: null,
       });
 
-      await schoolStore.updateSchool("existing-school", updates);
+      await schoolStore.updateSchool("existing-school", updates, "family-123");
 
       expect(mockQuery.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -292,7 +287,7 @@ describe("useSchoolStore", () => {
         error: null,
       });
 
-      await schoolStore.updateSchool("existing-school", updates);
+      await schoolStore.updateSchool("existing-school", updates, "family-123");
 
       expect(mockQuery.update).toHaveBeenCalled();
       const updateCall = mockQuery.update.mock.calls[0][0];
@@ -319,7 +314,7 @@ describe("useSchoolStore", () => {
         error: null,
       });
 
-      await schoolStore.updateSchool("existing-school", updates);
+      await schoolStore.updateSchool("existing-school", updates, "family-123");
 
       expect(mockQuery.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -343,7 +338,7 @@ describe("useSchoolStore", () => {
         error: null,
       });
 
-      await schoolStore.updateSchool("existing-school", updates);
+      await schoolStore.updateSchool("existing-school", updates, "family-123");
 
       expect(mockQuery.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -357,7 +352,7 @@ describe("useSchoolStore", () => {
       userStore.user = null;
 
       await expect(
-        schoolStore.updateSchool("existing-school", { name: "New Name" }),
+        schoolStore.updateSchool("existing-school", { name: "New Name" }, "family-123"),
       ).rejects.toThrow("User not authenticated");
       expect(schoolStore.error).toBe("User not authenticated");
     });
@@ -372,7 +367,7 @@ describe("useSchoolStore", () => {
       });
 
       await expect(
-        schoolStore.updateSchool("existing-school", updates),
+        schoolStore.updateSchool("existing-school", updates, "family-123"),
       ).rejects.toThrow();
       expect(schoolStore.error).toBe("Update failed");
     });
@@ -385,7 +380,7 @@ describe("useSchoolStore", () => {
         error: null,
       });
 
-      await schoolStore.updateSchool("non-existent-school", updates);
+      await schoolStore.updateSchool("non-existent-school", updates, "family-123");
 
       // Original school should remain unchanged
       expect(schoolStore.schools[0]).toEqual(existingSchool);
@@ -422,7 +417,7 @@ describe("useSchoolStore", () => {
     it("should delete a school successfully", async () => {
       setupDeleteMock({ data: null, error: null });
 
-      await schoolStore.deleteSchool("school-to-delete");
+      await schoolStore.deleteSchool("school-to-delete", "family-123");
 
       expect(schoolStore.schools).toHaveLength(0);
       expect(schoolStore.selectedSchoolId).toBeNull();
@@ -434,7 +429,7 @@ describe("useSchoolStore", () => {
       userStore.user = null;
 
       await expect(
-        schoolStore.deleteSchool("school-to-delete"),
+        schoolStore.deleteSchool("school-to-delete", "family-123"),
       ).rejects.toThrow("User not authenticated");
       expect(schoolStore.error).toBe("User not authenticated");
     });
@@ -447,7 +442,7 @@ describe("useSchoolStore", () => {
       });
 
       await expect(
-        schoolStore.deleteSchool("school-to-delete"),
+        schoolStore.deleteSchool("school-to-delete", "family-123"),
       ).rejects.toThrow();
       expect(schoolStore.error).toBe("Delete failed");
       // School should remain in state on error
@@ -457,7 +452,7 @@ describe("useSchoolStore", () => {
     it("should clear selected school if it was the deleted one", async () => {
       setupDeleteMock({ data: null, error: null });
 
-      await schoolStore.deleteSchool("school-to-delete");
+      await schoolStore.deleteSchool("school-to-delete", "family-123");
 
       expect(schoolStore.selectedSchoolId).toBeNull();
     });
@@ -466,7 +461,7 @@ describe("useSchoolStore", () => {
       schoolStore.selectedSchoolId = "other-school-id";
       setupDeleteMock({ data: null, error: null });
 
-      await schoolStore.deleteSchool("school-to-delete");
+      await schoolStore.deleteSchool("school-to-delete", "family-123");
 
       expect(schoolStore.selectedSchoolId).toBe("other-school-id");
     });
@@ -481,7 +476,7 @@ describe("useSchoolStore", () => {
         error: null,
       });
 
-      const result = await schoolStore.getSchool("school-to-get");
+      const result = await schoolStore.getSchool("school-to-get", "family-123");
 
       expect(result).toEqual(existingSchool);
       expect(mockSupabase.from).toHaveBeenCalledWith("schools");
@@ -497,7 +492,7 @@ describe("useSchoolStore", () => {
         error: { message: "No rows returned" },
       });
 
-      const result = await schoolStore.getSchool("non-existent-school");
+      const result = await schoolStore.getSchool("non-existent-school", "family-123");
 
       expect(result).toBeNull();
       expect(schoolStore.error).toBe("Failed to fetch school");
@@ -506,7 +501,7 @@ describe("useSchoolStore", () => {
     it("should throw error when user is not authenticated", async () => {
       userStore.user = null;
 
-      const result = await schoolStore.getSchool("school-to-get");
+      const result = await schoolStore.getSchool("school-to-get", "family-123");
 
       expect(result).toBeNull();
       expect(schoolStore.error).toBe("User not authenticated");
@@ -518,7 +513,7 @@ describe("useSchoolStore", () => {
         error: { message: "Database error" },
       });
 
-      const result = await schoolStore.getSchool("school-to-get");
+      const result = await schoolStore.getSchool("school-to-get", "family-123");
 
       expect(result).toBeNull();
       expect(schoolStore.error).toBe("Failed to fetch school");

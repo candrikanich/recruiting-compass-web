@@ -20,28 +20,36 @@
       <HelpStepCard :step="3" title="Add to your list" :last="true">
         Tap <strong>Add to list</strong>. The school now appears on your
         <NuxtLink to="/schools" class="font-medium text-primary-600 hover:underline">Schools</NuxtLink>
-        page with an initial fit score.
+        page with fit signals based on your profile.
       </HelpStepCard>
     </section>
 
-    <!-- Fit score -->
+    <!-- Fit signals -->
     <section class="mb-10">
-      <HelpSectionHeader title="What is a fit score?" />
+      <HelpSectionHeader title="School Fit Signals" />
       <p class="mb-4 text-sm text-gray-600">
-        A fit score is a 0–100 rating that reflects how well a school matches your athlete profile.
-        Higher scores indicate a stronger overall fit.
+        Each school shows two independent fit signals — honest indicators based on what we actually know
+        about you and the school.
       </p>
-      <HelpImageSlot caption="Fit score breakdown showing academic, athletic, and location dimensions." />
-      <p class="mt-4 text-sm text-gray-600">Fit scores are calculated from four dimensions:</p>
-      <ul class="mt-3 space-y-2 text-sm text-gray-700">
-        <li><strong>Academic fit</strong> — your GPA and test scores vs. the school's average admit profile</li>
-        <li><strong>Athletic fit</strong> — your sport and level vs. the school's program division and roster needs</li>
-        <li><strong>Size fit</strong> — enrollment size preference match</li>
-        <li><strong>Location fit</strong> — proximity to home and region preference</li>
+      <ul class="mt-3 space-y-3 text-sm text-gray-700">
+        <li>
+          <strong>Personal Fit</strong> — compares your preferences (home state, campus size, cost
+          sensitivity) against the school's profile. These are factors only you can weigh.
+        </li>
+        <li>
+          <strong>Academic Fit</strong> — compares your SAT or ACT scores against that school's
+          25th–75th percentile range from the US College Scorecard. An in-range or above-range score
+          means you have a realistic academic profile for admission.
+        </li>
       </ul>
       <HelpCallout type="info">
-        Fit scores update automatically when you update your athlete profile. Keep your profile
-        current for the most accurate scores.
+        We do not show Athletic Fit or Opportunity Fit. We cannot reliably know what a coach is looking
+        for or what roster spots are available — that information can only come from direct conversations
+        with coaches.
+      </HelpCallout>
+      <HelpCallout type="tip">
+        Fit signals update automatically when you update your profile. Keep your test scores and
+        preferences current for the most accurate signals.
       </HelpCallout>
     </section>
 
@@ -53,7 +61,7 @@
         letters are all tied to specific schools.
       </p>
       <ul class="space-y-2 text-sm text-gray-700">
-        <li><strong>Sort</strong> — by fit score, recent activity, or date added</li>
+        <li><strong>Sort</strong> — by recent activity or date added</li>
         <li><strong>Filter</strong> — by division, state, or interaction status</li>
         <li><strong>Remove</strong> — tap the school and select <strong>Remove from list</strong>. This also removes associated interactions.</li>
       </ul>

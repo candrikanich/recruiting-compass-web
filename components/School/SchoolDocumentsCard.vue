@@ -30,7 +30,7 @@
         </div>
         <NuxtLink
           :to="`/documents/${doc.id}`"
-          class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           View
         </NuxtLink>

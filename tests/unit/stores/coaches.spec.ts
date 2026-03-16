@@ -40,7 +40,6 @@ describe("useCoachStore", () => {
     twitter_handle: "@coach",
     instagram_handle: "coach",
     notes: "Head coach",
-    responsiveness_score: 85,
     last_contact_date: "2024-01-01",
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",
@@ -204,7 +203,7 @@ describe("useCoachStore", () => {
       await coachStore.fetchCoachesBySchools(["school-1"]);
 
       expect(mockQuery.select).toHaveBeenCalledWith(
-        "id, school_id, first_name, last_name, email, responsiveness_score, last_contact_date, role",
+        "id, school_id, first_name, last_name, email, last_contact_date, role",
       );
     });
 
@@ -306,7 +305,7 @@ describe("useCoachStore", () => {
       const initialCoach = createMockCoach();
       coachStore.coaches = [initialCoach];
 
-      const updates = { first_name: "Johnny", responsiveness_score: 95 };
+      const updates = { first_name: "Johnny" };
       const updatedCoach = createMockCoach(updates);
       mockQuery.single.mockResolvedValue({ data: updatedCoach, error: null });
 
@@ -429,19 +428,16 @@ describe("useCoachStore", () => {
           id: "coach-1",
           school_id: "school-1",
           role: "head",
-          responsiveness_score: 85,
         }),
         createMockCoach({
           id: "coach-2",
           school_id: "school-2",
           role: "assistant",
-          responsiveness_score: 60,
         }),
         createMockCoach({
           id: "coach-3",
           school_id: "school-1",
           role: "recruiting",
-          responsiveness_score: 90,
         }),
       ];
     });
@@ -458,13 +454,6 @@ describe("useCoachStore", () => {
       const headCoaches = coachStore.coachesByRole("head");
       expect(headCoaches).toHaveLength(1);
       expect(headCoaches[0].role).toBe("head");
-    });
-
-    it("should sort coaches by responsiveness", () => {
-      const sorted = coachStore.coachesByResponsiveness;
-      expect(sorted[0].responsiveness_score).toBe(90); // Highest
-      expect(sorted[1].responsiveness_score).toBe(85);
-      expect(sorted[2].responsiveness_score).toBe(60); // Lowest
     });
 
     it("should sort coaches by last contact date", () => {

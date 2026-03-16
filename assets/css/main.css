@@ -71,6 +71,17 @@
   --color-brand-red-700: #b91c1c;
   --color-brand-red-800: #991b1b;
   --color-brand-red-900: #7f1d1d;
+
+  --color-brand-indigo-50: #eef2ff;
+  --color-brand-indigo-100: #e0e7ff;
+  --color-brand-indigo-200: #c7d2fe;
+  --color-brand-indigo-300: #a5b4fc;
+  --color-brand-indigo-400: #818cf8;
+  --color-brand-indigo-500: #6366f1;
+  --color-brand-indigo-600: #4f46e5;
+  --color-brand-indigo-700: #4338ca;
+  --color-brand-indigo-800: #3730a3;
+  --color-brand-indigo-900: #312e81;
 }
 
 /*

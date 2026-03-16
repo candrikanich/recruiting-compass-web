@@ -18,7 +18,7 @@
               ($event.target as HTMLSelectElement).value,
             )
           "
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">All Types</option>
           <option value="email">Email</option>
@@ -48,7 +48,7 @@
               ($event.target as HTMLSelectElement).value,
             )
           "
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Both</option>
           <option value="outbound">Sent by Us</option>
@@ -73,7 +73,7 @@
               ($event.target as HTMLSelectElement).value,
             )
           "
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">All Time</option>
           <option value="7">Last 7 Days</option>
@@ -100,7 +100,7 @@
               ($event.target as HTMLSelectElement).value,
             )
           "
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">All Sentiments</option>
           <option value="very_positive">Very Positive</option>

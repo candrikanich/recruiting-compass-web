@@ -82,7 +82,7 @@ const handleSkip = () => {
             min="0"
             max="5"
             placeholder="3.5"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -97,7 +97,7 @@ const handleSkip = () => {
             min="0"
             max="1600"
             placeholder="1400"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
           <p class="text-sm text-slate-500 mt-1">Score out of 1600</p>
         </div>
@@ -113,7 +113,7 @@ const handleSkip = () => {
             min="0"
             max="36"
             placeholder="33"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
           <p class="text-sm text-slate-500 mt-1">Score out of 36</p>
         </div>

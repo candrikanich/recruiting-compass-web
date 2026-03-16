@@ -48,12 +48,10 @@
         :state-options="stateOptions"
         :user-home-location="userHomeLocation"
         :sort-by="sortBy"
-        :priority-tier-filter="priorityTierFilter"
         @update:filter="handleFilterUpdate"
         @remove-filter="handleRemoveFilter"
         @clear-filters="clearFilters"
         @update:sort="sortBy = $event"
-        @update:priority-tier="priorityTierFilter = $event"
       />
 
       <!-- Results Intro -->
@@ -156,6 +154,7 @@
         <SchoolListCard
           v-for="school in paginatedSchools"
           :key="school.id"
+          v-memo="[school.updated_at]"
           :school="school"
           @toggle-favorite="toggleFavorite"
           @delete="handleDeleteSchool"
@@ -205,7 +204,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, inject } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { createClientLogger } from "~/utils/logger";
 import { useSchools } from "~/composables/useSchools";
 import { useSchoolLogos } from "~/composables/useSchoolLogos";
@@ -216,7 +215,7 @@ import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useOffers } from "~/composables/useOffers";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoaches } from "~/composables/useCoaches";
-import { useFamilyContext } from "~/composables/useFamilyContext";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useUserStore } from "~/stores/user";
 import { useUniversalFilter } from "~/composables/useUniversalFilter";
 import { useSchoolExport } from "~/composables/useSchoolExport";
@@ -224,6 +223,7 @@ import { useSchoolDistance } from "~/composables/useSchoolDistance";
 import { useLiveRegion } from "~/composables/useLiveRegion";
 import type { School } from "~/types";
 import type { FilterValue } from "~/types/filters";
+import type { Interaction, Coach } from "~/types/models";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -238,18 +238,15 @@ interface SchoolFilterValues {
   status?: string;
   state?: string;
   is_favorite?: boolean;
-  fit_score?: { min: number; max: number };
   distance?: { max: number };
   show_matches?: boolean;
 }
 
-definePageMeta({});
+
 
 const logger = createClientLogger("schools");
 
-const activeFamily =
-  inject<ReturnType<typeof useActiveFamily>>("activeFamily") ||
-  useFamilyContext();
+const activeFamily = useFamilyCtx();
 const { activeFamilyId } = activeFamily;
 
 const { schools, loading, error, fetchSchools, toggleFavorite, smartDelete } =
@@ -269,9 +266,8 @@ const { stats: schoolStats } = useSchoolStats(
   computed(() => schools.value)
 );
 
-const allInteractions = ref<any[]>([]);
-const allCoaches = ref<any[]>([]);
-const priorityTierFilter = ref<("A" | "B" | "C")[] | null>(null);
+const allInteractions = computed<Interaction[]>(() => interactionsData.value ?? []);
+const allCoaches = computed<Coach[]>(() => coachesData.value ?? []);
 const sortBy = ref<string>("a-z");
 
 // Pagination
@@ -384,14 +380,6 @@ const activeFiltersDisplay = computed(() => {
           display[key] = "Favorites";
         } else if (key === "name") {
           display[key] = `"${value}"`;
-        } else if (key === "fit_score") {
-          if (typeof value === "object" && value !== null && "min" in value) {
-            const rangeValue = value as { min?: number; max?: number };
-            const min = rangeValue.min ?? 0;
-            const max = rangeValue.max ?? 100;
-            if (min === 0 && max === 100) return;
-            display[key] = `${min} - ${max}`;
-          }
         } else if (key === "distance") {
           if (typeof value === "object" && value !== null && "max" in value) {
             const rangeValue = value as { max?: number };
@@ -405,20 +393,11 @@ const activeFiltersDisplay = computed(() => {
       }
     },
   );
-  if (priorityTierFilter.value && priorityTierFilter.value.length > 0) {
-    display["priority_tier"] = priorityTierFilter.value.join(", ");
-  }
   return display;
 });
 
 const filteredSchools = computed(() => {
   let filtered = filteredItems.value as unknown as School[];
-
-  if (priorityTierFilter.value && priorityTierFilter.value.length > 0) {
-    filtered = filtered.filter((s: School) =>
-      priorityTierFilter.value?.includes(s.priority_tier as "A" | "B" | "C"),
-    );
-  }
 
   const showMatches = typedFilterValues.value.show_matches;
   if (showMatches && hasPreferences.value) {
@@ -434,8 +413,6 @@ const filteredSchools = computed(() => {
 const sortedFilteredSchools = computed(() => {
   return [...filteredSchools.value].sort((a, b) => {
     switch (sortBy.value) {
-      case "fit-score":
-        return (b.fit_score ?? -1) - (a.fit_score ?? -1);
       case "distance": {
         if (
           !userHomeLocation.value?.latitude ||
@@ -464,11 +441,7 @@ const handleFilterUpdate = (field: string, value: any) => {
 };
 
 const handleRemoveFilter = (field: string) => {
-  if (field === "priority_tier") {
-    priorityTierFilter.value = null;
-  } else {
-    setFilterValue(field, null);
-  }
+  setFilterValue(field, null);
 };
 
 const handleDeleteSchool = (schoolId: string) => {
@@ -515,9 +488,6 @@ onMounted(async () => {
     fetchInteractions({}),
     loadAllPreferences(),
   ]);
-  allInteractions.value = interactionsData.value;
-  allCoaches.value = coachesData.value;
-
   if (schools.value.length > 0) {
     fetchMultipleLogos(schools.value).catch((err) => {
       logger.warn("Failed to fetch logos", err);

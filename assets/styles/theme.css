@@ -38,29 +38,42 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  /* Brand Colors - Vibrant Design System */
-  --brand-blue-500: #3b82f6;
-  --brand-blue-600: #2563eb;
-  --brand-blue-100: #dbeafe;
-  --brand-blue-700: #1d4ed8;
+  /* Brand Colors — aliases to @theme tokens in assets/css/main.css */
+  --brand-blue-100: var(--color-brand-blue-100);
+  --brand-blue-500: var(--color-brand-blue-500);
+  --brand-blue-600: var(--color-brand-blue-600);
+  --brand-blue-700: var(--color-brand-blue-700);
 
-  --brand-purple-500: #a855f7;
-  --brand-purple-600: #9333ea;
-  --brand-purple-100: #f3e8ff;
-  --brand-purple-700: #7e22ce;
+  --brand-purple-100: var(--color-brand-purple-100);
+  --brand-purple-500: var(--color-brand-purple-500);
+  --brand-purple-600: var(--color-brand-purple-600);
+  --brand-purple-700: var(--color-brand-purple-700);
 
-  --brand-emerald-500: #10b981;
-  --brand-emerald-600: #059669;
-  --brand-emerald-100: #d1fae5;
-  --brand-emerald-700: #047857;
+  --brand-emerald-100: var(--color-brand-emerald-100);
+  --brand-emerald-500: var(--color-brand-emerald-500);
+  --brand-emerald-600: var(--color-brand-emerald-600);
+  --brand-emerald-700: var(--color-brand-emerald-700);
 
-  --brand-orange-500: #f97316;
-  --brand-orange-600: #ea580c;
-  --brand-orange-100: #ffedd5;
-  --brand-orange-700: #c2410c;
+  --brand-orange-100: var(--color-brand-orange-100);
+  --brand-orange-500: var(--color-brand-orange-500);
+  --brand-orange-600: var(--color-brand-orange-600);
+  --brand-orange-700: var(--color-brand-orange-700);
 
-  --brand-indigo-500: #6366f1;
-  --brand-indigo-600: #4f46e5;
+  --brand-indigo-100: var(--color-brand-indigo-100);
+  --brand-indigo-500: var(--color-brand-indigo-500);
+  --brand-indigo-600: var(--color-brand-indigo-600);
+  --brand-indigo-700: var(--color-brand-indigo-700);
+
+  --brand-red-100: var(--color-brand-red-100);
+  --brand-red-500: var(--color-brand-red-500);
+  --brand-red-600: var(--color-brand-red-600);
+  --brand-red-700: var(--color-brand-red-700);
+
+  --brand-slate-100: var(--color-brand-slate-100);
+  --brand-slate-200: var(--color-brand-slate-200);
+  --brand-slate-500: var(--color-brand-slate-500);
+  --brand-slate-600: var(--color-brand-slate-600);
+  --brand-slate-700: var(--color-brand-slate-700);
 
   /* Background Gradients */
   --gradient-page: linear-gradient(

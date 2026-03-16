@@ -2,14 +2,12 @@
   <div
     class="bg-linear-to-br from-amber-50 to-amber-100 rounded-2xl border border-amber-200 shadow-xs p-6"
   >
-    <div
+    <button
+      type="button"
       data-testid="guidance-header"
-      role="button"
-      tabindex="0"
-      class="w-full flex items-center gap-2 mb-4 text-left cursor-pointer"
+      :aria-expanded="!collapsed"
+      class="w-full flex items-center gap-2 mb-4 text-left"
       @click="$emit('toggle')"
-      @keydown.enter="$emit('toggle')"
-      @keydown.space.prevent="$emit('toggle')"
     >
       <span class="text-2xl">❓</span>
       <h3 class="text-lg font-bold text-slate-900 flex-1">Common Worries</h3>
@@ -22,7 +20,7 @@
       >
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
       </svg>
-    </div>
+    </button>
 
     <div v-if="!collapsed">
       <p class="text-sm text-slate-600 mb-4">

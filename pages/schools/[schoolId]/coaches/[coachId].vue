@@ -198,27 +198,6 @@
               </div>
             </div>
 
-            <!-- Responsiveness -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-              <h3 class="text-lg font-bold text-gray-900 mb-4">
-                Responsiveness
-              </h3>
-              <div class="text-center">
-                <p
-                  class="text-4xl font-bold"
-                  :class="getResponsiveColor(coach.responsiveness_score)"
-                >
-                  {{ Math.round(coach.responsiveness_score) }}%
-                </p>
-                <p class="text-sm text-gray-600 mt-2">Responsiveness Score</p>
-                <p
-                  v-if="coach.last_contact_date"
-                  class="text-xs text-gray-500 mt-3"
-                >
-                  Last contact: {{ formatDate(coach.last_contact_date) }}
-                </p>
-              </div>
-            </div>
 
             <!-- Delete -->
             <div class="bg-white rounded-lg shadow-sm p-6">
@@ -285,12 +264,6 @@ const editedCoach = ref<{
 
 const schoolName = ref("");
 
-const getResponsiveColor = (score: number): string => {
-  if (score >= 80) return "text-green-600";
-  if (score >= 60) return "text-blue-600";
-  if (score >= 40) return "text-yellow-600";
-  return "text-red-600";
-};
 
 const formatDate = (dateStr: string | null): string => {
   if (!dateStr) return "Never";

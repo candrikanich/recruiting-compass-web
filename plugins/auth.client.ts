@@ -1,4 +1,13 @@
 export default defineNuxtPlugin(() => {
-  // Auth plugin - provides auth context initialization
-  // Actual auth header injection happens in the useAuthFetch composable
+  const supabase = useSupabase();
+  const userStore = useUserStore();
+
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_IN") {
+      userStore.initializeUser();
+    }
+    if (event === "SIGNED_OUT") {
+      userStore.logout();
+    }
+  });
 });

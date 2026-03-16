@@ -234,8 +234,6 @@ export type Database = {
           last_name: string
           notes: string | null
           phone: string | null
-          private_notes: string | null
-          responsiveness_score: number | null
           role: Database["public"]["Enums"]["coach_role"]
           school_id: string
           twitter_handle: string | null
@@ -256,8 +254,6 @@ export type Database = {
           last_name: string
           notes?: string | null
           phone?: string | null
-          private_notes?: string | null
-          responsiveness_score?: number | null
           role: Database["public"]["Enums"]["coach_role"]
           school_id: string
           twitter_handle?: string | null
@@ -278,8 +274,6 @@ export type Database = {
           last_name?: string
           notes?: string | null
           phone?: string | null
-          private_notes?: string | null
-          responsiveness_score?: number | null
           role?: Database["public"]["Enums"]["coach_role"]
           school_id?: string
           twitter_handle?: string | null
@@ -339,7 +333,6 @@ export type Database = {
           last_name: string | null
           notes: string | null
           phone: string | null
-          private_notes: string | null
           responsiveness_score: number | null
           role: Database["public"]["Enums"]["coach_role"] | null
           school_id: string | null
@@ -361,7 +354,6 @@ export type Database = {
           last_name?: string | null
           notes?: string | null
           phone?: string | null
-          private_notes?: string | null
           responsiveness_score?: number | null
           role?: Database["public"]["Enums"]["coach_role"] | null
           school_id?: string | null
@@ -383,7 +375,6 @@ export type Database = {
           last_name?: string | null
           notes?: string | null
           phone?: string | null
-          private_notes?: string | null
           responsiveness_score?: number | null
           role?: Database["public"]["Enums"]["coach_role"] | null
           school_id?: string | null
@@ -1806,8 +1797,6 @@ export type Database = {
           division: Database["public"]["Enums"]["school_division"] | null
           family_unit_id: string | null
           favicon_url: string | null
-          fit_score: number | null
-          fit_score_data: Json | null
           fit_tier: string | null
           id: string
           instagram_handle: string | null
@@ -1816,10 +1805,7 @@ export type Database = {
           name: string
           notes: string | null
           offer_details: Json | null
-          priority_tier: string | null
-          private_notes: Json | null
           pros: string[] | null
-          ranking: number | null
           recruiting_approach: string | null
           state: string | null
           status: Database["public"]["Enums"]["school_status"] | null
@@ -1845,8 +1831,6 @@ export type Database = {
           division?: Database["public"]["Enums"]["school_division"] | null
           family_unit_id?: string | null
           favicon_url?: string | null
-          fit_score?: number | null
-          fit_score_data?: Json | null
           fit_tier?: string | null
           id?: string
           instagram_handle?: string | null
@@ -1855,10 +1839,7 @@ export type Database = {
           name: string
           notes?: string | null
           offer_details?: Json | null
-          priority_tier?: string | null
-          private_notes?: Json | null
           pros?: string[] | null
-          ranking?: number | null
           recruiting_approach?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["school_status"] | null
@@ -1884,8 +1865,6 @@ export type Database = {
           division?: Database["public"]["Enums"]["school_division"] | null
           family_unit_id?: string | null
           favicon_url?: string | null
-          fit_score?: number | null
-          fit_score_data?: Json | null
           fit_tier?: string | null
           id?: string
           instagram_handle?: string | null
@@ -1894,10 +1873,7 @@ export type Database = {
           name?: string
           notes?: string | null
           offer_details?: Json | null
-          priority_tier?: string | null
-          private_notes?: Json | null
           pros?: string[] | null
-          ranking?: number | null
           recruiting_approach?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["school_status"] | null
@@ -1954,8 +1930,6 @@ export type Database = {
           division: Database["public"]["Enums"]["school_division"] | null
           family_unit_id: string | null
           favicon_url: string | null
-          fit_score: number | null
-          fit_score_data: Json | null
           fit_tier: string | null
           id: string | null
           instagram_handle: string | null
@@ -1964,10 +1938,7 @@ export type Database = {
           name: string | null
           notes: string | null
           offer_details: Json | null
-          priority_tier: string | null
-          private_notes: Json | null
           pros: string[] | null
-          ranking: number | null
           recruiting_approach: string | null
           status: Database["public"]["Enums"]["school_status"] | null
           status_changed_at: string | null
@@ -1991,8 +1962,6 @@ export type Database = {
           division?: Database["public"]["Enums"]["school_division"] | null
           family_unit_id?: string | null
           favicon_url?: string | null
-          fit_score?: number | null
-          fit_score_data?: Json | null
           fit_tier?: string | null
           id?: string | null
           instagram_handle?: string | null
@@ -2001,10 +1970,7 @@ export type Database = {
           name?: string | null
           notes?: string | null
           offer_details?: Json | null
-          priority_tier?: string | null
-          private_notes?: Json | null
           pros?: string[] | null
-          ranking?: number | null
           recruiting_approach?: string | null
           status?: Database["public"]["Enums"]["school_status"] | null
           status_changed_at?: string | null
@@ -2028,8 +1994,6 @@ export type Database = {
           division?: Database["public"]["Enums"]["school_division"] | null
           family_unit_id?: string | null
           favicon_url?: string | null
-          fit_score?: number | null
-          fit_score_data?: Json | null
           fit_tier?: string | null
           id?: string | null
           instagram_handle?: string | null
@@ -2038,10 +2002,7 @@ export type Database = {
           name?: string | null
           notes?: string | null
           offer_details?: Json | null
-          priority_tier?: string | null
-          private_notes?: Json | null
           pros?: string[] | null
-          ranking?: number | null
           recruiting_approach?: string | null
           status?: Database["public"]["Enums"]["school_status"] | null
           status_changed_at?: string | null

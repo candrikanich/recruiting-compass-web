@@ -67,7 +67,7 @@ const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
         :max="maxDateOfBirth"
         :value="dateOfBirth ?? ''"
         :disabled="loading"
-        class="w-full px-3 py-2 text-base border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
+        class="w-full px-3 py-2 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
         @input="emit('update:dateOfBirth', ($event.target as HTMLInputElement).value)"
       />
       <p class="mt-1 text-xs text-slate-500">Players must be 13 or older to register.</p>

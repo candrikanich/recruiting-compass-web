@@ -16,7 +16,7 @@ defineProps<Props>();
         v-if="linkTo"
         :to="linkTo"
         :aria-label="`View details for ${label}: ${value}`"
-        class="text-blue-600 hover:underline focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-1"
+        class="text-blue-600 hover:underline focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-1"
       >
         {{ value }}
       </NuxtLink>

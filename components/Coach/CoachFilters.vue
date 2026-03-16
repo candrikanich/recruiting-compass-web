@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
     <!-- Search -->
     <div>
       <label
@@ -22,7 +22,7 @@
           "
           aria-describedby="coaches-search-hint"
           placeholder="Name, email, phone..."
-          class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
       <p id="coaches-search-hint" class="mt-1 text-xs text-slate-500">
@@ -42,7 +42,7 @@
             ($event.target as HTMLSelectElement).value || null,
           )
         "
-        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="">-- All --</option>
         <option value="head">Head Coach</option>
@@ -64,7 +64,7 @@
             ($event.target as HTMLSelectElement).value || null,
           )
         "
-        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="">-- All --</option>
         <option value="7">Last 7 days</option>
@@ -72,28 +72,6 @@
         <option value="30">Last 30 days</option>
         <option value="60">Last 60 days</option>
         <option value="90">Last 90 days</option>
-      </select>
-    </div>
-
-    <!-- Responsiveness -->
-    <div>
-      <label class="block text-sm font-medium text-slate-700 mb-1">
-        Responsiveness
-      </label>
-      <select
-        :value="filterValues.get('responsiveness') || ''"
-        @change="
-          handleUpdate(
-            'responsiveness',
-            ($event.target as HTMLSelectElement).value || null,
-          )
-        "
-        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-      >
-        <option value="">-- All --</option>
-        <option value="high">High (75%+)</option>
-        <option value="medium">Medium (50-74%)</option>
-        <option value="low">Low (&lt;50%)</option>
       </select>
     </div>
 
@@ -107,12 +85,11 @@
         @change="
           emit('update:sort', ($event.target as HTMLSelectElement).value)
         "
-        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="name">Last Name (A-Z)</option>
         <option value="school">School (A-Z)</option>
         <option value="last-contacted">Last Contacted</option>
-        <option value="responsiveness">Responsiveness</option>
         <option value="role">Role</option>
       </select>
     </div>

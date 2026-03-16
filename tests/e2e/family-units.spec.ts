@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { loginViaForm } from "./helpers/login";
 
 // Test data from documentation
 const TEST_ACCOUNTS = {
@@ -18,15 +19,7 @@ const TEST_ACCOUNTS = {
 
 test.describe("Family Units", () => {
   test("parent can view school list", async ({ page }) => {
-    await page.goto("/login");
-
-    // Login as parent
-    await page.fill('input[type="email"]', TEST_ACCOUNTS.parent.email);
-    await page.fill('input[type="password"]', TEST_ACCOUNTS.parent.password);
-    await page.click('button:has-text("Sign in")');
-
-    // Wait for redirect to dashboard
-    await page.waitForURL(/\/(dashboard|schools)/);
+    await loginViaForm(page, TEST_ACCOUNTS.parent.email, TEST_ACCOUNTS.parent.password, /\/(dashboard|schools)/);
 
     // Navigate to schools
     await page.goto("/schools");
@@ -37,15 +30,7 @@ test.describe("Family Units", () => {
   });
 
   test("parent can switch between athletes", async ({ page }) => {
-    await page.goto("/login");
-
-    // Login as parent
-    await page.fill('input[type="email"]', TEST_ACCOUNTS.parent.email);
-    await page.fill('input[type="password"]', TEST_ACCOUNTS.parent.password);
-    await page.click('button:has-text("Sign in")');
-
-    // Wait for redirect
-    await page.waitForURL(/\/(dashboard|schools)/);
+    await loginViaForm(page, TEST_ACCOUNTS.parent.email, TEST_ACCOUNTS.parent.password, /\/(dashboard|schools)/);
 
     // Navigate to schools
     await page.goto("/schools");
@@ -75,15 +60,7 @@ test.describe("Family Units", () => {
   });
 
   test("player can view their own schools", async ({ page }) => {
-    await page.goto("/login");
-
-    // Login as player
-    await page.fill('input[type="email"]', TEST_ACCOUNTS.player1.email);
-    await page.fill('input[type="password"]', TEST_ACCOUNTS.player1.password);
-    await page.click('button:has-text("Sign in")');
-
-    // Wait for redirect
-    await page.waitForURL(/\/(dashboard|schools)/);
+    await loginViaForm(page, TEST_ACCOUNTS.player1.email, TEST_ACCOUNTS.player1.password, /\/(dashboard|schools)/);
 
     // Navigate to schools
     await page.goto("/schools");
@@ -99,15 +76,7 @@ test.describe("Family Units", () => {
   });
 
   test("player cannot see athlete selector", async ({ page }) => {
-    await page.goto("/login");
-
-    // Login as player
-    await page.fill('input[type="email"]', TEST_ACCOUNTS.player1.email);
-    await page.fill('input[type="password"]', TEST_ACCOUNTS.player1.password);
-    await page.click('button:has-text("Sign in")');
-
-    // Wait for redirect
-    await page.waitForURL(/\/(dashboard|schools)/);
+    await loginViaForm(page, TEST_ACCOUNTS.player1.email, TEST_ACCOUNTS.player1.password, /\/(dashboard|schools)/);
 
     // Navigate to schools
     await page.goto("/schools");
@@ -124,67 +93,8 @@ test.describe("Family Units", () => {
     expect(isVisible).toBe(false);
   });
 
-  test("private notes can be added to schools", async ({ page }) => {
-    await page.goto("/login");
-
-    // Login as player
-    await page.fill('input[type="email"]', TEST_ACCOUNTS.player1.email);
-    await page.fill('input[type="password"]', TEST_ACCOUNTS.player1.password);
-    await page.click('button:has-text("Sign in")');
-
-    // Wait for redirect
-    await page.waitForURL(/\/(dashboard|schools)/);
-
-    // Navigate to schools
-    await page.goto("/schools");
-    await page.waitForLoadState("networkidle");
-
-    // Look for private notes card (with lock emoji and "Your Private Notes" text)
-    const privateNotesCard = page.locator("text=🔒 Your Private Notes").first();
-
-    if (await privateNotesCard.isVisible().catch(() => false)) {
-      // Find the "Add Notes" or "Edit" button
-      const editButton = privateNotesCard
-        .locator("button:has-text('Add Notes'), button:has-text('Edit')")
-        .first();
-
-      if (await editButton.isVisible().catch(() => false)) {
-        await editButton.click();
-
-        // Fill in the note text
-        const textarea = privateNotesCard.locator("textarea").first();
-        if (await textarea.isVisible().catch(() => false)) {
-          await textarea.fill("Test private note");
-
-          // Save the note
-          const saveButton = privateNotesCard.locator(
-            "button:has-text('Save')",
-          );
-          if (await saveButton.isVisible().catch(() => false)) {
-            await saveButton.click();
-            await page.waitForLoadState("networkidle");
-
-            // Verify note is saved
-            const savedNote = privateNotesCard.locator(
-              "text=Test private note",
-            );
-            expect(await savedNote.isVisible().catch(() => false)).toBeTruthy();
-          }
-        }
-      }
-    }
-  });
-
   test("schools page displays school data correctly", async ({ page }) => {
-    await page.goto("/login");
-
-    // Login as player with existing data
-    await page.fill('input[type="email"]', TEST_ACCOUNTS.player1.email);
-    await page.fill('input[type="password"]', TEST_ACCOUNTS.player1.password);
-    await page.click('button:has-text("Sign in")');
-
-    // Wait for redirect
-    await page.waitForURL(/\/(dashboard|schools)/);
+    await loginViaForm(page, TEST_ACCOUNTS.player1.email, TEST_ACCOUNTS.player1.password, /\/(dashboard|schools)/);
 
     // Navigate to schools
     await page.goto("/schools");
@@ -204,15 +114,7 @@ test.describe("Family Units", () => {
   });
 
   test("family context is maintained across pages", async ({ page }) => {
-    await page.goto("/login");
-
-    // Login as parent
-    await page.fill('input[type="email"]', TEST_ACCOUNTS.parent.email);
-    await page.fill('input[type="password"]', TEST_ACCOUNTS.parent.password);
-    await page.click('button:has-text("Sign in")');
-
-    // Wait for redirect
-    await page.waitForURL(/\/(dashboard|schools)/);
+    await loginViaForm(page, TEST_ACCOUNTS.parent.email, TEST_ACCOUNTS.parent.password, /\/(dashboard|schools)/);
 
     // Navigate to schools
     await page.goto("/schools");

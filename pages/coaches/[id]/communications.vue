@@ -35,7 +35,7 @@
             >
             <select
               v-model="selectedType"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Types</option>
               <option value="email">Email</option>
@@ -55,7 +55,7 @@
             >
             <select
               v-model="selectedDirection"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Both</option>
               <option value="outbound">Sent by Us</option>
@@ -70,7 +70,7 @@
             >
             <select
               v-model="selectedDateRange"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Time</option>
               <option value="7">Last 7 Days</option>
@@ -87,7 +87,7 @@
             >
             <select
               v-model="selectedSentiment"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Sentiments</option>
               <option value="very_positive">Very Positive</option>

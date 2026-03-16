@@ -113,8 +113,9 @@ export default defineNuxtConfig({
       authEnforcementEnabled:
         process.env.NUXT_PUBLIC_AUTH_ENFORCEMENT_ENABLED === "true",
       sentryDsn: process.env.NUXT_PUBLIC_SENTRY_DSN || "",
-      posthogKey: process.env.NUXT_PUBLIC_POSTHOG_KEY || "",
-      posthogHost: process.env.NUXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com",
+      posthogPublicKey: process.env.NUXT_PUBLIC_POSTHOG_PUBLIC_KEY || "",
+      posthogHost: 'https://us.i.posthog.com',
+      posthogDefaults: '2026-01-30'
     },
   },
 

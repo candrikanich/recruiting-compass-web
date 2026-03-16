@@ -79,7 +79,7 @@
                 <textarea
                   v-model="manualEmails"
                   placeholder="coach1@example.com, coach2@example.com"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   rows="2"
                 />
               </div>
@@ -134,7 +134,7 @@
                 v-model="form.subject"
                 type="text"
                 :maxlength="MAX_SUBJECT_LENGTH"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter subject line"
               />
               <p class="text-xs text-slate-500 mt-1">
@@ -151,7 +151,7 @@
                 v-model="form.body"
                 rows="6"
                 :maxlength="MAX_BODY_LENGTH"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 placeholder="Write your message here..."
               />
               <p

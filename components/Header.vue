@@ -23,7 +23,7 @@
             to="/search"
             aria-label="Search coaches and schools"
             title="Search"
-            class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
+            class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
             data-testid="nav-search-button"
           >
             <MagnifyingGlassIcon class="w-5 h-5" aria-hidden="true" />
@@ -38,7 +38,7 @@
             :aria-expanded="isMobileMenuOpen"
             aria-haspopup="menu"
             aria-controls="mobile-nav-menu"
-            class="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
+            class="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
           >
             <Bars3Icon v-if="!isMobileMenuOpen" class="w-6 h-6" aria-hidden="true" />
             <XMarkIcon v-else class="w-6 h-6" aria-hidden="true" />
@@ -68,7 +68,7 @@
               :to="item.to"
               :aria-current="isActive(item.to) ? 'page' : undefined"
               :data-testid="`mobile-nav-${item.to.replace('/', '')}`"
-              class="flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              class="flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               :class="
                 isActive(item.to)
                   ? 'bg-blue-50 text-blue-600'
@@ -110,7 +110,7 @@
               :key="item.to"
               :to="item.to"
               :aria-current="isActive(item.to) ? 'page' : undefined"
-              class="flex items-center gap-3 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              class="flex items-center gap-3 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               @click="closeMobileMenu"
             >
               <component :is="item.icon" class="w-5 h-5" aria-hidden="true" />
@@ -123,7 +123,7 @@
             <button
               data-testid="mobile-logout-button"
               @click="handleLogout"
-              class="flex items-center gap-3 w-full px-3 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              class="flex items-center gap-3 w-full px-3 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             >
               <ArrowRightOnRectangleIcon class="w-5 h-5" aria-hidden="true" />
               <span>Log Out</span>

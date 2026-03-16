@@ -15,23 +15,6 @@
           {{ schoolName }}
         </p>
       </div>
-      <div
-        v-if="
-          coach.responsiveness_score !== undefined &&
-          coach.responsiveness_score !== null
-        "
-        class="text-right"
-      >
-        <div
-          class="inline-block px-3 py-1 rounded-full"
-          :class="getResponsivenessLabelClass(coach.responsiveness_score)"
-        >
-          <p class="text-xs font-semibold">
-            {{ coach.responsiveness_score }}% •
-            {{ getResponsivenessLabel(coach.responsiveness_score).label }}
-          </p>
-        </div>
-      </div>
     </div>
 
     <!-- Contact info grid -->
@@ -40,7 +23,7 @@
         <span class="text-blue-600 mr-2" aria-hidden="true">✉️</span>
         <a
           :href="`mailto:${coach.email}`"
-          class="hover:underline break-all text-blue-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
+          class="hover:underline break-all text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
         >
           {{ coach.email }}
         </a>
@@ -48,7 +31,7 @@
 
       <div v-if="coach.phone" class="flex items-center text-sm text-slate-900">
         <span class="text-green-600 mr-2" aria-hidden="true">📱</span>
-        <a :href="`tel:${coach.phone}`" class="hover:underline text-blue-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm">
+        <a :href="`tel:${coach.phone}`" class="hover:underline text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm">
           {{ coach.phone }}
         </a>
       </div>
@@ -62,7 +45,7 @@
           :href="`https://twitter.com/${coach.twitter_handle.replace('@', '')}`"
           target="_blank"
           rel="noopener noreferrer"
-          class="hover:underline text-blue-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
+          class="hover:underline text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
         >
           {{ coach.twitter_handle }}
         </a>
@@ -77,7 +60,7 @@
           :href="`https://instagram.com/${coach.instagram_handle.replace('@', '')}`"
           target="_blank"
           rel="noopener noreferrer"
-          class="hover:underline text-blue-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
+          class="hover:underline text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
         >
           {{ coach.instagram_handle }}
         </a>
@@ -110,7 +93,7 @@
           @click="emit('email', coach)"
           :aria-label="`Send email to ${coach.first_name} ${coach.last_name}`"
           title="Send email"
-          class="px-3 py-1.5 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="px-3 py-1.5 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           Email
         </button>
@@ -121,7 +104,7 @@
           @click="emit('text', coach)"
           :aria-label="`Send text to ${coach.first_name} ${coach.last_name}`"
           title="Send text"
-          class="px-3 py-1.5 rounded-sm transition bg-emerald-100 text-emerald-700 hover:bg-emerald-200 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+          class="px-3 py-1.5 rounded-sm transition bg-emerald-100 text-emerald-700 hover:bg-emerald-200 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
         >
           Text
         </button>
@@ -132,7 +115,7 @@
           @click="emit('tweet', coach)"
           :aria-label="`View ${coach.first_name} ${coach.last_name} on Twitter`"
           title="Visit Twitter"
-          class="px-3 py-1.5 rounded-sm transition inline-block bg-blue-100 text-blue-600 hover:bg-blue-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="px-3 py-1.5 rounded-sm transition inline-block bg-blue-100 text-blue-600 hover:bg-blue-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           Tweet
         </button>
@@ -143,7 +126,7 @@
           @click="emit('instagram', coach)"
           :aria-label="`View ${coach.first_name} ${coach.last_name} on Instagram`"
           title="Visit Instagram"
-          class="px-3 py-1.5 rounded-sm transition inline-block bg-purple-100 text-purple-700 hover:bg-purple-200 focus:outline-hidden focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+          class="px-3 py-1.5 rounded-sm transition inline-block bg-purple-100 text-purple-700 hover:bg-purple-200 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
         >
           Instagram
         </button>
@@ -153,7 +136,7 @@
           @click="emit('view', coach)"
           :aria-label="`View details for ${coach.first_name} ${coach.last_name}`"
           title="View details"
-          class="px-3 py-1.5 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="px-3 py-1.5 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           View
         </button>
@@ -166,7 +149,6 @@
 import { ShareIcon, PhotoIcon } from "@heroicons/vue/24/outline";
 import { getRoleLabel } from "~/utils/coachLabels";
 import type { Coach } from "~/types/models";
-import { getResponsivenessLabel } from "~/utils/coachResponsiveness";
 
 defineProps<{
   coach: Coach;
@@ -181,18 +163,6 @@ const emit = defineEmits<{
   view: [coach: Coach];
 }>();
 
-const getResponsivenessLabelClass = (score: number): string => {
-  if (score >= 75) {
-    return "bg-emerald-100 text-emerald-800";
-  }
-  if (score >= 50) {
-    return "bg-blue-100 text-blue-700";
-  }
-  if (score >= 25) {
-    return "bg-orange-100 text-orange-800";
-  }
-  return "bg-purple-100 text-purple-800";
-};
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);

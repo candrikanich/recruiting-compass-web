@@ -14,18 +14,15 @@ export function createMockSchool(overrides: Partial<School> = {}): School {
     state: overrides.state || "MA",
     division: overrides.division || "D1",
     conference: overrides.conference || "ACC",
-    ranking: overrides.ranking ?? null,
     is_favorite: overrides.is_favorite ?? false,
     website: overrides.website || "https://test.edu",
     favicon_url: overrides.favicon_url ?? null,
     twitter_handle: overrides.twitter_handle || "@testuniv",
     instagram_handle: overrides.instagram_handle || "testuniv",
     status: overrides.status || "researching",
-    priority_tier: overrides.priority_tier ?? null,
     notes: overrides.notes || "Great program",
     pros: overrides.pros || ["Good facilities", "Strong academics"],
     cons: overrides.cons || ["Far from home"],
-    private_notes: overrides.private_notes ?? null,
     offer_details: overrides.offer_details ?? null,
     academic_info: overrides.academic_info || {
       admission_rate: 0.25,
@@ -199,7 +196,6 @@ export const createCommittedSchool = (overrides?: Partial<School>): School =>
   createMockSchool({
     status: "committed",
     is_favorite: true,
-    ranking: 1,
     ...overrides,
   });
 
@@ -233,7 +229,6 @@ export function createBatchSchools(count: number = 5): School[] {
     createMockSchool({
       id: `school-${i + 1}`,
       name: `University ${String.fromCharCode(65 + i)}`,
-      ranking: null,
       division: ["D1", "D2", "D3"][i % 3] as any,
     }),
   );

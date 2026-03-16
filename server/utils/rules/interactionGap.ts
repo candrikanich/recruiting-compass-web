@@ -92,7 +92,7 @@ export const interactionGapRule: Rule = {
 
     return {
       days_since_contact: daysSinceContact,
-      school_priority: school?.priority ?? school?.priority_tier,
+      school_priority: school?.priority,
       school_status: school?.status,
     };
   },

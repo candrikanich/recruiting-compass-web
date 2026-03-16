@@ -93,92 +93,6 @@ describe("AtAGlanceSummary", () => {
     });
   });
 
-  describe("Coach Responsiveness", () => {
-    it("computes average responsiveness from all coaches", () => {
-      const coaches = [
-        createMockCoach({ responsiveness_score: 80 }),
-        createMockCoach({ responsiveness_score: 60 }),
-      ];
-
-      const wrapper = mount(AtAGlanceSummary, {
-        props: buildDefaultProps({ coaches }),
-      });
-
-      expect(wrapper.text()).toContain("70%");
-      expect(wrapper.text()).toContain("2 coaches tracked");
-    });
-
-    it("returns 0% when coaches array is empty", () => {
-      const wrapper = mount(AtAGlanceSummary, {
-        props: buildDefaultProps({ coaches: [] }),
-      });
-
-      expect(wrapper.text()).toContain("0%");
-      expect(wrapper.text()).toContain("0 coaches tracked");
-    });
-
-    it("rounds average responsiveness to nearest integer", () => {
-      const coaches = [
-        createMockCoach({ responsiveness_score: 33 }),
-        createMockCoach({ responsiveness_score: 33 }),
-        createMockCoach({ responsiveness_score: 34 }),
-      ];
-
-      const wrapper = mount(AtAGlanceSummary, {
-        props: buildDefaultProps({ coaches }),
-      });
-
-      // (33 + 33 + 34) / 3 = 33.333... -> rounds to 33
-      expect(wrapper.text()).toContain("33%");
-    });
-
-    it("treats null/undefined responsiveness_score as 0", () => {
-      const coaches = [
-        createMockCoach({ responsiveness_score: 100 }),
-        createMockCoach({ responsiveness_score: 0 }),
-      ];
-
-      const wrapper = mount(AtAGlanceSummary, {
-        props: buildDefaultProps({ coaches }),
-      });
-
-      expect(wrapper.text()).toContain("50%");
-    });
-
-    it("applies green badge for responsiveness >= 75", () => {
-      const coaches = [createMockCoach({ responsiveness_score: 80 })];
-
-      const wrapper = mount(AtAGlanceSummary, {
-        props: buildDefaultProps({ coaches }),
-      });
-
-      const badge = wrapper.find(".bg-emerald-100");
-      expect(badge.exists()).toBe(true);
-    });
-
-    it("applies orange badge for responsiveness between 50 and 74", () => {
-      const coaches = [createMockCoach({ responsiveness_score: 60 })];
-
-      const wrapper = mount(AtAGlanceSummary, {
-        props: buildDefaultProps({ coaches }),
-      });
-
-      const badge = wrapper.find(".bg-orange-100");
-      expect(badge.exists()).toBe(true);
-    });
-
-    it("applies red badge for responsiveness below 50", () => {
-      const coaches = [createMockCoach({ responsiveness_score: 30 })];
-
-      const wrapper = mount(AtAGlanceSummary, {
-        props: buildDefaultProps({ coaches }),
-      });
-
-      const badge = wrapper.find(".bg-red-100");
-      expect(badge.exists()).toBe(true);
-    });
-  });
-
   describe("Interactions This Month", () => {
     it("counts only interactions from the current month and year", () => {
       const interactions = [
@@ -298,13 +212,12 @@ describe("AtAGlanceSummary", () => {
       expect(wrapper.text()).toContain("At a Glance");
     });
 
-    it("renders all four metric cards", () => {
+    it("renders all three metric cards", () => {
       const wrapper = mount(AtAGlanceSummary, {
         props: buildDefaultProps(),
       });
 
       expect(wrapper.text()).toContain("Schools with Offers");
-      expect(wrapper.text()).toContain("Avg Coach Responsiveness");
       expect(wrapper.text()).toContain("Interactions This Month");
       expect(wrapper.text()).toContain("Days Until Graduation");
     });

@@ -56,32 +56,3 @@ export const getRoleBadgeClass = (role: string): string => {
   return classes[role] || "bg-slate-100 text-slate-700";
 };
 
-/**
- * Get progress bar color class for responsiveness score
- */
-export const getResponsivenessBarClass = (score: number): string => {
-  if (score >= 75) return "bg-emerald-500";
-  if (score >= 50) return "bg-amber-500";
-  return "bg-red-500";
-};
-
-/**
- * Get text color class for responsiveness score
- */
-export const getResponsivenessTextClass = (score: number): string => {
-  if (score >= 75) return "text-emerald-600";
-  if (score >= 50) return "text-amber-600";
-  return "text-red-600";
-};
-
-/**
- * Get human-readable label for responsiveness filter value
- */
-export const getResponsivenessFilterLabel = (value: string): string => {
-  const labels: Record<string, string> = {
-    high: "High (75%+)",
-    medium: "Medium (50-74%)",
-    low: "Low (<50%)",
-  };
-  return labels[value] || value;
-};

@@ -41,123 +41,6 @@ describe("Dashboard Page Logic", () => {
     setActivePinia(createPinia());
   });
 
-  describe("aTierSchoolCount computed property", () => {
-    it("counts schools with priority_tier === A", () => {
-      const schools: School[] = [
-        {
-          id: "1",
-          user_id: "user-1",
-          name: "Stanford",
-          location: null,
-          status: "interested",
-          notes: null,
-          pros: [],
-          cons: [],
-          is_favorite: false,
-          priority_tier: "A",
-        },
-        {
-          id: "2",
-          user_id: "user-1",
-          name: "Berkeley",
-          location: null,
-          status: "interested",
-          notes: null,
-          pros: [],
-          cons: [],
-          is_favorite: false,
-          priority_tier: "A",
-        },
-        {
-          id: "3",
-          user_id: "user-1",
-          name: "UCLA",
-          location: null,
-          status: "interested",
-          notes: null,
-          pros: [],
-          cons: [],
-          is_favorite: false,
-          priority_tier: "B",
-        },
-      ];
-
-      // Expected: 2 A-tier schools
-      const aTierCount = schools.filter((s) => s.priority_tier === "A").length;
-      expect(aTierCount).toBe(2);
-    });
-
-    it("returns 0 when no A-tier schools", () => {
-      const schools: School[] = [
-        {
-          id: "1",
-          user_id: "user-1",
-          name: "Stanford",
-          location: null,
-          status: "interested",
-          notes: null,
-          pros: [],
-          cons: [],
-          is_favorite: false,
-          priority_tier: "B",
-        },
-        {
-          id: "2",
-          user_id: "user-1",
-          name: "Berkeley",
-          location: null,
-          status: "interested",
-          notes: null,
-          pros: [],
-          cons: [],
-          is_favorite: false,
-          priority_tier: "C",
-        },
-      ];
-
-      const aTierCount = schools.filter((s) => s.priority_tier === "A").length;
-      expect(aTierCount).toBe(0);
-    });
-
-    it("returns 0 with empty schools array", () => {
-      const schools: School[] = [];
-      const aTierCount = schools.filter((s) => s.priority_tier === "A").length;
-      expect(aTierCount).toBe(0);
-    });
-
-    it("ignores schools without priority_tier", () => {
-      const schools: School[] = [
-        {
-          id: "1",
-          user_id: "user-1",
-          name: "Stanford",
-          location: null,
-          status: "interested",
-          notes: null,
-          pros: [],
-          cons: [],
-          is_favorite: false,
-          priority_tier: null,
-        },
-        {
-          id: "2",
-          user_id: "user-1",
-          name: "Berkeley",
-          location: null,
-          status: "interested",
-          notes: null,
-          pros: [],
-          cons: [],
-          is_favorite: false,
-          priority_tier: "A",
-        },
-      ];
-
-      const aTierCount = schools.filter((s) => s.priority_tier === "A").length;
-      expect(aTierCount).toBe(1);
-    });
-  });
-
   describe("contactsThisMonth computed property", () => {
     it("counts interactions occurring this month", () => {
       const now = new Date();
@@ -2090,10 +1973,6 @@ describe("Dashboard Page Logic", () => {
         interactions: Interaction[];
         offers: ReturnType<typeof createMockOffer>[];
       }) => {
-        const aTierSchoolCount = params.schools.filter(
-          (s) => s.priority_tier === "A",
-        ).length;
-
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const contactsThisMonth = params.interactions.filter((i) => {
@@ -2129,7 +2008,6 @@ describe("Dashboard Page Logic", () => {
           schoolCount: params.schools.length,
           coachCount: params.coaches.length,
           interactionCount: params.interactions.length,
-          aTierSchoolCount,
           contactsThisMonth,
           totalOffers,
           acceptedOffers,
@@ -2148,7 +2026,6 @@ describe("Dashboard Page Logic", () => {
         expect(result.schoolCount).toBe(0);
         expect(result.coachCount).toBe(0);
         expect(result.interactionCount).toBe(0);
-        expect(result.aTierSchoolCount).toBe(0);
         expect(result.contactsThisMonth).toBe(0);
         expect(result.totalOffers).toBe(0);
         expect(result.acceptedOffers).toBe(0);
@@ -2362,14 +2239,9 @@ describe("Dashboard Page Logic", () => {
     describe("Large Datasets", () => {
       it("handles 100 schools without error", () => {
         const largeSchoolsArray = createMockSchools(100, (i) => ({
-          priority_tier: i < 20 ? "A" : i < 50 ? "B" : "C",
           academic_info: { student_size: (i + 1) * 500 },
         }));
 
-        const aTierCount = largeSchoolsArray.filter(
-          (s) => s.priority_tier === "A",
-        ).length;
-        expect(aTierCount).toBe(20);
         expect(largeSchoolsArray).toHaveLength(100);
       });
 
@@ -2723,19 +2595,6 @@ describe("Dashboard Page Logic", () => {
         const isValidDate = !isNaN(interactionDate.getTime());
 
         expect(isValidDate).toBe(false);
-      });
-
-      it("handles school with null priority_tier in A-tier count", () => {
-        const schools: School[] = [
-          createMockSchool({ priority_tier: null }),
-          createMockSchool({ priority_tier: undefined as any }),
-          createMockSchool({ priority_tier: "A" }),
-        ];
-
-        const aTierCount = schools.filter(
-          (s) => s.priority_tier === "A",
-        ).length;
-        expect(aTierCount).toBe(1);
       });
 
       it("handles offers with unexpected status values", () => {

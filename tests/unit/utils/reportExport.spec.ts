@@ -68,44 +68,6 @@ describe("reportExport", () => {
       expect(report.schools?.byDivision).toEqual({ D1: 2, D2: 1 });
     });
 
-    it("should count coaches and calculate average response rate", () => {
-      const coaches: Coach[] = [
-        { id: "1", responsiveness_score: 0.8 } as any,
-        { id: "2", responsiveness_score: 0.6 } as any,
-        { id: "3", responsiveness_score: 0.9 } as any,
-      ];
-
-      const report = generateReportData(
-        [],
-        coaches,
-        [],
-        [],
-        "2024-01-01",
-        "2024-01-31",
-      );
-
-      expect(report.coaches?.total).toBe(3);
-      expect(report.coaches?.avgResponseRate).toBe(0.77); // (0.8 + 0.6 + 0.9) / 3 = 0.7666... rounded to 2 decimals
-    });
-
-    it("should handle coaches without responsiveness score", () => {
-      const coaches: Coach[] = [
-        { id: "1", responsiveness_score: undefined } as any,
-        { id: "2", responsiveness_score: 0.8 } as any,
-      ];
-
-      const report = generateReportData(
-        [],
-        coaches,
-        [],
-        [],
-        "2024-01-01",
-        "2024-01-31",
-      );
-
-      expect(report.coaches?.avgResponseRate).toBe(0.8);
-    });
-
     it("should filter interactions by date range", () => {
       const interactions: Interaction[] = [
         {
@@ -274,7 +236,7 @@ describe("reportExport", () => {
           byStatus: { active: 8, inactive: 2 },
           byDivision: { D1: 5, D2: 5 },
         },
-        coaches: { total: 25, avgResponseRate: 0.75, bySchool: 10 },
+        coaches: { total: 25, bySchool: 10 },
         interactions: {
           total: 50,
           byType: { email: 30, call: 20 },
@@ -305,7 +267,7 @@ describe("reportExport", () => {
           byStatus: { active: 3, inactive: 2 },
           byDivision: { D1: 4 },
         },
-        coaches: { total: 0, avgResponseRate: 0, bySchool: 0 },
+        coaches: { total: 0, bySchool: 0 },
         interactions: { total: 0, byType: {}, bySentiment: {} },
         metrics: { total: 0, byType: {}, summaries: [] },
       };
@@ -324,7 +286,7 @@ describe("reportExport", () => {
         dateRange: { from: "2024-01-01", to: "2024-01-31" },
         generatedAt: "2024-01-31T12:00:00Z",
         schools: { total: 0, byStatus: {}, byDivision: {} },
-        coaches: { total: 20, avgResponseRate: 0.85, bySchool: 10 },
+        coaches: { total: 20, bySchool: 10 },
         interactions: { total: 0, byType: {}, bySentiment: {} },
         metrics: { total: 0, byType: {}, summaries: [] },
       };
@@ -334,8 +296,6 @@ describe("reportExport", () => {
       expect(csv).toContain("Coaches Summary");
       expect(csv).toContain("Total Coaches");
       expect(csv).toContain("20");
-      expect(csv).toContain("Average Response Rate");
-      expect(csv).toContain("0.85");
     });
 
     it("should include interaction statistics in CSV", () => {
@@ -344,7 +304,7 @@ describe("reportExport", () => {
         dateRange: { from: "2024-01-01", to: "2024-01-31" },
         generatedAt: "2024-01-31T12:00:00Z",
         schools: { total: 0, byStatus: {}, byDivision: {} },
-        coaches: { total: 0, avgResponseRate: 0, bySchool: 0 },
+        coaches: { total: 0, bySchool: 0 },
         interactions: {
           total: 50,
           byType: { email: 30, call: 20 },
@@ -368,7 +328,7 @@ describe("reportExport", () => {
         dateRange: { from: "2024-01-01", to: "2024-01-31" },
         generatedAt: "2024-01-31T12:00:00Z",
         schools: { total: 0, byStatus: {}, byDivision: {} },
-        coaches: { total: 0, avgResponseRate: 0, bySchool: 0 },
+        coaches: { total: 0, bySchool: 0 },
         interactions: { total: 0, byType: {}, bySentiment: {} },
         metrics: {
           total: 100,

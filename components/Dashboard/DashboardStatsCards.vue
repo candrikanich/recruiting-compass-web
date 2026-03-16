@@ -6,7 +6,7 @@
     <NuxtLink
       v-if="showSchools"
       to="/schools"
-      class="relative group rounded-xl overflow-hidden transition-all focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+      class="relative group rounded-xl overflow-hidden transition-all focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
       :aria-label="`Schools section: ${schoolCount} total schools. Navigate to manage schools.`"
     >
       <div
@@ -40,7 +40,7 @@
     <NuxtLink
       v-if="showCoaches"
       to="/coaches"
-      class="relative group rounded-xl overflow-hidden transition-all focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      class="relative group rounded-xl overflow-hidden transition-all focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
       :aria-label="`Coaches section: ${coachCount} total coaches. Navigate to manage all coaches.`"
     >
       <div
@@ -74,7 +74,7 @@
     <NuxtLink
       v-if="showInteractions"
       to="/interactions"
-      class="relative group rounded-xl overflow-hidden transition-all focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+      class="relative group rounded-xl overflow-hidden transition-all focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
       :aria-label="`Interactions section: ${interactionCount} logged interactions. Navigate to track interactions.`"
     >
       <div
@@ -109,7 +109,7 @@
       v-if="showEvents"
       data-testid="stat-card-events"
       to="/events"
-      class="relative group rounded-xl overflow-hidden transition-all focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+      class="relative group rounded-xl overflow-hidden transition-all focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
       :aria-label="`Events section: ${eventCount} entered events. Navigate to view all events.`"
     >
       <div
@@ -136,7 +136,7 @@
     <NuxtLink
       v-if="showOffers"
       to="/offers"
-      class="relative group rounded-xl overflow-hidden transition-all focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+      class="relative group rounded-xl overflow-hidden transition-all focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
       :aria-label="`Offers section: ${acceptedOffers} accepted out of ${totalOffers} total offers. Navigate to view all offers.`"
     >
       <div
@@ -171,7 +171,7 @@
       v-if="showMonthlyContacts"
       data-testid="stat-card-monthly-contacts"
       to="/interactions"
-      class="relative group rounded-xl overflow-hidden transition-all focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+      class="relative group rounded-xl overflow-hidden transition-all focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
       :aria-label="`Monthly contacts: ${contactsThisMonth} contacts this month. Navigate to view interaction history.`"
     >
       <div

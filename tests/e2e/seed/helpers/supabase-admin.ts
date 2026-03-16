@@ -26,40 +26,118 @@ export async function createTestAccounts() {
 
   for (const [key, account] of Object.entries(TEST_ACCOUNTS)) {
     try {
-      // Try to delete existing user first
-      const { data: existingUsers } = await supabase.auth.admin.listUsers();
-      const existingUser = existingUsers?.users?.find(
-        (u) => u.email === account.email,
-      );
+      let userId: string;
 
-      if (existingUser) {
-        console.log(`⏭️  Test account already exists: ${account.email}`);
-        continue;
+      // Try to create the user first
+      const { data: createData, error: createError } =
+        await supabase.auth.admin.createUser({
+          email: account.email,
+          password: account.password,
+          email_confirm: true,
+          user_metadata: {
+            display_name: account.displayName,
+            role: account.role,
+          },
+        });
+
+      if (createError) {
+        if (createError.message?.includes("already been registered") ||
+            createError.message?.includes("already registered")) {
+          // User exists — look them up by listing users with email filter
+          const { data: listData } = await supabase.auth.admin.listUsers({
+            page: 1,
+            perPage: 1000,
+          });
+          const existing = listData?.users?.find((u) => u.email === account.email);
+          if (!existing) {
+            console.warn(`⚠️  ${account.email} exists but couldn't be found — skipping setup`);
+            continue;
+          }
+          userId = existing.id;
+          console.log(`⏭️  Test account already exists: ${account.email}`);
+        } else {
+          throw createError;
+        }
+      } else {
+        userId = createData.user.id;
+        console.log(`✅ Created test account: ${account.email}`);
       }
 
-      // Create new user
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: account.email,
-        password: account.password,
-        email_confirm: true,
-        user_metadata: {
-          display_name: account.displayName,
-          role: account.role,
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      console.log(`✅ Created test account: ${account.email}`);
+      // Ensure onboarding is complete and family_unit exists
+      await setupTestAccountData(supabase, userId, account);
     } catch (error) {
       console.error(
-        `❌ Failed to create test account ${account.email}:`,
+        `❌ Failed to setup test account ${account.email}:`,
         error,
       );
-      throw error;
+      // Don't throw — allow other accounts to be created
     }
+  }
+}
+
+/**
+ * Sets up a test account with onboarding complete and a family unit.
+ * Idempotent — safe to call multiple times.
+ */
+async function setupTestAccountData(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  userId: string,
+  account: { displayName: string; role: string },
+) {
+  // Update onboarding status for the user (only update existing row — don't insert)
+  // The users row is created by a DB trigger when auth.users is created.
+  const { error: userError } = await supabase
+    .from("users")
+    .update({
+      phase_milestone_data: {
+        onboarding_complete: true,
+        onboarding_completed_at: new Date().toISOString(),
+      },
+      onboarding_completed: true,
+    })
+    .eq("id", userId);
+
+  if (userError) {
+    // Non-fatal — row might not exist yet if trigger hasn't fired
+    console.warn(`⚠️  Could not update users row for ${userId}:`, userError.message);
+  }
+
+  // Check if user already has a family_unit membership
+  const { data: membership } = await supabase
+    .from("family_members")
+    .select("family_unit_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (membership) return; // Already has family unit
+
+  // Create family unit
+  const { data: familyUnit, error: familyError } = await supabase
+    .from("family_units")
+    .insert({ family_name: `${account.displayName} Family`, created_by_user_id: userId })
+    .select()
+    .single();
+
+  if (familyError) {
+    console.warn(`⚠️  Could not create family_unit for ${userId}:`, familyError.message);
+    return;
+  }
+
+  // Add user as member of family unit
+  const { data: familyMember, error: memberError } = await supabase
+    .from("family_members")
+    .insert({
+      family_unit_id: familyUnit.id,
+      user_id: userId,
+      role: account.role === "player" ? "player" : "parent",
+    });
+
+  if (memberError) {
+    console.error(
+      `❌ Failed to add ${userId} as member of family unit ${familyUnit.id} (role: ${account.role}):`,
+      memberError.message,
+    );
+    throw memberError;
   }
 }
 

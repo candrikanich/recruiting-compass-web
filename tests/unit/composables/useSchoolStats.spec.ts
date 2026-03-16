@@ -30,19 +30,6 @@ describe('useSchoolStats', () => {
     expect(stats.value[1].value).toBe(2);
   });
 
-  it('filters Tier A schools', () => {
-    const schools = ref<School[]>([
-      { id: '1', name: 'School 1', priority_tier: 'A', family_unit_id: 'f1' } as School,
-      { id: '2', name: 'School 2', priority_tier: 'B', family_unit_id: 'f1' } as School,
-      { id: '3', name: 'School 3', priority_tier: 'A', family_unit_id: 'f1' } as School
-    ]);
-
-    const { stats } = useSchoolStats(schools);
-
-    expect(stats.value[2].label).toBe('Tier A');
-    expect(stats.value[2].value).toBe(2);
-  });
-
   it('counts visited schools', () => {
     const schools = ref<School[]>([
       { id: '1', name: 'School 1', status: 'official_visit_scheduled', family_unit_id: 'f1' } as School,
@@ -52,8 +39,8 @@ describe('useSchoolStats', () => {
 
     const { stats } = useSchoolStats(schools);
 
-    expect(stats.value[3].label).toBe('Visited');
-    expect(stats.value[3].value).toBe(2);
+    expect(stats.value[2].label).toBe('Visited');
+    expect(stats.value[2].value).toBe(2);
   });
 
   it('handles empty schools array', () => {
@@ -64,7 +51,6 @@ describe('useSchoolStats', () => {
     expect(stats.value[0].value).toBe(0);
     expect(stats.value[1].value).toBe(0);
     expect(stats.value[2].value).toBe(0);
-    expect(stats.value[3].value).toBe(0);
   });
 
   it('handles missing fields gracefully', () => {
@@ -76,7 +62,6 @@ describe('useSchoolStats', () => {
     const { stats } = useSchoolStats(schools);
 
     expect(stats.value[1].value).toBe(0); // No favorites
-    expect(stats.value[2].value).toBe(0); // No Tier A
-    expect(stats.value[3].value).toBe(0); // No visited
+    expect(stats.value[2].value).toBe(0); // No visited
   });
 });

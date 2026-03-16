@@ -7,10 +7,9 @@
         @change="
           $emit('update:modelValue', ($event.target as HTMLSelectElement).value)
         "
-        class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="a-z">A - Z</option>
-        <option value="fit-score">Fit Score</option>
         <option value="distance">Distance</option>
         <option value="last-contact">Last Contact</option>
       </select>

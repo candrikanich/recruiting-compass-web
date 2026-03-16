@@ -5,6 +5,7 @@
  */
 
 import { ref, computed, isRef, type Ref, type ComputedRef } from "vue";
+import { useDebounceFn } from "@vueuse/core";
 import { createClientLogger } from "~/utils/logger";
 import type {
   FilterConfig,
@@ -106,24 +107,20 @@ export const useUniversalFilter = <T extends Record<string, unknown>>(
     }
   };
 
-  // Debounced filter value updates
-  const debounceTimeouts: Record<string, ReturnType<typeof setTimeout>> = {};
+  // Per-field debounced setters
+  const debouncedSetters: Record<string, ReturnType<typeof useDebounceFn>> = {};
 
   // Set individual filter value with debounce support
   const setFilterValue = (field: string, value: FilterValue) => {
     if (debounceMs > 0) {
-      // Clear existing timeout for this field
-      if (debounceTimeouts[field]) {
-        clearTimeout(debounceTimeouts[field]);
+      if (!debouncedSetters[field]) {
+        debouncedSetters[field] = useDebounceFn((v: FilterValue) => {
+          filterValues.value[field] = v;
+          activePresetId.value = undefined;
+          saveToStorage();
+        }, debounceMs);
       }
-
-      // Set new debounced timeout
-      debounceTimeouts[field] = setTimeout(() => {
-        filterValues.value[field] = value;
-        activePresetId.value = undefined;
-        saveToStorage();
-        delete debounceTimeouts[field];
-      }, debounceMs);
+      debouncedSetters[field](value);
     } else {
       // No debounce - update immediately
       filterValues.value[field] = value;

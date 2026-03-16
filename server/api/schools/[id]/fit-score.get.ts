@@ -64,10 +64,10 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Get school fit score data
+    // Get school name
     const { data: school, error: schoolError } = await supabase
       .from("schools")
-      .select("id, user_id, name, fit_score, fit_score_data")
+      .select("id, user_id, name")
       .eq("id", schoolId)
       .single();
 
@@ -78,20 +78,13 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Return fit score and breakdown with proper type safety
-    const schoolName = (school as { name: string })?.name || "";
-    const fitScore =
-      (school as { fit_score: number | null })?.fit_score || null;
-    const fitScoreData =
-      (school as { fit_score_data: unknown | null })?.fit_score_data || null;
-
     return {
       success: true,
       data: {
         schoolId,
-        schoolName,
-        fitScore: fitScore || null,
-        fitScoreData: fitScoreData || null,
+        schoolName: school.name,
+        fitScore: null,
+        fitScoreData: null,
       },
     };
   } catch (err: unknown) {

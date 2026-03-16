@@ -7,7 +7,7 @@ import type { Ref, ComputedRef } from "vue";
 import type { Coach, School } from "~/types/models";
 import { getSchoolName } from "~/utils/coachHelpers";
 
-export type FilterField = "search" | "role" | "lastContact" | "responsiveness";
+export type FilterField = "search" | "role" | "lastContact";
 
 export const useCoachPageFilters = (
   allCoaches: Ref<Coach[]>,
@@ -50,30 +50,7 @@ export const useCoachPageFilters = (
         }
       }
 
-      // Responsiveness filter - score range calculation
-      let matchesResponsiveness = true;
-      const responsivenessFilter = filterValues.value.get("responsiveness");
-      if (responsivenessFilter) {
-        const score = coach.responsiveness_score || 0;
-        switch (responsivenessFilter) {
-          case "high":
-            matchesResponsiveness = score >= 75;
-            break;
-          case "medium":
-            matchesResponsiveness = score >= 50 && score < 75;
-            break;
-          case "low":
-            matchesResponsiveness = score < 50;
-            break;
-        }
-      }
-
-      return (
-        matchesSearch &&
-        matchesRole &&
-        matchesLastContact &&
-        matchesResponsiveness
-      );
+      return matchesSearch && matchesRole && matchesLastContact;
     });
 
     // Apply sorting
@@ -98,8 +75,6 @@ export const useCoachPageFilters = (
             : 0;
           return dateB - dateA; // Most recent first
         }
-        case "responsiveness":
-          return (b.responsiveness_score || 0) - (a.responsiveness_score || 0); // Highest first
         case "role": {
           const roleOrder = { head: 0, assistant: 1, recruiting: 2 };
           return (

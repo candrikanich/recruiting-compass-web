@@ -60,7 +60,7 @@ const handleZipCodeInput = (value: string) => {
             placeholder="12345"
             pattern="\d{5}"
             maxlength="5"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             required
           />
           <p class="text-sm text-slate-500 mt-2">

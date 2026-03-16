@@ -19,6 +19,8 @@ export interface CollegeDataResult {
   studentFacultyRatio: number | null;
   tuitionInState: number | null;
   tuitionOutOfState: number | null;
+  avgNetPrice: number | null;
+  graduationRate: number | null;
   latitude: number | null;
   longitude: number | null;
 }
@@ -176,6 +178,10 @@ export const useCollegeData = () => {
       tuitionOutOfState: getNumberField(
         school["latest.cost.tuition.out_of_state"],
       ),
+      avgNetPrice: getNumberField(school["latest.cost.avg_net_price.overall"]),
+      graduationRate: getNumberField(
+        school["latest.completion.completion_rate_4yr_150nt"],
+      ),
       latitude: getNumberField(school["location.lat"]),
       longitude: getNumberField(school["location.lon"]),
     };
@@ -208,7 +214,7 @@ export const useCollegeData = () => {
       const params = new URLSearchParams({
         q: schoolName,
         fields:
-          "id,school.name,school.city,school.state,school.school_url,location.lat,location.lon,latest.admissions.admission_rate.overall,latest.student.size,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state",
+          "id,school.name,school.city,school.state,school.school_url,location.lat,location.lon,latest.admissions.admission_rate.overall,latest.student.size,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state,latest.cost.avg_net_price.overall,latest.completion.completion_rate_4yr_150nt",
         per_page: "1",
       });
 
@@ -284,7 +290,7 @@ export const useCollegeData = () => {
       const params = new URLSearchParams({
         id: scoreId,
         fields:
-          "id,school.name,school.city,school.state,school.school_url,location.lat,location.lon,latest.admissions.admission_rate.overall,latest.student.size,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state",
+          "id,school.name,school.city,school.state,school.school_url,location.lat,location.lon,latest.admissions.admission_rate.overall,latest.student.size,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state,latest.cost.avg_net_price.overall,latest.completion.completion_rate_4yr_150nt",
       });
 
       const url = `/api/colleges/search?${params.toString()}`;

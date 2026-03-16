@@ -18,7 +18,6 @@ export interface ReportData {
   };
   coaches?: {
     total: number;
-    avgResponseRate: number;
     bySchool: number;
   };
   interactions?: {
@@ -83,16 +82,6 @@ export const generateReportData = (
     }
   });
 
-  // Calculate coach stats
-  const coachResponseRates = coaches
-    .filter((c) => c.responsiveness_score !== undefined)
-    .map((c) => c.responsiveness_score || 0);
-  const avgResponseRate =
-    coachResponseRates.length > 0
-      ? coachResponseRates.reduce((a, b) => a + b, 0) /
-        coachResponseRates.length
-      : 0;
-
   // Calculate metric stats
   const metricsByType = {} as Record<string, number>;
   const metricSummaries: Array<{
@@ -134,7 +123,6 @@ export const generateReportData = (
     },
     coaches: {
       total: coaches.length,
-      avgResponseRate: Math.round(avgResponseRate * 100) / 100,
       bySchool: schools.length,
     },
     interactions: {
@@ -179,9 +167,6 @@ export const exportReportToCSV = (report: ReportData): string => {
   // Coaches Summary
   lines.push('"Coaches Summary"');
   lines.push('"Total Coaches",' + (report.coaches?.total || 0));
-  lines.push(
-    '"Average Response Rate",' + (report.coaches?.avgResponseRate || 0),
-  );
   lines.push("");
 
   // Interactions Summary

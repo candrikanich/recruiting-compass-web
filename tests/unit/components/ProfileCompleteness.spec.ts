@@ -5,6 +5,7 @@ import ProfileCompleteness from "~/components/ProfileCompleteness.vue";
 vi.mock("~/composables/useProfileCompleteness", () => ({
   useProfileCompleteness: () => ({
     completeness: { value: 75 },
+    updateCompleteness: vi.fn().mockResolvedValue(undefined),
   }),
 }));
 

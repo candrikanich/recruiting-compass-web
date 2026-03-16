@@ -1,4 +1,5 @@
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import { useEventListener, useThrottleFn } from "@vueuse/core";
 import type { SessionPreferences } from "~/types/session";
 import { DEFAULT_TIMEOUT_CONFIG } from "~/types/session";
 
@@ -10,8 +11,7 @@ export const useSessionTimeout = () => {
   let warningInterval: ReturnType<typeof setInterval> | null = null;
   let isLoggingOut = false;
   let _lastActivityTime = Date.now();
-  let activityThrottleTimeout: ReturnType<typeof setTimeout> | null = null;
-  let boundActivityHandler: (() => void) | null = null;
+  let stopActivityListeners: (() => void) | null = null;
 
   const getSessionPreferences = (): SessionPreferences | null => {
     try {
@@ -50,16 +50,9 @@ export const useSessionTimeout = () => {
     }
   };
 
-  const handleActivity = () => {
-    // Throttle activity updates to 30 seconds
-    if (activityThrottleTimeout) return;
-
+  const handleActivity = useThrottleFn(() => {
     updateActivity();
-
-    activityThrottleTimeout = setTimeout(() => {
-      activityThrottleTimeout = null;
-    }, DEFAULT_TIMEOUT_CONFIG.activityThrottleMs);
-  };
+  }, DEFAULT_TIMEOUT_CONFIG.activityThrottleMs, false, true);
 
   const showWarning = (secondsRemaining: number) => {
     isWarningVisible.value = true;
@@ -158,13 +151,12 @@ export const useSessionTimeout = () => {
     if (!prefs || !prefs.rememberMe) return;
 
     // Add activity event listeners
-    boundActivityHandler = () => {
-      handleActivity();
-    };
-
-    DEFAULT_TIMEOUT_CONFIG.activityEvents.forEach((event) => {
-      document.addEventListener(event, boundActivityHandler!, true);
-    });
+    stopActivityListeners = useEventListener(
+      document,
+      DEFAULT_TIMEOUT_CONFIG.activityEvents,
+      handleActivity,
+      { capture: true },
+    );
 
     // Start checking for timeout every 30 seconds
     if (checkInterval) clearInterval(checkInterval);
@@ -188,18 +180,8 @@ export const useSessionTimeout = () => {
       warningInterval = null;
     }
 
-    if (activityThrottleTimeout) {
-      clearTimeout(activityThrottleTimeout);
-      activityThrottleTimeout = null;
-    }
-
-    // Remove event listeners
-    if (boundActivityHandler) {
-      DEFAULT_TIMEOUT_CONFIG.activityEvents.forEach((event) => {
-        document.removeEventListener(event, boundActivityHandler!, true);
-      });
-      boundActivityHandler = null;
-    }
+    stopActivityListeners?.();
+    stopActivityListeners = null;
   };
 
   onMounted(() => {

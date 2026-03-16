@@ -10,7 +10,7 @@
       :id="selectId"
       :value="value"
       @change="$emit('change', ($event.target as HTMLSelectElement).value)"
-      class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
+      class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
       :style="selectStyle"
     >
       <slot />

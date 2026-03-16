@@ -61,7 +61,7 @@
       </label>
       <NuxtLink
         to="/forgot-password"
-        class="text-sm text-slate-700 hover:text-blue-600 font-medium underline hover:no-underline focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-sm px-2 py-1 transition-colors"
+        class="text-sm text-slate-700 hover:text-blue-600 font-medium underline hover:no-underline focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-sm px-2 py-1 transition-colors"
       >
         Forgot password?
       </NuxtLink>
@@ -80,7 +80,7 @@
             ? 'Validating your information'
             : 'Sign in to your account'
       "
-      class="w-full px-6 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+      class="w-full px-6 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
     >
       {{ loading ? "Signing in..." : validating ? "Validating..." : "Sign In" }}
     </button>
@@ -104,7 +104,7 @@
       Don't have an account?
       <NuxtLink
         to="/signup"
-        class="text-blue-600 hover:text-blue-700 font-medium underline hover:no-underline focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-sm px-1 transition-colors"
+        class="text-blue-600 hover:text-blue-700 font-medium underline hover:no-underline focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-sm px-1 transition-colors"
       >
         Create one now
       </NuxtLink>

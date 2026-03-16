@@ -1,11 +1,10 @@
-import { ref, computed, shallowRef, inject, watch } from "vue";
-import { useSupabase } from "./useSupabase";
+import { computed, inject, watch } from "vue";
 import { useUserStore } from "~/stores/user";
+import { useSchoolStore } from "~/stores/schools";
 import { useActiveFamily } from "./useActiveFamily";
 import { useFamilyContext } from "./useFamilyContext";
 import type { School } from "~/types/models";
 import { schoolSchema } from "~/utils/validation/schemas";
-import { sanitizeHtml } from "~/utils/validation/sanitize";
 import { createClientLogger } from "~/utils/logger";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 
@@ -39,37 +38,8 @@ const logger = createClientLogger("useSchools");
  * - Academic and athletic requirements tracking
  */
 export const useSchools = () => {
-  return useSchoolsInternal();
-};
-
-const useSchoolsInternal = (): {
-  schools: ComputedRef<School[]>;
-  favoriteSchools: ComputedRef<School[]>;
-  loading: ComputedRef<boolean>;
-  error: ComputedRef<string | null>;
-  fetchSchools: () => Promise<void>;
-  getSchool: (id: string) => Promise<School | null>;
-  createSchool: (
-    schoolData: Omit<School, "id" | "createdAt" | "updatedAt">,
-  ) => Promise<School>;
-  updateSchool: (id: string, updates: Partial<School>) => Promise<School>;
-  deleteSchool: (id: string) => Promise<void>;
-  smartDelete: (id: string) => Promise<{ cascadeUsed: boolean }>;
-  toggleFavorite: (id: string, currentFavorite: boolean) => Promise<School>;
-  updateRanking: (schools_: School[]) => Promise<void>;
-  findDuplicate: (
-    schoolData: Partial<School> | Record<string, string | null | undefined>,
-  ) => {
-    duplicate: School | null;
-    matchType: "name" | "domain" | "ncaa_id" | null;
-  };
-  hasDuplicate: ComputedRef<(schoolData: Partial<School>) => boolean>;
-  isNameDuplicate: (newName: string | undefined) => School | null;
-  isDomainDuplicate: (website: string | null | undefined) => School | null;
-  isNCAAAIDuplicate: (ncaaId: string | null | undefined) => School | null;
-} => {
-  const supabase = useSupabase();
   const userStore = useUserStore();
+  const schoolStore = useSchoolStore();
   const { $fetchAuth } = useAuthFetch();
   const injectedFamily =
     inject<ReturnType<typeof useActiveFamily>>("activeFamily");
@@ -83,26 +53,17 @@ const useSchoolsInternal = (): {
 
   const activeFamily = injectedFamily ?? useFamilyContext();
 
-  const schools = shallowRef<School[]>([]);
-  const loadingCount = ref(0);
-  const errorRef = ref<string | null>(null);
-
-  const loading = computed(() => loadingCount.value > 0);
-  const error = computed(() => errorRef.value);
-
-  // In-flight deduplication: prevents concurrent duplicate Supabase calls
-  let fetchInFlight: Promise<void> | null = null;
-
-  const favoriteSchools = computed(() =>
-    schools.value.filter((s) => s.is_favorite),
-  );
+  const schools = computed(() => schoolStore.schools);
+  const loading = computed(() => schoolStore.loading);
+  const error = computed(() => schoolStore.error);
+  const favoriteSchools = computed(() => schoolStore.favoriteSchools);
 
   // Auto-invalidate cache when parent switches athlete
   watch(
     () => activeFamily.activeAthleteId?.value,
     async (newId, oldId) => {
       if (newId && newId !== oldId) {
-        schools.value = [];
+        schoolStore.$patch({ schools: [], isFetched: false });
         await fetchSchools();
       }
     },
@@ -119,21 +80,13 @@ const useSchoolsInternal = (): {
     },
   );
 
-  const fetchSchools = (): Promise<void> => {
-    if (fetchInFlight) return fetchInFlight;
-
-    fetchInFlight = (async () => {
+  const fetchSchools = async (): Promise<void> => {
     logger.debug("[useSchools] fetchSchools called");
     logger.debug(`[useSchools] User: ${userStore.user?.id || "null"}`);
     logger.debug(
       `[useSchools] Active Family ID: ${activeFamily.activeFamilyId?.value || "null"}`,
     );
 
-    loadingCount.value++;
-    errorRef.value = null;
-
-    try {
-    // Ensure we have both user and family context
     if (!userStore.user) {
       logger.debug("[useSchools] No user, skipping fetch");
       return;
@@ -147,147 +100,12 @@ const useSchoolsInternal = (): {
     logger.debug(
       `[useSchools] Fetching for family: ${activeFamily.activeFamilyId.value}`,
     );
-      // 🚀 Quick Win: Select only needed columns (2-3x faster, enables index-only scans)
-      const schoolsResponse = await supabase
-        .from("schools")
-        .select(
-          `
-          id,
-          name,
-          location,
-          division,
-          conference,
-          ranking,
-          is_favorite,
-          status,
-          status_changed_at,
-          priority_tier,
-          website,
-          favicon_url,
-          twitter_handle,
-          instagram_handle,
-          notes,
-          pros,
-          cons,
-          fit_score,
-          fit_tier,
-          user_id,
-          family_unit_id,
-          created_at,
-          updated_at,
-          academic_info
-        `,
-        )
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
-        .order("ranking", { ascending: true, nullsFirst: false });
 
-      const { data, error: fetchError } = schoolsResponse as {
-        data: School[];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error: any;
-      };
-
-      if (fetchError) throw fetchError;
-
-      // Deduplicate by ID (keep first occurrence)
-      const seen = new Set<string>();
-      const deduplicated = (data || []).filter((school) => {
-        if (seen.has(school.id)) {
-          logger.warn(
-            `[useSchools] Duplicate school detected: ${school.name} (ID: ${school.id})`,
-          );
-          return false;
-        }
-        seen.add(school.id);
-        return true;
-      });
-
-      schools.value = deduplicated;
-      logger.debug(`[useSchools] Loaded ${schools.value.length} schools`);
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch schools";
-      errorRef.value = message;
-      logger.error("[useSchools] Error:", message);
-    } finally {
-      loadingCount.value--;
-    }
-    })().finally(() => {
-      fetchInFlight = null;
-    });
-
-    return fetchInFlight;
+    await schoolStore.fetchSchools(activeFamily.activeFamilyId.value);
   };
 
   const getSchool = async (id: string): Promise<School | null> => {
-    if (!userStore.user || !activeFamily.activeFamilyId.value) return null;
-
-    loadingCount.value++;
-    errorRef.value = null;
-
-    try {
-      // Fetch all available columns for detail view
-      const schoolResponse = await supabase
-        .from("schools")
-        .select(
-          `
-          id,
-          name,
-          location,
-          division,
-          conference,
-          ranking,
-          is_favorite,
-          status,
-          status_changed_at,
-          priority_tier,
-          website,
-          favicon_url,
-          twitter_handle,
-          instagram_handle,
-          notes,
-          pros,
-          cons,
-          fit_score,
-          fit_tier,
-          user_id,
-          family_unit_id,
-          created_at,
-          updated_at,
-          academic_info,
-          amenities,
-          coaching_philosophy,
-          coaching_style,
-          recruiting_approach,
-          communication_style,
-          success_metrics,
-          offer_details,
-          private_notes,
-          fit_score_data,
-          created_by,
-          updated_by
-        `,
-        )
-        .eq("id", id)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
-        .single();
-
-      const { data, error: fetchError } = schoolResponse as {
-        data: School;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error: any;
-      };
-
-      if (fetchError) throw fetchError;
-      return data;
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch school";
-      errorRef.value = message;
-      return null;
-    } finally {
-      loadingCount.value--;
-    }
+    return schoolStore.getSchool(id, activeFamily.activeFamilyId.value ?? "");
   };
 
   const createSchool = async (
@@ -305,234 +123,59 @@ const useSchoolsInternal = (): {
       throw new Error("Athlete context not set");
     }
 
-    loadingCount.value++;
-    errorRef.value = null;
+    // Validate school data with Zod schema (composable responsibility)
+    await schoolSchema.parseAsync(schoolData);
 
+    const result = await schoolStore.createSchool(
+      schoolData as Omit<School, "id" | "created_at" | "updated_at">,
+    );
+
+    const { $posthog } = useNuxtApp();
+    $posthog?.capture("school_added", { division: schoolData.division ?? null });
+
+    // Fetch logo asynchronously (don't block school creation)
     try {
-      // Validate school data with Zod schema
-      const validated = await schoolSchema.parseAsync(schoolData);
-
-      // Sanitize text fields to prevent XSS
-      if (validated.notes) {
-        validated.notes = sanitizeHtml(validated.notes);
-      }
-      if (validated.pros && Array.isArray(validated.pros)) {
-        validated.pros = validated.pros.map((p: string | null | undefined) =>
-          p ? sanitizeHtml(p) : p,
-        );
-      }
-      if (validated.cons && Array.isArray(validated.cons)) {
-        validated.cons = validated.cons.map((c: string | null | undefined) =>
-          c ? sanitizeHtml(c) : c,
-        );
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const insertResponse = await (supabase.from("schools") as any)
-        .insert([
-          {
-            ...validated,
-            user_id: dataOwnerUserId,
-            family_unit_id: activeFamily.activeFamilyId.value,
-            created_by: userStore.user.id,
-            updated_by: userStore.user.id,
-          },
-        ])
-        .select()
-        .single();
-
-      const { data, error: insertError } = insertResponse as {
-        data: School;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error: any;
-      };
-
-      if (insertError) throw insertError;
-
-      schools.value = [...schools.value, data];
-
-      const { $posthog } = useNuxtApp();
-      $posthog?.capture("school_added", { division: schoolData.division ?? null });
-
-      // Fetch logo asynchronously (don't block school creation)
-      // Use dynamic import to avoid circular dependency
-      try {
-        const { useSchoolLogos } = await import("./useSchoolLogos");
-        const { fetchSchoolLogo } = useSchoolLogos();
-        fetchSchoolLogo(data).catch((err) => {
-          logger.warn("Failed to fetch logo for new school:", err);
-          // Don't fail school creation if logo fetch fails
-        });
-      } catch (logoError) {
-        logger.warn("Failed to initialize logo fetching:", logoError);
-        // Don't fail school creation if logo fetching initialization fails
-      }
-
-      return data;
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to create school";
-      errorRef.value = message;
-      throw err;
-    } finally {
-      loadingCount.value--;
+      const { useSchoolLogos } = await import("./useSchoolLogos");
+      const { fetchSchoolLogo } = useSchoolLogos();
+      fetchSchoolLogo(result).catch((err) => {
+        logger.warn("Failed to fetch logo for new school:", err);
+      });
+    } catch (logoError) {
+      logger.warn("Failed to initialize logo fetching:", logoError);
     }
+
+    return result;
   };
 
   const updateSchool = async (id: string, updates: Partial<School>) => {
-    if (!userStore.user || !activeFamily.activeFamilyId.value) {
-      throw new Error("User not authenticated or family not loaded");
-    }
-
-    loadingCount.value++;
-    errorRef.value = null;
-
-    try {
-      // Sanitize text fields to prevent XSS
-      const sanitizedUpdates = { ...updates };
-
-      if (sanitizedUpdates.notes) {
-        sanitizedUpdates.notes = sanitizeHtml(sanitizedUpdates.notes);
-      }
-      if (sanitizedUpdates.pros && Array.isArray(sanitizedUpdates.pros)) {
-        sanitizedUpdates.pros = sanitizedUpdates.pros
-          .filter((p): p is string => !!p)
-          .map((p) => sanitizeHtml(p));
-      }
-      if (sanitizedUpdates.cons && Array.isArray(sanitizedUpdates.cons)) {
-        sanitizedUpdates.cons = sanitizedUpdates.cons
-          .filter((c): c is string => !!c)
-          .map((c) => sanitizeHtml(c));
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updateResponse = await (supabase.from("schools") as any)
-        .update({
-          ...sanitizedUpdates,
-          updated_by: userStore.user.id,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", id)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value)
-        .select()
-        .single();
-
-      const { data, error: updateError } = updateResponse as {
-        data: School;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error: any;
-      };
-
-      if (updateError) throw updateError;
-
-      // Update local state
-      const index = schools.value.findIndex((s) => s.id === id);
-      if (index !== -1) {
-        schools.value = schools.value.map((s, i) => (i === index ? data : s));
-      }
-
-      return data;
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update school";
-      errorRef.value = message;
-      throw err;
-    } finally {
-      loadingCount.value--;
-    }
+    return schoolStore.updateSchool(id, updates, activeFamily.activeFamilyId.value ?? "");
   };
 
   const deleteSchool = async (id: string) => {
-    if (!userStore.user || !activeFamily.activeFamilyId.value) {
-      throw new Error("User not authenticated or family not loaded");
-    }
-
-    loadingCount.value++;
-    errorRef.value = null;
-
     try {
-      const deleteResponse = await supabase
-        .from("schools")
-        .delete()
-        .eq("id", id)
-        .eq("family_unit_id", activeFamily.activeFamilyId.value);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: deleteError } = deleteResponse as { error: any };
-
-      if (deleteError) {
-        // Parse database errors for better user messaging
-        const message = deleteError.message || "Failed to delete school";
-
-        // Check for foreign key constraint errors
-        if (
-          message.includes("violates foreign key constraint") ||
-          message.includes("still referenced")
-        ) {
-          const betterMessage =
-            "Cannot delete this school because it has associated coaches, documents, or interactions. Please remove these first.";
-          errorRef.value = betterMessage;
-          throw new Error(betterMessage);
-        }
-
-        errorRef.value = message;
-        throw deleteError;
-      }
-
-      // Update local state
-      schools.value = schools.value.filter((s) => s.id !== id);
+      return await schoolStore.deleteSchool(id, activeFamily.activeFamilyId.value ?? "");
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "Failed to delete school";
-      errorRef.value = message;
-      logger.error("[useSchools] Delete error:", {
-        schoolId: id,
-        error: message,
-      });
+        err instanceof Error
+          ? err.message
+          : (err as { message?: string })?.message ?? "Failed to delete school";
+      // Rewrite FK constraint errors to a user-friendly message
+      if (
+        message.includes("violates foreign key constraint") ||
+        message.includes("still referenced")
+      ) {
+        const betterMessage =
+          "Cannot delete this school because it has associated coaches, documents, or interactions. Please remove these first.";
+        // Update store error so callers reading error.value see the friendly message
+        schoolStore.$patch({ error: betterMessage });
+        throw new Error(betterMessage);
+      }
       throw err;
-    } finally {
-      loadingCount.value--;
     }
   };
 
   const toggleFavorite = async (id: string, currentFavorite: boolean) => {
-    return updateSchool(id, { is_favorite: !currentFavorite });
-  };
-
-  const updateRanking = async (schools_: School[]) => {
-    if (!userStore.user) throw new Error("User not authenticated");
-
-    loadingCount.value++;
-    errorRef.value = null;
-
-    try {
-      // Batch update all rankings in a single operation (28x faster than loop)
-      const updates = schools_.map((school, index) => ({
-        id: school.id,
-        ranking: index + 1,
-        updated_by: userStore.user!.id,
-        updated_at: new Date().toISOString(),
-      }));
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const upsertResponse = await (supabase.from("schools") as any).upsert(
-        updates,
-        { onConflict: "id" },
-      );
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: batchError } = upsertResponse as { error: any };
-
-      if (batchError) throw batchError;
-
-      schools.value = schools_;
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update ranking";
-      errorRef.value = message;
-    } finally {
-      loadingCount.value--;
-    }
+    return schoolStore.toggleFavorite(id, currentFavorite, activeFamily.activeFamilyId.value ?? "");
   };
 
   /**
@@ -603,7 +246,6 @@ const useSchoolsInternal = (): {
     duplicate: School | null;
     matchType: "name" | "domain" | "ncaa_id" | null;
   } => {
-    // Check name first (most reliable)
     const nameDuplicate = isNameDuplicate(
       schoolData.name === null ? undefined : schoolData.name,
     );
@@ -611,13 +253,11 @@ const useSchoolsInternal = (): {
       return { duplicate: nameDuplicate, matchType: "name" };
     }
 
-    // Check domain second
     const domainDuplicate = isDomainDuplicate(schoolData.website);
     if (domainDuplicate) {
       return { duplicate: domainDuplicate, matchType: "domain" };
     }
 
-    // Check NCAA ID last
     const ncaaIdDuplicate = isNCAAAIDuplicate(schoolData.ncaa_id);
     if (ncaaIdDuplicate) {
       return { duplicate: ncaaIdDuplicate, matchType: "ncaa_id" };
@@ -639,11 +279,9 @@ const useSchoolsInternal = (): {
    */
   const smartDelete = async (id: string): Promise<{ cascadeUsed: boolean }> => {
     try {
-      // Try simple delete first
       await deleteSchool(id);
       return { cascadeUsed: false };
     } catch (err) {
-      // If simple delete fails, try cascade delete
       const message =
         err instanceof Error ? err.message : "Failed to delete school";
 
@@ -652,15 +290,15 @@ const useSchoolsInternal = (): {
         message.includes("violates foreign key constraint") ||
         message.includes("still referenced")
       ) {
-        // Use cascade delete API
         const response = await $fetchAuth<Record<string, unknown>>(
           `/api/schools/${id}/cascade-delete`,
           { method: "POST", body: { confirmDelete: true } },
         );
 
         if (response.success) {
-          // Update local state
-          schools.value = schools.value.filter((s) => s.id !== id);
+          schoolStore.$patch({
+            schools: schoolStore.schools.filter((s) => s.id !== id),
+          });
           return { cascadeUsed: true };
         }
         throw new Error(
@@ -668,13 +306,12 @@ const useSchoolsInternal = (): {
         );
       }
 
-      // Re-throw if it's a different error
       throw err;
     }
   };
 
   return {
-    schools: computed(() => schools.value),
+    schools,
     favoriteSchools,
     loading,
     error,
@@ -685,7 +322,6 @@ const useSchoolsInternal = (): {
     deleteSchool,
     smartDelete,
     toggleFavorite,
-    updateRanking,
     findDuplicate,
     hasDuplicate,
     isNameDuplicate,

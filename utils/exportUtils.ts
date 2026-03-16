@@ -107,7 +107,6 @@ export const exportSchoolComparisonToCSV = (
     "Location",
     "Distance (mi)",
     "Status",
-    "Ranking",
     "Coaches",
     "Interactions",
     "Offer Type",
@@ -125,7 +124,6 @@ export const exportSchoolComparisonToCSV = (
     s.location || "",
     s.distance ? Math.round(s.distance) : "",
     formatStatus(s.status),
-    s.ranking || "",
     s.coachCount || 0,
     s.interactionCount || 0,
     s.offer ? formatOfferType(s.offer.offer_type) : "",
@@ -358,7 +356,6 @@ export const generateSchoolComparisonPDF = (
     <table>
       <thead>
         <tr>
-          <th>Rank</th>
           <th>School</th>
           <th>Division</th>
           <th>Distance</th>
@@ -370,9 +367,8 @@ export const generateSchoolComparisonPDF = (
       <tbody>
         ${schools
           .map(
-            (s, idx) => `
+            (s, _idx) => `
           <tr>
-            <td>${s.ranking || idx + 1}</td>
             <td><strong>${s.name}</strong><br><small style="color:#666">${s.location || ""}</small></td>
             <td>${s.division || "-"}</td>
             <td>${s.distance ? `${Math.round(s.distance)} mi` : "-"}</td>
@@ -764,7 +760,6 @@ export const exportCoachesToCSV = (
     "Phone",
     "Twitter",
     "Instagram",
-    "Responsiveness Score",
     "Last Contact Date",
     "Notes",
   ];
@@ -778,9 +773,6 @@ export const exportCoachesToCSV = (
     c.phone || "",
     c.twitter_handle || "",
     c.instagram_handle || "",
-    c.responsiveness_score !== null && c.responsiveness_score !== undefined
-      ? `${c.responsiveness_score}%`
-      : "",
     c.last_contact_date
       ? new Date(c.last_contact_date).toLocaleDateString()
       : "",
@@ -805,14 +797,6 @@ export const generateCoachesPDF = (
   const headCoachCount = coaches.filter((c) => c.role === "head").length;
   const assistantCount = coaches.filter((c) => c.role === "assistant").length;
   const recruitingCount = coaches.filter((c) => c.role === "recruiting").length;
-  const avgResponsiveness =
-    coaches.length > 0
-      ? Math.round(
-          coaches.reduce((sum, c) => sum + (c.responsiveness_score || 0), 0) /
-            coaches.length,
-        )
-      : 0;
-
   const summaryHTML = `
     <div class="summary-grid">
       <div class="summary-card">
@@ -826,10 +810,6 @@ export const generateCoachesPDF = (
       <div class="summary-card">
         <div class="value">${assistantCount + recruitingCount}</div>
         <div class="label">Staff</div>
-      </div>
-      <div class="summary-card">
-        <div class="value">${avgResponsiveness}%</div>
-        <div class="label">Avg Responsiveness</div>
       </div>
     </div>
   `;
@@ -853,7 +833,6 @@ export const generateCoachesPDF = (
             <th>Role</th>
             <th>Email</th>
             <th>Phone</th>
-            <th>Responsiveness</th>
             <th>Last Contact</th>
           </tr>
         </thead>
@@ -866,7 +845,6 @@ export const generateCoachesPDF = (
               <td><span class="badge ${getRoleBadgeClass(c.role)}">${formatRole(c.role)}</span></td>
               <td>${c.email || "-"}</td>
               <td>${c.phone || "-"}</td>
-              <td>${c.responsiveness_score !== null && c.responsiveness_score !== undefined ? `${c.responsiveness_score}%` : "-"}</td>
               <td>${c.last_contact_date ? new Date(c.last_contact_date).toLocaleDateString() : "-"}</td>
             </tr>
           `,

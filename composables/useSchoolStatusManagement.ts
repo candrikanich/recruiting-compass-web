@@ -11,7 +11,6 @@ export const useSchoolStatusManagement = (schoolId: string) => {
   const { updateStatus: updateSchoolStatus } = useSchoolStatus();
 
   const statusUpdating = ref(false);
-  const priorityUpdating = ref(false);
 
   const updateStatus = async (
     status: School["status"],
@@ -28,21 +27,6 @@ export const useSchoolStatusManagement = (schoolId: string) => {
     }
   };
 
-  const updatePriority = async (
-    tier: "A" | "B" | "C" | null,
-  ): Promise<School | null> => {
-    priorityUpdating.value = true;
-    try {
-      const updated = await updateSchool(schoolId, { priority_tier: tier });
-      return updated;
-    } catch (err) {
-      logger.error("Failed to update priority:", err);
-      return null;
-    } finally {
-      priorityUpdating.value = false;
-    }
-  };
-
   const toggleFavorite = async (
     currentSchool: School,
   ): Promise<School | null> => {
@@ -54,9 +38,7 @@ export const useSchoolStatusManagement = (schoolId: string) => {
 
   return {
     statusUpdating,
-    priorityUpdating,
     updateStatus,
-    updatePriority,
     toggleFavorite,
   };
 };

@@ -45,18 +45,4 @@ export namespace AthleteAPI {
 
   export type RecalculateStatusResponse = StatusScoreResult;
 
-  // Portfolio health endpoint
-  export type GetPortfolioHealthRequest = Record<string, never>;
-
-  export interface PortfolioHealthScore {
-    overall_health_score: number;
-    school_diversity_score: number;
-    coach_contact_frequency_score: number;
-    academic_progress_score: number;
-    performance_metric_score: number;
-    communication_score: number;
-    offer_negotiation_score: number;
-  }
-
-  export type GetPortfolioHealthResponse = PortfolioHealthScore;
 }

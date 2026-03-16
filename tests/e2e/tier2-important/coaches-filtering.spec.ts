@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { CoachesPage } from "../pages/CoachesPage";
 import { SchoolsPage } from "../pages/SchoolsPage";
+import { loginViaForm } from "../helpers/login";
 import {
   coachFixtures,
   createCoachData,
@@ -47,11 +48,7 @@ test.describe("Coach Search and Filtering", () => {
     schoolsPage = new SchoolsPage(page);
 
     // Login
-    await page.goto("/login");
-    await page.fill('input[type="email"]', "test@example.com");
-    await page.fill('input[type="password"]', "password123");
-    await page.click('button:has-text("Sign In")');
-    await page.waitForURL("/dashboard");
+    await loginViaForm(page, "player@test.com", "TestPass123!");
 
     // Create test school
     const schoolName = generateUniqueSchoolName("Filter Test School");
@@ -247,19 +244,6 @@ test.describe("Coach Search and Filtering", () => {
       }
     });
 
-    test("should sort by responsiveness score", async ({ page }) => {
-      await coachHelpers.navigateToCoaches(page, schoolId);
-
-      try {
-        await coachesPage.sortBy("responsiveness");
-        // If sort was successful, should be ordered by responsiveness
-
-        const coachCount = await coachesPage.getCoachCount();
-        expect(coachCount).toBeGreaterThan(0);
-      } catch {
-        // Sort may not be available, skip silently
-      }
-    });
   });
 
   // ==================== COMBINED FILTERS TESTS ====================

@@ -26,7 +26,6 @@ describe("useSchoolStatusManagement", () => {
     location: "Test City",
     division: "D1",
     status: "researching",
-    priority_tier: "B",
     is_favorite: false,
   } as School;
 
@@ -122,87 +121,6 @@ describe("useSchoolStatusManagement", () => {
     });
   });
 
-  describe("updatePriority", () => {
-    it("updates priority tier successfully", async () => {
-      const updatedSchool = { ...mockSchool, priority_tier: "A" };
-      mockUpdateSchool.mockResolvedValue(updatedSchool);
-
-      const { updatePriority, priorityUpdating } =
-        useSchoolStatusManagement(schoolId);
-
-      expect(priorityUpdating.value).toBe(false);
-
-      const promise = updatePriority("A");
-      expect(priorityUpdating.value).toBe(true);
-
-      const result = await promise;
-
-      expect(mockUpdateSchool).toHaveBeenCalledWith(schoolId, {
-        priority_tier: "A",
-      });
-      expect(result).toEqual(updatedSchool);
-      expect(priorityUpdating.value).toBe(false);
-    });
-
-    it("sets loading state during update", async () => {
-      mockUpdateSchool.mockImplementation(
-        () =>
-          new Promise((resolve) => setTimeout(() => resolve(mockSchool), 100)),
-      );
-
-      const { updatePriority, priorityUpdating } =
-        useSchoolStatusManagement(schoolId);
-
-      const promise = updatePriority("C");
-      expect(priorityUpdating.value).toBe(true);
-
-      await promise;
-      expect(priorityUpdating.value).toBe(false);
-    });
-
-    it("handles null priority tier (removes priority)", async () => {
-      const updatedSchool = { ...mockSchool, priority_tier: null };
-      mockUpdateSchool.mockResolvedValue(updatedSchool);
-
-      const { updatePriority } = useSchoolStatusManagement(schoolId);
-      const result = await updatePriority(null);
-
-      expect(mockUpdateSchool).toHaveBeenCalledWith(schoolId, {
-        priority_tier: null,
-      });
-      expect(result?.priority_tier).toBeNull();
-    });
-
-    it("updates to different priority tiers", async () => {
-      const priorities: Array<"A" | "B" | "C" | null> = ["A", "B", "C", null];
-
-      const { updatePriority } = useSchoolStatusManagement(schoolId);
-
-      for (const tier of priorities) {
-        const updatedSchool = { ...mockSchool, priority_tier: tier };
-        mockUpdateSchool.mockResolvedValue(updatedSchool);
-
-        const result = await updatePriority(tier);
-        expect(result?.priority_tier).toBe(tier);
-      }
-    });
-
-    it("clears loading state even on error", async () => {
-      mockUpdateSchool.mockRejectedValue(new Error("Update failed"));
-
-      const { updatePriority, priorityUpdating } =
-        useSchoolStatusManagement(schoolId);
-
-      try {
-        await updatePriority("A");
-      } catch {
-        // Expected to throw
-      }
-
-      expect(priorityUpdating.value).toBe(false);
-    });
-  });
-
   describe("toggleFavorite", () => {
     it("toggles favorite from false to true", async () => {
       const updatedSchool = { ...mockSchool, is_favorite: true };
@@ -271,35 +189,4 @@ describe("useSchoolStatusManagement", () => {
     });
   });
 
-  describe("loading states", () => {
-    it("maintains separate loading states for status and priority", async () => {
-      mockUpdateStatus.mockImplementation(
-        () =>
-          new Promise((resolve) => setTimeout(() => resolve(mockSchool), 100)),
-      );
-      mockUpdateSchool.mockImplementation(
-        () =>
-          new Promise((resolve) => setTimeout(() => resolve(mockSchool), 100)),
-      );
-
-      const { updateStatus, updatePriority, statusUpdating, priorityUpdating } =
-        useSchoolStatusManagement(schoolId);
-
-      // Start status update
-      const statusPromise = updateStatus("interested");
-      expect(statusUpdating.value).toBe(true);
-      expect(priorityUpdating.value).toBe(false);
-
-      await statusPromise;
-      expect(statusUpdating.value).toBe(false);
-
-      // Start priority update
-      const priorityPromise = updatePriority("A");
-      expect(statusUpdating.value).toBe(false);
-      expect(priorityUpdating.value).toBe(true);
-
-      await priorityPromise;
-      expect(priorityUpdating.value).toBe(false);
-    });
-  });
 });
