@@ -34,10 +34,12 @@ export default defineEventHandler(async (event) => {
       )
     ) {
       throw createError({
-        statusCode: 422,
+        statusCode: 400,
         message: "Invalid trigger reason",
       });
     }
+
+    logger.info("Triggering suggestion update", { reason });
 
     const result = await triggerSuggestionUpdate(supabase, user.id, reason, {
       interactionSchoolId,
@@ -45,12 +47,13 @@ export default defineEventHandler(async (event) => {
     });
 
     return result;
-  } catch (error: unknown) {
-    if (error instanceof Error && "statusCode" in error) {
-      throw error;
+  } catch (err: unknown) {
+    if (err instanceof Error && "statusCode" in err) {
+      throw err;
     }
 
-    logger.error("Failed to trigger suggestion update", error);
+    logger.error("Failed to trigger suggestion update", err);
+
     throw createError({
       statusCode: 500,
       message: "Failed to trigger suggestion update",
