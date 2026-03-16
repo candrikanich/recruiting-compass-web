@@ -35,44 +35,50 @@ const UpdateProfileSchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "player/profile");
-  const { id: userId } = await requireAuth(event);
-  const body = await readBody(event);
-  const supabase = useSupabaseAdmin();
+  try {
+    const { id: userId } = await requireAuth(event);
+    const body = await readBody(event);
+    const supabase = useSupabaseAdmin();
 
-  const parsed = UpdateProfileSchema.safeParse(body);
-  if (!parsed.success) {
-    throw createError({ statusCode: 422, statusMessage: "Invalid profile data" });
-  }
-
-  const updates = parsed.data;
-
-  if (updates.vanity_slug && RESERVED_SLUGS.has(updates.vanity_slug)) {
-    throw createError({ statusCode: 422, statusMessage: "That slug is reserved" });
-  }
-
-  const { data: membership } = await supabase
-    .from("family_members")
-    .select("family_unit_id")
-    .eq("user_id", userId)
-    .single();
-
-  if (!membership) {
-    throw createError({ statusCode: 403, statusMessage: "Not a family member" });
-  }
-
-  const { error } = await (supabase as any)
-    .from("player_profiles")
-    .update(updates)
-    .eq("user_id", userId);
-
-  if (error) {
-    if ((error as any).code === "23505") {
-      throw createError({ statusCode: 409, statusMessage: "That slug is already taken" });
+    const parsed = UpdateProfileSchema.safeParse(body);
+    if (!parsed.success) {
+      throw createError({ statusCode: 422, statusMessage: "Invalid profile data" });
     }
-    logger.error("Failed to update player profile", error);
+
+    const updates = parsed.data;
+
+    if (updates.vanity_slug && RESERVED_SLUGS.has(updates.vanity_slug)) {
+      throw createError({ statusCode: 422, statusMessage: "That slug is reserved" });
+    }
+
+    const { data: membership } = await supabase
+      .from("family_members")
+      .select("family_unit_id")
+      .eq("user_id", userId)
+      .single();
+
+    if (!membership) {
+      throw createError({ statusCode: 403, statusMessage: "Not a family member" });
+    }
+
+    const { error } = await (supabase as any)
+      .from("player_profiles")
+      .update(updates)
+      .eq("user_id", userId);
+
+    if (error) {
+      if ((error as any).code === "23505") {
+        throw createError({ statusCode: 409, statusMessage: "That slug is already taken" });
+      }
+      logger.error("Failed to update player profile", error);
+      throw createError({ statusCode: 500, statusMessage: "Failed to update profile" });
+    }
+
+    logger.info("Player profile updated", { userId });
+    return { success: true };
+  } catch (err) {
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Failed to update profile", err);
     throw createError({ statusCode: 500, statusMessage: "Failed to update profile" });
   }
-
-  logger.info("Player profile updated", { userId });
-  return { success: true };
 });

@@ -33,11 +33,11 @@ watch(
 const saveError = ref<string | null>(null);
 const saving = ref(false);
 
-async function save(field: Record<string, unknown>) {
+async function save(field: Parameters<typeof updateProfile>[0]) {
   saving.value = true;
   saveError.value = null;
   try {
-    await updateProfile(field as any);
+    await updateProfile(field);
     Object.assign(draft, field);
   } catch (err) {
     saveError.value = err instanceof Error ? err.message : "Failed to save";
