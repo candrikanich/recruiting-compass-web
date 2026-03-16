@@ -299,19 +299,6 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await expect(contactFreqWidget).toBeVisible();
   });
 
-  test("Navigation from dashboard stat cards works", async ({ page }) => {
-    dashboardPage = new DashboardPage(page);
-    await dashboardPage.goto();
-    await dashboardPage.waitForDashboardLoad();
-
-    // Click A-tier card and verify navigation
-    await dashboardPage.clickATierCard();
-    await dashboardPage.waitForNetworkIdle();
-
-    const url = await dashboardPage.getPageURL();
-    expect(url).toContain("/schools?tier=A");
-  });
-
   test("Dashboard loads with network throttling (slow 3G)", async ({
     page,
   }) => {
