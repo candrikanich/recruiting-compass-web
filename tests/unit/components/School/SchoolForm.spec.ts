@@ -82,6 +82,14 @@ vi.mock("~/components/DesignSystem/FieldError.vue", () => ({
   },
 }));
 
+// Define the autocomplete stub at module level so it can be used as a ref for findComponent()
+const SchoolAutocompleteMock = {
+  name: "SchoolAutocomplete",
+  template: '<div data-testid="school-autocomplete-stub"><input /></div>',
+  props: ["disabled"],
+  emits: ["select"],
+};
+
 describe("SchoolForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -100,12 +108,7 @@ describe("SchoolForm", () => {
       props: { loading: false, ...props },
       global: {
         stubs: {
-          SchoolAutocomplete: {
-            template:
-              '<div data-testid="school-autocomplete-stub"><input /></div>',
-            props: ["disabled"],
-            emits: ["select"],
-          },
+          SchoolAutocomplete: SchoolAutocompleteMock,
           FormErrorSummary: true,
           DesignSystemFieldError: true,
           DesignSystemFormInput: {
@@ -465,6 +468,192 @@ describe("SchoolForm", () => {
         "declined",
         "committed",
       ]);
+    });
+  });
+
+  describe("NCAA division/conference population on college select", () => {
+    const college = {
+      id: "134130",
+      name: "University of Florida",
+      city: "Gainesville",
+      state: "FL",
+      location: "Gainesville, FL",
+      website: "https://ufl.edu",
+    };
+
+    it("calls NCAA lookup when a college is selected from autocomplete", async () => {
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      const autocomplete = wrapper.findComponent({
+        name: "SchoolAutocomplete",
+      });
+      await autocomplete.vm.$emit("select", college);
+      await flushPromises();
+
+      expect(mockLookupSchool).toHaveBeenCalledWith(
+        college.name,
+        college.id,
+      );
+    });
+
+    it("populates division and conference when NCAA lookup returns a result", async () => {
+      mockLookupSchool.mockResolvedValue({
+        division: "D1",
+        conference: "SEC",
+      });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      const autocomplete = wrapper.findComponent({
+        name: "SchoolAutocomplete",
+      });
+      await autocomplete.vm.$emit("select", college);
+      await flushPromises();
+
+      const divisionSelect = wrapper.find(
+        "#division",
+      ) as ReturnType<typeof wrapper.find>;
+      const conferenceInput = wrapper.find(
+        "#conference",
+      ) as ReturnType<typeof wrapper.find>;
+
+      expect(
+        (divisionSelect.element as HTMLSelectElement).value,
+      ).toBe("D1");
+      expect(
+        (conferenceInput.element as HTMLInputElement).value,
+      ).toBe("SEC");
+    });
+
+    it("leaves division and conference empty when NCAA lookup returns null", async () => {
+      mockLookupSchool.mockResolvedValue(null);
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      const autocomplete = wrapper.findComponent({
+        name: "SchoolAutocomplete",
+      });
+      await autocomplete.vm.$emit("select", college);
+      await flushPromises();
+
+      const divisionSelect = wrapper.find("#division");
+      expect(
+        (divisionSelect.element as HTMLSelectElement).value,
+      ).toBe("");
+    });
+
+    it("does not overwrite an already-populated division when parent sends empty initialData", async () => {
+      // SchoolForm's own lookup sets division. Simulate parent sending empty division
+      // (its loading state) — the watch must NOT overwrite the direct lookup result.
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      // Select a college (triggers internal NCAA lookup)
+      const autocomplete = wrapper.findComponent({
+        name: "SchoolAutocomplete",
+      });
+      await autocomplete.vm.$emit("select", college);
+      await flushPromises();
+
+      // Simulate parent update with empty division (loading state)
+      await wrapper.setProps({
+        initialData: {
+          name: college.name,
+          location: college.location,
+          website: college.website,
+          division: "",
+          conference: "",
+        },
+      });
+      await nextTick();
+
+      // Division should NOT have been overwritten with ''
+      const divisionSelect = wrapper.find("#division");
+      expect(
+        (divisionSelect.element as HTMLSelectElement).value,
+      ).toBe("D1");
+    });
+
+    it("clears division and conference when parent clears the selection", async () => {
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      // Select a college
+      const autocomplete = wrapper.findComponent({
+        name: "SchoolAutocomplete",
+      });
+      await autocomplete.vm.$emit("select", college);
+      await flushPromises();
+
+      // Confirm division is set
+      expect(
+        (wrapper.find("#division").element as HTMLSelectElement).value,
+      ).toBe("D1");
+
+      // Simulate parent clearing selection (name goes to '')
+      await wrapper.setProps({
+        initialData: { name: "", location: "", website: "", division: "", conference: "" },
+      });
+      await nextTick();
+
+      // Division and conference should be cleared
+      expect(
+        (wrapper.find("#division").element as HTMLSelectElement).value,
+      ).toBe("");
+    });
+
+    it("emits collegeSelect to parent after the NCAA lookup completes", async () => {
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      const autocomplete = wrapper.findComponent({
+        name: "SchoolAutocomplete",
+      });
+      await autocomplete.vm.$emit("select", college);
+      await flushPromises();
+
+      expect(wrapper.emitted("collegeSelect")).toBeTruthy();
+      expect(wrapper.emitted("collegeSelect")![0][0]).toMatchObject({
+        name: college.name,
+      });
+    });
+
+    it("populates division on second college selection after the first", async () => {
+      // Regression: NCAA lookup must run on every selection, not just the first
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      const autocomplete = wrapper.findComponent({
+        name: "SchoolAutocomplete",
+      });
+
+      // First selection
+      await autocomplete.vm.$emit("select", college);
+      await flushPromises();
+      expect(
+        (wrapper.find("#division").element as HTMLSelectElement).value,
+      ).toBe("D1");
+
+      // Simulate clear (parent resets selection)
+      await wrapper.setProps({
+        initialData: { name: "", location: "", website: "", division: "", conference: "" },
+      });
+      await nextTick();
+
+      // Second selection with different result
+      mockLookupSchool.mockResolvedValue({
+        division: "D2",
+        conference: "New Conference",
+      });
+      await autocomplete.vm.$emit("select", {
+        ...college,
+        name: "Florida Southern College",
+        id: "136516",
+      });
+      await flushPromises();
+
+      expect(
+        (wrapper.find("#division").element as HTMLSelectElement).value,
+      ).toBe("D2");
     });
   });
 });
