@@ -3,6 +3,8 @@ import { mount, flushPromises } from "@vue/test-utils";
 import { nextTick, ref, computed } from "vue";
 import SchoolForm from "~/components/School/SchoolForm.vue";
 
+const mockLookupSchool = vi.fn();
+
 const mockValidate = vi.fn();
 const mockValidateField = vi.fn();
 const mockClearErrors = vi.fn();
@@ -19,6 +21,12 @@ vi.mock("~/composables/useFormValidation", () => ({
     validateField: mockValidateField,
     clearErrors: mockClearErrors,
     hasErrors: mockHasErrors,
+  }),
+}));
+
+vi.mock("~/composables/useNcaaLookup", () => ({
+  useNcaaLookup: () => ({
+    lookupSchool: mockLookupSchool,
   }),
 }));
 
@@ -68,6 +76,7 @@ describe("SchoolForm", () => {
     mockErrors.value = {};
     mockFieldErrors.value = {};
     mockHasErrorsRef.value = false;
+    mockLookupSchool.mockResolvedValue(null);
     mockValidate.mockResolvedValue({
       name: "Test School",
       status: "researching",
@@ -80,6 +89,7 @@ describe("SchoolForm", () => {
       global: {
         stubs: {
           SchoolAutocomplete: {
+            name: "SchoolAutocomplete",
             template:
               '<div data-testid="school-autocomplete-stub"><input /></div>',
             props: ["disabled"],
@@ -444,6 +454,103 @@ describe("SchoolForm", () => {
         "declined",
         "committed",
       ]);
+    });
+  });
+
+  describe("NCAA lookup on college select", () => {
+    const mockCollege = {
+      id: "134130",
+      name: "University of Florida",
+      location: "Gainesville, FL",
+      website: "https://ufl.edu",
+    };
+
+    it("calls lookupSchool with college name and id when college selected", async () => {
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      const autocomplete = wrapper.findComponent({ name: "SchoolAutocomplete" });
+      await autocomplete.vm.$emit("select", mockCollege);
+      await flushPromises();
+
+      expect(mockLookupSchool).toHaveBeenCalledWith("University of Florida", "134130");
+    });
+
+    it("populates division and conference fields after NCAA lookup succeeds", async () => {
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      const autocomplete = wrapper.findComponent({ name: "SchoolAutocomplete" });
+      await autocomplete.vm.$emit("select", mockCollege);
+      await flushPromises();
+
+      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D1");
+      expect((wrapper.find("#conference").element as HTMLInputElement).value).toBe("SEC");
+    });
+
+    it("marks division and conference as auto-filled when NCAA result found", async () => {
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      const autocomplete = wrapper.findComponent({ name: "SchoolAutocomplete" });
+      await autocomplete.vm.$emit("select", mockCollege);
+      await flushPromises();
+
+      // The auto-filled indicator should appear somewhere in the rendered output
+      const divisionLabel = wrapper.find("#division")?.element?.closest("div");
+      expect(divisionLabel?.textContent).toContain("auto-filled");
+    });
+
+    it("leaves division and conference empty when school not in NCAA database", async () => {
+      mockLookupSchool.mockResolvedValue(null);
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      const autocomplete = wrapper.findComponent({ name: "SchoolAutocomplete" });
+      await autocomplete.vm.$emit("select", {
+        id: "999999",
+        name: "Unknown Community College",
+        location: "Nowhere, TX",
+        website: null,
+      });
+      await flushPromises();
+
+      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("");
+      expect((wrapper.find("#conference").element as HTMLInputElement).value).toBe("");
+    });
+
+    it("emits collegeSelect with original college data after NCAA lookup", async () => {
+      mockLookupSchool.mockResolvedValue({ division: "D2", conference: "Mountain West" });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      await wrapper.findComponent({ name: "SchoolAutocomplete" }).vm.$emit("select", mockCollege);
+      await flushPromises();
+
+      const emitted = wrapper.emitted("collegeSelect");
+      expect(emitted).toBeTruthy();
+      expect(emitted![0][0]).toMatchObject(mockCollege);
+    });
+
+    it("populates division and conference on every new selection, not just the first", async () => {
+      const wrapper = mountForm({ useAutocomplete: true });
+      const autocomplete = wrapper.findComponent({ name: "SchoolAutocomplete" });
+
+      // First selection
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
+      await autocomplete.vm.$emit("select", mockCollege);
+      await flushPromises();
+      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D1");
+
+      // Second selection with different result
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "Big Ten" });
+      await autocomplete.vm.$emit("select", {
+        id: "147767",
+        name: "University of Michigan",
+        location: "Ann Arbor, MI",
+        website: "https://umich.edu",
+      });
+      await flushPromises();
+      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D1");
+      expect((wrapper.find("#conference").element as HTMLInputElement).value).toBe("Big Ten");
     });
   });
 });

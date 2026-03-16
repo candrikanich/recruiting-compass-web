@@ -209,6 +209,7 @@
 <script setup lang="ts">
 import { reactive, watch, computed, toRefs } from "vue";
 import { useFormValidation } from "~/composables/useFormValidation";
+import { useNcaaLookup } from "~/composables/useNcaaLookup";
 import { schoolSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
 import type { CollegeDataResult } from "~/composables/useCollegeData";
@@ -264,6 +265,7 @@ const emit = defineEmits<{
 
 const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } =
   useFormValidation();
+const { lookupSchool } = useNcaaLookup();
 
 // Form data - initialize with parent data or defaults
 const formData = reactive({
@@ -407,7 +409,7 @@ const isAutoFilled = (field: string) => {
   return autoFilledFields[field as keyof typeof autoFilledFields];
 };
 
-const handleCollegeSelect = (college: any) => {
+const handleCollegeSelect = async (college: any) => {
   formData.name = college.name;
   formData.location = college.location || "";
   formData.website = college.website || "";
@@ -415,6 +417,14 @@ const handleCollegeSelect = (college: any) => {
   autoFilledFields.name = true;
   autoFilledFields.location = !!college.location;
   autoFilledFields.website = !!college.website;
+
+  const ncaaResult = await lookupSchool(college.name, college.id).catch(() => null);
+  if (ncaaResult) {
+    formData.division = ncaaResult.division;
+    formData.conference = ncaaResult.conference || "";
+    autoFilledFields.division = true;
+    autoFilledFields.conference = !!ncaaResult.conference;
+  }
 
   emit("collegeSelect", college);
 };
