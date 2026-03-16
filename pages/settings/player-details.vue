@@ -371,9 +371,9 @@
                 class="flex items-center gap-3"
               >
                 <select
-                  v-model="link.platform"
+                  :value="(form.video_links ?? [])[idx].platform"
                   :disabled="isParentRole"
-                  @change="triggerSave"
+                  @change="(e) => { form.video_links = (form.video_links ?? []).map((l, i) => i === idx ? { ...l, platform: (e.target as HTMLSelectElement).value as 'hudl' | 'youtube' | 'vimeo' } : l); triggerSave(); }"
                   class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
                 >
                   <option value="hudl">Hudl</option>
@@ -381,19 +381,19 @@
                   <option value="vimeo">Vimeo</option>
                 </select>
                 <input
-                  v-model="link.url"
+                  :value="(form.video_links ?? [])[idx].url"
                   :disabled="isParentRole"
                   type="url"
                   placeholder="https://..."
-                  @blur="triggerSave"
+                  @blur="(e) => { form.video_links = (form.video_links ?? []).map((l, i) => i === idx ? { ...l, url: (e.target as HTMLInputElement).value } : l); triggerSave(); }"
                   class="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
                 />
                 <input
-                  v-model="link.title"
+                  :value="(form.video_links ?? [])[idx].title"
                   :disabled="isParentRole"
                   type="text"
                   placeholder="Title (optional)"
-                  @blur="triggerSave"
+                  @blur="(e) => { form.video_links = (form.video_links ?? []).map((l, i) => i === idx ? { ...l, title: (e.target as HTMLInputElement).value } : l); triggerSave(); }"
                   class="w-32 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
                 />
                 <button

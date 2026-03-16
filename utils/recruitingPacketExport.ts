@@ -42,7 +42,6 @@ export interface SchoolGroupedByPriority {
 }
 
 export interface SchoolPacketData extends Partial<School> {
-  fitScore?: number;
   coachCount?: number;
   interactionCount?: number;
 }
@@ -676,6 +675,7 @@ const getStatusBadge = (status: string): string => {
     offer_received: '<span class="badge badge-green">Offer</span>',
     committed: '<span class="badge badge-green">Committed</span>',
     declined: '<span class="badge badge-red">Declined</span>',
+    not_pursuing: '<span class="badge badge-red">Not Pursuing</span>',
     researching: '<span class="badge badge-gray">Researching</span>',
   };
   return badges[status] || `<span class="badge badge-gray">${status}</span>`;
