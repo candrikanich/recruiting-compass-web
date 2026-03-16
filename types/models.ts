@@ -354,6 +354,12 @@ export interface HomeLocation {
   longitude?: number;
 }
 
+export interface VideoLink {
+  platform: "hudl" | "youtube" | "vimeo";
+  url: string;
+  title?: string;
+}
+
 export interface PlayerDetails {
   graduation_year?: number;
   primary_sport?: string;
@@ -401,6 +407,9 @@ export interface PlayerDetails {
   travel_team_year?: number;
   travel_team_name?: string;
   travel_team_coach?: string;
+  // Video & Course Content
+  video_links?: VideoLink[];
+  core_courses?: string[];
 }
 
 export interface SchoolPreference {

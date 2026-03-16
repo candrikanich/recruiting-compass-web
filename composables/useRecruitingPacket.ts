@@ -17,7 +17,6 @@ import type {
   SchoolGroupedByPriority,
   SchoolPacketData,
   ActivitySummary,
-  VideoLink,
 } from "~/utils/recruitingPacketExport";
 import {
   generateRecruitingPacketHTML,
@@ -103,10 +102,9 @@ export const useRecruitingPacket = () => {
       gpa: details?.gpa,
       sat_score: details?.sat_score,
       act_score: details?.act_score,
-      // video_links and core_courses are added to PlayerDetails in a follow-up task
-      video_links: (details as PlayerDetails & { video_links?: VideoLink[]; core_courses?: string[] })?.video_links ?? [],
+      video_links: details?.video_links ?? [],
       social_media: buildSocialMedia(details),
-      core_courses: (details as PlayerDetails & { video_links?: VideoLink[]; core_courses?: string[] })?.core_courses ?? [],
+      core_courses: details?.core_courses ?? [],
     };
   };
 
