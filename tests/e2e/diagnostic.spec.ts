@@ -33,7 +33,7 @@ test.describe("Diagnostic Tests", () => {
 
     // Step 1: User type selection is shown first
     const playerOption = page.locator('[data-testid="user-type-player"]');
-    await expect(playerOption).toBeAttached();
+    await expect(playerOption).toBeVisible();
 
     // Select player role to proceed to the form
     await page.locator('[data-testid="user-type-player"]').click();
@@ -65,7 +65,6 @@ test.describe("Diagnostic Tests", () => {
     // Fill with invalid email
     await emailInput.fill("not-an-email");
     await emailInput.blur();
-    await page.waitForTimeout(200);
   });
 
   test("should validate password field", async ({ page }) => {
@@ -81,7 +80,6 @@ test.describe("Diagnostic Tests", () => {
     // Fill with weak password
     await passwordInput.fill("weak");
     await passwordInput.blur();
-    await page.waitForTimeout(200);
   });
 
   test("should have Supabase connection", async ({ page }) => {

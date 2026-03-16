@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 import { BasePage } from "./BasePage";
 
 export class SchoolsPage extends BasePage {
@@ -86,7 +86,10 @@ export class SchoolsPage extends BasePage {
       )
       .first();
     await searchInput.fill(query);
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
   }
 
   async filterByDivision(division: string) {
@@ -105,14 +108,12 @@ export class SchoolsPage extends BasePage {
     );
   }
 
-  async filterByState(state: string) {
-    // Simplified implementation
-    console.log(`Filtering by state: ${state}`);
+  async filterByState(_state: string) {
+    // Simplified implementation — filter UI not yet implemented
   }
 
-  async filterByConference(conference: string) {
-    // Simplified implementation
-    console.log(`Filtering by conference: ${conference}`);
+  async filterByConference(_conference: string) {
+    // Simplified implementation — filter UI not yet implemented
   }
 
   async filterByMultipleCriteria(filters: any) {
@@ -135,18 +136,13 @@ export class SchoolsPage extends BasePage {
   }
 
   async expectSearchResults(count: number) {
-    const schoolCount = await this.getSchoolCount();
     if (count === 0) {
       await this.expectVisible(
         "text=No schools found, text=No results, text=Empty",
       );
     } else {
       const actualCount = await this.getSchoolCount();
-      if (actualCount < count) {
-        console.log(
-          `Expected at least ${count} schools, but found ${actualCount}`,
-        );
-      }
+      expect(actualCount).toBeGreaterThanOrEqual(count);
     }
   }
 
@@ -166,7 +162,10 @@ export class SchoolsPage extends BasePage {
         .first();
       await searchInput.fill("");
     }
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
   }
 
   async getActiveFilterCount(): Promise<number> {
@@ -179,6 +178,9 @@ export class SchoolsPage extends BasePage {
 
   async clearAllFilters() {
     await this.click('button:has-text("Clear"), button:has-text("Reset")');
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
   }
 }
