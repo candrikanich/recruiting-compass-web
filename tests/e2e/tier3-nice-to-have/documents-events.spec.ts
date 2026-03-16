@@ -1,26 +1,14 @@
 import { test } from "@playwright/test";
-import { AuthPage } from "../pages/AuthPage";
 import { DocumentsPage } from "../pages/DocumentsPage";
 import { EventsPage } from "../pages/EventsPage";
-import { testUsers } from "../fixtures/testData";
 
 test.describe("Phase 3: Documents and Events Management", () => {
-  let authPage: AuthPage;
   let documentsPage: DocumentsPage;
   let eventsPage: EventsPage;
 
   test.beforeEach(async ({ page }) => {
-    authPage = new AuthPage(page);
     documentsPage = new DocumentsPage(page);
     eventsPage = new EventsPage(page);
-
-    // Login first
-    await authPage.goto();
-    await authPage.signup(
-      testUsers.newUser.email,
-      testUsers.newUser.password,
-      testUsers.newUser.displayName,
-    );
   });
 
   // Documents Tests
