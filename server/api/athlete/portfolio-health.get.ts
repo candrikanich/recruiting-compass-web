@@ -40,10 +40,10 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Get all schools for this user with fit score data
+    // Get all schools for this user
     const { data: schools, error: schoolsError } = await supabase
       .from("schools")
-      .select("id, name, fit_score, fit_score_data")
+      .select("id, name")
       .eq("user_id", athleteId)
       .order("created_at", { ascending: false });
 
@@ -52,10 +52,10 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 500, statusMessage: "Failed to fetch schools" });
     }
 
-    // Calculate portfolio health
+    // Calculate portfolio health — fit scores are no longer stored; pass 0 for all schools
     const portfolioHealth = calculatePortfolioHealth(
-      (schools || []).map((school: { fit_score?: number | null }) => ({
-        fit_score: school.fit_score ?? 0,
+      (schools || []).map(() => ({
+        fit_score: 0,
         fit_tier: undefined,
       })),
     );
@@ -65,19 +65,12 @@ export default defineEventHandler(async (event) => {
       data: {
         portfolio: portfolioHealth,
         schoolCount: schools?.length || 0,
-        schools: (schools || []).map(
-          (school: {
-            id: string;
-            name: string;
-            fit_score?: number | null;
-            fit_score_data?: unknown;
-          }) => ({
-            id: school.id,
-            name: school.name,
-            fitScore: school.fit_score,
-            fitScoreData: school.fit_score_data,
-          }),
-        ),
+        schools: (schools || []).map((school: { id: string; name: string }) => ({
+          id: school.id,
+          name: school.name,
+          fitScore: null,
+          fitScoreData: null,
+        })),
       },
     };
   } catch (err: unknown) {
