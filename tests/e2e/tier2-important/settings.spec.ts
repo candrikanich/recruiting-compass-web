@@ -1,23 +1,11 @@
-import { test } from "@playwright/test";
-import { AuthPage } from "../pages/AuthPage";
+import { test, expect } from "@playwright/test";
 import { SettingsPage } from "../pages/SettingsPage";
-import { testUsers } from "../fixtures/testData";
 
 test.describe("Phase 2: Settings Pages - Comprehensive Coverage", () => {
-  let authPage: AuthPage;
   let settingsPage: SettingsPage;
 
   test.beforeEach(async ({ page }) => {
-    authPage = new AuthPage(page);
     settingsPage = new SettingsPage(page);
-
-    // Login first
-    await authPage.goto();
-    await authPage.signup(
-      testUsers.newUser.email,
-      testUsers.newUser.password,
-      testUsers.newUser.displayName,
-    );
   });
 
   test("should load settings dashboard successfully", async ({ page }) => {

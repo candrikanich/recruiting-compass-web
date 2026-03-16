@@ -1,25 +1,14 @@
 import { test } from "@playwright/test";
-import { AuthPage } from "../pages/AuthPage";
 import { SchoolsPage } from "../pages/SchoolsPage";
-import { testUsers, testSchools } from "../fixtures/testData";
+import { testSchools } from "../fixtures/testData";
 
 test.describe("Tier 2: Search & Filter Functionality", () => {
-  let authPage: AuthPage;
   let schoolsPage: SchoolsPage;
 
   test.beforeEach(async ({ page }) => {
-    authPage = new AuthPage(page);
     schoolsPage = new SchoolsPage(page);
 
-    // Setup: Login and create multiple schools for testing
-    await authPage.goto();
-    await authPage.signup(
-      testUsers.newUser.email,
-      testUsers.newUser.password,
-      testUsers.newUser.displayName,
-    );
-
-    // Add multiple schools with different attributes
+    // Setup: Create multiple schools for testing (auth provided by storageState)
     await schoolsPage.navigateToSchools();
     await schoolsPage.clickAddSchool();
     await schoolsPage.createSchool(testSchools.school1);
