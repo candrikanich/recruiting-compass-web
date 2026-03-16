@@ -96,13 +96,18 @@
       </div>
     </div>
 
-    <!-- Fit Score Card -->
+    <!-- Fit Signals Card -->
     <div
-      v-if="fitScore"
+      v-if="personalFit || academicFit"
       class="bg-white rounded-xl border border-slate-200 shadow-xs p-6"
     >
-      <h3 class="font-semibold text-slate-900 mb-4">School Fit Analysis</h3>
-      <FitScoreDisplay :fit-score="fitScore" :show-breakdown="true" />
+      <h3 class="font-semibold text-slate-900 mb-4">School Fit</h3>
+      <SchoolFitSignals
+        v-if="personalFit && academicFit"
+        :personal-fit="personalFit"
+        :academic-fit="academicFit"
+        @enrich="emit('enrich')"
+      />
     </div>
 
     <!-- Status History -->
@@ -140,7 +145,8 @@
 <script setup lang="ts">
 import { getRoleLabel } from "~/utils/coachLabels";
 import type { School, Coach } from "~/types/models";
-import type { FitScoreResult, DivisionRecommendation } from "~/types/timeline";
+import type { DivisionRecommendation } from "~/types/timeline";
+import type { PersonalFitAnalysis, AcademicFitAnalysis } from "~/types/schoolFit";
 import {
   ChatBubbleLeftRightIcon,
   UsersIcon,
@@ -151,18 +157,20 @@ import {
   TrashIcon,
 } from "@heroicons/vue/24/outline";
 import SchoolStatusHistory from "~/components/School/SchoolStatusHistory.vue";
-import FitScoreDisplay from "~/components/FitScore/FitScoreDisplay.vue";
+import SchoolFitSignals from "~/components/School/SchoolFitSignals.vue";
 
 defineProps<{
   schoolId: string;
   coaches: Coach[];
   school: School;
-  fitScore?: FitScoreResult | null;
+  personalFit?: PersonalFitAnalysis | null;
+  academicFit?: AcademicFitAnalysis | null;
   divisionRecommendation?: DivisionRecommendation | null;
 }>();
 
 const emit = defineEmits<{
   "open-email-modal": [];
   delete: [];
+  enrich: [];
 }>();
 </script>
