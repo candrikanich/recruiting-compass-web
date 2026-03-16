@@ -23,7 +23,7 @@ export class SearchPage extends BasePage {
     type: "all" | "schools" | "coaches" | "interactions" | "metrics",
   ) {
     await this.click(`button:has-text("${this.getTypeLabel(type)}")`);
-    await this.page.waitForTimeout(500);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   }
 
   private getTypeLabel(type: string): string {

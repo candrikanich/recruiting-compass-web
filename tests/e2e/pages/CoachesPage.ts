@@ -81,7 +81,7 @@ export class CoachesPage extends BasePage {
       .first();
     if (await editButton.isVisible()) {
       await editButton.click();
-      await this.page.waitForTimeout(500);
+      await this.page.locator('#firstName, input[placeholder*="first name"]').waitFor({ state: "visible" });
     }
 
     if (updates.firstName) {
@@ -116,12 +116,10 @@ export class CoachesPage extends BasePage {
       .locator(`button:has-text("Delete")`)
       .first();
     await deleteButton.click();
-    await this.page.waitForTimeout(500);
 
-    // Confirm deletion
-    const confirmButton = await this.page
-      .locator('button:has-text("Confirm")')
-      .first();
+    // Confirm deletion — wait for the dialog to be ready
+    const confirmButton = this.page.locator('button:has-text("Confirm")').first();
+    await confirmButton.waitFor({ state: "visible" });
     await confirmButton.click();
     await this.page.waitForLoadState("networkidle");
   }
@@ -132,7 +130,8 @@ export class CoachesPage extends BasePage {
       .locator('input[placeholder*="Search"], input[type="search"]')
       .first();
     await searchInput.fill(searchTerm);
-    await this.page.waitForTimeout(800); // Wait for search to process
+    // Debounced search — wait for loading indicator to disappear
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   }
 
   async filterByRole(role: string) {
@@ -145,7 +144,7 @@ export class CoachesPage extends BasePage {
     } else {
       await this.selectOption('select[name="role"]', role);
     }
-    await this.page.waitForTimeout(500);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   }
 
   async sortBy(sortOption: string) {
@@ -159,7 +158,7 @@ export class CoachesPage extends BasePage {
       } else {
         await this.selectOption('select[name="sort"]', sortOption);
       }
-      await this.page.waitForTimeout(500);
+      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
     }
   }
 
@@ -169,7 +168,7 @@ export class CoachesPage extends BasePage {
       .first();
     if (await clearButton.isVisible()) {
       await clearButton.click();
-      await this.page.waitForTimeout(500);
+      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
     }
   }
 
@@ -237,7 +236,6 @@ export class CoachesPage extends BasePage {
       )
       .first();
     await emailButton.click();
-    await this.page.waitForTimeout(500);
   }
 
   async clickTextAction() {
@@ -247,7 +245,6 @@ export class CoachesPage extends BasePage {
       )
       .first();
     await textButton.click();
-    await this.page.waitForTimeout(500);
   }
 
   async clickTwitterAction() {
@@ -307,6 +304,5 @@ export class CoachesPage extends BasePage {
 
   async waitForCoachsToLoad() {
     await this.page.waitForLoadState("networkidle");
-    await this.page.waitForTimeout(500); // Additional wait for animations
   }
 }

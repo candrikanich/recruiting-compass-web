@@ -34,7 +34,9 @@ export const authFixture = {
 
     // Navigate to login to ensure fresh state
     await page.goto("/login");
-    await page.waitForTimeout(1000); // Wait for any redirects
+    await page.waitForURL("/login", { timeout: 5000 }).catch(() => {
+      // Already on /login or another page — that's fine
+    });
   },
 
   /**
@@ -75,11 +77,8 @@ export const authFixture = {
     await authPage.goto();
     await authPage.signup(email, password, displayName);
 
-    // After signup, the app redirects to verify-email page
-    // We'll bypass this by using Supabase admin API if available,
-    // or navigate directly to dashboard if auth token exists
-    await page.waitForTimeout(500);
-
+    // After signup the app redirects to onboarding/verify-email.
+    // Navigate directly to dashboard — the session is active even before email verification.
     // Try to access dashboard directly - if session is valid, we'll be allowed
     await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
 

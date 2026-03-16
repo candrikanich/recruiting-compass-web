@@ -263,9 +263,7 @@ test.describe("Phase 2: Settings Pages - Comprehensive Coverage", () => {
       .locator('[aria-required="true"]')
       .isVisible();
 
-    // Should have some accessibility attributes
-    if (!hasAriaLabel && !hasAriaRequired) {
-      console.log("Form could improve accessibility - missing ARIA attributes");
-    }
+    // At least one of aria-label on the select or aria-required on the label must be present
+    expect(hasAriaLabel !== null || hasAriaRequired).toBe(true);
   });
 });
