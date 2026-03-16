@@ -176,21 +176,6 @@
                   </div>
                 </div>
               </div>
-              <div class="bg-slate-50 rounded-xl p-4">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center"
-                  >
-                    <ArrowPathIcon class="w-5 h-5 text-indigo-600" />
-                  </div>
-                  <div>
-                    <p class="text-2xl font-bold text-slate-900">
-                      {{ currentReport.coaches?.avgResponseRate || 0 }}%
-                    </p>
-                    <p class="text-sm text-slate-500">Response Rate</p>
-                  </div>
-                </div>
-              </div>
             </div>
 
             <!-- Schools by Status -->
@@ -280,7 +265,6 @@ import {
   BuildingLibraryIcon,
   UserGroupIcon,
   ChatBubbleLeftRightIcon,
-  ArrowPathIcon,
   DocumentTextIcon,
   CheckIcon,
 } from "@heroicons/vue/24/outline";

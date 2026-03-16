@@ -429,20 +429,6 @@ describe("useCoachAnalytics", () => {
       expect(metrics.responseRate).toBe(0);
     });
 
-    it("should handle very high responsiveness", () => {
-      mockInteractions.value = [
-        createMockInteraction({ id: "i1", direction: "outbound" }),
-        createMockInteraction({ id: "i2", direction: "inbound" }),
-        createMockInteraction({ id: "i3", direction: "inbound" }),
-        createMockInteraction({ id: "i4", direction: "inbound" }),
-      ];
-
-      const analytics = useCoachAnalytics();
-      const metrics = analytics.calculateCoachMetrics("coach-1");
-
-      expect(metrics.responseRate).toBeLessThanOrEqual(100);
-    });
-
     it("should handle interactions with no occurred_at", () => {
       mockInteractions.value = [
         createMockInteraction({

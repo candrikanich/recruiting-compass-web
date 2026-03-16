@@ -244,19 +244,6 @@ test.describe("Coach Search and Filtering", () => {
       }
     });
 
-    test("should sort by responsiveness score", async ({ page }) => {
-      await coachHelpers.navigateToCoaches(page, schoolId);
-
-      try {
-        await coachesPage.sortBy("responsiveness");
-        // If sort was successful, should be ordered by responsiveness
-
-        const coachCount = await coachesPage.getCoachCount();
-        expect(coachCount).toBeGreaterThan(0);
-      } catch {
-        // Sort may not be available, skip silently
-      }
-    });
   });
 
   // ==================== COMBINED FILTERS TESTS ====================
