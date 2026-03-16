@@ -3,6 +3,9 @@ import { AuthPage } from "../pages/AuthPage";
 import { authFixture } from "../fixtures/auth.fixture";
 
 test.describe("Tier 1: Session Timeout - Warning and Logout", () => {
+  // This spec tests login/signup and session behavior — must start unauthenticated
+  test.use({ storageState: undefined });
+
   let authPage: AuthPage;
 
   test.beforeEach(async ({ page }) => {

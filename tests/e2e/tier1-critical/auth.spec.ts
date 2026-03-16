@@ -4,6 +4,9 @@ import { authFixture } from "../fixtures/auth.fixture";
 import { testUsers } from "../fixtures/testData";
 
 test.describe("Tier 1: Authentication - Critical User Flows", () => {
+  // This spec tests login/signup — must start unauthenticated
+  test.use({ storageState: undefined });
+
   let authPage: AuthPage;
 
   test.beforeEach(async ({ page }) => {

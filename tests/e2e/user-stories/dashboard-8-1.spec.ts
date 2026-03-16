@@ -231,7 +231,23 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     expect(largeClasses).toContain("xl:grid-cols-6");
   });
 
-  test("All stat cards have proper links", async ({ page }) => {
+  test("Navigation from dashboard stat cards works", async ({ page }) => {
+    dashboardPage = new DashboardPage(page);
+    await dashboardPage.goto();
+    await dashboardPage.waitForDashboardLoad();
+
+    // Click A-tier card and verify navigation
+    await dashboardPage.clickATierCard();
+    await dashboardPage.waitForNetworkIdle();
+
+    const url = await dashboardPage.getPageURL();
+    expect(url).toContain("/schools?tier=A");
+  });
+
+  test.skip("All stat cards have proper links", async ({ page }) => {
+    // TODO: test account has 0 schools; clicking cards navigates to empty pages.
+    // This test would pass regardless of correctness. Skipped until we seed
+    // test account with schools data.
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
@@ -351,7 +367,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await page.waitForTimeout(200);
   });
 
-  test("Dashboard displays correct stat counts", async ({ page }) => {
+  test.skip("Dashboard displays correct stat counts", async ({ page }) => {
+    // TODO: test account has 0 coaches, 0 schools, 0 interactions. This assertion
+    // is vacuous (always passes for >= 0). Skipped until we add seed data to test account.
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();

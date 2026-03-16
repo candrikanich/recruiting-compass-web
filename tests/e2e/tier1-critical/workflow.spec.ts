@@ -1,34 +1,22 @@
 import { test } from "@playwright/test";
-import { AuthPage } from "../pages/AuthPage";
 import { SchoolsPage } from "../pages/SchoolsPage";
 import { CoachesPage } from "../pages/CoachesPage";
 import { InteractionsPage } from "../pages/InteractionsPage";
 import {
-  testUsers,
   testSchools,
   testCoaches,
   testInteractions,
 } from "../fixtures/testData";
 
 test.describe("Tier 1: Complete Recruiting Workflow", () => {
-  let authPage: AuthPage;
   let schoolsPage: SchoolsPage;
   let coachesPage: CoachesPage;
   let interactionsPage: InteractionsPage;
 
   test.beforeEach(async ({ page }) => {
-    authPage = new AuthPage(page);
     schoolsPage = new SchoolsPage(page);
     coachesPage = new CoachesPage(page);
     interactionsPage = new InteractionsPage(page);
-
-    // Login
-    await authPage.goto();
-    await authPage.signup(
-      testUsers.newUser.email,
-      testUsers.newUser.password,
-      testUsers.newUser.displayName,
-    );
   });
 
   test("should complete full workflow: school -> coach -> interaction", async ({

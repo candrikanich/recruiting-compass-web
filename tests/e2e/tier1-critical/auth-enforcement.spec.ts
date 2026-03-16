@@ -6,6 +6,9 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("Auth Enforcement - Protected Routes", () => {
+  // Tests that protected routes redirect unauthenticated users — must start logged out
+  test.use({ storageState: undefined });
+
   test("should redirect unauthenticated user from dashboard to login", async ({
     page,
   }) => {
