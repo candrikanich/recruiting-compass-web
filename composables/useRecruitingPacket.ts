@@ -6,23 +6,24 @@
 
 import { ref, computed } from "vue";
 import { useAuthFetch } from "./useAuthFetch";
-import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useSchools } from "./useSchools";
 import { useCoaches } from "./useCoaches";
 import { useInteractions } from "./useInteractions";
+import { usePreferenceManager } from "./usePreferenceManager";
 import type {
   RecruitingPacketData,
   AthletePacketData,
   SchoolGroupedByPriority,
   SchoolPacketData,
   ActivitySummary,
+  VideoLink,
 } from "~/utils/recruitingPacketExport";
 import {
   generateRecruitingPacketHTML,
   generatePacketFilename,
 } from "~/utils/recruitingPacketExport";
-import type { School } from "~/types/models";
+import type { School, PlayerDetails } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
 
 interface PacketGenerationResult {
@@ -35,11 +36,11 @@ const logger = createClientLogger("useRecruitingPacket");
 
 export const useRecruitingPacket = () => {
   const { $fetchAuth } = useAuthFetch();
-  const supabase = useSupabase();
   const userStore = useUserStore();
   const { schools } = useSchools();
   const { coaches } = useCoaches();
   const { interactions } = useInteractions();
+  const { playerPrefs, getPlayerDetails } = usePreferenceManager();
 
   // State
   const loading = ref(false);
@@ -51,75 +52,62 @@ export const useRecruitingPacket = () => {
   // Derived state
   const hasGeneratedPacket = computed(() => !!generatedHtml.value);
 
+  const formatHeight = (inches: number | undefined): string | undefined => {
+    if (!inches) return undefined;
+    const feet = Math.floor(inches / 12);
+    const remainingInches = inches % 12;
+    return `${feet}'${remainingInches}"`;
+  };
+
+  const buildSocialMedia = (
+    details: PlayerDetails | null,
+  ): Array<{ platform: "instagram" | "twitter" | "tiktok"; handle: string }> => {
+    const links: Array<{
+      platform: "instagram" | "twitter" | "tiktok";
+      handle: string;
+    }> = [];
+    if (details?.instagram_handle)
+      links.push({ platform: "instagram", handle: details.instagram_handle });
+    if (details?.twitter_handle)
+      links.push({ platform: "twitter", handle: details.twitter_handle });
+    if (details?.tiktok_handle)
+      links.push({ platform: "tiktok", handle: details.tiktok_handle });
+    return links;
+  };
+
   /**
-   * Fetch athlete profile data from Supabase
+   * Fetch athlete profile data from usePreferenceManager
    */
   const fetchAthleteData = async (): Promise<AthletePacketData> => {
     if (!userStore.user) {
       throw new Error("No user logged in");
     }
 
-    // Fetch extended athlete profile
-    const profileResponse = await supabase
-      .from("user_profiles")
-      .select(
-        `
-        *,
-        athletes:athlete_profiles(*)
-      `,
-      )
-      .eq("user_id", userStore.user.id)
-      .single();
-    const { data: profile, error: profileError } = profileResponse as {
-      data: Record<string, unknown> | null;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any;
-    };
+    // Load preferences explicitly — composable may be used before player-details page is visited
+    await playerPrefs.loadPreferences();
+    const details = getPlayerDetails();
 
-    if (profileError) {
-      logger.warn("Profile not found, using basic user data");
-    }
+    const position = details?.positions?.[0] ?? details?.primary_position;
 
-    const athleteData: AthletePacketData = {
+    return {
       id: userStore.user.id,
       email: userStore.user.email,
       full_name: userStore.user.full_name || "Athlete",
       profile_photo_url: userStore.user.profile_photo_url,
-      height: profile ? (profile.height as string | undefined) : undefined,
-      weight: profile ? (profile.weight as string | undefined) : undefined,
-      position: profile ? (profile.position as string) : undefined,
-      high_school: profile ? (profile.high_school as string) : undefined,
-      graduation_year: profile
-        ? (profile.graduation_year as number)
-        : undefined,
-      gpa: profile ? (profile.gpa as number) : undefined,
-      sat_score: profile ? (profile.sat_score as number) : undefined,
-      act_score: profile ? (profile.act_score as number) : undefined,
-      video_links: (
-        (profile?.video_links as Array<{
-          platform?: string;
-          url?: string;
-          title?: string;
-        }>) || []
-      ).map((v: { platform?: string; url?: string; title?: string }) => ({
-        platform: (v.platform as "hudl" | "youtube" | "vimeo") || "youtube",
-        url: String(v.url || ""),
-        title: v.title as string | undefined,
-      })),
-      social_media: (
-        (profile?.social_media as Array<{
-          platform?: string;
-          handle?: string;
-        }>) || []
-      ).map((m) => ({
-        platform:
-          (m.platform as "instagram" | "twitter" | "tiktok") || "instagram",
-        handle: String(m.handle || ""),
-      })),
-      core_courses: (profile?.core_courses as string[]) || [],
+      height: formatHeight(details?.height_inches),
+      weight: details?.weight_lbs ? `${details.weight_lbs} lbs` : undefined,
+      position,
+      high_school: details?.school_name ?? details?.high_school,
+      school_name: details?.school_name,
+      graduation_year: details?.graduation_year,
+      gpa: details?.gpa,
+      sat_score: details?.sat_score,
+      act_score: details?.act_score,
+      // video_links and core_courses are added to PlayerDetails in a follow-up task
+      video_links: (details as PlayerDetails & { video_links?: VideoLink[]; core_courses?: string[] })?.video_links ?? [],
+      social_media: buildSocialMedia(details),
+      core_courses: (details as PlayerDetails & { video_links?: VideoLink[]; core_courses?: string[] })?.core_courses ?? [],
     };
-
-    return athleteData;
   };
 
   /**
@@ -406,11 +394,11 @@ export const useRecruitingPacket = () => {
     const athleteName = generatedData.value?.athlete.full_name || "Athlete";
     const graduationYear =
       generatedData.value?.athlete.graduation_year || "N/A";
-    const position = generatedData.value?.athlete.position || "Baseball Player";
+    const position = generatedData.value?.athlete.position || "Athlete";
 
     return `Dear Coach,
 
-I hope this email finds you well. I am excited to share my recruiting profile with you as I explore collegiate baseball opportunities.
+I hope this email finds you well. I am excited to share my recruiting profile with you as I explore collegiate opportunities.
 
 ${athleteName} is a ${position} graduating in ${graduationYear}. The attached recruiting packet includes my athletic profile, academic information, schools of interest, and recent recruiting activity.
 
