@@ -400,7 +400,6 @@ const handleAddCoach = async () => {
       twitter_handle: newCoach.twitter_handle || null,
       instagram_handle: newCoach.instagram_handle || null,
       notes: newCoach.notes || null,
-      responsiveness_score: 0,
       last_contact_date: null,
     });
 

@@ -88,7 +88,6 @@
             >
               <option value="name">Name (A-Z)</option>
               <option value="lastContact">Last Contact (Recent)</option>
-              <option value="responsiveness">Responsiveness</option>
             </select>
           </div>
         </div>
@@ -323,7 +322,6 @@ const handleCoachFormSubmit = async (formData: any) => {
       twitter_handle: formData.twitter_handle || null,
       instagram_handle: formData.instagram_handle || null,
       notes: formData.notes || null,
-      responsiveness_score: 0,
       last_contact_date: null,
     });
 
