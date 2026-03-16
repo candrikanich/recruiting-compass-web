@@ -362,46 +362,6 @@ describe("useSchools - Extended Coverage", () => {
     });
   });
 
-  describe("updateRanking", () => {
-    it("should batch update rankings", async () => {
-      mockQuery.upsert = vi.fn().mockResolvedValueOnce({
-        error: null,
-      });
-
-      const schools = useSchools();
-      const schoolsToRank = [
-        createMockSchool({ id: "school-1", ranking: 1 }),
-        createMockSchool({ id: "school-2", ranking: 2 }),
-      ];
-
-      await expect(
-        schools.updateRanking(schoolsToRank),
-      ).resolves.toBeUndefined();
-      expect(mockQuery.upsert).toHaveBeenCalled();
-    });
-
-    it("should handle ranking update error", async () => {
-      mockQuery.upsert = vi.fn().mockResolvedValueOnce({
-        error: { message: "Database error" },
-      });
-
-      const schools = useSchools();
-      const schoolsToRank = [createMockSchool()];
-
-      await schools.updateRanking(schoolsToRank);
-
-      expect(schools.error.value).toBeTruthy();
-    });
-
-    it("should throw when user not authenticated", async () => {
-      userStore.user = null;
-
-      const schools = useSchools();
-      await expect(() =>
-        schools.updateRanking([createMockSchool()]),
-      ).rejects.toThrow("User not authenticated");
-    });
-  });
 
   describe("updateStatus", () => {
     it("should handle status update error", async () => {

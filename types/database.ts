@@ -1939,7 +1939,6 @@ export type Database = {
           notes: string | null
           offer_details: Json | null
           pros: string[] | null
-          ranking: number | null
           recruiting_approach: string | null
           status: Database["public"]["Enums"]["school_status"] | null
           status_changed_at: string | null
@@ -1972,7 +1971,6 @@ export type Database = {
           notes?: string | null
           offer_details?: Json | null
           pros?: string[] | null
-          ranking?: number | null
           recruiting_approach?: string | null
           status?: Database["public"]["Enums"]["school_status"] | null
           status_changed_at?: string | null
@@ -2005,7 +2003,6 @@ export type Database = {
           notes?: string | null
           offer_details?: Json | null
           pros?: string[] | null
-          ranking?: number | null
           recruiting_approach?: string | null
           status?: Database["public"]["Enums"]["school_status"] | null
           status_changed_at?: string | null

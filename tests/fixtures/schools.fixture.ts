@@ -196,7 +196,6 @@ export const createCommittedSchool = (overrides?: Partial<School>): School =>
   createMockSchool({
     status: "committed",
     is_favorite: true,
-    ranking: 1,
     ...overrides,
   });
 
@@ -230,7 +229,6 @@ export function createBatchSchools(count: number = 5): School[] {
     createMockSchool({
       id: `school-${i + 1}`,
       name: `University ${String.fromCharCode(65 + i)}`,
-      ranking: null,
       division: ["D1", "D2", "D3"][i % 3] as any,
     }),
   );

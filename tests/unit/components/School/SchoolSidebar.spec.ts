@@ -220,17 +220,6 @@ describe("SchoolSidebar", () => {
     });
   });
 
-  describe("Ranking section", () => {
-    it("renders Ranking section", () => {
-      const wrapper = mount(SchoolSidebar, {
-        props: defaultProps,
-        global: { stubs },
-      });
-      expect(wrapper.text()).toContain("Ranking");
-      expect(wrapper.text()).toContain("Current ranking");
-    });
-  });
-
   describe("Fit Signals section", () => {
     const mockPersonalFit = {
       signals: {

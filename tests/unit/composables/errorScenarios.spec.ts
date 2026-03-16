@@ -465,24 +465,6 @@ describe("Error Handling - Critical Scenarios", () => {
       expect(() => canDelete("pending")).not.toThrow();
     });
 
-    it("should validate school ranking uniqueness", async () => {
-      const schools = [
-        { id: "s1", ranking: 1 },
-        { id: "s2", ranking: 2 },
-        { id: "s3", ranking: 2 }, // Duplicate
-      ];
-
-      const validateRankings = (schools: any[]) => {
-        const rankings = schools.map((s) => s.ranking);
-        const hasDuplicate = rankings.length !== new Set(rankings).size;
-
-        if (hasDuplicate) {
-          throw new Error("School rankings must be unique");
-        }
-      };
-
-      expect(() => validateRankings(schools)).toThrow("must be unique");
-    });
   });
 
   describe("Error Recovery", () => {
