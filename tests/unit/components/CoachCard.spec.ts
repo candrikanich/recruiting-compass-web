@@ -3,28 +3,6 @@ import { mount } from "@vue/test-utils";
 import CoachCard from "~/components/CoachCard.vue";
 import type { Coach } from "~/types/models";
 
-// Mock the coachResponsiveness utility
-vi.mock("~/utils/coachResponsiveness", () => ({
-  getResponsivenessLabel: vi.fn((score: number) => {
-    if (score >= 75) {
-      return {
-        label: "Highly Responsive",
-        color: "bg-green-100 text-green-700",
-      };
-    }
-    if (score >= 50) {
-      return { label: "Responsive", color: "bg-blue-100 text-blue-700" };
-    }
-    if (score >= 25) {
-      return {
-        label: "Moderately Responsive",
-        color: "bg-yellow-100 text-yellow-700",
-      };
-    }
-    return { label: "Low Responsiveness", color: "bg-red-100 text-red-700" };
-  }),
-}));
-
 describe("CoachCard.vue", () => {
   const createMockCoach = (overrides = {}): Coach => ({
     id: "coach-1",

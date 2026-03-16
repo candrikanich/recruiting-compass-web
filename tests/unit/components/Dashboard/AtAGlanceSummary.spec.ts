@@ -212,13 +212,12 @@ describe("AtAGlanceSummary", () => {
       expect(wrapper.text()).toContain("At a Glance");
     });
 
-    it("renders all four metric cards", () => {
+    it("renders all three metric cards", () => {
       const wrapper = mount(AtAGlanceSummary, {
         props: buildDefaultProps(),
       });
 
       expect(wrapper.text()).toContain("Schools with Offers");
-      expect(wrapper.text()).toContain("Avg Coach Responsiveness");
       expect(wrapper.text()).toContain("Interactions This Month");
       expect(wrapper.text()).toContain("Days Until Graduation");
     });
