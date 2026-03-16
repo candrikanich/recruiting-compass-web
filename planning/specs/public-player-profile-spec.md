@@ -192,9 +192,9 @@ The `[slug]` on the public route resolves as follows:
 
 ---
 
-## Open Questions
+## Resolved Decisions
 
-- [ ] What's the hash generation strategy? (nanoid 6-char alphanumeric is a good default — low collision risk at this scale)
-- [ ] Should vanity slug have character restrictions? (lowercase alphanumeric + hyphens, max 30 chars, no TRC-reserved paths like `p`, `api`, `auth`)
-- [ ] Does the "Send Profile" button on the coach detail page always generate the same link, or a new one each send? (Recommend: idempotent — one link per coach, generated once, reused)
+- **Hash generation**: `nanoid` 6-char alphanumeric (e.g. `k7x9m2`). Low collision risk at this scale.
+- **Vanity slug format**: Lowercase alphanumeric + hyphens only, max 30 chars. Reserved paths (`p`, `api`, `auth`, etc.) blocked at validation.
+- **Tracking link per coach**: Idempotent — one link per coach, generated once, reused on subsequent sends. Keeps analytics clean and prevents duplicate link clutter on the coach detail page.
 - [ ] Should `profile_views` rows be written async (fire-and-forget) or inline with the page load?
