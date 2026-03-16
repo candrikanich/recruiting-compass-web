@@ -25,7 +25,7 @@ export interface CoachState {
 /**
  * Coaches store — manages coach data and communication tracking.
  *
- * Provides canonical state for coach CRUD, filtering, and responsiveness scoring.
+ * Provides canonical state for coach CRUD and filtering.
  * Use via `useCoaches()` composable for full family-context orchestration.
  */
 const logger = createClientLogger("stores/coaches");
@@ -66,17 +66,6 @@ export const useCoachStore = defineStore("coaches", () => {
         );
       }
       return true;
-    }),
-  );
-
-  /**
-   * Get coaches sorted by responsiveness score (highest first)
-   */
-  const coachesByResponsiveness = computed(() =>
-    [...coaches.value].sort((a, b) => {
-      const scoreA = a.responsiveness_score || 0;
-      const scoreB = b.responsiveness_score || 0;
-      return scoreB - scoreA;
     }),
   );
 
@@ -225,7 +214,7 @@ export const useCoachStore = defineStore("coaches", () => {
       const { data, error: fetchError } = await supabase
         .from("coaches")
         .select(
-          "id, school_id, first_name, last_name, email, responsiveness_score, last_contact_date, role",
+          "id, school_id, first_name, last_name, email, last_contact_date, role",
         )
         .in("school_id", schoolIds)
         .order("school_id", { ascending: true })
@@ -453,7 +442,6 @@ export const useCoachStore = defineStore("coaches", () => {
     isFetchedBySchools,
     filters,
     filteredCoaches,
-    coachesByResponsiveness,
     coachesByLastContact,
     coachesBySchool,
     coachesByRole,

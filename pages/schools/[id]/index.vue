@@ -449,6 +449,8 @@ const lookupCollegeData = async () => {
         admission_rate: result.admissionRate,
         tuition_in_state: result.tuitionInState,
         tuition_out_of_state: result.tuitionOutOfState,
+        avg_net_price: result.avgNetPrice,
+        graduation_rate: result.graduationRate,
         latitude: result.latitude,
         longitude: result.longitude,
       } as unknown as AcademicInfo,

@@ -263,6 +263,32 @@
               }}%</span
             >
           </div>
+          <div
+            v-if="getAcademicInfo(school, 'avg_net_price')"
+            class="flex justify-between p-2 bg-slate-50 rounded-sm"
+          >
+            <span class="text-slate-600">Avg Net Price</span>
+            <span class="font-medium text-slate-900"
+              >${{
+                (
+                  getAcademicInfo(school, "avg_net_price") as number
+                ).toLocaleString()
+              }}/yr</span
+            >
+          </div>
+          <div
+            v-if="getAcademicInfo(school, 'graduation_rate')"
+            class="flex justify-between p-2 bg-slate-50 rounded-sm"
+          >
+            <span class="text-slate-600">Graduation Rate</span>
+            <span class="font-medium text-slate-900"
+              >{{
+                (
+                  (getAcademicInfo(school, "graduation_rate") as number) * 100
+                ).toFixed(0)
+              }}%</span
+            >
+          </div>
         </div>
       </div>
     </div>

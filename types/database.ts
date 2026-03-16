@@ -234,7 +234,6 @@ export type Database = {
           last_name: string
           notes: string | null
           phone: string | null
-          responsiveness_score: number | null
           role: Database["public"]["Enums"]["coach_role"]
           school_id: string
           twitter_handle: string | null
@@ -255,7 +254,6 @@ export type Database = {
           last_name: string
           notes?: string | null
           phone?: string | null
-          responsiveness_score?: number | null
           role: Database["public"]["Enums"]["coach_role"]
           school_id: string
           twitter_handle?: string | null
@@ -276,7 +274,6 @@ export type Database = {
           last_name?: string
           notes?: string | null
           phone?: string | null
-          responsiveness_score?: number | null
           role?: Database["public"]["Enums"]["coach_role"]
           school_id?: string
           twitter_handle?: string | null

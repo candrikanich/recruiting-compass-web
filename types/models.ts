@@ -20,6 +20,12 @@ export interface AcademicInfo {
   state?: string;
   latitude?: number;
   longitude?: number;
+  student_size?: number | null;
+  admission_rate?: number | null;
+  tuition_in_state?: number | null;
+  tuition_out_of_state?: number | null;
+  avg_net_price?: number | null;
+  graduation_rate?: number | null;
   [key: string]: number | string | string[] | null | undefined;
 }
 
@@ -124,7 +130,6 @@ export interface Coach {
   twitter_handle: string | null;
   instagram_handle: string | null;
   notes: string | null;
-  responsiveness_score: number;
   last_contact_date: string | null;
   availability?: CoachAvailability | null;
   created_by?: string;
