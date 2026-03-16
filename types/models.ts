@@ -412,6 +412,58 @@ export interface PlayerDetails {
   core_courses?: string[];
 }
 
+export interface PlayerProfile {
+  id: string;
+  user_id: string;
+  family_unit_id: string;
+  hash_slug: string;
+  vanity_slug: string | null;
+  is_published: boolean;
+  bio: string | null;
+  show_academics: boolean;
+  show_athletic: boolean;
+  show_film: boolean;
+  show_schools: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProfileTrackingLink {
+  id: string;
+  profile_id: string;
+  coach_id: string;
+  ref_token: string;
+  view_count: number;
+  last_viewed_at: string | null;
+  created_at: string;
+}
+
+/** Shape returned by GET /api/public/profile/[slug] */
+export interface PublicProfileData {
+  playerName: string;
+  bio: string | null;
+  /** null when show_academics is false */
+  academics: {
+    gpa?: number;
+    sat_score?: number;
+    act_score?: number;
+    graduation_year?: number;
+    high_school?: string;
+    core_courses?: string[];
+  } | null;
+  /** null when show_athletic is false */
+  athletic: {
+    primary_sport?: string;
+    primary_position?: string;
+    height_inches?: number;
+    weight_lbs?: number;
+  } | null;
+  /** null when show_film is false */
+  film: VideoLink[] | null;
+  /** null when show_schools is false */
+  schools: Array<{ id: string; name: string }> | null;
+}
+
 export interface SchoolPreference {
   id: string;
   category: "location" | "academic" | "program" | "custom";
