@@ -31,6 +31,27 @@ vi.mock("~/composables/useCollegeAutocomplete", () => ({
   }),
 }));
 
+// vi.mock factories are hoisted before module-level code runs, so mockLookupSchool must be
+// created with vi.hoisted() to be available inside the factory.
+const mockLookupSchool = vi.hoisted(() => vi.fn());
+vi.mock("~/composables/useNcaaLookup", () => ({
+  useNcaaLookup: () => ({
+    lookupSchool: mockLookupSchool,
+    lookupDivision: mockLookupSchool,
+    loading: { value: false },
+    cacheSize: { value: 0 },
+    getSchools: vi.fn().mockReturnValue([]),
+    getNcaaDatabase: vi.fn().mockReturnValue({}),
+    getCached: vi.fn().mockReturnValue(null),
+    setCached: vi.fn(),
+    isCached: vi.fn().mockReturnValue(false),
+    clearCache: vi.fn(),
+    invalidateEntry: vi.fn(),
+    getCacheStats: vi.fn().mockReturnValue({ size: 0, entries: [] }),
+    preloadCache: vi.fn(),
+  }),
+}));
+
 vi.mock("~/utils/validation/schemas", () => ({
   schoolSchema: {
     shape: {
@@ -62,12 +83,21 @@ vi.mock("~/components/DesignSystem/FieldError.vue", () => ({
   },
 }));
 
+// Stub defined at module level so findComponent(SchoolAutocompleteMock) can locate it
+const SchoolAutocompleteMock = {
+  name: "SchoolAutocomplete",
+  template: '<div data-testid="school-autocomplete-stub"><input /></div>',
+  props: ["disabled"],
+  emits: ["select"],
+};
+
 describe("SchoolForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockErrors.value = {};
     mockFieldErrors.value = {};
     mockHasErrorsRef.value = false;
+    mockLookupSchool.mockResolvedValue(null); // default: no NCAA match
     mockValidate.mockResolvedValue({
       name: "Test School",
       status: "researching",
@@ -79,12 +109,7 @@ describe("SchoolForm", () => {
       props: { loading: false, ...props },
       global: {
         stubs: {
-          SchoolAutocomplete: {
-            template:
-              '<div data-testid="school-autocomplete-stub"><input /></div>',
-            props: ["disabled"],
-            emits: ["select"],
-          },
+          SchoolAutocomplete: SchoolAutocompleteMock,
           FormErrorSummary: true,
           DesignSystemFieldError: true,
           DesignSystemFormInput: {
@@ -444,6 +469,127 @@ describe("SchoolForm", () => {
         "declined",
         "committed",
       ]);
+    });
+  });
+
+  // ─── NCAA Division/Conference Population ────────────────────────────────────
+  // These tests verify that selecting a college from the autocomplete triggers
+  // an NCAA lookup and populates division/conference in the form. They also
+  // guard against the watch accidentally overwriting already-populated values
+  // with an empty string while the parent's async lookup is still in flight.
+
+  describe("NCAA division/conference population on college select", () => {
+    const college = {
+      id: "134130",
+      name: "University of Florida",
+      city: "Gainesville",
+      state: "FL",
+      location: "Gainesville, FL",
+      website: "https://ufl.edu",
+    };
+
+    it("calls NCAA lookup with college name and ID when selected", async () => {
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      await wrapper.findComponent(SchoolAutocompleteMock).vm.$emit("select", college);
+      await flushPromises();
+
+      expect(mockLookupSchool).toHaveBeenCalledWith(college.name, college.id);
+    });
+
+    it("populates division and conference from NCAA lookup result", async () => {
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      await wrapper.findComponent(SchoolAutocompleteMock).vm.$emit("select", college);
+      await flushPromises();
+
+      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D1");
+      expect((wrapper.find("#conference").element as HTMLInputElement).value).toBe("SEC");
+    });
+
+    it("leaves division and conference empty when NCAA lookup returns null", async () => {
+      mockLookupSchool.mockResolvedValue(null);
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      await wrapper.findComponent(SchoolAutocompleteMock).vm.$emit("select", college);
+      await flushPromises();
+
+      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("");
+    });
+
+    it("emits collegeSelect to parent after the NCAA lookup completes", async () => {
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      await wrapper.findComponent(SchoolAutocompleteMock).vm.$emit("select", college);
+      await flushPromises();
+
+      expect(wrapper.emitted("collegeSelect")).toBeTruthy();
+      expect(wrapper.emitted("collegeSelect")![0][0]).toMatchObject({ name: college.name });
+    });
+
+    it("watch: does not overwrite populated division when parent sends empty division (loading state)", async () => {
+      // The parent fires two prop updates: (1) college selected without NCAA data,
+      // (2) NCAA data arrives. Between these, initialData.division = ''.
+      // The watch must NOT clear the division SchoolForm already set via its own lookup.
+      const wrapper = mountForm({
+        useAutocomplete: true,
+        initialData: { name: college.name, location: college.location, website: college.website ?? "", division: "D1", conference: "SEC" },
+      });
+      await nextTick();
+      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D1");
+
+      // Simulate parent's intermediate state: college name set but division still loading
+      await wrapper.setProps({
+        initialData: { name: college.name, location: college.location, website: college.website ?? "", division: "", conference: "" },
+      });
+      await nextTick();
+
+      // Division must survive the transient empty-division update from the parent
+      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D1");
+    });
+
+    it("watch: clears division when parent clears the selection entirely", async () => {
+      const wrapper = mountForm({
+        useAutocomplete: true,
+        initialData: { name: college.name, location: college.location, website: college.website ?? "", division: "D1", conference: "SEC" },
+      });
+      await nextTick();
+      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D1");
+
+      // Parent clears selection: name goes to '' as well as division
+      await wrapper.setProps({
+        initialData: { name: "", location: "", website: "", division: "", conference: "" },
+      });
+      await nextTick();
+
+      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("");
+    });
+
+    it("NCAA lookup runs on second selection after clearing", async () => {
+      // Regression: NCAA lookup must be called for every college selection.
+      mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
+      const wrapper = mountForm({ useAutocomplete: true });
+
+      await wrapper.findComponent(SchoolAutocompleteMock).vm.$emit("select", college);
+      await flushPromises();
+      const firstCallCount = mockLookupSchool.mock.calls.length;
+      expect(firstCallCount).toBeGreaterThan(0);
+      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D1");
+
+      // Second selection with a different school
+      mockLookupSchool.mockResolvedValue({ division: "D2", conference: "SSC" });
+      await wrapper.findComponent(SchoolAutocompleteMock).vm.$emit("select", {
+        ...college,
+        name: "Florida Southern College",
+        id: "136516",
+      });
+      await flushPromises();
+
+      expect(mockLookupSchool.mock.calls.length).toBeGreaterThan(firstCallCount);
+      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D2");
     });
   });
 });
