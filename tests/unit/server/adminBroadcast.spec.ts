@@ -11,12 +11,14 @@ vi.mock("~/server/utils/auth", () => ({
 
 vi.mock("~/server/utils/supabase", () => ({
   createServerSupabaseClient: vi.fn(),
-  useSupabaseAdmin: vi.fn(() => ({
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({ data: [], error: null })),
-      insert: vi.fn(() => ({ error: null })),
-    })),
-  })),
+  useSupabaseAdmin: vi.fn(() => {
+    const mockFrom = vi.fn().mockImplementation((table: string) => {
+      if (table === "users") return { select: vi.fn().mockReturnValue({ data: [{ id: "user-1" }], error: null }) }
+      if (table === "notifications") return { insert: vi.fn().mockReturnValue({ error: null }) }
+      return { select: vi.fn().mockReturnValue({ data: [], error: null }) }
+    })
+    return { from: mockFrom }
+  }),
 }))
 
 vi.mock("~/server/utils/logger", () => ({
@@ -143,6 +145,14 @@ describe("broadcastSchema validation", () => {
         message: "x".repeat(1001),
       })
       expect(result.success).toBe(false)
+    })
+  })
+
+  describe("cross-field rules", () => {
+    it("schema allows target=user without user_id (runtime guard enforces this)", () => {
+      const result = broadcastSchema.safeParse({ target: "user", type: "event", title: "Test" })
+      // Zod doesn't enforce cross-field — runtime handler does
+      expect(result.success).toBe(true)
     })
   })
 })

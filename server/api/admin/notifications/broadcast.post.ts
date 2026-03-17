@@ -76,10 +76,14 @@ export default defineEventHandler(async (event): Promise<BroadcastResponse> => {
     scheduled_for: scheduledFor,
   }))
 
-  const { error: insertError } = await supabase.from("notifications").insert(rows)
-  if (insertError) {
-    logger.error("Failed to insert broadcast notifications", insertError)
-    throw createError({ statusCode: 500, statusMessage: "Failed to send notifications" })
+  const BATCH_SIZE = 500
+  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    const batch = rows.slice(i, i + BATCH_SIZE)
+    const { error } = await supabase.from("notifications").insert(batch)
+    if (error) {
+      logger.error("Failed to insert broadcast batch", error)
+      throw createError({ statusCode: 500, statusMessage: "Failed to send broadcast" })
+    }
   }
 
   logger.info(`Admin broadcast sent: type=${type}, target=${target}, recipients=${userIds.length}`)
