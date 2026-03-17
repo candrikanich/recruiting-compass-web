@@ -272,7 +272,7 @@ export const statusHistorySelectors = {
   historyEntry: ".flex.items-start.gap-4",
   statusBadge: ".px-2.py-1.text-xs.font-medium.rounded-full",
   arrowIcon: "svg.w-4.h-4",
-  timestamp: ".text-xs.text-slate-400",
+  timestamp: ".text-xs.text-slate-400.shrink-0",
   userName: ".flex.items-start.gap-4 .text-sm.text-slate-600",
   errorMessage: ".bg-red-50",
 };

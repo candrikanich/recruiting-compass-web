@@ -51,7 +51,7 @@ test.describe("School Detail - Status History", () => {
     await schoolHelpers.changeSchoolStatus(page, schoolId, "contacted");
     await page.waitForTimeout(500);
 
-    await schoolHelpers.changeSchoolStatus(page, schoolId, "recruited");
+    await schoolHelpers.changeSchoolStatus(page, schoolId, "offer_received");
     await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
@@ -95,7 +95,7 @@ test.describe("School Detail - Status History", () => {
     });
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
-    await schoolHelpers.changeSchoolStatus(page, schoolId, "recruited");
+    await schoolHelpers.changeSchoolStatus(page, schoolId, "offer_received");
     await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
