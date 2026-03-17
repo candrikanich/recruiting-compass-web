@@ -126,9 +126,10 @@ export const useSchools = () => {
     // Validate school data with Zod schema (composable responsibility)
     await schoolSchema.parseAsync(schoolData);
 
-    const result = await schoolStore.createSchool(
-      schoolData as Omit<School, "id" | "created_at" | "updated_at">,
-    );
+    const result = await schoolStore.createSchool({
+      ...schoolData,
+      family_unit_id: activeFamily.activeFamilyId.value,
+    } as Omit<School, "id" | "created_at" | "updated_at">);
 
     const { $posthog } = useNuxtApp();
     $posthog?.capture("school_added", { division: schoolData.division ?? null });

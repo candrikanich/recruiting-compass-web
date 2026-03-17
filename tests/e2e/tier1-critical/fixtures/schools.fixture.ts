@@ -175,7 +175,8 @@ export const schoolHelpers = {
     const isChecked = await searchCheckbox.isChecked().catch(() => false);
     if (isChecked) {
       await searchCheckbox.uncheck();
-      await page.waitForTimeout(300); // wait for form to switch to text input mode
+      // Wait for form to switch to text input mode
+      await page.locator(schoolSelectors.nameInput).waitFor({ state: "visible" });
     }
 
     await schoolHelpers.fillSchoolForm(page, data);

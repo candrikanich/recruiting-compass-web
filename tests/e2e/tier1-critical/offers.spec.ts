@@ -1,26 +1,15 @@
 import { test } from "@playwright/test";
-import { AuthPage } from "../pages/AuthPage";
 import { SchoolsPage } from "../pages/SchoolsPage";
 import { OffersPage } from "../pages/OffersPage";
-import { testUsers, testSchools, testOffers } from "../fixtures/testData";
+import { testSchools, testOffers } from "../fixtures/testData";
 
 test.describe("Tier 1: Offer Management - Critical Flows", () => {
-  let authPage: AuthPage;
   let schoolsPage: SchoolsPage;
   let offersPage: OffersPage;
 
   test.beforeEach(async ({ page }) => {
-    authPage = new AuthPage(page);
     schoolsPage = new SchoolsPage(page);
     offersPage = new OffersPage(page);
-
-    // Login
-    await authPage.goto();
-    await authPage.signup(
-      testUsers.newUser.email,
-      testUsers.newUser.password,
-      testUsers.newUser.displayName,
-    );
 
     // Add schools
     await schoolsPage.navigateToSchools();

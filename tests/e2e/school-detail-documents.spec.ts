@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { authFixture } from "./fixtures/auth.fixture";
 import {
   schoolHelpers,
   createSchoolData,
@@ -26,8 +25,6 @@ test.describe("School Detail - Document Management", () => {
   );
 
   test.beforeEach(async ({ page }) => {
-    await authFixture.loginFast(page, "player");
-
     const schoolData = createSchoolData({
       name: generateUniqueSchoolName("Docs Test"),
     });

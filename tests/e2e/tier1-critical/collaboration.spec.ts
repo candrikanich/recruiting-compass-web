@@ -10,13 +10,6 @@ test.describe("Tier 1: Family Collaboration - Critical Flows", () => {
   test.beforeEach(async ({ page }) => {
     authPage = new AuthPage(page);
     collaborationPage = new CollaborationPage(page);
-
-    await authPage.goto();
-    await authPage.signup(
-      testUsers.newUser.email,
-      testUsers.newUser.password,
-      testUsers.newUser.displayName,
-    );
   });
 
   test("should invite family member", async ({ page }) => {

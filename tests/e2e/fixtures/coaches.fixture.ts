@@ -208,11 +208,11 @@ export const coachSelectors = {
   confirmDeleteButton: 'button:has-text("Confirm")',
   cancelButton: 'button:has-text("Cancel")',
 
-  // Form fields
+  // Form fields (CoachForm uses DesignSystemFormInput with specific placeholders)
   firstNameInput:
-    '#firstName, input[name="firstName"], input[placeholder*="First"]',
+    'input[placeholder="e.g., John"], #firstName, input[name="firstName"]',
   lastNameInput:
-    '#lastName, input[name="lastName"], input[placeholder*="Last"]',
+    'input[placeholder="e.g., Smith"], #lastName, input[name="lastName"]',
   roleSelect: '#role, select[name="role"]',
   emailInput: '#email, input[name="email"], input[type="email"]',
   phoneInput: '#phone, input[name="phone"], input[type="tel"]',
@@ -283,7 +283,8 @@ export const coachHelpers = {
       await page.fill(coachSelectors.lastNameInput, coachData.lastName);
     }
     if (coachData.role) {
-      await page.selectOption(coachSelectors.roleSelect, coachData.role);
+      // Scope to the form to avoid matching filter bar's "Role" select
+      await page.locator("form").getByLabel("Role").selectOption(coachData.role);
     }
     if (coachData.email) {
       await page.fill(coachSelectors.emailInput, coachData.email);
@@ -325,7 +326,8 @@ export const coachHelpers = {
   async createCoach(page, schoolId, coachData) {
     await coachHelpers.navigateToCoaches(page, schoolId);
     await page.click(coachSelectors.addCoachButton);
-    await page.waitForURL(/\/coaches\/new/);
+    // Coach form is rendered inline (v-if) — wait for it to appear
+    await page.waitForSelector('h2:has-text("Add New Coach")', { timeout: 5000 });
 
     await coachHelpers.fillCoachForm(page, coachData);
     await page.click(coachSelectors.saveCoachButton);
@@ -346,7 +348,7 @@ export const coachHelpers = {
   async searchCoaches(page, searchTerm) {
     const searchInput = await page.locator(coachSelectors.searchInput).first();
     await searchInput.fill(searchTerm);
-    await page.waitForTimeout(500); // Wait for search to process
+    await page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   },
 
   /**
@@ -354,7 +356,7 @@ export const coachHelpers = {
    */
   async filterByRole(page, role) {
     await page.selectOption(coachSelectors.roleFilter, role);
-    await page.waitForTimeout(500);
+    await page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   },
 
   /**
@@ -366,7 +368,7 @@ export const coachHelpers = {
       .first();
     if (await clearButton.isVisible()) {
       await clearButton.click();
-      await page.waitForTimeout(500);
+      await page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
     }
   },
 
@@ -401,7 +403,6 @@ export const coachHelpers = {
    */
   async clickEmailAction(page) {
     await page.click(coachSelectors.emailAction);
-    await page.waitForTimeout(500);
   },
 
   /**
@@ -409,7 +410,6 @@ export const coachHelpers = {
    */
   async clickTextAction(page) {
     await page.click(coachSelectors.textAction);
-    await page.waitForTimeout(500);
   },
 
   /**

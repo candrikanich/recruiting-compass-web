@@ -1,0 +1,2619 @@
+# Public Player Profile Pages — Implementation Plan
+
+> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Spec:** `planning/specs/public-player-profile-spec.md`
+
+**Goal:** Build publicly accessible, shareable player profile pages — players configure visibility inside TRC and share per-coach trackable links; coaches see a clean read-only profile card with no account required.
+
+**Architecture:** A no-auth Nuxt public route (`/p/[slug]`) backed by a `player_profiles` Postgres table. Players manage visibility toggles + bio in a new subsection of their player details settings page. Per-coach tracking links (idempotent: one per coach) are generated from the coach detail page and record views via a `?ref=` token.
+
+**Tech Stack:** Nuxt 3 / Vue 3, Pinia, Supabase (Postgres), Nitro API routes, Vitest, TailwindCSS
+
+---
+
+## File Map
+
+### New Files
+
+| Path | Purpose |
+|---|---|
+| `supabase/migrations/20260316000000_create_player_profiles.sql` | DB schema for 3 new tables |
+| `server/api/public/profile/[slug].get.ts` | No-auth GET — resolves slug, returns profile data |
+| `server/api/public/profile/[slug]/view.post.ts` | No-auth POST — records a view with optional ?ref= token |
+| `server/api/player/profile.get.ts` | Auth GET — player fetches their own profile settings |
+| `server/api/player/profile.put.ts` | Auth PUT — update toggles, bio, slug, publish state |
+| `server/api/player/profile/tracking-links/[coachId].get.ts` | Auth GET — fetch link + stats for a coach |
+| `server/api/player/profile/tracking-links/[coachId].post.ts` | Auth POST — create or return tracking link (idempotent) |
+| `stores/playerProfile.ts` | Pinia store for profile state |
+| `composables/usePlayerProfile.ts` | Composable wrapping store + URL helpers |
+| `pages/p/[slug].vue` | Public profile page (no auth middleware) |
+| `components/profile/PublicProfileCard.vue` | Rendered profile card (used on public page + preview) |
+| `components/profile/ProfileSetup.vue` | Setup UI: toggles, bio, slug, publish toggle |
+| `components/profile/ProfilePreview.vue` | Live preview pane — renders PublicProfileCard with current state |
+| `components/coaches/CoachProfileLink.vue` | "Send Profile" section embedded on coach detail page |
+| `tests/unit/server/api/public/profile.spec.ts` | Tests for public GET |
+| `tests/unit/server/api/public/profile-view.spec.ts` | Tests for view recording |
+| `tests/unit/server/api/player/profile-settings.spec.ts` | Tests for player GET/PUT |
+| `tests/unit/server/api/player/tracking-links.spec.ts` | Tests for tracking link API |
+| `tests/unit/stores/playerProfile.spec.ts` | Pinia store tests |
+| `tests/unit/composables/usePlayerProfile.spec.ts` | Composable tests |
+
+### Modified Files
+
+| Path | Change |
+|---|---|
+| `types/models.ts` | Add `PlayerProfile`, `ProfileTrackingLink`, `PublicProfileData` interfaces |
+| `pages/settings/player-details.vue` | Add "Public Profile" tab with `ProfileSetup` component |
+| `pages/coaches/[id].vue` | Add `CoachProfileLink` component |
+
+---
+
+## ⚠️ Discovery Step — Verify Table Names Before Starting
+
+Run these before Task 1 to confirm FK targets exist:
+
+```bash
+npx supabase db execute "
+  SELECT table_name
+  FROM information_schema.tables
+  WHERE table_schema = 'public'
+  AND table_name IN ('users', 'family_units', 'coaches', 'schools', 'player_details');
+"
+```
+
+Player details are stored in `family_units.pending_player_details` (jsonb) — confirmed by migration `20260228000001`. The public API reads from that column. The `user_id` in `player_profiles` maps to `users(id)` — players are users with `role = 'player'`.
+
+---
+
+## Chunk 1: Foundation (Tasks 1–4)
+
+### Task 1: Database Migration
+
+**Files:**
+- Create: `supabase/migrations/20260316000000_create_player_profiles.sql`
+
+- [ ] **Step 1: Write the migration file**
+
+```sql
+-- Public player profile pages
+-- Three tables:
+--   player_profiles     — per-player profile config (slugs, visibility toggles, bio)
+--   profile_tracking_links — one row per (profile, coach) for click tracking
+--   profile_views       — detail log of every view event
+
+CREATE TABLE player_profiles (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  family_unit_id  uuid NOT NULL REFERENCES family_units(id) ON DELETE CASCADE,
+  hash_slug       text NOT NULL UNIQUE,
+  vanity_slug     text UNIQUE,
+  is_published    boolean NOT NULL DEFAULT false,
+  bio             text,
+  show_academics  boolean NOT NULL DEFAULT true,
+  show_athletic   boolean NOT NULL DEFAULT true,
+  show_film       boolean NOT NULL DEFAULT true,
+  show_schools    boolean NOT NULL DEFAULT true,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now(),
+  -- hash_slug: exactly 6 lowercase alphanumeric chars (generated by server)
+  CONSTRAINT hash_slug_format  CHECK (hash_slug ~ '^[a-z0-9]{6}$'),
+  -- vanity_slug: 2–30 chars, lowercase alphanumeric + hyphens, no leading/trailing hyphen
+  CONSTRAINT vanity_slug_format CHECK (
+    vanity_slug IS NULL
+    OR vanity_slug ~ '^[a-z0-9][a-z0-9\-]{0,28}[a-z0-9]$'
+  ),
+  -- One profile per player (enforces idempotent auto-create in GET handler)
+  UNIQUE (user_id)
+);
+
+CREATE TABLE profile_tracking_links (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id      uuid NOT NULL REFERENCES player_profiles(id) ON DELETE CASCADE,
+  coach_id        uuid NOT NULL REFERENCES coaches(id) ON DELETE CASCADE,
+  ref_token       text NOT NULL UNIQUE,
+  view_count      int NOT NULL DEFAULT 0,
+  last_viewed_at  timestamptz,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  -- One link per (profile, coach) — enforces idempotent "Send Profile"
+  UNIQUE (profile_id, coach_id)
+);
+
+CREATE TABLE profile_views (
+  id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id          uuid NOT NULL REFERENCES player_profiles(id) ON DELETE CASCADE,
+  tracking_link_id    uuid REFERENCES profile_tracking_links(id) ON DELETE SET NULL,
+  viewed_at           timestamptz NOT NULL DEFAULT now(),
+  user_agent          text
+);
+
+CREATE INDEX idx_profile_tracking_links_profile ON profile_tracking_links(profile_id);
+CREATE INDEX idx_profile_views_profile          ON profile_views(profile_id);
+CREATE INDEX idx_profile_views_tracking_link    ON profile_views(tracking_link_id);
+
+-- Auto-update updated_at on any player_profiles row change
+CREATE OR REPLACE FUNCTION set_player_profiles_updated_at()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER player_profiles_updated_at
+  BEFORE UPDATE ON player_profiles
+  FOR EACH ROW EXECUTE FUNCTION set_player_profiles_updated_at();
+
+-- Atomic view count increment used by the view recording API
+CREATE OR REPLACE FUNCTION increment_profile_link_view(link_id uuid)
+RETURNS void LANGUAGE sql AS $$
+  UPDATE profile_tracking_links
+  SET view_count = view_count + 1, last_viewed_at = now()
+  WHERE id = link_id;
+$$;
+```
+
+- [ ] **Step 2: Run migration**
+
+```bash
+npx supabase db push
+```
+
+Expected: `Applying migration 20260316000000_create_player_profiles...done`
+
+- [ ] **Step 3: Regenerate TypeScript DB types**
+
+```bash
+npx supabase gen types typescript --local > types/database.ts
+```
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add supabase/migrations/20260316000000_create_player_profiles.sql types/database.ts
+git commit -m "feat: add player_profiles, profile_tracking_links, profile_views tables"
+```
+
+---
+
+### Task 2: TypeScript Model Interfaces
+
+**Files:**
+- Modify: `types/models.ts`
+
+- [ ] **Step 1: Add interfaces after the existing `PlayerDetails` interface**
+
+Find the `PlayerDetails` interface in `types/models.ts` and add the following immediately after it:
+
+```typescript
+export interface PlayerProfile {
+  id: string;
+  user_id: string;
+  family_unit_id: string;
+  hash_slug: string;
+  vanity_slug: string | null;
+  is_published: boolean;
+  bio: string | null;
+  show_academics: boolean;
+  show_athletic: boolean;
+  show_film: boolean;
+  show_schools: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProfileTrackingLink {
+  id: string;
+  profile_id: string;
+  coach_id: string;
+  ref_token: string;
+  view_count: number;
+  last_viewed_at: string | null;
+  created_at: string;
+}
+
+/** Shape returned by GET /api/public/profile/[slug] */
+export interface PublicProfileData {
+  playerName: string;
+  bio: string | null;
+  /** null when show_academics is false */
+  academics: {
+    gpa?: number;
+    sat_score?: number;
+    act_score?: number;
+    graduation_year?: number;
+    high_school?: string;
+    core_courses?: string[];
+  } | null;
+  /** null when show_athletic is false */
+  athletic: {
+    primary_sport?: string;
+    primary_position?: string;
+    height_inches?: number;
+    weight_lbs?: number;
+  } | null;
+  /** null when show_film is false */
+  film: VideoLink[] | null;
+  /** null when show_schools is false */
+  schools: Array<{ id: string; name: string }> | null;
+}
+```
+
+- [ ] **Step 2: Run type check**
+
+```bash
+npm run type-check
+```
+
+Expected: zero new errors.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add types/models.ts
+git commit -m "feat: add PlayerProfile, ProfileTrackingLink, PublicProfileData types"
+```
+
+---
+
+### Task 3: Public Profile GET API
+
+**Files:**
+- Create: `server/api/public/profile/[slug].get.ts`
+- Create: `tests/unit/server/api/public/profile.spec.ts`
+
+- [ ] **Step 1: Write the failing tests**
+
+```typescript
+// tests/unit/server/api/public/profile.spec.ts
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+const mockState = {
+  profileRow: null as Record<string, unknown> | null,
+  userRow: null as { full_name: string } | null,
+  familyUnitRow: null as { pending_player_details: Record<string, unknown> } | null,
+  schoolsRows: [] as Array<{ id: string; name: string }>,
+};
+
+vi.mock("~/server/utils/supabase", () => ({
+  createServerSupabaseClient: vi.fn(() => ({
+    from: (table: string) => {
+      if (table === "player_profiles") {
+        return {
+          select: () => ({
+            or: () => ({
+              maybeSingle: () =>
+                Promise.resolve({ data: mockState.profileRow, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === "users") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({ data: mockState.userRow, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === "family_units") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({ data: mockState.familyUnitRow, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === "schools") {
+        return {
+          select: () => ({
+            eq: () =>
+              Promise.resolve({ data: mockState.schoolsRows, error: null }),
+          }),
+        };
+      }
+      return {};
+    },
+  })),
+}));
+
+vi.mock("~/server/utils/logger", () => ({
+  useLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }),
+}));
+
+vi.mock("h3", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("h3")>();
+  return {
+    ...actual,
+    defineEventHandler: (fn: Function) => fn,
+    getRouterParam: vi.fn(() => "abc123"),
+    createError: (cfg: { statusCode: number; statusMessage?: string }) => {
+      const err = new Error(cfg.statusMessage) as Error & { statusCode: number };
+      err.statusCode = cfg.statusCode;
+      return err;
+    },
+  };
+});
+
+const { default: handler } = await import(
+  "~/server/api/public/profile/[slug].get"
+);
+
+describe("GET /api/public/profile/[slug]", () => {
+  beforeEach(() => {
+    mockState.profileRow = null;
+    mockState.userRow = null;
+    mockState.familyUnitRow = null;
+    mockState.schoolsRows = [];
+  });
+
+  it("throws 404 when slug not found", async () => {
+    mockState.profileRow = null;
+    await expect(handler({} as any)).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("throws 410 when profile exists but is unpublished", async () => {
+    mockState.profileRow = {
+      id: "p1",
+      is_published: false,
+      user_id: "u1",
+      family_unit_id: "f1",
+      show_academics: true,
+      show_athletic: true,
+      show_film: true,
+      show_schools: true,
+      bio: null,
+    };
+    await expect(handler({} as any)).rejects.toMatchObject({ statusCode: 410 });
+  });
+
+  it("returns profile data for a published profile", async () => {
+    mockState.profileRow = {
+      id: "p1",
+      is_published: true,
+      user_id: "u1",
+      family_unit_id: "f1",
+      show_academics: true,
+      show_athletic: false,
+      show_film: false,
+      show_schools: false,
+      bio: "Future D1 pitcher",
+    };
+    mockState.userRow = { full_name: "John Smith" };
+    mockState.familyUnitRow = {
+      pending_player_details: { gpa: 3.9, graduation_year: 2026 },
+    };
+
+    const result = await handler({} as any);
+
+    expect(result.playerName).toBe("John Smith");
+    expect(result.bio).toBe("Future D1 pitcher");
+    expect(result.academics).toMatchObject({ gpa: 3.9, graduation_year: 2026 });
+    expect(result.athletic).toBeNull(); // show_athletic is false
+    expect(result.film).toBeNull();
+    expect(result.schools).toBeNull();
+  });
+
+  it("returns film links when show_film is true", async () => {
+    mockState.profileRow = {
+      id: "p1",
+      is_published: true,
+      user_id: "u1",
+      family_unit_id: "f1",
+      show_academics: false,
+      show_athletic: false,
+      show_film: true,
+      show_schools: false,
+      bio: null,
+    };
+    mockState.userRow = { full_name: "Jane Doe" };
+    mockState.familyUnitRow = {
+      pending_player_details: {
+        video_links: [{ platform: "hudl", url: "https://hudl.com/video/123", title: "Highlights" }],
+      },
+    };
+
+    const result = await handler({} as any);
+
+    expect(result.film).toHaveLength(1);
+    expect(result.film![0].platform).toBe("hudl");
+    expect(result.academics).toBeNull();
+  });
+
+  it("returns schools array when show_schools is true", async () => {
+    mockState.profileRow = {
+      id: "p1",
+      is_published: true,
+      user_id: "u1",
+      family_unit_id: "f1",
+      show_academics: false,
+      show_athletic: false,
+      show_film: false,
+      show_schools: true,
+      bio: null,
+    };
+    mockState.userRow = { full_name: "Jane Doe" };
+    mockState.schoolsRows = [
+      { id: "s1", name: "State University" },
+      { id: "s2", name: "Tech College" },
+    ];
+
+    const result = await handler({} as any);
+
+    expect(result.schools).toHaveLength(2);
+    expect(result.schools![0].name).toBe("State University");
+  });
+});
+```
+
+- [ ] **Step 2: Run test to confirm it fails**
+
+```bash
+npx vitest run tests/unit/server/api/public/profile.spec.ts
+```
+
+Expected: FAIL — cannot find module `~/server/api/public/profile/[slug].get`
+
+- [ ] **Step 3: Implement the route**
+
+```typescript
+// server/api/public/profile/[slug].get.ts
+import { defineEventHandler, getRouterParam, createError } from "h3";
+import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
+import type { PublicProfileData, VideoLink } from "~/types/models";
+
+export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "public/profile");
+  const slug = getRouterParam(event, "slug")!;
+  const supabase = createServerSupabaseClient();
+
+  // Resolve by hash_slug first, then vanity_slug
+  const { data: profile } = await supabase
+    .from("player_profiles")
+    .select("*")
+    .or(`hash_slug.eq.${slug},vanity_slug.eq.${slug}`)
+    .maybeSingle();
+
+  if (!profile) {
+    logger.warn("Profile slug not found", { slug });
+    throw createError({ statusCode: 404, statusMessage: "Profile not found" });
+  }
+
+  if (!profile.is_published) {
+    logger.info("Profile is unpublished", { slug });
+    throw createError({
+      statusCode: 410,
+      statusMessage: "This profile is not currently available",
+    });
+  }
+
+  const { data: user } = await supabase
+    .from("users")
+    .select("full_name")
+    .eq("id", profile.user_id)
+    .maybeSingle();
+
+  // Player details live in family_units.pending_player_details (jsonb)
+  let details: Record<string, unknown> | null = null;
+  if (profile.show_academics || profile.show_athletic || profile.show_film) {
+    const { data: familyUnit } = await supabase
+      .from("family_units")
+      .select("pending_player_details")
+      .eq("id", profile.family_unit_id)
+      .maybeSingle();
+    details = (familyUnit?.pending_player_details as Record<string, unknown>) ?? null;
+  }
+
+  let schools: Array<{ id: string; name: string }> | null = null;
+  if (profile.show_schools) {
+    const { data } = await supabase
+      .from("schools")
+      .select("id, name")
+      .eq("family_unit_id", profile.family_unit_id);
+    schools = data ?? null;
+  }
+
+  const result: PublicProfileData = {
+    playerName: user?.full_name ?? "Athlete",
+    bio: profile.bio ?? null,
+    academics:
+      profile.show_academics && details
+        ? {
+            gpa: details.gpa as number | undefined,
+            sat_score: details.sat_score as number | undefined,
+            act_score: details.act_score as number | undefined,
+            graduation_year: details.graduation_year as number | undefined,
+            high_school: details.high_school as string | undefined,
+            core_courses: details.core_courses as string[] | undefined,
+          }
+        : null,
+    athletic:
+      profile.show_athletic && details
+        ? {
+            primary_sport: details.primary_sport as string | undefined,
+            primary_position: details.primary_position as string | undefined,
+            height_inches: details.height_inches as number | undefined,
+            weight_lbs: details.weight_lbs as number | undefined,
+          }
+        : null,
+    film:
+      profile.show_film && details?.video_links
+        ? (details.video_links as VideoLink[])
+        : null,
+    schools: profile.show_schools ? (schools ?? []) : null,
+  };
+
+  logger.info("Public profile served", { slug });
+  return result;
+});
+```
+
+- [ ] **Step 4: Run tests to confirm they pass**
+
+```bash
+npx vitest run tests/unit/server/api/public/profile.spec.ts
+```
+
+Expected: 4 passing
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add server/api/public/profile/\[slug\].get.ts tests/unit/server/api/public/profile.spec.ts
+git commit -m "feat: add public profile GET API"
+```
+
+---
+
+### Task 4: View Recording POST API
+
+**Files:**
+- Create: `server/api/public/profile/[slug]/view.post.ts`
+- Create: `tests/unit/server/api/public/profile-view.spec.ts`
+
+- [ ] **Step 1: Write the failing tests**
+
+```typescript
+// tests/unit/server/api/public/profile-view.spec.ts
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+const mockState = {
+  profileRow: null as { id: string } | null,
+  linkRow: null as { id: string } | null,
+  insertError: null as object | null,
+  refToken: null as string | null,
+};
+
+vi.mock("~/server/utils/supabase", () => ({
+  createServerSupabaseClient: vi.fn(() => ({
+    from: (table: string) => {
+      if (table === "player_profiles") {
+        return {
+          select: () => ({
+            or: () => ({
+              maybeSingle: () =>
+                Promise.resolve({ data: mockState.profileRow, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === "profile_tracking_links") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({ data: mockState.linkRow, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === "profile_views") {
+        return {
+          insert: () => ({ then: (fn: Function) => fn({ error: mockState.insertError }) }),
+        };
+      }
+      return {};
+    },
+    // Top-level rpc — used for increment_profile_link_view
+    rpc: vi.fn(() => ({ then: (fn: Function) => fn({ error: null }) })),
+  })),
+}));
+
+vi.mock("~/server/utils/logger", () => ({
+  useLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }),
+}));
+
+vi.mock("h3", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("h3")>();
+  return {
+    ...actual,
+    defineEventHandler: (fn: Function) => fn,
+    getRouterParam: vi.fn(() => "abc123"),
+    getQuery: vi.fn(() => ({ ref: mockState.refToken })),
+    getRequestHeader: vi.fn(() => "Mozilla/5.0"),
+    createError: (cfg: { statusCode: number; statusMessage?: string }) => {
+      const err = new Error(cfg.statusMessage) as Error & { statusCode: number };
+      err.statusCode = cfg.statusCode;
+      return err;
+    },
+  };
+});
+
+const { default: handler } = await import(
+  "~/server/api/public/profile/[slug]/view.post"
+);
+
+describe("POST /api/public/profile/[slug]/view", () => {
+  beforeEach(() => {
+    mockState.profileRow = null;
+    mockState.linkRow = null;
+    mockState.insertError = null;
+    mockState.refToken = null;
+  });
+
+  it("throws 404 when profile slug not found", async () => {
+    mockState.profileRow = null;
+    await expect(handler({} as any)).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("records anonymous view when no ref token", async () => {
+    mockState.profileRow = { id: "p1" };
+    mockState.refToken = null;
+    const result = await handler({} as any);
+    expect(result.ok).toBe(true);
+  });
+
+  it("records view and returns ok even if ref token not found", async () => {
+    mockState.profileRow = { id: "p1" };
+    mockState.refToken = "unknown-token";
+    mockState.linkRow = null;
+    const result = await handler({} as any);
+    expect(result.ok).toBe(true);
+  });
+});
+```
+
+- [ ] **Step 2: Run test to confirm it fails**
+
+```bash
+npx vitest run tests/unit/server/api/public/profile-view.spec.ts
+```
+
+Expected: FAIL — module not found
+
+- [ ] **Step 3: Implement the route**
+
+```typescript
+// server/api/public/profile/[slug]/view.post.ts
+import { defineEventHandler, getRouterParam, getQuery, getRequestHeader, createError } from "h3";
+import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
+
+export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "public/profile/view");
+  const slug = getRouterParam(event, "slug")!;
+  const { ref } = getQuery(event) as { ref?: string };
+  const userAgent = getRequestHeader(event, "user-agent") ?? null;
+  const supabase = createServerSupabaseClient();
+
+  const { data: profile } = await supabase
+    .from("player_profiles")
+    .select("id")
+    .or(`hash_slug.eq.${slug},vanity_slug.eq.${slug}`)
+    .maybeSingle();
+
+  if (!profile) {
+    throw createError({ statusCode: 404, statusMessage: "Profile not found" });
+  }
+
+  // Resolve tracking link from ref token (if provided)
+  let trackingLinkId: string | null = null;
+  if (ref) {
+    const { data: link } = await supabase
+      .from("profile_tracking_links")
+      .select("id")
+      .eq("ref_token", ref)
+      .maybeSingle();
+
+    if (link) {
+      trackingLinkId = link.id;
+      // Atomic increment via SQL function defined in migration — fire and forget
+      supabase
+        .rpc("increment_profile_link_view", { link_id: link.id })
+        .then(({ error: e }) => {
+          if (e) logger.warn("Failed to increment view count", e);
+        });
+    }
+  }
+
+  // Insert detailed view log — fire and forget (don't block response)
+  supabase
+    .from("profile_views")
+    .insert({ profile_id: profile.id, tracking_link_id: trackingLinkId, user_agent: userAgent })
+    .then(({ error }) => {
+      if (error) logger.warn("Failed to log profile view", error);
+    });
+
+  logger.debug("View recorded", { slug, hasRef: !!ref });
+  return { ok: true };
+});
+```
+
+- [ ] **Step 4: Run tests**
+
+```bash
+npx vitest run tests/unit/server/api/public/profile-view.spec.ts
+```
+
+Expected: 3 passing
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add server/api/public/profile/\[slug\]/view.post.ts tests/unit/server/api/public/profile-view.spec.ts
+git commit -m "feat: add public profile view recording API"
+```
+
+---
+
+## Chunk 2: Player Management API + State Layer (Tasks 5–9)
+
+### Task 5: Player Profile Settings GET API
+
+**Files:**
+- Create: `server/api/player/profile.get.ts`
+- Create: `tests/unit/server/api/player/profile-settings.spec.ts` (partial — GET tests)
+
+- [ ] **Step 1: Write failing tests for GET**
+
+```typescript
+// tests/unit/server/api/player/profile-settings.spec.ts
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+const mockState = {
+  userId: "user-abc",
+  membership: { family_unit_id: "family-123" } as { family_unit_id: string } | null,
+  profileRow: null as Record<string, unknown> | null,
+};
+
+vi.mock("~/server/utils/auth", () => ({
+  requireAuth: vi.fn(async () => ({ id: mockState.userId })),
+}));
+
+vi.mock("~/server/utils/logger", () => ({
+  useLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }),
+}));
+
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: vi.fn(() => ({
+    from: (table: string) => {
+      if (table === "family_members") {
+        return {
+          select: () => ({
+            eq: () => ({
+              single: () =>
+                Promise.resolve({ data: mockState.membership, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === "player_profiles") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({ data: mockState.profileRow, error: null }),
+            }),
+          }),
+          insert: () => ({
+            select: () => ({
+              single: () =>
+                Promise.resolve({
+                  data: {
+                    ...mockState.profileRow,
+                    id: "new-p1",
+                    hash_slug: "abc123",
+                    is_published: false,
+                  },
+                  error: null,
+                }),
+            }),
+          }),
+        };
+      }
+      return {};
+    },
+  })),
+}));
+
+vi.mock("h3", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("h3")>();
+  return {
+    ...actual,
+    defineEventHandler: (fn: Function) => fn,
+    createError: (cfg: { statusCode: number; statusMessage?: string }) => {
+      const err = new Error(cfg.statusMessage) as Error & { statusCode: number };
+      err.statusCode = cfg.statusCode;
+      return err;
+    },
+  };
+});
+
+const { default: getHandler } = await import("~/server/api/player/profile.get");
+
+describe("GET /api/player/profile", () => {
+  beforeEach(() => {
+    mockState.userId = "user-abc";
+    mockState.membership = { family_unit_id: "family-123" };
+    mockState.profileRow = null;
+  });
+
+  it("returns 403 when user is not a family member", async () => {
+    mockState.membership = null;
+    await expect(getHandler({} as any)).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("creates and returns a new profile if none exists", async () => {
+    mockState.profileRow = null;
+    const result = await getHandler({} as any);
+    expect(result.hash_slug).toBeDefined();
+    expect(result.is_published).toBe(false);
+  });
+
+  it("returns existing profile when one exists", async () => {
+    mockState.profileRow = {
+      id: "p1",
+      user_id: "user-abc",
+      family_unit_id: "family-123",
+      hash_slug: "xyz789",
+      vanity_slug: null,
+      is_published: true,
+      bio: "Hello",
+      show_academics: true,
+      show_athletic: false,
+      show_film: true,
+      show_schools: true,
+    };
+    const result = await getHandler({} as any);
+    expect(result.hash_slug).toBe("xyz789");
+    expect(result.is_published).toBe(true);
+  });
+});
+```
+
+- [ ] **Step 2: Run test to confirm it fails**
+
+```bash
+npx vitest run tests/unit/server/api/player/profile-settings.spec.ts
+```
+
+Expected: FAIL — module not found
+
+- [ ] **Step 3: Implement GET route**
+
+```typescript
+// server/api/player/profile.get.ts
+import { defineEventHandler, createError } from "h3";
+import { requireAuth } from "~/server/utils/auth";
+import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
+
+/** Generates a 6-char lowercase alphanumeric hash slug */
+function generateHashSlug(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  return Array.from(crypto.getRandomValues(new Uint8Array(6)))
+    .map((b) => chars[b % chars.length])
+    .join("");
+}
+
+export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "player/profile");
+  const { id: userId } = await requireAuth(event);
+  const supabase = useSupabaseAdmin();
+
+  const { data: membership } = await supabase
+    .from("family_members")
+    .select("family_unit_id")
+    .eq("user_id", userId)
+    .single();
+
+  if (!membership) {
+    throw createError({ statusCode: 403, statusMessage: "Not a family member" });
+  }
+
+  const { data: existing } = await supabase
+    .from("player_profiles")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (existing) {
+    return existing;
+  }
+
+  // Auto-create profile on first access (idempotent — unique constraint on user_id)
+  const { data: created, error } = await supabase
+    .from("player_profiles")
+    .insert({
+      user_id: userId,
+      family_unit_id: membership.family_unit_id,
+      hash_slug: generateHashSlug(),
+    })
+    .select()
+    .single();
+
+  if (error) {
+    logger.error("Failed to create player profile", error);
+    throw createError({ statusCode: 500, statusMessage: "Failed to initialize profile" });
+  }
+
+  logger.info("Created new player profile", { userId });
+  return created;
+});
+```
+
+- [ ] **Step 4: Run tests**
+
+```bash
+npx vitest run tests/unit/server/api/player/profile-settings.spec.ts
+```
+
+Expected: 3 passing
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add server/api/player/profile.get.ts tests/unit/server/api/player/profile-settings.spec.ts
+git commit -m "feat: add player profile GET API with auto-create"
+```
+
+---
+
+### Task 6: Player Profile Settings PUT API
+
+**Files:**
+- Modify: `tests/unit/server/api/player/profile-settings.spec.ts` (add PUT tests)
+- Create: `server/api/player/profile.put.ts`
+
+- [ ] **Step 1: Rewrite the full spec file to cover both GET and PUT**
+
+Replace `tests/unit/server/api/player/profile-settings.spec.ts` entirely with this complete version that covers both handlers:
+
+```typescript
+// tests/unit/server/api/player/profile-settings.spec.ts
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+const mockState = {
+  userId: "user-abc",
+  membership: { family_unit_id: "family-123" } as { family_unit_id: string } | null,
+  profileRow: null as Record<string, unknown> | null,
+  updateError: null as { code?: string; message?: string } | null,
+  requestBody: {} as Record<string, unknown>,
+};
+
+vi.mock("~/server/utils/auth", () => ({
+  requireAuth: vi.fn(async () => ({ id: mockState.userId })),
+}));
+
+vi.mock("~/server/utils/logger", () => ({
+  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+}));
+
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: vi.fn(() => ({
+    from: (table: string) => {
+      if (table === "family_members") {
+        return {
+          select: () => ({
+            eq: () => ({
+              single: () =>
+                Promise.resolve({ data: mockState.membership, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === "player_profiles") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({ data: mockState.profileRow, error: null }),
+            }),
+          }),
+          insert: () => ({
+            select: () => ({
+              single: () =>
+                Promise.resolve({
+                  data: {
+                    id: "new-p1",
+                    user_id: mockState.userId,
+                    family_unit_id: "family-123",
+                    hash_slug: "abc123",
+                    vanity_slug: null,
+                    is_published: false,
+                    bio: null,
+                    show_academics: true,
+                    show_athletic: true,
+                    show_film: true,
+                    show_schools: true,
+                  },
+                  error: null,
+                }),
+            }),
+          }),
+          update: () => ({
+            eq: () => Promise.resolve({ error: mockState.updateError }),
+          }),
+        };
+      }
+      return {};
+    },
+  })),
+}));
+
+vi.mock("h3", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("h3")>();
+  return {
+    ...actual,
+    defineEventHandler: (fn: Function) => fn,
+    readBody: vi.fn(async () => mockState.requestBody),
+    createError: (cfg: { statusCode: number; statusMessage?: string }) => {
+      const err = new Error(cfg.statusMessage) as Error & { statusCode: number };
+      err.statusCode = cfg.statusCode;
+      return err;
+    },
+  };
+});
+
+const { default: getHandler } = await import("~/server/api/player/profile.get");
+const { default: putHandler } = await import("~/server/api/player/profile.put");
+
+describe("GET /api/player/profile", () => {
+  beforeEach(() => {
+    mockState.userId = "user-abc";
+    mockState.membership = { family_unit_id: "family-123" };
+    mockState.profileRow = null;
+  });
+
+  it("returns 403 when user is not a family member", async () => {
+    mockState.membership = null;
+    await expect(getHandler({} as any)).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("creates and returns a new profile if none exists", async () => {
+    mockState.profileRow = null;
+    const result = await getHandler({} as any);
+    expect(result.hash_slug).toBeDefined();
+    expect(result.is_published).toBe(false);
+  });
+
+  it("returns existing profile when one exists", async () => {
+    mockState.profileRow = {
+      id: "p1",
+      user_id: "user-abc",
+      family_unit_id: "family-123",
+      hash_slug: "xyz789",
+      vanity_slug: null,
+      is_published: true,
+      bio: "Hello",
+      show_academics: true,
+      show_athletic: false,
+      show_film: true,
+      show_schools: true,
+    };
+    const result = await getHandler({} as any);
+    expect(result.hash_slug).toBe("xyz789");
+    expect(result.is_published).toBe(true);
+  });
+});
+
+describe("PUT /api/player/profile", () => {
+  beforeEach(() => {
+    mockState.userId = "user-abc";
+    mockState.membership = { family_unit_id: "family-123" };
+    mockState.profileRow = { id: "p1", user_id: "user-abc" };
+    mockState.updateError = null;
+    mockState.requestBody = { bio: "Hello world", is_published: true };
+  });
+
+  it("returns 403 when user is not a family member", async () => {
+    mockState.membership = null;
+    await expect(putHandler({} as any)).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("rejects reserved vanity slugs", async () => {
+    mockState.requestBody = { vanity_slug: "api" };
+    await expect(putHandler({} as any)).rejects.toMatchObject({ statusCode: 422 });
+  });
+
+  it("rejects invalid vanity slug format (uppercase)", async () => {
+    mockState.requestBody = { vanity_slug: "UPPERCASE" };
+    await expect(putHandler({} as any)).rejects.toMatchObject({ statusCode: 422 });
+  });
+
+  it("rejects vanity slugs with invalid characters", async () => {
+    mockState.requestBody = { vanity_slug: "my slug!" };
+    await expect(putHandler({} as any)).rejects.toMatchObject({ statusCode: 422 });
+  });
+
+  it("updates profile and returns success", async () => {
+    mockState.requestBody = { bio: "Future D1 pitcher", is_published: true };
+    const result = await putHandler({} as any);
+    expect(result.success).toBe(true);
+  });
+
+  it("returns 409 when vanity slug is already taken", async () => {
+    mockState.requestBody = { vanity_slug: "takenslug" };
+    mockState.updateError = { code: "23505", message: "unique violation" };
+    await expect(putHandler({} as any)).rejects.toMatchObject({ statusCode: 409 });
+  });
+});
+```
+
+- [ ] **Step 2: Confirm new tests fail**
+
+```bash
+npx vitest run tests/unit/server/api/player/profile-settings.spec.ts
+```
+
+Expected: GET tests pass, PUT tests FAIL — module not found
+
+- [ ] **Step 3: Implement PUT route**
+
+```typescript
+// server/api/player/profile.put.ts
+import { defineEventHandler, readBody, createError } from "h3";
+import { z } from "zod";
+import { requireAuth } from "~/server/utils/auth";
+import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
+
+const RESERVED_SLUGS = new Set([
+  "api", "p", "auth", "login", "signup", "join", "admin",
+  "settings", "dashboard", "coaches", "schools", "help",
+]);
+
+const UpdateProfileSchema = z.object({
+  bio: z.string().max(300).nullable().optional(),
+  is_published: z.boolean().optional(),
+  show_academics: z.boolean().optional(),
+  show_athletic: z.boolean().optional(),
+  show_film: z.boolean().optional(),
+  show_schools: z.boolean().optional(),
+  vanity_slug: z
+    .string()
+    .regex(/^[a-z0-9][a-z0-9-]{0,28}[a-z0-9]$/, "Invalid slug format")
+    .nullable()
+    .optional(),
+});
+
+export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "player/profile");
+  const { id: userId } = await requireAuth(event);
+  const body = await readBody(event);
+  const supabase = useSupabaseAdmin();
+
+  const parsed = UpdateProfileSchema.safeParse(body);
+  if (!parsed.success) {
+    throw createError({ statusCode: 422, statusMessage: "Invalid profile data" });
+  }
+
+  const updates = parsed.data;
+
+  if (updates.vanity_slug && RESERVED_SLUGS.has(updates.vanity_slug)) {
+    throw createError({ statusCode: 422, statusMessage: "That slug is reserved" });
+  }
+
+  const { data: membership } = await supabase
+    .from("family_members")
+    .select("family_unit_id")
+    .eq("user_id", userId)
+    .single();
+
+  if (!membership) {
+    throw createError({ statusCode: 403, statusMessage: "Not a family member" });
+  }
+
+  const { error } = await supabase
+    .from("player_profiles")
+    .update(updates)
+    .eq("user_id", userId);
+
+  if (error) {
+    // Unique constraint on vanity_slug
+    if (error.code === "23505") {
+      throw createError({ statusCode: 409, statusMessage: "That slug is already taken" });
+    }
+    logger.error("Failed to update player profile", error);
+    throw createError({ statusCode: 500, statusMessage: "Failed to update profile" });
+  }
+
+  logger.info("Player profile updated", { userId });
+  return { success: true };
+});
+```
+
+- [ ] **Step 4: Run all tests in spec**
+
+```bash
+npx vitest run tests/unit/server/api/player/profile-settings.spec.ts
+```
+
+Expected: all passing
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add server/api/player/profile.put.ts tests/unit/server/api/player/profile-settings.spec.ts
+git commit -m "feat: add player profile PUT API with slug validation"
+```
+
+---
+
+### Task 7: Tracking Links API
+
+**Files:**
+- Create: `server/api/player/profile/tracking-links/[coachId].get.ts`
+- Create: `server/api/player/profile/tracking-links/[coachId].post.ts`
+- Create: `tests/unit/server/api/player/tracking-links.spec.ts`
+
+- [ ] **Step 1: Write the failing tests**
+
+```typescript
+// tests/unit/server/api/player/tracking-links.spec.ts
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+const mockState = {
+  userId: "user-abc",
+  coachId: "coach-xyz",
+  membership: { family_unit_id: "family-123" } as { family_unit_id: string } | null,
+  profileRow: null as { id: string } | null,
+  existingLink: null as Record<string, unknown> | null,
+};
+
+vi.mock("~/server/utils/auth", () => ({
+  requireAuth: vi.fn(async () => ({ id: mockState.userId })),
+}));
+
+vi.mock("~/server/utils/logger", () => ({
+  useLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }),
+}));
+
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: vi.fn(() => ({
+    from: (table: string) => {
+      if (table === "family_members") {
+        return {
+          select: () => ({
+            eq: () => ({
+              single: () =>
+                Promise.resolve({ data: mockState.membership, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === "player_profiles") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({ data: mockState.profileRow, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === "profile_tracking_links") {
+        return {
+          select: () => ({
+            eq: (col: string) => ({
+              eq: () => ({
+                maybeSingle: () =>
+                  Promise.resolve({ data: mockState.existingLink, error: null }),
+              }),
+              maybeSingle: () =>
+                Promise.resolve({ data: mockState.existingLink, error: null }),
+            }),
+          }),
+          insert: () => ({
+            select: () => ({
+              single: () =>
+                Promise.resolve({
+                  data: {
+                    id: "link-1",
+                    profile_id: "p1",
+                    coach_id: mockState.coachId,
+                    ref_token: "tok123abc",
+                    view_count: 0,
+                    last_viewed_at: null,
+                  },
+                  error: null,
+                }),
+            }),
+          }),
+        };
+      }
+      return {};
+    },
+  })),
+}));
+
+vi.mock("h3", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("h3")>();
+  return {
+    ...actual,
+    defineEventHandler: (fn: Function) => fn,
+    getRouterParam: vi.fn(() => mockState.coachId),
+    createError: (cfg: { statusCode: number; statusMessage?: string }) => {
+      const err = new Error(cfg.statusMessage) as Error & { statusCode: number };
+      err.statusCode = cfg.statusCode;
+      return err;
+    },
+  };
+});
+
+const { default: getHandler } = await import(
+  "~/server/api/player/profile/tracking-links/[coachId].get"
+);
+const { default: postHandler } = await import(
+  "~/server/api/player/profile/tracking-links/[coachId].post"
+);
+
+describe("Tracking Links API", () => {
+  beforeEach(() => {
+    mockState.membership = { family_unit_id: "family-123" };
+    mockState.profileRow = { id: "p1" };
+    mockState.existingLink = null;
+  });
+
+  describe("GET /api/player/profile/tracking-links/[coachId]", () => {
+    it("returns null when no link exists for this coach", async () => {
+      mockState.existingLink = null;
+      const result = await getHandler({} as any);
+      expect(result).toBeNull();
+    });
+
+    it("returns existing link with view stats", async () => {
+      mockState.existingLink = {
+        id: "link-1",
+        ref_token: "tok123abc",
+        view_count: 5,
+        last_viewed_at: "2026-03-10T12:00:00Z",
+      };
+      const result = await getHandler({} as any);
+      expect(result.ref_token).toBe("tok123abc");
+      expect(result.view_count).toBe(5);
+    });
+  });
+
+  describe("POST /api/player/profile/tracking-links/[coachId]", () => {
+    it("returns existing link when one already exists (idempotent)", async () => {
+      mockState.existingLink = {
+        id: "link-1",
+        ref_token: "existing-tok",
+        view_count: 3,
+        last_viewed_at: null,
+      };
+      const result = await postHandler({} as any);
+      expect(result.ref_token).toBe("existing-tok");
+    });
+
+    it("creates a new link when none exists", async () => {
+      mockState.existingLink = null;
+      const result = await postHandler({} as any);
+      expect(result.ref_token).toBeDefined();
+      expect(result.coach_id).toBe("coach-xyz");
+    });
+
+    it("returns 404 when player has no profile", async () => {
+      mockState.profileRow = null;
+      await expect(postHandler({} as any)).rejects.toMatchObject({ statusCode: 404 });
+    });
+  });
+});
+```
+
+- [ ] **Step 2: Run test to confirm failure**
+
+```bash
+npx vitest run tests/unit/server/api/player/tracking-links.spec.ts
+```
+
+Expected: FAIL — modules not found
+
+- [ ] **Step 3: Implement GET route**
+
+```typescript
+// server/api/player/profile/tracking-links/[coachId].get.ts
+import { defineEventHandler, getRouterParam, createError } from "h3";
+import { requireAuth } from "~/server/utils/auth";
+import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
+
+export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "player/profile/tracking-links");
+  const { id: userId } = await requireAuth(event);
+  const coachId = getRouterParam(event, "coachId")!;
+  const supabase = useSupabaseAdmin();
+
+  const { data: membership } = await supabase
+    .from("family_members")
+    .select("family_unit_id")
+    .eq("user_id", userId)
+    .single();
+
+  if (!membership) {
+    throw createError({ statusCode: 403, statusMessage: "Not a family member" });
+  }
+
+  const { data: profile } = await supabase
+    .from("player_profiles")
+    .select("id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!profile) return null;
+
+  const { data: link } = await supabase
+    .from("profile_tracking_links")
+    .select("*")
+    .eq("profile_id", profile.id)
+    .eq("coach_id", coachId)
+    .maybeSingle();
+
+  logger.debug("Tracking link lookup", { coachId, found: !!link });
+  return link ?? null;
+});
+```
+
+- [ ] **Step 4: Implement POST route**
+
+```typescript
+// server/api/player/profile/tracking-links/[coachId].post.ts
+import { defineEventHandler, getRouterParam, createError } from "h3";
+import { requireAuth } from "~/server/utils/auth";
+import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
+
+function generateRefToken(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  return Array.from(crypto.getRandomValues(new Uint8Array(8)))
+    .map((b) => chars[b % chars.length])
+    .join("");
+}
+
+export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "player/profile/tracking-links");
+  const { id: userId } = await requireAuth(event);
+  const coachId = getRouterParam(event, "coachId")!;
+  const supabase = useSupabaseAdmin();
+
+  const { data: membership } = await supabase
+    .from("family_members")
+    .select("family_unit_id")
+    .eq("user_id", userId)
+    .single();
+
+  if (!membership) {
+    throw createError({ statusCode: 403, statusMessage: "Not a family member" });
+  }
+
+  const { data: profile } = await supabase
+    .from("player_profiles")
+    .select("id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!profile) {
+    throw createError({ statusCode: 404, statusMessage: "No profile found — publish one first" });
+  }
+
+  // Idempotent: return existing link if present
+  const { data: existing } = await supabase
+    .from("profile_tracking_links")
+    .select("*")
+    .eq("profile_id", profile.id)
+    .eq("coach_id", coachId)
+    .maybeSingle();
+
+  if (existing) {
+    logger.debug("Returning existing tracking link", { coachId });
+    return existing;
+  }
+
+  const { data: created, error } = await supabase
+    .from("profile_tracking_links")
+    .insert({ profile_id: profile.id, coach_id: coachId, ref_token: generateRefToken() })
+    .select()
+    .single();
+
+  if (error) {
+    logger.error("Failed to create tracking link", error);
+    throw createError({ statusCode: 500, statusMessage: "Failed to create tracking link" });
+  }
+
+  logger.info("Tracking link created", { coachId });
+  return created;
+});
+```
+
+- [ ] **Step 5: Run tests**
+
+```bash
+npx vitest run tests/unit/server/api/player/tracking-links.spec.ts
+```
+
+Expected: 5 passing
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add \
+  server/api/player/profile/tracking-links/\[coachId\].get.ts \
+  server/api/player/profile/tracking-links/\[coachId\].post.ts \
+  tests/unit/server/api/player/tracking-links.spec.ts
+git commit -m "feat: add tracking links GET/POST API (idempotent per coach)"
+```
+
+---
+
+### Task 8: Pinia Store
+
+**Files:**
+- Create: `stores/playerProfile.ts`
+- Create: `tests/unit/stores/playerProfile.spec.ts`
+
+- [ ] **Step 1: Write the failing tests**
+
+```typescript
+// tests/unit/stores/playerProfile.spec.ts
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { setActivePinia, createPinia } from "pinia";
+
+const mockFetchFn = vi.fn();
+
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: () => ({ $fetchAuth: mockFetchFn }),
+}));
+
+const mockProfileData = {
+  id: "p1",
+  hash_slug: "abc123",
+  is_published: false,
+  bio: null,
+  show_academics: true,
+  show_athletic: true,
+  show_film: true,
+  show_schools: true,
+  vanity_slug: null,
+};
+
+const { usePlayerProfileStore } = await import("~/stores/playerProfile");
+
+describe("usePlayerProfileStore", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    mockFetchFn.mockReset();
+  });
+
+  it("initializes with null profile and not loading", () => {
+    const store = usePlayerProfileStore();
+    expect(store.profile).toBeNull();
+    expect(store.loading).toBe(false);
+    expect(store.error).toBeNull();
+  });
+
+  it("fetchProfile populates profile on success", async () => {
+    mockFetchFn.mockResolvedValueOnce(mockProfileData);
+    const store = usePlayerProfileStore();
+    await store.fetchProfile();
+    expect(store.profile?.hash_slug).toBe("abc123");
+    expect(store.loading).toBe(false);
+  });
+
+  it("updateProfile merges changes into state optimistically", async () => {
+    mockFetchFn
+      .mockResolvedValueOnce(mockProfileData)   // fetchProfile
+      .mockResolvedValueOnce({ success: true }); // updateProfile
+    const store = usePlayerProfileStore();
+    await store.fetchProfile();
+    await store.updateProfile({ bio: "New bio", is_published: true });
+    expect(store.profile?.bio).toBe("New bio");
+    expect(store.profile?.is_published).toBe(true);
+  });
+
+  it("sets error when fetchProfile throws", async () => {
+    mockFetchFn.mockRejectedValueOnce(new Error("Network error"));
+    const store = usePlayerProfileStore();
+    await store.fetchProfile();
+    expect(store.error).toBe("Network error");
+    expect(store.loading).toBe(false);
+  });
+});
+```
+
+- [ ] **Step 2: Confirm failure**
+
+```bash
+npx vitest run tests/unit/stores/playerProfile.spec.ts
+```
+
+Expected: FAIL — module not found
+
+- [ ] **Step 3: Implement the store**
+
+```typescript
+// stores/playerProfile.ts
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
+import type { PlayerProfile } from "~/types/models";
+import { useAuthFetch } from "~/composables/useAuthFetch";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("stores/playerProfile");
+
+export const usePlayerProfileStore = defineStore("playerProfile", () => {
+  const profile = ref<PlayerProfile | null>(null);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
+
+  const isPublished = computed(() => profile.value?.is_published ?? false);
+  const profileUrl = computed(() => {
+    if (!profile.value) return null;
+    const slug = profile.value.vanity_slug ?? profile.value.hash_slug;
+    return `/p/${slug}`;
+  });
+
+  async function fetchProfile(): Promise<void> {
+    const { $fetchAuth } = useAuthFetch();
+    loading.value = true;
+    error.value = null;
+    try {
+      const data = await $fetchAuth<PlayerProfile>("/api/player/profile");
+      profile.value = data;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to load profile";
+      logger.error("fetchProfile failed", { message });
+      error.value = message;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function updateProfile(updates: Partial<PlayerProfile>): Promise<void> {
+    const { $fetchAuth } = useAuthFetch();
+    // Optimistic update
+    if (profile.value) {
+      profile.value = { ...profile.value, ...updates };
+    }
+    try {
+      await $fetchAuth("/api/player/profile", { method: "PUT", body: updates });
+    } catch (err) {
+      // Roll back on failure — re-fetch canonical state
+      logger.error("updateProfile failed, re-fetching", err);
+      await fetchProfile();
+      throw err;
+    }
+  }
+
+  return {
+    profile,
+    loading,
+    error,
+    isPublished,
+    profileUrl,
+    fetchProfile,
+    updateProfile,
+  };
+});
+```
+
+- [ ] **Step 4: Run tests**
+
+```bash
+npx vitest run tests/unit/stores/playerProfile.spec.ts
+```
+
+Expected: 3–4 passing
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add stores/playerProfile.ts tests/unit/stores/playerProfile.spec.ts
+git commit -m "feat: add usePlayerProfileStore with optimistic updates"
+```
+
+---
+
+### Task 9: Composable
+
+**Files:**
+- Create: `composables/usePlayerProfile.ts`
+- Create: `tests/unit/composables/usePlayerProfile.spec.ts`
+
+- [ ] **Step 1: Write the failing tests**
+
+```typescript
+// tests/unit/composables/usePlayerProfile.spec.ts
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { setActivePinia, createPinia } from "pinia";
+
+vi.mock("~/stores/playerProfile", () => ({
+  usePlayerProfileStore: vi.fn(() => ({
+    profile: { hash_slug: "abc123", vanity_slug: "john2026", is_published: true },
+    loading: false,
+    error: null,
+    profileUrl: "/p/john2026",
+    isPublished: true,
+    fetchProfile: vi.fn(),
+    updateProfile: vi.fn(),
+  })),
+}));
+
+const { usePlayerProfile } = await import("~/composables/usePlayerProfile");
+
+describe("usePlayerProfile", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
+  it("exposes profile data from store", () => {
+    const { profile, isPublished } = usePlayerProfile();
+    expect(profile.value?.hash_slug).toBe("abc123");
+    expect(isPublished.value).toBe(true);
+  });
+
+  it("builds full public URL from profile URL", () => {
+    const { publicUrl } = usePlayerProfile();
+    // Should include origin in full URL
+    expect(publicUrl.value).toContain("/p/");
+  });
+
+  it("exposes fetchProfile and updateProfile", () => {
+    const { fetchProfile, updateProfile } = usePlayerProfile();
+    expect(typeof fetchProfile).toBe("function");
+    expect(typeof updateProfile).toBe("function");
+  });
+});
+```
+
+- [ ] **Step 2: Confirm failure**
+
+```bash
+npx vitest run tests/unit/composables/usePlayerProfile.spec.ts
+```
+
+Expected: FAIL — module not found
+
+- [ ] **Step 3: Implement the composable**
+
+```typescript
+// composables/usePlayerProfile.ts
+import { computed, onMounted } from "vue";
+import { usePlayerProfileStore } from "~/stores/playerProfile";
+import type { PlayerProfile } from "~/types/models";
+
+export const usePlayerProfile = () => {
+  const store = usePlayerProfileStore();
+
+  const profile = computed(() => store.profile);
+  const loading = computed(() => store.loading);
+  const error = computed(() => store.error);
+  const isPublished = computed(() => store.isPublished);
+
+  /** Full absolute URL for sharing (uses current origin in browser, relative on server) */
+  const publicUrl = computed(() => {
+    if (!store.profileUrl) return null;
+    if (import.meta.client) {
+      return `${window.location.origin}${store.profileUrl}`;
+    }
+    return store.profileUrl;
+  });
+
+  const fetchProfile = (): Promise<void> => store.fetchProfile();
+  const updateProfile = (updates: Partial<PlayerProfile>): Promise<void> =>
+    store.updateProfile(updates);
+
+  onMounted(() => {
+    if (!store.profile && !store.loading) {
+      fetchProfile();
+    }
+  });
+
+  return {
+    profile,
+    loading,
+    error,
+    isPublished,
+    publicUrl,
+    fetchProfile,
+    updateProfile,
+  };
+};
+```
+
+- [ ] **Step 4: Run tests**
+
+```bash
+npx vitest run tests/unit/composables/usePlayerProfile.spec.ts
+```
+
+Expected: 3 passing
+
+- [ ] **Step 5: Run full test suite**
+
+```bash
+npm test
+```
+
+Expected: all existing tests still passing, ~10 new tests added
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add composables/usePlayerProfile.ts tests/unit/composables/usePlayerProfile.spec.ts
+git commit -m "feat: add usePlayerProfile composable"
+```
+
+---
+
+## Chunk 3: UI (Tasks 10–14)
+
+### Task 10: Public Profile Page
+
+**Files:**
+- Create: `pages/p/[slug].vue`
+
+- [ ] **Step 1: Create the public page**
+
+```vue
+<!-- pages/p/[slug].vue -->
+<script setup lang="ts">
+import type { PublicProfileData } from "~/types/models";
+
+// No auth middleware — this page is publicly accessible
+definePageMeta({ layout: "default" });
+
+const route = useRoute();
+const slug = route.params.slug as string;
+// Named refToken (not "ref") to avoid shadowing Vue's ref() function
+const refToken = (route.query.ref as string) ?? null;
+
+const { data: profile, error, status } = await useFetch<PublicProfileData>(
+  `/api/public/profile/${slug}`,
+  { key: `profile-${slug}` }
+);
+
+// Fire-and-forget view recording — only fires when profile loaded successfully
+if (import.meta.client && profile.value) {
+  const viewUrl = refToken
+    ? `/api/public/profile/${slug}/view?ref=${refToken}`
+    : `/api/public/profile/${slug}/view`;
+  $fetch(viewUrl, { method: "POST" }).catch(() => {/* silent */});
+}
+
+const notFound = computed(() => status.value === "error" && (error.value as any)?.statusCode === 404);
+const unavailable = computed(() => status.value === "error" && (error.value as any)?.statusCode === 410);
+
+useSeoMeta({
+  title: computed(() => profile.value ? `${profile.value.playerName} — Recruiting Profile` : "Player Profile"),
+  description: computed(() => profile.value?.bio ?? "Recruiting profile powered by The Recruiting Compass"),
+});
+</script>
+
+<template>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Loading -->
+    <div v-if="status === 'pending'" class="flex items-center justify-center min-h-screen">
+      <div class="text-gray-400">Loading profile…</div>
+    </div>
+
+    <!-- Not found -->
+    <div v-else-if="notFound" class="flex flex-col items-center justify-center min-h-screen gap-4 text-center px-4">
+      <h1 class="text-2xl font-semibold text-gray-800">Profile not found</h1>
+      <p class="text-gray-500">This link may be incorrect or the profile has been removed.</p>
+    </div>
+
+    <!-- Unavailable (unpublished or cancelled) -->
+    <div v-else-if="unavailable" class="flex flex-col items-center justify-center min-h-screen gap-4 text-center px-4">
+      <h1 class="text-2xl font-semibold text-gray-800">Profile not available</h1>
+      <p class="text-gray-500">This player's profile is not currently available. Check back later.</p>
+    </div>
+
+    <!-- Profile card -->
+    <div v-else-if="profile" class="max-w-2xl mx-auto py-8 px-4">
+      <PublicProfileCard :profile="profile" />
+    </div>
+  </div>
+</template>
+```
+
+- [ ] **Step 2: Verify no auth is required**
+
+Make sure `definePageMeta` does NOT include `middleware: "auth"`. The page must be accessible without a session.
+
+- [ ] **Step 3: Start dev server and verify the page renders**
+
+```bash
+npm run dev
+```
+
+Navigate to `http://localhost:3000/p/anyslug` — you should see the "Profile not found" state (no DB data yet, but the page route works).
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add pages/p/\[slug\].vue
+git commit -m "feat: add public profile page route /p/[slug]"
+```
+
+---
+
+### Task 11: PublicProfileCard Component
+
+**Files:**
+- Create: `components/profile/PublicProfileCard.vue`
+
+- [ ] **Step 1: Implement the component**
+
+```vue
+<!-- components/profile/PublicProfileCard.vue -->
+<script setup lang="ts">
+import type { PublicProfileData } from "~/types/models";
+
+const props = withDefaults(
+  defineProps<{ profile: PublicProfileData }>(),
+  {}
+);
+
+function formatHeight(inches: number | undefined): string {
+  if (!inches) return "—";
+  const ft = Math.floor(inches / 12);
+  const inn = inches % 12;
+  return `${ft}'${inn}"`;
+}
+
+function formatGPA(gpa: number | undefined): string {
+  return gpa?.toFixed(2) ?? "—";
+}
+</script>
+
+<template>
+  <article class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-br from-slate-800 to-slate-700 px-6 py-8 text-white">
+      <h1 class="text-3xl font-bold tracking-tight">{{ profile.playerName }}</h1>
+      <p v-if="profile.athletic?.primary_sport" class="mt-1 text-slate-300 text-sm">
+        {{ profile.athletic.primary_sport }}
+        <span v-if="profile.athletic.primary_position"> · {{ profile.athletic.primary_position }}</span>
+      </p>
+      <p v-if="profile.bio" class="mt-3 text-slate-200 text-sm leading-relaxed">{{ profile.bio }}</p>
+    </header>
+
+    <div class="divide-y divide-gray-100">
+
+      <!-- Athletic Stats -->
+      <section v-if="profile.athletic" class="px-6 py-5">
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Athletic Profile</h2>
+        <dl class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+          <div v-if="profile.athletic.height_inches" class="flex justify-between">
+            <dt class="text-gray-500">Height</dt>
+            <dd class="font-medium text-gray-900">{{ formatHeight(profile.athletic.height_inches) }}</dd>
+          </div>
+          <div v-if="profile.athletic.weight_lbs" class="flex justify-between">
+            <dt class="text-gray-500">Weight</dt>
+            <dd class="font-medium text-gray-900">{{ profile.athletic.weight_lbs }} lbs</dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- Academic Stats -->
+      <section v-if="profile.academics" class="px-6 py-5">
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Academics</h2>
+        <dl class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+          <div v-if="profile.academics.gpa" class="flex justify-between">
+            <dt class="text-gray-500">GPA</dt>
+            <dd class="font-medium text-gray-900">{{ formatGPA(profile.academics.gpa) }}</dd>
+          </div>
+          <div v-if="profile.academics.graduation_year" class="flex justify-between">
+            <dt class="text-gray-500">Grad Year</dt>
+            <dd class="font-medium text-gray-900">{{ profile.academics.graduation_year }}</dd>
+          </div>
+          <div v-if="profile.academics.sat_score" class="flex justify-between">
+            <dt class="text-gray-500">SAT</dt>
+            <dd class="font-medium text-gray-900">{{ profile.academics.sat_score }}</dd>
+          </div>
+          <div v-if="profile.academics.act_score" class="flex justify-between">
+            <dt class="text-gray-500">ACT</dt>
+            <dd class="font-medium text-gray-900">{{ profile.academics.act_score }}</dd>
+          </div>
+          <div v-if="profile.academics.high_school" class="col-span-2 flex justify-between">
+            <dt class="text-gray-500">High School</dt>
+            <dd class="font-medium text-gray-900">{{ profile.academics.high_school }}</dd>
+          </div>
+        </dl>
+        <div v-if="profile.academics.core_courses?.length" class="mt-3">
+          <p class="text-xs text-gray-400 mb-1">Core Courses</p>
+          <p class="text-sm text-gray-700">{{ profile.academics.core_courses.join(", ") }}</p>
+        </div>
+      </section>
+
+      <!-- Film Links -->
+      <section v-if="profile.film?.length" class="px-6 py-5">
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Film</h2>
+        <ul class="space-y-2">
+          <li v-for="link in profile.film" :key="link.url">
+            <a
+              :href="link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              <span class="capitalize">{{ link.platform }}</span>
+              <span v-if="link.title" class="text-gray-500">— {{ link.title }}</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Target Schools -->
+      <section v-if="profile.schools?.length" class="px-6 py-5">
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Target Schools</h2>
+        <ul class="space-y-1">
+          <li v-for="school in profile.schools" :key="school.id" class="text-sm text-gray-700">
+            {{ school.name }}
+          </li>
+        </ul>
+      </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="px-6 py-4 bg-gray-50 text-center">
+      <p class="text-xs text-gray-400">
+        Recruiting profile powered by
+        <a href="/" class="text-gray-500 hover:text-gray-700">The Recruiting Compass</a>
+      </p>
+    </footer>
+  </article>
+</template>
+```
+
+- [ ] **Step 2: Smoke test in browser**
+
+With `npm run dev` running, seed a test profile directly in Supabase (or via the API), set `is_published = true`, navigate to `/p/<hash_slug>` — confirm all sections render.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add components/profile/PublicProfileCard.vue
+git commit -m "feat: add PublicProfileCard component"
+```
+
+---
+
+### Task 12: Profile Setup + Preview Components
+
+**Files:**
+- Create: `components/profile/ProfilePreview.vue`
+- Create: `components/profile/ProfileSetup.vue`
+
+- [ ] **Step 1: Create ProfilePreview**
+
+```vue
+<!-- components/profile/ProfilePreview.vue -->
+<script setup lang="ts">
+import type { PlayerProfile, PublicProfileData, VideoLink } from "~/types/models";
+
+const props = defineProps<{
+  settings: PlayerProfile;
+  playerName: string;
+  details: Record<string, unknown> | null;
+  schools: Array<{ id: string; name: string }>;
+}>();
+
+const previewData = computed<PublicProfileData>(() => ({
+  playerName: props.playerName,
+  bio: props.settings.bio ?? null,
+  academics: props.settings.show_academics && props.details
+    ? {
+        gpa: props.details.gpa as number | undefined,
+        sat_score: props.details.sat_score as number | undefined,
+        act_score: props.details.act_score as number | undefined,
+        graduation_year: props.details.graduation_year as number | undefined,
+        high_school: props.details.high_school as string | undefined,
+        core_courses: props.details.core_courses as string[] | undefined,
+      }
+    : null,
+  athletic: props.settings.show_athletic && props.details
+    ? {
+        primary_sport: props.details.primary_sport as string | undefined,
+        primary_position: props.details.primary_position as string | undefined,
+        height_inches: props.details.height_inches as number | undefined,
+        weight_lbs: props.details.weight_lbs as number | undefined,
+      }
+    : null,
+  film: props.settings.show_film && props.details?.video_links
+    ? (props.details.video_links as VideoLink[])
+    : null,
+  schools: props.settings.show_schools ? props.schools : null,
+}));
+</script>
+
+<template>
+  <div class="bg-gray-50 rounded-xl p-4">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Preview — What coaches see</p>
+    <PublicProfileCard :profile="previewData" />
+  </div>
+</template>
+```
+
+- [ ] **Step 2: Create ProfileSetup**
+
+```vue
+<!-- components/profile/ProfileSetup.vue -->
+<script setup lang="ts">
+import { usePlayerProfile } from "~/composables/usePlayerProfile";
+
+const { profile, loading, publicUrl, updateProfile } = usePlayerProfile();
+
+// Local draft — synced from store, saved on blur/toggle
+const draft = reactive({
+  bio: "",
+  vanity_slug: "",
+  show_academics: true,
+  show_athletic: true,
+  show_film: true,
+  show_schools: true,
+  is_published: false,
+});
+
+watch(
+  () => profile.value,
+  (p) => {
+    if (!p) return;
+    draft.bio = p.bio ?? "";
+    draft.vanity_slug = p.vanity_slug ?? "";
+    draft.show_academics = p.show_academics;
+    draft.show_athletic = p.show_athletic;
+    draft.show_film = p.show_film;
+    draft.show_schools = p.show_schools;
+    draft.is_published = p.is_published;
+  },
+  { immediate: true }
+);
+
+const saveError = ref<string | null>(null);
+const saving = ref(false);
+
+async function save(field: Partial<typeof draft>) {
+  saving.value = true;
+  saveError.value = null;
+  try {
+    await updateProfile(field as any);
+    Object.assign(draft, field);
+  } catch (err) {
+    saveError.value = err instanceof Error ? err.message : "Failed to save";
+  } finally {
+    saving.value = false;
+  }
+}
+
+const slugError = ref<string | null>(null);
+
+function validateSlug(slug: string): boolean {
+  if (!slug) return true; // empty is valid (clears vanity slug)
+  if (!/^[a-z0-9][a-z0-9-]{0,28}[a-z0-9]$/.test(slug)) {
+    slugError.value = "Only lowercase letters, numbers, and hyphens. Min 2 chars.";
+    return false;
+  }
+  slugError.value = null;
+  return true;
+}
+
+function onSlugBlur() {
+  if (validateSlug(draft.vanity_slug)) {
+    save({ vanity_slug: draft.vanity_slug || null });
+  }
+}
+
+function copyLink() {
+  if (publicUrl.value) navigator.clipboard.writeText(publicUrl.value);
+}
+</script>
+
+<template>
+  <div v-if="loading" class="text-gray-400 text-sm">Loading profile settings…</div>
+
+  <div v-else-if="profile" class="space-y-6">
+
+    <!-- Publish toggle -->
+    <div class="flex items-center justify-between p-4 rounded-xl border"
+         :class="draft.is_published ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-white'">
+      <div>
+        <p class="font-medium text-sm text-gray-900">
+          {{ draft.is_published ? "Profile is live" : "Profile is unpublished" }}
+        </p>
+        <p class="text-xs text-gray-500 mt-0.5">
+          {{ draft.is_published
+            ? "Coaches can view this profile via your sharing links."
+            : "Only you can see this. Publish to make it shareable." }}
+        </p>
+      </div>
+      <button
+        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+        :class="draft.is_published ? 'bg-green-500' : 'bg-gray-300'"
+        @click="save({ is_published: !draft.is_published })"
+      >
+        <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
+              :class="draft.is_published ? 'translate-x-6' : 'translate-x-1'" />
+      </button>
+    </div>
+
+    <!-- Sharing links -->
+    <div class="space-y-2">
+      <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Your profile link</label>
+      <div class="flex gap-2">
+        <code class="flex-1 bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-700 truncate">
+          {{ publicUrl }}
+        </code>
+        <button class="px-3 py-2 text-sm bg-gray-800 text-white rounded-lg hover:bg-gray-700"
+                @click="copyLink">
+          Copy
+        </button>
+      </div>
+    </div>
+
+    <!-- Vanity slug -->
+    <div class="space-y-1">
+      <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Custom URL (optional)</label>
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-400 shrink-0">recruitingcompass.com/p/</span>
+        <input
+          v-model="draft.vanity_slug"
+          type="text"
+          placeholder="yourname2026"
+          class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+          @blur="onSlugBlur"
+        />
+      </div>
+      <p v-if="slugError" class="text-xs text-red-500">{{ slugError }}</p>
+      <p class="text-xs text-gray-400">Changing your custom URL will break any links using the old one.</p>
+    </div>
+
+    <!-- Bio -->
+    <div class="space-y-1">
+      <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Bio / Statement</label>
+      <textarea
+        v-model="draft.bio"
+        rows="3"
+        maxlength="300"
+        placeholder="A short statement about yourself (300 chars max)"
+        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 resize-none"
+        @blur="save({ bio: draft.bio || null })"
+      />
+      <p class="text-xs text-gray-400 text-right">{{ draft.bio.length }}/300</p>
+    </div>
+
+    <!-- Section toggles -->
+    <div class="space-y-3">
+      <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">What to show coaches</label>
+      <div class="space-y-2">
+        <label v-for="section in [
+          { key: 'show_academics', label: 'Academic stats (GPA, SAT/ACT, graduation year)' },
+          { key: 'show_athletic', label: 'Athletic profile (sport, position, height/weight)' },
+          { key: 'show_film', label: 'Film & video links' },
+          { key: 'show_schools', label: 'Target schools list' },
+        ]" :key="section.key" class="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            :checked="(draft as any)[section.key]"
+            class="h-4 w-4 rounded border-gray-300 text-slate-700"
+            @change="save({ [section.key]: !((draft as any)[section.key]) })"
+          />
+          <span class="text-sm text-gray-700">{{ section.label }}</span>
+        </label>
+      </div>
+    </div>
+
+    <p v-if="saveError" class="text-xs text-red-500">{{ saveError }}</p>
+  </div>
+</template>
+```
+
+- [ ] **Step 3: Run type check**
+
+```bash
+npm run type-check
+```
+
+Expected: no errors
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add components/profile/ProfileSetup.vue components/profile/ProfilePreview.vue
+git commit -m "feat: add ProfileSetup and ProfilePreview components"
+```
+
+---
+
+### Task 13: Integrate ProfileSetup into Player Details Page
+
+**Files:**
+- Modify: `pages/settings/player-details.vue`
+
+- [ ] **Step 1: Read the current player-details.vue to find the tab structure**
+
+```bash
+# Read the file to find tab shape and active composables
+cat pages/settings/player-details.vue | head -100
+```
+
+Note:
+- The tabs array likely uses `{ id: "...", name: "...", icon: SomeIconComponent }` — match the existing shape exactly
+- Import `ShareIcon` from `@heroicons/vue/24/outline` for the tab icon (same pattern as other tabs)
+
+- [ ] **Step 2: Add the Public Profile tab**
+
+**a) Import ShareIcon** (find where other icons are imported and add alongside them):
+```typescript
+import { ShareIcon } from "@heroicons/vue/24/outline";
+```
+
+**b) Add to the tabs array** (use `id`/`name`/`icon` to match existing tab shape):
+```typescript
+{ id: "public-profile", name: "Public Profile", icon: ShareIcon }
+```
+
+**c) Add `usePlayerProfile` to the script setup** (add near other composable calls):
+```typescript
+const { profile: playerProfile } = usePlayerProfile();
+```
+
+**d) Add a schools fetch** (the page doesn't already have target schools — add this):
+```typescript
+const { data: targetSchools } = await useFetch<Array<{ id: string; name: string }>>(
+  "/api/schools",
+  { pick: ["id", "name"] as any }
+);
+```
+> Note: adjust the endpoint to match whatever the existing schools API route is — likely `/api/schools` returning `{ data: [...] }`. If the page already fetches schools, use that variable instead.
+
+**e) Add the tab panel** (in the tab content area, alongside other tab panels):
+```vue
+<template v-if="activeTab?.id === 'public-profile'">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <ProfileSetup />
+    <ProfilePreview
+      v-if="playerProfile"
+      :settings="playerProfile"
+      :player-name="currentUser?.full_name ?? 'Athlete'"
+      :details="(familyUnit?.pending_player_details as Record<string, unknown>) ?? null"
+      :schools="targetSchools ?? []"
+    />
+  </div>
+</template>
+```
+> `familyUnit` and `currentUser` — adapt to whatever variables already exist on the page. If `pending_player_details` is not accessible from the page, pass `null` for `:details` and the preview will just not show academic/athletic/film sections until that data loads.
+
+- [ ] **Step 3: Run tests and type check**
+
+```bash
+npm run type-check && npm test
+```
+
+Expected: clean
+
+- [ ] **Step 4: Verify in browser**
+
+Navigate to `/settings/player-details` → "Public Profile" tab. Confirm:
+- ProfileSetup renders with current profile state
+- Toggling a section updates the preview instantly
+- Toggling "Profile is live" persists (verify in Supabase)
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add pages/settings/player-details.vue
+git commit -m "feat: add Public Profile tab to player details settings"
+```
+
+---
+
+### Task 14: Coach Detail — Send Profile Integration
+
+**Files:**
+- Create: `components/coaches/CoachProfileLink.vue`
+- Modify: `pages/coaches/[id].vue`
+
+- [ ] **Step 1: Implement CoachProfileLink**
+
+```vue
+<!-- components/coaches/CoachProfileLink.vue -->
+<script setup lang="ts">
+import { useAuthFetch } from "~/composables/useAuthFetch";
+import { usePlayerProfileStore } from "~/stores/playerProfile";
+
+const props = defineProps<{ coachId: string }>();
+
+const { $fetchAuth } = useAuthFetch();
+const profileStore = usePlayerProfileStore();
+
+// Ensure profile is loaded so we can show the URL and unpublished warning
+if (!profileStore.profile && !profileStore.loading) {
+  profileStore.fetchProfile();
+}
+
+const link = ref<{
+  ref_token: string;
+  view_count: number;
+  last_viewed_at: string | null;
+} | null>(null);
+
+const loading = ref(false);
+const copied = ref(false);
+const error = ref<string | null>(null);
+
+onMounted(async () => {
+  loading.value = true;
+  try {
+    const data = await $fetchAuth<typeof link.value>(
+      `/api/player/profile/tracking-links/${props.coachId}`
+    );
+    link.value = data;
+  } catch {
+    // No link yet — that's fine
+  } finally {
+    loading.value = false;
+  }
+});
+
+async function generateLink() {
+  loading.value = true;
+  error.value = null;
+  try {
+    const data = await $fetchAuth<typeof link.value>(
+      `/api/player/profile/tracking-links/${props.coachId}`,
+      { method: "POST" }
+    );
+    link.value = data;
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : "Failed to generate link";
+  } finally {
+    loading.value = false;
+  }
+}
+
+const trackingUrl = computed(() => {
+  if (!link.value || !profileStore.profileUrl) return null;
+  const base = import.meta.client ? `${window.location.origin}${profileStore.profileUrl}` : profileStore.profileUrl;
+  return `${base}?ref=${link.value.ref_token}`;
+});
+
+async function copyLink() {
+  if (!trackingUrl.value) return;
+  await navigator.clipboard.writeText(trackingUrl.value);
+  copied.value = true;
+  setTimeout(() => { copied.value = false; }, 2000);
+}
+
+function formatDate(iso: string | null): string {
+  if (!iso) return "Never";
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+</script>
+
+<template>
+  <div class="rounded-xl border border-gray-100 p-4 space-y-3">
+    <h3 class="text-sm font-semibold text-gray-700">Send Recruiting Profile</h3>
+
+    <div v-if="loading" class="text-sm text-gray-400">Loading…</div>
+
+    <template v-else>
+      <!-- Has existing link -->
+      <div v-if="link" class="space-y-3">
+        <p v-if="!profileStore.profile?.is_published" class="text-xs text-amber-600">
+          ⚠️ Your profile is unpublished. Coaches who click this link will see a "not available" message.
+        </p>
+        <div class="flex gap-2">
+          <code class="flex-1 bg-gray-50 rounded-lg px-3 py-2 text-xs text-gray-600 truncate">
+            {{ trackingUrl }}
+          </code>
+          <button
+            class="px-3 py-2 text-xs bg-gray-800 text-white rounded-lg hover:bg-gray-700 whitespace-nowrap"
+            @click="copyLink"
+          >
+            {{ copied ? "Copied!" : "Copy link" }}
+          </button>
+        </div>
+        <div class="flex gap-4 text-xs text-gray-400">
+          <span>{{ link.view_count }} view{{ link.view_count !== 1 ? "s" : "" }}</span>
+          <span>Last viewed: {{ formatDate(link.last_viewed_at) }}</span>
+        </div>
+      </div>
+
+      <!-- No link yet -->
+      <div v-else class="space-y-2">
+        <p class="text-xs text-gray-500">
+          Generate a personalized profile link to share with this coach. You'll see when they view it.
+        </p>
+        <button
+          class="px-4 py-2 text-sm bg-slate-800 text-white rounded-lg hover:bg-slate-700 disabled:opacity-50"
+          :disabled="loading"
+          @click="generateLink"
+        >
+          Generate profile link
+        </button>
+        <p v-if="!profileStore.profile?.is_published" class="text-xs text-amber-600">
+          ⚠️ Your profile is not published. Coaches who click this link will see a "not available" message.
+        </p>
+      </div>
+
+      <p v-if="error" class="text-xs text-red-500">{{ error }}</p>
+    </template>
+  </div>
+</template>
+```
+
+- [ ] **Step 2: Add CoachProfileLink to the coach detail page**
+
+Open `pages/coaches/[id].vue` and add `CoachProfileLink` at the bottom of the main content area:
+
+```vue
+<!-- Near the bottom of the coach detail template, before </div> -->
+<CoachProfileLink :coach-id="coach.id" />
+```
+
+Make sure `coach.id` is the correct variable name for the loaded coach's ID (check the existing file).
+
+- [ ] **Step 3: Run type check**
+
+```bash
+npm run type-check
+```
+
+Expected: clean
+
+- [ ] **Step 4: Test in browser**
+
+1. Navigate to any coach detail page
+2. See "Send Recruiting Profile" section
+3. Click "Generate profile link" — link appears with `?ref=` token
+4. Copy link, open in incognito window
+5. Back on coach detail page — view count increments
+
+- [ ] **Step 5: Run full test suite**
+
+```bash
+npm test
+```
+
+Expected: all tests passing
+
+- [ ] **Step 6: Final commit**
+
+```bash
+git add components/coaches/CoachProfileLink.vue pages/coaches/\[id\].vue
+git commit -m "feat: add Send Profile section to coach detail page"
+```
+
+---
+
+## Final Checklist
+
+- [ ] `npm run type-check` passes
+- [ ] `npm run lint` passes
+- [ ] `npm test` passes (all existing + new tests)
+- [ ] Public profile page accessible without auth at `/p/[slug]`
+- [ ] Unpublished profile shows friendly message (not 404)
+- [ ] View recording fires without blocking page load
+- [ ] Profile settings save on toggle/blur without full page reload
+- [ ] Live preview updates in real time in settings
+- [ ] Tracking link is idempotent (clicking "Generate" twice on same coach gives same link)
+- [ ] `git push` succeeds (hooks pass)

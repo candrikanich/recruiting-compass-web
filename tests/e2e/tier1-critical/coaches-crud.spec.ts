@@ -417,7 +417,7 @@ test.describe("Coaches CRUD Operations", () => {
       // Verify removed from list
       await coachHelpers.navigateToCoaches(page, schoolId);
       const finalCount = await coachesPage.getCoachCount();
-      expect(finalCount).toBeLessThanOrEqual(initialCount);
+      expect(finalCount).toBe(initialCount - 1);
     });
   });
 });

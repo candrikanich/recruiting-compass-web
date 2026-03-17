@@ -38,7 +38,6 @@ test.describe("Complete Coach Workflow", () => {
 
     // Verify school was created
     await expect(page.locator(`text=${schoolName}`)).toBeVisible();
-    console.log(`✓ Created school: ${schoolName}`);
 
     // ===== PHASE 3: ADD COACH TO SCHOOL =====
     const coachName = generateUniqueCoachName("Workflow", "Coach");
@@ -59,9 +58,6 @@ test.describe("Complete Coach Workflow", () => {
       coachData.firstName,
       coachData.lastName,
     );
-    console.log(
-      `✓ Created coach: ${coachData.firstName} ${coachData.lastName}`,
-    );
 
     // ===== PHASE 4: VIEW COACH DETAILS =====
     await coachesPage.viewCoachDetails(
@@ -70,7 +66,6 @@ test.describe("Complete Coach Workflow", () => {
 
     // Verify coach detail page loaded with info
     await expect(page.locator(`text=${coachData.firstName}`)).toBeVisible();
-    console.log(`✓ Viewed coach details page`);
 
     // ===== PHASE 5: LOG INTERACTION =====
     const logButton = await page
@@ -109,7 +104,6 @@ test.describe("Complete Coach Workflow", () => {
       if (await saveButton.isVisible()) {
         await saveButton.click();
         await page.waitForLoadState("networkidle");
-        console.log(`✓ Logged interaction with coach`);
       }
     }
 
@@ -134,7 +128,6 @@ test.describe("Complete Coach Workflow", () => {
         .isVisible();
 
       expect(timelineVisible || true).toBe(true);
-      console.log(`✓ Viewed communication history`);
     }
 
     // ===== PHASE 7: VERIFY METRICS UPDATED =====
@@ -146,7 +139,7 @@ test.describe("Complete Coach Workflow", () => {
 
     if (await interactionCount.isVisible()) {
       const count = await interactionCount.textContent();
-      console.log(`✓ Interaction metrics displayed: ${count}`);
+      expect(count).toBeTruthy();
     }
 
     // ===== PHASE 8: SEARCH AND FILTER COACHES =====
@@ -158,7 +151,6 @@ test.describe("Complete Coach Workflow", () => {
       coachData.firstName,
       coachData.lastName,
     );
-    console.log(`✓ Searched and found coach`);
 
     // ===== PHASE 9: FILTER BY ROLE =====
     await coachesPage.clearFilters();
@@ -167,7 +159,6 @@ test.describe("Complete Coach Workflow", () => {
     // Should find our head coach
     const coachCount = await coachesPage.getCoachCount();
     expect(coachCount).toBeGreaterThan(0);
-    console.log(`✓ Filtered coaches by role`);
 
     // ===== PHASE 10: UPDATE COACH INFORMATION =====
     await coachesPage.viewCoachDetails(
@@ -189,21 +180,8 @@ test.describe("Complete Coach Workflow", () => {
       (await phoneText.isVisible().catch(() => false));
 
     if (isPhoneVisible) {
-      console.log(`✓ Updated coach phone number`);
+      expect(isPhoneVisible).toBe(true);
     }
-
-    // ===== WORKFLOW SUMMARY =====
-    console.log(`
-    ✅ COMPLETE WORKFLOW VERIFICATION PASSED
-    ================================================
-    1. ✓ Created school: ${schoolName}
-    2. ✓ Added coach: ${coachData.firstName} ${coachData.lastName}
-    3. ✓ Logged interaction with coach
-    4. ✓ Viewed communication history
-    5. ✓ Searched and filtered coaches
-    6. ✓ Updated coach information
-    7. ✓ All features working end-to-end
-    `);
   });
 
   test("Multiple coaches workflow with different roles", async ({ page }) => {
@@ -259,21 +237,18 @@ test.describe("Complete Coach Workflow", () => {
         coachData.firstName,
         coachData.lastName,
       );
-      console.log(`✓ Created ${coach.role} coach`);
     }
 
     // Verify all coaches appear in list
     await coachHelpers.navigateToCoaches(page, schoolId);
     const totalCoaches = await coachesPage.getCoachCount();
     expect(totalCoaches).toBe(3);
-    console.log(`✓ All 3 coaches displayed in list`);
 
     // Filter by each role and verify
     for (const coach of coachRoles) {
       await coachesPage.filterByRole(coach.role);
       const count = await coachesPage.getCoachCount();
       expect(count).toBeGreaterThan(0);
-      console.log(`✓ Filtered and found ${coach.role} coach`);
 
       await coachesPage.clearFilters();
     }
@@ -317,7 +292,6 @@ test.describe("Complete Coach Workflow", () => {
     if (await emailButton.isVisible()) {
       const href = await emailButton.getAttribute("href");
       expect(href).toBeDefined();
-      console.log(`✓ Email action available`);
     }
 
     const textButton = await page
@@ -329,7 +303,6 @@ test.describe("Complete Coach Workflow", () => {
     if (await textButton.isVisible()) {
       const href = await textButton.getAttribute("href");
       expect(href).toBeDefined();
-      console.log(`✓ Text action available`);
     }
 
     const twitterLink = await page.locator('a[href*="twitter.com"]').first();
@@ -337,7 +310,6 @@ test.describe("Complete Coach Workflow", () => {
     if (await twitterLink.isVisible()) {
       const href = await twitterLink.getAttribute("href");
       expect(href).toContain("twitter.com");
-      console.log(`✓ Twitter action available`);
     }
   });
 });

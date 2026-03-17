@@ -3,11 +3,22 @@ import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { deriveTimezone } from "~/server/utils/timezone";
+
+const homeLocationSchema = z.object({
+  address: z.string().max(200).optional(),
+  city: z.string().max(100).optional(),
+  state: z.string().length(2).optional(),
+  zip: z.string().max(10).optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+});
 
 const profileSchema = z.object({
   full_name: z.string().min(1).max(100).optional(),
   phone: z.string().max(30).nullable().optional(),
   date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format").nullable().optional(),
+  home_location: homeLocationSchema.nullable().optional(),
 });
 
 export default defineEventHandler(async (event) => {
@@ -30,9 +41,13 @@ export default defineEventHandler(async (event) => {
     }
 
     const supabase = useSupabaseAdmin();
+    const updatePayload: Record<string, unknown> = { ...parsed.data };
+    if (parsed.data.home_location?.state) {
+      updatePayload.timezone = deriveTimezone(parsed.data.home_location.state);
+    }
     const { error } = await supabase
       .from("users")
-      .update(parsed.data)
+      .update(updatePayload)
       .eq("id", user.id);
 
     if (error) {

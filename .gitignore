@@ -1,3 +1,6 @@
+# Brainstorming sessions
+.superpowers/
+
 # Dependencies
 node_modules/
 yarn.lock
@@ -49,3 +52,6 @@ test-results/
 supabase/.temp/
 .vercel
 .worktrees
+
+# Playwright auth state (contains real tokens — never commit)
+tests/e2e/.auth/*.json

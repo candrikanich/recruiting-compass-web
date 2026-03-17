@@ -4,7 +4,7 @@ import { BasePage } from "./BasePage";
 export class AuthPage extends BasePage {
   async goto() {
     await super.goto("/login");
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('input[type="email"]').waitFor({ state: "visible" });
   }
 
   async login(

@@ -1,7 +1,28 @@
 // Test data fixtures for E2E tests
+
+/**
+ * Creates a unique test user object for tests that need a fresh account.
+ * Call this INSIDE the test, not at module level.
+ * @example
+ *   const user = makeTestUser("signup");
+ *   await authPage.signup(user.email, user.password, user.displayName);
+ */
+export function makeTestUser(prefix = "test") {
+  const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  return {
+    email: `${prefix}-${suffix}@example.com`,
+    password: "TestPassword123!",
+    displayName: "Test User",
+  };
+}
+
 export const testUsers = {
+  /**
+   * @deprecated Shared email causes test collisions. Use makeTestUser() instead.
+   * Set to an obviously-invalid value so accidental use fails loudly.
+   */
   newUser: {
-    email: `test-${Date.now()}@example.com`,
+    email: "DEPRECATED-use-makeTestUser@example.com",
     password: "TestPassword123!",
     displayName: "Test User",
   },
@@ -10,8 +31,11 @@ export const testUsers = {
     password: "ExistingPass123!",
     displayName: "Existing User",
   },
+  /**
+   * @deprecated Use makeTestUser() instead.
+   */
   collaborator: {
-    email: `collaborator-${Date.now()}@example.com`,
+    email: "DEPRECATED-use-makeTestUser@example.com",
     password: "CollaboratorPass123!",
     displayName: "Collaborator User",
   },

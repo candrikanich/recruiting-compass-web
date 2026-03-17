@@ -1,19 +1,8 @@
-import { test, expect, type Page } from "@playwright/test";
-import { loginViaForm } from "./helpers/login";
-
-const TEST_PARENT = {
-  email: "test.parent@andrikanich.com",
-  password: "test-password",
-};
-
-async function loginAsParent(page: Page) {
-  await loginViaForm(page, TEST_PARENT.email, TEST_PARENT.password, /\/(dashboard|schools|onboarding)/);
-}
+import { test, expect } from "@playwright/test";
+import { resolve } from "path";
 
 test.describe("Parent Fit Score Access", () => {
-  test.beforeEach(async ({ page }) => {
-    await loginAsParent(page);
-  });
+  test.use({ storageState: resolve(process.cwd(), "tests/e2e/.auth/parent.json") });
 
   test("parent can view schools page after login", async ({ page }) => {
     await page.goto("/schools");

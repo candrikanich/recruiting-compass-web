@@ -1,9 +1,7 @@
 import { test, expect } from "@playwright/test";
-import { loginViaForm } from "./helpers/login";
 
 test.describe("Notifications Page", () => {
   test.beforeEach(async ({ page }) => {
-    await loginViaForm(page, "player@test.com", "TestPass123!", /\/dashboard/);
     await page.goto("/notifications");
     await page.waitForLoadState("networkidle");
   });

@@ -14,13 +14,6 @@ test.describe("Tier 3: Error Recovery & Edge Cases", () => {
   test.beforeEach(async ({ page }) => {
     authPage = new AuthPage(page);
     schoolsPage = new SchoolsPage(page);
-
-    await authPage.goto();
-    await authPage.signup(
-      testUsers.newUser.email,
-      testUsers.newUser.password,
-      testUsers.newUser.displayName,
-    );
   });
 
   test("should recover from network error", async ({ page }) => {
