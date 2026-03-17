@@ -339,7 +339,7 @@ export async function generateCoachFollowupNotifications(
   try {
     const { data: coaches, error: coachesError } = await supabase
       .from("coaches")
-      .select("id, first_name, last_name, last_contact_date")
+      .select("id, first_name, last_name, last_contact_date, follow_up_threshold_days")
       .eq("user_id", userId);
 
     if (coachesError) throw coachesError;
@@ -347,7 +347,6 @@ export async function generateCoachFollowupNotifications(
 
     let createdCount = 0;
     const now = new Date();
-    const FOLLOWUP_THRESHOLD = 7; // days
 
     for (const coach of coaches) {
       if (!coach.last_contact_date) continue;
@@ -356,8 +355,9 @@ export async function generateCoachFollowupNotifications(
       const daysSince = Math.ceil(
         (now.getTime() - lastContact.getTime()) / (1000 * 60 * 60 * 24),
       );
+      const threshold = coach.follow_up_threshold_days ?? 21;
 
-      if (daysSince >= FOLLOWUP_THRESHOLD) {
+      if (daysSince >= threshold) {
         // Check if notification already exists for this coach
         const { data: existing, error: checkError } = await supabase
           .from("notifications")
@@ -379,7 +379,7 @@ export async function generateCoachFollowupNotifications(
               user_id: userId,
               type: "follow_up",
               title: template.title(coachName),
-              message: template.message(coachName, FOLLOWUP_THRESHOLD),
+              message: template.message(coachName, threshold),
               related_entity_type: "coach",
               related_entity_id: coach.id,
               related_coach_id: coach.id,
