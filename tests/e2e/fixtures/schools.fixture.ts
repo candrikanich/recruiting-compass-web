@@ -284,7 +284,7 @@ export const sidebarSelectors = {
   quickActions: 'h3:has-text("Quick Actions")',
   logInteractionLink: 'a:has-text("Log Interaction"):first-of-type, a:has-text("Log Interaction")',
   sendEmailButton: 'button:has-text("Send Email")',
-  manageCoachesLink: 'a[href*="/coaches"]',
+  manageCoachesLink: 'a[href*="/schools/"][href*="/coaches"]',
   coachesList: ".space-y-3",
   coachCard: ".p-3.border.border-slate-200.rounded-lg",
   coachName: ".font-medium.text-slate-900.text-sm",
