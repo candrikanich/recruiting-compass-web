@@ -36,120 +36,10 @@
         <!-- Address Section -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-lg font-semibold text-slate-900 mb-4">Address</h2>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1"
-                >Street Address</label
-              >
-              <input
-                v-model="localLocation.address"
-                type="text"
-                placeholder="123 Main Street"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div class="col-span-2">
-                <label class="block text-sm font-medium text-slate-700 mb-1"
-                  >City</label
-                >
-                <input
-                  v-model="localLocation.city"
-                  type="text"
-                  placeholder="Chicago"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1"
-                  >State</label
-                >
-                <input
-                  v-model="localLocation.state"
-                  type="text"
-                  placeholder="IL"
-                  maxlength="2"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 uppercase"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1"
-                  >ZIP Code</label
-                >
-                <input
-                  v-model="localLocation.zip"
-                  type="text"
-                  placeholder="60601"
-                  maxlength="10"
-                  @blur="triggerSave"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Coordinates Section -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h2 class="text-lg font-semibold text-slate-900">Coordinates</h2>
-              <p class="text-sm text-slate-500">
-                Auto-detected from address or enter manually
-              </p>
-            </div>
-            <button
-              @click="handleGeocode"
-              :disabled="geocoding || !hasAddress"
-              class="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition flex items-center gap-2"
-            >
-              <MapPinIcon class="w-4 h-4" />
-              {{ geocoding ? "Looking up..." : "Lookup from Address" }}
-            </button>
-          </div>
-
-          <div
-            v-if="geocodeError"
-            class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm"
-          >
-            {{ geocodeError }}
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1"
-                >Latitude</label
-              >
-              <input
-                v-model.number="localLocation.latitude"
-                type="number"
-                step="0.000001"
-                placeholder="41.8781"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1"
-                >Longitude</label
-              >
-              <input
-                v-model.number="localLocation.longitude"
-                type="number"
-                step="0.000001"
-                placeholder="-87.6298"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-
-          <p
-            v-if="localLocation.latitude && localLocation.longitude"
-            class="mt-3 text-sm text-emerald-600 flex items-center gap-1"
-          >
-            <CheckCircleIcon class="w-4 h-4" />
-            Coordinates set - distances will be calculated automatically
-          </p>
+          <AddressAutocompleteInput
+            :model-value="localLocation"
+            @update:model-value="(v) => { Object.assign(localLocation, v); triggerSave(); }"
+          />
         </div>
 
         <!-- Action Buttons -->
@@ -191,13 +81,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { useGeocoding } from "~/composables/useGeocoding";
 import { useAutoSave } from "~/composables/useAutoSave";
 import {
   ArrowLeftIcon,
-  MapPinIcon,
   CheckCircleIcon,
 } from "@heroicons/vue/24/outline";
 import type { HomeLocation } from "~/types/models";
@@ -214,12 +102,6 @@ const {
   setHomeLocation,
   loadAllPreferences,
 } = usePreferenceManager();
-const {
-  geocodeAddress,
-  loading: geocoding,
-  error: geocodeError,
-} = useGeocoding();
-
 const localLocation = reactive<HomeLocation>({
   address: "",
   city: "",
@@ -232,66 +114,18 @@ const localLocation = reactive<HomeLocation>({
 const saving = ref(false);
 const saveSuccess = ref(false);
 
-// Auto-save configuration for zip code
 const { triggerSave } = useAutoSave({
   debounceMs: 500,
   onSave: async () => {
-    // Auto-geocode if we have an address but no coordinates
-    if (
-      hasAddress.value &&
-      (!localLocation.latitude || !localLocation.longitude)
-    ) {
-      const result = await geocodeAddress(fullAddress.value);
-      if (result) {
-        localLocation.latitude = result.latitude;
-        localLocation.longitude = result.longitude;
-      }
-    }
     await setHomeLocation(localLocation);
   },
 });
-
-const hasAddress = computed(() => {
-  return localLocation.address || localLocation.city || localLocation.zip;
-});
-
-const fullAddress = computed(() => {
-  const parts = [
-    localLocation.address,
-    localLocation.city,
-    localLocation.state,
-    localLocation.zip,
-  ].filter(Boolean);
-  return parts.join(", ");
-});
-
-const handleGeocode = async () => {
-  if (!fullAddress.value) return;
-
-  const result = await geocodeAddress(fullAddress.value);
-  if (result) {
-    localLocation.latitude = result.latitude;
-    localLocation.longitude = result.longitude;
-  }
-};
 
 const handleSave = async () => {
   saving.value = true;
   saveSuccess.value = false;
 
   try {
-    // Auto-geocode if we have an address but no coordinates
-    if (
-      hasAddress.value &&
-      (!localLocation.latitude || !localLocation.longitude)
-    ) {
-      const result = await geocodeAddress(fullAddress.value);
-      if (result) {
-        localLocation.latitude = result.latitude;
-        localLocation.longitude = result.longitude;
-      }
-    }
-
     await setHomeLocation(localLocation);
     saveSuccess.value = true;
     setTimeout(() => (saveSuccess.value = false), 3000);
@@ -318,20 +152,6 @@ onMounted(async () => {
   const location = getHomeLocation.value;
   if (location) {
     Object.assign(localLocation, location);
-
-    // Auto-geocode if we have an address but no coordinates
-    if (
-      hasAddress.value &&
-      (!localLocation.latitude || !localLocation.longitude)
-    ) {
-      const result = await geocodeAddress(fullAddress.value);
-      if (result) {
-        localLocation.latitude = result.latitude;
-        localLocation.longitude = result.longitude;
-        // Save the coordinates immediately
-        await setHomeLocation(localLocation);
-      }
-    }
   }
 });
 </script>
