@@ -11,16 +11,16 @@ test.describe("Recruiting Packet Feature", () => {
 
   test("should display Generate Packet button", async ({ page }) => {
     // Look for the button text
-    const button = page.getByRole("button", {
-      name: /Generate Packet/i,
+    const button = page.locator("button").filter({
+      hasText: /Generate Packet/i,
     });
 
     await expect(button).toBeVisible();
   });
 
   test("should have enabled button when clicked", async ({ page }) => {
-    const button = page.getByRole("button", {
-      name: /Generate Packet/i,
+    const button = page.locator("button").filter({
+      hasText: /Generate Packet/i,
     });
 
     // Button should be enabled initially
@@ -31,7 +31,7 @@ test.describe("Recruiting Packet Feature", () => {
     // Set up listener for new windows
     const [popup] = await Promise.all([
       page.waitForEvent("popup"),
-      page.getByRole("button", { name: /Generate Packet/i }).click(),
+      page.locator("button").filter({ hasText: /Generate Packet/i }).click(),
     ]);
 
     // Should open in new window
@@ -44,7 +44,7 @@ test.describe("Recruiting Packet Feature", () => {
   test("should open preview window with packet HTML", async ({ page }) => {
     const [popup] = await Promise.all([
       page.waitForEvent("popup"),
-      page.getByRole("button", { name: /Generate Packet/i }).click(),
+      page.locator("button").filter({ hasText: /Generate Packet/i }).click(),
     ]);
 
     // Check that PDF has expected content
@@ -55,7 +55,7 @@ test.describe("Recruiting Packet Feature", () => {
   test("should include athlete information in packet", async ({ page }) => {
     const [popup] = await Promise.all([
       page.waitForEvent("popup"),
-      page.getByRole("button", { name: /Generate Packet/i }).click(),
+      page.locator("button").filter({ hasText: /Generate Packet/i }).click(),
     ]);
 
     // Check for key sections
@@ -74,7 +74,7 @@ test.describe("Recruiting Packet Feature", () => {
   test("should include download button in preview", async ({ page }) => {
     const [popup] = await Promise.all([
       page.waitForEvent("popup"),
-      page.getByRole("button", { name: /Generate Packet/i }).click(),
+      page.locator("button").filter({ hasText: /Generate Packet/i }).click(),
     ]);
 
     // Should have print button
@@ -96,7 +96,7 @@ test.describe("Recruiting Packet Feature", () => {
 
     const [popup] = await Promise.all([
       page.waitForEvent("popup"),
-      page.getByRole("button", { name: /Generate Packet/i }).click(),
+      page.locator("button").filter({ hasText: /Generate Packet/i }).click(),
     ]);
 
     // Click download button (window.print)
@@ -106,7 +106,7 @@ test.describe("Recruiting Packet Feature", () => {
   test("should display all school tiers", async ({ page }) => {
     const [popup] = await Promise.all([
       page.waitForEvent("popup"),
-      page.getByRole("button", { name: /Generate Packet/i }).click(),
+      page.locator("button").filter({ hasText: /Generate Packet/i }).click(),
     ]);
 
     const bodyText = await popup.locator("body").textContent();
@@ -124,7 +124,7 @@ test.describe("Recruiting Packet Feature", () => {
   test("should include interaction breakdown", async ({ page }) => {
     const [popup] = await Promise.all([
       page.waitForEvent("popup"),
-      page.getByRole("button", { name: /Generate Packet/i }).click(),
+      page.locator("button").filter({ hasText: /Generate Packet/i }).click(),
     ]);
 
     const bodyText = await popup.locator("body").textContent();
@@ -141,7 +141,7 @@ test.describe("Recruiting Packet Feature", () => {
   }) => {
     const [popup] = await Promise.all([
       page.waitForEvent("popup"),
-      page.getByRole("button", { name: /Generate Packet/i }).click(),
+      page.locator("button").filter({ hasText: /Generate Packet/i }).click(),
     ]);
 
     // Check for image or placeholder
@@ -156,7 +156,7 @@ test.describe("Recruiting Packet Feature", () => {
   test("should include generation date in packet", async ({ page }) => {
     const [popup] = await Promise.all([
       page.waitForEvent("popup"),
-      page.getByRole("button", { name: /Generate Packet/i }).click(),
+      page.locator("button").filter({ hasText: /Generate Packet/i }).click(),
     ]);
 
     const bodyText = await popup.locator("body").textContent();
@@ -197,8 +197,8 @@ test.describe("Recruiting Packet Feature", () => {
     await page.waitForLoadState("networkidle");
 
     // Button should still be present
-    const button = page.getByRole("button", {
-      name: /Generate Packet/i,
+    const button = page.locator("button").filter({
+      hasText: /Generate Packet/i,
     });
 
     await expect(button).toBeVisible();
@@ -207,7 +207,7 @@ test.describe("Recruiting Packet Feature", () => {
   test("should show success message", async ({ page }) => {
     const [popup] = await Promise.all([
       page.waitForEvent("popup"),
-      page.getByRole("button", { name: /Generate Packet/i }).click(),
+      page.locator("button").filter({ hasText: /Generate Packet/i }).click(),
     ]);
 
     // Check for success message (if toast notification is shown)
