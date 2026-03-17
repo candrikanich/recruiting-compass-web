@@ -12,6 +12,8 @@ export const CACHE_KEYS = {
   COLLEGE_SEARCH: (query: string) => `college:search:${query.toLowerCase().trim()}`,
   COLLEGE_ID: (id: string) => `college:id:${id}`,
   NCAA_METADATA: "ncaa:metadata:all",
+  NCES_SEARCH: (q: string, state: string) =>
+    `nces:search:${q.toLowerCase().trim()}:${state.toLowerCase()}`,
 } as const;
 
 /**

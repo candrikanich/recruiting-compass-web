@@ -365,6 +365,7 @@ export interface PlayerDetails {
   primary_sport?: string;
   primary_position?: string;
   high_school?: string;
+  nces_school_id?: string; // NCES school identifier; null if free-text entry was used
   club_team?: string;
   positions?: string[];
   bats?: "L" | "R" | "S";
