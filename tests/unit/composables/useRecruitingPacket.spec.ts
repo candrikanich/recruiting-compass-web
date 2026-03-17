@@ -43,6 +43,13 @@ const mockSchoolData: School[] = [
     status: "offer_received",
     is_favorite: true,
     user_id: "test-user-id",
+    website: null,
+    favicon_url: null,
+    twitter_handle: null,
+    instagram_handle: null,
+    notes: null,
+    pros: [],
+    cons: [],
   },
   {
     id: "school-2",
@@ -53,6 +60,13 @@ const mockSchoolData: School[] = [
     status: "camp_invite",
     is_favorite: false,
     user_id: "test-user-id",
+    website: null,
+    favicon_url: null,
+    twitter_handle: null,
+    instagram_handle: null,
+    notes: null,
+    pros: [],
+    cons: [],
   },
 ];
 

@@ -109,11 +109,11 @@ export class SchoolsPage extends BasePage {
   }
 
   async filterByState(_state: string) {
-    // Simplified implementation — filter UI not yet implemented
+    throw new Error("filterByState: filter UI not yet implemented in the app");
   }
 
   async filterByConference(_conference: string) {
-    // Simplified implementation — filter UI not yet implemented
+    throw new Error("filterByConference: filter UI not yet implemented in the app");
   }
 
   async filterByMultipleCriteria(filters: any) {

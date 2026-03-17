@@ -213,6 +213,7 @@ import { useNcaaLookup } from "~/composables/useNcaaLookup";
 import { schoolSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
 import type { CollegeDataResult } from "~/composables/useCollegeData";
+import type { CollegeSearchResult } from "~/types/api";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 
 // Division options
@@ -431,7 +432,11 @@ const isAutoFilled = (field: string) => {
   return autoFilledFields[field as keyof typeof autoFilledFields];
 };
 
-const handleCollegeSelect = async (college: any) => {
+let lookupGeneration = 0;
+
+const handleCollegeSelect = async (college: CollegeSearchResult) => {
+  const myGeneration = ++lookupGeneration;
+
   formData.name = college.name;
   formData.location = college.location || "";
   formData.website = college.website || "";
@@ -443,6 +448,7 @@ const handleCollegeSelect = async (college: any) => {
   // This avoids a flash where the parent's async lookup triggers an empty-division prop update
   // that would overwrite the already-populated value (see watch logic below).
   const ncaaResult = await lookupSchool(college.name, college.id).catch(() => null);
+  if (myGeneration !== lookupGeneration) return; // stale — a newer selection happened
   if (ncaaResult) {
     formData.division = ncaaResult.division;
     formData.conference = ncaaResult.conference || "";

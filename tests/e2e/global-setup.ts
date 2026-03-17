@@ -2,6 +2,7 @@ import type { FullConfig } from "@playwright/test";
 import { chromium } from "@playwright/test";
 import { execSync } from "child_process";
 import { config } from "dotenv";
+import fs from "fs/promises";
 import { resolve } from "path";
 import { createTestAccounts } from "./seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "./config/test-accounts";
@@ -29,6 +30,7 @@ async function globalSetup(_config: FullConfig) {
   // Provision storageState for each test account.
   // This allows every test to start pre-authenticated — no per-test login needed.
   const browser = await chromium.launch();
+  await fs.mkdir(AUTH_DIR, { recursive: true });
   try {
     for (const [role, account] of Object.entries(TEST_ACCOUNTS)) {
       console.log(`🔐 Capturing storageState for ${role}...`);

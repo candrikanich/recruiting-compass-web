@@ -48,7 +48,10 @@ export class SettingsPage extends BasePage {
   }
 
   async expectSaveSuccess() {
-    await expect(this.page.locator('[data-testid="save-player-details-button"]')).toBeVisible();
+    // The player-details page uses auto-save (no explicit save button).
+    // The sticky header shows "Saved" once isSaving becomes false.
+    await expect(this.page.locator("text=Saved")).toBeVisible();
+    await expect(this.page.locator("text=Saving")).not.toBeVisible();
   }
 
   async expectValidationErrors() {

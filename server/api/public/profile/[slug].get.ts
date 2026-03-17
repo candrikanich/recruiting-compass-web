@@ -18,11 +18,27 @@ export default defineEventHandler(async (event) => {
     const supabase = createServerSupabaseClient();
 
     // Resolve by hash_slug first, then vanity_slug
-    const { data: profile } = await supabase
+    let profileResult = await supabase
       .from("player_profiles")
       .select("*")
-      .or(`hash_slug.eq.${slug},vanity_slug.eq.${slug}`)
+      .eq("hash_slug", slug)
       .maybeSingle();
+    if (profileResult.error) {
+      logger.error("Failed to query player_profiles by hash_slug", profileResult.error);
+      throw createError({ statusCode: 500, statusMessage: "Failed to load profile" });
+    }
+    if (!profileResult.data) {
+      profileResult = await supabase
+        .from("player_profiles")
+        .select("*")
+        .eq("vanity_slug", slug)
+        .maybeSingle();
+      if (profileResult.error) {
+        logger.error("Failed to query player_profiles by vanity_slug", profileResult.error);
+        throw createError({ statusCode: 500, statusMessage: "Failed to load profile" });
+      }
+    }
+    const profile = profileResult.data;
 
     if (!profile) {
       logger.warn("Profile slug not found", { slug });

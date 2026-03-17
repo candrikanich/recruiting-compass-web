@@ -13,7 +13,7 @@ vi.mock("~/server/utils/supabase", () => ({
       if (table === "player_profiles") {
         return {
           select: () => ({
-            or: () => ({
+            eq: () => ({
               maybeSingle: () =>
                 Promise.resolve({ data: mockState.profileRow, error: null }),
             }),

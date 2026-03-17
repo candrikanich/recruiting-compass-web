@@ -13,7 +13,7 @@ vi.mock("~/server/utils/supabase", () => ({
       if (table === "player_profiles") {
         return {
           select: () => ({
-            or: () => ({
+            eq: () => ({
               maybeSingle: () =>
                 Promise.resolve({ data: mockState.profileRow, error: null }),
             }),
@@ -24,21 +24,23 @@ vi.mock("~/server/utils/supabase", () => ({
         return {
           select: () => ({
             eq: () => ({
-              maybeSingle: () =>
-                Promise.resolve({ data: mockState.linkRow, error: null }),
+              eq: () => ({
+                maybeSingle: () =>
+                  Promise.resolve({ data: mockState.linkRow, error: null }),
+              }),
             }),
           }),
         };
       }
       if (table === "profile_views") {
         return {
-          insert: () => ({ then: (fn: Function) => fn({ error: mockState.insertError }) }),
+          insert: () => Promise.resolve({ error: mockState.insertError }),
         };
       }
       return {};
     },
     // Top-level rpc — used for increment_profile_link_view
-    rpc: vi.fn(() => ({ then: (fn: Function) => fn({ error: null }) })),
+    rpc: vi.fn(() => Promise.resolve({ error: null })),
   })),
 }));
 

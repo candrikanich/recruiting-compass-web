@@ -19,43 +19,67 @@ export default defineEventHandler(async (event) => {
     const userAgent = rawUserAgent ? rawUserAgent.slice(0, 512) : null;
     const supabase = createServerSupabaseClient();
 
-    const { data: profile } = await supabase
+    // Resolve by hash_slug first, then vanity_slug
+    let profileResult = await supabase
       .from("player_profiles")
       .select("id")
-      .or(`hash_slug.eq.${slug},vanity_slug.eq.${slug}`)
+      .eq("hash_slug", slug)
       .maybeSingle();
+    if (profileResult.error) {
+      logger.error("Failed to query player_profiles by hash_slug", profileResult.error);
+      throw createError({ statusCode: 500, statusMessage: "Failed to record view" });
+    }
+    if (!profileResult.data) {
+      profileResult = await supabase
+        .from("player_profiles")
+        .select("id")
+        .eq("vanity_slug", slug)
+        .maybeSingle();
+      if (profileResult.error) {
+        logger.error("Failed to query player_profiles by vanity_slug", profileResult.error);
+        throw createError({ statusCode: 500, statusMessage: "Failed to record view" });
+      }
+    }
+    const profile = profileResult.data;
 
     if (!profile) {
       throw createError({ statusCode: 404, statusMessage: "Profile not found" });
     }
 
-    // Resolve tracking link from ref token (if provided)
+    // Resolve tracking link from ref token (if provided), validating it belongs to this profile
     let trackingLinkId: string | null = null;
     if (ref) {
-      const { data: link } = await supabase
+      const { data: link, error: linkError } = await supabase
         .from("profile_tracking_links")
         .select("id")
         .eq("ref_token", ref)
+        .eq("profile_id", profile.id)
         .maybeSingle();
 
-      if (link) {
+      if (linkError) {
+        logger.warn("Failed to resolve ref token", linkError);
+      } else if (link) {
         trackingLinkId = link.id;
-        // Atomic increment via SQL function defined in migration — fire and forget
-        supabase
-          .rpc("increment_profile_link_view", { link_id: link.id })
-          .then(({ error: e }: { error: unknown }) => {
-            if (e) logger.warn("Failed to increment view count", e);
-          });
       }
     }
 
-    // Insert detailed view log — fire and forget (don't block response)
-    supabase
-      .from("profile_views")
-      .insert({ profile_id: profile.id, tracking_link_id: trackingLinkId, user_agent: userAgent })
-      .then(({ error }: { error: unknown }) => {
-        if (error) logger.warn("Failed to log profile view", error);
-      });
+    // Await both analytics writes so data is not silently lost
+    const results = await Promise.allSettled([
+      trackingLinkId
+        ? supabase.rpc("increment_profile_link_view", { link_id: trackingLinkId })
+        : Promise.resolve({ error: null }),
+      supabase
+        .from("profile_views")
+        .insert({ profile_id: profile.id, tracking_link_id: trackingLinkId, user_agent: userAgent }),
+    ]);
+
+    for (const result of results) {
+      if (result.status === "rejected") {
+        logger.warn("Analytics write threw unexpectedly", result.reason);
+      } else if ((result.value as { error: unknown }).error) {
+        logger.warn("Analytics write returned error", (result.value as { error: unknown }).error);
+      }
+    }
 
     logger.debug("View recorded", { slug, hasRef: !!ref });
     return { ok: true };

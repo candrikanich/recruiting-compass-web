@@ -17,12 +17,16 @@ export default defineEventHandler(async (event) => {
     const coachId = getRouterParam(event, "coachId")!;
     const supabase = useSupabaseAdmin();
 
-    const { data: membership } = await supabase
+    const { data: membership, error: membershipError } = await supabase
       .from("family_members")
       .select("family_unit_id")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
+    if (membershipError) {
+      logger.error("Failed to query family membership", membershipError);
+      throw createError({ statusCode: 500, statusMessage: "Failed to create tracking link" });
+    }
     if (!membership) {
       throw createError({ statusCode: 403, statusMessage: "Not a family member" });
     }
@@ -56,6 +60,21 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (error) {
+      // Handle race condition: concurrent request already inserted this (profile_id, coach_id) pair
+      if ((error as { code: string }).code === "23505") {
+        const { data: raced, error: refetchError } = await supabase
+          .from("profile_tracking_links")
+          .select("*")
+          .eq("profile_id", profile.id)
+          .eq("coach_id", coachId)
+          .maybeSingle();
+        if (refetchError || !raced) {
+          logger.error("Failed to re-fetch tracking link after 23505", refetchError ?? error);
+          throw createError({ statusCode: 500, statusMessage: "Failed to create tracking link" });
+        }
+        logger.debug("Returning concurrently-created tracking link", { coachId });
+        return raced;
+      }
       logger.error("Failed to create tracking link", error);
       throw createError({ statusCode: 500, statusMessage: "Failed to create tracking link" });
     }

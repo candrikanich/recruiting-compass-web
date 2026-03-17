@@ -1,73 +1,38 @@
 <script setup lang="ts">
-import { useAuthFetch } from "~/composables/useAuthFetch";
 import { usePlayerProfileStore } from "~/stores/playerProfile";
+import { useTrackingLink } from "~/composables/useTrackingLink";
 
 const props = defineProps<{ coachId: string }>();
 
-const { $fetchAuth } = useAuthFetch();
 const profileStore = usePlayerProfileStore();
-
-const link = ref<{
-  ref_token: string;
-  view_count: number;
-  last_viewed_at: string | null;
-} | null>(null);
-
-const loading = ref(false);
-const copied = ref(false);
-const error = ref<string | null>(null);
+const { link, loading, loadError, error, trackingUrl, fetchLink, generateLink } =
+  useTrackingLink(computed(() => props.coachId));
 
 onMounted(async () => {
-  // Ensure profile store is populated for URL and unpublished warning
   if (!profileStore.profile && !profileStore.loading) {
     profileStore.fetchProfile();
   }
-
-  loading.value = true;
-  try {
-    const data = await $fetchAuth<typeof link.value>(
-      `/api/player/profile/tracking-links/${props.coachId}`
-    );
-    link.value = data;
-  } catch {
-    // No link yet — that's fine
-  } finally {
-    loading.value = false;
-  }
+  await fetchLink();
 });
 
-async function generateLink() {
-  loading.value = true;
-  error.value = null;
-  try {
-    const data = await $fetchAuth<typeof link.value>(
-      `/api/player/profile/tracking-links/${props.coachId}`,
-      { method: "POST" }
-    );
-    link.value = data;
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : "Failed to generate link";
-  } finally {
-    loading.value = false;
-  }
-}
-
-const trackingUrl = computed(() => {
-  if (!link.value || !profileStore.profileUrl) return null;
-  const base = import.meta.client ? `${window.location.origin}${profileStore.profileUrl}` : profileStore.profileUrl;
-  return `${base}?ref=${link.value.ref_token}`;
-});
+const copied = ref(false);
 
 async function copyLink() {
   if (!trackingUrl.value) return;
   await navigator.clipboard.writeText(trackingUrl.value);
   copied.value = true;
-  setTimeout(() => { copied.value = false; }, 2000);
+  setTimeout(() => {
+    copied.value = false;
+  }, 2000);
 }
 
 function formatDate(iso: string | null): string {
   if (!iso) return "Never";
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 </script>
 
@@ -78,8 +43,10 @@ function formatDate(iso: string | null): string {
     <div v-if="loading" class="text-sm text-gray-400">Loading…</div>
 
     <template v-else>
+      <p v-if="loadError" class="text-xs text-red-500">{{ loadError }}</p>
+
       <!-- Has existing link -->
-      <div v-if="link" class="space-y-3">
+      <div v-else-if="link" class="space-y-3">
         <p v-if="!profileStore.profile?.is_published" class="text-xs text-amber-600">
           ⚠️ Your profile is unpublished. Coaches who click this link will see a "not available" message.
         </p>

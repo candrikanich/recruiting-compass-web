@@ -23,7 +23,7 @@ vi.mock("~/server/utils/supabase", () => ({
         return {
           select: () => ({
             eq: () => ({
-              single: () =>
+              maybeSingle: () =>
                 Promise.resolve({ data: mockState.membership, error: null }),
             }),
           }),
