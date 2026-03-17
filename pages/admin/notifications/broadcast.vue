@@ -41,6 +41,7 @@
               v-model="form.user_id"
               type="text"
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              :required="form.target === 'user'"
               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
           </div>
@@ -153,6 +154,12 @@ const errorMessage = ref<string | null>(null);
 async function submit() {
   successMessage.value = null;
   errorMessage.value = null;
+
+  if (form.value.target === 'user' && !form.value.user_id.trim()) {
+    errorMessage.value = 'A User ID is required when targeting a specific user.'
+    return
+  }
+
   sending.value = true;
 
   try {
