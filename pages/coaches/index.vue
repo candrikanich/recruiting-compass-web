@@ -59,10 +59,11 @@
       :aria-busy="loading"
     >
       <!-- Summary Tiles -->
-      <StatsTiles :stats="coachStats" aria-label="Coaches Statistics" />
+      <StatsTiles v-if="allCoaches.length > 0" :stats="coachStats" aria-label="Coaches Statistics" />
 
       <!-- Filter Bar -->
       <div
+        v-if="allCoaches.length > 0"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 mb-6"
       >
         <CoachFilters
@@ -128,7 +129,26 @@
         </div>
       </div>
 
-      <!-- Empty State -->
+      <!-- Empty State: No schools followed yet -->
+      <div
+        v-else-if="schools.length === 0"
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        role="status"
+      >
+        <svg class="w-12 h-12 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
+        </svg>
+        <h2 class="text-slate-900 font-semibold mb-2">Add schools first</h2>
+        <p class="text-slate-600 mb-6">Coaches are added through school pages. Follow a school to start tracking coaches there.</p>
+        <NuxtLink
+          to="/schools/new"
+          class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+        >
+          Add a School
+        </NuxtLink>
+      </div>
+
+      <!-- Empty State: Has schools but no coaches -->
       <div
         v-else-if="allCoaches.length === 0"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
@@ -138,8 +158,14 @@
           class="w-12 h-12 text-slate-400 mx-auto mb-4"
           aria-hidden="true"
         />
-        <h2 class="text-slate-900 font-semibold mb-2">No coaches found</h2>
-        <p class="text-slate-700">Add coaches through school detail pages</p>
+        <h2 class="text-slate-900 font-semibold mb-2">No coaches yet</h2>
+        <p class="text-slate-600 mb-6">Visit a school's page to add coaches from their staff.</p>
+        <NuxtLink
+          to="/schools"
+          class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+        >
+          Go to Schools
+        </NuxtLink>
       </div>
 
       <!-- No Results State -->
