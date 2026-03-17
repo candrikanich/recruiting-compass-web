@@ -165,6 +165,42 @@ export interface SendInviteEmailOptions {
   token: string;
 }
 
+export function renderWeeklyDigestEmail(data: {
+  lines: string[]
+  upcomingDeadlines: Array<{ label: string; deadline_date: string }>
+}): string {
+  const lineItems = data.lines
+    .map(l => `<li style="margin:4px 0">${escapeHtml(l)}</li>`)
+    .join('')
+  const deadlineItems = data.upcomingDeadlines.length
+    ? data.upcomingDeadlines.map(d => `<li>${escapeHtml(d.label)} — ${d.deadline_date}</li>`).join('')
+    : '<li>No upcoming deadlines</li>'
+  return `<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+    <h2 style="color:#1a1a1a">Your Weekly Recruiting Recap</h2>
+    <ul style="padding-left:20px">${lineItems}</ul>
+    <h3 style="color:#1a1a1a">Upcoming Deadlines</h3>
+    <ul style="padding-left:20px">${deadlineItems}</ul>
+    <p style="color:#888;font-size:12px;margin-top:32px">
+      You're receiving this because you have a Recruiting Compass account.
+    </p>
+  </body></html>`
+}
+
+export function renderDeadlineAlertEmail(data: {
+  label: string
+  daysUntil: number
+  deadline_date: string
+}): string {
+  const urgency = data.daysUntil === 0 ? 'TODAY' : `in ${data.daysUntil} day${data.daysUntil !== 1 ? 's' : ''}`
+  return `<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+    <h2 style="color:#dc2626">Deadline ${urgency}</h2>
+    <p><strong>${escapeHtml(data.label)}</strong> is due ${urgency} (${data.deadline_date}).</p>
+    <p style="color:#888;font-size:12px;margin-top:32px">
+      You're receiving this because you have a Recruiting Compass account.
+    </p>
+  </body></html>`
+}
+
 export const sendInviteEmail = async (
   options: SendInviteEmailOptions,
 ): Promise<{ success: boolean; messageId?: string; error?: string }> => {
