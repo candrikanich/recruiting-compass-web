@@ -21,7 +21,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto("/schools");
-    await page.waitForLoadState("networkidle");
+    // Use load instead of networkidle to avoid timing out on slow requests
+    await page.waitForLoadState("load");
+    await page.waitForTimeout(500);
     // Wait for schools or empty state — SchoolsFilterPanel only renders when schools.length > 0
     await page
       .waitForSelector("[data-testid='school-card']", { timeout: 10000 })
