@@ -507,7 +507,7 @@
                   <input
                     v-model="form[social.key]"
                     type="text"
-                    @blur="triggerSave"
+                    @blur="(e) => handleSocialBlur(String(social.key), (e.target as HTMLInputElement).value)"
                     :placeholder="social.placeholder"
                     :class="[
                       'w-full py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700',
@@ -636,6 +636,7 @@ import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
 import { useAutoSave } from "~/composables/useAutoSave";
 import { useUserStore } from "~/stores/user";
 import { normalizePositions } from "~/utils/positions";
+import { normalizeHandle, type SocialPlatform } from "~/utils/social";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import ProfileCompleteness from "~/components/ProfileCompleteness.vue";
 import { calculateProfileCompleteness } from "~/utils/profileCompletenessCalculation";
@@ -823,6 +824,27 @@ const removeCourse = (idx: number) => {
   form.value.core_courses = (form.value.core_courses ?? []).filter((_, i) => i !== idx);
   triggerSave();
 };
+
+const SOCIAL_PLATFORMS: Record<string, SocialPlatform | null> = {
+  twitter_handle: "twitter",
+  instagram_handle: "instagram",
+  tiktok_handle: "tiktok",
+  facebook_url: null,
+};
+
+function handleSocialBlur(key: string, value: string) {
+  const platform = SOCIAL_PLATFORMS[key];
+  if (!platform) return;
+
+  const { handle, isShortUrl } = normalizeHandle(value, platform);
+  (form.value as Record<string, unknown>)[key] = handle;
+
+  if (isShortUrl) {
+    showToast("Short links can't be used as handles — enter your username directly.", "warning");
+  }
+
+  triggerSave();
+}
 
 const socialInputs: { key: keyof PlayerDetails; label: string; prefix?: string; placeholder: string }[] = [
   { key: "twitter_handle", label: "Twitter / X", prefix: "@", placeholder: "username" },
