@@ -1602,6 +1602,39 @@ export type Database = {
         }
         Relationships: []
       }
+      nces_schools: {
+        Row: {
+          nces_id: string
+          name: string
+          city: string | null
+          state: string | null
+          zip: string | null
+          latitude: number | null
+          longitude: number | null
+          created_at: string | null
+        }
+        Insert: {
+          nces_id: string
+          name: string
+          city?: string | null
+          state?: string | null
+          zip?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          created_at?: string | null
+        }
+        Update: {
+          nces_id?: string
+          name?: string
+          city?: string | null
+          state?: string | null
+          zip?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
       player_profiles: {
         Row: {
           bio: string | null
