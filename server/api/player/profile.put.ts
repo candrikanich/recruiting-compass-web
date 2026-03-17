@@ -61,13 +61,13 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 403, statusMessage: "Not a family member" });
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("player_profiles")
       .update(updates)
       .eq("user_id", userId);
 
     if (error) {
-      if ((error as any).code === "23505") {
+      if ((error as { code: string }).code === "23505") {
         throw createError({ statusCode: 409, statusMessage: "That slug is already taken" });
       }
       logger.error("Failed to update player profile", error);

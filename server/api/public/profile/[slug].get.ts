@@ -1,7 +1,7 @@
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
-import type { PlayerProfile, PublicProfileData, VideoLink } from "~/types/models";
+import type { PublicProfileData, VideoLink } from "~/types/models";
 
 const HASH_SLUG_RE = /^[a-z0-9]{6}$/;
 const VANITY_SLUG_RE = /^[a-z0-9][a-z0-9-]{0,28}[a-z0-9]$/;
@@ -18,12 +18,11 @@ export default defineEventHandler(async (event) => {
     const supabase = createServerSupabaseClient();
 
     // Resolve by hash_slug first, then vanity_slug
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: profile } = (await (supabase as any)
+    const { data: profile } = await supabase
       .from("player_profiles")
       .select("*")
       .or(`hash_slug.eq.${slug},vanity_slug.eq.${slug}`)
-      .maybeSingle()) as { data: PlayerProfile | null; error: unknown };
+      .maybeSingle();
 
     if (!profile) {
       logger.warn("Profile slug not found", { slug });

@@ -333,6 +333,7 @@ export type Database = {
           last_name: string | null
           notes: string | null
           phone: string | null
+          private_notes: string | null
           responsiveness_score: number | null
           role: Database["public"]["Enums"]["coach_role"] | null
           school_id: string | null
@@ -354,6 +355,7 @@ export type Database = {
           last_name?: string | null
           notes?: string | null
           phone?: string | null
+          private_notes?: string | null
           responsiveness_score?: number | null
           role?: Database["public"]["Enums"]["coach_role"] | null
           school_id?: string | null
@@ -375,6 +377,7 @@ export type Database = {
           last_name?: string | null
           notes?: string | null
           phone?: string | null
+          private_notes?: string | null
           responsiveness_score?: number | null
           role?: Database["public"]["Enums"]["coach_role"] | null
           school_id?: string | null
@@ -903,6 +906,7 @@ export type Database = {
         Row: {
           accepted_at: string | null
           created_at: string
+          declined_at: string | null
           expires_at: string
           family_unit_id: string
           id: string
@@ -915,6 +919,7 @@ export type Database = {
         Insert: {
           accepted_at?: string | null
           created_at?: string
+          declined_at?: string | null
           expires_at?: string
           family_unit_id: string
           id?: string
@@ -927,6 +932,7 @@ export type Database = {
         Update: {
           accepted_at?: string | null
           created_at?: string
+          declined_at?: string | null
           expires_at?: string
           family_unit_id?: string
           id?: string
@@ -1596,6 +1602,69 @@ export type Database = {
         }
         Relationships: []
       }
+      player_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string
+          family_unit_id: string
+          hash_slug: string
+          id: string
+          is_published: boolean
+          show_academics: boolean
+          show_athletic: boolean
+          show_film: boolean
+          show_schools: boolean
+          updated_at: string
+          user_id: string
+          vanity_slug: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          family_unit_id: string
+          hash_slug: string
+          id?: string
+          is_published?: boolean
+          show_academics?: boolean
+          show_athletic?: boolean
+          show_film?: boolean
+          show_schools?: boolean
+          updated_at?: string
+          user_id: string
+          vanity_slug?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          family_unit_id?: string
+          hash_slug?: string
+          id?: string
+          is_published?: boolean
+          show_academics?: boolean
+          show_athletic?: boolean
+          show_film?: boolean
+          show_schools?: boolean
+          updated_at?: string
+          user_id?: string
+          vanity_slug?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_profiles_family_unit_id_fkey"
+            columns: ["family_unit_id"]
+            isOneToOne: false
+            referencedRelation: "family_units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       positions: {
         Row: {
           created_at: string | null
@@ -1668,6 +1737,90 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_tracking_links: {
+        Row: {
+          coach_id: string
+          created_at: string
+          id: string
+          last_viewed_at: string | null
+          profile_id: string
+          ref_token: string
+          view_count: number
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          id?: string
+          last_viewed_at?: string | null
+          profile_id: string
+          ref_token: string
+          view_count?: number
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          id?: string
+          last_viewed_at?: string | null
+          profile_id?: string
+          ref_token?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_tracking_links_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "coaches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_tracking_links_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "player_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_views: {
+        Row: {
+          id: string
+          profile_id: string
+          tracking_link_id: string | null
+          user_agent: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          tracking_link_id?: string | null
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          tracking_link_id?: string | null
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_views_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "player_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_views_tracking_link_id_fkey"
+            columns: ["tracking_link_id"]
+            isOneToOne: false
+            referencedRelation: "profile_tracking_links"
             referencedColumns: ["id"]
           },
         ]
@@ -1930,6 +2083,8 @@ export type Database = {
           division: Database["public"]["Enums"]["school_division"] | null
           family_unit_id: string | null
           favicon_url: string | null
+          fit_score: number | null
+          fit_score_data: Json | null
           fit_tier: string | null
           id: string | null
           instagram_handle: string | null
@@ -1938,7 +2093,10 @@ export type Database = {
           name: string | null
           notes: string | null
           offer_details: Json | null
+          priority_tier: string | null
+          private_notes: Json | null
           pros: string[] | null
+          ranking: number | null
           recruiting_approach: string | null
           status: Database["public"]["Enums"]["school_status"] | null
           status_changed_at: string | null
@@ -1962,6 +2120,8 @@ export type Database = {
           division?: Database["public"]["Enums"]["school_division"] | null
           family_unit_id?: string | null
           favicon_url?: string | null
+          fit_score?: number | null
+          fit_score_data?: Json | null
           fit_tier?: string | null
           id?: string | null
           instagram_handle?: string | null
@@ -1970,7 +2130,10 @@ export type Database = {
           name?: string | null
           notes?: string | null
           offer_details?: Json | null
+          priority_tier?: string | null
+          private_notes?: Json | null
           pros?: string[] | null
+          ranking?: number | null
           recruiting_approach?: string | null
           status?: Database["public"]["Enums"]["school_status"] | null
           status_changed_at?: string | null
@@ -1994,6 +2157,8 @@ export type Database = {
           division?: Database["public"]["Enums"]["school_division"] | null
           family_unit_id?: string | null
           favicon_url?: string | null
+          fit_score?: number | null
+          fit_score_data?: Json | null
           fit_tier?: string | null
           id?: string | null
           instagram_handle?: string | null
@@ -2002,7 +2167,10 @@ export type Database = {
           name?: string | null
           notes?: string | null
           offer_details?: Json | null
+          priority_tier?: string | null
+          private_notes?: Json | null
           pros?: string[] | null
+          ranking?: number | null
           recruiting_approach?: string | null
           status?: Database["public"]["Enums"]["school_status"] | null
           status_changed_at?: string | null
@@ -2579,6 +2747,10 @@ export type Database = {
         Returns: {
           family_unit_id: string
         }[]
+      }
+      increment_profile_link_view: {
+        Args: { link_id: string }
+        Returns: undefined
       }
       is_data_owner: { Args: { target_user_id: string }; Returns: boolean }
       is_parent_viewing_athlete: {

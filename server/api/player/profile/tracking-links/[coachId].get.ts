@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 403, statusMessage: "Not a family member" });
     }
 
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("player_profiles")
       .select("id")
       .eq("user_id", userId)
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
 
     if (!profile) return null;
 
-    const { data: link } = await (supabase as any)
+    const { data: link } = await supabase
       .from("profile_tracking_links")
       .select("*")
       .eq("profile_id", profile.id)

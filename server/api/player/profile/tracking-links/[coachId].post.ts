@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 403, statusMessage: "Not a family member" });
     }
 
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("player_profiles")
       .select("id")
       .eq("user_id", userId)
@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: "No profile found — publish one first" });
     }
 
-    const { data: existing } = await (supabase as any)
+    const { data: existing } = await supabase
       .from("profile_tracking_links")
       .select("*")
       .eq("profile_id", profile.id)
@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
       return existing;
     }
 
-    const { data: created, error } = await (supabase as any)
+    const { data: created, error } = await supabase
       .from("profile_tracking_links")
       .insert({ profile_id: profile.id, coach_id: coachId, ref_token: generateRefToken() })
       .select()

@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 403, statusMessage: "Not a family member" });
     }
 
-    const { data: existing } = await (supabase as any)
+    const { data: existing } = await supabase
       .from("player_profiles")
       .select("*")
       .eq("user_id", userId)
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Auto-create profile on first access (idempotent — UNIQUE (user_id) constraint in DB)
-    const { data: created, error } = await (supabase as any)
+    const { data: created, error } = await supabase
       .from("player_profiles")
       .insert({
         user_id: userId,
@@ -50,8 +50,8 @@ export default defineEventHandler(async (event) => {
 
     if (error) {
       // 23505 = unique_violation: another request already created the profile
-      if ((error as any).code === "23505") {
-        const { data: race } = await (supabase as any)
+      if ((error as { code: string }).code === "23505") {
+        const { data: race } = await supabase
           .from("player_profiles")
           .select("*")
           .eq("user_id", userId)

@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     const userAgent = rawUserAgent ? rawUserAgent.slice(0, 512) : null;
     const supabase = createServerSupabaseClient();
 
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("player_profiles")
       .select("id")
       .or(`hash_slug.eq.${slug},vanity_slug.eq.${slug}`)
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     // Resolve tracking link from ref token (if provided)
     let trackingLinkId: string | null = null;
     if (ref) {
-      const { data: link } = await (supabase as any)
+      const { data: link } = await supabase
         .from("profile_tracking_links")
         .select("id")
         .eq("ref_token", ref)
@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
       if (link) {
         trackingLinkId = link.id;
         // Atomic increment via SQL function defined in migration — fire and forget
-        (supabase as any)
+        supabase
           .rpc("increment_profile_link_view", { link_id: link.id })
           .then(({ error: e }: { error: unknown }) => {
             if (e) logger.warn("Failed to increment view count", e);
@@ -50,7 +50,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Insert detailed view log — fire and forget (don't block response)
-    (supabase as any)
+    supabase
       .from("profile_views")
       .insert({ profile_id: profile.id, tracking_link_id: trackingLinkId, user_agent: userAgent })
       .then(({ error }: { error: unknown }) => {
