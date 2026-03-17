@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { authFixture } from "./fixtures/auth.fixture";
 import {
   schoolHelpers,
   createSchoolData,
@@ -9,10 +8,6 @@ import {
 
 test.describe("School Detail - Status History", () => {
   let schoolId: string;
-
-  test.beforeEach(async ({ page }) => {
-    await authFixture.loginFast(page, "player");
-  });
 
   test("should show loading spinner on initial load", async ({ page }) => {
     const schoolData = createSchoolData({

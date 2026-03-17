@@ -82,15 +82,11 @@ test.describe("Diagnostic Tests", () => {
     await passwordInput.blur();
   });
 
-  test("should have Supabase connection", async ({ page }) => {
-    // This will fail if Supabase isn't configured
+  test("should load the app successfully", async ({ page }) => {
     await page.goto("/login");
-
-    // Supabase is connected when Nuxt has fully hydrated
-    const isNuxtReady = await page.evaluate(() => {
-      return (window as any).__NUXT__?.ready === true;
-    });
-
-    expect(isNuxtReady).toBe(true);
+    await page.waitForLoadState("networkidle");
+    // Verify the app rendered — login page has email + password inputs
+    await expect(page.locator('input[type="email"]')).toBeVisible();
+    await expect(page.locator('input[type="password"]')).toBeVisible();
   });
 });

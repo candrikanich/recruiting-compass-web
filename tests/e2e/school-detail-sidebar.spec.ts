@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { authFixture } from "./fixtures/auth.fixture";
 import {
   schoolHelpers,
   createSchoolData,
@@ -16,8 +15,6 @@ test.describe("School Detail - Sidebar Features", () => {
   let schoolId: string;
 
   test.beforeEach(async ({ page }) => {
-    await authFixture.loginFast(page, "player");
-
     const schoolData = createSchoolData({
       name: generateUniqueSchoolName("Sidebar Test"),
     });
@@ -42,7 +39,7 @@ test.describe("School Detail - Sidebar Features", () => {
 
       const manageCoachesLink = page.locator(
         sidebarSelectors.manageCoachesLink,
-      );
+      ).first();
       await expect(manageCoachesLink).toBeVisible();
     });
 
@@ -77,7 +74,7 @@ test.describe("School Detail - Sidebar Features", () => {
     }) => {
       const manageCoachesLink = page.locator(
         sidebarSelectors.manageCoachesLink,
-      );
+      ).first();
       await manageCoachesLink.click();
 
       await page.waitForURL(`/schools/${schoolId}/coaches`);

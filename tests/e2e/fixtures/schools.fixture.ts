@@ -196,19 +196,20 @@ export function generateUniqueSchoolName(prefix = "Test School") {
 export const schoolSelectors = {
   // Navigation
   schoolsLink: "text=Schools",
-  addSchoolButton: 'button:has-text("Add School")',
+  addSchoolButton: ':is(button, a):has-text("Add School")',
   backButton: 'a:has-text("Back to Schools")',
 
-  // Form fields
-  nameInput: 'input[placeholder*="name"], input[name="name"]',
-  locationInput: 'input[placeholder*="location"], input[name="location"]',
-  divisionSelect: 'select[name="division"]',
-  statusSelect: 'select[name="status"]',
-  conferenceInput: 'input[name="conference"]',
-  websiteInput: 'input[name="website"]',
-  twitterInput: 'input[name="twitter_handle"]',
-  instagramInput: 'input[name="instagram_handle"]',
-  notesTextarea: 'textarea[name="notes"]',
+  // Form fields (uses DesignSystemFormInput placeholders — no name= attributes)
+  autocompleteToggle: 'input[type="checkbox"]',
+  nameInput: 'input[placeholder="e.g., University of Florida"]',
+  locationInput: 'input[placeholder="e.g., Gainesville, Florida"]',
+  divisionSelect: 'select',
+  statusSelect: '#school-status',
+  conferenceInput: 'input[placeholder*="SEC"], input[placeholder*="Conference"], input[placeholder*="conference"]',
+  websiteInput: 'input[placeholder*="http"], input[placeholder*="website"]',
+  twitterInput: 'input[placeholder*="twitter"], input[placeholder*="Twitter"]',
+  instagramInput: 'input[placeholder*="instagram"], input[placeholder*="Instagram"]',
+  notesTextarea: 'textarea',
 
   // Pro/Con sections
   prosContainer: '[data-testid="pros-section"], .pros-section',
@@ -216,8 +217,8 @@ export const schoolSelectors = {
   addProButton: 'button:has-text("Add Pro")',
   addConButton: 'button:has-text("Add Con")',
 
-  // Form actions
-  createButton: 'button:has-text("Create School")',
+  // Form actions — submit button has data-testid
+  createButton: '[data-testid="add-school-button"]',
   updateButton: 'button:has-text("Update School")',
   deleteButton: 'button:has-text("Delete")',
   favoriteButton: 'button:has-text("⭐"), .favorite-button',
@@ -253,11 +254,11 @@ export const notesFixtures = {
  * Notes selectors for E2E testing
  */
 export const notesSelectors = {
-  sharedNotesSection: "text=Notes",
-  editButton: 'button:has-text("Edit")',
-  cancelButton: 'button:has-text("Cancel")',
+  sharedNotesSection: 'h2.text-lg.font-semibold:has-text("Notes")',
+  editButton: 'button[aria-label="Edit notes"]',
+  cancelButton: 'button[aria-label="Cancel editing notes"]',
   saveButton: 'button:has-text("Save Notes")',
-  notesTextarea: 'textarea[placeholder*="notes"]',
+  notesTextarea: '#notes-textarea',
   notesDisplay: ".text-slate-700.text-sm.whitespace-pre-wrap",
 };
 
@@ -272,7 +273,7 @@ export const statusHistorySelectors = {
   statusBadge: ".px-2.py-1.text-xs.font-medium.rounded-full",
   arrowIcon: "svg.w-4.h-4",
   timestamp: ".text-xs.text-slate-400",
-  userName: ".text-sm.text-slate-600",
+  userName: ".flex.items-start.gap-4 .text-sm.text-slate-600",
   errorMessage: ".bg-red-50",
 };
 
@@ -281,9 +282,9 @@ export const statusHistorySelectors = {
  */
 export const sidebarSelectors = {
   quickActions: 'h3:has-text("Quick Actions")',
-  logInteractionLink: 'a:has-text("Log Interaction")',
+  logInteractionLink: 'a:has-text("Log Interaction"):first-of-type, a:has-text("Log Interaction")',
   sendEmailButton: 'button:has-text("Send Email")',
-  manageCoachesLink: 'a:has-text("Manage Coaches")',
+  manageCoachesLink: 'a[href*="/coaches"]',
   coachesList: ".space-y-3",
   coachCard: ".p-3.border.border-slate-200.rounded-lg",
   coachName: ".font-medium.text-slate-900.text-sm",
@@ -317,13 +318,11 @@ export const schoolHelpers = {
       await page.fill(schoolSelectors.locationInput, schoolData.location);
     }
     if (schoolData.division) {
-      await page.selectOption(
-        schoolSelectors.divisionSelect,
-        schoolData.division,
-      );
+      await page.getByLabel("Division").selectOption(schoolData.division);
     }
     if (schoolData.status) {
-      await page.selectOption(schoolSelectors.statusSelect, schoolData.status);
+      // Status select has label "Initial Status" in the add form
+      await page.getByLabel(/Status/i).selectOption(schoolData.status);
     }
     if (schoolData.conference) {
       await page.fill(schoolSelectors.conferenceInput, schoolData.conference);
@@ -369,17 +368,25 @@ export const schoolHelpers = {
    * Navigate to schools page
    */
   async navigateToSchools(page) {
-    await page.click(schoolSelectors.schoolsLink);
-    await page.waitForURL("/schools");
+    await page.goto("/schools");
+    await page.waitForLoadState("networkidle");
   },
 
   /**
    * Create a new school and return its ID
    */
   async createSchool(page, schoolData) {
-    await schoolHelpers.navigateToSchools(page);
-    await page.click(schoolSelectors.addSchoolButton);
-    await page.waitForURL("/schools/new");
+    // Navigate directly to the new school form (avoids needing nav header to be visible)
+    await page.goto("/schools/new");
+    await page.waitForLoadState("networkidle");
+
+    // Disable autocomplete to enable manual form entry (autocomplete is on by default)
+    const autocompleteToggle = page.locator(schoolSelectors.autocompleteToggle).first();
+    const isChecked = await autocompleteToggle.isChecked().catch(() => false);
+    if (isChecked) {
+      await autocompleteToggle.uncheck();
+      await page.waitForTimeout(300); // wait for form to switch to manual mode
+    }
 
     await schoolHelpers.fillSchoolForm(page, schoolData);
 
@@ -461,7 +468,12 @@ export const schoolHelpers = {
     await page.goto(`/schools/${schoolId}`);
     await page.waitForLoadState("networkidle");
 
-    const statusSelect = page.locator(schoolSelectors.statusSelect).first();
+    // Use getByLabel to find the status select (has sr-only label "School status")
+    const statusSelect = page.getByLabel("School status");
+    await statusSelect.waitFor({ state: "visible" });
+    await page.waitForFunction(
+      () => !document.getElementById("school-status")?.hasAttribute("disabled"),
+    );
     await statusSelect.selectOption(newStatus);
     await page.waitForLoadState("networkidle");
   },
@@ -474,25 +486,27 @@ export const schoolHelpers = {
     await page.waitForLoadState("networkidle");
 
     await page.click('button:has-text("Add Coach")');
-    await page.waitForURL(/\/coaches\/new/);
+    // Coach form renders inline (v-if) — wait for it to appear
+    await page.waitForSelector('h2:has-text("Add New Coach")', { timeout: 5000 });
 
     if (coachData.firstName) {
-      await page.fill('input[name="firstName"]', coachData.firstName);
+      await page.fill('input[placeholder="e.g., John"]', coachData.firstName);
     }
     if (coachData.lastName) {
-      await page.fill('input[name="lastName"]', coachData.lastName);
+      await page.fill('input[placeholder="e.g., Smith"]', coachData.lastName);
     }
     if (coachData.role) {
-      await page.selectOption('select[name="role"]', coachData.role);
+      // Use form element to scope to the add form, not the filter bar
+      await page.locator('form').getByLabel("Role").selectOption(coachData.role);
     }
     if (coachData.email) {
-      await page.fill('input[name="email"]', coachData.email);
+      await page.fill('input[type="email"]', coachData.email);
     }
     if (coachData.phone) {
-      await page.fill('input[name="phone"]', coachData.phone);
+      await page.fill('input[type="tel"], input[placeholder*="555"]', coachData.phone);
     }
 
-    await page.click('button:has-text("Save Coach")');
+    await page.click('[data-testid="add-coach-button"]');
     await page.waitForLoadState("networkidle");
   },
 };

@@ -73,22 +73,92 @@ export async function createTestAccounts() {
       // Don't throw — allow other accounts to be created
     }
   }
+
+  // Post-setup: link parent@test.com into player@test.com's family unit
+  await linkParentToPlayerFamilyUnit(supabase);
 }
 
 /**
- * Sets up a test account with onboarding complete and a family unit.
+ * Ensures parent@test.com is a member of the same family unit as player@test.com.
+ * Idempotent — safe to call multiple times.
+ */
+async function linkParentToPlayerFamilyUnit(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+) {
+  // Resolve both user IDs
+  const { data: listData } = await supabase.auth.admin.listUsers({
+    page: 1,
+    perPage: 1000,
+  });
+  const users = listData?.users ?? [];
+  const playerUser = users.find((u) => u.email === TEST_ACCOUNTS.player.email);
+  const parentUser = users.find((u) => u.email === TEST_ACCOUNTS.parent.email);
+
+  if (!playerUser || !parentUser) {
+    console.warn("⚠️  Cannot link parent to player family unit — one or both accounts not found");
+    return;
+  }
+
+  // Find player's family unit
+  const { data: playerMembership } = await supabase
+    .from("family_members")
+    .select("family_unit_id")
+    .eq("user_id", playerUser.id)
+    .maybeSingle();
+
+  if (!playerMembership) {
+    console.warn("⚠️  player@test.com has no family unit — cannot link parent");
+    return;
+  }
+
+  const familyUnitId = playerMembership.family_unit_id;
+
+  // Check if parent is already in this family unit
+  const { data: existingMembership } = await supabase
+    .from("family_members")
+    .select("family_unit_id")
+    .eq("user_id", parentUser.id)
+    .eq("family_unit_id", familyUnitId)
+    .maybeSingle();
+
+  if (existingMembership) {
+    console.log("⏭️  parent@test.com already in player's family unit");
+    return;
+  }
+
+  // Add parent to player's family unit
+  const { error: linkError } = await supabase
+    .from("family_members")
+    .insert({
+      family_unit_id: familyUnitId,
+      user_id: parentUser.id,
+      role: "parent",
+    });
+
+  if (linkError) {
+    console.error("❌ Failed to link parent@test.com to player's family unit:", linkError.message);
+  } else {
+    console.log("✅ Linked parent@test.com to player@test.com's family unit");
+  }
+}
+
+/**
+ * Sets up a test account with onboarding complete and (for players) a family unit.
+ * Parent accounts are intentionally skipped here — they are linked to the player's
+ * family unit by `linkParentToPlayerFamilyUnit` after all accounts are created.
  * Idempotent — safe to call multiple times.
  */
 async function setupTestAccountData(
   supabase: ReturnType<typeof getSupabaseAdmin>,
   userId: string,
-  account: { displayName: string; role: string },
+  account: { displayName: string; role: string; email?: string },
 ) {
   // Update onboarding status for the user (only update existing row — don't insert)
   // The users row is created by a DB trigger when auth.users is created.
   const { error: userError } = await supabase
     .from("users")
     .update({
+      role: account.role as "player" | "parent" | "admin",
       phase_milestone_data: {
         onboarding_complete: true,
         onboarding_completed_at: new Date().toISOString(),
@@ -101,6 +171,10 @@ async function setupTestAccountData(
     // Non-fatal — row might not exist yet if trigger hasn't fired
     console.warn(`⚠️  Could not update users row for ${userId}:`, userError.message);
   }
+
+  // Parent accounts get their family unit membership via linkParentToPlayerFamilyUnit —
+  // skip creating a standalone unit for them.
+  if (account.role === "parent") return;
 
   // Check if user already has a family_unit membership
   const { data: membership } = await supabase
@@ -124,17 +198,17 @@ async function setupTestAccountData(
   }
 
   // Add user as member of family unit
-  const { data: familyMember, error: memberError } = await supabase
+  const { error: memberError } = await supabase
     .from("family_members")
     .insert({
       family_unit_id: familyUnit.id,
       user_id: userId,
-      role: account.role === "player" ? "player" : "parent",
+      role: "player",
     });
 
   if (memberError) {
     console.error(
-      `❌ Failed to add ${userId} as member of family unit ${familyUnit.id} (role: ${account.role}):`,
+      `❌ Failed to add ${userId} as member of family unit ${familyUnit.id}:`,
       memberError.message,
     );
     throw memberError;
