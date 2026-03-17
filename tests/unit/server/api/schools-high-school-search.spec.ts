@@ -98,13 +98,18 @@ describe("GET /api/schools/high-school-search", () => {
     expect(result).toEqual([]);
   });
 
-  it("applies state ordering when state param provided", async () => {
-    vi.mocked(getQuery).mockReturnValue({ q: "Lincoln", state: "OH" });
+  it("biases matching-state schools to front of results", async () => {
+    const schools = [
+      { nces_id: "1", name: "Lincoln HS", city: "Columbus", state: "OH" },
+      { nces_id: "2", name: "Lincoln Academy", city: "Athens", state: "OH" },
+      { nces_id: "3", name: "Lincoln High", city: "Chicago", state: "IL" },
+    ];
+    mockLimit.mockResolvedValue({ data: schools, error: null });
+    vi.mocked(getQuery).mockReturnValue({ q: "Lincoln", state: "IL" });
     const handler = await import("~/server/api/schools/high-school-search.get");
-    await handler.default(mockEvent);
-    expect(mockOrder).toHaveBeenCalledWith(
-      expect.stringContaining("state"),
-      expect.any(Object)
-    );
+    const result = await handler.default(mockEvent);
+    // IL school should be first
+    expect(result[0].state).toBe("IL");
+    expect(result).toHaveLength(3);
   });
 });

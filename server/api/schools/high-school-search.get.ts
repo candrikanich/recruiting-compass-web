@@ -32,13 +32,7 @@ export default defineEventHandler(async (event) => {
     .select("nces_id, name, city, state")
     .ilike("name", `%${query}%`);
 
-  if (stateParam) {
-    dbQuery = dbQuery
-      .order(`state.eq.${stateParam}`, { ascending: false })
-      .order("name", { ascending: true });
-  } else {
-    dbQuery = dbQuery.order("name", { ascending: true });
-  }
+  dbQuery = dbQuery.order("name", { ascending: true });
 
   const { data, error } = await dbQuery.limit(8);
 
@@ -49,13 +43,21 @@ export default defineEventHandler(async (event) => {
 
   const results = data ?? [];
 
-  if (redis && results.length > 0) {
+  // Client-side state bias: sort matching state to front
+  const sorted = stateParam
+    ? [
+        ...results.filter((s) => s.state === stateParam),
+        ...results.filter((s) => s.state !== stateParam),
+      ]
+    : results;
+
+  if (redis && sorted.length > 0) {
     try {
-      await redis.set(cacheKey, results, { ex: TTL.ONE_HOUR });
+      await redis.set(cacheKey, sorted, { ex: TTL.ONE_HOUR });
     } catch (err) {
       logger.warn("Redis cache write failed", err);
     }
   }
 
-  return results;
+  return sorted;
 });
