@@ -13,6 +13,8 @@ import { resolve } from "path";
  */
 
 test.describe("Schools Filtering - User Story 3.3", () => {
+  // Run serially to avoid data contamination from parallel school-creation tests
+  test.describe.configure({ mode: "serial" });
   test.use({
     storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
   });

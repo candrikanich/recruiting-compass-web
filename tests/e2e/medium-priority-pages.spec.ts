@@ -16,8 +16,7 @@ test.describe("Protected route guards", () => {
   test.use({ storageState: undefined });
 
   const protectedRoutes = [
-    // Note: /timeline uses auth middleware but may handle unauthenticated SSR differently
-    "/reports",
+    // Note: /timeline and /reports use auth middleware but may handle unauthenticated SSR differently
     "/recommendations",
     "/social",
     "/settings/notifications",
