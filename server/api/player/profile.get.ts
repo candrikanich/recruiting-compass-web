@@ -6,9 +6,20 @@ import { useLogger } from "~/server/utils/logger";
 /** Generates a 6-char lowercase alphanumeric hash slug */
 function generateHashSlug(): string {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  return Array.from(crypto.getRandomValues(new Uint8Array(6)))
-    .map((b) => chars[b % chars.length])
-    .join("");
+  const charsLength = chars.length;
+  const maxUnbiasedValue = 256 - (256 % charsLength);
+
+  const slugChars: string[] = [];
+  while (slugChars.length < 6) {
+    const randomBytes = crypto.getRandomValues(new Uint8Array(1));
+    const byte = randomBytes[0];
+    if (byte >= maxUnbiasedValue) {
+      continue;
+    }
+    slugChars.push(chars[byte % charsLength]);
+  }
+
+  return slugChars.join("");
 }
 
 export default defineEventHandler(async (event) => {
