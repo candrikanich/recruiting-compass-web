@@ -5,7 +5,6 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 
 // Import the functions we'll test
-// (scanner.mjs doesn't exist yet — these imports will fail, confirming RED)
 import {
   isSkipped,
   isAutoDelete,

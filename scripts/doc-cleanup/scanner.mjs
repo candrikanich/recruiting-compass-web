@@ -1,12 +1,10 @@
 // scripts/doc-cleanup/scanner.mjs
 import { readdir, stat, readFile, writeFile } from 'node:fs/promises'
-import { join, basename as pathBasename, relative, dirname } from 'node:path'
+import { join, basename as pathBasename, relative, dirname as pathDirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
 
 const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const REPO_ROOT = join(__dirname, '../..')
 
 const SCAN_DIRS = ['planning', 'docs', 'archived-docs']
 
@@ -79,7 +77,7 @@ export function isSkipped(relPath, base, mtime) {
 
 export function isAutoDelete(relPath, base, mtime) {
   if (relPath.startsWith('test-results/')) return true
-  if (relPath.startsWith('archived-docs/') && Date.now() - mtime > THIRTY_DAYS_MS + 60_000) return true
+  if (relPath.startsWith('archived-docs/') && Date.now() - mtime > THIRTY_DAYS_MS + 1000) return true
   for (const re of AUTO_DELETE_BASENAME_PATTERNS) {
     if (re.test(base)) return true
   }
@@ -116,7 +114,7 @@ export function detectPairs(items) {
 
   const groups = new Map()
   for (const item of items) {
-    const dir = dirname(item.relPath)
+    const dir = pathDirname(item.relPath)
     const slug = toSlug(item.basename)
     const key = `${dir}/${slug}`
     if (!groups.has(key)) groups.set(key, [])
@@ -227,7 +225,7 @@ export async function scan(repoRoot, repoName) {
 const isMain = process.argv[1] === fileURLToPath(import.meta.url)
 if (isMain) {
   const repoName = process.argv[2] || 'recruiting-compass-web'
-  scan(REPO_ROOT, repoName).catch((err) => {
+  scan(process.cwd(), repoName).catch((err) => {
     console.error(err)
     process.exit(1)
   })
