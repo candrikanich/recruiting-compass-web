@@ -1,6 +1,9 @@
 import { ref, computed } from "vue";
 import type { Suggestion } from "~/types/timeline";
 import { useAuthFetch } from "~/composables/useAuthFetch";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("suggestions");
 
 export function useSuggestions() {
   const { $fetchAuth } = useAuthFetch();
@@ -35,6 +38,7 @@ export function useSuggestions() {
         options.onUpdate(newCount);
       }
     } catch (e: unknown) {
+      logger.error("Failed to fetch suggestions", e);
       error.value =
         e instanceof Error ? e.message : "Failed to fetch suggestions";
     } finally {
@@ -51,6 +55,7 @@ export function useSuggestions() {
         (s) => s.id !== suggestionId,
       );
     } catch (e: unknown) {
+      logger.error("Failed to dismiss suggestion", e);
       error.value =
         e instanceof Error ? e.message : "Failed to dismiss suggestion";
     }
@@ -65,6 +70,7 @@ export function useSuggestions() {
         (s) => s.id !== suggestionId,
       );
     } catch (e: unknown) {
+      logger.error("Failed to complete suggestion", e);
       error.value =
         e instanceof Error ? e.message : "Failed to complete suggestion";
     }
@@ -75,6 +81,7 @@ export function useSuggestions() {
       await $fetchAuth("/api/suggestions/surface", { method: "POST" });
       await fetchSuggestions("dashboard");
     } catch (e: unknown) {
+      logger.error("Failed to surface more suggestions", e);
       error.value =
         e instanceof Error ? e.message : "Failed to surface more suggestions";
     }

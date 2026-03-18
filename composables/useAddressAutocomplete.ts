@@ -1,6 +1,9 @@
 import { ref } from "vue";
 import { debounce } from "~/utils/debounce";
 import type { HomeLocation } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("address-autocomplete");
 
 export interface AddressSuggestion {
   label: string;
@@ -26,7 +29,8 @@ export const useAddressAutocomplete = () => {
       suggestions.value = await $fetch<AddressSuggestion[]>(
         `/api/address/autocomplete?q=${encodeURIComponent(q.trim())}`
       );
-    } catch {
+    } catch (err) {
+      logger.warn("Address autocomplete search failed", err);
       suggestions.value = [];
     } finally {
       loading.value = false;
