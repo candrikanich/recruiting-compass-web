@@ -1,14 +1,20 @@
 import { defineEventHandler, getQuery } from "h3";
 import { useLogger } from "~/server/utils/logger";
 
-interface RadarAddress {
-  formattedAddress: string;
-  addressLabel: string;
-  city: string;
-  stateCode: string;
-  postalCode: string;
-  latitude: number;
-  longitude: number;
+interface NominatimResult {
+  display_name: string;
+  lat: string;
+  lon: string;
+  address: {
+    house_number?: string;
+    road?: string;
+    city?: string;
+    town?: string;
+    village?: string;
+    state?: string;
+    postcode?: string;
+    "ISO3166-2-lvl4"?: string; // e.g. "US-IL"
+  };
 }
 
 export default defineEventHandler(async (event) => {
@@ -18,32 +24,44 @@ export default defineEventHandler(async (event) => {
 
   if (query.length < 3) return [];
 
-  const config = useRuntimeConfig();
-  if (!config.radarApiKey) {
-    logger.error("NUXT_RADAR_API_KEY is not configured");
-    return [];
-  }
-
   try {
-    const res = await $fetch<{ addresses: RadarAddress[] }>(
-      "https://api.radar.io/v1/autocomplete",
+    const results = await $fetch<NominatimResult[]>(
+      "https://nominatim.openstreetmap.org/search",
       {
-        headers: { Authorization: config.radarApiKey },
-        params: { query, country: "US", limit: 5 },
+        params: {
+          q: query,
+          format: "json",
+          addressdetails: 1,
+          countrycodes: "us",
+          limit: 5,
+        },
+        headers: {
+          // Nominatim usage policy requires a descriptive User-Agent
+          "User-Agent": "TheRecruitingCompass/1.0 (recruiting-compass-web)",
+        },
       }
     );
 
-    return (res.addresses ?? []).map((a) => ({
-      label: a.formattedAddress,
-      address: a.addressLabel,
-      city: a.city,
-      state: a.stateCode,
-      zip: a.postalCode,
-      latitude: a.latitude,
-      longitude: a.longitude,
-    }));
+    return results.map((r) => {
+      const a = r.address;
+      const streetParts = [a.house_number, a.road].filter(Boolean);
+      const street = streetParts.length ? streetParts.join(" ") : "";
+      const city = a.city ?? a.town ?? a.village ?? "";
+      // Extract 2-letter code from "US-IL" → "IL"
+      const stateCode = a["ISO3166-2-lvl4"]?.split("-")[1] ?? a.state ?? "";
+
+      return {
+        label: r.display_name,
+        address: street,
+        city,
+        state: stateCode,
+        zip: a.postcode ?? "",
+        latitude: parseFloat(r.lat),
+        longitude: parseFloat(r.lon),
+      };
+    });
   } catch (err) {
-    logger.error("Radar.io autocomplete failed", err);
+    logger.error("Nominatim autocomplete failed", err);
     return [];
   }
 });
