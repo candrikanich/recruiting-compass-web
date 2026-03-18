@@ -28,7 +28,7 @@
         <div>
           <p class="font-medium text-gray-900">{{ d.label }}</p>
           <p class="text-sm text-gray-500 mt-0.5">
-            {{ d.deadline_date }} · <span class="capitalize">{{ d.category.replace('_', ' ') }}</span>
+            {{ d.deadline_date }} · <span class="capitalize">{{ d.category.replaceAll('_', ' ') }}</span>
           </p>
         </div>
         <button

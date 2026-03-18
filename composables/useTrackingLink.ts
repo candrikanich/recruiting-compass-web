@@ -47,7 +47,7 @@ export const useTrackingLink = (
 
   async function fetchLink(): Promise<void> {
     if (!profileStore.profile && !profileStore.loading) {
-      profileStore.fetchProfile();
+      await profileStore.fetchProfile();
     }
     const id = toValue(coachId);
     loading.value = true;

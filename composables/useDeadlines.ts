@@ -29,15 +29,31 @@ export function useDeadlines() {
     deadline_date: string
     category: string
     school_id?: string
-  }) {
-    const created = await $fetch('/api/deadlines', { method: 'POST', body: payload })
-    await fetchDeadlines()
-    return created
+  }): Promise<{
+    id: string
+    label: string
+    deadline_date: string
+    category: string
+    school_id?: string
+  }> {
+    try {
+      const created = await $fetch('/api/deadlines', { method: 'POST', body: payload })
+      await fetchDeadlines()
+      return created
+    } catch (err) {
+      console.error('Failed to create deadline', err)
+      throw err
+    }
   }
 
   async function removeDeadline(id: string) {
-    await $fetch(`/api/deadlines/${id}`, { method: 'DELETE' })
-    deadlines.value = deadlines.value.filter(d => d.id !== id)
+    try {
+      await $fetch(`/api/deadlines/${id}`, { method: 'DELETE' })
+      deadlines.value = deadlines.value.filter(d => d.id !== id)
+    } catch (err) {
+      console.error('Failed to remove deadline', err)
+      throw err
+    }
   }
 
   return { deadlines, loading, error, fetchDeadlines, createDeadline, removeDeadline }

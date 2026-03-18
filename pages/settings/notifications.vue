@@ -86,8 +86,9 @@ const emailPrefs = ref<Record<string, boolean>>({})
 definePageMeta({ middleware: 'auth' })
 
 onMounted(async () => {
+  if (!userStore.user) return;
   try {
-    const userId = userStore.user!.id
+    const userId = userStore.user.id
 
     const { data } = await db
       .from('notification_preferences')
