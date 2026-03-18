@@ -15,7 +15,6 @@ const SKIP_DIR_PREFIXES = [
   'docs/history/',
   'docs/superpowers/specs/',
   '.claude/',
-  'test-results/',
   'node_modules/',
   '.git/',
   '.nuxt/',
