@@ -63,6 +63,11 @@ function onBlur() {
   // Small delay so click on dropdown item fires first
   setTimeout(() => { showDropdown.value = false; }, 150);
 }
+
+function formatSchoolLocation(school: NcesSchool): string {
+  const parts = [school.city, school.state].filter(part => part && part.trim() !== "");
+  return parts.length > 0 ? parts.join(", ") : "";
+}
 </script>
 
 <template>
@@ -109,7 +114,7 @@ function onBlur() {
           @mousedown.prevent="onSelect(school)"
         >
           <span class="text-sm font-medium text-slate-800">{{ school.name }}</span>
-          <span class="text-xs text-slate-400 ml-2">{{ school.city }}, {{ school.state }}</span>
+          <span class="text-xs text-slate-400 ml-2">{{ formatSchoolLocation(school) }}</span>
         </button>
 
         <div v-if="!loading && results.length === 0 && inputValue.length >= 2" class="px-4 py-3">

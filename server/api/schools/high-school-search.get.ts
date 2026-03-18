@@ -27,10 +27,16 @@ export default defineEventHandler(async (event) => {
   }
 
   const supabase = useSupabaseAdmin();
+  // Escape SQL wildcards to prevent injection
+  const escapedQuery = query
+    .replace(/\\/g, '\\\\')  // Escape backslashes first
+    .replace(/%/g, '\\%')    // Escape percent signs
+    .replace(/_/g, '\\_');   // Escape underscores
+
   let dbQuery = supabase
     .from("nces_schools")
     .select("nces_id, name, city, state")
-    .ilike("name", `%${query}%`);
+    .ilike("name", `%${escapedQuery}%`);
 
   dbQuery = dbQuery.order("name", { ascending: true });
 

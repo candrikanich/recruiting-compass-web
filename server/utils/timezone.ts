@@ -16,6 +16,8 @@ const STATE_TIMEZONE: Record<string, string> = {
   ...Object.fromEntries(
     ['WA','OR','CA','NV'].map(s => [s, 'America/Los_Angeles'])
   ),
+  AK: 'America/Anchorage',
+  HI: 'Pacific/Honolulu',
 }
 
 export function deriveTimezone(state?: string | null): string {

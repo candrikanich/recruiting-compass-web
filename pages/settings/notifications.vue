@@ -4,6 +4,7 @@
     <p class="text-gray-500 mb-8">Control which notifications you receive and how.</p>
 
     <div v-if="loading" class="text-gray-400">Loading preferences...</div>
+    <div v-else-if="error" class="text-red-600">{{ error }}</div>
     <div v-else class="space-y-4">
       <div
         v-for="type in NOTIFICATION_TYPES"
@@ -78,53 +79,75 @@ type NotificationPrefRow = {
 const db = useSupabase() as any
 const userStore = useUserStore()
 const loading = ref(true)
+const error = ref<string | null>(null)
 const pushPrefs = ref<Record<string, boolean>>({})
 const emailPrefs = ref<Record<string, boolean>>({})
 
 definePageMeta({ middleware: 'auth' })
 
 onMounted(async () => {
-  const userId = userStore.user!.id
+  try {
+    const userId = userStore.user!.id
 
-  const { data } = await db
-    .from('notification_preferences')
-    .select('notification_type, push_enabled, email_enabled')
-    .eq('user_id', userId) as { data: NotificationPrefRow[] | null }
+    const { data } = await db
+      .from('notification_preferences')
+      .select('notification_type, push_enabled, email_enabled')
+      .eq('user_id', userId) as { data: NotificationPrefRow[] | null }
 
-  // Defaults: all push on, email on for applicable types
-  const pushMap: Record<string, boolean> = {}
-  const emailMap: Record<string, boolean> = {}
-  for (const t of NOTIFICATION_TYPES) {
-    pushMap[t.value] = true
-    if (EMAIL_TYPES.has(t.value)) emailMap[t.value] = true
-  }
-
-  // Apply saved preferences
-  for (const row of data ?? []) {
-    pushMap[row.notification_type] = row.push_enabled
-    if (EMAIL_TYPES.has(row.notification_type)) {
-      emailMap[row.notification_type] = row.email_enabled ?? true
+    // Defaults: all push on, email on for applicable types
+    const pushMap: Record<string, boolean> = {}
+    const emailMap: Record<string, boolean> = {}
+    for (const t of NOTIFICATION_TYPES) {
+      pushMap[t.value] = true
+      if (EMAIL_TYPES.has(t.value)) emailMap[t.value] = true
     }
-  }
 
-  pushPrefs.value = pushMap
-  emailPrefs.value = emailMap
-  loading.value = false
+    // Apply saved preferences
+    for (const row of data ?? []) {
+      pushMap[row.notification_type] = row.push_enabled
+      if (EMAIL_TYPES.has(row.notification_type)) {
+        emailMap[row.notification_type] = row.email_enabled ?? true
+      }
+    }
+
+    pushPrefs.value = pushMap
+    emailPrefs.value = emailMap
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to load notification preferences'
+  } finally {
+    loading.value = false
+  }
 })
 
 async function togglePush(type: string) {
+  const originalValue = pushPrefs.value[type]
   pushPrefs.value[type] = !pushPrefs.value[type]
-  await db.from('notification_preferences').upsert(
-    { user_id: userStore.user!.id, notification_type: type, push_enabled: pushPrefs.value[type] },
-    { onConflict: 'user_id,notification_type' }
-  )
+
+  try {
+    await db.from('notification_preferences').upsert(
+      { user_id: userStore.user!.id, notification_type: type, push_enabled: pushPrefs.value[type] },
+      { onConflict: 'user_id,notification_type' }
+    )
+  } catch (error) {
+    // Revert on failure
+    pushPrefs.value[type] = originalValue
+    console.error('Failed to update push notification preference:', error)
+  }
 }
 
 async function toggleEmail(type: string) {
+  const originalValue = emailPrefs.value[type]
   emailPrefs.value[type] = !emailPrefs.value[type]
-  await db.from('notification_preferences').upsert(
-    { user_id: userStore.user!.id, notification_type: type, email_enabled: emailPrefs.value[type] },
-    { onConflict: 'user_id,notification_type' }
-  )
+
+  try {
+    await db.from('notification_preferences').upsert(
+      { user_id: userStore.user!.id, notification_type: type, email_enabled: emailPrefs.value[type] },
+      { onConflict: 'user_id,notification_type' }
+    )
+  } catch (error) {
+    // Revert on failure
+    emailPrefs.value[type] = originalValue
+    console.error('Failed to update email notification preference:', error)
+  }
 }
 </script>

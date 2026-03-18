@@ -12,6 +12,8 @@ const schema = z.object({
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, 'email/send')
+  await requireAuth(event)
+
   const body = await readBody(event)
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
@@ -43,8 +45,17 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!response.ok) {
-    const error = await response.json()
-    logger.error('Resend delivery error', error)
+    let errorMessage = `HTTP ${response.status}`
+    try {
+      const errorData = await response.json()
+      logger.error('Resend delivery error', errorData)
+      errorMessage = errorData.message || errorMessage
+    } catch {
+      // Response body is not JSON
+      const textError = await response.text().catch(() => 'Unknown error')
+      logger.error('Resend delivery error (non-JSON)', { status: response.status, body: textError })
+      errorMessage = textError || errorMessage
+    }
     throw createError({ statusCode: 500, statusMessage: 'Failed to send email' })
   }
 

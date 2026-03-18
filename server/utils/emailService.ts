@@ -173,7 +173,7 @@ export function renderWeeklyDigestEmail(data: {
     .map(l => `<li style="margin:4px 0">${escapeHtml(l)}</li>`)
     .join('')
   const deadlineItems = data.upcomingDeadlines.length
-    ? data.upcomingDeadlines.map(d => `<li>${escapeHtml(d.label)} — ${d.deadline_date}</li>`).join('')
+    ? data.upcomingDeadlines.map(d => `<li>${escapeHtml(d.label)} — ${escapeHtml(d.deadline_date)}</li>`).join('')
     : '<li>No upcoming deadlines</li>'
   return `<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
     <h2 style="color:#1a1a1a">Your Weekly Recruiting Recap</h2>
@@ -194,7 +194,7 @@ export function renderDeadlineAlertEmail(data: {
   const urgency = data.daysUntil === 0 ? 'TODAY' : `in ${data.daysUntil} day${data.daysUntil !== 1 ? 's' : ''}`
   return `<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
     <h2 style="color:#dc2626">Deadline ${urgency}</h2>
-    <p><strong>${escapeHtml(data.label)}</strong> is due ${urgency} (${data.deadline_date}).</p>
+    <p><strong>${escapeHtml(data.label)}</strong> is due ${urgency} (${escapeHtml(data.deadline_date)}).</p>
     <p style="color:#888;font-size:12px;margin-top:32px">
       You're receiving this because you have a Recruiting Compass account.
     </p>

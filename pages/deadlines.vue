@@ -126,6 +126,8 @@ async function submitAdd() {
     await createDeadline({ ...newDeadline })
     showAdd.value = false
     Object.assign(newDeadline, { label: '', deadline_date: '', category: 'application' })
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to create deadline'
   } finally {
     addingDeadline.value = false
   }

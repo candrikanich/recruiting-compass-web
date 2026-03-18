@@ -60,6 +60,8 @@ test.describe("Family Units - Parent", () => {
 });
 
 test.describe("Family Units - Player", () => {
+  test.use({ storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json") });
+
   test("player can view their own schools", async ({ page }) => {
     // Navigate to schools
     await page.goto("/schools");

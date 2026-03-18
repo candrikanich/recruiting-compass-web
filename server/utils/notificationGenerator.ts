@@ -379,7 +379,7 @@ export async function generateCoachFollowupNotifications(
               user_id: userId,
               type: "follow_up",
               title: template.title(coachName),
-              message: template.message(coachName, threshold),
+              message: template.message(coachName, daysSince),
               related_entity_type: "coach",
               related_entity_id: coach.id,
               related_coach_id: coach.id,

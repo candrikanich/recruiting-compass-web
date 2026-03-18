@@ -36,18 +36,20 @@ export default defineEventHandler(async (event): Promise<BroadcastResponse> => {
   const parsed = broadcastSchema.safeParse(body)
 
   if (!parsed.success) {
+    logger.error("Broadcast validation failed", { issues: parsed.error.issues })
     throw createError({
       statusCode: 422,
-      statusMessage: `Validation error: ${parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ")}`,
+      statusMessage: "Validation error",
     })
   }
 
   const { target, user_id, type, title, message } = parsed.data
 
   if (target === "user" && !user_id) {
+    logger.error("Missing user_id for user target")
     throw createError({
       statusCode: 422,
-      statusMessage: "user_id is required when target is 'user'",
+      statusMessage: "Missing required field",
     })
   }
 

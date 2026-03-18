@@ -1,4 +1,4 @@
-import { ref, computed, toValue, onMounted, type MaybeRefOrGetter, type Ref, type ComputedRef } from "vue";
+import { ref, computed, toValue, onMounted, onUnmounted, type MaybeRefOrGetter, type Ref, type ComputedRef } from "vue";
 import { FetchError } from "ofetch";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { usePlayerProfileStore } from "~/stores/playerProfile";
@@ -72,16 +72,55 @@ export const useTrackingLink = (
 
   async function copyLink(): Promise<void> {
     if (!trackingUrl.value) return;
-    await navigator.clipboard.writeText(trackingUrl.value);
-    if (copyTimeout !== null) clearTimeout(copyTimeout);
-    copied.value = true;
-    copyTimeout = setTimeout(() => {
-      copied.value = false;
+
+    // Clear any existing timeout
+    if (copyTimeout !== null) {
+      clearTimeout(copyTimeout);
       copyTimeout = null;
-    }, 2000);
+    }
+
+    try {
+      // Check for browser runtime and clipboard API support
+      if (typeof window !== 'undefined' && navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        await navigator.clipboard.writeText(trackingUrl.value);
+      } else {
+        // Fallback: create temporary textarea and use execCommand
+        const textArea = document.createElement('textarea');
+        textArea.value = trackingUrl.value;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+
+      copied.value = true;
+      copyTimeout = setTimeout(() => {
+        copied.value = false;
+        copyTimeout = null;
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy tracking link:', err);
+      // Still show copied state briefly to indicate attempt was made
+      copied.value = true;
+      copyTimeout = setTimeout(() => {
+        copied.value = false;
+        copyTimeout = null;
+      }, 1000);
+    }
   }
 
   onMounted(() => fetchLink());
+
+  onUnmounted(() => {
+    if (copyTimeout !== null) {
+      clearTimeout(copyTimeout);
+      copyTimeout = null;
+    }
+  });
 
   async function generateLink(): Promise<void> {
     const id = toValue(coachId);
