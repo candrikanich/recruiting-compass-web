@@ -44,6 +44,9 @@ playwright-report/
 test-results/
 .playwright-mcp/
 
+# Doc cleanup
+.doc-cleanup-manifest.json
+
 # Temp files
 *.tmp
 
