@@ -48,13 +48,29 @@ Each repo (web + iOS) runs independently with its own scanner config, manifest, 
 
 ### Skip Paths (filtered before any bucket assignment)
 
-The scanner must skip these paths entirely — they are never candidates:
+The scanner must skip these paths/files entirely — they are never candidates.
+This is the **authoritative protected list** (also reproduced at the end of this spec):
 
 ```
+# Directories
 docs/history/**
 docs/superpowers/specs/**
 .claude/**
+
+# Specific files (root level)
+CLAUDE.md
+CLAUDE.local.md
+README.md
+CONTRIBUTING.md
+SECRETS.md
+COMPLETED_WORK.md
+
+# Specific planning files
 planning/lessons.md
+planning/RLS_POLICIES_*.md
+planning/SECURITY_AUDIT_*.md
+
+# Recency buffer — any file modified in the last 7 days
 ```
 
 ### Scan Targets
