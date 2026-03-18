@@ -5,26 +5,8 @@ import { useTrackingLink } from "~/composables/useTrackingLink";
 const props = defineProps<{ coachId: string }>();
 
 const profileStore = usePlayerProfileStore();
-const { link, loading, loadError, error, trackingUrl, fetchLink, generateLink } =
+const { link, loading, loadError, error, copied, trackingUrl, generateLink, copyLink } =
   useTrackingLink(computed(() => props.coachId));
-
-onMounted(async () => {
-  if (!profileStore.profile && !profileStore.loading) {
-    profileStore.fetchProfile();
-  }
-  await fetchLink();
-});
-
-const copied = ref(false);
-
-async function copyLink() {
-  if (!trackingUrl.value) return;
-  await navigator.clipboard.writeText(trackingUrl.value);
-  copied.value = true;
-  setTimeout(() => {
-    copied.value = false;
-  }, 2000);
-}
 
 function formatDate(iso: string | null): string {
   if (!iso) return "Never";

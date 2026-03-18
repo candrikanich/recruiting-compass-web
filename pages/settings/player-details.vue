@@ -151,13 +151,16 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-slate-100">
                 <div class="md:col-span-2">
                   <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">High School Name</label>
-                  <input
-                    v-model="form.school_name"
+                  <HighSchoolSearchInput
+                    :model-value="{ name: form.school_name, nces_school_id: form.nces_school_id || null }"
+                    :state-hint="form.school_state || ''"
                     :disabled="isParentRole"
-                    type="text"
-                    placeholder="e.g., Lincoln High School"
-                    @blur="triggerSave"
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700"
+                    @update:model-value="(v) => {
+                      form.school_name = v.name;
+                      form.high_school = v.name;
+                      form.nces_school_id = v.nces_school_id ?? '';
+                      triggerSave();
+                    }"
                   />
                 </div>
                 <div>
@@ -504,7 +507,7 @@
                   <input
                     v-model="form[social.key]"
                     type="text"
-                    @blur="triggerSave"
+                    @blur="(e) => handleSocialBlur(String(social.key), (e.target as HTMLInputElement).value)"
                     :placeholder="social.placeholder"
                     :class="[
                       'w-full py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700',
@@ -633,6 +636,7 @@ import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
 import { useAutoSave } from "~/composables/useAutoSave";
 import { useUserStore } from "~/stores/user";
 import { normalizePositions } from "~/utils/positions";
+import { normalizeHandle, type SocialPlatform } from "~/utils/social";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import ProfileCompleteness from "~/components/ProfileCompleteness.vue";
 import { calculateProfileCompleteness } from "~/utils/profileCompletenessCalculation";
@@ -711,6 +715,7 @@ const form = ref<PlayerDetails>({
   allow_share_phone: false,
   allow_share_email: false,
   school_name: "",
+  nces_school_id: "",
   school_address: "",
   school_city: "",
   school_state: "",
@@ -819,6 +824,27 @@ const removeCourse = (idx: number) => {
   form.value.core_courses = (form.value.core_courses ?? []).filter((_, i) => i !== idx);
   triggerSave();
 };
+
+const SOCIAL_PLATFORMS: Record<string, SocialPlatform | null> = {
+  twitter_handle: "twitter",
+  instagram_handle: "instagram",
+  tiktok_handle: "tiktok",
+  facebook_url: null,
+};
+
+function handleSocialBlur(key: string, value: string) {
+  const platform = SOCIAL_PLATFORMS[key];
+  if (!platform) return;
+
+  const { handle, isShortUrl } = normalizeHandle(value, platform);
+  (form.value as Record<string, unknown>)[key] = handle;
+
+  if (isShortUrl) {
+    showToast("Short links can't be used as handles — enter your username directly.", "warning");
+  }
+
+  triggerSave();
+}
 
 const socialInputs: { key: keyof PlayerDetails; label: string; prefix?: string; placeholder: string }[] = [
   { key: "twitter_handle", label: "Twitter / X", prefix: "@", placeholder: "username" },

@@ -26,7 +26,7 @@ CREATE POLICY "player_profiles_insert" ON player_profiles
 
 -- Players can update their own profile
 CREATE POLICY "player_profiles_update" ON player_profiles
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- No user-facing DELETE — cascade deletes handle cleanup via users/family_units FK
 

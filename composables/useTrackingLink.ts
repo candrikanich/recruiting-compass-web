@@ -1,7 +1,10 @@
-import { ref, computed, toValue, type MaybeRefOrGetter, type Ref, type ComputedRef } from "vue";
+import { ref, computed, toValue, onMounted, onUnmounted, type MaybeRefOrGetter, type Ref, type ComputedRef } from "vue";
 import { FetchError } from "ofetch";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { usePlayerProfileStore } from "~/stores/playerProfile";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("tracking-link");
 
 export interface TrackingLink {
   ref_token: string;
@@ -14,9 +17,11 @@ export interface UseTrackingLinkReturn {
   loading: Ref<boolean>;
   loadError: Ref<string | null>;
   error: Ref<string | null>;
+  copied: Ref<boolean>;
   trackingUrl: ComputedRef<string | null>;
   fetchLink: () => Promise<void>;
   generateLink: () => Promise<void>;
+  copyLink: () => Promise<void>;
 }
 
 export const useTrackingLink = (
@@ -29,6 +34,8 @@ export const useTrackingLink = (
   const loading = ref(false);
   const loadError = ref<string | null>(null);
   const error = ref<string | null>(null);
+  const copied = ref(false);
+  let copyTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const trackingUrl = computed(() => {
     if (!link.value || !profileStore.profileUrl) return null;
@@ -39,6 +46,9 @@ export const useTrackingLink = (
   });
 
   async function fetchLink(): Promise<void> {
+    if (!profileStore.profile && !profileStore.loading) {
+      profileStore.fetchProfile();
+    }
     const id = toValue(coachId);
     loading.value = true;
     loadError.value = null;
@@ -51,6 +61,7 @@ export const useTrackingLink = (
       if (err instanceof FetchError && err.statusCode === 404) {
         link.value = null;
       } else {
+        logger.error("Failed to load tracking link", err);
         loadError.value =
           err instanceof Error ? err.message : "Failed to load tracking link";
       }
@@ -58,6 +69,57 @@ export const useTrackingLink = (
       loading.value = false;
     }
   }
+
+  async function copyLink(): Promise<void> {
+    if (!trackingUrl.value) return;
+
+    // Clear any existing timeout
+    if (copyTimeout !== null) {
+      clearTimeout(copyTimeout);
+      copyTimeout = null;
+    }
+
+    try {
+      // Check for browser runtime and clipboard API support
+      if (typeof window !== 'undefined' && navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        await navigator.clipboard.writeText(trackingUrl.value);
+      } else {
+        // Fallback: create temporary textarea and use execCommand
+        const textArea = document.createElement('textarea');
+        textArea.value = trackingUrl.value;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+
+      copied.value = true;
+      copyTimeout = setTimeout(() => {
+        copied.value = false;
+        copyTimeout = null;
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy tracking link:', err);
+      error.value = 'Failed to copy link to clipboard';
+      if (copyTimeout !== null) {
+        clearTimeout(copyTimeout);
+        copyTimeout = null;
+      }
+    }
+  }
+
+  onMounted(() => fetchLink());
+
+  onUnmounted(() => {
+    if (copyTimeout !== null) {
+      clearTimeout(copyTimeout);
+      copyTimeout = null;
+    }
+  });
 
   async function generateLink(): Promise<void> {
     const id = toValue(coachId);
@@ -77,5 +139,5 @@ export const useTrackingLink = (
     }
   }
 
-  return { link, loading, loadError, error, trackingUrl, fetchLink, generateLink };
+  return { link, loading, loadError, error, copied, trackingUrl, fetchLink, generateLink, copyLink };
 };

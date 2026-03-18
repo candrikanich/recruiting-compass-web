@@ -147,7 +147,7 @@
         role="status"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <MagnifyingGlassIcon class="w-12 h-12 text-slate-300 mx-auto mb-4" />
+        <MagnifyingGlassIcon class="w-12 h-12 text-slate-300 mx-auto mb-4" aria-hidden="true" />
         <p class="text-slate-900 font-medium mb-2">No interactions match your filters</p>
         <p class="text-sm text-slate-500">Try adjusting your search or filters</p>
       </div>
