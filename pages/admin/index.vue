@@ -507,6 +507,12 @@
           >
             Batch fetch school logos
           </NuxtLink>
+          <NuxtLink
+            to="/admin/notifications/broadcast"
+            class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 font-medium text-slate-700 hover:bg-slate-50 transition"
+          >
+            Broadcast notification
+          </NuxtLink>
         </div>
       </div>
     </div>
