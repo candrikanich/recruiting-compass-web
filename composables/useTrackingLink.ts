@@ -103,7 +103,7 @@ export const useTrackingLink = (
         copyTimeout = null;
       }, 2000);
     } catch (err) {
-      console.error('Failed to copy tracking link:', err);
+      logger.error('Failed to copy tracking link', err);
       error.value = 'Failed to copy link to clipboard';
       if (copyTimeout !== null) {
         clearTimeout(copyTimeout);
@@ -132,6 +132,7 @@ export const useTrackingLink = (
       );
       link.value = data;
     } catch (err) {
+      logger.error("Failed to generate tracking link", err);
       error.value =
         err instanceof Error ? err.message : "Failed to generate link";
     } finally {
