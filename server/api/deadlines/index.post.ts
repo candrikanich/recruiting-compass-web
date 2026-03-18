@@ -9,19 +9,7 @@ import { z } from "zod";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
-
-const createDeadlineSchema = z.object({
-  label: z.string().min(1).max(200),
-  deadline_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  category: z.enum([
-    "application",
-    "decision",
-    "financial_aid",
-    "visit",
-    "custom",
-  ]),
-  school_id: z.string().uuid().optional(),
-});
+import { createDeadlineSchema } from "~/utils/validation/schemas";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "deadlines/create");

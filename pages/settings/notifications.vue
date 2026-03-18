@@ -128,10 +128,10 @@ async function togglePush(type: string) {
       { user_id: userStore.user!.id, notification_type: type, push_enabled: pushPrefs.value[type] },
       { onConflict: 'user_id,notification_type' }
     )
-  } catch (error) {
+  } catch (err) {
     // Revert on failure
     pushPrefs.value[type] = originalValue
-    console.error('Failed to update push notification preference:', error)
+    console.error('Failed to update push notification preference:', err)
   }
 }
 
@@ -144,10 +144,10 @@ async function toggleEmail(type: string) {
       { user_id: userStore.user!.id, notification_type: type, email_enabled: emailPrefs.value[type] },
       { onConflict: 'user_id,notification_type' }
     )
-  } catch (error) {
+  } catch (err) {
     // Revert on failure
     emailPrefs.value[type] = originalValue
-    console.error('Failed to update email notification preference:', error)
+    console.error('Failed to update email notification preference:', err)
   }
 }
 </script>

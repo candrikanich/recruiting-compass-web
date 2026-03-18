@@ -118,6 +118,14 @@ test.describe("Recruiting Packet Feature", () => {
     if (!hasTiers) {
       // No priority tiers in test data — verify packet has basic content
       expect(bodyText?.length ?? 0).toBeGreaterThan(100);
+    } else {
+      // When tiers exist, verify all expected tier headers are present
+      expect(bodyText).toContain("Priority A");
+      expect(bodyText).toContain("Priority B");
+      expect(bodyText).toContain("Priority C");
+      // Verify each tier has at least some content (basic structure check)
+      const tierSections = bodyText.split(/(?=Priority [ABC])/);
+      expect(tierSections.length).toBeGreaterThan(3); // At least 3 tier sections plus header
     }
   });
 

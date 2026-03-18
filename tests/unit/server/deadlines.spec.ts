@@ -1,12 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { z } from 'zod'
-
-const createDeadlineSchema = z.object({
-  label: z.string().min(1).max(200),
-  deadline_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  category: z.enum(['application','decision','financial_aid','visit','custom']),
-  school_id: z.string().uuid().optional(),
-})
+import { createDeadlineSchema } from '~/utils/validation/schemas'
 
 describe('Deadline API schema', () => {
   it('accepts valid deadline', () => {

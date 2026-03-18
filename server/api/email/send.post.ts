@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { z } from 'zod'
 import { renderWeeklyDigestEmail, renderDeadlineAlertEmail } from '~/server/utils/emailService'
 import { useLogger } from '~/server/utils/logger'
+import { requireAuth } from '~/server/utils/auth'
 
 const schema = z.object({
   to: z.string().email(),
@@ -25,15 +26,16 @@ export default defineEventHandler(async (event) => {
     ? renderWeeklyDigestEmail(data as Parameters<typeof renderWeeklyDigestEmail>[0])
     : renderDeadlineAlertEmail(data as Parameters<typeof renderDeadlineAlertEmail>[0])
 
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) {
-    throw createError({ statusCode: 500, statusMessage: 'RESEND_API_KEY not configured' })
+  const { resendApiKey } = useRuntimeConfig()
+  if (!resendApiKey) {
+    logger.error('RESEND_API_KEY not configured')
+    throw createError({ statusCode: 500, statusMessage: 'Service configuration error' })
   }
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${resendApiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

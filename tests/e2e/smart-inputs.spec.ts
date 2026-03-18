@@ -39,9 +39,7 @@ test.describe("Smart Inputs — High School Search", () => {
     await page.locator("text=Lincoln High School").first().click();
     await expect(schoolInput).toHaveValue("Lincoln High School");
     // Dropdown should dismiss after selection
-    await expect(page.locator("text=Lincoln High School").nth(1))
-      .not.toBeVisible({ timeout: 2000 })
-      .catch(() => {});
+    await expect(page.locator("text=Lincoln High School").nth(1)).not.toBeVisible({ timeout: 2000 });
   });
 
   test("shows escape hatch when no results found", async ({ page }) => {

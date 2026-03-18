@@ -5,9 +5,9 @@ CREATE TABLE IF NOT EXISTS system_calendar (
   start_date DATE NOT NULL,
   end_date DATE,
   season_year INTEGER NOT NULL,
-  category TEXT NOT NULL,
+  category TEXT NOT NULL CHECK (category IN ('dead_period', 'quiet_period', 'contact_period', 'evaluation_period', 'sat_date', 'act_date', 'signing_day', 'nli_period')),
   sport TEXT,
-  division TEXT,
+  division TEXT CHECK (division IN ('d1', 'd2', 'd3') OR division IS NULL),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

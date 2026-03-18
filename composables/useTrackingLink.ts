@@ -104,12 +104,11 @@ export const useTrackingLink = (
       }, 2000);
     } catch (err) {
       console.error('Failed to copy tracking link:', err);
-      // Still show copied state briefly to indicate attempt was made
-      copied.value = true;
-      copyTimeout = setTimeout(() => {
-        copied.value = false;
+      error.value = 'Failed to copy link to clipboard';
+      if (copyTimeout !== null) {
+        clearTimeout(copyTimeout);
         copyTimeout = null;
-      }, 1000);
+      }
     }
   }
 

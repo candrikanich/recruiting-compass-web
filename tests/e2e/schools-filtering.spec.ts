@@ -65,7 +65,7 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     await page.waitForTimeout(500);
 
     const filteredCount = await schoolCards.count();
-    expect(filteredCount).toBeLessThanOrEqual(initialCount);
+    expect(filteredCount).toBe(0);
   });
 
   test("should show filter chip when search text is applied", async ({
@@ -84,10 +84,7 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
     // Chip value is displayed as "University" (quoted in display)
     const filtersLabel = page.locator("text=Filters:");
-    const hasFilters = await filtersLabel.isVisible().catch(() => false);
-    if (hasFilters) {
-      await expect(filtersLabel).toBeVisible();
-    }
+    await expect(filtersLabel).toBeVisible();
   });
 
   // ============================================================================
@@ -166,24 +163,18 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
     // Use the first non-empty option (data-dependent — only available states are shown)
     const options = await stateSelectById.locator("option").all();
-    const firstRealOption = options.find(async (o) => await o.getAttribute("value") !== "");
-    if (!firstRealOption) return; // no states available
-    const stateValue = await stateSelectById.locator("option").nth(1).getAttribute("value");
+    const optionValues = await Promise.all(options.map(o => o.getAttribute("value")));
+    const firstRealIndex = optionValues.findIndex(value => value !== "");
+    if (firstRealIndex === -1) return; // no states available
+    const stateValue = optionValues[firstRealIndex];
     if (!stateValue) return;
     await stateSelectById.selectOption(stateValue);
-    await page.waitForTimeout(500);
 
     const filteredCount = await schoolCards.count();
     expect(filteredCount).toBeLessThanOrEqual(initialCount);
 
     // Chip should have a remove button with aria-label matching the state value
-    const hasChip = await page
-      .locator(`button[aria-label="Remove ${stateValue} filter"]`)
-      .isVisible()
-      .catch(() => false);
-    if (hasChip) {
-      await expect(page.locator(`button[aria-label="Remove ${stateValue} filter"]`)).toBeVisible();
-    }
+    await expect(page.locator(`button[aria-label="Remove ${stateValue} filter"]`)).toBeVisible();
   });
 
   test("should show states with schools in the State dropdown", async ({
