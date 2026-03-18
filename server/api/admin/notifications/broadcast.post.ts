@@ -13,7 +13,6 @@ import { useSupabaseAdmin } from "~/server/utils/supabase"
 import { useLogger } from "~/server/utils/logger"
 import type { Database } from "~/types/database"
 
-type NotificationType = Database["public"]["Enums"]["notification_type"]
 
 export const broadcastSchema = z.object({
   target: z.enum(["all", "user"]),
