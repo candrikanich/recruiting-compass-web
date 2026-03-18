@@ -25,7 +25,11 @@ export default defineConfig({
     setupFiles: ["./tests/setup.ts"],
 
     // Use glob patterns instead of explicit file list
-    include: ["tests/unit/**/*.spec.ts", "tests/integration/**/*.spec.ts"],
+    include: [
+      "tests/unit/**/*.spec.ts",
+      "tests/integration/**/*.spec.ts",
+      "tests/unit/**/*.test.mjs",
+    ],
     exclude: ["node_modules/", "dist/", ".nuxt/", "tests/e2e/**"],
 
     // Optimize based on environment
