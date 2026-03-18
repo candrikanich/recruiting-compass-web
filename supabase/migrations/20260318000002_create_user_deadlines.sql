@@ -19,6 +19,11 @@ CREATE INDEX IF NOT EXISTS idx_user_deadlines_category ON user_deadlines(categor
 ALTER TABLE user_deadlines ENABLE ROW LEVEL SECURITY;
 
 -- Allow users to manage their own deadlines
+DROP POLICY IF EXISTS "user_deadlines_select" ON user_deadlines;
+DROP POLICY IF EXISTS "user_deadlines_insert" ON user_deadlines;
+DROP POLICY IF EXISTS "user_deadlines_update" ON user_deadlines;
+DROP POLICY IF EXISTS "user_deadlines_delete" ON user_deadlines;
+
 CREATE POLICY "user_deadlines_select" ON user_deadlines
 FOR SELECT USING (auth.uid() = user_id);
 
