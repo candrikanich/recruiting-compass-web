@@ -14,8 +14,7 @@ export default defineEventHandler(async (event) => {
     const user = await requireAuth(event);
     const supabase = createServerSupabaseClient();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- user_deadlines not yet in generated types
-    const { data, error } = await (supabase.from("user_deadlines") as any)
+    const { data, error } = await supabase.from("user_deadlines")
       .select("*")
       .eq("user_id", user.id)
       .order("deadline_date", { ascending: true });

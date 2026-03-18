@@ -38,7 +38,7 @@
           <h2 class="text-lg font-semibold text-slate-900 mb-4">Address</h2>
           <AddressAutocompleteInput
             :model-value="localLocation"
-            @update:model-value="(v) => { Object.assign(localLocation, v); triggerSave(); }"
+            @update:model-value="(v: HomeLocation) => { Object.assign(localLocation, v); triggerSave(); }"
           />
         </div>
 

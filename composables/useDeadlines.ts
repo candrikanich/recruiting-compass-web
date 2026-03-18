@@ -37,9 +37,9 @@ export function useDeadlines() {
     school_id?: string
   }> {
     try {
-      const created = await $fetch('/api/deadlines', { method: 'POST', body: payload })
+      const result = await $fetch<{ success: boolean; deadline: { id: string; label: string; deadline_date: string; category: string; school_id?: string } }>('/api/deadlines', { method: 'POST', body: payload })
       await fetchDeadlines()
-      return created
+      return result.deadline
     } catch (err) {
       console.error('Failed to create deadline', err)
       throw err

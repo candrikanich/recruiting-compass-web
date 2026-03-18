@@ -11,6 +11,9 @@ import { z } from "zod"
 import { requireAdmin } from "~/server/utils/auth"
 import { useSupabaseAdmin } from "~/server/utils/supabase"
 import { useLogger } from "~/server/utils/logger"
+import type { Database } from "~/types/database"
+
+type NotificationType = Database["public"]["Enums"]["notification_type"]
 
 export const broadcastSchema = z.object({
   target: z.enum(["all", "user"]),
@@ -81,7 +84,7 @@ export default defineEventHandler(async (event): Promise<BroadcastResponse> => {
   const BATCH_SIZE = 500
   for (let i = 0; i < rows.length; i += BATCH_SIZE) {
     const batch = rows.slice(i, i + BATCH_SIZE)
-    const { error } = await supabase.from("notifications").insert(batch)
+    const { error } = await supabase.from("notifications").insert(batch as Array<Database["public"]["Tables"]["notifications"]["Insert"]>)
     if (error) {
       logger.error("Failed to insert broadcast batch", error)
       throw createError({ statusCode: 500, statusMessage: "Failed to send broadcast" })

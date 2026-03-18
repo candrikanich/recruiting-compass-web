@@ -155,7 +155,7 @@
                     :model-value="{ name: form.school_name, nces_school_id: form.nces_school_id || null }"
                     :state-hint="form.school_state || ''"
                     :disabled="isParentRole"
-                    @update:model-value="(v) => {
+                    @update:model-value="(v: HighSchoolSelection) => {
                       form.school_name = v.name;
                       form.high_school = v.name;
                       form.nces_school_id = v.nces_school_id ?? '';
@@ -641,6 +641,7 @@ import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import ProfileCompleteness from "~/components/ProfileCompleteness.vue";
 import { calculateProfileCompleteness } from "~/utils/profileCompletenessCalculation";
 import type { PlayerDetails, VideoLink } from "~/types/models";
+import type { HighSchoolSelection } from "~/composables/useHighSchoolSearch";
 
 definePageMeta({
   middleware: "auth",
