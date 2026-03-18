@@ -431,3 +431,22 @@ export const helpFeedbackSchema = z.object({
 });
 
 export type HelpFeedbackInput = z.infer<typeof helpFeedbackSchema>;
+
+// ============================================================================
+// DEADLINE SCHEMAS
+// ============================================================================
+
+export const createDeadlineSchema = z.object({
+  label: z.string().min(1).max(200),
+  deadline_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  category: z.enum([
+    "application",
+    "decision",
+    "financial_aid",
+    "visit",
+    "custom",
+  ]),
+  school_id: z.string().uuid().optional(),
+});
+
+export type CreateDeadlineInput = z.infer<typeof createDeadlineSchema>;

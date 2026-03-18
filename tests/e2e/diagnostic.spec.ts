@@ -4,6 +4,9 @@ import { test, expect } from "@playwright/test";
  * Diagnostic test to verify E2E setup and Supabase connection
  */
 test.describe("Diagnostic Tests", () => {
+  // This spec tests the login/signup UI — must start unauthenticated
+  test.use({ storageState: undefined });
+
   test("should load login page", async ({ page }) => {
     await page.goto("/login");
     await expect(page).toHaveURL("/login");
@@ -30,7 +33,7 @@ test.describe("Diagnostic Tests", () => {
 
     // Step 1: User type selection is shown first
     const playerOption = page.locator('[data-testid="user-type-player"]');
-    await expect(playerOption).toBeAttached();
+    await expect(playerOption).toBeVisible();
 
     // Select player role to proceed to the form
     await page.locator('[data-testid="user-type-player"]').click();
@@ -62,7 +65,6 @@ test.describe("Diagnostic Tests", () => {
     // Fill with invalid email
     await emailInput.fill("not-an-email");
     await emailInput.blur();
-    await page.waitForTimeout(200);
   });
 
   test("should validate password field", async ({ page }) => {
@@ -78,21 +80,13 @@ test.describe("Diagnostic Tests", () => {
     // Fill with weak password
     await passwordInput.fill("weak");
     await passwordInput.blur();
-    await page.waitForTimeout(200);
   });
 
-  test("should have Supabase connection", async ({ page }) => {
-    // This will fail if Supabase isn't configured
+  test("should load the app successfully", async ({ page }) => {
     await page.goto("/login");
-
-    // If page loads without errors, Supabase is connected
-    const isLoaded = await page.evaluate(() => {
-      return (
-        (window as any).__NUXT__?.ready === true ||
-        document.body.textContent.length > 0
-      );
-    });
-
-    expect(isLoaded).toBe(true);
+    await page.waitForLoadState("networkidle");
+    // Verify the app rendered — login page has email + password inputs
+    await expect(page.locator('input[type="email"]')).toBeVisible();
+    await expect(page.locator('input[type="password"]')).toBeVisible();
   });
 });

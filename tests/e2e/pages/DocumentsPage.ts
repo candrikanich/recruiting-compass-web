@@ -15,7 +15,7 @@ export class DocumentsPage extends BasePage {
   async clickAddDocument() {
     // Click the "Add Document" button in the header to toggle upload form
     await this.page.getByRole('button', { name: /add document/i }).click();
-    await this.page.waitForTimeout(500); // Wait for form to appear
+    await this.page.locator('input[type="file"], select[name="type"]').first().waitFor({ state: "visible" });
   }
 
   async expectDocumentsVisible() {
@@ -47,20 +47,26 @@ export class DocumentsPage extends BasePage {
     const filterOption = await this.page.locator(`text=${filterType}`).first();
     if (await filterOption.isVisible()) {
       await filterOption.click();
-      await this.page.waitForTimeout(1000);
+      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+        .catch((err: Error) => {
+          if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        });
     }
   }
 
   async clearAllFilters() {
     // Look for clear filters button
     await this.click('button:has-text("Clear"), button:has-text("Reset")');
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   }
 
   // Document Actions
   async clickDocument(documentName: string) {
     await this.click(`text=${documentName}`);
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[role="dialog"], [data-testid*="document-detail"]').waitFor({ state: "visible" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
   }
 
   async uploadDocument(fileName: string) {
@@ -69,14 +75,17 @@ export class DocumentsPage extends BasePage {
     const fileInput = await this.page.locator('input[type="file"]').first();
     if (await fileInput.isVisible()) {
       await fileInput.setInputFiles(fileName);
-      await this.page.waitForTimeout(2000);
+      await this.page.waitForLoadState("networkidle");
     }
   }
 
   async deleteDocument(documentName: string) {
     // Select document and delete
     await this.click(`text=${documentName}`);
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[role="dialog"], [data-testid*="document-detail"]').waitFor({ state: "visible" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
 
     // Look for delete option
     const deleteButton = await this.page
@@ -85,7 +94,7 @@ export class DocumentsPage extends BasePage {
     if (await deleteButton.isVisible()) {
       await deleteButton.click();
       await this.click('button:has-text("Confirm"), button:has-text("Yes")');
-      await this.page.waitForTimeout(2000);
+      await this.page.waitForLoadState("networkidle");
     }
   }
 
@@ -96,7 +105,10 @@ export class DocumentsPage extends BasePage {
       .first();
     if (await searchInput.isVisible()) {
       await searchInput.fill(query);
-      await this.page.waitForTimeout(1000);
+      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+        .catch((err: Error) => {
+          if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        });
     }
   }
 
@@ -115,7 +127,10 @@ export class DocumentsPage extends BasePage {
 
   async downloadDocument(documentName: string) {
     await this.click(`text=${documentName}`);
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[role="dialog"], [data-testid*="document-detail"]').waitFor({ state: "visible" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
 
     // Look for download button
     const downloadButton = await this.page
@@ -164,14 +179,16 @@ export class DocumentsPage extends BasePage {
   async selectMultipleDocuments(documentNames: string[]) {
     for (const doc of documentNames) {
       await this.click(`text=${doc}`);
-      await this.page.waitForTimeout(500);
+      await this.page.locator('[role="dialog"], [data-testid*="document-detail"]').waitFor({ state: "visible" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
     }
   }
 
   async deleteMultipleDocuments(documentNames: string[]) {
     for (const doc of documentNames) {
       await this.deleteDocument(doc);
-      await this.page.waitForTimeout(1000);
     }
   }
 
@@ -182,7 +199,10 @@ export class DocumentsPage extends BasePage {
       .first();
     if (await sortButton.isVisible()) {
       await sortButton.click();
-      await this.page.waitForTimeout(1000);
+      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+        .catch((err: Error) => {
+          if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        });
     }
   }
 
@@ -192,7 +212,10 @@ export class DocumentsPage extends BasePage {
       .first();
     if (await viewButton.isVisible()) {
       await viewButton.click();
-      await this.page.waitForTimeout(1000);
+      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+        .catch((err: Error) => {
+          if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        });
     }
   }
 }

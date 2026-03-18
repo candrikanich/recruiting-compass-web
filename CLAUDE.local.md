@@ -4,13 +4,13 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 ## Current Session
 
-**Status:** NEARLY DONE — family unit symmetric redesign, Tasks 1–16 done (1 remains)
-**Branch:** develop (10 commits ahead of origin — NOT YET PUSHED)
-**Build:** not explicitly run this session
-**Tests:** ✅ 5860 passing (305 files)
-**Lint:** ✅ Clean (0 errors)
-**Type-check:** ✅ Clean (0 errors)
-**Handoff:** `planning/2026-02-28-family-unit-symmetric-handoff.md`
+**Status:** NEARLY DONE — E2E test suite overhaul, ~130/149 targeted tests passing
+**Branch:** develop (11 commits ahead of origin — NOT YET PUSHED)
+**Build:** not run this session
+**Tests:** E2E targeted specs ~130 pass / 14 fail (recruiting-packet pre-existing) / 23 skip (a11y)
+**Lint:** UNKNOWN — not run this session
+**Type-check:** UNKNOWN — not run this session
+**Handoff:** `planning/handoff-2026-03-17-e2e-test-fixes.md`
 
 ## Action Required
 

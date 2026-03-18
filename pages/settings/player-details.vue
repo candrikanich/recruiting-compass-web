@@ -151,13 +151,16 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-slate-100">
                 <div class="md:col-span-2">
                   <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">High School Name</label>
-                  <input
-                    v-model="form.school_name"
+                  <HighSchoolSearchInput
+                    :model-value="{ name: form.school_name, nces_school_id: form.nces_school_id || null }"
+                    :state-hint="form.school_state || ''"
                     :disabled="isParentRole"
-                    type="text"
-                    placeholder="e.g., Lincoln High School"
-                    @blur="triggerSave"
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700"
+                    @update:model-value="(v: HighSchoolSelection) => {
+                      form.school_name = v.name;
+                      form.high_school = v.name;
+                      form.nces_school_id = v.nces_school_id ?? '';
+                      triggerSave();
+                    }"
                   />
                 </div>
                 <div>
@@ -357,6 +360,68 @@
               </template>
             </div>
           </div>
+
+          <!-- Video Links -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+              <h2 class="text-base font-bold text-slate-900">Video Links</h2>
+              <p class="text-xs text-slate-500 font-medium">Hudl, YouTube, or Vimeo highlight reels for recruiters.</p>
+            </div>
+            <div class="p-6 space-y-4">
+              <div
+                v-for="(link, idx) in form.video_links"
+                :key="idx"
+                class="flex items-center gap-3"
+              >
+                <select
+                  :value="(form.video_links ?? [])[idx].platform"
+                  :disabled="isParentRole"
+                  @change="(e) => { form.video_links = (form.video_links ?? []).map((l, i) => i === idx ? { ...l, platform: (e.target as HTMLSelectElement).value as 'hudl' | 'youtube' | 'vimeo' } : l); triggerSave(); }"
+                  class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
+                >
+                  <option value="hudl">Hudl</option>
+                  <option value="youtube">YouTube</option>
+                  <option value="vimeo">Vimeo</option>
+                </select>
+                <input
+                  :value="(form.video_links ?? [])[idx].url"
+                  :disabled="isParentRole"
+                  type="url"
+                  placeholder="https://..."
+                  @blur="(e) => { form.video_links = (form.video_links ?? []).map((l, i) => i === idx ? { ...l, url: (e.target as HTMLInputElement).value } : l); triggerSave(); }"
+                  class="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
+                />
+                <input
+                  :value="(form.video_links ?? [])[idx].title"
+                  :disabled="isParentRole"
+                  type="text"
+                  placeholder="Title (optional)"
+                  @blur="(e) => { form.video_links = (form.video_links ?? []).map((l, i) => i === idx ? { ...l, title: (e.target as HTMLInputElement).value } : l); triggerSave(); }"
+                  class="w-32 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
+                />
+                <button
+                  v-if="!isParentRole"
+                  @click="removeVideoLink(idx)"
+                  type="button"
+                  class="p-2 text-slate-400 hover:text-red-500 transition rounded-lg hover:bg-red-50"
+                  title="Remove"
+                >
+                  <XMarkIcon class="w-4 h-4" />
+                </button>
+              </div>
+
+              <button
+                v-if="!isParentRole && (form.video_links ?? []).length < 5"
+                @click="addVideoLink"
+                type="button"
+                class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 py-2"
+              >
+                <PlusIcon class="w-4 h-4" />
+                Add Video Link
+              </button>
+              <p v-if="(form.video_links ?? []).length >= 5" class="text-xs text-slate-500">Maximum 5 video links.</p>
+            </div>
+          </div>
         </div>
 
         <!-- TAB: ACADEMICS & SOCIAL -->
@@ -383,6 +448,54 @@
             </div>
           </div>
 
+          <!-- Core Courses -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+              <h2 class="text-base font-bold text-slate-900">Core Courses</h2>
+              <p class="text-xs text-slate-500 font-medium">AP, honors, or notable courses for your recruiting profile.</p>
+            </div>
+            <div class="p-6 space-y-4">
+              <div class="flex flex-wrap gap-2">
+                <div
+                  v-for="(course, idx) in form.core_courses"
+                  :key="idx"
+                  class="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full"
+                >
+                  {{ course }}
+                  <button
+                    v-if="!isParentRole"
+                    @click="removeCourse(idx)"
+                    type="button"
+                    class="text-blue-400 hover:text-blue-600 transition"
+                    :aria-label="`Remove ${course}`"
+                  >
+                    <XMarkIcon class="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              <div v-if="!isParentRole && (form.core_courses?.length ?? 0) < 20" class="flex gap-2">
+                <input
+                  v-model="newCourseInput"
+                  type="text"
+                  placeholder="e.g., AP Chemistry"
+                  @keydown.enter.prevent="addCourse"
+                  class="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition"
+                  maxlength="60"
+                />
+                <button
+                  @click="addCourse"
+                  type="button"
+                  :disabled="!newCourseInput.trim()"
+                  class="px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Add
+                </button>
+              </div>
+              <p v-if="(form.core_courses?.length ?? 0) >= 20" class="text-xs text-slate-500">Maximum 20 courses added.</p>
+            </div>
+          </div>
+
           <!-- Social Media -->
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <h2 class="text-base font-bold text-slate-900 mb-6">Social Handles</h2>
@@ -394,7 +507,7 @@
                   <input
                     v-model="form[social.key]"
                     type="text"
-                    @blur="triggerSave"
+                    @blur="(e) => handleSocialBlur(String(social.key), (e.target as HTMLInputElement).value)"
                     :placeholder="social.placeholder"
                     :class="[
                       'w-full py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700',
@@ -436,6 +549,20 @@
                 <span class="text-sm font-bold text-slate-600 group-hover:text-slate-900 transition">Show email to verified coaches</span>
               </label>
             </div>
+          </div>
+        </div>
+
+        <!-- TAB: PUBLIC PROFILE -->
+        <div v-show="currentTab === 'public-profile'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ProfileSetup />
+            <ProfilePreview
+              v-if="playerProfile"
+              :settings="playerProfile"
+              :player-name="userStore.user?.full_name ?? 'Athlete'"
+              :details="(form as unknown as Record<string, unknown>)"
+              :schools="[]"
+            />
           </div>
         </div>
 
@@ -497,7 +624,11 @@ import {
   ClockIcon,
   CheckCircleIcon,
   CheckIcon,
+  XMarkIcon,
+  PlusIcon,
+  ShareIcon,
 } from "@heroicons/vue/24/outline";
+import { usePlayerProfile } from "~/composables/usePlayerProfile";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useAppToast } from "~/composables/useAppToast";
 import { useFormValidation } from "~/composables/useFormValidation";
@@ -505,10 +636,12 @@ import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
 import { useAutoSave } from "~/composables/useAutoSave";
 import { useUserStore } from "~/stores/user";
 import { normalizePositions } from "~/utils/positions";
+import { normalizeHandle, type SocialPlatform } from "~/utils/social";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import ProfileCompleteness from "~/components/ProfileCompleteness.vue";
 import { calculateProfileCompleteness } from "~/utils/profileCompletenessCalculation";
-import type { PlayerDetails } from "~/types/models";
+import type { PlayerDetails, VideoLink } from "~/types/models";
+import type { HighSchoolSelection } from "~/composables/useHighSchoolSearch";
 
 definePageMeta({
   middleware: "auth",
@@ -528,7 +661,10 @@ const tabs = [
   { id: "athletics", name: "Athletics", icon: BoltIcon },
   { id: "academics", name: "Academics & Social", icon: AcademicCapIcon },
   { id: "history", name: "History", icon: ClockIcon },
+  { id: "public-profile", name: "Public Profile", icon: ShareIcon },
 ];
+
+const { profile: playerProfile } = usePlayerProfile();
 
 const BATS_OPTIONS = [
   { value: "R", label: "Right" },
@@ -580,6 +716,7 @@ const form = ref<PlayerDetails>({
   allow_share_phone: false,
   allow_share_email: false,
   school_name: "",
+  nces_school_id: "",
   school_address: "",
   school_city: "",
   school_state: "",
@@ -596,6 +733,8 @@ const form = ref<PlayerDetails>({
   travel_team_year: undefined,
   travel_team_name: "",
   travel_team_coach: "",
+  video_links: [] as VideoLink[],
+  core_courses: [] as string[],
 });
 
 const { commonSports, getPositionsBySport } = useSportsPositionLookup();
@@ -663,6 +802,51 @@ const togglePosition = (pos: string) => {
   else form.value.positions.push(pos);
 };
 
+const addVideoLink = () => {
+  form.value.video_links = [...(form.value.video_links ?? []), { platform: "hudl", url: "", title: "" }];
+};
+
+const removeVideoLink = (idx: number) => {
+  form.value.video_links = (form.value.video_links ?? []).filter((_, i) => i !== idx);
+  triggerSave();
+};
+
+const newCourseInput = ref("");
+
+const addCourse = () => {
+  const trimmed = newCourseInput.value.trim();
+  if (!trimmed || form.value.core_courses?.includes(trimmed)) return;
+  form.value.core_courses = [...(form.value.core_courses ?? []), trimmed];
+  newCourseInput.value = "";
+  triggerSave();
+};
+
+const removeCourse = (idx: number) => {
+  form.value.core_courses = (form.value.core_courses ?? []).filter((_, i) => i !== idx);
+  triggerSave();
+};
+
+const SOCIAL_PLATFORMS: Record<string, SocialPlatform | null> = {
+  twitter_handle: "twitter",
+  instagram_handle: "instagram",
+  tiktok_handle: "tiktok",
+  facebook_url: null,
+};
+
+function handleSocialBlur(key: string, value: string) {
+  const platform = SOCIAL_PLATFORMS[key];
+  if (!platform) return;
+
+  const { handle, isShortUrl } = normalizeHandle(value, platform);
+  (form.value as Record<string, unknown>)[key] = handle;
+
+  if (isShortUrl) {
+    showToast("Short links can't be used as handles — enter your username directly.", "warning");
+  }
+
+  triggerSave();
+}
+
 const socialInputs: { key: keyof PlayerDetails; label: string; prefix?: string; placeholder: string }[] = [
   { key: "twitter_handle", label: "Twitter / X", prefix: "@", placeholder: "username" },
   { key: "instagram_handle", label: "Instagram", prefix: "@", placeholder: "username" },
@@ -685,6 +869,8 @@ onMounted(async () => {
       playerDetails.school_name = playerDetails.high_school;
     }
     form.value = { ...form.value, ...playerDetails, positions: normalizePositions(playerDetails.positions) };
+    form.value.video_links = playerDetails.video_links ?? [];
+    form.value.core_courses = playerDetails.core_courses ?? [];
     initializeHeight(playerDetails.height_inches);
     if (form.value.primary_sport) {
       availablePositions.value = getPositionsBySport(form.value.primary_sport);

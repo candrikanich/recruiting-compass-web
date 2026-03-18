@@ -44,10 +44,10 @@ test.describe("Schools Sorting", () => {
       }
     }
 
-    // First few should be alphabetically sorted
+    // All names should be in non-descending alphabetical order
     if (names.length >= 2) {
-      const isSorted = names[0].localeCompare(names[1]) <= 0;
-      expect(isSorted).toBeTruthy();
+      const sorted = [...names].sort((a, b) => a.localeCompare(b));
+      expect(names).toEqual(sorted);
     }
   });
 
@@ -215,10 +215,9 @@ test.describe("Schools Sorting", () => {
       await divisionSelect.selectOption("D1");
       await page.waitForTimeout(300);
 
-      // Verify schools are still sorted
+      // Verify schools are still sorted (filtering reduces or maintains count)
       let filteredSchools = await page.locator("h3").all();
       expect(filteredSchools.length).toBeLessThanOrEqual(initialCount);
-      expect(filteredSchools.length).toBeGreaterThanOrEqual(0);
     }
   });
 

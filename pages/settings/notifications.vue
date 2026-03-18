@@ -1,262 +1,154 @@
 <template>
-  <div
-    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
-  >
-    <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-        <NuxtLink
-          to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+  <div class="max-w-2xl mx-auto py-8 px-4">
+    <h1 class="text-2xl font-bold mb-2">Notification Preferences</h1>
+    <p class="text-gray-500 mb-8">Control which notifications you receive and how.</p>
+
+    <div v-if="loading" class="text-gray-400">Loading preferences...</div>
+    <div v-else-if="error" class="text-red-600">{{ error }}</div>
+    <div v-else class="space-y-4">
+      <div
+        v-for="type in NOTIFICATION_TYPES"
+        :key="type.value"
+        class="p-4 bg-white rounded-lg border border-gray-200 space-y-3"
+      >
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="font-medium text-gray-900">{{ type.label }}</p>
+            <p class="text-sm text-gray-500">{{ type.description }}</p>
+          </div>
+          <button
+            role="switch"
+            :aria-checked="pushPrefs[type.value]"
+            :aria-label="`Push notifications for ${type.label}`"
+            @click="togglePush(type.value)"
+            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+            :class="pushPrefs[type.value] ? 'bg-blue-600' : 'bg-gray-200'"
+          >
+            <span
+              class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+              :class="pushPrefs[type.value] ? 'translate-x-6' : 'translate-x-1'"
+            />
+          </button>
+        </div>
+
+        <!-- Email toggle only for deadline_alert and weekly_digest -->
+        <div
+          v-if="EMAIL_TYPES.has(type.value)"
+          class="flex items-center justify-between pt-2 border-t border-gray-100"
         >
-          <ArrowLeftIcon class="w-4 h-4" />
-          Back to Settings
-        </NuxtLink>
-        <h1 class="text-2xl font-semibold text-slate-900">
-          Notification Preferences
-        </h1>
-        <p class="text-slate-600">
-          Configure how you receive alerts and updates
-        </p>
+          <p class="text-sm text-gray-600">Also send email</p>
+          <button
+            role="switch"
+            :aria-checked="emailPrefs[type.value]"
+            :aria-label="`Email notifications for ${type.label}`"
+            @click="toggleEmail(type.value)"
+            class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
+            :class="emailPrefs[type.value] ? 'bg-blue-600' : 'bg-gray-200'"
+          >
+            <span
+              class="inline-block h-3 w-3 transform rounded-full bg-white transition-transform"
+              :class="emailPrefs[type.value] ? 'translate-x-5' : 'translate-x-1'"
+            />
+          </button>
+        </div>
       </div>
     </div>
-
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-      <div
-        v-if="isLoading"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
-      >
-        <div
-          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
-        ></div>
-        <p class="text-slate-600">Loading preferences...</p>
-      </div>
-
-      <div v-else class="space-y-6">
-        <!-- In-App Notifications Section -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4">
-            In-App Notifications
-          </h2>
-          <div class="space-y-4">
-            <!-- Follow-up Reminders -->
-            <div class="flex items-start justify-between gap-4">
-              <div class="flex-1">
-                <label class="flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    v-model="localSettings.enableFollowUpReminders"
-                    class="w-4 h-4 text-blue-600 rounded-sm"
-                  />
-                  <span class="ml-3 text-sm font-medium text-gray-900"
-                    >Coach Follow-Up Reminders</span
-                  >
-                </label>
-                <p class="ml-7 text-xs text-gray-600">
-                  Remind me when I haven't contacted a coach in a while
-                </p>
-              </div>
-              <div
-                v-if="localSettings.enableFollowUpReminders"
-                class="flex items-center gap-2"
-              >
-                <input
-                  type="number"
-                  v-model.number="localSettings.followUpReminderDays"
-                  min="1"
-                  max="90"
-                  class="w-16 px-2 py-1 border border-gray-300 rounded-sm text-sm"
-                />
-                <span class="text-sm text-gray-600 whitespace-nowrap"
-                  >days</span
-                >
-              </div>
-            </div>
-
-            <!-- Deadline Alerts -->
-            <div class="flex items-start">
-              <label class="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  v-model="localSettings.enableDeadlineAlerts"
-                  class="w-4 h-4 text-blue-600 rounded-sm"
-                />
-                <div class="ml-3">
-                  <span class="text-sm font-medium text-gray-900"
-                    >Deadline Alerts</span
-                  >
-                  <p class="text-xs text-gray-600">
-                    Notify me about upcoming offer/event deadlines
-                  </p>
-                </div>
-              </label>
-            </div>
-
-            <!-- Daily Digest -->
-            <div class="flex items-start">
-              <label class="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  v-model="localSettings.enableDailyDigest"
-                  class="w-4 h-4 text-blue-600 rounded-sm"
-                />
-                <div class="ml-3">
-                  <span class="text-sm font-medium text-gray-900"
-                    >Daily Digest</span
-                  >
-                  <p class="text-xs text-gray-600">
-                    Receive a daily summary of activity
-                  </p>
-                </div>
-              </label>
-            </div>
-
-            <!-- Inbound Interaction Alerts -->
-            <div class="flex items-start">
-              <label class="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  v-model="localSettings.enableInboundInteractionAlerts"
-                  class="w-4 h-4 text-blue-600 rounded-sm"
-                />
-                <div class="ml-3">
-                  <span class="text-sm font-medium text-gray-900"
-                    >Inbound Contact Alerts</span
-                  >
-                  <p class="text-xs text-gray-600">
-                    Notify me when a coach reaches out
-                  </p>
-                </div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Email Notifications Section -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4">
-            Email Notifications
-          </h2>
-          <div class="space-y-4">
-            <div class="flex items-start">
-              <label class="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  v-model="localSettings.enableEmailNotifications"
-                  class="w-4 h-4 text-blue-600 rounded-sm"
-                />
-                <div class="ml-3">
-                  <span class="text-sm font-medium text-gray-900"
-                    >Enable Email Notifications</span
-                  >
-                  <p class="text-xs text-gray-600">
-                    Send important notifications via email
-                  </p>
-                </div>
-              </label>
-            </div>
-
-            <div
-              v-if="localSettings.enableEmailNotifications"
-              class="ml-7 flex items-start"
-            >
-              <label class="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  v-model="localSettings.emailOnlyHighPriority"
-                  class="w-4 h-4 text-blue-600 rounded-sm"
-                />
-                <div class="ml-3">
-                  <span class="text-sm font-medium text-gray-900"
-                    >High-Priority Only</span
-                  >
-                  <p class="text-xs text-gray-600">
-                    Only email me for urgent notifications
-                  </p>
-                </div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Save Button -->
-        <div class="flex justify-end gap-4">
-          <button
-            @click="handleReset"
-            class="px-6 py-2 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition"
-          >
-            Reset to Defaults
-          </button>
-          <button
-            @click="handleSave"
-            :disabled="saving"
-            class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
-          >
-            {{ saving ? "Saving..." : "Save Preferences" }}
-          </button>
-        </div>
-
-        <!-- Success/Error Messages -->
-        <div
-          v-if="saveSuccess"
-          class="bg-green-50 border border-green-200 rounded-lg p-4"
-        >
-          <p class="text-green-800">Preferences saved successfully</p>
-        </div>
-        <div
-          v-if="error"
-          class="bg-red-50 border border-red-200 rounded-lg p-4"
-        >
-          <p class="text-red-700">Error: {{ error }}</p>
-        </div>
-      </div>
-    </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
-import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
-import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { getDefaultNotificationSettings } from "~/utils/preferenceValidation";
-import type { NotificationSettings } from "~/types/models";
-import { createClientLogger } from "~/utils/logger";
+import { useSupabase } from '~/composables/useSupabase'
+import { useUserStore } from '~/stores/user'
 
-const logger = createClientLogger("settings/notifications");
+const NOTIFICATION_TYPES = [
+  { value: 'follow_up_reminder', label: 'Follow-up Reminders', description: 'When it\'s time to contact a coach' },
+  { value: 'deadline_alert', label: 'Deadline Alerts', description: 'Application, offer, and NCAA deadlines — 7, 3, and 0 days out' },
+  { value: 'weekly_digest', label: 'Weekly Digest', description: 'Monday morning recruiting summary' },
+  { value: 'event', label: 'Event Reminders', description: '24 hours before visits and showcases' },
+] as const
 
-definePageMeta({ middleware: "auth" });
+const EMAIL_TYPES = new Set(['deadline_alert', 'weekly_digest'])
 
-const { isLoading, error, getNotificationSettings, setNotificationSettings } =
-  usePreferenceManager();
+type NotificationPrefRow = {
+  notification_type: string
+  push_enabled: boolean
+  email_enabled: boolean | null
+}
 
-const localSettings = reactive<NotificationSettings>(
-  getDefaultNotificationSettings(),
-);
+// notification_preferences is not yet in the generated database types — cast to any
+const db = useSupabase() as any
+const userStore = useUserStore()
+const loading = ref(true)
+const error = ref<string | null>(null)
+const pushPrefs = ref<Record<string, boolean>>({})
+const emailPrefs = ref<Record<string, boolean>>({})
 
-const saving = ref(false);
-const saveSuccess = ref(false);
-
-const handleSave = async () => {
-  saving.value = true;
-  saveSuccess.value = false;
-
-  try {
-    await setNotificationSettings(localSettings);
-    saveSuccess.value = true;
-    setTimeout(() => (saveSuccess.value = false), 3000);
-  } catch (err) {
-    logger.error("Failed to save notification settings", err);
-  } finally {
-    saving.value = false;
-  }
-};
-
-const handleReset = () => {
-  Object.assign(localSettings, getDefaultNotificationSettings());
-};
+definePageMeta({ middleware: 'auth' })
 
 onMounted(async () => {
-  const settings = getNotificationSettings();
-  Object.assign(localSettings, settings);
-});
+  if (!userStore.user) return;
+  try {
+    const userId = userStore.user.id
+
+    const { data } = await db
+      .from('notification_preferences')
+      .select('notification_type, push_enabled, email_enabled')
+      .eq('user_id', userId) as { data: NotificationPrefRow[] | null }
+
+    // Defaults: all push on, email on for applicable types
+    const pushMap: Record<string, boolean> = {}
+    const emailMap: Record<string, boolean> = {}
+    for (const t of NOTIFICATION_TYPES) {
+      pushMap[t.value] = true
+      if (EMAIL_TYPES.has(t.value)) emailMap[t.value] = true
+    }
+
+    // Apply saved preferences
+    for (const row of data ?? []) {
+      pushMap[row.notification_type] = row.push_enabled
+      if (EMAIL_TYPES.has(row.notification_type)) {
+        emailMap[row.notification_type] = row.email_enabled ?? true
+      }
+    }
+
+    pushPrefs.value = pushMap
+    emailPrefs.value = emailMap
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to load notification preferences'
+  } finally {
+    loading.value = false
+  }
+})
+
+async function togglePush(type: string) {
+  const originalValue = pushPrefs.value[type]
+  pushPrefs.value[type] = !pushPrefs.value[type]
+
+  try {
+    await db.from('notification_preferences').upsert(
+      { user_id: userStore.user!.id, notification_type: type, push_enabled: pushPrefs.value[type] },
+      { onConflict: 'user_id,notification_type' }
+    )
+  } catch (err) {
+    // Revert on failure
+    pushPrefs.value[type] = originalValue
+    console.error('Failed to update push notification preference:', err)
+  }
+}
+
+async function toggleEmail(type: string) {
+  const originalValue = emailPrefs.value[type]
+  emailPrefs.value[type] = !emailPrefs.value[type]
+
+  try {
+    await db.from('notification_preferences').upsert(
+      { user_id: userStore.user!.id, notification_type: type, email_enabled: emailPrefs.value[type] },
+      { onConflict: 'user_id,notification_type' }
+    )
+  } catch (err) {
+    // Revert on failure
+    emailPrefs.value[type] = originalValue
+    console.error('Failed to update email notification preference:', err)
+  }
+}
 </script>

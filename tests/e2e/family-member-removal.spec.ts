@@ -1,17 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { loginViaForm } from "./helpers/login";
-
-// Test data from documentation
-const TEST_ACCOUNTS = {
-  player: {
-    email: "test.player2028@andrikanich.com",
-    password: "test-password",
-  },
-  parent: {
-    email: "test.parent@andrikanich.com",
-    password: "test-password",
-  },
-};
 
 test.describe("Family Member Removal", () => {
   test("family management page loads with proper structure", async ({
@@ -134,14 +121,6 @@ test.describe("Family Member Removal", () => {
 });
 
 test.describe("authenticated family management", () => {
-  const PLAYER = {
-    email: "test.player2028@andrikanich.com",
-    password: "test-password",
-  };
-
-  test.beforeEach(async ({ page }) => {
-    await loginViaForm(page, PLAYER.email, PLAYER.password, /\/(dashboard|schools)/);
-  });
 
   test("family management page loads for authenticated player", async ({
     page,

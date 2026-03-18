@@ -4,6 +4,9 @@ import { authFixture } from "../fixtures/auth.fixture";
 import { testUsers } from "../fixtures/testData";
 
 test.describe("Tier 1: Remember Me - Session Persistence", () => {
+  // This spec tests the remember-me checkbox on the login form — must start unauthenticated
+  test.use({ storageState: undefined });
+
   let authPage: AuthPage;
 
   test.beforeEach(async ({ page }) => {

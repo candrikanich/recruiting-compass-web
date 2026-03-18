@@ -4,6 +4,9 @@ import { authFixture } from "../fixtures/auth.fixture";
 import { testUsers } from "../fixtures/testData";
 
 test.describe("Tier 1: Authentication - Critical User Flows", () => {
+  // This spec tests login/signup — must start unauthenticated
+  test.use({ storageState: undefined });
+
   let authPage: AuthPage;
 
   test.beforeEach(async ({ page }) => {
@@ -158,32 +161,8 @@ test.describe("Tier 1: Authentication - Critical User Flows", () => {
     // Try to access dashboard without login
     await authPage.page.goto("/dashboard");
 
-    // Wait a moment to see what happens
-    await page.waitForTimeout(2000);
-
-    // Check what actually loads on dashboard when not logged in
-    // Maybe it shows dashboard with different content instead of redirecting
-    const url = page.url();
-    console.log("URL when accessing dashboard while logged out:", url);
-
-    // For now, just check that we can access some dashboard content
-    // This test may need adjustment based on actual app behavior
-    if (url.includes("/dashboard")) {
-      console.log(
-        "App allows dashboard access without login - checking content",
-      );
-      // Check if it shows login prompt or different content
-      const hasLoginPrompt =
-        (await page.isVisible("text=Sign in")) ||
-        (await page.isVisible("text=Login")) ||
-        (await page.isVisible('[data-testid="login-button"]'));
-      console.log("Has login prompt on dashboard:", hasLoginPrompt);
-    }
-
-    // App should either redirect to login or show dashboard with limited content
-    const finalUrl = page.url();
-    expect(finalUrl).toMatch(/\/(login|dashboard)/);
-    console.log("Final URL:", finalUrl);
+    // Unauthenticated users must be redirected to login
+    await expect(page).toHaveURL("/login");
   });
 
   test("should redirect to dashboard after successful login", async ({

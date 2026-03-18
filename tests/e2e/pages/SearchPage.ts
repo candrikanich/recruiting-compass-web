@@ -23,7 +23,7 @@ export class SearchPage extends BasePage {
     type: "all" | "schools" | "coaches" | "interactions" | "metrics",
   ) {
     await this.click(`button:has-text("${this.getTypeLabel(type)}")`);
-    await this.page.waitForTimeout(500);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   }
 
   private getTypeLabel(type: string): string {
@@ -44,14 +44,7 @@ export class SearchPage extends BasePage {
   }
 
   async waitForSearchResults() {
-    await this.page.waitForTimeout(2000);
-
-    const loadingVisible = await this.page
-      .locator('text=Searching..., [data-testid*="loading"]')
-      .isVisible();
-    if (loadingVisible) {
-      await this.page.waitForSelector("text=Searching...", { state: "hidden" });
-    }
+    await this.page.locator('text=Searching..., [data-testid*="loading"]').waitFor({ state: "hidden" }).catch(() => {});
   }
 
   // Search Results Validation
@@ -127,8 +120,7 @@ export class SearchPage extends BasePage {
       name,
     );
     await this.click('button:has-text("Save"), button:has-text("Create")');
-
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   }
 
   async expectSavedSearchExists(name: string) {
@@ -179,14 +171,14 @@ export class SearchPage extends BasePage {
     await filterSection
       .locator(`text=${value}, input[value="${value}"]`)
       .click();
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   }
 
   async clearAllFilters() {
     await this.click(
       'button:has-text("Clear Filters"), button:has-text("Reset")',
     );
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   }
 
   // Cross-Entity Search
@@ -198,7 +190,6 @@ export class SearchPage extends BasePage {
   // Search Suggestions
   async expectSearchSuggestions(query: string) {
     await this.fillSearchQuery(query.substring(0, 2));
-    await this.page.waitForTimeout(1000);
     await this.expectVisible(
       '[data-testid*="suggestion"], .suggestions, .autocomplete',
     );

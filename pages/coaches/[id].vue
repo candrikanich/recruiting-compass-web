@@ -76,6 +76,9 @@
           :interactions="recentInteractions"
           :coach-name="`${coach.first_name} ${coach.last_name}`"
         />
+
+        <!-- Send Profile -->
+        <CoachProfileLink :coach-id="coachId" />
       </div>
     </main>
 

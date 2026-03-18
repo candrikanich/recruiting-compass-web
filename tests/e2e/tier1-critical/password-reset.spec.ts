@@ -12,6 +12,9 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("Password Reset Flow", () => {
+  // This spec tests the login/reset UI — must start unauthenticated
+  test.use({ storageState: undefined });
+
   test.beforeEach(async ({ page }) => {
     // Start from login page
     await page.goto("/login");

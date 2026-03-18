@@ -1,5 +1,6 @@
 <template>
   <div
+    data-testid="school-card"
     class="bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow overflow-hidden group flex flex-col h-full"
   >
     <div class="p-5 flex-1 flex flex-col">

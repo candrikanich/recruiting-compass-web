@@ -1,23 +1,11 @@
 import { test } from "@playwright/test";
-import { AuthPage } from "../pages/AuthPage";
 import { SearchPage } from "../pages/SearchPage";
-import { testUsers } from "../fixtures/testData";
 
 test.describe("Phase 2: Advanced Search Functionality", () => {
-  let authPage: AuthPage;
   let searchPage: SearchPage;
 
   test.beforeEach(async ({ page }) => {
-    authPage = new AuthPage(page);
     searchPage = new SearchPage(page);
-
-    // Login first
-    await authPage.goto();
-    await authPage.signup(
-      testUsers.newUser.email,
-      testUsers.newUser.password,
-      testUsers.newUser.displayName,
-    );
   });
 
   test("should load search page successfully", async ({ page }) => {

@@ -193,6 +193,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
 
     // Get all interactions count
     let allInteractions = await page.locator(".space-y-4 > div").count();
+    expect(allInteractions).toBeGreaterThan(0);
 
     // Select "Last 30 Days" filter
     await page.selectOption("#date-filter", "30");
@@ -357,8 +358,9 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     // Wait for filters
     await page.waitForSelector("#type-filter");
 
-    // Get initial count
+    // Get initial count — must have data for the filter comparisons to be meaningful
     const initialCount = await page.locator(".space-y-4 > div").count();
+    expect(initialCount).toBeGreaterThan(0);
 
     // Apply filter 1: Type = Email
     await page.selectOption("#type-filter", "email");

@@ -1,22 +1,12 @@
 import { test } from "@playwright/test";
-import { AuthPage } from "../pages/AuthPage";
 import { PerformancePage } from "../pages/PerformancePage";
-import { testUsers, testPerformanceMetrics } from "../fixtures/testData";
+import { testPerformanceMetrics } from "../fixtures/testData";
 
 test.describe("Tier 2: Performance Tracking & Analytics", () => {
-  let authPage: AuthPage;
   let performancePage: PerformancePage;
 
   test.beforeEach(async ({ page }) => {
-    authPage = new AuthPage(page);
     performancePage = new PerformancePage(page);
-
-    await authPage.goto();
-    await authPage.signup(
-      testUsers.newUser.email,
-      testUsers.newUser.password,
-      testUsers.newUser.displayName,
-    );
   });
 
   test("should log performance metrics", async () => {

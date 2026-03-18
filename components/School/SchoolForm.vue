@@ -209,9 +209,11 @@
 <script setup lang="ts">
 import { reactive, watch, computed, toRefs } from "vue";
 import { useFormValidation } from "~/composables/useFormValidation";
+import { useNcaaLookup } from "~/composables/useNcaaLookup";
 import { schoolSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
 import type { CollegeDataResult } from "~/composables/useCollegeData";
+import type { CollegeSearchResult } from "~/types/api";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 
 // Division options
@@ -264,6 +266,7 @@ const emit = defineEmits<{
 
 const { errors, fieldErrors, validate, validateField, clearErrors, hasErrors } =
   useFormValidation();
+const { lookupSchool } = useNcaaLookup();
 
 // Form data - initialize with parent data or defaults
 const formData = reactive({
@@ -293,13 +296,26 @@ watch(
   initialData,
   (newData) => {
     if (newData) {
-      Object.assign(formData, {
-        name: newData.name ?? formData.name,
-        location: newData.location ?? formData.location,
-        division: newData.division ?? formData.division,
-        conference: newData.conference ?? formData.conference,
-        website: newData.website ?? formData.website,
-      });
+      formData.name = newData.name ?? formData.name;
+      formData.location = newData.location ?? formData.location;
+      formData.website = newData.website ?? formData.website;
+
+      // Division and conference need special handling.
+      // The parent sends '' while its async NCAA lookup is still in flight.
+      // SchoolForm may have already set these via its own direct lookup in handleCollegeSelect.
+      // Only update when parent has an actual value; only clear when parent also clears the name
+      // (which signals a true selection-clear rather than a transient loading state).
+      if (newData.division) {
+        formData.division = newData.division;
+      } else if (!newData.name) {
+        formData.division = ""; // parent cleared the selection entirely
+      }
+
+      if (newData.conference) {
+        formData.conference = newData.conference;
+      } else if (!newData.name) {
+        formData.conference = ""; // parent cleared the selection entirely
+      }
     }
   },
   { deep: true },
@@ -310,13 +326,22 @@ watch(
   initialAutoFilledFields,
   (newFields) => {
     if (newFields) {
+      formData.name = newFields.name !== undefined ? formData.name : formData.name;
       Object.assign(autoFilledFields, {
         name: newFields.name ?? autoFilledFields.name,
         location: newFields.location ?? autoFilledFields.location,
         website: newFields.website ?? autoFilledFields.website,
-        division: newFields.division ?? autoFilledFields.division,
-        conference: newFields.conference ?? autoFilledFields.conference,
+        // Only flip to true — don't clear back to false while parent NCAA lookup is in flight.
+        division: newFields.division || autoFilledFields.division,
+        conference: newFields.conference || autoFilledFields.conference,
       });
+
+      // When the parent fully resets (name goes false with no other fields true),
+      // that signals selection was cleared — reset division/conference indicators too.
+      if (newFields.name === false && !newFields.location && !newFields.website) {
+        autoFilledFields.division = false;
+        autoFilledFields.conference = false;
+      }
     }
   },
   { deep: true },
@@ -407,14 +432,29 @@ const isAutoFilled = (field: string) => {
   return autoFilledFields[field as keyof typeof autoFilledFields];
 };
 
-const handleCollegeSelect = (college: any) => {
+let lookupGeneration = 0;
+
+const handleCollegeSelect = async (college: CollegeSearchResult) => {
+  const myGeneration = ++lookupGeneration;
+
   formData.name = college.name;
   formData.location = college.location || "";
   formData.website = college.website || "";
-
   autoFilledFields.name = true;
   autoFilledFields.location = !!college.location;
   autoFilledFields.website = !!college.website;
+
+  // Perform NCAA lookup directly so division/conference are set before notifying the parent.
+  // This avoids a flash where the parent's async lookup triggers an empty-division prop update
+  // that would overwrite the already-populated value (see watch logic below).
+  const ncaaResult = await lookupSchool(college.name, college.id).catch(() => null);
+  if (myGeneration !== lookupGeneration) return; // stale — a newer selection happened
+  if (ncaaResult) {
+    formData.division = ncaaResult.division;
+    formData.conference = ncaaResult.conference || "";
+    autoFilledFields.division = true;
+    autoFilledFields.conference = !!ncaaResult.conference;
+  }
 
   emit("collegeSelect", college);
 };

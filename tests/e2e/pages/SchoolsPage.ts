@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 import { BasePage } from "./BasePage";
 
 export class SchoolsPage extends BasePage {
@@ -27,7 +27,7 @@ export class SchoolsPage extends BasePage {
     if (await autocompleteCheckbox.isVisible()) {
       // Uncheck autocomplete to use manual entry for testing
       await autocompleteCheckbox.uncheck();
-      await this.page.waitForTimeout(500);
+      await this.page.locator("#name").waitFor({ state: "visible" });
     }
 
     // Now the form should be in manual mode
@@ -86,7 +86,10 @@ export class SchoolsPage extends BasePage {
       )
       .first();
     await searchInput.fill(query);
-    await this.page.waitForTimeout(1000); // Wait for search to process
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
   }
 
   async filterByDivision(division: string) {
@@ -96,7 +99,7 @@ export class SchoolsPage extends BasePage {
       .first();
     if (await filterButton.isVisible()) {
       await filterButton.click();
-      await this.page.waitForTimeout(500);
+      await this.page.locator('select:has-text("Division"), select[name*="division"]').waitFor({ state: "visible" });
     }
     // Look for division select
     await this.selectOption(
@@ -105,14 +108,12 @@ export class SchoolsPage extends BasePage {
     );
   }
 
-  async filterByState(state: string) {
-    // Simplified implementation
-    console.log(`Filtering by state: ${state}`);
+  async filterByState(_state: string) {
+    throw new Error("filterByState: filter UI not yet implemented in the app");
   }
 
-  async filterByConference(conference: string) {
-    // Simplified implementation
-    console.log(`Filtering by conference: ${conference}`);
+  async filterByConference(_conference: string) {
+    throw new Error("filterByConference: filter UI not yet implemented in the app");
   }
 
   async filterByMultipleCriteria(filters: any) {
@@ -135,18 +136,13 @@ export class SchoolsPage extends BasePage {
   }
 
   async expectSearchResults(count: number) {
-    const schoolCount = await this.getSchoolCount();
     if (count === 0) {
       await this.expectVisible(
         "text=No schools found, text=No results, text=Empty",
       );
     } else {
       const actualCount = await this.getSchoolCount();
-      if (actualCount < count) {
-        console.log(
-          `Expected at least ${count} schools, but found ${actualCount}`,
-        );
-      }
+      expect(actualCount).toBeGreaterThanOrEqual(count);
     }
   }
 
@@ -166,7 +162,10 @@ export class SchoolsPage extends BasePage {
         .first();
       await searchInput.fill("");
     }
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
   }
 
   async getActiveFilterCount(): Promise<number> {
@@ -179,6 +178,9 @@ export class SchoolsPage extends BasePage {
 
   async clearAllFilters() {
     await this.click('button:has-text("Clear"), button:has-text("Reset")');
-    await this.page.waitForTimeout(1000);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
   }
 }

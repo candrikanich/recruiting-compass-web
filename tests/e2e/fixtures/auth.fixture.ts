@@ -34,7 +34,9 @@ export const authFixture = {
 
     // Navigate to login to ensure fresh state
     await page.goto("/login");
-    await page.waitForTimeout(1000); // Wait for any redirects
+    await page.waitForURL("/login", { timeout: 5000 }).catch(() => {
+      // Already on /login or another page — that's fine
+    });
   },
 
   /**
@@ -75,11 +77,8 @@ export const authFixture = {
     await authPage.goto();
     await authPage.signup(email, password, displayName);
 
-    // After signup, the app redirects to verify-email page
-    // We'll bypass this by using Supabase admin API if available,
-    // or navigate directly to dashboard if auth token exists
-    await page.waitForTimeout(500);
-
+    // After signup the app redirects to onboarding/verify-email.
+    // Navigate directly to dashboard — the session is active even before email verification.
     // Try to access dashboard directly - if session is valid, we'll be allowed
     await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
 
@@ -161,57 +160,46 @@ export const authFixture = {
   },
 
   /**
-   * Fast login using pre-seeded test account (< 1 second)
-   * Bypasses UI and directly uses API credentials
+   * Fast login using pre-captured storageState from global setup (< 1 second).
+   * Loads .auth/{accountType}.json and injects cookies + localStorage into the page context.
    */
   async loginFast(page: Page, accountType: TestAccountType = "player") {
     const account = TEST_ACCOUNTS[accountType];
+    const { readFile } = await import("fs/promises");
+    const { resolve } = await import("path");
+    const authFilePath = resolve(process.cwd(), `tests/e2e/.auth/${accountType}.json`);
 
-    // Navigate to app first
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-
-    // Inject auth session via Supabase client
     try {
-      await page.evaluate(
-        async ({ email, password }) => {
-          // Access Supabase client from the app
-          const supabase = (window as any).$nuxt?.$supabase;
-          if (!supabase) {
-            throw new Error("Supabase client not available");
-          }
+      const stateJson = await readFile(authFilePath, "utf-8");
+      const state = JSON.parse(stateJson);
 
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
+      // Apply cookies first
+      await page.context().clearCookies();
+      if (state.cookies?.length) {
+        await page.context().addCookies(state.cookies);
+      }
 
-          if (error) {
-            throw error;
-          }
+      // Navigate to app to establish the origin before injecting localStorage
+      await page.goto("/", { waitUntil: "domcontentloaded" });
 
-          // Session is automatically stored by Supabase client
-          return data.session;
-        },
-        { email: account.email, password: account.password },
-      );
+      // Inject localStorage items (Supabase auth tokens live here)
+      for (const origin of state.origins ?? []) {
+        for (const item of origin.localStorage ?? []) {
+          await page.evaluate(
+            ([key, value]) => localStorage.setItem(key, value),
+            [item.name, item.value] as [string, string],
+          );
+        }
+      }
 
       // Navigate to dashboard to confirm auth
       await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+      await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 15000 });
 
-      // Verify we're logged in
-      await expect(page).toHaveURL(/\/dashboard|\/$/);
       return account;
     } catch (error) {
-      console.error(
-        `Fast login failed for ${accountType}, falling back to UI login...`,
-      );
-
-      // Fallback to standard login via UI
-      return await authFixture.loginOrSignup(
-        page,
-        account.email,
-        account.password,
-        account.displayName,
+      throw new Error(
+        `loginFast(${accountType}) failed — ensure global setup has run and .auth/${accountType}.json exists`,
       );
     }
   },

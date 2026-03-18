@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 import { BasePage } from "./BasePage";
 
 export class SettingsPage extends BasePage {
@@ -31,7 +31,10 @@ export class SettingsPage extends BasePage {
 
     // Save the form
     await this.click('[data-testid="save-player-details-button"]');
-    await this.page.waitForTimeout(2000); // Wait for save to complete
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
   }
 
   async expectPlayerDetailsVisible() {
@@ -45,17 +48,10 @@ export class SettingsPage extends BasePage {
   }
 
   async expectSaveSuccess() {
-    // Look for success message or redirect
-    const saveButton = await this.page.locator(
-      '[data-testid="save-player-details-button"]',
-    );
-    const buttonText = await saveButton.textContent();
-
-    if (buttonText && buttonText.includes("Save Player Details")) {
-      // Save was successful
-      return true;
-    }
-    return false;
+    // The player-details page uses auto-save (no explicit save button).
+    // The sticky header shows "Saved" once isSaving becomes false.
+    await expect(this.page.locator("text=Saved")).toBeVisible();
+    await expect(this.page.locator("text=Saving")).not.toBeVisible();
   }
 
   async expectValidationErrors() {
@@ -101,7 +97,10 @@ export class SettingsPage extends BasePage {
 
     // Save the form
     await this.click('button:has-text("Save Location")');
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
   }
 
   async expectLocationForm() {
@@ -150,7 +149,10 @@ export class SettingsPage extends BasePage {
     await this.click(
       'button:has-text("Send Invitation"), button:has-text("Invite")',
     );
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
   }
 
   async expectInvitationSuccess() {
@@ -180,7 +182,10 @@ export class SettingsPage extends BasePage {
 
   async saveNotificationSettings() {
     await this.click('button:has-text("Save"), button:has-text("Update")');
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
   }
 
   // Communication Templates Page
@@ -213,7 +218,10 @@ export class SettingsPage extends BasePage {
 
     // Save template
     await this.click('button:has-text("Create"), button:has-text("Save")');
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      .catch((err: Error) => {
+        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+      });
   }
 
   async expectTemplateCreated() {
