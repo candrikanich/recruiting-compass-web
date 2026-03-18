@@ -5,7 +5,6 @@
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
-import { z } from "zod";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
@@ -28,8 +27,8 @@ export default defineEventHandler(async (event) => {
 
     const supabase = createServerSupabaseClient();
 
-    const { data, error } = await (supabase
-      .from("user_deadlines") as any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- user_deadlines not yet in generated types
+    const { data, error } = await (supabase.from("user_deadlines") as any)
       .insert([
         {
           user_id: user.id,

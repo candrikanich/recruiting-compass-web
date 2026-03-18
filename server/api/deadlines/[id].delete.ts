@@ -22,8 +22,8 @@ export default defineEventHandler(async (event) => {
 
     // Verify ownership before deleting — RLS is the authoritative guard but we
     // return a 404 (not 403) to avoid leaking whether the row exists.
-    const { data: existing, error: fetchError } = await (supabase
-      .from("user_deadlines") as any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- user_deadlines not yet in generated types
+    const { data: existing, error: fetchError } = await (supabase.from("user_deadlines") as any)
       .select("id")
       .eq("id", id)
       .eq("user_id", user.id)
@@ -38,8 +38,8 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: "Deadline not found" });
     }
 
-    const { error: deleteError } = await (supabase
-      .from("user_deadlines") as any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- user_deadlines not yet in generated types
+    const { error: deleteError } = await (supabase.from("user_deadlines") as any)
       .delete()
       .eq("id", id)
       .eq("user_id", user.id);
