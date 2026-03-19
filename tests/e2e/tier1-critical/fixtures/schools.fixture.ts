@@ -122,9 +122,12 @@ export const schoolHelpers = {
 
   async fillSchoolForm(page: Page, data: Partial<SchoolData>) {
     if (data.name) {
-      // Use getByLabel for robust matching regardless of placeholder text changes
-      const nameField = page.getByLabel("School Name", { exact: false });
-      await nameField.waitFor({ state: "visible" });
+      // Wait for the manual entry input (placeholder appears after unchecking autocomplete toggle)
+      const nameField = page
+        .getByPlaceholder("e.g., University of Florida")
+        .or(page.getByLabel("School Name", { exact: false }))
+        .first();
+      await nameField.waitFor({ state: "visible", timeout: 15000 });
       await nameField.fill(data.name);
     }
 
