@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Browser } from "@playwright/test";
+import { resolve } from "path";
 import { CoachesPage } from "../pages/CoachesPage";
 import { SchoolsPage } from "../pages/SchoolsPage";
 import {
@@ -18,14 +19,23 @@ test.describe("Coaches CRUD Operations", () => {
   let schoolsPage: SchoolsPage;
   let schoolId: string;
 
+  test.beforeAll(async ({ browser }: { browser: Browser }) => {
+    const ctx = await browser.newContext({
+      storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
+    });
+    const page = await ctx.newPage();
+    try {
+      const schoolName = generateUniqueSchoolName("Coaches Test School");
+      const schoolData = createSchoolData({ name: schoolName });
+      schoolId = await schoolHelpers.createSchool(page, schoolData);
+    } finally {
+      await ctx.close();
+    }
+  });
+
   test.beforeEach(async ({ page }) => {
     coachesPage = new CoachesPage(page);
     schoolsPage = new SchoolsPage(page);
-
-    // Create a test school
-    const schoolName = generateUniqueSchoolName("Coaches Test School");
-    const schoolData = createSchoolData({ name: schoolName });
-    schoolId = await schoolHelpers.createSchool(page, schoolData);
   });
 
   // ==================== CREATE TESTS ====================

@@ -194,7 +194,37 @@ jobs:
           echo "  /api/csrf-token → HTTP $CSRF_STATUS"
           echo "  /login → HTTP $LOGIN_STATUS"
 
-  # Step 5: Notify success
+  # Step 5: Auto-rollback if smoke test failed
+  rollback:
+    name: Auto-Rollback on Smoke Failure
+    needs: smoke-test
+    if: failure() && needs.smoke-test.result == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rollback to previous production deployment
+        run: vercel rollback --token="${{ secrets.VERCEL_TOKEN }}" --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PROD }}
+
+      - name: Notify Slack - Rollback executed
+        uses: slackapi/slack-github-action@v3
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "⏪ Production auto-rolled back after smoke test failure",
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*⏪ Auto-Rollback Executed*\nSmoke test failed — production rolled back to previous deployment automatically.\n*Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                }
+              }]
+            }
+
+  # Step 7: Notify success
   notify-success:
     name: Notify Slack - Deployment Success
     if: success()
@@ -218,7 +248,7 @@ jobs:
               }]
             }
 
-  # Step 6: Notify failure
+  # Step 8: Notify failure
   notify-failure:
     name: Notify Slack - Deployment Failed
     if: failure()

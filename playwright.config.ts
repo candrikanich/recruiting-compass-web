@@ -12,7 +12,7 @@ export default defineConfig({
   timeout: 30000, // 30s per test — player auth state cached globally via storageState
 
   use: {
-    baseURL: "http://localhost:3003",
+    baseURL: process.env.BASE_URL || "http://localhost:3003",
     trace: "on-first-retry",
     // Every test browser starts pre-authenticated as player.
     // Auth tests (login/signup/password-reset) override with:
@@ -42,11 +42,14 @@ export default defineConfig({
       : []),
   ],
 
-  webServer: {
-    command: process.env.CI ? "npm run preview" : "npm run dev",
-    url: "http://localhost:3003",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-    env: process.env.CI ? { PORT: "3003" } : {},
-  },
+  // Skip local server when BASE_URL points to an external environment (e.g. staging smoke)
+  webServer: process.env.BASE_URL
+    ? undefined
+    : {
+        command: process.env.CI ? "npm run preview" : "npm run dev",
+        url: "http://localhost:3003",
+        reuseExistingServer: !process.env.CI,
+        timeout: 120000,
+        env: process.env.CI ? { PORT: "3003" } : {},
+      },
 });

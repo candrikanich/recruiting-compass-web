@@ -85,6 +85,8 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     environment: staging
+    outputs:
+      deployment-url: ${{ steps.deploy.outputs.deployment-url }}
     steps:
       - uses: actions/checkout@v6
 
@@ -123,12 +125,55 @@ jobs:
           fi
           echo "Deployment verified: $URL"
 
-  # Step 4: Notify on failure
+  # Step 4: Smoke E2E against the live staging URL (auth-enforcement only — no storageState needed)
+  staging-smoke-e2e:
+    name: Staging Smoke E2E
+    needs: deploy-staging
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run smoke tests against staging URL
+        run: npx playwright test --grep "@smoke" --project chromium
+        env:
+          BASE_URL: ${{ needs.deploy-staging.outputs.deployment-url }}
+          CI: true
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NUXT_ADMIN_TOKEN_SECRET: ${{ secrets.NUXT_ADMIN_TOKEN_SECRET }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Upload smoke test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: staging-smoke-report
+          path: playwright-report/
+          retention-days: 7
+
+  # Step 5: Notify on failure
   notify-failure:
     name: Notify Slack on Failure
     runs-on: ubuntu-latest
-    if: always() && (needs.quality.result == 'failure' || needs.test.result == 'failure' || (github.event_name == 'push' && needs.deploy-staging.result == 'failure'))
-    needs: [quality, test, deploy-staging]
+    if: always() && (needs.quality.result == 'failure' || needs.test.result == 'failure' || (github.event_name == 'push' && (needs.deploy-staging.result == 'failure' || needs.staging-smoke-e2e.result == 'failure')))
+    needs: [quality, test, deploy-staging, staging-smoke-e2e]
 
     steps:
       - name: Send Slack notification
@@ -157,12 +202,12 @@ jobs:
               ]
             }
 
-  # Step 5: Notify on success
+  # Step 6: Notify on success
   notify-success:
     name: Notify Slack on Success
     runs-on: ubuntu-latest
-    if: always() && needs.quality.result == 'success' && needs.test.result == 'success' && (github.event_name == 'pull_request' || needs.deploy-staging.result == 'success')
-    needs: [quality, test, deploy-staging]
+    if: always() && needs.quality.result == 'success' && needs.test.result == 'success' && (github.event_name == 'pull_request' || (needs.deploy-staging.result == 'success' && needs.staging-smoke-e2e.result == 'success'))
+    needs: [quality, test, deploy-staging, staging-smoke-e2e]
 
     steps:
       - name: Send Slack notification

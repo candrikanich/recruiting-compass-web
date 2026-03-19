@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Browser } from "@playwright/test";
+import { resolve } from "path";
 import { CoachesPage } from "../pages/CoachesPage";
 import { SchoolsPage } from "../pages/SchoolsPage";
 import {
@@ -42,25 +43,35 @@ test.describe("Coach Search and Filtering", () => {
     },
   ];
 
+  // Create school + coaches ONCE for all tests in this describe block
+  test.beforeAll(async ({ browser }) => {
+    const ctx = await browser.newContext({
+      storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
+    });
+    const page = await ctx.newPage();
+    try {
+      const schoolName = generateUniqueSchoolName("Filter Test School");
+      const schoolData = createSchoolData({ name: schoolName });
+      schoolId = await schoolHelpers.createSchool(page, schoolData);
+
+      const tmpCoaches = new CoachesPage(page);
+      for (const coach of testCoaches) {
+        const coachData = createCoachData({
+          ...coach,
+          email: generateUniqueCoachEmail(coach.firstName),
+        });
+        await coachHelpers.navigateToCoaches(page, schoolId);
+        await tmpCoaches.clickAddCoach();
+        await tmpCoaches.createCoach(coachData);
+      }
+    } finally {
+      await ctx.close();
+    }
+  });
+
   test.beforeEach(async ({ page }) => {
     coachesPage = new CoachesPage(page);
     schoolsPage = new SchoolsPage(page);
-
-    // Create test school
-    const schoolName = generateUniqueSchoolName("Filter Test School");
-    const schoolData = createSchoolData({ name: schoolName });
-    schoolId = await schoolHelpers.createSchool(page, schoolData);
-
-    // Create test coaches
-    for (const coach of testCoaches) {
-      const coachData = createCoachData({
-        ...coach,
-        email: generateUniqueCoachEmail(coach.firstName),
-      });
-      await coachHelpers.navigateToCoaches(page, schoolId);
-      await coachesPage.clickAddCoach();
-      await coachesPage.createCoach(coachData);
-    }
   });
 
   // ==================== SEARCH TESTS ====================

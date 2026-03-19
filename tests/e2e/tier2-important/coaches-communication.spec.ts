@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Browser } from "@playwright/test";
+import { resolve } from "path";
 import { CoachesPage } from "../pages/CoachesPage";
 import { SchoolsPage } from "../pages/SchoolsPage";
 import {
@@ -20,28 +21,39 @@ test.describe("Coach Communication History", () => {
   let schoolId: string;
   let coachId: string;
 
+  test.beforeAll(async ({ browser }: { browser: Browser }) => {
+    const ctx = await browser.newContext({
+      storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
+    });
+    const page = await ctx.newPage();
+    try {
+      // Create test school
+      const schoolName = generateUniqueSchoolName("Comm Test School");
+      const schoolData = createSchoolData({ name: schoolName });
+      schoolId = await schoolHelpers.createSchool(page, schoolData);
+
+      // Create test coach
+      const coachName = generateUniqueCoachName("Comm", "Coach");
+      const coachData = createCoachData({
+        ...coachName,
+        email: generateUniqueCoachEmail("comm"),
+      });
+
+      const tempCoachesPage = new CoachesPage(page);
+      await coachHelpers.navigateToCoaches(page, schoolId);
+      await tempCoachesPage.clickAddCoach();
+      await tempCoachesPage.createCoach(coachData);
+
+      // Get coach ID from URL after creation (if available)
+      coachId = "test-coach"; // Placeholder - would be extracted in real scenario
+    } finally {
+      await ctx.close();
+    }
+  });
+
   test.beforeEach(async ({ page }) => {
     coachesPage = new CoachesPage(page);
     schoolsPage = new SchoolsPage(page);
-
-    // Create test school
-    const schoolName = generateUniqueSchoolName("Comm Test School");
-    const schoolData = createSchoolData({ name: schoolName });
-    schoolId = await schoolHelpers.createSchool(page, schoolData);
-
-    // Create test coach
-    const coachName = generateUniqueCoachName("Comm", "Coach");
-    const coachData = createCoachData({
-      ...coachName,
-      email: generateUniqueCoachEmail("comm"),
-    });
-
-    await coachHelpers.navigateToCoaches(page, schoolId);
-    await coachesPage.clickAddCoach();
-    await coachesPage.createCoach(coachData);
-
-    // Get coach ID from URL after creation (if available)
-    coachId = "test-coach"; // Placeholder - would be extracted in real scenario
   });
 
   // ==================== VIEW HISTORY TESTS ====================
