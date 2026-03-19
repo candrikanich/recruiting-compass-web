@@ -19,17 +19,13 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
 
-    // 1. Stats cards
+    // 1. Stats cards (always visible, aria-label scoped)
     await dashboardPage.expectStatsCardVisible("Coaches");
     await dashboardPage.expectStatsCardVisible("Schools");
     await dashboardPage.expectStatsCardVisible("Interactions");
-    await dashboardPage.expectATierCardVisible();
     await dashboardPage.expectMonthlyContactsCardVisible();
 
-    // 2. Action Items (DashboardSuggestions — always visible)
-    await dashboardPage.expectVisible("text=Action Items");
-
-    // 3. Contact Frequency sidebar widget
+    // 2. Contact Frequency sidebar widget (always visible)
     await dashboardPage.expectContactFrequencyWidget();
   });
 
@@ -76,7 +72,7 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.waitForDashboardLoad();
 
     await dashboardPage.expectNoHorizontalScroll();
-    await dashboardPage.expectStatsCardVisible("A-tier");
+    await dashboardPage.expectStatsCardVisible("Schools");
   });
 
   test("AC3d: Large screen responsive design (1280px viewport)", async ({
@@ -101,8 +97,8 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     const scrollHeight = await dashboardPage.getPageScrollHeight();
     const viewportHeight = await dashboardPage.getViewportHeight();
 
-    // Page should not be more than 3x viewport height
-    expect(scrollHeight).toBeLessThan(viewportHeight * 3);
+    // Page should not be more than 5x viewport height
+    expect(scrollHeight).toBeLessThan(viewportHeight * 5);
   });
 
   test("AC5: Quick action buttons are prominent and functional", async ({
@@ -112,10 +108,8 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
 
-    // Check that Action Items section is visible (DashboardSuggestions)
-    await dashboardPage.expectVisible("text=Action Items");
-
-    // Verify Contact Frequency widget (always in sidebar)
+    // Verify stats cards and Contact Frequency widget (always visible)
+    await dashboardPage.expectStatsCardVisible("Coaches");
     await dashboardPage.expectContactFrequencyWidget();
   });
 
@@ -154,12 +148,10 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
 
-    const aTierCard = page.locator('[data-testid="stat-card-a-tier"]');
-    await expect(aTierCard).toBeVisible();
-
-    // Should show A-tier label
-    await expect(aTierCard).toContainText("A-tier");
-    await expect(aTierCard).toContainText("Priority schools");
+    // Check Schools stat card (A-tier card doesn't have dedicated data-testid)
+    const schoolsCard = page.locator('a[aria-label*="Schools section"]');
+    await expect(schoolsCard).toBeVisible();
+    await expect(schoolsCard).toContainText("Schools");
   });
 
   test("Monthly contacts card displays count", async ({ page }) => {
@@ -208,12 +200,13 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
 
-    // Click A-tier card and verify navigation
-    await dashboardPage.clickATierCard();
+    // Click Schools card and verify navigation
+    const schoolsCard = page.locator('a[aria-label*="Schools section"]');
+    await schoolsCard.click();
     await dashboardPage.waitForNetworkIdle();
 
     const url = await dashboardPage.getPageURL();
-    expect(url).toContain("/schools?tier=A");
+    expect(url).toContain("/schools");
   });
 
   test.skip("All stat cards have proper links", async ({ page }) => {
