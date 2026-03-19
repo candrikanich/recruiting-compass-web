@@ -60,6 +60,14 @@ test.describe("Coach Search and Filtering", () => {
       const player = usersData?.users?.find((u) => u.email === TEST_ACCOUNTS.player.email);
       if (!player) throw new Error("Player test account not found");
 
+      // Get the player's family unit ID (schools are scoped by family_unit_id)
+      const { data: familyMember } = await supabase
+        .from("family_unit_members")
+        .select("family_unit_id")
+        .eq("user_id", player.id)
+        .maybeSingle();
+      const familyUnitId = familyMember?.family_unit_id ?? null;
+
       // Create test school
       const { data: school, error: schoolErr } = await supabase
         .from("schools")
@@ -71,6 +79,7 @@ test.describe("Coach Search and Filtering", () => {
           user_id: player.id,
           created_by: player.id,
           updated_by: player.id,
+          family_unit_id: familyUnitId,
         }])
         .select("id")
         .single();
