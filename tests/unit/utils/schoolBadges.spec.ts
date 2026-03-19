@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import {
   getStatusBadgeClass,
   getSizeBadgeClass,
-  getFitScoreBadgeClass,
   formatSchoolStatus,
 } from "~/utils/schoolBadges";
 
@@ -56,25 +55,6 @@ describe("schoolBadges", () => {
 
     it("returns default for unknown size", () => {
       expect(getSizeBadgeClass("Tiny")).toBe("bg-slate-100 text-slate-700");
-    });
-  });
-
-  describe("getFitScoreBadgeClass", () => {
-    it("returns emerald for scores >= 70", () => {
-      expect(getFitScoreBadgeClass(70)).toBe("bg-emerald-100 text-emerald-700");
-      expect(getFitScoreBadgeClass(100)).toBe(
-        "bg-emerald-100 text-emerald-700",
-      );
-    });
-
-    it("returns orange for scores >= 50 and < 70", () => {
-      expect(getFitScoreBadgeClass(50)).toBe("bg-orange-100 text-orange-700");
-      expect(getFitScoreBadgeClass(69)).toBe("bg-orange-100 text-orange-700");
-    });
-
-    it("returns red for scores < 50", () => {
-      expect(getFitScoreBadgeClass(49)).toBe("bg-red-100 text-red-700");
-      expect(getFitScoreBadgeClass(0)).toBe("bg-red-100 text-red-700");
     });
   });
 

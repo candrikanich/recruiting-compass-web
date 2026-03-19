@@ -87,7 +87,6 @@ describe("useCoaches", () => {
     twitter_handle: "@coachsmith",
     instagram_handle: "coachsmith",
     notes: "Head coach",
-    responsiveness_score: 85,
     last_contact_date: "2024-01-01",
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",
@@ -214,22 +213,6 @@ describe("useCoaches", () => {
       expect(coaches.value[0]).toEqual(coachWithNulls);
     });
 
-    it("should handle responsiveness_score edge values", async () => {
-      const coaches = [
-        createMockCoach({ id: "coach-1", responsiveness_score: 0 }),
-        createMockCoach({ id: "coach-2", responsiveness_score: 100 }),
-        createMockCoach({ id: "coach-3", responsiveness_score: 50 }),
-      ];
-
-      mockQuery.order.mockResolvedValue({ data: coaches, error: null });
-
-      const { fetchCoaches, coaches: coachesRef } = useCoaches();
-      await fetchCoaches("school-123");
-
-      expect(coachesRef.value.map((c) => c.responsiveness_score)).toEqual([
-        0, 100, 50,
-      ]);
-    });
   });
 
   describe("Computed Properties", () => {

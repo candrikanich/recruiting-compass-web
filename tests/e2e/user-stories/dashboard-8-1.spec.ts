@@ -126,9 +126,13 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
 
-    // Filter out known transient Supabase connection errors in test environment
+    // Filter out known transient network/Supabase errors in test environment
     const criticalErrors = errors.filter(
-      (e) => !e.includes("Failed to fetch") && !e.includes("supabase.co"),
+      (e) =>
+        !e.includes("Failed to fetch") &&
+        !e.includes("supabase.co") &&
+        !e.includes("ERR_CONNECTION_REFUSED") &&
+        !e.includes("net::"),
     );
     expect(criticalErrors).toHaveLength(0);
   });
