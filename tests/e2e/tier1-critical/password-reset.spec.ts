@@ -12,6 +12,8 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("Password Reset Flow", () => {
+  // Use unique emails per test to avoid Supabase rate limiting
+  const testEmail = () => `reset-test-${Date.now()}-${Math.random().toString(36).substring(2, 6)}@test-example.com`;
   // This spec tests the login/reset UI — must start unauthenticated
   test.use({ storageState: undefined });
 
@@ -92,7 +94,7 @@ test.describe("Password Reset Flow", () => {
       const emailInput = page.getByLabel(/email/i);
 
       // Enter valid email
-      await emailInput.fill("test@example.com");
+      await emailInput.fill(testEmail());
 
       // Should be enabled
       await expect(submitButton).toBeEnabled();
@@ -103,23 +105,24 @@ test.describe("Password Reset Flow", () => {
     }) => {
       await page.goto("/forgot-password");
 
+      const email = testEmail();
       const emailInput = page.getByLabel(/email/i);
       const submitButton = page.locator('[data-testid="send-reset-link-button"]');
 
       // Fill form and submit
-      await emailInput.fill("test@example.com");
+      await emailInput.fill(email);
       await emailInput.blur();
       await expect(submitButton).toBeEnabled({ timeout: 5000 });
       await submitButton.click();
 
-      // Should show success state
+      // Should show success state — Supabase auth API can take 5-10s
       await expect(
         page.getByRole("heading", { name: /check your email/i }),
-      ).toBeVisible();
+      ).toBeVisible({ timeout: 15000 });
       await expect(
         page.getByText(/we've sent you a password reset link/i),
       ).toBeVisible();
-      await expect(page.getByText(/test@example.com/)).toBeVisible();
+      await expect(page.getByText(email)).toBeVisible();
     });
 
     test("should show resend button after success", async ({ page }) => {
@@ -129,7 +132,7 @@ test.describe("Password Reset Flow", () => {
       const submitButton = page.locator('[data-testid="send-reset-link-button"]');
 
       // Submit form — blur triggers Vue validation so button becomes enabled
-      await emailInput.fill("test@example.com");
+      await emailInput.fill(testEmail());
       await emailInput.blur();
       await expect(submitButton).toBeEnabled({ timeout: 5000 });
       await submitButton.click();
@@ -147,7 +150,7 @@ test.describe("Password Reset Flow", () => {
       const submitButton = page.locator('[data-testid="send-reset-link-button"]');
 
       // Submit form — blur needed so Vue enables the button
-      await emailInput.fill("test@example.com");
+      await emailInput.fill(testEmail());
       await emailInput.blur();
       await expect(submitButton).toBeEnabled({ timeout: 5000 });
       await submitButton.click();
@@ -183,9 +186,10 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/reset-password");
 
       // invalidToken is set after async supabase.auth.getSession() on mount
+      // Can take 10-20s depending on Supabase latency
       await expect(
         page.getByRole("heading", { name: /invalid link/i }),
-      ).toBeVisible({ timeout: 20000 });
+      ).toBeVisible({ timeout: 30000 });
       await expect(page.getByText(/no reset link provided/i)).toBeVisible();
     });
 
@@ -405,7 +409,7 @@ test.describe("Password Reset Flow", () => {
 
       // Submit multiple times — check for success or rate limit response
       for (let i = 0; i < 3; i++) {
-        await emailInput.fill("test@example.com");
+        await emailInput.fill(testEmail());
         await emailInput.blur();
         await expect(submitButton).toBeEnabled({ timeout: 5000 });
         await submitButton.click();
