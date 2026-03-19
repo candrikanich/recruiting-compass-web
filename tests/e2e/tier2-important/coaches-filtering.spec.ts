@@ -14,6 +14,10 @@ import {
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
+import {
+  getSupabaseAdmin,
+} from "../seed/helpers/supabase-admin";
+import { TEST_ACCOUNTS } from "../config/test-accounts";
 
 test.describe("Coach Search and Filtering", () => {
   // Extended timeout for beforeAll (creates school + 3 coaches via UI)
@@ -46,34 +50,48 @@ test.describe("Coach Search and Filtering", () => {
     },
   ];
 
-  // Create school + coaches ONCE for all tests in this describe block
-  test.beforeAll(async ({ browser }, testInfo) => {
-    testInfo.setTimeout(120000); // data setup takes up to 2 minutes
-    let ctx;
+  // Seed school + coaches ONCE via Supabase admin (fast, no browser needed)
+  test.beforeAll(async () => {
     try {
-      ctx = await browser.newContext({
-        storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
-      });
-      const page = await ctx.newPage();
-      const schoolName = generateUniqueSchoolName("Filter Test School");
-      const schoolData = createSchoolData({ name: schoolName });
-      schoolId = await schoolHelpers.createSchool(page, schoolData);
+      const supabase = getSupabaseAdmin();
 
-      const tmpCoaches = new CoachesPage(page);
-      for (const coach of testCoaches) {
-        const coachData = createCoachData({
-          ...coach,
+      // Find player user ID
+      const { data: usersData } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      const player = usersData?.users?.find((u) => u.email === TEST_ACCOUNTS.player.email);
+      if (!player) throw new Error("Player test account not found");
+
+      // Create test school
+      const { data: school, error: schoolErr } = await supabase
+        .from("schools")
+        .insert([{
+          name: generateUniqueSchoolName("Filter Test School"),
+          location: "Test City, USA",
+          division: "D3",
+          status: "researching",
+          user_id: player.id,
+          created_by: player.id,
+          updated_by: player.id,
+        }])
+        .select("id")
+        .single();
+      if (schoolErr) throw schoolErr;
+      schoolId = school.id;
+
+      // Create test coaches
+      await supabase.from("coaches").insert(
+        testCoaches.map((coach) => ({
+          first_name: coach.firstName,
+          last_name: coach.lastName,
+          role: coach.role,
           email: generateUniqueCoachEmail(coach.firstName),
-        });
-        await coachHelpers.navigateToCoaches(page, schoolId);
-        await tmpCoaches.clickAddCoach();
-        await tmpCoaches.createCoach(coachData);
-      }
+          school_id: schoolId,
+          user_id: player.id,
+          created_by: player.id,
+        })),
+      );
     } catch (err) {
       console.warn("⚠️  coaches-filtering beforeAll setup failed:", err);
       // schoolId stays undefined — beforeEach will skip affected tests
-    } finally {
-      await ctx?.close().catch(() => {});
     }
   });
 
