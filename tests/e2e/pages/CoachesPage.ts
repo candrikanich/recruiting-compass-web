@@ -127,7 +127,7 @@ export class CoachesPage extends BasePage {
   // Search and Filter
   async searchCoaches(searchTerm: string) {
     const searchInput = await this.page
-      .locator('input[placeholder*="Search"], input[type="search"]')
+      .locator('input[placeholder*="Name, email"], input[placeholder*="Search"], input[type="search"]')
       .first();
     await searchInput.fill(searchTerm);
     // Debounced search — wait for loading indicator to disappear
@@ -135,15 +135,8 @@ export class CoachesPage extends BasePage {
   }
 
   async filterByRole(role: string) {
-    const roleFilter = await this.page
-      .locator('select[name="role"], button:has-text("Role")')
-      .first();
-    if ((await roleFilter.getAttribute("role")) === "combobox") {
-      await roleFilter.click();
-      await this.clickByText(role);
-    } else {
-      await this.selectOption('select[name="role"]', role);
-    }
+    // Role filter is a native <select id="roleFilter"> on the school coaches page
+    await this.selectOption('#roleFilter, select[name="role"]', role);
     await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   }
 
