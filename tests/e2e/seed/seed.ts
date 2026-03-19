@@ -1,6 +1,9 @@
 import { readFileSync } from "fs";
-import { join } from "path";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 import { getSupabaseAdmin, createTestAccounts } from "./helpers/supabase-admin";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const SEED_DATA = {
   schools: [
