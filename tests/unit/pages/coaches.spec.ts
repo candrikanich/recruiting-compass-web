@@ -92,7 +92,6 @@ const CoachesPage = defineComponent({
         twitter_handle: null,
         instagram_handle: null,
         notes: null,
-        responsiveness_score: 75,
         last_contact_date: "2025-02-01",
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-02-01T00:00:00Z",

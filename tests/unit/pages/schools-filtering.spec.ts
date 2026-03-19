@@ -257,51 +257,33 @@ describe("School Filtering - User Story 3.3", () => {
 
   describe("Combined Filters (AND Logic)", () => {
     it("should apply multiple filters together", () => {
-      const fitScoreFilter = (
-        school: School,
-        range: { min?: number; max?: number },
-      ) => {
-        const score = school.fit_score;
-        if (score === null || score === undefined) return false;
-        const min = range?.min ?? 0;
-        const max = range?.max ?? 100;
-        return score >= min && score <= max;
-      };
-
       const divisionFilter = (school: School, division: string) => {
         return school.division === division;
       };
 
+      const stateFilter = (school: School, state: string) => {
+        const schoolState = school.academic_info?.state || school.state;
+        return schoolState === state;
+      };
+
       const filtered = schools.filter(
-        (s) =>
-          fitScoreFilter(s, { min: 70, max: 100 }) && divisionFilter(s, "D2"),
+        (s) => divisionFilter(s, "D2") && stateFilter(s, "TX"),
       );
 
       filtered.forEach((school) => {
-        if (school.fit_score !== null && school.fit_score !== undefined) {
-          expect(school.fit_score).toBeGreaterThanOrEqual(70);
-          expect(school.fit_score).toBeLessThanOrEqual(100);
-        }
         expect(school.division).toBe("D2");
+        const schoolState = school.academic_info?.state || school.state;
+        expect(schoolState).toBe("TX");
       });
     });
 
     it("should return no results when filters exclude all schools", () => {
-      const fitScoreFilter = (
-        school: School,
-        range: { min?: number; max?: number },
-      ) => {
-        const score = school.fit_score;
-        if (score === null || score === undefined) return false;
-        const min = range?.min ?? 0;
-        const max = range?.max ?? 100;
-        return score >= min && score <= max;
+      const divisionFilter = (school: School, division: string) => {
+        return school.division === division;
       };
 
-      // Fit score 0-10 is very unlikely in test data (50-100 range)
-      const filtered = schools.filter((s) =>
-        fitScoreFilter(s, { min: 0, max: 10 }),
-      );
+      // No school will have division "D4"
+      const filtered = schools.filter((s) => divisionFilter(s, "D4"));
       expect(filtered.length).toBe(0);
     });
   });
@@ -316,17 +298,6 @@ describe("School Filtering - User Story 3.3", () => {
       const homeLocation = { latitude: 37.7749, longitude: -122.4194 };
       const cache = mockDistanceCache(testSchools, homeLocation);
 
-      const fitScoreFilter = (
-        school: School,
-        range: { min?: number; max?: number },
-      ) => {
-        const score = school.fit_score;
-        if (score === null || score === undefined) return false;
-        const min = range?.min ?? 0;
-        const max = range?.max ?? 100;
-        return score >= min && score <= max;
-      };
-
       const distanceFilter = (school: School, range: { max?: number }) => {
         const distance = cache.get(school.id);
         if (distance === undefined) return false;
@@ -336,10 +307,8 @@ describe("School Filtering - User Story 3.3", () => {
 
       const startTime = performance.now();
 
-      const filtered = testSchools.filter(
-        (s) =>
-          fitScoreFilter(s, { min: 70, max: 100 }) &&
-          distanceFilter(s, { max: 500 }),
+      const filtered = testSchools.filter((s) =>
+        distanceFilter(s, { max: 500 }),
       );
 
       const duration = performance.now() - startTime;
@@ -373,12 +342,11 @@ describe("School Filtering - User Story 3.3", () => {
       const cache1 = mockDistanceCache(testSchools, homeLocation);
       const duration1 = performance.now() - startTime1;
 
-      // Second calculation (should use cache)
+      // Second calculation
       const startTime2 = performance.now();
       const cache2 = mockDistanceCache(testSchools, homeLocation);
       const duration2 = performance.now() - startTime2;
 
-      // Both should be fast, second should be roughly similar (cache helps overall)
       expect(duration1).toBeLessThan(100);
       expect(duration2).toBeLessThan(100);
 
@@ -408,44 +376,5 @@ describe("School Filtering - User Story 3.3", () => {
       expect(stateSet.size).toBe(0);
     });
 
-    it("should handle schools with all null/undefined fit scores", () => {
-      const schoolsNoScores = schools.map((s) => ({ ...s, fit_score: null }));
-
-      const fitScoreFilter = (
-        school: School,
-        range: { min?: number; max?: number },
-      ) => {
-        const score = school.fit_score;
-        if (score === null || score === undefined) return false;
-        const min = range?.min ?? 0;
-        const max = range?.max ?? 100;
-        return score >= min && score <= max;
-      };
-
-      const filtered = schoolsNoScores.filter((s) =>
-        fitScoreFilter(s, { min: 0, max: 100 }),
-      );
-      expect(filtered.length).toBe(0);
-    });
-
-    it("should handle min > max for fit score gracefully", () => {
-      const filterFn = (
-        school: School,
-        range: { min?: number; max?: number },
-      ) => {
-        const score = school.fit_score;
-        if (score === null || score === undefined) return false;
-        const min = range?.min ?? 0;
-        const max = range?.max ?? 100;
-        // In production, you'd swap or validate, but filter logic here just checks
-        return score >= min && score <= max;
-      };
-
-      // min=100, max=50 will result in no schools matching
-      const filtered = schools.filter((s) =>
-        filterFn(s, { min: 100, max: 50 }),
-      );
-      expect(filtered.length).toBe(0);
-    });
   });
 });
