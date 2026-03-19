@@ -182,13 +182,14 @@ export class CoachesPage extends BasePage {
   }
 
   async getCoachCount(): Promise<number> {
-    // Look for coach cards or list items
-    const cards = await this.page
-      .locator(
-        '[data-testid="coach-card"], .coach-card, [data-testid="coach-item"], .coach-item',
-      )
-      .count();
-    return cards;
+    // Wait for Supabase data to load — poll until count stabilizes
+    let count = 0;
+    for (let i = 0; i < 10; i++) {
+      count = await this.page.locator('h3.text-lg.font-bold.text-slate-900').count();
+      if (count > 0) break;
+      await this.page.waitForTimeout(500);
+    }
+    return count;
   }
 
   async expectFilteredResults(expectedCount: number) {

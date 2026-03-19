@@ -317,6 +317,13 @@ export const coachHelpers = {
   async navigateToCoaches(page, schoolId) {
     await page.goto(`/schools/${schoolId}/coaches`);
     await page.waitForLoadState("domcontentloaded");
+    // Wait for "Loading coaches..." text to disappear (shows while Supabase fetch is in progress)
+    await page.locator('text=Loading coaches').waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    // Wait for either coach cards or empty state to appear
+    await page.locator('h3.text-lg.font-bold, text=No coaches added yet')
+      .first()
+      .waitFor({ state: "visible", timeout: 8000 })
+      .catch(() => {});
   },
 
   /**
