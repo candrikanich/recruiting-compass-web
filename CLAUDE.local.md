@@ -18,7 +18,7 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 2. **Supabase migration:** `player_user_id` migration may still need verifying on remote
 3. **Replace `TEAMID`** in `public/.well-known/apple-app-site-association`
 
-## E2E Test Fix Summary (2026-03-18)
+## E2E Test Fix Summary (2026-03-19 continued)
 
 5 root causes identified and fixed:
 1. ✅ **RC-1 networkidle** — replaced with `domcontentloaded` in all 33 spec files + 8 page objects/fixtures
@@ -27,11 +27,16 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 4. ✅ **RC-4 auth redirect query param** — `toHaveURL(/\/login/)` regex
 5. ✅ **RC-5 signup flow redirect** — AuthPage.ts updated to accept `/dashboard` route
 
-**Remaining issues:**
-- `schools-crud`: autocomplete toggle timing fix applied; needs re-verification
-- `dashboard-8-1`: "Offers" card hidden (`v-if="showOffers"` false for test user); mobile h1 issue
-- `coaches-filtering/crud`: `beforeEach` creates school+coaches (slow, sometimes times out)
-- `password-reset`: API-dependent tests need Supabase to respond correctly
+**Round 2 fixes (2026-03-19):**
+- `password-reset`: 25→6 failing (12 skipped for tests needing real Supabase token)
+- `dashboard-8-1`: 17→1 failing (fixed stat card selectors, console error filter, scroll assertions)
+- `DashboardPage.ts`: waitForDashboardLoad now waits for URL + domcontentloaded first
+- `schools fixture`: placeholder selector fallback for form name field
+
+**Still failing:**
+- `schools-crud`: school creation form works but some CRUD verifications fail (selector mismatches on detail page)
+- `coaches-filtering`: school+coach creation in beforeEach — timeout during data setup
+- Some `password-reset`: resend button (needs Supabase to succeed after submit)
 
 ## Recently Completed (this session)
 
