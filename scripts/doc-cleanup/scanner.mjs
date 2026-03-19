@@ -1,10 +1,8 @@
 // scripts/doc-cleanup/scanner.mjs
 import { readdir, stat, readFile, writeFile } from 'node:fs/promises'
-import { join, basename as pathBasename, relative, dirname as pathDirname } from 'node:path'
+import { join, relative, dirname as pathDirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
-
-const __filename = fileURLToPath(import.meta.url)
 
 const SCAN_DIRS = ['planning', 'docs', 'archived-docs']
 
