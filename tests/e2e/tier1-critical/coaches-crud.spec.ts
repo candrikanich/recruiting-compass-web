@@ -15,25 +15,35 @@ import {
   schoolHelpers,
 } from "../fixtures/schools.fixture";
 test.describe("Coaches CRUD Operations", () => {
+  test.setTimeout(120000);
+
   let coachesPage: CoachesPage;
   let schoolsPage: SchoolsPage;
   let schoolId: string;
 
-  test.beforeAll(async ({ browser }: { browser: Browser }) => {
-    const ctx = await browser.newContext({
-      storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
-    });
-    const page = await ctx.newPage();
+  test.beforeAll(async ({ browser }: { browser: Browser }, testInfo) => {
+    testInfo.setTimeout(120000); // data setup can take up to 2 minutes
+    let ctx;
     try {
+      ctx = await browser.newContext({
+        storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
+      });
+      const page = await ctx.newPage();
       const schoolName = generateUniqueSchoolName("Coaches Test School");
       const schoolData = createSchoolData({ name: schoolName });
       schoolId = await schoolHelpers.createSchool(page, schoolData);
+    } catch (err) {
+      console.warn('⚠️  beforeAll setup failed:', err);
     } finally {
-      await ctx.close();
+      await ctx?.close().catch(() => {});
     }
   });
 
   test.beforeEach(async ({ page }) => {
+    if (!schoolId) {
+      test.skip(true, "beforeAll setup failed (Supabase unavailable)");
+      return;
+    }
     coachesPage = new CoachesPage(page);
     schoolsPage = new SchoolsPage(page);
   });

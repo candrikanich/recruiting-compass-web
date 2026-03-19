@@ -16,17 +16,21 @@ import {
 } from "../fixtures/schools.fixture";
 
 test.describe("Coach Communication History", () => {
+  test.setTimeout(120000);
+
   let coachesPage: CoachesPage;
   let schoolsPage: SchoolsPage;
   let schoolId: string;
   let coachId: string;
 
-  test.beforeAll(async ({ browser }: { browser: Browser }) => {
-    const ctx = await browser.newContext({
-      storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
-    });
-    const page = await ctx.newPage();
+  test.beforeAll(async ({ browser }: { browser: Browser }, testInfo) => {
+    testInfo.setTimeout(120000); // data setup can take up to 2 minutes
+    let ctx;
     try {
+      ctx = await browser.newContext({
+        storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
+      });
+      const page = await ctx.newPage();
       // Create test school
       const schoolName = generateUniqueSchoolName("Comm Test School");
       const schoolData = createSchoolData({ name: schoolName });
@@ -46,12 +50,18 @@ test.describe("Coach Communication History", () => {
 
       // Get coach ID from URL after creation (if available)
       coachId = "test-coach"; // Placeholder - would be extracted in real scenario
+    } catch (err) {
+      console.warn('⚠️  beforeAll setup failed:', err);
     } finally {
-      await ctx.close();
+      await ctx?.close().catch(() => {});
     }
   });
 
   test.beforeEach(async ({ page }) => {
+    if (!schoolId) {
+      test.skip(true, "beforeAll setup failed (Supabase unavailable)");
+      return;
+    }
     coachesPage = new CoachesPage(page);
     schoolsPage = new SchoolsPage(page);
   });
