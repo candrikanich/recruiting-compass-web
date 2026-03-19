@@ -236,7 +236,6 @@ export const coachSelectors = {
   coachDetailEmail: '[data-testid="coach-detail-email"]',
   coachDetailPhone: '[data-testid="coach-detail-phone"]',
   coachDetailRole: '[data-testid="coach-detail-role"]',
-  coachResponsiveness: '[data-testid="responsiveness-score"]',
   coachLastContact: '[data-testid="last-contact-date"]',
 
   // Search and filtering

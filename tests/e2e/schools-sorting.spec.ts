@@ -96,38 +96,6 @@ test.describe("Schools Sorting", () => {
     }
   });
 
-  test("should sort by fit score when selected", async ({ page }) => {
-    // Find the sort dropdown and select "Fit Score"
-    const sortSelect = await page.locator("select").nth(5); // Assuming it's the 6th select
-
-    // Try to find it by looking for the select that has fit-score option
-    const allSelects = await page.locator("select").all();
-    let fitScoreSelect = null;
-
-    for (const select of allSelects) {
-      const options = await select.locator("option").all();
-      for (const option of options) {
-        const value = await option.getAttribute("value");
-        if (value === "fit-score") {
-          fitScoreSelect = select;
-          break;
-        }
-      }
-      if (fitScoreSelect) break;
-    }
-
-    if (fitScoreSelect) {
-      await fitScoreSelect.selectOption("fit-score");
-
-      // Wait for re-sort
-      await page.waitForTimeout(300);
-
-      // Verify the sort happened (this would require actual fit score data)
-      const schoolCards = await page.locator("h3").all();
-      expect(schoolCards.length).toBeGreaterThan(0);
-    }
-  });
-
   test("should show warning when distance sort selected without home location", async ({
     page,
   }) => {
@@ -182,42 +150,6 @@ test.describe("Schools Sorting", () => {
       // Verify schools are displayed
       const schoolCards = await page.locator("h3").all();
       expect(schoolCards.length).toBeGreaterThan(0);
-    }
-  });
-
-  test("should maintain sort when applying other filters", async ({ page }) => {
-    // First select a sort order (fit-score)
-    const allSelects = await page.locator("select").all();
-    let fitScoreSelect = null;
-
-    for (const select of allSelects) {
-      const options = await select.locator("option").all();
-      for (const option of options) {
-        const value = await option.getAttribute("value");
-        if (value === "fit-score") {
-          fitScoreSelect = select;
-          break;
-        }
-      }
-      if (fitScoreSelect) break;
-    }
-
-    if (fitScoreSelect) {
-      await fitScoreSelect.selectOption("fit-score");
-      await page.waitForTimeout(200);
-
-      // Get initial school list
-      let initialSchools = await page.locator("h3").all();
-      const initialCount = initialSchools.length;
-
-      // Now apply another filter (e.g., division)
-      const divisionSelect = allSelects[1]; // Typically the second select
-      await divisionSelect.selectOption("D1");
-      await page.waitForTimeout(300);
-
-      // Verify schools are still sorted (filtering reduces or maintains count)
-      let filteredSchools = await page.locator("h3").all();
-      expect(filteredSchools.length).toBeLessThanOrEqual(initialCount);
     }
   });
 

@@ -116,7 +116,6 @@ describe("recruitingPacketExport", () => {
           division: "D1",
           conference: "Big 12",
           status: "offer_received" as const,
-          fitScore: 92,
           coachCount: 3,
           interactionCount: 15,
         },
@@ -129,7 +128,6 @@ describe("recruitingPacketExport", () => {
           division: "D1",
           conference: "Conference USA",
           status: "camp_invite" as const,
-          fitScore: 85,
           coachCount: 2,
           interactionCount: 8,
         },
@@ -142,7 +140,6 @@ describe("recruitingPacketExport", () => {
           division: "D1",
           conference: "Sun Belt",
           status: "contacted" as const,
-          fitScore: 72,
           coachCount: 1,
           interactionCount: 3,
         },
@@ -244,9 +241,6 @@ describe("recruitingPacketExport", () => {
     it("should include schools section", () => {
       const html = generateRecruitingPacketHTML(mockData);
       expect(html).toContain("Schools of Interest");
-      expect(html).toContain("Priority A");
-      expect(html).toContain("Priority B");
-      expect(html).toContain("Priority C");
     });
 
     it("should list all schools by tier", () => {
@@ -261,11 +255,6 @@ describe("recruitingPacketExport", () => {
       expect(html).toContain("Austin, TX");
       expect(html).toContain("Big 12");
       expect(html).toContain("D1");
-    });
-
-    it("does not render a Fit Score column even when fitScore is provided", () => {
-      const html = generateRecruitingPacketHTML(mockData);
-      expect(html).not.toContain("Fit Score");
     });
 
     it("should include activity summary section", () => {
