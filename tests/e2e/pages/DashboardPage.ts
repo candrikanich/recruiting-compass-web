@@ -11,6 +11,9 @@ export class DashboardPage extends BasePage {
   }
 
   async waitForDashboardLoad() {
+    // Ensure we're on the dashboard URL, then wait for h1 to render
+    await this.page.waitForURL(/\/dashboard/, { timeout: 10000 });
+    await this.page.waitForLoadState("domcontentloaded");
     await this.page.waitForSelector("h1:has-text('Dashboard')", { timeout: 15000 });
   }
 
