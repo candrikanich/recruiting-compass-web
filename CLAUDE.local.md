@@ -4,30 +4,34 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 ## Current Session
 
-**Status:** NEARLY DONE — E2E test suite overhaul, ~130/149 targeted tests passing
-**Branch:** develop (11 commits ahead of origin — NOT YET PUSHED)
+**Status:** E2E test systemic overhaul — major networkidle fix applied, ~64% pass rate on spot-check
+**Branch:** develop (NOT YET PUSHED)
 **Build:** not run this session
-**Tests:** E2E targeted specs ~130 pass / 14 fail (recruiting-packet pre-existing) / 23 skip (a11y)
-**Lint:** UNKNOWN — not run this session
-**Type-check:** UNKNOWN — not run this session
-**Handoff:** `planning/handoff-2026-03-17-e2e-test-fixes.md`
+**Tests:** Full suite was ~261 failing; spot-check 35/55 passing after fixes
+**Lint:** UNKNOWN
+**Type-check:** UNKNOWN
+**Handoff:** `planning/handoff-2026-03-18-e2e-fixes.md`
 
 ## Action Required
 
-1. **Push branch first:** `git push`
-2. **Verify Supabase migration on remote:** The remote DB may still have `player_user_id` (migration `20260228000000` may have failed silently). Check via Supabase Dashboard before deploying.
-3. **Replace `TEAMID`** in `public/.well-known/apple-app-site-association` with real Apple Team ID
+1. **Push branch:** `git push`
+2. **Supabase migration:** `player_user_id` migration may still need verifying on remote
+3. **Replace `TEAMID`** in `public/.well-known/apple-app-site-association`
 
-## Resume at Task 17
+## E2E Test Fix Summary (2026-03-18)
 
-```
-/executing-plans docs/plans/2026-02-28-family-unit-symmetric-redesign-plan.md
-```
-→ Only Task 17 (E2E tests) remains
+5 root causes identified and fixed:
+1. ✅ **RC-1 networkidle** — replaced with `domcontentloaded` in all 33 spec files + 8 page objects/fixtures
+2. ✅ **RC-2 loginViaForm in beforeEach** — removed from 10 spec files (storageState handles auth)
+3. ✅ **RC-3 password-reset button selector** — fixed `aria-label` mismatch, added blur+wait before submit
+4. ✅ **RC-4 auth redirect query param** — `toHaveURL(/\/login/)` regex
+5. ✅ **RC-5 signup flow redirect** — AuthPage.ts updated to accept `/dashboard` route
 
-## Tasks Remaining (17 only)
-
-17. E2E tests — create `tests/e2e/family-invite-flow.spec.ts`, check auth.spec.ts + family-units.spec.ts for stale assertions
+**Remaining issues:**
+- `schools-crud`: autocomplete toggle timing fix applied; needs re-verification
+- `dashboard-8-1`: "Offers" card hidden (`v-if="showOffers"` false for test user); mobile h1 issue
+- `coaches-filtering/crud`: `beforeEach` creates school+coaches (slow, sometimes times out)
+- `password-reset`: API-dependent tests need Supabase to respond correctly
 
 ## Recently Completed (this session)
 
