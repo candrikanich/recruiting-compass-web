@@ -19,6 +19,8 @@ jobs:
   pre-deploy-checks:
     name: Pre-Deployment Checks
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Verify deployment confirmation
         env:
@@ -47,6 +49,8 @@ jobs:
   verify:
     name: Verify Code Quality
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -77,6 +81,8 @@ jobs:
     name: Deploy to Vercel Production
     needs: [pre-deploy-checks, verify]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     environment:
       name: production
       url: https://recruiting-compass-web-a9wx.vercel.app
@@ -115,6 +121,9 @@ jobs:
     name: Post-Deploy Smoke Test
     needs: deploy
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     env:
       PROD_URL: https://recruiting-compass-web-a9wx.vercel.app
     steps:
@@ -200,6 +209,8 @@ jobs:
     needs: smoke-test
     if: failure() && needs.smoke-test.result == 'failure'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Rollback to previous production deployment
         run: vercel rollback --token="${{ secrets.VERCEL_TOKEN }}" --yes
@@ -230,6 +241,8 @@ jobs:
     if: success()
     needs: [deploy, smoke-test]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Send Slack notification
         uses: slackapi/slack-github-action@v3
@@ -254,6 +267,8 @@ jobs:
     if: failure()
     needs: [deploy, smoke-test]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Send Slack notification
         uses: slackapi/slack-github-action@v3

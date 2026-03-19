@@ -5,9 +5,15 @@ import { useLogger } from "~/server/utils/logger";
 
 function generateRefToken(): string {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  return Array.from(crypto.getRandomValues(new Uint8Array(8)))
-    .map((b) => chars[b % chars.length])
-    .join("");
+  const max = Math.floor(256 / chars.length) * chars.length; // 252 — eliminates modulo bias
+  const result: string[] = [];
+  while (result.length < 8) {
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    for (const b of bytes) {
+      if (b < max && result.length < 8) result.push(chars[b % chars.length]);
+    }
+  }
+  return result.join("");
 }
 
 export default defineEventHandler(async (event) => {
