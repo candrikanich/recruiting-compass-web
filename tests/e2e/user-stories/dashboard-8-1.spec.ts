@@ -150,17 +150,6 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await expect(widget.locator('h3:has-text("Contact Frequency")')).toBeVisible();
   });
 
-  test("A-tier schools card displays count", async ({ page }) => {
-    dashboardPage = new DashboardPage(page);
-    await dashboardPage.goto();
-    await dashboardPage.waitForDashboardLoad();
-
-    // Check Schools stat card (A-tier card doesn't have dedicated data-testid)
-    const schoolsCard = page.locator('a[aria-label*="Schools section"]');
-    await expect(schoolsCard).toBeVisible();
-    await expect(schoolsCard).toContainText("Schools");
-  });
-
   test("Monthly contacts card displays count", async ({ page }) => {
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
@@ -210,37 +199,11 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     // Click Schools card and verify navigation
     const schoolsCard = page.locator('a[aria-label*="Schools section"]');
     await schoolsCard.click();
-    await dashboardPage.waitForNetworkIdle();
+    // Wait for navigation to complete
+    await page.waitForURL(/\/schools/, { timeout: 10000 });
 
     const url = await dashboardPage.getPageURL();
-    expect(url).toContain("/schools");
-  });
-
-  test.skip("All stat cards have proper links", async ({ page }) => {
-    // TODO: test account has 0 schools; clicking cards navigates to empty pages.
-    // This test would pass regardless of correctness. Skipped until we seed
-    // test account with schools data.
-    dashboardPage = new DashboardPage(page);
-    await dashboardPage.goto();
-    await dashboardPage.waitForDashboardLoad();
-
-    // Coaches card should link to /coaches
-    const coachesCard = page.locator("a:has-text('Coaches')").first();
-    await expect(coachesCard).toHaveAttribute("href", "/coaches");
-
-    // Schools card should link to /schools
-    const schoolsCard = page.locator("a:has-text('Schools')").first();
-    await expect(schoolsCard).toHaveAttribute("href", "/schools");
-
-    // A-tier card should link to /schools?tier=A
-    const aTierCard = page.locator('[data-testid="stat-card-a-tier"]');
-    await expect(aTierCard).toHaveAttribute("href", "/schools?tier=A");
-
-    // Monthly contacts card should link to /interactions
-    const contactsCard = page.locator(
-      '[data-testid="stat-card-monthly-contacts"]',
-    );
-    await expect(contactsCard).toHaveAttribute("href", "/interactions");
+    expect(url).toMatch(/\/schools/);
   });
 
   test("Dashboard persists visibility preferences", async ({ page }) => {

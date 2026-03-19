@@ -118,7 +118,6 @@ const createMockSchool = (overrides = {}): School => ({
   pros: ["Strong baseball program", "Great campus"],
   cons: ["Far from home", "Expensive tuition"],
   notes: "Great baseball program",
-  private_notes: {},
   website: "https://duke.edu",
   twitter_handle: "@DukeBaseball",
   instagram_handle: "dukebaseball",

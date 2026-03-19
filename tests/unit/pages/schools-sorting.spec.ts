@@ -12,7 +12,6 @@ const mockSchools: School[] = [
     division: "D1",
     status: "researching",
     is_favorite: false,
-    fit_score: 85,
     ranking: 1,
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-15T00:00:00Z",
@@ -30,7 +29,6 @@ const mockSchools: School[] = [
     division: "D1",
     status: "contacted",
     is_favorite: true,
-    fit_score: 72,
     ranking: 2,
     created_at: "2024-01-02T00:00:00Z",
     updated_at: "2024-01-10T00:00:00Z",
@@ -48,7 +46,6 @@ const mockSchools: School[] = [
     division: "D1",
     status: "interested",
     is_favorite: false,
-    fit_score: null,
     ranking: 3,
     created_at: "2024-01-03T00:00:00Z",
     updated_at: "2024-01-20T00:00:00Z",
@@ -66,7 +63,6 @@ const mockSchools: School[] = [
     division: "D1",
     status: "researching",
     is_favorite: false,
-    fit_score: 90,
     ranking: 4,
     created_at: "2024-01-04T00:00:00Z",
     updated_at: "2024-01-05T00:00:00Z",
@@ -117,46 +113,6 @@ describe("School Sorting Utilities", () => {
       expect(sorted[0].name).toBe("alabama");
       expect(sorted[1].name).toBe("BASEBALL STATE");
       expect(sorted[2].name).toBe("Clemson");
-    });
-  });
-
-  describe("Fit Score sorting", () => {
-    it("should sort schools by fit score ascending", () => {
-      const sorted = [...mockSchools].sort((a, b) => {
-        const scoreA = a.fit_score ?? -1;
-        const scoreB = b.fit_score ?? -1;
-        return scoreA - scoreB;
-      });
-
-      expect(sorted[0].id).toBe("3"); // null (treated as -1)
-      expect(sorted[1].id).toBe("2"); // 72
-      expect(sorted[2].id).toBe("1"); // 85
-      expect(sorted[3].id).toBe("4"); // 90
-    });
-
-    it("should sort schools by fit score descending", () => {
-      const sorted = [...mockSchools].sort((a, b) => {
-        const scoreA = a.fit_score ?? -1;
-        const scoreB = b.fit_score ?? -1;
-        return scoreB - scoreA;
-      });
-
-      expect(sorted[0].id).toBe("4"); // 90
-      expect(sorted[1].id).toBe("1"); // 85
-      expect(sorted[2].id).toBe("2"); // 72
-      expect(sorted[3].id).toBe("3"); // null
-    });
-
-    it("should handle schools with null fit scores", () => {
-      const sorted = [...mockSchools].sort((a, b) => {
-        const scoreA = a.fit_score ?? -1;
-        const scoreB = b.fit_score ?? -1;
-        return scoreA - scoreB;
-      });
-
-      const nullSchool = sorted.find((s) => s.fit_score === null);
-      expect(nullSchool).toBeDefined();
-      expect(nullSchool?.id).toBe("3");
     });
   });
 
@@ -333,20 +289,5 @@ describe("School Sorting Utilities", () => {
       expect(sorted.every((s) => s.name === "Same")).toBe(true);
     });
 
-    it("should handle schools with identical fit scores", () => {
-      const schools: School[] = [
-        { ...mockSchools[0], fit_score: 80 },
-        { ...mockSchools[1], fit_score: 80 },
-        { ...mockSchools[2], fit_score: 80 },
-      ];
-
-      const sorted = [...schools].sort((a, b) => {
-        const scoreA = a.fit_score ?? -1;
-        const scoreB = b.fit_score ?? -1;
-        return scoreA - scoreB;
-      });
-
-      expect(sorted.every((s) => s.fit_score === 80)).toBe(true);
-    });
   });
 });

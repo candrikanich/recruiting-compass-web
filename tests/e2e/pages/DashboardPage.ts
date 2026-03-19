@@ -41,17 +41,6 @@ export class DashboardPage extends BasePage {
     return match ? parseInt(match[0]) : 0;
   }
 
-  async expectATierCardVisible() {
-    // No dedicated A-tier card; check monthly contacts card (always visible)
-    await this.expectVisible('[data-testid="stat-card-monthly-contacts"]');
-  }
-
-  async getATierCount(): Promise<number> {
-    const element = this.page.locator('[data-testid="stat-card-monthly-contacts"]');
-    const text = await element.locator("div").nth(2).textContent();
-    return text ? parseInt(text) : 0;
-  }
-
   async expectMonthlyContactsCardVisible() {
     await this.expectVisible('[data-testid="stat-card-monthly-contacts"]');
   }
@@ -171,10 +160,6 @@ export class DashboardPage extends BasePage {
     const viewportHeight = await this.getViewportHeight();
     const ratio = scrollHeight / viewportHeight;
     expect(ratio).toBeLessThan(maxRatio);
-  }
-
-  async clickATierCard() {
-    await this.click('[data-testid="stat-card-a-tier"]');
   }
 
   async clickMonthlyContactsCard() {
