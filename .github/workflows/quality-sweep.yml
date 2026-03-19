@@ -1,0 +1,93 @@
+# Weekly Quality Sweep
+# Runs lint:fix and format on the codebase, then opens a PR if any
+# changes were made. Runs Monday mornings at 1am UTC so the PR is
+# ready to review at the start of the week.
+
+name: Weekly Quality Sweep
+
+on:
+  schedule:
+    - cron: "0 1 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  sweep:
+    name: Lint Fix & Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare Nuxt
+        run: npx nuxi prepare
+
+      - name: Run lint fix
+        run: npm run lint:fix
+        continue-on-error: true
+
+      - name: Run formatter
+        run: npm run format
+        continue-on-error: true
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+          STATS=$(git diff --stat | tail -1)
+          echo "stats=$STATS" >> $GITHUB_OUTPUT
+
+      - name: Create PR if changes exist
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STATS: ${{ steps.changes.outputs.stats }}
+          CURRENT_DATE: ${{ github.run_id }}
+        run: |
+          BRANCH="chore/quality-sweep-$(date +%Y-%m-%d)"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "style: automated quality sweep $(date +%Y-%m-%d)"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "style: weekly quality sweep $(date +%Y-%m-%d)" \
+            --body "## Automated Quality Sweep
+
+          This PR was created automatically by the weekly quality sweep workflow.
+
+          **Changes:** $STATS
+
+          ### What was run
+          - \`npm run lint:fix\` — ESLint auto-fix
+          - \`npm run format\` — Prettier formatting
+
+          These are mechanical style fixes with no logic changes. Safe to merge after a quick scan."
+
+      - name: Report no changes
+        if: steps.changes.outputs.changed == 'false'
+        run: echo "Nothing to fix — codebase is already clean"

@@ -70,10 +70,10 @@ jobs:
           COVERAGE=$(grep -A 2 'BRH' coverage/lcov.info | tail -1 | grep -oP '\d+(?=,)' | head -1)
           echo "Coverage: $COVERAGE%"
           if [ "$COVERAGE" -lt ${{ env.COVERAGE_THRESHOLD }} ]; then
-            echo "❌ Coverage below ${{ env.COVERAGE_THRESHOLD }}% threshold (got $COVERAGE%)"
+            echo "Coverage below ${{ env.COVERAGE_THRESHOLD }}% threshold (got $COVERAGE%)"
             exit 1
           fi
-          echo "✅ Coverage meets ${{ env.COVERAGE_THRESHOLD }}% threshold"
+          echo "Coverage meets ${{ env.COVERAGE_THRESHOLD }}% threshold"
 
   # Note: Accessibility testing is available via "npm run test:a11y" locally
   # CI/CD integration coming after more pages are covered with a11y fixes
@@ -100,17 +100,16 @@ jobs:
           OUTPUT=$(vercel deploy --token="${{ secrets.VERCEL_TOKEN }}" 2>&1)
           echo "$OUTPUT"
           if [ $? -ne 0 ]; then
-            echo "❌ Vercel deployment failed"
+            echo "Vercel deployment failed"
             exit 1
           fi
           if echo "$OUTPUT" | grep -q "ERROR"; then
-            echo "❌ Deployment contains errors"
+            echo "Deployment contains errors"
             exit 1
           fi
-          # Extract deployment URL from output
           URL=$(echo "$OUTPUT" | grep -oP '(?<=https://)[^ ]+' | head -1)
           echo "deployment-url=https://$URL" >> $GITHUB_OUTPUT
-          echo "✅ Successfully deployed to: https://$URL"
+          echo "Successfully deployed to: https://$URL"
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
@@ -119,10 +118,10 @@ jobs:
         run: |
           URL="${{ steps.deploy.outputs.deployment-url }}"
           if [ -z "$URL" ]; then
-            echo "❌ No deployment URL found"
+            echo "No deployment URL found"
             exit 1
           fi
-          echo "✅ Deployment verified: $URL"
+          echo "Deployment verified: $URL"
 
   # Step 4: Notify on failure
   notify-failure:
@@ -133,23 +132,19 @@ jobs:
 
     steps:
       - name: Send Slack notification
-
         uses: slackapi/slack-github-action@v3
-
-        uses: slackapi/slack-github-action@v3
-
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
             {
-              "text": "❌ Pipeline Failed",
+              "text": "Pipeline Failed",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*❌ Pipeline Failed*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}"
+                    "text": "*Pipeline Failed*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}"
                   }
                 },
                 {
@@ -171,23 +166,19 @@ jobs:
 
     steps:
       - name: Send Slack notification
-
         uses: slackapi/slack-github-action@v3
-
-        uses: slackapi/slack-github-action@v3
-
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
             {
-              "text": "✅ Pipeline Passed${{ github.event_name == 'push' && ' - Deployed to Staging' || '' }}",
+              "text": "Pipeline Passed",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*✅ Pipeline Passed${{ github.event_name == 'push' && ' - Deployed to Staging' || '' }}*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}"
+                    "text": "*Pipeline Passed*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}"
                   }
                 }
               ]
