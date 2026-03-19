@@ -70,8 +70,8 @@ export class AuthPage extends BasePage {
     await this.waitForElementEnabled('[data-testid="signup-button"]');
     await this.click('[data-testid="signup-button"]');
 
-    // Wait for navigation to onboarding (or verify-email for legacy flow)
-    await this.page.waitForURL(/\/(onboarding|verify-email)/, { timeout: 15000 });
+    // Wait for navigation to onboarding, verify-email, or dashboard depending on Supabase config
+    await this.page.waitForURL(/\/(onboarding|verify-email|dashboard)/, { timeout: 15000 });
   }
 
   async logout() {
@@ -103,8 +103,8 @@ export class AuthPage extends BasePage {
   }
 
   async expectVerifyEmail() {
-    // Signup now redirects to onboarding or verify-email depending on Supabase config
-    await this.expectURL(/\/(onboarding|verify-email)/);
+    // Signup now redirects to onboarding, verify-email, or dashboard depending on Supabase config
+    await this.expectURL(/\/(onboarding|verify-email|dashboard)/);
   }
 
   async expectError(message: string) {

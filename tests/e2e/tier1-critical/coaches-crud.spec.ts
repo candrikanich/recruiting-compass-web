@@ -13,8 +13,6 @@ import {
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
-import { loginViaForm } from "../helpers/login";
-
 test.describe("Coaches CRUD Operations", () => {
   let coachesPage: CoachesPage;
   let schoolsPage: SchoolsPage;
@@ -23,9 +21,6 @@ test.describe("Coaches CRUD Operations", () => {
   test.beforeEach(async ({ page }) => {
     coachesPage = new CoachesPage(page);
     schoolsPage = new SchoolsPage(page);
-
-    // Login
-    await loginViaForm(page, "player@test.com", "TestPass123!");
 
     // Create a test school
     const schoolName = generateUniqueSchoolName("Coaches Test School");
@@ -345,7 +340,7 @@ test.describe("Coaches CRUD Operations", () => {
 
       // Reload page
       await page.reload();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Verify changes persisted
       await expect(page.locator(`text=PersistFirst`)).toBeVisible({

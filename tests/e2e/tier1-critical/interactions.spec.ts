@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { loginViaForm } from "../helpers/login";
 
 // User Story 5.1: Parent Logs Interactions
 // Test comprehensive interaction logging workflows for parents
@@ -7,8 +6,6 @@ test.describe("User Story 5.1: Parent Logs Interactions", () => {
   let schoolId: string;
 
   test.beforeEach(async ({ page }) => {
-    await loginViaForm(page, "parent@test.com", "TestPass123!", /\/dashboard/);
-
     // Navigate to a school to access interactions
     await page.goto("/schools");
     await page.click("a:first-child"); // Click first school

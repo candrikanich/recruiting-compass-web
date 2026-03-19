@@ -51,7 +51,7 @@ export class OffersPage extends BasePage {
     }
 
     await this.clickByText("Create Offer");
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async acceptOffer(schoolName: string) {
@@ -108,7 +108,7 @@ export class OffersPage extends BasePage {
 
   async viewOfferDetails(schoolName: string) {
     await this.click(`text=${schoolName}`);
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async updateOffer(schoolName: string, updates: any) {

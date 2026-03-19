@@ -1,7 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { CoachesPage } from "../pages/CoachesPage";
 import { SchoolsPage } from "../pages/SchoolsPage";
-import { loginViaForm } from "../helpers/login";
 import {
   coachFixtures,
   createCoachData,
@@ -24,9 +23,6 @@ test.describe("Coach Communication History", () => {
   test.beforeEach(async ({ page }) => {
     coachesPage = new CoachesPage(page);
     schoolsPage = new SchoolsPage(page);
-
-    // Login
-    await loginViaForm(page, "player@test.com", "TestPass123!");
 
     // Create test school
     const schoolName = generateUniqueSchoolName("Comm Test School");
@@ -81,7 +77,7 @@ test.describe("Coach Communication History", () => {
         await commButton.click();
 
         // Wait for communications page to load
-        await page.waitForLoadState("networkidle");
+        await page.waitForLoadState("domcontentloaded");
 
         // Check for interaction list or timeline
         const timelineVisible = await page
@@ -254,7 +250,7 @@ test.describe("Coach Communication History", () => {
 
       if (await commButton.isVisible()) {
         await commButton.click();
-        await page.waitForLoadState("networkidle");
+        await page.waitForLoadState("domcontentloaded");
 
         // Look for type filter
         const typeFilter = await page
@@ -279,7 +275,7 @@ test.describe("Coach Communication History", () => {
 
       if (await commButton.isVisible()) {
         await commButton.click();
-        await page.waitForLoadState("networkidle");
+        await page.waitForLoadState("domcontentloaded");
 
         // Look for direction filter
         const directionFilter = await page
@@ -304,7 +300,7 @@ test.describe("Coach Communication History", () => {
 
       if (await commButton.isVisible()) {
         await commButton.click();
-        await page.waitForLoadState("networkidle");
+        await page.waitForLoadState("domcontentloaded");
 
         // Look for sentiment filter
         const sentimentFilter = await page
@@ -329,7 +325,7 @@ test.describe("Coach Communication History", () => {
 
       if (await commButton.isVisible()) {
         await commButton.click();
-        await page.waitForLoadState("networkidle");
+        await page.waitForLoadState("domcontentloaded");
 
         // Look for date range filter
         const dateFilter = await page
@@ -354,7 +350,7 @@ test.describe("Coach Communication History", () => {
 
       if (await commButton.isVisible()) {
         await commButton.click();
-        await page.waitForLoadState("networkidle");
+        await page.waitForLoadState("domcontentloaded");
 
         // Look for stats display
         const statsElements = await page
@@ -381,7 +377,7 @@ test.describe("Coach Communication History", () => {
 
       if (await commButton.isVisible()) {
         await commButton.click();
-        await page.waitForLoadState("networkidle");
+        await page.waitForLoadState("domcontentloaded");
 
         // Page should load successfully
         await expect(page).toHaveURL(/\/communications/);

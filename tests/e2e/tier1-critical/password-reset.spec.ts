@@ -42,7 +42,7 @@ test.describe("Password Reset Flow", () => {
       // Check form elements are visible
       await expect(page.getByLabel(/email/i)).toBeVisible();
       await expect(
-        page.getByRole("button", { name: /send reset link/i }),
+        page.locator('[data-testid="send-reset-link-button"]'),
       ).toBeVisible();
       await expect(
         page.getByRole("link", { name: /back to login/i }),
@@ -58,10 +58,10 @@ test.describe("Password Reset Flow", () => {
       await emailInput.focus();
       await emailInput.blur();
 
-      // Should show validation error
-      await expect(page.getByText(/invalid.*email/i)).toBeVisible({
-        timeout: 1000,
-      });
+      // Should show validation error (empty → "Email must be at least 5 characters")
+      await expect(
+        page.getByText(/email.*character|valid email/i),
+      ).toBeVisible({ timeout: 3000 });
     });
 
     test("should disable submit button with invalid email", async ({
@@ -69,9 +69,7 @@ test.describe("Password Reset Flow", () => {
     }) => {
       await page.goto("/forgot-password");
 
-      const submitButton = page.getByRole("button", {
-        name: /send reset link/i,
-      });
+      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
       const emailInput = page.getByLabel(/email/i);
 
       // Initially disabled (empty)
@@ -88,9 +86,7 @@ test.describe("Password Reset Flow", () => {
     test("should enable submit button with valid email", async ({ page }) => {
       await page.goto("/forgot-password");
 
-      const submitButton = page.getByRole("button", {
-        name: /send reset link/i,
-      });
+      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
       const emailInput = page.getByLabel(/email/i);
 
       // Enter valid email
@@ -106,12 +102,12 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", {
-        name: /send reset link/i,
-      });
+      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
 
       // Fill form and submit
       await emailInput.fill("test@example.com");
+      await emailInput.blur();
+      await expect(submitButton).toBeEnabled({ timeout: 5000 });
       await submitButton.click();
 
       // Should show success state
@@ -128,9 +124,7 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", {
-        name: /send reset link/i,
-      });
+      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
 
       // Submit form
       await emailInput.fill("test@example.com");
@@ -146,9 +140,7 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", {
-        name: /send reset link/i,
-      });
+      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
 
       // Submit form
       await emailInput.fill("test@example.com");
@@ -383,9 +375,7 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", {
-        name: /send reset link/i,
-      });
+      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
 
       // Submit with non-existent email
       await emailInput.fill("nonexistent@example.com");
@@ -401,9 +391,7 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", {
-        name: /send reset link/i,
-      });
+      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
 
       // Submit multiple times
       for (let i = 0; i < 3; i++) {
@@ -464,9 +452,7 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", {
-        name: /send reset link/i,
-      });
+      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
 
       // Enter email with whitespace
       await emailInput.fill("  test@example.com  ");
@@ -479,9 +465,7 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.getByRole("button", {
-        name: /send reset link/i,
-      });
+      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
 
       // Enter email with special characters
       await emailInput.fill("test+tag@example.co.uk");

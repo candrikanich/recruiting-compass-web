@@ -7,7 +7,7 @@ test.describe("Family Units - Parent", () => {
   test("parent can view school list", async ({ page }) => {
     // Navigate to schools
     await page.goto("/schools");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Check schools page loads
     await expect(page.locator("h1:has-text('Schools')")).toBeVisible();
@@ -16,7 +16,7 @@ test.describe("Family Units - Parent", () => {
   test("parent can switch between athletes", async ({ page }) => {
     // Navigate to schools
     await page.goto("/schools");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Look for athlete selector — the AthleteSelector component renders for parents
     // with linked athletes. It may not be a plain <select> element.
@@ -35,7 +35,7 @@ test.describe("Family Units - Parent", () => {
         const secondValue = await secondOption.getAttribute("value");
         if (secondValue && secondValue !== initialValue) {
           await athleteSelector.selectOption(secondValue);
-          await page.waitForLoadState("networkidle");
+          await page.waitForLoadState("domcontentloaded");
           expect(await athleteSelector.inputValue()).toBe(secondValue);
         }
       }
@@ -45,16 +45,16 @@ test.describe("Family Units - Parent", () => {
   test("family context is maintained across pages", async ({ page }) => {
     // Navigate to schools
     await page.goto("/schools");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify we can navigate and return
     await page.goto("/coaches");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await expect(page.locator("h1").first()).toBeVisible();
 
     // Navigate back to schools
     await page.goto("/schools");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await expect(page.locator("h1:has-text('Schools')")).toBeVisible();
   });
 });
@@ -65,7 +65,7 @@ test.describe("Family Units - Player", () => {
   test("player can view their own schools", async ({ page }) => {
     // Navigate to schools
     await page.goto("/schools");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Check schools page loads with data
     await expect(page.locator("h1:has-text('Schools')")).toBeVisible();
@@ -79,7 +79,7 @@ test.describe("Family Units - Player", () => {
   test("player cannot see athlete selector", async ({ page }) => {
     // Navigate to schools
     await page.goto("/schools");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Check that athlete selector is not visible (player should not see it)
     // If there's a select for athlete switching, it should not be visible for players
@@ -92,7 +92,7 @@ test.describe("Family Units - Player", () => {
   test("schools page displays school data correctly", async ({ page }) => {
     // Navigate to schools
     await page.goto("/schools");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify key page elements
     await expect(page.locator("h1:has-text('Schools')")).toBeVisible();

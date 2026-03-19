@@ -317,7 +317,7 @@ export const coachHelpers = {
    */
   async navigateToCoaches(page, schoolId) {
     await page.goto(`/schools/${schoolId}/coaches`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   },
 
   /**
@@ -331,7 +331,7 @@ export const coachHelpers = {
 
     await coachHelpers.fillCoachForm(page, coachData);
     await page.click(coachSelectors.saveCoachButton);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   },
 
   /**
@@ -425,7 +425,7 @@ export const coachHelpers = {
    */
   async logInteraction(page, interactionData) {
     await page.click(coachSelectors.logInteractionButton);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     if (interactionData.subject) {
       await page.fill(
@@ -449,6 +449,6 @@ export const coachHelpers = {
     await page.click(
       'button:has-text("Save"), [data-testid="save-interaction"]',
     );
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   },
 };

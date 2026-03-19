@@ -83,7 +83,7 @@ export const documentHelpers = {
     await page.click(documentSelectors.submitButton);
 
     // Wait for upload to complete
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   },
 
   /**

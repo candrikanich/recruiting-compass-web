@@ -18,7 +18,7 @@ export class SchoolsPage extends BasePage {
 
   async createSchool(school: any) {
     // Wait for the page to load
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
 
     // Check if autocomplete is enabled (default behavior)
     const autocompleteCheckbox = await this.page

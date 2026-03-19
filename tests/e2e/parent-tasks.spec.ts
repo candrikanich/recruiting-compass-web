@@ -1,12 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { loginViaForm } from "./helpers/login";
 
 // pages/tasks/index.vue confirmed present.
 // Confirmed testids: task-item, status-filter, urgency-filter, task-checkbox-*
 // Not yet implemented: deadline-badge, athlete-select — those tests remain skipped.
 test.describe("Parent Task Viewing Workflow", () => {
   test.beforeEach(async ({ page }) => {
-    await loginViaForm(page, "parent@test.com", "TestPass123!", /\/dashboard/);
     await page.goto("/tasks");
   });
 

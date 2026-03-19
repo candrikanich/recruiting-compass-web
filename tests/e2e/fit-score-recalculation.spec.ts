@@ -66,7 +66,7 @@ test.describe.skip("Fit Score Auto-Recalculation", () => {
     await saveButton.click();
 
     // Wait for save to complete
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify button text changes from "Saving..." back to normal
     await expect(saveButton).not.toContainText("Saving...");
@@ -94,7 +94,7 @@ test.describe.skip("Fit Score Auto-Recalculation", () => {
     await expect(saveButton).toContainText("Saving...");
 
     // Wait for completion
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Should be back to "Save Player Details"
     await expect(saveButton).toContainText("Save Player Details");
@@ -147,7 +147,7 @@ test.describe.skip("Fit Score Auto-Recalculation", () => {
     await saveButton.click();
 
     // Wait for completion
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Button should be enabled and clickable
     await expect(saveButton).not.toBeDisabled();

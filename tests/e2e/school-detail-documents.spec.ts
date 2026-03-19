@@ -31,7 +31,7 @@ test.describe("School Detail - Document Management", () => {
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
     await page.goto(`/schools/${schoolId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("should show empty state when no documents exist", async ({ page }) => {
@@ -53,7 +53,7 @@ test.describe("School Detail - Document Management", () => {
     });
 
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const isDocumentVisible = await documentHelpers.verifyDocumentInList(
       page,
@@ -88,7 +88,7 @@ test.describe("School Detail - Document Management", () => {
     });
 
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const viewLink = page.locator(documentSelectors.viewLink).first();
     await viewLink.click();
@@ -124,7 +124,7 @@ test.describe("School Detail - Document Management", () => {
     }
 
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const docCount = await documentHelpers.getDocumentCount(page);
     expect(docCount).toBeGreaterThanOrEqual(3);

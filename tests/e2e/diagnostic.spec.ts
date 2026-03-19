@@ -84,7 +84,7 @@ test.describe("Diagnostic Tests", () => {
 
   test("should load the app successfully", async ({ page }) => {
     await page.goto("/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     // Verify the app rendered — login page has email + password inputs
     await expect(page.locator('input[type="email"]')).toBeVisible();
     await expect(page.locator('input[type="password"]')).toBeVisible();

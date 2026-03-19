@@ -5,7 +5,7 @@ test.describe("30+ Schools Warning", () => {
     // Navigate to schools page
     await page.goto("/schools");
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("should show warning when user has 30+ schools", async ({ page }) => {
@@ -111,7 +111,7 @@ test.describe("30+ Schools Warning", () => {
     await page.setViewportSize({ width: 375, height: 667 });
 
     // Wait for rerender
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const warningBanner = page.locator(".bg-amber-50");
     const bannerCount = await warningBanner.count();

@@ -5,11 +5,9 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
   let interactionId: string;
 
   test.beforeEach(async ({ page }) => {
-    await loginViaForm(page, "player@test.com", "TestPass123!", /\/dashboard/);
-
     // Navigate to interactions list
     await page.goto("/interactions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Get first interaction ID (if exists) or create one
     const firstInteraction = page
@@ -58,7 +56,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
   test("displays all interaction fields correctly", async ({ page }) => {
     // Navigate to detail page
     await page.goto(`/interactions/${interactionId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify page loaded
     await expect(page.locator("h1")).toBeVisible();
@@ -81,7 +79,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
   }) => {
     // Navigate to detail page
     await page.goto(`/interactions/${interactionId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Find the school DetailCard - it should have both label and value
     const schoolCard = page.locator('text="School"').locator("..");
@@ -123,7 +121,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
     page,
   }) => {
     await page.goto(`/interactions/${interactionId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Find school link (if present)
     const schoolLink = page.locator('a[href*="/schools/"]').first();
@@ -143,7 +141,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
     page,
   }) => {
     await page.goto(`/interactions/${interactionId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Find coach link (if present)
     const coachLink = page.locator('a[href*="/coaches/"]').first();
@@ -161,7 +159,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
 
   test("exports interaction as CSV", async ({ page }) => {
     await page.goto(`/interactions/${interactionId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Set up download listener
     const downloadPromise = page.waitForEvent("download");
@@ -216,7 +214,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
     await page.waitForURL("**/interactions", { timeout: 5000 });
 
     // Verify interaction is no longer in list
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     const deletedInteraction = page.locator(
       `:has-text("Delete Test Interaction")`,
     );
@@ -232,7 +230,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
 
   test("cancels delete when user declines confirmation", async ({ page }) => {
     await page.goto(`/interactions/${interactionId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Set up dialog handler to cancel confirmation
     page.on("dialog", (dialog) => {
@@ -258,7 +256,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
   test("displays attachments when present", async ({ page }) => {
     // This test assumes interaction might have attachments
     await page.goto(`/interactions/${interactionId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Check if attachments section exists
     const attachmentsHeading = page.locator('h2:has-text("Attachments")');
@@ -319,7 +317,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
 
   test("shows 'You' for logged by current user", async ({ page }) => {
     await page.goto(`/interactions/${interactionId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Find "Logged By" section
     await expect(page.locator("text=Logged By")).toBeVisible();
@@ -334,7 +332,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
 
   test("displays correct interaction type badge", async ({ page }) => {
     await page.goto(`/interactions/${interactionId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify at least one badge is displayed
     const badges = page.locator(
@@ -345,7 +343,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
 
   test("displays correct direction badge", async ({ page }) => {
     await page.goto(`/interactions/${interactionId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify direction badge exists (outbound or inbound)
     const directionText = page.locator("text=/Outbound|Inbound/");
@@ -400,7 +398,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
     const nonExistentId = "non-existent-interaction-id-123456";
 
     await page.goto(`/interactions/${nonExistentId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Should either show error message or loading state
     // At minimum, should not crash (page should exist)
@@ -444,11 +442,9 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
 
 test.describe("Interaction Detail Page - Navigation", () => {
   test("back navigation returns to interactions list", async ({ page }) => {
-    await loginViaForm(page, "player@test.com", "TestPass123!", /\/dashboard/);
-
     // Navigate to interactions list
     await page.goto("/interactions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Click first interaction
     const firstInteraction = page.locator('button:has-text("View")').first();
@@ -470,9 +466,6 @@ test.describe("Interaction Detail Page - Navigation", () => {
 });
 
 test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
-  test.beforeEach(async ({ page }) => {
-    await loginViaForm(page, "player@test.com", "TestPass123!", /\/dashboard/);
-  });
 
   test("handles network error gracefully", async ({ page }) => {
     // Simulate network failure
@@ -484,7 +477,7 @@ test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
     await page.goto(`/interactions/${nonExistentId}`);
 
     // Should not crash, should show some UI
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     expect(page).toBeTruthy();
 
     // Page should still have basic structure
@@ -593,7 +586,7 @@ test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
 
   test("handles rapid navigation between detail pages", async ({ page }) => {
     await page.goto("/interactions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Get multiple interaction IDs
     const viewButtons = page.locator('button:has-text("View")');
@@ -603,7 +596,7 @@ test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
       // Rapidly navigate between different interactions
       for (let i = 0; i < Math.min(3, buttonCount); i++) {
         await page.goto("/interactions");
-        await page.waitForLoadState("networkidle");
+        await page.waitForLoadState("domcontentloaded");
 
         const btn = page.locator('button:has-text("View")').nth(i);
         await btn.click();
@@ -620,7 +613,7 @@ test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
 
   test("handles page refresh on detail page", async ({ page }) => {
     await page.goto("/interactions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Navigate to interaction
     const firstInteraction = page.locator('button:has-text("View")').first();
@@ -635,7 +628,7 @@ test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
 
       // Refresh the page
       await page.reload();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Verify page still loads correctly
       await expect(page.locator("h1")).toBeVisible();
@@ -646,7 +639,7 @@ test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
   test("handles direct URL access to detail page", async ({ page }) => {
     // First get an interaction ID
     await page.goto("/interactions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const firstInteraction = page.locator('button:has-text("View")').first();
     const hasInteraction = await firstInteraction
@@ -667,7 +660,7 @@ test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
 
       // Navigate directly to interaction URL
       await page.goto(interactionUrl);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Verify page loads correctly via direct URL
       await expect(page.locator("h1")).toBeVisible();

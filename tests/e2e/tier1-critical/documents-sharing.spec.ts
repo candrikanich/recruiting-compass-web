@@ -22,7 +22,7 @@ test.describe("Document Sharing Workflows", () => {
     // Navigate to documents page
     await page.goto("/documents");
     // Wait for documents page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   // ============================================================================
@@ -32,7 +32,7 @@ test.describe("Document Sharing Workflows", () => {
   test("should share document with another user", async ({ page }) => {
     // Navigate to first document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Click share button
     const shareBtn = page.locator('[data-testid="share-document-btn"]');
@@ -75,7 +75,7 @@ test.describe("Document Sharing Workflows", () => {
   test("should share document with view permission", async ({ page }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Open share modal
     await page.click('[data-testid="share-document-btn"]');
@@ -117,7 +117,7 @@ test.describe("Document Sharing Workflows", () => {
   test("should share document with edit permission", async ({ page }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Open share modal
     await page.click('[data-testid="share-document-btn"]');
@@ -154,7 +154,7 @@ test.describe("Document Sharing Workflows", () => {
   test("should not share with invalid email", async ({ page }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Open share modal
     await page.click('[data-testid="share-document-btn"]');
@@ -184,7 +184,7 @@ test.describe("Document Sharing Workflows", () => {
   }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify document is already shared
     const sharedList = page.locator('[data-testid="shared-users-list"]');
@@ -221,7 +221,7 @@ test.describe("Document Sharing Workflows", () => {
   }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify document is shared with edit access
     const firstUserRow = page
@@ -252,7 +252,7 @@ test.describe("Document Sharing Workflows", () => {
   test("should add expiration date to shared access", async ({ page }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Open share modal
     await page.click('[data-testid="share-document-btn"]');
@@ -304,7 +304,7 @@ test.describe("Document Sharing Workflows", () => {
   test("should revoke document access from user", async ({ page }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Get initial shared user count
     const sharedList = page.locator('[data-testid="shared-users-list"]');
@@ -341,7 +341,7 @@ test.describe("Document Sharing Workflows", () => {
   test("should revoke all access to document", async ({ page }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Click "Remove all sharing"
     const removeAllBtn = page.locator('[data-testid="remove-all-sharing-btn"]');
@@ -377,7 +377,7 @@ test.describe("Document Sharing Workflows", () => {
 
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify document displays
     const docName = page.locator('[data-testid="document-name"]');
@@ -398,7 +398,7 @@ test.describe("Document Sharing Workflows", () => {
   test("should edit shared document with edit access", async ({ page }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify edit button available
     const editBtn = page.locator('[data-testid="edit-document-btn"]');
@@ -435,7 +435,7 @@ test.describe("Document Sharing Workflows", () => {
   test("should set document to private (no sharing)", async ({ page }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Click document settings
     const settingsBtn = page.locator('[data-testid="document-settings-btn"]');
@@ -467,7 +467,7 @@ test.describe("Document Sharing Workflows", () => {
   test("should set document to shareable", async ({ page }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Click settings
     const settingsBtn = page.locator('[data-testid="document-settings-btn"]');
@@ -497,7 +497,7 @@ test.describe("Document Sharing Workflows", () => {
   test("should complete full sharing workflow", async ({ page }) => {
     // 1. Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // 2. Share document
     await page.click('[data-testid="share-document-btn"]');

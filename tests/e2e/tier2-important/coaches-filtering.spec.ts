@@ -1,7 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { CoachesPage } from "../pages/CoachesPage";
 import { SchoolsPage } from "../pages/SchoolsPage";
-import { loginViaForm } from "../helpers/login";
 import {
   coachFixtures,
   createCoachData,
@@ -46,9 +45,6 @@ test.describe("Coach Search and Filtering", () => {
   test.beforeEach(async ({ page }) => {
     coachesPage = new CoachesPage(page);
     schoolsPage = new SchoolsPage(page);
-
-    // Login
-    await loginViaForm(page, "player@test.com", "TestPass123!");
 
     // Create test school
     const schoolName = generateUniqueSchoolName("Filter Test School");

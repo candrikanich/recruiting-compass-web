@@ -5,9 +5,7 @@ import { loginViaForm } from "../helpers/login";
 test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
   // Athlete Flow Tests
   test.describe("Athlete Flow", () => {
-    test.beforeEach(async ({ page }) => {
-      await loginViaForm(page, "player@test.com", "TestPass123!", /\/dashboard/);
-    });
+    test.beforeEach(async ({ page }) => {});
 
     test("Scenario 1: Athlete navigates to My Interactions page", async ({
       page,
@@ -56,7 +54,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
       await page.click('button[type="submit"]:has-text("Log Interaction")');
 
       // Verify success and redirect
-      await page.waitForURL("**/interactions", { waitUntil: "networkidle" });
+      await page.waitForURL("**/interactions", { waitUntil: "domcontentloaded" });
 
       // Verify interaction appears in list with "You" badge
       await expect(page.locator("text=Recruiting Inquiry")).toBeVisible();
@@ -111,7 +109,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
         await page.click('button[type="submit"]');
 
         // Verify interaction type appears
-        await page.waitForURL("**/interactions", { waitUntil: "networkidle" });
+        await page.waitForURL("**/interactions", { waitUntil: "domcontentloaded" });
         await expect(page.locator(`text=${display}`)).toBeVisible();
       }
     });
@@ -119,9 +117,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
 
   // Parent Flow Tests
   test.describe("Parent Flow", () => {
-    test.beforeEach(async ({ page }) => {
-      await loginViaForm(page, "parent@test.com", "TestPass123!", /\/dashboard/);
-    });
+    test.beforeEach(async ({ page }) => {});
 
     test("Scenario 1: Parent sees Athlete Activity widget on dashboard", async ({
       page,

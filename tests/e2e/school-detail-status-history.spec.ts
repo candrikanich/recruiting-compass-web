@@ -20,7 +20,7 @@ test.describe("School Detail - Status History", () => {
     const heading = page.locator(statusHistorySelectors.heading);
     await expect(heading).toBeVisible();
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("should show empty state when no history exists", async ({ page }) => {
@@ -31,7 +31,7 @@ test.describe("School Detail - Status History", () => {
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
     await page.goto(`/schools/${schoolId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await page.waitForTimeout(1000);
 
@@ -55,7 +55,7 @@ test.describe("School Detail - Status History", () => {
     await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(1500);
 
     const historyEntries = page.locator(statusHistorySelectors.historyEntry);
@@ -77,7 +77,7 @@ test.describe("School Detail - Status History", () => {
     await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(1500);
 
     const initialText = page.locator("text=Initial");
@@ -99,7 +99,7 @@ test.describe("School Detail - Status History", () => {
     await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(1500);
 
     const statusBadges = page.locator(statusHistorySelectors.statusBadge);
@@ -126,7 +126,7 @@ test.describe("School Detail - Status History", () => {
     await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(1500);
 
     const userNameElements = page.locator(statusHistorySelectors.userName);
@@ -149,7 +149,7 @@ test.describe("School Detail - Status History", () => {
     await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(1500);
 
     const timestamps = page.locator(statusHistorySelectors.timestamp);
@@ -173,7 +173,7 @@ test.describe("School Detail - Status History", () => {
     await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(1500);
 
     const arrowIcons = page.locator(statusHistorySelectors.arrowIcon);

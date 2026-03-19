@@ -18,12 +18,12 @@ export class CoachesPage extends BasePage {
 
   async goToCoachDetail(schoolId: string, coachId: string) {
     await super.goto(`/schools/${schoolId}/coaches/${coachId}`);
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async goToCoachCommunications(schoolId: string, coachId: string) {
     await super.goto(`/schools/${schoolId}/coaches/${coachId}/communications`);
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   // CRUD Operations
@@ -71,7 +71,7 @@ export class CoachesPage extends BasePage {
     }
 
     await this.click('[data-testid="add-coach-button"]');
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async updateCoach(updates: any) {
@@ -107,7 +107,7 @@ export class CoachesPage extends BasePage {
       .locator('button:has-text("Save"), [data-testid="save-coach"]')
       .first();
     await saveButton.click();
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async deleteCoach(coachName: string) {
@@ -121,7 +121,7 @@ export class CoachesPage extends BasePage {
     const confirmButton = this.page.locator('button:has-text("Confirm")').first();
     await confirmButton.waitFor({ state: "visible" });
     await confirmButton.click();
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   // Search and Filter
@@ -185,7 +185,7 @@ export class CoachesPage extends BasePage {
 
   async viewCoachDetails(coachName: string) {
     await this.clickByText(coachName);
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async getCoachCount(): Promise<number> {
@@ -303,6 +303,6 @@ export class CoachesPage extends BasePage {
   }
 
   async waitForCoachsToLoad() {
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 }

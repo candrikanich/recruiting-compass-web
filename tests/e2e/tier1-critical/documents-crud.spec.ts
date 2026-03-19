@@ -22,7 +22,7 @@ test.describe("Document CRUD Workflows", () => {
     // Navigate to documents page
     await page.goto("/documents");
     // Wait for documents page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   // ============================================================================
@@ -147,7 +147,7 @@ test.describe("Document CRUD Workflows", () => {
     await page.locator('[data-testid="document-card"]').first().click();
 
     // Verify detail page loads
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Check all detail sections visible
     await expect(page.locator('[data-testid="document-name"]')).toBeVisible();
@@ -165,7 +165,7 @@ test.describe("Document CRUD Workflows", () => {
   test("should display document metadata and info", async ({ page }) => {
     // Navigate to first document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify metadata displayed
     const metadata = page.locator('[data-testid="document-metadata"]');
@@ -208,7 +208,7 @@ test.describe("Document CRUD Workflows", () => {
   test("should edit document name and description", async ({ page }) => {
     // Navigate to document detail
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Click edit button
     const editBtn = page.locator('[data-testid="edit-document-btn"]');
@@ -244,7 +244,7 @@ test.describe("Document CRUD Workflows", () => {
   test("should update document tags", async ({ page }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Click edit button
     await page.click('[data-testid="edit-document-btn"]');
@@ -285,7 +285,7 @@ test.describe("Document CRUD Workflows", () => {
 
     // Click first document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Click delete button
     const deleteBtn = page.locator('[data-testid="delete-document-btn"]');
@@ -314,7 +314,7 @@ test.describe("Document CRUD Workflows", () => {
   test("should cancel document deletion", async ({ page }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Store document name for verification
     const docNameElement = page.locator('[data-testid="document-name"]');
@@ -339,7 +339,7 @@ test.describe("Document CRUD Workflows", () => {
   test("should view document version history", async ({ page }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Click version history tab
     const versionTab = page.locator('[data-testid="version-history-tab"]');
@@ -360,7 +360,7 @@ test.describe("Document CRUD Workflows", () => {
   test("should restore document to previous version", async ({ page }) => {
     // Navigate to document
     await page.locator('[data-testid="document-card"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Open version history
     const versionTab = page.locator('[data-testid="version-history-tab"]');
@@ -446,7 +446,7 @@ test.describe("Document CRUD Workflows", () => {
 
     // 2. Navigate to document
     await page.click("text=Complete Workflow Test");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // 3. Edit metadata
     await page.click('[data-testid="edit-document-btn"]');

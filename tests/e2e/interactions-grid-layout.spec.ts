@@ -17,7 +17,7 @@ test.describe("Interactions Grid Layout", () => {
   test("should display interactions in responsive grid layout", async ({ page }) => {
     // Navigate to interactions page
     await page.goto("/interactions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Find the interactions list container (not the filters or analytics grids)
     // Use the specific grid pattern: grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6
@@ -46,7 +46,7 @@ test.describe("Interactions Grid Layout", () => {
     await page.setViewportSize({ width: 1280, height: 720 });
 
     await page.goto("/interactions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Target the interactions list grid specifically
     const container = page.locator('main#main-content div.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3.gap-6');
@@ -64,7 +64,7 @@ test.describe("Interactions Grid Layout", () => {
 
   test("should maintain card functionality in grid layout", async ({ page }) => {
     await page.goto("/interactions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Target the interactions list grid specifically
     const container = page.locator('main#main-content div.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3.gap-6');

@@ -11,8 +11,7 @@ export class DashboardPage extends BasePage {
   }
 
   async waitForDashboardLoad() {
-    await this.page.waitForLoadState("networkidle");
-    await this.expectVisible("h1:has-text('Dashboard')");
+    await this.page.waitForSelector("h1:has-text('Dashboard')", { timeout: 15000 });
   }
 
   async expectStatsCardVisible(label: string) {
@@ -188,7 +187,7 @@ export class DashboardPage extends BasePage {
   }
 
   async waitForNetworkIdle() {
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async countStatCards(): Promise<number> {

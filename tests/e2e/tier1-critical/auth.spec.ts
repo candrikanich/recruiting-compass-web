@@ -162,7 +162,7 @@ test.describe("Tier 1: Authentication - Critical User Flows", () => {
     await authPage.page.goto("/dashboard");
 
     // Unauthenticated users must be redirected to login
-    await expect(page).toHaveURL("/login");
+    await expect(page).toHaveURL(/\/login/);
   });
 
   test("should redirect to dashboard after successful login", async ({

@@ -80,7 +80,7 @@ export class EventsPage extends BasePage {
     await this.click(
       'button:has-text("Save Event"), button:has-text("Create"), button[type="submit"]',
     );
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   // Event Filtering and Search
@@ -152,7 +152,7 @@ export class EventsPage extends BasePage {
     if (await deleteButton.isVisible()) {
       await deleteButton.click();
       await this.click('button:has-text("Confirm"), button:has-text("Yes")');
-      await this.page.waitForLoadState("networkidle");
+      await this.page.waitForLoadState("domcontentloaded");
     }
   }
 

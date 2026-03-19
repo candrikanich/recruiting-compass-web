@@ -5,7 +5,7 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
     // Navigate to player details page
     await page.goto("/settings/player-details");
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("should create athlete profile with required fields only", async ({
@@ -118,7 +118,7 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
 
     // Reload and verify data persists
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const reloadedHighSchool = page.locator(
       'input[placeholder="Lincoln High School"]',
@@ -236,7 +236,7 @@ test.describe("Athlete Profile Creation - User Story 2.1", () => {
 
     // Reload page
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify data persists
     const reloadedInput = page.locator(
@@ -293,7 +293,7 @@ test.describe("Profile Photo Component", () => {
     // Navigate to player details page
     await page.goto("/settings/player-details");
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("should display profile photo section", async ({ page }) => {

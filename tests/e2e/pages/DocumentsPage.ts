@@ -75,7 +75,7 @@ export class DocumentsPage extends BasePage {
     const fileInput = await this.page.locator('input[type="file"]').first();
     if (await fileInput.isVisible()) {
       await fileInput.setInputFiles(fileName);
-      await this.page.waitForLoadState("networkidle");
+      await this.page.waitForLoadState("domcontentloaded");
     }
   }
 
@@ -94,7 +94,7 @@ export class DocumentsPage extends BasePage {
     if (await deleteButton.isVisible()) {
       await deleteButton.click();
       await this.click('button:has-text("Confirm"), button:has-text("Yes")');
-      await this.page.waitForLoadState("networkidle");
+      await this.page.waitForLoadState("domcontentloaded");
     }
   }
 

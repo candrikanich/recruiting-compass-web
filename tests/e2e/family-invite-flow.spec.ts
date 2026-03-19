@@ -175,7 +175,7 @@ test.describe("Family Invite Flow", () => {
 
     test("invalid token shows not-found error", async ({ page }) => {
       await page.goto("/join?token=invalid-token-xyz-e2e");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       await expect(
         page.locator('[data-testid="error-not-found"]'),
       ).toBeVisible({ timeout: 10000 });
@@ -184,7 +184,7 @@ test.describe("Family Invite Flow", () => {
     test("expired token shows expired error", async ({ page }) => {
       test.skip(!seedReady, "Invite seed not available");
       await page.goto(`/join?token=${EXPIRED_TOKEN}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       await expect(
         page.locator('[data-testid="error-expired"]'),
       ).toBeVisible({ timeout: 10000 });
@@ -198,7 +198,7 @@ test.describe("Family Invite Flow", () => {
     test("shows invite details and login form", async ({ page }) => {
       test.skip(!seedReady, "Invite seed not available");
       await page.goto(`/join?token=${VALID_TOKEN}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       await expect(
         page.locator('[data-testid="error-not-found"]'),
@@ -228,7 +228,7 @@ test.describe("Family Invite Flow", () => {
       test.skip(!seedReady, "Invite seed not available");
       await loginAs(page, TEST_PARENT.email, TEST_PARENT.password);
       await page.goto(`/join?token=${VALID_TOKEN}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       await expect(
         page.locator('[data-testid="connect-button"]'),
@@ -244,7 +244,7 @@ test.describe("Family Invite Flow", () => {
       test.skip(!seedReady, "Invite seed not available");
       await loginAs(page, TEST_PARENT.email, TEST_PARENT.password);
       await page.goto(`/join?token=${VALID_TOKEN}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       await expect(
         page.locator('[data-testid="connect-button"]'),
@@ -263,7 +263,7 @@ test.describe("Family Invite Flow", () => {
       test.skip(!seedReady, "Invite seed not available");
       await loginAs(page, TEST_PARENT.email, TEST_PARENT.password);
       await page.goto(`/join?token=${DECLINE_TOKEN}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       await expect(
         page.locator('[data-testid="decline-button"]'),
@@ -280,7 +280,7 @@ test.describe("Family Invite Flow", () => {
     }) => {
       test.skip(!seedReady, "Invite seed not available");
       await page.goto(`/join?token=${DECLINE_TOKEN}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       await expect(
         page.locator('[data-testid="decline-button"]'),
@@ -295,7 +295,7 @@ test.describe("Family Invite Flow", () => {
       test.skip(!seedReady, "Invite seed not available");
       // Visit join page unauthenticated — invite email matches TEST_PARENT (existing user)
       await page.goto(`/join?token=${LOGIN_CONNECT_TOKEN}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Should show login form (emailExists=true for TEST_PARENT)
       await expect(
@@ -325,7 +325,7 @@ test.describe("Family Invite Flow", () => {
       test.skip(!seedReady, "Invite seed not available");
       await loginAs(page, TEST_PLAYER.email, TEST_PLAYER.password);
       await page.goto("/settings/family-management");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Should have at least one pending invite (the REVOKE_TOKEN one)
       await expect(
@@ -356,7 +356,7 @@ test.describe("Family Invite Flow", () => {
       test.skip(!seedReady, "Invite seed not available");
       await loginAs(page, TEST_PLAYER.email, TEST_PLAYER.password);
       await page.goto("/settings/family-management");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       await expect(
         page.locator('[data-testid="pending-invite-card"]').first(),
@@ -367,7 +367,7 @@ test.describe("Family Invite Flow", () => {
       test.skip(!seedReady, "Invite seed not available");
       await loginAs(page, TEST_PLAYER.email, TEST_PLAYER.password);
       await page.goto("/settings/family-management");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       await expect(
         page.locator('[data-testid="revoke-invite-button"]').first(),

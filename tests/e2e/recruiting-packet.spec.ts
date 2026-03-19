@@ -6,7 +6,7 @@ test.describe("Recruiting Packet Feature", () => {
     await page.goto("/dashboard");
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("should display Generate Packet button", async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe("Recruiting Packet Feature", () => {
     expect(popup).toBeDefined();
 
     // Wait for PDF preview window to load
-    await popup.waitForLoadState("networkidle");
+    await popup.waitForLoadState("domcontentloaded");
   });
 
   test("should open preview window with packet HTML", async ({ page }) => {
@@ -179,7 +179,7 @@ test.describe("Recruiting Packet Feature", () => {
     await mobileContext.setViewportSize({ width: 375, height: 667 });
 
     await mobileContext.goto("/dashboard");
-    await mobileContext.waitForLoadState("networkidle");
+    await mobileContext.waitForLoadState("domcontentloaded");
 
     const [popup] = await Promise.all([
       mobileContext.waitForEvent("popup"),
@@ -202,7 +202,7 @@ test.describe("Recruiting Packet Feature", () => {
     });
 
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Button should still be present
     const button = page.locator("button").filter({
