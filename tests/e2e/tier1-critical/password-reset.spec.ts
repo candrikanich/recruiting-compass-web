@@ -122,8 +122,7 @@ test.describe("Password Reset Flow", () => {
       await expect(page.getByText(/test@example.com/)).toBeVisible();
     });
 
-    test.skip("should show resend button after success", async ({ page }) => {
-      // SKIP: requires Supabase to accept the password reset email submission
+    test("should show resend button after success", async ({ page }) => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
@@ -141,8 +140,7 @@ test.describe("Password Reset Flow", () => {
       ).toBeVisible({ timeout: 15000 });
     });
 
-    test.skip("should have resend cooldown", async ({ page }) => {
-      // SKIP: requires Supabase to accept the password reset email submission
+    test("should have resend cooldown", async ({ page }) => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
@@ -181,8 +179,7 @@ test.describe("Password Reset Flow", () => {
   });
 
   test.describe("Reset Password Page", () => {
-    test.skip("should display error when no token in URL", async ({ page }) => {
-      // SKIP: invalidToken requires supabase.auth.getSession() which hangs when Supabase is slow
+    test("should display error when no token in URL", async ({ page }) => {
       await page.goto("/reset-password");
 
       // invalidToken is set after async supabase.auth.getSession() on mount
