@@ -12,23 +12,27 @@ vi.mock("~/utils/logger", () => ({
   }),
 }));
 
-// Build a chainable Supabase query builder for testing
-const buildChain = (overrides: Record<string, unknown> = {}) => {
-  const chain: Record<string, unknown> = {
-    select: vi.fn(() => chain),
-    eq: vi.fn(() => chain),
-    ilike: vi.fn(() => chain),
-    or: vi.fn(() => chain),
-    gte: vi.fn(() => chain),
-    lte: vi.fn(() => chain),
-    order: vi.fn(() => chain),
-    limit: vi.fn(() => Promise.resolve({ data: [], error: null })),
-    maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
-    single: vi.fn(() => Promise.resolve({ data: null, error: null })),
-    ...overrides,
-  };
-  // Make `limit` return the chain so we can await it as a query
-  chain.limit = vi.fn(() => Promise.resolve({ data: [], error: null, ...overrides }));
+// Build a chainable Supabase query builder for testing.
+// The chain is thenable so `await queryBuilder` resolves to { data, error }.
+// All builder methods (including limit) return the same chain so filters applied
+// after limit() are still captured by the spies.
+const buildChain = (resolvedData: unknown[] = [], resolvedError: unknown = null) => {
+  const chain: Record<string, unknown> = {};
+
+  const methods = ["select", "eq", "ilike", "or", "gte", "lte", "order", "limit"];
+  for (const m of methods) {
+    chain[m] = vi.fn(() => chain);
+  }
+
+  // Make the chain itself awaitable
+  chain.then = (resolve: (v: unknown) => void) =>
+    Promise.resolve({ data: resolvedData, error: resolvedError }).then(resolve);
+  chain.catch = (reject: (e: unknown) => unknown) =>
+    Promise.resolve({ data: resolvedData, error: resolvedError }).catch(reject);
+
+  chain.maybeSingle = vi.fn(() => Promise.resolve({ data: null, error: null }));
+  chain.single = vi.fn(() => Promise.resolve({ data: null, error: null }));
+
   return chain;
 };
 
@@ -225,13 +229,10 @@ describe("useEntitySearch", () => {
         family_unit_id: "family-1",
       };
 
-      mockChain.limit = vi.fn(() =>
-        Promise.resolve({ data: [mockSchool], error: null }),
-      );
+      // Rebuild chain with data so await resolves to it
+      mockChain = buildChain([mockSchool]);
 
-      const { performSearch, searchType, schoolResults } = useEntitySearch();
-      // Disable fuzzy search for predictable output
-      const { useFuzzySearch } = useEntitySearch();
+      const { performSearch, searchType, schoolResults, useFuzzySearch } = useEntitySearch();
       useFuzzySearch.value = false;
       searchType.value = "schools";
 
@@ -243,9 +244,7 @@ describe("useEntitySearch", () => {
       const userStore = useUserStore();
       userStore.user = { id: "user-1", role: "player" } as any;
 
-      mockChain.limit = vi.fn(() =>
-        Promise.resolve({ data: null, error: new Error("DB error") }),
-      );
+      mockChain = buildChain([], new Error("DB error"));
 
       const { performSearch, searchType, schoolResults } = useEntitySearch();
       searchType.value = "schools";

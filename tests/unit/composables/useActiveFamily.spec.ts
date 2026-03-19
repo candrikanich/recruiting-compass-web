@@ -456,30 +456,46 @@ describe("useActiveFamily", () => {
       expect(activeFamily.familyMembers.value).toEqual([]);
     });
 
-    it("fetches members when activeFamilyId is set", async () => {
+    it("fetches members when activeFamilyId is set via initialization", async () => {
       const { useSupabase } = await import("~/composables/useSupabase");
       const mockMembers = [
         { id: "mem-1", family_unit_id: "family-1", user_id: "player-1" },
       ];
 
+      // First call to maybeSingle (player family lookup), second call is members select
+      let callCount = 0;
       vi.mocked(useSupabase).mockReturnValue({
-        from: vi.fn(() => ({
-          select: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ data: mockMembers, error: null })),
-          })),
-        })),
+        from: vi.fn((table: string) => {
+          callCount++;
+          if (table === "family_members" && callCount === 1) {
+            // First call: player family lookup
+            return {
+              select: vi.fn(() => ({
+                eq: vi.fn(() => ({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: { family_unit_id: "family-1" },
+                    error: null,
+                  }),
+                })),
+              })),
+            };
+          }
+          // Subsequent calls: family members fetch
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => Promise.resolve({ data: mockMembers, error: null })),
+            })),
+          };
+        }),
       } as any);
 
       const userStore = useUserStore();
       userStore.user = { id: "player-1", role: "player" } as any;
 
       const activeFamily = useActiveFamily();
-      // Manually set playerFamilyId to simulate initialized state
-      (activeFamily as any).playerFamilyId.value = "family-1";
-      // Trigger activeFamilyId by accessing the computed, then call fetchFamilyMembers
+      await activeFamily.initializeFamily();
       await activeFamily.fetchFamilyMembers();
 
-      // Members should be populated
       expect(activeFamily.familyMembers.value.length).toBeGreaterThanOrEqual(0);
     });
   });
