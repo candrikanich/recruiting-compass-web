@@ -61,7 +61,8 @@ describe("getParentMessage", () => {
 
   it("does NOT return long-phase message when daysInPhase is exactly 200", () => {
     const result = getParentMessage({ daysInPhase: 200 });
-    expect(result).not.toContain("working on this phase for a while");
+    // daysInPhase > 200 is required, so exactly 200 falls through to null
+    expect(result).toBeNull();
   });
 
   it("returns on_track status message when no phase but status=on_track", () => {

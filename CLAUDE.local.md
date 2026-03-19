@@ -33,10 +33,16 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 - `DashboardPage.ts`: waitForDashboardLoad now waits for URL + domcontentloaded first
 - `schools fixture`: placeholder selector fallback for form name field
 
+**Final status (2026-03-19):**
+- `coaches-filtering`: 15/15 PASSING ✅ (Supabase admin seeding + fixed selectors)
+- `password-reset`: 14 pass / 6 fail / 12 skip (API-dependent tests skip when no real token)
+- `dashboard-8-1`: ~20/22 passing ✅
+- Broad 6-spec check: 69 passed, 8 failed, 13 skipped
+
 **Still failing:**
-- `schools-crud`: school creation form works but some CRUD verifications fail (selector mismatches on detail page)
-- `coaches-filtering`: school+coach creation in beforeEach — timeout during data setup
-- Some `password-reset`: resend button (needs Supabase to succeed after submit)
+- `schools-crud`: form reaches /schools/new but CRUD verifications need selector review (detail page)
+- Some `password-reset`: resend button test (needs Supabase to accept test email)
+- `coaches-crud/communication`: converted to beforeAll, likely working but needs verification
 
 ## Recently Completed (this session)
 
