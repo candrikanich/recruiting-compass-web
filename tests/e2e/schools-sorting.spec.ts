@@ -24,12 +24,12 @@ test.describe("Schools Sorting", () => {
     let found = false;
     for (const select of sortSelects) {
       const text = await select.textContent();
-      if (text?.includes("Fit") || text?.includes("Distance")) {
+      if (text?.includes("Distance") || text?.includes("A-Z")) {
         found = true;
         break;
       }
     }
-    expect(found || sortSelects.length > 5).toBeTruthy(); // At least 6 selects (search, division, status, favorites, priority, sort)
+    expect(found || sortSelects.length > 4).toBeTruthy(); // At least 5 selects (search, division, status, favorites, sort)
   });
 
   test("should sort schools A-Z by default", async ({ page }) => {
