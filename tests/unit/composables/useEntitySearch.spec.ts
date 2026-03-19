@@ -405,9 +405,7 @@ describe("useEntitySearch", () => {
         { id: "m3", notes: null, metric_type: "weight" },
       ];
 
-      mockChain.limit = vi.fn(() =>
-        Promise.resolve({ data: metrics, error: null }),
-      );
+      mockChain = buildChain(metrics);
 
       const { performSearch, searchType, metricsResults } = useEntitySearch();
       searchType.value = "metrics";
@@ -442,9 +440,7 @@ describe("useEntitySearch", () => {
           family_unit_id: "f1",
         },
       ];
-      mockChain.limit = vi.fn(() =>
-        Promise.resolve({ data: schoolData, error: null }),
-      );
+      mockChain = buildChain(schoolData);
 
       const { performSearch, searchType, schoolResults, useFuzzySearch } =
         useEntitySearch();
@@ -479,16 +475,7 @@ describe("useEntitySearch", () => {
       const userStore = useUserStore();
       userStore.user = { id: "user-1", role: "player" } as any;
 
-      // Build a chain where limit resolves with school name data
-      const suggestionChain: Record<string, unknown> = {
-        select: vi.fn(() => suggestionChain),
-        eq: vi.fn(() => suggestionChain),
-        ilike: vi.fn(() => suggestionChain),
-        limit: vi.fn(() =>
-          Promise.resolve({ data: [{ name: "Duke" }, { name: "Duquesne" }], error: null }),
-        ),
-      };
-      mockChain = suggestionChain as any;
+      mockChain = buildChain([{ name: "Duke" }, { name: "Duquesne" }]);
 
       const { getSchoolSuggestions } = useEntitySearch();
       const result = await getSchoolSuggestions("Du");
@@ -499,13 +486,11 @@ describe("useEntitySearch", () => {
       const userStore = useUserStore();
       userStore.user = { id: "user-1", role: "player" } as any;
 
-      const errorChain: Record<string, unknown> = {
-        select: vi.fn(() => errorChain),
-        eq: vi.fn(() => errorChain),
-        ilike: vi.fn(() => errorChain),
-        limit: vi.fn(() => Promise.reject(new Error("network error"))),
-      };
-      mockChain = errorChain as any;
+      // Make the chain throw when awaited
+      mockChain = buildChain([], new Error("network error"));
+      // Override then to reject
+      (mockChain as any).then = (_resolve: unknown, reject: (e: Error) => void) =>
+        Promise.reject(new Error("network error")).catch(reject);
 
       const { getSchoolSuggestions } = useEntitySearch();
       const result = await getSchoolSuggestions("Du");
@@ -536,15 +521,7 @@ describe("useEntitySearch", () => {
       const userStore = useUserStore();
       userStore.user = { id: "user-1", role: "player" } as any;
 
-      const suggestionChain: Record<string, unknown> = {
-        select: vi.fn(() => suggestionChain),
-        eq: vi.fn(() => suggestionChain),
-        ilike: vi.fn(() => suggestionChain),
-        limit: vi.fn(() =>
-          Promise.resolve({ data: [{ name: "John Smith" }, { name: "Joe Brown" }], error: null }),
-        ),
-      };
-      mockChain = suggestionChain as any;
+      mockChain = buildChain([{ name: "John Smith" }, { name: "Joe Brown" }]);
 
       const { getCoachSuggestions } = useEntitySearch();
       const result = await getCoachSuggestions("Jo");
@@ -555,13 +532,9 @@ describe("useEntitySearch", () => {
       const userStore = useUserStore();
       userStore.user = { id: "user-1", role: "player" } as any;
 
-      const errorChain: Record<string, unknown> = {
-        select: vi.fn(() => errorChain),
-        eq: vi.fn(() => errorChain),
-        ilike: vi.fn(() => errorChain),
-        limit: vi.fn(() => Promise.reject(new Error("network error"))),
-      };
-      mockChain = errorChain as any;
+      mockChain = buildChain([], new Error("network error"));
+      (mockChain as any).then = (_resolve: unknown, reject: (e: Error) => void) =>
+        Promise.reject(new Error("network error")).catch(reject);
 
       const { getCoachSuggestions } = useEntitySearch();
       const result = await getCoachSuggestions("Jo");
