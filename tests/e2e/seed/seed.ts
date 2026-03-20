@@ -130,6 +130,19 @@ async function seedDatabase() {
     console.log("👤 Creating test accounts...");
     await createTestAccounts();
 
+    // Resolve player user ID (required by schools.user_id NOT NULL constraint)
+    const { data: listData } = await supabase.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    });
+    const playerUser = listData?.users?.find(
+      (u) => u.email === "player@test.com",
+    );
+    if (!playerUser) {
+      throw new Error("player@test.com not found — cannot seed schools without user_id");
+    }
+    const playerUserId = playerUser.id;
+
     // Step 3: Seed schools
     console.log("🏫 Seeding schools...");
     const { data: schoolData, error: schoolError } = await supabase
@@ -137,6 +150,7 @@ async function seedDatabase() {
       .insert(
         SEED_DATA.schools.map((s) => ({
           ...s,
+          user_id: playerUserId,
           created_at: new Date().toISOString(),
         })),
       )
