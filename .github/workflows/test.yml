@@ -115,9 +115,9 @@ jobs:
             echo "Deployment contains errors"
             exit 1
           fi
-          URL=$(echo "$OUTPUT" | grep -oP '(?<=https://)[^ ]+' | head -1)
-          echo "deployment-url=https://$URL" >> $GITHUB_OUTPUT
-          echo "Successfully deployed to: https://$URL"
+          URL=$(echo "$OUTPUT" | grep -oP 'https://[^\s]+\.vercel\.app' | tail -1)
+          echo "deployment-url=$URL" >> $GITHUB_OUTPUT
+          echo "Successfully deployed to: $URL"
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
