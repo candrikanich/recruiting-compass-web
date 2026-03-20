@@ -36,7 +36,7 @@
         <!-- Address Section -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-lg font-semibold text-slate-900 mb-4">Address</h2>
-          <AddressAutocompleteInput
+          <SharedAddressAutocompleteInput
             :model-value="localLocation"
             @update:model-value="(v: HomeLocation) => { Object.assign(localLocation, v); triggerSave(); }"
           />
