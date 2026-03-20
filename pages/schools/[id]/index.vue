@@ -250,7 +250,7 @@ const {
   loading: collegeDataLoading,
   error: collegeDataError,
 } = useCollegeData();
-const { getPlayerDetails } = usePreferenceManager();
+const { getPlayerDetails, getHomeLocation, loadAllPreferences } = usePreferenceManager();
 const { $fetchAuth } = useAuthFetch();
 const { showToast } = useAppToast();
 const { announcement, announce, liveRegionAttrs } = useLiveRegion();
@@ -329,7 +329,7 @@ const calculatedSize = computed(() =>
   ),
 );
 // Distance calculation using composable
-const calculatedDistanceFromHome = useSingleSchoolDistance(school);
+const calculatedDistanceFromHome = useSingleSchoolDistance(school, getHomeLocation);
 
 // Handlers - Status Management (using createUpdateHandler utility)
 const handleStatusUpdate = createUpdateHandler(school, updateStatus);
@@ -538,6 +538,7 @@ const lookupCollegeData = async () => {
 
 const loadPageData = async () => {
   const { getRecommendedDivisions } = useDivisionRecommendations();
+  await loadAllPreferences();
   school.value = await getSchool(id);
   if (school.value) {
     initializeForm(school.value);

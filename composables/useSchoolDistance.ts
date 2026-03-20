@@ -9,7 +9,6 @@ import { computed, type ComputedRef } from "vue";
 import type { School } from "~/types";
 import type { HomeLocation } from "~/types/models";
 import { calculateDistance, formatDistance } from "~/utils/distance";
-import { usePreferenceManager } from "~/composables/usePreferenceManager";
 
 export function useSchoolDistance(
   schools: ComputedRef<School[]>,
@@ -70,27 +69,28 @@ function extractCoordinates(
 }
 
 /**
- * Composable for calculating distance from home to a single school
- * Used in school detail page to reduce nested conditionals
+ * Composable for calculating distance from home to a single school.
+ *
+ * Accepts homeLocation explicitly so the caller controls when/how preferences
+ * are loaded — avoids creating a private usePreferenceManager instance that
+ * never has loadAllPreferences() called on it.
  *
  * @param school - Ref to the school entity
+ * @param homeLocation - ComputedRef from the caller's usePreferenceManager instance
  * @returns Computed formatted distance string or null if coordinates unavailable
  *
  * @example
- * const school = ref<School | null>(null);
- * const distanceFromHome = useSingleSchoolDistance(school);
- *
- * // In template:
- * <p v-if="distanceFromHome">{{ distanceFromHome }} from home</p>
+ * const { getHomeLocation, loadAllPreferences } = usePreferenceManager();
+ * await loadAllPreferences();
+ * const distanceFromHome = useSingleSchoolDistance(school, getHomeLocation);
  */
 export function useSingleSchoolDistance(
   school: import("vue").Ref<School | null>,
+  homeLocation: import("vue").ComputedRef<HomeLocation | null>,
 ) {
-  const { getHomeLocation } = usePreferenceManager();
-
   return computed(() => {
     const schoolCoords = extractCoordinates(school.value?.academic_info);
-    const homeCoords = extractCoordinates(getHomeLocation.value);
+    const homeCoords = extractCoordinates(homeLocation.value);
 
     if (!schoolCoords || !homeCoords) return null;
 
