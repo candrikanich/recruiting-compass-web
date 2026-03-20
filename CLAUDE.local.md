@@ -4,13 +4,13 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 ## Current Session
 
-**Status:** E2E test systemic overhaul — major networkidle fix applied, ~64% pass rate on spot-check
-**Branch:** develop (NOT YET PUSHED)
+**Status:** NEARLY DONE — E2E suite is 259/0 pass/fail; 10 tests in 3 user-stories specs need selector fixes
+**Branch:** develop (3 commits ahead of origin — NOT YET PUSHED)
 **Build:** not run this session
-**Tests:** Full suite was ~261 failing; spot-check 35/55 passing after fixes
+**Tests:** Full suite: 259 pass, 133 skip, 27 did not run, 0 fail ✅ (10 flaky in user-stories when run isolated)
 **Lint:** UNKNOWN
 **Type-check:** UNKNOWN
-**Handoff:** `planning/handoff-2026-03-18-e2e-fixes.md`
+**Handoff:** `planning/handoff-2026-03-20-e2e-status.md`
 
 ## Action Required
 
