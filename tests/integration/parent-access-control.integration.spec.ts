@@ -145,28 +145,6 @@ describe("Parent/Athlete Access Control Integration Tests", () => {
       });
     });
 
-    describe("POST /api/schools/[id]/fit-score", () => {
-      it("should reject parent updating school fit score", async () => {
-        // Parent should not be able to update fit scores
-        // Expected: 403 Forbidden
-
-        expect(true).toBe(true); // Placeholder
-      });
-
-      it("should allow athlete to update own school fit score", async () => {
-        // Athlete should be able to update their school fit scores
-        // Expected: 200 with updated fit score data
-
-        expect(true).toBe(true); // Placeholder
-      });
-
-      it("should reject update for non-owned school", async () => {
-        // Athlete cannot update schools they don't own
-        // Expected: 404 Not Found
-
-        expect(true).toBe(true); // Placeholder
-      });
-    });
   });
 
   describe("Read-Only Routes - Parent Access Allowed", () => {

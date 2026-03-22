@@ -36,10 +36,17 @@
         <!-- Address Section -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <h2 class="text-lg font-semibold text-slate-900 mb-4">Address</h2>
-          <AddressAutocompleteInput
+          <SharedAddressAutocompleteInput
             :model-value="localLocation"
             @update:model-value="(v: HomeLocation) => { Object.assign(localLocation, v); triggerSave(); }"
           />
+          <!-- Geocode status -->
+          <p v-if="localLocation.latitude" class="text-xs text-green-600 mt-3">
+            ✓ Coordinates set ({{ localLocation.latitude.toFixed(4) }}, {{ localLocation.longitude?.toFixed(4) }}) — distance calculations enabled
+          </p>
+          <p v-else-if="localLocation.address" class="text-xs text-amber-600 mt-3">
+            Coordinates not set — click Save Location to auto-geocode and enable distance calculations
+          </p>
         </div>
 
         <!-- Action Buttons -->
@@ -89,6 +96,7 @@ import {
   CheckCircleIcon,
 } from "@heroicons/vue/24/outline";
 import type { HomeLocation } from "~/types/models";
+import type { AddressSuggestion } from "~/composables/useAddressAutocomplete";
 import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("settings/location");
@@ -126,6 +134,25 @@ const handleSave = async () => {
   saveSuccess.value = false;
 
   try {
+    // Auto-geocode if address fields are set but lat/lng is missing
+    if (localLocation.address && !localLocation.latitude) {
+      const query = [localLocation.address, localLocation.city, localLocation.state, localLocation.zip]
+        .filter(Boolean)
+        .join(", ");
+      try {
+        const results = await $fetch<AddressSuggestion[]>(
+          `/api/address/autocomplete?q=${encodeURIComponent(query)}`
+        );
+        if (results.length > 0) {
+          localLocation.latitude = results[0].latitude;
+          localLocation.longitude = results[0].longitude;
+          logger.info("Auto-geocoded home location", { lat: results[0].latitude, lng: results[0].longitude });
+        }
+      } catch (geocodeErr) {
+        logger.warn("Auto-geocoding failed, saving without coordinates", geocodeErr);
+      }
+    }
+
     await setHomeLocation(localLocation);
     saveSuccess.value = true;
     setTimeout(() => (saveSuccess.value = false), 3000);

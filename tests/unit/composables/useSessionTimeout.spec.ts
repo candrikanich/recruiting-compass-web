@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
+// Mock the store so the dynamic import inside handleTimeout doesn't pull in
+// the real stores/user.ts and its Supabase/logger dependency chain.
+vi.mock("~/stores/user", () => ({
+  useUserStore: vi.fn(() => ({
+    logout: vi.fn().mockResolvedValue(undefined),
+  })),
+}));
+
 vi.stubGlobal("navigateTo", vi.fn());
 import { useSessionTimeout } from "~/composables/useSessionTimeout";
 import type { SessionPreferences } from "~/types/session";

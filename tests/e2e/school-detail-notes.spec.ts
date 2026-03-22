@@ -17,7 +17,7 @@ test.describe("School Detail - Notes Management", () => {
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
     await page.goto(`/schools/${schoolId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("should display shared notes section with Edit button", async ({
@@ -47,7 +47,7 @@ test.describe("School Detail - Notes Management", () => {
     await page.waitForTimeout(1000);
 
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const notesDisplay = page
       .locator(notesSelectors.notesDisplay)
@@ -111,7 +111,7 @@ test.describe("School Detail - Notes Management", () => {
     await page.waitForTimeout(1000);
 
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const notesDisplay = page.locator(notesSelectors.notesDisplay).first();
     const displayText = await notesDisplay.textContent();

@@ -37,7 +37,8 @@ async function globalSetup(_config: FullConfig) {
       const context = await browser.newContext();
       const page = await context.newPage();
       try {
-        await page.goto("http://localhost:3003/login", { waitUntil: "domcontentloaded" });
+        const baseUrl = process.env.BASE_URL || "http://localhost:3003";
+        await page.goto(`${baseUrl}/login`, { waitUntil: "domcontentloaded" });
 
         // Fill form with blur events (Vue reactive validation requires blur to enable submit)
         await page.locator('input[type="email"]').fill(account.email);

@@ -4,6 +4,9 @@ import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("useCursorPagination");
 
+// Local alias prevents Nuxt's unimport scanner from treating `unknown` as a named export
+type AnyRecord = Record<string, unknown>;
+
 /**
  * Cursor-based pagination helper
  *
@@ -31,7 +34,7 @@ const logger = createClientLogger("useCursorPagination");
  * }
  * ```
  */
-export const useCursorPagination = <T extends Record<string, unknown>>(
+export const useCursorPagination = <T extends AnyRecord>(
   queryBuilder: ReturnType<SupabaseClient["from"]>,
   cursorColumn: keyof T,
   pageSize = 20,
@@ -156,7 +159,7 @@ export const useCursorPagination = <T extends Record<string, unknown>>(
  * );
  * ```
  */
-export const useTypedCursorPagination = <T extends Record<string, unknown>>(
+export const useTypedCursorPagination = <T extends AnyRecord>(
   supabase: SupabaseClient,
   table: string,
   columns: string,

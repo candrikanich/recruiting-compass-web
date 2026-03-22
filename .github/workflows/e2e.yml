@@ -71,3 +71,53 @@ jobs:
           name: playwright-results
           path: test-results/
           retention-days: 30
+
+  # WebKit (Safari) — non-blocking initially; failures are reported but don't gate the PR
+  e2e-webkit:
+    name: Playwright E2E Tests (WebKit/Safari)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    continue-on-error: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright WebKit browser
+        run: npx playwright install --with-deps webkit
+
+      - name: Prepare Nuxt
+        run: npx nuxi prepare
+
+      - name: Build application
+        run: npm run build
+        env:
+          NITRO_PRESET: node-server
+
+      - name: Run E2E tests (WebKit only)
+        run: npm run test:e2e -- --project webkit
+        env:
+          CI: true
+          FULL_TESTS: "1"
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NUXT_ADMIN_TOKEN_SECRET: ${{ secrets.NUXT_ADMIN_TOKEN_SECRET }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Upload WebKit report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-webkit-report
+          path: playwright-report/
+          retention-days: 30

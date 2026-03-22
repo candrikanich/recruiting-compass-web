@@ -21,7 +21,7 @@ test.describe("School Detail - Sidebar Features", () => {
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
     await page.goto(`/schools/${schoolId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test.describe("Quick Actions Section", () => {
@@ -115,7 +115,7 @@ test.describe("School Detail - Sidebar Features", () => {
 
       // Verify coaches were created on the coaches page before checking sidebar
       await page.goto(`/schools/${schoolId}/coaches`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       const coachesOnPage = page.locator(".rounded-2xl.shadow-lg").filter({ hasText: "John" });
       const coachCreated = await coachesOnPage.count();
       if (coachCreated === 0) {
@@ -124,7 +124,7 @@ test.describe("School Detail - Sidebar Features", () => {
       }
 
       await page.goto(`/schools/${schoolId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       await page.waitForTimeout(1000);
 
       const coachCards = page.locator(sidebarSelectors.coachCard);
@@ -155,7 +155,7 @@ test.describe("School Detail - Sidebar Features", () => {
       await schoolHelpers.addCoachToSchool(page, schoolId, coach);
 
       await page.goto(`/schools/${schoolId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       await page.waitForTimeout(1000);
 
       const emailLink = page.locator(sidebarSelectors.emailIcon).first();
@@ -180,7 +180,7 @@ test.describe("School Detail - Sidebar Features", () => {
       await schoolHelpers.addCoachToSchool(page, schoolId, coach);
 
       await page.goto(`/schools/${schoolId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       await page.waitForTimeout(1000);
 
       const phoneLink = page.locator(sidebarSelectors.phoneIcon).first();
@@ -205,7 +205,7 @@ test.describe("School Detail - Sidebar Features", () => {
       await schoolHelpers.addCoachToSchool(page, schoolId, coach);
 
       await page.goto(`/schools/${schoolId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       await page.waitForTimeout(1000);
 
       const smsLink = page.locator(sidebarSelectors.smsIcon).first();

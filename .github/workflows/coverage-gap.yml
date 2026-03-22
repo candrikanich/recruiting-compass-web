@@ -1,0 +1,152 @@
+# Weekly Coverage Gap Analysis
+# Runs Vitest coverage, finds the 5 worst files, then uses Claude to write
+# new tests and open a PR. Runs every Sunday at 2am UTC.
+
+name: Weekly Coverage Gap Analysis
+
+on:
+  schedule:
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+env:
+  NODE_VERSION: "20"
+  # Files below this statement coverage % are candidates
+  GAP_THRESHOLD: 70
+
+jobs:
+  find-gaps:
+    name: Find Coverage Gaps
+    runs-on: ubuntu-latest
+    outputs:
+      has_gaps: ${{ steps.parse.outputs.has_gaps }}
+      gap_summary: ${{ steps.parse.outputs.gap_summary }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare Nuxt
+        run: npx nuxi prepare
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+        continue-on-error: true
+
+      - name: Parse coverage and find gaps
+        id: parse
+        env:
+          THRESHOLD: ${{ env.GAP_THRESHOLD }}
+        run: |
+          node << 'SCRIPT'
+          const fs = require('fs');
+          const path = require('path');
+
+          const summaryPath = 'coverage/coverage-final.json';
+          if (!fs.existsSync(summaryPath)) {
+            console.log('No coverage data found');
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'has_gaps=false\n');
+            process.exit(0);
+          }
+
+          const data = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+          const threshold = parseInt(process.env.THRESHOLD, 10);
+          const cwd = process.cwd();
+
+          const files = Object.entries(data).map(([file, cov]) => {
+            const stmts = Object.values(cov.s || {});
+            const total = stmts.length;
+            const covered = stmts.filter(c => c > 0).length;
+            const pct = total > 0 ? Math.round((covered / total) * 100) : 100;
+            return { file: path.relative(cwd, file), pct, total };
+          });
+
+          const gaps = files
+            .filter(f => f.pct < threshold && f.total > 5)
+            .sort((a, b) => a.pct - b.pct)
+            .slice(0, 5);
+
+          if (gaps.length === 0) {
+            console.log(`All files meet the ${threshold}% threshold — nothing to do`);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'has_gaps=false\n');
+            process.exit(0);
+          }
+
+          const summary = gaps.map(g => `- \`${g.file}\`: ${g.pct}% statements covered`).join('\n');
+          console.log('Coverage gaps found:\n' + summary);
+
+          const out = process.env.GITHUB_OUTPUT;
+          require('fs').appendFileSync(out, `has_gaps=true\n`);
+          require('fs').appendFileSync(out, `gap_summary<<GAP_EOF\n${summary}\nGAP_EOF\n`);
+
+          // Write to a file for the Claude step to read
+          fs.writeFileSync('coverage-gaps.md', `# Coverage Gaps\n\nFiles below ${threshold}% statement coverage:\n\n${summary}\n`);
+          SCRIPT
+
+      - name: Upload gap report
+        if: steps.parse.outputs.has_gaps == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-gaps
+          path: coverage-gaps.md
+          retention-days: 7
+
+  write-tests:
+    name: Write Tests with Claude
+    needs: find-gaps
+    if: needs.find-gaps.outputs.has_gaps == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download gap report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-gaps
+
+      - name: Run Claude to write tests
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            A weekly coverage gap analysis has been run. The file `coverage-gaps.md`
+            lists the files with the lowest test coverage in this codebase.
+
+            Your task:
+            1. Read `coverage-gaps.md` to see which files need tests
+            2. For each file listed, read it and its existing test file (if any) in
+               `tests/unit/` or `tests/integration/`
+            3. Write tests that cover the most important untested paths, prioritising:
+               - Error handling branches
+               - Core business logic
+               - Edge cases with different input shapes
+            4. Follow existing test patterns exactly (vitest, happy-dom, vi.mock for
+               Supabase, the mockState pattern from existing tests)
+            5. Do NOT refactor source files — only add test files
+            6. Run `npm run test` to confirm all new tests pass before finishing
+            7. Create a branch named `chore/coverage-gap-$(date +%Y-%m-%d)` and commit
+               the new tests with message: `test: improve coverage for low-coverage files`
+            8. Open a PR with title `test: weekly coverage gap fill — $(date +%Y-%m-%d)`
+               and body listing which files were covered and what was tested
+
+            Coverage gaps to address:
+            ${{ needs.find-gaps.outputs.gap_summary }}

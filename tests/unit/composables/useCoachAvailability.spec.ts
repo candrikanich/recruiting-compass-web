@@ -27,7 +27,6 @@ describe("useCoachAvailability", () => {
     twitter_handle: "@coach",
     instagram_handle: "coach",
     notes: "",
-    responsiveness_score: 75,
     last_contact_date: new Date().toISOString(),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),

@@ -1,5 +1,8 @@
 import { ref } from "vue";
 import type { FeedbackInput } from "~/utils/validation/schemas";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("feedback");
 
 export const useFeedback = () => {
   const loading = ref(false);
@@ -14,6 +17,7 @@ export const useFeedback = () => {
         body: form,
       });
     } catch (err: unknown) {
+      logger.error("Failed to submit feedback", err);
       const apiError = err as { data?: { message?: string } };
       error.value =
         apiError.data?.message ?? "Failed to send feedback. Please try again.";

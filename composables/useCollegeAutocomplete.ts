@@ -1,5 +1,8 @@
 import { ref } from "vue";
 import { useAuthFetch } from "./useAuthFetch";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("college-autocomplete");
 import type {
   CollegeSearchResult,
   CollegeScorecardResponse,
@@ -80,8 +83,10 @@ export const useCollegeAutocomplete = () => {
       } catch (err: unknown) {
         const status = (err as { statusCode?: number })?.statusCode;
         if (status === 429) {
+          logger.warn("College search rate limited (429)");
           error.value = "Too many requests. Please try again in a moment.";
         } else {
+          logger.error("College search API call failed", err);
           error.value = "Unable to search colleges. Please check your connection.";
         }
         return;
@@ -104,6 +109,7 @@ export const useCollegeAutocomplete = () => {
 
       results.value = Array.from(uniqueSchools.values()).map(transformResult);
     } catch (err) {
+      logger.error("Unexpected error in college search", err);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       error.value = `Failed to search colleges: ${errorMessage}`;
       results.value = [];

@@ -6,7 +6,7 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     await page.goto("/tasks");
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("Scenario 1: Athlete views tasks for their grade", async ({ page }) => {
@@ -212,7 +212,7 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     expect(hasLoadingIndicator >= 0).toBe(true);
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Content should be visible after load
     const heading = page.locator('h1:has-text("My Tasks")');
@@ -319,7 +319,7 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     const startTime = Date.now();
 
     await page.goto("/tasks");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const loadTime = Date.now() - startTime;
 
@@ -340,7 +340,7 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
 
     // Navigate back to tasks
     await page.goto("/tasks");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify we're back on tasks page
     expect(page.url()).toContain("/tasks");

@@ -10,12 +10,28 @@
 ALTER TABLE family_units
   ADD COLUMN IF NOT EXISTS created_by_user_id uuid REFERENCES users(id);
 
-UPDATE family_units
-  SET created_by_user_id = player_user_id
-  WHERE created_by_user_id IS NULL AND player_user_id IS NOT NULL;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'family_units' AND column_name = 'player_user_id'
+  ) THEN
+    UPDATE family_units
+      SET created_by_user_id = player_user_id
+      WHERE created_by_user_id IS NULL AND player_user_id IS NOT NULL;
+  END IF;
+END $$;
 
-ALTER TABLE family_units
-  ALTER COLUMN created_by_user_id SET NOT NULL;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'family_units' AND column_name = 'created_by_user_id'
+      AND is_nullable = 'YES'
+  ) THEN
+    ALTER TABLE family_units ALTER COLUMN created_by_user_id SET NOT NULL;
+  END IF;
+END $$;
 
 ALTER TABLE family_units
   ADD COLUMN IF NOT EXISTS pending_player_details jsonb;

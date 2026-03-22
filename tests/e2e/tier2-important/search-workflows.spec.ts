@@ -22,7 +22,7 @@ test.describe("Search & Filter Workflows", () => {
     // Navigate to documents page
     await page.goto("/documents");
     // Wait for documents page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   // ============================================================================
@@ -578,7 +578,7 @@ test.describe("Search & Filter Workflows", () => {
     // 6. Click on a result to view details
     if (count > 0) {
       await results.first().click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Verify detail page loads
       const detailName = page.locator('[data-testid="document-name"]');
@@ -587,7 +587,7 @@ test.describe("Search & Filter Workflows", () => {
 
     // 7. Go back and clear search
     await page.goto("/documents");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     if (await searchInput.isVisible()) {
       await searchInput.clear();

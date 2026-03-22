@@ -13,7 +13,6 @@ const mockCoach: Coach = {
   phone: null,
   twitter_handle: null,
   instagram_handle: null,
-  responsiveness_score: 80,
   last_contact_date: "2026-01-01",
   notes: null,
   created_at: "2026-01-01",

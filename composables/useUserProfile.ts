@@ -1,6 +1,9 @@
 import { ref, computed } from "vue";
 import { useUserStore } from "~/stores/user";
 import { useAuthFetch } from "~/composables/useAuthFetch";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("user-profile");
 
 // Module-level singleton — persists across remounts within the same browser session
 const emailChangePending = ref(false);
@@ -38,7 +41,8 @@ export function useUserProfile() {
       store.updateProfileFields(fields);
       personalInfoSaved.value = true;
       return true;
-    } catch {
+    } catch (err) {
+      logger.error("Failed to save personal info", err);
       personalInfoError.value = "Failed to save. Please try again.";
       return false;
     } finally {
@@ -62,6 +66,11 @@ export function useUserProfile() {
       return true;
     } catch (err: unknown) {
       const status = (err as { statusCode?: number }).statusCode;
+      if (status === 401) {
+        logger.warn("Change password rejected: incorrect current password");
+      } else {
+        logger.error("Failed to change password", err);
+      }
       passwordError.value =
         status === 401
           ? "Current password is incorrect."
@@ -88,6 +97,11 @@ export function useUserProfile() {
       return true;
     } catch (err: unknown) {
       const status = (err as { statusCode?: number }).statusCode;
+      if (status === 401) {
+        logger.warn("Change email rejected: incorrect current password");
+      } else {
+        logger.error("Failed to change email", err);
+      }
       emailError.value =
         status === 401
           ? "Current password is incorrect."

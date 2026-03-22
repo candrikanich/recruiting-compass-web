@@ -9,7 +9,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
   // Tests that protected routes redirect unauthenticated users — must start logged out
   test.use({ storageState: undefined });
 
-  test("should redirect unauthenticated user from dashboard to login", async ({
+  test("should redirect unauthenticated user from dashboard to login @smoke", async ({
     page,
   }) => {
     await page.goto("/dashboard");
@@ -17,14 +17,14 @@ test.describe("Auth Enforcement - Protected Routes", () => {
     expect(page.url()).toContain("/login");
   });
 
-  test("should redirect unauthenticated user from coaches page to login", async ({
+  test("should redirect unauthenticated user from coaches page to login @smoke", async ({
     page,
   }) => {
     await page.goto("/coaches");
     expect(page.url()).toContain("/login");
   });
 
-  test("should redirect unauthenticated user from schools page to login", async ({
+  test("should redirect unauthenticated user from schools page to login @smoke", async ({
     page,
   }) => {
     await page.goto("/schools");
@@ -55,7 +55,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
 });
 
 test.describe("Auth Enforcement - Public Routes", () => {
-  test("should allow access to login page without auth", async ({ page }) => {
+  test("should allow access to login page without auth @smoke", async ({ page }) => {
     await page.goto("/login");
     expect(page.url()).toContain("/login");
     // Should see login form

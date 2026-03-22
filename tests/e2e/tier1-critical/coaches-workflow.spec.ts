@@ -76,7 +76,7 @@ test.describe("Complete Coach Workflow", () => {
 
     if (await logButton.isVisible()) {
       await logButton.click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Fill in interaction details
       const subjectInput = await page
@@ -103,7 +103,7 @@ test.describe("Complete Coach Workflow", () => {
         .first();
       if (await saveButton.isVisible()) {
         await saveButton.click();
-        await page.waitForLoadState("networkidle");
+        await page.waitForLoadState("domcontentloaded");
       }
     }
 
@@ -117,7 +117,7 @@ test.describe("Complete Coach Workflow", () => {
     if (await commButton.isVisible()) {
       await commButton.click();
       await page.waitForURL(/\/communications/);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Verify communications page loaded
       const timelineVisible = await page
@@ -172,7 +172,7 @@ test.describe("Complete Coach Workflow", () => {
 
     // Verify update persisted
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const phoneText = await page.locator(`text=${updatedPhone}`).first();
     const isPhoneVisible =

@@ -236,7 +236,6 @@ export const coachSelectors = {
   coachDetailEmail: '[data-testid="coach-detail-email"]',
   coachDetailPhone: '[data-testid="coach-detail-phone"]',
   coachDetailRole: '[data-testid="coach-detail-role"]',
-  coachResponsiveness: '[data-testid="responsiveness-score"]',
   coachLastContact: '[data-testid="last-contact-date"]',
 
   // Search and filtering
@@ -317,7 +316,14 @@ export const coachHelpers = {
    */
   async navigateToCoaches(page, schoolId) {
     await page.goto(`/schools/${schoolId}/coaches`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
+    // Wait for "Loading coaches..." text to disappear (shows while Supabase fetch is in progress)
+    await page.locator('text=Loading coaches').waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    // Wait for either coach cards or empty state to appear
+    await page.locator('h3.text-lg.font-bold, text=No coaches added yet')
+      .first()
+      .waitFor({ state: "visible", timeout: 8000 })
+      .catch(() => {});
   },
 
   /**
@@ -331,7 +337,7 @@ export const coachHelpers = {
 
     await coachHelpers.fillCoachForm(page, coachData);
     await page.click(coachSelectors.saveCoachButton);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   },
 
   /**
@@ -425,7 +431,7 @@ export const coachHelpers = {
    */
   async logInteraction(page, interactionData) {
     await page.click(coachSelectors.logInteractionButton);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     if (interactionData.subject) {
       await page.fill(
@@ -449,6 +455,6 @@ export const coachHelpers = {
     await page.click(
       'button:has-text("Save"), [data-testid="save-interaction"]',
     );
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   },
 };

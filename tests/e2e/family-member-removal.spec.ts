@@ -126,7 +126,7 @@ test.describe("authenticated family management", () => {
     page,
   }) => {
     await page.goto("/settings/family-management");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page).not.toHaveURL(/\/login/);
     await expect(
@@ -138,7 +138,7 @@ test.describe("authenticated family management", () => {
     page,
   }) => {
     await page.goto("/settings/family-management");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const removeButtons = page.locator(
       'button[title="Remove this parent from your family"]',
@@ -154,7 +154,7 @@ test.describe("authenticated family management", () => {
 
   test("invite form is visible for authenticated player", async ({ page }) => {
     await page.goto("/settings/family-management");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(
       page.locator('[data-testid="invite-member-form"]'),

@@ -1,4 +1,7 @@
 import { ref } from 'vue'
+import { createClientLogger } from '~/utils/logger'
+
+const logger = createClientLogger('deadlines')
 
 export function useDeadlines() {
   const deadlines = ref<Array<{
@@ -41,7 +44,7 @@ export function useDeadlines() {
       await fetchDeadlines()
       return result.deadline
     } catch (err) {
-      console.error('Failed to create deadline', err)
+      logger.error('Failed to create deadline', err)
       throw err
     }
   }
@@ -51,7 +54,7 @@ export function useDeadlines() {
       await $fetch(`/api/deadlines/${id}`, { method: 'DELETE' })
       deadlines.value = deadlines.value.filter(d => d.id !== id)
     } catch (err) {
-      console.error('Failed to remove deadline', err)
+      logger.error('Failed to remove deadline', err)
       throw err
     }
   }

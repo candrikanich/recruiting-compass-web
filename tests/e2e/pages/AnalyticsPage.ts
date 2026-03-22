@@ -144,7 +144,7 @@ export class AnalyticsPage extends BasePage {
 
   // Data Loading and Error Handling
   async waitForDataToLoad() {
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
     // Wait for stats and charts to load (look for loaded content)
     await this.expectVisible("text=Total Schools");
   }

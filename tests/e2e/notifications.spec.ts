@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Notifications Page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/notifications");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   // ── Page structure ──────────────────────────────────────────────────────────

@@ -264,3 +264,44 @@ Marked `@deprecated`, scheduled for removal:
 - **Store patterns**: Mutations only in actions; no direct component mutations
 - **API layer**: Consider service functions if API calls become complex
 - **Major version tasks**: Remove deprecated composables, audit codebase for unused functions
+
+## Doc Cleanup Run — 2026-03-18
+- Deleted: 46 files (21 session debris + 25 stale one-offs)
+- Compressed: 39 files → 11 domain history files
+- Kept: 27 files (active reference docs, design specs, testing guides)
+
+| Doc | Domain | Summary |
+|-----|--------|---------|
+| WEEK_2_COMPLETE.md | general | Documentation Week 2 all 8 deliverables complete |
+| WEEK_4_COMPLETE.md | general | Documentation Week 4 launch prep complete |
+| implementation-complete.md | general | User Story 3.4 (school priority/status) deployed |
+| PROJECT_PROGRESS_TRACKER.md | general | MVP documentation project 100% complete |
+| FINAL_INTEGRATIONS_GUIDE.md | general | Week 4 component integration checklist done |
+| fit-score-recalculation-fix.md | general | Fit score bug fixed (missing trigger on player_details) |
+| AUDIT_REPORT_2026-02-02.md | general | Comprehensive MVP audit across all 4 main pages |
+| dashboard-consolidation-completion.md | ui | Dashboard grid consolidated into single responsive system |
+| dashboard-refactoring-summary.md | ui | Dashboard refactored to focused components, all tests passing |
+| interactions-detail-refactoring.md | ui | Interactions detail page refactored, improved test coverage |
+| document-form-refactor.md | ui | Document upload form aligned to add-form pattern |
+| dashboard-test-coverage-completion-report.md | testing | Dashboard test coverage target met |
+| interaction-detail-test-implementation-summary.md | testing | Interaction detail full test coverage achieved |
+| interactions-test-implementation-summary.md | testing | Interactions page 4860/4860 tests passing |
+| test-implementation-summary.md | testing | Add pages test coverage complete |
+| TECH-DEBT-COMPLETION-2026-01-28.md | infrastructure | Tech debt remediation phases 1–5 complete (90%) |
+| phase1-2-completion-status.md | infrastructure | Security hardening (RLS + Zod validation) deployed |
+| supabase-quick-wins-implementation.md | infrastructure | Supabase indexes, pooling, RLS patterns adopted |
+| MIGRATION_VALIDATION_GUIDE.md | infrastructure | Migration 022 family units applied successfully |
+| e2e-infrastructure-implementation-complete.md | e2e | 43+ skipped E2E tests fixed, CI/CD integration enabled |
+| e2e-solutions-delivered.md | e2e | E2E test credentials, seeding, and isolation resolved |
+| e2e-school-detail-implementation-summary.md | e2e | School detail E2E coverage from 40% to 75% |
+| story-1-1-email-verification-implementation.md | auth | Email verification flow implemented with OTP |
+| a11y-audit-summary.md | accessibility | School detail WCAG 2.1 AA audit — partial compliance, issues tracked |
+| ACCESSIBILITY_AUDIT_2026-02-02.md | accessibility | Full MVP accessibility audit — 14 issues found |
+| ACCESSIBILITY_AUDIT_SUMMARY.md | accessibility | Accessibility audit quick reference summary |
+| performance-results.md | performance | Performance optimization baseline and results documented |
+| iOS_SPEC_Phase6_* (7 files) | ios | Phase 6 iOS specs: Documents, Reports, Social features |
+| iOS_ARCHITECTURE_MIRRORING.md | ios | iOS/Nuxt architecture parallel patterns established |
+| FAMILY_CODE_IMPLEMENTATION.md | family | Family code generation and join flow implemented |
+| FAMILY_CONTEXT_FIXES_SUMMARY.md | family | Family context stale data bug fixed ($reset on athlete switch) |
+| IMPLEMENTATION_SUMMARY.md | family | Family unit system phases 1–4 foundations built |
+| STORY_3_4_COMPLETE.md | schools | School priority levels and recruiting status deployed |

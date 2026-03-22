@@ -1,7 +1,7 @@
 -- Help Center feedback table
 -- Records thumbs up/down votes on help pages for content quality tracking
 
-create table help_feedback (
+create table if not exists help_feedback (
   id          uuid primary key default gen_random_uuid(),
   page        text not null,
   helpful     boolean not null,
@@ -14,12 +14,14 @@ comment on column help_feedback.page is 'The /help/[slug] path that received fee
 comment on column help_feedback.helpful is 'true = thumbs up, false = thumbs down';
 
 -- Allow authenticated users to insert their own feedback
+drop policy if exists "Users can submit help feedback" on help_feedback;
 create policy "Users can submit help feedback"
   on help_feedback for insert
   to authenticated
   with check (user_id = auth.uid());
 
 -- Allow service role to read all feedback (for admin/analytics)
+drop policy if exists "Service role can read all help feedback" on help_feedback;
 create policy "Service role can read all help feedback"
   on help_feedback for select
   to service_role

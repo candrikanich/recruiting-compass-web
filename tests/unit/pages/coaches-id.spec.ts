@@ -21,7 +21,6 @@ const mockCoachData: Coach = {
   instagram_handle: "coachsmith",
   notes: "Excellent recruiter",
   last_contact_date: "2024-01-20",
-  responsiveness_score: 8.5,
   created_at: "2024-01-01",
   updated_at: "2024-01-20",
 };
@@ -114,10 +113,6 @@ describe("pages/coaches/[id].vue - Coach Detail Page", () => {
     it("should display social media handles", () => {
       expect(mockCoachData.twitter_handle).toBe("@coachsmith");
       expect(mockCoachData.instagram_handle).toBe("coachsmith");
-    });
-
-    it("should display responsiveness score if available", () => {
-      expect(mockCoachData.responsiveness_score).toBe(8.5);
     });
 
     it("should display last contact date", () => {
@@ -258,14 +253,6 @@ describe("pages/coaches/[id].vue - Coach Detail Page", () => {
       };
       expect(coachMinimal.twitter_handle).toBeNull();
       expect(coachMinimal.instagram_handle).toBeNull();
-    });
-
-    it("should handle null responsiveness score", () => {
-      const coachNoScore = {
-        ...mockCoachData,
-        responsiveness_score: null,
-      };
-      expect(coachNoScore.responsiveness_score).toBeNull();
     });
 
     it("should handle null last contact date", () => {

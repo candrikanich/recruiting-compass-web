@@ -1,6 +1,9 @@
 import { readFileSync } from "fs";
-import { join } from "path";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 import { getSupabaseAdmin, createTestAccounts } from "./helpers/supabase-admin";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const SEED_DATA = {
   schools: [
@@ -54,31 +57,31 @@ const SEED_DATA = {
     {
       first_name: "John",
       last_name: "Smith",
-      role: "Head Coach",
+      role: "head",
       email: "jsmith@duke.edu",
     },
     {
       first_name: "Mike",
       last_name: "Johnson",
-      role: "Recruiting Coordinator",
+      role: "recruiting",
       email: "mjohnson@duke.edu",
     },
     {
       first_name: "Sarah",
       last_name: "Williams",
-      role: "Head Coach",
+      role: "head",
       email: "swilliams@bc.edu",
     },
     {
       first_name: "Tom",
       last_name: "Brown",
-      role: "Assistant Coach",
+      role: "assistant",
       email: "tbrown@bc.edu",
     },
     {
       first_name: "David",
       last_name: "Martinez",
-      role: "Head Coach",
+      role: "head",
       email: "dmartinez@ufl.edu",
     },
   ],
@@ -127,6 +130,19 @@ async function seedDatabase() {
     console.log("👤 Creating test accounts...");
     await createTestAccounts();
 
+    // Resolve player user ID (required by schools.user_id NOT NULL constraint)
+    const { data: listData } = await supabase.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    });
+    const playerUser = listData?.users?.find(
+      (u) => u.email === "player@test.com",
+    );
+    if (!playerUser) {
+      throw new Error("player@test.com not found — cannot seed schools without user_id");
+    }
+    const playerUserId = playerUser.id;
+
     // Step 3: Seed schools
     console.log("🏫 Seeding schools...");
     const { data: schoolData, error: schoolError } = await supabase
@@ -134,6 +150,7 @@ async function seedDatabase() {
       .insert(
         SEED_DATA.schools.map((s) => ({
           ...s,
+          user_id: playerUserId,
           created_at: new Date().toISOString(),
         })),
       )

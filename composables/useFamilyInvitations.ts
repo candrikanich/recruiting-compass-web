@@ -1,5 +1,8 @@
 import { ref } from "vue";
 import { useAuthFetch } from "./useAuthFetch";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("family-invitations");
 
 export interface PendingInvitation {
   id: string;
@@ -23,7 +26,8 @@ export function useFamilyInvitations() {
         "/api/family/invitations",
       );
       invitations.value = data.invitations;
-    } catch {
+    } catch (err) {
+      logger.error("Failed to load invitations", err);
       error.value = "Failed to load invitations";
     } finally {
       loading.value = false;
@@ -36,7 +40,8 @@ export function useFamilyInvitations() {
     try {
       await $fetchAuth(`/api/family/invitations/${id}`, { method: "DELETE" });
       await fetchInvitations();
-    } catch {
+    } catch (err) {
+      logger.error("Failed to revoke invitation", err);
       error.value = "Failed to revoke invitation";
     } finally {
       loading.value = false;
@@ -58,6 +63,7 @@ export function useFamilyInvitations() {
       });
       await fetchInvitations();
     } catch (err) {
+      logger.error("Failed to resend invitation", err);
       error.value = "Failed to resend invitation";
       throw err;
     } finally {

@@ -28,9 +28,7 @@ const CSRF_EXEMPT_PREFIXES = [
   "/api/auth",
 ] as const;
 
-const CSRF_EXEMPT_EXACT_PATHS = [
-  "/api/athlete/fit-scores/recalculate-all",
-] as const;
+const CSRF_EXEMPT_EXACT_PATHS: string[] = [];
 
 const CSRF_EXEMPT_PATTERNS: Array<{ prefixes: string[]; suffix: string }> = [
   {
@@ -91,9 +89,6 @@ describe("CSRF middleware path exemptions", () => {
     it("exempts /api/auth/*", () => {
       expect(isExempt("/api/auth/login")).toBe(true);
     });
-    it("exempts fit-scores recalculate exact path", () => {
-      expect(isExempt("/api/athlete/fit-scores/recalculate-all")).toBe(true);
-    });
     it("exempts schools cascade-delete", () => {
       expect(isExempt("/api/schools/abc-123/cascade-delete")).toBe(true);
     });
@@ -125,11 +120,6 @@ describe("CSRF middleware path exemptions", () => {
     });
     it("does NOT exempt arbitrary paths containing 'schools'", () => {
       expect(isExempt("/api/admin/schools/export")).toBe(false);
-    });
-    it("does NOT exempt fit-scores partial path", () => {
-      expect(isExempt("/api/athlete/fit-scores/recalculate-all/extra")).toBe(
-        false,
-      );
     });
   });
 });

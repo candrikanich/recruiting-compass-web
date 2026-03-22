@@ -1,5 +1,8 @@
 import { ref } from "vue";
 import { debounce } from "~/utils/debounce";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("high-school-search");
 
 export interface NcesSchool {
   nces_id: string;
@@ -31,7 +34,8 @@ export const useHighSchoolSearch = (stateHint?: string) => {
       results.value = await $fetch<NcesSchool[]>(
         `/api/schools/high-school-search?${params.toString()}`,
       );
-    } catch {
+    } catch (err) {
+      logger.warn("High school search failed", err);
       error.value = "School search unavailable";
       results.value = [];
     } finally {

@@ -11,17 +11,12 @@ import {
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
-import { loginViaForm } from "../helpers/login";
-
 test.describe("Coach Detail Page - Comprehensive Coverage", () => {
   let coachesPage: CoachesPage;
   let schoolId: string;
 
   test.beforeEach(async ({ page }) => {
     coachesPage = new CoachesPage(page);
-
-    // Login
-    await loginViaForm(page, "player@test.com", "TestPass123!");
 
     // Create a test school
     const schoolName = generateUniqueSchoolName("Detail Test School");
@@ -269,7 +264,7 @@ test.describe("Coach Detail Page - Comprehensive Coverage", () => {
 
       // Reload page
       await page.reload();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Verify notes persisted
       const reloadedNotesSection = page
@@ -315,7 +310,7 @@ test.describe("Coach Detail Page - Comprehensive Coverage", () => {
 
       // Reload and verify cleared
       await page.reload();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       const clearedNotes = await page
         .locator('section:has-text("Notes"):not(:has-text("Private"))')
@@ -333,7 +328,7 @@ test.describe("Coach Detail Page - Comprehensive Coverage", () => {
     test("should display error when coach not found", async ({ page }) => {
       // Navigate to non-existent coach ID
       await page.goto("/coaches/non-existent-coach-id-12345");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Verify error state displayed
       const errorMessages = [
@@ -549,7 +544,7 @@ test.describe("Coach Detail Page - Comprehensive Coverage", () => {
 
         // Note: Loading state may be too fast to catch reliably
         // Just verify page eventually loads successfully
-        await page.waitForLoadState("networkidle");
+        await page.waitForLoadState("domcontentloaded");
         await expect(page.locator(`text=${coachData.firstName}`)).toBeVisible({
           timeout: 5000,
         });
@@ -638,7 +633,7 @@ test.describe("Coach Detail Page - Comprehensive Coverage", () => {
 
       // Reload and verify notes persisted
       await page.reload();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       const savedLongNotes = await page
         .locator('section:has-text("Notes"):not(:has-text("Private"))')

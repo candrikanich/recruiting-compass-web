@@ -255,7 +255,7 @@ describe("composables/useCoachFilters", () => {
         coaches,
         "john",
         "head",
-        "responsiveness",
+        "name",
       );
 
       expect(result).toHaveLength(1);

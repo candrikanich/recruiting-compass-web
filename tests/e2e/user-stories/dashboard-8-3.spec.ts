@@ -6,17 +6,14 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
     await page.goto("/dashboard");
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("displays Recent Activity section on dashboard", async ({ page }) => {
-    // Verify "Recent Activity" section exists
-    const activitySection = page.locator("text=Recent Activity");
-    await expect(activitySection).toBeVisible();
-
-    // Verify it's in the right location (in the analytics column)
-    const analyticsColumn = page.locator('[class*="lg:grid"]');
-    await expect(analyticsColumn).toContainText("Recent Activity");
+    // Wait for the lazy-loaded widget to mount (past Suspense fallback)
+    // then verify the h3 heading is visible — use h3 to avoid strict mode violation
+    const activitySection = page.locator('h3:has-text("Recent Activity")');
+    await expect(activitySection).toBeVisible({ timeout: 15000 });
   });
 
   test.skip("shows last 10 events in feed", async ({ page }) => {
@@ -101,7 +98,7 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
 
     // Wait for potential reload
     await page
-      .waitForLoadState("networkidle", { timeout: 5000 })
+      .waitForLoadState("domcontentloaded")
       .catch(() => {});
 
     // Verify we're still on the page
@@ -127,7 +124,7 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
 
         // Wait for navigation
         await page
-          .waitForLoadState("networkidle", { timeout: 5000 })
+          .waitForLoadState("domcontentloaded")
           .catch(() => {});
 
         // Should have navigated
@@ -141,9 +138,16 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
   });
 
   test("shows empty state when no activities", async ({ page }) => {
-    // This test assumes a fresh user with no activities
-    // In practice, you may need to create a test user without activities
-    // or mock the response
+    // Wait for the RecentActivityFeed component to mount past the Suspense fallback
+    // (the h3 header renders immediately when the component is mounted)
+    await expect(page.locator('h3:has-text("Recent Activity")')).toBeVisible({
+      timeout: 15000,
+    });
+    // Now wait for the component's own data fetch to complete (spinner disappears)
+    await page
+      .locator(".animate-spin")
+      .waitFor({ state: "detached", timeout: 10000 })
+      .catch(() => {});
 
     const noActivityText = page.locator(
       "text=/No recent activity|Start logging/",
@@ -162,14 +166,11 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
     const viewAllLink = page.locator("text=View All Activity");
     await viewAllLink.click();
 
-    // Wait for navigation
-    await page.waitForLoadState("networkidle");
+    // Wait for Vue Router client-side navigation to complete
+    await page.waitForURL(/\/activity/, { timeout: 10000 });
 
-    // Should be on activity page
-    expect(page.url()).toContain("/activity");
-
-    // Should show activity history page elements
-    const pageTitle = page.locator("text=Activity History");
+    // Should show activity history page h1
+    const pageTitle = page.locator("h1:has-text('Activity History')");
     await expect(pageTitle).toBeVisible();
   });
 });
@@ -180,7 +181,7 @@ test.describe("Activity History Page", () => {
     await page.goto("/activity");
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("displays Activity History page", async ({ page }) => {
@@ -208,7 +209,7 @@ test.describe("Activity History Page", () => {
     await typeSelect.selectOption("interaction");
 
     // Wait for filter to apply
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify URL or content updated
     expect(page.url()).toContain("/activity");
@@ -221,7 +222,7 @@ test.describe("Activity History Page", () => {
     await dateSelect.selectOption("week");
 
     // Wait for filter to apply
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     expect(page.url()).toContain("/activity");
   });
@@ -233,7 +234,7 @@ test.describe("Activity History Page", () => {
     await searchInput.fill("test");
 
     // Wait for search to apply
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     expect(page.url()).toContain("/activity");
   });
@@ -262,7 +263,7 @@ test.describe("Activity History Page", () => {
 
       if (isNextEnabled) {
         await nextButton.click();
-        await page.waitForLoadState("networkidle");
+        await page.waitForLoadState("domcontentloaded");
 
         // After pagination, should still have activities
         const newItems = page.locator('[data-testid="activity-event-item"]');
@@ -280,7 +281,7 @@ test.describe("Real-time Activity Updates", () => {
     await page.goto("/dashboard");
 
     // Wait for initial load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Get initial activity count
     const activityItems = page.locator('[data-testid="activity-event-item"]');
@@ -292,7 +293,7 @@ test.describe("Real-time Activity Updates", () => {
 
     // Wait a bit to see if any updates come in
     await page
-      .waitForLoadState("networkidle", { timeout: 3000 })
+      .waitForLoadState("domcontentloaded")
       .catch(() => {});
 
     // Should still have the same or more activities

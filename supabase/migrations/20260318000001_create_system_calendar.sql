@@ -12,10 +12,17 @@ CREATE TABLE IF NOT EXISTS system_calendar (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Add unique constraint to prevent duplicate entries
-ALTER TABLE system_calendar
-ADD CONSTRAINT system_calendar_unique_label_start_season
-UNIQUE (label, start_date, season_year);
+-- Add unique constraint to prevent duplicate entries (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'system_calendar_unique_label_start_season'
+  ) THEN
+    ALTER TABLE system_calendar
+      ADD CONSTRAINT system_calendar_unique_label_start_season
+      UNIQUE (label, start_date, season_year);
+  END IF;
+END $$;
 
 -- Add indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_system_calendar_season_year ON system_calendar(season_year);
@@ -26,5 +33,6 @@ CREATE INDEX IF NOT EXISTS idx_system_calendar_start_date ON system_calendar(sta
 ALTER TABLE system_calendar ENABLE ROW LEVEL SECURITY;
 
 -- Allow read access to all authenticated users
+DROP POLICY IF EXISTS "system_calendar_read" ON system_calendar;
 CREATE POLICY "system_calendar_read" ON system_calendar
 FOR SELECT USING (auth.role() = 'authenticated');

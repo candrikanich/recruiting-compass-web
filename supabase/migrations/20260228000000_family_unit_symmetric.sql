@@ -7,14 +7,30 @@
 ALTER TABLE family_units
   ADD COLUMN IF NOT EXISTS created_by_user_id uuid REFERENCES users(id);
 
--- 2. Backfill created_by_user_id from player_user_id for existing rows
-UPDATE family_units
-  SET created_by_user_id = player_user_id
-  WHERE created_by_user_id IS NULL AND player_user_id IS NOT NULL;
+-- 2. Backfill created_by_user_id from player_user_id for existing rows (guard: column may be gone)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'family_units' AND column_name = 'player_user_id'
+  ) THEN
+    UPDATE family_units
+      SET created_by_user_id = player_user_id
+      WHERE created_by_user_id IS NULL AND player_user_id IS NOT NULL;
+  END IF;
+END $$;
 
--- 3. Make created_by_user_id NOT NULL now that it's backfilled
-ALTER TABLE family_units
-  ALTER COLUMN created_by_user_id SET NOT NULL;
+-- 3. Make created_by_user_id NOT NULL now that it's backfilled (guard: no-op if already NOT NULL)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'family_units' AND column_name = 'created_by_user_id'
+      AND is_nullable = 'YES'
+  ) THEN
+    ALTER TABLE family_units ALTER COLUMN created_by_user_id SET NOT NULL;
+  END IF;
+END $$;
 
 -- 4. Drop player_user_id (RLS policies that reference it will be rebuilt below)
 ALTER TABLE family_units
@@ -77,6 +93,11 @@ CREATE POLICY "family_units_delete" ON family_units
 
 -- 8. RLS: family_invitations
 ALTER TABLE family_invitations ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "family_invitations_select" ON family_invitations;
+DROP POLICY IF EXISTS "family_invitations_insert" ON family_invitations;
+DROP POLICY IF EXISTS "family_invitations_update" ON family_invitations;
+DROP POLICY IF EXISTS "family_invitations_delete" ON family_invitations;
 
 -- Any family member can view invitations for their family
 CREATE POLICY "family_invitations_select" ON family_invitations

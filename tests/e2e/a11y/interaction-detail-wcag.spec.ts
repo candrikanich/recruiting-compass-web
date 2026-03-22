@@ -6,7 +6,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to interactions and get an interaction ID
     await page.goto("/interactions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const firstInteraction = page.locator('button:has-text("View")').first();
     const hasInteraction = await firstInteraction
@@ -29,7 +29,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
       page,
     }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Start from top of page
       await page.keyboard.press("Tab");
@@ -64,7 +64,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
       page,
     }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Find Export button
       const exportButton = page.locator('button:has-text("Export")');
@@ -98,7 +98,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
 
     test("focus order is logical and sequential", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Expected logical order: Export → Delete → School link → Coach link (if present)
       const focusOrder: string[] = [];
@@ -129,7 +129,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
 
     test("can activate buttons via Enter key", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Focus Export button
       const exportButton = page.locator('button:has-text("Export")');
@@ -145,7 +145,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
 
     test("can activate buttons via Space key", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Focus Delete button
       const deleteButton = page.locator('button:has-text("Delete")');
@@ -167,7 +167,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
 
     test("can navigate links via keyboard", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Find school link (if present)
       const schoolLink = page.locator('a[href*="/schools/"]').first();
@@ -195,7 +195,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
   test.describe("Screen Reader Compatibility", () => {
     test("uses semantic HTML for main structure", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check for semantic elements
       const hasH1 = await page.locator("h1").count();
@@ -214,7 +214,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
 
     test("buttons have accessible text content", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Export button
       const exportButton = page.locator('button:has-text("Export")');
@@ -229,7 +229,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
 
     test("links have descriptive text", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check all links have text content
       const links = await page.locator("a").all();
@@ -247,7 +247,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
       page,
     }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check for main landmark
       const mainLandmarks = await page.locator('[role="main"], main').count();
@@ -260,7 +260,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
 
     test("form controls are properly labeled", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // If there are any input/select/textarea elements, they should be labeled
       const inputs = await page.locator("input, select, textarea").all();
@@ -291,7 +291,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
   test.describe("Color Contrast", () => {
     test("text has sufficient contrast ratio (WCAG AA)", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check heading contrast
       const h1 = page.locator("h1").first();
@@ -326,7 +326,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
 
     test("badges have sufficient contrast", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Find badge elements
       const badges = page.locator(
@@ -351,7 +351,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
 
     test("links have sufficient contrast", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check links (typically blue-600)
       const links = await page.locator("a").all();
@@ -381,7 +381,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
       page,
     }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check Export button
       const exportButton = page.locator('button:has-text("Export")');
@@ -407,7 +407,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
 
     test("links meet minimum touch target size", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       const links = await page.locator("a").all();
 
@@ -426,7 +426,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
 
     test("touch targets have adequate spacing", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check spacing between Export and Delete buttons
       const exportButton = page.locator('button:has-text("Export")');
@@ -448,7 +448,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
   test.describe("Focus Management", () => {
     test("focus is not trapped in modal dialogs", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // This test verifies focus can move throughout the page
       // If there are no modals, focus should move freely
@@ -465,7 +465,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
 
     test("no focus outline-solid suppression", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check that focus:outline-hidden is not used globally
       const bodyOutline = await page.evaluate(() => {
@@ -479,7 +479,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
 
     test("focus is visible on all interactive elements", async ({ page }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Tab to each button and verify focus is visible
       const buttons = await page.locator("button").all();
@@ -512,7 +512,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
       await page.setViewportSize({ width: 375, height: 667 }); // iPhone SE
 
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Verify main content is visible
       await expect(page.locator("h1")).toBeVisible();
@@ -535,7 +535,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
       await page.setViewportSize({ width: 768, height: 1024 }); // iPad
 
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Verify content scales appropriately
       await expect(page.locator("h1")).toBeVisible();
@@ -546,7 +546,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
       page,
     }) => {
       await page.goto(`/interactions/${interactionId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Get initial viewport
       const initialViewport = page.viewportSize();

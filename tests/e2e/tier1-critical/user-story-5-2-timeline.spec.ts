@@ -11,7 +11,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     await page.goto("/");
     // Assuming auth is required, wait for redirect or check if logged in
     // Adjust based on actual auth flow
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("Scenario 1: Parent views school-specific timeline", async ({
@@ -60,7 +60,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     );
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify coach name is displayed
     const headerText = page.locator("h1");
@@ -313,7 +313,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
       `/coaches/${testCoachId}/communications`,
     );
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Look for summary stats grid
     const statsGrid = page.locator(

@@ -430,7 +430,7 @@ describe("pages/schools/[id]/coaches.vue", () => {
       // Set filters
       await wrapper.find("#search").setValue("John");
       await wrapper.find("#roleFilter").setValue("head");
-      await wrapper.find("#sortFilter").setValue("responsiveness");
+      await wrapper.find("#sortFilter").setValue("lastContact");
       await flushPromises();
 
       // Click clear

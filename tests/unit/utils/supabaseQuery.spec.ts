@@ -329,7 +329,7 @@ describe("supabaseQuery utilities", () => {
 
   describe("queryUpdate", () => {
     it("should update records with filters", async () => {
-      const mockData = [{ id: "1", responsiveness_score: 8.5 }];
+      const mockData = [{ id: "1", email: "updated@example.com" }];
       mockSupabase.update.mockReturnThis();
       mockSupabase.eq.mockReturnThis();
       mockSupabase.select.mockResolvedValueOnce({
@@ -339,7 +339,7 @@ describe("supabaseQuery utilities", () => {
 
       const result = await queryUpdate(
         "coaches",
-        { responsiveness_score: 8.5 },
+        { email: "updated@example.com" },
         { id: "1" },
       );
 

@@ -1138,10 +1138,10 @@ export const testAthletes = {
 };
 
 // ============================================================================
-// SCHOOL & FIT SCORE FIXTURES
+// SCHOOL FIXTURES
 // ============================================================================
 
-export const testSchoolsWithFitScores = {
+export const testSchools = {
   // Reach school - D1 power program
   reach: {
     id: "school-reach-1",
@@ -1149,36 +1149,7 @@ export const testSchoolsWithFitScores = {
     division: "DI",
     conference: "SEC",
     location: "Nashville, TN",
-    priority: "A",
-    fit_score: 48,
-    fit_tier: "unlikely",
-    fit_score_data: {
-      athletic: 35, // 0-40 scale
-      academic: 22, // 0-25 scale (strong academics)
-      opportunity: 8, // 0-20 scale (very competitive roster)
-      personal: 12, // 0-15 scale
-    },
     roster_depth: "stacked",
-    scholarship_type: "full",
-  },
-
-  // High reach - D1 competitive
-  highReach: {
-    id: "school-reach-2",
-    name: "Texas Christian University",
-    division: "DI",
-    conference: "Big 12",
-    location: "Fort Worth, TX",
-    priority: "A",
-    fit_score: 55,
-    fit_tier: "reach",
-    fit_score_data: {
-      athletic: 28,
-      academic: 20,
-      opportunity: 10,
-      personal: 12,
-    },
-    roster_depth: "competitive",
     scholarship_type: "full",
   },
 
@@ -1189,15 +1160,6 @@ export const testSchoolsWithFitScores = {
     division: "DI",
     conference: "Missouri Valley",
     location: "Dallas, TX",
-    priority: "A",
-    fit_score: 76,
-    fit_tier: "match",
-    fit_score_data: {
-      athletic: 32,
-      academic: 22,
-      opportunity: 16,
-      personal: 14,
-    },
     roster_depth: "moderate",
     scholarship_type: "partial",
   },
@@ -1209,76 +1171,7 @@ export const testSchoolsWithFitScores = {
     division: "DII",
     conference: "Lone Star",
     location: "San Angelo, TX",
-    priority: "B",
-    fit_score: 88,
-    fit_tier: "safety",
-    fit_score_data: {
-      athletic: 38,
-      academic: 24,
-      opportunity: 18,
-      personal: 13,
-    },
     roster_depth: "open",
-    scholarship_type: "partial",
-  },
-
-  // D3 option
-  d3Option: {
-    id: "school-d3-1",
-    name: "Trinity University",
-    division: "DIII",
-    conference: "SCAC",
-    location: "San Antonio, TX",
-    priority: "B",
-    fit_score: 82,
-    fit_tier: "match",
-    fit_score_data: {
-      athletic: 35,
-      academic: 24,
-      opportunity: 15,
-      personal: 14,
-    },
-    roster_depth: "moderate",
-    scholarship_type: "none", // D3 no athletic scholarships
-  },
-
-  // JUCO option
-  jucoOption: {
-    id: "school-juco-1",
-    name: "San Jacinto College",
-    division: "JUCO",
-    conference: "Region XIV",
-    location: "Pasadena, TX",
-    priority: "C",
-    fit_score: 92,
-    fit_tier: "safety",
-    fit_score_data: {
-      athletic: 38,
-      academic: 25,
-      opportunity: 19,
-      personal: 13,
-    },
-    roster_depth: "open",
-    scholarship_type: "partial",
-  },
-
-  // NAIA option
-  naiaOption: {
-    id: "school-naia-1",
-    name: "Oklahoma City University",
-    division: "NAIA",
-    conference: "Sooner Athletic",
-    location: "Oklahoma City, OK",
-    priority: "B",
-    fit_score: 79,
-    fit_tier: "match",
-    fit_score_data: {
-      athletic: 33,
-      academic: 22,
-      opportunity: 16,
-      personal: 12,
-    },
-    roster_depth: "moderate",
     scholarship_type: "partial",
   },
 };
@@ -1443,28 +1336,6 @@ export const recoveryScenarios = {
     },
   },
 
-  // Targeting unrealistic level
-  unrealisticTargets: {
-    trigger: "fit_gap",
-    athlete_id: "athlete-overreach",
-    trigger_date: "2026-01-15",
-    details: {
-      average_fit_score: 42,
-      schools_at_reach_or_unlikely: 18,
-      schools_at_match_or_safety: 0,
-    },
-    recovery_plan: {
-      title: "Target School Realignment",
-      steps: [
-        'Get honest feedback from coaches: "What level fits me?"',
-        "Accept assessment without arguing - coaches know their rosters",
-        "Rebuild list to realistic tier: 20 schools with fit score 70-85",
-        "Execute harder at realistic tier - more frequent contact",
-        "Take visits to realistic options - build real relationships",
-      ],
-      duration_days: 21,
-    },
-  },
 };
 
 // ============================================================================
@@ -1783,83 +1654,6 @@ export const statusScoreTestCases = {
   },
 };
 
-// ============================================================================
-// FIT SCORE CALCULATION FIXTURES
-// ============================================================================
-
-export const fitScoreTestCases = {
-  // Strong fit - all dimensions high
-  strongFit: {
-    input: {
-      athleticFit: 36, // out of 40
-      academicFit: 22, // out of 25
-      opportunityFit: 17, // out of 20
-      personalFit: 13, // out of 15
-    },
-    expected: {
-      score: 88,
-      tier: "safety",
-    },
-  },
-
-  // Match fit
-  matchFit: {
-    input: {
-      athleticFit: 30,
-      academicFit: 20,
-      opportunityFit: 14,
-      personalFit: 11,
-    },
-    expected: {
-      score: 75,
-      tier: "match",
-    },
-  },
-
-  // Reach fit
-  reachFit: {
-    input: {
-      athleticFit: 24,
-      academicFit: 18,
-      opportunityFit: 10,
-      personalFit: 10,
-    },
-    expected: {
-      score: 62,
-      tier: "reach",
-    },
-  },
-
-  // Unlikely fit
-  unlikelyFit: {
-    input: {
-      athleticFit: 16,
-      academicFit: 12,
-      opportunityFit: 8,
-      personalFit: 6,
-    },
-    expected: {
-      score: 42,
-      tier: "unlikely",
-    },
-  },
-
-  // Partial data - missing opportunity and personal
-  partialData: {
-    input: {
-      athleticFit: 32,
-      academicFit: 20,
-      opportunityFit: null,
-      personalFit: null,
-    },
-    expected: {
-      score: 52, // Only athletic + academic calculated, scaled appropriately
-      tier: "reach",
-      missing_dimensions: ["opportunity", "personal"],
-      data_complete: false,
-    },
-  },
-};
 
 // ============================================================================
 // EXPORT ALL FIXTURES
@@ -1881,8 +1675,8 @@ export const timelineTestData = {
   // Athletes
   athletes: testAthletes,
 
-  // Schools with fit scores
-  schools: testSchoolsWithFitScores,
+  // Schools
+  schools: testSchools,
 
   // Suggestions
   suggestions: testSuggestions,
@@ -1902,7 +1696,6 @@ export const timelineTestData = {
   // Test cases
   testCases: {
     statusScore: statusScoreTestCases,
-    fitScore: fitScoreTestCases,
   },
 };
 

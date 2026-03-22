@@ -4,7 +4,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to timeline (assumes user is authenticated)
     await page.goto("/timeline");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("Scenario 1: Parent views timeline with current phase info", async ({
@@ -143,7 +143,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
   }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // All four guidance sections should be visible
     await expect(page.locator("text=What Matters Right Now")).toBeVisible();
@@ -174,7 +174,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
   }) => {
     // Set desktop viewport
     await page.setViewportSize({ width: 1280, height: 1024 });
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // All four sections should be visible
     await expect(page.locator("text=What Matters Right Now")).toBeVisible();

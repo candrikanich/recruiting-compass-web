@@ -175,6 +175,7 @@ export const useAuth = () => {
     } catch (err: unknown) {
       const authError = err instanceof Error ? err : new Error("Login failed");
       error.value = authError;
+      logger.error("[useAuth] Login failed", authError.message);
       throw authError;
     } finally {
       loading.value = false;
@@ -207,6 +208,7 @@ export const useAuth = () => {
     } catch (err: unknown) {
       const authError = err instanceof Error ? err : new Error("Logout failed");
       error.value = authError;
+      logger.error("[useAuth] Logout failed", authError.message);
       throw authError;
     } finally {
       loading.value = false;
@@ -271,6 +273,7 @@ export const useAuth = () => {
     } catch (err: unknown) {
       const authError = err instanceof Error ? err : new Error("Signup failed");
       error.value = authError;
+      logger.error("[useAuth] Signup failed", authError.message);
       throw authError;
     } finally {
       loading.value = false;

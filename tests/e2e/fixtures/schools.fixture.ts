@@ -369,7 +369,8 @@ export const schoolHelpers = {
    */
   async navigateToSchools(page) {
     await page.goto("/schools");
-    await page.waitForLoadState("networkidle");
+    await page.waitForURL("/schools");
+    await page.waitForLoadState("domcontentloaded");
   },
 
   /**
@@ -378,10 +379,13 @@ export const schoolHelpers = {
   async createSchool(page, schoolData) {
     // Navigate directly to the new school form (avoids needing nav header to be visible)
     await page.goto("/schools/new");
-    await page.waitForLoadState("networkidle");
+    await page.waitForURL("/schools/new");
+    await page.waitForLoadState("domcontentloaded");
 
     // Disable autocomplete to enable manual form entry (autocomplete is on by default)
     const autocompleteToggle = page.locator(schoolSelectors.autocompleteToggle).first();
+    // Wait for Vue to mount before checking checkbox state
+    await autocompleteToggle.waitFor({ state: "visible", timeout: 10000 });
     const isChecked = await autocompleteToggle.isChecked().catch(() => false);
     if (isChecked) {
       await autocompleteToggle.uncheck();
@@ -442,7 +446,7 @@ export const schoolHelpers = {
    */
   async waitForSchoolDetailLoad(page) {
     await page.waitForSelector(schoolSelectors.schoolName, { timeout: 10000 });
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   },
 
   /**
@@ -466,7 +470,7 @@ export const schoolHelpers = {
    */
   async changeSchoolStatus(page, schoolId, newStatus) {
     await page.goto(`/schools/${schoolId}`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Use getByLabel to find the status select (has sr-only label "School status")
     const statusSelect = page.getByLabel("School status");
@@ -475,7 +479,7 @@ export const schoolHelpers = {
       () => !document.getElementById("school-status")?.hasAttribute("disabled"),
     );
     await statusSelect.selectOption(newStatus);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   },
 
   /**
@@ -483,7 +487,7 @@ export const schoolHelpers = {
    */
   async addCoachToSchool(page, schoolId, coachData) {
     await page.goto(`/schools/${schoolId}/coaches`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await page.click('button:has-text("Add Coach")');
     // Coach form renders inline (v-if) — wait for it to appear
@@ -507,6 +511,6 @@ export const schoolHelpers = {
     }
 
     await page.click('[data-testid="add-coach-button"]');
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   },
 };

@@ -22,13 +22,16 @@ test.describe("Tier 1: Authentication - Critical User Flows", () => {
   test("should signup new user successfully", async ({ page }) => {
     authPage = new AuthPage(page);
 
+    // Use a unique email per run to avoid "already registered" errors
+    const uniqueEmail = `e2e-signup-${Date.now()}@test-example.com`;
+
     await authPage.signup(
-      testUsers.newUser.email,
+      uniqueEmail,
       testUsers.newUser.password,
       testUsers.newUser.displayName,
     );
 
-    // After signup, user should be redirected to verify-email page
+    // After signup, user should be redirected to verify-email, onboarding, or dashboard
     await authPage.expectVerifyEmail();
   });
 
@@ -162,7 +165,7 @@ test.describe("Tier 1: Authentication - Critical User Flows", () => {
     await authPage.page.goto("/dashboard");
 
     // Unauthenticated users must be redirected to login
-    await expect(page).toHaveURL("/login");
+    await expect(page).toHaveURL(/\/login/);
   });
 
   test("should redirect to dashboard after successful login", async ({

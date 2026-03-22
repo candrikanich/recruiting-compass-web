@@ -14,7 +14,6 @@ describe("Coach Analytics - Complex Calculations", () => {
     twitter_handle: "@coachsmith",
     instagram_handle: "coachsmith",
     notes: "",
-    responsiveness_score: 75,
     last_contact_date: new Date().toISOString(),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -36,79 +35,6 @@ describe("Coach Analytics - Complex Calculations", () => {
     attachments: [],
     created_at: new Date().toISOString(),
     ...overrides,
-  });
-
-  describe("Responsiveness Score Calculation", () => {
-    it("should calculate responsiveness from interaction ratio", () => {
-      const interactions = [
-        createMockInteraction({ direction: "outbound" }),
-        createMockInteraction({ id: "interaction-2", direction: "outbound" }),
-        createMockInteraction({ id: "interaction-3", direction: "inbound" }),
-        createMockInteraction({ id: "interaction-4", direction: "inbound" }),
-      ];
-
-      const inbound = interactions.filter(
-        (i) => i.direction === "inbound",
-      ).length;
-      const outbound = interactions.filter(
-        (i) => i.direction === "outbound",
-      ).length;
-      const responseRate = outbound > 0 ? (inbound / outbound) * 100 : 0;
-
-      expect(responseRate).toBe(100); // 2 inbound / 2 outbound = 100%
-    });
-
-    it("should handle zero outbound interactions", () => {
-      const interactions = [
-        createMockInteraction({ direction: "inbound" }),
-        createMockInteraction({ id: "interaction-2", direction: "inbound" }),
-      ];
-
-      const outbound = interactions.filter(
-        (i) => i.direction === "outbound",
-      ).length;
-      const responseRate = outbound > 0 ? 100 : 0;
-
-      expect(responseRate).toBe(0); // No outbound = 0% rate (can't measure)
-    });
-
-    it("should cap responsiveness score at 100%", () => {
-      const interactions = [
-        createMockInteraction({ direction: "outbound" }),
-        createMockInteraction({ id: "interaction-2", direction: "inbound" }),
-        createMockInteraction({ id: "interaction-3", direction: "inbound" }),
-      ];
-
-      const inbound = interactions.filter(
-        (i) => i.direction === "inbound",
-      ).length;
-      const outbound = interactions.filter(
-        (i) => i.direction === "outbound",
-      ).length;
-      const responseRate = Math.min((inbound / outbound) * 100, 100);
-
-      expect(responseRate).toBe(100);
-    });
-
-    it("should calculate partial responsiveness", () => {
-      const interactions = [
-        createMockInteraction({ direction: "outbound" }),
-        createMockInteraction({ id: "interaction-2", direction: "outbound" }),
-        createMockInteraction({ id: "interaction-3", direction: "outbound" }),
-        createMockInteraction({ id: "interaction-4", direction: "inbound" }),
-      ];
-
-      const inbound = interactions.filter(
-        (i) => i.direction === "inbound",
-      ).length;
-      const outbound = interactions.filter(
-        (i) => i.direction === "outbound",
-      ).length;
-      const responseRate = (inbound / outbound) * 100;
-
-      expect(responseRate).toBe(33.33333333333333); // 1/3
-      expect(Math.round(responseRate)).toBe(33);
-    });
   });
 
   describe("Trend Analysis", () => {
@@ -305,36 +231,6 @@ describe("Coach Analytics - Complex Calculations", () => {
     });
   });
 
-  describe("Coach Ranking by Responsiveness", () => {
-    it("should rank coaches by responsiveness score", () => {
-      const coaches = [
-        createMockCoach({ id: "coach-1", responsiveness_score: 85 }),
-        createMockCoach({ id: "coach-2", responsiveness_score: 92 }),
-        createMockCoach({ id: "coach-3", responsiveness_score: 65 }),
-      ];
-
-      const sorted = [...coaches].sort(
-        (a, b) => b.responsiveness_score - a.responsiveness_score,
-      );
-
-      expect(sorted[0].id).toBe("coach-2"); // 92
-      expect(sorted[1].id).toBe("coach-1"); // 85
-      expect(sorted[2].id).toBe("coach-3"); // 65
-    });
-
-    it("should categorize responsiveness levels", () => {
-      const scores = [95, 70, 35];
-
-      const levels = scores.map((score) => {
-        if (score >= 80) return "High";
-        if (score >= 60) return "Medium";
-        return "Low";
-      });
-
-      expect(levels).toEqual(["High", "Medium", "Low"]);
-    });
-  });
-
   describe("Communication Metrics", () => {
     it("should count interactions by type", () => {
       const interactions = [
@@ -388,37 +284,5 @@ describe("Coach Analytics - Complex Calculations", () => {
     });
   });
 
-  describe("School Comparison", () => {
-    it("should rank coaches within a school", () => {
-      const coaches = [
-        createMockCoach({ responsiveness_score: 78 }),
-        createMockCoach({ id: "coach-2", responsiveness_score: 92 }),
-        createMockCoach({ id: "coach-3", responsiveness_score: 65 }),
-      ];
-
-      const ranked = [...coaches].sort(
-        (a, b) => b.responsiveness_score - a.responsiveness_score,
-      );
-
-      expect(ranked[0].responsiveness_score).toBe(92);
-      expect(ranked[ranked.length - 1].responsiveness_score).toBe(65);
-    });
-
-    it("should identify high-touch vs low-touch coaching staffs", () => {
-      const coaches = [
-        createMockCoach({ responsiveness_score: 88 }),
-        createMockCoach({ id: "coach-2", responsiveness_score: 85 }),
-        createMockCoach({ id: "coach-3", responsiveness_score: 80 }),
-      ];
-
-      const avgScore =
-        coaches.reduce((sum, c) => sum + c.responsiveness_score, 0) /
-        coaches.length;
-
-      const touchType = avgScore >= 80 ? "high-touch" : "low-touch";
-
-      expect(touchType).toBe("high-touch");
-      expect(avgScore).toBeGreaterThan(80);
-    });
-  });
 });
+

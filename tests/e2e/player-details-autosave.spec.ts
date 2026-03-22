@@ -5,7 +5,7 @@ test.describe("Player Details Auto-Save", () => {
     // Navigate to player details page
     // Note: In a real test, you'd login first, but for now we assume auth is set up
     await page.goto("/settings/player-details");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("should display player details page", async ({ page }) => {

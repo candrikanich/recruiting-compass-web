@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   isValidFamilyCodeFormat,
   checkRateLimit,
+  generateFamilyCode,
 } from "~/server/utils/familyCode";
 
 describe("familyCode utilities", () => {
@@ -58,6 +59,95 @@ describe("familyCode utilities", () => {
       }
       // 6th attempt should be blocked
       expect(checkRateLimit(ip)).toBe(false);
+    });
+
+    it("resets rate limit and allows request when resetAt time has passed", () => {
+      const ip = `reset-test-${Math.random()}`;
+
+      // Exhaust the 5 allowed attempts using real Date.now()
+      for (let i = 0; i < 5; i++) {
+        checkRateLimit(ip);
+      }
+      // Confirm it's now blocked
+      expect(checkRateLimit(ip)).toBe(false);
+
+      // Advance time beyond the 5-minute window (5 * 60 * 1000 ms)
+      const future = Date.now() + 6 * 60 * 1000;
+      const dateSpy = vi.spyOn(Date, "now").mockReturnValue(future);
+
+      try {
+        // Should reset and allow again
+        expect(checkRateLimit(ip)).toBe(true);
+      } finally {
+        dateSpy.mockRestore();
+      }
+    });
+  });
+
+  describe("generateFamilyCode", () => {
+    it("returns a FAM-XXXXXX code when no collision exists", async () => {
+      const mockSupabase = {
+        from: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({ data: null }),
+            }),
+          }),
+        }),
+      } as any;
+
+      const code = await generateFamilyCode(mockSupabase);
+
+      expect(code).toMatch(/^FAM-[A-Z0-9]{6}$/);
+    });
+
+    it("retries on collision and returns code on 5th attempt", async () => {
+      const collision = { data: { id: "existing-family" } };
+      const noCollision = { data: null };
+
+      const singleMock = vi
+        .fn()
+        .mockResolvedValueOnce(collision)
+        .mockResolvedValueOnce(collision)
+        .mockResolvedValueOnce(collision)
+        .mockResolvedValueOnce(collision)
+        .mockResolvedValueOnce(noCollision);
+
+      const mockSupabase = {
+        from: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: singleMock,
+            }),
+          }),
+        }),
+      } as any;
+
+      const code = await generateFamilyCode(mockSupabase);
+
+      expect(code).toMatch(/^FAM-[A-Z0-9]{6}$/);
+      expect(singleMock).toHaveBeenCalledTimes(5);
+    });
+
+    it("throws when all 5 attempts result in collisions", async () => {
+      const collision = { data: { id: "existing-family" } };
+
+      const singleMock = vi.fn().mockResolvedValue(collision);
+
+      const mockSupabase = {
+        from: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: singleMock,
+            }),
+          }),
+        }),
+      } as any;
+
+      await expect(generateFamilyCode(mockSupabase)).rejects.toThrow(
+        "Failed to generate unique family code",
+      );
+      expect(singleMock).toHaveBeenCalledTimes(5);
     });
   });
 });

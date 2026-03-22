@@ -60,19 +60,17 @@ describe("schoolBadges", () => {
   });
 
   describe("getFitScoreBadgeClass", () => {
-    it("returns emerald for scores >= 70", () => {
+    it("returns emerald class for score >= 70", () => {
       expect(getFitScoreBadgeClass(70)).toBe("bg-emerald-100 text-emerald-700");
-      expect(getFitScoreBadgeClass(100)).toBe(
-        "bg-emerald-100 text-emerald-700",
-      );
+      expect(getFitScoreBadgeClass(100)).toBe("bg-emerald-100 text-emerald-700");
     });
 
-    it("returns orange for scores >= 50 and < 70", () => {
-      expect(getFitScoreBadgeClass(50)).toBe("bg-orange-100 text-orange-700");
+    it("returns orange class for score 50-69", () => {
       expect(getFitScoreBadgeClass(69)).toBe("bg-orange-100 text-orange-700");
+      expect(getFitScoreBadgeClass(50)).toBe("bg-orange-100 text-orange-700");
     });
 
-    it("returns red for scores < 50", () => {
+    it("returns red class for score < 50", () => {
       expect(getFitScoreBadgeClass(49)).toBe("bg-red-100 text-red-700");
       expect(getFitScoreBadgeClass(0)).toBe("bg-red-100 text-red-700");
     });

@@ -24,7 +24,7 @@ This project uses a dual codebase: a Nuxt/TypeScript web app and a SwiftUI iOS a
 ## Core Stack
 
 - Nuxt 3 (Vue 3) with file-based routing
-- Pinia for state management (no direct mutations in components)
+- Pinia for state management (no direct mutations in components — bypasses devtools tracking, makes state changes untraceable)
 - Supabase PostgreSQL + Auth + Storage
 - Nitro for API endpoints (`/server/api/**`)
 - TypeScript strict mode, TailwindCSS
@@ -78,7 +78,7 @@ Organize by action: 1) Pending Confirmations (amber), 2) Received Invitations (b
 
 ## Supabase & Database
 
-**Client:** Use `useSupabase()` singleton. Select specific columns, filter with `.eq()`.
+**Client:** Use `useSupabase()` singleton — do NOT create new clients per request (wastes connections). Select specific columns, filter with `.eq()`.
 
 **Schema:** Add columns as nullable, separate migration. Use CHECK constraints for enums (not PG enums).
 
@@ -106,7 +106,7 @@ export default defineEventHandler(async (event) => {
 
 **Context name convention:** Match the API route path — e.g., `"tasks"`, `"family/members"`, `"auth/verify-email"`.
 
-**Never expose raw `error.message`** in `statusMessage` — use generic strings.
+**Never expose raw `error.message`** in `statusMessage` — leaks internal stack details, DB schema, and file paths to clients.
 
 **Log levels:**
 - `logger.error` — unexpected failures (DB errors, unhandled exceptions)
@@ -127,9 +127,9 @@ export default defineEventHandler(async (event) => {
 
 ## Common Patterns
 
-- **State mutation**: Only in Pinia actions, never in components
-- **Error handling**: Always try/catch async operations, set error state explicitly
-- **N+1 queries**: Use `.select()` with specific columns, batch fetch related data, cache in stores
+- **State mutation**: Only in Pinia actions, never in components — keeps state changes auditable and devtools-visible
+- **Error handling**: Always try/catch async operations, set error state explicitly — silent failures leave users on broken UI with no feedback
+- **N+1 queries**: Use `.select()` with specific columns, batch fetch related data, cache in stores — unbounded queries on lists will kill performance at scale
 - **Component auto-import**: No import needed for `/components/**`
 - **Supabase connection**: Verify `.env.local`, check project isn't paused
 

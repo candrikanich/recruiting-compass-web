@@ -34,7 +34,7 @@ export class PerformancePage extends BasePage {
     }
 
     await this.clickByText("Log Metric");
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async expectMetricLogged(metricType: string, value: string) {

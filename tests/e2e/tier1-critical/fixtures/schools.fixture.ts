@@ -106,7 +106,8 @@ export const schoolSelectors = {
 export const schoolHelpers = {
   async navigateToSchools(page: Page) {
     await page.goto("/schools");
-    await page.waitForLoadState("networkidle");
+    await page.waitForURL("/schools");
+    await page.waitForLoadState("domcontentloaded");
   },
 
   async navigateToSchool(page: Page, schoolId: string) {
@@ -114,15 +115,19 @@ export const schoolHelpers = {
     // — a fresh page.goto triggers a new API request that can 429 immediately after creation
     if (!page.url().includes(`/schools/${schoolId}`)) {
       await page.goto(`/schools/${schoolId}`);
+      await page.waitForURL(`/schools/${schoolId}`);
     }
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   },
 
   async fillSchoolForm(page: Page, data: Partial<SchoolData>) {
     if (data.name) {
-      // Use getByLabel for robust matching regardless of placeholder text changes
-      const nameField = page.getByLabel("School Name", { exact: false });
-      await nameField.waitFor({ state: "visible" });
+      // Wait for the manual entry input (placeholder appears after unchecking autocomplete toggle)
+      const nameField = page
+        .getByPlaceholder("e.g., University of Florida")
+        .or(page.getByLabel("School Name", { exact: false }))
+        .first();
+      await nameField.waitFor({ state: "visible", timeout: 15000 });
       await nameField.fill(data.name);
     }
 
@@ -172,6 +177,8 @@ export const schoolHelpers = {
 
     // Uncheck "Search college database" to enable free-text entry for test school names
     const searchCheckbox = page.locator('input[type="checkbox"]').first();
+    // Wait for Vue to mount before checking checkbox state
+    await searchCheckbox.waitFor({ state: "visible", timeout: 10000 });
     const isChecked = await searchCheckbox.isChecked().catch(() => false);
     if (isChecked) {
       await searchCheckbox.uncheck();

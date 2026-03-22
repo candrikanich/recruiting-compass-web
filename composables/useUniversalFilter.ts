@@ -17,6 +17,9 @@ import type {
 
 const logger = createClientLogger("useUniversalFilter");
 
+// Local alias prevents Nuxt's unimport scanner from treating `unknown` as a named export
+type AnyRecord = Record<string, unknown>;
+
 /**
  * Composable for managing universal filters across list pages
  * @param items - The array of items to filter
@@ -24,7 +27,7 @@ const logger = createClientLogger("useUniversalFilter");
  * @param options - Optional configuration
  * @returns Filter state and computed filtered items
  */
-export const useUniversalFilter = <T extends Record<string, unknown>>(
+export const useUniversalFilter = <T extends AnyRecord>(
   items: Ref<T[]> | T[],
   configs: FilterConfig[] | Ref<FilterConfig[]> | ComputedRef<FilterConfig[]>,
   options: UseUniversalFilterOptions = {},

@@ -21,7 +21,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
 
     test("parent sees read-only warning banner", async ({ page }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Warning banner is an amber box with h3 "Read-only view"
       const warningHeading = page.locator("h3", { hasText: "Read-only view" });
@@ -40,7 +40,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       page,
     }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // The Basics tab is shown by default. Graduation year and Primary Sport
       // selects both have :disabled="isParentRole"
@@ -56,7 +56,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
 
     test("parent sees position buttons disabled", async ({ page }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Navigate to Athletics tab (use first match - desktop nav button)
       const athleticsTab = page.locator("button", { hasText: "Athletics" }).first();
@@ -77,7 +77,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.goto("/settings/player-details", {
         waitUntil: "domcontentloaded",
       });
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       const response = await context.request.patch(
         "/api/user/preferences/player-details",
@@ -98,7 +98,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
 
     test("parent does not see auto-save as available", async ({ page }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // The page has a sticky header showing "Saved" or "Saving" state
       // For parents, inputs are disabled so no mutations occur
@@ -113,7 +113,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       page,
     }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // No warning banner for players
       const warningHeading = page.locator("h3", { hasText: "Read-only view" });
@@ -126,7 +126,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
 
     test("player sees enabled form inputs on Basics tab", async ({ page }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Graduation year and Primary Sport selects should not be disabled
       const graduationSelect = page.locator("select").first();
@@ -137,7 +137,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       page,
     }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Switch to Academics & Social tab
       const academicsTab = page.locator("button", {
@@ -154,7 +154,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
 
     test("player sees auto-save status indicator", async ({ page }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Sticky header shows "Saved" when not saving
       const savedIndicator = page.locator("text=Saved");
@@ -163,7 +163,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
 
     test("player sees tab navigation", async ({ page }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Tabs appear twice (desktop + mobile), use first() to avoid strict mode
       await expect(page.locator("button", { hasText: "Basics" }).first()).toBeVisible();
@@ -177,7 +177,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
   test.describe("Page Structure", () => {
     test("page loads with form content", async ({ page }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Essential Info section heading is on the Basics tab (default)
       await expect(
@@ -187,7 +187,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
 
     test("Academics tab shows academic standing section", async ({ page }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       const academicsTab = page.locator("button", {
         hasText: "Academics & Social",
@@ -216,7 +216,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
 
     test("player details API endpoint exists", async ({ page, request }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       const response = await request.get(
         "/api/user/preferences/player-details",

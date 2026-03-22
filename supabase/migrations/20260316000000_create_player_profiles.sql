@@ -4,7 +4,7 @@
 --   profile_tracking_links — one row per (profile, coach) for click tracking
 --   profile_views       — detail log of every view event
 
-CREATE TABLE player_profiles (
+CREATE TABLE IF NOT EXISTS player_profiles (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   family_unit_id  uuid NOT NULL REFERENCES family_units(id) ON DELETE CASCADE,
@@ -29,7 +29,7 @@ CREATE TABLE player_profiles (
   UNIQUE (user_id)
 );
 
-CREATE TABLE profile_tracking_links (
+CREATE TABLE IF NOT EXISTS profile_tracking_links (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   profile_id      uuid NOT NULL REFERENCES player_profiles(id) ON DELETE CASCADE,
   coach_id        uuid NOT NULL REFERENCES coaches(id) ON DELETE CASCADE,
@@ -41,7 +41,7 @@ CREATE TABLE profile_tracking_links (
   UNIQUE (profile_id, coach_id)
 );
 
-CREATE TABLE profile_views (
+CREATE TABLE IF NOT EXISTS profile_views (
   id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   profile_id          uuid NOT NULL REFERENCES player_profiles(id) ON DELETE CASCADE,
   tracking_link_id    uuid REFERENCES profile_tracking_links(id) ON DELETE SET NULL,
@@ -49,9 +49,9 @@ CREATE TABLE profile_views (
   user_agent          text
 );
 
-CREATE INDEX idx_profile_tracking_links_profile ON profile_tracking_links(profile_id);
-CREATE INDEX idx_profile_views_profile          ON profile_views(profile_id);
-CREATE INDEX idx_profile_views_tracking_link    ON profile_views(tracking_link_id);
+CREATE INDEX IF NOT EXISTS idx_profile_tracking_links_profile ON profile_tracking_links(profile_id);
+CREATE INDEX IF NOT EXISTS idx_profile_views_profile          ON profile_views(profile_id);
+CREATE INDEX IF NOT EXISTS idx_profile_views_tracking_link    ON profile_views(tracking_link_id);
 
 -- Auto-update updated_at on any player_profiles row change
 CREATE OR REPLACE FUNCTION set_player_profiles_updated_at()
@@ -62,6 +62,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS player_profiles_updated_at ON player_profiles;
 CREATE TRIGGER player_profiles_updated_at
   BEFORE UPDATE ON player_profiles
   FOR EACH ROW EXECUTE FUNCTION set_player_profiles_updated_at();

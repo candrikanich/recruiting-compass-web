@@ -40,7 +40,7 @@ test.describe("Protected route guards", () => {
 test.describe("/timeline — Recruiting Timeline", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/timeline");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("loads and shows heading", async ({ page }) => {
@@ -66,7 +66,7 @@ test.describe("/timeline — Recruiting Timeline", () => {
 test.describe("/reports — Reports & Analytics", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/reports");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("loads and shows heading", async ({ page }) => {
@@ -90,7 +90,7 @@ test.describe("/reports — Reports & Analytics", () => {
 test.describe("/recommendations — Recommendation Letters", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/recommendations");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("loads and shows heading", async ({ page }) => {
@@ -111,7 +111,7 @@ test.describe("/recommendations — Recommendation Letters", () => {
 test.describe("/social — Social Media Monitoring", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/social");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("loads and shows heading", async ({ page }) => {
@@ -134,7 +134,7 @@ test.describe("/social — Social Media Monitoring", () => {
 test.describe("/settings/notifications — Notification Preferences", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/settings/notifications");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("loads and shows heading", async ({ page }) => {
@@ -157,7 +157,7 @@ test.describe("/settings/notifications — Notification Preferences", () => {
 test.describe("/settings/profile — Profile Settings", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/settings/profile");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("loads and shows heading", async ({ page }) => {
@@ -175,7 +175,7 @@ test.describe("/settings/profile — Profile Settings", () => {
 test.describe("/settings/social-sync — Social Media Sync", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/settings/social-sync");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("loads and shows heading", async ({ page }) => {

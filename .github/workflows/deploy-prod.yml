@@ -19,10 +19,14 @@ jobs:
   pre-deploy-checks:
     name: Pre-Deployment Checks
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Verify deployment confirmation
+        env:
+          CONFIRM_INPUT: ${{ github.event.inputs.confirm }}
         run: |
-          if [ "${{ github.event.inputs.confirm }}" != "DEPLOY" ]; then
+          if [ "$CONFIRM_INPUT" != "DEPLOY" ]; then
             echo "❌ Deployment cancelled - confirmation mismatch"
             echo "You must type 'DEPLOY' exactly to confirm"
             exit 1
@@ -30,19 +34,23 @@ jobs:
           echo "✅ Production deployment confirmed"
 
       - name: Verify branch is main
+        env:
+          GIT_REF: ${{ github.ref }}
+          GIT_REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+          if [ "$GIT_REF" != "refs/heads/main" ]; then
             echo "❌ Can only deploy from 'main' branch"
-            echo "Current branch: ${{ github.ref_name }}"
+            echo "Current branch: $GIT_REF_NAME"
             exit 1
           fi
           echo "✅ Deploying from main branch"
 
   # Step 2: Run tests to ensure nothing is broken
-  # This prevents deploying code that fails tests
   verify:
     name: Verify Code Quality
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -73,6 +81,8 @@ jobs:
     name: Deploy to Vercel Production
     needs: [pre-deploy-checks, verify]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     environment:
       name: production
       url: https://recruiting-compass-web-a9wx.vercel.app
@@ -106,19 +116,136 @@ jobs:
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PROD }}
 
-  # Step 4: Notify success
+  # Step 4: Smoke test the production deployment
+  smoke-test:
+    name: Post-Deploy Smoke Test
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    env:
+      PROD_URL: https://recruiting-compass-web-a9wx.vercel.app
+    steps:
+      - name: Wait for propagation
+        run: sleep 10
+
+      - name: Test homepage (SSR)
+        id: homepage
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$PROD_URL/")
+          ELAPSED=$(curl -s -o /dev/null -w "%{time_total}" --max-time 15 "$PROD_URL/")
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "elapsed=$ELAPSED" >> $GITHUB_OUTPUT
+          echo "Homepage: HTTP $STATUS (${ELAPSED}s)"
+
+      - name: Test CSRF endpoint (API + crypto)
+        id: csrf
+        run: |
+          RESPONSE=$(curl -s --max-time 15 "$PROD_URL/api/csrf-token")
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$PROD_URL/api/csrf-token")
+          HAS_TOKEN=$(echo "$RESPONSE" | grep -c '"token"' || true)
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "has_token=$HAS_TOKEN" >> $GITHUB_OUTPUT
+          echo "CSRF endpoint: HTTP $STATUS (token_present=$HAS_TOKEN)"
+
+      - name: Test login page (auth routing)
+        id: login
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 -L "$PROD_URL/login")
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "Login page: HTTP $STATUS"
+
+      - name: Evaluate and report
+        env:
+          HOMEPAGE_STATUS: ${{ steps.homepage.outputs.status }}
+          HOMEPAGE_ELAPSED: ${{ steps.homepage.outputs.elapsed }}
+          CSRF_STATUS: ${{ steps.csrf.outputs.status }}
+          CSRF_HAS_TOKEN: ${{ steps.csrf.outputs.has_token }}
+          LOGIN_STATUS: ${{ steps.login.outputs.status }}
+          COMMIT_SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FAILED=false
+          DETAILS=""
+
+          [ "$HOMEPAGE_STATUS" != "200" ] && FAILED=true && DETAILS="${DETAILS}- \`/\`: HTTP $HOMEPAGE_STATUS (expected 200)\n"
+          { [ "$CSRF_STATUS" != "200" ] || [ "$CSRF_HAS_TOKEN" != "1" ]; } && \
+            FAILED=true && DETAILS="${DETAILS}- \`/api/csrf-token\`: HTTP $CSRF_STATUS, token_in_body=$CSRF_HAS_TOKEN\n"
+          [ "$LOGIN_STATUS" != "200" ] && FAILED=true && DETAILS="${DETAILS}- \`/login\`: HTTP $LOGIN_STATUS (expected 200)\n"
+
+          if [ "$FAILED" = "true" ]; then
+            echo "❌ Smoke test FAILED"
+            printf '%b\n' "$DETAILS"
+            SHORT_SHA="${COMMIT_SHA:0:7}"
+            BODY="## Production Smoke Test Failed
+
+          **Commit:** $COMMIT_SHA
+          **Run:** $RUN_URL
+
+          ### Failed checks
+          $(printf '%b' "$DETAILS")
+          ### All results
+          | Endpoint | Status |
+          |---|---|
+          | \`/\` | HTTP $HOMEPAGE_STATUS ($HOMEPAGE_ELAPSED s) |
+          | \`/api/csrf-token\` | HTTP $CSRF_STATUS (token: $CSRF_HAS_TOKEN) |
+          | \`/login\` | HTTP $LOGIN_STATUS |"
+            gh issue create \
+              --title "🚨 Production smoke test failed — $SHORT_SHA" \
+              --body "$BODY" \
+              --label "bug"
+            exit 1
+          fi
+          echo "✅ All smoke tests passed"
+          echo "  / → HTTP $HOMEPAGE_STATUS (${HOMEPAGE_ELAPSED}s)"
+          echo "  /api/csrf-token → HTTP $CSRF_STATUS"
+          echo "  /login → HTTP $LOGIN_STATUS"
+
+  # Step 5: Auto-rollback if smoke test failed
+  rollback:
+    name: Auto-Rollback on Smoke Failure
+    needs: smoke-test
+    if: failure() && needs.smoke-test.result == 'failure'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Rollback to previous production deployment
+        run: vercel rollback --token="${{ secrets.VERCEL_TOKEN }}" --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PROD }}
+
+      - name: Notify Slack - Rollback executed
+        uses: slackapi/slack-github-action@v3
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "⏪ Production auto-rolled back after smoke test failure",
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*⏪ Auto-Rollback Executed*\nSmoke test failed — production rolled back to previous deployment automatically.\n*Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                }
+              }]
+            }
+
+  # Step 7: Notify success
   notify-success:
     name: Notify Slack - Deployment Success
     if: success()
-    needs: deploy
+    needs: [deploy, smoke-test]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Send Slack notification
-
         uses: slackapi/slack-github-action@v3
-
-        uses: slackapi/slack-github-action@v3
-
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
@@ -134,19 +261,17 @@ jobs:
               }]
             }
 
-  # Step 5: Notify failure
+  # Step 8: Notify failure
   notify-failure:
     name: Notify Slack - Deployment Failed
     if: failure()
-    needs: deploy
+    needs: [deploy, smoke-test]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Send Slack notification
-
         uses: slackapi/slack-github-action@v3
-
-        uses: slackapi/slack-github-action@v3
-
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook

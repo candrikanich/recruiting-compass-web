@@ -18,12 +18,12 @@ export class CoachesPage extends BasePage {
 
   async goToCoachDetail(schoolId: string, coachId: string) {
     await super.goto(`/schools/${schoolId}/coaches/${coachId}`);
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async goToCoachCommunications(schoolId: string, coachId: string) {
     await super.goto(`/schools/${schoolId}/coaches/${coachId}/communications`);
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   // CRUD Operations
@@ -71,7 +71,7 @@ export class CoachesPage extends BasePage {
     }
 
     await this.click('[data-testid="add-coach-button"]');
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async updateCoach(updates: any) {
@@ -107,7 +107,7 @@ export class CoachesPage extends BasePage {
       .locator('button:has-text("Save"), [data-testid="save-coach"]')
       .first();
     await saveButton.click();
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async deleteCoach(coachName: string) {
@@ -121,13 +121,13 @@ export class CoachesPage extends BasePage {
     const confirmButton = this.page.locator('button:has-text("Confirm")').first();
     await confirmButton.waitFor({ state: "visible" });
     await confirmButton.click();
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   // Search and Filter
   async searchCoaches(searchTerm: string) {
     const searchInput = await this.page
-      .locator('input[placeholder*="Search"], input[type="search"]')
+      .locator('input[placeholder*="Name, email"], input[placeholder*="Search"], input[type="search"]')
       .first();
     await searchInput.fill(searchTerm);
     // Debounced search — wait for loading indicator to disappear
@@ -135,15 +135,8 @@ export class CoachesPage extends BasePage {
   }
 
   async filterByRole(role: string) {
-    const roleFilter = await this.page
-      .locator('select[name="role"], button:has-text("Role")')
-      .first();
-    if ((await roleFilter.getAttribute("role")) === "combobox") {
-      await roleFilter.click();
-      await this.clickByText(role);
-    } else {
-      await this.selectOption('select[name="role"]', role);
-    }
+    // Role filter is a native <select id="roleFilter"> on the school coaches page
+    await this.selectOption('#roleFilter, select[name="role"]', role);
     await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
   }
 
@@ -185,17 +178,18 @@ export class CoachesPage extends BasePage {
 
   async viewCoachDetails(coachName: string) {
     await this.clickByText(coachName);
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async getCoachCount(): Promise<number> {
-    // Look for coach cards or list items
-    const cards = await this.page
-      .locator(
-        '[data-testid="coach-card"], .coach-card, [data-testid="coach-item"], .coach-item',
-      )
-      .count();
-    return cards;
+    // Wait for Supabase data to load — poll until count stabilizes
+    let count = 0;
+    for (let i = 0; i < 10; i++) {
+      count = await this.page.locator('h3.text-lg.font-bold.text-slate-900').count();
+      if (count > 0) break;
+      await this.page.waitForTimeout(500);
+    }
+    return count;
   }
 
   async expectFilteredResults(expectedCount: number) {
@@ -303,6 +297,6 @@ export class CoachesPage extends BasePage {
   }
 
   async waitForCoachsToLoad() {
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 }

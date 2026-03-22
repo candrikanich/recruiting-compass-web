@@ -59,7 +59,7 @@ export class InteractionsPage extends BasePage {
     );
 
     await this.click('[data-testid="log-interaction-submit-button"]');
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async expectInteractionLogged(schoolName: string) {
@@ -93,7 +93,7 @@ export class InteractionsPage extends BasePage {
 
   async viewInteractionDetails(schoolName: string) {
     await this.click(`text=${schoolName}`);
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async deleteInteraction(schoolName: string) {
