@@ -34,3 +34,8 @@ Sentry.init({
     /builds\/meta\/dev\.json/,
   ],
 });
+
+// TODO: REMOVE — Sentry logs verification test
+Sentry.logger.info("Sentry client logs verification", {
+  log_source: "sentry_test",
+});

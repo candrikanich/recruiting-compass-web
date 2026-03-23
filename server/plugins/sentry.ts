@@ -16,6 +16,11 @@ export default defineNitroPlugin((nitroApp) => {
     return;
   }
 
+  // TODO: REMOVE — Sentry logs verification test
+  Sentry.logger.info("Sentry server logs verification", {
+    log_source: "sentry_test",
+  });
+
   nitroApp.hooks.hook("request", (event) => {
     // Set up Sentry scope for this request
     Sentry.withScope((scope) => {
