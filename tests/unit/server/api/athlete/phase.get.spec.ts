@@ -45,22 +45,12 @@ function createMockSupabase(graduationYear: number | null) {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     single: vi.fn(),
+    // user_preferences query uses maybeSingle; returns null error when 0 rows (no PGRST116)
+    maybeSingle: vi.fn().mockResolvedValue({
+      data: graduationYear ? { data: { graduation_year: graduationYear } } : null,
+      error: null,
+    }),
   };
-
-  let singleCallCount = 0;
-  mockSupabase.single.mockImplementation(() => {
-    singleCallCount++;
-    if (singleCallCount === 1) {
-      // First .single() call: user_preferences (player category)
-      return Promise.resolve({
-        data: graduationYear
-          ? { data: { graduation_year: graduationYear } }
-          : null,
-        error: graduationYear ? null : { code: "PGRST116" },
-      });
-    }
-    return Promise.resolve({ data: null, error: null });
-  });
 
   // Handle athlete_task query (no .single(), resolves as array)
   mockSupabase.eq.mockImplementation((field: string, value: unknown) => {
@@ -83,7 +73,11 @@ function createMockSupabaseWithErrors(opts: {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     single: vi.fn(),
-    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+    // user_preferences query uses maybeSingle — wire to opts so error tests work
+    maybeSingle: vi.fn().mockResolvedValue({
+      data: opts.prefData ?? null,
+      error: opts.prefError ?? null,
+    }),
   };
 
   mockSupabase.single.mockResolvedValue({
