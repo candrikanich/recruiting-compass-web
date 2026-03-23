@@ -92,6 +92,21 @@ export const useAuthFetch = () => {
         throw new SessionExpiredError();
       }
 
+      // Handle 403 CSRF failures by force-refreshing the token and retrying once.
+      // This covers the stale-cookie case: the csrf-token cookie expired (24h maxAge)
+      // but useCookie returned the cached value from the Vue/SSR state rather than
+      // re-reading document.cookie, so header and cookie diverged on the server.
+      if (err instanceof FetchError && err.statusCode === 403 && STATE_CHANGING_METHODS.includes(method)) {
+        const { getCsrfToken } = useCsrf();
+        // Invalidate the cached token so getCsrfToken fetches a fresh one
+        const csrfCookie = useCookie("csrf-token");
+        csrfCookie.value = null;
+        const freshCsrfToken = await getCsrfToken();
+        const retryHeaders = { ...headers, "x-csrf-token": freshCsrfToken };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (await ($fetch as any)(url, { ...options, headers: retryHeaders })) as T;
+      }
+
       throw err;
     }
   };
