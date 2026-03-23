@@ -107,3 +107,13 @@ Source: pi newsletter
 - **Frequency + recency ranking surfaces what matters**: A flat lessons log treats all mistakes equally — ranking by recurrence count separates noise (one-off edge cases) from signal (systematic blind spots worth injecting into every session).
 - **Core vs. long-term split**: Inject only top-N recurring lessons into every session context; keep full history in the archive. Prevents the lessons file from growing so large it becomes overhead.
 - **Auto-extraction vs. manual**: Relying on the agent to notice and save lessons misses things. A post-task hook that prompts reflection catches patterns before they're forgotten.
+
+---
+
+### 10 Backend Mistakes That Reveal Inexperience — 2026-03-23
+Source: pasted content (Gopi C K)
+
+- **Pagination on every list endpoint**: Never return unbounded result sets from Nitro list handlers — default to `?limit=20&offset=0` unless the dataset is provably small (≤ 50 items max). Example: `server/api/schools/index.get.ts` must accept and apply `limit`/`offset` query params.
+- **Index new filter columns in migrations**: Every Supabase migration that adds a column used in `.eq()`, `.order()`, or `.match()` calls should include a `CREATE INDEX` in the same migration file — missing indexes degrade silently as rows grow.
+- **Failure-first Supabase queries**: Treat Supabase as a flaky external service — always chain `.throwOnError()` or explicitly check `error !== null` after every query. Silent `null` returns (`.maybeSingle()` without null checks) cause downstream crashes with no useful error context.
+- **Standardized Nitro error response shape**: All `createError()` calls should follow the same shape: `{ statusCode, statusMessage }` — no raw `error.message` leakage (already in CLAUDE.md), no ad-hoc response objects. Consistency enables predictable client-side error handling.
