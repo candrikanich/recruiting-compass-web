@@ -52,31 +52,34 @@ export default defineEventHandler(async (event) => {
     const familyUnitIds = familyMembers.map((fm) => fm.family_unit_id);
     logger.debug("Family unit IDs", { familyUnitIds });
 
-    // Fetch player members of these families (only families with a connected player count)
-    const { data: playerMembers, error: playerMembersError } = await supabase
-      .from("family_members")
-      .select("family_unit_id, user_id, users!inner(id, full_name, email)")
-      .in("family_unit_id", familyUnitIds)
-      .eq("role", "player");
+    // Fetch player members and family unit details in parallel — both depend on
+    // familyUnitIds from query 1 but are independent of each other.
+    const [playerMembersResult, familiesResult] = await Promise.all([
+      supabase
+        .from("family_members")
+        .select("family_unit_id, user_id, users!inner(id, full_name, email)")
+        .in("family_unit_id", familyUnitIds)
+        .eq("role", "player"),
+      supabase
+        .from("family_units")
+        .select("id, family_name")
+        .in("id", familyUnitIds),
+    ]);
+
+    const { data: playerMembers, error: playerMembersError } = playerMembersResult;
+    const { data: families, error: familiesError } = familiesResult;
 
     if (playerMembersError) {
       logger.error("Failed to fetch player members", playerMembersError);
       throw createError({ statusCode: 500, statusMessage: "Failed to fetch accessible families" });
     }
 
-    logger.debug("Found player members", { count: playerMembers?.length ?? 0 });
-
-    // Fetch all family unit details (including those without a connected player)
-    const { data: families, error: familiesError } = await supabase
-      .from("family_units")
-      .select("id, family_name")
-      .in("id", familyUnitIds);
-
     if (familiesError) {
       logger.error("Failed to fetch family units", familiesError);
       throw createError({ statusCode: 500, statusMessage: "Failed to fetch accessible families" });
     }
 
+    logger.debug("Found player members", { count: playerMembers?.length ?? 0 });
     logger.debug("Fetched parent families", { familyCount: families?.length ?? 0 });
 
     type PlayerMemberRow = {
