@@ -25,5 +25,9 @@ Sentry.init({
     /Failed to fetch dynamically imported module/,
     /Importing a module script failed/,
     /Unable to preload CSS/,
+    // Nuxt dev-server manifest fetch — /_nuxt/builds/meta/dev.json only exists
+    // in the Vite dev server. When the server restarts mid-session, Nuxt can't
+    // fetch it and Sentry captures the linked FetchError. Not possible in prod.
+    /builds\/meta\/dev\.json/,
   ],
 });
