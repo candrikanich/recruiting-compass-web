@@ -563,6 +563,10 @@
               :details="(form as unknown as Record<string, unknown>)"
               :schools="[]"
             />
+            <div v-else-if="profileLoading" class="bg-gray-50 rounded-xl p-4 animate-pulse">
+              <div class="h-3 w-32 bg-gray-200 rounded mb-4" />
+              <div class="h-24 bg-gray-200 rounded-xl" />
+            </div>
           </div>
         </div>
 
@@ -664,7 +668,7 @@ const tabs = [
   { id: "public-profile", name: "Public Profile", icon: ShareIcon },
 ];
 
-const { profile: playerProfile } = usePlayerProfile();
+const { profile: playerProfile, loading: profileLoading } = usePlayerProfile();
 
 const BATS_OPTIONS = [
   { value: "R", label: "Right" },

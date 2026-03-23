@@ -168,6 +168,7 @@ async function seedDatabase() {
     const coachesToInsert = SEED_DATA.coaches.map((coach, idx) => ({
       ...coach,
       school_id: schoolMap[idx % schoolMap.length]?.id,
+      user_id: playerUserId,
       created_at: new Date().toISOString(),
     }));
 

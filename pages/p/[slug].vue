@@ -55,5 +55,11 @@ useSeoMeta({
     <div v-else-if="profile" class="max-w-2xl mx-auto py-8 px-4">
       <PublicProfileCard :profile="profile" />
     </div>
+
+    <!-- Generic error fallback (500 or unexpected status) -->
+    <div v-else class="flex flex-col items-center justify-center min-h-screen gap-4 text-center px-4">
+      <h1 class="text-2xl font-semibold text-gray-800">Something went wrong</h1>
+      <p class="text-gray-500">Unable to load this profile. Please try again later.</p>
+    </div>
   </div>
 </template>

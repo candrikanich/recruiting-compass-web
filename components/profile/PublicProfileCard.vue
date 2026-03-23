@@ -35,7 +35,7 @@ function formatGPA(gpa: number | undefined): string {
     <div class="divide-y divide-gray-100">
 
       <!-- Athletic Stats -->
-      <section v-if="profile.athletic" class="px-6 py-5">
+      <section v-if="profile.athletic && (profile.athletic.primary_sport || profile.athletic.height_inches || profile.athletic.weight_lbs)" class="px-6 py-5">
         <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Athletic Profile</h2>
         <dl class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
           <div v-if="profile.athletic.height_inches" class="flex justify-between">
@@ -50,7 +50,7 @@ function formatGPA(gpa: number | undefined): string {
       </section>
 
       <!-- Academic Stats -->
-      <section v-if="profile.academics" class="px-6 py-5">
+      <section v-if="profile.academics && (profile.academics.gpa || profile.academics.graduation_year || profile.academics.sat_score || profile.academics.act_score || profile.academics.high_school)" class="px-6 py-5">
         <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Academics</h2>
         <dl class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
           <div v-if="profile.academics.gpa" class="flex justify-between">

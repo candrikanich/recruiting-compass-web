@@ -13,7 +13,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
     page,
   }) => {
     await page.goto("/dashboard");
-    // Should be redirected to login
+    await page.waitForURL(/\/login/, { timeout: 10000 });
     expect(page.url()).toContain("/login");
   });
 
@@ -21,6 +21,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
     page,
   }) => {
     await page.goto("/coaches");
+    await page.waitForURL(/\/login/, { timeout: 10000 });
     expect(page.url()).toContain("/login");
   });
 
@@ -28,6 +29,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
     page,
   }) => {
     await page.goto("/schools");
+    await page.waitForURL(/\/login/, { timeout: 10000 });
     expect(page.url()).toContain("/login");
   });
 
@@ -35,6 +37,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
     page,
   }) => {
     await page.goto("/search");
+    await page.waitForURL(/\/login/, { timeout: 10000 });
     expect(page.url()).toContain("/login");
   });
 
@@ -42,6 +45,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
     page,
   }) => {
     await page.goto("/dashboard");
+    await page.waitForURL(/\/login/, { timeout: 10000 });
     expect(page.url()).toContain(
       `redirect=${encodeURIComponent("/dashboard")}`,
     );
@@ -49,6 +53,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
 
   test("should preserve redirect URL for nested routes", async ({ page }) => {
     await page.goto("/coaches/123/analytics");
+    await page.waitForURL(/\/login/, { timeout: 10000 });
     expect(page.url()).toContain("redirect=");
     expect(page.url()).toContain("coaches");
   });

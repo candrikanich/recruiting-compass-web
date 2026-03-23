@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { usePlayerProfile } from "~/composables/usePlayerProfile";
 
-const { profile, loading, publicUrl, updateProfile } = usePlayerProfile();
+const { profile, loading, error, publicUrl, updateProfile, fetchProfile } = usePlayerProfile();
 
 // Local draft — synced from store, saved on blur/toggle
 const draft = reactive({
@@ -71,6 +71,11 @@ function copyLink() {
 
 <template>
   <div v-if="loading" class="text-gray-400 text-sm">Loading profile settings…</div>
+
+  <div v-else-if="error" class="text-sm text-red-500 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+    Failed to load profile settings. Please refresh the page.
+    <button class="ml-2 underline hover:no-underline" @click="fetchProfile()">Retry</button>
+  </div>
 
   <div v-else-if="profile" class="space-y-6">
 
