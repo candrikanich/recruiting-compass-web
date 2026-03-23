@@ -43,6 +43,23 @@ export default defineNuxtPlugin((nuxtApp) => {
   // Hook into unhandled promise rejections
   if (import.meta.client) {
     window.addEventListener('unhandledrejection', (event) => {
+      // Stale chunk error: a Vite/Nuxt deploy happened while the user had the
+      // app open. Old chunk URLs no longer exist. Reload once to pick up the
+      // latest bundles. Guard against reload loops with sessionStorage.
+      const reason = event.reason;
+      const isChunkError =
+        reason instanceof TypeError &&
+        (reason.message.includes('Failed to fetch dynamically imported module') ||
+          reason.message.includes('Importing a module script failed'));
+      if (isChunkError) {
+        const reloadKey = 'chunk-reload-attempted';
+        if (!sessionStorage.getItem(reloadKey)) {
+          sessionStorage.setItem(reloadKey, '1');
+          window.location.reload();
+        }
+        return;
+      }
+
       console.error('[Unhandled Promise Rejection]', event.reason);
       processError(event.reason);
     });

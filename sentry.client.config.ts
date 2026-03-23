@@ -19,5 +19,11 @@ Sentry.init({
     // when the module graph is in a transient state during a hot update.
     // These never occur in production (no HMR) and are not actionable.
     /mod\.default/,
+    // Stale chunk errors — browser has old chunk URLs after a Vite rebuild (dev)
+    // or a production deploy. The page just needs a refresh; not a code bug.
+    // Safari surfaces the same failure as "Importing a module script failed".
+    /Failed to fetch dynamically imported module/,
+    /Importing a module script failed/,
+    /Unable to preload CSS/,
   ],
 });
