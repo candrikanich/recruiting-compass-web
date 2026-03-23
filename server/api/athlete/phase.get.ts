@@ -62,16 +62,18 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Fetch graduation year from user_preferences (player category)
+    // Fetch graduation year from user_preferences (player category).
+    // maybeSingle() returns { data: null, error: null } when 0 rows exist —
+    // no need to special-case PGRST116. Only real errors (connection failures,
+    // RLS violations, duplicate rows) surface as prefError.
     const { data: prefData, error: prefError } = await supabase
       .from("user_preferences")
       .select("data")
       .eq("user_id", athleteId)
       .eq("category", "player")
-      .single();
+      .maybeSingle();
 
-    if (prefError && prefError.code !== "PGRST116") {
-      // PGRST116 = no rows found, which is OK (player prefs not set yet)
+    if (prefError) {
       logger.error("Error fetching player preferences", prefError);
       throw createError({
         statusCode: 500,

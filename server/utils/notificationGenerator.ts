@@ -141,9 +141,9 @@ export async function generateOfferNotifications(
             .eq("related_entity_type", "offer")
             .eq("type", "deadline")
             .eq("scheduled_for", new Date().toISOString().split("T")[0])
-            .single();
+            .maybeSingle();
 
-          if (checkError && checkError.code !== "PGRST116") throw checkError; // PGRST116 = no rows returned
+          if (checkError) throw checkError;
 
           // Only create if doesn't exist
           if (!existing) {
@@ -220,9 +220,9 @@ export async function generateRecommendationNotifications(
             .eq("related_entity_type", "recommendation")
             .eq("type", "deadline")
             .eq("scheduled_for", new Date().toISOString().split("T")[0])
-            .single();
+            .maybeSingle();
 
-          if (checkError && checkError.code !== "PGRST116") throw checkError;
+          if (checkError) throw checkError;
 
           if (!existing) {
             const templateKey =
@@ -294,9 +294,9 @@ export async function generateEventNotifications(
             .eq("related_entity_type", "event")
             .eq("type", "deadline")
             .eq("scheduled_for", new Date().toISOString().split("T")[0])
-            .single();
+            .maybeSingle();
 
-          if (checkError && checkError.code !== "PGRST116") throw checkError;
+          if (checkError) throw checkError;
 
           if (!existing) {
             const templateKey =
@@ -367,9 +367,9 @@ export async function generateCoachFollowupNotifications(
           .eq("related_entity_type", "coach")
           .eq("type", "follow_up")
           .eq("scheduled_for", new Date().toISOString().split("T")[0])
-          .single();
+          .maybeSingle();
 
-        if (checkError && checkError.code !== "PGRST116") throw checkError;
+        if (checkError) throw checkError;
 
         if (!existing) {
           const coachName = `${coach.first_name} ${coach.last_name}`.trim();

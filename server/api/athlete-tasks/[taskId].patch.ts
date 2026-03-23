@@ -132,16 +132,16 @@ export default defineEventHandler(async (event) => {
       updateData.completed_at = new Date().toISOString();
     }
 
-    // Try to update existing record
+    // Try to update existing record — maybeSingle() returns null with no error
+    // when no row exists yet, avoiding the PGRST116 special-case.
     const { data: existingData, error: selectError } = await supabase
       .from("athlete_task")
       .select("id")
       .eq("athlete_id", user.id)
       .eq("task_id", taskId)
-      .single();
+      .maybeSingle();
 
-    if (selectError && selectError.code !== "PGRST116") {
-      // PGRST116 means no rows found, which is expected
+    if (selectError) {
       logger.error("Error checking existing athlete task", selectError);
       throw createError({
         statusCode: 500,
