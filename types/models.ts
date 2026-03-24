@@ -457,6 +457,7 @@ export interface PublicProfileData {
   athletic: {
     primary_sport?: string;
     primary_position?: string;
+    positions?: string[];
     height_inches?: number;
     weight_lbs?: number;
   } | null;

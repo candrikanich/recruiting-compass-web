@@ -100,6 +100,7 @@ export default defineEventHandler(async (event) => {
           ? {
               primary_sport: details.primary_sport as string | undefined,
               primary_position: details.primary_position as string | undefined,
+              positions: details.positions as string[] | undefined,
               height_inches: details.height_inches as number | undefined,
               weight_lbs: details.weight_lbs as number | undefined,
             }
