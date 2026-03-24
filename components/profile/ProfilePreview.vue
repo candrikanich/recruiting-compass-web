@@ -1,6 +1,7 @@
 <!-- components/profile/ProfilePreview.vue -->
 <script setup lang="ts">
 import type { PlayerProfile, PublicProfileData, VideoLink } from "~/types/models";
+import { useUserStore } from "~/stores/user";
 
 const props = defineProps<{
   settings: PlayerProfile;
@@ -9,8 +10,12 @@ const props = defineProps<{
   schools: Array<{ id: string; name: string }>;
 }>();
 
+const userStore = useUserStore();
+
 const previewData = computed<PublicProfileData>(() => ({
   playerName: props.playerName,
+  photoUrl: userStore.user?.profile_photo_url ?? null,
+  headerColor: props.settings.header_color ?? "slate",
   bio: props.settings.bio ?? null,
   academics: props.settings.show_academics && props.details
     ? {
@@ -26,8 +31,12 @@ const previewData = computed<PublicProfileData>(() => ({
     ? {
         primary_sport: props.details.primary_sport as string | undefined,
         primary_position: props.details.primary_position as string | undefined,
+        positions: props.details.positions as string[] | undefined,
         height_inches: props.details.height_inches as number | undefined,
         weight_lbs: props.details.weight_lbs as number | undefined,
+        ncaa_id: (props.details.ncaa_id as string | undefined) || undefined,
+        perfect_game_id: (props.details.perfect_game_id as string | undefined) || undefined,
+        prep_baseball_id: (props.details.prep_baseball_id as string | undefined) || undefined,
       }
     : null,
   film: props.settings.show_film && props.details?.video_links
