@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
 
     const { data: user } = await supabase
       .from("users")
-      .select("full_name")
+      .select("full_name, profile_photo_url")
       .eq("id", profile.user_id)
       .maybeSingle();
 
@@ -82,6 +82,7 @@ export default defineEventHandler(async (event) => {
 
     const result: PublicProfileData = {
       playerName: user?.full_name ?? "Athlete",
+      photoUrl: user?.profile_photo_url ?? null,
       bio: profile.bio ?? null,
       academics:
         profile.show_academics && details

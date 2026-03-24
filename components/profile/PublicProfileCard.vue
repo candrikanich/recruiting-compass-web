@@ -24,12 +24,22 @@ function formatGPA(gpa: number | undefined): string {
 
     <!-- Header -->
     <header class="bg-gradient-to-br from-slate-800 to-slate-700 px-6 py-8 text-white">
-      <h1 class="text-3xl font-bold tracking-tight">{{ profile.playerName }}</h1>
-      <p v-if="profile.athletic?.primary_sport" class="mt-1 text-slate-300 text-sm">
-        {{ profile.athletic.primary_sport }}
-        <span v-if="profile.athletic.primary_position"> · {{ profile.athletic.primary_position }}</span>
-      </p>
-      <p v-if="profile.bio" class="mt-3 text-slate-200 text-sm leading-relaxed">{{ profile.bio }}</p>
+      <div class="flex items-center gap-5">
+        <img
+          v-if="profile.photoUrl"
+          :src="profile.photoUrl"
+          :alt="`${profile.playerName} profile photo`"
+          class="w-20 h-20 rounded-full object-cover ring-2 ring-white/20 shrink-0"
+        />
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight">{{ profile.playerName }}</h1>
+          <p v-if="profile.athletic?.primary_sport" class="mt-1 text-slate-300 text-sm">
+            {{ profile.athletic.primary_sport }}
+            <span v-if="profile.athletic.primary_position"> · {{ profile.athletic.primary_position }}</span>
+          </p>
+          <p v-if="profile.bio" class="mt-3 text-slate-200 text-sm leading-relaxed">{{ profile.bio }}</p>
+        </div>
+      </div>
     </header>
 
     <div class="divide-y divide-gray-100">

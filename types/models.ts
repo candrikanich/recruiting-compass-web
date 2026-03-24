@@ -442,6 +442,7 @@ export interface ProfileTrackingLink {
 /** Shape returned by GET /api/public/profile/[slug] */
 export interface PublicProfileData {
   playerName: string;
+  photoUrl: string | null;
   bio: string | null;
   /** null when show_academics is false */
   academics: {
