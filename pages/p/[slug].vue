@@ -53,7 +53,7 @@ useSeoMeta({
 
     <!-- Profile card -->
     <div v-else-if="profile" class="max-w-2xl mx-auto py-8 px-4">
-      <PublicProfileCard :profile="profile" />
+      <ProfilePublicProfileCard :profile="profile" />
     </div>
 
     <!-- Generic error fallback (500 or unexpected status) -->

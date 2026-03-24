@@ -40,6 +40,6 @@ const previewData = computed<PublicProfileData>(() => ({
 <template>
   <div class="bg-gray-50 rounded-xl p-4">
     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Preview — What coaches see</p>
-    <PublicProfileCard :profile="previewData" />
+    <ProfilePublicProfileCard :profile="previewData" />
   </div>
 </template>
