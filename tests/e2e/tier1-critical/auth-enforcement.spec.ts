@@ -67,7 +67,7 @@ test.describe("Auth Enforcement - Public Routes", () => {
     await page.goto("/login");
     expect(page.url()).toContain("/login");
     // Should see login form
-    await expect(page.locator("text=Sign In")).toBeVisible();
+    await expect(page.locator('[data-testid="login-button"]')).toBeVisible();
   });
 
   test("should allow access to signup page without auth", async ({ page }) => {

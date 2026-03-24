@@ -87,6 +87,8 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ middleware: "auth" });
+
 import { ref, reactive } from "vue";
 import { CheckIcon } from "@heroicons/vue/24/solid";
 import { useSchools } from "~/composables/useSchools";
