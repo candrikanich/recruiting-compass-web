@@ -152,7 +152,7 @@
                 <div class="md:col-span-2">
                   <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">High School Name</label>
                   <SharedHighSchoolSearchInput
-                    :model-value="{ name: form.school_name, nces_school_id: form.nces_school_id || null }"
+                    :model-value="{ name: form.school_name ?? '', nces_school_id: form.nces_school_id || null }"
                     :state-hint="form.school_state || ''"
                     :disabled="isParentRole"
                     @update:model-value="(v: HighSchoolSelection) => {
