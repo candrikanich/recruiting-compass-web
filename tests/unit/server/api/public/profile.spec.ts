@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const mockState = {
   profileRow: null as Record<string, unknown> | null,
   userRow: null as { full_name: string } | null,
-  familyUnitRow: null as { pending_player_details: Record<string, unknown> } | null,
+  playerPrefsData: null as Record<string, unknown> | null,
   schoolsRows: [] as Array<{ id: string; name: string }>,
 };
 
@@ -30,15 +30,16 @@ vi.mock("~/server/utils/supabase", () => ({
           }),
         };
       }
-      if (table === "family_units") {
-        return {
-          select: () => ({
-            eq: () => ({
-              maybeSingle: () =>
-                Promise.resolve({ data: mockState.familyUnitRow, error: null }),
+      if (table === "user_preferences") {
+        const chain = {
+          eq: () => chain,
+          maybeSingle: () =>
+            Promise.resolve({
+              data: mockState.playerPrefsData ? { data: mockState.playerPrefsData } : null,
+              error: null,
             }),
-          }),
         };
+        return { select: () => chain };
       }
       if (table === "schools") {
         return {
@@ -79,7 +80,7 @@ describe("GET /api/public/profile/[slug]", () => {
   beforeEach(() => {
     mockState.profileRow = null;
     mockState.userRow = null;
-    mockState.familyUnitRow = null;
+    mockState.playerPrefsData = null;
     mockState.schoolsRows = [];
   });
 
@@ -116,9 +117,7 @@ describe("GET /api/public/profile/[slug]", () => {
       bio: "Future D1 pitcher",
     };
     mockState.userRow = { full_name: "John Smith" };
-    mockState.familyUnitRow = {
-      pending_player_details: { gpa: 3.9, graduation_year: 2026 },
-    };
+    mockState.playerPrefsData = { gpa: 3.9, graduation_year: 2026 };
 
     const result = await handler({} as any);
 
@@ -143,10 +142,8 @@ describe("GET /api/public/profile/[slug]", () => {
       bio: null,
     };
     mockState.userRow = { full_name: "Jane Doe" };
-    mockState.familyUnitRow = {
-      pending_player_details: {
-        video_links: [{ platform: "hudl", url: "https://hudl.com/video/123", title: "Highlights" }],
-      },
+    mockState.playerPrefsData = {
+      video_links: [{ platform: "hudl", url: "https://hudl.com/video/123", title: "Highlights" }],
     };
 
     const result = await handler({} as any);
