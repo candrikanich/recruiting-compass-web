@@ -18,7 +18,7 @@ const previewData = computed<PublicProfileData>(() => ({
         sat_score: props.details.sat_score as number | undefined,
         act_score: props.details.act_score as number | undefined,
         graduation_year: props.details.graduation_year as number | undefined,
-        high_school: props.details.high_school as string | undefined,
+        high_school: (props.details.school_name ?? props.details.high_school) as string | undefined,
         core_courses: props.details.core_courses as string[] | undefined,
       }
     : null,

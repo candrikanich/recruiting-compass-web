@@ -561,7 +561,7 @@
               :settings="playerProfile"
               :player-name="userStore.user?.full_name ?? 'Athlete'"
               :details="(form as unknown as Record<string, unknown>)"
-              :schools="[]"
+              :schools="previewSchools"
             />
             <div v-else-if="profileLoading" class="bg-gray-50 rounded-xl p-4 animate-pulse">
               <div class="h-3 w-32 bg-gray-200 rounded mb-4" />
@@ -639,6 +639,7 @@ import { useFormValidation } from "~/composables/useFormValidation";
 import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
 import { useAutoSave } from "~/composables/useAutoSave";
 import { useUserStore } from "~/stores/user";
+import { useSchoolStore } from "~/stores/schools";
 import { normalizePositions } from "~/utils/positions";
 import { normalizeHandle, type SocialPlatform } from "~/utils/social";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
@@ -652,6 +653,10 @@ definePageMeta({
 });
 
 const userStore = useUserStore();
+const schoolStore = useSchoolStore();
+const previewSchools = computed(() =>
+  schoolStore.schools.map((s) => ({ id: s.id, name: s.name }))
+);
 const { isLoading, getPlayerDetails, setPlayerDetails, loadAllPreferences } =
   usePreferenceManager();
 const { showToast } = useAppToast();

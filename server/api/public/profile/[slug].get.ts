@@ -59,15 +59,16 @@ export default defineEventHandler(async (event) => {
       .eq("id", profile.user_id)
       .maybeSingle();
 
-    // Player details live in family_units.pending_player_details (jsonb)
+    // Player details live in user_preferences (category = "player")
     let details: Record<string, unknown> | null = null;
     if (profile.show_academics || profile.show_athletic || profile.show_film) {
-      const { data: familyUnit } = await supabase
-        .from("family_units")
-        .select("pending_player_details")
-        .eq("id", profile.family_unit_id)
+      const { data: prefs } = await supabase
+        .from("user_preferences")
+        .select("data")
+        .eq("user_id", profile.user_id)
+        .eq("category", "player")
         .maybeSingle();
-      details = (familyUnit?.pending_player_details as Record<string, unknown>) ?? null;
+      details = (prefs?.data as Record<string, unknown>) ?? null;
     }
 
     let schools: Array<{ id: string; name: string }> | null = null;
@@ -89,7 +90,7 @@ export default defineEventHandler(async (event) => {
               sat_score: details.sat_score as number | undefined,
               act_score: details.act_score as number | undefined,
               graduation_year: details.graduation_year as number | undefined,
-              high_school: details.high_school as string | undefined,
+              high_school: (details.school_name ?? details.high_school) as string | undefined,
               core_courses: details.core_courses as string[] | undefined,
             }
           : null,
