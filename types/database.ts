@@ -1641,6 +1641,7 @@ export type Database = {
           created_at: string
           family_unit_id: string
           hash_slug: string
+          header_color: string
           id: string
           is_published: boolean
           show_academics: boolean
@@ -1656,6 +1657,7 @@ export type Database = {
           created_at?: string
           family_unit_id: string
           hash_slug: string
+          header_color?: string
           id?: string
           is_published?: boolean
           show_academics?: boolean
@@ -1671,6 +1673,7 @@ export type Database = {
           created_at?: string
           family_unit_id?: string
           hash_slug?: string
+          header_color?: string
           id?: string
           is_published?: boolean
           show_academics?: boolean

@@ -4,6 +4,17 @@ import { usePlayerProfile } from "~/composables/usePlayerProfile";
 
 const { profile, loading, error, publicUrl, updateProfile, fetchProfile } = usePlayerProfile();
 
+const HEADER_COLORS = [
+  { key: "slate",   label: "Slate",   swatch: "bg-slate-700" },
+  { key: "blue",    label: "Blue",    swatch: "bg-blue-700" },
+  { key: "indigo",  label: "Indigo",  swatch: "bg-indigo-700" },
+  { key: "violet",  label: "Violet",  swatch: "bg-violet-700" },
+  { key: "rose",    label: "Rose",    swatch: "bg-rose-700" },
+  { key: "amber",   label: "Amber",   swatch: "bg-amber-600" },
+  { key: "emerald", label: "Emerald", swatch: "bg-emerald-700" },
+  { key: "teal",    label: "Teal",    swatch: "bg-teal-700" },
+] as const;
+
 // Local draft — synced from store, saved on blur/toggle
 const draft = reactive({
   bio: "",
@@ -13,6 +24,7 @@ const draft = reactive({
   show_film: true,
   show_schools: true,
   is_published: false,
+  header_color: "slate",
 });
 
 watch(
@@ -26,6 +38,7 @@ watch(
     draft.show_film = p.show_film;
     draft.show_schools = p.show_schools;
     draft.is_published = p.is_published;
+    draft.header_color = p.header_color ?? "slate";
   },
   { immediate: true }
 );
@@ -145,6 +158,21 @@ function copyLink() {
         @blur="save({ bio: draft.bio || null })"
       />
       <p class="text-xs text-gray-400 text-right">{{ draft.bio.length }}/300</p>
+    </div>
+
+    <!-- Header color -->
+    <div class="space-y-2">
+      <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Header color</label>
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="color in HEADER_COLORS"
+          :key="color.key"
+          :title="color.label"
+          class="w-7 h-7 rounded-full transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400"
+          :class="[color.swatch, draft.header_color === color.key ? 'ring-2 ring-offset-2 ring-slate-600 scale-110' : '']"
+          @click="save({ header_color: color.key })"
+        />
+      </div>
     </div>
 
     <!-- Section toggles -->

@@ -7,6 +7,17 @@ withDefaults(
   {}
 );
 
+const HEADER_GRADIENTS: Record<string, string> = {
+  slate:   "bg-gradient-to-br from-slate-800 to-slate-700",
+  blue:    "bg-gradient-to-br from-blue-800 to-blue-700",
+  indigo:  "bg-gradient-to-br from-indigo-800 to-indigo-700",
+  violet:  "bg-gradient-to-br from-violet-800 to-violet-700",
+  rose:    "bg-gradient-to-br from-rose-800 to-rose-700",
+  amber:   "bg-gradient-to-br from-amber-700 to-amber-600",
+  emerald: "bg-gradient-to-br from-emerald-800 to-emerald-700",
+  teal:    "bg-gradient-to-br from-teal-800 to-teal-700",
+};
+
 function formatHeight(inches: number | undefined): string {
   if (!inches) return "—";
   const ft = Math.floor(inches / 12);
@@ -23,7 +34,7 @@ function formatGPA(gpa: number | undefined): string {
   <article class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
     <!-- Header -->
-    <header class="bg-gradient-to-br from-slate-800 to-slate-700 px-6 py-8 text-white">
+    <header class="px-6 py-8 text-white" :class="HEADER_GRADIENTS[profile.headerColor] ?? HEADER_GRADIENTS.slate">
       <div class="flex items-center gap-5">
         <img
           v-if="profile.photoUrl"

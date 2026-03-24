@@ -421,6 +421,7 @@ export interface PlayerProfile {
   vanity_slug: string | null;
   is_published: boolean;
   bio: string | null;
+  header_color: string;
   show_academics: boolean;
   show_athletic: boolean;
   show_film: boolean;
@@ -443,6 +444,7 @@ export interface ProfileTrackingLink {
 export interface PublicProfileData {
   playerName: string;
   photoUrl: string | null;
+  headerColor: string;
   bio: string | null;
   /** null when show_academics is false */
   academics: {

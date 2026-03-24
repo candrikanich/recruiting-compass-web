@@ -83,6 +83,7 @@ export default defineEventHandler(async (event) => {
     const result: PublicProfileData = {
       playerName: user?.full_name ?? "Athlete",
       photoUrl: user?.profile_photo_url ?? null,
+      headerColor: profile.header_color ?? "slate",
       bio: profile.bio ?? null,
       academics:
         profile.show_academics && details
