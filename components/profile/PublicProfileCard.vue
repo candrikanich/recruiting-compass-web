@@ -67,6 +67,31 @@ function formatGPA(gpa: number | undefined): string {
             <dd class="font-medium text-gray-900">{{ profile.athletic.weight_lbs }} lbs</dd>
           </div>
         </dl>
+        <!-- Recruiting Database IDs -->
+        <div v-if="profile.athletic.ncaa_id || profile.athletic.perfect_game_id || profile.athletic.prep_baseball_id" class="mt-4 pt-4 border-t border-gray-100">
+          <p class="text-xs text-gray-400 mb-2">Recruiting IDs</p>
+          <dl class="space-y-1.5 text-sm">
+            <div v-if="profile.athletic.ncaa_id" class="flex justify-between">
+              <dt class="text-gray-500">NCAA ID</dt>
+              <dd class="font-mono font-medium text-gray-900">{{ profile.athletic.ncaa_id }}</dd>
+            </div>
+            <div v-if="profile.athletic.perfect_game_id" class="flex justify-between">
+              <dt class="text-gray-500">Perfect Game</dt>
+              <dd class="font-medium">
+                <a
+                  :href="`https://www.perfectgame.org/Players/Playerprofile.aspx?ID=${profile.athletic.perfect_game_id}`"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-blue-600 hover:text-blue-800 hover:underline font-mono"
+                >{{ profile.athletic.perfect_game_id }}</a>
+              </dd>
+            </div>
+            <div v-if="profile.athletic.prep_baseball_id" class="flex justify-between">
+              <dt class="text-gray-500">Prep Baseball</dt>
+              <dd class="font-mono font-medium text-gray-900">{{ profile.athletic.prep_baseball_id }}</dd>
+            </div>
+          </dl>
+        </div>
       </section>
 
       <!-- Academic Stats -->

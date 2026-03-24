@@ -103,6 +103,9 @@ export default defineEventHandler(async (event) => {
               positions: details.positions as string[] | undefined,
               height_inches: details.height_inches as number | undefined,
               weight_lbs: details.weight_lbs as number | undefined,
+              ncaa_id: (details.ncaa_id as string | undefined) || undefined,
+              perfect_game_id: (details.perfect_game_id as string | undefined) || undefined,
+              prep_baseball_id: (details.prep_baseball_id as string | undefined) || undefined,
             }
           : null,
       film:

@@ -460,6 +460,9 @@ export interface PublicProfileData {
     positions?: string[];
     height_inches?: number;
     weight_lbs?: number;
+    ncaa_id?: string;
+    perfect_game_id?: string;
+    prep_baseball_id?: string;
   } | null;
   /** null when show_film is false */
   film: VideoLink[] | null;
