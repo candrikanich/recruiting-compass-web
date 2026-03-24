@@ -7,7 +7,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Auth Enforcement - Protected Routes", () => {
   // Tests that protected routes redirect unauthenticated users — must start logged out
-  test.use({ storageState: undefined });
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   test("should redirect unauthenticated user from dashboard to login @smoke", async ({
     page,
@@ -61,7 +61,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
 
 test.describe("Auth Enforcement - Public Routes", () => {
   // Tests that public routes are accessible without auth — must start logged out
-  test.use({ storageState: undefined });
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   test("should allow access to login page without auth @smoke", async ({ page }) => {
     await page.goto("/login");

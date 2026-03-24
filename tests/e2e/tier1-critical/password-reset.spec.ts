@@ -15,7 +15,7 @@ test.describe("Password Reset Flow", () => {
   // Use unique emails per test to avoid Supabase rate limiting
   const testEmail = () => `reset-test-${Date.now()}-${Math.random().toString(36).substring(2, 6)}@test-example.com`;
   // This spec tests the login/reset UI — must start unauthenticated
-  test.use({ storageState: undefined });
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   test.beforeEach(async ({ page }) => {
     // Start from login page — wait for Vue to hydrate before asserting

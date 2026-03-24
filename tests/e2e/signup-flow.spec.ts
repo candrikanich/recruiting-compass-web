@@ -5,7 +5,7 @@ const RUN = Date.now();
 
 test.describe("Signup Page - Full Flow E2E Tests", () => {
   // This spec tests the signup UI — must start unauthenticated
-  test.use({ storageState: undefined });
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   test.beforeEach(async ({ page }) => {
     await page.goto("/signup");

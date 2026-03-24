@@ -5,7 +5,7 @@ import { test, expect } from "@playwright/test";
  */
 test.describe("Diagnostic Tests", () => {
   // This spec tests the login/signup UI — must start unauthenticated
-  test.use({ storageState: undefined });
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   test("should load login page", async ({ page }) => {
     await page.goto("/login");

@@ -41,10 +41,10 @@ test.describe("Parent features", () => {
 
 ## Testing Auth Flows (login, signup, password reset)
 
-These tests must start logged OUT. Add `test.use({ storageState: undefined })` to the describe block:
+These tests must start logged OUT. Use `test.use({ storageState: { cookies: [], origins: [] } })` — **not** `storageState: undefined`, which falls back to the global default (`player.json`) when that file exists (it always does in CI after global setup):
 ```typescript
 test.describe("Login flow", () => {
-  test.use({ storageState: undefined }); // start unauthenticated
+  test.use({ storageState: { cookies: [], origins: [] } }); // explicitly clear all auth state
 
   test("rejects wrong password", async ({ page }) => {
     await page.goto("/login");
@@ -60,7 +60,7 @@ Only when the test is specifically about account creation. Never use `testUsers.
 import { makeTestUser } from "../fixtures/testData";
 
 test.describe("Signup creates account", () => {
-  test.use({ storageState: undefined });
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   test("signup creates a new account", async ({ page }) => {
     const user = makeTestUser("signup-test"); // unique email per call

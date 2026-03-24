@@ -5,7 +5,7 @@ import { testUsers } from "../fixtures/testData";
 
 test.describe("Tier 1: Remember Me - Session Persistence", () => {
   // This spec tests the remember-me checkbox on the login form — must start unauthenticated
-  test.use({ storageState: undefined });
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   let authPage: AuthPage;
 
