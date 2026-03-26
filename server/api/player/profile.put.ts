@@ -26,6 +26,7 @@ const UpdateProfileSchema = z.object({
   show_athletic: z.boolean().optional(),
   show_film: z.boolean().optional(),
   show_schools: z.boolean().optional(),
+  header_color: z.enum(["slate", "blue", "emerald", "violet", "rose", "amber", "teal", "indigo"]).optional(),
   vanity_slug: z
     .string()
     .regex(/^[a-z0-9][a-z0-9-]{0,28}[a-z0-9]$/, "Invalid slug format")

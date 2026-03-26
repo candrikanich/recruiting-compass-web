@@ -211,6 +211,8 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ middleware: "auth" });
+
 import { ref, computed, onMounted, watch } from "vue";
 import { createClientLogger } from "~/utils/logger";
 import { useSchools } from "~/composables/useSchools";

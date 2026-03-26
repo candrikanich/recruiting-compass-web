@@ -55,6 +55,7 @@ describe('generateCoachFollowupNotifications — per-coach threshold', () => {
           eq: vi.fn().mockReturnThis(),
           is: vi.fn().mockReturnThis(),
           single: vi.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
           insert: mockInsert,
         }
       }
@@ -164,6 +165,7 @@ describe('generateCoachFollowupNotifications — per-coach threshold', () => {
           eq: vi.fn().mockReturnThis(),
           is: vi.fn().mockReturnThis(),
           single: vi.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
           insert: mockInsert,
         }
       }

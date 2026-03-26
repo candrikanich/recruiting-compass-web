@@ -189,6 +189,8 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ middleware: "auth" });
+
 import { ref, onMounted, computed, watch, defineAsyncComponent } from "vue";
 import { useRoute } from "vue-router";
 import { navigateTo } from "#app";

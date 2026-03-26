@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
   // This spec tests the signup UI accessibility — must start unauthenticated
-  test.use({ storageState: undefined });
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   test.beforeEach(async ({ page }) => {
     // Navigate to signup page

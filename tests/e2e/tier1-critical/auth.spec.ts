@@ -5,7 +5,7 @@ import { testUsers } from "../fixtures/testData";
 
 test.describe("Tier 1: Authentication - Critical User Flows", () => {
   // This spec tests login/signup — must start unauthenticated
-  test.use({ storageState: undefined });
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   let authPage: AuthPage;
 

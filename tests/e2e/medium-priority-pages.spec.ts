@@ -13,7 +13,7 @@ test.describe.configure({ mode: "serial" });
 // ── Auth guards — protected routes redirect to login ─────────────────────────
 
 test.describe("Protected route guards", () => {
-  test.use({ storageState: undefined });
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   const protectedRoutes = [
     // Note: /timeline and /reports use auth middleware but may handle unauthenticated SSR differently

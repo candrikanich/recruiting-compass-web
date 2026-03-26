@@ -421,6 +421,7 @@ export interface PlayerProfile {
   vanity_slug: string | null;
   is_published: boolean;
   bio: string | null;
+  header_color: string;
   show_academics: boolean;
   show_athletic: boolean;
   show_film: boolean;
@@ -442,6 +443,8 @@ export interface ProfileTrackingLink {
 /** Shape returned by GET /api/public/profile/[slug] */
 export interface PublicProfileData {
   playerName: string;
+  photoUrl: string | null;
+  headerColor: string;
   bio: string | null;
   /** null when show_academics is false */
   academics: {
@@ -456,8 +459,12 @@ export interface PublicProfileData {
   athletic: {
     primary_sport?: string;
     primary_position?: string;
+    positions?: string[];
     height_inches?: number;
     weight_lbs?: number;
+    ncaa_id?: string;
+    perfect_game_id?: string;
+    prep_baseball_id?: string;
   } | null;
   /** null when show_film is false */
   film: VideoLink[] | null;

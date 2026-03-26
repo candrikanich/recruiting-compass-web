@@ -151,8 +151,8 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-slate-100">
                 <div class="md:col-span-2">
                   <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">High School Name</label>
-                  <HighSchoolSearchInput
-                    :model-value="{ name: form.school_name, nces_school_id: form.nces_school_id || null }"
+                  <SharedHighSchoolSearchInput
+                    :model-value="{ name: form.school_name ?? '', nces_school_id: form.nces_school_id || null }"
                     :state-hint="form.school_state || ''"
                     :disabled="isParentRole"
                     @update:model-value="(v: HighSchoolSelection) => {
@@ -561,8 +561,12 @@
               :settings="playerProfile"
               :player-name="userStore.user?.full_name ?? 'Athlete'"
               :details="(form as unknown as Record<string, unknown>)"
-              :schools="[]"
+              :schools="previewSchools"
             />
+            <div v-else-if="profileLoading" class="bg-gray-50 rounded-xl p-4 animate-pulse">
+              <div class="h-3 w-32 bg-gray-200 rounded mb-4" />
+              <div class="h-24 bg-gray-200 rounded-xl" />
+            </div>
           </div>
         </div>
 
@@ -635,6 +639,7 @@ import { useFormValidation } from "~/composables/useFormValidation";
 import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
 import { useAutoSave } from "~/composables/useAutoSave";
 import { useUserStore } from "~/stores/user";
+import { useSchoolStore } from "~/stores/schools";
 import { normalizePositions } from "~/utils/positions";
 import { normalizeHandle, type SocialPlatform } from "~/utils/social";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
@@ -648,6 +653,10 @@ definePageMeta({
 });
 
 const userStore = useUserStore();
+const schoolStore = useSchoolStore();
+const previewSchools = computed(() =>
+  schoolStore.schools.map((s) => ({ id: s.id, name: s.name }))
+);
 const { isLoading, getPlayerDetails, setPlayerDetails, loadAllPreferences } =
   usePreferenceManager();
 const { showToast } = useAppToast();
@@ -664,7 +673,7 @@ const tabs = [
   { id: "public-profile", name: "Public Profile", icon: ShareIcon },
 ];
 
-const { profile: playerProfile } = usePlayerProfile();
+const { profile: playerProfile, loading: profileLoading } = usePlayerProfile();
 
 const BATS_OPTIONS = [
   { value: "R", label: "Right" },

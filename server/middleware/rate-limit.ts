@@ -157,6 +157,11 @@ function getClientIp(event: H3Event): string {
  * })
  */
 export default defineEventHandler((event) => {
+  // Rate limiting is only meaningful in production. In development and test
+  // environments the only traffic is the developer or the E2E suite — applying
+  // limits here causes false 429s during automated test runs.
+  if (process.env.NODE_ENV !== "production") return;
+
   const ip = getClientIp(event);
   const path = event.path;
   const config = getEndpointConfig(path);

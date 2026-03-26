@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Email Verification Flow", () => {
   // This spec tests the signup/email-verification UI — must start unauthenticated
-  test.use({ storageState: undefined });
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   const testEmail = `verify-test-${Date.now()}@example.com`;
   const testPassword = "TestPassword123!";

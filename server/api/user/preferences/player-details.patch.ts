@@ -83,13 +83,14 @@ export default defineEventHandler(async (event) => {
 
     const validatedDetails = validationResult.data as PlayerDetails;
 
-    // Fetch current preferences
+    // Fetch current preferences — maybeSingle() returns null with no error when
+    // no row exists yet, avoiding the PGRST116 special-case.
     const response = await supabase
       .from("user_preferences")
       .select("data")
       .eq("user_id", user.id)
       .eq("category", "player_details")
-      .single();
+      .maybeSingle();
 
     const { data: currentPrefs, error: fetchError } = response as {
       data: { data: unknown } | null;
@@ -97,8 +98,7 @@ export default defineEventHandler(async (event) => {
       error: any;
     };
 
-    if (fetchError && fetchError.code !== "PGRST116") {
-      // PGRST116 means no rows found, which is acceptable
+    if (fetchError) {
       await logError(event, {
         userId: user.id,
         action: "READ",

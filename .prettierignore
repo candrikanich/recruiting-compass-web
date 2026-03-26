@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.nuxt/
+.output/
+dist/
+.vercel/
+
+# Test artifacts
+coverage/
+playwright-report/
+test-results/
+
+# Generated files
+package-lock.json
+coverage-report.json
+
+# Claude / AI tooling
+.claude/
+
+# Project docs & planning (not source code)
+planning/
+documentation/
+docs/
+archived-docs/
+research/
+refactor/
+
+# Supabase generated
+supabase/.branches/
+supabase/.temp/
+
+# Large data files
+data/
+
+# Generated reports
+.reports/
+
+# Root Claude-specific docs (not project source docs)
+CLAUDE.md
+CLAUDE.local.md
+COMPLETED_WORK.md
+ARCHITECTURAL_REVIEW.md

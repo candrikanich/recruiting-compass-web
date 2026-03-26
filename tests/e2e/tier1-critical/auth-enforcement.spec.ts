@@ -7,13 +7,13 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Auth Enforcement - Protected Routes", () => {
   // Tests that protected routes redirect unauthenticated users — must start logged out
-  test.use({ storageState: undefined });
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   test("should redirect unauthenticated user from dashboard to login @smoke", async ({
     page,
   }) => {
     await page.goto("/dashboard");
-    // Should be redirected to login
+    await page.waitForURL(/\/login/, { timeout: 30000 });
     expect(page.url()).toContain("/login");
   });
 
@@ -21,6 +21,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
     page,
   }) => {
     await page.goto("/coaches");
+    await page.waitForURL(/\/login/, { timeout: 30000 });
     expect(page.url()).toContain("/login");
   });
 
@@ -28,6 +29,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
     page,
   }) => {
     await page.goto("/schools");
+    await page.waitForURL(/\/login/, { timeout: 30000 });
     expect(page.url()).toContain("/login");
   });
 
@@ -35,6 +37,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
     page,
   }) => {
     await page.goto("/search");
+    await page.waitForURL(/\/login/, { timeout: 30000 });
     expect(page.url()).toContain("/login");
   });
 
@@ -42,6 +45,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
     page,
   }) => {
     await page.goto("/dashboard");
+    await page.waitForURL(/\/login/, { timeout: 30000 });
     expect(page.url()).toContain(
       `redirect=${encodeURIComponent("/dashboard")}`,
     );
@@ -49,17 +53,21 @@ test.describe("Auth Enforcement - Protected Routes", () => {
 
   test("should preserve redirect URL for nested routes", async ({ page }) => {
     await page.goto("/coaches/123/analytics");
+    await page.waitForURL(/\/login/, { timeout: 30000 });
     expect(page.url()).toContain("redirect=");
     expect(page.url()).toContain("coaches");
   });
 });
 
 test.describe("Auth Enforcement - Public Routes", () => {
+  // Tests that public routes are accessible without auth — must start logged out
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test("should allow access to login page without auth @smoke", async ({ page }) => {
     await page.goto("/login");
     expect(page.url()).toContain("/login");
     // Should see login form
-    expect(page.locator("text=Sign In")).toBeVisible();
+    await expect(page.locator('[data-testid="login-button"]')).toBeVisible();
   });
 
   test("should allow access to signup page without auth", async ({ page }) => {

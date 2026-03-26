@@ -87,15 +87,16 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Fetch preferences for the target user and category
+    // Fetch preferences for the target user and category.
+    // maybeSingle() returns null with no error when 0 rows exist.
     const { data, error } = await supabase
       .from("user_preferences")
       .select("data, updated_at")
       .eq("user_id", targetUserId)
       .eq("category", category)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code === "PGRST116") {
+    if (!error && !data) {
       // No preferences found for this category - return empty
       return {
         category,
