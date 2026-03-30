@@ -43,8 +43,14 @@ vi.mock("h3", async (importOriginal) => {
   return {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
-    createError: (config: { statusCode: number; statusMessage?: string; message?: string }) => {
-      const err = new Error(config.statusMessage ?? config.message ?? "error") as Error & {
+    createError: (config: {
+      statusCode: number;
+      statusMessage?: string;
+      message?: string;
+    }) => {
+      const err = new Error(
+        config.statusMessage ?? config.message ?? "error",
+      ) as Error & {
         statusCode: number;
       };
       err.statusCode = config.statusCode;
@@ -53,9 +59,12 @@ vi.mock("h3", async (importOriginal) => {
   };
 });
 
-const { default: handler } = await import("~/server/api/account/cancel-deletion.post");
+const { default: handler } =
+  await import("~/server/api/account/cancel-deletion.post");
 
-const mockEvent = { context: {}, node: { req: {}, res: {} } } as Parameters<typeof handler>[0];
+const mockEvent = { context: {}, node: { req: {}, res: {} } } as Parameters<
+  typeof handler
+>[0];
 
 describe("POST /api/account/cancel-deletion", () => {
   beforeEach(() => {

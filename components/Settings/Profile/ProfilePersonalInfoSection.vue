@@ -1,10 +1,15 @@
 <template>
   <section class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-    <h2 class="text-lg font-semibold text-slate-900 mb-4">Personal Information</h2>
+    <h2 class="text-lg font-semibold text-slate-900 mb-4">
+      Personal Information
+    </h2>
 
     <form class="space-y-4" @submit.prevent="handleSave">
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1" for="full-name">
+        <label
+          class="block text-sm font-medium text-slate-700 mb-1"
+          for="full-name"
+        >
           Full Name <span class="text-red-500">*</span>
         </label>
         <UInput
@@ -13,11 +18,16 @@
           placeholder="Your full name"
           :disabled="loading"
         />
-        <p v-if="nameError" class="text-sm text-red-600 mt-1">{{ nameError }}</p>
+        <p v-if="nameError" class="text-sm text-red-600 mt-1">
+          {{ nameError }}
+        </p>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1" for="phone">
+        <label
+          class="block text-sm font-medium text-slate-700 mb-1"
+          for="phone"
+        >
           Phone <span class="text-slate-600 font-normal">(optional)</span>
         </label>
         <UInput
@@ -31,7 +41,8 @@
 
       <div v-if="isAthlete">
         <label class="block text-sm font-medium text-slate-700 mb-1" for="dob">
-          Date of Birth <span class="text-slate-600 font-normal">(optional)</span>
+          Date of Birth
+          <span class="text-slate-600 font-normal">(optional)</span>
         </label>
         <UInput
           id="dob"

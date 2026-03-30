@@ -1,46 +1,48 @@
 // composables/useSchoolStats.ts
-import { computed } from 'vue';
-import type { Ref } from 'vue';
-import type { School } from '~/types/models';
+import { computed } from "vue";
+import type { Ref } from "vue";
+import type { School } from "~/types/models";
 import {
   AcademicCapIcon,
   StarIcon,
   MapPinIcon,
-  ChatBubbleLeftRightIcon
-} from '@heroicons/vue/24/outline';
+  ChatBubbleLeftRightIcon,
+} from "@heroicons/vue/24/outline";
 
 export function useSchoolStats(schools: Ref<School[]>) {
   const stats = computed(() => [
     {
-      label: 'Total Schools',
+      label: "Total Schools",
       value: schools.value.length,
       icon: AcademicCapIcon,
-      color: 'blue' as const,
-      testId: 'stat-total-schools'
+      color: "blue" as const,
+      testId: "stat-total-schools",
     },
     {
-      label: 'Favorites',
-      value: schools.value.filter(s => s.is_favorite).length,
+      label: "Favorites",
+      value: schools.value.filter((s) => s.is_favorite).length,
       icon: StarIcon,
-      color: 'amber' as const,
-      testId: 'stat-favorites'
+      color: "amber" as const,
+      testId: "stat-favorites",
     },
     {
-      label: 'Visited',
-      value: schools.value.filter(s =>
-        s.status === 'official_visit_scheduled' || s.status === 'official_visit_invited'
+      label: "Visited",
+      value: schools.value.filter(
+        (s) =>
+          s.status === "official_visit_scheduled" ||
+          s.status === "official_visit_invited",
       ).length,
       icon: MapPinIcon,
-      color: 'green' as const,
-      testId: 'stat-visited'
+      color: "green" as const,
+      testId: "stat-visited",
     },
     {
-      label: 'Contacted',
-      value: schools.value.filter(s => s.status === 'contacted').length,
+      label: "Contacted",
+      value: schools.value.filter((s) => s.status === "contacted").length,
       icon: ChatBubbleLeftRightIcon,
-      color: 'purple' as const,
-      testId: 'stat-contacted'
-    }
+      color: "purple" as const,
+      testId: "stat-contacted",
+    },
   ]);
 
   return { stats };

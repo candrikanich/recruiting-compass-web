@@ -837,7 +837,11 @@ describe("pages/schools/[id]/coaches.vue", () => {
           school_id: "other-school",
           first_name: "Other",
         }),
-        createMockCoach({ id: "coach-3", school_id: "school-123", first_name: "Jane" }),
+        createMockCoach({
+          id: "coach-3",
+          school_id: "school-123",
+          first_name: "Jane",
+        }),
       ];
 
       const wrapper = mount(SchoolCoachesPage);

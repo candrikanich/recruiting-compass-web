@@ -163,10 +163,7 @@ onMounted(async () => {
 
     <!-- File Upload -->
     <div>
-      <label
-        for="file"
-        class="block text-sm font-medium mb-2 text-slate-700"
-      >
+      <label for="file" class="block text-sm font-medium mb-2 text-slate-700">
         Select File <span class="text-red-500" aria-hidden="true">*</span>
         <span class="sr-only">(required)</span>
       </label>

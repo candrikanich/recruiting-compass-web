@@ -147,7 +147,13 @@ export const useCoachStore = defineStore("coaches", () => {
   async function fetchAllCoaches(filterOptions?: CoachFilters) {
     // Guard: don't refetch if already loaded
     // Only return cache if it was populated without filters
-    if (isFetched.value && coaches.value.length > 0 && !filterOptions && !lastFetchedWithFilters.value) return;
+    if (
+      isFetched.value &&
+      coaches.value.length > 0 &&
+      !filterOptions &&
+      !lastFetchedWithFilters.value
+    )
+      return;
 
     loading.value = true;
     error.value = null;
@@ -369,9 +375,7 @@ export const useCoachStore = defineStore("coaches", () => {
    * Delete a coach
    */
   async function deleteCoach(id: string) {
-    const { useFamilyContext } = await import(
-      "~/composables/useFamilyContext"
-    );
+    const { useFamilyContext } = await import("~/composables/useFamilyContext");
     const userStore = useUserStore();
     const activeFamily = useFamilyContext();
     const supabase = useSupabase();

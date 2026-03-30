@@ -298,8 +298,9 @@ describe("useOffers", () => {
      */
     function setupDeleteMock(result: { error: Error | null }) {
       // First .eq() → returns an object whose second .eq() resolves with result
-      mockQuery.eq
-        .mockReturnValueOnce({ eq: vi.fn().mockResolvedValueOnce(result) });
+      mockQuery.eq.mockReturnValueOnce({
+        eq: vi.fn().mockResolvedValueOnce(result),
+      });
     }
 
     it("removes the offer from the offers list after delete", async () => {

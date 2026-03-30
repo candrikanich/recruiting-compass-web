@@ -56,9 +56,8 @@ describe("GET /api/colleges/search", () => {
       Object.assign(new Error("Unauthorized"), { statusCode: 401 }),
     );
 
-    const { default: handler } = await import(
-      "~/server/api/colleges/search.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/colleges/search.get");
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 401 });
   });
 
@@ -68,9 +67,8 @@ describe("GET /api/colleges/search", () => {
     vi.mocked(requireAuth).mockResolvedValue(undefined);
     vi.mocked(h3.getQuery).mockReturnValue({});
 
-    const { default: handler } = await import(
-      "~/server/api/colleges/search.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/colleges/search.get");
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 400 });
   });
 
@@ -80,9 +78,8 @@ describe("GET /api/colleges/search", () => {
     vi.mocked(requireAuth).mockResolvedValue(undefined);
     vi.mocked(h3.getQuery).mockReturnValue({ q: "ab" });
 
-    const { default: handler } = await import(
-      "~/server/api/colleges/search.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/colleges/search.get");
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 422 });
   });
 
@@ -112,9 +109,8 @@ describe("GET /api/colleges/search", () => {
       }),
     );
 
-    const { default: handler } = await import(
-      "~/server/api/colleges/search.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/colleges/search.get");
     const result = await handler(mockEvent);
 
     expect(result).toEqual(mockResults);
@@ -142,9 +138,8 @@ describe("GET /api/colleges/search", () => {
       }),
     );
 
-    const { default: handler } = await import(
-      "~/server/api/colleges/search.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/colleges/search.get");
     const result = await handler(mockEvent);
 
     expect(JSON.stringify(result)).not.toContain("test-api-key");
@@ -161,9 +156,8 @@ describe("GET /api/colleges/search", () => {
       vi.fn().mockResolvedValue({ ok: false, status: 429 }),
     );
 
-    const { default: handler } = await import(
-      "~/server/api/colleges/search.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/colleges/search.get");
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 429 });
   });
 
@@ -178,9 +172,8 @@ describe("GET /api/colleges/search", () => {
       vi.fn().mockResolvedValue({ ok: false, status: 401 }),
     );
 
-    const { default: handler } = await import(
-      "~/server/api/colleges/search.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/colleges/search.get");
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 502 });
   });
 
@@ -195,9 +188,8 @@ describe("GET /api/colleges/search", () => {
       vi.fn().mockRejectedValue(new Error("Network error")),
     );
 
-    const { default: handler } = await import(
-      "~/server/api/colleges/search.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/colleges/search.get");
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 503 });
   });
 
@@ -220,9 +212,8 @@ describe("GET /api/colleges/search", () => {
       }),
     );
 
-    const { default: handler } = await import(
-      "~/server/api/colleges/search.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/colleges/search.get");
     const result = await handler(mockEvent);
 
     expect(result).toEqual(mockResults);
@@ -240,14 +231,12 @@ describe("GET /api/colleges/search", () => {
       "fetch",
       vi.fn().mockResolvedValue({
         ok: true,
-        json: () =>
-          Promise.resolve({ metadata: { total: 0 }, results: [] }),
+        json: () => Promise.resolve({ metadata: { total: 0 }, results: [] }),
       }),
     );
 
-    const { default: handler } = await import(
-      "~/server/api/colleges/search.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/colleges/search.get");
     await handler(mockEvent);
 
     const fetchCall = vi.mocked(global.fetch).mock.calls[0][0] as string;

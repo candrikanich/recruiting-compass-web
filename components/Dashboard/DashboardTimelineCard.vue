@@ -3,9 +3,7 @@
     v-if="!phaseLoading"
     class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-8"
   >
-    <div
-      class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6"
-    >
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
       <!-- Phase Badge -->
       <div class="flex items-center gap-3 shrink-0">
         <div
@@ -56,7 +54,10 @@ import { ref, computed, onMounted } from "vue";
 import { usePhaseCalculation } from "~/composables/usePhaseCalculation";
 import { useStatusScore } from "~/composables/useStatusScore";
 import { useTasks } from "~/composables/useTasks";
-import { getWhatMattersNow, type WhatMattersItem } from "~/utils/whatMattersNow";
+import {
+  getWhatMattersNow,
+  type WhatMattersItem,
+} from "~/utils/whatMattersNow";
 import type { Phase } from "~/types/timeline";
 
 const {
@@ -65,11 +66,7 @@ const {
   fetchPhase,
 } = usePhaseCalculation();
 
-const {
-  statusScore,
-  statusColor,
-  fetchStatusScore,
-} = useStatusScore();
+const { statusScore, statusColor, fetchStatusScore } = useStatusScore();
 
 const { fetchTasksWithStatus, tasksWithStatus } = useTasks();
 

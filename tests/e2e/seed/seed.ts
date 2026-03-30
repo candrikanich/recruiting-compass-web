@@ -139,7 +139,9 @@ async function seedDatabase() {
       (u) => u.email === "player@test.com",
     );
     if (!playerUser) {
-      throw new Error("player@test.com not found — cannot seed schools without user_id");
+      throw new Error(
+        "player@test.com not found — cannot seed schools without user_id",
+      );
     }
     const playerUserId = playerUser.id;
 

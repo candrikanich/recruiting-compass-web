@@ -44,8 +44,8 @@ export default defineEventHandler((event) => {
   //
   // Vercel Speed Insights: va.vercel-scripts.com, vitals.vercel-insights.com, blob: workers
   // Supabase Storage: frame-src/object-src for PDF previews, wss: for WebSocket
-  const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL || '';
-  const supabaseWss = supabaseUrl.replace('https://', 'wss://');
+  const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL || "";
+  const supabaseWss = supabaseUrl.replace("https://", "wss://");
   const cspHeader = isProduction
     ? `default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' ${supabaseUrl} ${supabaseWss} https://vitals.vercel-insights.com; worker-src 'self' blob:; frame-src 'self' ${supabaseUrl}; object-src 'self' ${supabaseUrl}; frame-ancestors 'none'`
     : `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https: http://localhost:*; worker-src 'self' blob:; frame-src 'self' ${supabaseUrl}; object-src 'self' ${supabaseUrl}; frame-ancestors 'self'`;

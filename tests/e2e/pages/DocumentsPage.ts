@@ -14,8 +14,11 @@ export class DocumentsPage extends BasePage {
   // Document Management
   async clickAddDocument() {
     // Click the "Add Document" button in the header to toggle upload form
-    await this.page.getByRole('button', { name: /add document/i }).click();
-    await this.page.locator('input[type="file"], select[name="type"]').first().waitFor({ state: "visible" });
+    await this.page.getByRole("button", { name: /add document/i }).click();
+    await this.page
+      .locator('input[type="file"], select[name="type"]')
+      .first()
+      .waitFor({ state: "visible" });
   }
 
   async expectDocumentsVisible() {
@@ -47,9 +50,15 @@ export class DocumentsPage extends BasePage {
     const filterOption = await this.page.locator(`text=${filterType}`).first();
     if (await filterOption.isVisible()) {
       await filterOption.click();
-      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      await this.page
+        .locator('[data-testid*="loading"], .animate-spin')
+        .waitFor({ state: "hidden" })
         .catch((err: Error) => {
-          if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+          if (
+            !err.message.includes("not found") &&
+            !err.message.includes("strict mode")
+          )
+            throw err;
         });
     }
   }
@@ -57,15 +66,24 @@ export class DocumentsPage extends BasePage {
   async clearAllFilters() {
     // Look for clear filters button
     await this.click('button:has-text("Clear"), button:has-text("Reset")');
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   // Document Actions
   async clickDocument(documentName: string) {
     await this.click(`text=${documentName}`);
-    await this.page.locator('[role="dialog"], [data-testid*="document-detail"]').waitFor({ state: "visible" })
+    await this.page
+      .locator('[role="dialog"], [data-testid*="document-detail"]')
+      .waitFor({ state: "visible" })
       .catch((err: Error) => {
-        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        if (
+          !err.message.includes("not found") &&
+          !err.message.includes("strict mode")
+        )
+          throw err;
       });
   }
 
@@ -82,9 +100,15 @@ export class DocumentsPage extends BasePage {
   async deleteDocument(documentName: string) {
     // Select document and delete
     await this.click(`text=${documentName}`);
-    await this.page.locator('[role="dialog"], [data-testid*="document-detail"]').waitFor({ state: "visible" })
+    await this.page
+      .locator('[role="dialog"], [data-testid*="document-detail"]')
+      .waitFor({ state: "visible" })
       .catch((err: Error) => {
-        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        if (
+          !err.message.includes("not found") &&
+          !err.message.includes("strict mode")
+        )
+          throw err;
       });
 
     // Look for delete option
@@ -105,9 +129,15 @@ export class DocumentsPage extends BasePage {
       .first();
     if (await searchInput.isVisible()) {
       await searchInput.fill(query);
-      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      await this.page
+        .locator('[data-testid*="loading"], .animate-spin')
+        .waitFor({ state: "hidden" })
         .catch((err: Error) => {
-          if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+          if (
+            !err.message.includes("not found") &&
+            !err.message.includes("strict mode")
+          )
+            throw err;
         });
     }
   }
@@ -127,9 +157,15 @@ export class DocumentsPage extends BasePage {
 
   async downloadDocument(documentName: string) {
     await this.click(`text=${documentName}`);
-    await this.page.locator('[role="dialog"], [data-testid*="document-detail"]').waitFor({ state: "visible" })
+    await this.page
+      .locator('[role="dialog"], [data-testid*="document-detail"]')
+      .waitFor({ state: "visible" })
       .catch((err: Error) => {
-        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        if (
+          !err.message.includes("not found") &&
+          !err.message.includes("strict mode")
+        )
+          throw err;
       });
 
     // Look for download button
@@ -179,10 +215,16 @@ export class DocumentsPage extends BasePage {
   async selectMultipleDocuments(documentNames: string[]) {
     for (const doc of documentNames) {
       await this.click(`text=${doc}`);
-      await this.page.locator('[role="dialog"], [data-testid*="document-detail"]').waitFor({ state: "visible" })
-      .catch((err: Error) => {
-        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
-      });
+      await this.page
+        .locator('[role="dialog"], [data-testid*="document-detail"]')
+        .waitFor({ state: "visible" })
+        .catch((err: Error) => {
+          if (
+            !err.message.includes("not found") &&
+            !err.message.includes("strict mode")
+          )
+            throw err;
+        });
     }
   }
 
@@ -199,9 +241,15 @@ export class DocumentsPage extends BasePage {
       .first();
     if (await sortButton.isVisible()) {
       await sortButton.click();
-      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      await this.page
+        .locator('[data-testid*="loading"], .animate-spin')
+        .waitFor({ state: "hidden" })
         .catch((err: Error) => {
-          if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+          if (
+            !err.message.includes("not found") &&
+            !err.message.includes("strict mode")
+          )
+            throw err;
         });
     }
   }
@@ -212,9 +260,15 @@ export class DocumentsPage extends BasePage {
       .first();
     if (await viewButton.isVisible()) {
       await viewButton.click();
-      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+      await this.page
+        .locator('[data-testid*="loading"], .animate-spin')
+        .waitFor({ state: "hidden" })
         .catch((err: Error) => {
-          if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+          if (
+            !err.message.includes("not found") &&
+            !err.message.includes("strict mode")
+          )
+            throw err;
         });
     }
   }

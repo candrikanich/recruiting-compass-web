@@ -22,7 +22,10 @@ export default defineEventHandler(async (event) => {
 
     if (error) {
       logger.error("Failed to set deletion_requested_at", error);
-      throw createError({ statusCode: 500, statusMessage: "Failed to request account deletion" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to request account deletion",
+      });
     }
 
     logger.info("Account deletion requested", { userId: user.id });
@@ -30,6 +33,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to request account deletion", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to request account deletion" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to request account deletion",
+    });
   }
 });

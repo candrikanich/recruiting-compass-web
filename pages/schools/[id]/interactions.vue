@@ -184,8 +184,6 @@ import type { Interaction } from "~/types/models";
 import { ChatBubbleLeftRightIcon } from "@heroicons/vue/24/outline";
 import { useLiveRegion } from "~/composables/useLiveRegion";
 
-
-
 const route = useRoute();
 const id = route.params.id as string;
 

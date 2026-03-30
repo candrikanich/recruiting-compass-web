@@ -2,21 +2,19 @@
   "headers": [
     {
       "source": "/.well-known/apple-app-site-association",
-      "headers": [
-        { "key": "Content-Type", "value": "application/json" }
-      ]
+      "headers": [{ "key": "Content-Type", "value": "application/json" }]
     }
   ],
   "crons": [
     {
       "path": "/api/cron/cleanup-expired-invites",
-      "schedule": "0 0 * * *" 
+      "schedule": "0 0 * * *"
     },
-        {
+    {
       "path": "/api/cron/process-account-deletions",
       "schedule": "0 0 * * *"
     },
-        {
+    {
       "path": "/api/cron/daily-suggestions",
       "schedule": "0 7 * * *"
     }

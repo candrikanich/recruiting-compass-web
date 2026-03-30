@@ -39,7 +39,11 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  if (!ALLOWED_CATEGORIES.includes(category as (typeof ALLOWED_CATEGORIES)[number])) {
+  if (
+    !ALLOWED_CATEGORIES.includes(
+      category as (typeof ALLOWED_CATEGORIES)[number],
+    )
+  ) {
     throw createError({
       statusCode: 422,
       statusMessage: "Invalid category",
@@ -53,7 +57,7 @@ export default defineEventHandler(async (event) => {
 
     const supabase = useSupabaseAdmin();
 
-    const result = await supabase
+    const result = (await supabase
       .from("user_preferences")
       .upsert(
         {
@@ -65,7 +69,7 @@ export default defineEventHandler(async (event) => {
         { onConflict: "user_id,category" },
       )
       .select()
-      .single() as {
+      .single()) as {
       data: Database["public"]["Tables"]["user_preferences"]["Row"] | null;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any;

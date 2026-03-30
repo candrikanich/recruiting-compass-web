@@ -4,37 +4,63 @@
 
     <UAlert v-if="emailChangePending" color="info" class="mb-4">
       <template #description>
-        A verification email has been sent to your new address. Check your inbox to confirm the change.
+        A verification email has been sent to your new address. Check your inbox
+        to confirm the change.
       </template>
     </UAlert>
 
     <p class="text-sm text-slate-600 mb-4">
-      <span class="font-medium text-slate-800">Current:</span> {{ store.user?.email }}
+      <span class="font-medium text-slate-800">Current:</span>
+      {{ store.user?.email }}
     </p>
 
     <div v-if="!showForm">
-      <UButton variant="outline" color="neutral" size="sm" @click="showForm = true">
+      <UButton
+        variant="outline"
+        color="neutral"
+        size="sm"
+        @click="showForm = true"
+      >
         Change Email
       </UButton>
     </div>
 
     <form v-else class="space-y-4" @submit.prevent="handleSubmit">
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1" for="new-email">
+        <label
+          class="block text-sm font-medium text-slate-700 mb-1"
+          for="new-email"
+        >
           New Email Address
         </label>
-        <UInput id="new-email" v-model="newEmail" type="email" placeholder="new@example.com" :disabled="loading" />
+        <UInput
+          id="new-email"
+          v-model="newEmail"
+          type="email"
+          placeholder="new@example.com"
+          :disabled="loading"
+        />
       </div>
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1" for="current-pass-email">
+        <label
+          class="block text-sm font-medium text-slate-700 mb-1"
+          for="current-pass-email"
+        >
           Current Password (to confirm)
         </label>
-        <UInput id="current-pass-email" v-model="currentPassword" type="password" :disabled="loading" />
+        <UInput
+          id="current-pass-email"
+          v-model="currentPassword"
+          type="password"
+          :disabled="loading"
+        />
         <p v-if="error" class="text-sm text-red-600 mt-1">{{ error }}</p>
       </div>
       <div class="flex items-center gap-3">
         <UButton type="submit" :loading="loading">Update Email</UButton>
-        <UButton type="button" variant="ghost" color="neutral" @click="cancel">Cancel</UButton>
+        <UButton type="button" variant="ghost" color="neutral" @click="cancel"
+          >Cancel</UButton
+        >
       </div>
     </form>
   </section>
@@ -46,7 +72,12 @@ import { useUserStore } from "~/stores/user";
 import { useUserProfile } from "~/composables/useUserProfile";
 
 const store = useUserStore();
-const { changeEmail, emailLoading: loading, emailError: error, emailChangePending } = useUserProfile();
+const {
+  changeEmail,
+  emailLoading: loading,
+  emailError: error,
+  emailChangePending,
+} = useUserProfile();
 
 const showForm = ref(false);
 const newEmail = ref("");

@@ -32,7 +32,9 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
       statusMessage: "SYNC_API_KEY not configured — endpoint disabled",
     });
   }
-  const bearerSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+  const bearerSecret = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : undefined;
   if (!bearerSecret || !verifySharedSecret(bearerSecret, syncApiKey)) {
     throw createError({
       statusCode: 401,
@@ -51,7 +53,9 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
 
     // Initialize services
     const twitterBearerToken = config.twitterBearerToken as string | undefined;
-    const instagramAccessToken = config.instagramAccessToken as string | undefined;
+    const instagramAccessToken = config.instagramAccessToken as
+      | string
+      | undefined;
     const twitterService = new TwitterService(twitterBearerToken ?? "");
     const instagramService = new InstagramService(instagramAccessToken ?? "");
 
@@ -177,7 +181,10 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
               if (!insertError) {
                 postsInserted++;
               } else {
-                logger.warn("Failed to insert post", { post_url: post.post_url, error: insertError });
+                logger.warn("Failed to insert post", {
+                  post_url: post.post_url,
+                  error: insertError,
+                });
               }
             }
           }

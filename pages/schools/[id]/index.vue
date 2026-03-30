@@ -235,8 +235,6 @@ const EmailSendModal = defineAsyncComponent(
 );
 import DesignSystemConfirmDialog from "~/components/DesignSystem/ConfirmDialog.vue";
 
-
-
 const route = useRoute();
 const id = route.params.id as string;
 const userStore = useUserStore();
@@ -252,7 +250,8 @@ const {
   loading: collegeDataLoading,
   error: collegeDataError,
 } = useCollegeData();
-const { getPlayerDetails, getHomeLocation, loadAllPreferences } = usePreferenceManager();
+const { getPlayerDetails, getHomeLocation, loadAllPreferences } =
+  usePreferenceManager();
 const { $fetchAuth } = useAuthFetch();
 const { showToast } = useAppToast();
 const { announcement, announce, liveRegionAttrs } = useLiveRegion();
@@ -308,7 +307,9 @@ const athleteProfile = computed<AthleteProfileForFit>(() => {
 
 const schoolAcademicInfo = computed<SchoolAcademicInfo>(() => {
   const info = school.value?.academic_info;
-  return (typeof info === "object" && info !== null ? info : {}) as SchoolAcademicInfo;
+  return (
+    typeof info === "object" && info !== null ? info : {}
+  ) as SchoolAcademicInfo;
 });
 
 const fitSignals = computed<SchoolFitSignals | null>(() => {
@@ -331,7 +332,10 @@ const calculatedSize = computed(() =>
   ),
 );
 // Distance calculation using composable
-const calculatedDistanceFromHome = useSingleSchoolDistance(school, getHomeLocation);
+const calculatedDistanceFromHome = useSingleSchoolDistance(
+  school,
+  getHomeLocation,
+);
 
 // Handlers - Status Management (using createUpdateHandler utility)
 const handleStatusUpdate = createUpdateHandler(school, updateStatus);

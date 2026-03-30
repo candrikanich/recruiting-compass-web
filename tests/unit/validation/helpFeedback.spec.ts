@@ -3,17 +3,26 @@ import { helpFeedbackSchema } from "~/utils/validation/schemas";
 
 describe("helpFeedbackSchema", () => {
   it("accepts valid thumbs up payload", () => {
-    const result = helpFeedbackSchema.safeParse({ page: "/help/schools", helpful: true });
+    const result = helpFeedbackSchema.safeParse({
+      page: "/help/schools",
+      helpful: true,
+    });
     expect(result.success).toBe(true);
   });
 
   it("accepts valid thumbs down payload", () => {
-    const result = helpFeedbackSchema.safeParse({ page: "/help/phases", helpful: false });
+    const result = helpFeedbackSchema.safeParse({
+      page: "/help/phases",
+      helpful: false,
+    });
     expect(result.success).toBe(true);
   });
 
   it("rejects page that does not start with /", () => {
-    const result = helpFeedbackSchema.safeParse({ page: "help/schools", helpful: true });
+    const result = helpFeedbackSchema.safeParse({
+      page: "help/schools",
+      helpful: true,
+    });
     expect(result.success).toBe(false);
   });
 
@@ -23,12 +32,18 @@ describe("helpFeedbackSchema", () => {
   });
 
   it("rejects page longer than 200 characters", () => {
-    const result = helpFeedbackSchema.safeParse({ page: "/" + "a".repeat(200), helpful: true });
+    const result = helpFeedbackSchema.safeParse({
+      page: "/" + "a".repeat(200),
+      helpful: true,
+    });
     expect(result.success).toBe(false);
   });
 
   it("rejects non-boolean helpful", () => {
-    const result = helpFeedbackSchema.safeParse({ page: "/help/schools", helpful: "yes" });
+    const result = helpFeedbackSchema.safeParse({
+      page: "/help/schools",
+      helpful: "yes",
+    });
     expect(result.success).toBe(false);
   });
 

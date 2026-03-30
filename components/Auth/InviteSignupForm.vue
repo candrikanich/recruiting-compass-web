@@ -56,7 +56,10 @@ const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
 
     <!-- Date of Birth (players only — COPPA compliance) -->
     <div v-if="role === 'player'">
-      <label for="invite-dob" class="block text-sm font-medium text-slate-700 mb-1.5">
+      <label
+        for="invite-dob"
+        class="block text-sm font-medium text-slate-700 mb-1.5"
+      >
         Player Date of Birth <span class="text-red-600">*</span>
       </label>
       <input
@@ -68,9 +71,13 @@ const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
         :value="dateOfBirth ?? ''"
         :disabled="loading"
         class="w-full px-3 py-2 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
-        @input="emit('update:dateOfBirth', ($event.target as HTMLInputElement).value)"
+        @input="
+          emit('update:dateOfBirth', ($event.target as HTMLInputElement).value)
+        "
       />
-      <p class="mt-1 text-xs text-slate-500">Players must be 13 or older to register.</p>
+      <p class="mt-1 text-xs text-slate-500">
+        Players must be 13 or older to register.
+      </p>
     </div>
 
     <DesignSystemInput
@@ -112,13 +119,22 @@ const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
         :checked="agreeToTerms ?? false"
         :disabled="loading"
         class="mt-1 rounded-sm border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
-        @change="emit('update:agreeToTerms', ($event.target as HTMLInputElement).checked)"
+        @change="
+          emit(
+            'update:agreeToTerms',
+            ($event.target as HTMLInputElement).checked,
+          )
+        "
       />
       <label for="invite-terms" class="text-sm text-slate-600">
         I agree to the
-        <NuxtLink to="/legal/terms" class="text-blue-600 hover:underline">Terms</NuxtLink>
+        <NuxtLink to="/legal/terms" class="text-blue-600 hover:underline"
+          >Terms</NuxtLink
+        >
         and
-        <NuxtLink to="/legal/privacy" class="text-blue-600 hover:underline">Privacy Policy</NuxtLink>
+        <NuxtLink to="/legal/privacy" class="text-blue-600 hover:underline"
+          >Privacy Policy</NuxtLink
+        >
       </label>
     </div>
 

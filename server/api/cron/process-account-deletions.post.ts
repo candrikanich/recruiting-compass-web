@@ -41,7 +41,9 @@ export default defineEventHandler(async (event) => {
   const authHeader = getHeader(event, "authorization");
   const cronSecretHeader = getHeader(event, "x-cron-secret");
   const cronSecret = process.env.CRON_SECRET;
-  const bearerSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+  const bearerSecret = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : undefined;
 
   const isAuthorized =
     cronSecret &&
@@ -53,7 +55,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const supabase = useSupabaseAdmin();
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const thirtyDaysAgo = new Date(
+    Date.now() - 30 * 24 * 60 * 60 * 1000,
+  ).toISOString();
 
   // Find accounts ready for hard deletion
   const { data: pendingUsers, error: fetchError } = await supabase
@@ -82,9 +86,14 @@ export default defineEventHandler(async (event) => {
       // 1. Delete application data
       for (const { table, column } of DATA_TABLES) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error } = await (supabase.from(table as any) as any).delete().eq(column, user.id);
+        const { error } = await (supabase.from(table as any) as any)
+          .delete()
+          .eq(column, user.id);
         if (error && error.code !== "42P01") {
-          logger.warn(`Failed to delete from ${table}.${column}`, { userId: user.id, error });
+          logger.warn(`Failed to delete from ${table}.${column}`, {
+            userId: user.id,
+            error,
+          });
         }
       }
 
@@ -102,17 +111,30 @@ export default defineEventHandler(async (event) => {
 
         if ((count ?? 0) <= 1) {
           // Last member — dissolve the family unit
-          await supabase.from("family_invitations").delete().eq("family_unit_id", family_unit_id);
-          await supabase.from("family_members").delete().eq("family_unit_id", family_unit_id);
+          await supabase
+            .from("family_invitations")
+            .delete()
+            .eq("family_unit_id", family_unit_id);
+          await supabase
+            .from("family_members")
+            .delete()
+            .eq("family_unit_id", family_unit_id);
           await supabase.from("family_units").delete().eq("id", family_unit_id);
         } else {
           // Detach user from unit
-          await supabase.from("family_members").delete().eq("user_id", user.id).eq("family_unit_id", family_unit_id);
+          await supabase
+            .from("family_members")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("family_unit_id", family_unit_id);
         }
       }
 
       // 3. Cancel remaining invitations sent by this user
-      await supabase.from("family_invitations").delete().eq("invited_by", user.id);
+      await supabase
+        .from("family_invitations")
+        .delete()
+        .eq("invited_by", user.id);
 
       // 4. Delete user record
       await supabase.from("users").delete().eq("id", user.id);
@@ -121,10 +143,16 @@ export default defineEventHandler(async (event) => {
       try {
         await supabase.auth.admin.deleteUser(user.id);
       } catch (authErr) {
-        logger.warn("Failed to delete auth user (non-fatal)", { userId: user.id, authErr });
+        logger.warn("Failed to delete auth user (non-fatal)", {
+          userId: user.id,
+          authErr,
+        });
       }
 
-      logger.info("Account hard-deleted", { userId: user.id, email: user.email });
+      logger.info("Account hard-deleted", {
+        userId: user.id,
+        email: user.email,
+      });
       deleted++;
     } catch (err) {
       logger.error("Failed to hard-delete account", { userId: user.id, err });

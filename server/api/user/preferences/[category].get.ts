@@ -64,7 +64,11 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  if (!ALLOWED_CATEGORIES.includes(category as (typeof ALLOWED_CATEGORIES)[number])) {
+  if (
+    !ALLOWED_CATEGORIES.includes(
+      category as (typeof ALLOWED_CATEGORIES)[number],
+    )
+  ) {
     throw createError({
       statusCode: 400,
       statusMessage: "Invalid category",
@@ -82,7 +86,10 @@ export default defineEventHandler(async (event) => {
         const athleteId = await getLinkedAthleteId(user.id, supabase);
         if (athleteId) {
           targetUserId = athleteId;
-          logger.info("Parent viewing athlete preferences", { category, athleteId });
+          logger.info("Parent viewing athlete preferences", {
+            category,
+            athleteId,
+          });
         }
       }
     }

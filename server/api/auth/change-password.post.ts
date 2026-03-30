@@ -14,7 +14,10 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "auth/change-password");
   try {
     const user = await requireAuth(event);
-    const body = await readBody<{ currentPassword: string; newPassword: string }>(event);
+    const body = await readBody<{
+      currentPassword: string;
+      newPassword: string;
+    }>(event);
 
     const parsed = changePasswordSchema.safeParse(body);
     if (!parsed.success) {
@@ -25,7 +28,10 @@ export default defineEventHandler(async (event) => {
     const { currentPassword, newPassword } = parsed.data;
 
     if (!user.email) {
-      throw createError({ statusCode: 401, statusMessage: "User account has no email address" });
+      throw createError({
+        statusCode: 401,
+        statusMessage: "User account has no email address",
+      });
     }
 
     const anonClient = createClient(
@@ -41,16 +47,25 @@ export default defineEventHandler(async (event) => {
     const supabase = useSupabaseAdmin();
 
     if (signInError) {
-      throw createError({ statusCode: 401, statusMessage: "Current password is incorrect" });
+      throw createError({
+        statusCode: 401,
+        statusMessage: "Current password is incorrect",
+      });
     }
 
-    const { error: updateError } = await supabase.auth.admin.updateUserById(user.id, {
-      password: newPassword,
-    });
+    const { error: updateError } = await supabase.auth.admin.updateUserById(
+      user.id,
+      {
+        password: newPassword,
+      },
+    );
 
     if (updateError) {
       logger.error("Failed to update password", updateError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to update password" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to update password",
+      });
     }
 
     logger.info("Password changed successfully");
@@ -58,6 +73,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Unexpected error changing password", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to change password" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to change password",
+    });
   }
 });

@@ -1,11 +1,15 @@
 <template>
   <div
     class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
-    :class="{'pb-32 sm:pb-20': true}"
+    :class="{ 'pb-32 sm:pb-20': true }"
   >
     <!-- Sticky Status Header (Offsets global header which is top-0) -->
-    <div class="sticky top-16 z-30 bg-white/90 backdrop-blur-lg border-b border-slate-200">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+    <div
+      class="sticky top-16 z-30 bg-white/90 backdrop-blur-lg border-b border-slate-200"
+    >
+      <div
+        class="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center"
+      >
         <div class="flex items-center gap-3">
           <NuxtLink
             to="/settings"
@@ -15,12 +19,22 @@
             <ArrowLeftIcon class="w-5 h-5" />
           </NuxtLink>
           <div class="flex items-center gap-2">
-            <h1 class="text-sm font-bold text-slate-900 hidden sm:block">Player Details</h1>
-            <div v-if="saving || isSaving" class="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-blue-600 font-bold">
-              <div class="w-2.5 h-2.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <h1 class="text-sm font-bold text-slate-900 hidden sm:block">
+              Player Details
+            </h1>
+            <div
+              v-if="saving || isSaving"
+              class="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-blue-600 font-bold"
+            >
+              <div
+                class="w-2.5 h-2.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"
+              ></div>
               Saving
             </div>
-            <div v-else class="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-emerald-600 font-bold">
+            <div
+              v-else
+              class="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-emerald-600 font-bold"
+            >
               <CheckCircleIcon class="w-3 h-3" />
               Saved
             </div>
@@ -34,7 +48,9 @@
 
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
       <!-- Profile Completeness Hero -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8">
+      <div
+        class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8"
+      >
         <ProfileCompleteness :percentage="profileCompleteness" />
       </div>
 
@@ -48,7 +64,7 @@
             'flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all',
             currentTab === tab.id
               ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50',
           ]"
         >
           <component :is="tab.icon" class="w-4 h-4" />
@@ -57,7 +73,9 @@
       </nav>
 
       <!-- Mobile Tab Bar (Sticky Bottom, iOS Style) -->
-      <nav class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)]">
+      <nav
+        class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)]"
+      >
         <div class="flex justify-around items-center h-16">
           <button
             v-for="tab in tabs"
@@ -66,8 +84,14 @@
             class="flex flex-col items-center justify-center flex-1 gap-1"
             :class="currentTab === tab.id ? 'text-blue-600' : 'text-slate-400'"
           >
-            <component :is="tab.icon" class="w-6 h-6" :class="currentTab === tab.id ? 'fill-blue-50' : ''" />
-            <span class="text-[10px] font-bold uppercase tracking-tighter">{{ tab.name }}</span>
+            <component
+              :is="tab.icon"
+              class="w-6 h-6"
+              :class="currentTab === tab.id ? 'fill-blue-50' : ''"
+            />
+            <span class="text-[10px] font-bold uppercase tracking-tighter">{{
+              tab.name
+            }}</span>
           </button>
         </div>
       </nav>
@@ -77,7 +101,9 @@
         v-if="isLoading"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+        ></div>
         <p class="text-slate-600 font-medium">Loading your profile...</p>
       </div>
 
@@ -97,28 +123,40 @@
         <div>
           <h3 class="text-sm font-bold text-amber-900">Read-only view</h3>
           <p class="text-xs text-amber-700 mt-0.5 font-medium leading-relaxed">
-            You\'re viewing this profile as a parent. Your athlete is the primary owner of this data.
+            You\'re viewing this profile as a parent. Your athlete is the
+            primary owner of this data.
           </p>
         </div>
       </div>
 
       <div v-if="!isLoading" class="space-y-6">
         <!-- TAB: BASICS -->
-        <div v-show="currentTab === 'basics'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div
+          v-show="currentTab === 'basics'"
+          class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+        >
+          <div
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+          >
             <div class="p-5 border-b border-slate-100 bg-slate-50/50">
               <h2 class="text-base font-bold text-slate-900">Essential Info</h2>
-              <p class="text-xs text-slate-500 font-medium">The core details recruiters see first.</p>
+              <p class="text-xs text-slate-500 font-medium">
+                The core details recruiters see first.
+              </p>
             </div>
-            
+
             <div class="p-6 space-y-8">
               <!-- Profile Photo -->
-              <div class="flex flex-col sm:flex-row gap-8 items-center sm:items-start">
+              <div
+                class="flex flex-col sm:flex-row gap-8 items-center sm:items-start"
+              >
                 <SettingsProfilePhotoUpload />
                 <div class="flex-1 space-y-5 w-full">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
+                      <label
+                        class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                      >
                         Graduation Year <span class="text-red-500">*</span>
                       </label>
                       <select
@@ -128,11 +166,20 @@
                         class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 appearance-none font-medium text-slate-700"
                       >
                         <option :value="undefined">Select Year</option>
-                        <option v-for="year in graduationYears" :key="year" :value="year">{{ year }}</option>
+                        <option
+                          v-for="year in graduationYears"
+                          :key="year"
+                          :value="year"
+                        >
+                          {{ year }}
+                        </option>
                       </select>
                     </div>
                     <div>
-                      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Primary Sport</label>
+                      <label
+                        class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                        >Primary Sport</label
+                      >
                       <select
                         v-model="form.primary_sport"
                         :disabled="isParentRole"
@@ -140,7 +187,13 @@
                         class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 appearance-none font-medium text-slate-700"
                       >
                         <option :value="undefined">Select Sport</option>
-                        <option v-for="sport in commonSports" :key="sport" :value="sport">{{ sport }}</option>
+                        <option
+                          v-for="sport in commonSports"
+                          :key="sport"
+                          :value="sport"
+                        >
+                          {{ sport }}
+                        </option>
                       </select>
                     </div>
                   </div>
@@ -148,23 +201,36 @@
               </div>
 
               <!-- School Info -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-slate-100">
+              <div
+                class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-slate-100"
+              >
                 <div class="md:col-span-2">
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">High School Name</label>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    >High School Name</label
+                  >
                   <SharedHighSchoolSearchInput
-                    :model-value="{ name: form.school_name ?? '', nces_school_id: form.nces_school_id || null }"
+                    :model-value="{
+                      name: form.school_name ?? '',
+                      nces_school_id: form.nces_school_id || null,
+                    }"
                     :state-hint="form.school_state || ''"
                     :disabled="isParentRole"
-                    @update:model-value="(v: HighSchoolSelection) => {
-                      form.school_name = v.name;
-                      form.high_school = v.name;
-                      form.nces_school_id = v.nces_school_id ?? '';
-                      triggerSave();
-                    }"
+                    @update:model-value="
+                      (v: HighSchoolSelection) => {
+                        form.school_name = v.name;
+                        form.high_school = v.name;
+                        form.nces_school_id = v.nces_school_id ?? '';
+                        triggerSave();
+                      }
+                    "
                   />
                 </div>
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">School City</label>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    >School City</label
+                  >
                   <input
                     v-model="form.school_city"
                     :disabled="isParentRole"
@@ -175,7 +241,10 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">School State</label>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    >School State</label
+                  >
                   <input
                     v-model="form.school_state"
                     :disabled="isParentRole"
@@ -189,9 +258,13 @@
               </div>
 
               <!-- College Preferences -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-slate-100">
+              <div
+                class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-slate-100"
+              >
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                  >
                     Campus Size Preference
                   </label>
                   <div class="flex p-1 bg-slate-100 rounded-xl">
@@ -200,21 +273,28 @@
                       :key="opt.value"
                       type="button"
                       :disabled="isParentRole"
-                      @click="form.campus_size_preference = opt.value; triggerSave()"
+                      @click="
+                        form.campus_size_preference = opt.value;
+                        triggerSave();
+                      "
                       :class="[
                         'flex-1 py-2 text-xs font-bold rounded-lg transition-all',
                         form.campus_size_preference === opt.value
                           ? 'bg-white text-blue-600 shadow-sm'
-                          : 'text-slate-500 hover:text-slate-700'
+                          : 'text-slate-500 hover:text-slate-700',
                       ]"
                     >
                       {{ opt.label }}
                     </button>
                   </div>
-                  <p class="text-xs text-slate-400 mt-1.5 ml-1">Used for personal fit analysis</p>
+                  <p class="text-xs text-slate-400 mt-1.5 ml-1">
+                    Used for personal fit analysis
+                  </p>
                 </div>
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                  >
                     Cost Sensitivity
                   </label>
                   <div class="flex p-1 bg-slate-100 rounded-xl">
@@ -223,18 +303,23 @@
                       :key="opt.value"
                       type="button"
                       :disabled="isParentRole"
-                      @click="form.cost_sensitivity = opt.value; triggerSave()"
+                      @click="
+                        form.cost_sensitivity = opt.value;
+                        triggerSave();
+                      "
                       :class="[
                         'flex-1 py-2 text-xs font-bold rounded-lg transition-all',
                         form.cost_sensitivity === opt.value
                           ? 'bg-white text-blue-600 shadow-sm'
-                          : 'text-slate-500 hover:text-slate-700'
+                          : 'text-slate-500 hover:text-slate-700',
                       ]"
                     >
                       {{ opt.label }}
                     </button>
                   </div>
-                  <p class="text-xs text-slate-400 mt-1.5 ml-1">Used for personal fit analysis</p>
+                  <p class="text-xs text-slate-400 mt-1.5 ml-1">
+                    Used for personal fit analysis
+                  </p>
                 </div>
               </div>
             </div>
@@ -242,10 +327,17 @@
         </div>
 
         <!-- TAB: ATHLETICS -->
-        <div v-show="currentTab === 'athletics'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div
+          v-show="currentTab === 'athletics'"
+          class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+        >
           <!-- Physical Stats -->
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2">
+          <div
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
+          >
+            <h2
+              class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2"
+            >
               <BoltIcon class="w-5 h-5 text-blue-600" />
               Physical Profile
             </h2>
@@ -254,18 +346,38 @@
               <!-- Height/Weight Row -->
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Height</label>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    >Height</label
+                  >
                   <div class="flex gap-2">
-                    <select v-model="heightFeet" :disabled="isParentRole" @change="triggerSave" class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
-                      <option v-for="ft in [4, 5, 6, 7]" :key="ft" :value="ft">{{ ft }}'</option>
+                    <select
+                      v-model="heightFeet"
+                      :disabled="isParentRole"
+                      @change="triggerSave"
+                      class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium text-slate-700"
+                    >
+                      <option v-for="ft in [4, 5, 6, 7]" :key="ft" :value="ft">
+                        {{ ft }}'
+                      </option>
                     </select>
-                    <select v-model="heightInches" :disabled="isParentRole" @change="triggerSave" class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
-                      <option v-for="i in 12" :key="i - 1" :value="i - 1">{{ i - 1 }}"</option>
+                    <select
+                      v-model="heightInches"
+                      :disabled="isParentRole"
+                      @change="triggerSave"
+                      class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium text-slate-700"
+                    >
+                      <option v-for="i in 12" :key="i - 1" :value="i - 1">
+                        {{ i - 1 }}"
+                      </option>
                     </select>
                   </div>
                 </div>
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Weight (lbs)</label>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    >Weight (lbs)</label
+                  >
                   <input
                     v-model.number="form.weight_lbs"
                     :disabled="isParentRole"
@@ -280,16 +392,24 @@
               <!-- Bats/Throws (Sport Specific) -->
               <div v-if="isBaseballOrSoftball" class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Bats</label>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    >Bats</label
+                  >
                   <div class="flex p-1 bg-slate-100 rounded-xl">
-                    <button 
-                      v-for="opt in BATS_OPTIONS" 
+                    <button
+                      v-for="opt in BATS_OPTIONS"
                       :key="opt.value"
                       type="button"
-                      @click="form.bats = opt.value; triggerSave()"
+                      @click="
+                        form.bats = opt.value;
+                        triggerSave();
+                      "
                       :class="[
                         'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
-                        form.bats === opt.value ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                        form.bats === opt.value
+                          ? 'bg-white text-blue-600 shadow-sm'
+                          : 'text-slate-500 hover:text-slate-700',
                       ]"
                     >
                       {{ opt.label }}
@@ -297,16 +417,24 @@
                   </div>
                 </div>
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Throws</label>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    >Throws</label
+                  >
                   <div class="flex p-1 bg-slate-100 rounded-xl">
-                    <button 
-                      v-for="opt in THROWS_OPTIONS" 
+                    <button
+                      v-for="opt in THROWS_OPTIONS"
                       :key="opt.value"
                       type="button"
-                      @click="form.throws = opt.value; triggerSave()"
+                      @click="
+                        form.throws = opt.value;
+                        triggerSave();
+                      "
                       :class="[
                         'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
-                        form.throws === opt.value ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                        form.throws === opt.value
+                          ? 'bg-white text-blue-600 shadow-sm'
+                          : 'text-slate-500 hover:text-slate-700',
                       ]"
                     >
                       {{ opt.label }}
@@ -318,54 +446,97 @@
 
             <!-- Positions -->
             <div class="mt-8 pt-8 border-t border-slate-100">
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1">Positions You Play</label>
-              <div v-if="availablePositions.length > 0" class="flex flex-wrap gap-2">
+              <label
+                class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1"
+                >Positions You Play</label
+              >
+              <div
+                v-if="availablePositions.length > 0"
+                class="flex flex-wrap gap-2"
+              >
                 <button
                   v-for="pos in availablePositions"
                   :key="pos"
                   type="button"
                   :disabled="isParentRole"
-                  @click="togglePosition(pos); triggerSave()"
+                  @click="
+                    togglePosition(pos);
+                    triggerSave();
+                  "
                   :class="[
                     'px-4 py-2.5 rounded-xl text-xs font-bold transition-all border-2',
                     isPositionSelected(pos)
                       ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-105 z-10'
-                      : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300',
                   ]"
                 >
                   {{ pos }}
                 </button>
               </div>
-              <p v-else class="text-sm text-slate-400 italic">Select a sport on the Basics tab to see positions.</p>
+              <p v-else class="text-sm text-slate-400 italic">
+                Select a sport on the Basics tab to see positions.
+              </p>
             </div>
           </div>
 
           <!-- External IDs -->
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 class="text-base font-bold text-slate-900 mb-6">Recruiting Database IDs</h2>
+          <div
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
+          >
+            <h2 class="text-base font-bold text-slate-900 mb-6">
+              Recruiting Database IDs
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">NCAA ID</label>
-                <input v-model="form.ncaa_id" @blur="triggerSave" placeholder="ID Number" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+                <label
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                  >NCAA ID</label
+                >
+                <input
+                  v-model="form.ncaa_id"
+                  @blur="triggerSave"
+                  placeholder="ID Number"
+                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                />
               </div>
               <template v-if="isBaseballOrSoftball">
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Perfect Game ID</label>
-                  <input v-model="form.perfect_game_id" @blur="triggerSave" placeholder="ID Number" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    >Perfect Game ID</label
+                  >
+                  <input
+                    v-model="form.perfect_game_id"
+                    @blur="triggerSave"
+                    placeholder="ID Number"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  />
                 </div>
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Prep Baseball ID</label>
-                  <input v-model="form.prep_baseball_id" @blur="triggerSave" placeholder="ID Number" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    >Prep Baseball ID</label
+                  >
+                  <input
+                    v-model="form.prep_baseball_id"
+                    @blur="triggerSave"
+                    placeholder="ID Number"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  />
                 </div>
               </template>
             </div>
           </div>
 
           <!-- Video Links -->
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+          >
             <div class="p-5 border-b border-slate-100 bg-slate-50/50">
               <h2 class="text-base font-bold text-slate-900">Video Links</h2>
-              <p class="text-xs text-slate-500 font-medium">Hudl, YouTube, or Vimeo highlight reels for recruiters.</p>
+              <p class="text-xs text-slate-500 font-medium">
+                Hudl, YouTube, or Vimeo highlight reels for recruiters.
+              </p>
             </div>
             <div class="p-6 space-y-4">
               <div
@@ -376,7 +547,20 @@
                 <select
                   :value="(form.video_links ?? [])[idx].platform"
                   :disabled="isParentRole"
-                  @change="(e) => { form.video_links = (form.video_links ?? []).map((l, i) => i === idx ? { ...l, platform: (e.target as HTMLSelectElement).value as 'hudl' | 'youtube' | 'vimeo' } : l); triggerSave(); }"
+                  @change="
+                    (e) => {
+                      form.video_links = (form.video_links ?? []).map((l, i) =>
+                        i === idx
+                          ? {
+                              ...l,
+                              platform: (e.target as HTMLSelectElement)
+                                .value as 'hudl' | 'youtube' | 'vimeo',
+                            }
+                          : l,
+                      );
+                      triggerSave();
+                    }
+                  "
                   class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
                 >
                   <option value="hudl">Hudl</option>
@@ -388,7 +572,16 @@
                   :disabled="isParentRole"
                   type="url"
                   placeholder="https://..."
-                  @blur="(e) => { form.video_links = (form.video_links ?? []).map((l, i) => i === idx ? { ...l, url: (e.target as HTMLInputElement).value } : l); triggerSave(); }"
+                  @blur="
+                    (e) => {
+                      form.video_links = (form.video_links ?? []).map((l, i) =>
+                        i === idx
+                          ? { ...l, url: (e.target as HTMLInputElement).value }
+                          : l,
+                      );
+                      triggerSave();
+                    }
+                  "
                   class="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
                 />
                 <input
@@ -396,7 +589,19 @@
                   :disabled="isParentRole"
                   type="text"
                   placeholder="Title (optional)"
-                  @blur="(e) => { form.video_links = (form.video_links ?? []).map((l, i) => i === idx ? { ...l, title: (e.target as HTMLInputElement).value } : l); triggerSave(); }"
+                  @blur="
+                    (e) => {
+                      form.video_links = (form.video_links ?? []).map((l, i) =>
+                        i === idx
+                          ? {
+                              ...l,
+                              title: (e.target as HTMLInputElement).value,
+                            }
+                          : l,
+                      );
+                      triggerSave();
+                    }
+                  "
                   class="w-32 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
                 />
                 <button
@@ -419,40 +624,84 @@
                 <PlusIcon class="w-4 h-4" />
                 Add Video Link
               </button>
-              <p v-if="(form.video_links ?? []).length >= 5" class="text-xs text-slate-500">Maximum 5 video links.</p>
+              <p
+                v-if="(form.video_links ?? []).length >= 5"
+                class="text-xs text-slate-500"
+              >
+                Maximum 5 video links.
+              </p>
             </div>
           </div>
         </div>
 
         <!-- TAB: ACADEMICS & SOCIAL -->
-        <div v-show="currentTab === 'academics'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div
+          v-show="currentTab === 'academics'"
+          class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+        >
           <!-- Academics -->
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2">
+          <div
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
+          >
+            <h2
+              class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2"
+            >
               <AcademicCapIcon class="w-5 h-5 text-blue-600" />
               Academic Standing
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">GPA</label>
-                <input v-model.number="form.gpa" type="number" step="0.01" @blur="triggerSave" placeholder="e.g. 3.85" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+                <label
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                  >GPA</label
+                >
+                <input
+                  v-model.number="form.gpa"
+                  type="number"
+                  step="0.01"
+                  @blur="triggerSave"
+                  placeholder="e.g. 3.85"
+                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                />
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">SAT Score</label>
-                <input v-model.number="form.sat_score" type="number" @blur="triggerSave" placeholder="1200" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+                <label
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                  >SAT Score</label
+                >
+                <input
+                  v-model.number="form.sat_score"
+                  type="number"
+                  @blur="triggerSave"
+                  placeholder="1200"
+                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                />
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ACT Score</label>
-                <input v-model.number="form.act_score" type="number" @blur="triggerSave" placeholder="28" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+                <label
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                  >ACT Score</label
+                >
+                <input
+                  v-model.number="form.act_score"
+                  type="number"
+                  @blur="triggerSave"
+                  placeholder="28"
+                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                />
               </div>
             </div>
           </div>
 
           <!-- Core Courses -->
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+          >
             <div class="p-5 border-b border-slate-100 bg-slate-50/50">
               <h2 class="text-base font-bold text-slate-900">Core Courses</h2>
-              <p class="text-xs text-slate-500 font-medium">AP, honors, or notable courses for your recruiting profile.</p>
+              <p class="text-xs text-slate-500 font-medium">
+                AP, honors, or notable courses for your recruiting profile.
+              </p>
             </div>
             <div class="p-6 space-y-4">
               <div class="flex flex-wrap gap-2">
@@ -474,7 +723,10 @@
                 </div>
               </div>
 
-              <div v-if="!isParentRole && (form.core_courses?.length ?? 0) < 20" class="flex gap-2">
+              <div
+                v-if="!isParentRole && (form.core_courses?.length ?? 0) < 20"
+                class="flex gap-2"
+              >
                 <input
                   v-model="newCourseInput"
                   type="text"
@@ -492,26 +744,52 @@
                   Add
                 </button>
               </div>
-              <p v-if="(form.core_courses?.length ?? 0) >= 20" class="text-xs text-slate-500">Maximum 20 courses added.</p>
+              <p
+                v-if="(form.core_courses?.length ?? 0) >= 20"
+                class="text-xs text-slate-500"
+              >
+                Maximum 20 courses added.
+              </p>
             </div>
           </div>
 
           <!-- Social Media -->
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 class="text-base font-bold text-slate-900 mb-6">Social Handles</h2>
+          <div
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
+          >
+            <h2 class="text-base font-bold text-slate-900 mb-6">
+              Social Handles
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div v-for="social in socialInputs" :key="social.key" class="relative">
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{{ social.label }}</label>
+              <div
+                v-for="social in socialInputs"
+                :key="social.key"
+                class="relative"
+              >
+                <label
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                  >{{ social.label }}</label
+                >
                 <div class="flex items-center">
-                  <span v-if="social.prefix" class="absolute left-4 text-slate-400 font-bold">{{ social.prefix }}</span>
+                  <span
+                    v-if="social.prefix"
+                    class="absolute left-4 text-slate-400 font-bold"
+                    >{{ social.prefix }}</span
+                  >
                   <input
                     v-model="form[social.key]"
                     type="text"
-                    @blur="(e) => handleSocialBlur(String(social.key), (e.target as HTMLInputElement).value)"
+                    @blur="
+                      (e) =>
+                        handleSocialBlur(
+                          String(social.key),
+                          (e.target as HTMLInputElement).value,
+                        )
+                    "
                     :placeholder="social.placeholder"
                     :class="[
                       'w-full py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700',
-                      social.prefix ? 'pl-9 pr-4' : 'px-4'
+                      social.prefix ? 'pl-9 pr-4' : 'px-4',
                     ]"
                   />
                 </div>
@@ -520,50 +798,98 @@
           </div>
 
           <!-- Contact -->
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 class="text-base font-bold text-slate-900 mb-6">Contact & Privacy</h2>
+          <div
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
+          >
+            <h2 class="text-base font-bold text-slate-900 mb-6">
+              Contact & Privacy
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Phone Number</label>
-                <input v-model="form.phone" type="tel" @blur="triggerSave" placeholder="(555) 000-0000" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+                <label
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                  >Phone Number</label
+                >
+                <input
+                  v-model="form.phone"
+                  type="tel"
+                  @blur="triggerSave"
+                  placeholder="(555) 000-0000"
+                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                />
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Public Email</label>
-                <input v-model="form.email" type="email" @blur="triggerSave" placeholder="athlete@example.com" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+                <label
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                  >Public Email</label
+                >
+                <input
+                  v-model="form.email"
+                  type="email"
+                  @blur="triggerSave"
+                  placeholder="athlete@example.com"
+                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                />
               </div>
             </div>
-            
+
             <div class="bg-slate-50 rounded-2xl p-4 space-y-4">
               <label class="flex items-center gap-3 cursor-pointer group">
                 <div class="relative flex items-center">
-                  <input v-model="form.allow_share_phone" type="checkbox" @change="triggerSave" class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 transition-all shadow-sm" />
-                  <CheckIcon class="absolute h-4 w-4 text-white opacity-0 peer-checked:opacity-100 left-1 top-1 pointer-events-none stroke-[3]" />
+                  <input
+                    v-model="form.allow_share_phone"
+                    type="checkbox"
+                    @change="triggerSave"
+                    class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 transition-all shadow-sm"
+                  />
+                  <CheckIcon
+                    class="absolute h-4 w-4 text-white opacity-0 peer-checked:opacity-100 left-1 top-1 pointer-events-none stroke-[3]"
+                  />
                 </div>
-                <span class="text-sm font-bold text-slate-600 group-hover:text-slate-900 transition">Show phone number to verified coaches</span>
+                <span
+                  class="text-sm font-bold text-slate-600 group-hover:text-slate-900 transition"
+                  >Show phone number to verified coaches</span
+                >
               </label>
               <label class="flex items-center gap-3 cursor-pointer group">
                 <div class="relative flex items-center">
-                  <input v-model="form.allow_share_email" type="checkbox" @change="triggerSave" class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 transition-all shadow-sm" />
-                  <CheckIcon class="absolute h-4 w-4 text-white opacity-0 peer-checked:opacity-100 left-1 top-1 pointer-events-none stroke-[3]" />
+                  <input
+                    v-model="form.allow_share_email"
+                    type="checkbox"
+                    @change="triggerSave"
+                    class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 transition-all shadow-sm"
+                  />
+                  <CheckIcon
+                    class="absolute h-4 w-4 text-white opacity-0 peer-checked:opacity-100 left-1 top-1 pointer-events-none stroke-[3]"
+                  />
                 </div>
-                <span class="text-sm font-bold text-slate-600 group-hover:text-slate-900 transition">Show email to verified coaches</span>
+                <span
+                  class="text-sm font-bold text-slate-600 group-hover:text-slate-900 transition"
+                  >Show email to verified coaches</span
+                >
               </label>
             </div>
           </div>
         </div>
 
         <!-- TAB: PUBLIC PROFILE -->
-        <div v-show="currentTab === 'public-profile'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div
+          v-show="currentTab === 'public-profile'"
+          class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+        >
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ProfileSetup />
             <ProfilePreview
               v-if="playerProfile"
               :settings="playerProfile"
               :player-name="userStore.user?.full_name ?? 'Athlete'"
-              :details="(form as unknown as Record<string, unknown>)"
+              :details="form as unknown as Record<string, unknown>"
               :schools="previewSchools"
             />
-            <div v-else-if="profileLoading" class="bg-gray-50 rounded-xl p-4 animate-pulse">
+            <div
+              v-else-if="profileLoading"
+              class="bg-gray-50 rounded-xl p-4 animate-pulse"
+            >
               <div class="h-3 w-32 bg-gray-200 rounded mb-4" />
               <div class="h-24 bg-gray-200 rounded-xl" />
             </div>
@@ -571,43 +897,103 @@
         </div>
 
         <!-- TAB: HISTORY -->
-        <div v-show="currentTab === 'history'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2">
+        <div
+          v-show="currentTab === 'history'"
+          class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+        >
+          <div
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
+          >
+            <h2
+              class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2"
+            >
               <ClockIcon class="w-5 h-5 text-blue-600" />
               High School Career
             </h2>
             <div class="space-y-6">
-              <div v-for="grade in gradeLevels" :key="grade.key" class="p-5 rounded-2xl bg-slate-50 border border-slate-100">
-                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-5">{{ grade.label }}</h3>
+              <div
+                v-for="grade in gradeLevels"
+                :key="grade.key"
+                class="p-5 rounded-2xl bg-slate-50 border border-slate-100"
+              >
+                <h3
+                  class="text-xs font-black text-slate-400 uppercase tracking-widest mb-5"
+                >
+                  {{ grade.label }}
+                </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Team Level</label>
-                    <input v-model="form[grade.teamKey]" @blur="triggerSave" placeholder="e.g. Varsity" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium shadow-xs" />
+                    <label
+                      class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                      >Team Level</label
+                    >
+                    <input
+                      v-model="form[grade.teamKey]"
+                      @blur="triggerSave"
+                      placeholder="e.g. Varsity"
+                      class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium shadow-xs"
+                    />
                   </div>
                   <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Head Coach</label>
-                    <input v-model="form[grade.coachKey]" @blur="triggerSave" placeholder="Coach Name" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium shadow-xs" />
+                    <label
+                      class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                      >Head Coach</label
+                    >
+                    <input
+                      v-model="form[grade.coachKey]"
+                      @blur="triggerSave"
+                      placeholder="Coach Name"
+                      class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium shadow-xs"
+                    />
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 class="text-base font-bold text-slate-900 mb-6">Latest Travel Team</h2>
+          <div
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
+          >
+            <h2 class="text-base font-bold text-slate-900 mb-6">
+              Latest Travel Team
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Season Year</label>
-                <input v-model.number="form.travel_team_year" type="number" @blur="triggerSave" placeholder="2024" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+                <label
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                  >Season Year</label
+                >
+                <input
+                  v-model.number="form.travel_team_year"
+                  type="number"
+                  @blur="triggerSave"
+                  placeholder="2024"
+                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                />
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Organization</label>
-                <input v-model="form.travel_team_name" @blur="triggerSave" placeholder="Team Name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+                <label
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                  >Organization</label
+                >
+                <input
+                  v-model="form.travel_team_name"
+                  @blur="triggerSave"
+                  placeholder="Team Name"
+                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                />
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Head Coach</label>
-                <input v-model="form.travel_team_coach" @blur="triggerSave" placeholder="Coach Name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+                <label
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                  >Head Coach</label
+                >
+                <input
+                  v-model="form.travel_team_coach"
+                  @blur="triggerSave"
+                  placeholder="Coach Name"
+                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                />
               </div>
             </div>
           </div>
@@ -655,7 +1041,7 @@ definePageMeta({
 const userStore = useUserStore();
 const schoolStore = useSchoolStore();
 const previewSchools = computed(() =>
-  schoolStore.schools.map((s) => ({ id: s.id, name: s.name }))
+  schoolStore.schools.map((s) => ({ id: s.id, name: s.name })),
 );
 const { isLoading, getPlayerDetails, setPlayerDetails, loadAllPreferences } =
   usePreferenceManager();
@@ -750,10 +1136,15 @@ const { commonSports, getPositionsBySport } = useSportsPositionLookup();
 const availablePositions = ref<string[]>([]);
 
 const isBaseballOrSoftball = computed(() => {
-  return form.value.primary_sport === "Baseball" || form.value.primary_sport === "Softball";
+  return (
+    form.value.primary_sport === "Baseball" ||
+    form.value.primary_sport === "Softball"
+  );
 });
 
-const profileCompleteness = computed(() => calculateProfileCompleteness(form.value));
+const profileCompleteness = computed(() =>
+  calculateProfileCompleteness(form.value),
+);
 
 const { isSaving, triggerSave } = useAutoSave({
   debounceMs: 1000,
@@ -775,7 +1166,9 @@ watch(
   (sport) => {
     if (sport) {
       availablePositions.value = getPositionsBySport(sport);
-      if (!availablePositions.value.includes(form.value.primary_position || "")) {
+      if (
+        !availablePositions.value.includes(form.value.primary_position || "")
+      ) {
         form.value.primary_position = undefined;
       }
     } else {
@@ -802,7 +1195,8 @@ const initializeHeight = (totalInches: number | undefined) => {
   }
 };
 
-const isPositionSelected = (pos: string) => form.value.positions?.includes(pos) || false;
+const isPositionSelected = (pos: string) =>
+  form.value.positions?.includes(pos) || false;
 
 const togglePosition = (pos: string) => {
   if (!form.value.positions) form.value.positions = [];
@@ -812,11 +1206,16 @@ const togglePosition = (pos: string) => {
 };
 
 const addVideoLink = () => {
-  form.value.video_links = [...(form.value.video_links ?? []), { platform: "hudl", url: "", title: "" }];
+  form.value.video_links = [
+    ...(form.value.video_links ?? []),
+    { platform: "hudl", url: "", title: "" },
+  ];
 };
 
 const removeVideoLink = (idx: number) => {
-  form.value.video_links = (form.value.video_links ?? []).filter((_, i) => i !== idx);
+  form.value.video_links = (form.value.video_links ?? []).filter(
+    (_, i) => i !== idx,
+  );
   triggerSave();
 };
 
@@ -831,7 +1230,9 @@ const addCourse = () => {
 };
 
 const removeCourse = (idx: number) => {
-  form.value.core_courses = (form.value.core_courses ?? []).filter((_, i) => i !== idx);
+  form.value.core_courses = (form.value.core_courses ?? []).filter(
+    (_, i) => i !== idx,
+  );
   triggerSave();
 };
 
@@ -850,24 +1251,71 @@ function handleSocialBlur(key: string, value: string) {
   (form.value as Record<string, unknown>)[key] = handle;
 
   if (isShortUrl) {
-    showToast("Short links can't be used as handles — enter your username directly.", "warning");
+    showToast(
+      "Short links can't be used as handles — enter your username directly.",
+      "warning",
+    );
   }
 
   triggerSave();
 }
 
-const socialInputs: { key: keyof PlayerDetails; label: string; prefix?: string; placeholder: string }[] = [
-  { key: "twitter_handle", label: "Twitter / X", prefix: "@", placeholder: "username" },
-  { key: "instagram_handle", label: "Instagram", prefix: "@", placeholder: "username" },
-  { key: "tiktok_handle", label: "TikTok", prefix: "@", placeholder: "username" },
-  { key: "facebook_url", label: "Facebook URL", placeholder: "https://facebook.com/..." },
+const socialInputs: {
+  key: keyof PlayerDetails;
+  label: string;
+  prefix?: string;
+  placeholder: string;
+}[] = [
+  {
+    key: "twitter_handle",
+    label: "Twitter / X",
+    prefix: "@",
+    placeholder: "username",
+  },
+  {
+    key: "instagram_handle",
+    label: "Instagram",
+    prefix: "@",
+    placeholder: "username",
+  },
+  {
+    key: "tiktok_handle",
+    label: "TikTok",
+    prefix: "@",
+    placeholder: "username",
+  },
+  {
+    key: "facebook_url",
+    label: "Facebook URL",
+    placeholder: "https://facebook.com/...",
+  },
 ];
 
 const gradeLevels = [
-  { key: "9", label: "9th Grade (Freshman)", teamKey: "ninth_grade_team", coachKey: "ninth_grade_coach" },
-  { key: "10", label: "10th Grade (Sophomore)", teamKey: "tenth_grade_team", coachKey: "tenth_grade_coach" },
-  { key: "11", label: "11th Grade (Junior)", teamKey: "eleventh_grade_team", coachKey: "eleventh_grade_coach" },
-  { key: "12", label: "12th Grade (Senior)", teamKey: "twelfth_grade_team", coachKey: "twelfth_grade_coach" },
+  {
+    key: "9",
+    label: "9th Grade (Freshman)",
+    teamKey: "ninth_grade_team",
+    coachKey: "ninth_grade_coach",
+  },
+  {
+    key: "10",
+    label: "10th Grade (Sophomore)",
+    teamKey: "tenth_grade_team",
+    coachKey: "tenth_grade_coach",
+  },
+  {
+    key: "11",
+    label: "11th Grade (Junior)",
+    teamKey: "eleventh_grade_team",
+    coachKey: "eleventh_grade_coach",
+  },
+  {
+    key: "12",
+    label: "12th Grade (Senior)",
+    teamKey: "twelfth_grade_team",
+    coachKey: "twelfth_grade_coach",
+  },
 ] as const;
 
 onMounted(async () => {
@@ -877,7 +1325,11 @@ onMounted(async () => {
     if (playerDetails.high_school && !playerDetails.school_name) {
       playerDetails.school_name = playerDetails.high_school;
     }
-    form.value = { ...form.value, ...playerDetails, positions: normalizePositions(playerDetails.positions) };
+    form.value = {
+      ...form.value,
+      ...playerDetails,
+      positions: normalizePositions(playerDetails.positions),
+    };
     form.value.video_links = playerDetails.video_links ?? [];
     form.value.core_courses = playerDetails.core_courses ?? [];
     initializeHeight(playerDetails.height_inches);
@@ -886,7 +1338,6 @@ onMounted(async () => {
     }
   }
 });
-
 </script>
 
 <style scoped>
@@ -904,5 +1355,3 @@ onMounted(async () => {
   }
 }
 </style>
-
-
