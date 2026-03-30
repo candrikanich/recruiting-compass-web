@@ -76,47 +76,13 @@ Track states: sentItems (I initiated), receivedItems (sent to me), pendingItems 
 
 Organize by action: 1) Pending Confirmations (amber), 2) Received Invitations (blue), 3) Sent Invitations (gray), 4) Completed (green). Separate card components per state.
 
-## Supabase & Database
+## Database & Common Patterns
 
-**Client:** Use `useSupabase()` singleton — do NOT create new clients per request (wastes connections). Select specific columns, filter with `.eq()`.
-
-**Schema:** Add columns as nullable, separate migration. Use CHECK constraints for enums (not PG enums).
-
-**Types:** `npx supabase gen types typescript --local > types/database.ts` after migrations
+@claude/database.md
 
 ## Logging
 
-**In API routes (Nitro handlers):** Always use `useLogger(event, "context")` as the first line inside `defineEventHandler`. This captures the correlation ID and request context automatically:
-
-```typescript
-import { useLogger } from "~/server/utils/logger";
-
-export default defineEventHandler(async (event) => {
-  const logger = useLogger(event, "feature/route-name");
-  try {
-    logger.info("Fetching data");
-    return result;
-  } catch (err) {
-    if (err instanceof Error && "statusCode" in err) throw err; // re-throw H3 first
-    logger.error("Failed to fetch data", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to fetch data" });
-  }
-});
-```
-
-**Context name convention:** Match the API route path — e.g., `"tasks"`, `"family/members"`, `"auth/verify-email"`.
-
-**Never expose raw `error.message`** in `statusMessage` — leaks internal stack details, DB schema, and file paths to clients.
-
-**Log levels:**
-- `logger.error` — unexpected failures (DB errors, unhandled exceptions)
-- `logger.warn` — expected but notable conditions (data not found, business rule blocks)
-- `logger.info` — meaningful events (request processed, action completed)
-- `logger.debug` — verbose data useful only during development
-
-**Correlation IDs flow automatically:** client session ID → `useAuthFetch` injects `X-Request-ID` → correlation middleware reads it → `useLogger(event)` includes it in every log entry.
-
-**Background/cron jobs** (no H3Event available): use `createLogger("cron/job-name")` at module level.
+@claude/logging.md
 
 ## Code Quality
 
@@ -124,24 +90,6 @@ export default defineEventHandler(async (event) => {
 - **Vue**: `<script setup>`, `withDefaults(defineProps<{}>(), {})`, `defineEmits<{}>()`
 - **Styling**: TailwindCSS utilities only, component-scoped `<style scoped>` when needed
 - **Naming**: Composables `useXxx`, Stores `useXxxStore`, Components `PascalCase`, Pages `kebab-case`
-
-## Common Patterns
-
-- **State mutation**: Only in Pinia actions, never in components — keeps state changes auditable and devtools-visible
-- **Error handling**: Always try/catch async operations, set error state explicitly — silent failures leave users on broken UI with no feedback
-- **N+1 queries**: Use `.select()` with specific columns, batch fetch related data, cache in stores — unbounded queries on lists will kill performance at scale
-- **Pagination on list endpoints**: Any Nitro list handler not naturally bounded by `user_id`/`family_unit_id` must accept `?limit=20&offset=0` and apply `.range(offset, offset + limit - 1)` — never return unbounded result sets
-- **Index filter columns in migrations**: Every migration adding a column used in `.eq()`, `.order()`, or `.match()` must include a `CREATE INDEX` in the same migration file
-- **Component auto-import**: No import needed for `/components/**`
-- **Supabase connection**: Verify `.env.local`, check project isn't paused
-
-### Cascade-Delete Pattern
-
-1. Try simple delete (fast path) 2. Catch FK errors ("Cannot delete", "violates foreign key") 3. Fall back to `/api/[entity]/[id]/cascade-delete` (children first, `confirmDelete: true`) 4. Return `{ cascadeUsed: boolean }` for UX messaging 5. CSRF token required (ensure client uses `useAuthFetch` which auto-injects the token)
-
-**Security:** Use `family_unit_id` for access control (not `user_id`)
-
-**Entities:** schools, coaches, interactions
 
 ## Commands
 
@@ -169,21 +117,9 @@ Fix ALL errors in single pass before rebuilding. Batch fixes together.
 - [ ] For UI changes: open in browser → no blank screen, data loads, no console errors
 - [ ] `git push` succeeds (hooks pass)
 
-**TDD red-phase:** Before implementing, confirm the test actually fails for the right reason (missing feature, not a typo). A test that passes immediately proves nothing.
+## Testing
 
-**Convert manual findings:** If manual testing reveals a bug, write a failing test reproducing it before fixing it.
-
-## Bug-Driven TDD
-
-Write failing test → Fix code (minimal) → Verify passes. Prevents regression, increases coverage.
-
-## Testing Philosophy
-
-Never write tests that verify what the TypeScript type system already guarantees. Test runtime behavior, business logic, and edge cases — not type constraints.
-
-## Testing After Refactoring
-
-Run full test suite immediately after extracting components. Fix broken element references.
+@claude/testing.md
 
 ## Deployment
 
@@ -192,53 +128,6 @@ Run full test suite immediately after extracting components. Fix broken element 
 - **Publish**: `.vercel/output/`
 - **Env vars**: Set in Vercel project dashboard
 - **Runtime**: Node.js (serverless functions for API routes)
-
-## iOS / SwiftUI
-
-- Only use APIs and modifiers that actually exist in the target framework version. For SwiftUI, verify any unfamiliar modifier exists before using it. Do not hallucinate APIs like `.accessibilityLiveRegion()`. When unsure, use a Bash command to search Apple documentation or the project's existing usage patterns.
-- **xcconfig files are gitignored — always edit `project.pbxproj`**: Many `.xcconfig` files are gitignored and will never reach CI. Before editing any xcconfig, run `git check-ignore -v <file>`. If gitignored, apply the build setting change to `project.pbxproj` instead. Find the right location with `grep -n "SETTING_NAME" TheRecruitingCompass.xcodeproj/project.pbxproj`.
-- **Always update both Debug and Release configurations**: Build settings in `project.pbxproj` appear in multiple configuration blocks. After any pbxproj change, verify both configs are consistent: `grep -A2 -B2 "YOUR_SETTING" TheRecruitingCompass.xcodeproj/project.pbxproj`. Patching only Debug causes Release (what CI builds) to fail.
-- **Verify Swift feature flag names exactly — never guess**: Wrong flag variant is the #1 cause of multi-round CI fix sessions. Always grep existing project settings first: `grep -r "enable-experimental\|ExperimentalFeature" TheRecruitingCompass.xcodeproj/` before applying any compiler flag fix.
-
-## iOS Simulator Troubleshooting
-
-When the simulator behaves unexpectedly during builds or UI tests, work through this ladder in order:
-
-**Simulator won't boot / shuts down mid-test:**
-```bash
-sudo xcrun simctl shutdown all
-xcrun simctl erase all          # full reset — clears all simulator state
-xcrun simctl boot "iPhone 16"   # boot a known-good device
-```
-
-**SPM resolution failures or DerivedData corruption:**
-```bash
-rm -rf ~/Library/Developer/Xcode/DerivedData
-rm -rf ~/Library/Caches/org.swift.swiftpm
-# Then re-open project and let SPM re-resolve
-```
-
-**`xcodebuild` destination not found:**
-Try destinations in this order until one works:
-```bash
--destination 'generic/platform=iOS Simulator'
--destination 'platform=iOS Simulator,name=iPhone 16'
--destination 'platform=iOS Simulator,name=iPhone 15'
--destination 'platform=iOS Simulator,OS=latest,name=iPhone 16'
-```
-
-**Password autofill eating characters in UI tests:**
-iOS autofill silently drops characters from `.newPassword` / `.password` fields during `app.typeText()`. Fix:
-```swift
-// In the text field under test — use clipboard paste instead of typeText
-UIPasteboard.general.string = "testPassword123"
-field.tap()
-app.menuItems["Paste"].tap()
-```
-Or set `.textContentType(.none)` on the field in test builds (via `#if DEBUG`).
-
-**UI tests fail locally but pass CI (or vice versa):**
-Check simulator locale and keyboard settings — CI uses a clean simulator with no custom keyboards. Ensure tests don't depend on autocorrect, predictive text, or locale-specific formatting.
 
 ## Orient Before Acting
 
@@ -253,6 +142,10 @@ Before starting any feature work — web or iOS — spend 60 seconds orienting:
 3. **Check for a prior spec** — `ls planning/iOS_SPEC_*` before generating a new iOS spec.
 
 This 60-second check prevents the most common wrong-approach failure: starting work on the wrong feature or the already-completed version of a feature.
+
+## iOS / SwiftUI
+
+@claude/ios.md
 
 ## Learnings
 
