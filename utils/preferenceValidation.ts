@@ -125,6 +125,15 @@ export function validatePlayerDetails(data: unknown): PlayerDetails | null {
     eleventh_grade_coach: toString(obj.eleventh_grade_coach),
     twelfth_grade_team: toString(obj.twelfth_grade_team),
     twelfth_grade_coach: toString(obj.twelfth_grade_coach),
+    campus_size_preference: toOption<"small" | "medium" | "large">(
+      obj.campus_size_preference,
+      ["small", "medium", "large"],
+    ),
+    cost_sensitivity: toOption<"high" | "medium" | "low">(obj.cost_sensitivity, [
+      "high",
+      "medium",
+      "low",
+    ]),
     travel_team_year: toNumber(obj.travel_team_year),
     travel_team_name: toString(obj.travel_team_name),
     travel_team_coach: toString(obj.travel_team_coach),
