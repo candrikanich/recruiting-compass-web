@@ -283,6 +283,4 @@ describe("Coach Analytics - Complex Calculations", () => {
       expect(preferred).toBe("email");
     });
   });
-
 });
-

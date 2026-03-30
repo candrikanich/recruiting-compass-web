@@ -34,7 +34,11 @@ describe("HelpImageSlot", () => {
 
   it("uses explicit alt over caption when both are provided", () => {
     const wrapper = mount(HelpImageSlot, {
-      props: { src: "/help/phases.png", caption: "Phase timeline", alt: "Custom alt text" },
+      props: {
+        src: "/help/phases.png",
+        caption: "Phase timeline",
+        alt: "Custom alt text",
+      },
     });
     expect(wrapper.find("img").attributes("alt")).toBe("Custom alt text");
   });

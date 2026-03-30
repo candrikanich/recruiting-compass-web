@@ -71,9 +71,16 @@
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 :class="playerTooYoung ? 'border-red-400' : 'border-slate-300'"
               />
-              <p class="text-xs text-slate-500 mt-1">Players must be 13 or older to create an account.</p>
-              <p v-if="playerTooYoung" data-testid="age-error" class="text-sm text-red-600 mt-1">
-                Your player must be 13 or older to use Recruiting Compass. Players under 13 cannot create an account.
+              <p class="text-xs text-slate-500 mt-1">
+                Players must be 13 or older to create an account.
+              </p>
+              <p
+                v-if="playerTooYoung"
+                data-testid="age-error"
+                class="text-sm text-red-600 mt-1"
+              >
+                Your player must be 13 or older to use Recruiting Compass.
+                Players under 13 cannot create an account.
               </p>
             </div>
 
@@ -204,9 +211,7 @@
 
           <!-- Family code display -->
           <div class="border-t border-slate-200 pt-4">
-            <p class="text-sm text-slate-500 mb-2">
-              Or share your family code
-            </p>
+            <p class="text-sm text-slate-500 mb-2">Or share your family code</p>
             <div
               class="flex items-center gap-3 bg-slate-50 rounded-lg px-4 py-3"
             >
@@ -214,7 +219,11 @@
                 data-testid="family-code-display"
                 class="font-mono font-bold text-lg text-slate-900 tracking-wider flex-1"
               >
-                {{ familyCodeLoading ? "Loading\u2026" : (myFamilyCode ?? "\u2014") }}
+                {{
+                  familyCodeLoading
+                    ? "Loading\u2026"
+                    : (myFamilyCode ?? "\u2014")
+                }}
               </span>
               <button
                 v-if="myFamilyCode && !familyCodeLoading"
@@ -293,8 +302,13 @@ const today = new Date().toISOString().split("T")[0];
 const playerTooYoung = computed(() => {
   if (!playerDob.value) return false;
   const dob = new Date(playerDob.value);
-  const age = new Date().getFullYear() - dob.getFullYear()
-    - (new Date() < new Date(new Date().getFullYear(), dob.getMonth(), dob.getDate()) ? 1 : 0);
+  const age =
+    new Date().getFullYear() -
+    dob.getFullYear() -
+    (new Date() <
+    new Date(new Date().getFullYear(), dob.getMonth(), dob.getDate())
+      ? 1
+      : 0);
   return age < 13;
 });
 
@@ -319,14 +333,53 @@ const commonSports = [
 ];
 
 const sportPositions: Record<string, string[]> = {
-  Baseball: ["Pitcher", "Catcher", "Infielder", "Outfielder", "Designated Hitter"],
-  Basketball: ["Point Guard", "Shooting Guard", "Small Forward", "Power Forward", "Center"],
-  Football: ["Quarterback", "Running Back", "Wide Receiver", "Tight End", "Offensive Line", "Linebacker", "Defensive Back", "Defensive Line"],
+  Baseball: [
+    "Pitcher",
+    "Catcher",
+    "Infielder",
+    "Outfielder",
+    "Designated Hitter",
+  ],
+  Basketball: [
+    "Point Guard",
+    "Shooting Guard",
+    "Small Forward",
+    "Power Forward",
+    "Center",
+  ],
+  Football: [
+    "Quarterback",
+    "Running Back",
+    "Wide Receiver",
+    "Tight End",
+    "Offensive Line",
+    "Linebacker",
+    "Defensive Back",
+    "Defensive Line",
+  ],
   Soccer: ["Goalkeeper", "Defender", "Midfielder", "Forward"],
-  Volleyball: ["Outside Hitter", "Middle Blocker", "Setter", "Libero", "Opposite Hitter"],
-  Softball: ["Pitcher", "Catcher", "Infielder", "Outfielder", "Designated Hitter"],
+  Volleyball: [
+    "Outside Hitter",
+    "Middle Blocker",
+    "Setter",
+    "Libero",
+    "Opposite Hitter",
+  ],
+  Softball: [
+    "Pitcher",
+    "Catcher",
+    "Infielder",
+    "Outfielder",
+    "Designated Hitter",
+  ],
   "Track & Field": ["Sprinter", "Distance Runner", "Jumper", "Thrower"],
-  Swimming: ["Freestyle", "Backstroke", "Breaststroke", "Butterfly", "Individual Medley"],
+  Swimming: [
+    "Freestyle",
+    "Backstroke",
+    "Breaststroke",
+    "Butterfly",
+    "Individual Medley",
+  ],
   "Cross Country": ["Runner"],
   Tennis: ["Singles", "Doubles"],
   Golf: ["Golfer"],

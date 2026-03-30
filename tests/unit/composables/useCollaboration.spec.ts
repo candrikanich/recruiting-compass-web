@@ -11,8 +11,17 @@ const mockSupabaseResult: { data: unknown; error: unknown } = {
 function buildChain(): Record<string, unknown> {
   const chain: Record<string, unknown> = {};
   const methods = [
-    "from", "select", "insert", "update", "delete",
-    "eq", "or", "is", "order", "single", "maybeSingle",
+    "from",
+    "select",
+    "insert",
+    "update",
+    "delete",
+    "eq",
+    "or",
+    "is",
+    "order",
+    "single",
+    "maybeSingle",
   ];
   for (const m of methods) {
     chain[m] = vi.fn(() => {
@@ -20,7 +29,8 @@ function buildChain(): Record<string, unknown> {
         return Promise.resolve(mockSupabaseResult);
       }
       // Most terminal queries are awaited directly
-      const p = Promise.resolve(mockSupabaseResult) as Promise<unknown> & Record<string, unknown>;
+      const p = Promise.resolve(mockSupabaseResult) as Promise<unknown> &
+        Record<string, unknown>;
       // attach chain methods on the promise so callers can do .select().single()
       for (const n of methods) {
         p[n] = vi.fn(() => Promise.resolve(mockSupabaseResult));
@@ -220,7 +230,9 @@ describe("useCollaboration", () => {
       const success = await collaboration.revokeAccess("sr-1");
 
       expect(success).toBe(true);
-      expect(collaboration.sharedRecords.value.find((r) => r.id === "sr-1")).toBeUndefined();
+      expect(
+        collaboration.sharedRecords.value.find((r) => r.id === "sr-1"),
+      ).toBeUndefined();
     });
 
     it("returns false and sets error when delete fails", async () => {
@@ -286,7 +298,11 @@ describe("useCollaboration", () => {
       mockSupabaseResult.data = newComment;
       mockSupabaseResult.error = null;
 
-      const result = await collaboration.addComment("school", "school-1", "Nice program");
+      const result = await collaboration.addComment(
+        "school",
+        "school-1",
+        "Nice program",
+      );
 
       expect(result).toEqual(newComment);
       expect(collaboration.recordComments.value).toContainEqual(newComment);
@@ -325,7 +341,9 @@ describe("useCollaboration", () => {
       const success = await collaboration.deleteComment("c-1");
 
       expect(success).toBe(true);
-      expect(collaboration.recordComments.value.find((c) => c.id === "c-1")).toBeUndefined();
+      expect(
+        collaboration.recordComments.value.find((c) => c.id === "c-1"),
+      ).toBeUndefined();
     });
 
     it("returns false and sets error when update fails", async () => {
@@ -360,7 +378,10 @@ describe("useCollaboration", () => {
       const success = await collaboration.updateAccessLevel("sr-1", "edit");
 
       expect(success).toBe(true);
-      expect(collaboration.sharedRecords.value.find((r) => r.id === "sr-1")?.access_level).toBe("edit");
+      expect(
+        collaboration.sharedRecords.value.find((r) => r.id === "sr-1")
+          ?.access_level,
+      ).toBe("edit");
     });
 
     it("returns false and sets error when update fails", async () => {

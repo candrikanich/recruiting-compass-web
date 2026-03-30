@@ -80,7 +80,9 @@ export const useFamilyInvite = () => {
       )) as { data: unknown; error: unknown };
 
       if (emailError) {
-        throw new Error(emailError instanceof Error ? emailError.message : String(emailError));
+        throw new Error(
+          emailError instanceof Error ? emailError.message : String(emailError),
+        );
       }
 
       // Track last invited email
@@ -185,7 +187,10 @@ export const useFamilyInvite = () => {
     error.value = null;
     try {
       const { $fetchAuth } = useAuthFetch();
-      await $fetchAuth("/api/family/invite", { method: "POST", body: { email, role } });
+      await $fetchAuth("/api/family/invite", {
+        method: "POST",
+        body: { email, role },
+      });
       lastInvitedEmail.value = email;
       const { $posthog } = useNuxtApp();
       $posthog?.capture("family_invite_sent", { method: "email" });

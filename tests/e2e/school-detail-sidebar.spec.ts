@@ -37,9 +37,9 @@ test.describe("School Detail - Sidebar Features", () => {
       const sendEmailButton = page.locator(sidebarSelectors.sendEmailButton);
       await expect(sendEmailButton).toBeVisible();
 
-      const manageCoachesLink = page.locator(
-        sidebarSelectors.manageCoachesLink,
-      ).first();
+      const manageCoachesLink = page
+        .locator(sidebarSelectors.manageCoachesLink)
+        .first();
       await expect(manageCoachesLink).toBeVisible();
     });
 
@@ -72,9 +72,9 @@ test.describe("School Detail - Sidebar Features", () => {
     test("should navigate to coaches management on Manage Coaches click", async ({
       page,
     }) => {
-      const manageCoachesLink = page.locator(
-        sidebarSelectors.manageCoachesLink,
-      ).first();
+      const manageCoachesLink = page
+        .locator(sidebarSelectors.manageCoachesLink)
+        .first();
       await manageCoachesLink.click();
 
       await page.waitForURL(`/schools/${schoolId}/coaches`);
@@ -116,7 +116,9 @@ test.describe("School Detail - Sidebar Features", () => {
       // Verify coaches were created on the coaches page before checking sidebar
       await page.goto(`/schools/${schoolId}/coaches`);
       await page.waitForLoadState("domcontentloaded");
-      const coachesOnPage = page.locator(".rounded-2xl.shadow-lg").filter({ hasText: "John" });
+      const coachesOnPage = page
+        .locator(".rounded-2xl.shadow-lg")
+        .filter({ hasText: "John" });
       const coachCreated = await coachesOnPage.count();
       if (coachCreated === 0) {
         // Coach creation didn't work — skip remaining assertions
@@ -159,7 +161,9 @@ test.describe("School Detail - Sidebar Features", () => {
       await page.waitForTimeout(1000);
 
       const emailLink = page.locator(sidebarSelectors.emailIcon).first();
-      const emailVisible = await emailLink.isVisible({ timeout: 3000 }).catch(() => false);
+      const emailVisible = await emailLink
+        .isVisible({ timeout: 3000 })
+        .catch(() => false);
       if (!emailVisible) return; // Coach not in sidebar - skip
 
       const href = await emailLink.getAttribute("href");
@@ -184,7 +188,9 @@ test.describe("School Detail - Sidebar Features", () => {
       await page.waitForTimeout(1000);
 
       const phoneLink = page.locator(sidebarSelectors.phoneIcon).first();
-      const phoneVisible = await phoneLink.isVisible({ timeout: 3000 }).catch(() => false);
+      const phoneVisible = await phoneLink
+        .isVisible({ timeout: 3000 })
+        .catch(() => false);
       if (!phoneVisible) return; // Coach not in sidebar - skip
 
       const href = await phoneLink.getAttribute("href");
@@ -209,7 +215,9 @@ test.describe("School Detail - Sidebar Features", () => {
       await page.waitForTimeout(1000);
 
       const smsLink = page.locator(sidebarSelectors.smsIcon).first();
-      const smsVisible = await smsLink.isVisible({ timeout: 3000 }).catch(() => false);
+      const smsVisible = await smsLink
+        .isVisible({ timeout: 3000 })
+        .catch(() => false);
       if (!smsVisible) return; // Coach not in sidebar - skip
 
       const href = await smsLink.getAttribute("href");

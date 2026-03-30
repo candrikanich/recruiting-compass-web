@@ -118,7 +118,10 @@
 
       <!-- Status badges row (non-completed states + prerequisites) -->
       <div
-        v-if="(showStatus && task.athlete_task && !isCompleted) || task.has_incomplete_prerequisites"
+        v-if="
+          (showStatus && task.athlete_task && !isCompleted) ||
+          task.has_incomplete_prerequisites
+        "
         class="mt-2 flex flex-wrap items-center gap-2"
       >
         <StatusIndicator

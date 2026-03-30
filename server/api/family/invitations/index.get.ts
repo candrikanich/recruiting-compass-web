@@ -22,20 +22,28 @@ export default defineEventHandler(async (event) => {
 
     const { data: invitations, error } = await supabase
       .from("family_invitations")
-      .select("id, invited_email, role, status, expires_at, created_at, invited_by")
+      .select(
+        "id, invited_email, role, status, expires_at, created_at, invited_by",
+      )
       .in("family_unit_id", familyIds)
       .eq("status", "pending")
       .order("created_at", { ascending: false });
 
     if (error) {
       logger.error("Failed to fetch invitations", error);
-      throw createError({ statusCode: 500, statusMessage: "Failed to fetch invitations" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to fetch invitations",
+      });
     }
 
     return { invitations: invitations ?? [] };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to list invitations", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to fetch invitations" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to fetch invitations",
+    });
   }
 });

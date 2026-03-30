@@ -29,7 +29,10 @@ export default defineEventHandler(async (event) => {
     ? authHeader.slice(7)
     : getCookie(event, "sb-access-token") || null;
   if (!token) {
-    throw createError({ statusCode: 401, statusMessage: "Unauthorized - no authentication token" });
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Unauthorized - no authentication token",
+    });
   }
   const client = createServerSupabaseUserClient(token);
   const logger = useLogger(event, "coaches/deletion-blockers");

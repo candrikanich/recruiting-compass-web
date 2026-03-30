@@ -298,7 +298,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     // Metrics section only renders when the player has tracked schools.
     // Without seed data the widget shows an empty state — verify gracefully.
     const metricCards = contactFreqWidget.locator('[data-testid^="metric-"]');
-    const hasMetrics = await metricCards.count() > 0;
+    const hasMetrics = (await metricCards.count()) > 0;
     if (hasMetrics) {
       await expect(metricCards.first()).toBeVisible();
     } else {
@@ -333,7 +333,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
 
     // Metrics only render when player has tracked schools — verify gracefully
     const metricCards = contactFreqWidget.locator('[data-testid^="metric-"]');
-    const hasMetrics = await metricCards.count() > 0;
+    const hasMetrics = (await metricCards.count()) > 0;
     if (hasMetrics) {
       await expect(metricCards.first()).toBeVisible();
     } else {
@@ -341,7 +341,9 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     }
   });
 
-  test.skip("Color-coded schools display properly stacked", async ({ page }) => {
+  test.skip("Color-coded schools display properly stacked", async ({
+    page,
+  }) => {
     // TODO: test account has 0 schools. Skipped until seed data added.
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
@@ -371,7 +373,9 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     }
   });
 
-  test.skip("Summary metrics are accurate for tracked schools", async ({ page }) => {
+  test.skip("Summary metrics are accurate for tracked schools", async ({
+    page,
+  }) => {
     // TODO: test account has 0 schools. Assertion that (0 <= 0) is vacuous.
     // Skipped until seed data added.
     dashboardPage = new DashboardPage(page);

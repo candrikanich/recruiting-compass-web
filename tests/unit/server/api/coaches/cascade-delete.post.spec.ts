@@ -37,8 +37,14 @@ vi.mock("h3", async (importOriginal) => {
     readBody: vi.fn().mockResolvedValue({ confirmDelete: true }),
     getHeader: vi.fn().mockReturnValue("Bearer test-token"),
     getCookie: vi.fn().mockReturnValue(undefined),
-    createError: (opts: { statusCode: number; statusMessage?: string; message?: string }) => {
-      const err = new Error(opts.statusMessage ?? opts.message) as Error & { statusCode: number };
+    createError: (opts: {
+      statusCode: number;
+      statusMessage?: string;
+      message?: string;
+    }) => {
+      const err = new Error(opts.statusMessage ?? opts.message) as Error & {
+        statusCode: number;
+      };
       err.statusCode = opts.statusCode;
       return err;
     },
@@ -48,9 +54,8 @@ vi.mock("h3", async (importOriginal) => {
 import { requireAuth } from "~/server/utils/auth";
 import * as h3Module from "h3";
 
-const { default: handler } = await import(
-  "~/server/api/coaches/[id]/cascade-delete.post"
-);
+const { default: handler } =
+  await import("~/server/api/coaches/[id]/cascade-delete.post");
 
 const mockEvent = {
   context: { params: { id: TEST_UUID } },
@@ -80,10 +85,10 @@ describe("POST /api/coaches/[id]/cascade-delete", () => {
 
   it("returns success:true with deleted counts when all deletes succeed", async () => {
     mockDeleteEq
-      .mockResolvedValueOnce({ count: 3, error: null })  // follow_up_reminders
-      .mockResolvedValueOnce({ count: 5, error: null })  // interactions
-      .mockResolvedValueOnce({ count: 2, error: null })  // offers
-      .mockResolvedValueOnce({ count: 1, error: null })  // social_media_posts
+      .mockResolvedValueOnce({ count: 3, error: null }) // follow_up_reminders
+      .mockResolvedValueOnce({ count: 5, error: null }) // interactions
+      .mockResolvedValueOnce({ count: 2, error: null }) // offers
+      .mockResolvedValueOnce({ count: 1, error: null }) // social_media_posts
       .mockResolvedValueOnce({ count: 1, error: null }); // coaches
 
     const result = await handler(mockEvent);
@@ -202,7 +207,10 @@ describe("POST /api/coaches/[id]/cascade-delete", () => {
   // ── Delete failure → 500 (one test per step) ──────────────────────────────
 
   it("throws 500 when follow_up_reminders delete fails", async () => {
-    mockDeleteEq.mockResolvedValueOnce({ count: null, error: { message: "db error" } });
+    mockDeleteEq.mockResolvedValueOnce({
+      count: null,
+      error: { message: "db error" },
+    });
 
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 500 });
   });

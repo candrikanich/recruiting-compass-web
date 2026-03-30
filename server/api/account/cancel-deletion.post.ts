@@ -23,7 +23,10 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (!userData?.deletion_requested_at) {
-      throw createError({ statusCode: 400, statusMessage: "No pending deletion to cancel" });
+      throw createError({
+        statusCode: 400,
+        statusMessage: "No pending deletion to cancel",
+      });
     }
 
     const { error } = await supabase
@@ -33,7 +36,10 @@ export default defineEventHandler(async (event) => {
 
     if (error) {
       logger.error("Failed to cancel deletion", error);
-      throw createError({ statusCode: 500, statusMessage: "Failed to cancel account deletion" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to cancel account deletion",
+      });
     }
 
     logger.info("Account deletion cancelled", { userId: user.id });
@@ -41,6 +47,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to cancel account deletion", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to cancel account deletion" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to cancel account deletion",
+    });
   }
 });

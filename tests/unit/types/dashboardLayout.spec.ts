@@ -50,7 +50,7 @@ describe("WIDGET_SIZES", () => {
 describe("WIDGET_LABELS", () => {
   it("has a label for every widget ID in WIDGET_SIZES", () => {
     expect(Object.keys(WIDGET_LABELS).sort()).toEqual(
-      Object.keys(WIDGET_SIZES).sort()
+      Object.keys(WIDGET_SIZES).sort(),
     );
   });
 

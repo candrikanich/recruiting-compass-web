@@ -56,7 +56,8 @@ export function createLogger(context: string, options?: LoggerOptions): Logger {
   // - info and debug: respect LOG_LEVEL (defaults to "info" in dev, silenced in prod unless set)
   const configuredLevel = (process.env.LOG_LEVEL as LogLevel) || "info";
   const minLevelPriority = LOG_LEVEL_PRIORITY[configuredLevel];
-  const verboseLoggingEnabled = isDevelopment || process.env.LOG_LEVEL !== undefined;
+  const verboseLoggingEnabled =
+    isDevelopment || process.env.LOG_LEVEL !== undefined;
 
   // Extract request context if event provided
   const requestContext = options?.event
@@ -83,8 +84,12 @@ export function createLogger(context: string, options?: LoggerOptions): Logger {
 
     if (isDevelopment) {
       const prefix = `[${timestamp}] [${context}] [${level.toUpperCase()}]`;
-      const consoleMethod =
-        { debug: "log", info: "log", warn: "warn", error: "error" }[level];
+      const consoleMethod = {
+        debug: "log",
+        info: "log",
+        warn: "warn",
+        error: "error",
+      }[level];
 
       // Include request ID in development logs if available
       const requestSuffix = requestContext?.requestId
@@ -181,7 +186,9 @@ function sanitizeLogData(data: unknown): unknown {
   // Handle objects
   if (typeof data === "object") {
     const sanitized: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+    for (const [key, value] of Object.entries(
+      data as Record<string, unknown>,
+    )) {
       const lowerKey = key.toLowerCase();
       if (SENSITIVE_FIELDS.has(lowerKey) || lowerKey.includes("password")) {
         sanitized[key] = "[REDACTED]";

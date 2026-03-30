@@ -3,7 +3,9 @@
     <div class="flex items-center justify-between mb-6">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">Deadlines</h1>
-        <p class="text-gray-500 text-sm mt-1">Track application, offer, and recruiting deadlines</p>
+        <p class="text-gray-500 text-sm mt-1">
+          Track application, offer, and recruiting deadlines
+        </p>
       </div>
       <button
         @click="showAdd = true"
@@ -14,10 +16,17 @@
     </div>
 
     <div v-if="loading" class="text-gray-400 py-12 text-center">Loading...</div>
-    <div v-else-if="error" class="text-red-600 py-8 text-center">{{ error }}</div>
-    <div v-else-if="sortedDeadlines.length === 0" class="text-gray-400 text-center py-16">
+    <div v-else-if="error" class="text-red-600 py-8 text-center">
+      {{ error }}
+    </div>
+    <div
+      v-else-if="sortedDeadlines.length === 0"
+      class="text-gray-400 text-center py-16"
+    >
       <p class="text-lg">No deadlines yet.</p>
-      <p class="text-sm mt-2">Add application deadlines, offer decisions, and other key dates.</p>
+      <p class="text-sm mt-2">
+        Add application deadlines, offer decisions, and other key dates.
+      </p>
     </div>
     <ul v-else class="space-y-3">
       <li
@@ -28,7 +37,10 @@
         <div>
           <p class="font-medium text-gray-900">{{ d.label }}</p>
           <p class="text-sm text-gray-500 mt-0.5">
-            {{ d.deadline_date }} · <span class="capitalize">{{ d.category.replaceAll('_', ' ') }}</span>
+            {{ d.deadline_date }} ·
+            <span class="capitalize">{{
+              d.category.replaceAll("_", " ")
+            }}</span>
           </p>
         </div>
         <button
@@ -54,7 +66,9 @@
         <h2 class="text-lg font-bold">Add Deadline</h2>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Label</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Label</label
+          >
           <input
             v-model="newDeadline.label"
             type="text"
@@ -66,7 +80,9 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Date</label
+          >
           <input
             v-model="newDeadline.deadline_date"
             type="date"
@@ -76,8 +92,13 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-          <select v-model="newDeadline.category" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Category</label
+          >
+          <select
+            v-model="newDeadline.category"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2"
+          >
             <option value="application">Application</option>
             <option value="decision">Decision</option>
             <option value="financial_aid">Financial Aid</option>
@@ -99,7 +120,7 @@
             :disabled="addingDeadline"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
-            {{ addingDeadline ? 'Adding…' : 'Add Deadline' }}
+            {{ addingDeadline ? "Adding…" : "Add Deadline" }}
           </button>
         </div>
       </form>
@@ -108,28 +129,46 @@
 </template>
 
 <script setup lang="ts">
-const { deadlines, loading, error, fetchDeadlines, createDeadline, removeDeadline } = useDeadlines()
-const showAdd = ref(false)
-const addingDeadline = ref(false)
-const newDeadline = reactive({ label: '', deadline_date: '', category: 'application' })
+const {
+  deadlines,
+  loading,
+  error,
+  fetchDeadlines,
+  createDeadline,
+  removeDeadline,
+} = useDeadlines();
+const showAdd = ref(false);
+const addingDeadline = ref(false);
+const newDeadline = reactive({
+  label: "",
+  deadline_date: "",
+  category: "application",
+});
 
-onMounted(fetchDeadlines)
+onMounted(fetchDeadlines);
 
 const sortedDeadlines = computed(() =>
-  [...deadlines.value].sort((a, b) => a.deadline_date.localeCompare(b.deadline_date))
-)
+  [...deadlines.value].sort((a, b) =>
+    a.deadline_date.localeCompare(b.deadline_date),
+  ),
+);
 
 async function submitAdd() {
-  if (!newDeadline.label || !newDeadline.deadline_date) return
-  addingDeadline.value = true
+  if (!newDeadline.label || !newDeadline.deadline_date) return;
+  addingDeadline.value = true;
   try {
-    await createDeadline({ ...newDeadline })
-    showAdd.value = false
-    Object.assign(newDeadline, { label: '', deadline_date: '', category: 'application' })
+    await createDeadline({ ...newDeadline });
+    showAdd.value = false;
+    Object.assign(newDeadline, {
+      label: "",
+      deadline_date: "",
+      category: "application",
+    });
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to create deadline'
+    error.value =
+      err instanceof Error ? err.message : "Failed to create deadline";
   } finally {
-    addingDeadline.value = false
+    addingDeadline.value = false;
   }
 }
 </script>

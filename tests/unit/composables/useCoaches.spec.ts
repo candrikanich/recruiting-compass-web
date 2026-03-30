@@ -97,7 +97,11 @@ describe("useCoaches", () => {
     it("delegates to store and populates coaches ref", async () => {
       const mockCoaches = [
         createMockCoach(),
-        createMockCoach({ id: "coach-2", first_name: "Jane", role: "assistant" }),
+        createMockCoach({
+          id: "coach-2",
+          first_name: "Jane",
+          role: "assistant",
+        }),
       ];
       mockQuery.order.mockResolvedValue({ data: mockCoaches, error: null });
 
@@ -212,7 +216,6 @@ describe("useCoaches", () => {
 
       expect(coaches.value[0]).toEqual(coachWithNulls);
     });
-
   });
 
   describe("Computed Properties", () => {

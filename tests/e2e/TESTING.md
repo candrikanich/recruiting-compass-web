@@ -21,10 +21,12 @@ test("should create a school", async ({ page }) => {
 ## Auth Accounts
 
 Two pre-seeded accounts are available:
+
 - **`player@test.com` / `TestPass123!`** — default (player role, completed onboarding)
 - **`parent@test.com` / `TestPass123!`** — parent role
 
 To use the parent account, override storageState at the describe level:
+
 ```typescript
 import { resolve } from "path";
 const AUTH_DIR = resolve(process.cwd(), "tests/e2e/.auth");
@@ -42,6 +44,7 @@ test.describe("Parent features", () => {
 ## Testing Auth Flows (login, signup, password reset)
 
 These tests must start logged OUT. Use `test.use({ storageState: { cookies: [], origins: [] } })` — **not** `storageState: undefined`, which falls back to the global default (`player.json`) when that file exists (it always does in CI after global setup):
+
 ```typescript
 test.describe("Login flow", () => {
   test.use({ storageState: { cookies: [], origins: [] } }); // explicitly clear all auth state
@@ -56,6 +59,7 @@ test.describe("Login flow", () => {
 ## Creating Unique Test Accounts
 
 Only when the test is specifically about account creation. Never use `testUsers.newUser` (deprecated).
+
 ```typescript
 import { makeTestUser } from "../fixtures/testData";
 
@@ -72,13 +76,15 @@ test.describe("Signup creates account", () => {
 ## Assertions: Specific > Generic
 
 BAD (always passes, provides no confidence):
+
 ```typescript
-expect(url).toMatch(/\/(login|dashboard)/);         // both are "valid"
-expect(count).toBeLessThanOrEqual(3);               // passes when 0
-expect(isLoaded).toBe(true);                        // page has any text
+expect(url).toMatch(/\/(login|dashboard)/); // both are "valid"
+expect(count).toBeLessThanOrEqual(3); // passes when 0
+expect(isLoaded).toBe(true); // page has any text
 ```
 
 GOOD (fails if the feature is broken):
+
 ```typescript
 await expect(page).toHaveURL("/dashboard");
 expect(count).toBeGreaterThanOrEqual(1);
@@ -95,7 +101,7 @@ await expect(page.locator(".result")).toBeVisible();
 // GOOD — wait for the specific condition
 await expect(page.locator(".result")).toBeVisible({ timeout: 10000 });
 await page.waitForURL("/dashboard");
-await page.waitForResponse(url => url.includes("/api/schools"));
+await page.waitForResponse((url) => url.includes("/api/schools"));
 ```
 
 ## No console.log in Tests
@@ -106,6 +112,7 @@ Remove all `console.log` before committing.
 ## Test Isolation
 
 Each test should be independent. If your test creates DB records, clean them up:
+
 ```typescript
 import { getSupabaseAdmin } from "../seed/helpers/supabase-admin";
 
@@ -117,10 +124,10 @@ test.afterEach(async () => {
 
 ## File Location
 
-| Directory | Tests |
-|-----------|-------|
-| `tier1-critical/` | Core flows: CRUD, auth, primary user journeys |
-| `tier2-important/` | Secondary flows: filtering, search, settings, analytics |
-| `tier3-nice-to-have/` | Edge cases, error recovery |
-| `a11y/` | Accessibility (WCAG) |
-| Root level | Quick smoke tests for specific behaviors |
+| Directory             | Tests                                                   |
+| --------------------- | ------------------------------------------------------- |
+| `tier1-critical/`     | Core flows: CRUD, auth, primary user journeys           |
+| `tier2-important/`    | Secondary flows: filtering, search, settings, analytics |
+| `tier3-nice-to-have/` | Edge cases, error recovery                              |
+| `a11y/`               | Accessibility (WCAG)                                    |
+| Root level            | Quick smoke tests for specific behaviors                |

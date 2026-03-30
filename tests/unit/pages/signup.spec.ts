@@ -646,9 +646,12 @@ describe("signup.vue", () => {
       await wrapper.find("form").trigger("submit.prevent");
       await wrapper.vm.$nextTick();
 
-      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith("/api/family/create", {
-        method: "POST",
-      });
+      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith(
+        "/api/family/create",
+        {
+          method: "POST",
+        },
+      );
     });
 
     it("should navigate to /onboarding after player signup", async () => {
@@ -732,9 +735,12 @@ describe("signup.vue", () => {
       await wrapper.find("form").trigger("submit.prevent");
       await wrapper.vm.$nextTick();
 
-      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith("/api/family/create", {
-        method: "POST",
-      });
+      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith(
+        "/api/family/create",
+        {
+          method: "POST",
+        },
+      );
     });
 
     it("should navigate to /onboarding/parent after parent signup", async () => {

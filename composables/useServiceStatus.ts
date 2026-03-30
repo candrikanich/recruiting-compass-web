@@ -5,10 +5,10 @@
  * when to show the Service Unavailable error page.
  */
 
-import { ref } from 'vue';
+import { ref } from "vue";
 
 interface ServiceError {
-  service: 'supabase' | 'api' | 'other';
+  service: "supabase" | "api" | "other";
   statusCode: number;
   message: string;
   timestamp: Date;
@@ -21,43 +21,42 @@ const lastError = ref<ServiceError | null>(null);
 const consecutiveErrors = ref<number>(0);
 
 export const useServiceStatus = () => {
-
   /**
    * Detect error type and categorize it
    */
   const detectErrorType = (error: unknown): ServiceError | null => {
     // Network errors (fetch failures, timeouts)
-    if (error instanceof TypeError && error.message.includes('fetch')) {
+    if (error instanceof TypeError && error.message.includes("fetch")) {
       return {
-        service: 'supabase',
+        service: "supabase",
         statusCode: 0,
-        message: 'Network error - service unreachable',
+        message: "Network error - service unreachable",
         timestamp: new Date(),
         retryCount: 0,
       };
     }
 
     // Check if error has status code (HTTP error)
-    if (typeof error === 'object' && error !== null) {
+    if (typeof error === "object" && error !== null) {
       const err = error as Record<string, unknown>;
 
       // Supabase error format
-      if ('status' in err && typeof err.status === 'number') {
+      if ("status" in err && typeof err.status === "number") {
         return {
-          service: 'supabase',
+          service: "supabase",
           statusCode: err.status,
-          message: err.message as string || 'Service error',
+          message: (err.message as string) || "Service error",
           timestamp: new Date(),
           retryCount: 0,
         };
       }
 
       // Fetch response error
-      if ('statusCode' in err && typeof err.statusCode === 'number') {
+      if ("statusCode" in err && typeof err.statusCode === "number") {
         return {
-          service: 'api',
+          service: "api",
           statusCode: err.statusCode,
-          message: err.message as string || 'API error',
+          message: (err.message as string) || "API error",
           timestamp: new Date(),
           retryCount: 0,
         };
@@ -102,9 +101,7 @@ export const useServiceStatus = () => {
     // Threshold logic:
     // - Network errors (statusCode 0): Show immediately
     // - Server errors (500+): Show after 2 consecutive errors
-    const shouldShow =
-      error.statusCode === 0 ||
-      consecutiveErrors.value >= 2;
+    const shouldShow = error.statusCode === 0 || consecutiveErrors.value >= 2;
 
     if (shouldShow) {
       isServiceUnavailable.value = true;
@@ -132,18 +129,18 @@ export const useServiceStatus = () => {
    */
   const getErrorMessage = (): string => {
     if (!lastError.value) {
-      return 'Service temporarily unavailable';
+      return "Service temporarily unavailable";
     }
 
     if (lastError.value.statusCode === 0) {
-      return 'Unable to connect to our services. Please check your internet connection.';
+      return "Unable to connect to our services. Please check your internet connection.";
     }
 
     if (lastError.value.statusCode >= 500) {
-      return 'Our service provider is experiencing technical difficulties. Please try again in a few minutes.';
+      return "Our service provider is experiencing technical difficulties. Please try again in a few minutes.";
     }
 
-    return 'Service temporarily unavailable';
+    return "Service temporarily unavailable";
   };
 
   return {

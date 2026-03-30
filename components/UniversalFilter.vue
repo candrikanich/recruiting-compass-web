@@ -352,8 +352,8 @@ const visibleConfigs = computed(() => {
 });
 
 // Dynamic grid classes based on columns prop
-const filterGridClasses = computed(() =>
-  `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${props.columns} gap-4`
+const filterGridClasses = computed(
+  () => `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${props.columns} gap-4`,
 );
 
 // Handle single value changes

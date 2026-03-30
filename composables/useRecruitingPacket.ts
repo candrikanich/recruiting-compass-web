@@ -60,7 +60,10 @@ export const useRecruitingPacket = () => {
 
   const buildSocialMedia = (
     details: PlayerDetails | null,
-  ): Array<{ platform: "instagram" | "twitter" | "tiktok"; handle: string }> => {
+  ): Array<{
+    platform: "instagram" | "twitter" | "tiktok";
+    handle: string;
+  }> => {
     const links: Array<{
       platform: "instagram" | "twitter" | "tiktok";
       handle: string;
@@ -166,17 +169,25 @@ export const useRecruitingPacket = () => {
    * Calculate activity summary
    */
   const calculateActivitySummary = (): ActivitySummary => {
-    const VISIT_TYPES = ["in_person_visit", "unofficial_visit", "official_visit", "virtual_meeting"];
+    const VISIT_TYPES = [
+      "in_person_visit",
+      "unofficial_visit",
+      "official_visit",
+      "virtual_meeting",
+    ];
     const breakdown = {
       emails: interactions.value.filter((i) => i.type === "email").length,
       calls: interactions.value.filter((i) => i.type === "phone_call").length,
       camps: interactions.value.filter(
         (i) => i.type === "camp" || i.type === "showcase",
       ).length,
-      visits: interactions.value.filter((i) => VISIT_TYPES.includes(i.type)).length,
+      visits: interactions.value.filter((i) => VISIT_TYPES.includes(i.type))
+        .length,
       other: interactions.value.filter(
         (i) =>
-          !["email", "phone_call", "camp", "showcase", ...VISIT_TYPES].includes(i.type),
+          !["email", "phone_call", "camp", "showcase", ...VISIT_TYPES].includes(
+            i.type,
+          ),
       ).length,
     };
 

@@ -1,30 +1,41 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { useHighSchoolSearch, type NcesSchool, type HighSchoolSelection } from "~/composables/useHighSchoolSearch";
+import {
+  useHighSchoolSearch,
+  type NcesSchool,
+  type HighSchoolSelection,
+} from "~/composables/useHighSchoolSearch";
 
-const props = withDefaults(defineProps<{
-  modelValue: HighSchoolSelection | null;
-  stateHint?: string;
-  disabled?: boolean;
-  placeholder?: string;
-}>(), {
-  placeholder: "Search for your high school",
-  disabled: false,
-});
+const props = withDefaults(
+  defineProps<{
+    modelValue: HighSchoolSelection | null;
+    stateHint?: string;
+    disabled?: boolean;
+    placeholder?: string;
+  }>(),
+  {
+    placeholder: "Search for your high school",
+    disabled: false,
+  },
+);
 
 const emit = defineEmits<{
   "update:modelValue": [value: HighSchoolSelection];
 }>();
 
-const { results, loading, search, selectSchool, clearResults } = useHighSchoolSearch(props.stateHint);
+const { results, loading, search, selectSchool, clearResults } =
+  useHighSchoolSearch(props.stateHint);
 
 const inputValue = ref(props.modelValue?.name ?? "");
 const showDropdown = ref(false);
 const isManualMode = ref(false);
 
-watch(() => props.modelValue, (v) => {
-  inputValue.value = v?.name ?? "";
-});
+watch(
+  () => props.modelValue,
+  (v) => {
+    inputValue.value = v?.name ?? "";
+  },
+);
 
 function onInput(e: Event) {
   const val = (e.target as HTMLInputElement).value;
@@ -61,11 +72,15 @@ function disableManualMode() {
 
 function onBlur() {
   // Small delay so click on dropdown item fires first
-  setTimeout(() => { showDropdown.value = false; }, 150);
+  setTimeout(() => {
+    showDropdown.value = false;
+  }, 150);
 }
 
 function formatSchoolLocation(school: NcesSchool): string {
-  const parts = [school.city, school.state].filter(part => part && part.trim() !== "");
+  const parts = [school.city, school.state].filter(
+    (part) => part && part.trim() !== "",
+  );
   return parts.length > 0 ? parts.join(", ") : "";
 }
 </script>
@@ -103,7 +118,10 @@ function formatSchoolLocation(school: NcesSchool): string {
 
       <!-- Dropdown -->
       <div
-        v-if="showDropdown && (results.length > 0 || (!loading && inputValue.length >= 2))"
+        v-if="
+          showDropdown &&
+          (results.length > 0 || (!loading && inputValue.length >= 2))
+        "
         class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden"
       >
         <button
@@ -113,11 +131,18 @@ function formatSchoolLocation(school: NcesSchool): string {
           class="w-full px-4 py-3 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0 flex justify-between items-center"
           @mousedown.prevent="onSelect(school)"
         >
-          <span class="text-sm font-medium text-slate-800">{{ school.name }}</span>
-          <span class="text-xs text-slate-400 ml-2">{{ formatSchoolLocation(school) }}</span>
+          <span class="text-sm font-medium text-slate-800">{{
+            school.name
+          }}</span>
+          <span class="text-xs text-slate-400 ml-2">{{
+            formatSchoolLocation(school)
+          }}</span>
         </button>
 
-        <div v-if="!loading && results.length === 0 && inputValue.length >= 2" class="px-4 py-3">
+        <div
+          v-if="!loading && results.length === 0 && inputValue.length >= 2"
+          class="px-4 py-3"
+        >
           <p class="text-sm text-slate-500 mb-2">No schools found.</p>
           <button
             type="button"
