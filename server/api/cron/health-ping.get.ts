@@ -90,7 +90,12 @@ export default defineEventHandler(async (event) => {
     try {
       const res = await fetch(`${baseUrl}${path}`, { method: "HEAD" });
       result.pagesChecked.push({ path, status: res.status });
-      if (res.ok) result.siteUp = true;
+      if (res.ok) {
+        result.siteUp = true;
+      } else {
+        result.errors.push(`${path} returned ${res.status} ${res.statusText}`);
+        logger.warn(`Page health check failed for ${path}`, { status: res.status });
+      }
     } catch (err) {
       result.errors.push(`Failed to reach ${path}`);
       logger.error(`Page health check failed for ${path}`, err);
@@ -150,7 +155,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const status =
-    result.errors.length === 0 ? "healthy" : "degraded";
+    result.siteUp && result.errors.length === 0 ? "healthy" : "degraded";
   logger.info(`Health ping complete — ${status}`, result);
 
   return { status, ...result };
