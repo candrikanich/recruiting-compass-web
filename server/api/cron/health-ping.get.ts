@@ -1,5 +1,5 @@
 /**
- * POST /api/cron/health-ping
+ * GET /api/cron/health-ping
  * Daily health check: verifies the site is reachable and warms Upstash cache
  * with common college search queries so production users get cache hits.
  *
