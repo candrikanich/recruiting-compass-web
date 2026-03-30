@@ -88,7 +88,17 @@ export default defineEventHandler(async (event) => {
 
   for (const path of PUBLIC_PATHS) {
     try {
-      const res = await fetch(`${baseUrl}${path}`, { method: "HEAD" });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      let res: Response;
+      try {
+        res = await fetch(`${baseUrl}${path}`, {
+          method: "HEAD",
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
       result.pagesChecked.push({ path, status: res.status });
       if (res.ok) {
         result.siteUp = true;
@@ -132,9 +142,20 @@ export default defineEventHandler(async (event) => {
             per_page: "10",
           });
 
-          const response = await fetch(
-            `${COLLEGE_SCORECARD_BASE}?${params.toString()}`,
+          const scorecardController = new AbortController();
+          const scorecardTimeoutId = setTimeout(
+            () => scorecardController.abort(),
+            5000,
           );
+          let response: Response;
+          try {
+            response = await fetch(
+              `${COLLEGE_SCORECARD_BASE}?${params.toString()}`,
+              { signal: scorecardController.signal },
+            );
+          } finally {
+            clearTimeout(scorecardTimeoutId);
+          }
 
           if (!response.ok) {
             result.errors.push(
