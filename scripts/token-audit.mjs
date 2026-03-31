@@ -156,7 +156,6 @@ function parseVueSections(content) {
 function auditFile(filePath) {
   const content = readFileSync(filePath, "utf8");
   const isVue = extname(filePath) === ".vue";
-  const relPath = relative(ROOT, filePath);
 
   // Skip canonical token source files
   if (!isVue && SKIP_ASSET_FILES.some((f) => filePath.endsWith(f))) {
