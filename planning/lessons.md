@@ -117,3 +117,14 @@ Source: pasted content (Gopi C K)
 - **Index new filter columns in migrations**: Every Supabase migration that adds a column used in `.eq()`, `.order()`, or `.match()` calls should include a `CREATE INDEX` in the same migration file — missing indexes degrade silently as rows grow.
 - **Failure-first Supabase queries**: Treat Supabase as a flaky external service — always chain `.throwOnError()` or explicitly check `error !== null` after every query. Silent `null` returns (`.maybeSingle()` without null checks) cause downstream crashes with no useful error context.
 - **Standardized Nitro error response shape**: All `createError()` calls should follow the same shape: `{ statusCode, statusMessage }` — no raw `error.message` leakage (already in CLAUDE.md), no ad-hoc response objects. Consistency enables predictable client-side error handling.
+
+---
+
+### HTML5 Native Features That Replace Vue Abstractions — 2026-03-31
+Source: pasted content (Mahad Nadeem)
+
+- **`<dialog>` eliminates Teleport modals**: Native `<dialog>` renders in the browser's top layer automatically — no `<Teleport to="body">`, no SSR crash risk, no custom backdrop/ESC/focus-trap logic. Audit existing modal components and replace with a thin `<dialog>`-based Vue wrapper. Example: `dialogRef.value?.showModal()` / `dialogRef.value?.close()`.
+- **`<details>/<summary>` for collapsible UI**: Any Vue component that uses `v-show`/`v-if` solely to toggle visibility of a section (filters, FAQ, advanced options) can be replaced with `<details>/<summary>` — keyboard accessible, zero JS, zero state.
+- **`<progress>` for async job feedback**: Native `<progress value="N" max="100">` handles background job / data-fetch feedback with no CSS animation, no custom component. Update `.value` reactively from a Pinia store.
+- **Layer native form constraints with Zod**: HTML5 `required`, `min`, `max`, `minlength`, `type="email"` provide instant in-browser feedback *before* Zod/server validation runs — they don't replace Zod but reduce unnecessary server round-trips and improve mobile UX on forms.
+- **Excess ARIA signals wrong base HTML**: If a Vue component needs more than 1–2 ARIA attributes to be accessible, the underlying element choice is probably wrong (e.g., `div` + `role="button"` instead of `<button>`). Treat ARIA accumulation as a code smell and audit the semantic element first.
