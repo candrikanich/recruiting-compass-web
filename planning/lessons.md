@@ -128,3 +128,13 @@ Source: pasted content (Mahad Nadeem)
 - **`<progress>` for async job feedback**: Native `<progress value="N" max="100">` handles background job / data-fetch feedback with no CSS animation, no custom component. Update `.value` reactively from a Pinia store.
 - **Layer native form constraints with Zod**: HTML5 `required`, `min`, `max`, `minlength`, `type="email"` provide instant in-browser feedback *before* Zod/server validation runs — they don't replace Zod but reduce unnecessary server round-trips and improve mobile UX on forms.
 - **Excess ARIA signals wrong base HTML**: If a Vue component needs more than 1–2 ARIA attributes to be accessible, the underlying element choice is probably wrong (e.g., `div` + `role="button"` instead of `<button>`). Treat ARIA accumulation as a code smell and audit the semantic element first.
+
+---
+
+### Form Automation Tips for Happier Users and Clients — 2026-03-31
+Source: https://css-tricks.com/form-automation-tips-for-happier-user-and-clients/
+
+- **Normalize form data before submission**: Lowercase email, title-case name, strip non-digit characters from phone — do this in a composable before the Nitro call, not server-side. Prevents duplicate Supabase records caused by casing inconsistencies ("JOHN SMITH" vs "john smith"). Example: `email.trim().toLowerCase()`, `phone.replace(/\D/g, '')`.
+- **Disable submit atomically with a `submitting` ref**: Use `const submitting = ref(false)` — set `true` before the `$fetch` call, reset in `catch` only (not `finally`). `finally` re-enables the button even on success, which invites double-submissions on slow connections; only re-enable on recoverable error.
+- **Include `source` and `timestamp` in Nitro-bound form payloads**: Add `{ source: 'app_form_name', timestamp: new Date().toISOString() }` to every form payload sent to Nitro endpoints — makes Supabase audit trails queryable and any downstream webhook (email, Zapier) reliable without post-processing.
+- **Specific error messages replace generic ones**: Nitro `createError()` `statusMessage` should name the actual failure — `"Email already registered"`, `"Phone number format invalid"` — not `"Something went wrong"`. Pair with a specific success message that sets expectations: `"Sent. You'll hear back within 24 hours."` instead of `"Success!"`.
