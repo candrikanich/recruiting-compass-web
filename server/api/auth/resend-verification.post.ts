@@ -62,7 +62,7 @@ export default defineEventHandler(
         await // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabaseAdmin.auth.admin as any).generateLink({
           type: "magiclink",
-          email: email,
+          email: email.trim().toLowerCase(),
         });
 
       if (resendError) {
