@@ -33,7 +33,9 @@
     "feature:ios": "bash scripts/feature-tdd.sh --scope ios",
     "feature:both": "bash scripts/feature-tdd.sh --scope both",
     "feature:full": "bash scripts/full-stack-feature.sh",
-    "feature:full:web-only": "bash scripts/full-stack-feature.sh --web-only"
+    "feature:full:web-only": "bash scripts/full-stack-feature.sh --web-only",
+    "audit:tokens": "node scripts/token-audit.mjs",
+    "audit:tokens:ci": "node scripts/token-audit.mjs --errors-only"
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",

@@ -57,7 +57,7 @@ const parts = computed(() => {
 
 <style scoped>
 mark {
-  background-color: #fef08a;
+  background-color: var(--color-highlight);
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
 }

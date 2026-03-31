@@ -204,8 +204,8 @@ const resetForm = () => {
 .spinner {
   width: 20px;
   height: 20px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #2563eb;
+  border: 3px solid var(--color-brand-slate-200);
+  border-top-color: var(--color-brand-blue-600);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

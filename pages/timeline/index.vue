@@ -191,8 +191,8 @@
 @keyframes highlight-pulse {
   0%,
   15% {
-    background-color: rgb(219 234 254); /* blue-100 */
-    box-shadow: 0 0 0 2px rgb(147 197 253); /* blue-300 */
+    background-color: var(--color-brand-blue-100);
+    box-shadow: 0 0 0 2px var(--color-brand-blue-300);
   }
   100% {
     background-color: transparent;

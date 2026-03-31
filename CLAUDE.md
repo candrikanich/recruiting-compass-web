@@ -84,6 +84,18 @@ Organize by action: 1) Pending Confirmations (amber), 2) Received Invitations (b
 
 @claude/logging.md
 
+## UI Code
+
+Before writing or modifying any UI code, read:
+- `docs/design/tokens.md` — semantic CSS variables (`--background`, `--muted`, `--shadow-card`, etc.)
+- `docs/design/components.md` — `<Badge>`, `<Button>`, `<Card>`, skeletons, empty/error states
+
+**Rules (enforced by `npm run audit:tokens`):**
+- Never write raw hex colors (`#3b82f6`) or `rgba(...)` in `<style>` blocks or inline `style=` attributes
+- Use CSS variables from `theme.css` or Tailwind brand utilities (`bg-brand-blue-600`, `text-brand-slate-700`)
+- Chart.js/canvas configs require raw hex — add `// audit-ignore` to suppress audit warnings on those lines
+- Use `<DesignSystem*>` components for empty states, loading states, and errors — do not build these inline
+
 ## Code Quality
 
 - **TypeScript**: Strict mode, no `any` (except tests), `as const` for enums. When a type fix would cascade to 50+ files, prefer targeted `as SomeType` casts or narrowing at the call site — do not chase the root cause through the entire codebase in a single pass.
