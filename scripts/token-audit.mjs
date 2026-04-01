@@ -15,7 +15,7 @@
  * Exit codes: 0 = clean, 1 = errors found
  */
 
-import { readFileSync, readdirSync, statSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 import { join, extname, relative } from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -110,11 +110,10 @@ function lineNumber(content, charOffset) {
 function collectFiles(dir) {
   const files = [];
   try {
-    for (const entry of readdirSync(dir)) {
-      const full = join(dir, entry);
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
       if (IGNORE_PATHS.some((p) => full.includes(`/${p}/`) || full.endsWith(`/${p}`))) continue;
-      const stat = statSync(full);
-      if (stat.isDirectory()) {
+      if (entry.isDirectory()) {
         files.push(...collectFiles(full));
       } else if ([".vue", ".css"].includes(extname(full))) {
         files.push(full);
@@ -136,15 +135,15 @@ function parseVueSections(content) {
     template: templateMatch
       ? {
           text: templateMatch[1],
-          start: content.indexOf(templateMatch[0]),
+          start: templateMatch.index,
         }
       : null,
     script: scriptMatch
-      ? { text: scriptMatch[1], start: content.indexOf(scriptMatch[0]) }
+      ? { text: scriptMatch[1], start: scriptMatch.index }
       : null,
     styles: styleMatches.map((m) => ({
       text: m[1],
-      start: content.indexOf(m[0]),
+      start: m.index,
     })),
   };
 }

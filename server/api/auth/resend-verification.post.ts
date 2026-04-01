@@ -16,7 +16,7 @@ export default defineEventHandler(
 
     try {
       const body = await readBody<{ email: string }>(event);
-      const { email } = body;
+      const email = body.email?.trim().toLowerCase();
 
       if (!email) {
         throw createError({
@@ -62,7 +62,7 @@ export default defineEventHandler(
         await // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabaseAdmin.auth.admin as any).generateLink({
           type: "magiclink",
-          email: email.trim().toLowerCase(),
+          email,
         });
 
       if (resendError) {
