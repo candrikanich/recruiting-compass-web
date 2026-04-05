@@ -100,6 +100,7 @@
   },
   "overrides": {
     "flatted": "^3.4.2",
+    "defu": "^6.1.6",
     "reka-ui": "2.8.2",
     "@vercel/nft": "^0.27.4",
     "serialize-javascript": "^7.0.3",
