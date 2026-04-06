@@ -21,27 +21,27 @@ describe("TimelineStatPills", () => {
 
   it("shows green dot for on_track status", () => {
     const wrapper = mount(TimelineStatPills, { props: defaultProps });
-    expect(
-      wrapper.find("[data-testid='status-dot']").classes(),
-    ).toContain("bg-emerald-500");
+    expect(wrapper.find("[data-testid='status-dot']").classes()).toContain(
+      "bg-emerald-500",
+    );
   });
 
   it("shows amber dot for slightly_behind status", () => {
     const wrapper = mount(TimelineStatPills, {
       props: { ...defaultProps, statusLabel: "slightly_behind" },
     });
-    expect(
-      wrapper.find("[data-testid='status-dot']").classes(),
-    ).toContain("bg-amber-500");
+    expect(wrapper.find("[data-testid='status-dot']").classes()).toContain(
+      "bg-amber-500",
+    );
   });
 
   it("shows red dot for at_risk status", () => {
     const wrapper = mount(TimelineStatPills, {
       props: { ...defaultProps, statusLabel: "at_risk" },
     });
-    expect(
-      wrapper.find("[data-testid='status-dot']").classes(),
-    ).toContain("bg-red-500");
+    expect(wrapper.find("[data-testid='status-dot']").classes()).toContain(
+      "bg-red-500",
+    );
   });
 
   it("computes task progress percentage correctly", () => {

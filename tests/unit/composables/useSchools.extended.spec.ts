@@ -362,7 +362,6 @@ describe("useSchools - Extended Coverage", () => {
     });
   });
 
-
   describe("updateStatus", () => {
     it("should handle status update error", async () => {
       mockQuery.single.mockResolvedValueOnce({

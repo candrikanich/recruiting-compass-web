@@ -121,7 +121,6 @@ test.describe("Family Member Removal", () => {
 });
 
 test.describe("authenticated family management", () => {
-
   test("family management page loads for authenticated player", async ({
     page,
   }) => {

@@ -47,7 +47,9 @@ function createMockSupabase(graduationYear: number | null) {
     single: vi.fn(),
     // user_preferences query uses maybeSingle; returns null error when 0 rows (no PGRST116)
     maybeSingle: vi.fn().mockResolvedValue({
-      data: graduationYear ? { data: { graduation_year: graduationYear } } : null,
+      data: graduationYear
+        ? { data: { graduation_year: graduationYear } }
+        : null,
       error: null,
     }),
   };
@@ -112,9 +114,8 @@ describe("/api/athlete/phase.get", () => {
     it("should return sophomore phase for Class of 2028 in February 2026", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } = await import(
-        "~/server/utils/supabase"
-      );
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
 
@@ -140,9 +141,8 @@ describe("/api/athlete/phase.get", () => {
     it("should return freshman phase for Class of 2029 in February 2026", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } = await import(
-        "~/server/utils/supabase"
-      );
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
 
@@ -168,9 +168,8 @@ describe("/api/athlete/phase.get", () => {
     it("should return junior phase for Class of 2027 in February 2026", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } = await import(
-        "~/server/utils/supabase"
-      );
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
 
@@ -196,9 +195,8 @@ describe("/api/athlete/phase.get", () => {
     it("should default to freshman when no graduation year is set", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } = await import(
-        "~/server/utils/supabase"
-      );
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
 
@@ -224,9 +222,8 @@ describe("/api/athlete/phase.get", () => {
     it("should return senior phase for Class of 2026 in February 2026", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } = await import(
-        "~/server/utils/supabase"
-      );
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
 
@@ -254,9 +251,8 @@ describe("/api/athlete/phase.get", () => {
     it("throws 500 when preferences DB query returns a non-PGRST116 error", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } = await import(
-        "~/server/utils/supabase"
-      );
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
 
@@ -285,9 +281,8 @@ describe("/api/athlete/phase.get", () => {
     it("throws 500 when athlete_task query returns an error", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } = await import(
-        "~/server/utils/supabase"
-      );
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
 
@@ -317,9 +312,8 @@ describe("/api/athlete/phase.get", () => {
     it("throws 401 when a dependency inside the try block throws an Unauthorized error", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } = await import(
-        "~/server/utils/supabase"
-      );
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
       const { requireAuth, getUserRole } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
 
@@ -347,9 +341,8 @@ describe("/api/athlete/phase.get", () => {
     it("throws 500 for unexpected generic errors thrown inside the try block", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } = await import(
-        "~/server/utils/supabase"
-      );
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
       const { requireAuth, getUserRole } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
 
@@ -361,7 +354,9 @@ describe("/api/athlete/phase.get", () => {
         createMockSupabase(2027) as any,
       );
       // getUserRole throws a non-Unauthorized, non-H3 error inside the try block
-      vi.mocked(getUserRole).mockRejectedValue(new Error("unexpected DB failure"));
+      vi.mocked(getUserRole).mockRejectedValue(
+        new Error("unexpected DB failure"),
+      );
 
       const mockEvent = {
         context: {},

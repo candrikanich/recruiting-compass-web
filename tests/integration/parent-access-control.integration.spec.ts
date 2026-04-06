@@ -144,7 +144,6 @@ describe("Parent/Athlete Access Control Integration Tests", () => {
         expect(true).toBe(true); // Placeholder
       });
     });
-
   });
 
   describe("Read-Only Routes - Parent Access Allowed", () => {

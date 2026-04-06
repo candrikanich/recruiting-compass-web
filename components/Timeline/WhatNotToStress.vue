@@ -10,7 +10,9 @@
       @click="$emit('toggle')"
     >
       <span class="text-2xl">🛡️</span>
-      <h3 class="text-lg font-bold text-slate-900 flex-1">What NOT to Stress About</h3>
+      <h3 class="text-lg font-bold text-slate-900 flex-1">
+        What NOT to Stress About
+      </h3>
       <svg
         class="w-5 h-5 text-slate-400 transition-transform duration-200"
         :class="{ 'rotate-180': !collapsed }"
@@ -18,7 +20,12 @@
         viewBox="0 0 24 24"
         stroke="currentColor"
       >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M19 9l-7 7-7-7"
+        />
       </svg>
     </button>
 
@@ -28,28 +35,28 @@
       </p>
 
       <div class="space-y-2">
-      <div
-        v-if="messages.length === 0"
-        class="text-sm text-slate-500 py-4 text-center"
-      >
-        No reassurance needed—you're doing great!
-      </div>
+        <div
+          v-if="messages.length === 0"
+          class="text-sm text-slate-500 py-4 text-center"
+        >
+          No reassurance needed—you're doing great!
+        </div>
 
-      <div
-        v-for="msg in messages"
-        :key="msg.id"
-        class="bg-white rounded-lg border border-emerald-100 p-3 hover:border-emerald-200 transition"
-      >
-        <div class="flex items-start gap-3">
-          <div class="shrink-0 text-lg">{{ msg.icon }}</div>
-          <div class="flex-1 min-w-0">
-            <div class="font-medium text-slate-900">{{ msg.title }}</div>
-            <div class="text-sm text-slate-600 mt-1 leading-relaxed">
-              {{ msg.message }}
+        <div
+          v-for="msg in messages"
+          :key="msg.id"
+          class="bg-white rounded-lg border border-emerald-100 p-3 hover:border-emerald-200 transition"
+        >
+          <div class="flex items-start gap-3">
+            <div class="shrink-0 text-lg">{{ msg.icon }}</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-slate-900">{{ msg.title }}</div>
+              <div class="text-sm text-slate-600 mt-1 leading-relaxed">
+                {{ msg.message }}
+              </div>
             </div>
           </div>
         </div>
-      </div>
       </div>
     </div>
   </div>

@@ -74,7 +74,9 @@ export const useCursorPagination = <T extends AnyRecord>(
       }
 
       // Apply ordering
-      query = query.order(cursorColumn as string, { ascending: order === "asc" });
+      query = query.order(cursorColumn as string, {
+        ascending: order === "asc",
+      });
 
       const { data, error: fetchError } = (await query) as {
         data: T[] | null;
@@ -107,9 +109,7 @@ export const useCursorPagination = <T extends AnyRecord>(
       items.value = [...items.value, ...data];
     } catch (err: unknown) {
       const message =
-        err instanceof Error
-          ? err.message
-          : "Failed to load paginated results";
+        err instanceof Error ? err.message : "Failed to load paginated results";
       error.value = message;
       logger.error("[useCursorPagination] Error:", message);
     } finally {
@@ -209,7 +209,9 @@ export const useTypedCursorPagination = <T extends AnyRecord>(
       }
 
       // Apply ordering
-      query = query.order(cursorColumn as string, { ascending: order === "asc" });
+      query = query.order(cursorColumn as string, {
+        ascending: order === "asc",
+      });
 
       const { data, error: fetchError } = (await query) as {
         data: T[] | null;
@@ -240,9 +242,7 @@ export const useTypedCursorPagination = <T extends AnyRecord>(
       items.value = [...items.value, ...data];
     } catch (err: unknown) {
       const message =
-        err instanceof Error
-          ? err.message
-          : "Failed to load paginated results";
+        err instanceof Error ? err.message : "Failed to load paginated results";
       error.value = message;
       logger.error("[useTypedCursorPagination] Error:", message);
     } finally {

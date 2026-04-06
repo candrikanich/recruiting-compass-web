@@ -125,8 +125,18 @@ describe("useRecruitingPacket", () => {
     vi.mocked(useCoaches).mockReturnValue({
       coaches: {
         value: [
-          { id: "coach-1", school_id: "school-1", first_name: "Mike", last_name: "Coach" },
-          { id: "coach-2", school_id: "school-1", first_name: "Sarah", last_name: "Assistant" },
+          {
+            id: "coach-1",
+            school_id: "school-1",
+            first_name: "Mike",
+            last_name: "Coach",
+          },
+          {
+            id: "coach-2",
+            school_id: "school-1",
+            first_name: "Sarah",
+            last_name: "Assistant",
+          },
         ],
       },
     } as any);
@@ -138,7 +148,8 @@ describe("useRecruitingPacket", () => {
 
   describe("Initial state", () => {
     it("initializes with correct state", () => {
-      const { loading, error, hasGeneratedPacket, generatedHtml } = useRecruitingPacket();
+      const { loading, error, hasGeneratedPacket, generatedHtml } =
+        useRecruitingPacket();
 
       expect(loading.value).toBe(false);
       expect(error.value).toBeNull();
@@ -163,9 +174,17 @@ describe("useRecruitingPacket", () => {
     it("maps social media flat fields to platform array, excluding empty handles", async () => {
       const { generatePacket } = useRecruitingPacket();
       const result = await generatePacket();
-      expect(result.data.athlete.social_media).toContainEqual({ platform: "twitter", handle: "jsmith" });
-      expect(result.data.athlete.social_media).toContainEqual({ platform: "instagram", handle: "johnsmith" });
-      expect(result.data.athlete.social_media).not.toContainEqual(expect.objectContaining({ platform: "tiktok" }));
+      expect(result.data.athlete.social_media).toContainEqual({
+        platform: "twitter",
+        handle: "jsmith",
+      });
+      expect(result.data.athlete.social_media).toContainEqual({
+        platform: "instagram",
+        handle: "johnsmith",
+      });
+      expect(result.data.athlete.social_media).not.toContainEqual(
+        expect.objectContaining({ platform: "tiktok" }),
+      );
     });
 
     it("uses first position from positions array", async () => {
@@ -203,7 +222,9 @@ describe("useRecruitingPacket", () => {
     it("returns undefined height when height_inches is not set", async () => {
       vi.mocked(usePreferenceManager).mockReturnValue({
         playerPrefs: { loadPreferences: vi.fn().mockResolvedValue(undefined) },
-        getPlayerDetails: vi.fn().mockReturnValue({ ...mockPlayerDetails, height_inches: undefined }),
+        getPlayerDetails: vi
+          .fn()
+          .mockReturnValue({ ...mockPlayerDetails, height_inches: undefined }),
       } as any);
       const { generatePacket } = useRecruitingPacket();
       const result = await generatePacket();
@@ -213,7 +234,9 @@ describe("useRecruitingPacket", () => {
     it("returns undefined weight when weight_lbs is not set", async () => {
       vi.mocked(usePreferenceManager).mockReturnValue({
         playerPrefs: { loadPreferences: vi.fn().mockResolvedValue(undefined) },
-        getPlayerDetails: vi.fn().mockReturnValue({ ...mockPlayerDetails, weight_lbs: undefined }),
+        getPlayerDetails: vi
+          .fn()
+          .mockReturnValue({ ...mockPlayerDetails, weight_lbs: undefined }),
       } as any);
       const { generatePacket } = useRecruitingPacket();
       const result = await generatePacket();
@@ -223,7 +246,8 @@ describe("useRecruitingPacket", () => {
 
   describe("generatePacket", () => {
     it("successfully generates packet with all data", async () => {
-      const { generatePacket, loading, error, generatedHtml } = useRecruitingPacket();
+      const { generatePacket, loading, error, generatedHtml } =
+        useRecruitingPacket();
 
       expect(loading.value).toBe(false);
 
@@ -255,10 +279,14 @@ describe("useRecruitingPacket", () => {
       expect(generatedData.value?.schools.tier_c).toBeDefined();
 
       // UT should be in tier_a (offer_received)
-      expect(generatedData.value?.schools.tier_a.some((s) => s.id === "school-1")).toBe(true);
+      expect(
+        generatedData.value?.schools.tier_a.some((s) => s.id === "school-1"),
+      ).toBe(true);
 
       // Rice should be in tier_b (camp_invite)
-      expect(generatedData.value?.schools.tier_b.some((s) => s.id === "school-2")).toBe(true);
+      expect(
+        generatedData.value?.schools.tier_b.some((s) => s.id === "school-2"),
+      ).toBe(true);
     });
 
     it("calculates activity summary", async () => {
@@ -268,9 +296,15 @@ describe("useRecruitingPacket", () => {
 
       expect(generatedData.value?.activitySummary.totalSchools).toBe(2);
       expect(generatedData.value?.activitySummary.totalInteractions).toBe(3);
-      expect(generatedData.value?.activitySummary.interactionBreakdown.emails).toBe(1);
-      expect(generatedData.value?.activitySummary.interactionBreakdown.calls).toBe(1);
-      expect(generatedData.value?.activitySummary.interactionBreakdown.camps).toBe(1);
+      expect(
+        generatedData.value?.activitySummary.interactionBreakdown.emails,
+      ).toBe(1);
+      expect(
+        generatedData.value?.activitySummary.interactionBreakdown.calls,
+      ).toBe(1);
+      expect(
+        generatedData.value?.activitySummary.interactionBreakdown.camps,
+      ).toBe(1);
     });
 
     it("generates valid filename", async () => {
@@ -281,7 +315,9 @@ describe("useRecruitingPacket", () => {
 
     it("captures recruiting_packet_generated event on success", async () => {
       const mockCapture = vi.fn();
-      vi.mocked(useNuxtApp).mockReturnValue({ $posthog: { capture: mockCapture } } as ReturnType<typeof useNuxtApp>);
+      vi.mocked(useNuxtApp).mockReturnValue({
+        $posthog: { capture: mockCapture },
+      } as ReturnType<typeof useNuxtApp>);
 
       const { generatePacket } = useRecruitingPacket();
       await generatePacket();
@@ -300,7 +336,9 @@ describe("useRecruitingPacket", () => {
 
     it("handles errors gracefully", async () => {
       vi.mocked(usePreferenceManager).mockReturnValue({
-        playerPrefs: { loadPreferences: vi.fn().mockRejectedValue(new Error("Load failed")) },
+        playerPrefs: {
+          loadPreferences: vi.fn().mockRejectedValue(new Error("Load failed")),
+        },
         getPlayerDetails: vi.fn().mockReturnValue(null),
       } as any);
 
@@ -354,7 +392,8 @@ describe("useRecruitingPacket", () => {
       const mockOpen = vi.fn().mockReturnValue(null);
       global.window.open = mockOpen;
 
-      const { openPacketPreview, generatePacket, error } = useRecruitingPacket();
+      const { openPacketPreview, generatePacket, error } =
+        useRecruitingPacket();
 
       await generatePacket();
 
@@ -382,8 +421,14 @@ describe("useRecruitingPacket", () => {
 
   describe("resetPacket", () => {
     it("clears all generated data", async () => {
-      const { generatePacket, resetPacket, generatedHtml, generatedData, error, showEmailModal } =
-        useRecruitingPacket();
+      const {
+        generatePacket,
+        resetPacket,
+        generatedHtml,
+        generatedData,
+        error,
+        showEmailModal,
+      } = useRecruitingPacket();
 
       await generatePacket();
 
@@ -427,7 +472,11 @@ describe("useRecruitingPacket", () => {
       await generatePacket();
 
       try {
-        await emailPacket({ recipients: ["coach@example.com"], subject: "Test", body: "Test" });
+        await emailPacket({
+          recipients: ["coach@example.com"],
+          subject: "Test",
+          body: "Test",
+        });
       } catch {
         // Expected
       }
@@ -446,7 +495,11 @@ describe("useRecruitingPacket", () => {
 
       expect(showEmailModal.value).toBe(true);
 
-      await emailPacket({ recipients: ["coach@example.com"], subject: "Test", body: "Test" });
+      await emailPacket({
+        recipients: ["coach@example.com"],
+        subject: "Test",
+        body: "Test",
+      });
 
       expect(showEmailModal.value).toBe(false);
     });

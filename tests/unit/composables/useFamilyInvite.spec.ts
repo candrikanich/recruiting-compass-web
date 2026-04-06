@@ -71,20 +71,27 @@ describe("useFamilyInvite", () => {
       mockFetchAuth.mockRejectedValue(new Error("Network error"));
 
       const invite = useFamilyInvite();
-      await expect(invite.sendInvite({ email: "x@y.com", role: "player" })).rejects.toThrow();
+      await expect(
+        invite.sendInvite({ email: "x@y.com", role: "player" }),
+      ).rejects.toThrow();
       expect(invite.error.value).toBe("Network error");
     });
 
     it("captures family_invite_sent event on success", async () => {
       const mockCapture = vi.fn();
-      vi.mocked(useNuxtApp).mockReturnValue({ $posthog: { capture: mockCapture } } as ReturnType<typeof useNuxtApp>);
+      vi.mocked(useNuxtApp).mockReturnValue({
+        $posthog: { capture: mockCapture },
+      } as ReturnType<typeof useNuxtApp>);
 
       mockFetchAuth.mockResolvedValue({ success: true });
 
       const invite = useFamilyInvite();
       await invite.sendInvite({ email: "parent@example.com", role: "parent" });
 
-      expect(mockCapture).toHaveBeenCalledWith("family_invite_sent", expect.objectContaining({ method: "email" }));
+      expect(mockCapture).toHaveBeenCalledWith(
+        "family_invite_sent",
+        expect.objectContaining({ method: "email" }),
+      );
     });
   });
 

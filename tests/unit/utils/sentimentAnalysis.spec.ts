@@ -133,7 +133,9 @@ describe("utils/sentimentAnalysis", () => {
       it("returns combined score for mixed positive and negative text", () => {
         const positiveResult = analyzeSentiment("committed");
         const negativeResult = analyzeSentiment("injury");
-        const mixedResult = analyzeSentiment("committed but dealing with injury");
+        const mixedResult = analyzeSentiment(
+          "committed but dealing with injury",
+        );
 
         expect(mixedResult.score).toBeLessThan(positiveResult.score);
         expect(mixedResult.score).toBeGreaterThan(negativeResult.score);

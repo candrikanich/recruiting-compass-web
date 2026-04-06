@@ -2,7 +2,9 @@
   <div class="flex items-start gap-3">
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2 flex-wrap">
-        <span class="text-sm font-medium text-slate-700">{{ signal.label }}</span>
+        <span class="text-sm font-medium text-slate-700">{{
+          signal.label
+        }}</span>
         <span
           class="px-1.5 py-0.5 rounded text-xs font-semibold"
           :class="chipClass"

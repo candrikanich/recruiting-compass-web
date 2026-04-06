@@ -147,8 +147,11 @@ describe("useServiceStatus", () => {
     });
 
     it("should reset consecutive errors on 4xx error", () => {
-      const { markServiceUnavailable, consecutiveErrors, isServiceUnavailable } =
-        useServiceStatus();
+      const {
+        markServiceUnavailable,
+        consecutiveErrors,
+        isServiceUnavailable,
+      } = useServiceStatus();
 
       // First 500 error
       markServiceUnavailable({
@@ -295,8 +298,11 @@ describe("useServiceStatus", () => {
 
   describe("integration scenarios", () => {
     it("should handle mixed error sequences correctly", () => {
-      const { markServiceUnavailable, isServiceUnavailable, consecutiveErrors } =
-        useServiceStatus();
+      const {
+        markServiceUnavailable,
+        isServiceUnavailable,
+        consecutiveErrors,
+      } = useServiceStatus();
 
       // 500 error
       markServiceUnavailable({

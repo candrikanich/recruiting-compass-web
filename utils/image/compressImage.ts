@@ -67,7 +67,8 @@ export const compressImage = async (
   };
 
   try {
-    const { default: imageCompression } = await import("browser-image-compression");
+    const { default: imageCompression } =
+      await import("browser-image-compression");
     const compressedBlob = await imageCompression(file, compressionOptions);
 
     // Generate unique filename with timestamp

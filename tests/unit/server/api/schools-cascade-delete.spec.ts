@@ -9,19 +9,25 @@ vi.mock("~/server/utils/supabase", () => ({
   createServerSupabaseClient: vi.fn(),
 }));
 vi.mock("h3", async (importOriginal) => {
-  const actual = await importOriginal() as Record<string, unknown>;
+  const actual = (await importOriginal()) as Record<string, unknown>;
   return {
     ...actual,
     readBody: vi.fn(),
     getRouterParam: vi.fn(),
     getHeader: vi.fn(),
     getCookie: vi.fn(),
-    createError: vi.fn((opts: { statusCode: number; statusMessage: string }) => {
-      const err = new Error(opts.statusMessage) as Error & { statusCode: number };
-      err.statusCode = opts.statusCode;
-      return err;
-    }),
-    defineEventHandler: vi.fn((handler: (event: unknown) => unknown) => handler),
+    createError: vi.fn(
+      (opts: { statusCode: number; statusMessage: string }) => {
+        const err = new Error(opts.statusMessage) as Error & {
+          statusCode: number;
+        };
+        err.statusCode = opts.statusCode;
+        return err;
+      },
+    ),
+    defineEventHandler: vi.fn(
+      (handler: (event: unknown) => unknown) => handler,
+    ),
   };
 });
 
@@ -32,7 +38,8 @@ describe("POST /api/schools/[id]/cascade-delete security", () => {
 
   it("rejects unauthenticated requests with 401 before touching the database", async () => {
     const { requireAuth } = await import("~/server/utils/auth");
-    const { createServerSupabaseUserClient } = await import("~/server/utils/supabase");
+    const { createServerSupabaseUserClient } =
+      await import("~/server/utils/supabase");
     const h3 = await import("h3");
 
     // Set up h3 mocks for this test
@@ -43,13 +50,12 @@ describe("POST /api/schools/[id]/cascade-delete security", () => {
 
     // requireAuth throws 401
     vi.mocked(requireAuth).mockRejectedValue(
-      Object.assign(new Error("Unauthorized"), { statusCode: 401 })
+      Object.assign(new Error("Unauthorized"), { statusCode: 401 }),
     );
 
     // Import handler (after mocks are set at module level)
-    const { default: handler } = await import(
-      "~/server/api/schools/[id]/cascade-delete.post"
-    );
+    const { default: handler } =
+      await import("~/server/api/schools/[id]/cascade-delete.post");
 
     const mockEvent = {
       context: {},

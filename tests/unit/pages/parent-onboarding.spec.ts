@@ -52,7 +52,10 @@ const createWrapper = () =>
     },
   });
 
-const setDob = async (wrapper: ReturnType<typeof mount>, dob = "2005-06-15") => {
+const setDob = async (
+  wrapper: ReturnType<typeof mount>,
+  dob = "2005-06-15",
+) => {
   const dobInput = wrapper.find('[data-testid="player-dob"]');
   (dobInput.element as HTMLInputElement).value = dob;
   await dobInput.trigger("input");
@@ -191,9 +194,7 @@ describe("Parent Onboarding", () => {
     });
 
     it("calls sendInvite with player role when invite is sent", async () => {
-      const { useFamilyInvite } = await import(
-        "~/composables/useFamilyInvite"
-      );
+      const { useFamilyInvite } = await import("~/composables/useFamilyInvite");
       const mockSendInvite = vi.fn().mockResolvedValue(undefined);
       vi.mocked(useFamilyInvite).mockReturnValue({
         sendInvite: mockSendInvite,
@@ -210,9 +211,7 @@ describe("Parent Onboarding", () => {
       await wrapper
         .find('[data-testid="invite-email"]')
         .setValue("player@example.com");
-      await wrapper
-        .find('[data-testid="send-invite-button"]')
-        .trigger("click");
+      await wrapper.find('[data-testid="send-invite-button"]').trigger("click");
       await wrapper.vm.$nextTick();
 
       expect(mockSendInvite).toHaveBeenCalledWith({
@@ -228,9 +227,7 @@ describe("Parent Onboarding", () => {
       await wrapper
         .find('[data-testid="invite-email"]')
         .setValue("player@example.com");
-      await wrapper
-        .find('[data-testid="send-invite-button"]')
-        .trigger("click");
+      await wrapper.find('[data-testid="send-invite-button"]').trigger("click");
       await wrapper.vm.$nextTick();
 
       expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");

@@ -35,7 +35,9 @@ vi.mock("~/server/utils/supabase", () => ({
           eq: () => chain,
           maybeSingle: () =>
             Promise.resolve({
-              data: mockState.playerPrefsData ? { data: mockState.playerPrefsData } : null,
+              data: mockState.playerPrefsData
+                ? { data: mockState.playerPrefsData }
+                : null,
               error: null,
             }),
         };
@@ -55,7 +57,12 @@ vi.mock("~/server/utils/supabase", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -65,16 +72,17 @@ vi.mock("h3", async (importOriginal) => {
     defineEventHandler: (fn: Function) => fn,
     getRouterParam: vi.fn(() => "abc123"),
     createError: (cfg: { statusCode: number; statusMessage?: string }) => {
-      const err = new Error(cfg.statusMessage) as Error & { statusCode: number };
+      const err = new Error(cfg.statusMessage) as Error & {
+        statusCode: number;
+      };
       err.statusCode = cfg.statusCode;
       return err;
     },
   };
 });
 
-const { default: handler } = await import(
-  "~/server/api/public/profile/[slug].get"
-);
+const { default: handler } =
+  await import("~/server/api/public/profile/[slug].get");
 
 describe("GET /api/public/profile/[slug]", () => {
   beforeEach(() => {
@@ -143,7 +151,13 @@ describe("GET /api/public/profile/[slug]", () => {
     };
     mockState.userRow = { full_name: "Jane Doe" };
     mockState.playerPrefsData = {
-      video_links: [{ platform: "hudl", url: "https://hudl.com/video/123", title: "Highlights" }],
+      video_links: [
+        {
+          platform: "hudl",
+          url: "https://hudl.com/video/123",
+          title: "Highlights",
+        },
+      ],
     };
 
     const result = await handler({} as any);

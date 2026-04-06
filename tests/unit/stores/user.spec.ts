@@ -46,7 +46,11 @@ describe("useUserStore", () => {
       .mockReturnValue({ single: mockSingle, maybeSingle: mockSingle });
     const mockSelect = vi
       .fn()
-      .mockReturnValue({ eq: mockEq, single: mockSingle, maybeSingle: mockSingle });
+      .mockReturnValue({
+        eq: mockEq,
+        single: mockSingle,
+        maybeSingle: mockSingle,
+      });
     const mockInsert = vi.fn().mockReturnValue({
       select: vi.fn().mockResolvedValue({ data: [], error: null }),
     });

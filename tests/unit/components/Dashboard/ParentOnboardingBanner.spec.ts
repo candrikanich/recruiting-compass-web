@@ -45,8 +45,12 @@ describe("ParentOnboardingBanner", () => {
   it("shows invite CTA when no family members", async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    expect(wrapper.find('[data-testid="invite-athlete-cta"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="connected-state"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="invite-athlete-cta"]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.find('[data-testid="connected-state"]').exists()).toBe(
+      false,
+    );
   });
 
   it("shows connected state on first view after player joins", async () => {
@@ -55,7 +59,9 @@ describe("ParentOnboardingBanner", () => {
     mockFamilies.value = [{ id: "fam-1" }];
     await flushPromises();
     expect(wrapper.find('[data-testid="connected-state"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="invite-athlete-cta"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="invite-athlete-cta"]').exists()).toBe(
+      false,
+    );
   });
 
   it("sets localStorage flag when showing connected state", async () => {
@@ -74,8 +80,12 @@ describe("ParentOnboardingBanner", () => {
     expect(wrapper.find('[data-testid="connected-state"]').exists()).toBe(true);
     vi.advanceTimersByTime(3000);
     await flushPromises();
-    expect(wrapper.find('[data-testid="connected-state"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="invite-athlete-cta"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="connected-state"]').exists()).toBe(
+      false,
+    );
+    expect(wrapper.find('[data-testid="invite-athlete-cta"]').exists()).toBe(
+      false,
+    );
   });
 
   it("stays hidden on mount when already acknowledged", async () => {
@@ -83,7 +93,11 @@ describe("ParentOnboardingBanner", () => {
     mockFamilies.value = [{ id: "fam-1" }];
     const wrapper = createWrapper();
     await flushPromises();
-    expect(wrapper.find('[data-testid="invite-athlete-cta"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="connected-state"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="invite-athlete-cta"]').exists()).toBe(
+      false,
+    );
+    expect(wrapper.find('[data-testid="connected-state"]').exists()).toBe(
+      false,
+    );
   });
 });

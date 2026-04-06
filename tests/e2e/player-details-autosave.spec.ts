@@ -147,7 +147,9 @@ test.describe("Player Details Auto-Save", () => {
 
   test("should render without errors", async ({ page }) => {
     // Page loaded in beforeEach — verify no error state is shown
-    const errorBanner = page.locator('[data-testid="error-banner"], .text-red-600').first();
+    const errorBanner = page
+      .locator('[data-testid="error-banner"], .text-red-600')
+      .first();
     const hasError = await errorBanner.isVisible().catch(() => false);
     expect(hasError).toBe(false);
   });

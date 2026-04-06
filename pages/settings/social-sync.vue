@@ -372,7 +372,6 @@ onMounted(async () => {
     await loadTrackedAccounts();
     await loadSettings();
     await fetchPosts();
-
   } catch (err) {
     logger.error("Error loading data", err);
   } finally {

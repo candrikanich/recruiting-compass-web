@@ -18,9 +18,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to a school with interactions
-    await page.goto(
-      `/schools/${testSchoolId}/interactions`,
-    );
+    await page.goto(`/schools/${testSchoolId}/interactions`);
 
     // Wait for the interactions to load
     await page.waitForSelector(".space-y-4", { timeout: 5000 });
@@ -55,9 +53,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
 
   test("Scenario 2: Parent views coach-specific timeline", async ({ page }) => {
     // Navigate to coach communications page
-    await page.goto(
-      `/coaches/${testCoachId}/communications`,
-    );
+    await page.goto(`/coaches/${testCoachId}/communications`);
 
     // Wait for page to load
     await page.waitForLoadState("domcontentloaded");
@@ -85,9 +81,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to school interactions page
-    await page.goto(
-      `/schools/${testSchoolId}/interactions`,
-    );
+    await page.goto(`/schools/${testSchoolId}/interactions`);
 
     // Wait for metrics to load
     await page.waitForSelector(".grid.grid-cols-2.sm\\:grid-cols-4.gap-4.mb-6");
@@ -138,9 +132,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to school interactions page
-    await page.goto(
-      `/schools/${testSchoolId}/interactions`,
-    );
+    await page.goto(`/schools/${testSchoolId}/interactions`);
 
     // Wait for filters to be visible
     await page.waitForSelector("#type-filter");
@@ -184,9 +176,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to school interactions page
-    await page.goto(
-      `/schools/${testSchoolId}/interactions`,
-    );
+    await page.goto(`/schools/${testSchoolId}/interactions`);
 
     // Wait for filters
     await page.waitForSelector("#date-filter");
@@ -215,9 +205,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to school interactions page
-    await page.goto(
-      `/schools/${testSchoolId}/interactions`,
-    );
+    await page.goto(`/schools/${testSchoolId}/interactions`);
 
     // Wait for interactions
     await page.waitForSelector(".space-y-4");
@@ -249,9 +237,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     const startTime = Date.now();
 
     // Navigate to school interactions page
-    await page.goto(
-      `/schools/${testSchoolId}/interactions`,
-    );
+    await page.goto(`/schools/${testSchoolId}/interactions`);
 
     // Wait for the timeline section to be visible
     await page.waitForSelector(".space-y-4, [class*='No interactions']", {
@@ -268,9 +254,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to school interactions page
-    await page.goto(
-      `/schools/${testSchoolId}/interactions`,
-    );
+    await page.goto(`/schools/${testSchoolId}/interactions`);
 
     // Wait for filters
     await page.waitForSelector("#type-filter");
@@ -309,9 +293,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to coach communications page
-    await page.goto(
-      `/coaches/${testCoachId}/communications`,
-    );
+    await page.goto(`/coaches/${testCoachId}/communications`);
 
     await page.waitForLoadState("domcontentloaded");
 
@@ -351,9 +333,7 @@ test.describe("User Story 5.2: Parent Views Interaction Timeline", () => {
     page,
   }) => {
     // Navigate to school interactions page
-    await page.goto(
-      `/schools/${testSchoolId}/interactions`,
-    );
+    await page.goto(`/schools/${testSchoolId}/interactions`);
 
     // Wait for filters
     await page.waitForSelector("#type-filter");

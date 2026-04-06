@@ -18,7 +18,6 @@ vi.mock("~/utils/validation/sanitize", () => ({
   sanitizeHtml: (html: string) => html.replace(/<[^>]*>/g, ""),
 }));
 
-
 describe("useSchoolStore", () => {
   let schoolStore: ReturnType<typeof useSchoolStore>;
   let userStore: ReturnType<typeof useUserStore>;
@@ -233,7 +232,11 @@ describe("useSchoolStore", () => {
         error: null,
       });
 
-      const result = await schoolStore.updateSchool("existing-school", updates, "family-123");
+      const result = await schoolStore.updateSchool(
+        "existing-school",
+        updates,
+        "family-123",
+      );
 
       expect(result).toEqual(updatedSchool);
       expect(schoolStore.schools[0]).toEqual(updatedSchool);
@@ -352,7 +355,11 @@ describe("useSchoolStore", () => {
       userStore.user = null;
 
       await expect(
-        schoolStore.updateSchool("existing-school", { name: "New Name" }, "family-123"),
+        schoolStore.updateSchool(
+          "existing-school",
+          { name: "New Name" },
+          "family-123",
+        ),
       ).rejects.toThrow("User not authenticated");
       expect(schoolStore.error).toBe("User not authenticated");
     });
@@ -380,7 +387,11 @@ describe("useSchoolStore", () => {
         error: null,
       });
 
-      await schoolStore.updateSchool("non-existent-school", updates, "family-123");
+      await schoolStore.updateSchool(
+        "non-existent-school",
+        updates,
+        "family-123",
+      );
 
       // Original school should remain unchanged
       expect(schoolStore.schools[0]).toEqual(existingSchool);
@@ -492,7 +503,10 @@ describe("useSchoolStore", () => {
         error: { message: "No rows returned" },
       });
 
-      const result = await schoolStore.getSchool("non-existent-school", "family-123");
+      const result = await schoolStore.getSchool(
+        "non-existent-school",
+        "family-123",
+      );
 
       expect(result).toBeNull();
       expect(schoolStore.error).toBe("Failed to fetch school");

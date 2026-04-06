@@ -16,14 +16,11 @@ test.describe("User Preferences API - Phase 2", () => {
     const categories = ["filters", "session", "display"];
 
     for (const category of categories) {
-      const response = await request.get(
-        `/api/user/preferences/${category}`,
-        {
-          headers: {
-            authorization: "Bearer invalid-token",
-          },
+      const response = await request.get(`/api/user/preferences/${category}`, {
+        headers: {
+          authorization: "Bearer invalid-token",
         },
-      );
+      });
 
       // Should be 401 Unauthorized (not 404 Not Found)
       // This confirms the endpoint exists
@@ -32,33 +29,27 @@ test.describe("User Preferences API - Phase 2", () => {
   });
 
   test("should reject POST without auth", async ({ request }) => {
-    const response = await request.post(
-      `/api/user/preferences/filters`,
-      {
+    const response = await request.post(`/api/user/preferences/filters`, {
+      data: {
         data: {
-          data: {
-            activeFilters: ["division-1"],
-          },
-        },
-        headers: {
-          authorization: "Bearer invalid-token",
+          activeFilters: ["division-1"],
         },
       },
-    );
+      headers: {
+        authorization: "Bearer invalid-token",
+      },
+    });
 
     // Status can be 401 or 403 depending on auth validation
     expect([401, 403]).toContain(response.status());
   });
 
   test("should reject DELETE without auth", async ({ request }) => {
-    const response = await request.delete(
-      `/api/user/preferences/session`,
-      {
-        headers: {
-          authorization: "Bearer invalid-token",
-        },
+    const response = await request.delete(`/api/user/preferences/session`, {
+      headers: {
+        authorization: "Bearer invalid-token",
       },
-    );
+    });
 
     // Status can be 401 or 403 depending on auth validation
     expect([401, 403]).toContain(response.status());

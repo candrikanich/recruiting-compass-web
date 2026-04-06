@@ -94,7 +94,10 @@
         role="status"
         aria-live="polite"
       >
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" aria-hidden="true"></div>
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+          aria-hidden="true"
+        ></div>
         <p class="text-slate-600">Loading interactions...</p>
       </div>
 
@@ -109,13 +112,21 @@
 
       <!-- Empty State: No coaches yet -->
       <div
-        v-else-if="!loading && allInteractions.length === 0 && coaches.length === 0"
+        v-else-if="
+          !loading && allInteractions.length === 0 && coaches.length === 0
+        "
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         role="status"
       >
-        <UserGroupIcon class="w-12 h-12 text-slate-400 mx-auto mb-4" aria-hidden="true" />
+        <UserGroupIcon
+          class="w-12 h-12 text-slate-400 mx-auto mb-4"
+          aria-hidden="true"
+        />
         <h2 class="text-slate-900 font-semibold mb-2">Add a coach first</h2>
-        <p class="text-slate-600 mb-6">Interactions are linked to coaches. Visit a school page to add coaches to your list.</p>
+        <p class="text-slate-600 mb-6">
+          Interactions are linked to coaches. Visit a school page to add coaches
+          to your list.
+        </p>
         <NuxtLink
           to="/schools"
           class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
@@ -130,9 +141,14 @@
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         role="status"
       >
-        <ChatBubbleLeftRightIcon class="w-12 h-12 text-slate-400 mx-auto mb-4" aria-hidden="true" />
+        <ChatBubbleLeftRightIcon
+          class="w-12 h-12 text-slate-400 mx-auto mb-4"
+          aria-hidden="true"
+        />
         <h2 class="text-slate-900 font-semibold mb-2">No interactions yet</h2>
-        <p class="text-slate-600 mb-6">Start logging your recruiting conversations with coaches.</p>
+        <p class="text-slate-600 mb-6">
+          Start logging your recruiting conversations with coaches.
+        </p>
         <NuxtLink
           to="/interactions/add"
           class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
@@ -143,20 +159,26 @@
 
       <!-- No Results State (has interactions but filters returned nothing) -->
       <div
-        v-else-if="filteredInteractions.length === 0 && allInteractions.length > 0"
+        v-else-if="
+          filteredInteractions.length === 0 && allInteractions.length > 0
+        "
         role="status"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <MagnifyingGlassIcon class="w-12 h-12 text-slate-300 mx-auto mb-4" aria-hidden="true" />
-        <p class="text-slate-900 font-medium mb-2">No interactions match your filters</p>
-        <p class="text-sm text-slate-500">Try adjusting your search or filters</p>
+        <MagnifyingGlassIcon
+          class="w-12 h-12 text-slate-300 mx-auto mb-4"
+          aria-hidden="true"
+        />
+        <p class="text-slate-900 font-medium mb-2">
+          No interactions match your filters
+        </p>
+        <p class="text-sm text-slate-500">
+          Try adjusting your search or filters
+        </p>
       </div>
 
       <!-- Interactions Grid -->
-      <div
-        v-else
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <InteractionCard
           v-for="interaction in filteredInteractions"
           :key="interaction.id"

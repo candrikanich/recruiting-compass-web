@@ -38,7 +38,9 @@ describe("generateCoachEmailTemplate", () => {
     const result = generateCoachEmailTemplate("Alex Smith", "Johnson", []);
     expect(result).toContain("Subject: Alex Smith - Performance Update");
     expect(result).toContain("Hi Coach Johnson,");
-    expect(result).toContain("No metrics available for the selected date range");
+    expect(result).toContain(
+      "No metrics available for the selected date range",
+    );
     expect(result).toContain("Alex Smith");
     expect(result).not.toContain("KEY HIGHLIGHTS");
   });
@@ -55,18 +57,41 @@ describe("generateCoachEmailTemplate", () => {
 
   it("includes date range in template when metrics are provided", () => {
     const metrics = [
-      makeMetric({ recorded_date: "2026-01-01", metric_type: "velocity", value: 85 }),
-      makeMetric({ id: "metric-2", recorded_date: "2026-03-01", metric_type: "exit_velo", value: 92 }),
+      makeMetric({
+        recorded_date: "2026-01-01",
+        metric_type: "velocity",
+        value: 85,
+      }),
+      makeMetric({
+        id: "metric-2",
+        recorded_date: "2026-03-01",
+        metric_type: "exit_velo",
+        value: 92,
+      }),
     ];
-    const result = generateCoachEmailTemplate("Jordan Lee", "Williams", metrics);
+    const result = generateCoachEmailTemplate(
+      "Jordan Lee",
+      "Williams",
+      metrics,
+    );
     expect(result).toContain("recent performance metrics from");
     expect(result).toContain("KEY HIGHLIGHTS:");
   });
 
   it("deduplicates metrics by type and keeps latest when multiple of same type", () => {
     const metrics = [
-      makeMetric({ id: "m1", recorded_date: "2026-01-01", metric_type: "velocity", value: 85 }),
-      makeMetric({ id: "m2", recorded_date: "2026-03-01", metric_type: "velocity", value: 90 }),
+      makeMetric({
+        id: "m1",
+        recorded_date: "2026-01-01",
+        metric_type: "velocity",
+        value: 85,
+      }),
+      makeMetric({
+        id: "m2",
+        recorded_date: "2026-03-01",
+        metric_type: "velocity",
+        value: 90,
+      }),
     ];
     const result = generateCoachEmailTemplate("Alex", "Coach", metrics);
     // Latest value (90) should appear, old value (85) should not appear as separate entry
@@ -77,7 +102,9 @@ describe("generateCoachEmailTemplate", () => {
   });
 
   it("formats metric type with underscores replaced by spaces and uppercased", () => {
-    const metrics = [makeMetric({ metric_type: "exit_velo", value: 95, unit: "mph" })];
+    const metrics = [
+      makeMetric({ metric_type: "exit_velo", value: 95, unit: "mph" }),
+    ];
     const result = generateCoachEmailTemplate("Sam", "Brown", metrics);
     expect(result).toContain("EXIT VELO: 95 mph");
   });
@@ -95,7 +122,9 @@ describe("generateEventSummaryTemplate", () => {
   it("includes event name and athlete name in header", () => {
     const event = makeEvent();
     const result = generateEventSummaryTemplate(event, [], "Jordan Lee");
-    expect(result).toContain("Jordan Lee - Spring Showcase Performance Summary");
+    expect(result).toContain(
+      "Jordan Lee - Spring Showcase Performance Summary",
+    );
     expect(result).toContain("Event: Spring Showcase");
   });
 
@@ -127,7 +156,12 @@ describe("generateEventSummaryTemplate", () => {
     const event = makeEvent();
     const metrics = [
       makeMetric({ metric_type: "velocity", value: 88, unit: "mph" }),
-      makeMetric({ id: "m2", metric_type: "exit_velo", value: 102, unit: "mph" }),
+      makeMetric({
+        id: "m2",
+        metric_type: "exit_velo",
+        value: 102,
+        unit: "mph",
+      }),
     ];
     const result = generateEventSummaryTemplate(event, metrics, "Alex");
     expect(result).toContain("VELOCITY: 88 mph");
