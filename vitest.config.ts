@@ -2,16 +2,18 @@ import { defineConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
 import { fileURLToPath } from "node:url";
 
-// Plugin to mock SVG and image imports in tests
+// Plugin to mock SVG and image imports in tests.
+// Uses the \0 virtual module prefix so Vite's server.fs.deny check
+// (tightened in 7.3.2) never sees these as real filesystem paths.
 const mockAssetsPlugin = {
   name: "mock-assets",
-  resolveId(id) {
+  resolveId(id: string) {
     if (/\.(svg|png|jpg|jpeg|gif)$/.test(id)) {
-      return id;
+      return "\0" + id;
     }
   },
-  load(id) {
-    if (/\.(svg|png|jpg|jpeg|gif)$/.test(id)) {
+  load(id: string) {
+    if (id.startsWith("\0") && /\.(svg|png|jpg|jpeg|gif)$/.test(id.slice(1))) {
       return `export default "test-asset-stub"`;
     }
   },
