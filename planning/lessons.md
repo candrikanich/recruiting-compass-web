@@ -138,3 +138,14 @@ Source: https://css-tricks.com/form-automation-tips-for-happier-user-and-clients
 - **Disable submit atomically with a `submitting` ref**: Use `const submitting = ref(false)` — set `true` before the `$fetch` call, reset in `catch` only (not `finally`). `finally` re-enables the button even on success, which invites double-submissions on slow connections; only re-enable on recoverable error.
 - **Include `source` and `timestamp` in Nitro-bound form payloads**: Add `{ source: 'app_form_name', timestamp: new Date().toISOString() }` to every form payload sent to Nitro endpoints — makes Supabase audit trails queryable and any downstream webhook (email, Zapier) reliable without post-processing.
 - **Specific error messages replace generic ones**: Nitro `createError()` `statusMessage` should name the actual failure — `"Email already registered"`, `"Phone number format invalid"` — not `"Something went wrong"`. Pair with a specific success message that sets expectations: `"Sent. You'll hear back within 24 hours."` instead of `"Success!"`.
+
+---
+
+### Autonomous Code Review Bot with Claude Code Hooks — 2026-04-06
+Source: pasted content (Vikas Sah)
+
+- **PreToolUse hooks for deterministic safety gates**: Claude Code PreToolUse hooks (exit 2 = block, stderr = feedback to Claude) enforce rules the LLM cannot bypass — use them to block lock file edits, CI workflow modifications, `.env`/`.pem` access, and destructive git commands. Unlike prompt guardrails, hooks are deterministic and always fire.
+- **PostToolUse hooks for anti-pattern detection**: PostToolUse hooks run linters/greps after every Edit/Write and surface warnings via `systemMessage` JSON — Claude sees the feedback in context and self-corrects on next turn. Example: flag `console.log`, bare `any` types in non-test files.
+- **Auto-review PR trigger complements on-demand @claude**: Our `claude.yml` only fires on `@claude` mentions — adding `pull_request: [opened, synchronize]` as a trigger with a scoped review prompt (security, correctness, performance, error handling + "don't invent problems") catches issues before a human reviewer opens the PR.
+- **Scope AI reviews narrowly to prevent cry-wolf effect**: Teams abandon AI review tools when false positive rate is high — limit the review prompt to 3-4 specific categories the LLM reliably detects (security vulns, common bugs, missing error handling) rather than reviewing "everything". Include "if everything looks good, say so" to suppress noise.
+- **Lock down allowedTools in CI review jobs**: Use `--allowedTools` to restrict what Claude can do in GitHub Actions — read diffs and post comments only, never modify code or push. Example: `"Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"`
