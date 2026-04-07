@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "24"
 
 jobs:
   # Job 1: Dependency vulnerability scanning
@@ -138,7 +138,7 @@ jobs:
 
       - name: TruffleHog Secret Scan (PR diff)
         if: github.event_name == 'pull_request' && steps.sha-check.outputs.has_diff == 'true'
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.94.2
         with:
           path: ./
           base: ${{ github.event.pull_request.base.sha }}
@@ -170,7 +170,7 @@ jobs:
 
       - name: TruffleHog Secret Scan (scheduled/manual)
         if: github.event_name != 'pull_request' && steps.scan-base.outputs.has_diff == 'true'
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.94.2
         with:
           path: ./
           base: ${{ steps.scan-base.outputs.sha }}
