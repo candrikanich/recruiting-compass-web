@@ -99,6 +99,7 @@
     "vitest-axe": "^0.1.0"
   },
   "overrides": {
+    "vite": "^7.3.2",
     "flatted": "^3.4.2",
     "defu": "^6.1.6",
     "reka-ui": "2.8.2",
