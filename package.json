@@ -101,7 +101,7 @@
     "reka-ui": "2.8.2",
     "@vercel/nft": "^0.27.4",
     "serialize-javascript": "^7.0.3",
-    "basic-ftp": "^5.2.0",
+    "basic-ftp": "^5.2.1",
     "dompurify": "^3.3.2",
     "tar": "^7.5.10",
     "svgo": "^4.0.1",
