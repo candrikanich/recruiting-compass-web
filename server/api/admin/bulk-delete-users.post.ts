@@ -113,7 +113,11 @@ export default defineEventHandler(
           if (getUserError || !targetUserData?.id) {
             return { resolved: false, email: targetEmail } as const;
           }
-          return { resolved: true, email: targetEmail, id: targetUserData.id } as const;
+          return {
+            resolved: true,
+            email: targetEmail,
+            id: targetUserData.id,
+          } as const;
         }),
       );
 
@@ -122,12 +126,21 @@ export default defineEventHandler(
       resolutionResults.forEach((result, index) => {
         if (result.status === "fulfilled") {
           if (result.value.resolved) {
-            resolvedUsers.push({ email: result.value.email, id: result.value.id });
+            resolvedUsers.push({
+              email: result.value.email,
+              id: result.value.id,
+            });
           } else {
-            errors.push({ email: result.value.email, reason: "User not found" });
+            errors.push({
+              email: result.value.email,
+              reason: "User not found",
+            });
           }
         } else {
-          errors.push({ email: normalizedEmails[index], reason: "Resolution failed" });
+          errors.push({
+            email: normalizedEmails[index],
+            reason: "Resolution failed",
+          });
         }
       });
 
@@ -185,40 +198,45 @@ export default defineEventHandler(
 
         // Delete each user from the auth system and record results
         await Promise.all(
-          resolvedUsers.map(async ({ email: targetEmail, id: targetUserId }) => {
-            try {
-              if (supabaseAdmin.auth.admin?.deleteUser) {
-                const { error: deleteError } =
-                  await supabaseAdmin.auth.admin.deleteUser(targetUserId);
+          resolvedUsers.map(
+            async ({ email: targetEmail, id: targetUserId }) => {
+              try {
+                if (supabaseAdmin.auth.admin?.deleteUser) {
+                  const { error: deleteError } =
+                    await supabaseAdmin.auth.admin.deleteUser(targetUserId);
 
-                if (deleteError) {
-                  logger.warn(
-                    `Failed to delete auth user ${targetUserId} (${targetEmail}):`,
-                    deleteError,
-                  );
-                  errors.push({ email: targetEmail, reason: deleteError.message || "Auth deletion failed" });
-                  return;
+                  if (deleteError) {
+                    logger.warn(
+                      `Failed to delete auth user ${targetUserId} (${targetEmail}):`,
+                      deleteError,
+                    );
+                    errors.push({
+                      email: targetEmail,
+                      reason: deleteError.message || "Auth deletion failed",
+                    });
+                    return;
+                  }
                 }
-              }
 
-              deletedEmails.push(targetEmail);
-              logger.info(
-                `User ${targetEmail} (${targetUserId}) and all associated data deleted by admin ${user.id}`,
-              );
-            } catch (authError) {
-              errors.push({
-                email: targetEmail,
-                reason:
-                  authError instanceof Error
-                    ? authError.message
-                    : "Unknown error",
-              });
-              logger.error(
-                `Could not delete from auth system for ${targetEmail}:`,
-                authError,
-              );
-            }
-          }),
+                deletedEmails.push(targetEmail);
+                logger.info(
+                  `User ${targetEmail} (${targetUserId}) and all associated data deleted by admin ${user.id}`,
+                );
+              } catch (authError) {
+                errors.push({
+                  email: targetEmail,
+                  reason:
+                    authError instanceof Error
+                      ? authError.message
+                      : "Unknown error",
+                });
+                logger.error(
+                  `Could not delete from auth system for ${targetEmail}:`,
+                  authError,
+                );
+              }
+            },
+          ),
         );
       }
 

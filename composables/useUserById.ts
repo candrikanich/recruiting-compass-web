@@ -41,7 +41,10 @@ export const useUserById = (userId: string) => {
         .single();
 
       if (fetchError) {
-        logger.debug("User not found or fetch error", { userId, code: fetchError.code });
+        logger.debug("User not found or fetch error", {
+          userId,
+          code: fetchError.code,
+        });
         errorRef.value = null; // Silently handle not found
         return;
       }

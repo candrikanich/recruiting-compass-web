@@ -236,7 +236,10 @@ const schoolsWithNoRecentContact = computed(() => {
     const existing = schoolLastInteractionMap.get(interaction.school_id);
 
     if (!existing || interactionDate > existing.getTime()) {
-      schoolLastInteractionMap.set(interaction.school_id, new Date(interactionDate));
+      schoolLastInteractionMap.set(
+        interaction.school_id,
+        new Date(interactionDate),
+      );
     }
   });
 

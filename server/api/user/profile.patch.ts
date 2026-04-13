@@ -17,7 +17,11 @@ const homeLocationSchema = z.object({
 const profileSchema = z.object({
   full_name: z.string().min(1).max(100).optional(),
   phone: z.string().max(30).nullable().optional(),
-  date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format").nullable().optional(),
+  date_of_birth: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format")
+    .nullable()
+    .optional(),
   home_location: homeLocationSchema.nullable().optional(),
 });
 
@@ -37,7 +41,10 @@ export default defineEventHandler(async (event) => {
     }
 
     if (Object.keys(parsed.data).length === 0) {
-      throw createError({ statusCode: 400, statusMessage: "At least one field must be provided" });
+      throw createError({
+        statusCode: 400,
+        statusMessage: "At least one field must be provided",
+      });
     }
 
     const supabase = useSupabaseAdmin();
@@ -52,7 +59,10 @@ export default defineEventHandler(async (event) => {
 
     if (error) {
       logger.error("Failed to update user profile", error);
-      throw createError({ statusCode: 500, statusMessage: "Failed to update profile" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to update profile",
+      });
     }
 
     logger.info("User profile updated", { userId: user.id });
@@ -60,6 +70,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to update user profile", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to update profile" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to update profile",
+    });
   }
 });

@@ -12,7 +12,6 @@ export interface CoachMetrics {
   inboundCount: number;
 }
 
-
 export const useCoachAnalytics = () => {
   const { interactions } = useInteractions();
   const { coaches } = useCoaches();
@@ -123,9 +122,8 @@ export const useCoachAnalytics = () => {
         responseRate: avgResponseRate,
       },
       rank:
-        schoolMetrics.filter(
-          (m) => m.responseRate > coachMetrics.responseRate,
-        ).length + 1,
+        schoolMetrics.filter((m) => m.responseRate > coachMetrics.responseRate)
+          .length + 1,
       totalCoaches: schoolMetrics.length,
     };
   };

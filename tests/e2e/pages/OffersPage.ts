@@ -13,7 +13,10 @@ export class OffersPage extends BasePage {
   async clickCreateOffer() {
     await this.click('[data-testid="log-offer-button"]');
     // Wait for the form to appear (it might be a modal or same page)
-    await this.page.locator('[role="dialog"], [data-testid="school-select"]').first().waitFor({ state: "visible" });
+    await this.page
+      .locator('[role="dialog"], [data-testid="school-select"]')
+      .first()
+      .waitFor({ state: "visible" });
   }
 
   async createOffer(offer: any) {

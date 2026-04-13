@@ -3,10 +3,9 @@ import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 
-
 export default defineEventHandler(async (event) => {
-  setResponseHeader(event, 'Deprecation', 'true');
-  setResponseHeader(event, 'Sunset', '2026-06-01');
+  setResponseHeader(event, "Deprecation", "true");
+  setResponseHeader(event, "Sunset", "2026-06-01");
 
   const logger = useLogger(event, "family/accessible");
   const user = await requireAuth(event);
@@ -32,7 +31,10 @@ export default defineEventHandler(async (event) => {
 
     if (membersError) {
       logger.error("Failed to fetch family members", membersError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to fetch accessible families" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to fetch accessible families",
+      });
     }
 
     logger.debug("Found family members", {
@@ -66,21 +68,30 @@ export default defineEventHandler(async (event) => {
         .in("id", familyUnitIds),
     ]);
 
-    const { data: playerMembers, error: playerMembersError } = playerMembersResult;
+    const { data: playerMembers, error: playerMembersError } =
+      playerMembersResult;
     const { data: families, error: familiesError } = familiesResult;
 
     if (playerMembersError) {
       logger.error("Failed to fetch player members", playerMembersError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to fetch accessible families" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to fetch accessible families",
+      });
     }
 
     if (familiesError) {
       logger.error("Failed to fetch family units", familiesError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to fetch accessible families" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to fetch accessible families",
+      });
     }
 
     logger.debug("Found player members", { count: playerMembers?.length ?? 0 });
-    logger.debug("Fetched parent families", { familyCount: families?.length ?? 0 });
+    logger.debug("Fetched parent families", {
+      familyCount: families?.length ?? 0,
+    });
 
     type PlayerMemberRow = {
       family_unit_id: string;
@@ -91,17 +102,21 @@ export default defineEventHandler(async (event) => {
 
     // Map families: include player info when available, null athlete when not yet connected
     const accessibleFamilies = (families || []).flatMap((family) => {
-      const players = typedPlayerMembers.filter((pm) => pm.family_unit_id === family.id);
+      const players = typedPlayerMembers.filter(
+        (pm) => pm.family_unit_id === family.id,
+      );
 
       if (players.length === 0) {
         // No player connected yet — parent can still use the family
-        return [{
-          familyUnitId: family.id,
-          athleteId: null as string | null,
-          athleteName: null as string | null,
-          graduationYear: null as number | null,
-          familyName: family.family_name || "Family",
-        }];
+        return [
+          {
+            familyUnitId: family.id,
+            athleteId: null as string | null,
+            athleteName: null as string | null,
+            graduationYear: null as number | null,
+            familyName: family.family_name || "Family",
+          },
+        ];
       }
 
       return players.map((pm) => ({

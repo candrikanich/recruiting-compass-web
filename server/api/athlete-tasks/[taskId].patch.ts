@@ -100,7 +100,10 @@ export default defineEventHandler(async (event) => {
               .maybeSingle();
 
           if (athleteTaskError) {
-            logger.error("Error checking prerequisite status", athleteTaskError);
+            logger.error(
+              "Error checking prerequisite status",
+              athleteTaskError,
+            );
           }
 
           const status = athleteTaskData?.status || "not_started";

@@ -39,7 +39,10 @@ export default defineEventHandler(async (event) => {
       .eq("category", category);
 
     if (countError) {
-      logger.warn("Failed to fetch preference history count, defaulting to 0", countError);
+      logger.warn(
+        "Failed to fetch preference history count, defaulting to 0",
+        countError,
+      );
     }
 
     // Fetch history records

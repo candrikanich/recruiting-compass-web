@@ -290,7 +290,9 @@ export const useInteractions = () => {
               .eq("id", data.id);
           if (updateError) {
             logger.error("Failed to update attachment paths:", updateError);
-            throw new Error("Failed to save attachments. Interaction created but files were not linked.");
+            throw new Error(
+              "Failed to save attachments. Interaction created but files were not linked.",
+            );
           }
           updatedData = { ...data, attachments: uploadedPaths };
         }
@@ -357,7 +359,9 @@ export const useInteractions = () => {
 
       const index = interactions.value.findIndex((i) => i.id === id);
       if (index !== -1) {
-        interactions.value = interactions.value.map((item, i) => (i === index ? data : item));
+        interactions.value = interactions.value.map((item, i) =>
+          i === index ? data : item,
+        );
       }
 
       return data;

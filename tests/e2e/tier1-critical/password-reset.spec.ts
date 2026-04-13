@@ -13,7 +13,8 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Password Reset Flow", () => {
   // Use unique emails per test to avoid Supabase rate limiting
-  const testEmail = () => `reset-test-${Date.now()}-${Math.random().toString(36).substring(2, 6)}@test-example.com`;
+  const testEmail = () =>
+    `reset-test-${Date.now()}-${Math.random().toString(36).substring(2, 6)}@test-example.com`;
   // This spec tests the login/reset UI — must start unauthenticated
   test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -21,7 +22,9 @@ test.describe("Password Reset Flow", () => {
     // Start from login page — wait for Vue to hydrate before asserting
     await page.goto("/login");
     await page.waitForLoadState("domcontentloaded");
-    await page.locator('[data-testid="login-button"]').waitFor({ state: "visible", timeout: 10000 });
+    await page
+      .locator('[data-testid="login-button"]')
+      .waitFor({ state: "visible", timeout: 10000 });
   });
 
   test.describe("Forgot Password Page", () => {
@@ -73,7 +76,9 @@ test.describe("Password Reset Flow", () => {
     }) => {
       await page.goto("/forgot-password");
 
-      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
+      const submitButton = page.locator(
+        '[data-testid="send-reset-link-button"]',
+      );
       const emailInput = page.getByLabel(/email/i);
 
       // Initially disabled (empty)
@@ -90,7 +95,9 @@ test.describe("Password Reset Flow", () => {
     test("should enable submit button with valid email", async ({ page }) => {
       await page.goto("/forgot-password");
 
-      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
+      const submitButton = page.locator(
+        '[data-testid="send-reset-link-button"]',
+      );
       const emailInput = page.getByLabel(/email/i);
 
       // Enter valid email
@@ -107,7 +114,9 @@ test.describe("Password Reset Flow", () => {
 
       const email = testEmail();
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
+      const submitButton = page.locator(
+        '[data-testid="send-reset-link-button"]',
+      );
 
       // Fill form and submit
       await emailInput.fill(email);
@@ -129,7 +138,9 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
+      const submitButton = page.locator(
+        '[data-testid="send-reset-link-button"]',
+      );
 
       // Submit form — blur triggers Vue validation so button becomes enabled
       await emailInput.fill(testEmail());
@@ -147,7 +158,9 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
+      const submitButton = page.locator(
+        '[data-testid="send-reset-link-button"]',
+      );
 
       // Submit form — blur needed so Vue enables the button
       await emailInput.fill(testEmail());
@@ -193,7 +206,9 @@ test.describe("Password Reset Flow", () => {
       await expect(page.getByText(/no reset link provided/i)).toBeVisible();
     });
 
-    test.skip("should display form elements when token exists", async ({ page }) => {
+    test.skip("should display form elements when token exists", async ({
+      page,
+    }) => {
       // SKIP: requires a real Supabase auth session — mock token always triggers invalidToken state
       await page.goto("/reset-password?token=mock-token");
 
@@ -205,7 +220,9 @@ test.describe("Password Reset Flow", () => {
       ).toBeVisible();
     });
 
-    test.skip("should show password requirements checklist", async ({ page }) => {
+    test.skip("should show password requirements checklist", async ({
+      page,
+    }) => {
       // SKIP: requires a real Supabase auth session
       await page.goto("/reset-password?token=mock-token");
 
@@ -387,7 +404,9 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
+      const submitButton = page.locator(
+        '[data-testid="send-reset-link-button"]',
+      );
 
       // Submit with non-existent email — enable button first
       await emailInput.fill("nonexistent@example.com");
@@ -405,7 +424,9 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
+      const submitButton = page.locator(
+        '[data-testid="send-reset-link-button"]',
+      );
 
       // Submit multiple times — check for success or rate limit response
       for (let i = 0; i < 3; i++) {
@@ -416,7 +437,9 @@ test.describe("Password Reset Flow", () => {
 
         // Should show either success state or rate limit error
         await expect(
-          page.getByText(/reset link|check your email|too many requests/i).first(),
+          page
+            .getByText(/reset link|check your email|too many requests/i)
+            .first(),
         ).toBeVisible({ timeout: 15000 });
 
         // Navigate back to form if needed
@@ -426,7 +449,9 @@ test.describe("Password Reset Flow", () => {
       }
     });
 
-    test.skip("should not allow password reuse of reset token", async ({ page }) => {
+    test.skip("should not allow password reuse of reset token", async ({
+      page,
+    }) => {
       // This test verifies the backend enforces single-use tokens
       // Actual testing would require attempting to use same token twice
       await page.goto("/reset-password?token=single-use");
@@ -470,7 +495,9 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
+      const submitButton = page.locator(
+        '[data-testid="send-reset-link-button"]',
+      );
 
       // Enter email with whitespace
       await emailInput.fill("  test@example.com  ");
@@ -483,7 +510,9 @@ test.describe("Password Reset Flow", () => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
-      const submitButton = page.locator('[data-testid="send-reset-link-button"]');
+      const submitButton = page.locator(
+        '[data-testid="send-reset-link-button"]',
+      );
 
       // Enter email with special characters
       await emailInput.fill("test+tag@example.co.uk");
@@ -517,7 +546,9 @@ test.describe("Password Reset Flow", () => {
       // Forgot password page should have at least one SVG icon
       await page.goto("/forgot-password");
       // Wait for form to render (Vue hydration completes)
-      await page.locator('[data-testid="send-reset-link-button"]').waitFor({ state: "visible" });
+      await page
+        .locator('[data-testid="send-reset-link-button"]')
+        .waitFor({ state: "visible" });
       const svgCount = await page.locator("svg").count();
       expect(svgCount).toBeGreaterThan(0);
     });

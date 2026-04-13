@@ -466,7 +466,6 @@ test.describe("Interaction Detail Page - Navigation", () => {
 });
 
 test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
-
   test("handles network error gracefully", async ({ page }) => {
     // Simulate network failure
     await page.route("**/api/interactions/**", (route) => {
@@ -656,7 +655,12 @@ test.describe("Interaction Detail Page - Error Handling & Edge Cases", () => {
       await page.click('button:has-text("Logout")').catch(() => {});
 
       // Login again
-      await loginViaForm(page, "player@test.com", "TestPass123!", /\/dashboard/);
+      await loginViaForm(
+        page,
+        "player@test.com",
+        "TestPass123!",
+        /\/dashboard/,
+      );
 
       // Navigate directly to interaction URL
       await page.goto(interactionUrl);

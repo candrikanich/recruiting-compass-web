@@ -29,7 +29,10 @@ interface MetadataEntry {
   ncaa_logo_slug?: string;
 }
 
-const METADATA: Record<string, MetadataEntry> = ncaaMetadata as Record<string, MetadataEntry>;
+const METADATA: Record<string, MetadataEntry> = ncaaMetadata as Record<
+  string,
+  MetadataEntry
+>;
 
 /**
  * Session-based cache for NCAA lookups

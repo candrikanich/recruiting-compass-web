@@ -225,7 +225,6 @@ describe("composables/useCoachFilters", () => {
       expect(result[1].id).toBe("coach-3"); // Has date
       expect(result[2].id).toBe("coach-2"); // Null date (treated as 0)
     });
-
   });
 
   describe("applyFiltersAndSort", () => {
@@ -251,12 +250,7 @@ describe("composables/useCoachFilters", () => {
         }),
       ];
 
-      const result = applyFiltersAndSort(
-        coaches,
-        "john",
-        "head",
-        "name",
-      );
+      const result = applyFiltersAndSort(coaches, "john", "head", "name");
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe("coach-1");

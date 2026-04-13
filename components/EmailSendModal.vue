@@ -107,7 +107,9 @@
 
             <!-- Content -->
             <div class="px-6 py-6 space-y-4">
-              <div class="bg-amber-50 border-l-4 border-amber-600 p-4 rounded-sm">
+              <div
+                class="bg-amber-50 border-l-4 border-amber-600 p-4 rounded-sm"
+              >
                 <p class="text-sm text-amber-900">
                   Your email client should have opened with the message
                   pre-filled. Send it, then confirm below so we can record this

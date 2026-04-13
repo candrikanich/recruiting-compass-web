@@ -124,7 +124,12 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { athlete: athleteData, loading, error, fetchAthleteProfile } = useAthleteProfile(props.athleteId);
+const {
+  athlete: athleteData,
+  loading,
+  error,
+  fetchAthleteProfile,
+} = useAthleteProfile(props.athleteId);
 const showLearnMore = ref(false);
 
 const message = computed(() => {

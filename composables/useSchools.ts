@@ -132,7 +132,9 @@ export const useSchools = () => {
     } as Omit<School, "id" | "created_at" | "updated_at">);
 
     const { $posthog } = useNuxtApp();
-    $posthog?.capture("school_added", { division: schoolData.division ?? null });
+    $posthog?.capture("school_added", {
+      division: schoolData.division ?? null,
+    });
 
     // Fetch logo asynchronously (don't block school creation)
     try {
@@ -149,17 +151,25 @@ export const useSchools = () => {
   };
 
   const updateSchool = async (id: string, updates: Partial<School>) => {
-    return schoolStore.updateSchool(id, updates, activeFamily.activeFamilyId.value ?? "");
+    return schoolStore.updateSchool(
+      id,
+      updates,
+      activeFamily.activeFamilyId.value ?? "",
+    );
   };
 
   const deleteSchool = async (id: string) => {
     try {
-      return await schoolStore.deleteSchool(id, activeFamily.activeFamilyId.value ?? "");
+      return await schoolStore.deleteSchool(
+        id,
+        activeFamily.activeFamilyId.value ?? "",
+      );
     } catch (err: unknown) {
       const message =
         err instanceof Error
           ? err.message
-          : (err as { message?: string })?.message ?? "Failed to delete school";
+          : ((err as { message?: string })?.message ??
+            "Failed to delete school");
       // Rewrite FK constraint errors to a user-friendly message
       if (
         message.includes("violates foreign key constraint") ||
@@ -176,7 +186,11 @@ export const useSchools = () => {
   };
 
   const toggleFavorite = async (id: string, currentFavorite: boolean) => {
-    return schoolStore.toggleFavorite(id, currentFavorite, activeFamily.activeFamilyId.value ?? "");
+    return schoolStore.toggleFavorite(
+      id,
+      currentFavorite,
+      activeFamily.activeFamilyId.value ?? "",
+    );
   };
 
   /**

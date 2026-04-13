@@ -34,8 +34,12 @@ export interface ScorecardSchool {
   "school.city": string;
   "latest.student.size": number | null;
   "latest.admissions.admission_rate.overall": number | null;
-  "latest.admissions.sat_scores.25th_percentile.critical_reading": number | null;
-  "latest.admissions.sat_scores.75th_percentile.critical_reading": number | null;
+  "latest.admissions.sat_scores.25th_percentile.critical_reading":
+    | number
+    | null;
+  "latest.admissions.sat_scores.75th_percentile.critical_reading":
+    | number
+    | null;
   "latest.admissions.sat_scores.25th_percentile.math": number | null;
   "latest.admissions.sat_scores.75th_percentile.math": number | null;
   "latest.admissions.act_scores.25th_percentile.cumulative": number | null;
@@ -94,17 +98,11 @@ export function scorecardToAcademicInfo(
   school: ScorecardSchool,
 ): Partial<SchoolAcademicInfo> {
   const sat25Reading =
-    school[
-      "latest.admissions.sat_scores.25th_percentile.critical_reading"
-    ];
-  const sat25Math =
-    school["latest.admissions.sat_scores.25th_percentile.math"];
+    school["latest.admissions.sat_scores.25th_percentile.critical_reading"];
+  const sat25Math = school["latest.admissions.sat_scores.25th_percentile.math"];
   const sat75Reading =
-    school[
-      "latest.admissions.sat_scores.75th_percentile.critical_reading"
-    ];
-  const sat75Math =
-    school["latest.admissions.sat_scores.75th_percentile.math"];
+    school["latest.admissions.sat_scores.75th_percentile.critical_reading"];
+  const sat75Math = school["latest.admissions.sat_scores.75th_percentile.math"];
 
   const sat25 =
     sat25Reading !== null && sat25Math !== null

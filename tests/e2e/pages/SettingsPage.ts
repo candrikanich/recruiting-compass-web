@@ -31,9 +31,15 @@ export class SettingsPage extends BasePage {
 
     // Save the form
     await this.click('[data-testid="save-player-details-button"]');
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
       .catch((err: Error) => {
-        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        if (
+          !err.message.includes("not found") &&
+          !err.message.includes("strict mode")
+        )
+          throw err;
       });
   }
 
@@ -97,9 +103,15 @@ export class SettingsPage extends BasePage {
 
     // Save the form
     await this.click('button:has-text("Save Location")');
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
       .catch((err: Error) => {
-        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        if (
+          !err.message.includes("not found") &&
+          !err.message.includes("strict mode")
+        )
+          throw err;
       });
   }
 
@@ -149,9 +161,15 @@ export class SettingsPage extends BasePage {
     await this.click(
       'button:has-text("Send Invitation"), button:has-text("Invite")',
     );
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
       .catch((err: Error) => {
-        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        if (
+          !err.message.includes("not found") &&
+          !err.message.includes("strict mode")
+        )
+          throw err;
       });
   }
 
@@ -182,9 +200,15 @@ export class SettingsPage extends BasePage {
 
   async saveNotificationSettings() {
     await this.click('button:has-text("Save"), button:has-text("Update")');
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
       .catch((err: Error) => {
-        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        if (
+          !err.message.includes("not found") &&
+          !err.message.includes("strict mode")
+        )
+          throw err;
       });
   }
 
@@ -218,9 +242,15 @@ export class SettingsPage extends BasePage {
 
     // Save template
     await this.click('button:has-text("Create"), button:has-text("Save")');
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
       .catch((err: Error) => {
-        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        if (
+          !err.message.includes("not found") &&
+          !err.message.includes("strict mode")
+        )
+          throw err;
       });
   }
 

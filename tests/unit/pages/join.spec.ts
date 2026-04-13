@@ -59,14 +59,36 @@ const createWrapper = () =>
           props: ["loading", "to", "variant", "color", "type", "fullWidth"],
         },
         DesignSystemInput: {
-          template: '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+          template:
+            '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
           props: ["modelValue", "label", "type", "placeholder"],
           emits: ["update:modelValue"],
         },
         AuthInviteSignupForm: {
-          template: '<form data-testid="invite-signup-form" @submit.prevent="$emit(\'submit\')"><slot /></form>',
-          props: ["email", "firstName", "lastName", "dateOfBirth", "password", "confirmPassword", "agreeToTerms", "loading", "prefill", "role"],
-          emits: ["update:email", "update:firstName", "update:lastName", "update:dateOfBirth", "update:password", "update:confirmPassword", "update:agreeToTerms", "submit"],
+          template:
+            '<form data-testid="invite-signup-form" @submit.prevent="$emit(\'submit\')"><slot /></form>',
+          props: [
+            "email",
+            "firstName",
+            "lastName",
+            "dateOfBirth",
+            "password",
+            "confirmPassword",
+            "agreeToTerms",
+            "loading",
+            "prefill",
+            "role",
+          ],
+          emits: [
+            "update:email",
+            "update:firstName",
+            "update:lastName",
+            "update:dateOfBirth",
+            "update:password",
+            "update:confirmPassword",
+            "update:agreeToTerms",
+            "submit",
+          ],
         },
       },
     },
@@ -84,7 +106,9 @@ describe("/join page", () => {
     vi.clearAllMocks();
     mockUserStore.user.value = null;
     mockUserStore.isAuthenticated = false;
-    (global.navigateTo as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    (global.navigateTo as ReturnType<typeof vi.fn>).mockResolvedValue(
+      undefined,
+    );
     mockSignup.mockResolvedValue({ data: { user: { id: "new-u-1" } } });
   });
 
@@ -118,13 +142,17 @@ describe("/join page", () => {
       const wrapper = createWrapper();
       await flushPromises();
       expect(wrapper.find('[data-testid="email-input"]').exists()).toBe(true);
-      expect(wrapper.find('[data-testid="password-input"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="password-input"]').exists()).toBe(
+        true,
+      );
     });
 
     it("shows signup form when user is not authenticated", async () => {
       const wrapper = createWrapper();
       await flushPromises();
-      expect(wrapper.find('[data-testid="invite-signup-form"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="invite-signup-form"]').exists()).toBe(
+        true,
+      );
     });
 
     it("shows connect button when user is authenticated", async () => {
@@ -132,7 +160,9 @@ describe("/join page", () => {
       mockUserStore.user.value = { id: "u-1", email: "player@example.com" };
       const wrapper = createWrapper();
       await flushPromises();
-      expect(wrapper.find('[data-testid="connect-button"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="connect-button"]').exists()).toBe(
+        true,
+      );
       expect(wrapper.find('[data-testid="email-input"]').exists()).toBe(false);
     });
 
@@ -163,9 +193,13 @@ describe("/join page", () => {
       const wrapper = createWrapper();
       await flushPromises();
 
-      await wrapper.find('[data-testid="email-input"]').setValue("player@example.com");
+      await wrapper
+        .find('[data-testid="email-input"]')
+        .setValue("player@example.com");
       await wrapper.find('[data-testid="password-input"]').setValue("secret");
-      await wrapper.find('[data-testid="login-connect-button"]').trigger("click");
+      await wrapper
+        .find('[data-testid="login-connect-button"]')
+        .trigger("click");
       await flushPromises();
 
       expect(mockLogin).toHaveBeenCalledWith("player@example.com", "secret");
@@ -175,24 +209,37 @@ describe("/join page", () => {
 
   describe("error states", () => {
     it("shows expired message for 410 response", async () => {
-      mockFetch.mockRejectedValue({ statusCode: 410, statusMessage: "Expired" });
+      mockFetch.mockRejectedValue({
+        statusCode: 410,
+        statusMessage: "Expired",
+      });
       const wrapper = createWrapper();
       await flushPromises();
       expect(wrapper.find('[data-testid="error-expired"]').exists()).toBe(true);
     });
 
     it("shows already accepted message for 409 response", async () => {
-      mockFetch.mockRejectedValue({ statusCode: 409, statusMessage: "Already accepted" });
+      mockFetch.mockRejectedValue({
+        statusCode: 409,
+        statusMessage: "Already accepted",
+      });
       const wrapper = createWrapper();
       await flushPromises();
-      expect(wrapper.find('[data-testid="error-accepted"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="error-accepted"]').exists()).toBe(
+        true,
+      );
     });
 
     it("shows not found message for 404 response", async () => {
-      mockFetch.mockRejectedValue({ statusCode: 404, statusMessage: "Not found" });
+      mockFetch.mockRejectedValue({
+        statusCode: 404,
+        statusMessage: "Not found",
+      });
       const wrapper = createWrapper();
       await flushPromises();
-      expect(wrapper.find('[data-testid="error-not-found"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="error-not-found"]').exists()).toBe(
+        true,
+      );
     });
   });
 
@@ -204,7 +251,9 @@ describe("/join page", () => {
     it("shows decline button when invite is valid", async () => {
       const wrapper = createWrapper();
       await flushPromises();
-      expect(wrapper.find('[data-testid="decline-button"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="decline-button"]').exists()).toBe(
+        true,
+      );
     });
 
     it("shows declined state after clicking decline", async () => {
@@ -212,7 +261,9 @@ describe("/join page", () => {
       await flushPromises();
       await wrapper.find('[data-testid="decline-button"]').trigger("click");
       await flushPromises();
-      expect(wrapper.find('[data-testid="invite-declined"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="invite-declined"]').exists()).toBe(
+        true,
+      );
     });
 
     it("shows decline button for authenticated user", async () => {
@@ -220,14 +271,20 @@ describe("/join page", () => {
       mockUserStore.user.value = { id: "u-1", email: "player@example.com" };
       const wrapper = createWrapper();
       await flushPromises();
-      expect(wrapper.find('[data-testid="decline-button"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="decline-button"]').exists()).toBe(
+        true,
+      );
     });
   });
 
   describe("Connection toast", () => {
     it("shows connected toast when existing user accepts invite", async () => {
       mockFetch
-        .mockResolvedValueOnce({ invitationId: "inv-1", role: "parent", familyName: "Smith" })
+        .mockResolvedValueOnce({
+          invitationId: "inv-1",
+          role: "parent",
+          familyName: "Smith",
+        })
         .mockResolvedValueOnce({ success: true }); // accept
 
       mockUserStore.isAuthenticated = true;
@@ -239,12 +296,19 @@ describe("/join page", () => {
       await wrapper.find('[data-testid="connect-button"]').trigger("click");
       await flushPromises();
 
-      expect(mockShowToast).toHaveBeenCalledWith("You're connected!", "success");
+      expect(mockShowToast).toHaveBeenCalledWith(
+        "You're connected!",
+        "success",
+      );
     });
 
     it("shows connected toast when new user signs up and accepts invite", async () => {
       mockFetch
-        .mockResolvedValueOnce({ invitationId: "inv-1", role: "parent", familyName: "Jones" })
+        .mockResolvedValueOnce({
+          invitationId: "inv-1",
+          role: "parent",
+          familyName: "Jones",
+        })
         .mockResolvedValueOnce({ success: true }); // accept
 
       mockSignup.mockResolvedValueOnce({ data: { user: { id: "u2" } } });
@@ -254,22 +318,33 @@ describe("/join page", () => {
       const wrapper = createWrapper();
       await flushPromises();
 
-      await wrapper.find('[data-testid="invite-signup-form"]').trigger("submit");
+      await wrapper
+        .find('[data-testid="invite-signup-form"]')
+        .trigger("submit");
       await flushPromises();
 
-      expect(mockShowToast).toHaveBeenCalledWith("You're connected!", "success");
+      expect(mockShowToast).toHaveBeenCalledWith(
+        "You're connected!",
+        "success",
+      );
     });
   });
 
   describe("signup flow (unauthenticated)", () => {
     it("calls signup then accept then navigates to player onboarding on signup submit", async () => {
       mockFetch
-        .mockResolvedValueOnce({ invitationId: "inv-123", role: "player", familyName: "The Smiths" })
+        .mockResolvedValueOnce({
+          invitationId: "inv-123",
+          role: "player",
+          familyName: "The Smiths",
+        })
         .mockResolvedValueOnce({ success: true, familyUnitId: "fam-1" });
 
       const wrapper = createWrapper();
       await flushPromises();
-      await wrapper.find('[data-testid="invite-signup-form"]').trigger("submit");
+      await wrapper
+        .find('[data-testid="invite-signup-form"]')
+        .trigger("submit");
       await flushPromises();
 
       expect(mockSignup).toHaveBeenCalled();
@@ -287,29 +362,47 @@ describe("/join page", () => {
           invitationId: "inv-123",
           role: "player",
           familyName: "The Smiths",
-          prefill: { firstName: "Owen", lastName: "Smith", graduationYear: 2027, sport: "Soccer", position: "Midfielder" },
+          prefill: {
+            firstName: "Owen",
+            lastName: "Smith",
+            graduationYear: 2027,
+            sport: "Soccer",
+            position: "Midfielder",
+          },
         })
         .mockResolvedValueOnce({ success: true, familyUnitId: "fam-1" });
 
       const wrapper = createWrapper();
       await flushPromises();
-      await wrapper.find('[data-testid="invite-signup-form"]').trigger("submit");
+      await wrapper
+        .find('[data-testid="invite-signup-form"]')
+        .trigger("submit");
       await flushPromises();
 
       expect(global.navigateTo).toHaveBeenCalledWith({
         path: "/onboarding",
-        query: { graduationYear: "2027", sport: "Soccer", position: "Midfielder" },
+        query: {
+          graduationYear: "2027",
+          sport: "Soccer",
+          position: "Midfielder",
+        },
       });
     });
 
     it("navigates to dashboard when role is parent on signup submit", async () => {
       mockFetch
-        .mockResolvedValueOnce({ invitationId: "inv-123", role: "parent", familyName: "The Smiths" })
+        .mockResolvedValueOnce({
+          invitationId: "inv-123",
+          role: "parent",
+          familyName: "The Smiths",
+        })
         .mockResolvedValueOnce({ success: true });
 
       const wrapper = createWrapper();
       await flushPromises();
-      await wrapper.find('[data-testid="invite-signup-form"]').trigger("submit");
+      await wrapper
+        .find('[data-testid="invite-signup-form"]')
+        .trigger("submit");
       await flushPromises();
 
       expect(mockSignup).toHaveBeenCalled();
