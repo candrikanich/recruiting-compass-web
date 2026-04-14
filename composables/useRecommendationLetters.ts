@@ -66,8 +66,8 @@ export function useRecommendationLetters() {
 
     try {
       if (existingId) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { error: updateError } = await (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           supabase.from("recommendation_letters") as any
         )
           .update(formData)
@@ -75,8 +75,8 @@ export function useRecommendationLetters() {
           .eq("user_id", userStore.user.id);
         if (updateError) throw updateError;
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { error: insertError } = await (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           supabase.from("recommendation_letters") as any
         )
           .insert([{ ...formData, user_id: userStore.user.id }])

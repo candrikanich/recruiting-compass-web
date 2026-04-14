@@ -375,8 +375,8 @@ export const useSchoolStore = defineStore("schools", () => {
       }
 
       // Fetch current status from DB to avoid stale-cache history corruption
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: currentSchool, error: selectError } = await (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         supabase as any
       )
         .from("schools")
@@ -399,8 +399,8 @@ export const useSchoolStore = defineStore("schools", () => {
         updated_at: now,
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: updatedSchool, error: schoolError } = await (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         supabase as any
       )
         .from("schools")
