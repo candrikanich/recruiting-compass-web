@@ -166,7 +166,7 @@ export async function isParentViewingLinkedAthlete(
       .from("account_links")
       .select("id")
       .eq("parent_user_id", parentUserId)
-      .eq("athlete_id", athleteUserId)
+      .eq("player_user_id", athleteUserId)
       .eq("status", "verified")
       .single();
 

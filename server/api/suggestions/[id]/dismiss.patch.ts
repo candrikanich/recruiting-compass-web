@@ -8,7 +8,6 @@ import { requireUuidParam } from "~/server/utils/validation";
 interface DismissUpdateData {
   dismissed: boolean;
   dismissed_at: string;
-  [key: string]: unknown;
 }
 
 export default defineEventHandler(async (event) => {
@@ -52,7 +51,7 @@ export default defineEventHandler(async (event) => {
       action: "UPDATE",
       resourceType: "suggestions",
       resourceId: suggestionId,
-      newValues: updateData,
+      newValues: updateData as unknown as Record<string, unknown>,
       description: "Dismissed suggestion",
     });
 
