@@ -97,11 +97,11 @@ export default defineEventHandler(async (event) => {
     // phase_milestone_data is a custom JSONB column not captured in generated types
     const updateResult = await supabase
       .from("users")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .update({
         current_phase: nextPhase,
         phase_milestone_data: phaseMilestoneData,
         updated_at: new Date().toISOString(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       .eq("id", user.id);
 
