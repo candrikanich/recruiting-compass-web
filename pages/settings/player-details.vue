@@ -1073,9 +1073,9 @@ const THROWS_OPTIONS = [
 ] as const;
 
 const CAMPUS_SIZE_OPTIONS = [
-  { value: "small" as const, label: "Small" },
-  { value: "medium" as const, label: "Medium" },
-  { value: "large" as const, label: "Large" },
+  { value: "small" as const, label: "Small (<5K)" },
+  { value: "medium" as const, label: "Mid (5K–25K)" },
+  { value: "large" as const, label: "Large (25K+)" },
 ];
 
 const COST_SENSITIVITY_OPTIONS = [

@@ -1,5 +1,5 @@
 /**
- * POST /api/cron/cleanup-expired-invites
+ * GET /api/cron/cleanup-expired-invites
  * Daily cron job to:
  *   1. Mark pending invites past their expiry as 'expired'
  *   2. Hard-delete declined/expired invites older than 7 days

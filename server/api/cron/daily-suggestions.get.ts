@@ -1,5 +1,5 @@
 /**
- * POST /api/cron/daily-suggestions
+ * GET /api/cron/daily-suggestions
  * Scheduled cron job to refresh suggestions for all active athletes
  * Triggered by Vercel Cron (daily at 07:00 UTC) or manually.
  *

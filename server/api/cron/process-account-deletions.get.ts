@@ -1,5 +1,5 @@
 /**
- * POST /api/cron/process-account-deletions
+ * GET /api/cron/process-account-deletions
  * Daily cron job to hard-delete accounts whose deletion_requested_at is > 30 days ago.
  *
  * Cascade order (mirrors admin/delete-user):
