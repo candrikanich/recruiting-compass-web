@@ -35,7 +35,10 @@
     "feature:full": "bash scripts/full-stack-feature.sh",
     "feature:full:web-only": "bash scripts/full-stack-feature.sh --web-only",
     "audit:tokens": "node scripts/token-audit.mjs",
-    "audit:tokens:ci": "node scripts/token-audit.mjs --errors-only"
+    "audit:tokens:ci": "node scripts/token-audit.mjs --errors-only",
+    "bundle:report": "node scripts/bundle-size.mjs",
+    "bundle:check": "node scripts/bundle-size.mjs check",
+    "bundle:update": "node scripts/bundle-size.mjs update"
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
