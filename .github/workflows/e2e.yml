@@ -19,6 +19,9 @@ jobs:
     name: Playwright E2E Tests
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Dependabot PRs don't have access to secrets — the server can't start without them.
+    # Dependency bumps are validated by unit tests, lint, and type-check.
+    if: github.actor != 'dependabot[bot]'
 
     steps:
       - name: Checkout code
@@ -78,6 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     continue-on-error: true
+    if: github.actor != 'dependabot[bot]'
 
     steps:
       - name: Checkout code

@@ -2,6 +2,12 @@
 
 Historical context and completed sessions. Not loaded by default.
 
+## Doc Cleanup — 2026-04-05
+
+- **Auto-deleted:** 17 stale handoff/archived docs
+- **Compressed:** 42 iOS spec + phase docs → docs/doc-history.md
+- **Flagged for review:** 179 files (no action taken — requires human review)
+
 ## TypeScript Error Resolution - Session 4 ✅ COMPLETE
 
 **Completed February 2, 2026 - ZERO ERRORS ACHIEVED**

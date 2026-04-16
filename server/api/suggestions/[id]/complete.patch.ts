@@ -8,7 +8,6 @@ import { requireUuidParam } from "~/server/utils/validation";
 interface CompleteUpdateData {
   completed: boolean;
   completed_at: string;
-  [key: string]: unknown;
 }
 
 export default defineEventHandler(async (event) => {
@@ -60,7 +59,7 @@ export default defineEventHandler(async (event) => {
       action: "UPDATE",
       resourceType: "suggestions",
       resourceId: suggestionId,
-      newValues: updateData,
+      newValues: updateData as unknown as Record<string, unknown>,
       description: "Marked suggestion as complete",
     });
 

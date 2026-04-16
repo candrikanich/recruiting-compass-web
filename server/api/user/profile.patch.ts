@@ -41,13 +41,14 @@ export default defineEventHandler(async (event) => {
     }
 
     const supabase = useSupabaseAdmin();
-    const updatePayload: Record<string, unknown> = { ...parsed.data };
+    const updatePayload = { ...parsed.data } as Record<string, unknown>;
     if (parsed.data.home_location?.state) {
       updatePayload.timezone = deriveTimezone(parsed.data.home_location.state);
     }
     const { error } = await supabase
       .from("users")
-      .update(updatePayload)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .update(updatePayload as any)
       .eq("id", user.id);
 
     if (error) {

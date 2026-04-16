@@ -418,14 +418,14 @@ import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 
 <style scoped>
 :deep(.prose) {
-  color: #475569;
+  color: var(--color-brand-slate-600);
   line-height: 1.5;
 }
 
 :deep(.prose h2) {
   font-size: 1.25rem;
   font-weight: bold;
-  color: #111827;
+  color: var(--foreground);
   margin-top: 2rem;
   margin-bottom: 1rem;
 }
@@ -442,11 +442,11 @@ import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 }
 
 :deep(.prose li) {
-  color: #475569;
+  color: var(--color-brand-slate-600);
   margin-top: 0.5rem;
 }
 
 :deep(.prose a) {
-  color: #2563eb;
+  color: var(--color-brand-blue-600);
 }
 </style>

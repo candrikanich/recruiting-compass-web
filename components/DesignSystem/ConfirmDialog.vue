@@ -1,56 +1,47 @@
 <template>
-  <Teleport to="body">
-    <Transition name="fade">
-      <div
-        v-if="isOpen"
-        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        @keydown.escape="handleCancel"
-      >
-        <div
-          ref="dialogRef"
-          role="dialog"
-          aria-modal="true"
-          :aria-labelledby="titleId"
-          :aria-describedby="messageId"
-          class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6"
-          :class="borderClass"
-        >
-          <div class="mb-4">
-            <h2 :id="titleId" class="text-lg font-semibold text-slate-900">
-              {{ title }}
-            </h2>
-            <p :id="messageId" class="text-sm text-slate-600 mt-1">
-              {{ message }}
-            </p>
-          </div>
-
-          <div class="flex gap-3 justify-end pt-4 border-t border-slate-200">
-            <button
-              ref="cancelButtonRef"
-              type="button"
-              @click="handleCancel"
-              class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
-            >
-              {{ cancelText }}
-            </button>
-            <button
-              type="button"
-              @click="handleConfirm"
-              class="px-4 py-2 rounded-lg font-medium transition focus:ring-2 focus:ring-offset-2"
-              :class="confirmButtonClass"
-            >
-              {{ confirmText }}
-            </button>
-          </div>
-        </div>
+  <Transition name="fade">
+    <dialog
+      v-if="isOpen"
+      ref="dialogRef"
+      class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 backdrop:bg-black/50"
+      :class="borderClass"
+      role="dialog"
+      :aria-labelledby="titleId"
+      :aria-describedby="messageId"
+      @cancel.prevent="handleCancel"
+    >
+      <div class="mb-4">
+        <h2 :id="titleId" class="text-lg font-semibold text-slate-900">
+          {{ title }}
+        </h2>
+        <p :id="messageId" class="text-sm text-slate-600 mt-1">
+          {{ message }}
+        </p>
       </div>
-    </Transition>
-  </Teleport>
+
+      <div class="flex gap-3 justify-end pt-4 border-t border-slate-200">
+        <button
+          type="button"
+          @click="handleCancel"
+          class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+        >
+          {{ cancelText }}
+        </button>
+        <button
+          type="button"
+          @click="handleConfirm"
+          class="px-4 py-2 rounded-lg font-medium transition focus:ring-2 focus:ring-offset-2"
+          :class="confirmButtonClass"
+        >
+          {{ confirmText }}
+        </button>
+      </div>
+    </dialog>
+  </Transition>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from "vue";
-import { useFocusTrap } from "~/composables/useFocusTrap";
 
 type DialogVariant = "danger" | "warning";
 
@@ -75,12 +66,23 @@ const emit = defineEmits<{
   cancel: [];
 }>();
 
-const dialogRef = ref<HTMLElement | null>(null);
-const cancelButtonRef = ref<HTMLButtonElement | null>(null);
-const { activate, deactivate } = useFocusTrap(dialogRef);
+const dialogRef = ref<HTMLDialogElement | null>(null);
 
 const titleId = "confirm-dialog-title";
 const messageId = "confirm-dialog-message";
+
+// Call showModal() when the dialog element mounts so it renders in the top
+// layer with a native backdrop and built-in focus trapping.
+watch(
+  dialogRef,
+  async (el) => {
+    if (el) {
+      await nextTick();
+      el.showModal?.();
+    }
+  },
+  { flush: "post" },
+);
 
 const borderClass = computed(() =>
   props.variant === "danger"
@@ -94,27 +96,8 @@ const confirmButtonClass = computed(() =>
     : "bg-amber-600 text-white hover:bg-amber-700 focus:ring-amber-500",
 );
 
-const handleConfirm = () => {
-  deactivate();
-  emit("confirm");
-};
-
-const handleCancel = () => {
-  deactivate();
-  emit("cancel");
-};
-
-watch(
-  () => props.isOpen,
-  async (isOpen) => {
-    if (isOpen) {
-      await nextTick();
-      activate();
-    } else {
-      deactivate();
-    }
-  },
-);
+const handleConfirm = () => emit("confirm");
+const handleCancel = () => emit("cancel");
 </script>
 
 <style scoped>

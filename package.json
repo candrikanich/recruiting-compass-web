@@ -33,7 +33,9 @@
     "feature:ios": "bash scripts/feature-tdd.sh --scope ios",
     "feature:both": "bash scripts/feature-tdd.sh --scope both",
     "feature:full": "bash scripts/full-stack-feature.sh",
-    "feature:full:web-only": "bash scripts/full-stack-feature.sh --web-only"
+    "feature:full:web-only": "bash scripts/full-stack-feature.sh --web-only",
+    "audit:tokens": "node scripts/token-audit.mjs",
+    "audit:tokens:ci": "node scripts/token-audit.mjs --errors-only"
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
@@ -97,7 +99,9 @@
     "vitest-axe": "^0.1.0"
   },
   "overrides": {
+    "vite": "^7.3.2",
     "flatted": "^3.4.2",
+    "defu": "^6.1.6",
     "reka-ui": "2.8.2",
     "@vercel/nft": "^0.27.4",
     "serialize-javascript": "^7.0.3",
@@ -113,6 +117,8 @@
     "devalue": "^5.6.3",
     "yauzl": "^3.2.1",
     "ajv": "^6.14.0",
-    "node-forge": "^1.4.0"
+    "node-forge": "^1.4.0",
+    "lodash": "^4.18.1",
+    "lodash-es": "^4.18.1"
   }
 }

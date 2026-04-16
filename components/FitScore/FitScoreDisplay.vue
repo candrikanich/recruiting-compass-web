@@ -32,102 +32,92 @@
       </p>
     </div>
 
-    <!-- Breakdown Toggle Button -->
-    <button
-      v-if="showBreakdown && Object.keys(fitScore.breakdown).length > 0"
-      @click="isExpanded = !isExpanded"
-      class="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 mb-3"
-    >
-      {{ isExpanded ? "Hide" : "View" }} Fit Score Breakdown
-      <ChevronUpIcon v-if="isExpanded" class="w-4 h-4" />
-      <ChevronDownIcon v-else class="w-4 h-4" />
-    </button>
-
     <!-- Breakdown (Optional) -->
-    <div
-      v-if="
-        showBreakdown &&
-        Object.keys(fitScore.breakdown).length > 0 &&
-        isExpanded
-      "
-      class="bg-slate-50 rounded-lg p-4"
+    <details
+      v-if="showBreakdown && Object.keys(fitScore.breakdown).length > 0"
+      class="mb-3 group"
     >
-      <h4 class="font-semibold text-sm text-slate-900 mb-3">Score Breakdown</h4>
+      <summary
+        class="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 cursor-pointer list-none"
+      >
+        <span class="transition-transform group-open:rotate-90 inline-block">▶</span>
+        Fit Score Breakdown
+      </summary>
 
-      <div class="space-y-2">
-        <!-- Athletic Fit -->
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-slate-700">Athletic Fit</span>
-          <div class="flex items-center gap-2">
-            <div class="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
-              <div
-                class="h-full bg-blue-500"
-                :style="{
-                  width: `${((fitScore.breakdown.athleticFit || 0) / 40) * 100}%`,
-                }"
-              />
+      <div class="bg-slate-50 rounded-lg p-4 mt-2">
+        <h4 class="font-semibold text-sm text-slate-900 mb-3">Score Breakdown</h4>
+
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-slate-700">Athletic Fit</span>
+            <div class="flex items-center gap-2">
+              <div class="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-blue-500"
+                  :style="{
+                    width: `${((fitScore.breakdown.athleticFit || 0) / 40) * 100}%`,
+                  }"
+                />
+              </div>
+              <span class="text-sm font-medium text-slate-900 w-12 text-right">
+                {{ fitScore.breakdown.athleticFit || 0 }}/40
+              </span>
             </div>
-            <span class="text-sm font-medium text-slate-900 w-12 text-right">
-              {{ fitScore.breakdown.athleticFit || 0 }}/40
-            </span>
           </div>
-        </div>
 
-        <!-- Academic Fit -->
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-slate-700">Academic Fit</span>
-          <div class="flex items-center gap-2">
-            <div class="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
-              <div
-                class="h-full bg-purple-500"
-                :style="{
-                  width: `${((fitScore.breakdown.academicFit || 0) / 25) * 100}%`,
-                }"
-              />
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-slate-700">Academic Fit</span>
+            <div class="flex items-center gap-2">
+              <div class="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-purple-500"
+                  :style="{
+                    width: `${((fitScore.breakdown.academicFit || 0) / 25) * 100}%`,
+                  }"
+                />
+              </div>
+              <span class="text-sm font-medium text-slate-900 w-12 text-right">
+                {{ fitScore.breakdown.academicFit || 0 }}/25
+              </span>
             </div>
-            <span class="text-sm font-medium text-slate-900 w-12 text-right">
-              {{ fitScore.breakdown.academicFit || 0 }}/25
-            </span>
           </div>
-        </div>
 
-        <!-- Opportunity Fit -->
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-slate-700">Opportunity Fit</span>
-          <div class="flex items-center gap-2">
-            <div class="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
-              <div
-                class="h-full bg-emerald-500"
-                :style="{
-                  width: `${((fitScore.breakdown.opportunityFit || 0) / 20) * 100}%`,
-                }"
-              />
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-slate-700">Opportunity Fit</span>
+            <div class="flex items-center gap-2">
+              <div class="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-emerald-500"
+                  :style="{
+                    width: `${((fitScore.breakdown.opportunityFit || 0) / 20) * 100}%`,
+                  }"
+                />
+              </div>
+              <span class="text-sm font-medium text-slate-900 w-12 text-right">
+                {{ fitScore.breakdown.opportunityFit || 0 }}/20
+              </span>
             </div>
-            <span class="text-sm font-medium text-slate-900 w-12 text-right">
-              {{ fitScore.breakdown.opportunityFit || 0 }}/20
-            </span>
           </div>
-        </div>
 
-        <!-- Personal Fit -->
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-slate-700">Personal Fit</span>
-          <div class="flex items-center gap-2">
-            <div class="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
-              <div
-                class="h-full bg-orange-500"
-                :style="{
-                  width: `${((fitScore.breakdown.personalFit || 0) / 15) * 100}%`,
-                }"
-              />
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-slate-700">Personal Fit</span>
+            <div class="flex items-center gap-2">
+              <div class="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-orange-500"
+                  :style="{
+                    width: `${((fitScore.breakdown.personalFit || 0) / 15) * 100}%`,
+                  }"
+                />
+              </div>
+              <span class="text-sm font-medium text-slate-900 w-12 text-right">
+                {{ fitScore.breakdown.personalFit || 0 }}/15
+              </span>
             </div>
-            <span class="text-sm font-medium text-slate-900 w-12 text-right">
-              {{ fitScore.breakdown.personalFit || 0 }}/15
-            </span>
           </div>
         </div>
       </div>
-    </div>
+    </details>
 
     <!-- Recommendation -->
     <div
@@ -140,8 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/vue/24/solid";
+import { computed } from "vue";
 import Badge from "~/components/DesignSystem/Badge.vue";
 import type { FitScoreResult, FitTier } from "~/types/timeline";
 import type { BadgeColor } from "~/components/DesignSystem/Badge.vue";
@@ -156,8 +145,6 @@ const props = withDefaults(defineProps<Props>(), {
   showBreakdown: false,
   showRecommendation: true,
 });
-
-const isExpanded = ref(false);
 
 // Format tier name
 function formatTier(tier: FitTier): string {

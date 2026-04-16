@@ -117,3 +117,35 @@ Source: pasted content (Gopi C K)
 - **Index new filter columns in migrations**: Every Supabase migration that adds a column used in `.eq()`, `.order()`, or `.match()` calls should include a `CREATE INDEX` in the same migration file — missing indexes degrade silently as rows grow.
 - **Failure-first Supabase queries**: Treat Supabase as a flaky external service — always chain `.throwOnError()` or explicitly check `error !== null` after every query. Silent `null` returns (`.maybeSingle()` without null checks) cause downstream crashes with no useful error context.
 - **Standardized Nitro error response shape**: All `createError()` calls should follow the same shape: `{ statusCode, statusMessage }` — no raw `error.message` leakage (already in CLAUDE.md), no ad-hoc response objects. Consistency enables predictable client-side error handling.
+
+---
+
+### HTML5 Native Features That Replace Vue Abstractions — 2026-03-31
+Source: pasted content (Mahad Nadeem)
+
+- **`<dialog>` eliminates Teleport modals**: Native `<dialog>` renders in the browser's top layer automatically — no `<Teleport to="body">`, no SSR crash risk, no custom backdrop/ESC/focus-trap logic. Audit existing modal components and replace with a thin `<dialog>`-based Vue wrapper. Example: `dialogRef.value?.showModal()` / `dialogRef.value?.close()`.
+- **`<details>/<summary>` for collapsible UI**: Any Vue component that uses `v-show`/`v-if` solely to toggle visibility of a section (filters, FAQ, advanced options) can be replaced with `<details>/<summary>` — keyboard accessible, zero JS, zero state.
+- **`<progress>` for async job feedback**: Native `<progress value="N" max="100">` handles background job / data-fetch feedback with no CSS animation, no custom component. Update `.value` reactively from a Pinia store.
+- **Layer native form constraints with Zod**: HTML5 `required`, `min`, `max`, `minlength`, `type="email"` provide instant in-browser feedback *before* Zod/server validation runs — they don't replace Zod but reduce unnecessary server round-trips and improve mobile UX on forms.
+- **Excess ARIA signals wrong base HTML**: If a Vue component needs more than 1–2 ARIA attributes to be accessible, the underlying element choice is probably wrong (e.g., `div` + `role="button"` instead of `<button>`). Treat ARIA accumulation as a code smell and audit the semantic element first.
+
+---
+
+### Form Automation Tips for Happier Users and Clients — 2026-03-31
+Source: https://css-tricks.com/form-automation-tips-for-happier-user-and-clients/
+
+- **Normalize form data before submission**: Lowercase email, title-case name, strip non-digit characters from phone — do this in a composable before the Nitro call, not server-side. Prevents duplicate Supabase records caused by casing inconsistencies ("JOHN SMITH" vs "john smith"). Example: `email.trim().toLowerCase()`, `phone.replace(/\D/g, '')`.
+- **Disable submit atomically with a `submitting` ref**: Use `const submitting = ref(false)` — set `true` before the `$fetch` call, reset in `catch` only (not `finally`). `finally` re-enables the button even on success, which invites double-submissions on slow connections; only re-enable on recoverable error.
+- **Include `source` and `timestamp` in Nitro-bound form payloads**: Add `{ source: 'app_form_name', timestamp: new Date().toISOString() }` to every form payload sent to Nitro endpoints — makes Supabase audit trails queryable and any downstream webhook (email, Zapier) reliable without post-processing.
+- **Specific error messages replace generic ones**: Nitro `createError()` `statusMessage` should name the actual failure — `"Email already registered"`, `"Phone number format invalid"` — not `"Something went wrong"`. Pair with a specific success message that sets expectations: `"Sent. You'll hear back within 24 hours."` instead of `"Success!"`.
+
+---
+
+### Autonomous Code Review Bot with Claude Code Hooks — 2026-04-06
+Source: pasted content (Vikas Sah)
+
+- **PreToolUse hooks for deterministic safety gates**: Claude Code PreToolUse hooks (exit 2 = block, stderr = feedback to Claude) enforce rules the LLM cannot bypass — use them to block lock file edits, CI workflow modifications, `.env`/`.pem` access, and destructive git commands. Unlike prompt guardrails, hooks are deterministic and always fire.
+- **PostToolUse hooks for anti-pattern detection**: PostToolUse hooks run linters/greps after every Edit/Write and surface warnings via `systemMessage` JSON — Claude sees the feedback in context and self-corrects on next turn. Example: flag `console.log`, bare `any` types in non-test files.
+- **Auto-review PR trigger complements on-demand @claude**: Our `claude.yml` only fires on `@claude` mentions — adding `pull_request: [opened, synchronize]` as a trigger with a scoped review prompt (security, correctness, performance, error handling + "don't invent problems") catches issues before a human reviewer opens the PR.
+- **Scope AI reviews narrowly to prevent cry-wolf effect**: Teams abandon AI review tools when false positive rate is high — limit the review prompt to 3-4 specific categories the LLM reliably detects (security vulns, common bugs, missing error handling) rather than reviewing "everything". Include "if everything looks good, say so" to suppress noise.
+- **Lock down allowedTools in CI review jobs**: Use `--allowedTools` to restrict what Claude can do in GitHub Actions — read diffs and post comments only, never modify code or push. Example: `"Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"`

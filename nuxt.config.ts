@@ -28,6 +28,10 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: "en",
       },
+      link: [
+        { rel: "preconnect", href: "https://us.i.posthog.com" },
+        { rel: "dns-prefetch", href: "https://us.i.posthog.com" },
+      ],
     },
   },
 

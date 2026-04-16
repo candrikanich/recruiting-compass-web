@@ -94,14 +94,15 @@ export default defineEventHandler(async (event) => {
       completedTaskIds,
     );
 
-    // Supabase type generation doesn't include custom columns - need to bypass type check
+    // phase_milestone_data is a custom JSONB column not captured in generated types
     const updateResult = await supabase
       .from("users")
       .update({
         current_phase: nextPhase,
-        phase_milestone_data: phaseMilestoneData as unknown,
+        phase_milestone_data: phaseMilestoneData,
         updated_at: new Date().toISOString(),
-      } as Record<string, unknown>)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any)
       .eq("id", user.id);
 
     const { error: updateError } = updateResult;

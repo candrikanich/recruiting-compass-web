@@ -230,7 +230,7 @@ input[type="range"] {
 
 input[type="range"]::-webkit-slider-runnable-track {
   height: 6px;
-  background: linear-gradient(to right, #cbd5e1, #a1a5ab);
+  background: linear-gradient(to right, var(--color-brand-slate-300), var(--color-brand-slate-400));
   border-radius: 3px;
 }
 
@@ -240,27 +240,27 @@ input[type="range"]::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: var(--color-brand-blue-500);
   border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15); /* audit-ignore — range thumb shadow, no token equivalent */
   cursor: pointer;
   margin-top: -5px;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
-  background: #2563eb;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  background: var(--color-brand-blue-600);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); /* audit-ignore — range thumb shadow, no token equivalent */
 }
 
 input[type="range"]::-moz-range-track {
-  background: linear-gradient(to right, #cbd5e1, #a1a5ab);
+  background: linear-gradient(to right, var(--color-brand-slate-300), var(--color-brand-slate-400));
   height: 6px;
   border-radius: 3px;
   border: none;
 }
 
 input[type="range"]::-moz-range-progress {
-  background: linear-gradient(to right, #cbd5e1, #a1a5ab);
+  background: linear-gradient(to right, var(--color-brand-slate-300), var(--color-brand-slate-400));
   height: 6px;
   border-radius: 3px;
 }
@@ -269,32 +269,32 @@ input[type="range"]::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: var(--color-brand-blue-500);
   border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15); /* audit-ignore — range thumb shadow, no token equivalent */
   cursor: pointer;
 }
 
 input[type="range"]::-moz-range-thumb:hover {
-  background: #2563eb;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  background: var(--color-brand-blue-600);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); /* audit-ignore — range thumb shadow, no token equivalent */
 }
 
 input[type="range"]:disabled::-webkit-slider-runnable-track {
-  background: #e2e8f0;
+  background: var(--color-brand-slate-200);
 }
 
 input[type="range"]:disabled::-webkit-slider-thumb {
-  background: #cbd5e1;
+  background: var(--color-brand-slate-300);
   cursor: not-allowed;
 }
 
 input[type="range"]:disabled::-moz-range-track {
-  background: #e2e8f0;
+  background: var(--color-brand-slate-200);
 }
 
 input[type="range"]:disabled::-moz-range-thumb {
-  background: #cbd5e1;
+  background: var(--color-brand-slate-300);
   cursor: not-allowed;
 }
 </style>

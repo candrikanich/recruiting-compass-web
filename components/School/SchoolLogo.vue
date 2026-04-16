@@ -149,8 +149,8 @@ watch(
 .school-logo:has(.logo-fallback) {
   background: linear-gradient(
     135deg,
-    rgb(168, 85, 247) 0%,
-    rgb(147, 51, 234) 100%
+    var(--color-brand-purple-500) 0%,
+    var(--color-brand-purple-600) 100%
   );
 }
 
@@ -176,13 +176,13 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.5); /* audit-ignore — semi-transparent overlay, no token equivalent */
 }
 
 .spinner {
   width: 60%;
   height: 60%;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3); /* audit-ignore — semi-transparent white, no token equivalent */
   border-top-color: white;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;

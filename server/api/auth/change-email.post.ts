@@ -4,9 +4,10 @@ import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { emailSchema } from "~/utils/validation/validators";
 
 const changeEmailSchema = z.object({
-  newEmail: z.string().email(),
+  newEmail: emailSchema,
   currentPassword: z.string().min(1),
 });
 

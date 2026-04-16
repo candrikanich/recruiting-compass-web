@@ -41,6 +41,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Token audit (no hardcoded CSS values)
+        run: npm run audit:tokens:ci
+
   # Step 2: Unit and integration tests with coverage
   test:
     name: Unit & Integration Tests

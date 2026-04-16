@@ -342,7 +342,7 @@ watch(
 
 :deep(.leaflet-popup-content-wrapper) {
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-card-hover);
   padding: 8px 12px;
 }
 

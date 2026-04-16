@@ -60,7 +60,7 @@ export async function gatherUserData(userId: string): Promise<ExportData> {
       }>,
       supabase.from("schools").select("*").eq("user_id", userId),
       supabase.from("coaches").select("*").eq("user_id", userId),
-      supabase.from("interactions").select("*").eq("user_id", userId),
+      supabase.from("interactions").select("*").eq("logged_by", userId),
       supabase.from("events").select("*").eq("user_id", userId),
       supabase.from("documents").select("*").eq("user_id", userId),
       supabase.from("performance_metrics").select("*").eq("user_id", userId),

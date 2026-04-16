@@ -75,6 +75,9 @@
   --brand-slate-600: var(--color-brand-slate-600);
   --brand-slate-700: var(--color-brand-slate-700);
 
+  /* Search highlight */
+  --color-highlight: #fef08a;
+
   /* Background Gradients */
   --gradient-page: linear-gradient(
     135deg,
