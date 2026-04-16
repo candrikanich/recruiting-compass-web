@@ -113,12 +113,10 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   }
 
   const commitSha = process.env.GITHUB_SHA ?? 'unknown';
-  const runUrl = [
-    process.env.GITHUB_SERVER_URL,
-    process.env.GITHUB_REPOSITORY,
-    'actions/runs',
-    process.env.GITHUB_RUN_ID,
-  ].join('/');
+  const serverUrl = process.env.GITHUB_SERVER_URL ?? '';
+  const repo = process.env.GITHUB_REPOSITORY ?? '';
+  const runId = process.env.GITHUB_RUN_ID ?? '';
+  const runUrl = `${serverUrl}/${repo}/actions/runs/${runId}`;
 
   const payload = buildSlackPayload(representative, commitSha, runUrl);
   postToSlack(webhookUrl, payload)
