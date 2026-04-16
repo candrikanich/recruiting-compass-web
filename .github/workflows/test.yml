@@ -203,8 +203,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify Chrome is available
-        run: google-chrome-stable --version
+      - name: Install Chrome for Lighthouse CI
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y google-chrome-stable
 
       - name: Run Lighthouse CI collect
         run: npx lhci collect --config=lighthouserc.cjs
