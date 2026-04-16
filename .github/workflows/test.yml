@@ -179,7 +179,62 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  # Step 5: Notify on failure
+  # Step 5: Lighthouse CI against the live staging URL
+  lighthouse:
+    name: Lighthouse CI
+    needs: deploy-staging
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify Chrome is available
+        run: google-chrome-stable --version
+
+      - name: Run Lighthouse CI collect
+        run: npx lhci collect --config=lighthouserc.cjs
+        env:
+          LHCI_BASE_URL: ${{ needs.deploy-staging.outputs.deployment-url }}
+          LHCI_CI_EMAIL: ${{ secrets.LHCI_CI_EMAIL }}
+          LHCI_CI_PASSWORD: ${{ secrets.LHCI_CI_PASSWORD }}
+          LHCI_PROFILE_SLUG: ${{ secrets.LHCI_PROFILE_SLUG }}
+
+      - name: Run Lighthouse CI upload
+        run: npx lhci upload --config=lighthouserc.cjs
+
+      - name: Post Slack report
+        run: node scripts/lhci-slack-report.js
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+
+      - name: Upload HTML reports as artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-reports-${{ github.sha }}
+          path: .lighthouseci/
+          retention-days: 7
+
+  # Step 6: Notify on failure
   notify-failure:
     name: Notify Slack on Failure
     runs-on: ubuntu-latest
@@ -215,7 +270,7 @@ jobs:
               ]
             }
 
-  # Step 6: Notify on success
+  # Step 7: Notify on success
   notify-success:
     name: Notify Slack on Success
     runs-on: ubuntu-latest
