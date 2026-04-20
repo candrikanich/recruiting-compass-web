@@ -102,12 +102,13 @@ export default [
     },
   },
   {
-    files: ["scripts/**/*.js", "scripts/**/*.mjs"],
+    files: ["scripts/**/*.js", "scripts/**/*.mjs", "scripts/**/*.cjs"],
     languageOptions: {
       globals: {
         process: "readonly",
         console: "readonly",
         fetch: "readonly",
+        URL: "readonly",
         __dirname: "readonly",
         __filename: "readonly",
         Buffer: "readonly",
