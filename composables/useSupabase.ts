@@ -32,9 +32,9 @@ export const useSupabase = () => {
         // Check for server errors (500+)
         if (response.status >= 500) {
           markServiceUnavailable({
-            service: 'supabase',
+            service: "supabase",
             statusCode: response.status,
-            message: response.statusText || 'Server error',
+            message: response.statusText || "Server error",
             timestamp: new Date(),
             retryCount: 0,
           });
@@ -47,9 +47,9 @@ export const useSupabase = () => {
       } catch (err) {
         // Network error - service is unreachable
         markServiceUnavailable({
-          service: 'supabase',
+          service: "supabase",
           statusCode: 0,
-          message: err instanceof Error ? err.message : 'Network error',
+          message: err instanceof Error ? err.message : "Network error",
           timestamp: new Date(),
           retryCount: 0,
         });

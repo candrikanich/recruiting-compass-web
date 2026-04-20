@@ -162,7 +162,14 @@ describe("WhatMattersNow Component", () => {
     const wrapper = mount(WhatMattersNow, {
       props: {
         priorities: [
-          { taskId: "t1", title: "Do thing", whyItMatters: "reason", category: "academic-standing", priority: 10, isRequired: true },
+          {
+            taskId: "t1",
+            title: "Do thing",
+            whyItMatters: "reason",
+            category: "academic-standing",
+            priority: 10,
+            isRequired: true,
+          },
         ],
         phaseLabel: "Freshman",
         collapsed: true,

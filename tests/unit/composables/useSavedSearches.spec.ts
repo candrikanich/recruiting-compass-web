@@ -132,7 +132,11 @@ describe("useSavedSearches", () => {
   describe("loadSearchHistory", () => {
     it("populates searchHistory on success", async () => {
       const mockHistory = [
-        { id: "h1", search_term: "soccer", searched_at: "2026-01-01T10:00:00Z" },
+        {
+          id: "h1",
+          search_term: "soccer",
+          searched_at: "2026-01-01T10:00:00Z",
+        },
       ];
       mockState.historyData = mockHistory;
 
@@ -187,8 +191,28 @@ describe("useSavedSearches", () => {
   describe("deleteSavedSearch", () => {
     it("removes the item from savedSearches on success", async () => {
       composable.savedSearches.value = [
-        { id: "s1", name: "Keep", is_favorite: false, use_count: 0, searchType: "schools", filters: {}, created_at: "", updated_at: "", user_id: "user-1" },
-        { id: "s2", name: "Delete Me", is_favorite: false, use_count: 0, searchType: "schools", filters: {}, created_at: "", updated_at: "", user_id: "user-1" },
+        {
+          id: "s1",
+          name: "Keep",
+          is_favorite: false,
+          use_count: 0,
+          searchType: "schools",
+          filters: {},
+          created_at: "",
+          updated_at: "",
+          user_id: "user-1",
+        },
+        {
+          id: "s2",
+          name: "Delete Me",
+          is_favorite: false,
+          use_count: 0,
+          searchType: "schools",
+          filters: {},
+          created_at: "",
+          updated_at: "",
+          user_id: "user-1",
+        },
       ];
 
       const result = await composable.deleteSavedSearch("s2");
@@ -212,7 +236,14 @@ describe("useSavedSearches", () => {
   describe("clearHistory", () => {
     it("empties searchHistory ref on success", async () => {
       composable.searchHistory.value = [
-        { id: "h1", search_term: "test", searched_at: "2026-01-01T10:00:00Z", user_id: "user-1", searchType: "all", result_count: 0 },
+        {
+          id: "h1",
+          search_term: "test",
+          searched_at: "2026-01-01T10:00:00Z",
+          user_id: "user-1",
+          searchType: "all",
+          result_count: 0,
+        },
       ];
 
       const result = await composable.clearHistory();
@@ -235,9 +266,39 @@ describe("useSavedSearches", () => {
   describe("favoritedSearches", () => {
     it("returns only favorited searches sorted by use_count descending", () => {
       composable.savedSearches.value = [
-        { id: "s1", name: "A", is_favorite: true, use_count: 1, searchType: "schools", filters: {}, created_at: "", updated_at: "", user_id: "user-1" },
-        { id: "s2", name: "B", is_favorite: false, use_count: 10, searchType: "schools", filters: {}, created_at: "", updated_at: "", user_id: "user-1" },
-        { id: "s3", name: "C", is_favorite: true, use_count: 5, searchType: "schools", filters: {}, created_at: "", updated_at: "", user_id: "user-1" },
+        {
+          id: "s1",
+          name: "A",
+          is_favorite: true,
+          use_count: 1,
+          searchType: "schools",
+          filters: {},
+          created_at: "",
+          updated_at: "",
+          user_id: "user-1",
+        },
+        {
+          id: "s2",
+          name: "B",
+          is_favorite: false,
+          use_count: 10,
+          searchType: "schools",
+          filters: {},
+          created_at: "",
+          updated_at: "",
+          user_id: "user-1",
+        },
+        {
+          id: "s3",
+          name: "C",
+          is_favorite: true,
+          use_count: 5,
+          searchType: "schools",
+          filters: {},
+          created_at: "",
+          updated_at: "",
+          user_id: "user-1",
+        },
       ];
 
       const faved = composable.favoritedSearches.value;

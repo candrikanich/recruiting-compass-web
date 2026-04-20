@@ -104,7 +104,9 @@ export default defineEventHandler(async (event) => {
         result.siteUp = true;
       } else {
         result.errors.push(`${path} returned ${res.status} ${res.statusText}`);
-        logger.warn(`Page health check failed for ${path}`, { status: res.status });
+        logger.warn(`Page health check failed for ${path}`, {
+          status: res.status,
+        });
       }
     } catch (err) {
       result.errors.push(`Failed to reach ${path}`);

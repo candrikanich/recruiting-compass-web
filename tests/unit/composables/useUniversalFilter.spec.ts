@@ -90,10 +90,14 @@ const baseConfigs: FilterConfig[] = [
 ];
 
 function makeFilter(extraConfigs: FilterConfig[] = [], opts = {}) {
-  return useUniversalFilter(ref(makeItems()), [...baseConfigs, ...extraConfigs], {
-    persistState: false,
-    ...opts,
-  });
+  return useUniversalFilter(
+    ref(makeItems()),
+    [...baseConfigs, ...extraConfigs],
+    {
+      persistState: false,
+      ...opts,
+    },
+  );
 }
 
 // ── localStorage mock helpers ──────────────────────────────────────────────
@@ -160,9 +164,13 @@ describe("useUniversalFilter – initial state", () => {
   });
 
   it("accepts plain array (non-ref) for configs", () => {
-    const { filteredItems } = useUniversalFilter(ref(makeItems()), baseConfigs, {
-      persistState: false,
-    });
+    const { filteredItems } = useUniversalFilter(
+      ref(makeItems()),
+      baseConfigs,
+      {
+        persistState: false,
+      },
+    );
     expect(filteredItems.value).toHaveLength(5);
   });
 });
@@ -221,11 +229,28 @@ describe("text filter", () => {
   });
 
   it("treats null fieldValue as non-match", () => {
-    const items = [{ id: "x", name: null as unknown as string, division: "D1", location: "", active: true, score: 0, tags: [], createdAt: "2024-01-01" }];
-    const configs: FilterConfig[] = [{ type: "text", field: "name", label: "Name" }];
-    const { filteredItems, setFilterValue } = useUniversalFilter(ref(items), configs, {
-      persistState: false,
-    });
+    const items = [
+      {
+        id: "x",
+        name: null as unknown as string,
+        division: "D1",
+        location: "",
+        active: true,
+        score: 0,
+        tags: [],
+        createdAt: "2024-01-01",
+      },
+    ];
+    const configs: FilterConfig[] = [
+      { type: "text", field: "name", label: "Name" },
+    ];
+    const { filteredItems, setFilterValue } = useUniversalFilter(
+      ref(items),
+      configs,
+      {
+        persistState: false,
+      },
+    );
     setFilterValue("name", "anything");
     expect(filteredItems.value).toHaveLength(0);
   });
@@ -257,7 +282,8 @@ describe("select filter", () => {
       configs,
       {
         persistState: false,
-        compareValues: (a, b) => String(a).toLowerCase() === String(b).toLowerCase(),
+        compareValues: (a, b) =>
+          String(a).toLowerCase() === String(b).toLowerCase(),
       },
     );
     setFilterValue("division", "d1");
@@ -567,8 +593,13 @@ describe("savePreset", () => {
 
 describe("loadPreset", () => {
   it("loads filters from a saved preset", () => {
-    const { filterValues, setFilterValue, savePreset, loadPreset, activePresetId } =
-      makeFilter();
+    const {
+      filterValues,
+      setFilterValue,
+      savePreset,
+      loadPreset,
+      activePresetId,
+    } = makeFilter();
     setFilterValue("division", "D1");
     const preset = savePreset("D1 preset");
     setFilterValue("division", null);
@@ -594,7 +625,8 @@ describe("deletePreset", () => {
   });
 
   it("clears activePresetId if the deleted preset was active", () => {
-    const { activePresetId, savePreset, loadPreset, deletePreset } = makeFilter();
+    const { activePresetId, savePreset, loadPreset, deletePreset } =
+      makeFilter();
     const preset = savePreset("Active preset");
     loadPreset(preset.id);
     expect(activePresetId.value).toBe(preset.id);
@@ -603,7 +635,8 @@ describe("deletePreset", () => {
   });
 
   it("does not clear activePresetId if a different preset is deleted", async () => {
-    const { activePresetId, savePreset, loadPreset, deletePreset } = makeFilter();
+    const { activePresetId, savePreset, loadPreset, deletePreset } =
+      makeFilter();
     const p1 = savePreset("Preset 1");
     // Ensure a different timestamp for p2
     await new Promise((r) => setTimeout(r, 2));
@@ -924,10 +957,14 @@ describe("localStorage persistence (persistState: true)", () => {
   });
 
   it("skips save when persistState is false (lines 376-377 branch)", () => {
-    const { setFilterValue } = useUniversalFilter(ref(makeItems()), baseConfigs, {
-      persistState: false,
-      storageKey: "skip-save-key",
-    });
+    const { setFilterValue } = useUniversalFilter(
+      ref(makeItems()),
+      baseConfigs,
+      {
+        persistState: false,
+        storageKey: "skip-save-key",
+      },
+    );
     setFilterValue("division", "D1");
     expect(ls.setItem).not.toHaveBeenCalled();
   });

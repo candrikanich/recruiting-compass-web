@@ -76,9 +76,7 @@ test.describe("Family Invite Flow", () => {
           role: "parent",
           token: EXPIRED_TOKEN,
           status: "pending",
-          expires_at: new Date(
-            Date.now() - 24 * 60 * 60 * 1000,
-          ).toISOString(),
+          expires_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
         })
         .select("id")
         .single();
@@ -168,29 +166,29 @@ test.describe("Family Invite Flow", () => {
   test.describe("/join page — error states", () => {
     test("no token shows not-found error", async ({ page }) => {
       await page.goto("/join");
-      await expect(
-        page.locator('[data-testid="error-not-found"]'),
-      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('[data-testid="error-not-found"]')).toBeVisible(
+        { timeout: 10000 },
+      );
     });
 
     test("invalid token shows not-found error", async ({ page }) => {
       await page.goto("/join?token=invalid-token-xyz-e2e");
       await page.waitForLoadState("domcontentloaded");
-      await expect(
-        page.locator('[data-testid="error-not-found"]'),
-      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('[data-testid="error-not-found"]')).toBeVisible(
+        { timeout: 10000 },
+      );
     });
 
     test("expired token shows expired error", async ({ page }) => {
       test.skip(!seedReady, "Invite seed not available");
       await page.goto(`/join?token=${EXPIRED_TOKEN}`);
       await page.waitForLoadState("domcontentloaded");
-      await expect(
-        page.locator('[data-testid="error-expired"]'),
-      ).toBeVisible({ timeout: 10000 });
-      await expect(
-        page.locator('[data-testid="error-expired"]'),
-      ).toContainText("expired");
+      await expect(page.locator('[data-testid="error-expired"]')).toBeVisible({
+        timeout: 10000,
+      });
+      await expect(page.locator('[data-testid="error-expired"]')).toContainText(
+        "expired",
+      );
     });
   });
 
@@ -212,9 +210,7 @@ test.describe("Family Invite Flow", () => {
       await expect(
         page.locator('[data-testid="login-connect-button"]'),
       ).toBeVisible();
-      await expect(
-        page.locator('[data-testid="email-input"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="email-input"]')).toBeVisible();
       await expect(
         page.locator('[data-testid="password-input"]'),
       ).toBeVisible();
@@ -230,9 +226,9 @@ test.describe("Family Invite Flow", () => {
       await page.goto(`/join?token=${VALID_TOKEN}`);
       await page.waitForLoadState("domcontentloaded");
 
-      await expect(
-        page.locator('[data-testid="connect-button"]'),
-      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('[data-testid="connect-button"]')).toBeVisible({
+        timeout: 10000,
+      });
       await expect(
         page.locator('[data-testid="login-connect-button"]'),
       ).not.toBeVisible();
@@ -246,9 +242,9 @@ test.describe("Family Invite Flow", () => {
       await page.goto(`/join?token=${VALID_TOKEN}`);
       await page.waitForLoadState("domcontentloaded");
 
-      await expect(
-        page.locator('[data-testid="connect-button"]'),
-      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('[data-testid="connect-button"]')).toBeVisible({
+        timeout: 10000,
+      });
 
       await page.locator('[data-testid="connect-button"]').click();
       await page.waitForURL(/\/dashboard/, { timeout: 15000 });
@@ -265,14 +261,14 @@ test.describe("Family Invite Flow", () => {
       await page.goto(`/join?token=${DECLINE_TOKEN}`);
       await page.waitForLoadState("domcontentloaded");
 
-      await expect(
-        page.locator('[data-testid="decline-button"]'),
-      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('[data-testid="decline-button"]')).toBeVisible({
+        timeout: 10000,
+      });
 
       await page.locator('[data-testid="decline-button"]').click();
-      await expect(
-        page.locator('[data-testid="invite-declined"]'),
-      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('[data-testid="invite-declined"]')).toBeVisible(
+        { timeout: 10000 },
+      );
     });
 
     test("unauthenticated user sees decline button on valid invite", async ({
@@ -282,9 +278,9 @@ test.describe("Family Invite Flow", () => {
       await page.goto(`/join?token=${DECLINE_TOKEN}`);
       await page.waitForLoadState("domcontentloaded");
 
-      await expect(
-        page.locator('[data-testid="decline-button"]'),
-      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('[data-testid="decline-button"]')).toBeVisible({
+        timeout: 10000,
+      });
     });
   });
 
@@ -302,7 +298,9 @@ test.describe("Family Invite Flow", () => {
         page.locator('[data-testid="login-connect-button"]'),
       ).toBeVisible({ timeout: 10000 });
       await expect(page.locator('[data-testid="email-input"]')).toBeVisible();
-      await expect(page.locator('[data-testid="password-input"]')).toBeVisible();
+      await expect(
+        page.locator('[data-testid="password-input"]'),
+      ).toBeVisible();
 
       // Fill password (email is pre-filled from invite)
       await page
@@ -337,7 +335,10 @@ test.describe("Family Invite Flow", () => {
         .count();
 
       // Click the first revoke button
-      await page.locator('[data-testid="revoke-invite-button"]').first().click();
+      await page
+        .locator('[data-testid="revoke-invite-button"]')
+        .first()
+        .click();
 
       // Wait for the list to update
       await page.waitForTimeout(1500);

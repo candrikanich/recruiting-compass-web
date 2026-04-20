@@ -283,7 +283,10 @@ export const coachHelpers = {
     }
     if (coachData.role) {
       // Scope to the form to avoid matching filter bar's "Role" select
-      await page.locator("form").getByLabel("Role").selectOption(coachData.role);
+      await page
+        .locator("form")
+        .getByLabel("Role")
+        .selectOption(coachData.role);
     }
     if (coachData.email) {
       await page.fill(coachSelectors.emailInput, coachData.email);
@@ -318,9 +321,13 @@ export const coachHelpers = {
     await page.goto(`/schools/${schoolId}/coaches`);
     await page.waitForLoadState("domcontentloaded");
     // Wait for "Loading coaches..." text to disappear (shows while Supabase fetch is in progress)
-    await page.locator('text=Loading coaches').waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    await page
+      .locator("text=Loading coaches")
+      .waitFor({ state: "hidden", timeout: 10000 })
+      .catch(() => {});
     // Wait for either coach cards or empty state to appear
-    await page.locator('h3.text-lg.font-bold, text=No coaches added yet')
+    await page
+      .locator("h3.text-lg.font-bold, text=No coaches added yet")
       .first()
       .waitFor({ state: "visible", timeout: 8000 })
       .catch(() => {});
@@ -333,7 +340,9 @@ export const coachHelpers = {
     await coachHelpers.navigateToCoaches(page, schoolId);
     await page.click(coachSelectors.addCoachButton);
     // Coach form is rendered inline (v-if) — wait for it to appear
-    await page.waitForSelector('h2:has-text("Add New Coach")', { timeout: 5000 });
+    await page.waitForSelector('h2:has-text("Add New Coach")', {
+      timeout: 5000,
+    });
 
     await coachHelpers.fillCoachForm(page, coachData);
     await page.click(coachSelectors.saveCoachButton);
@@ -354,7 +363,10 @@ export const coachHelpers = {
   async searchCoaches(page, searchTerm) {
     const searchInput = await page.locator(coachSelectors.searchInput).first();
     await searchInput.fill(searchTerm);
-    await page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   },
 
   /**
@@ -362,7 +374,10 @@ export const coachHelpers = {
    */
   async filterByRole(page, role) {
     await page.selectOption(coachSelectors.roleFilter, role);
-    await page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   },
 
   /**
@@ -374,7 +389,10 @@ export const coachHelpers = {
       .first();
     if (await clearButton.isVisible()) {
       await clearButton.click();
-      await page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+      await page
+        .locator('[data-testid*="loading"], .animate-spin')
+        .waitFor({ state: "hidden" })
+        .catch(() => {});
     }
   },
 

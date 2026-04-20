@@ -188,5 +188,4 @@ describe("useSchoolStatusManagement", () => {
       expect(result?.is_favorite).toBe(true);
     });
   });
-
 });

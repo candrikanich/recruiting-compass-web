@@ -42,7 +42,6 @@
         {{ notes || "No notes added yet." }}
       </p>
     </div>
-
   </div>
 </template>
 

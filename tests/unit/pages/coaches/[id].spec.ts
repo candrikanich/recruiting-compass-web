@@ -652,7 +652,6 @@ describe("Coach Detail Page", () => {
         notes: "Updated notes",
       });
     });
-
   });
 
   describe("Stats and Interactions", () => {

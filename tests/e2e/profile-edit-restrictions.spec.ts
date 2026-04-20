@@ -29,10 +29,9 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
 
       // Sub-text describes read-only reason
       // Using partial text to avoid apostrophe encoding issues
-      const warningText = page.getByText(
-        "viewing this profile as a parent",
-        { exact: false },
-      );
+      const warningText = page.getByText("viewing this profile as a parent", {
+        exact: false,
+      });
       await expect(warningText).toBeVisible();
     });
 
@@ -59,7 +58,9 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.waitForLoadState("domcontentloaded");
 
       // Navigate to Athletics tab (use first match - desktop nav button)
-      const athleticsTab = page.locator("button", { hasText: "Athletics" }).first();
+      const athleticsTab = page
+        .locator("button", { hasText: "Athletics" })
+        .first();
       await athleticsTab.click();
       await page.waitForTimeout(300);
 
@@ -140,9 +141,11 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.waitForLoadState("domcontentloaded");
 
       // Switch to Academics & Social tab
-      const academicsTab = page.locator("button", {
-        hasText: "Academics & Social",
-      }).first();
+      const academicsTab = page
+        .locator("button", {
+          hasText: "Academics & Social",
+        })
+        .first();
       await academicsTab.click();
       await page.waitForTimeout(300);
 
@@ -166,11 +169,21 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.waitForLoadState("domcontentloaded");
 
       // Tabs appear twice (desktop + mobile), use first() to avoid strict mode
-      await expect(page.locator("button", { hasText: "Basics" }).first()).toBeVisible();
-      await expect(page.locator("button", { hasText: "Athletics" }).first()).toBeVisible();
-      await expect(page.locator("button", { hasText: "Academics & Social" }).first()).toBeVisible();
-      await expect(page.locator("button", { hasText: "History" }).first()).toBeVisible();
-      await expect(page.locator("button", { hasText: "Public Profile" }).first()).toBeVisible();
+      await expect(
+        page.locator("button", { hasText: "Basics" }).first(),
+      ).toBeVisible();
+      await expect(
+        page.locator("button", { hasText: "Athletics" }).first(),
+      ).toBeVisible();
+      await expect(
+        page.locator("button", { hasText: "Academics & Social" }).first(),
+      ).toBeVisible();
+      await expect(
+        page.locator("button", { hasText: "History" }).first(),
+      ).toBeVisible();
+      await expect(
+        page.locator("button", { hasText: "Public Profile" }).first(),
+      ).toBeVisible();
     });
   });
 
@@ -189,9 +202,11 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.goto("/settings/player-details");
       await page.waitForLoadState("domcontentloaded");
 
-      const academicsTab = page.locator("button", {
-        hasText: "Academics & Social",
-      }).first();
+      const academicsTab = page
+        .locator("button", {
+          hasText: "Academics & Social",
+        })
+        .first();
       await academicsTab.click();
       await page.waitForTimeout(300);
 

@@ -147,7 +147,9 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
 
     // Widget should have proper structure — h3 "Contact Frequency" inside widget
     const widget = page.locator('[data-testid="contact-frequency-widget"]');
-    await expect(widget.locator('h3:has-text("Contact Frequency")')).toBeVisible();
+    await expect(
+      widget.locator('h3:has-text("Contact Frequency")'),
+    ).toBeVisible();
   });
 
   test("Monthly contacts card displays count", async ({ page }) => {

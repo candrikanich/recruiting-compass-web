@@ -13,7 +13,10 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err; // re-throw H3 first
     logger.error("Failed to fetch data", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to fetch data" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to fetch data",
+    });
   }
 });
 ```
@@ -23,6 +26,7 @@ export default defineEventHandler(async (event) => {
 **Never expose raw `error.message`** in `statusMessage` — leaks internal stack details, DB schema, and file paths to clients.
 
 **Log levels:**
+
 - `logger.error` — unexpected failures (DB errors, unhandled exceptions)
 - `logger.warn` — expected but notable conditions (data not found, business rule blocks)
 - `logger.info` — meaningful events (request processed, action completed)

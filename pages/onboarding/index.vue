@@ -186,9 +186,15 @@
         </div>
 
         <!-- Screen 5: Invite Parent -->
-        <div v-if="currentStep === 5" class="space-y-6" data-testid="step-5-invite">
+        <div
+          v-if="currentStep === 5"
+          class="space-y-6"
+          data-testid="step-5-invite"
+        >
           <div class="text-center mb-4">
-            <h2 class="text-2xl font-bold text-slate-900 mb-2">Invite a parent</h2>
+            <h2 class="text-2xl font-bold text-slate-900 mb-2">
+              Invite a parent
+            </h2>
             <p class="text-slate-600">
               Add a parent so they can follow your recruiting journey with you.
             </p>
@@ -213,14 +219,18 @@
             class="w-full px-6 py-3 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             @click="sendParentInvite"
           >
-            {{ inviteLoading ? 'Sending...' : 'Send invite' }}
+            {{ inviteLoading ? "Sending..." : "Send invite" }}
           </button>
 
           <div class="mt-6 pt-4 border-t border-slate-200">
             <p class="text-sm text-slate-500 mb-3">Or share your family code</p>
-            <div class="flex items-center gap-3 bg-slate-50 rounded-lg px-4 py-3">
-              <span class="font-mono font-semibold text-slate-900 tracking-widest flex-1">
-                {{ myFamilyCode ?? '...' }}
+            <div
+              class="flex items-center gap-3 bg-slate-50 rounded-lg px-4 py-3"
+            >
+              <span
+                class="font-mono font-semibold text-slate-900 tracking-widest flex-1"
+              >
+                {{ myFamilyCode ?? "..." }}
               </span>
               <button
                 v-if="myFamilyCode"
@@ -239,7 +249,9 @@
                   stroke-width="2"
                 >
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  <path
+                    d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                  />
                 </svg>
                 <svg
                   v-else
@@ -353,7 +365,7 @@ const onboardingData = ref<Record<string, unknown>>({});
 const loading = ref(false);
 const error = ref<string | null>(null);
 const zipCodeError = ref<string | null>(null);
-const parentInviteEmail = ref('');
+const parentInviteEmail = ref("");
 
 const totalSteps = 5;
 
@@ -582,7 +594,7 @@ const sendParentInvite = async () => {
   if (!parentInviteEmail.value) return;
   loading.value = true;
   try {
-    await sendInvite({ email: parentInviteEmail.value, role: 'parent' });
+    await sendInvite({ email: parentInviteEmail.value, role: "parent" });
     const assessment = {
       hasHighlightVideo: false,
       hasContactedCoaches: false,
@@ -591,10 +603,10 @@ const sendParentInvite = async () => {
       hasTakenTestScores: false,
     };
     await completeOnboarding(assessment);
-    showToast('Invite sent! Taking you to your dashboard.', 'success');
-    await navigateTo('/dashboard');
+    showToast("Invite sent! Taking you to your dashboard.", "success");
+    await navigateTo("/dashboard");
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to send invite';
+    error.value = err instanceof Error ? err.message : "Failed to send invite";
   } finally {
     loading.value = false;
   }

@@ -77,7 +77,6 @@ vi.mock("~/stores/user", () => ({
   })),
 }));
 
-
 describe("Schools Store - Status History (Story 3.4)", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -151,7 +150,11 @@ describe("Schools Store - Status History (Story 3.4)", () => {
 
       store.schools = [mockSchool];
 
-      const result = await store.updateStatus("school-1", "camp_invite", "family-123");
+      const result = await store.updateStatus(
+        "school-1",
+        "camp_invite",
+        "family-123",
+      );
 
       expect(result).toBeDefined();
       expect(result.status).toBe("camp_invite");
@@ -270,5 +273,4 @@ describe("Schools Store - Status History (Story 3.4)", () => {
       });
     });
   });
-
 });

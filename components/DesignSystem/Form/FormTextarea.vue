@@ -1,50 +1,50 @@
 <script setup lang="ts">
-import { computed, useId } from 'vue'
+import { computed, useId } from "vue";
 
 const props = withDefaults(
   defineProps<{
-    modelValue: string
-    label: string
-    placeholder?: string
-    required?: boolean
-    disabled?: boolean
-    error?: string
-    rows?: number
-    maxlength?: number
-    showCounter?: boolean
+    modelValue: string;
+    label: string;
+    placeholder?: string;
+    required?: boolean;
+    disabled?: boolean;
+    error?: string;
+    rows?: number;
+    maxlength?: number;
+    showCounter?: boolean;
   }>(),
   {
-    placeholder: '',
+    placeholder: "",
     required: false,
     disabled: false,
-    error: '',
+    error: "",
     rows: 4,
     maxlength: undefined,
-    showCounter: false
-  }
-)
+    showCounter: false,
+  },
+);
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
-  blur: []
-}>()
+  "update:modelValue": [value: string];
+  blur: [];
+}>();
 
-const id = useId()
+const id = useId();
 
 const handleInput = (event: Event) => {
-  const target = event.target as HTMLTextAreaElement
-  emit('update:modelValue', target.value)
-}
+  const target = event.target as HTMLTextAreaElement;
+  emit("update:modelValue", target.value);
+};
 
 const handleBlur = () => {
-  emit('blur')
-}
+  emit("blur");
+};
 
-const characterCount = computed(() => props.modelValue.length)
+const characterCount = computed(() => props.modelValue.length);
 const isApproachingLimit = computed(() => {
-  if (!props.maxlength) return false
-  return characterCount.value > props.maxlength * 0.9
-})
+  if (!props.maxlength) return false;
+  return characterCount.value > props.maxlength * 0.9;
+});
 </script>
 
 <template>
@@ -71,11 +71,20 @@ const isApproachingLimit = computed(() => {
       @blur="handleBlur"
     />
 
-    <div v-if="showCounter && maxlength" class="text-xs mt-1" :class="isApproachingLimit ? 'text-red-600' : 'text-slate-500'">
+    <div
+      v-if="showCounter && maxlength"
+      class="text-xs mt-1"
+      :class="isApproachingLimit ? 'text-red-600' : 'text-slate-500'"
+    >
       {{ characterCount }}/{{ maxlength }} characters
     </div>
 
-    <div v-if="error" :id="`${id}-error`" role="alert" class="text-sm text-red-600 mt-1">
+    <div
+      v-if="error"
+      :id="`${id}-error`"
+      role="alert"
+      class="text-sm text-red-600 mt-1"
+    >
       {{ error }}
     </div>
   </div>

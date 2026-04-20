@@ -39,7 +39,9 @@ test.describe("Parent Task Viewing Workflow", () => {
 
   test("can expand task details when tasks exist", async ({ page }) => {
     const taskItem = page.locator("[data-testid='task-item']").first();
-    const hasTask = await taskItem.isVisible({ timeout: 3000 }).catch(() => false);
+    const hasTask = await taskItem
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
     if (!hasTask) {
       test.skip();
       return;
@@ -51,14 +53,20 @@ test.describe("Parent Task Viewing Workflow", () => {
   });
 
   // Needs deadline-badge testid in tasks page template
-  test.skip("sees deadline badges with correct urgency colors", async ({ page }) => {
+  test.skip("sees deadline badges with correct urgency colors", async ({
+    page,
+  }) => {
     await page.waitForSelector("[data-testid='deadline-badge']");
-    const criticalBadge = page.locator("[data-testid='deadline-badge'].bg-red-100");
+    const criticalBadge = page.locator(
+      "[data-testid='deadline-badge'].bg-red-100",
+    );
     expect(await criticalBadge.count()).toBeGreaterThanOrEqual(0);
   });
 
   // Needs athlete-select testid — AthleteSwitcher component not yet wired up with testid
-  test.skip("sees athlete switcher with multiple athletes", async ({ page }) => {
+  test.skip("sees athlete switcher with multiple athletes", async ({
+    page,
+  }) => {
     const athleteSwitcher = page.locator("[data-testid='athlete-select']");
     await expect(athleteSwitcher).toBeVisible();
     const options = page.locator("[data-testid='athlete-select'] option");
@@ -66,7 +74,9 @@ test.describe("Parent Task Viewing Workflow", () => {
   });
 
   // Needs real linked athlete in DB for parent@test.com
-  test.skip("parent cannot toggle task checkboxes (read-only view)", async ({ page }) => {
+  test.skip("parent cannot toggle task checkboxes (read-only view)", async ({
+    page,
+  }) => {
     await page.waitForSelector("[data-testid*='task-checkbox-']");
     const checkbox = page.locator("[data-testid*='task-checkbox-']").first();
     const isDisabled = await checkbox.isDisabled();

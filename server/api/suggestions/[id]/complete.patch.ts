@@ -68,6 +68,9 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if (error instanceof Error && "statusCode" in error) throw error;
     logger.error("Failed to complete suggestion", error);
-    throw createError({ statusCode: 500, statusMessage: "Failed to complete suggestion" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to complete suggestion",
+    });
   }
 });

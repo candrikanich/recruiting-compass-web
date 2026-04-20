@@ -1,9 +1,14 @@
 <template>
   <div class="mt-16 border-t border-gray-200 pt-8">
-    <div v-if="!submitted" class="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div
+      v-if="!submitted"
+      class="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between"
+    >
       <div>
         <p class="font-medium text-gray-900">Was this page helpful?</p>
-        <p class="text-sm text-gray-500">Your feedback helps us improve our docs.</p>
+        <p class="text-sm text-gray-500">
+          Your feedback helps us improve our docs.
+        </p>
       </div>
       <div class="flex items-center gap-2">
         <button
@@ -48,23 +53,23 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-const route = useRoute()
+const route = useRoute();
 
-const submitted = ref(false)
-const loading = ref(false)
+const submitted = ref(false);
+const loading = ref(false);
 
 async function submit(helpful: boolean) {
-  loading.value = true
+  loading.value = true;
   try {
-    await $fetch('/api/help/feedback', {
-      method: 'POST',
+    await $fetch("/api/help/feedback", {
+      method: "POST",
       body: { page: route.path, helpful },
-    })
+    });
   } catch {
     // Silently fail — feedback is non-critical
   } finally {
-    loading.value = false
-    submitted.value = true
+    loading.value = false;
+    submitted.value = true;
   }
 }
 </script>

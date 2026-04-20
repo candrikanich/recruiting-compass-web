@@ -1,6 +1,11 @@
 <template>
-  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
-    <PageHeader title="Analytics" description="Comprehensive recruiting metrics and performance insights" />
+  <div
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
+  >
+    <PageHeader
+      title="Analytics"
+      description="Comprehensive recruiting metrics and performance insights"
+    />
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Date Range Controls -->

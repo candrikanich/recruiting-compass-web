@@ -37,8 +37,14 @@ vi.mock("h3", async (importOriginal) => {
     readBody: vi.fn().mockResolvedValue({ confirmDelete: true }),
     getHeader: vi.fn().mockReturnValue("Bearer test-token"),
     getCookie: vi.fn().mockReturnValue(undefined),
-    createError: (opts: { statusCode: number; statusMessage?: string; message?: string }) => {
-      const err = new Error(opts.statusMessage ?? opts.message) as Error & { statusCode: number };
+    createError: (opts: {
+      statusCode: number;
+      statusMessage?: string;
+      message?: string;
+    }) => {
+      const err = new Error(opts.statusMessage ?? opts.message) as Error & {
+        statusCode: number;
+      };
       err.statusCode = opts.statusCode;
       return err;
     },
@@ -48,9 +54,8 @@ vi.mock("h3", async (importOriginal) => {
 import { requireAuth } from "~/server/utils/auth";
 import * as h3Module from "h3";
 
-const { default: handler } = await import(
-  "~/server/api/schools/[id]/cascade-delete.post"
-);
+const { default: handler } =
+  await import("~/server/api/schools/[id]/cascade-delete.post");
 
 const mockEvent = {
   context: { params: { id: TEST_UUID } },
@@ -75,15 +80,15 @@ describe("POST /api/schools/[id]/cascade-delete", () => {
 
   it("returns success:true with deleted counts when all deletes succeed", async () => {
     mockDeleteEq
-      .mockResolvedValueOnce({ count: 2, error: null })  // school_status_history
-      .mockResolvedValueOnce({ count: 4, error: null })  // coaches
-      .mockResolvedValueOnce({ count: 7, error: null })  // interactions
-      .mockResolvedValueOnce({ count: 1, error: null })  // offers
-      .mockResolvedValueOnce({ count: 3, error: null })  // social_media_posts
-      .mockResolvedValueOnce({ count: 5, error: null })  // documents
-      .mockResolvedValueOnce({ count: 2, error: null })  // events
-      .mockResolvedValueOnce({ count: 1, error: null })  // suggestion
-      .mockResolvedValueOnce({ count: 6, error: null })  // follow_up_reminders
+      .mockResolvedValueOnce({ count: 2, error: null }) // school_status_history
+      .mockResolvedValueOnce({ count: 4, error: null }) // coaches
+      .mockResolvedValueOnce({ count: 7, error: null }) // interactions
+      .mockResolvedValueOnce({ count: 1, error: null }) // offers
+      .mockResolvedValueOnce({ count: 3, error: null }) // social_media_posts
+      .mockResolvedValueOnce({ count: 5, error: null }) // documents
+      .mockResolvedValueOnce({ count: 2, error: null }) // events
+      .mockResolvedValueOnce({ count: 1, error: null }) // suggestion
+      .mockResolvedValueOnce({ count: 6, error: null }) // follow_up_reminders
       .mockResolvedValueOnce({ count: 1, error: null }); // school itself
 
     const result = await handler(mockEvent);
@@ -155,7 +160,8 @@ describe("POST /api/schools/[id]/cascade-delete", () => {
     await handler(mockEvent);
 
     // Last eq call is the school delete
-    const lastEqCall = mockDeleteEq.mock.calls[mockDeleteEq.mock.calls.length - 1];
+    const lastEqCall =
+      mockDeleteEq.mock.calls[mockDeleteEq.mock.calls.length - 1];
     expect(lastEqCall).toEqual(["id", TEST_UUID]);
   });
 
@@ -209,7 +215,10 @@ describe("POST /api/schools/[id]/cascade-delete", () => {
   // ── Child delete failures → 500 ───────────────────────────────────────────
 
   it("throws 500 when school_status_history delete fails", async () => {
-    mockDeleteEq.mockResolvedValueOnce({ count: null, error: { message: "db error" } });
+    mockDeleteEq.mockResolvedValueOnce({
+      count: null,
+      error: { message: "db error" },
+    });
 
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 500 });
   });
@@ -261,7 +270,10 @@ describe("POST /api/schools/[id]/cascade-delete", () => {
     for (let i = 0; i < 9; i++) {
       mockDeleteEq.mockResolvedValueOnce({ count: 0, error: null });
     }
-    mockDeleteEq.mockResolvedValueOnce({ count: null, error: { message: "db error" } });
+    mockDeleteEq.mockResolvedValueOnce({
+      count: null,
+      error: { message: "db error" },
+    });
 
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 500 });
   });

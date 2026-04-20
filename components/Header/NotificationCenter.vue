@@ -3,7 +3,11 @@
     <!-- Notification Bell -->
     <button
       @click="isOpen = !isOpen"
-      :aria-label="unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'"
+      :aria-label="
+        unreadCount > 0
+          ? `Notifications, ${unreadCount} unread`
+          : 'Notifications'
+      "
       :aria-expanded="isOpen"
       aria-controls="notifications-dropdown"
       aria-haspopup="menu"

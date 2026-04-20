@@ -167,7 +167,10 @@ export const authFixture = {
     const account = TEST_ACCOUNTS[accountType];
     const { readFile } = await import("fs/promises");
     const { resolve } = await import("path");
-    const authFilePath = resolve(process.cwd(), `tests/e2e/.auth/${accountType}.json`);
+    const authFilePath = resolve(
+      process.cwd(),
+      `tests/e2e/.auth/${accountType}.json`,
+    );
 
     try {
       const stateJson = await readFile(authFilePath, "utf-8");
