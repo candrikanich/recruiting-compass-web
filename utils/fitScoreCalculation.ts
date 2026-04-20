@@ -31,7 +31,10 @@ export function calculatePersonalFitSignals(
   athlete: AthleteProfileForFit,
   school: SchoolAcademicInfo,
 ): PersonalFitAnalysis {
-  const location = calcLocationSignal(athlete.school_state ?? null, school.state ?? null);
+  const location = calcLocationSignal(
+    athlete.school_state ?? null,
+    school.state ?? null,
+  );
   const campusSize = calcCampusSizeSignal(
     athlete.campus_size_preference ?? null,
     school.student_size ?? null,
@@ -93,7 +96,8 @@ function calcCampusSizeSignal(
       label: "Campus Size",
       value: sizeDisplay,
       strength: "unknown",
-      explanation: "Add your campus size preference in your profile to see fit.",
+      explanation:
+        "Add your campus size preference in your profile to see fit.",
     };
   }
 
@@ -148,7 +152,8 @@ function calcCostSignal(
       explanation = "Cost is manageable but factor in scholarship potential.";
     } else {
       strength = "stretch";
-      explanation = "Cost may be a significant challenge — explore all aid options.";
+      explanation =
+        "Cost may be a significant challenge — explore all aid options.";
     }
   } else if (sensitivity === "medium") {
     if (costOfAttendance <= 35000) {
@@ -156,7 +161,8 @@ function calcCostSignal(
       explanation = "Cost is reasonable for your situation.";
     } else if (costOfAttendance <= 55000) {
       strength = "good";
-      explanation = "Cost is on the higher end — factor in scholarship potential.";
+      explanation =
+        "Cost is on the higher end — factor in scholarship potential.";
     } else {
       strength = "stretch";
       explanation = "Cost is high — ensure scholarship options are explored.";
@@ -196,7 +202,9 @@ export function calculateAcademicFitSignals(
   );
 
   const hasSchoolData = !!(school.sat_25th || school.act_25th);
-  const availableSignals = [sat, act].filter((s) => s.strength !== "unknown").length;
+  const availableSignals = [sat, act].filter(
+    (s) => s.strength !== "unknown",
+  ).length;
 
   return {
     signals: { sat, act },
@@ -242,13 +250,21 @@ function calcTestScoreSignal(
     explanation = `Your ${testName} of ${athleteScore} is below their 25th percentile (${school25th}–${school75th}).`;
   }
 
-  return { label: testName, athleteValue: athleteScore, schoolRange: range, strength, explanation };
+  return {
+    label: testName,
+    athleteValue: athleteScore,
+    schoolRange: range,
+    strength,
+    explanation,
+  };
 }
 
 // ─── Deprecated stubs (backward compat — remove after all callers updated) ────
 
 /** @deprecated Use calculatePersonalFitSignals instead */
-export function calculateFitScore(inputs: Partial<FitScoreInputs>): FitScoreResult {
+export function calculateFitScore(
+  inputs: Partial<FitScoreInputs>,
+): FitScoreResult {
   const score =
     (inputs.athleticFit ?? 0) +
     (inputs.academicFit ?? 0) +
@@ -280,37 +296,37 @@ export function getFitTierColor(_tier: FitTier): string {
 }
 
 /** @deprecated — athletic fit is not calculable from available data */
- 
+
 export function calculateAthleticFit(..._args: unknown[]): number {
   return 0;
 }
 
 /** @deprecated — opportunity fit is not calculable from available data */
- 
+
 export function calculateOpportunityFit(..._args: unknown[]): number {
   return 0;
 }
 
 /** @deprecated — use calculateAcademicFitSignals instead */
- 
+
 export function calculateAcademicFit(..._args: unknown[]): number {
   return 0;
 }
 
 /** @deprecated — use calculatePersonalFitSignals instead */
- 
+
 export function calculatePersonalFit(..._args: unknown[]): number {
   return 0;
 }
 
 /** @deprecated */
- 
+
 export function getFitScoreRecommendation(..._args: unknown[]): string {
   return "";
 }
 
 /** @deprecated — portfolio health removed */
- 
+
 export function calculatePortfolioHealth(..._args: unknown[]): {
   reaches: number;
   matches: number;
@@ -331,5 +347,10 @@ export function calculatePortfolioHealth(..._args: unknown[]): {
   };
 }
 
-export const FIT_WEIGHTS = { athletic: 0, academic: 0, opportunity: 0, personal: 0 };
+export const FIT_WEIGHTS = {
+  athletic: 0,
+  academic: 0,
+  opportunity: 0,
+  personal: 0,
+};
 export const FIT_THRESHOLDS = { match: 70, reach: 50, unlikely: 0 };

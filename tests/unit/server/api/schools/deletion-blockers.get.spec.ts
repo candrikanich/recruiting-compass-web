@@ -23,7 +23,10 @@ const mockState = {
 };
 
 vi.mock("~/server/utils/auth", () => ({
-  requireAuth: vi.fn(async () => ({ id: "user-id", email: "user@example.com" })),
+  requireAuth: vi.fn(async () => ({
+    id: "user-id",
+    email: "user@example.com",
+  })),
 }));
 
 vi.mock("~/server/utils/logger", () => ({
@@ -35,12 +38,17 @@ vi.mock("~/server/utils/logger", () => ({
   }),
 }));
 
-function buildSelectChain(getCount: () => number | null, getError: () => object | null) {
+function buildSelectChain(
+  getCount: () => number | null,
+  getError: () => object | null,
+) {
   return {
     select: vi.fn().mockReturnValue({
-      eq: vi.fn().mockImplementation(() =>
-        Promise.resolve({ count: getCount(), error: getError(), data: [] })
-      ),
+      eq: vi
+        .fn()
+        .mockImplementation(() =>
+          Promise.resolve({ count: getCount(), error: getError(), data: [] }),
+        ),
     }),
   };
 }
@@ -49,39 +57,57 @@ vi.mock("~/server/utils/supabase", () => ({
   createServerSupabaseUserClient: vi.fn(() => ({
     from: (table: string) => {
       if (table === "coaches") {
-        return buildSelectChain(() => mockState.coachCount, () => mockState.coachError);
+        return buildSelectChain(
+          () => mockState.coachCount,
+          () => mockState.coachError,
+        );
       }
       if (table === "interactions") {
         return buildSelectChain(
           () => mockState.interactionCount,
-          () => mockState.interactionError
+          () => mockState.interactionError,
         );
       }
       if (table === "offers") {
-        return buildSelectChain(() => mockState.offerCount, () => mockState.offerError);
+        return buildSelectChain(
+          () => mockState.offerCount,
+          () => mockState.offerError,
+        );
       }
       if (table === "school_status_history") {
         return buildSelectChain(
           () => mockState.historyCount,
-          () => mockState.historyError
+          () => mockState.historyError,
         );
       }
       if (table === "social_media_posts") {
-        return buildSelectChain(() => mockState.postCount, () => mockState.postError);
+        return buildSelectChain(
+          () => mockState.postCount,
+          () => mockState.postError,
+        );
       }
       if (table === "documents") {
-        return buildSelectChain(() => mockState.docCount, () => mockState.docError);
+        return buildSelectChain(
+          () => mockState.docCount,
+          () => mockState.docError,
+        );
       }
       if (table === "events") {
-        return buildSelectChain(() => mockState.eventCount, () => mockState.eventError);
+        return buildSelectChain(
+          () => mockState.eventCount,
+          () => mockState.eventError,
+        );
       }
       if (table === "suggestion") {
         return buildSelectChain(
           () => mockState.suggestionCount,
-          () => mockState.suggestionError
+          () => mockState.suggestionError,
         );
       }
-      return buildSelectChain(() => 0, () => null);
+      return buildSelectChain(
+        () => 0,
+        () => null,
+      );
     },
   })),
 }));
@@ -95,7 +121,9 @@ vi.mock("h3", async (importOriginal) => {
     getHeader: vi.fn(() => mockState.authToken),
     getCookie: vi.fn(() => undefined),
     createError: (config: { statusCode: number; statusMessage: string }) => {
-      const err = new Error(config.statusMessage) as Error & { statusCode: number };
+      const err = new Error(config.statusMessage) as Error & {
+        statusCode: number;
+      };
       err.statusCode = config.statusCode;
       return err;
     },
@@ -128,7 +156,10 @@ describe("GET /api/schools/[id]/deletion-blockers", () => {
     mockState.authToken = "Bearer valid-token";
     mockState.schoolId = "test-school-id";
 
-    vi.mocked(requireAuth).mockResolvedValue({ id: "user-id", email: "user@example.com" });
+    vi.mocked(requireAuth).mockResolvedValue({
+      id: "user-id",
+      email: "user@example.com",
+    });
 
     const h3 = await import("h3");
     vi.mocked(h3.getRouterParam).mockReturnValue("test-school-id");
@@ -137,9 +168,8 @@ describe("GET /api/schools/[id]/deletion-blockers", () => {
   });
 
   const getHandler = async () => {
-    const { default: handler } = await import(
-      "~/server/api/schools/[id]/deletion-blockers.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/schools/[id]/deletion-blockers.get");
     return handler;
   };
 
@@ -288,13 +318,13 @@ describe("GET /api/schools/[id]/deletion-blockers", () => {
       expect(result.canDelete).toBe(false);
       expect(result.blockers).toHaveLength(3);
       expect(result.blockers).toContainEqual(
-        expect.objectContaining({ table: "coaches", count: 1 })
+        expect.objectContaining({ table: "coaches", count: 1 }),
       );
       expect(result.blockers).toContainEqual(
-        expect.objectContaining({ table: "interactions", count: 3 })
+        expect.objectContaining({ table: "interactions", count: 3 }),
       );
       expect(result.blockers).toContainEqual(
-        expect.objectContaining({ table: "offers", count: 2 })
+        expect.objectContaining({ table: "offers", count: 2 }),
       );
       expect(result.message).toContain("Cannot delete this school");
     });
@@ -318,7 +348,9 @@ describe("GET /api/schools/[id]/deletion-blockers", () => {
 
   describe("auth failure", () => {
     it("re-throws H3Error from requireAuth without wrapping", async () => {
-      const h3Error = Object.assign(new Error("Unauthorized"), { statusCode: 401 });
+      const h3Error = Object.assign(new Error("Unauthorized"), {
+        statusCode: 401,
+      });
       vi.mocked(requireAuth).mockRejectedValue(h3Error);
 
       const handler = await getHandler();
@@ -330,7 +362,9 @@ describe("GET /api/schools/[id]/deletion-blockers", () => {
     });
 
     it("re-throws 403 from requireAuth", async () => {
-      const h3Error = Object.assign(new Error("Forbidden"), { statusCode: 403 });
+      const h3Error = Object.assign(new Error("Forbidden"), {
+        statusCode: 403,
+      });
       vi.mocked(requireAuth).mockRejectedValue(h3Error);
 
       const handler = await getHandler();
@@ -348,7 +382,9 @@ describe("GET /api/schools/[id]/deletion-blockers", () => {
       vi.mocked(getHeader).mockReturnValue("");
 
       const handler = await getHandler();
-      await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 401 });
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 401,
+      });
     });
   });
 

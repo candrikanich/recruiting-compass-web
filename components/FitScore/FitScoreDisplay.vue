@@ -40,12 +40,16 @@
       <summary
         class="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 cursor-pointer list-none"
       >
-        <span class="transition-transform group-open:rotate-90 inline-block">▶</span>
+        <span class="transition-transform group-open:rotate-90 inline-block"
+          >▶</span
+        >
         Fit Score Breakdown
       </summary>
 
       <div class="bg-slate-50 rounded-lg p-4 mt-2">
-        <h4 class="font-semibold text-sm text-slate-900 mb-3">Score Breakdown</h4>
+        <h4 class="font-semibold text-sm text-slate-900 mb-3">
+          Score Breakdown
+        </h4>
 
         <div class="space-y-2">
           <div class="flex items-center justify-between">

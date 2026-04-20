@@ -3,7 +3,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const mockState = {
   userId: "user-abc",
   coachId: "coach-xyz",
-  membership: { family_unit_id: "family-123" } as { family_unit_id: string } | null,
+  membership: { family_unit_id: "family-123" } as {
+    family_unit_id: string;
+  } | null,
   profileRow: null as { id: string } | null,
   existingLink: null as Record<string, unknown> | null,
 };
@@ -13,7 +15,12 @@ vi.mock("~/server/utils/auth", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
@@ -45,7 +52,10 @@ vi.mock("~/server/utils/supabase", () => ({
             eq: () => ({
               eq: () => ({
                 maybeSingle: () =>
-                  Promise.resolve({ data: mockState.existingLink, error: null }),
+                  Promise.resolve({
+                    data: mockState.existingLink,
+                    error: null,
+                  }),
               }),
             }),
           }),
@@ -79,19 +89,19 @@ vi.mock("h3", async (importOriginal) => {
     defineEventHandler: (fn: Function) => fn,
     getRouterParam: vi.fn(() => mockState.coachId),
     createError: (cfg: { statusCode: number; statusMessage?: string }) => {
-      const err = new Error(cfg.statusMessage) as Error & { statusCode: number };
+      const err = new Error(cfg.statusMessage) as Error & {
+        statusCode: number;
+      };
       err.statusCode = cfg.statusCode;
       return err;
     },
   };
 });
 
-const { default: getHandler } = await import(
-  "~/server/api/player/profile/tracking-links/[coachId].get"
-);
-const { default: postHandler } = await import(
-  "~/server/api/player/profile/tracking-links/[coachId].post"
-);
+const { default: getHandler } =
+  await import("~/server/api/player/profile/tracking-links/[coachId].get");
+const { default: postHandler } =
+  await import("~/server/api/player/profile/tracking-links/[coachId].post");
 
 describe("Tracking Links API", () => {
   beforeEach(() => {
@@ -141,7 +151,9 @@ describe("Tracking Links API", () => {
 
     it("returns 404 when player has no profile", async () => {
       mockState.profileRow = null;
-      await expect(postHandler({} as any)).rejects.toMatchObject({ statusCode: 404 });
+      await expect(postHandler({} as any)).rejects.toMatchObject({
+        statusCode: 404,
+      });
     });
   });
 });

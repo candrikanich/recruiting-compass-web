@@ -51,7 +51,9 @@ export const useAthleteActivity = (): AthleteActivityState & {
       };
 
       if (linksError) {
-        throw new Error(`Failed to fetch linked accounts: ${linksError.message}`);
+        throw new Error(
+          `Failed to fetch linked accounts: ${linksError.message}`,
+        );
       }
 
       if (!accountLinks || accountLinks.length === 0) {

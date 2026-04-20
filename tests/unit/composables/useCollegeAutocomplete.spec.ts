@@ -79,7 +79,10 @@ describe("useCollegeAutocomplete", () => {
       "school.city": "Gainesville",
       "school.state": "FL",
     };
-    mockFetchAuth.mockResolvedValue({ metadata: { total: 2 }, results: [school, school] });
+    mockFetchAuth.mockResolvedValue({
+      metadata: { total: 2 },
+      results: [school, school],
+    });
     const { searchColleges, results } = useCollegeAutocomplete();
 
     await searchColleges("Florida");
@@ -88,7 +91,9 @@ describe("useCollegeAutocomplete", () => {
   });
 
   it("sets error on rate limit (429)", async () => {
-    mockFetchAuth.mockRejectedValue(Object.assign(new Error("Rate limited"), { statusCode: 429 }));
+    mockFetchAuth.mockRejectedValue(
+      Object.assign(new Error("Rate limited"), { statusCode: 429 }),
+    );
     const { searchColleges, error } = useCollegeAutocomplete();
 
     await searchColleges("Florida");
@@ -97,7 +102,9 @@ describe("useCollegeAutocomplete", () => {
   });
 
   it("sets error on other non-ok responses", async () => {
-    mockFetchAuth.mockRejectedValue(Object.assign(new Error("Bad Gateway"), { statusCode: 502 }));
+    mockFetchAuth.mockRejectedValue(
+      Object.assign(new Error("Bad Gateway"), { statusCode: 502 }),
+    );
     const { searchColleges, error } = useCollegeAutocomplete();
 
     await searchColleges("Florida");
@@ -123,7 +130,12 @@ describe("useCollegeAutocomplete", () => {
     mockFetchAuth.mockResolvedValue({
       metadata: { total: 1 },
       results: [
-        { id: 1, "school.name": "University of Florida", "school.city": "Gainesville", "school.state": "FL" },
+        {
+          id: 1,
+          "school.name": "University of Florida",
+          "school.city": "Gainesville",
+          "school.state": "FL",
+        },
       ],
     });
     await searchColleges("Florida");
@@ -136,7 +148,11 @@ describe("useCollegeAutocomplete", () => {
 
   it("sets loading true during fetch and false after", async () => {
     let resolveFetch!: (value: unknown) => void;
-    mockFetchAuth.mockReturnValue(new Promise((resolve) => { resolveFetch = resolve; }));
+    mockFetchAuth.mockReturnValue(
+      new Promise((resolve) => {
+        resolveFetch = resolve;
+      }),
+    );
     const { searchColleges, loading } = useCollegeAutocomplete();
 
     const fetchPromise = searchColleges("Florida");

@@ -28,7 +28,13 @@ describe("validateDashboardLayout", () => {
 
   it("returns null when leftColumn or rightColumn is missing", () => {
     const incomplete = {
-      statsCards: { coaches: true, schools: true, interactions: true, offers: true, events: true },
+      statsCards: {
+        coaches: true,
+        schools: true,
+        interactions: true,
+        offers: true,
+        events: true,
+      },
       leftColumn: [],
       // missing rightColumn
     };
@@ -37,7 +43,13 @@ describe("validateDashboardLayout", () => {
 
   it("returns a valid DashboardLayout for correct new format", () => {
     const input = {
-      statsCards: { coaches: false, schools: true, interactions: true, offers: true, events: false },
+      statsCards: {
+        coaches: false,
+        schools: true,
+        interactions: true,
+        offers: true,
+        events: false,
+      },
       leftColumn: [{ id: "schoolMapWidget", visible: true }],
       rightColumn: [{ id: "eventsSummary", visible: false }],
     };
@@ -53,7 +65,13 @@ describe("validateDashboardLayout", () => {
 
   it("filters out unknown widget ids from columns", () => {
     const input = {
-      statsCards: { coaches: true, schools: true, interactions: true, offers: true, events: true },
+      statsCards: {
+        coaches: true,
+        schools: true,
+        interactions: true,
+        offers: true,
+        events: true,
+      },
       leftColumn: [
         { id: "schoolMapWidget", visible: true },
         { id: "unknownWidget", visible: true },

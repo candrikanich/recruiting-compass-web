@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
+  >
     <!-- Page Header -->
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
@@ -11,7 +13,9 @@
           Back to Settings
         </NuxtLink>
         <h1 class="text-2xl font-semibold text-slate-900">My Profile</h1>
-        <p class="text-slate-600">Manage your identity, security, and account settings</p>
+        <p class="text-slate-600">
+          Manage your identity, security, and account settings
+        </p>
       </div>
     </div>
 

@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { nextTick } from "vue";
-import { usePageFilters, clearAllFilterCaches } from "~/composables/usePageFilters";
+import {
+  usePageFilters,
+  clearAllFilterCaches,
+} from "~/composables/usePageFilters";
 
 vi.mock("~/utils/logger", () => ({
   createClientLogger: () => ({

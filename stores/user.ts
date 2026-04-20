@@ -62,10 +62,7 @@ export const useUserStore = defineStore("user", () => {
           .maybeSingle();
 
         if (fetchError) {
-          logger.error(
-            "[initializeUser] Unexpected fetch error:",
-            fetchError,
-          );
+          logger.error("[initializeUser] Unexpected fetch error:", fetchError);
         }
 
         if (profile) {
@@ -160,13 +157,19 @@ export const useUserStore = defineStore("user", () => {
       const { error, data: _data } = response;
 
       if (error) {
-        if (error.code === "23505" || (error as { status?: number }).status === 409) {
+        if (
+          error.code === "23505" ||
+          (error as { status?: number }).status === 409
+        ) {
           logger.debug(
             "[createUserProfile] Profile exists (duplicate key), treating as success",
           );
           return true;
         }
-        logger.error("[createUserProfile] Insert failed:", { code: error.code, message: error.message });
+        logger.error("[createUserProfile] Insert failed:", {
+          code: error.code,
+          message: error.message,
+        });
         throw new Error(error.message ?? "Insert failed");
       }
 

@@ -91,7 +91,10 @@ export default defineEventHandler(async (event) => {
   // Authenticate user and get verified user ID
   const { id: userId } = await requireAuth(event);
 
-  const rateLimitResult = await rateLimitByUser(event, userId, { requests: 5, window: "24 h" });
+  const rateLimitResult = await rateLimitByUser(event, userId, {
+    requests: 5,
+    window: "24 h",
+  });
   throwIfRateLimited(rateLimitResult);
 
   // Parse and validate request body

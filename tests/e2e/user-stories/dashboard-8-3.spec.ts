@@ -97,9 +97,7 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
     await refreshButton.click();
 
     // Wait for potential reload
-    await page
-      .waitForLoadState("domcontentloaded")
-      .catch(() => {});
+    await page.waitForLoadState("domcontentloaded").catch(() => {});
 
     // Verify we're still on the page
     expect(page.url()).toContain("/dashboard");
@@ -123,9 +121,7 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
         await firstItem.click();
 
         // Wait for navigation
-        await page
-          .waitForLoadState("domcontentloaded")
-          .catch(() => {});
+        await page.waitForLoadState("domcontentloaded").catch(() => {});
 
         // Should have navigated
         const newUrl = page.url();
@@ -274,7 +270,9 @@ test.describe("Activity History Page", () => {
 });
 
 test.describe("Real-time Activity Updates", () => {
-  test.skip("activity feed updates without manual refresh", async ({ page }) => {
+  test.skip("activity feed updates without manual refresh", async ({
+    page,
+  }) => {
     // TODO: `expect(finalCount).toBeGreaterThanOrEqual(0)` is vacuous (always true).
     // Test doesn't actually verify real-time updates.
     // Navigate to dashboard
@@ -292,9 +290,7 @@ test.describe("Real-time Activity Updates", () => {
     // For now, we just verify the feed exists and can be displayed.
 
     // Wait a bit to see if any updates come in
-    await page
-      .waitForLoadState("domcontentloaded")
-      .catch(() => {});
+    await page.waitForLoadState("domcontentloaded").catch(() => {});
 
     // Should still have the same or more activities
     const finalCount = await activityItems.count();

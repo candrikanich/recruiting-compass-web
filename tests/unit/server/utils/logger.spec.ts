@@ -254,7 +254,10 @@ describe("server/utils/logger", () => {
   describe("useLogger", () => {
     it("should create a logger with event context", () => {
       const mockEvent = {
-        context: { requestId: "test-req-id-12345678", user: { id: "user-abc" } },
+        context: {
+          requestId: "test-req-id-12345678",
+          user: { id: "user-abc" },
+        },
         path: "/api/test",
         method: "GET",
       } as any;
@@ -328,7 +331,10 @@ describe("server/utils/logger", () => {
 
     it("should redact password fields in logged data", () => {
       const logger = createLogger("test");
-      logger.info("User login", { email: "user@example.com", password: "secret123" });
+      logger.info("User login", {
+        email: "user@example.com",
+        password: "secret123",
+      });
 
       expect(consoleLogSpy).toHaveBeenCalled();
       const parsed = JSON.parse(consoleLogSpy.mock.calls[0][0] as string);
@@ -357,7 +363,9 @@ describe("server/utils/logger", () => {
 
     it("should recursively sanitize nested objects", () => {
       const logger = createLogger("test");
-      logger.info("Nested data", { user: { id: "123", token: "secret-token" } });
+      logger.info("Nested data", {
+        user: { id: "123", token: "secret-token" },
+      });
 
       const parsed = JSON.parse(consoleLogSpy.mock.calls[0][0] as string);
       expect(parsed.data.user.token).toBe("[REDACTED]");

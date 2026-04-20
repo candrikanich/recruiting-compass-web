@@ -12,7 +12,9 @@ describe("AppError", () => {
   });
 
   it("accepts optional context object", () => {
-    const err = new AppError(400, "validation", "Invalid input", { field: "email" });
+    const err = new AppError(400, "validation", "Invalid input", {
+      field: "email",
+    });
     expect(err.context).toEqual({ field: "email" });
   });
 

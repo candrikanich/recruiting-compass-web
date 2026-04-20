@@ -26,7 +26,8 @@ export const usePlayerProfileStore = defineStore("playerProfile", () => {
       const data = await $fetchAuth<PlayerProfile>("/api/player/profile");
       profile.value = data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to load profile";
+      const message =
+        err instanceof Error ? err.message : "Failed to load profile";
       logger.error("fetchProfile failed", { message });
       error.value = message;
     } finally {

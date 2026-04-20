@@ -96,8 +96,8 @@ export default defineNuxtConfig({
       crawlLinks: false,
     },
     routeRules: {
-      '/.well-known/apple-app-site-association': {
-        headers: { 'content-type': 'application/json' },
+      "/.well-known/apple-app-site-association": {
+        headers: { "content-type": "application/json" },
       },
     },
   },
@@ -118,8 +118,8 @@ export default defineNuxtConfig({
         process.env.NUXT_PUBLIC_AUTH_ENFORCEMENT_ENABLED === "true",
       sentryDsn: process.env.NUXT_PUBLIC_SENTRY_DSN || "",
       posthogPublicKey: process.env.NUXT_PUBLIC_POSTHOG_PUBLIC_KEY || "",
-      posthogHost: 'https://us.i.posthog.com',
-      posthogDefaults: '2026-01-30'
+      posthogHost: "https://us.i.posthog.com",
+      posthogDefaults: "2026-01-30",
     },
   },
 

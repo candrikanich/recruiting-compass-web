@@ -160,7 +160,10 @@ export const useActivityFeed = () => {
         subject: string | null;
         occurred_at: string | null;
         created_at: string;
-        schools: { id: string; name: string } | { id: string; name: string }[] | null;
+        schools:
+          | { id: string; name: string }
+          | { id: string; name: string }[]
+          | null;
       };
       const interactionsResult = await supabase
         .from("interactions")
@@ -172,8 +175,9 @@ export const useActivityFeed = () => {
         .limit(50);
 
       const interactionsError = interactionsResult.error;
-      const interactionsWithSchools =
-        interactionsResult.data as unknown as InteractionWithSchool[] | null;
+      const interactionsWithSchools = interactionsResult.data as unknown as
+        | InteractionWithSchool[]
+        | null;
 
       if (interactionsError) {
         logger.error("Error fetching interactions:", interactionsError);
@@ -213,18 +217,24 @@ export const useActivityFeed = () => {
         new_status: string;
         notes: string | null;
         changed_at: string;
-        schools: { id: string; name: string } | { id: string; name: string }[] | null;
+        schools:
+          | { id: string; name: string }
+          | { id: string; name: string }[]
+          | null;
       };
       const statusResult = await supabase
         .from("school_status_history")
-        .select("id, school_id, new_status, notes, changed_at, schools(id, name)")
+        .select(
+          "id, school_id, new_status, notes, changed_at, schools(id, name)",
+        )
         .eq("changed_by", session.value!.user!.id)
         .order("changed_at", { ascending: false })
         .limit(50);
 
       const statusError = statusResult.error;
-      const statusChanges =
-        statusResult.data as unknown as StatusChangeWithSchool[] | null;
+      const statusChanges = statusResult.data as unknown as
+        | StatusChangeWithSchool[]
+        | null;
 
       if (statusError) {
         logger.error("Error fetching status changes:", statusError);

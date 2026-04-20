@@ -5,7 +5,10 @@
     <!-- Global Navigation -->
 
     <!-- Page Header -->
-    <PageHeader title="Settings" description="Manage your profile, preferences, and account settings" />
+    <PageHeader
+      title="Settings"
+      description="Manage your profile, preferences, and account settings"
+    />
 
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <!-- Profile Section -->

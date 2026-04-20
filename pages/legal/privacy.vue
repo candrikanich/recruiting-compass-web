@@ -57,7 +57,8 @@
             <li>
               <strong>Registration Information:</strong> Name, email address,
               password (stored as a hashed value — never in plaintext), date of
-              birth (used to verify age eligibility), and role (parent or player)
+              birth (used to verify age eligibility), and role (parent or
+              player)
             </li>
             <li>
               <strong>Profile Information:</strong> Profile photo, graduation
@@ -90,7 +91,8 @@
               is currently in use)
             </li>
             <li>
-              Social Security numbers or government-issued identification numbers
+              Social Security numbers or government-issued identification
+              numbers
             </li>
           </ul>
 
@@ -148,9 +150,7 @@
           <p>
             School and program information displayed in the Service may be
             sourced from the
-            <strong
-              >U.S. Department of Education College Scorecard API</strong
-            >
+            <strong>U.S. Department of Education College Scorecard API</strong>
             and other publicly available sources. We use this data to provide
             reference information about colleges and athletic programs.
           </p>
@@ -226,8 +226,8 @@
             </li>
             <li>
               <strong>Pending invitations:</strong> Invitation email addresses
-              are retained until the invitation is accepted, declined, or expires
-              (invitations expire after 30 days)
+              are retained until the invitation is accepted, declined, or
+              expires (invitations expire after 30 days)
             </li>
             <li>
               <strong>Deleted accounts:</strong> Following an account deletion

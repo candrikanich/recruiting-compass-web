@@ -19,7 +19,9 @@ export default defineEventHandler(async (event) => {
   const authHeader = getHeader(event, "authorization");
   const cronSecretHeader = getHeader(event, "x-cron-secret");
   const cronSecret = process.env.CRON_SECRET;
-  const bearerSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+  const bearerSecret = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : undefined;
 
   const isAuthorized =
     cronSecret &&
@@ -32,7 +34,9 @@ export default defineEventHandler(async (event) => {
 
   const supabase = useSupabaseAdmin();
   const now = new Date().toISOString();
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const sevenDaysAgo = new Date(
+    Date.now() - 7 * 24 * 60 * 60 * 1000,
+  ).toISOString();
 
   // Step 1: Mark pending invites past their expiry as 'expired'
   const { data: expiredRows, error: expireError } = await supabase
@@ -45,7 +49,9 @@ export default defineEventHandler(async (event) => {
   if (expireError) {
     logger.error("Failed to mark expired invites", expireError);
   } else {
-    logger.info("Marked invites as expired", { count: expiredRows?.length ?? 0 });
+    logger.info("Marked invites as expired", {
+      count: expiredRows?.length ?? 0,
+    });
   }
 
   // Step 2: Hard-delete declined invites with 7-day grace period
@@ -59,7 +65,9 @@ export default defineEventHandler(async (event) => {
   if (declineDeleteError) {
     logger.error("Failed to delete declined invites", declineDeleteError);
   } else {
-    logger.info("Deleted declined invites", { count: declinedRows?.length ?? 0 });
+    logger.info("Deleted declined invites", {
+      count: declinedRows?.length ?? 0,
+    });
   }
 
   // Step 3: Hard-delete expired invites older than 7 days
@@ -73,7 +81,9 @@ export default defineEventHandler(async (event) => {
   if (expiredDeleteError) {
     logger.error("Failed to delete expired invites", expiredDeleteError);
   } else {
-    logger.info("Deleted expired invites", { count: expiredDeletedRows?.length ?? 0 });
+    logger.info("Deleted expired invites", {
+      count: expiredDeletedRows?.length ?? 0,
+    });
   }
 
   return {

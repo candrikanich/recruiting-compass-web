@@ -39,13 +39,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Component } from 'vue';
+import type { Component } from "vue";
 
 interface StatTile {
   label: string;
   value: number | string;
   icon?: Component;
-  color?: 'blue' | 'amber' | 'green' | 'purple' | 'slate';
+  color?: "blue" | "amber" | "green" | "purple" | "slate";
   testId?: string;
 }
 
@@ -55,28 +55,28 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  ariaLabel: 'Statistics'
+  ariaLabel: "Statistics",
 });
 
 const getIconClass = (color?: string): string => {
   const colorMap: Record<string, string> = {
-    blue: 'text-blue-600',
-    amber: 'text-amber-600',
-    green: 'text-green-600',
-    purple: 'text-purple-600',
-    slate: 'text-slate-600'
+    blue: "text-blue-600",
+    amber: "text-amber-600",
+    green: "text-green-600",
+    purple: "text-purple-600",
+    slate: "text-slate-600",
   };
-  return colorMap[color || 'blue'] || 'text-blue-600';
+  return colorMap[color || "blue"] || "text-blue-600";
 };
 
 const getIconBgClass = (color?: string): string => {
   const colorMap: Record<string, string> = {
-    blue: 'bg-blue-100',
-    amber: 'bg-amber-100',
-    green: 'bg-green-100',
-    purple: 'bg-purple-100',
-    slate: 'bg-slate-100'
+    blue: "bg-blue-100",
+    amber: "bg-amber-100",
+    green: "bg-green-100",
+    purple: "bg-purple-100",
+    slate: "bg-slate-100",
   };
-  return colorMap[color || 'blue'] || 'bg-blue-100';
+  return colorMap[color || "blue"] || "bg-blue-100";
 };
 </script>

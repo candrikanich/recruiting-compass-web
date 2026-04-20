@@ -10,7 +10,10 @@ export default defineEventHandler(async (event) => {
     const token = getRouterParam(event, "token");
 
     if (!token) {
-      throw createError({ statusCode: 400, statusMessage: "Token is required" });
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Token is required",
+      });
     }
 
     const supabase = useSupabaseAdmin();
@@ -22,15 +25,24 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (!invitation) {
-      throw createError({ statusCode: 404, statusMessage: "Invitation not found" });
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Invitation not found",
+      });
     }
 
     if (invitation.status !== "pending") {
-      throw createError({ statusCode: 409, statusMessage: "Invitation is no longer pending" });
+      throw createError({
+        statusCode: 409,
+        statusMessage: "Invitation is no longer pending",
+      });
     }
 
     if (new Date(invitation.expires_at) < new Date()) {
-      throw createError({ statusCode: 410, statusMessage: "This invitation has expired" });
+      throw createError({
+        statusCode: 410,
+        statusMessage: "This invitation has expired",
+      });
     }
 
     const { error } = await supabase
@@ -40,7 +52,10 @@ export default defineEventHandler(async (event) => {
 
     if (error) {
       logger.error("Failed to decline invitation", error);
-      throw createError({ statusCode: 500, statusMessage: "Failed to decline invitation" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to decline invitation",
+      });
     }
 
     logger.info("Invitation declined", { invitationId: invitation.id });
@@ -48,6 +63,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to decline invitation", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to decline invitation" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to decline invitation",
+    });
   }
 });

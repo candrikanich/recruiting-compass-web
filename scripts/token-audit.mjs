@@ -112,7 +112,12 @@ function collectFiles(dir) {
   try {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, entry.name);
-      if (IGNORE_PATHS.some((p) => full.includes(`/${p}/`) || full.endsWith(`/${p}`))) continue;
+      if (
+        IGNORE_PATHS.some(
+          (p) => full.includes(`/${p}/`) || full.endsWith(`/${p}`),
+        )
+      )
+        continue;
       if (entry.isDirectory()) {
         files.push(...collectFiles(full));
       } else if ([".vue", ".css"].includes(extname(full))) {
@@ -200,7 +205,12 @@ function auditFile(filePath) {
         const val = m[0];
         // Skip fully-transparent rgba which is a common utility
         if (/rgba\s*\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)/.test(val)) continue;
-        addError(startLine + i, val, "style block", "--shadow-card, --shadow-lg, or --border token");
+        addError(
+          startLine + i,
+          val,
+          "style block",
+          "--shadow-card, --shadow-lg, or --border token",
+        );
       }
     });
   }
@@ -224,10 +234,20 @@ function auditFile(filePath) {
         if (!line.includes("style=")) return;
         for (const m of line.matchAll(HEX_RE)) {
           const hex = `#${m[1]}`;
-          addError(startLine + i, hex, "inline style attribute", getSuggestion(hex) ?? "use a CSS variable from theme.css");
+          addError(
+            startLine + i,
+            hex,
+            "inline style attribute",
+            getSuggestion(hex) ?? "use a CSS variable from theme.css",
+          );
         }
         for (const m of line.matchAll(RGBA_RE)) {
-          addError(startLine + i, m[0], "inline style attribute", "--shadow-* or --border token");
+          addError(
+            startLine + i,
+            m[0],
+            "inline style attribute",
+            "--shadow-* or --border token",
+          );
         }
       });
     }
@@ -235,7 +255,12 @@ function auditFile(filePath) {
     // <script> → warnings (Chart.js and canvas configs require raw hex)
     if (script) {
       const startLine = lineNumber(content, script.start);
-      scanForHex(script.text, startLine, false, "<script> (chart/canvas config?)");
+      scanForHex(
+        script.text,
+        startLine,
+        false,
+        "<script> (chart/canvas config?)",
+      );
     }
   } else {
     // Plain CSS — all hardcoded hex is an error
@@ -244,11 +269,21 @@ function auditFile(filePath) {
       if (IGNORE_COMMENT.test(line)) return;
       for (const m of line.matchAll(HEX_RE)) {
         const hex = `#${m[1]}`;
-        addError(i + 1, hex, "CSS file", getSuggestion(hex) ?? "use a CSS variable from theme.css");
+        addError(
+          i + 1,
+          hex,
+          "CSS file",
+          getSuggestion(hex) ?? "use a CSS variable from theme.css",
+        );
       }
       for (const m of line.matchAll(RGBA_RE)) {
         if (/rgba\s*\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)/.test(m[0])) continue;
-        addError(i + 1, m[0], "CSS file", "--shadow-card, --shadow-lg, or --border token");
+        addError(
+          i + 1,
+          m[0],
+          "CSS file",
+          "--shadow-card, --shadow-lg, or --border token",
+        );
       }
     });
   }
@@ -305,20 +340,26 @@ if (!ERRORS_ONLY) {
 }
 console.log(`Errors:               ${totalErrors}`);
 if (!ERRORS_ONLY) {
-  console.log(`Warnings:             ${totalWarnings} (chart/canvas configs — review manually)`);
+  console.log(
+    `Warnings:             ${totalWarnings} (chart/canvas configs — review manually)`,
+  );
 }
 console.log();
 
 if (totalErrors > 0) {
   console.log(
-    `❌ ${totalErrors} error(s) found — hardcoded values in style blocks or inline styles.`
+    `❌ ${totalErrors} error(s) found — hardcoded values in style blocks or inline styles.`,
   );
-  console.log(`   Fix by replacing with CSS variables or Tailwind brand utilities.`);
-  console.log(`   Suppress intentional exceptions with // audit-ignore at end of line.`);
+  console.log(
+    `   Fix by replacing with CSS variables or Tailwind brand utilities.`,
+  );
+  console.log(
+    `   Suppress intentional exceptions with // audit-ignore at end of line.`,
+  );
   process.exit(1);
 } else if (!ERRORS_ONLY && totalWarnings > 0) {
   console.log(
-    `⚠️  ${totalWarnings} warning(s) in script sections — review chart/canvas configs.`
+    `⚠️  ${totalWarnings} warning(s) in script sections — review chart/canvas configs.`,
   );
   process.exit(0);
 } else {

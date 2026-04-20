@@ -22,13 +22,19 @@ export default defineEventHandler(async (event) => {
 
     if (error) {
       logger.error("Failed to fetch deletion status", error);
-      throw createError({ statusCode: 500, statusMessage: "Failed to fetch account status" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to fetch account status",
+      });
     }
 
     return { deletion_requested_at: data?.deletion_requested_at ?? null };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to fetch deletion status", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to fetch account status" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to fetch account status",
+    });
   }
 });

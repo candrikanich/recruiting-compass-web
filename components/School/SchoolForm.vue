@@ -218,21 +218,21 @@ import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 
 // Division options
 const divisionOptions = computed(() => [
-  { value: '', label: 'Select Division' },
-  { value: 'D1', label: 'Division 1 (D1)' },
-  { value: 'D2', label: 'Division 2 (D2)' },
-  { value: 'D3', label: 'Division 3 (D3)' }
-])
+  { value: "", label: "Select Division" },
+  { value: "D1", label: "Division 1 (D1)" },
+  { value: "D2", label: "Division 2 (D2)" },
+  { value: "D3", label: "Division 3 (D3)" },
+]);
 
 // Status options
 const statusOptions = computed(() => [
-  { value: 'researching', label: 'Researching' },
-  { value: 'contacted', label: 'Contacted' },
-  { value: 'interested', label: 'Interested' },
-  { value: 'offer_received', label: 'Offer Received' },
-  { value: 'declined', label: 'Declined' },
-  { value: 'committed', label: 'Committed' }
-])
+  { value: "researching", label: "Researching" },
+  { value: "contacted", label: "Contacted" },
+  { value: "interested", label: "Interested" },
+  { value: "offer_received", label: "Offer Received" },
+  { value: "declined", label: "Declined" },
+  { value: "committed", label: "Committed" },
+]);
 
 const props = defineProps<{
   loading: boolean;
@@ -326,7 +326,8 @@ watch(
   initialAutoFilledFields,
   (newFields) => {
     if (newFields) {
-      formData.name = newFields.name !== undefined ? formData.name : formData.name;
+      formData.name =
+        newFields.name !== undefined ? formData.name : formData.name;
       Object.assign(autoFilledFields, {
         name: newFields.name ?? autoFilledFields.name,
         location: newFields.location ?? autoFilledFields.location,
@@ -338,7 +339,11 @@ watch(
 
       // When the parent fully resets (name goes false with no other fields true),
       // that signals selection was cleared — reset division/conference indicators too.
-      if (newFields.name === false && !newFields.location && !newFields.website) {
+      if (
+        newFields.name === false &&
+        !newFields.location &&
+        !newFields.website
+      ) {
         autoFilledFields.division = false;
         autoFilledFields.conference = false;
       }
@@ -447,7 +452,9 @@ const handleCollegeSelect = async (college: CollegeSearchResult) => {
   // Perform NCAA lookup directly so division/conference are set before notifying the parent.
   // This avoids a flash where the parent's async lookup triggers an empty-division prop update
   // that would overwrite the already-populated value (see watch logic below).
-  const ncaaResult = await lookupSchool(college.name, college.id).catch(() => null);
+  const ncaaResult = await lookupSchool(college.name, college.id).catch(
+    () => null,
+  );
   if (myGeneration !== lookupGeneration) return; // stale — a newer selection happened
   if (ncaaResult) {
     formData.division = ncaaResult.division;

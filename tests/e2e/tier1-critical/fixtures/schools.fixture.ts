@@ -72,17 +72,25 @@ export const generateUniqueSchoolName = (prefix: string): string => {
 
 export const schoolSelectors = {
   // List page
-  addSchoolButton: ':is(button, a):has-text("Add School"), button[aria-label*="Add"], a[href="/schools/new"]',
+  addSchoolButton:
+    ':is(button, a):has-text("Add School"), button[aria-label*="Add"], a[href="/schools/new"]',
   // Form mode toggle
-  searchCollegeCheckbox: 'input[type="checkbox"]:near(:text("Search college database"))',
+  searchCollegeCheckbox:
+    'input[type="checkbox"]:near(:text("Search college database"))',
   // Form fields (manual entry mode — after unchecking "Search college database")
-  nameInput: 'input[placeholder*="University of Florida"], input[aria-label*="School Name"], input[placeholder*="School Name"]',
-  locationInput: 'input[placeholder*="Gainesville"], input[placeholder*="Location"], input[aria-label*="Location"]',
-  divisionSelect: 'select[aria-label*="Division"], select:near(:text("Division")), [data-testid="division-select"]',
+  nameInput:
+    'input[placeholder*="University of Florida"], input[aria-label*="School Name"], input[placeholder*="School Name"]',
+  locationInput:
+    'input[placeholder*="Gainesville"], input[placeholder*="Location"], input[aria-label*="Location"]',
+  divisionSelect:
+    'select[aria-label*="Division"], select:near(:text("Division")), [data-testid="division-select"]',
   statusSelect: 'select[aria-label*="Status"], [data-testid="status-select"]',
-  websiteInput: 'input[placeholder*="example.com"], input[placeholder*="Website"], input[aria-label*="Website"]',
-  twitterInput: 'input[placeholder*="@handle"]:first-of-type, input[placeholder*="Twitter"], input[aria-label*="Twitter"]',
-  instagramInput: 'input[placeholder*="@handle"]:last-of-type, input[placeholder*="Instagram"], input[aria-label*="Instagram"]',
+  websiteInput:
+    'input[placeholder*="example.com"], input[placeholder*="Website"], input[aria-label*="Website"]',
+  twitterInput:
+    'input[placeholder*="@handle"]:first-of-type, input[placeholder*="Twitter"], input[aria-label*="Twitter"]',
+  instagramInput:
+    'input[placeholder*="@handle"]:last-of-type, input[placeholder*="Instagram"], input[aria-label*="Instagram"]',
   // Buttons
   createButton:
     'button:has-text("Add School"), button:has-text("Create"), button[type="submit"]',
@@ -132,9 +140,9 @@ export const schoolHelpers = {
     }
 
     if (data.location) {
-      const locationField = page.getByLabel("Location", { exact: false }).or(
-        page.getByPlaceholder(/Gainesville|Location/i),
-      );
+      const locationField = page
+        .getByLabel("Location", { exact: false })
+        .or(page.getByPlaceholder(/Gainesville|Location/i));
       await locationField.first().fill(data.location);
     }
 
@@ -155,18 +163,22 @@ export const schoolHelpers = {
     }
 
     if (data.website) {
-      const websiteField = page.getByLabel("School Website", { exact: false }).or(
-        page.getByPlaceholder(/example\.com|Website/i),
-      );
+      const websiteField = page
+        .getByLabel("School Website", { exact: false })
+        .or(page.getByPlaceholder(/example\.com|Website/i));
       await websiteField.first().fill(data.website);
     }
 
     if (data.twitter_handle) {
-      await page.getByLabel("Twitter Handle", { exact: false }).fill(data.twitter_handle);
+      await page
+        .getByLabel("Twitter Handle", { exact: false })
+        .fill(data.twitter_handle);
     }
 
     if (data.instagram_handle) {
-      await page.getByLabel("Instagram Handle", { exact: false }).fill(data.instagram_handle);
+      await page
+        .getByLabel("Instagram Handle", { exact: false })
+        .fill(data.instagram_handle);
     }
   },
 
@@ -183,7 +195,9 @@ export const schoolHelpers = {
     if (isChecked) {
       await searchCheckbox.uncheck();
       // Wait for form to switch to text input mode
-      await page.locator(schoolSelectors.nameInput).waitFor({ state: "visible" });
+      await page
+        .locator(schoolSelectors.nameInput)
+        .waitFor({ state: "visible" });
     }
 
     await schoolHelpers.fillSchoolForm(page, data);
