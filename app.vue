@@ -16,6 +16,7 @@
         @stay-logged-in="dismissWarning"
         @logout-now="handleTimeout"
       />
+      <SpeedInsights />
     </template>
   </div>
 </template>
@@ -26,6 +27,7 @@ import { useSessionTimeout } from "~/composables/useSessionTimeout";
 import { useUserStore } from "~/stores/user";
 import { useActiveFamily } from "~/composables/useActiveFamily";
 import SessionTimeoutWarning from "~/components/Auth/SessionTimeoutWarning.vue";
+import { SpeedInsights } from "@vercel/speed-insights/vue";
 import { createClientLogger } from "~/utils/logger";
 const logger = createClientLogger("app");
 
