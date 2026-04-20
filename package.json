@@ -88,7 +88,7 @@
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.32.0",
-    "happy-dom": "^20.8.9",
+    "happy-dom": "^20.9.0",
     "pa11y-ci": "^4.1.0",
     "prettier": "^3.8.2",
     "supabase": "^2.84.5",
