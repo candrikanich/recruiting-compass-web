@@ -67,14 +67,16 @@ export function useRecommendationLetters() {
     try {
       if (existingId) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: updateError } = await (supabase.from("recommendation_letters") as any)
+        const table = supabase.from("recommendation_letters") as any;
+        const { error: updateError } = await table
           .update(formData)
           .eq("id", existingId)
           .eq("user_id", userStore.user.id);
         if (updateError) throw updateError;
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: insertError } = await (supabase.from("recommendation_letters") as any)
+        const table = supabase.from("recommendation_letters") as any;
+        const { error: insertError } = await table
           .insert([{ ...formData, user_id: userStore.user.id }])
           .select();
         if (insertError) throw insertError;

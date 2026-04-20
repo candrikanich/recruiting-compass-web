@@ -66,7 +66,10 @@ export default defineEventHandler(async (event) => {
   if (!body.confirmed) {
     const searchName = (body as EnrichSearchBody).schoolName || schoolName;
     if (!searchName) {
-      throw createError({ statusCode: 400, statusMessage: "School name required" });
+      throw createError({
+        statusCode: 400,
+        statusMessage: "School name required",
+      });
     }
 
     logger.info("Searching College Scorecard", { schoolName: searchName });
@@ -123,10 +126,14 @@ export default defineEventHandler(async (event) => {
 
     const mergedInfo: SchoolAcademicInfo = { ...existingInfo, ...enrichedData };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const academicInfo = mergedInfo as any;
     const { error: updateError } = await supabase
       .from("schools")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .update({ academic_info: mergedInfo as any, updated_at: new Date().toISOString() })
+      .update({
+        academic_info: academicInfo,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", schoolId);
 
     if (updateError) {
@@ -137,7 +144,10 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    logger.info("School enriched with Scorecard data", { schoolId, scorecardId });
+    logger.info("School enriched with Scorecard data", {
+      schoolId,
+      scorecardId,
+    });
 
     return {
       success: true,

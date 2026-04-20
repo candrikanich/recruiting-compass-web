@@ -149,7 +149,10 @@ export const useSchoolStore = defineStore("schools", () => {
   /**
    * Get a single school by ID
    */
-  async function getSchool(id: string, familyId: string): Promise<School | null> {
+  async function getSchool(
+    id: string,
+    familyId: string,
+  ): Promise<School | null> {
     const userStore = useUserStore();
     const supabase = useSupabase();
 
@@ -237,7 +240,11 @@ export const useSchoolStore = defineStore("schools", () => {
   /**
    * Update an existing school
    */
-  async function updateSchool(id: string, updates: Partial<School>, familyId: string) {
+  async function updateSchool(
+    id: string,
+    updates: Partial<School>,
+    familyId: string,
+  ) {
     const userStore = useUserStore();
     const supabase = useSupabase();
 
@@ -334,7 +341,11 @@ export const useSchoolStore = defineStore("schools", () => {
   /**
    * Toggle favorite status of a school
    */
-  async function toggleFavorite(id: string, isFavorite: boolean, familyId: string) {
+  async function toggleFavorite(
+    id: string,
+    isFavorite: boolean,
+    familyId: string,
+  ) {
     return updateSchool(id, { is_favorite: !isFavorite }, familyId);
   }
 
@@ -365,7 +376,8 @@ export const useSchoolStore = defineStore("schools", () => {
 
       // Fetch current status from DB to avoid stale-cache history corruption
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: currentSchool, error: selectError } = await (supabase as any)
+      const supabaseAny = supabase as any;
+      const { data: currentSchool, error: selectError } = await supabaseAny
         .from("schools")
         .select("status")
         .eq("id", schoolId)
@@ -386,8 +398,7 @@ export const useSchoolStore = defineStore("schools", () => {
         updated_at: now,
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: updatedSchool, error: schoolError } = await (supabase as any)
+      const { data: updatedSchool, error: schoolError } = await supabaseAny
         .from("schools")
         .update(schoolUpdateData)
         .eq("id", schoolId)
