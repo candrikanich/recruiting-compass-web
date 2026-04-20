@@ -126,11 +126,12 @@ export default defineEventHandler(async (event) => {
 
     const mergedInfo: SchoolAcademicInfo = { ...existingInfo, ...enrichedData };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const academicInfo = mergedInfo as any;
     const { error: updateError } = await supabase
       .from("schools")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .update({
-        academic_info: mergedInfo as any,
+        academic_info: academicInfo,
         updated_at: new Date().toISOString(),
       })
       .eq("id", schoolId);
