@@ -28,7 +28,10 @@ export default defineEventHandler(
   async (event): Promise<RequestPasswordResetResponse> => {
     const logger = useLogger(event, "auth/request-password-reset");
 
-    const rateLimitResult = await rateLimitByIp(event, { requests: 5, window: "1 h" });
+    const rateLimitResult = await rateLimitByIp(event, {
+      requests: 5,
+      window: "1 h",
+    });
     throwIfRateLimited(rateLimitResult);
 
     try {

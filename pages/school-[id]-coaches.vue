@@ -351,8 +351,6 @@ import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import { getRoleLabel } from "~/utils/coachLabels";
 
-
-
 const route = useRoute();
 const id = route.params.id as string;
 

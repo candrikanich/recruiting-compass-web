@@ -123,7 +123,12 @@ import {
 const userStore = useUserStore();
 const { schools: schoolsData } = useSchools();
 const { coaches: coachesData } = useCoaches();
-const { linkedAthletes: activityLinkedAthletes, recentInteractions: activityRecentInteractions, loading: activityLoading, fetchAthleteActivity } = useAthleteActivity();
+const {
+  linkedAthletes: activityLinkedAthletes,
+  recentInteractions: activityRecentInteractions,
+  loading: activityLoading,
+  fetchAthleteActivity,
+} = useAthleteActivity();
 
 const linkedAthletes = computed(() => activityLinkedAthletes.value);
 const recentInteractions = computed(() => activityRecentInteractions.value);

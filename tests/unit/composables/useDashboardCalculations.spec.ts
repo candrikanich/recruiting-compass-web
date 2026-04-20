@@ -101,7 +101,6 @@ describe("useDashboardCalculations", () => {
     expect(acceptedOffers.value).toBe(2);
   });
 
-
   it("should get upcoming events sorted by date", () => {
     const now = new Date();
     const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);

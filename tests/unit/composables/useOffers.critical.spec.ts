@@ -106,7 +106,10 @@ describe("useOffers - Critical Offer Creation Flow", () => {
         scholarship_amount: 25000,
       };
 
-      const createdOffer = createMockOffer({ ...offerData, scholarship_percentage: 50 });
+      const createdOffer = createMockOffer({
+        ...offerData,
+        scholarship_percentage: 50,
+      });
       mockQuery.single.mockResolvedValue({ data: createdOffer, error: null });
 
       const { createOffer } = useOffers();
@@ -123,7 +126,10 @@ describe("useOffers - Critical Offer Creation Flow", () => {
         offer_date: "2025-01-15",
       };
 
-      const createdOffer = createMockOffer({ ...offerData, scholarship_percentage: 0 });
+      const createdOffer = createMockOffer({
+        ...offerData,
+        scholarship_percentage: 0,
+      });
       mockQuery.single.mockResolvedValue({ data: createdOffer, error: null });
 
       const { createOffer } = useOffers();
@@ -223,7 +229,11 @@ describe("useOffers - Critical Offer Creation Flow", () => {
       const { createOffer } = useOffers();
 
       await expect(
-        createOffer({ school_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", offer_type: "full_ride" as const, offer_date: "2025-01-15" }),
+        createOffer({
+          school_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+          offer_type: "full_ride" as const,
+          offer_date: "2025-01-15",
+        }),
       ).rejects.toThrow("Insert failed");
     });
   });

@@ -61,7 +61,9 @@
         <div class="lg:col-span-4 space-y-6">
           <!-- Action Items — always visible -->
           <section aria-labelledby="suggestions-heading">
-            <h2 id="suggestions-heading" class="sr-only">Recommended Actions</h2>
+            <h2 id="suggestions-heading" class="sr-only">
+              Recommended Actions
+            </h2>
             <DashboardSuggestions
               :suggestions="dashboardSuggestions || []"
               :is-viewing-as-parent="isViewingAsParent || false"
@@ -159,13 +161,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  watch,
-  computed,
-  defineAsyncComponent,
-  onMounted,
-} from "vue";
+import { ref, watch, computed, defineAsyncComponent, onMounted } from "vue";
 import type { Component } from "vue";
 import { useRouter } from "vue-router";
 import { createClientLogger } from "~/utils/logger";
@@ -336,7 +332,10 @@ const widgetPropsMap = computed(
       interactions: allInteractions.value,
       offers: allOffers.value,
     },
-    schoolStatusOverview: { breakdown: schoolSizeBreakdown.value, count: schoolCount.value },
+    schoolStatusOverview: {
+      breakdown: schoolSizeBreakdown.value,
+      count: schoolCount.value,
+    },
     eventsSummary: { events: upcomingEvents.value, showEvents: true },
     recentNotifications: {},
     linkedAccounts: { showSocial: true },
@@ -391,9 +390,13 @@ const targetUserId = computed(() => {
 
 // Get active athlete name for parent context banner
 const activeAthleteName = computed(() => {
-  return activeFamily.parentAccessibleFamilies.value.find(
-    (f) => f.athleteId !== null && f.athleteId === activeFamily.activeAthleteId.value,
-  )?.athleteName ?? undefined;
+  return (
+    activeFamily.parentAccessibleFamilies.value.find(
+      (f) =>
+        f.athleteId !== null &&
+        f.athleteId === activeFamily.activeAthleteId.value,
+    )?.athleteName ?? undefined
+  );
 });
 
 // User first name for greeting

@@ -86,9 +86,15 @@ export class SchoolsPage extends BasePage {
       )
       .first();
     await searchInput.fill(query);
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
       .catch((err: Error) => {
-        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        if (
+          !err.message.includes("not found") &&
+          !err.message.includes("strict mode")
+        )
+          throw err;
       });
   }
 
@@ -99,7 +105,9 @@ export class SchoolsPage extends BasePage {
       .first();
     if (await filterButton.isVisible()) {
       await filterButton.click();
-      await this.page.locator('select:has-text("Division"), select[name*="division"]').waitFor({ state: "visible" });
+      await this.page
+        .locator('select:has-text("Division"), select[name*="division"]')
+        .waitFor({ state: "visible" });
     }
     // Look for division select
     await this.selectOption(
@@ -113,7 +121,9 @@ export class SchoolsPage extends BasePage {
   }
 
   async filterByConference(_conference: string) {
-    throw new Error("filterByConference: filter UI not yet implemented in the app");
+    throw new Error(
+      "filterByConference: filter UI not yet implemented in the app",
+    );
   }
 
   async filterByMultipleCriteria(filters: any) {
@@ -162,9 +172,15 @@ export class SchoolsPage extends BasePage {
         .first();
       await searchInput.fill("");
     }
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
       .catch((err: Error) => {
-        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        if (
+          !err.message.includes("not found") &&
+          !err.message.includes("strict mode")
+        )
+          throw err;
       });
   }
 
@@ -178,9 +194,15 @@ export class SchoolsPage extends BasePage {
 
   async clearAllFilters() {
     await this.click('button:has-text("Clear"), button:has-text("Reset")');
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" })
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
       .catch((err: Error) => {
-        if (!err.message.includes("not found") && !err.message.includes("strict mode")) throw err;
+        if (
+          !err.message.includes("not found") &&
+          !err.message.includes("strict mode")
+        )
+          throw err;
       });
   }
 }

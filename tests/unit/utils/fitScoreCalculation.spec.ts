@@ -408,7 +408,10 @@ describe("fitScoreCalculation", () => {
         );
         expect(result.signals.sat.strength).toBe("unknown");
         expect(result.signals.sat.athleteValue).toBeNull();
-        expect(result.signals.sat.schoolRange).toEqual({ low: 1200, high: 1450 });
+        expect(result.signals.sat.schoolRange).toEqual({
+          low: 1200,
+          high: 1450,
+        });
       });
 
       it("unknown when school has no SAT data", () => {
@@ -423,7 +426,10 @@ describe("fitScoreCalculation", () => {
           { sat_25th: 1200, sat_75th: 1450 },
         );
         expect(result.signals.sat.athleteValue).toBe(1300);
-        expect(result.signals.sat.schoolRange).toEqual({ low: 1200, high: 1450 });
+        expect(result.signals.sat.schoolRange).toEqual({
+          low: 1200,
+          high: 1450,
+        });
       });
     });
 

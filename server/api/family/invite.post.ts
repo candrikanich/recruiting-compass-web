@@ -17,7 +17,10 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/invite");
   try {
     const { id: userId } = await requireAuth(event);
-    const rateLimitResult = await rateLimitByUser(event, userId, { requests: 10, window: "1 h" });
+    const rateLimitResult = await rateLimitByUser(event, userId, {
+      requests: 10,
+      window: "1 h",
+    });
     throwIfRateLimited(rateLimitResult);
 
     const user = { id: userId };
@@ -26,7 +29,8 @@ export default defineEventHandler(async (event) => {
     if (!parseResult.success) {
       throw createError({
         statusCode: 400,
-        statusMessage: parseResult.error.issues[0]?.message ?? "Invalid request body",
+        statusMessage:
+          parseResult.error.issues[0]?.message ?? "Invalid request body",
       });
     }
     const { email, role } = parseResult.data;
@@ -75,7 +79,11 @@ export default defineEventHandler(async (event) => {
     // Get inviter name and family name for the email (parallel)
     const [{ data: inviterProfile }, { data: family }] = await Promise.all([
       supabase.from("users").select("full_name").eq("id", user.id).single(),
-      supabase.from("family_units").select("family_name").eq("id", familyUnitId).single(),
+      supabase
+        .from("family_units")
+        .select("family_name")
+        .eq("id", familyUnitId)
+        .single(),
     ]);
 
     const token = randomUUID();
@@ -94,7 +102,10 @@ export default defineEventHandler(async (event) => {
 
     if (error) {
       logger.error("Failed to create invitation", error);
-      throw createError({ statusCode: 500, statusMessage: "Failed to create invitation" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to create invitation",
+      });
     }
 
     // Send invite email (non-blocking — don't fail if email fails)
@@ -107,17 +118,30 @@ export default defineEventHandler(async (event) => {
         token,
       });
       if (!emailResult.success) {
-        logger.warn("Failed to send invite email — invitation created but email not sent", { error: emailResult.error });
+        logger.warn(
+          "Failed to send invite email — invitation created but email not sent",
+          { error: emailResult.error },
+        );
       }
     } catch (err) {
-      logger.warn("Failed to send invite email — invitation created but email not sent", err);
+      logger.warn(
+        "Failed to send invite email — invitation created but email not sent",
+        err,
+      );
     }
 
-    logger.info("Invitation created", { invitationId: invitation.id, role, familyUnitId });
+    logger.info("Invitation created", {
+      invitationId: invitation.id,
+      role,
+      familyUnitId,
+    });
     return { success: true, invitationId: invitation.id };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to create invitation", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to create invitation" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to create invitation",
+    });
   }
 });

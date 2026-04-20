@@ -31,10 +31,16 @@ export default defineEventHandler(async (event) => {
 
     if (membershipError) {
       logger.error("Failed to query family membership", membershipError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to create tracking link" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to create tracking link",
+      });
     }
     if (!membership) {
-      throw createError({ statusCode: 403, statusMessage: "Not a family member" });
+      throw createError({
+        statusCode: 403,
+        statusMessage: "Not a family member",
+      });
     }
 
     const { data: profile } = await supabase
@@ -44,7 +50,10 @@ export default defineEventHandler(async (event) => {
       .maybeSingle();
 
     if (!profile) {
-      throw createError({ statusCode: 404, statusMessage: "No profile found — publish one first" });
+      throw createError({
+        statusCode: 404,
+        statusMessage: "No profile found — publish one first",
+      });
     }
 
     const { data: existing } = await supabase
@@ -61,7 +70,11 @@ export default defineEventHandler(async (event) => {
 
     const { data: created, error } = await supabase
       .from("profile_tracking_links")
-      .insert({ profile_id: profile.id, coach_id: coachId, ref_token: generateRefToken() })
+      .insert({
+        profile_id: profile.id,
+        coach_id: coachId,
+        ref_token: generateRefToken(),
+      })
       .select()
       .single();
 
@@ -75,14 +88,25 @@ export default defineEventHandler(async (event) => {
           .eq("coach_id", coachId)
           .maybeSingle();
         if (refetchError || !raced) {
-          logger.error("Failed to re-fetch tracking link after 23505", refetchError ?? error);
-          throw createError({ statusCode: 500, statusMessage: "Failed to create tracking link" });
+          logger.error(
+            "Failed to re-fetch tracking link after 23505",
+            refetchError ?? error,
+          );
+          throw createError({
+            statusCode: 500,
+            statusMessage: "Failed to create tracking link",
+          });
         }
-        logger.debug("Returning concurrently-created tracking link", { coachId });
+        logger.debug("Returning concurrently-created tracking link", {
+          coachId,
+        });
         return raced;
       }
       logger.error("Failed to create tracking link", error);
-      throw createError({ statusCode: 500, statusMessage: "Failed to create tracking link" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to create tracking link",
+      });
     }
 
     logger.info("Tracking link created", { coachId });
@@ -90,6 +114,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to create tracking link", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to create tracking link" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to create tracking link",
+    });
   }
 });

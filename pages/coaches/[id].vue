@@ -152,12 +152,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  computed,
-  reactive,
-  onMounted,
-} from "vue";
+import { ref, computed, reactive, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";

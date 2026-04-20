@@ -37,8 +37,14 @@ vi.mock("h3", async (importOriginal) => {
     readBody: vi.fn().mockResolvedValue({ confirmDelete: true }),
     getHeader: vi.fn().mockReturnValue("Bearer test-token"),
     getCookie: vi.fn().mockReturnValue(undefined),
-    createError: (opts: { statusCode: number; statusMessage?: string; message?: string }) => {
-      const err = new Error(opts.statusMessage ?? opts.message) as Error & { statusCode: number };
+    createError: (opts: {
+      statusCode: number;
+      statusMessage?: string;
+      message?: string;
+    }) => {
+      const err = new Error(opts.statusMessage ?? opts.message) as Error & {
+        statusCode: number;
+      };
       err.statusCode = opts.statusCode;
       return err;
     },
@@ -48,9 +54,8 @@ vi.mock("h3", async (importOriginal) => {
 import { requireAuth } from "~/server/utils/auth";
 import * as h3Module from "h3";
 
-const { default: handler } = await import(
-  "~/server/api/interactions/[id]/cascade-delete.post"
-);
+const { default: handler } =
+  await import("~/server/api/interactions/[id]/cascade-delete.post");
 
 const mockEvent = {
   context: { params: { id: TEST_UUID } },
@@ -73,7 +78,7 @@ describe("POST /api/interactions/[id]/cascade-delete", () => {
   it("returns success:true with deleted counts when all deletes succeed", async () => {
     // follow_up_reminders: 2 deleted, interactions: 1 deleted
     mockDeleteEq
-      .mockResolvedValueOnce({ count: 2, error: null })  // follow_up_reminders
+      .mockResolvedValueOnce({ count: 2, error: null }) // follow_up_reminders
       .mockResolvedValueOnce({ count: 1, error: null }); // interactions
 
     const result = await handler(mockEvent);
@@ -91,7 +96,7 @@ describe("POST /api/interactions/[id]/cascade-delete", () => {
 
   it("returns success:true with empty deleted when no related records exist", async () => {
     mockDeleteEq
-      .mockResolvedValueOnce({ count: 0, error: null })  // follow_up_reminders (falsy → not recorded)
+      .mockResolvedValueOnce({ count: 0, error: null }) // follow_up_reminders (falsy → not recorded)
       .mockResolvedValueOnce({ count: 0, error: null }); // interactions (falsy → not recorded)
 
     const result = await handler(mockEvent);
@@ -116,7 +121,11 @@ describe("POST /api/interactions/[id]/cascade-delete", () => {
     await handler(mockEvent);
 
     // First delete: follow_up_reminders filtered by interaction_id
-    expect(mockDeleteEq).toHaveBeenNthCalledWith(1, "interaction_id", TEST_UUID);
+    expect(mockDeleteEq).toHaveBeenNthCalledWith(
+      1,
+      "interaction_id",
+      TEST_UUID,
+    );
   });
 
   it("passes the interaction UUID to eq filter for interactions", async () => {

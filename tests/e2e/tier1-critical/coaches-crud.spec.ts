@@ -33,7 +33,7 @@ test.describe("Coaches CRUD Operations", () => {
       const schoolData = createSchoolData({ name: schoolName });
       schoolId = await schoolHelpers.createSchool(page, schoolData);
     } catch (err) {
-      console.warn('⚠️  beforeAll setup failed:', err);
+      console.warn("⚠️  beforeAll setup failed:", err);
     } finally {
       await ctx?.close().catch(() => {});
     }

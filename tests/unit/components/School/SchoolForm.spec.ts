@@ -113,32 +113,64 @@ describe("SchoolForm", () => {
           FormErrorSummary: true,
           DesignSystemFieldError: true,
           DesignSystemFormInput: {
-            template: '<div><label :for="getFieldId(label)">{{ label }}<span v-if="autoFilled"> (auto-filled)</span></label><input :id="getFieldId(label)" v-model="modelValue" :type="type || \'text\'" :disabled="disabled" :required="required" :placeholder="placeholder" @blur="$emit(\'blur\')" /></div>',
-            props: ['modelValue', 'label', 'type', 'disabled', 'required', 'placeholder', 'error', 'autoFilled'],
-            emits: ['update:modelValue', 'blur'],
+            template:
+              '<div><label :for="getFieldId(label)">{{ label }}<span v-if="autoFilled"> (auto-filled)</span></label><input :id="getFieldId(label)" v-model="modelValue" :type="type || \'text\'" :disabled="disabled" :required="required" :placeholder="placeholder" @blur="$emit(\'blur\')" /></div>',
+            props: [
+              "modelValue",
+              "label",
+              "type",
+              "disabled",
+              "required",
+              "placeholder",
+              "error",
+              "autoFilled",
+            ],
+            emits: ["update:modelValue", "blur"],
             setup(props: any) {
-              const getFieldId = (label: string) => label.toLowerCase().replace(/\s+/g, '').replace(/\W/g, '')
-              return { getFieldId }
-            }
+              const getFieldId = (label: string) =>
+                label.toLowerCase().replace(/\s+/g, "").replace(/\W/g, "");
+              return { getFieldId };
+            },
           },
           DesignSystemFormSelect: {
-            template: '<div><label :for="getFieldId(label)">{{ label }}<span v-if="autoFilled"> (auto-filled)</span></label><select :id="getFieldId(label)" v-model="modelValue" :disabled="disabled" :required="required" @blur="$emit(\'blur\')"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select></div>',
-            props: ['modelValue', 'label', 'disabled', 'required', 'options', 'error', 'autoFilled'],
-            emits: ['update:modelValue', 'blur'],
+            template:
+              '<div><label :for="getFieldId(label)">{{ label }}<span v-if="autoFilled"> (auto-filled)</span></label><select :id="getFieldId(label)" v-model="modelValue" :disabled="disabled" :required="required" @blur="$emit(\'blur\')"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select></div>',
+            props: [
+              "modelValue",
+              "label",
+              "disabled",
+              "required",
+              "options",
+              "error",
+              "autoFilled",
+            ],
+            emits: ["update:modelValue", "blur"],
             setup(props: any) {
-              const getFieldId = (label: string) => label ? label.toLowerCase().replace(/\s+/g, '').replace(/\W/g, '') : 'select'
-              return { getFieldId }
-            }
+              const getFieldId = (label: string) =>
+                label
+                  ? label.toLowerCase().replace(/\s+/g, "").replace(/\W/g, "")
+                  : "select";
+              return { getFieldId };
+            },
           },
           DesignSystemFormTextarea: {
-            template: '<textarea :id="getFieldId(label)" v-model="modelValue" :disabled="disabled" :rows="rows" :placeholder="placeholder" @blur="$emit(\'blur\')"></textarea>',
-            props: ['modelValue', 'label', 'disabled', 'rows', 'placeholder', 'error'],
-            emits: ['update:modelValue', 'blur'],
+            template:
+              '<textarea :id="getFieldId(label)" v-model="modelValue" :disabled="disabled" :rows="rows" :placeholder="placeholder" @blur="$emit(\'blur\')"></textarea>',
+            props: [
+              "modelValue",
+              "label",
+              "disabled",
+              "rows",
+              "placeholder",
+              "error",
+            ],
+            emits: ["update:modelValue", "blur"],
             setup(props: any) {
-              const getFieldId = (label: string) => label.toLowerCase().replace(/\s+/g, '').replace(/\W/g, '')
-              return { getFieldId }
-            }
-          }
+              const getFieldId = (label: string) =>
+                label.toLowerCase().replace(/\s+/g, "").replace(/\W/g, "");
+              return { getFieldId };
+            },
+          },
         },
       },
     });
@@ -432,9 +464,9 @@ describe("SchoolForm", () => {
         },
       });
 
-      expect((wrapper.find("#schoolname").element as HTMLInputElement).value).toBe(
-        "Pre-filled School",
-      );
+      expect(
+        (wrapper.find("#schoolname").element as HTMLInputElement).value,
+      ).toBe("Pre-filled School");
       expect(
         (wrapper.find("#location").element as HTMLInputElement).value,
       ).toBe("Tampa, FL");
@@ -448,9 +480,9 @@ describe("SchoolForm", () => {
 
     it("defaults status to researching when not specified", () => {
       const wrapper = mountForm();
-      expect((wrapper.find("#initialstatus").element as HTMLSelectElement).value).toBe(
-        "researching",
-      );
+      expect(
+        (wrapper.find("#initialstatus").element as HTMLSelectElement).value,
+      ).toBe("researching");
     });
   });
 
@@ -492,7 +524,9 @@ describe("SchoolForm", () => {
       mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
       const wrapper = mountForm({ useAutocomplete: true });
 
-      await wrapper.findComponent(SchoolAutocompleteMock).vm.$emit("select", college);
+      await wrapper
+        .findComponent(SchoolAutocompleteMock)
+        .vm.$emit("select", college);
       await flushPromises();
 
       expect(mockLookupSchool).toHaveBeenCalledWith(college.name, college.id);
@@ -502,32 +536,46 @@ describe("SchoolForm", () => {
       mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
       const wrapper = mountForm({ useAutocomplete: true });
 
-      await wrapper.findComponent(SchoolAutocompleteMock).vm.$emit("select", college);
+      await wrapper
+        .findComponent(SchoolAutocompleteMock)
+        .vm.$emit("select", college);
       await flushPromises();
 
-      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D1");
-      expect((wrapper.find("#conference").element as HTMLInputElement).value).toBe("SEC");
+      expect(
+        (wrapper.find("#division").element as HTMLSelectElement).value,
+      ).toBe("D1");
+      expect(
+        (wrapper.find("#conference").element as HTMLInputElement).value,
+      ).toBe("SEC");
     });
 
     it("leaves division and conference empty when NCAA lookup returns null", async () => {
       mockLookupSchool.mockResolvedValue(null);
       const wrapper = mountForm({ useAutocomplete: true });
 
-      await wrapper.findComponent(SchoolAutocompleteMock).vm.$emit("select", college);
+      await wrapper
+        .findComponent(SchoolAutocompleteMock)
+        .vm.$emit("select", college);
       await flushPromises();
 
-      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("");
+      expect(
+        (wrapper.find("#division").element as HTMLSelectElement).value,
+      ).toBe("");
     });
 
     it("emits collegeSelect to parent after the NCAA lookup completes", async () => {
       mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
       const wrapper = mountForm({ useAutocomplete: true });
 
-      await wrapper.findComponent(SchoolAutocompleteMock).vm.$emit("select", college);
+      await wrapper
+        .findComponent(SchoolAutocompleteMock)
+        .vm.$emit("select", college);
       await flushPromises();
 
       expect(wrapper.emitted("collegeSelect")).toBeTruthy();
-      expect(wrapper.emitted("collegeSelect")![0][0]).toMatchObject({ name: college.name });
+      expect(wrapper.emitted("collegeSelect")![0][0]).toMatchObject({
+        name: college.name,
+      });
     });
 
     it("watch: does not overwrite populated division when parent sends empty division (loading state)", async () => {
@@ -536,36 +584,68 @@ describe("SchoolForm", () => {
       // The watch must NOT clear the division SchoolForm already set via its own lookup.
       const wrapper = mountForm({
         useAutocomplete: true,
-        initialData: { name: college.name, location: college.location, website: college.website ?? "", division: "D1", conference: "SEC" },
+        initialData: {
+          name: college.name,
+          location: college.location,
+          website: college.website ?? "",
+          division: "D1",
+          conference: "SEC",
+        },
       });
       await nextTick();
-      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D1");
+      expect(
+        (wrapper.find("#division").element as HTMLSelectElement).value,
+      ).toBe("D1");
 
       // Simulate parent's intermediate state: college name set but division still loading
       await wrapper.setProps({
-        initialData: { name: college.name, location: college.location, website: college.website ?? "", division: "", conference: "" },
+        initialData: {
+          name: college.name,
+          location: college.location,
+          website: college.website ?? "",
+          division: "",
+          conference: "",
+        },
       });
       await nextTick();
 
       // Division must survive the transient empty-division update from the parent
-      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D1");
+      expect(
+        (wrapper.find("#division").element as HTMLSelectElement).value,
+      ).toBe("D1");
     });
 
     it("watch: clears division when parent clears the selection entirely", async () => {
       const wrapper = mountForm({
         useAutocomplete: true,
-        initialData: { name: college.name, location: college.location, website: college.website ?? "", division: "D1", conference: "SEC" },
+        initialData: {
+          name: college.name,
+          location: college.location,
+          website: college.website ?? "",
+          division: "D1",
+          conference: "SEC",
+        },
       });
       await nextTick();
-      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D1");
+      expect(
+        (wrapper.find("#division").element as HTMLSelectElement).value,
+      ).toBe("D1");
 
       // Parent clears selection: name goes to '' as well as division
       await wrapper.setProps({
-        initialData: { name: "", location: "", website: "", division: "", conference: "" },
+        initialData: {
+          name: "",
+          location: "",
+          website: "",
+          division: "",
+          conference: "",
+        },
       });
       await nextTick();
 
-      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("");
+      expect(
+        (wrapper.find("#division").element as HTMLSelectElement).value,
+      ).toBe("");
     });
 
     it("NCAA lookup runs on second selection after clearing", async () => {
@@ -573,11 +653,15 @@ describe("SchoolForm", () => {
       mockLookupSchool.mockResolvedValue({ division: "D1", conference: "SEC" });
       const wrapper = mountForm({ useAutocomplete: true });
 
-      await wrapper.findComponent(SchoolAutocompleteMock).vm.$emit("select", college);
+      await wrapper
+        .findComponent(SchoolAutocompleteMock)
+        .vm.$emit("select", college);
       await flushPromises();
       const firstCallCount = mockLookupSchool.mock.calls.length;
       expect(firstCallCount).toBeGreaterThan(0);
-      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D1");
+      expect(
+        (wrapper.find("#division").element as HTMLSelectElement).value,
+      ).toBe("D1");
 
       // Second selection with a different school
       mockLookupSchool.mockResolvedValue({ division: "D2", conference: "SSC" });
@@ -588,8 +672,12 @@ describe("SchoolForm", () => {
       });
       await flushPromises();
 
-      expect(mockLookupSchool.mock.calls.length).toBeGreaterThan(firstCallCount);
-      expect((wrapper.find("#division").element as HTMLSelectElement).value).toBe("D2");
+      expect(mockLookupSchool.mock.calls.length).toBeGreaterThan(
+        firstCallCount,
+      );
+      expect(
+        (wrapper.find("#division").element as HTMLSelectElement).value,
+      ).toBe("D2");
     });
   });
 });

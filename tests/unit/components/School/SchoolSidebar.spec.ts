@@ -223,16 +223,43 @@ describe("SchoolSidebar", () => {
   describe("Fit Signals section", () => {
     const mockPersonalFit = {
       signals: {
-        location: { label: "Location", value: "In-state", strength: "strong" as const, explanation: "Same state" },
-        campusSize: { label: "Campus Size", value: "Medium", strength: "good" as const, explanation: "Matches preference" },
-        cost: { label: "Cost", value: "$30k", strength: "stretch" as const, explanation: "Above budget" },
+        location: {
+          label: "Location",
+          value: "In-state",
+          strength: "strong" as const,
+          explanation: "Same state",
+        },
+        campusSize: {
+          label: "Campus Size",
+          value: "Medium",
+          strength: "good" as const,
+          explanation: "Matches preference",
+        },
+        cost: {
+          label: "Cost",
+          value: "$30k",
+          strength: "stretch" as const,
+          explanation: "Above budget",
+        },
       },
       availableSignals: 3,
     };
     const mockAcademicFit = {
       signals: {
-        sat: { label: "SAT", athleteValue: 1300, schoolRange: { low: 1200, high: 1450 }, strength: "in-range" as const, explanation: "Within range" },
-        act: { label: "ACT", athleteValue: null, schoolRange: null, strength: "unknown" as const, explanation: "No data" },
+        sat: {
+          label: "SAT",
+          athleteValue: 1300,
+          schoolRange: { low: 1200, high: 1450 },
+          strength: "in-range" as const,
+          explanation: "Within range",
+        },
+        act: {
+          label: "ACT",
+          athleteValue: null,
+          schoolRange: null,
+          strength: "unknown" as const,
+          explanation: "No data",
+        },
       },
       admissionRate: 0.35,
       availableSignals: 1,
@@ -241,7 +268,11 @@ describe("SchoolSidebar", () => {
 
     it("renders School Fit card when both personalFit and academicFit are provided", () => {
       const wrapper = mount(SchoolSidebar, {
-        props: { ...defaultProps, personalFit: mockPersonalFit, academicFit: mockAcademicFit },
+        props: {
+          ...defaultProps,
+          personalFit: mockPersonalFit,
+          academicFit: mockAcademicFit,
+        },
         global: { stubs },
       });
       expect(wrapper.text()).toContain("School Fit");
@@ -273,7 +304,11 @@ describe("SchoolSidebar", () => {
 
     it("renders SchoolFitSignals component when both props are provided", () => {
       const wrapper = mount(SchoolSidebar, {
-        props: { ...defaultProps, personalFit: mockPersonalFit, academicFit: mockAcademicFit },
+        props: {
+          ...defaultProps,
+          personalFit: mockPersonalFit,
+          academicFit: mockAcademicFit,
+        },
         global: { stubs },
       });
       expect(wrapper.text()).toContain("Fit Signals");
@@ -281,7 +316,11 @@ describe("SchoolSidebar", () => {
 
     it("includes enrich in declared emits", () => {
       const wrapper = mount(SchoolSidebar, {
-        props: { ...defaultProps, personalFit: mockPersonalFit, academicFit: mockAcademicFit },
+        props: {
+          ...defaultProps,
+          personalFit: mockPersonalFit,
+          academicFit: mockAcademicFit,
+        },
         global: { stubs },
       });
       // SchoolSidebar declares enrich as an emittable event

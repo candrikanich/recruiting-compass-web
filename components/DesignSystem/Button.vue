@@ -143,7 +143,7 @@ function handleClick(event: MouseEvent) {
     :type="to ? undefined : type"
     :to="to"
     :class="buttonClasses"
-    :disabled="to ? undefined : (disabled || loading)"
+    :disabled="to ? undefined : disabled || loading"
     @click="handleClick"
   >
     <svg

@@ -11,7 +11,10 @@ export default defineEventHandler(async (event) => {
     const token = getRouterParam(event, "token");
 
     if (!token) {
-      throw createError({ statusCode: 400, statusMessage: "Token is required" });
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Token is required",
+      });
     }
 
     const supabase = useSupabaseAdmin();
@@ -23,15 +26,24 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (!invitation) {
-      throw createError({ statusCode: 404, statusMessage: "Invitation not found" });
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Invitation not found",
+      });
     }
 
     if (invitation.status !== "pending") {
-      throw createError({ statusCode: 409, statusMessage: "Invitation is no longer valid" });
+      throw createError({
+        statusCode: 409,
+        statusMessage: "Invitation is no longer valid",
+      });
     }
 
     if (new Date(invitation.expires_at) < new Date()) {
-      throw createError({ statusCode: 410, statusMessage: "This invitation has expired" });
+      throw createError({
+        statusCode: 410,
+        statusMessage: "This invitation has expired",
+      });
     }
 
     const emailMismatch =
@@ -56,7 +68,10 @@ export default defineEventHandler(async (event) => {
 
       if (memberError) {
         logger.error("Failed to add family member", memberError);
-        throw createError({ statusCode: 500, statusMessage: "Failed to join family" });
+        throw createError({
+          statusCode: 500,
+          statusMessage: "Failed to join family",
+        });
       }
     }
 
@@ -70,10 +85,17 @@ export default defineEventHandler(async (event) => {
       userId: user.id,
       emailMismatch,
     });
-    return { success: true, familyUnitId: invitation.family_unit_id, emailMismatch };
+    return {
+      success: true,
+      familyUnitId: invitation.family_unit_id,
+      emailMismatch,
+    };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to accept invitation", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to accept invitation" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to accept invitation",
+    });
   }
 });

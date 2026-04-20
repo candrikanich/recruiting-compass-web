@@ -7,9 +7,7 @@ import {
 } from "~/utils/notificationHelpers";
 import type { Notification } from "~/types/models";
 
-function makeNotification(
-  overrides: Partial<Notification> = {},
-): Notification {
+function makeNotification(overrides: Partial<Notification> = {}): Notification {
   return {
     id: "notif-1",
     type: "general",

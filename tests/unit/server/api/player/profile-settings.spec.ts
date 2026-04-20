@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockState = {
   userId: "user-abc",
-  membership: { family_unit_id: "family-123" } as { family_unit_id: string } | null,
+  membership: { family_unit_id: "family-123" } as {
+    family_unit_id: string;
+  } | null,
   profileRow: null as Record<string, unknown> | null,
   updateError: null as { code?: string; message?: string } | null,
   requestBody: {} as Record<string, unknown>,
@@ -13,7 +15,12 @@ vi.mock("~/server/utils/auth", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
@@ -75,7 +82,9 @@ vi.mock("h3", async (importOriginal) => {
     defineEventHandler: (fn: Function) => fn,
     readBody: vi.fn(async () => mockState.requestBody),
     createError: (cfg: { statusCode: number; statusMessage?: string }) => {
-      const err = new Error(cfg.statusMessage) as Error & { statusCode: number };
+      const err = new Error(cfg.statusMessage) as Error & {
+        statusCode: number;
+      };
       err.statusCode = cfg.statusCode;
       return err;
     },
@@ -94,7 +103,9 @@ describe("GET /api/player/profile", () => {
 
   it("returns 403 when user is not a family member", async () => {
     mockState.membership = null;
-    await expect(getHandler({} as any)).rejects.toMatchObject({ statusCode: 403 });
+    await expect(getHandler({} as any)).rejects.toMatchObject({
+      statusCode: 403,
+    });
   });
 
   it("creates and returns a new profile if none exists", async () => {
@@ -135,22 +146,30 @@ describe("PUT /api/player/profile", () => {
 
   it("returns 403 when user is not a family member", async () => {
     mockState.membership = null;
-    await expect(putHandler({} as any)).rejects.toMatchObject({ statusCode: 403 });
+    await expect(putHandler({} as any)).rejects.toMatchObject({
+      statusCode: 403,
+    });
   });
 
   it("rejects reserved vanity slugs", async () => {
     mockState.requestBody = { vanity_slug: "api" };
-    await expect(putHandler({} as any)).rejects.toMatchObject({ statusCode: 422 });
+    await expect(putHandler({} as any)).rejects.toMatchObject({
+      statusCode: 422,
+    });
   });
 
   it("rejects invalid vanity slug format (uppercase)", async () => {
     mockState.requestBody = { vanity_slug: "UPPERCASE" };
-    await expect(putHandler({} as any)).rejects.toMatchObject({ statusCode: 422 });
+    await expect(putHandler({} as any)).rejects.toMatchObject({
+      statusCode: 422,
+    });
   });
 
   it("rejects vanity slugs with invalid characters", async () => {
     mockState.requestBody = { vanity_slug: "my slug!" };
-    await expect(putHandler({} as any)).rejects.toMatchObject({ statusCode: 422 });
+    await expect(putHandler({} as any)).rejects.toMatchObject({
+      statusCode: 422,
+    });
   });
 
   it("updates profile and returns success", async () => {
@@ -162,6 +181,8 @@ describe("PUT /api/player/profile", () => {
   it("returns 409 when vanity slug is already taken", async () => {
     mockState.requestBody = { vanity_slug: "takenslug" };
     mockState.updateError = { code: "23505", message: "unique violation" };
-    await expect(putHandler({} as any)).rejects.toMatchObject({ statusCode: 409 });
+    await expect(putHandler({} as any)).rejects.toMatchObject({
+      statusCode: 409,
+    });
   });
 });

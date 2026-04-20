@@ -13,13 +13,22 @@ const createWrapper = (props: Record<string, unknown> = {}) =>
       stubs: {
         NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
         DesignSystemButton: {
-          template: "<button :type=\"type || 'button'\" :disabled=\"loading\"><slot /></button>",
+          template:
+            '<button :type="type || \'button\'" :disabled="loading"><slot /></button>',
           props: ["loading", "type", "fullWidth"],
         },
         DesignSystemInput: {
           template:
             '<input :data-testid="id" :value="modelValue" :disabled="disabled" @input="$emit(\'update:modelValue\', $event.target.value)" />',
-          props: ["modelValue", "label", "type", "disabled", "id", "placeholder", "hint"],
+          props: [
+            "modelValue",
+            "label",
+            "type",
+            "disabled",
+            "id",
+            "placeholder",
+            "hint",
+          ],
           emits: ["update:modelValue"],
         },
       },
@@ -32,12 +41,16 @@ describe("InviteSignupForm", () => {
     const emailInput = wrapper.find('[data-testid="invite-email"]');
     expect(emailInput.exists()).toBe(true);
     expect(emailInput.attributes("disabled")).toBeUndefined();
-    expect((emailInput.element as HTMLInputElement).value).toBe("test@example.com");
+    expect((emailInput.element as HTMLInputElement).value).toBe(
+      "test@example.com",
+    );
   });
 
   it("emits update:email when the email input changes", async () => {
     const wrapper = createWrapper({ email: "" });
-    await wrapper.find('[data-testid="invite-email"]').setValue("newuser@example.com");
+    await wrapper
+      .find('[data-testid="invite-email"]')
+      .setValue("newuser@example.com");
     expect(wrapper.emitted("update:email")).toEqual([["newuser@example.com"]]);
   });
 
@@ -96,7 +109,9 @@ describe("InviteSignupForm", () => {
 
     it("emits update:confirmPassword when the confirmPassword input changes", async () => {
       const wrapper = createWrapper();
-      await wrapper.find('[data-testid="confirmPassword"]').setValue("Secret1!");
+      await wrapper
+        .find('[data-testid="confirmPassword"]')
+        .setValue("Secret1!");
       expect(wrapper.emitted("update:confirmPassword")).toEqual([["Secret1!"]]);
     });
 

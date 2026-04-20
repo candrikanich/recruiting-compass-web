@@ -1,16 +1,16 @@
 :root {
   --font-size: 16px;
-  --background: #F4F6FA;
+  --background: #f4f6fa;
   --foreground: oklch(0.145 0 0);
-  --card: #FAFBFD;
+  --card: #fafbfd;
   --card-foreground: oklch(0.145 0 0);
-  --popover: #FAFBFD;
+  --popover: #fafbfd;
   --popover-foreground: oklch(0.145 0 0);
   --primary: #030213;
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.95 0.0058 264.53);
   --secondary-foreground: #030213;
-  --muted: #E8EDF5;
+  --muted: #e8edf5;
   --muted-foreground: #717182;
   --accent: #e9ebef;
   --accent-foreground: #030213;
@@ -108,15 +108,12 @@
 
   /* Shadows — brand-tinted (cool blue) instead of pure black */
   --shadow-card:
-    0 1px 3px rgba(30, 50, 100, 0.08),
-    0 0 0 1px rgba(30, 50, 100, 0.04);
+    0 1px 3px rgba(30, 50, 100, 0.08), 0 0 0 1px rgba(30, 50, 100, 0.04);
   --shadow-card-hover:
-    0 4px 16px rgba(30, 50, 100, 0.10),
-    0 1px 4px rgba(30, 50, 100, 0.06),
+    0 4px 16px rgba(30, 50, 100, 0.1), 0 1px 4px rgba(30, 50, 100, 0.06),
     0 0 0 1px rgba(30, 50, 100, 0.04);
   --shadow-lg:
-    0 12px 40px rgba(30, 50, 100, 0.12),
-    0 2px 8px rgba(30, 50, 100, 0.06);
+    0 12px 40px rgba(30, 50, 100, 0.12), 0 2px 8px rgba(30, 50, 100, 0.06);
 }
 
 @layer base {

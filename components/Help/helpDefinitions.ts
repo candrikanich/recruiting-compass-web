@@ -141,7 +141,6 @@ We intentionally do not show Athletic Fit or Opportunity Fit because we cannot r
     fullDescription: `If a coach hasn't interacted with you in 30+ days, Recruiting Compass suggests a recovery plan. This might be a new angle to approach them, optimal timing to reach out, or a sample message to use. It's designed to help you re-engage with coaches who've gone quiet without seeming desperate.`,
     relatedLinks: [{ label: "Recovery Plan Guide", url: "/docs/recovery" }],
   },
-
 };
 
 export const helpCategoryGroups = {

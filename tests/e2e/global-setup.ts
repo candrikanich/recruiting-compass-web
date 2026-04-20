@@ -24,7 +24,9 @@ async function globalSetup(_config: FullConfig) {
     console.log("✅ Test accounts ready");
   } catch (error) {
     console.warn("⚠️  Test account provisioning failed:", error);
-    console.warn("   CRUD tests may fail if accounts/onboarding are not set up");
+    console.warn(
+      "   CRUD tests may fail if accounts/onboarding are not set up",
+    );
   }
 
   // Provision storageState for each test account.
@@ -47,9 +49,14 @@ async function globalSetup(_config: FullConfig) {
         await page.locator('input[type="password"]').blur();
 
         // Wait for the submit button to become enabled
-        await page.locator('[data-testid="login-button"]').waitFor({ state: "visible" });
+        await page
+          .locator('[data-testid="login-button"]')
+          .waitFor({ state: "visible" });
         await page.waitForFunction(
-          () => !document.querySelector('[data-testid="login-button"]')?.hasAttribute("disabled"),
+          () =>
+            !document
+              .querySelector('[data-testid="login-button"]')
+              ?.hasAttribute("disabled"),
         );
         await page.click('[data-testid="login-button"]');
         await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 15000 });
@@ -57,8 +64,13 @@ async function globalSetup(_config: FullConfig) {
         await context.storageState({ path: `${AUTH_DIR}/${role}.json` });
         console.log(`  ✅ Saved ${role}.json`);
       } catch (error) {
-        console.warn(`  ⚠️  Could not capture storageState for ${role}:`, error);
-        console.warn(`     Tests requiring pre-auth for ${role} may fall back to UI login`);
+        console.warn(
+          `  ⚠️  Could not capture storageState for ${role}:`,
+          error,
+        );
+        console.warn(
+          `     Tests requiring pre-auth for ${role} may fall back to UI login`,
+        );
       } finally {
         await context.close();
       }

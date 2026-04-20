@@ -44,8 +44,7 @@ export const formalOutreachRule: Rule = {
       if (lastInteraction) {
         const intRecord = lastInteraction as Record<string, unknown>;
         const daysSince = Math.floor(
-          (Date.now() -
-            new Date(intRecord.occurred_at as string).getTime()) /
+          (Date.now() - new Date(intRecord.occurred_at as string).getTime()) /
             (1000 * 60 * 60 * 24),
         );
         daysSinceInteractionList.push(daysSince);

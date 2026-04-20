@@ -80,7 +80,9 @@ describe("useSchools", () => {
 
     it("captures school_added event on success", async () => {
       const mockCapture = vi.fn();
-      vi.mocked(useNuxtApp).mockReturnValue({ $posthog: { capture: mockCapture } } as ReturnType<typeof useNuxtApp>);
+      vi.mocked(useNuxtApp).mockReturnValue({
+        $posthog: { capture: mockCapture },
+      } as ReturnType<typeof useNuxtApp>);
 
       mockQuery.single.mockResolvedValue({
         data: { id: "school-1", name: "Test School" },
@@ -88,9 +90,16 @@ describe("useSchools", () => {
       });
 
       const { createSchool } = useSchools();
-      await createSchool({ name: "Test School", city: "Test City", state: "TS", status: "researching" });
+      await createSchool({
+        name: "Test School",
+        city: "Test City",
+        state: "TS",
+        status: "researching",
+      });
 
-      expect(mockCapture).toHaveBeenCalledWith("school_added", { division: null });
+      expect(mockCapture).toHaveBeenCalledWith("school_added", {
+        division: null,
+      });
     });
   });
 

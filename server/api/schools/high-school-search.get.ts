@@ -8,12 +8,17 @@ export default defineEventHandler(async (event) => {
   const { q, state } = getQuery(event);
 
   const query = String(q ?? "").trim();
-  const stateParam = String(state ?? "").trim().toUpperCase();
+  const stateParam = String(state ?? "")
+    .trim()
+    .toUpperCase();
 
   if (!query) return [];
 
   if (query.length < 2) {
-    throw createError({ statusCode: 400, statusMessage: "q must be at least 2 characters" });
+    throw createError({
+      statusCode: 400,
+      statusMessage: "q must be at least 2 characters",
+    });
   }
 
   const cacheKey = CACHE_KEYS.NCES_SEARCH(query, stateParam);
@@ -29,9 +34,9 @@ export default defineEventHandler(async (event) => {
   const supabase = useSupabaseAdmin();
   // Escape SQL wildcards to prevent injection
   const escapedQuery = query
-    .replace(/\\/g, '\\\\')  // Escape backslashes first
-    .replace(/%/g, '\\%')    // Escape percent signs
-    .replace(/_/g, '\\_');   // Escape underscores
+    .replace(/\\/g, "\\\\") // Escape backslashes first
+    .replace(/%/g, "\\%") // Escape percent signs
+    .replace(/_/g, "\\_"); // Escape underscores
 
   let dbQuery = supabase
     .from("nces_schools")

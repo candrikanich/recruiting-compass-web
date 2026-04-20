@@ -10,7 +10,10 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "help/feedback");
 
   try {
-    const rateLimitResult = await rateLimitByIp(event, { requests: 10, window: "1 h" });
+    const rateLimitResult = await rateLimitByIp(event, {
+      requests: 10,
+      window: "1 h",
+    });
     throwIfRateLimited(rateLimitResult);
 
     const user = await requireAuth(event);
@@ -25,15 +28,24 @@ export default defineEventHandler(async (event) => {
 
     if (error) {
       logger.error("Failed to save help feedback", error);
-      throw createError({ statusCode: 500, statusMessage: "Failed to save feedback" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to save feedback",
+      });
     }
 
-    logger.info("Help feedback saved", { page: body.page, helpful: body.helpful });
+    logger.info("Help feedback saved", {
+      page: body.page,
+      helpful: body.helpful,
+    });
 
     return { ok: true };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     const safe = createSafeErrorResponse(err, "help/feedback");
-    throw createError({ statusCode: safe.statusCode, statusMessage: safe.statusMessage });
+    throw createError({
+      statusCode: safe.statusCode,
+      statusMessage: safe.statusMessage,
+    });
   }
 });

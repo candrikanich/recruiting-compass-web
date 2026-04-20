@@ -62,7 +62,9 @@ describe("schoolBadges", () => {
   describe("getFitScoreBadgeClass", () => {
     it("returns emerald class for score >= 70", () => {
       expect(getFitScoreBadgeClass(70)).toBe("bg-emerald-100 text-emerald-700");
-      expect(getFitScoreBadgeClass(100)).toBe("bg-emerald-100 text-emerald-700");
+      expect(getFitScoreBadgeClass(100)).toBe(
+        "bg-emerald-100 text-emerald-700",
+      );
     });
 
     it("returns orange class for score 50-69", () => {

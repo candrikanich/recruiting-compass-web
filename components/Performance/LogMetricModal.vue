@@ -1,7 +1,14 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
-import { useEvents } from '~/composables/useEvents';
-import { usePerformance } from '~/composables/usePerformance';
+import {
+  ref,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  nextTick,
+} from "vue";
+import { useEvents } from "~/composables/useEvents";
+import { usePerformance } from "~/composables/usePerformance";
 
 interface Props {
   show: boolean;
@@ -11,7 +18,7 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   close: [];
-  'metric-created': [metric: any];
+  "metric-created": [metric: any];
 }>();
 
 // Composables
@@ -19,14 +26,22 @@ const { events, loading: eventsLoading, fetchEvents } = useEvents();
 const { createMetric } = usePerformance();
 
 // Form state
-type MetricType = 'velocity' | 'exit_velo' | 'sixty_time' | 'pop_time' | 'batting_avg' | 'era' | 'strikeouts' | 'other';
-const metricType = ref<MetricType | ''>('');
+type MetricType =
+  | "velocity"
+  | "exit_velo"
+  | "sixty_time"
+  | "pop_time"
+  | "batting_avg"
+  | "era"
+  | "strikeouts"
+  | "other";
+const metricType = ref<MetricType | "">("");
 const value = ref<number | null>(null);
-const date = ref('');
-const unit = ref('');
+const date = ref("");
+const unit = ref("");
 const eventId = ref<string | null>(null);
 const verified = ref(false);
-const notes = ref('');
+const notes = ref("");
 const loading = ref(false);
 const error = ref<string | null>(null);
 
@@ -35,14 +50,14 @@ const firstInputRef = ref<HTMLElement | null>(null);
 
 // Metric type options (per spec)
 const metricTypes = [
-  { value: 'velocity', label: 'Fastball Velocity (mph)' },
-  { value: 'exit_velo', label: 'Exit Velocity (mph)' },
-  { value: 'sixty_time', label: '60-Yard Dash (sec)' },
-  { value: 'pop_time', label: 'Pop Time (sec)' },
-  { value: 'batting_avg', label: 'Batting Average' },
-  { value: 'era', label: 'ERA' },
-  { value: 'strikeouts', label: 'Strikeouts' },
-  { value: 'other', label: 'Other' },
+  { value: "velocity", label: "Fastball Velocity (mph)" },
+  { value: "exit_velo", label: "Exit Velocity (mph)" },
+  { value: "sixty_time", label: "60-Yard Dash (sec)" },
+  { value: "pop_time", label: "Pop Time (sec)" },
+  { value: "batting_avg", label: "Batting Average" },
+  { value: "era", label: "ERA" },
+  { value: "strikeouts", label: "Strikeouts" },
+  { value: "other", label: "Other" },
 ] as const;
 
 // Computed properties
@@ -58,29 +73,29 @@ const sortedEvents = computed(() => {
 
 const formatEventDate = (dateString: string): string => {
   // Use UTC to avoid timezone issues with date-only strings
-  const date = new Date(dateString + 'T00:00:00Z');
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    timeZone: 'UTC',
+  const date = new Date(dateString + "T00:00:00Z");
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
   });
 };
 
 // Methods
 const handleClose = () => {
   resetForm();
-  emit('close');
+  emit("close");
 };
 
 const resetForm = () => {
-  metricType.value = '';
+  metricType.value = "";
   value.value = null;
-  date.value = '';
-  unit.value = '';
+  date.value = "";
+  unit.value = "";
   eventId.value = null;
   verified.value = false;
-  notes.value = '';
+  notes.value = "";
   loading.value = false;
   error.value = null;
 };
@@ -96,16 +111,19 @@ const handleSubmit = async () => {
       metric_type: metricType.value as MetricType,
       value: value.value!,
       recorded_date: date.value,
-      unit: unit.value || '',
+      unit: unit.value || "",
       event_id: eventId.value,
       verified: verified.value,
       notes: notes.value || null,
     });
 
-    emit('metric-created', newMetric);
+    emit("metric-created", newMetric);
     handleClose();
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to save metric. Please try again.';
+    error.value =
+      err instanceof Error
+        ? err.message
+        : "Failed to save metric. Please try again.";
   } finally {
     loading.value = false;
   }
@@ -113,21 +131,21 @@ const handleSubmit = async () => {
 
 // Keyboard event handler
 const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') {
+  if (event.key === "Escape") {
     handleClose();
   }
 };
 
 // Lifecycle
 onMounted(() => {
-  date.value = new Date().toISOString().split('T')[0];
+  date.value = new Date().toISOString().split("T")[0];
   // Add ESC key listener
-  document.addEventListener('keydown', handleKeydown);
+  document.addEventListener("keydown", handleKeydown);
 });
 
 onBeforeUnmount(() => {
   // Clean up event listener
-  document.removeEventListener('keydown', handleKeydown);
+  document.removeEventListener("keydown", handleKeydown);
 });
 
 // Watch show prop to fetch events and manage focus
@@ -140,7 +158,7 @@ watch(
       await nextTick();
       firstInputRef.value?.focus();
     }
-  }
+  },
 );
 </script>
 
@@ -159,15 +177,24 @@ watch(
         @click.stop
       >
         <!-- Header -->
-        <div class="bg-linear-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white">
-          <h2 id="modal-title" class="text-xl font-bold">Log Performance Metric</h2>
-          <p class="mt-1 text-sm text-white/90">Record your athletic performance</p>
+        <div
+          class="bg-linear-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white"
+        >
+          <h2 id="modal-title" class="text-xl font-bold">
+            Log Performance Metric
+          </h2>
+          <p class="mt-1 text-sm text-white/90">
+            Record your athletic performance
+          </p>
         </div>
 
         <!-- Content -->
         <div class="p-6">
           <!-- Error Display -->
-          <div v-if="error" class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-800">
+          <div
+            v-if="error"
+            class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-800"
+          >
             {{ error }}
           </div>
 
@@ -176,7 +203,10 @@ watch(
             <div class="grid gap-4 md:grid-cols-2 mb-4">
               <!-- Row 1: Metric Type and Value -->
               <div>
-                <label for="metricType" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="metricType"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Metric Type <span class="text-red-500">*</span>
                 </label>
                 <select
@@ -198,7 +228,10 @@ watch(
               </div>
 
               <div>
-                <label for="value" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="value"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Value <span class="text-red-500">*</span>
                 </label>
                 <input
@@ -214,7 +247,10 @@ watch(
 
               <!-- Row 2: Date and Unit -->
               <div>
-                <label for="date" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="date"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Date <span class="text-red-500">*</span>
                 </label>
                 <input
@@ -227,7 +263,10 @@ watch(
               </div>
 
               <div>
-                <label for="unit" class="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  for="unit"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Unit
                 </label>
                 <input
@@ -242,7 +281,10 @@ watch(
 
             <!-- Event Dropdown (full width) -->
             <div class="mb-4">
-              <label for="event" class="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                for="event"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Event (Optional)
               </label>
               <select
@@ -251,7 +293,9 @@ watch(
                 class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
                 <option v-if="eventsLoading" value="">Loading events...</option>
-                <option v-else-if="events.length === 0" value="">No events available</option>
+                <option v-else-if="events.length === 0" value="">
+                  No events available
+                </option>
                 <template v-else>
                   <option :value="null">No event</option>
                   <option
@@ -281,7 +325,10 @@ watch(
 
             <!-- Notes Textarea -->
             <div class="mb-6">
-              <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                for="notes"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Notes
               </label>
               <textarea
@@ -300,7 +347,7 @@ watch(
                 :disabled="!isFormValid || loading"
                 class="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
-                {{ loading ? 'Logging...' : 'Log Metric' }}
+                {{ loading ? "Logging..." : "Log Metric" }}
               </button>
               <button
                 type="button"

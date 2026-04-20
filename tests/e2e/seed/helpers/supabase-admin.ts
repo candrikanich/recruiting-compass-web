@@ -41,16 +41,22 @@ export async function createTestAccounts() {
         });
 
       if (createError) {
-        if (createError.message?.includes("already been registered") ||
-            createError.message?.includes("already registered")) {
+        if (
+          createError.message?.includes("already been registered") ||
+          createError.message?.includes("already registered")
+        ) {
           // User exists — look them up by listing users with email filter
           const { data: listData } = await supabase.auth.admin.listUsers({
             page: 1,
             perPage: 1000,
           });
-          const existing = listData?.users?.find((u) => u.email === account.email);
+          const existing = listData?.users?.find(
+            (u) => u.email === account.email,
+          );
           if (!existing) {
-            console.warn(`⚠️  ${account.email} exists but couldn't be found — skipping setup`);
+            console.warn(
+              `⚠️  ${account.email} exists but couldn't be found — skipping setup`,
+            );
             continue;
           }
           userId = existing.id;
@@ -66,10 +72,7 @@ export async function createTestAccounts() {
       // Ensure onboarding is complete and family_unit exists
       await setupTestAccountData(supabase, userId, account);
     } catch (error) {
-      console.error(
-        `❌ Failed to setup test account ${account.email}:`,
-        error,
-      );
+      console.error(`❌ Failed to setup test account ${account.email}:`, error);
       // Don't throw — allow other accounts to be created
     }
   }
@@ -95,7 +98,9 @@ async function linkParentToPlayerFamilyUnit(
   const parentUser = users.find((u) => u.email === TEST_ACCOUNTS.parent.email);
 
   if (!playerUser || !parentUser) {
-    console.warn("⚠️  Cannot link parent to player family unit — one or both accounts not found");
+    console.warn(
+      "⚠️  Cannot link parent to player family unit — one or both accounts not found",
+    );
     return;
   }
 
@@ -127,16 +132,17 @@ async function linkParentToPlayerFamilyUnit(
   }
 
   // Add parent to player's family unit
-  const { error: linkError } = await supabase
-    .from("family_members")
-    .insert({
-      family_unit_id: familyUnitId,
-      user_id: parentUser.id,
-      role: "parent",
-    });
+  const { error: linkError } = await supabase.from("family_members").insert({
+    family_unit_id: familyUnitId,
+    user_id: parentUser.id,
+    role: "parent",
+  });
 
   if (linkError) {
-    console.error("❌ Failed to link parent@test.com to player's family unit:", linkError.message);
+    console.error(
+      "❌ Failed to link parent@test.com to player's family unit:",
+      linkError.message,
+    );
   } else {
     console.log("✅ Linked parent@test.com to player@test.com's family unit");
   }
@@ -169,7 +175,10 @@ async function setupTestAccountData(
 
   if (userError) {
     // Non-fatal — row might not exist yet if trigger hasn't fired
-    console.warn(`⚠️  Could not update users row for ${userId}:`, userError.message);
+    console.warn(
+      `⚠️  Could not update users row for ${userId}:`,
+      userError.message,
+    );
   }
 
   // Parent accounts get their family unit membership via linkParentToPlayerFamilyUnit —
@@ -188,23 +197,27 @@ async function setupTestAccountData(
   // Create family unit
   const { data: familyUnit, error: familyError } = await supabase
     .from("family_units")
-    .insert({ family_name: `${account.displayName} Family`, created_by_user_id: userId })
+    .insert({
+      family_name: `${account.displayName} Family`,
+      created_by_user_id: userId,
+    })
     .select()
     .single();
 
   if (familyError) {
-    console.warn(`⚠️  Could not create family_unit for ${userId}:`, familyError.message);
+    console.warn(
+      `⚠️  Could not create family_unit for ${userId}:`,
+      familyError.message,
+    );
     return;
   }
 
   // Add user as member of family unit
-  const { error: memberError } = await supabase
-    .from("family_members")
-    .insert({
-      family_unit_id: familyUnit.id,
-      user_id: userId,
-      role: "player",
-    });
+  const { error: memberError } = await supabase.from("family_members").insert({
+    family_unit_id: familyUnit.id,
+    user_id: userId,
+    role: "player",
+  });
 
   if (memberError) {
     console.error(
