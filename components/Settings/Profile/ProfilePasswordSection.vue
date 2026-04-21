@@ -7,20 +7,20 @@
         <label class="block text-sm font-medium text-slate-700 mb-1" for="current-password">
           Current Password
         </label>
-        <UInput id="current-password" v-model="current" type="password" :disabled="loading" />
+        <UInput id="current-password" v-model="current" type="password" autocomplete="current-password" :disabled="loading" />
         <p v-if="error" class="text-sm text-red-600 mt-1">{{ error }}</p>
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1" for="new-password">
           New Password
         </label>
-        <UInput id="new-password" v-model="newPass" type="password" :disabled="loading" />
+        <UInput id="new-password" v-model="newPass" type="password" autocomplete="new-password" :disabled="loading" />
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1" for="confirm-password">
           Confirm New Password
         </label>
-        <UInput id="confirm-password" v-model="confirm" type="password" :disabled="loading" />
+        <UInput id="confirm-password" v-model="confirm" type="password" autocomplete="new-password" :disabled="loading" />
         <p v-if="mismatchError" class="text-sm text-red-600 mt-1">Passwords do not match.</p>
       </div>
       <div class="flex items-center gap-3 pt-2">

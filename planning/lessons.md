@@ -149,3 +149,13 @@ Source: pasted content (Vikas Sah)
 - **Auto-review PR trigger complements on-demand @claude**: Our `claude.yml` only fires on `@claude` mentions — adding `pull_request: [opened, synchronize]` as a trigger with a scoped review prompt (security, correctness, performance, error handling + "don't invent problems") catches issues before a human reviewer opens the PR.
 - **Scope AI reviews narrowly to prevent cry-wolf effect**: Teams abandon AI review tools when false positive rate is high — limit the review prompt to 3-4 specific categories the LLM reliably detects (security vulns, common bugs, missing error handling) rather than reviewing "everything". Include "if everything looks good, say so" to suppress noise.
 - **Lock down allowedTools in CI review jobs**: Use `--allowedTools` to restrict what Claude can do in GitHub Actions — read diffs and post comments only, never modify code or push. Example: `"Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"`
+
+---
+
+### Simple CSS Tricks to Make Your Forms Look "Pro" — 2026-04-21
+Source: pasted content (Tushar Kanjariya / Medium)
+
+- **`focus-visible` over `focus` for keyboard accessibility**: Use Tailwind's `focus-visible:ring-2 focus-visible:ring-brand-blue-600` instead of `focus:ring-*` on all inputs — `focus-visible` only shows the ring for keyboard navigation, not mouse clicks, which is the correct WCAG behavior. Audit existing form components for bare `focus:ring` usage.
+- **`autocomplete` attributes on every form input**: Add explicit `autocomplete` values (`"email"`, `"name"`, `"tel"`, `"current-password"`, `"new-password"`, `"given-name"`, `"family-name"`) to all `<input>` elements — browsers use these for autofill and password managers, and they're required for WCAG 1.3.5 (Identify Input Purpose). Audit the coach/athlete registration and login forms.
+- **`accent-color` for branded checkboxes/radios**: Add `accent-color: var(--brand-blue)` to our global `theme.css` for `input[type="checkbox"], input[type="radio"]` — one line makes native checkboxes match brand color with zero custom component overhead. Tailwind does not apply this by default.
+- **Exclude checkbox/radio from generic input selectors**: Any global `input { ... }` or Tailwind `@apply` block targeting `input` without a type qualifier will apply padding/sizing to checkboxes and radios too — always scope to `input:not([type="checkbox"]):not([type="radio"])` in any global CSS targeting text inputs.

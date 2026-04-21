@@ -23,13 +23,13 @@
         <label class="block text-sm font-medium text-slate-700 mb-1" for="new-email">
           New Email Address
         </label>
-        <UInput id="new-email" v-model="newEmail" type="email" placeholder="new@example.com" :disabled="loading" />
+        <UInput id="new-email" v-model="newEmail" type="email" autocomplete="email" placeholder="new@example.com" :disabled="loading" />
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1" for="current-pass-email">
           Current Password (to confirm)
         </label>
-        <UInput id="current-pass-email" v-model="currentPassword" type="password" :disabled="loading" />
+        <UInput id="current-pass-email" v-model="currentPassword" type="password" autocomplete="current-password" :disabled="loading" />
         <p v-if="error" class="text-sm text-red-600 mt-1">{{ error }}</p>
       </div>
       <div class="flex items-center gap-3">

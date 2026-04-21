@@ -78,7 +78,8 @@
                   id="email"
                   v-model="form.email"
                   type="email"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+                  autocomplete="email"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus-visible:ring-2 focus-visible:ring-blue-500/20"
                 />
               </div>
               <div>

@@ -177,9 +177,14 @@
     line-height: 1.5;
   }
 
-  input {
+  input:not([type="checkbox"]):not([type="radio"]) {
     font-size: var(--text-base);
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--brand-blue-600);
   }
 }

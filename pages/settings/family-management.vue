@@ -151,8 +151,9 @@
               v-model="inviteEmail"
               data-testid="invite-email-input"
               type="email"
+              autocomplete="email"
               placeholder="family@example.com"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
             />
           </div>
           <div>

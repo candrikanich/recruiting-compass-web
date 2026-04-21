@@ -84,6 +84,7 @@
                 <input
                   v-model="form.email"
                   type="email"
+                  autocomplete="email"
                   required
                   class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900"
                   placeholder="your@email.com"

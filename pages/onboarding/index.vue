@@ -115,9 +115,10 @@
             <input
               v-model="onboardingData.zip_code"
               type="text"
+              autocomplete="postal-code"
               placeholder="Enter your 5-digit zip code"
               maxlength="5"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
               @keypress="restrictToNumbers"
               required
             />
@@ -143,11 +144,12 @@
             <input
               v-model.number="onboardingData.gpa"
               type="number"
+              autocomplete="off"
               step="0.01"
               min="0"
               max="4.0"
               placeholder="e.g., 3.8"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
             />
             <p class="text-slate-500 text-xs mt-1">Scale of 0.0 - 4.0</p>
           </div>
@@ -160,10 +162,11 @@
             <input
               v-model.number="onboardingData.sat_score"
               type="number"
+              autocomplete="off"
               min="400"
               max="1600"
               placeholder="e.g., 1500"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
             />
             <p class="text-slate-500 text-xs mt-1">Score between 400-1600</p>
           </div>
@@ -176,10 +179,11 @@
             <input
               v-model.number="onboardingData.act_score"
               type="number"
+              autocomplete="off"
               min="1"
               max="36"
               placeholder="e.g., 35"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
             />
             <p class="text-slate-500 text-xs mt-1">Score between 1-36</p>
           </div>
@@ -202,8 +206,9 @@
               v-model="parentInviteEmail"
               data-testid="parent-invite-email"
               type="email"
+              autocomplete="email"
               placeholder="parent@example.com"
-              class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-4 py-3 border border-slate-200 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500"
             />
           </div>
 

@@ -148,8 +148,9 @@
                   id="email"
                   v-model="email"
                   type="email"
+                  autocomplete="email"
                   required
-                  class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
                   placeholder="your.email@example.com"
                   :disabled="loading"
                   @blur="validateEmail"
