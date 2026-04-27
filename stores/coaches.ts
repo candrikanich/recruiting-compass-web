@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { defineStore } from "pinia";
 import type { Coach } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
@@ -12,22 +12,6 @@ export interface CoachFilters {
   search?: string;
 }
 
-export interface CoachState {
-  coaches: Coach[];
-  loading: boolean;
-  error: string | null;
-  isFetched: boolean;
-  lastFetchedWithFilters: boolean;
-  isFetchedBySchools: Record<string, boolean>; // Track which schools' coaches have been fetched
-  filters: CoachFilters;
-}
-
-/**
- * Coaches store — manages coach data and communication tracking.
- *
- * Provides canonical state for coach CRUD and filtering.
- * Use via `useCoaches()` composable for full family-context orchestration.
- */
 const logger = createClientLogger("stores/coaches");
 
 export const useCoachStore = defineStore("coaches", () => {
@@ -37,64 +21,9 @@ export const useCoachStore = defineStore("coaches", () => {
   const isFetched = ref(false);
   const lastFetchedWithFilters = ref<boolean>(false);
   const isFetchedBySchools = ref<Record<string, boolean>>({});
-  const filters = ref<CoachFilters>({
-    schoolId: undefined,
-    role: undefined,
-    search: undefined,
-  });
 
-  /**
-   * Get coaches for a specific school
-   */
   const coachesBySchool = (schoolId: string) =>
     coaches.value.filter((c) => c.school_id === schoolId);
-
-  /**
-   * Get coaches filtered by current filter state
-   */
-  const filteredCoaches = computed(() =>
-    coaches.value.filter((c) => {
-      if (filters.value.schoolId && c.school_id !== filters.value.schoolId)
-        return false;
-      if (filters.value.role && c.role !== filters.value.role) return false;
-      if (filters.value.search) {
-        const searchLower = filters.value.search.toLowerCase();
-        return (
-          c.first_name.toLowerCase().includes(searchLower) ||
-          c.last_name.toLowerCase().includes(searchLower) ||
-          c.email?.toLowerCase().includes(searchLower)
-        );
-      }
-      return true;
-    }),
-  );
-
-  /**
-   * Get coaches sorted by last contact date (most recent first)
-   */
-  const coachesByLastContact = computed(() =>
-    [...coaches.value].sort((a, b) => {
-      if (!a.last_contact_date && !b.last_contact_date) return 0;
-      if (!a.last_contact_date) return 1;
-      if (!b.last_contact_date) return -1;
-      return (
-        new Date(b.last_contact_date).getTime() -
-        new Date(a.last_contact_date).getTime()
-      );
-    }),
-  );
-
-  /**
-   * Get coaches by role
-   */
-  const coachesByRole = (role: Coach["role"]) =>
-    coaches.value.filter((c) => c.role === role);
-
-  /**
-   * Check if coaches for a school have been fetched
-   */
-  const areCoachesFetched = (schoolId: string) =>
-    isFetchedBySchools.value[schoolId] === true;
 
   /**
    * Fetch coaches for a specific school
@@ -396,8 +325,7 @@ export const useCoachStore = defineStore("coaches", () => {
 
       if (deleteError) throw deleteError;
 
-      // Update local state
-      coaches.value = coaches.value.filter((c) => c.id !== id);
+      removeCoach(id);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to delete coach";
@@ -408,29 +336,8 @@ export const useCoachStore = defineStore("coaches", () => {
     }
   }
 
-  /**
-   * Set filter state
-   */
-  function setFilters(newFilters: Partial<CoachFilters>) {
-    filters.value = { ...filters.value, ...newFilters };
-  }
-
-  /**
-   * Reset all filters
-   */
-  function resetFilters() {
-    filters.value = {
-      schoolId: undefined,
-      role: undefined,
-      search: undefined,
-    };
-  }
-
-  /**
-   * Clear error state
-   */
-  function clearError() {
-    error.value = null;
+  function removeCoach(id: string) {
+    coaches.value = coaches.value.filter((c) => c.id !== id);
   }
 
   return {
@@ -440,12 +347,6 @@ export const useCoachStore = defineStore("coaches", () => {
     isFetched,
     lastFetchedWithFilters,
     isFetchedBySchools,
-    filters,
-    filteredCoaches,
-    coachesByLastContact,
-    coachesBySchool,
-    coachesByRole,
-    areCoachesFetched,
     fetchCoaches,
     fetchAllCoaches,
     fetchCoachesBySchools,
@@ -453,8 +354,6 @@ export const useCoachStore = defineStore("coaches", () => {
     createCoach,
     updateCoach,
     deleteCoach,
-    setFilters,
-    resetFilters,
-    clearError,
+    removeCoach,
   };
 });

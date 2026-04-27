@@ -135,7 +135,7 @@ export const useCoaches = (): {
           { method: "POST", body: { confirmDelete: true } },
         );
         if (cascadeResponse.success) {
-          coachStore.coaches = coachStore.coaches.filter((c) => c.id !== id);
+          coachStore.removeCoach(id);
           return { cascadeUsed: true };
         }
         throw new Error(

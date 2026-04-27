@@ -77,11 +77,6 @@ describe("useCoachStore", () => {
       expect(coachStore.error).toBeNull();
       expect(coachStore.isFetched).toBe(false);
       expect(coachStore.isFetchedBySchools).toEqual({});
-      expect(coachStore.filters).toEqual({
-        schoolId: undefined,
-        role: undefined,
-        search: undefined,
-      });
     });
   });
 
@@ -421,140 +416,25 @@ describe("useCoachStore", () => {
     });
   });
 
-  describe("Getters", () => {
-    beforeEach(() => {
+  describe("removeCoach", () => {
+    it("removes a coach from local state", () => {
       coachStore.coaches = [
-        createMockCoach({
-          id: "coach-1",
-          school_id: "school-1",
-          role: "head",
-        }),
-        createMockCoach({
-          id: "coach-2",
-          school_id: "school-2",
-          role: "assistant",
-        }),
-        createMockCoach({
-          id: "coach-3",
-          school_id: "school-1",
-          role: "recruiting",
-        }),
-      ];
-    });
-
-    it("should filter coaches by school", () => {
-      const school1Coaches = coachStore.coachesBySchool("school-1");
-      expect(school1Coaches).toHaveLength(2);
-      expect(school1Coaches.every((c) => c.school_id === "school-1")).toBe(
-        true,
-      );
-    });
-
-    it("should filter coaches by role", () => {
-      const headCoaches = coachStore.coachesByRole("head");
-      expect(headCoaches).toHaveLength(1);
-      expect(headCoaches[0].role).toBe("head");
-    });
-
-    it("should sort coaches by last contact date", () => {
-      const now = new Date();
-      coachStore.coaches = [
-        createMockCoach({
-          id: "coach-1",
-          last_contact_date: new Date(
-            now.getTime() - 10 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        }),
-        createMockCoach({
-          id: "coach-2",
-          last_contact_date: new Date(
-            now.getTime() - 5 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        }),
-        createMockCoach({
-          id: "coach-3",
-          last_contact_date: new Date(
-            now.getTime() - 1 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        }),
+        createMockCoach({ id: "coach-1" }),
+        createMockCoach({ id: "coach-2" }),
       ];
 
-      const sorted = coachStore.coachesByLastContact;
-      expect(sorted[0].id).toBe("coach-3"); // Most recent
-      expect(sorted[2].id).toBe("coach-1"); // Oldest
+      coachStore.removeCoach("coach-1");
+
+      expect(coachStore.coaches).toHaveLength(1);
+      expect(coachStore.coaches[0].id).toBe("coach-2");
     });
 
-    it("should handle coaches without last contact date", () => {
-      coachStore.coaches = [
-        createMockCoach({ id: "coach-1", last_contact_date: "2024-01-01" }),
-        createMockCoach({ id: "coach-2", last_contact_date: null }),
-      ];
+    it("is a no-op when id not found", () => {
+      coachStore.coaches = [createMockCoach({ id: "coach-1" })];
 
-      const sorted = coachStore.coachesByLastContact;
-      expect(sorted[0].id).toBe("coach-1"); // With date comes first
-      expect(sorted[1].id).toBe("coach-2"); // Without date comes last
-    });
+      coachStore.removeCoach("missing");
 
-    it("should apply filters correctly", () => {
-      coachStore.setFilters({ schoolId: "school-1", role: "head" });
-
-      const filtered = coachStore.filteredCoaches;
-      expect(filtered).toHaveLength(1);
-      expect(filtered[0].id).toBe("coach-1");
-    });
-
-    it("should search by first name", () => {
-      coachStore.setFilters({ search: "john" });
-
-      const filtered = coachStore.filteredCoaches;
-      expect(filtered.length).toBeGreaterThan(0);
-      expect(filtered[0].first_name.toLowerCase()).toContain("john");
-    });
-
-    it("should check if coaches fetched for school", () => {
-      coachStore.isFetchedBySchools["school-1"] = true;
-
-      expect(coachStore.areCoachesFetched("school-1")).toBe(true);
-      expect(coachStore.areCoachesFetched("school-999")).toBe(false);
-    });
-  });
-
-  describe("Filter Management", () => {
-    it("should set filters", () => {
-      coachStore.setFilters({ schoolId: "school-1", role: "head" });
-
-      expect(coachStore.filters.schoolId).toBe("school-1");
-      expect(coachStore.filters.role).toBe("head");
-    });
-
-    it("should merge filter updates", () => {
-      coachStore.setFilters({ schoolId: "school-1" });
-      coachStore.setFilters({ role: "head" });
-
-      expect(coachStore.filters.schoolId).toBe("school-1");
-      expect(coachStore.filters.role).toBe("head");
-    });
-
-    it("should reset filters", () => {
-      coachStore.setFilters({
-        schoolId: "school-1",
-        role: "head",
-        search: "john",
-      });
-      coachStore.resetFilters();
-
-      expect(coachStore.filters).toEqual({
-        schoolId: undefined,
-        role: undefined,
-        search: undefined,
-      });
-    });
-
-    it("should clear error", () => {
-      coachStore.error = "Test error";
-      coachStore.clearError();
-
-      expect(coachStore.error).toBeNull();
+      expect(coachStore.coaches).toHaveLength(1);
     });
   });
 
