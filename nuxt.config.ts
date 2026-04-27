@@ -40,6 +40,13 @@ export default defineNuxtConfig({
     // Cache directory for faster builds
     cacheDir: ".vite",
 
+    // Strip console.* and debugger statements from production bundles.
+    // Server-side code uses useLogger(); client-side uses createClientLogger().
+    // Direct console calls are dev-only and must not ship to users.
+    esbuild: {
+      drop: process.env.NODE_ENV === "production" ? ["console", "debugger"] : [],
+    },
+
     // Pre-bundle frequently used dependencies
     optimizeDeps: {
       include: [

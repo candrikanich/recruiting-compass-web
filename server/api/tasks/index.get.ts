@@ -1,6 +1,7 @@
 /**
  * GET /api/tasks
- * Fetch all tasks with optional filters
+ * Fetch tasks with optional filters and pagination.
+ * Query: gradeLevel, category, division, limit (default 100, max 200), offset (default 0)
  * Performance: Cached for 1 hour (tasks rarely change)
  * Cache hit: Saves ~200-300ms database round trip
  */
@@ -25,9 +26,11 @@ export default defineEventHandler(async (event) => {
       : undefined;
     const category = query.category as string | undefined;
     const division = query.division as string | undefined;
+    const limit = Math.min(parseInt(String(query.limit ?? "100"), 10) || 100, 200);
+    const offset = Math.max(parseInt(String(query.offset ?? "0"), 10) || 0, 0);
 
-    // Generate cache key based on filters
-    const cacheKey = `tasks:${gradeLevel || "all"}:${category || "all"}:${division || "all"}`;
+    // Generate cache key based on filters + pagination window
+    const cacheKey = `tasks:${gradeLevel || "all"}:${category || "all"}:${division || "all"}:${limit}:${offset}`;
 
     // Try to get from cache first
     const cached = getCached<Task[]>(cacheKey);
@@ -54,10 +57,11 @@ export default defineEventHandler(async (event) => {
       request = request.contains("division_applicability", [division]);
     }
 
-    // Order by grade level and category
+    // Order by grade level and category, then bound the result window
     request = request
       .order("grade_level", { ascending: true })
-      .order("category", { ascending: true });
+      .order("category", { ascending: true })
+      .range(offset, offset + limit - 1);
 
     const { data, error } = await request;
 
