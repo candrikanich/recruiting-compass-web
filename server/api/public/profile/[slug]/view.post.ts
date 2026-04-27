@@ -94,13 +94,11 @@ export default defineEventHandler(async (event) => {
             link_id: trackingLinkId,
           })
         : Promise.resolve({ error: null }),
-      supabase
-        .from("profile_views")
-        .insert({
-          profile_id: profile.id,
-          tracking_link_id: trackingLinkId,
-          user_agent: userAgent,
-        }),
+      supabase.from("profile_views").insert({
+        profile_id: profile.id,
+        tracking_link_id: trackingLinkId,
+        user_agent: userAgent,
+      }),
     ]);
 
     for (const result of results) {
