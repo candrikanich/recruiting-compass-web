@@ -81,7 +81,7 @@
 
 <script setup lang="ts">
 import type { School } from "~/types/models";
-import { getStatusBadgeColor } from "~/utils/schoolStatusBadges";
+import { getStatusBadgeColor } from "~/utils/schoolBadges";
 import { getSizeColorClass } from "~/utils/schoolSize";
 import { MapPinIcon, StarIcon } from "@heroicons/vue/24/outline";
 import SchoolLogo from "~/components/School/SchoolLogo.vue";
