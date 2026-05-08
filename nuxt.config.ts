@@ -106,6 +106,29 @@ export default defineNuxtConfig({
       '/.well-known/apple-app-site-association': {
         headers: { 'content-type': 'application/json' },
       },
+      // RFC 9727 — extensionless catalog file needs an explicit linkset content-type.
+      '/.well-known/api-catalog': {
+        headers: { 'content-type': 'application/linkset+json; charset=utf-8' },
+      },
+      // RFC 8631 — service descriptions use the OpenAPI media type.
+      '/.well-known/api-docs/public-profile.openapi.json': {
+        headers: { 'content-type': 'application/openapi+json; charset=utf-8' },
+      },
+      // RFC 8288 Link headers — advertise discoverable resources to agents/crawlers
+      // on every response. Relation types are IANA-registered
+      // (https://www.iana.org/assignments/link-relations).
+      '/**': {
+        headers: {
+          link: [
+            '</sitemap.xml>; rel="sitemap"',
+            '</.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"',
+            '</legal/privacy>; rel="privacy-policy"',
+            '</legal/terms>; rel="terms-of-service"',
+            '</help>; rel="help"',
+            '</about>; rel="about"',
+          ].join(', '),
+        },
+      },
     },
   },
 
