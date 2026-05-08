@@ -117,6 +117,8 @@ export default defineNuxtConfig({
       // RFC 8288 Link headers — advertise discoverable resources to agents/crawlers
       // on every response. Relation types are IANA-registered
       // (https://www.iana.org/assignments/link-relations).
+      // Vary: Accept lets caches serve both HTML and the text/markdown variant
+      // (see server/middleware/agent-markdown.ts) without crossing them.
       '/**': {
         headers: {
           link: [
@@ -127,6 +129,7 @@ export default defineNuxtConfig({
             '</help>; rel="help"',
             '</about>; rel="about"',
           ].join(', '),
+          vary: 'Accept',
         },
       },
     },
