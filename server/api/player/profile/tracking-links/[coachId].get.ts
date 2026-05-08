@@ -18,10 +18,16 @@ export default defineEventHandler(async (event) => {
 
     if (membershipError) {
       logger.error("Failed to query family membership", membershipError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to load tracking link" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to load tracking link",
+      });
     }
     if (!membership) {
-      throw createError({ statusCode: 403, statusMessage: "Not a family member" });
+      throw createError({
+        statusCode: 403,
+        statusMessage: "Not a family member",
+      });
     }
 
     const { data: profile, error: profileError } = await supabase
@@ -32,7 +38,10 @@ export default defineEventHandler(async (event) => {
 
     if (profileError) {
       logger.error("Failed to query player profile", profileError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to load tracking link" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to load tracking link",
+      });
     }
     if (!profile) return null;
 
@@ -45,7 +54,10 @@ export default defineEventHandler(async (event) => {
 
     if (linkError) {
       logger.error("Failed to query tracking link", linkError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to load tracking link" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to load tracking link",
+      });
     }
 
     logger.debug("Tracking link lookup", { coachId, found: !!link });
@@ -53,6 +65,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to load tracking link", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to load tracking link" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to load tracking link",
+    });
   }
 });

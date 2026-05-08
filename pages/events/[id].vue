@@ -735,13 +735,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  onMounted,
-  reactive,
-  computed,
-  defineAsyncComponent,
-} from "vue";
+import { ref, onMounted, reactive, computed, defineAsyncComponent } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useEvents } from "~/composables/useEvents";
 import { usePerformance } from "~/composables/usePerformance";

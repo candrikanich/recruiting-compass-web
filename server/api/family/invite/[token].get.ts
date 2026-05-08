@@ -20,15 +20,24 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (!invitation) {
-      throw createError({ statusCode: 404, statusMessage: "Invitation not found" });
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Invitation not found",
+      });
     }
 
     if (invitation.status !== "pending") {
-      throw createError({ statusCode: 409, statusMessage: "This invitation is no longer valid" });
+      throw createError({
+        statusCode: 409,
+        statusMessage: "This invitation is no longer valid",
+      });
     }
 
     if (new Date(invitation.expires_at) < new Date()) {
-      throw createError({ statusCode: 410, statusMessage: "This invitation has expired" });
+      throw createError({
+        statusCode: 410,
+        statusMessage: "This invitation has expired",
+      });
     }
 
     const { data: familyUnit } = await supabase
@@ -38,7 +47,15 @@ export default defineEventHandler(async (event) => {
       .single();
 
     // Build prefill from parent-entered player details (only for player invitees)
-    let prefill: { firstName: string; lastName: string; graduationYear?: number; sport?: string; position?: string } | undefined;
+    let prefill:
+      | {
+          firstName: string;
+          lastName: string;
+          graduationYear?: number;
+          sport?: string;
+          position?: string;
+        }
+      | undefined;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pendingDetails = (familyUnit as any)?.pending_player_details;
     if (invitation.role === "player" && pendingDetails?.playerName) {
@@ -46,9 +63,13 @@ export default defineEventHandler(async (event) => {
       prefill = {
         firstName: parts[0] ?? "",
         lastName: parts.slice(1).join(" "),
-        ...(pendingDetails.graduationYear ? { graduationYear: pendingDetails.graduationYear } : {}),
+        ...(pendingDetails.graduationYear
+          ? { graduationYear: pendingDetails.graduationYear }
+          : {}),
         ...(pendingDetails.sport ? { sport: pendingDetails.sport } : {}),
-        ...(pendingDetails.position ? { position: pendingDetails.position } : {}),
+        ...(pendingDetails.position
+          ? { position: pendingDetails.position }
+          : {}),
       };
     }
 
@@ -62,6 +83,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to fetch invitation", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to fetch invitation" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to fetch invitation",
+    });
   }
 });

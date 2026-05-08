@@ -29,7 +29,8 @@ export function useSocialSyncSettings() {
       const settings = (data as any)?.social_sync_settings;
       if (settings) {
         autoSyncEnabled.value = settings.autoSyncEnabled ?? true;
-        notifyOnRecruitingPosts.value = settings.notifyOnRecruitingPosts ?? false;
+        notifyOnRecruitingPosts.value =
+          settings.notifyOnRecruitingPosts ?? false;
         notifyOnMentions.value = settings.notifyOnMentions ?? false;
         lastSyncTime.value = settings.lastSyncTime ?? null;
       }

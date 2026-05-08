@@ -3,11 +3,17 @@ import { setActivePinia, createPinia } from "pinia";
 import { useSocialSyncSettings } from "~/composables/useSocialSyncSettings";
 
 const mockSupabase = { from: vi.fn() };
-vi.mock("~/composables/useSupabase", () => ({ useSupabase: () => mockSupabase }));
+vi.mock("~/composables/useSupabase", () => ({
+  useSupabase: () => mockSupabase,
+}));
 
 let mockUserId = "user-123";
 vi.mock("~/stores/user", () => ({
-  useUserStore: () => ({ get user() { return { id: mockUserId }; } }),
+  useUserStore: () => ({
+    get user() {
+      return { id: mockUserId };
+    },
+  }),
 }));
 
 const makeMockQuery = () => {
@@ -76,7 +82,9 @@ describe("useSocialSyncSettings", () => {
       const result = await saveSettings();
       expect(mockQuery.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          social_sync_settings: expect.objectContaining({ autoSyncEnabled: false }),
+          social_sync_settings: expect.objectContaining({
+            autoSyncEnabled: false,
+          }),
         }),
       );
       expect(result.success).toBe(true);

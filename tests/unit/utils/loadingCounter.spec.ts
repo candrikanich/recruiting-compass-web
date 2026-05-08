@@ -49,7 +49,9 @@ describe("useLoadingCounter", () => {
   it("wrap() clears loading even when op throws", async () => {
     const { loading, wrap } = useLoadingCounter();
     await expect(
-      wrap(async () => { throw new Error("boom"); })
+      wrap(async () => {
+        throw new Error("boom");
+      }),
     ).rejects.toThrow("boom");
     expect(loading.value).toBe(false);
   });

@@ -129,11 +129,10 @@ export function validatePlayerDetails(data: unknown): PlayerDetails | null {
       obj.campus_size_preference,
       ["small", "medium", "large"],
     ),
-    cost_sensitivity: toOption<"high" | "medium" | "low">(obj.cost_sensitivity, [
-      "high",
-      "medium",
-      "low",
-    ]),
+    cost_sensitivity: toOption<"high" | "medium" | "low">(
+      obj.cost_sensitivity,
+      ["high", "medium", "low"],
+    ),
     travel_team_year: toNumber(obj.travel_team_year),
     travel_team_name: toString(obj.travel_team_name),
     travel_team_coach: toString(obj.travel_team_coach),

@@ -51,7 +51,7 @@ test.describe("Coach Communication History", () => {
       // Get coach ID from URL after creation (if available)
       coachId = "test-coach"; // Placeholder - would be extracted in real scenario
     } catch (err) {
-      console.warn('⚠️  beforeAll setup failed:', err);
+      console.warn("⚠️  beforeAll setup failed:", err);
     } finally {
       await ctx?.close().catch(() => {});
     }

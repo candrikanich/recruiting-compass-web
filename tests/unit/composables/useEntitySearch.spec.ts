@@ -16,10 +16,22 @@ vi.mock("~/utils/logger", () => ({
 // The chain is thenable so `await queryBuilder` resolves to { data, error }.
 // All builder methods (including limit) return the same chain so filters applied
 // after limit() are still captured by the spies.
-const buildChain = (resolvedData: unknown[] = [], resolvedError: unknown = null) => {
+const buildChain = (
+  resolvedData: unknown[] = [],
+  resolvedError: unknown = null,
+) => {
   const chain: Record<string, unknown> = {};
 
-  const methods = ["select", "eq", "ilike", "or", "gte", "lte", "order", "limit"];
+  const methods = [
+    "select",
+    "eq",
+    "ilike",
+    "or",
+    "gte",
+    "lte",
+    "order",
+    "limit",
+  ];
   for (const m of methods) {
     chain[m] = vi.fn(() => chain);
   }
@@ -83,8 +95,12 @@ describe("useEntitySearch", () => {
     });
 
     it("initializes all result arrays as empty", () => {
-      const { schoolResults, coachResults, interactionResults, metricsResults } =
-        useEntitySearch();
+      const {
+        schoolResults,
+        coachResults,
+        interactionResults,
+        metricsResults,
+      } = useEntitySearch();
       expect(schoolResults.value).toEqual([]);
       expect(coachResults.value).toEqual([]);
       expect(interactionResults.value).toEqual([]);
@@ -104,8 +120,14 @@ describe("useEntitySearch", () => {
 
   describe("clearResults", () => {
     it("clears all result arrays and resets query", () => {
-      const { schoolResults, coachResults, interactionResults, metricsResults, query, clearResults } =
-        useEntitySearch();
+      const {
+        schoolResults,
+        coachResults,
+        interactionResults,
+        metricsResults,
+        query,
+        clearResults,
+      } = useEntitySearch();
 
       // Manually set some state
       schoolResults.value = [{ id: "1" } as any];
@@ -194,7 +216,8 @@ describe("useEntitySearch", () => {
       searchType.value = "schools";
 
       const { useSupabase } = await import("~/composables/useSupabase");
-      const fromSpy = vi.mocked(useSupabase).mock.results[0]?.value.from as ReturnType<typeof vi.fn>;
+      const fromSpy = vi.mocked(useSupabase).mock.results[0]?.value
+        .from as ReturnType<typeof vi.fn>;
 
       await performSearch("test", {});
 
@@ -232,7 +255,8 @@ describe("useEntitySearch", () => {
       // Rebuild chain with data so await resolves to it
       mockChain = buildChain([mockSchool]);
 
-      const { performSearch, searchType, schoolResults, useFuzzySearch } = useEntitySearch();
+      const { performSearch, searchType, schoolResults, useFuzzySearch } =
+        useEntitySearch();
       useFuzzySearch.value = false;
       searchType.value = "schools";
 
@@ -315,7 +339,10 @@ describe("useEntitySearch", () => {
 
       const gteSpy = vi.spyOn(mockChain as any, "gte");
       await performSearch("test", { coaches: { responseRate: 0 } });
-      expect(gteSpy).not.toHaveBeenCalledWith("response_rate", expect.anything());
+      expect(gteSpy).not.toHaveBeenCalledWith(
+        "response_rate",
+        expect.anything(),
+      );
     });
 
     it("applies interaction sentiment filter", async () => {
@@ -489,8 +516,10 @@ describe("useEntitySearch", () => {
       // Make the chain throw when awaited
       mockChain = buildChain([], new Error("network error"));
       // Override then to reject
-      (mockChain as any).then = (_resolve: unknown, reject: (e: Error) => void) =>
-        Promise.reject(new Error("network error")).catch(reject);
+      (mockChain as any).then = (
+        _resolve: unknown,
+        reject: (e: Error) => void,
+      ) => Promise.reject(new Error("network error")).catch(reject);
 
       const { getSchoolSuggestions } = useEntitySearch();
       const result = await getSchoolSuggestions("Du");
@@ -533,8 +562,10 @@ describe("useEntitySearch", () => {
       userStore.user = { id: "user-1", role: "player" } as any;
 
       mockChain = buildChain([], new Error("network error"));
-      (mockChain as any).then = (_resolve: unknown, reject: (e: Error) => void) =>
-        Promise.reject(new Error("network error")).catch(reject);
+      (mockChain as any).then = (
+        _resolve: unknown,
+        reject: (e: Error) => void,
+      ) => Promise.reject(new Error("network error")).catch(reject);
 
       const { getCoachSuggestions } = useEntitySearch();
       const result = await getCoachSuggestions("Jo");

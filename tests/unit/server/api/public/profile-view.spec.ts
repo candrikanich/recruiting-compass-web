@@ -45,7 +45,12 @@ vi.mock("~/server/utils/supabase", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -57,16 +62,17 @@ vi.mock("h3", async (importOriginal) => {
     getQuery: vi.fn(() => ({ ref: mockState.refToken })),
     getRequestHeader: vi.fn(() => "Mozilla/5.0"),
     createError: (cfg: { statusCode: number; statusMessage?: string }) => {
-      const err = new Error(cfg.statusMessage) as Error & { statusCode: number };
+      const err = new Error(cfg.statusMessage) as Error & {
+        statusCode: number;
+      };
       err.statusCode = cfg.statusCode;
       return err;
     },
   };
 });
 
-const { default: handler } = await import(
-  "~/server/api/public/profile/[slug]/view.post"
-);
+const { default: handler } =
+  await import("~/server/api/public/profile/[slug]/view.post");
 
 describe("POST /api/public/profile/[slug]/view", () => {
   beforeEach(() => {

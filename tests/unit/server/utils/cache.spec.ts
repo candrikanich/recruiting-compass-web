@@ -94,7 +94,7 @@ describe("server/utils/cache", () => {
         setCached(`key:${i}`, i);
       }
       // Early keys are evicted, late keys exist
-      expect(getCached("key:99")).toBeNull();  // evicted
+      expect(getCached("key:99")).toBeNull(); // evicted
       expect(getCached("key:10099")).toBe(10099); // present
     });
   });

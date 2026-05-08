@@ -86,10 +86,14 @@ test.describe("School Detail - Notes Management", () => {
     await saveButton.click();
 
     // After clicking save, the edit mode closes (button disappears) — check with short timeout
-    const buttonText = await saveButton.textContent({ timeout: 500 }).catch(() => null);
+    const buttonText = await saveButton
+      .textContent({ timeout: 500 })
+      .catch(() => null);
     if (buttonText?.includes("Saving")) {
       expect(buttonText).toContain("Saving");
-      const isDisabled = await saveButton.isDisabled({ timeout: 500 }).catch(() => true);
+      const isDisabled = await saveButton
+        .isDisabled({ timeout: 500 })
+        .catch(() => true);
       expect(isDisabled).toBe(true);
     }
     // Wait for save to complete

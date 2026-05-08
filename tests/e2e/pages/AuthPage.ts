@@ -4,7 +4,9 @@ import { BasePage } from "./BasePage";
 export class AuthPage extends BasePage {
   async goto() {
     await super.goto("/login");
-    await this.page.locator('input[type="email"]').waitFor({ state: "visible" });
+    await this.page
+      .locator('input[type="email"]')
+      .waitFor({ state: "visible" });
   }
 
   async login(
@@ -71,7 +73,9 @@ export class AuthPage extends BasePage {
     await this.click('[data-testid="signup-button"]');
 
     // Wait for navigation to onboarding, verify-email, or dashboard depending on Supabase config
-    await this.page.waitForURL(/\/(onboarding|verify-email|dashboard)/, { timeout: 15000 });
+    await this.page.waitForURL(/\/(onboarding|verify-email|dashboard)/, {
+      timeout: 15000,
+    });
   }
 
   async logout() {
@@ -109,7 +113,9 @@ export class AuthPage extends BasePage {
 
   async expectError(message: string) {
     // Field errors use FieldError (role="alert"); form errors use FormErrorSummary (data-testid="error-message")
-    const alert = this.page.locator('[role="alert"]').filter({ hasText: message });
+    const alert = this.page
+      .locator('[role="alert"]')
+      .filter({ hasText: message });
     await expect(alert.first()).toBeVisible({ timeout: 5000 });
   }
 

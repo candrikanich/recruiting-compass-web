@@ -87,7 +87,9 @@ describe("useAuthFetch", () => {
       userStore.isAuthenticated = true;
       const { $fetchAuth } = useAuthFetch();
 
-      await expect($fetchAuth("/api/test")).rejects.toThrow(SessionExpiredError);
+      await expect($fetchAuth("/api/test")).rejects.toThrow(
+        SessionExpiredError,
+      );
       expect(mockShowToast).toHaveBeenCalledWith(
         expect.stringContaining("expired"),
         "warning",
@@ -103,7 +105,9 @@ describe("useAuthFetch", () => {
       userStore.isAuthenticated = false;
       const { $fetchAuth } = useAuthFetch();
 
-      await expect($fetchAuth("/api/test")).rejects.toThrow(SessionExpiredError);
+      await expect($fetchAuth("/api/test")).rejects.toThrow(
+        SessionExpiredError,
+      );
       expect(mockShowToast).not.toHaveBeenCalled();
       expect(mockNavigateTo).not.toHaveBeenCalled();
     });
@@ -120,7 +124,9 @@ describe("useAuthFetch", () => {
       userStore.isAuthenticated = true;
 
       const { $fetchAuth } = useAuthFetch();
-      await expect($fetchAuth("/api/test")).rejects.toThrow(SessionExpiredError);
+      await expect($fetchAuth("/api/test")).rejects.toThrow(
+        SessionExpiredError,
+      );
       expect(mockShowToast).toHaveBeenCalledWith(
         expect.stringContaining("expired"),
         "warning",
@@ -140,7 +146,9 @@ describe("useAuthFetch", () => {
       userStore.isAuthenticated = false;
 
       const { $fetchAuth } = useAuthFetch();
-      await expect($fetchAuth("/api/test")).rejects.toThrow(SessionExpiredError);
+      await expect($fetchAuth("/api/test")).rejects.toThrow(
+        SessionExpiredError,
+      );
       expect(mockShowToast).not.toHaveBeenCalled();
       expect(mockNavigateTo).not.toHaveBeenCalled();
     });

@@ -127,7 +127,9 @@ export const useOnboarding = () => {
           }
         }
         if (taskErrors.length > 0) {
-          throw new Error(`Failed to complete ${taskErrors.length} task(s). Please try again.`);
+          throw new Error(
+            `Failed to complete ${taskErrors.length} task(s). Please try again.`,
+          );
         }
       }
 
@@ -152,7 +154,9 @@ export const useOnboarding = () => {
       isOnboardingComplete.value = true;
 
       const { $posthog } = useNuxtApp();
-      $posthog?.capture("onboarding_step_completed", { step: currentStep.value });
+      $posthog?.capture("onboarding_step_completed", {
+        step: currentStep.value,
+      });
 
       return {
         assessment,

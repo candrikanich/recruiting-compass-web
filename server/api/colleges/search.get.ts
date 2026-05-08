@@ -1,8 +1,4 @@
-import {
-  defineEventHandler,
-  getQuery,
-  createError,
-} from "h3";
+import { defineEventHandler, getQuery, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { redis, CACHE_KEYS, TTL } from "~/server/utils/redis";
@@ -31,8 +27,8 @@ export default defineEventHandler(async (event) => {
   }
 
   // 1. Check Redis cache first
-  const cacheKey = id 
-    ? CACHE_KEYS.COLLEGE_ID(String(id)) 
+  const cacheKey = id
+    ? CACHE_KEYS.COLLEGE_ID(String(id))
     : CACHE_KEYS.COLLEGE_SEARCH(String(q));
 
   if (redis) {

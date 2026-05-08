@@ -3,11 +3,17 @@ import { setActivePinia, createPinia } from "pinia";
 import { useRecommendationLetters } from "~/composables/useRecommendationLetters";
 
 const mockSupabase = { from: vi.fn() };
-vi.mock("~/composables/useSupabase", () => ({ useSupabase: () => mockSupabase }));
+vi.mock("~/composables/useSupabase", () => ({
+  useSupabase: () => mockSupabase,
+}));
 
 let mockUserId = "user-123";
 vi.mock("~/stores/user", () => ({
-  useUserStore: () => ({ get user() { return { id: mockUserId }; } }),
+  useUserStore: () => ({
+    get user() {
+      return { id: mockUserId };
+    },
+  }),
 }));
 
 const makeMockQuery = () => {
@@ -40,12 +46,17 @@ describe("useRecommendationLetters", () => {
       await fetchLetters();
       expect(mockSupabase.from).toHaveBeenCalledWith("recommendation_letters");
       expect(mockQuery.eq).toHaveBeenCalledWith("user_id", "user-123");
-      expect(mockQuery.order).toHaveBeenCalledWith("requested_date", { ascending: false });
+      expect(mockQuery.order).toHaveBeenCalledWith("requested_date", {
+        ascending: false,
+      });
       expect(letters.value).toEqual([]);
     });
 
     it("sets error state on fetch failure", async () => {
-      mockQuery.order.mockResolvedValue({ data: null, error: { message: "DB down" } });
+      mockQuery.order.mockResolvedValue({
+        data: null,
+        error: { message: "DB down" },
+      });
       const { fetchLetters, error } = useRecommendationLetters();
       await fetchLetters();
       expect(error.value).toBeTruthy();
@@ -74,14 +85,21 @@ describe("useRecommendationLetters", () => {
     };
 
     it("inserts a new letter when no id provided", async () => {
-      const insertSelectMock = vi.fn().mockResolvedValue({ data: [{ id: "new-id" }], error: null });
+      const insertSelectMock = vi
+        .fn()
+        .mockResolvedValue({ data: [{ id: "new-id" }], error: null });
       const insertMock = { select: insertSelectMock };
       mockQuery.insert.mockReturnValue(insertMock);
       mockQuery.order.mockResolvedValue({ data: [], error: null });
       const { saveLetter } = useRecommendationLetters();
       await saveLetter(formData);
       expect(mockQuery.insert).toHaveBeenCalledWith(
-        expect.arrayContaining([expect.objectContaining({ writer_name: "Dr. Smith", user_id: "user-123" })]),
+        expect.arrayContaining([
+          expect.objectContaining({
+            writer_name: "Dr. Smith",
+            user_id: "user-123",
+          }),
+        ]),
       );
     });
 
@@ -91,12 +109,16 @@ describe("useRecommendationLetters", () => {
         .mockResolvedValueOnce({ data: null, error: null });
       const { saveLetter } = useRecommendationLetters();
       await saveLetter(formData, "letter-abc");
-      expect(mockQuery.update).toHaveBeenCalledWith(expect.objectContaining({ writer_name: "Dr. Smith" }));
+      expect(mockQuery.update).toHaveBeenCalledWith(
+        expect.objectContaining({ writer_name: "Dr. Smith" }),
+      );
       expect(mockQuery.eq).toHaveBeenCalledWith("id", "letter-abc");
     });
 
     it("sets error state on save failure", async () => {
-      const insertSelectMock = vi.fn().mockResolvedValue({ data: null, error: { message: "insert failed" } });
+      const insertSelectMock = vi
+        .fn()
+        .mockResolvedValue({ data: null, error: { message: "insert failed" } });
       const insertMock = { select: insertSelectMock };
       mockQuery.insert.mockReturnValue(insertMock);
       const { saveLetter, error } = useRecommendationLetters();

@@ -396,7 +396,10 @@ describe("useRecovery", () => {
       const { generateRecoveryPlan } = useRecovery();
       const plan = generateRecoveryPlan({
         type: "eligibility_incomplete",
-        details: { registrationStatus: "not_started", daysUntilEarlyDecember: 90 },
+        details: {
+          registrationStatus: "not_started",
+          daysUntilEarlyDecember: 90,
+        },
         severity: "high",
       });
 

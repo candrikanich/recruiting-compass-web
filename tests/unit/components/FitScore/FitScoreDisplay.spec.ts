@@ -89,9 +89,9 @@ describe("FitScoreDisplay", () => {
       const wrapper = mount(FitScoreDisplay, {
         props: { fitScore: withBreakdown, showBreakdown: true },
       });
-      expect(
-        (wrapper.find("details").element as HTMLDetailsElement).open,
-      ).toBe(false);
+      expect((wrapper.find("details").element as HTMLDetailsElement).open).toBe(
+        false,
+      );
     });
 
     it("summary label contains breakdown text", () => {

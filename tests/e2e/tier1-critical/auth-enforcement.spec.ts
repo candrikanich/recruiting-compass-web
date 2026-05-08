@@ -63,7 +63,9 @@ test.describe("Auth Enforcement - Public Routes", () => {
   // Tests that public routes are accessible without auth — must start logged out
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("should allow access to login page without auth @smoke", async ({ page }) => {
+  test("should allow access to login page without auth @smoke", async ({
+    page,
+  }) => {
     await page.goto("/login");
     expect(page.url()).toContain("/login");
     // Should see login form

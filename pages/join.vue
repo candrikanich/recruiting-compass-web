@@ -23,12 +23,22 @@ interface InviteDetails {
   invitationId: string;
   role: "player" | "parent";
   familyName: string;
-  prefill?: { firstName: string; lastName: string; graduationYear?: number; sport?: string; position?: string };
+  prefill?: {
+    firstName: string;
+    lastName: string;
+    graduationYear?: number;
+    sport?: string;
+    position?: string;
+  };
 }
 
 const invite = ref<InviteDetails | null>(null);
-const fetchError = ref<{ statusCode: number; statusMessage?: string } | null>(null);
-const fetchStatus = ref<"pending" | "success" | "error" | "declined">("pending");
+const fetchError = ref<{ statusCode: number; statusMessage?: string } | null>(
+  null,
+);
+const fetchStatus = ref<"pending" | "success" | "error" | "declined">(
+  "pending",
+);
 
 // Login form state
 const loginEmail = ref("");
@@ -55,12 +65,17 @@ onMounted(async () => {
     return;
   }
   try {
-    invite.value = await $fetch<InviteDetails>(`/api/family/invite/${token.value}`);
+    invite.value = await $fetch<InviteDetails>(
+      `/api/family/invite/${token.value}`,
+    );
     fetchStatus.value = "success";
   } catch (err: unknown) {
     fetchStatus.value = "error";
     const e = err as { statusCode?: number; statusMessage?: string };
-    fetchError.value = { statusCode: e?.statusCode ?? 500, statusMessage: e?.statusMessage };
+    fetchError.value = {
+      statusCode: e?.statusCode ?? 500,
+      statusMessage: e?.statusMessage,
+    };
   }
 });
 
@@ -71,14 +86,19 @@ async function accept() {
     if (!userStore.isAuthenticated) {
       await login(loginEmail.value, loginPassword.value);
     }
-    await $fetchAuth(`/api/family/invite/${token.value}/accept`, { method: "POST" });
+    await $fetchAuth(`/api/family/invite/${token.value}/accept`, {
+      method: "POST",
+    });
     await activeFamilyCtx?.refetchFamilies();
     showToast("You're connected!", "success");
     const { $posthog } = useNuxtApp();
     $posthog?.capture("family_invite_accepted");
     await navigateTo("/dashboard");
   } catch (err: unknown) {
-    loginError.value = err instanceof Error ? err.message : "Login failed. Please check your credentials.";
+    loginError.value =
+      err instanceof Error
+        ? err.message
+        : "Login failed. Please check your credentials.";
   } finally {
     loading.value = false;
   }
@@ -97,10 +117,15 @@ async function signupAndConnect() {
   if (invite.value.role === "player" && signupDateOfBirth.value) {
     const dob = new Date(signupDateOfBirth.value);
     const today = new Date();
-    const age = today.getFullYear() - dob.getFullYear() -
-      (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate()) ? 1 : 0);
+    const age =
+      today.getFullYear() -
+      dob.getFullYear() -
+      (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate())
+        ? 1
+        : 0);
     if (age < 13) {
-      signupError.value = "Recruiting Compass is not available for users under 13. If you're a parent, please register with your own information.";
+      signupError.value =
+        "Recruiting Compass is not available for users under 13. If you're a parent, please register with your own information.";
       return;
     }
   }
@@ -108,19 +133,35 @@ async function signupAndConnect() {
   loading.value = true;
   try {
     const fullName = `${signupFirstName.value} ${signupLastName.value}`.trim();
-    const authData = await signup(signupEmail.value, signupPassword.value, fullName, invite.value.role);
+    const authData = await signup(
+      signupEmail.value,
+      signupPassword.value,
+      fullName,
+      invite.value.role,
+    );
 
     if (!authData?.data?.user?.id) throw new Error("Signup failed");
 
-    const userRecord: Record<string, unknown> = { id: authData.data.user.id, email: signupEmail.value, full_name: fullName, role: invite.value.role };
-    if (invite.value.role === "player" && signupDateOfBirth.value) userRecord.date_of_birth = signupDateOfBirth.value;
-    const { error: upsertError } = await (supabase.from("users") as any).upsert([userRecord], { onConflict: "id" });
+    const userRecord: Record<string, unknown> = {
+      id: authData.data.user.id,
+      email: signupEmail.value,
+      full_name: fullName,
+      role: invite.value.role,
+    };
+    if (invite.value.role === "player" && signupDateOfBirth.value)
+      userRecord.date_of_birth = signupDateOfBirth.value;
+    const { error: upsertError } = await (supabase.from("users") as any).upsert(
+      [userRecord],
+      { onConflict: "id" },
+    );
     if (upsertError) throw new Error("Could not save account details");
 
     // Initialize the user store so role is available on the next page
     await userStore.initializeUser();
 
-    await $fetchAuth(`/api/family/invite/${token.value}/accept`, { method: "POST" });
+    await $fetchAuth(`/api/family/invite/${token.value}/accept`, {
+      method: "POST",
+    });
     await activeFamilyCtx?.refetchFamilies();
     showToast("You're connected!", "success");
     const { $posthog: $posthogSignup } = useNuxtApp();
@@ -130,13 +171,20 @@ async function signupAndConnect() {
       await navigateTo("/dashboard");
     } else {
       const query: Record<string, string> = {};
-      if (invite.value.prefill?.graduationYear) query.graduationYear = String(invite.value.prefill.graduationYear);
+      if (invite.value.prefill?.graduationYear)
+        query.graduationYear = String(invite.value.prefill.graduationYear);
       if (invite.value.prefill?.sport) query.sport = invite.value.prefill.sport;
-      if (invite.value.prefill?.position) query.position = invite.value.prefill.position;
-      await navigateTo(Object.keys(query).length ? { path: "/onboarding", query } : "/onboarding");
+      if (invite.value.prefill?.position)
+        query.position = invite.value.prefill.position;
+      await navigateTo(
+        Object.keys(query).length
+          ? { path: "/onboarding", query }
+          : "/onboarding",
+      );
     }
   } catch (err: unknown) {
-    signupError.value = err instanceof Error ? err.message : "Could not create account";
+    signupError.value =
+      err instanceof Error ? err.message : "Could not create account";
   } finally {
     loading.value = false;
   }
@@ -163,7 +211,9 @@ async function decline() {
     <!-- Declined -->
     <div v-else-if="fetchStatus === 'declined'" data-testid="invite-declined">
       <h1 class="text-xl font-semibold mb-2">Invitation declined</h1>
-      <p class="text-gray-600">You've declined this invitation. No action is needed.</p>
+      <p class="text-gray-600">
+        You've declined this invitation. No action is needed.
+      </p>
     </div>
 
     <!-- Error: expired -->
@@ -173,10 +223,15 @@ async function decline() {
     </div>
 
     <!-- Error: already accepted -->
-    <div v-else-if="fetchError?.statusCode === 409" data-testid="error-accepted">
+    <div
+      v-else-if="fetchError?.statusCode === 409"
+      data-testid="error-accepted"
+    >
       <h1 class="text-xl font-semibold mb-2">Already connected</h1>
       <p class="text-gray-600">You're already a member of this family.</p>
-      <DesignSystemButton to="/dashboard" class="mt-4">Go to dashboard</DesignSystemButton>
+      <DesignSystemButton to="/dashboard" class="mt-4"
+        >Go to dashboard</DesignSystemButton
+      >
     </div>
 
     <!-- Error: not found or other -->
@@ -200,10 +255,20 @@ async function decline() {
           Connecting as {{ userStore.user?.email }}
         </p>
         <div class="flex gap-3">
-          <DesignSystemButton data-testid="connect-button" :loading="loading" @click="accept">
+          <DesignSystemButton
+            data-testid="connect-button"
+            :loading="loading"
+            @click="accept"
+          >
             Connect to {{ invite.familyName }}
           </DesignSystemButton>
-          <DesignSystemButton data-testid="decline-button" variant="outline" color="red" :loading="declining" @click="decline">
+          <DesignSystemButton
+            data-testid="decline-button"
+            variant="outline"
+            color="red"
+            :loading="declining"
+            @click="decline"
+          >
             Decline
           </DesignSystemButton>
         </div>
@@ -213,15 +278,41 @@ async function decline() {
       <div v-else>
         <!-- Login form -->
         <div data-testid="login-section">
-          <p class="text-sm text-gray-500 mb-4">Log in to connect your account.</p>
-          <p v-if="loginError" class="text-sm text-red-600 mb-3" role="alert">{{ loginError }}</p>
-          <DesignSystemInput v-model="loginEmail" data-testid="email-input" label="Email" type="email" class="mb-3" />
-          <DesignSystemInput v-model="loginPassword" data-testid="password-input" label="Password" type="password" class="mb-4" />
+          <p class="text-sm text-gray-500 mb-4">
+            Log in to connect your account.
+          </p>
+          <p v-if="loginError" class="text-sm text-red-600 mb-3" role="alert">
+            {{ loginError }}
+          </p>
+          <DesignSystemInput
+            v-model="loginEmail"
+            data-testid="email-input"
+            label="Email"
+            type="email"
+            class="mb-3"
+          />
+          <DesignSystemInput
+            v-model="loginPassword"
+            data-testid="password-input"
+            label="Password"
+            type="password"
+            class="mb-4"
+          />
           <div class="flex gap-3">
-            <DesignSystemButton data-testid="login-connect-button" :loading="loading" @click="accept">
+            <DesignSystemButton
+              data-testid="login-connect-button"
+              :loading="loading"
+              @click="accept"
+            >
               Log in and connect
             </DesignSystemButton>
-            <DesignSystemButton data-testid="decline-button" variant="outline" color="red" :loading="declining" @click="decline">
+            <DesignSystemButton
+              data-testid="decline-button"
+              variant="outline"
+              color="red"
+              :loading="declining"
+              @click="decline"
+            >
               Decline
             </DesignSystemButton>
           </div>
@@ -231,9 +322,13 @@ async function decline() {
         <div class="mt-8" data-testid="signup-section">
           <p class="text-sm text-gray-500 mb-4">
             Don't have an account?
-            <NuxtLink to="/signup" class="text-blue-600 hover:underline">Create one instead</NuxtLink>.
+            <NuxtLink to="/signup" class="text-blue-600 hover:underline"
+              >Create one instead</NuxtLink
+            >.
           </p>
-          <p v-if="signupError" class="text-sm text-red-600 mb-3" role="alert">{{ signupError }}</p>
+          <p v-if="signupError" class="text-sm text-red-600 mb-3" role="alert">
+            {{ signupError }}
+          </p>
           <AuthInviteSignupForm
             :email="signupEmail"
             :role="invite.role"
@@ -255,7 +350,13 @@ async function decline() {
             @submit="signupAndConnect"
           />
           <div class="mt-4">
-            <DesignSystemButton data-testid="decline-button" variant="outline" color="red" :loading="declining" @click="decline">
+            <DesignSystemButton
+              data-testid="decline-button"
+              variant="outline"
+              color="red"
+              :loading="declining"
+              @click="decline"
+            >
               Decline invitation
             </DesignSystemButton>
           </div>

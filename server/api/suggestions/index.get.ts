@@ -66,7 +66,9 @@ export default defineEventHandler(async (event) => {
           .eq("athlete_id", athleteId);
 
         if (!totalEver) {
-          logger.info("No suggestions ever generated — bootstrapping for new user");
+          logger.info(
+            "No suggestions ever generated — bootstrapping for new user",
+          );
           try {
             await triggerSuggestionUpdate(supabase, athleteId, "daily_refresh");
             [suggestions, pendingCount] = await Promise.all([
@@ -90,6 +92,9 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if (error instanceof Error && "statusCode" in error) throw error;
     logger.error("Failed to fetch suggestions", error);
-    throw createError({ statusCode: 500, statusMessage: "Failed to fetch suggestions" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to fetch suggestions",
+    });
   }
 });

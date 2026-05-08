@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
+  >
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
@@ -16,11 +18,21 @@
 
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <!-- Account Info -->
-      <section class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-        <h2 class="text-lg font-semibold text-slate-900 mb-4">Account Information</h2>
+      <section
+        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6"
+      >
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">
+          Account Information
+        </h2>
         <div class="space-y-2 text-sm text-slate-600">
-          <p><span class="font-medium text-slate-800">Email:</span> {{ userStore.user?.email }}</p>
-          <p><span class="font-medium text-slate-800">Role:</span> {{ userStore.user?.role }}</p>
+          <p>
+            <span class="font-medium text-slate-800">Email:</span>
+            {{ userStore.user?.email }}
+          </p>
+          <p>
+            <span class="font-medium text-slate-800">Role:</span>
+            {{ userStore.user?.role }}
+          </p>
         </div>
       </section>
 
@@ -34,10 +46,12 @@
             <template #description>
               <p class="text-sm font-medium">
                 Your account is scheduled for deletion on
-                <strong>{{ deletionDate }}</strong>.
+                <strong>{{ deletionDate }}</strong
+                >.
               </p>
               <p class="text-sm mt-1">
-                All your data will be permanently removed on that date. You can cancel this request before then.
+                All your data will be permanently removed on that date. You can
+                cancel this request before then.
               </p>
             </template>
           </UAlert>
@@ -48,18 +62,25 @@
             color="neutral"
             @click="cancelDeletion"
           >
-            {{ loading ? 'Cancelling…' : 'Cancel Deletion Request' }}
+            {{ loading ? "Cancelling…" : "Cancel Deletion Request" }}
           </UButton>
-          <p v-if="errorMessage" class="text-sm text-red-600">{{ errorMessage }}</p>
+          <p v-if="errorMessage" class="text-sm text-red-600">
+            {{ errorMessage }}
+          </p>
         </div>
 
         <!-- Confirmation step -->
         <div v-else-if="confirmStep" class="space-y-4">
           <UAlert color="error">
             <template #description>
-              <p class="text-sm font-semibold">This action cannot be easily undone.</p>
+              <p class="text-sm font-semibold">
+                This action cannot be easily undone.
+              </p>
               <ul class="text-sm list-disc list-inside space-y-1 mt-2">
-                <li>All your schools, coaches, interactions, and notes will be deleted</li>
+                <li>
+                  All your schools, coaches, interactions, and notes will be
+                  deleted
+                </li>
                 <li>You will be removed from any shared family units</li>
                 <li>Your account will be permanently deleted after 30 days</li>
                 <li>You may cancel within the 30-day window</li>
@@ -73,7 +94,7 @@
               color="error"
               @click="requestDeletion"
             >
-              {{ loading ? 'Requesting…' : 'Yes, delete my account' }}
+              {{ loading ? "Requesting…" : "Yes, delete my account" }}
             </UButton>
             <UButton
               data-testid="cancel-confirm-button"
@@ -85,14 +106,17 @@
               Cancel
             </UButton>
           </div>
-          <p v-if="errorMessage" class="text-sm text-red-600">{{ errorMessage }}</p>
+          <p v-if="errorMessage" class="text-sm text-red-600">
+            {{ errorMessage }}
+          </p>
         </div>
 
         <!-- Initial state -->
         <div v-else class="space-y-4">
           <p class="text-sm text-slate-600">
-            You can request deletion of your account and all associated data. Your account will be
-            permanently deleted 30 days after your request, giving you time to change your mind.
+            You can request deletion of your account and all associated data.
+            Your account will be permanently deleted 30 days after your request,
+            giving you time to change your mind.
           </p>
           <UButton
             data-testid="request-deletion-button"
@@ -136,13 +160,19 @@ const deletionDate = computed(() => {
   if (!deletionRequestedAt.value) return "";
   const d = new Date(deletionRequestedAt.value);
   d.setDate(d.getDate() + 30);
-  return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 });
 
 onMounted(async () => {
   // Load current deletion status from the user store or fetch it
   try {
-    const data = await $fetchAuth<{ deletion_requested_at: string | null }>("/api/account/deletion-status");
+    const data = await $fetchAuth<{ deletion_requested_at: string | null }>(
+      "/api/account/deletion-status",
+    );
     deletionRequestedAt.value = data.deletion_requested_at;
   } catch {
     // Non-blocking — if this fails, show the default state
@@ -157,7 +187,8 @@ async function requestDeletion() {
     deletionRequestedAt.value = new Date().toISOString();
     confirmStep.value = false;
   } catch {
-    errorMessage.value = "Failed to request account deletion. Please try again.";
+    errorMessage.value =
+      "Failed to request account deletion. Please try again.";
   } finally {
     loading.value = false;
   }

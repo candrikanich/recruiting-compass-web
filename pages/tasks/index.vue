@@ -155,7 +155,8 @@ const taskCheckboxClass = (taskId: string) => [
 ];
 
 const taskCheckboxTitle = (taskId: string): string => {
-  if (isViewingAsParent.value) return "Parents can view tasks but cannot mark them complete";
+  if (isViewingAsParent.value)
+    return "Parents can view tasks but cannot mark them complete";
   if (isTaskLocked(taskId)) return "Complete prerequisites to unlock this task";
   return "Mark task complete";
 };

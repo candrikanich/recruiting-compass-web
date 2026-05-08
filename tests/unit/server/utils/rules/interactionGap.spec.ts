@@ -328,7 +328,6 @@ describe("interactionGapRule", () => {
 
       expect(snapshot.days_since_contact).toBe(20);
     });
-
   });
 
   describe("shouldReEvaluate", () => {

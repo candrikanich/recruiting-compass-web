@@ -229,9 +229,7 @@ describe("useSchools error scenarios", () => {
 
   describe("smartDelete error handling", () => {
     it("falls back to cascade on FK constraint error", async () => {
-      const mockFetchAuth = vi
-        .fn()
-        .mockResolvedValue({ success: true });
+      const mockFetchAuth = vi.fn().mockResolvedValue({ success: true });
       vi.spyOn(authFetchModule, "useAuthFetch").mockReturnValue({
         $fetchAuth: mockFetchAuth,
       });

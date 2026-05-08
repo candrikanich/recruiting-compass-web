@@ -22,13 +22,15 @@ describe("useAddressAutocomplete", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("returns empty suggestions initially", async () => {
-    const { useAddressAutocomplete } = await import("~/composables/useAddressAutocomplete");
+    const { useAddressAutocomplete } =
+      await import("~/composables/useAddressAutocomplete");
     const { suggestions } = useAddressAutocomplete();
     expect(suggestions.value).toEqual([]);
   });
 
   it("does not search for queries shorter than 3 chars", async () => {
-    const { useAddressAutocomplete } = await import("~/composables/useAddressAutocomplete");
+    const { useAddressAutocomplete } =
+      await import("~/composables/useAddressAutocomplete");
     const { search } = useAddressAutocomplete();
     await search("El");
     expect(mockFetch).not.toHaveBeenCalled();
@@ -36,14 +38,16 @@ describe("useAddressAutocomplete", () => {
 
   it("fetches suggestions for queries of 3+ chars", async () => {
     mockFetch.mockResolvedValue([suggestion]);
-    const { useAddressAutocomplete } = await import("~/composables/useAddressAutocomplete");
+    const { useAddressAutocomplete } =
+      await import("~/composables/useAddressAutocomplete");
     const { search, suggestions } = useAddressAutocomplete();
     await search("1428");
     expect(suggestions.value).toEqual([suggestion]);
   });
 
   it("selectSuggestion returns full HomeLocation with lat/lng", async () => {
-    const { useAddressAutocomplete } = await import("~/composables/useAddressAutocomplete");
+    const { useAddressAutocomplete } =
+      await import("~/composables/useAddressAutocomplete");
     const { selectSuggestion } = useAddressAutocomplete();
     const loc = selectSuggestion(suggestion);
     expect(loc).toEqual({
@@ -58,7 +62,8 @@ describe("useAddressAutocomplete", () => {
 
   it("returns empty suggestions on API error (graceful fallback)", async () => {
     mockFetch.mockRejectedValue(new Error("Network error"));
-    const { useAddressAutocomplete } = await import("~/composables/useAddressAutocomplete");
+    const { useAddressAutocomplete } =
+      await import("~/composables/useAddressAutocomplete");
     const { search, suggestions } = useAddressAutocomplete();
     await search("1428 Elm");
     expect(suggestions.value).toEqual([]);
@@ -66,7 +71,8 @@ describe("useAddressAutocomplete", () => {
 
   it("clears suggestions on empty query", async () => {
     mockFetch.mockResolvedValue([suggestion]);
-    const { useAddressAutocomplete } = await import("~/composables/useAddressAutocomplete");
+    const { useAddressAutocomplete } =
+      await import("~/composables/useAddressAutocomplete");
     const { search, suggestions } = useAddressAutocomplete();
     await search("1428");
     expect(suggestions.value).toHaveLength(1);

@@ -120,7 +120,9 @@ describe("useCollegeData", () => {
     });
 
     it("sets error on non-ok response", async () => {
-      mockFetchAuth.mockRejectedValue(Object.assign(new Error("Bad Gateway"), { statusCode: 502 }));
+      mockFetchAuth.mockRejectedValue(
+        Object.assign(new Error("Bad Gateway"), { statusCode: 502 }),
+      );
       const { fetchByName, error } = useCollegeData();
 
       const result = await fetchByName("University of Florida");

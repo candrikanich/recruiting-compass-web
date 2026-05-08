@@ -33,7 +33,11 @@ export default defineEventHandler(async (event) => {
       : undefined;
     const providedSecret = bearerSecret ?? legacyHeader;
 
-    if (!expectedSecret || !providedSecret || !verifySharedSecret(providedSecret, expectedSecret)) {
+    if (
+      !expectedSecret ||
+      !providedSecret ||
+      !verifySharedSecret(providedSecret, expectedSecret)
+    ) {
       throw createError({
         statusCode: 401,
         message: "Unauthorized: Invalid cron secret",

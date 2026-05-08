@@ -2,7 +2,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("~/server/utils/logger", () => ({
   useLogger: vi.fn(() => ({
-    debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
   })),
 }));
 
@@ -11,18 +14,34 @@ vi.mock("h3", async (importOriginal) => {
   return {
     ...actual,
     getQuery: vi.fn(),
-    createError: vi.fn((opts: { statusCode: number; statusMessage: string }) => {
-      const err = new Error(opts.statusMessage) as Error & { statusCode: number };
-      err.statusCode = opts.statusCode;
-      return err;
-    }),
-    defineEventHandler: vi.fn((handler: (event: unknown) => unknown) => handler),
+    createError: vi.fn(
+      (opts: { statusCode: number; statusMessage: string }) => {
+        const err = new Error(opts.statusMessage) as Error & {
+          statusCode: number;
+        };
+        err.statusCode = opts.statusCode;
+        return err;
+      },
+    ),
+    defineEventHandler: vi.fn(
+      (handler: (event: unknown) => unknown) => handler,
+    ),
   };
 });
 
 const mockSchools = [
-  { nces_id: "100001", name: "Lincoln High School", city: "Des Moines", state: "IA" },
-  { nces_id: "100002", name: "Lincoln-Way East High School", city: "Frankfort", state: "IL" },
+  {
+    nces_id: "100001",
+    name: "Lincoln High School",
+    city: "Des Moines",
+    state: "IA",
+  },
+  {
+    nces_id: "100002",
+    name: "Lincoln-Way East High School",
+    city: "Frankfort",
+    state: "IL",
+  },
 ];
 
 const mockSelect = vi.fn();
@@ -37,11 +56,16 @@ vi.mock("~/server/utils/supabase", () => ({
 
 vi.mock("~/server/utils/redis", () => ({
   redis: null,
-  CACHE_KEYS: { NCES_SEARCH: (q: string, s: string) => `nces:search:${q}:${s}` },
+  CACHE_KEYS: {
+    NCES_SEARCH: (q: string, s: string) => `nces:search:${q}:${s}`,
+  },
   TTL: { ONE_HOUR: 3600 },
 }));
 
-const mockEvent = { context: {}, node: { req: { headers: {} }, res: {} } } as never;
+const mockEvent = {
+  context: {},
+  node: { req: { headers: {} }, res: {} },
+} as never;
 
 import { getQuery, createError } from "h3";
 
@@ -79,7 +103,9 @@ describe("GET /api/schools/high-school-search", () => {
       return err;
     });
     const handler = await import("~/server/api/schools/high-school-search.get");
-    await expect(handler.default(mockEvent)).rejects.toMatchObject({ statusCode: 400 });
+    await expect(handler.default(mockEvent)).rejects.toMatchObject({
+      statusCode: 400,
+    });
   });
 
   it("returns schools matching query", async () => {

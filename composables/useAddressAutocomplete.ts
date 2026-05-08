@@ -27,7 +27,7 @@ export const useAddressAutocomplete = () => {
     loading.value = true;
     try {
       suggestions.value = await $fetch<AddressSuggestion[]>(
-        `/api/address/autocomplete?q=${encodeURIComponent(q.trim())}`
+        `/api/address/autocomplete?q=${encodeURIComponent(q.trim())}`,
       );
     } catch (err) {
       logger.warn("Address autocomplete search failed", err);

@@ -133,11 +133,11 @@ import { z } from "zod";
 
 // Role options
 const roleOptions = [
-  { value: '', label: 'Select Role' },
-  { value: 'head', label: 'Head Coach' },
-  { value: 'assistant', label: 'Assistant Coach' },
-  { value: 'recruiting', label: 'Recruiting Coordinator' },
-]
+  { value: "", label: "Select Role" },
+  { value: "head", label: "Head Coach" },
+  { value: "assistant", label: "Assistant Coach" },
+  { value: "recruiting", label: "Recruiting Coordinator" },
+];
 
 const props = defineProps<{
   loading: boolean;

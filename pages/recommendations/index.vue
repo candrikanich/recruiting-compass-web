@@ -1,6 +1,11 @@
 <template>
-  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
-    <PageHeader title="Recommendation Letters" description="Track recommendation letter requests and submissions" />
+  <div
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
+  >
+    <PageHeader
+      title="Recommendation Letters"
+      description="Track recommendation letter requests and submissions"
+    />
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Filters Section -->

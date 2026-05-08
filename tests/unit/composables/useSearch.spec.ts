@@ -85,7 +85,9 @@ describe("useSearch", () => {
     it("delegates to entitySearch with current filters", async () => {
       mockFilterMgmt.filters.value = { division: "D1" };
       await search.performSearch("soccer");
-      expect(mockEntitySearch.performSearch).toHaveBeenCalledWith("soccer", { division: "D1" });
+      expect(mockEntitySearch.performSearch).toHaveBeenCalledWith("soccer", {
+        division: "D1",
+      });
     });
   });
 
@@ -102,7 +104,10 @@ describe("useSearch", () => {
       mockEntitySearch.query.value = "basketball";
       await search.clearFilters();
       expect(mockFilterMgmt.clearFilters).toHaveBeenCalled();
-      expect(mockEntitySearch.performSearch).toHaveBeenCalledWith("basketball", expect.anything());
+      expect(mockEntitySearch.performSearch).toHaveBeenCalledWith(
+        "basketball",
+        expect.anything(),
+      );
     });
   });
 
@@ -111,15 +116,26 @@ describe("useSearch", () => {
     it("applies filter but does NOT re-search when query is empty", async () => {
       mockEntitySearch.query.value = "";
       await search.applyFilter("sport", "type", "soccer");
-      expect(mockFilterMgmt.applyFilter).toHaveBeenCalledWith("sport", "type", "soccer");
+      expect(mockFilterMgmt.applyFilter).toHaveBeenCalledWith(
+        "sport",
+        "type",
+        "soccer",
+      );
       expect(mockEntitySearch.performSearch).not.toHaveBeenCalled();
     });
 
     it("applies filter AND re-searches when query is active", async () => {
       mockEntitySearch.query.value = "soccer";
       await search.applyFilter("sport", "type", "outdoor");
-      expect(mockFilterMgmt.applyFilter).toHaveBeenCalledWith("sport", "type", "outdoor");
-      expect(mockEntitySearch.performSearch).toHaveBeenCalledWith("soccer", expect.anything());
+      expect(mockFilterMgmt.applyFilter).toHaveBeenCalledWith(
+        "sport",
+        "type",
+        "outdoor",
+      );
+      expect(mockEntitySearch.performSearch).toHaveBeenCalledWith(
+        "soccer",
+        expect.anything(),
+      );
     });
   });
 });

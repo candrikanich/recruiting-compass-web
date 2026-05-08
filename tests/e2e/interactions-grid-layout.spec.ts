@@ -14,14 +14,18 @@ test.describe("Interactions Grid Layout", () => {
     await authFixture.ensureLoggedIn(page);
   });
 
-  test("should display interactions in responsive grid layout", async ({ page }) => {
+  test("should display interactions in responsive grid layout", async ({
+    page,
+  }) => {
     // Navigate to interactions page
     await page.goto("/interactions");
     await page.waitForLoadState("domcontentloaded");
 
     // Find the interactions list container (not the filters or analytics grids)
     // Use the specific grid pattern: grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6
-    const container = page.locator('main#main-content div.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3.gap-6');
+    const container = page.locator(
+      "main#main-content div.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3.gap-6",
+    );
 
     // Check if grid exists (only when interactions are present)
     const gridCount = await container.count();
@@ -36,7 +40,9 @@ test.describe("Interactions Grid Layout", () => {
     } else {
       // Grid doesn't exist when there are no interactions
       // This is expected behavior - verify empty state instead
-      const emptyState = page.getByText(/No interactions yet|Loading interactions/);
+      const emptyState = page.getByText(
+        /No interactions yet|Loading interactions/,
+      );
       await expect(emptyState).toBeVisible();
     }
   });
@@ -49,8 +55,10 @@ test.describe("Interactions Grid Layout", () => {
     await page.waitForLoadState("domcontentloaded");
 
     // Target the interactions list grid specifically
-    const container = page.locator('main#main-content div.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3.gap-6');
-    const cards = container.locator('> div');
+    const container = page.locator(
+      "main#main-content div.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3.gap-6",
+    );
+    const cards = container.locator("> div");
 
     // If there are cards, verify they exist
     const count = await cards.count();
@@ -62,13 +70,17 @@ test.describe("Interactions Grid Layout", () => {
     }
   });
 
-  test("should maintain card functionality in grid layout", async ({ page }) => {
+  test("should maintain card functionality in grid layout", async ({
+    page,
+  }) => {
     await page.goto("/interactions");
     await page.waitForLoadState("domcontentloaded");
 
     // Target the interactions list grid specifically
-    const container = page.locator('main#main-content div.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3.gap-6');
-    const cards = container.locator('> div');
+    const container = page.locator(
+      "main#main-content div.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3.gap-6",
+    );
+    const cards = container.locator("> div");
     const count = await cards.count();
 
     if (count > 0) {

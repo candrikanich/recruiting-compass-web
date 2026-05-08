@@ -9,10 +9,13 @@
   >
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <div class="flex items-center gap-3">
-        <UserPlusIcon class="w-5 h-5 text-amber-600 shrink-0" aria-hidden="true" />
+        <UserPlusIcon
+          class="w-5 h-5 text-amber-600 shrink-0"
+          aria-hidden="true"
+        />
         <p class="text-sm text-amber-800">
-          <strong>Connect your athlete to get started</strong> —
-          invite them to join your family or share your family code.
+          <strong>Connect your athlete to get started</strong> — invite them to
+          join your family or share your family code.
         </p>
       </div>
       <NuxtLink
@@ -33,7 +36,10 @@
     class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg mb-6"
   >
     <div class="flex items-center gap-3">
-      <CheckCircleIcon class="w-5 h-5 text-green-600 shrink-0" aria-hidden="true" />
+      <CheckCircleIcon
+        class="w-5 h-5 text-green-600 shrink-0"
+        aria-hidden="true"
+      />
       <p class="text-sm text-green-800">
         <strong>You're connected!</strong> Your athlete has joined your family.
       </p>
@@ -63,10 +69,7 @@ const hasConnectedPlayer = computed(() =>
 );
 
 const showInviteCta = computed(
-  () =>
-    !loading.value &&
-    !hasConnectedPlayer.value &&
-    !acknowledged.value,
+  () => !loading.value && !hasConnectedPlayer.value && !acknowledged.value,
 );
 
 let timeoutId: ReturnType<typeof setTimeout> | null = null;

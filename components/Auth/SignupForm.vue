@@ -67,7 +67,9 @@
           required
           aria-required="true"
           :aria-invalid="fieldErrors.dateOfBirth ? 'true' : 'false'"
-          :aria-describedby="fieldErrors.dateOfBirth ? 'dateOfBirth-error' : 'dateOfBirth-hint'"
+          :aria-describedby="
+            fieldErrors.dateOfBirth ? 'dateOfBirth-error' : 'dateOfBirth-hint'
+          "
           :max="maxDateOfBirth"
           :class="[
             'w-full pl-10 pr-4 py-3 border rounded-lg transition-all focus:ring-2 focus:ring-offset-2 focus:outline-2 focus:border-transparent',
@@ -76,7 +78,12 @@
               : 'border-slate-300 focus:ring-blue-500 focus:outline-blue-600',
           ]"
           :disabled="disabled"
-          @input="$emit('update:dateOfBirth', ($event.target as HTMLInputElement).value)"
+          @input="
+            $emit(
+              'update:dateOfBirth',
+              ($event.target as HTMLInputElement).value,
+            )
+          "
         />
       </div>
       <p id="dateOfBirth-hint" class="text-xs text-slate-500 mt-1">

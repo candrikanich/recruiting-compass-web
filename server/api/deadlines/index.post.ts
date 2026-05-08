@@ -27,7 +27,8 @@ export default defineEventHandler(async (event) => {
 
     const supabase = createServerSupabaseClient();
 
-    const { data, error } = await supabase.from("user_deadlines")
+    const { data, error } = await supabase
+      .from("user_deadlines")
       .insert([
         {
           user_id: user.id,

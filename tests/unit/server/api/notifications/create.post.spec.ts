@@ -23,7 +23,10 @@ vi.mock("~/server/utils/supabase", () => ({
   createServerSupabaseClient: vi.fn(() => ({
     from: () => ({
       insert: () =>
-        Promise.resolve({ data: mockState.insertData, error: mockState.insertError }),
+        Promise.resolve({
+          data: mockState.insertData,
+          error: mockState.insertError,
+        }),
     }),
   })),
 }));
@@ -34,8 +37,14 @@ vi.mock("h3", async (importOriginal) => {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
     readBody: vi.fn(async () => mockState.body),
-    createError: (config: { statusCode: number; statusMessage?: string; message?: string }) => {
-      const err = new Error(config.statusMessage ?? config.message ?? "error") as Error & {
+    createError: (config: {
+      statusCode: number;
+      statusMessage?: string;
+      message?: string;
+    }) => {
+      const err = new Error(
+        config.statusMessage ?? config.message ?? "error",
+      ) as Error & {
         statusCode: number;
       };
       err.statusCode = config.statusCode;
@@ -47,9 +56,12 @@ vi.mock("h3", async (importOriginal) => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (mockState as any).body = {};
 
-const { default: handler } = await import("~/server/api/notifications/create.post");
+const { default: handler } =
+  await import("~/server/api/notifications/create.post");
 
-const mockEvent = { context: {}, node: { req: {}, res: {} } } as Parameters<typeof handler>[0];
+const mockEvent = { context: {}, node: { req: {}, res: {} } } as Parameters<
+  typeof handler
+>[0];
 
 describe("POST /api/notifications/create", () => {
   beforeEach(() => {
@@ -65,7 +77,10 @@ describe("POST /api/notifications/create", () => {
 
   it("creates a notification with minimal valid input", async () => {
     const result = await handler(mockEvent);
-    expect(result).toMatchObject({ success: true, notification: { id: "notif-1" } });
+    expect(result).toMatchObject({
+      success: true,
+      notification: { id: "notif-1" },
+    });
   });
 
   it("creates a notification with all optional fields", async () => {

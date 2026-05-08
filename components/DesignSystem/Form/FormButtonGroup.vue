@@ -1,39 +1,39 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 
 interface Props {
-  submitLabel?: string
-  cancelLabel?: string
-  loading?: boolean
-  submitDisabled?: boolean
+  submitLabel?: string;
+  cancelLabel?: string;
+  loading?: boolean;
+  submitDisabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  submitLabel: 'Submit',
-  cancelLabel: 'Cancel',
+  submitLabel: "Submit",
+  cancelLabel: "Cancel",
   loading: false,
   submitDisabled: false,
-})
+});
 
 const emit = defineEmits<{
-  submit: []
-  cancel: []
-}>()
+  submit: [];
+  cancel: [];
+}>();
 
 const computedSubmitLabel = computed(() => {
-  if (!props.loading) return props.submitLabel
+  if (!props.loading) return props.submitLabel;
 
   // Convert "Add School" → "Adding...", "Save" → "Saving...", etc.
   // Handle verbs ending in 'e' (save, update, delete, create) by removing the 'e' before adding 'ing'
-  let base = props.submitLabel
-  base = base.replace(/^(Save|Update|Delete|Create)(\s|$)/, '$1ing$2')
-  base = base.replace(/^(Add|Submit)(\s|$)/, '$1ing$2')
+  let base = props.submitLabel;
+  base = base.replace(/^(Save|Update|Delete|Create)(\s|$)/, "$1ing$2");
+  base = base.replace(/^(Add|Submit)(\s|$)/, "$1ing$2");
 
   // Remove the double 'e' that results from "Saveing" → "Saving", etc.
-  base = base.replace(/eing/, 'ing')
+  base = base.replace(/eing/, "ing");
 
-  return base === props.submitLabel ? 'Loading...' : `${base}...`
-})
+  return base === props.submitLabel ? "Loading..." : `${base}...`;
+});
 </script>
 
 <template>

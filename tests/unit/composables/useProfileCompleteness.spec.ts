@@ -91,9 +91,8 @@ describe("useProfileCompleteness", () => {
     });
 
     it("should handle calculation errors gracefully", async () => {
-      const { usePreferenceManager } = await import(
-        "~/composables/usePreferenceManager"
-      );
+      const { usePreferenceManager } =
+        await import("~/composables/usePreferenceManager");
       vi.mocked(usePreferenceManager).mockReturnValue({
         loadAllPreferences: vi
           .fn()
@@ -109,9 +108,8 @@ describe("useProfileCompleteness", () => {
     });
 
     it("should set completeness to 0 when no player details found", async () => {
-      const { usePreferenceManager } = await import(
-        "~/composables/usePreferenceManager"
-      );
+      const { usePreferenceManager } =
+        await import("~/composables/usePreferenceManager");
       vi.mocked(usePreferenceManager).mockReturnValue({
         loadAllPreferences: vi.fn().mockResolvedValue(undefined),
         getPlayerDetails: vi.fn().mockReturnValue(null),

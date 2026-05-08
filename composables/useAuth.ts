@@ -527,7 +527,10 @@ export const useAuth = () => {
       state2.storeUserId === state3.storeUserId;
 
     if (import.meta.dev) {
-      console.group("%c📊 Stability Analysis", "color: blue; font-weight: bold;");
+      console.group(
+        "%c📊 Stability Analysis",
+        "color: blue; font-weight: bold;",
+      );
       if (areStable) {
         console.log(
           "%c✅ User IDs are STABLE across all operations",

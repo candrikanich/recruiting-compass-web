@@ -339,7 +339,9 @@ export async function generateCoachFollowupNotifications(
   try {
     const { data: coaches, error: coachesError } = await supabase
       .from("coaches")
-      .select("id, first_name, last_name, last_contact_date, follow_up_threshold_days")
+      .select(
+        "id, first_name, last_name, last_contact_date, follow_up_threshold_days",
+      )
       .eq("user_id", userId);
 
     if (coachesError) throw coachesError;

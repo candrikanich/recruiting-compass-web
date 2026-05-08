@@ -20,7 +20,9 @@ vi.mock("h3", async (importOriginal) => {
     defineEventHandler: (fn: Function) => fn,
     getRouterParam: vi.fn().mockReturnValue("test-interaction-id"),
     createError: (config: { statusCode: number; statusMessage: string }) => {
-      const err = new Error(config.statusMessage) as Error & { statusCode: number };
+      const err = new Error(config.statusMessage) as Error & {
+        statusCode: number;
+      };
       err.statusCode = config.statusCode;
       return err;
     },
@@ -39,14 +41,16 @@ describe("GET /api/interactions/[id]/deletion-blockers", () => {
 
   describe("happy path — no blockers", () => {
     it("returns canDelete:true and empty blockers array when no FK references exist", async () => {
-      vi.mocked(requireAuth).mockResolvedValue({ id: "user-id", email: "user@example.com" });
+      vi.mocked(requireAuth).mockResolvedValue({
+        id: "user-id",
+        email: "user@example.com",
+      });
 
       const { getRouterParam } = await import("h3");
       vi.mocked(getRouterParam).mockReturnValue("test-interaction-id");
 
-      const { default: handler } = await import(
-        "~/server/api/interactions/[id]/deletion-blockers.get"
-      );
+      const { default: handler } =
+        await import("~/server/api/interactions/[id]/deletion-blockers.get");
 
       const result = await handler(mockEvent);
 
@@ -62,9 +66,8 @@ describe("GET /api/interactions/[id]/deletion-blockers", () => {
       const { getRouterParam } = await import("h3");
       vi.mocked(getRouterParam).mockReturnValue(undefined);
 
-      const { default: handler } = await import(
-        "~/server/api/interactions/[id]/deletion-blockers.get"
-      );
+      const { default: handler } =
+        await import("~/server/api/interactions/[id]/deletion-blockers.get");
 
       await expect(handler(mockEvent)).rejects.toMatchObject({
         statusCode: 400,
@@ -78,12 +81,13 @@ describe("GET /api/interactions/[id]/deletion-blockers", () => {
       const { getRouterParam } = await import("h3");
       vi.mocked(getRouterParam).mockReturnValue("test-interaction-id");
 
-      const h3Error = Object.assign(new Error("Unauthorized"), { statusCode: 401 });
+      const h3Error = Object.assign(new Error("Unauthorized"), {
+        statusCode: 401,
+      });
       vi.mocked(requireAuth).mockRejectedValue(h3Error);
 
-      const { default: handler } = await import(
-        "~/server/api/interactions/[id]/deletion-blockers.get"
-      );
+      const { default: handler } =
+        await import("~/server/api/interactions/[id]/deletion-blockers.get");
 
       await expect(handler(mockEvent)).rejects.toMatchObject({
         statusCode: 401,
@@ -95,12 +99,13 @@ describe("GET /api/interactions/[id]/deletion-blockers", () => {
       const { getRouterParam } = await import("h3");
       vi.mocked(getRouterParam).mockReturnValue("test-interaction-id");
 
-      const h3Error = Object.assign(new Error("Forbidden"), { statusCode: 403 });
+      const h3Error = Object.assign(new Error("Forbidden"), {
+        statusCode: 403,
+      });
       vi.mocked(requireAuth).mockRejectedValue(h3Error);
 
-      const { default: handler } = await import(
-        "~/server/api/interactions/[id]/deletion-blockers.get"
-      );
+      const { default: handler } =
+        await import("~/server/api/interactions/[id]/deletion-blockers.get");
 
       await expect(handler(mockEvent)).rejects.toMatchObject({
         statusCode: 403,
@@ -111,14 +116,16 @@ describe("GET /api/interactions/[id]/deletion-blockers", () => {
 
   describe("response shape", () => {
     it("always returns interactionId, canDelete, blockers, and message fields", async () => {
-      vi.mocked(requireAuth).mockResolvedValue({ id: "user-id", email: "user@example.com" });
+      vi.mocked(requireAuth).mockResolvedValue({
+        id: "user-id",
+        email: "user@example.com",
+      });
 
       const { getRouterParam } = await import("h3");
       vi.mocked(getRouterParam).mockReturnValue("abc-123");
 
-      const { default: handler } = await import(
-        "~/server/api/interactions/[id]/deletion-blockers.get"
-      );
+      const { default: handler } =
+        await import("~/server/api/interactions/[id]/deletion-blockers.get");
 
       const mockEventWithId = { context: { params: { id: "abc-123" } } } as any;
       const result = await handler(mockEventWithId);

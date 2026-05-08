@@ -21,9 +21,7 @@
 
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-4xl font-bold text-gray-900">
-          Coach Analytics
-        </h1>
+        <h1 class="text-4xl font-bold text-gray-900">Coach Analytics</h1>
         <p class="text-gray-600 mt-2">{{ coachName }} - {{ schoolName }}</p>
       </div>
 
@@ -198,7 +196,10 @@
         </div>
 
         <!-- Insights Section -->
-        <div v-if="insights.length > 0" class="bg-white rounded-lg shadow-sm p-6">
+        <div
+          v-if="insights.length > 0"
+          class="bg-white rounded-lg shadow-sm p-6"
+        >
           <h3 class="text-lg font-bold text-gray-900 mb-4">
             Insights & Recommendations
           </h3>
@@ -236,11 +237,8 @@ const coachId = route.params.id as string;
 const { getCoach } = useCoaches();
 const { getSchool } = useSchools();
 const { fetchInteractions } = useInteractions();
-const {
-  calculateCoachMetrics,
-  compareWithSchoolAverage,
-  generateInsights,
-} = useCoachAnalytics();
+const { calculateCoachMetrics, compareWithSchoolAverage, generateInsights } =
+  useCoachAnalytics();
 
 const coachName = ref("");
 const schoolName = ref("");

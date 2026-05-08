@@ -10,7 +10,10 @@ export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, "id");
 
     if (!id) {
-      throw createError({ statusCode: 400, statusMessage: "Invitation ID is required" });
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Invitation ID is required",
+      });
     }
 
     const supabase = useSupabaseAdmin();
@@ -23,7 +26,10 @@ export default defineEventHandler(async (event) => {
 
     if (error) {
       logger.error("Failed to revoke invitation", error);
-      throw createError({ statusCode: 500, statusMessage: "Failed to revoke invitation" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to revoke invitation",
+      });
     }
 
     logger.info("Invitation revoked", { invitationId: id, userId: user.id });
@@ -31,6 +37,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to revoke invitation", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to revoke invitation" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to revoke invitation",
+    });
   }
 });

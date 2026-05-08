@@ -2,10 +2,9 @@
 import { computed, onMounted } from "vue";
 import { useProfileCompleteness } from "~/composables/useProfileCompleteness";
 
-const props = withDefaults(
-  defineProps<{ percentage?: number }>(),
-  { percentage: undefined },
-);
+const props = withDefaults(defineProps<{ percentage?: number }>(), {
+  percentage: undefined,
+});
 
 const { completeness, updateCompleteness } = useProfileCompleteness();
 
@@ -17,7 +16,7 @@ onMounted(async () => {
 
 // Use prop if provided (live form data), otherwise fall back to fetched value
 const effectiveCompleteness = computed(() =>
-  props.percentage !== undefined ? props.percentage : completeness.value
+  props.percentage !== undefined ? props.percentage : completeness.value,
 );
 
 const progressBarColor = computed(() => {

@@ -2,7 +2,8 @@ import fs from "fs";
 import readline from "readline";
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.NUXT_PUBLIC_SUPABASE_URL ?? "";
+const SUPABASE_URL =
+  process.env.SUPABASE_URL ?? process.env.NUXT_PUBLIC_SUPABASE_URL ?? "";
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
@@ -12,7 +13,9 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 
 const csvPath = process.argv[2];
 if (!csvPath) {
-  console.error("Usage: npx tsx scripts/seed-nces-schools.ts /path/to/ccd_file.csv");
+  console.error(
+    "Usage: npx tsx scripts/seed-nces-schools.ts /path/to/ccd_file.csv",
+  );
   process.exit(1);
 }
 
@@ -37,8 +40,10 @@ function parseCSVLine(line: string): string[] {
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
     if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
-      else inQuotes = !inQuotes;
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else inQuotes = !inQuotes;
     } else if (ch === "," && !inQuotes) {
       fields.push(current.trim());
       current = "";
@@ -68,7 +73,15 @@ async function main(): Promise<void> {
       isFirstLine = false;
       console.log(`Headers detected: ${headers.length} columns`);
       // Validate required columns exist
-      const required = ["NCESSCH", "SCH_NAME", "LCITY", "LSTATE", "LZIP", "SY_STATUS", "GSHI"];
+      const required = [
+        "NCESSCH",
+        "SCH_NAME",
+        "LCITY",
+        "LSTATE",
+        "LZIP",
+        "SY_STATUS",
+        "GSHI",
+      ];
       const missing = required.filter((f) => !headers.includes(f));
       if (missing.length) {
         console.error(`Missing required columns: ${missing.join(", ")}`);
@@ -87,12 +100,12 @@ async function main(): Promise<void> {
     }
 
     batch.push({
-      nces_id:   get("NCESSCH"),
-      name:      get("SCH_NAME"),
-      city:      get("LCITY") || null,
-      state:     get("LSTATE") || null,
-      zip:       get("LZIP") || null,
-      latitude:  null, // not available in 2024-25 CCD CSV
+      nces_id: get("NCESSCH"),
+      name: get("SCH_NAME"),
+      city: get("LCITY") || null,
+      state: get("LSTATE") || null,
+      zip: get("LZIP") || null,
+      latitude: null, // not available in 2024-25 CCD CSV
       longitude: null,
     });
     total++;
@@ -109,7 +122,9 @@ async function main(): Promise<void> {
   console.log(`\nDone.`);
   console.log(`Inserted: ${total}`);
   console.log(`Skipped:  ${skipped}`);
-  console.log(`\nExpected ~27,000 rows. Verify: SELECT COUNT(*) FROM nces_schools;`);
+  console.log(
+    `\nExpected ~27,000 rows. Verify: SELECT COUNT(*) FROM nces_schools;`,
+  );
 }
 
 main().catch((err) => {

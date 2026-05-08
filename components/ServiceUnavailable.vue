@@ -37,7 +37,8 @@
 
       <!-- Additional info -->
       <p class="mb-8 text-sm text-gray-400">
-        We apologize for the inconvenience. This is typically resolved within a few minutes.
+        We apologize for the inconvenience. This is typically resolved within a
+        few minutes.
       </p>
 
       <!-- Try Again button -->
@@ -51,7 +52,7 @@
 
       <!-- Status info (if available) -->
       <div v-if="lastError" class="mt-8 text-xs text-gray-500">
-        <p>Error code: {{ lastError.statusCode || 'Network Error' }}</p>
+        <p>Error code: {{ lastError.statusCode || "Network Error" }}</p>
         <p>Time: {{ formatTime(lastError.timestamp) }}</p>
       </div>
     </div>

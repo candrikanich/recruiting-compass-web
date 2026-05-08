@@ -14,7 +14,10 @@ export class AnalyticsPage extends BasePage {
   // Date Range Controls
   async selectDateRangePreset(preset: string) {
     await this.selectOption('[data-testid="date-range-preset"]', preset);
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   async setCustomDateRange(startDate: string, endDate: string) {
@@ -22,12 +25,18 @@ export class AnalyticsPage extends BasePage {
     await this.fillInput('[data-testid="start-date-input"]', startDate);
     await this.fillInput('[data-testid="end-date-input"]', endDate);
     await this.click('[data-testid="apply-date-range-button"]');
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   async clearDateRange() {
     await this.click('[data-testid="clear-date-range-button"]');
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   // Stats Cards
@@ -70,7 +79,10 @@ export class AnalyticsPage extends BasePage {
   async clickChartSegment(chartTitle: string, segmentLabel: string) {
     const chart = await this.page.locator(`text=${chartTitle}`).locator("..");
     await chart.locator(`text=${segmentLabel}`).click();
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   async expectChartLegendItems(chartTitle: string, items: string[]) {

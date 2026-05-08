@@ -35,10 +35,8 @@ export default defineEventHandler(async (event) => {
   try {
     // grade_level is derived from graduation_year in user_preferences
     // (the profiles table was removed — see migration 041).
-    const schoolsSelect =
-      "id, name, division, status, priority";
-    const interactionsSelect =
-      "id, school_id, occurred_at, related_event_id";
+    const schoolsSelect = "id, name, division, status, priority";
+    const interactionsSelect = "id, school_id, occurred_at, related_event_id";
     const athleteTasksSelect = "task_id, status";
     const videosSelect = "id, health_status, title";
     const eventsSelect = "id, name, event_date, school_id, attended";
@@ -67,11 +65,23 @@ export default defineEventHandler(async (event) => {
           .eq("user_id", athleteId)
           .eq("category", "player")
           .single(),
-        supabase.from("schools").select(schoolsSelect).eq("family_unit_id", familyUnitId),
-        supabase.from("interactions").select(interactionsSelect).eq("logged_by", athleteId),
-        supabase.from("athlete_task").select(athleteTasksSelect).eq("athlete_id", athleteId),
+        supabase
+          .from("schools")
+          .select(schoolsSelect)
+          .eq("family_unit_id", familyUnitId),
+        supabase
+          .from("interactions")
+          .select(interactionsSelect)
+          .eq("logged_by", athleteId),
+        supabase
+          .from("athlete_task")
+          .select(athleteTasksSelect)
+          .eq("athlete_id", athleteId),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase as any).from("videos").select(videosSelect).eq("athlete_id", athleteId),
+        (supabase as any)
+          .from("videos")
+          .select(videosSelect)
+          .eq("athlete_id", athleteId),
         supabase.from("events").select(eventsSelect).eq("user_id", athleteId),
       ]);
 
@@ -80,7 +90,9 @@ export default defineEventHandler(async (event) => {
       typeof playerData?.graduation_year === "number"
         ? playerData.graduation_year
         : null;
-    const gradeLevel = graduationYear ? calculateCurrentGrade(graduationYear) : 9;
+    const gradeLevel = graduationYear
+      ? calculateCurrentGrade(graduationYear)
+      : 9;
 
     const context: RuleContext = {
       athleteId,

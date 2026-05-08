@@ -334,7 +334,9 @@ describe("useActiveFamily", () => {
         from: vi.fn(() => ({
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+              maybeSingle: vi
+                .fn()
+                .mockResolvedValue({ data: null, error: null }),
             })),
           })),
         })),
@@ -483,7 +485,9 @@ describe("useActiveFamily", () => {
           // Subsequent calls: family members fetch
           return {
             select: vi.fn(() => ({
-              eq: vi.fn(() => Promise.resolve({ data: mockMembers, error: null })),
+              eq: vi.fn(() =>
+                Promise.resolve({ data: mockMembers, error: null }),
+              ),
             })),
           };
         }),
@@ -507,7 +511,9 @@ describe("useActiveFamily", () => {
 
       const activeFamily = useActiveFamily();
       // Should not throw
-      await expect(activeFamily.switchAthlete("athlete-1")).resolves.toBeUndefined();
+      await expect(
+        activeFamily.switchAthlete("athlete-1"),
+      ).resolves.toBeUndefined();
     });
 
     it("sets error when athlete is not in accessible families", async () => {
@@ -601,7 +607,9 @@ describe("useActiveFamily", () => {
       await activeFamily.initializeFamily();
       await activeFamily.switchAthlete("athlete-1");
 
-      expect(localStorage.getItem("parent_last_viewed_athlete")).toBe("athlete-1");
+      expect(localStorage.getItem("parent_last_viewed_athlete")).toBe(
+        "athlete-1",
+      );
     });
   });
 

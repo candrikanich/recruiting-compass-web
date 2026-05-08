@@ -50,9 +50,14 @@ export const useSessionTimeout = () => {
     }
   };
 
-  const handleActivity = useThrottleFn(() => {
-    updateActivity();
-  }, DEFAULT_TIMEOUT_CONFIG.activityThrottleMs, false, true);
+  const handleActivity = useThrottleFn(
+    () => {
+      updateActivity();
+    },
+    DEFAULT_TIMEOUT_CONFIG.activityThrottleMs,
+    false,
+    true,
+  );
 
   const showWarning = (secondsRemaining: number) => {
     isWarningVisible.value = true;

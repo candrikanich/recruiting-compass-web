@@ -16,7 +16,8 @@
           Dashboard Customization
         </h1>
         <p class="text-slate-600">
-          Drag widgets to reorder, or use the arrow buttons. Click the eye to show or hide.
+          Drag widgets to reorder, or use the arrow buttons. Click the eye to
+          show or hide.
         </p>
       </div>
     </div>
@@ -35,7 +36,9 @@
             :key="card.key"
             class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition select-none"
             :class="
-              layout.statsCards[card.key] ? 'bg-white' : 'bg-slate-50 opacity-60'
+              layout.statsCards[card.key]
+                ? 'bg-white'
+                : 'bg-slate-50 opacity-60'
             "
           >
             <input
@@ -241,7 +244,11 @@ onMounted(async () => {
   layout.rightColumn = saved.rightColumn;
 });
 
-const moveWidget = (column: WidgetEntry[], id: string, direction: "up" | "down") => {
+const moveWidget = (
+  column: WidgetEntry[],
+  id: string,
+  direction: "up" | "down",
+) => {
   const index = column.findIndex((w) => w.id === id);
   if (index === -1) return;
   const newIndex = direction === "up" ? index - 1 : index + 1;

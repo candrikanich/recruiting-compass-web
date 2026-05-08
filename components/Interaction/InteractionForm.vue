@@ -54,34 +54,34 @@ const showOtherCoachModal = ref(false);
 
 // Sentiment value (non-null version for the select)
 const sentimentValue = computed({
-  get: () => form.value.sentiment || '',
+  get: () => form.value.sentiment || "",
   set: (value: string) => {
-    form.value.sentiment = value === '' ? null : value
-  }
-})
+    form.value.sentiment = value === "" ? null : value;
+  },
+});
 
 // Type options
 const typeOptions = computed(() => [
-  { value: '', label: 'Select Type' },
-  { value: 'email', label: '📧 Email' },
-  { value: 'text', label: '💬 Text' },
-  { value: 'phone_call', label: '☎️ Phone Call' },
-  { value: 'in_person_visit', label: '👥 In-Person Visit' },
-  { value: 'virtual_meeting', label: '💻 Virtual Meeting' },
-  { value: 'camp', label: '⚾ Camp' },
-  { value: 'showcase', label: '🎯 Showcase' },
-  { value: 'tweet', label: 'X (Twitter)' },
-  { value: 'dm', label: '💭 DM' }
-])
+  { value: "", label: "Select Type" },
+  { value: "email", label: "📧 Email" },
+  { value: "text", label: "💬 Text" },
+  { value: "phone_call", label: "☎️ Phone Call" },
+  { value: "in_person_visit", label: "👥 In-Person Visit" },
+  { value: "virtual_meeting", label: "💻 Virtual Meeting" },
+  { value: "camp", label: "⚾ Camp" },
+  { value: "showcase", label: "🎯 Showcase" },
+  { value: "tweet", label: "X (Twitter)" },
+  { value: "dm", label: "💭 DM" },
+]);
 
 // Sentiment options
 const sentimentOptions = computed(() => [
-  { value: '', label: 'No sentiment' },
-  { value: 'very_positive', label: '😄 Very Positive' },
-  { value: 'positive', label: '😊 Positive' },
-  { value: 'neutral', label: '😐 Neutral' },
-  { value: 'negative', label: '😕 Negative' }
-])
+  { value: "", label: "No sentiment" },
+  { value: "very_positive", label: "😄 Very Positive" },
+  { value: "positive", label: "😊 Positive" },
+  { value: "neutral", label: "😐 Neutral" },
+  { value: "negative", label: "😕 Negative" },
+]);
 
 const shouldShowCalibration = computed(() => {
   return (

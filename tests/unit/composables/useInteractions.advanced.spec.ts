@@ -165,9 +165,8 @@ describe("useInteractions - Advanced Lifecycle", () => {
     const composableModule = await import("~/composables/useInteractions");
     useInteractions = composableModule.useInteractions;
 
-    const remindersModule = await import(
-      "~/composables/useInteractionReminders"
-    );
+    const remindersModule =
+      await import("~/composables/useInteractionReminders");
     useInteractionReminders = remindersModule.useInteractionReminders;
 
     const notesModule = await import("~/composables/useInteractionNotes");
@@ -673,11 +672,8 @@ describe("useInteractions - Advanced Lifecycle", () => {
       const reminder = createMockReminder({ id: "reminder-123" });
       mockQuery.__setTestResponse({ data: [reminder], error: null });
 
-      const {
-        loadReminders,
-        reminders,
-        completeReminder,
-      } = useInteractionReminders();
+      const { loadReminders, reminders, completeReminder } =
+        useInteractionReminders();
       await loadReminders();
 
       expect(reminders.value[0].is_completed).toBe(false);
@@ -698,11 +694,8 @@ describe("useInteractions - Advanced Lifecycle", () => {
       const reminder = createMockReminder({ id: "reminder-123" });
       mockQuery.__setTestResponse({ data: [reminder], error: null });
 
-      const {
-        loadReminders,
-        reminders,
-        deleteReminder,
-      } = useInteractionReminders();
+      const { loadReminders, reminders, deleteReminder } =
+        useInteractionReminders();
       await loadReminders();
 
       expect(reminders.value.length).toBe(1);
@@ -777,10 +770,7 @@ describe("useInteractions - Advanced Lifecycle", () => {
         error: new Error("Update failed"),
       });
 
-      const {
-        completeReminder,
-        remindersError,
-      } = useInteractionReminders();
+      const { completeReminder, remindersError } = useInteractionReminders();
       const success = await completeReminder("reminder-123");
 
       expect(success).toBe(false);
@@ -927,7 +917,8 @@ describe("useInteractions - Advanced Lifecycle", () => {
         error: null,
       });
 
-      const { loadReminders, highPriorityReminders } = useInteractionReminders();
+      const { loadReminders, highPriorityReminders } =
+        useInteractionReminders();
       await loadReminders();
 
       expect(highPriorityReminders.value.length).toBe(1);

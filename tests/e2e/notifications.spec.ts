@@ -47,8 +47,7 @@ test.describe("Notifications Page", () => {
   test("shows either notifications or empty state — no blank screen", async ({
     page,
   }) => {
-    const hasNotifications =
-      (await page.locator(".border-l-4").count()) > 0;
+    const hasNotifications = (await page.locator(".border-l-4").count()) > 0;
     const hasEmptyState = await page
       .locator("text=You're all caught up!")
       .isVisible()
@@ -190,7 +189,9 @@ test.describe("Notifications Page", () => {
     await unread.first().click();
     await page.waitForTimeout(500);
 
-    const unreadCountAfter = await page.locator(".border-l-4.border-blue-500").count();
+    const unreadCountAfter = await page
+      .locator(".border-l-4.border-blue-500")
+      .count();
     expect(unreadCountAfter).toBeLessThan(unreadCountBefore);
   });
 
@@ -220,7 +221,9 @@ test.describe("Notifications Page", () => {
     await page.waitForTimeout(500);
 
     // No more unread cards
-    const unreadRemaining = await page.locator(".border-l-4.border-blue-500").count();
+    const unreadRemaining = await page
+      .locator(".border-l-4.border-blue-500")
+      .count();
     expect(unreadRemaining).toBe(0);
 
     // Mark all button should disappear

@@ -54,7 +54,9 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
       await page.click('[data-testid="log-interaction-submit-button"]');
 
       // Verify success and redirect
-      await page.waitForURL("**/interactions", { waitUntil: "domcontentloaded" });
+      await page.waitForURL("**/interactions", {
+        waitUntil: "domcontentloaded",
+      });
 
       // Verify interaction appears in list with "You" badge
       await expect(page.locator("text=Recruiting Inquiry")).toBeVisible();
@@ -116,7 +118,9 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
         await page.click('[data-testid="log-interaction-submit-button"]');
 
         // Verify interaction type appears
-        await page.waitForURL("**/interactions", { waitUntil: "domcontentloaded" });
+        await page.waitForURL("**/interactions", {
+          waitUntil: "domcontentloaded",
+        });
         await expect(page.locator(`text=${display}`)).toBeVisible();
       }
     });
@@ -261,7 +265,12 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
     }) => {
       // First, have athlete log an interaction
       // Login as athlete
-      await loginViaForm(page, "player@test.com", "TestPass123!", /\/dashboard/);
+      await loginViaForm(
+        page,
+        "player@test.com",
+        "TestPass123!",
+        /\/dashboard/,
+      );
 
       // Log an interaction — only possible if schools exist
       await page.goto("/interactions/add");
@@ -271,7 +280,12 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
         .catch(() => false);
       if (!hasSchools) {
         // No schools seeded — skip interaction creation; verify parent page loads at minimum
-        await loginViaForm(page, "parent@test.com", "TestPass123!", /\/dashboard/);
+        await loginViaForm(
+          page,
+          "parent@test.com",
+          "TestPass123!",
+          /\/dashboard/,
+        );
         await page.goto("/interactions");
         await expect(page.locator("h1")).toContainText("Interactions");
         return;
@@ -282,7 +296,9 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
 
       const today = new Date().toISOString().split("T")[0];
       await page.fill('input[type="datetime-local"]', `${today}T14:30`);
-      await page.getByLabel("Subject (Optional)").fill("Test Athlete Interaction");
+      await page
+        .getByLabel("Subject (Optional)")
+        .fill("Test Athlete Interaction");
 
       await page.click('[data-testid="log-interaction-submit-button"]');
       await page.waitForURL("**/interactions");
@@ -296,7 +312,12 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
         .catch(() => null);
 
       // Now login as parent
-      await loginViaForm(page, "parent@test.com", "TestPass123!", /\/dashboard/);
+      await loginViaForm(
+        page,
+        "parent@test.com",
+        "TestPass123!",
+        /\/dashboard/,
+      );
 
       // Navigate to interactions
       await page.goto("/interactions");

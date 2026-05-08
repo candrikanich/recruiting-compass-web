@@ -28,7 +28,9 @@ export const useInteractionNotes = () => {
   );
 
   const formattedNoteHistory: ComputedRef<
-    Array<NoteHistoryEntry & { formattedTime: string; isCurrentVersion: boolean }>
+    Array<
+      NoteHistoryEntry & { formattedTime: string; isCurrentVersion: boolean }
+    >
   > = computed(() =>
     noteHistory.value.map((entry) => ({
       ...entry,

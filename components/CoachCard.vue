@@ -31,7 +31,10 @@
 
       <div v-if="coach.phone" class="flex items-center text-sm text-slate-900">
         <span class="text-green-600 mr-2" aria-hidden="true">📱</span>
-        <a :href="`tel:${coach.phone}`" class="hover:underline text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm">
+        <a
+          :href="`tel:${coach.phone}`"
+          class="hover:underline text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
+        >
           {{ coach.phone }}
         </a>
       </div>
@@ -162,7 +165,6 @@ const emit = defineEmits<{
   instagram: [coach: Coach];
   view: [coach: Coach];
 }>();
-
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);

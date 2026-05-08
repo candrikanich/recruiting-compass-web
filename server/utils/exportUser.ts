@@ -50,11 +50,11 @@ export async function gatherUserData(userId: string): Promise<ExportData> {
       offersRes,
       auditRes,
     ] = await Promise.all([
-      (untypedSupabase
+      untypedSupabase
         .from("profiles")
         .select("*")
         .eq("user_id", userId)
-        .single() as unknown) as Promise<{
+        .single() as unknown as Promise<{
         data: ProfileRow | null;
         error: unknown;
       }>,

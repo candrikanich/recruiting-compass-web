@@ -1,6 +1,10 @@
 <!-- components/profile/ProfilePreview.vue -->
 <script setup lang="ts">
-import type { PlayerProfile, PublicProfileData, VideoLink } from "~/types/models";
+import type {
+  PlayerProfile,
+  PublicProfileData,
+  VideoLink,
+} from "~/types/models";
 import { useUserStore } from "~/stores/user";
 
 const props = defineProps<{
@@ -17,38 +21,48 @@ const previewData = computed<PublicProfileData>(() => ({
   photoUrl: userStore.user?.profile_photo_url ?? null,
   headerColor: props.settings.header_color ?? "slate",
   bio: props.settings.bio ?? null,
-  academics: props.settings.show_academics && props.details
-    ? {
-        gpa: props.details.gpa as number | undefined,
-        sat_score: props.details.sat_score as number | undefined,
-        act_score: props.details.act_score as number | undefined,
-        graduation_year: props.details.graduation_year as number | undefined,
-        high_school: (props.details.school_name ?? props.details.high_school) as string | undefined,
-        core_courses: props.details.core_courses as string[] | undefined,
-      }
-    : null,
-  athletic: props.settings.show_athletic && props.details
-    ? {
-        primary_sport: props.details.primary_sport as string | undefined,
-        primary_position: props.details.primary_position as string | undefined,
-        positions: props.details.positions as string[] | undefined,
-        height_inches: props.details.height_inches as number | undefined,
-        weight_lbs: props.details.weight_lbs as number | undefined,
-        ncaa_id: (props.details.ncaa_id as string | undefined) || undefined,
-        perfect_game_id: (props.details.perfect_game_id as string | undefined) || undefined,
-        prep_baseball_id: (props.details.prep_baseball_id as string | undefined) || undefined,
-      }
-    : null,
-  film: props.settings.show_film && props.details?.video_links
-    ? (props.details.video_links as VideoLink[])
-    : null,
+  academics:
+    props.settings.show_academics && props.details
+      ? {
+          gpa: props.details.gpa as number | undefined,
+          sat_score: props.details.sat_score as number | undefined,
+          act_score: props.details.act_score as number | undefined,
+          graduation_year: props.details.graduation_year as number | undefined,
+          high_school: (props.details.school_name ??
+            props.details.high_school) as string | undefined,
+          core_courses: props.details.core_courses as string[] | undefined,
+        }
+      : null,
+  athletic:
+    props.settings.show_athletic && props.details
+      ? {
+          primary_sport: props.details.primary_sport as string | undefined,
+          primary_position: props.details.primary_position as
+            | string
+            | undefined,
+          positions: props.details.positions as string[] | undefined,
+          height_inches: props.details.height_inches as number | undefined,
+          weight_lbs: props.details.weight_lbs as number | undefined,
+          ncaa_id: (props.details.ncaa_id as string | undefined) || undefined,
+          perfect_game_id:
+            (props.details.perfect_game_id as string | undefined) || undefined,
+          prep_baseball_id:
+            (props.details.prep_baseball_id as string | undefined) || undefined,
+        }
+      : null,
+  film:
+    props.settings.show_film && props.details?.video_links
+      ? (props.details.video_links as VideoLink[])
+      : null,
   schools: props.settings.show_schools ? props.schools : null,
 }));
 </script>
 
 <template>
   <div class="bg-gray-50 rounded-xl p-4">
-    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Preview — What coaches see</p>
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+      Preview — What coaches see
+    </p>
     <ProfilePublicProfileCard :profile="previewData" />
   </div>
 </template>

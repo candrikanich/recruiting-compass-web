@@ -2,7 +2,9 @@ import { test, expect } from "@playwright/test";
 import { resolve } from "path";
 
 test.describe("Family Units - Parent", () => {
-  test.use({ storageState: resolve(process.cwd(), "tests/e2e/.auth/parent.json") });
+  test.use({
+    storageState: resolve(process.cwd(), "tests/e2e/.auth/parent.json"),
+  });
 
   test("parent can view school list", async ({ page }) => {
     // Navigate to schools
@@ -21,7 +23,9 @@ test.describe("Family Units - Parent", () => {
     // Look for athlete selector — the AthleteSelector component renders for parents
     // with linked athletes. It may not be a plain <select> element.
     const athleteSelector = page.locator("select").first();
-    const isVisible = await athleteSelector.isVisible({ timeout: 3000 }).catch(() => false);
+    const isVisible = await athleteSelector
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
 
     if (isVisible) {
       // Get initial athlete value — skip if empty (no linked athletes)
@@ -60,7 +64,9 @@ test.describe("Family Units - Parent", () => {
 });
 
 test.describe("Family Units - Player", () => {
-  test.use({ storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json") });
+  test.use({
+    storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
+  });
 
   test("player can view their own schools", async ({ page }) => {
     // Navigate to schools
@@ -69,7 +75,9 @@ test.describe("Family Units - Player", () => {
     await page.waitForLoadState("domcontentloaded");
 
     // Check schools page loads — h1 is the reliable indicator (PageHeader component)
-    await expect(page.locator("h1:has-text('Schools')")).toBeVisible({ timeout: 10000 });
+    await expect(page.locator("h1:has-text('Schools')")).toBeVisible({
+      timeout: 10000,
+    });
 
     // Page URL confirms we're on the schools page
     expect(page.url()).toContain("/schools");
@@ -100,7 +108,11 @@ test.describe("Family Units - Player", () => {
     await expect(page.locator("h1:has-text('Schools')")).toBeVisible();
 
     // Check for school count or add-school link (depends on whether schools exist)
-    const hasSchoolContent = await page.locator('[data-testid="school-card"], a:has-text("Add School")').first().isVisible().catch(() => false);
+    const hasSchoolContent = await page
+      .locator('[data-testid="school-card"], a:has-text("Add School")')
+      .first()
+      .isVisible()
+      .catch(() => false);
     expect(hasSchoolContent).toBeTruthy();
   });
 });

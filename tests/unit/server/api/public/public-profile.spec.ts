@@ -75,7 +75,12 @@ vi.mock("~/server/utils/supabase", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -87,16 +92,17 @@ vi.mock("h3", async (importOriginal) => {
     getQuery: vi.fn(() => ({ ref: undefined })),
     getRequestHeader: vi.fn(() => "Mozilla/5.0"),
     createError: (cfg: { statusCode: number; statusMessage?: string }) => {
-      const err = new Error(cfg.statusMessage) as Error & { statusCode: number };
+      const err = new Error(cfg.statusMessage) as Error & {
+        statusCode: number;
+      };
       err.statusCode = cfg.statusCode;
       return err;
     },
   };
 });
 
-const { default: viewHandler } = await import(
-  "~/server/api/public/profile/[slug]/view.post"
-);
+const { default: viewHandler } =
+  await import("~/server/api/public/profile/[slug]/view.post");
 
 describe("Sequential slug resolution (view.post)", () => {
   beforeEach(() => {
@@ -141,13 +147,17 @@ describe("Sequential slug resolution (view.post)", () => {
     mockProfileState.hashSlugRow = null;
     mockProfileState.vanitySlugRow = null;
 
-    await expect(viewHandler({} as any)).rejects.toMatchObject({ statusCode: 404 });
+    await expect(viewHandler({} as any)).rejects.toMatchObject({
+      statusCode: 404,
+    });
   });
 
   it("throws 500 when hash_slug query returns a database error", async () => {
     mockProfileState.hashSlugError = { message: "db error" };
 
-    await expect(viewHandler({} as any)).rejects.toMatchObject({ statusCode: 500 });
+    await expect(viewHandler({} as any)).rejects.toMatchObject({
+      statusCode: 500,
+    });
     // vanity_slug should NOT be attempted after an error
     expect(eqCalls.find(([col]) => col === "vanity_slug")).toBeUndefined();
   });

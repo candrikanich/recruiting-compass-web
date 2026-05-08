@@ -5,7 +5,10 @@
     <!-- Header -->
 
     <!-- Page Header Section -->
-    <PageHeader title="Recruiting Timeline" description="Track your 4-year recruiting journey">
+    <PageHeader
+      title="Recruiting Timeline"
+      description="Track your 4-year recruiting journey"
+    >
       <template #actions>
         <!-- Current Phase Badge -->
         <div
@@ -279,9 +282,8 @@ const tasksByGrade = computed(() => ({
 // Stat pill aggregates
 const taskCompletedCount = computed(
   () =>
-    tasksWithStatus.value.filter(
-      (t) => t.athlete_task?.status === "completed",
-    ).length,
+    tasksWithStatus.value.filter((t) => t.athlete_task?.status === "completed")
+      .length,
 );
 const taskTotalCount = computed(() => tasksWithStatus.value.length);
 const milestonesCompletedCount = computed(

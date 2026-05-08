@@ -17,7 +17,9 @@ global.useAsyncData = vi.fn();
 global.definePageMeta = vi.fn();
 
 // Shared vi.fn() so both auto-import (global) and #app import resolve to the same mock
-const _useNuxtAppMock = vi.fn(() => ({} as ReturnType<typeof import("#app").useNuxtApp>));
+const _useNuxtAppMock = vi.fn(
+  () => ({}) as ReturnType<typeof import("#app").useNuxtApp>,
+);
 global.useNuxtApp = _useNuxtAppMock;
 export { _useNuxtAppMock as useNuxtAppMock };
 global.useLoadingStates = vi.fn(() => ({

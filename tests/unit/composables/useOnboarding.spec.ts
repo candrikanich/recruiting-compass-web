@@ -408,7 +408,9 @@ describe("useOnboarding", () => {
 
     it("captures onboarding_step_completed event on success", async () => {
       const mockCapture = vi.fn();
-      vi.mocked(useNuxtApp).mockReturnValue({ $posthog: { capture: mockCapture } } as ReturnType<typeof useNuxtApp>);
+      vi.mocked(useNuxtApp).mockReturnValue({
+        $posthog: { capture: mockCapture },
+      } as ReturnType<typeof useNuxtApp>);
 
       const { useSupabase } = await import("~/composables/useSupabase");
       const mockSupabase = {

@@ -67,15 +67,15 @@ NUXT_PUBLIC_COLLEGE_SCORECARD_API_KEY=your_key
 
 ## Commands
 
-| Command | Purpose |
-|---|---|
-| `npm run dev` | Dev server at localhost:3000 |
-| `npm run build` | Production build |
-| `npm run type-check` | TypeScript check |
-| `npm run lint:fix` | ESLint + Prettier |
-| `npm run test` | Vitest unit tests |
-| `npm run test:e2e` | Playwright E2E tests |
-| `npm run test:coverage` | Coverage report |
+| Command                 | Purpose                      |
+| ----------------------- | ---------------------------- |
+| `npm run dev`           | Dev server at localhost:3000 |
+| `npm run build`         | Production build             |
+| `npm run type-check`    | TypeScript check             |
+| `npm run lint:fix`      | ESLint + Prettier            |
+| `npm run test`          | Vitest unit tests            |
+| `npm run test:e2e`      | Playwright E2E tests         |
+| `npm run test:coverage` | Coverage report              |
 
 ---
 
@@ -111,16 +111,16 @@ See [`docs/deployment/ci-cd.md`](docs/deployment/ci-cd.md) for setup details.
 
 ## Documentation
 
-| Topic | Location |
-|---|---|
-| Architecture & diagrams | [`docs/architecture.md`](docs/architecture.md) |
-| API endpoint reference | [`docs/api/API_ENDPOINT_DOCUMENTATION.md`](docs/api/API_ENDPOINT_DOCUMENTATION.md) |
-| Database schema | [`docs/technical/DATABASE_SCHEMA.md`](docs/technical/DATABASE_SCHEMA.md) |
-| Testing strategy | [`docs/development/testing.md`](docs/development/testing.md) |
-| Deployment & CI/CD | [`docs/deployment/ci-cd.md`](docs/deployment/ci-cd.md) |
-| Accessibility guide | [`docs/accessibility/guide.md`](docs/accessibility/guide.md) |
-| User manual | [`docs/user/USER_MANUAL.md`](docs/user/USER_MANUAL.md) |
-| Full docs index | [`docs/INDEX.md`](docs/INDEX.md) |
+| Topic                   | Location                                                                           |
+| ----------------------- | ---------------------------------------------------------------------------------- |
+| Architecture & diagrams | [`docs/architecture.md`](docs/architecture.md)                                     |
+| API endpoint reference  | [`docs/api/API_ENDPOINT_DOCUMENTATION.md`](docs/api/API_ENDPOINT_DOCUMENTATION.md) |
+| Database schema         | [`docs/technical/DATABASE_SCHEMA.md`](docs/technical/DATABASE_SCHEMA.md)           |
+| Testing strategy        | [`docs/development/testing.md`](docs/development/testing.md)                       |
+| Deployment & CI/CD      | [`docs/deployment/ci-cd.md`](docs/deployment/ci-cd.md)                             |
+| Accessibility guide     | [`docs/accessibility/guide.md`](docs/accessibility/guide.md)                       |
+| User manual             | [`docs/user/USER_MANUAL.md`](docs/user/USER_MANUAL.md)                             |
+| Full docs index         | [`docs/INDEX.md`](docs/INDEX.md)                                                   |
 
 For development standards and architecture decisions, see [`CLAUDE.md`](CLAUDE.md).
 

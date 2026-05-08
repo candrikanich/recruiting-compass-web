@@ -12,7 +12,10 @@ function addButton(container: HTMLElement, id: string): HTMLButtonElement {
   const btn = document.createElement("button");
   btn.id = id;
   // Make visible to offsetParent filter used in getFocusableElements
-  Object.defineProperty(btn, "offsetParent", { get: () => container, configurable: true });
+  Object.defineProperty(btn, "offsetParent", {
+    get: () => container,
+    configurable: true,
+  });
   container.appendChild(btn);
   return btn;
 }

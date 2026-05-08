@@ -1,4 +1,10 @@
-import { computed, shallowReadonly, inject, watch, type ComputedRef } from "vue";
+import {
+  computed,
+  shallowReadonly,
+  inject,
+  watch,
+  type ComputedRef,
+} from "vue";
 import { useActiveFamily } from "./useActiveFamily";
 import { useFamilyContext } from "./useFamilyContext";
 import type { Coach } from "~/types/models";
@@ -78,7 +84,11 @@ export const useCoaches = (): {
     () => activeFamily.activeAthleteId?.value,
     async (newId, oldId) => {
       if (newId && newId !== oldId) {
-        coachStore.$patch({ coaches: [], isFetched: false, isFetchedBySchools: {} });
+        coachStore.$patch({
+          coaches: [],
+          isFetched: false,
+          isFetchedBySchools: {},
+        });
         await coachStore.fetchAllCoaches();
       }
     },
@@ -112,8 +122,7 @@ export const useCoaches = (): {
   const updateCoach = (id: string, updates: Partial<Coach>): Promise<Coach> =>
     coachStore.updateCoach(id, updates);
 
-  const deleteCoach = (id: string): Promise<void> =>
-    coachStore.deleteCoach(id);
+  const deleteCoach = (id: string): Promise<void> => coachStore.deleteCoach(id);
 
   const smartDelete = async (id: string): Promise<{ cascadeUsed: boolean }> => {
     try {

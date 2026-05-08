@@ -10,6 +10,7 @@
 When the simulator behaves unexpectedly during builds or UI tests, work through this ladder in order:
 
 **Simulator won't boot / shuts down mid-test:**
+
 ```bash
 sudo xcrun simctl shutdown all
 xcrun simctl erase all          # full reset — clears all simulator state
@@ -17,6 +18,7 @@ xcrun simctl boot "iPhone 16"   # boot a known-good device
 ```
 
 **SPM resolution failures or DerivedData corruption:**
+
 ```bash
 rm -rf ~/Library/Developer/Xcode/DerivedData
 rm -rf ~/Library/Caches/org.swift.swiftpm
@@ -25,6 +27,7 @@ rm -rf ~/Library/Caches/org.swift.swiftpm
 
 **`xcodebuild` destination not found:**
 Try destinations in this order until one works:
+
 ```bash
 -destination 'generic/platform=iOS Simulator'
 -destination 'platform=iOS Simulator,name=iPhone 16'
@@ -34,12 +37,14 @@ Try destinations in this order until one works:
 
 **Password autofill eating characters in UI tests:**
 iOS autofill silently drops characters from `.newPassword` / `.password` fields during `app.typeText()`. Fix:
+
 ```swift
 // In the text field under test — use clipboard paste instead of typeText
 UIPasteboard.general.string = "testPassword123"
 field.tap()
 app.menuItems["Paste"].tap()
 ```
+
 Or set `.textContentType(.none)` on the field in test builds (via `#if DEBUG`).
 
 **UI tests fail locally but pass CI (or vice versa):**

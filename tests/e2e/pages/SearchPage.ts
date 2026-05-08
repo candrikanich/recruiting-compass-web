@@ -23,7 +23,10 @@ export class SearchPage extends BasePage {
     type: "all" | "schools" | "coaches" | "interactions" | "metrics",
   ) {
     await this.click(`button:has-text("${this.getTypeLabel(type)}")`);
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   private getTypeLabel(type: string): string {
@@ -44,7 +47,10 @@ export class SearchPage extends BasePage {
   }
 
   async waitForSearchResults() {
-    await this.page.locator('text=Searching..., [data-testid*="loading"]').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('text=Searching..., [data-testid*="loading"]')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   // Search Results Validation
@@ -120,7 +126,10 @@ export class SearchPage extends BasePage {
       name,
     );
     await this.click('button:has-text("Save"), button:has-text("Create")');
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   async expectSavedSearchExists(name: string) {
@@ -171,14 +180,20 @@ export class SearchPage extends BasePage {
     await filterSection
       .locator(`text=${value}, input[value="${value}"]`)
       .click();
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   async clearAllFilters() {
     await this.click(
       'button:has-text("Clear Filters"), button:has-text("Reset")',
     );
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   // Cross-Entity Search

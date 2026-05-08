@@ -40,12 +40,21 @@ export default defineEventHandler(async (event): Promise<GetUsersResponse> => {
     const supabaseAdmin = useSupabaseAdmin();
 
     const query = getQuery(event);
-    const limit = Math.min(parseInt(String(query.limit ?? "50"), 10) || 50, 100);
+    const limit = Math.min(
+      parseInt(String(query.limit ?? "50"), 10) || 50,
+      100,
+    );
     const offset = Math.max(parseInt(String(query.offset ?? "0"), 10) || 0, 0);
 
-    const { data: users, error: fetchError, count } = await supabaseAdmin
+    const {
+      data: users,
+      error: fetchError,
+      count,
+    } = await supabaseAdmin
       .from("users")
-      .select("id, email, full_name, role, is_admin, created_at", { count: "exact" })
+      .select("id, email, full_name, role, is_admin, created_at", {
+        count: "exact",
+      })
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -58,7 +67,9 @@ export default defineEventHandler(async (event): Promise<GetUsersResponse> => {
     }
 
     const total = count ?? 0;
-    logger.info(`Admin ${user.id} fetched users (${users?.length ?? 0} of ${total})`);
+    logger.info(
+      `Admin ${user.id} fetched users (${users?.length ?? 0} of ${total})`,
+    );
 
     return {
       users: (users || []) as User[],

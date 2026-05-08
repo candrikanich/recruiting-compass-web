@@ -39,7 +39,13 @@ describe("phaseCalculation", () => {
   });
 
   describe("PHASE_INFO", () => {
-    const phases = ["freshman", "sophomore", "junior", "senior", "committed"] as const;
+    const phases = [
+      "freshman",
+      "sophomore",
+      "junior",
+      "senior",
+      "committed",
+    ] as const;
 
     it("has entries for all phases", () => {
       phases.forEach((phase) => {
@@ -83,7 +89,9 @@ describe("phaseCalculation", () => {
   describe("calculatePhase", () => {
     it("returns committed when hasSignedNLI is true regardless of completed tasks", () => {
       expect(calculatePhase([], true)).toBe("committed");
-      expect(calculatePhase(PHASE_MILESTONES.juniorToSenior, true)).toBe("committed");
+      expect(calculatePhase(PHASE_MILESTONES.juniorToSenior, true)).toBe(
+        "committed",
+      );
     });
 
     it("returns freshman when no tasks are completed", () => {
@@ -96,7 +104,9 @@ describe("phaseCalculation", () => {
     });
 
     it("returns sophomore when all freshmanToSophomore tasks are completed", () => {
-      expect(calculatePhase(PHASE_MILESTONES.freshmanToSophomore, false)).toBe("sophomore");
+      expect(calculatePhase(PHASE_MILESTONES.freshmanToSophomore, false)).toBe(
+        "sophomore",
+      );
     });
 
     it("returns junior when all sophomoreToJunior tasks are completed", () => {
@@ -109,7 +119,9 @@ describe("phaseCalculation", () => {
 
     it("returns junior even without freshman tasks if sophomore milestones are done (highest-phase check)", () => {
       // The function checks phases from highest to lowest; sophomoreToJunior tasks alone qualify for junior
-      expect(calculatePhase(PHASE_MILESTONES.sophomoreToJunior, false)).toBe("junior");
+      expect(calculatePhase(PHASE_MILESTONES.sophomoreToJunior, false)).toBe(
+        "junior",
+      );
     });
 
     it("returns senior when all juniorToSenior tasks are completed", () => {
@@ -122,7 +134,9 @@ describe("phaseCalculation", () => {
     });
 
     it("returns senior even without earlier tasks if juniorToSenior milestones are done", () => {
-      expect(calculatePhase(PHASE_MILESTONES.juniorToSenior, false)).toBe("senior");
+      expect(calculatePhase(PHASE_MILESTONES.juniorToSenior, false)).toBe(
+        "senior",
+      );
     });
 
     it("returns freshman when no milestones match", () => {
@@ -228,9 +242,9 @@ describe("phaseCalculation", () => {
     });
 
     it("junior: returns true when all juniorToSenior tasks complete", () => {
-      expect(
-        canAdvancePhase("junior", PHASE_MILESTONES.juniorToSenior),
-      ).toBe(true);
+      expect(canAdvancePhase("junior", PHASE_MILESTONES.juniorToSenior)).toBe(
+        true,
+      );
     });
 
     it("junior: returns false with no completed tasks", () => {

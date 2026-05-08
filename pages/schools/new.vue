@@ -100,8 +100,6 @@ import {
 import type { CollegeSearchResult } from "~/types/api";
 import type { School } from "~/types/models";
 
-
-
 const { createSchool, loading, error } = useSchools();
 const { lookupDivision } = useNcaaLookup();
 const {
@@ -160,7 +158,8 @@ const handleCollegeSelect = async (college: CollegeSearchResult) => {
     autoFilledFields.conference = !!ncaaResult.conference;
 
     // Set logo from NCAA lookup result or fallback to our utility
-    schoolLogo.value = ncaaResult.logo || getSchoolLogo(college.name, college.website);
+    schoolLogo.value =
+      ncaaResult.logo || getSchoolLogo(college.name, college.website);
   } else {
     // Fallback logo if no NCAA record found
     schoolLogo.value = getSchoolLogo(college.name, college.website);
@@ -170,13 +169,13 @@ const handleCollegeSelect = async (college: CollegeSearchResult) => {
   if (scorecardResult) {
     collegeScorecardData.value = scorecardResult;
     collegeScorecardFetched.value = true;
-    
+
     // Update website if scorecard has a better one
     if (scorecardResult.website && !selectedCollege.value.website) {
       selectedCollege.value.website = scorecardResult.website;
       autoFilledFields.website = true;
       // Re-run logo utility with website if we didn't have it before
-      if (!schoolLogo.value || schoolLogo.value.includes('ui-avatars')) {
+      if (!schoolLogo.value || schoolLogo.value.includes("ui-avatars")) {
         schoolLogo.value = getSchoolLogo(college.name, scorecardResult.website);
       }
     }

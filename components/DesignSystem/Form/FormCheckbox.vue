@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { useId } from 'vue'
+import { useId } from "vue";
 
 interface Props {
-  modelValue: boolean
-  label: string
-  disabled?: boolean
+  modelValue: boolean;
+  label: string;
+  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
-})
+});
 
 const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-}>()
+  "update:modelValue": [value: boolean];
+}>();
 
-const id = useId()
+const id = useId();
 
 function handleChange(event: Event) {
-  const target = event.target as HTMLInputElement
-  emit('update:modelValue', target.checked)
+  const target = event.target as HTMLInputElement;
+  emit("update:modelValue", target.checked);
 }
 </script>
 

@@ -400,7 +400,9 @@ describe("server/utils/auth", () => {
       const mockEq = vi.fn(() => ({ eq: mockEq, single: mockSingle }));
       const mockSelect = vi.fn(() => ({ eq: mockEq }));
       const mockFrom = vi.fn(() => ({ select: mockSelect }));
-      const mockSupabase = { from: mockFrom } as unknown as SupabaseClient<Database>;
+      const mockSupabase = {
+        from: mockFrom,
+      } as unknown as SupabaseClient<Database>;
 
       // Fill the cache past the limit (1001 unique user IDs)
       for (let i = 0; i < 1001; i++) {

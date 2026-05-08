@@ -103,7 +103,9 @@
                   </div>
                   <div>
                     <p class="font-medium text-gray-700 mb-1">&nbsp;</p>
-                    <div class="bg-white rounded-sm p-2 border border-green-200">
+                    <div
+                      class="bg-white rounded-sm p-2 border border-green-200"
+                    >
                       <span class="text-green-600">After:</span>
                       <span class="ml-2 text-gray-900 font-medium">
                         {{ formatValue(change.new_value) }}

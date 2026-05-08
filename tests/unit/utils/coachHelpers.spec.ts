@@ -63,7 +63,11 @@ describe("coachHelpers", () => {
     });
 
     it("uppercases lowercase first letters", () => {
-      const coach: Coach = { ...mockCoach, first_name: "alice", last_name: "brown" };
+      const coach: Coach = {
+        ...mockCoach,
+        first_name: "alice",
+        last_name: "brown",
+      };
       expect(getInitials(coach)).toBe("AB");
     });
 

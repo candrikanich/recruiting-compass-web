@@ -8,7 +8,10 @@ import { timingSafeEqual } from "crypto";
  * because an attacker already knows the expected length is non-zero, and
  * timingSafeEqual would throw on mismatched lengths anyway.
  */
-export function verifySharedSecret(provided: string, expected: string): boolean {
+export function verifySharedSecret(
+  provided: string,
+  expected: string,
+): boolean {
   if (!provided || !expected || provided.length !== expected.length) {
     return false;
   }

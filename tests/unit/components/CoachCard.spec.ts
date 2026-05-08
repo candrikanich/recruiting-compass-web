@@ -458,6 +458,5 @@ describe("CoachCard.vue", () => {
 
       expect(wrapper.text()).toContain("(555) 123-4567 ext. 890");
     });
-
   });
 });

@@ -100,8 +100,12 @@ const props = defineProps<{
 
 const emit = defineEmits<{ enrich: [] }>();
 
-const personalSignals = computed(() => Object.values(props.personalFit.signals));
-const academicSignals = computed(() => Object.values(props.academicFit.signals));
+const personalSignals = computed(() =>
+  Object.values(props.personalFit.signals),
+);
+const academicSignals = computed(() =>
+  Object.values(props.academicFit.signals),
+);
 
 function formatAdmissionRate(rate: number): string {
   return `${Math.round(rate * 100)}%`;

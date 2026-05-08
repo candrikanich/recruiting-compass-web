@@ -87,9 +87,9 @@ describe("Admin Dashboard (index.vue)", () => {
       global: {
         plugins: [createPinia()],
         stubs: {
-            NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
-            BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
-          },
+          NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
+          BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
+        },
       },
     });
 
@@ -110,9 +110,9 @@ describe("Admin Dashboard (index.vue)", () => {
       global: {
         plugins: [createPinia()],
         stubs: {
-            NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
-            BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
-          },
+          NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
+          BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
+        },
       },
     });
 
@@ -133,9 +133,9 @@ describe("Admin Dashboard (index.vue)", () => {
       global: {
         plugins: [createPinia()],
         stubs: {
-            NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
-            BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
-          },
+          NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
+          BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
+        },
       },
     });
 
@@ -155,9 +155,9 @@ describe("Admin Dashboard (index.vue)", () => {
       global: {
         plugins: [createPinia()],
         stubs: {
-            NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
-            BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
-          },
+          NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
+          BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
+        },
       },
     });
 

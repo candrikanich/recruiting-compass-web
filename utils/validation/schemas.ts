@@ -49,7 +49,9 @@ export const signupSchema = z
     path: ["confirmPassword"],
   })
   .refine(
-    (data) => data.role !== "player" || (!!data.dateOfBirth && /^\d{4}-\d{2}-\d{2}$/.test(data.dateOfBirth)),
+    (data) =>
+      data.role !== "player" ||
+      (!!data.dateOfBirth && /^\d{4}-\d{2}-\d{2}$/.test(data.dateOfBirth)),
     { message: "Date of birth is required", path: ["dateOfBirth"] },
   );
 

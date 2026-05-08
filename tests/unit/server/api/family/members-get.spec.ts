@@ -16,7 +16,12 @@ vi.mock("~/server/utils/auth", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 // Chainable builder that supports arbitrary .eq() depth before a terminal method
@@ -29,9 +34,13 @@ function buildChain(terminal: {
   maybeSingle: () => Promise<unknown>;
 } {
   const chain = {
-    get eq() { return () => chain; },
+    get eq() {
+      return () => chain;
+    },
     order: terminal.order ?? (() => Promise.resolve({ data: [], error: null })),
-    maybeSingle: terminal.maybeSingle ?? (() => Promise.resolve({ data: null, error: null })),
+    maybeSingle:
+      terminal.maybeSingle ??
+      (() => Promise.resolve({ data: null, error: null })),
   };
   return chain;
 }
@@ -45,11 +54,19 @@ vi.mock("~/server/utils/supabase", () => ({
           select: (cols: string) => {
             if (cols === "id") {
               return buildChain({
-                maybeSingle: () => Promise.resolve({ data: mockState.access, error: mockState.accessError }),
+                maybeSingle: () =>
+                  Promise.resolve({
+                    data: mockState.access,
+                    error: mockState.accessError,
+                  }),
               });
             }
             return buildChain({
-              order: () => Promise.resolve({ data: mockState.members, error: mockState.membersError }),
+              order: () =>
+                Promise.resolve({
+                  data: mockState.members,
+                  error: mockState.membersError,
+                }),
             });
           },
         };
@@ -57,7 +74,11 @@ vi.mock("~/server/utils/supabase", () => ({
       if (table === "users") {
         return {
           select: () => ({
-            in: () => Promise.resolve({ data: mockState.users, error: mockState.usersError }),
+            in: () =>
+              Promise.resolve({
+                data: mockState.users,
+                error: mockState.usersError,
+              }),
           }),
         };
       }
@@ -72,8 +93,14 @@ vi.mock("h3", async (importOriginal) => {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
     getQuery: vi.fn(() => ({ familyId: mockState.familyId })),
-    createError: (config: { statusCode: number; statusMessage?: string; message?: string }) => {
-      const err = new Error(config.statusMessage ?? config.message) as Error & { statusCode: number };
+    createError: (config: {
+      statusCode: number;
+      statusMessage?: string;
+      message?: string;
+    }) => {
+      const err = new Error(config.statusMessage ?? config.message) as Error & {
+        statusCode: number;
+      };
       err.statusCode = config.statusCode;
       return err;
     },
@@ -89,17 +116,37 @@ describe("GET /api/family/members", () => {
     mockState.access = { id: "member-self" };
     mockState.accessError = null;
     mockState.members = [
-      { id: "m-1", family_unit_id: "family-123", user_id: "user-abc", role: "player", added_at: "2024-01-01" },
+      {
+        id: "m-1",
+        family_unit_id: "family-123",
+        user_id: "user-abc",
+        role: "player",
+        added_at: "2024-01-01",
+      },
     ];
     mockState.membersError = null;
-    mockState.users = [{ id: "user-abc", email: "player@example.com", full_name: "Alice", role: "player" }];
+    mockState.users = [
+      {
+        id: "user-abc",
+        email: "player@example.com",
+        full_name: "Alice",
+        role: "player",
+      },
+    ];
     mockState.usersError = null;
   });
 
   it("returns members with user details", async () => {
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result).toMatchObject({ success: true, count: 1, familyId: "family-123" });
-    expect(result.members[0]).toMatchObject({ user_id: "user-abc", users: { email: "player@example.com" } });
+    expect(result).toMatchObject({
+      success: true,
+      count: 1,
+      familyId: "family-123",
+    });
+    expect(result.members[0]).toMatchObject({
+      user_id: "user-abc",
+      users: { email: "player@example.com" },
+    });
   });
 
   it("returns empty array when no members exist", async () => {
@@ -111,31 +158,44 @@ describe("GET /api/family/members", () => {
   it("uses empty user placeholder when user details not found", async () => {
     mockState.users = []; // no user record for the member
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result.members[0].users).toMatchObject({ id: "user-abc", email: "" });
+    expect(result.members[0].users).toMatchObject({
+      id: "user-abc",
+      email: "",
+    });
   });
 
   it("returns 400 when familyId is missing", async () => {
     mockState.familyId = "";
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 400 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 400 });
   });
 
   it("returns 403 when user is not a member of the family", async () => {
     mockState.access = null;
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 403 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 403 });
   });
 
   it("returns 403 when access check returns an error", async () => {
     mockState.accessError = { message: "rls error" };
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 403 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 403 });
   });
 
   it("returns 500 when members fetch fails", async () => {
     mockState.membersError = { message: "db error" };
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 500 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
   });
 
   it("returns 500 when user details fetch fails", async () => {
     mockState.usersError = { message: "db error" };
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 500 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
   });
 });

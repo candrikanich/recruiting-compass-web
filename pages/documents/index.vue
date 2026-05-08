@@ -1,6 +1,11 @@
 <template>
-  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
-    <PageHeader title="Documents" description="Manage videos, transcripts, and other recruiting documents">
+  <div
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
+  >
+    <PageHeader
+      title="Documents"
+      description="Manage videos, transcripts, and other recruiting documents"
+    >
       <template #actions>
         <NuxtLink
           to="/documents/add"
@@ -64,7 +69,12 @@
                 <input
                   id="search"
                   :value="searchValue"
-                  @input="handleFilterUpdate('search', ($event.target as HTMLInputElement).value)"
+                  @input="
+                    handleFilterUpdate(
+                      'search',
+                      ($event.target as HTMLInputElement).value,
+                    )
+                  "
                   type="text"
                   placeholder="Title or description..."
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
@@ -81,7 +91,12 @@
                 <select
                   id="type"
                   :value="typeValue"
-                  @change="handleFilterUpdate('type', ($event.target as HTMLSelectElement).value || null)"
+                  @change="
+                    handleFilterUpdate(
+                      'type',
+                      ($event.target as HTMLSelectElement).value || null,
+                    )
+                  "
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                 >
                   <option value="">-- All --</option>
@@ -104,7 +119,12 @@
                 <select
                   id="schoolId"
                   :value="schoolIdValue"
-                  @change="handleFilterUpdate('schoolId', ($event.target as HTMLSelectElement).value || null)"
+                  @change="
+                    handleFilterUpdate(
+                      'schoolId',
+                      ($event.target as HTMLSelectElement).value || null,
+                    )
+                  "
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                 >
                   <option value="">-- All --</option>
@@ -129,7 +149,12 @@
                 <select
                   id="shared"
                   :value="sharedValue"
-                  @change="handleFilterUpdate('shared', ($event.target as HTMLSelectElement).value || null)"
+                  @change="
+                    handleFilterUpdate(
+                      'shared',
+                      ($event.target as HTMLSelectElement).value || null,
+                    )
+                  "
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                 >
                   <option value="">-- All --</option>
@@ -353,10 +378,12 @@ const {
 const presets = computed(() => [...readonlyPresets.value]);
 
 // Computed helpers for type-safe filter access
-const searchValue = computed(() => String(filterValues.value?.search || ''));
-const typeValue = computed(() => String(filterValues.value?.type || ''));
-const schoolIdValue = computed(() => String(filterValues.value?.schoolId || ''));
-const sharedValue = computed(() => String(filterValues.value?.shared || ''));
+const searchValue = computed(() => String(filterValues.value?.search || ""));
+const typeValue = computed(() => String(filterValues.value?.type || ""));
+const schoolIdValue = computed(() =>
+  String(filterValues.value?.schoolId || ""),
+);
+const sharedValue = computed(() => String(filterValues.value?.shared || ""));
 
 // Filter event handlers
 const handleFilterUpdate = (field: string, value: any) => {

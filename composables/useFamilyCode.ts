@@ -73,7 +73,8 @@ export const useFamilyCode = () => {
         myFamilyCode.value = family?.family_code || null;
         myFamilyId.value = family?.id || null;
         myFamilyName.value = family?.family_name || null;
-        isPlayerFamilyCreator.value = family?.created_by_user_id === userStore.user.id;
+        isPlayerFamilyCreator.value =
+          family?.created_by_user_id === userStore.user.id;
       } else {
         // Parents: Get codes for families they belong to
         const membershipsResponse = await supabase
@@ -135,7 +136,6 @@ export const useFamilyCode = () => {
    * Creates a new family (players only) - calls API endpoint with auth
    */
   const createFamily = async () => {
-
     loading.value = true;
     error.value = null;
     successMessage.value = null;

@@ -28,7 +28,9 @@ vi.mock("h3", async (importOriginal) => {
     defineEventHandler: (fn: Function) => fn,
     getQuery: vi.fn(),
     createError: (config: { statusCode: number; statusMessage: string }) => {
-      const err = new Error(config.statusMessage) as Error & { statusCode: number };
+      const err = new Error(config.statusMessage) as Error & {
+        statusCode: number;
+      };
       err.statusCode = config.statusCode;
       return err;
     },
@@ -38,8 +40,22 @@ vi.mock("h3", async (importOriginal) => {
 import { getQuery } from "h3";
 
 const SAMPLE_USERS = [
-  { id: "1", email: "a@test.com", full_name: "A", role: "player", is_admin: false, created_at: "2024-01-01" },
-  { id: "2", email: "b@test.com", full_name: "B", role: "parent", is_admin: false, created_at: "2024-01-02" },
+  {
+    id: "1",
+    email: "a@test.com",
+    full_name: "A",
+    role: "player",
+    is_admin: false,
+    created_at: "2024-01-01",
+  },
+  {
+    id: "2",
+    email: "b@test.com",
+    full_name: "B",
+    role: "parent",
+    is_admin: false,
+    created_at: "2024-01-02",
+  },
 ];
 
 describe("GET /api/admin/users - pagination", () => {
@@ -63,7 +79,7 @@ describe("GET /api/admin/users - pagination", () => {
 
     expect(mockSelect).toHaveBeenCalledWith(
       "id, email, full_name, role, is_admin, created_at",
-      { count: "exact" }
+      { count: "exact" },
     );
     expect(mockRange).toHaveBeenCalledWith(0, 49);
   });
@@ -104,7 +120,11 @@ describe("GET /api/admin/users - pagination", () => {
   });
 
   it("throws 500 on database error", async () => {
-    mockRange.mockResolvedValue({ data: null, count: null, error: { message: "db error" } });
+    mockRange.mockResolvedValue({
+      data: null,
+      count: null,
+      error: { message: "db error" },
+    });
     vi.mocked(getQuery).mockReturnValue({});
     const { default: handler } = await import("~/server/api/admin/users.get");
     const mockEvent = {} as any;

@@ -81,7 +81,9 @@ export class CoachesPage extends BasePage {
       .first();
     if (await editButton.isVisible()) {
       await editButton.click();
-      await this.page.locator('#firstName, input[placeholder*="first name"]').waitFor({ state: "visible" });
+      await this.page
+        .locator('#firstName, input[placeholder*="first name"]')
+        .waitFor({ state: "visible" });
     }
 
     if (updates.firstName) {
@@ -118,7 +120,9 @@ export class CoachesPage extends BasePage {
     await deleteButton.click();
 
     // Confirm deletion — wait for the dialog to be ready
-    const confirmButton = this.page.locator('button:has-text("Confirm")').first();
+    const confirmButton = this.page
+      .locator('button:has-text("Confirm")')
+      .first();
     await confirmButton.waitFor({ state: "visible" });
     await confirmButton.click();
     await this.page.waitForLoadState("domcontentloaded");
@@ -127,17 +131,25 @@ export class CoachesPage extends BasePage {
   // Search and Filter
   async searchCoaches(searchTerm: string) {
     const searchInput = await this.page
-      .locator('input[placeholder*="Name, email"], input[placeholder*="Search"], input[type="search"]')
+      .locator(
+        'input[placeholder*="Name, email"], input[placeholder*="Search"], input[type="search"]',
+      )
       .first();
     await searchInput.fill(searchTerm);
     // Debounced search — wait for loading indicator to disappear
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   async filterByRole(role: string) {
     // Role filter is a native <select id="roleFilter"> on the school coaches page
     await this.selectOption('#roleFilter, select[name="role"]', role);
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   async sortBy(sortOption: string) {
@@ -151,7 +163,10 @@ export class CoachesPage extends BasePage {
       } else {
         await this.selectOption('select[name="sort"]', sortOption);
       }
-      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+      await this.page
+        .locator('[data-testid*="loading"], .animate-spin')
+        .waitFor({ state: "hidden" })
+        .catch(() => {});
     }
   }
 
@@ -161,7 +176,10 @@ export class CoachesPage extends BasePage {
       .first();
     if (await clearButton.isVisible()) {
       await clearButton.click();
-      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+      await this.page
+        .locator('[data-testid*="loading"], .animate-spin')
+        .waitFor({ state: "hidden" })
+        .catch(() => {});
     }
   }
 
@@ -185,7 +203,9 @@ export class CoachesPage extends BasePage {
     // Wait for Supabase data to load — poll until count stabilizes
     let count = 0;
     for (let i = 0; i < 10; i++) {
-      count = await this.page.locator('h3.text-lg.font-bold.text-slate-900').count();
+      count = await this.page
+        .locator("h3.text-lg.font-bold.text-slate-900")
+        .count();
       if (count > 0) break;
       await this.page.waitForTimeout(500);
     }

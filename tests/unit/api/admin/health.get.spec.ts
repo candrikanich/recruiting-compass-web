@@ -10,7 +10,12 @@ vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({ from: mockFrom })),
 }));
 
-const mockLogger = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };
+const mockLogger = {
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+  debug: vi.fn(),
+};
 vi.mock("~/server/utils/logger", () => ({
   createLogger: vi.fn(() => mockLogger),
   useLogger: vi.fn(() => mockLogger),

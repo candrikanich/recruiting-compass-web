@@ -71,6 +71,8 @@ describe("HelpFeedback", () => {
     const wrapper = mount(HelpFeedback);
     const link = wrapper.find('a[href^="mailto:"]');
     expect(link.exists()).toBe(true);
-    expect(link.attributes("href")).toBe("mailto:support@therecruitingcompass.com");
+    expect(link.attributes("href")).toBe(
+      "mailto:support@therecruitingcompass.com",
+    );
   });
 });

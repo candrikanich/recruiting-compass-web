@@ -14,7 +14,12 @@ vi.mock("~/composables/useFamilyCode", () => ({
   })),
 }));
 
-const mockUser = ref({ id: "u1", email: "test@example.com", full_name: "Test User", role: "player" });
+const mockUser = ref({
+  id: "u1",
+  email: "test@example.com",
+  full_name: "Test User",
+  role: "player",
+});
 vi.mock("~/stores/user", () => ({
   useUserStore: vi.fn(() => ({ user: mockUser.value, isAuthenticated: true })),
 }));
@@ -47,7 +52,9 @@ describe("HeaderProfile", () => {
     const wrapper = createWrapper();
     await wrapper.find('[data-testid="profile-menu"]').trigger("click");
     await flushPromises();
-    expect(wrapper.find('[data-testid="family-code"]').text()).toContain("FAM-ABC123");
+    expect(wrapper.find('[data-testid="family-code"]').text()).toContain(
+      "FAM-ABC123",
+    );
   });
 
   it("hides family code section when code is null", async () => {

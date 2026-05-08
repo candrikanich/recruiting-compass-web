@@ -90,7 +90,11 @@ export default [
   },
   {
     files: ["composables/**/*.ts"],
-    plugins: { local: { rules: { "no-supabase-in-composables": noSupabaseInComposables } } },
+    plugins: {
+      local: {
+        rules: { "no-supabase-in-composables": noSupabaseInComposables },
+      },
+    },
     rules: {
       "local/no-supabase-in-composables": "error",
     },

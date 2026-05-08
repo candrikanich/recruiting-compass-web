@@ -20,7 +20,10 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
     } else {
       // No interactions available — skip all tests in this describe block
       // (requires schools + data to create interactions, not available in base test account)
-      test.skip(true, "No interactions available for accessibility testing — run with E2E_SEED=true");
+      test.skip(
+        true,
+        "No interactions available for accessibility testing — run with E2E_SEED=true",
+      );
     }
   });
 

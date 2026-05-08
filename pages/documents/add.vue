@@ -26,7 +26,7 @@ const handleSubmit = async (formData: any) => {
       formData.file,
       formData.type as DocumentType,
       formData.title,
-      formData.description || undefined
+      formData.description || undefined,
     );
 
     if (result.success) {

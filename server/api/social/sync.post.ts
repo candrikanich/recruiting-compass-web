@@ -194,7 +194,10 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
 
         const { error: upsertError } = await supabaseAny
           .from("social_media_posts")
-          .upsert(postsToUpsert, { onConflict: "post_url", ignoreDuplicates: true });
+          .upsert(postsToUpsert, {
+            onConflict: "post_url",
+            ignoreDuplicates: true,
+          });
 
         if (upsertError) {
           logger.error("Failed to upsert Twitter posts", upsertError);

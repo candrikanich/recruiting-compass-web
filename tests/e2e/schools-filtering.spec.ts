@@ -36,12 +36,12 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
   test("should display all required filter controls", async ({ page }) => {
     // Filter panel only renders when schools exist
-    const hasSchools = await page.locator("[data-testid='school-card']").count();
+    const hasSchools = await page
+      .locator("[data-testid='school-card']")
+      .count();
     if (hasSchools === 0) return;
 
-    await expect(
-      page.locator('#school-search'),
-    ).toBeVisible();
+    await expect(page.locator("#school-search")).toBeVisible();
     await expect(page.locator("#filter-division")).toBeVisible();
     await expect(page.locator("#filter-status")).toBeVisible();
     await expect(page.locator("#filter-state")).toBeVisible();
@@ -58,9 +58,7 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
     if (initialCount === 0) return; // Filter panel not shown — no data to test
 
-    const searchInput = page.locator(
-      '#school-search',
-    );
+    const searchInput = page.locator("#school-search");
     await searchInput.fill("zzzzzzzznotaschool");
     await page.waitForTimeout(500);
 
@@ -76,9 +74,7 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
     if (initialCount === 0) return;
 
-    const searchInput = page.locator(
-      '#school-search',
-    );
+    const searchInput = page.locator("#school-search");
     await searchInput.fill("University");
     await page.waitForTimeout(500);
 
@@ -127,7 +123,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     const distanceSlider = page.locator('input[type="range"]');
     const sliderExists = await distanceSlider.count();
     if (sliderExists === 0) return; // filter panel not shown (no schools)
-    const isDisabled = await distanceSlider.isDisabled({ timeout: 1000 }).catch(() => false);
+    const isDisabled = await distanceSlider
+      .isDisabled({ timeout: 1000 })
+      .catch(() => false);
 
     if (isDisabled) {
       await expect(distanceSlider).toBeDisabled();
@@ -140,7 +138,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     const distanceSlider = page.locator('input[type="range"]');
     const sliderExists = await distanceSlider.count();
     if (sliderExists === 0) return; // filter panel not shown (no schools)
-    const isDisabled = await distanceSlider.isDisabled({ timeout: 1000 }).catch(() => true);
+    const isDisabled = await distanceSlider
+      .isDisabled({ timeout: 1000 })
+      .catch(() => true);
 
     if (!isDisabled) {
       // The distance label shows "X mi" next to the slider
@@ -163,8 +163,10 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
     // Use the first non-empty option (data-dependent — only available states are shown)
     const options = await stateSelectById.locator("option").all();
-    const optionValues = await Promise.all(options.map(o => o.getAttribute("value")));
-    const firstRealIndex = optionValues.findIndex(value => value !== "");
+    const optionValues = await Promise.all(
+      options.map((o) => o.getAttribute("value")),
+    );
+    const firstRealIndex = optionValues.findIndex((value) => value !== "");
     if (firstRealIndex === -1) return; // no states available
     const stateValue = optionValues[firstRealIndex];
     if (!stateValue) return;
@@ -174,7 +176,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     expect(filteredCount).toBeLessThanOrEqual(initialCount);
 
     // Chip should have a remove button with aria-label matching the state value
-    await expect(page.locator(`button[aria-label="Remove ${stateValue} filter"]`)).toBeVisible();
+    await expect(
+      page.locator(`button[aria-label="Remove ${stateValue} filter"]`),
+    ).toBeVisible();
   });
 
   test("should show states with schools in the State dropdown", async ({
@@ -204,7 +208,10 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     const stateSelect = page.locator("#filter-state");
 
     // Use the first available state option (data-dependent)
-    const firstStateVal = await stateSelect.locator("option").nth(1).getAttribute("value");
+    const firstStateVal = await stateSelect
+      .locator("option")
+      .nth(1)
+      .getAttribute("value");
     if (!firstStateVal) return;
     await stateSelect.selectOption(firstStateVal);
     await page.waitForTimeout(500);
@@ -219,7 +226,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     await page.waitForTimeout(500);
 
     // State chip should be gone
-    await expect(page.locator(`button[aria-label="Remove ${firstStateVal} filter"]`)).not.toBeVisible();
+    await expect(
+      page.locator(`button[aria-label="Remove ${firstStateVal} filter"]`),
+    ).not.toBeVisible();
   });
 
   // ============================================================================
@@ -246,7 +255,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
       .catch(() => false);
     if (hasFilters) {
       // Use aria-label on the remove button to confirm the D1 chip exists
-      await expect(page.locator('button[aria-label="Remove D1 filter"]')).toBeVisible();
+      await expect(
+        page.locator('button[aria-label="Remove D1 filter"]'),
+      ).toBeVisible();
     }
   });
 
@@ -297,7 +308,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     await page.waitForTimeout(500);
 
     // After applying filter, a chip should appear
-    const chipAfterFilter = page.locator('button[aria-label="Remove D3 filter"]');
+    const chipAfterFilter = page.locator(
+      'button[aria-label="Remove D3 filter"]',
+    );
     const chipVisible = await chipAfterFilter.isVisible().catch(() => false);
     if (chipVisible) {
       await expect(chipAfterFilter).toBeVisible();

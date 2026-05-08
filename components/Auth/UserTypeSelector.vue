@@ -7,11 +7,7 @@
         Choose the account type that best fits your needs
       </p>
     </div>
-    <div
-      role="radiogroup"
-      aria-labelledby="user-type-legend"
-      class="space-y-3"
-    >
+    <div role="radiogroup" aria-labelledby="user-type-legend" class="space-y-3">
       <!-- Parent Option -->
       <label
         :for="`user-type-parent-${uid}`"

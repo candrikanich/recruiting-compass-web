@@ -26,7 +26,18 @@ const UpdateProfileSchema = z.object({
   show_athletic: z.boolean().optional(),
   show_film: z.boolean().optional(),
   show_schools: z.boolean().optional(),
-  header_color: z.enum(["slate", "blue", "emerald", "violet", "rose", "amber", "teal", "indigo"]).optional(),
+  header_color: z
+    .enum([
+      "slate",
+      "blue",
+      "emerald",
+      "violet",
+      "rose",
+      "amber",
+      "teal",
+      "indigo",
+    ])
+    .optional(),
   vanity_slug: z
     .string()
     .regex(/^[a-z0-9][a-z0-9-]{0,28}[a-z0-9]$/, "Invalid slug format")
@@ -43,13 +54,19 @@ export default defineEventHandler(async (event) => {
 
     const parsed = UpdateProfileSchema.safeParse(body);
     if (!parsed.success) {
-      throw createError({ statusCode: 422, statusMessage: "Invalid profile data" });
+      throw createError({
+        statusCode: 422,
+        statusMessage: "Invalid profile data",
+      });
     }
 
     const updates = parsed.data;
 
     if (updates.vanity_slug && RESERVED_SLUGS.has(updates.vanity_slug)) {
-      throw createError({ statusCode: 422, statusMessage: "That slug is reserved" });
+      throw createError({
+        statusCode: 422,
+        statusMessage: "That slug is reserved",
+      });
     }
 
     const { data: membership } = await supabase
@@ -59,7 +76,10 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (!membership) {
-      throw createError({ statusCode: 403, statusMessage: "Not a family member" });
+      throw createError({
+        statusCode: 403,
+        statusMessage: "Not a family member",
+      });
     }
 
     const { error } = await supabase
@@ -69,10 +89,16 @@ export default defineEventHandler(async (event) => {
 
     if (error) {
       if ((error as { code: string }).code === "23505") {
-        throw createError({ statusCode: 409, statusMessage: "That slug is already taken" });
+        throw createError({
+          statusCode: 409,
+          statusMessage: "That slug is already taken",
+        });
       }
       logger.error("Failed to update player profile", error);
-      throw createError({ statusCode: 500, statusMessage: "Failed to update profile" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to update profile",
+      });
     }
 
     logger.info("Player profile updated", { userId });
@@ -80,6 +106,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to update profile", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to update profile" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to update profile",
+    });
   }
 });

@@ -9,7 +9,9 @@ import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "schools/fit-score");
-  logger.info("Deprecated endpoint called — use /api/schools/[id]/enrich instead");
+  logger.info(
+    "Deprecated endpoint called — use /api/schools/[id]/enrich instead",
+  );
   throw createError({
     statusCode: 410,
     statusMessage:

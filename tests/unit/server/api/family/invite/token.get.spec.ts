@@ -39,9 +39,8 @@ vi.mock("h3", async (importOriginal) => {
   };
 });
 
-const { default: handler } = await import(
-  "~/server/api/family/invite/[token].get"
-);
+const { default: handler } =
+  await import("~/server/api/family/invite/[token].get");
 const mockEvent = {} as Parameters<typeof handler>[0];
 
 describe("GET /api/family/invite/[token]", () => {
@@ -54,7 +53,10 @@ describe("GET /api/family/invite/[token]", () => {
       expires_at: new Date(Date.now() + 86_400_000).toISOString(),
       family_unit_id: "fam-1",
     };
-    mockState.familyUnit = { family_name: "The Smiths", pending_player_details: null };
+    mockState.familyUnit = {
+      family_name: "The Smiths",
+      pending_player_details: null,
+    };
   });
 
   it("returns invitationId, role, and familyName — no email or emailExists", async () => {
@@ -70,10 +72,21 @@ describe("GET /api/family/invite/[token]", () => {
   it("returns prefill when role is player and pending_player_details has playerName", async () => {
     mockState.familyUnit = {
       family_name: "The Smiths",
-      pending_player_details: { playerName: "Alex Johnson", graduationYear: 2026, sport: "Soccer", position: "Midfielder" },
+      pending_player_details: {
+        playerName: "Alex Johnson",
+        graduationYear: 2026,
+        sport: "Soccer",
+        position: "Midfielder",
+      },
     };
     const result = await handler(mockEvent);
-    expect(result.prefill).toEqual({ firstName: "Alex", lastName: "Johnson", graduationYear: 2026, sport: "Soccer", position: "Midfielder" });
+    expect(result.prefill).toEqual({
+      firstName: "Alex",
+      lastName: "Johnson",
+      graduationYear: 2026,
+      sport: "Soccer",
+      position: "Midfielder",
+    });
   });
 
   it("returns no prefill when role is parent", async () => {
@@ -87,7 +100,10 @@ describe("GET /api/family/invite/[token]", () => {
   });
 
   it("returns no prefill when pending_player_details is null", async () => {
-    mockState.familyUnit = { family_name: "The Smiths", pending_player_details: null };
+    mockState.familyUnit = {
+      family_name: "The Smiths",
+      pending_player_details: null,
+    };
     const result = await handler(mockEvent);
     expect(result.prefill).toBeUndefined();
   });

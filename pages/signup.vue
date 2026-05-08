@@ -199,13 +199,20 @@ const handleSignup = async () => {
   if (dateOfBirth.value) {
     const dob = new Date(dateOfBirth.value);
     const today = new Date();
-    const age = today.getFullYear() - dob.getFullYear() -
-      (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate()) ? 1 : 0);
+    const age =
+      today.getFullYear() -
+      dob.getFullYear() -
+      (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate())
+        ? 1
+        : 0);
     if (age < 13) {
-      setErrors([{
-        field: "form",
-        message: "Recruiting Compass is not available for users under 13. If you're a parent, please register with your own information.",
-      }]);
+      setErrors([
+        {
+          field: "form",
+          message:
+            "Recruiting Compass is not available for users under 13. If you're a parent, please register with your own information.",
+        },
+      ]);
       await focusErrorSummary();
       return;
     }
@@ -282,7 +289,10 @@ const handleSignup = async () => {
       role: validated.role,
     };
     if (validated.dateOfBirth) userRecord.date_of_birth = validated.dateOfBirth;
-    const upsertResponse = await (supabase.from("users") as any).upsert([userRecord], { onConflict: "id" });
+    const upsertResponse = await (supabase.from("users") as any).upsert(
+      [userRecord],
+      { onConflict: "id" },
+    );
     const { error: upsertError } = upsertResponse as { error: any };
 
     if (upsertError) {

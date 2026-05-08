@@ -55,7 +55,9 @@ describe("sanitizeSchoolFields", () => {
 
 describe("sanitizeSchoolFields — additional rich-text fields", () => {
   it("strips XSS from coaching_philosophy", () => {
-    const r = sanitizeSchoolFields({ coaching_philosophy: "<b>philosophy</b>" });
+    const r = sanitizeSchoolFields({
+      coaching_philosophy: "<b>philosophy</b>",
+    });
     expect(r.coaching_philosophy).toBe("philosophy");
   });
 

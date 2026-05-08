@@ -72,10 +72,7 @@ export default defineEventHandler(async (event) => {
 
     // Fetch prerequisite tasks
     const { data: prerequisitesData, error: prerequisitesError } =
-      await supabase
-        .from("task")
-        .select(TASK_COLUMNS)
-        .in("id", dependencyIds);
+      await supabase.from("task").select(TASK_COLUMNS).in("id", dependencyIds);
 
     if (prerequisitesError) {
       logger.error("Error fetching task prerequisites", prerequisitesError);

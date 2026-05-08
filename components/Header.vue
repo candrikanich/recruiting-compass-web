@@ -40,7 +40,11 @@
             aria-controls="mobile-nav-menu"
             class="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
           >
-            <Bars3Icon v-if="!isMobileMenuOpen" class="w-6 h-6" aria-hidden="true" />
+            <Bars3Icon
+              v-if="!isMobileMenuOpen"
+              class="w-6 h-6"
+              aria-hidden="true"
+            />
             <XMarkIcon v-else class="w-6 h-6" aria-hidden="true" />
           </button>
         </div>

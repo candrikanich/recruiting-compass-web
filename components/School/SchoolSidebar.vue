@@ -137,7 +137,10 @@
 import { getRoleLabel } from "~/utils/coachLabels";
 import type { School, Coach } from "~/types/models";
 import type { DivisionRecommendation } from "~/types/timeline";
-import type { PersonalFitAnalysis, AcademicFitAnalysis } from "~/types/schoolFit";
+import type {
+  PersonalFitAnalysis,
+  AcademicFitAnalysis,
+} from "~/types/schoolFit";
 import {
   ChatBubbleLeftRightIcon,
   UsersIcon,

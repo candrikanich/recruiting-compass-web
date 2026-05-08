@@ -28,7 +28,9 @@ vi.mock("~/server/utils/familyCode", () => ({
 }));
 
 vi.mock("~/server/utils/validation", () => ({
-  validateBody: vi.fn(async (_event: unknown, _schema: unknown) => mockState.body),
+  validateBody: vi.fn(
+    async (_event: unknown, _schema: unknown) => mockState.body,
+  ),
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
@@ -64,8 +66,14 @@ vi.mock("h3", async (importOriginal) => {
   return {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
-    createError: (config: { statusCode: number; statusMessage?: string; message?: string }) => {
-      const err = new Error(config.statusMessage ?? config.message ?? "error") as Error & {
+    createError: (config: {
+      statusCode: number;
+      statusMessage?: string;
+      message?: string;
+    }) => {
+      const err = new Error(
+        config.statusMessage ?? config.message ?? "error",
+      ) as Error & {
         statusCode: number;
       };
       err.statusCode = config.statusCode;
@@ -74,14 +82,20 @@ vi.mock("h3", async (importOriginal) => {
   };
 });
 
-const { default: handler } = await import("~/server/api/family/code/regenerate.post");
+const { default: handler } =
+  await import("~/server/api/family/code/regenerate.post");
 
-const mockEvent = { context: {}, node: { req: {}, res: {} } } as Parameters<typeof handler>[0];
+const mockEvent = { context: {}, node: { req: {}, res: {} } } as Parameters<
+  typeof handler
+>[0];
 
 describe("POST /api/family/code/regenerate", () => {
   beforeEach(() => {
     mockState.userId = "user-1";
-    mockState.familyData = { id: VALID_FAMILY_ID, created_by_user_id: "user-1" };
+    mockState.familyData = {
+      id: VALID_FAMILY_ID,
+      created_by_user_id: "user-1",
+    };
     mockState.updateError = null;
     mockState.generatedCode = "FAM-NEWCODE";
     mockState.body = { familyId: VALID_FAMILY_ID };
@@ -98,7 +112,10 @@ describe("POST /api/family/code/regenerate", () => {
   });
 
   it("throws 403 when user is not the family owner", async () => {
-    mockState.familyData = { id: VALID_FAMILY_ID, created_by_user_id: "other-user" };
+    mockState.familyData = {
+      id: VALID_FAMILY_ID,
+      created_by_user_id: "other-user",
+    };
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 403 });
   });
 
@@ -117,7 +134,9 @@ describe("POST /api/family/code/regenerate", () => {
 
   it("propagates 400 from validateBody when body is invalid", async () => {
     const { validateBody } = await import("~/server/utils/validation");
-    const validationErr = Object.assign(new Error("Validation failed"), { statusCode: 400 });
+    const validationErr = Object.assign(new Error("Validation failed"), {
+      statusCode: 400,
+    });
     vi.mocked(validateBody).mockRejectedValueOnce(validationErr);
 
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 400 });

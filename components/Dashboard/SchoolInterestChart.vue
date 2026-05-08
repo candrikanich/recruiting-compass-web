@@ -273,7 +273,11 @@ onUnmounted(() => {
   }
 });
 
-watch(chartData, () => {
-  initializeChart();
-}, { flush: "post" });
+watch(
+  chartData,
+  () => {
+    initializeChart();
+  },
+  { flush: "post" },
+);
 </script>

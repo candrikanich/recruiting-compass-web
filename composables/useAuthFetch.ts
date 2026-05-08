@@ -96,7 +96,11 @@ export const useAuthFetch = () => {
       // This covers the stale-cookie case: the csrf-token cookie expired (24h maxAge)
       // but useCookie returned the cached value from the Vue/SSR state rather than
       // re-reading document.cookie, so header and cookie diverged on the server.
-      if (err instanceof FetchError && err.statusCode === 403 && STATE_CHANGING_METHODS.includes(method)) {
+      if (
+        err instanceof FetchError &&
+        err.statusCode === 403 &&
+        STATE_CHANGING_METHODS.includes(method)
+      ) {
         const { getCsrfToken } = useCsrf();
         // Invalidate the cached token so getCsrfToken fetches a fresh one
         const csrfCookie = useCookie("csrf-token");
@@ -104,7 +108,10 @@ export const useAuthFetch = () => {
         const freshCsrfToken = await getCsrfToken();
         const retryHeaders = { ...headers, "x-csrf-token": freshCsrfToken };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (await ($fetch as any)(url, { ...options, headers: retryHeaders })) as T;
+        return (await ($fetch as any)(url, {
+          ...options,
+          headers: retryHeaders,
+        })) as T;
       }
 
       throw err;

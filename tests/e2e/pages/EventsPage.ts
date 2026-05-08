@@ -90,7 +90,10 @@ export class EventsPage extends BasePage {
       .first();
     if (await searchInput.isVisible()) {
       await searchInput.fill(query);
-      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+      await this.page
+        .locator('[data-testid*="loading"], .animate-spin')
+        .waitFor({ state: "hidden" })
+        .catch(() => {});
     }
   }
 
@@ -100,7 +103,10 @@ export class EventsPage extends BasePage {
       .first();
     if (await typeFilter.isVisible()) {
       await typeFilter.selectOption(eventType);
-      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+      await this.page
+        .locator('[data-testid*="loading"], .animate-spin')
+        .waitFor({ state: "hidden" })
+        .catch(() => {});
     }
   }
 
@@ -122,28 +128,43 @@ export class EventsPage extends BasePage {
     }
 
     await this.click('button:has-text("Apply"), button:has-text("Filter")');
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   // Event Interaction
   async clickEvent(eventName: string) {
     await this.click(`text=${eventName}`);
-    await this.page.locator('[role="dialog"], [data-testid*="event-detail"]').waitFor({ state: "visible" }).catch(() => {});
+    await this.page
+      .locator('[role="dialog"], [data-testid*="event-detail"]')
+      .waitFor({ state: "visible" })
+      .catch(() => {});
   }
 
   async editEvent(eventName: string) {
     // Click on event and wait for edit mode
     await this.click(`text=${eventName}`);
-    await this.page.locator('[role="dialog"], [data-testid*="event-detail"]').waitFor({ state: "visible" }).catch(() => {});
+    await this.page
+      .locator('[role="dialog"], [data-testid*="event-detail"]')
+      .waitFor({ state: "visible" })
+      .catch(() => {});
 
     // Look for edit button
     await this.click('button:has-text("Edit"), button[aria-label*="edit"]');
-    await this.page.locator('input, textarea').first().waitFor({ state: "visible" });
+    await this.page
+      .locator("input, textarea")
+      .first()
+      .waitFor({ state: "visible" });
   }
 
   async deleteEvent(eventName: string) {
     await this.click(`text=${eventName}`);
-    await this.page.locator('[role="dialog"], [data-testid*="event-detail"]').waitFor({ state: "visible" }).catch(() => {});
+    await this.page
+      .locator('[role="dialog"], [data-testid*="event-detail"]')
+      .waitFor({ state: "visible" })
+      .catch(() => {});
 
     // Look for delete option
     const deleteButton = await this.page
@@ -172,7 +193,10 @@ export class EventsPage extends BasePage {
       .first();
     if (await calendarButton.isVisible()) {
       await calendarButton.click();
-      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+      await this.page
+        .locator('[data-testid*="loading"], .animate-spin')
+        .waitFor({ state: "hidden" })
+        .catch(() => {});
     }
   }
 
@@ -182,7 +206,10 @@ export class EventsPage extends BasePage {
       .first();
     if (await listButton.isVisible()) {
       await listButton.click();
-      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+      await this.page
+        .locator('[data-testid*="loading"], .animate-spin')
+        .waitFor({ state: "hidden" })
+        .catch(() => {});
     }
   }
 
@@ -200,7 +227,10 @@ export class EventsPage extends BasePage {
     if (await typeFilter.isVisible()) {
       await typeFilter.click();
       await this.click(`text=${eventType}`);
-      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+      await this.page
+        .locator('[data-testid*="loading"], .animate-spin')
+        .waitFor({ state: "hidden" })
+        .catch(() => {});
     }
   }
 
@@ -212,10 +242,15 @@ export class EventsPage extends BasePage {
     await this.clickEvent(eventName);
 
     // Look for RSVP options
-    const rsvpButton = this.page.locator(`button:has-text("${response}")`).first();
+    const rsvpButton = this.page
+      .locator(`button:has-text("${response}")`)
+      .first();
     await rsvpButton.waitFor({ state: "visible" });
     await rsvpButton.click();
-    await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+    await this.page
+      .locator('[data-testid*="loading"], .animate-spin')
+      .waitFor({ state: "hidden" })
+      .catch(() => {});
   }
 
   // Event Statistics
@@ -264,7 +299,9 @@ export class EventsPage extends BasePage {
       .first();
     if (await reminderButton.isVisible()) {
       await reminderButton.click();
-      await this.page.locator('select[name*="time"], select[data-testid*="time"]').waitFor({ state: "visible" });
+      await this.page
+        .locator('select[name*="time"], select[data-testid*="time"]')
+        .waitFor({ state: "visible" });
       // Set reminder time
       await this.selectOption(
         'select[name*="time"], select[data-testid*="time"]',
@@ -288,7 +325,10 @@ export class EventsPage extends BasePage {
       .first();
     if (await shareButton.isVisible()) {
       await shareButton.click();
-      await this.page.locator('[data-testid*="loading"], .animate-spin').waitFor({ state: "hidden" }).catch(() => {});
+      await this.page
+        .locator('[data-testid*="loading"], .animate-spin')
+        .waitFor({ state: "hidden" })
+        .catch(() => {});
     }
   }
 

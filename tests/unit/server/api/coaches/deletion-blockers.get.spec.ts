@@ -12,7 +12,10 @@ const mockState = {
 };
 
 vi.mock("~/server/utils/auth", () => ({
-  requireAuth: vi.fn(async () => ({ id: "user-id", email: "user@example.com" })),
+  requireAuth: vi.fn(async () => ({
+    id: "user-id",
+    email: "user@example.com",
+  })),
 }));
 
 vi.mock("~/server/utils/validation", () => ({
@@ -28,12 +31,17 @@ vi.mock("~/server/utils/logger", () => ({
   }),
 }));
 
-function buildSelectChain(getCount: () => number | null, getError: () => object | null) {
+function buildSelectChain(
+  getCount: () => number | null,
+  getError: () => object | null,
+) {
   return {
     select: vi.fn().mockReturnValue({
-      eq: vi.fn().mockImplementation(() =>
-        Promise.resolve({ count: getCount(), error: getError(), data: [] })
-      ),
+      eq: vi
+        .fn()
+        .mockImplementation(() =>
+          Promise.resolve({ count: getCount(), error: getError(), data: [] }),
+        ),
     }),
   };
 }
@@ -44,22 +52,25 @@ vi.mock("~/server/utils/supabase", () => ({
       if (table === "interactions") {
         return buildSelectChain(
           () => mockState.interactionCount,
-          () => mockState.interactionError
+          () => mockState.interactionError,
         );
       }
       if (table === "offers") {
         return buildSelectChain(
           () => mockState.offerCount,
-          () => mockState.offerError
+          () => mockState.offerError,
         );
       }
       if (table === "social_media_posts") {
         return buildSelectChain(
           () => mockState.postCount,
-          () => mockState.postError
+          () => mockState.postError,
         );
       }
-      return buildSelectChain(() => 0, () => null);
+      return buildSelectChain(
+        () => 0,
+        () => null,
+      );
     },
   })),
 }));
@@ -72,7 +83,9 @@ vi.mock("h3", async (importOriginal) => {
     getHeader: vi.fn(() => mockState.authToken),
     getCookie: vi.fn(() => undefined),
     createError: (config: { statusCode: number; statusMessage: string }) => {
-      const err = new Error(config.statusMessage) as Error & { statusCode: number };
+      const err = new Error(config.statusMessage) as Error & {
+        statusCode: number;
+      };
       err.statusCode = config.statusCode;
       return err;
     },
@@ -95,7 +108,10 @@ describe("GET /api/coaches/[id]/deletion-blockers", () => {
     mockState.postError = null;
     mockState.authToken = "Bearer valid-token";
 
-    vi.mocked(requireAuth).mockResolvedValue({ id: "user-id", email: "user@example.com" });
+    vi.mocked(requireAuth).mockResolvedValue({
+      id: "user-id",
+      email: "user@example.com",
+    });
     vi.mocked(requireUuidParam).mockReturnValue("test-coach-id");
 
     const h3 = await import("h3");
@@ -104,9 +120,8 @@ describe("GET /api/coaches/[id]/deletion-blockers", () => {
   });
 
   const getHandler = async () => {
-    const { default: handler } = await import(
-      "~/server/api/coaches/[id]/deletion-blockers.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/coaches/[id]/deletion-blockers.get");
     return handler;
   };
 
@@ -179,13 +194,13 @@ describe("GET /api/coaches/[id]/deletion-blockers", () => {
       expect(result.canDelete).toBe(false);
       expect(result.blockers).toHaveLength(3);
       expect(result.blockers).toContainEqual(
-        expect.objectContaining({ table: "interactions", count: 2 })
+        expect.objectContaining({ table: "interactions", count: 2 }),
       );
       expect(result.blockers).toContainEqual(
-        expect.objectContaining({ table: "offers", count: 1 })
+        expect.objectContaining({ table: "offers", count: 1 }),
       );
       expect(result.blockers).toContainEqual(
-        expect.objectContaining({ table: "social_media_posts", count: 4 })
+        expect.objectContaining({ table: "social_media_posts", count: 4 }),
       );
       expect(result.message).toContain("Cannot delete this coach");
     });
@@ -193,7 +208,9 @@ describe("GET /api/coaches/[id]/deletion-blockers", () => {
 
   describe("auth failure", () => {
     it("re-throws H3Error from requireAuth", async () => {
-      const h3Error = Object.assign(new Error("Unauthorized"), { statusCode: 401 });
+      const h3Error = Object.assign(new Error("Unauthorized"), {
+        statusCode: 401,
+      });
       vi.mocked(requireAuth).mockRejectedValue(h3Error);
 
       const handler = await getHandler();
@@ -212,7 +229,9 @@ describe("GET /api/coaches/[id]/deletion-blockers", () => {
       vi.mocked(getHeader).mockReturnValue("");
 
       const handler = await getHandler();
-      await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 401 });
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 401,
+      });
     });
   });
 

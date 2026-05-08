@@ -87,7 +87,8 @@ export const useCollegeAutocomplete = () => {
           error.value = "Too many requests. Please try again in a moment.";
         } else {
           logger.error("College search API call failed", err);
-          error.value = "Unable to search colleges. Please check your connection.";
+          error.value =
+            "Unable to search colleges. Please check your connection.";
         }
         return;
       }

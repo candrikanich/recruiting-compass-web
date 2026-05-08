@@ -41,9 +41,7 @@ const showSwitcher = computed(() => {
   return isParent && familiesCount > 1;
 });
 
-const accessibleAthletes = computed(
-  () => activeFamily.getAccessibleAthletes(),
-);
+const accessibleAthletes = computed(() => activeFamily.getAccessibleAthletes());
 
 const selectedId = ref("");
 

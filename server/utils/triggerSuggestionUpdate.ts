@@ -56,33 +56,29 @@ export async function triggerSuggestionUpdate(
     // Fetch all athlete data required for rule evaluation.
     // grade_level is derived from graduation_year stored in user_preferences
     // (the profiles table was removed — see migration 041).
-    const [
-      playerPrefs,
-      schools,
-      interactions,
-      tasks,
-      athleteTasks,
-      events,
-    ] = await Promise.all([
-      supabase
-        .from("user_preferences")
-        .select("data")
-        .eq("user_id", athleteId)
-        .eq("category", "player")
-        .single(),
-      supabase.from("schools").select("*").eq("user_id", athleteId),
-      supabase.from("interactions").select("*").eq("logged_by", athleteId),
-      supabase.from("task").select("*"),
-      supabase.from("athlete_task").select("*").eq("athlete_id", athleteId),
-      supabase.from("events").select("*").eq("user_id", athleteId),
-    ]);
+    const [playerPrefs, schools, interactions, tasks, athleteTasks, events] =
+      await Promise.all([
+        supabase
+          .from("user_preferences")
+          .select("data")
+          .eq("user_id", athleteId)
+          .eq("category", "player")
+          .single(),
+        supabase.from("schools").select("*").eq("user_id", athleteId),
+        supabase.from("interactions").select("*").eq("logged_by", athleteId),
+        supabase.from("task").select("*"),
+        supabase.from("athlete_task").select("*").eq("athlete_id", athleteId),
+        supabase.from("events").select("*").eq("user_id", athleteId),
+      ]);
 
     const playerData = playerPrefs.data?.data as Record<string, unknown> | null;
     const graduationYear =
       typeof playerData?.graduation_year === "number"
         ? playerData.graduation_year
         : null;
-    const gradeLevel = graduationYear ? calculateCurrentGrade(graduationYear) : 9;
+    const gradeLevel = graduationYear
+      ? calculateCurrentGrade(graduationYear)
+      : 9;
 
     const context: RuleContext = {
       athleteId,

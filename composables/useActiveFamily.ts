@@ -112,7 +112,10 @@ export const useActiveFamily = () => {
 
     if (athletesWithYear.length === 0) {
       // All null years, return first athlete (if any)
-      return parentAccessibleFamilies.value.find((f) => f.athleteId !== null)?.athleteId ?? null;
+      return (
+        parentAccessibleFamilies.value.find((f) => f.athleteId !== null)
+          ?.athleteId ?? null
+      );
     }
 
     // Sort by graduation year ascending (earliest first)
@@ -258,7 +261,9 @@ export const useActiveFamily = () => {
     if (!isParent.value) return;
 
     if (
-      !parentAccessibleFamilies.value.some((f) => f.athleteId !== null && f.athleteId === athleteId)
+      !parentAccessibleFamilies.value.some(
+        (f) => f.athleteId !== null && f.athleteId === athleteId,
+      )
     ) {
       error.value = "No access to this athlete";
       return;
@@ -285,7 +290,8 @@ export const useActiveFamily = () => {
   const getAccessibleAthletes = () => {
     if (!isParent.value) return [];
     return parentAccessibleFamilies.value.filter(
-      (f): f is typeof f & { athleteId: string; athleteName: string } => f.athleteId !== null,
+      (f): f is typeof f & { athleteId: string; athleteName: string } =>
+        f.athleteId !== null,
     );
   };
 

@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { createCache, cacheKey, CACHE_DURATION, globalCache } from "~/utils/cache";
+import {
+  createCache,
+  cacheKey,
+  CACHE_DURATION,
+  globalCache,
+} from "~/utils/cache";
 
 describe("CacheManager (via createCache)", () => {
   let cache: ReturnType<typeof createCache>;

@@ -11,14 +11,19 @@
         <h1 class="text-4xl font-bold text-slate-900 mb-2">
           Broadcast Notification
         </h1>
-        <p class="text-slate-600">Send a notification to all users or a specific user.</p>
+        <p class="text-slate-600">
+          Send a notification to all users or a specific user.
+        </p>
       </div>
 
       <div class="bg-white rounded-lg shadow-md p-6">
         <form @submit.prevent="submit" class="space-y-5">
           <!-- Target -->
           <div>
-            <label for="target" class="block text-sm font-medium text-slate-700 mb-1">
+            <label
+              for="target"
+              class="block text-sm font-medium text-slate-700 mb-1"
+            >
               Target
             </label>
             <select
@@ -33,7 +38,10 @@
 
           <!-- User ID (shown only when target = user) -->
           <div v-if="form.target === 'user'">
-            <label for="user_id" class="block text-sm font-medium text-slate-700 mb-1">
+            <label
+              for="user_id"
+              class="block text-sm font-medium text-slate-700 mb-1"
+            >
               User ID (UUID)
             </label>
             <input
@@ -48,7 +56,10 @@
 
           <!-- Type -->
           <div>
-            <label for="type" class="block text-sm font-medium text-slate-700 mb-1">
+            <label
+              for="type"
+              class="block text-sm font-medium text-slate-700 mb-1"
+            >
               Type
             </label>
             <select
@@ -65,8 +76,12 @@
 
           <!-- Title -->
           <div>
-            <label for="title" class="block text-sm font-medium text-slate-700 mb-1">
-              Title <span class="text-slate-400 font-normal">(max 200 chars)</span>
+            <label
+              for="title"
+              class="block text-sm font-medium text-slate-700 mb-1"
+            >
+              Title
+              <span class="text-slate-400 font-normal">(max 200 chars)</span>
             </label>
             <input
               id="title"
@@ -80,8 +95,14 @@
 
           <!-- Message -->
           <div>
-            <label for="message" class="block text-sm font-medium text-slate-700 mb-1">
-              Message <span class="text-slate-400 font-normal">(optional, max 1000 chars)</span>
+            <label
+              for="message"
+              class="block text-sm font-medium text-slate-700 mb-1"
+            >
+              Message
+              <span class="text-slate-400 font-normal"
+                >(optional, max 1000 chars)</span
+              >
             </label>
             <textarea
               id="message"
@@ -155,9 +176,10 @@ async function submit() {
   successMessage.value = null;
   errorMessage.value = null;
 
-  if (form.value.target === 'user' && !form.value.user_id.trim()) {
-    errorMessage.value = 'A User ID is required when targeting a specific user.'
-    return
+  if (form.value.target === "user" && !form.value.user_id.trim()) {
+    errorMessage.value =
+      "A User ID is required when targeting a specific user.";
+    return;
   }
 
   sending.value = true;

@@ -12,7 +12,10 @@ export default defineEventHandler(
   async (event): Promise<VerifyEmailResponse> => {
     const logger = useLogger(event, "auth/verify-email");
 
-    const rateLimitResult = await rateLimitByIp(event, { requests: 10, window: "1 h" });
+    const rateLimitResult = await rateLimitByIp(event, {
+      requests: 10,
+      window: "1 h",
+    });
     throwIfRateLimited(rateLimitResult);
 
     try {

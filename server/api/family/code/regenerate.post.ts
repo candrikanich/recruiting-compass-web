@@ -14,75 +14,78 @@ const regenerateCodeSchema = z.object({
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/code/regenerate");
   try {
-  const user = await requireAuth(event);
-  const { familyId } = await validateBody(event, regenerateCodeSchema);
-  const supabase = useSupabaseAdmin();
+    const user = await requireAuth(event);
+    const { familyId } = await validateBody(event, regenerateCodeSchema);
+    const supabase = useSupabaseAdmin();
 
-  // Verify user is student owner of this family
-  const familyResponse = await supabase
-    .from("family_units")
-    .select("id, created_by_user_id")
-    .eq("id", familyId)
-    .single();
+    // Verify user is student owner of this family
+    const familyResponse = await supabase
+      .from("family_units")
+      .select("id, created_by_user_id")
+      .eq("id", familyId)
+      .single();
 
-  const { data: family } = familyResponse as {
-    data: Database["public"]["Tables"]["family_units"]["Row"] | null;
+    const { data: family } = familyResponse as {
+      data: Database["public"]["Tables"]["family_units"]["Row"] | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any;
+    };
+
+    if (!family || family.created_by_user_id !== user.id) {
+      throw createError({
+        statusCode: 403,
+        message: "Only the family owner can regenerate the code",
+      });
+    }
+
+    // Generate new code
+    const newCode = await generateFamilyCode(supabase);
+
+    // Update family
+    const updateResponse = await supabase
+      .from("family_units")
+      .update({
+        family_code: newCode,
+        code_generated_at: new Date().toISOString(),
+      } as Database["public"]["Tables"]["family_units"]["Update"])
+      .eq("id", familyId);
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    error: any;
-  };
+    const { error } = updateResponse as { error: any };
 
-  if (!family || family.created_by_user_id !== user.id) {
-    throw createError({
-      statusCode: 403,
-      message: "Only the family owner can regenerate the code",
-    });
-  }
+    if (error) {
+      throw createError({
+        statusCode: 500,
+        message: "Failed to regenerate code",
+      });
+    }
 
-  // Generate new code
-  const newCode = await generateFamilyCode(supabase);
+    // Log regeneration
 
-  // Update family
-  const updateResponse = await supabase
-    .from("family_units")
-    .update({
-      family_code: newCode,
-      code_generated_at: new Date().toISOString(),
-    } as Database["public"]["Tables"]["family_units"]["Update"])
-    .eq("id", familyId);
+    const logPromise = supabase.from("family_code_usage_log").insert({
+      family_unit_id: familyId,
+      user_id: user.id,
+      code_used: newCode,
+      action: "regenerated",
+    } as Database["public"]["Tables"]["family_code_usage_log"]["Insert"]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = updateResponse as { error: any };
-
-  if (error) {
-    throw createError({
-      statusCode: 500,
-      message: "Failed to regenerate code",
-    });
-  }
-
-  // Log regeneration
-
-  const logPromise = supabase.from("family_code_usage_log").insert({
-    family_unit_id: familyId,
-    user_id: user.id,
-    code_used: newCode,
-    action: "regenerated",
-  } as Database["public"]["Tables"]["family_code_usage_log"]["Insert"]);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (logPromise as any).catch(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (err: any) => logger.warn("Failed to log regeneration", err),
-  );
+    (logPromise as any).catch(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (err: any) => logger.warn("Failed to log regeneration", err),
+    );
 
-  logger.info("Family code regenerated", { familyId, userId: user.id });
-  return {
-    success: true,
-    familyCode: newCode,
-  };
+    logger.info("Family code regenerated", { familyId, userId: user.id });
+    return {
+      success: true,
+      familyCode: newCode,
+    };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to regenerate family code", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to regenerate family code" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to regenerate family code",
+    });
   }
 });

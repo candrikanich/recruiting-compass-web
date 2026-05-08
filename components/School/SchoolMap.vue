@@ -83,7 +83,9 @@ const initMap = async () => {
   marker = L.marker([lat, lng]).addTo(map);
 
   if (props.schoolName) {
-    marker.bindPopup(`<strong>${escapeHtml(props.schoolName)}</strong>`).openPopup();
+    marker
+      .bindPopup(`<strong>${escapeHtml(props.schoolName)}</strong>`)
+      .openPopup();
   }
 };
 

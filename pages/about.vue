@@ -1,25 +1,33 @@
 <template>
-  <div class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
+  <div
+    class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
+  >
     <PageHeader title="About" description="Our mission and how to reach us" />
 
     <main class="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-10">
       <!-- Mission Statement -->
       <section>
         <p class="text-lg text-slate-700 leading-relaxed">
-          The Recruiting Compass helps high school student athletes and their families manage the
-          college recruiting journey — tracking schools, coaches, interactions, and timelines in one
-          place. We believe every athlete deserves clarity, control, and a fair shot. No professional
+          The Recruiting Compass helps high school student athletes and their
+          families manage the college recruiting journey — tracking schools,
+          coaches, interactions, and timelines in one place. We believe every
+          athlete deserves clarity, control, and a fair shot. No professional
           service required.
         </p>
       </section>
 
       <!-- Feedback Form -->
       <section>
-        <h2 class="text-lg font-semibold text-slate-800 mb-4">Send Us a Message</h2>
+        <h2 class="text-lg font-semibold text-slate-800 mb-4">
+          Send Us a Message
+        </h2>
 
         <form class="space-y-4" @submit.prevent="submitFeedback">
           <div>
-            <label for="subject" class="block text-sm font-medium text-slate-700 mb-1">
+            <label
+              for="subject"
+              class="block text-sm font-medium text-slate-700 mb-1"
+            >
               Subject
             </label>
             <select
@@ -37,7 +45,10 @@
           </div>
 
           <div>
-            <label for="message" class="block text-sm font-medium text-slate-700 mb-1">
+            <label
+              for="message"
+              class="block text-sm font-medium text-slate-700 mb-1"
+            >
               Message
             </label>
             <textarea
@@ -54,12 +65,20 @@
             </p>
           </div>
 
-          <div v-if="errorMessage" class="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
+          <div
+            v-if="errorMessage"
+            class="rounded-lg bg-red-50 border border-red-200 px-4 py-3"
+          >
             <p class="text-sm text-red-700">{{ errorMessage }}</p>
           </div>
 
-          <div v-if="submitted" class="rounded-lg bg-green-50 border border-green-200 px-4 py-3">
-            <p class="text-sm text-green-700">Thanks for your message — we'll be in touch soon.</p>
+          <div
+            v-if="submitted"
+            class="rounded-lg bg-green-50 border border-green-200 px-4 py-3"
+          >
+            <p class="text-sm text-green-700">
+              Thanks for your message — we'll be in touch soon.
+            </p>
           </div>
 
           <UButton
@@ -80,7 +99,8 @@
           <a
             href="mailto:info@therecruitingcompass.com"
             class="text-blue-600 hover:underline"
-          >info@therecruitingcompass.com</a>.
+            >info@therecruitingcompass.com</a
+          >.
         </p>
       </section>
     </main>
@@ -88,38 +108,39 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue"
-import { useAuthFetch } from "~/composables/useAuthFetch"
+import { ref, reactive } from "vue";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 
 definePageMeta({
   middleware: "auth",
-})
+});
 
-const { $fetchAuth } = useAuthFetch()
+const { $fetchAuth } = useAuthFetch();
 
-const form = reactive({ subject: "", message: "" })
-const loading = ref(false)
-const submitted = ref(false)
-const errorMessage = ref("")
+const form = reactive({ subject: "", message: "" });
+const loading = ref(false);
+const submitted = ref(false);
+const errorMessage = ref("");
 
 async function submitFeedback() {
-  if (loading.value) return
-  loading.value = true
-  errorMessage.value = ""
+  if (loading.value) return;
+  loading.value = true;
+  errorMessage.value = "";
 
   try {
     await $fetchAuth("/api/feedback", {
       method: "POST",
       body: { subject: form.subject, message: form.message },
-    })
-    submitted.value = true
-    form.subject = ""
-    form.message = ""
-    setTimeout(() => (submitted.value = false), 5000)
+    });
+    submitted.value = true;
+    form.subject = "";
+    form.message = "";
+    setTimeout(() => (submitted.value = false), 5000);
   } catch {
-    errorMessage.value = "Something went wrong. Please try again or email us directly."
+    errorMessage.value =
+      "Something went wrong. Please try again or email us directly.";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 </script>

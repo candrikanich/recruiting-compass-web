@@ -11,7 +11,12 @@ vi.mock("~/server/utils/auth", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
@@ -49,15 +54,22 @@ vi.mock("h3", async (importOriginal) => {
       sport: "Soccer",
       position: "Midfielder",
     })),
-    createError: (config: { statusCode: number; statusMessage?: string; message?: string }) => {
-      const err = new Error(config.statusMessage ?? config.message) as Error & { statusCode: number };
+    createError: (config: {
+      statusCode: number;
+      statusMessage?: string;
+      message?: string;
+    }) => {
+      const err = new Error(config.statusMessage ?? config.message) as Error & {
+        statusCode: number;
+      };
       err.statusCode = config.statusCode;
       return err;
     },
   };
 });
 
-const { default: handler } = await import("~/server/api/family/player-details.post");
+const { default: handler } =
+  await import("~/server/api/family/player-details.post");
 
 describe("POST /api/family/player-details", () => {
   beforeEach(() => {
@@ -73,11 +85,15 @@ describe("POST /api/family/player-details", () => {
 
   it("returns 403 when the user is not a family member", async () => {
     mockState.membership = null;
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 403 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 403 });
   });
 
   it("returns 500 when the update fails", async () => {
     mockState.updateError = { message: "db error" };
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 500 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
   });
 });

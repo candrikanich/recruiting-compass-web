@@ -44,5 +44,4 @@ export namespace AthleteAPI {
   export type RecalculateStatusRequest = Record<string, never>;
 
   export type RecalculateStatusResponse = StatusScoreResult;
-
 }

@@ -37,9 +37,7 @@ export const prioritySchoolReminderRule: Rule = {
       const daysSinceContact = lastInteractionRecord
         ? Math.floor(
             (Date.now() -
-              new Date(
-                lastInteractionRecord.occurred_at as string,
-              ).getTime()) /
+              new Date(lastInteractionRecord.occurred_at as string).getTime()) /
               (1000 * 60 * 60 * 24),
           )
         : 999;

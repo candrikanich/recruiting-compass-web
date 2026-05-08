@@ -185,7 +185,9 @@ describe("WhatNotToStress Component", () => {
   it("renders collapsed when collapsed prop is true", () => {
     const wrapper = mount(WhatNotToStress, {
       props: {
-        messages: [{ id: "r1", title: "Relax", message: "It's fine", icon: "🛡️" }],
+        messages: [
+          { id: "r1", title: "Relax", message: "It's fine", icon: "🛡️" },
+        ],
         collapsed: true,
       },
     });

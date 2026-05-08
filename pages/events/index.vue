@@ -3,7 +3,10 @@
     class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
-    <PageHeader title="Events" description="Track camps, showcases, visits, and games">
+    <PageHeader
+      title="Events"
+      description="Track camps, showcases, visits, and games"
+    >
       <template #actions>
         <NuxtLink
           to="/events/create"
@@ -343,9 +346,7 @@ const {
 } = useEvents();
 
 // Summary statistics
-const { stats: eventStats } = useEventStats(
-  computed(() => events.value)
-);
+const { stats: eventStats } = useEventStats(computed(() => events.value));
 
 const currentMonth = ref(new Date());
 const sortBy = ref("date_desc");

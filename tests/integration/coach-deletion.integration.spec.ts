@@ -159,7 +159,10 @@ describe("Coach Deletion Integration", () => {
         $fetchAuth: mockFetchAuth,
       });
 
-      mockFetchAuth.mockResolvedValueOnce({ success: true, message: "Deleted" });
+      mockFetchAuth.mockResolvedValueOnce({
+        success: true,
+        message: "Deleted",
+      });
 
       // Setup mock to return FK constraint error
       const mockQuery: any = {

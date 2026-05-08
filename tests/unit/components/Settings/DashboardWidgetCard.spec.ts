@@ -43,6 +43,8 @@ describe("DashboardWidgetCard", () => {
       props: { id: "schoolMapWidget" as const, visible: true, disabled: true },
     });
     expect(wrapper.text()).toContain("Coming soon");
-    expect(wrapper.find("[data-testid='toggle-visibility']").exists()).toBe(false);
+    expect(wrapper.find("[data-testid='toggle-visibility']").exists()).toBe(
+      false,
+    );
   });
 });

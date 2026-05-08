@@ -18,10 +18,7 @@ const URL_PREFIXES: Record<SocialPlatform, RegExp[]> = {
     /^https?:\/\/(www\.)?instagram\.com\//,
     /^(www\.)?instagram\.com\//,
   ],
-  tiktok: [
-    /^https?:\/\/(www\.)?tiktok\.com\/@?/,
-    /^(www\.)?tiktok\.com\/@?/,
-  ],
+  tiktok: [/^https?:\/\/(www\.)?tiktok\.com\/@?/, /^(www\.)?tiktok\.com\/@?/],
 };
 
 export function normalizeHandle(
@@ -44,7 +41,10 @@ export function normalizeHandle(
     }
   }
 
-  handle = handle.replace(/^@/, "").replace(/[/?#].*$/, "").trim();
+  handle = handle
+    .replace(/^@/, "")
+    .replace(/[/?#].*$/, "")
+    .trim();
 
   return { handle, isShortUrl: false };
 }

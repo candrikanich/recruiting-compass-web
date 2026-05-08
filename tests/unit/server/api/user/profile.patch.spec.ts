@@ -53,7 +53,9 @@ describe("PATCH /api/user/profile", () => {
   });
 
   it("returns { success: true } with valid fields", async () => {
-    const result = await handler(makeEvent({ full_name: "Jane Doe", phone: "555-1234" }));
+    const result = await handler(
+      makeEvent({ full_name: "Jane Doe", phone: "555-1234" }),
+    );
     expect(result).toEqual({ success: true });
     expect(mockEq).toHaveBeenCalledWith("id", "user-123");
   });
@@ -72,7 +74,9 @@ describe("PATCH /api/user/profile", () => {
   });
 
   it("throws 400 when date_of_birth has invalid format", async () => {
-    await expect(handler(makeEvent({ date_of_birth: "03/08/2026" }))).rejects.toMatchObject({
+    await expect(
+      handler(makeEvent({ date_of_birth: "03/08/2026" })),
+    ).rejects.toMatchObject({
       statusCode: 400,
     });
   });

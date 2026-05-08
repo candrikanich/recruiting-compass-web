@@ -108,7 +108,6 @@ describe("CoachHeader", () => {
 
       expect(wrapper.text()).toContain("No contact recorded yet");
     });
-
   });
 
   describe("Contact Information", () => {

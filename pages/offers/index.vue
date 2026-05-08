@@ -5,7 +5,10 @@
     <!-- Global Navigation -->
 
     <!-- Page Header -->
-    <PageHeader title="Offers" description="Track and compare your scholarship offers">
+    <PageHeader
+      title="Offers"
+      description="Track and compare your scholarship offers"
+    >
       <template #actions>
         <button
           v-if="selectedOffers.length >= 2"

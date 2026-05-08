@@ -16,7 +16,12 @@ vi.mock("~/server/utils/auth", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 // Mock requireUuidParam to return mockState.memberId directly
@@ -32,7 +37,10 @@ vi.mock("~/server/utils/supabase", () => ({
           select: () => ({
             eq: () => ({
               single: () =>
-                Promise.resolve({ data: mockState.member, error: mockState.memberFetchError }),
+                Promise.resolve({
+                  data: mockState.member,
+                  error: mockState.memberFetchError,
+                }),
             }),
           }),
           delete: () => ({
@@ -57,15 +65,22 @@ vi.mock("h3", async (importOriginal) => {
   return {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
-    createError: (config: { statusCode: number; statusMessage?: string; message?: string }) => {
-      const err = new Error(config.statusMessage ?? config.message) as Error & { statusCode: number };
+    createError: (config: {
+      statusCode: number;
+      statusMessage?: string;
+      message?: string;
+    }) => {
+      const err = new Error(config.statusMessage ?? config.message) as Error & {
+        statusCode: number;
+      };
       err.statusCode = config.statusCode;
       return err;
     },
   };
 });
 
-const { default: handler } = await import("~/server/api/family/members/[memberId].delete");
+const { default: handler } =
+  await import("~/server/api/family/members/[memberId].delete");
 
 describe("DELETE /api/family/members/[memberId]", () => {
   beforeEach(() => {
@@ -76,7 +91,11 @@ describe("DELETE /api/family/members/[memberId]", () => {
       family_unit_id: "family-123",
       user_id: "parent-user-id",
       role: "parent",
-      family_units: { id: "family-123", family_name: "Test Family", created_by_user_id: OWNER_ID },
+      family_units: {
+        id: "family-123",
+        family_name: "Test Family",
+        created_by_user_id: OWNER_ID,
+      },
       users: { id: "parent-user-id", email: "parent@example.com" },
     };
     mockState.memberFetchError = null;
@@ -90,36 +109,50 @@ describe("DELETE /api/family/members/[memberId]", () => {
 
   it("returns 404 when member is not found", async () => {
     mockState.member = null;
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 404 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 404 });
   });
 
   it("returns 500 when member fetch fails", async () => {
     mockState.memberFetchError = { message: "db error" };
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 500 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
   });
 
   it("returns 403 when requester is not the family owner", async () => {
     mockState.userId = "some-other-user";
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 403 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 403 });
   });
 
   it("returns 400 when the user attempts to remove themselves", async () => {
     mockState.member = { ...mockState.member!, user_id: OWNER_ID };
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 400 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 400 });
   });
 
   it("returns 400 when the target member is not a parent", async () => {
     mockState.member = { ...mockState.member!, role: "player" };
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 400 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 400 });
   });
 
   it("returns 500 when the family data is missing from the member record", async () => {
     mockState.member = { ...mockState.member!, family_units: null };
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 500 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
   });
 
   it("returns 500 when delete fails", async () => {
     mockState.deleteError = { message: "constraint violation" };
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 500 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
   });
 });

@@ -125,7 +125,10 @@ describe("validateHomeLocation", () => {
   });
 
   it("returns location object when only latitude/longitude are provided", () => {
-    const result = validateHomeLocation({ latitude: 34.05, longitude: -118.25 });
+    const result = validateHomeLocation({
+      latitude: 34.05,
+      longitude: -118.25,
+    });
     expect(result).not.toBeNull();
     expect(result!.latitude).toBe(34.05);
     expect(result!.longitude).toBe(-118.25);
@@ -320,7 +323,9 @@ describe("validateSchoolPreferences", () => {
 
   it("defaults priority to 0 when missing", () => {
     const input = {
-      preferences: [{ id: "p2", category: "academic", type: "gpa", value: 3.5 }],
+      preferences: [
+        { id: "p2", category: "academic", type: "gpa", value: 3.5 },
+      ],
     };
     const result = validateSchoolPreferences(input);
     expect(result!.preferences[0].priority).toBe(0);
@@ -328,7 +333,9 @@ describe("validateSchoolPreferences", () => {
 
   it("includes template_used and last_updated when provided", () => {
     const input = {
-      preferences: [{ id: "p3", category: "program", type: "division", value: "D1" }],
+      preferences: [
+        { id: "p3", category: "program", type: "division", value: "D1" },
+      ],
       template_used: "default",
       last_updated: "2025-01-01T00:00:00Z",
     };
@@ -365,7 +372,9 @@ describe("validateDashboardLayout", () => {
   });
 
   it("returns null for the old boolean format (has 'widgets' key)", () => {
-    expect(validateDashboardLayout({ widgets: { someWidget: true } })).toBeNull();
+    expect(
+      validateDashboardLayout({ widgets: { someWidget: true } }),
+    ).toBeNull();
   });
 
   it("returns null when leftColumn is missing", () => {
@@ -377,7 +386,9 @@ describe("validateDashboardLayout", () => {
   });
 
   it("returns null when columns are non-arrays", () => {
-    expect(validateDashboardLayout({ leftColumn: "bad", rightColumn: "bad" })).toBeNull();
+    expect(
+      validateDashboardLayout({ leftColumn: "bad", rightColumn: "bad" }),
+    ).toBeNull();
   });
 
   it("parses a valid layout with widget entries", () => {
@@ -393,9 +404,7 @@ describe("validateDashboardLayout", () => {
         { id: "interactionTrendChart", visible: true },
         { id: "schoolMapWidget", visible: false },
       ],
-      rightColumn: [
-        { id: "eventsSummary", visible: true },
-      ],
+      rightColumn: [{ id: "eventsSummary", visible: true }],
     };
     const result = validateDashboardLayout(input);
     expect(result).not.toBeNull();
@@ -467,7 +476,9 @@ describe("getDefaultNotificationSettings", () => {
   });
 
   it("returns a new object on each call", () => {
-    expect(getDefaultNotificationSettings()).not.toBe(getDefaultNotificationSettings());
+    expect(getDefaultNotificationSettings()).not.toBe(
+      getDefaultNotificationSettings(),
+    );
   });
 });
 

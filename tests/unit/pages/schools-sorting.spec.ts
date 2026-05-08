@@ -288,6 +288,5 @@ describe("School Sorting Utilities", () => {
 
       expect(sorted.every((s) => s.name === "Same")).toBe(true);
     });
-
   });
 });

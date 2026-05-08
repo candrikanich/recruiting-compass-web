@@ -12,7 +12,12 @@ vi.mock("~/server/utils/auth", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
@@ -35,7 +40,10 @@ vi.mock("~/server/utils/supabase", () => ({
             in: () => ({
               eq: () => ({
                 order: () =>
-                  Promise.resolve({ data: mockState.invitations, error: mockState.invitationsError }),
+                  Promise.resolve({
+                    data: mockState.invitations,
+                    error: mockState.invitationsError,
+                  }),
               }),
             }),
           }),
@@ -51,15 +59,22 @@ vi.mock("h3", async (importOriginal) => {
   return {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
-    createError: (config: { statusCode: number; statusMessage?: string; message?: string }) => {
-      const err = new Error(config.statusMessage ?? config.message) as Error & { statusCode: number };
+    createError: (config: {
+      statusCode: number;
+      statusMessage?: string;
+      message?: string;
+    }) => {
+      const err = new Error(config.statusMessage ?? config.message) as Error & {
+        statusCode: number;
+      };
       err.statusCode = config.statusCode;
       return err;
     },
   };
 });
 
-const { default: handler } = await import("~/server/api/family/invitations/index.get");
+const { default: handler } =
+  await import("~/server/api/family/invitations/index.get");
 
 describe("GET /api/family/invitations", () => {
   beforeEach(() => {
@@ -71,7 +86,9 @@ describe("GET /api/family/invitations", () => {
         invited_email: "parent@example.com",
         role: "parent",
         status: "pending",
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        expires_at: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
         created_at: new Date().toISOString(),
         invited_by: "user-abc",
       },
@@ -81,7 +98,9 @@ describe("GET /api/family/invitations", () => {
 
   it("returns pending invitations for a family member", async () => {
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result).toMatchObject({ invitations: [{ id: "inv-1", role: "parent" }] });
+    expect(result).toMatchObject({
+      invitations: [{ id: "inv-1", role: "parent" }],
+    });
   });
 
   it("returns empty array when user has no family membership", async () => {
@@ -104,6 +123,8 @@ describe("GET /api/family/invitations", () => {
 
   it("returns 500 when the invitations fetch fails", async () => {
     mockState.invitationsError = { message: "db error" };
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 500 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
   });
 });

@@ -32,7 +32,11 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  if (!ALLOWED_CATEGORIES.includes(category as (typeof ALLOWED_CATEGORIES)[number])) {
+  if (
+    !ALLOWED_CATEGORIES.includes(
+      category as (typeof ALLOWED_CATEGORIES)[number],
+    )
+  ) {
     throw createError({
       statusCode: 400,
       statusMessage: "Invalid category",

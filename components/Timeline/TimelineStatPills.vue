@@ -1,7 +1,9 @@
 <template>
   <div class="grid grid-cols-3 gap-3 mb-6">
     <!-- Overall Score -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-xs px-4 py-3">
+    <div
+      class="bg-white rounded-xl border border-slate-200 shadow-xs px-4 py-3"
+    >
       <div class="text-xs text-slate-500 mb-1">Status</div>
       <div class="flex items-center gap-2">
         <div
@@ -15,7 +17,9 @@
     </div>
 
     <!-- Task Progress -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-xs px-4 py-3">
+    <div
+      class="bg-white rounded-xl border border-slate-200 shadow-xs px-4 py-3"
+    >
       <div class="text-xs text-slate-500 mb-1">Tasks</div>
       <div class="flex items-center gap-2">
         <span class="text-lg font-bold text-slate-900"
@@ -32,7 +36,9 @@
     </div>
 
     <!-- Milestone Progress -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-xs px-4 py-3">
+    <div
+      class="bg-white rounded-xl border border-slate-200 shadow-xs px-4 py-3"
+    >
       <div class="text-xs text-slate-500 mb-1">Milestones</div>
       <div class="flex items-center gap-2">
         <span class="text-lg font-bold text-slate-900"

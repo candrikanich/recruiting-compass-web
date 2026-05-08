@@ -242,9 +242,7 @@ test.describe("Coach Detail Page - Comprehensive Coverage", () => {
         `${coachData.firstName} ${coachData.lastName}`,
       );
 
-      const notesSection = page
-        .locator('section:has-text("Notes")')
-        .first();
+      const notesSection = page.locator('section:has-text("Notes")').first();
       const notesTextarea = notesSection
         .locator('textarea[placeholder*="notes"]')
         .first();

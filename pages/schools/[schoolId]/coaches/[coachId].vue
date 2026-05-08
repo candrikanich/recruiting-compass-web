@@ -199,7 +199,6 @@
               </div>
             </div>
 
-
             <!-- Delete -->
             <div class="bg-white rounded-lg shadow-sm p-6">
               <button
@@ -264,7 +263,6 @@ const editedCoach = ref<{
 });
 
 const schoolName = ref("");
-
 
 const formatDate = (dateStr: string | null): string => {
   if (!dateStr) return "Never";

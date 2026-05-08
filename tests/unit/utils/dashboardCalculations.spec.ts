@@ -17,7 +17,8 @@ function makeSchool(studentSize: number | null | undefined): School {
   return {
     id: `school-${studentSize ?? "null"}`,
     name: `School ${studentSize}`,
-    academic_info: studentSize !== undefined ? { student_size: studentSize } : undefined,
+    academic_info:
+      studentSize !== undefined ? { student_size: studentSize } : undefined,
   } as unknown as School;
 }
 
@@ -57,27 +58,42 @@ describe("calculateSchoolSizeBreakdown", () => {
   });
 
   it("counts Very Small schools (< 1,000 students)", () => {
-    const result = calculateSchoolSizeBreakdown([makeSchool(500), makeSchool(999)]);
+    const result = calculateSchoolSizeBreakdown([
+      makeSchool(500),
+      makeSchool(999),
+    ]);
     expect(result["Very Small"]).toBe(2);
   });
 
   it("counts Small schools (1,000–4,999 students)", () => {
-    const result = calculateSchoolSizeBreakdown([makeSchool(1000), makeSchool(4999)]);
+    const result = calculateSchoolSizeBreakdown([
+      makeSchool(1000),
+      makeSchool(4999),
+    ]);
     expect(result["Small"]).toBe(2);
   });
 
   it("counts Medium schools (5,000–9,999 students)", () => {
-    const result = calculateSchoolSizeBreakdown([makeSchool(5000), makeSchool(9999)]);
+    const result = calculateSchoolSizeBreakdown([
+      makeSchool(5000),
+      makeSchool(9999),
+    ]);
     expect(result["Medium"]).toBe(2);
   });
 
   it("counts Large schools (10,000–19,999 students)", () => {
-    const result = calculateSchoolSizeBreakdown([makeSchool(10000), makeSchool(19999)]);
+    const result = calculateSchoolSizeBreakdown([
+      makeSchool(10000),
+      makeSchool(19999),
+    ]);
     expect(result["Large"]).toBe(2);
   });
 
   it("counts Very Large schools (20,000+ students)", () => {
-    const result = calculateSchoolSizeBreakdown([makeSchool(20000), makeSchool(50000)]);
+    const result = calculateSchoolSizeBreakdown([
+      makeSchool(20000),
+      makeSchool(50000),
+    ]);
     expect(result["Very Large"]).toBe(2);
   });
 
@@ -102,12 +118,12 @@ describe("calculateSchoolSizeBreakdown", () => {
 
   it("counts a mixed set correctly", () => {
     const schools = [
-      makeSchool(500),     // Very Small
-      makeSchool(2000),    // Small
-      makeSchool(7500),    // Medium
-      makeSchool(15000),   // Large
-      makeSchool(25000),   // Very Large
-      makeSchool(null),    // ignored
+      makeSchool(500), // Very Small
+      makeSchool(2000), // Small
+      makeSchool(7500), // Medium
+      makeSchool(15000), // Large
+      makeSchool(25000), // Very Large
+      makeSchool(null), // ignored
     ];
     const result = calculateSchoolSizeBreakdown(schools);
     expect(result["Very Small"]).toBe(1);
@@ -224,7 +240,11 @@ describe("calculateAcceptedOffers", () => {
   });
 
   it("returns 0 when no offers are accepted", () => {
-    const offers = [makeOffer("pending"), makeOffer("declined"), makeOffer("expired")];
+    const offers = [
+      makeOffer("pending"),
+      makeOffer("declined"),
+      makeOffer("expired"),
+    ];
     expect(calculateAcceptedOffers(offers)).toBe(0);
   });
 });

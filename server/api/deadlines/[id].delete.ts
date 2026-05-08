@@ -15,14 +15,18 @@ export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, "id");
 
     if (!id) {
-      throw createError({ statusCode: 400, statusMessage: "Missing deadline id" });
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Missing deadline id",
+      });
     }
 
     const supabase = createServerSupabaseClient();
 
     // Verify ownership before deleting — RLS is the authoritative guard but we
     // return a 404 (not 403) to avoid leaking whether the row exists.
-    const { data: existing, error: fetchError } = await supabase.from("user_deadlines")
+    const { data: existing, error: fetchError } = await supabase
+      .from("user_deadlines")
       .select("id")
       .eq("id", id)
       .eq("user_id", user.id)
@@ -30,27 +34,40 @@ export default defineEventHandler(async (event) => {
 
     if (fetchError) {
       logger.error("Failed to verify deadline ownership", fetchError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to delete deadline" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to delete deadline",
+      });
     }
 
     if (!existing) {
-      throw createError({ statusCode: 404, statusMessage: "Deadline not found" });
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Deadline not found",
+      });
     }
 
-    const { error: deleteError } = await supabase.from("user_deadlines")
+    const { error: deleteError } = await supabase
+      .from("user_deadlines")
       .delete()
       .eq("id", id)
       .eq("user_id", user.id);
 
     if (deleteError) {
       logger.error("Failed to delete deadline", deleteError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to delete deadline" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to delete deadline",
+      });
     }
 
     return { success: true };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Unexpected error deleting deadline", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to delete deadline" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to delete deadline",
+    });
   }
 });

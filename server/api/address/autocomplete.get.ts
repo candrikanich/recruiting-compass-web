@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
           // Nominatim usage policy requires a descriptive User-Agent
           "User-Agent": "TheRecruitingCompass/1.0 (recruiting-compass-web)",
         },
-      }
+      },
     );
 
     return results.map((r) => {

@@ -15,7 +15,10 @@ describe("extractQueryResult", () => {
   });
 
   it("throws with error message when query returns an error", () => {
-    const response = { data: null, error: { message: "relation not found", code: "PGRST" } };
+    const response = {
+      data: null,
+      error: { message: "relation not found", code: "PGRST" },
+    };
     expect(() => extractQueryResult(response)).toThrow("relation not found");
   });
 
@@ -35,7 +38,9 @@ describe("requireQueryResult", () => {
 
   it("throws when data is null", () => {
     const response = { data: null, error: null };
-    expect(() => requireQueryResult(response, "School")).toThrow("School not found");
+    expect(() => requireQueryResult(response, "School")).toThrow(
+      "School not found",
+    );
   });
 
   it("uses default entity name when not provided", () => {

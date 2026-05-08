@@ -43,7 +43,6 @@
     </div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
       <!-- Performance Dashboard (Analytics Overview) -->
       <div v-if="metrics.length > 0" class="mb-8">
         <PerformanceDashboard :metrics="metrics" />
@@ -420,13 +419,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  onMounted,
-  reactive,
-  computed,
-  defineAsyncComponent,
-} from "vue";
+import { ref, onMounted, reactive, computed, defineAsyncComponent } from "vue";
 import { usePerformance } from "~/composables/usePerformance";
 import { CheckIcon, XMarkIcon } from "@heroicons/vue/24/solid";
 import type { PerformanceMetric } from "~/types/models";

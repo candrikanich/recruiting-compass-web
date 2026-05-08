@@ -42,7 +42,10 @@ export default defineEventHandler(async (event) => {
   try {
     body = cascadeDeleteSchema.parse(await readBody(event).catch(() => ({})));
   } catch {
-    throw createError({ statusCode: 400, statusMessage: "Invalid request body" });
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Invalid request body",
+    });
   }
 
   const { confirmDelete } = body;

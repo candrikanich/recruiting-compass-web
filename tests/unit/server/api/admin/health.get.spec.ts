@@ -53,9 +53,7 @@ describe("GET /api/admin/health", () => {
     vi.stubEnv("RESEND_API_KEY", "test-key");
     mockMaybeSingle.mockResolvedValue({ data: { id: "1" }, error: null });
 
-    const { default: handler } = await import(
-      "~/server/api/admin/health.get"
-    );
+    const { default: handler } = await import("~/server/api/admin/health.get");
     const mockEvent = { context: {}, node: { req: {}, res: {} } } as any;
 
     const response = await handler(mockEvent);
@@ -75,9 +73,7 @@ describe("GET /api/admin/health", () => {
     vi.stubEnv("RESEND_API_KEY", "");
     mockMaybeSingle.mockResolvedValue({ data: null, error: null });
 
-    const { default: handler } = await import(
-      "~/server/api/admin/health.get"
-    );
+    const { default: handler } = await import("~/server/api/admin/health.get");
     const mockEvent = { context: {}, node: { req: {}, res: {} } } as any;
 
     const response = await handler(mockEvent);
@@ -97,9 +93,7 @@ describe("GET /api/admin/health", () => {
       error: { message: "connection refused" },
     });
 
-    const { default: handler } = await import(
-      "~/server/api/admin/health.get"
-    );
+    const { default: handler } = await import("~/server/api/admin/health.get");
     const mockEvent = { context: {}, node: { req: {}, res: {} } } as any;
 
     const response = await handler(mockEvent);
@@ -117,9 +111,7 @@ describe("GET /api/admin/health", () => {
     vi.mocked(requireAdmin).mockRejectedValue(h3Error);
     vi.stubEnv("RESEND_API_KEY", "test-key");
 
-    const { default: handler } = await import(
-      "~/server/api/admin/health.get"
-    );
+    const { default: handler } = await import("~/server/api/admin/health.get");
     const mockEvent = { context: {}, node: { req: {}, res: {} } } as any;
 
     await expect(handler(mockEvent)).rejects.toMatchObject({
@@ -132,9 +124,7 @@ describe("GET /api/admin/health", () => {
     vi.mocked(requireAdmin).mockRejectedValue(new Error("unexpected failure"));
     vi.stubEnv("RESEND_API_KEY", "test-key");
 
-    const { default: handler } = await import(
-      "~/server/api/admin/health.get"
-    );
+    const { default: handler } = await import("~/server/api/admin/health.get");
     const mockEvent = { context: {}, node: { req: {}, res: {} } } as any;
 
     await expect(handler(mockEvent)).rejects.toMatchObject({

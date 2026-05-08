@@ -21,7 +21,11 @@
         :autocomplete="autocomplete"
         :placeholder="placeholder"
         :disabled="disabled"
-        :aria-describedby="[error ? `${id}-error` : null, describedBy].filter(Boolean).join(' ') || undefined"
+        :aria-describedby="
+          [error ? `${id}-error` : null, describedBy]
+            .filter(Boolean)
+            .join(' ') || undefined
+        "
         class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 focus:border-transparent transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
         @input="
           $emit('update:modelValue', ($event.target as HTMLInputElement).value)

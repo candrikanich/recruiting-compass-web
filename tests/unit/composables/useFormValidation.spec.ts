@@ -13,14 +13,12 @@ vi.mock("~/utils/logger", () => ({
 
 const testSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  age: z.number({ invalid_type_error: "Age must be a number" }).min(0, "Age must be non-negative"),
+  age: z
+    .number({ invalid_type_error: "Age must be a number" })
+    .min(0, "Age must be non-negative"),
 });
 
-function makeFile(
-  name: string,
-  type: string,
-  sizeBytes: number,
-): File {
+function makeFile(name: string, type: string, sizeBytes: number): File {
   const file = new File(["x"], name, { type });
   Object.defineProperty(file, "size", { value: sizeBytes, configurable: true });
   return file;
@@ -80,7 +78,9 @@ describe("useFormValidation", () => {
     });
 
     it("maps field path correctly for nested errors", async () => {
-      const nestedSchema = z.object({ user: z.object({ email: z.string().email("Bad email") }) });
+      const nestedSchema = z.object({
+        user: z.object({ email: z.string().email("Bad email") }),
+      });
       await v.validate({ user: { email: "not-an-email" } }, nestedSchema);
 
       const paths = v.errors.value.map((e) => e.field);
@@ -95,13 +95,17 @@ describe("useFormValidation", () => {
 
     it("returns null and sets generic error for non-Zod throw", async () => {
       const throwingSchema = {
-        parseAsync: async () => { throw new Error("unexpected"); },
+        parseAsync: async () => {
+          throw new Error("unexpected");
+        },
       } as unknown as z.ZodSchema;
 
       const result = await v.validate({}, throwingSchema);
 
       expect(result).toBeNull();
-      expect(v.errors.value).toEqual([{ field: "form", message: "Validation failed" }]);
+      expect(v.errors.value).toEqual([
+        { field: "form", message: "Validation failed" },
+      ]);
     });
 
     it("collects all field errors (not just first)", async () => {
@@ -487,7 +491,11 @@ describe("useFormValidation", () => {
   describe("clearFileErrors()", () => {
     it("empties fileErrors", () => {
       const files = [makeFile("bad.jpg", "image/jpeg", 1024)];
-      try { v.validateFiles(files, "transcript"); } catch { /* expected */ }
+      try {
+        v.validateFiles(files, "transcript");
+      } catch {
+        /* expected */
+      }
 
       v.clearFileErrors();
 
@@ -504,7 +512,11 @@ describe("useFormValidation", () => {
     });
 
     it("returns correct extensions for highlight_video", () => {
-      expect(v.getSupportedExtensions("highlight_video")).toEqual([".mp4", ".mov", ".avi"]);
+      expect(v.getSupportedExtensions("highlight_video")).toEqual([
+        ".mp4",
+        ".mov",
+        ".avi",
+      ]);
     });
   });
 
@@ -528,11 +540,15 @@ describe("useFormValidation", () => {
     });
 
     it("returns description string for highlight_video", () => {
-      expect(v.getFileDescription("highlight_video")).toBe("Video files (MP4, MOV, AVI)");
+      expect(v.getFileDescription("highlight_video")).toBe(
+        "Video files (MP4, MOV, AVI)",
+      );
     });
 
     it("returns description string for attachment", () => {
-      expect(v.getFileDescription("attachment")).toBe("Common document and image files");
+      expect(v.getFileDescription("attachment")).toBe(
+        "Common document and image files",
+      );
     });
   });
 });

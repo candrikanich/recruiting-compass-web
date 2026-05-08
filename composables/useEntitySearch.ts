@@ -108,7 +108,9 @@ export const useEntitySearch = () => {
     try {
       let queryBuilder = supabase
         .from("schools")
-        .select("id, name, city, state, address, division, status, verified, user_id, family_unit_id")
+        .select(
+          "id, name, city, state, address, division, status, verified, user_id, family_unit_id",
+        )
         .eq("user_id", userStore.user.id)
         .ilike("name", `%${searchQuery}%`)
         .limit(20);
@@ -167,7 +169,9 @@ export const useEntitySearch = () => {
     try {
       let queryBuilder = supabase
         .from("coaches")
-        .select("id, name, school, school_id, email, phone, sport, response_rate, verified, user_id")
+        .select(
+          "id, name, school, school_id, email, phone, sport, response_rate, verified, user_id",
+        )
         .eq("user_id", userStore.user.id)
         .or(`name.ilike.%${searchQuery}%,school.ilike.%${searchQuery}%`)
         .limit(20);
@@ -229,7 +233,9 @@ export const useEntitySearch = () => {
     try {
       let queryBuilder = supabase
         .from("interactions")
-        .select("id, subject, notes, type, direction, sentiment_label, recorded_date, coach_id, user_id")
+        .select(
+          "id, subject, notes, type, direction, sentiment_label, recorded_date, coach_id, user_id",
+        )
         .eq("user_id", userStore.user.id)
         .or(`subject.ilike.%${searchQuery}%,notes.ilike.%${searchQuery}%`)
         .order("recorded_date", { ascending: false })
@@ -290,7 +296,9 @@ export const useEntitySearch = () => {
     try {
       let queryBuilder = supabase
         .from("performance_metrics")
-        .select("id, metric_type, value, unit, recorded_date, notes, verified, user_id")
+        .select(
+          "id, metric_type, value, unit, recorded_date, notes, verified, user_id",
+        )
         .eq("user_id", userStore.user.id)
         .order("recorded_date", { ascending: false })
         .limit(20);

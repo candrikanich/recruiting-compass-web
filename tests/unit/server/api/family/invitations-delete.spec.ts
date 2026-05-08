@@ -11,7 +11,12 @@ vi.mock("~/server/utils/auth", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
@@ -37,15 +42,22 @@ vi.mock("h3", async (importOriginal) => {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
     getRouterParam: vi.fn(() => mockState.invitationId),
-    createError: (config: { statusCode: number; statusMessage?: string; message?: string }) => {
-      const err = new Error(config.statusMessage ?? config.message) as Error & { statusCode: number };
+    createError: (config: {
+      statusCode: number;
+      statusMessage?: string;
+      message?: string;
+    }) => {
+      const err = new Error(config.statusMessage ?? config.message) as Error & {
+        statusCode: number;
+      };
       err.statusCode = config.statusCode;
       return err;
     },
   };
 });
 
-const { default: handler } = await import("~/server/api/family/invitations/[id].delete");
+const { default: handler } =
+  await import("~/server/api/family/invitations/[id].delete");
 
 describe("DELETE /api/family/invitations/[id]", () => {
   beforeEach(() => {
@@ -61,11 +73,15 @@ describe("DELETE /api/family/invitations/[id]", () => {
 
   it("returns 400 when invitation ID is missing", async () => {
     mockState.invitationId = "";
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 400 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 400 });
   });
 
   it("returns 500 when the delete fails", async () => {
     mockState.deleteError = { message: "foreign key violation" };
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 500 });
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
   });
 });

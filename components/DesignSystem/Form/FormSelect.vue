@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, useId } from 'vue';
+import { computed, useId } from "vue";
 
 interface SelectOption {
   value: string;
@@ -19,12 +19,12 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   required: false,
   disabled: false,
-  error: '',
-  autoFilled: false
+  error: "",
+  autoFilled: false,
 });
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string];
+  "update:modelValue": [value: string];
   blur: [];
 }>();
 
@@ -32,19 +32,19 @@ const inputId = useId();
 
 const dropdownStyle = computed(() => ({
   backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-  backgroundPosition: 'right 0.75rem center',
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: '1.5em 1.5em',
-  paddingRight: '2.5rem'
+  backgroundPosition: "right 0.75rem center",
+  backgroundRepeat: "no-repeat",
+  backgroundSize: "1.5em 1.5em",
+  paddingRight: "2.5rem",
 }));
 
 const handleInput = (event: Event) => {
   const target = event.target as HTMLSelectElement;
-  emit('update:modelValue', target.value);
+  emit("update:modelValue", target.value);
 };
 
 const handleBlur = () => {
-  emit('blur');
+  emit("blur");
 };
 </script>
 
@@ -54,7 +54,9 @@ const handleBlur = () => {
       {{ label }}
       <span v-if="required" class="text-red-500" aria-hidden="true">*</span>
       <span v-if="required" class="sr-only">(required)</span>
-      <span v-if="autoFilled" class="text-xs font-normal text-blue-700 ml-1">(auto-filled)</span>
+      <span v-if="autoFilled" class="text-xs font-normal text-blue-700 ml-1"
+        >(auto-filled)</span
+      >
     </label>
     <select
       :id="inputId"
@@ -69,10 +71,18 @@ const handleBlur = () => {
       @input="handleInput"
       @blur="handleBlur"
     >
-      <option v-for="option in options" :key="option.value" :value="option.value">
+      <option
+        v-for="option in options"
+        :key="option.value"
+        :value="option.value"
+      >
         {{ option.label }}
       </option>
     </select>
-    <DesignSystemFieldError v-if="error" :id="`${inputId}-error`" :error="error" />
+    <DesignSystemFieldError
+      v-if="error"
+      :id="`${inputId}-error`"
+      :error="error"
+    />
   </div>
 </template>

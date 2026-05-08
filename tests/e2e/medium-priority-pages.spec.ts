@@ -51,7 +51,9 @@ test.describe("/timeline — Recruiting Timeline", () => {
   });
 
   test("shows guidance sidebar", async ({ page }) => {
-    await expect(page.locator('[data-testid="guidance-sidebar"]')).toBeVisible();
+    await expect(
+      page.locator('[data-testid="guidance-sidebar"]'),
+    ).toBeVisible();
   });
 
   test("shows year section headings", async ({ page }) => {

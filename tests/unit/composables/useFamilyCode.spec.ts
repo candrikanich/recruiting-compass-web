@@ -67,12 +67,13 @@ vi.mock("~/composables/useSupabase", () => ({
 /**
  * Player branch: chain that terminates with .maybeSingle()
  */
-const buildPlayerChain = (opts: {
-  result?: unknown;
-  error?: unknown;
-}) => ({
-  select: function () { return this; },
-  eq: function () { return this; },
+const buildPlayerChain = (opts: { result?: unknown; error?: unknown }) => ({
+  select: function () {
+    return this;
+  },
+  eq: function () {
+    return this;
+  },
   maybeSingle: async () => ({
     data: opts.result ?? null,
     error: opts.error ?? null,
@@ -145,7 +146,8 @@ describe("useFamilyCode", () => {
           },
         });
 
-      const { fetchMyCode, myFamilyCode, myFamilyId, myFamilyName } = useFamilyCode();
+      const { fetchMyCode, myFamilyCode, myFamilyId, myFamilyName } =
+        useFamilyCode();
       await fetchMyCode();
 
       expect(myFamilyCode.value).toBe("ABC123");
@@ -235,8 +237,7 @@ describe("useFamilyCode", () => {
     ];
 
     it("populates parentFamilies from membership rows", async () => {
-      supabaseFromMock = () =>
-        buildParentChain({ result: membershipRows });
+      supabaseFromMock = () => buildParentChain({ result: membershipRows });
 
       const { fetchMyCode, parentFamilies } = useFamilyCode();
       await fetchMyCode();
@@ -247,10 +248,10 @@ describe("useFamilyCode", () => {
     });
 
     it("sets myFamilyCode/myFamilyId/myFamilyName from first family", async () => {
-      supabaseFromMock = () =>
-        buildParentChain({ result: membershipRows });
+      supabaseFromMock = () => buildParentChain({ result: membershipRows });
 
-      const { fetchMyCode, myFamilyCode, myFamilyId, myFamilyName } = useFamilyCode();
+      const { fetchMyCode, myFamilyCode, myFamilyId, myFamilyName } =
+        useFamilyCode();
       await fetchMyCode();
 
       expect(myFamilyCode.value).toBe("PARENT1");
@@ -284,7 +285,8 @@ describe("useFamilyCode", () => {
         familyName: "New Family",
       });
 
-      const { createFamily, myFamilyCode, myFamilyId, myFamilyName } = useFamilyCode();
+      const { createFamily, myFamilyCode, myFamilyId, myFamilyName } =
+        useFamilyCode();
       await createFamily();
 
       expect(mockFetchAuth).toHaveBeenCalledWith("/api/family/create", {

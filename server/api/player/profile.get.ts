@@ -35,7 +35,10 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (!membership) {
-      throw createError({ statusCode: 403, statusMessage: "Not a family member" });
+      throw createError({
+        statusCode: 403,
+        statusMessage: "Not a family member",
+      });
     }
 
     const { data: existing } = await supabase
@@ -70,7 +73,10 @@ export default defineEventHandler(async (event) => {
         if (race) return race;
       }
       logger.error("Failed to create player profile", error);
-      throw createError({ statusCode: 500, statusMessage: "Failed to initialize profile" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to initialize profile",
+      });
     }
 
     logger.info("Created new player profile", { userId });
@@ -78,6 +84,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to load profile", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to load profile" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to load profile",
+    });
   }
 });

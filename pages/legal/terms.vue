@@ -65,12 +65,12 @@
               underlying the Service
             </li>
             <li>
-              Remove any copyright, trademark, or other proprietary notices
-              from any portion of the Service
+              Remove any copyright, trademark, or other proprietary notices from
+              any portion of the Service
             </li>
             <li>
-              Use the Service in any way that violates these Terms or
-              applicable law
+              Use the Service in any way that violates these Terms or applicable
+              law
             </li>
           </ul>
           <p>
@@ -148,8 +148,8 @@
           </p>
           <p>
             For minor, non-material changes (such as clarifications or
-            formatting updates), the updated Terms are effective immediately upon
-            posting.
+            formatting updates), the updated Terms are effective immediately
+            upon posting.
           </p>
         </section>
 
@@ -159,9 +159,9 @@
             These Terms and Conditions are governed by and construed in
             accordance with the laws of the State of Ohio, United States,
             without regard to conflict of law principles. You irrevocably submit
-            to the exclusive jurisdiction of the state and federal courts located
-            in Cuyahoga County, Ohio for any matter not subject to arbitration
-            under Section 12.
+            to the exclusive jurisdiction of the state and federal courts
+            located in Cuyahoga County, Ohio for any matter not subject to
+            arbitration under Section 12.
           </p>
         </section>
 
@@ -295,8 +295,8 @@
           </p>
           <p>
             Recruiting Compass may use aggregated, anonymized, non-personally
-            identifiable data derived from Service usage for product improvement,
-            analytics, and research.
+            identifiable data derived from Service usage for product
+            improvement, analytics, and research.
           </p>
         </section>
 
@@ -318,9 +318,9 @@
           <h2>16. Fit Score Disclaimer</h2>
           <p>
             Recruiting Compass calculates a "Fit Score" as an algorithmic
-            estimate to help athletes gauge potential compatibility with schools.
-            Fit Scores are based on user-entered data and publicly available
-            school information.
+            estimate to help athletes gauge potential compatibility with
+            schools. Fit Scores are based on user-entered data and publicly
+            available school information.
           </p>
           <p>
             <strong
@@ -378,9 +378,9 @@
             and effect. These Terms, together with the
             <NuxtLink to="/legal/privacy" class="text-blue-600 hover:underline"
               >Privacy Policy</NuxtLink
-            >, constitute the entire agreement between you and Recruiting Compass
-            with respect to the Service and supersede all prior agreements and
-            understandings.
+            >, constitute the entire agreement between you and Recruiting
+            Compass with respect to the Service and supersede all prior
+            agreements and understandings.
           </p>
         </section>
 

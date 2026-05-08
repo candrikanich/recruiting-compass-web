@@ -21,7 +21,9 @@ console.log("Fetching NCAA member list...");
 const response = await fetch(NCAA_API);
 
 if (!response.ok) {
-  throw new Error(`NCAA API returned ${response.status}: ${response.statusText}`);
+  throw new Error(
+    `NCAA API returned ${response.status}: ${response.statusText}`,
+  );
 }
 
 const members = await response.json();
@@ -39,11 +41,17 @@ for (const member of members) {
   if (!divKey) continue; // skip associate members or unknown divisions
 
   const website = member.webSiteUrl
-    ? member.webSiteUrl.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "").toLowerCase()
+    ? member.webSiteUrl
+        .replace(/^https?:\/\/(www\.)?/, "")
+        .replace(/\/$/, "")
+        .toLowerCase()
     : null;
 
   const athleticWebsite = member.athleticWebUrl
-    ? member.athleticWebUrl.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "").toLowerCase()
+    ? member.athleticWebUrl
+        .replace(/^https?:\/\/(www\.)?/, "")
+        .replace(/\/$/, "")
+        .toLowerCase()
     : null;
 
   const addr = member.memberOrgAddress ?? {};
@@ -56,7 +64,9 @@ for (const member of members) {
     ...(member.nickname ? { nickname: member.nickname } : {}),
     ...(addr.city ? { city: addr.city } : {}),
     ...(addr.state ? { state: addr.state } : {}),
-    ...(member.hex1 ? { colors: [member.hex1, member.hex2, member.hex3].filter(Boolean) } : {}),
+    ...(member.hex1
+      ? { colors: [member.hex1, member.hex2, member.hex3].filter(Boolean) }
+      : {}),
   });
 }
 
@@ -68,7 +78,9 @@ for (const key of Object.keys(result)) {
 console.log(`D1: ${result.D1.length} schools`);
 console.log(`D2: ${result.D2.length} schools`);
 console.log(`D3: ${result.D3.length} schools`);
-console.log(`Total: ${result.D1.length + result.D2.length + result.D3.length} schools`);
+console.log(
+  `Total: ${result.D1.length + result.D2.length + result.D3.length} schools`,
+);
 
 writeFileSync(OUTPUT_PATH, JSON.stringify(result, null, 2));
 console.log(`Written to ${OUTPUT_PATH}`);

@@ -70,16 +70,14 @@
         </div>
 
         <!-- Family Code -->
-        <div
-          v-if="myFamilyCode"
-          class="px-4 py-2 border-b border-slate-200"
-        >
+        <div v-if="myFamilyCode" class="px-4 py-2 border-b border-slate-200">
           <p class="text-xs text-slate-600 mb-1">Family code</p>
           <div class="flex items-center gap-2">
             <span
               data-testid="family-code"
               class="font-mono text-xs font-semibold text-slate-700 tracking-widest"
-            >{{ myFamilyCode }}</span>
+              >{{ myFamilyCode }}</span
+            >
             <button
               type="button"
               :aria-label="codeCopied ? 'Copied!' : 'Copy family code'"
@@ -87,11 +85,31 @@
               class="text-slate-400 hover:text-slate-600 transition-colors"
               @click.stop="copyFamilyCode"
             >
-              <svg v-if="!codeCopied" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <svg
+                v-if="!codeCopied"
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                <path
+                  d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                />
               </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <svg
+                v-else
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-3.5 h-3.5 text-green-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </button>
@@ -192,7 +210,9 @@ const menuRef = ref<HTMLElement | null>(null);
 
 const getMenuItems = () =>
   menuRef.value
-    ? Array.from(menuRef.value.querySelectorAll<HTMLElement>('[role="menuitem"]'))
+    ? Array.from(
+        menuRef.value.querySelectorAll<HTMLElement>('[role="menuitem"]'),
+      )
     : [];
 
 const handleTriggerKeydown = (event: KeyboardEvent) => {

@@ -12,7 +12,10 @@ export default defineEventHandler(async (event) => {
     const slug = getRouterParam(event, "slug")!;
 
     if (!HASH_SLUG_RE.test(slug) && !VANITY_SLUG_RE.test(slug)) {
-      throw createError({ statusCode: 404, statusMessage: "Profile not found" });
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Profile not found",
+      });
     }
 
     const supabase = createServerSupabaseClient();
@@ -24,8 +27,14 @@ export default defineEventHandler(async (event) => {
       .eq("hash_slug", slug)
       .maybeSingle();
     if (profileResult.error) {
-      logger.error("Failed to query player_profiles by hash_slug", profileResult.error);
-      throw createError({ statusCode: 500, statusMessage: "Failed to load profile" });
+      logger.error(
+        "Failed to query player_profiles by hash_slug",
+        profileResult.error,
+      );
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to load profile",
+      });
     }
     if (!profileResult.data) {
       profileResult = await supabase
@@ -34,15 +43,24 @@ export default defineEventHandler(async (event) => {
         .eq("vanity_slug", slug)
         .maybeSingle();
       if (profileResult.error) {
-        logger.error("Failed to query player_profiles by vanity_slug", profileResult.error);
-        throw createError({ statusCode: 500, statusMessage: "Failed to load profile" });
+        logger.error(
+          "Failed to query player_profiles by vanity_slug",
+          profileResult.error,
+        );
+        throw createError({
+          statusCode: 500,
+          statusMessage: "Failed to load profile",
+        });
       }
     }
     const profile = profileResult.data;
 
     if (!profile) {
       logger.warn("Profile slug not found", { slug });
-      throw createError({ statusCode: 404, statusMessage: "Profile not found" });
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Profile not found",
+      });
     }
 
     if (!profile.is_published) {
@@ -92,7 +110,9 @@ export default defineEventHandler(async (event) => {
               sat_score: details.sat_score as number | undefined,
               act_score: details.act_score as number | undefined,
               graduation_year: details.graduation_year as number | undefined,
-              high_school: (details.school_name ?? details.high_school) as string | undefined,
+              high_school: (details.school_name ?? details.high_school) as
+                | string
+                | undefined,
               core_courses: details.core_courses as string[] | undefined,
             }
           : null,
@@ -105,8 +125,10 @@ export default defineEventHandler(async (event) => {
               height_inches: details.height_inches as number | undefined,
               weight_lbs: details.weight_lbs as number | undefined,
               ncaa_id: (details.ncaa_id as string | undefined) || undefined,
-              perfect_game_id: (details.perfect_game_id as string | undefined) || undefined,
-              prep_baseball_id: (details.prep_baseball_id as string | undefined) || undefined,
+              perfect_game_id:
+                (details.perfect_game_id as string | undefined) || undefined,
+              prep_baseball_id:
+                (details.prep_baseball_id as string | undefined) || undefined,
             }
           : null,
       film:
@@ -121,6 +143,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to load profile", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to load profile" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to load profile",
+    });
   }
 });

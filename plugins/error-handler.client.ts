@@ -17,7 +17,8 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     if (serviceError) {
       // Check if this is a service-level error (500+, network)
-      const isServiceIssue = serviceError.statusCode === 0 || serviceError.statusCode >= 500;
+      const isServiceIssue =
+        serviceError.statusCode === 0 || serviceError.statusCode >= 500;
 
       if (isServiceIssue) {
         markServiceUnavailable(serviceError);
@@ -27,7 +28,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // Hook into Vue's global error handler
   nuxtApp.vueApp.config.errorHandler = (err, instance, info) => {
-    console.error('[Global Error Handler]', err, info);
+    console.error("[Global Error Handler]", err, info);
     processError(err);
 
     // Don't prevent default error handling
@@ -35,32 +36,34 @@ export default defineNuxtPlugin((nuxtApp) => {
   };
 
   // Hook into Nuxt's Vue error handling
-  nuxtApp.hook('vue:error', (err, instance, info) => {
-    console.error('[Nuxt Vue Error]', err, info);
+  nuxtApp.hook("vue:error", (err, instance, info) => {
+    console.error("[Nuxt Vue Error]", err, info);
     processError(err);
   });
 
   // Hook into unhandled promise rejections
   if (import.meta.client) {
-    window.addEventListener('unhandledrejection', (event) => {
+    window.addEventListener("unhandledrejection", (event) => {
       // Stale chunk error: a Vite/Nuxt deploy happened while the user had the
       // app open. Old chunk URLs no longer exist. Reload once to pick up the
       // latest bundles. Guard against reload loops with sessionStorage.
       const reason = event.reason;
       const isChunkError =
         reason instanceof TypeError &&
-        (reason.message.includes('Failed to fetch dynamically imported module') ||
-          reason.message.includes('Importing a module script failed'));
+        (reason.message.includes(
+          "Failed to fetch dynamically imported module",
+        ) ||
+          reason.message.includes("Importing a module script failed"));
       if (isChunkError) {
-        const reloadKey = 'chunk-reload-attempted';
+        const reloadKey = "chunk-reload-attempted";
         if (!sessionStorage.getItem(reloadKey)) {
-          sessionStorage.setItem(reloadKey, '1');
+          sessionStorage.setItem(reloadKey, "1");
           window.location.reload();
         }
         return;
       }
 
-      console.error('[Unhandled Promise Rejection]', event.reason);
+      console.error("[Unhandled Promise Rejection]", event.reason);
       processError(event.reason);
     });
   }

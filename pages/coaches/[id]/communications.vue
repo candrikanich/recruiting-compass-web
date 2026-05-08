@@ -404,7 +404,8 @@ const getSentimentClass = (sentiment: string): string => {
       "px-2 py-1 rounded-sm text-xs font-semibold bg-blue-100 text-blue-800",
     neutral:
       "px-2 py-1 rounded-sm text-xs font-semibold bg-gray-100 text-gray-800",
-    negative: "px-2 py-1 rounded-sm text-xs font-semibold bg-red-100 text-red-800",
+    negative:
+      "px-2 py-1 rounded-sm text-xs font-semibold bg-red-100 text-red-800",
   };
   return classes[sentiment] || "";
 };

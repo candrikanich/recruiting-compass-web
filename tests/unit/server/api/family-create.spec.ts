@@ -33,14 +33,21 @@ vi.mock("~/server/utils/supabase", () => ({
           select: () => ({
             eq: () => ({
               maybeSingle: () =>
-                Promise.resolve({ data: mockState.existingFamily, error: null }),
+                Promise.resolve({
+                  data: mockState.existingFamily,
+                  error: null,
+                }),
             }),
           }),
           insert: () => ({
             select: () => ({
               single: () =>
                 Promise.resolve({
-                  data: { id: "family-123", family_code: "FAM-TESTCODE", family_name: "My Family" },
+                  data: {
+                    id: "family-123",
+                    family_code: "FAM-TESTCODE",
+                    family_name: "My Family",
+                  },
                   error: null,
                 }),
             }),
@@ -52,7 +59,10 @@ vi.mock("~/server/utils/supabase", () => ({
         return { insert: () => Promise.resolve({ error: null }) };
       }
       if (table === "family_code_usage_log") {
-        const builder = Object.assign(Promise.resolve({ data: null, error: null }), { catch: vi.fn() });
+        const builder = Object.assign(
+          Promise.resolve({ data: null, error: null }),
+          { catch: vi.fn() },
+        );
         return { insert: vi.fn().mockReturnValue(builder) };
       }
       return {};
@@ -65,8 +75,14 @@ vi.mock("h3", async (importOriginal) => {
   return {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
-    createError: (config: { statusCode: number; message?: string; statusMessage?: string }) => {
-      const err = new Error(config.message ?? config.statusMessage) as Error & { statusCode: number };
+    createError: (config: {
+      statusCode: number;
+      message?: string;
+      statusMessage?: string;
+    }) => {
+      const err = new Error(config.message ?? config.statusMessage) as Error & {
+        statusCode: number;
+      };
       err.statusCode = config.statusCode;
       return err;
     },
@@ -85,7 +101,11 @@ describe("POST /api/family/create — symmetric", () => {
 
   it("allows a player to create a family unit", async () => {
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result).toMatchObject({ success: true, familyCode: "FAM-TESTCODE", familyId: "family-123" });
+    expect(result).toMatchObject({
+      success: true,
+      familyCode: "FAM-TESTCODE",
+      familyId: "family-123",
+    });
   });
 
   it("allows a parent to create a family unit", async () => {
@@ -97,9 +117,17 @@ describe("POST /api/family/create — symmetric", () => {
   });
 
   it("returns existing family if one already exists", async () => {
-    mockState.existingFamily = { id: "existing-family", family_code: "FAM-EXISTING", family_name: "My Family" };
+    mockState.existingFamily = {
+      id: "existing-family",
+      family_code: "FAM-EXISTING",
+      family_name: "My Family",
+    };
 
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result).toMatchObject({ success: true, familyId: "existing-family", message: "Family already exists" });
+    expect(result).toMatchObject({
+      success: true,
+      familyId: "existing-family",
+      message: "Family already exists",
+    });
   });
 });

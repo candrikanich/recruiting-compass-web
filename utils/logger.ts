@@ -29,7 +29,9 @@ function sanitizeData(data: unknown): unknown {
 
   if (typeof data === "object") {
     const sanitized: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+    for (const [key, value] of Object.entries(
+      data as Record<string, unknown>,
+    )) {
       const lower = key.toLowerCase();
       if (SENSITIVE_FIELDS.has(lower) || lower.includes("password")) {
         sanitized[key] = "[REDACTED]";
@@ -61,8 +63,8 @@ function sanitizeData(data: unknown): unknown {
  */
 export function createClientLogger(context: string): Logger {
   const isDev = import.meta.env.DEV;
-  const configuredLevel = (import.meta.env.VITE_LOG_LEVEL as LogLevel) ||
-    (isDev ? "debug" : "warn");
+  const configuredLevel =
+    (import.meta.env.VITE_LOG_LEVEL as LogLevel) || (isDev ? "debug" : "warn");
   const minPriority = LOG_LEVEL_PRIORITY[configuredLevel] ?? 2;
 
   const log = (level: LogLevel, message: string, data?: unknown) => {

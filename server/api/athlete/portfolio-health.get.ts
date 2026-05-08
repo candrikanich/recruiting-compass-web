@@ -8,6 +8,7 @@ import { defineEventHandler, createError } from "h3";
 export default defineEventHandler(async (_event) => {
   throw createError({
     statusCode: 410,
-    statusMessage: "Portfolio health has been removed. Use per-school fit signals instead.",
+    statusMessage:
+      "Portfolio health has been removed. Use per-school fit signals instead.",
   });
 });

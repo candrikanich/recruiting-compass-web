@@ -14,9 +14,7 @@ import {
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
-import {
-  getSupabaseAdmin,
-} from "../seed/helpers/supabase-admin";
+import { getSupabaseAdmin } from "../seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "../config/test-accounts";
 
 test.describe("Coach Search and Filtering", () => {
@@ -56,8 +54,13 @@ test.describe("Coach Search and Filtering", () => {
       const supabase = getSupabaseAdmin();
 
       // Find player user ID
-      const { data: usersData } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
-      const player = usersData?.users?.find((u) => u.email === TEST_ACCOUNTS.player.email);
+      const { data: usersData } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000,
+      });
+      const player = usersData?.users?.find(
+        (u) => u.email === TEST_ACCOUNTS.player.email,
+      );
       if (!player) throw new Error("Player test account not found");
 
       // Get the player's family unit ID (schools are scoped by family_unit_id)
@@ -71,16 +74,18 @@ test.describe("Coach Search and Filtering", () => {
       // Create test school
       const { data: school, error: schoolErr } = await supabase
         .from("schools")
-        .insert([{
-          name: generateUniqueSchoolName("Filter Test School"),
-          location: "Test City, USA",
-          division: "D3",
-          status: "researching",
-          user_id: player.id,
-          created_by: player.id,
-          updated_by: player.id,
-          family_unit_id: familyUnitId,
-        }])
+        .insert([
+          {
+            name: generateUniqueSchoolName("Filter Test School"),
+            location: "Test City, USA",
+            division: "D3",
+            status: "researching",
+            user_id: player.id,
+            created_by: player.id,
+            updated_by: player.id,
+            family_unit_id: familyUnitId,
+          },
+        ])
         .select("id")
         .single();
       if (schoolErr) throw schoolErr;
@@ -121,7 +126,9 @@ test.describe("Coach Search and Filtering", () => {
       await coachesPage.searchCoaches("John");
 
       // Use heading role to avoid strict mode — h3 "John Smith" is specific
-      await expect(page.getByRole("heading", { name: /John Smith/ })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: /John Smith/ }),
+      ).toBeVisible();
     });
 
     test("should filter coaches by last name", async ({ page }) => {
@@ -137,14 +144,18 @@ test.describe("Coach Search and Filtering", () => {
       await coachesPage.searchCoaches("John");
 
       // Should still find John Smith
-      await expect(page.getByRole("heading", { name: /John Smith/ })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: /John Smith/ }),
+      ).toBeVisible();
     });
 
     test("should be case insensitive", async ({ page }) => {
       await coachHelpers.navigateToCoaches(page, schoolId);
       await coachesPage.searchCoaches("john");
 
-      await expect(page.getByRole("heading", { name: /John Smith/ })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: /John Smith/ }),
+      ).toBeVisible();
     });
 
     test("should show no results message when no matches", async ({ page }) => {
@@ -187,7 +198,9 @@ test.describe("Coach Search and Filtering", () => {
       // Should show John Smith (head coach)
       const coachCount = await coachesPage.getCoachCount();
       expect(coachCount).toBeGreaterThan(0);
-      await expect(page.getByRole("heading", { name: /John Smith/ })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: /John Smith/ }),
+      ).toBeVisible();
     });
 
     test("should filter by assistant coach role", async ({ page }) => {
@@ -197,7 +210,9 @@ test.describe("Coach Search and Filtering", () => {
       // Should show Jane Doe (assistant coach)
       const coachCount = await coachesPage.getCoachCount();
       expect(coachCount).toBeGreaterThan(0);
-      await expect(page.getByRole("heading", { name: /Jane Doe/ })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: /Jane Doe/ }),
+      ).toBeVisible();
     });
 
     test("should filter by recruiting coordinator role", async ({ page }) => {
@@ -207,7 +222,9 @@ test.describe("Coach Search and Filtering", () => {
       // Should show Robert Johnson (recruiting coordinator)
       const coachCount = await coachesPage.getCoachCount();
       expect(coachCount).toBeGreaterThan(0);
-      await expect(page.getByRole("heading", { name: /Robert Johnson/ })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: /Robert Johnson/ }),
+      ).toBeVisible();
     });
 
     test("should show all coaches when filter is cleared", async ({ page }) => {
@@ -238,7 +255,10 @@ test.describe("Coach Search and Filtering", () => {
       await coachHelpers.navigateToCoaches(page, schoolId);
 
       // Sort — the coaches page has a sort select
-      const sortSelect = page.locator('#sortSelect, select').filter({ hasText: 'Name' }).first();
+      const sortSelect = page
+        .locator("#sortSelect, select")
+        .filter({ hasText: "Name" })
+        .first();
       if (await sortSelect.isVisible().catch(() => false)) {
         await sortSelect.selectOption({ label: /Name/ });
       }
@@ -248,7 +268,10 @@ test.describe("Coach Search and Filtering", () => {
       expect(coachCount).toBeGreaterThan(0);
 
       // First coach heading should be defined
-      const firstCoach = await page.locator('h3.text-lg.font-bold').first().textContent();
+      const firstCoach = await page
+        .locator("h3.text-lg.font-bold")
+        .first()
+        .textContent();
       expect(firstCoach).toBeTruthy();
     });
 
@@ -265,7 +288,6 @@ test.describe("Coach Search and Filtering", () => {
         // Sort may not be available, skip silently
       }
     });
-
   });
 
   // ==================== COMBINED FILTERS TESTS ====================
@@ -281,7 +303,9 @@ test.describe("Coach Search and Filtering", () => {
       await coachesPage.searchCoaches("Smith");
 
       // Should find John Smith (head coach matching "Smith" search)
-      await expect(page.getByRole("heading", { name: /John Smith/ })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: /John Smith/ }),
+      ).toBeVisible();
     });
 
     test("should clear all filters at once", async ({ page }) => {

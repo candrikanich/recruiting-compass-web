@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 defineProps<{
-  title: string
-  badge?: 'new' | 'required' | 'optional'
-}>()
+  title: string;
+  badge?: "new" | "required" | "optional";
+}>();
 </script>

@@ -175,9 +175,7 @@ describe("getParentActionItems", () => {
       phase: "junior",
       status: "on_track",
     });
-    const trainingAction = actions.find((a) =>
-      a.includes("Focus on training"),
-    );
+    const trainingAction = actions.find((a) => a.includes("Focus on training"));
     expect(trainingAction).toBeUndefined();
   });
 
@@ -244,14 +242,11 @@ describe("getRecruitingExpectations", () => {
     "committed",
   ] as const;
 
-  it.each(phases)(
-    "returns a string for phase=%s with division=DI",
-    (phase) => {
-      const result = getRecruitingExpectations(phase, "DI");
-      expect(typeof result).toBe("string");
-      expect(result.length).toBeGreaterThan(0);
-    },
-  );
+  it.each(phases)("returns a string for phase=%s with division=DI", (phase) => {
+    const result = getRecruitingExpectations(phase, "DI");
+    expect(typeof result).toBe("string");
+    expect(result.length).toBeGreaterThan(0);
+  });
 
   it.each(["DI", "DII", "DIII", "NAIA", "JUCO", "ALL"] as const)(
     "returns correct string for junior phase with division=%s",

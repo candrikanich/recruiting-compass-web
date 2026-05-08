@@ -464,7 +464,6 @@ describe("Error Handling - Critical Scenarios", () => {
       expect(() => canDelete("accepted")).toThrow("Cannot delete");
       expect(() => canDelete("pending")).not.toThrow();
     });
-
   });
 
   describe("Error Recovery", () => {

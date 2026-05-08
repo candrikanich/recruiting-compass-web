@@ -203,13 +203,15 @@ export const schoolSelectors = {
   autocompleteToggle: 'input[type="checkbox"]',
   nameInput: 'input[placeholder="e.g., University of Florida"]',
   locationInput: 'input[placeholder="e.g., Gainesville, Florida"]',
-  divisionSelect: 'select',
-  statusSelect: '#school-status',
-  conferenceInput: 'input[placeholder*="SEC"], input[placeholder*="Conference"], input[placeholder*="conference"]',
+  divisionSelect: "select",
+  statusSelect: "#school-status",
+  conferenceInput:
+    'input[placeholder*="SEC"], input[placeholder*="Conference"], input[placeholder*="conference"]',
   websiteInput: 'input[placeholder*="http"], input[placeholder*="website"]',
   twitterInput: 'input[placeholder*="twitter"], input[placeholder*="Twitter"]',
-  instagramInput: 'input[placeholder*="instagram"], input[placeholder*="Instagram"]',
-  notesTextarea: 'textarea',
+  instagramInput:
+    'input[placeholder*="instagram"], input[placeholder*="Instagram"]',
+  notesTextarea: "textarea",
 
   // Pro/Con sections
   prosContainer: '[data-testid="pros-section"], .pros-section',
@@ -258,7 +260,7 @@ export const notesSelectors = {
   editButton: 'button[aria-label="Edit notes"]',
   cancelButton: 'button[aria-label="Cancel editing notes"]',
   saveButton: 'button:has-text("Save Notes")',
-  notesTextarea: '#notes-textarea',
+  notesTextarea: "#notes-textarea",
   notesDisplay: ".text-slate-700.text-sm.whitespace-pre-wrap",
 };
 
@@ -282,7 +284,8 @@ export const statusHistorySelectors = {
  */
 export const sidebarSelectors = {
   quickActions: 'h3:has-text("Quick Actions")',
-  logInteractionLink: 'a:has-text("Log Interaction"):first-of-type, a:has-text("Log Interaction")',
+  logInteractionLink:
+    'a:has-text("Log Interaction"):first-of-type, a:has-text("Log Interaction")',
   sendEmailButton: 'button:has-text("Send Email")',
   manageCoachesLink: 'a[href*="/schools/"][href*="/coaches"]',
   coachesList: ".space-y-3",
@@ -383,7 +386,9 @@ export const schoolHelpers = {
     await page.waitForLoadState("domcontentloaded");
 
     // Disable autocomplete to enable manual form entry (autocomplete is on by default)
-    const autocompleteToggle = page.locator(schoolSelectors.autocompleteToggle).first();
+    const autocompleteToggle = page
+      .locator(schoolSelectors.autocompleteToggle)
+      .first();
     // Wait for Vue to mount before checking checkbox state
     await autocompleteToggle.waitFor({ state: "visible", timeout: 10000 });
     const isChecked = await autocompleteToggle.isChecked().catch(() => false);
@@ -491,7 +496,9 @@ export const schoolHelpers = {
 
     await page.click('button:has-text("Add Coach")');
     // Coach form renders inline (v-if) — wait for it to appear
-    await page.waitForSelector('h2:has-text("Add New Coach")', { timeout: 5000 });
+    await page.waitForSelector('h2:has-text("Add New Coach")', {
+      timeout: 5000,
+    });
 
     if (coachData.firstName) {
       await page.fill('input[placeholder="e.g., John"]', coachData.firstName);
@@ -501,13 +508,19 @@ export const schoolHelpers = {
     }
     if (coachData.role) {
       // Use form element to scope to the add form, not the filter bar
-      await page.locator('form').getByLabel("Role").selectOption(coachData.role);
+      await page
+        .locator("form")
+        .getByLabel("Role")
+        .selectOption(coachData.role);
     }
     if (coachData.email) {
       await page.fill('input[type="email"]', coachData.email);
     }
     if (coachData.phone) {
-      await page.fill('input[type="tel"], input[placeholder*="555"]', coachData.phone);
+      await page.fill(
+        'input[type="tel"], input[placeholder*="555"]',
+        coachData.phone,
+      );
     }
 
     await page.click('[data-testid="add-coach-button"]');

@@ -375,6 +375,5 @@ describe("School Filtering - User Story 3.3", () => {
 
       expect(stateSet.size).toBe(0);
     });
-
   });
 });

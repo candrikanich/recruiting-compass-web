@@ -3,7 +3,11 @@ import { setActivePinia, createPinia } from "pinia";
 
 vi.mock("~/stores/playerProfile", () => ({
   usePlayerProfileStore: vi.fn(() => ({
-    profile: { hash_slug: "abc123", vanity_slug: "john2026", is_published: true },
+    profile: {
+      hash_slug: "abc123",
+      vanity_slug: "john2026",
+      is_published: true,
+    },
     loading: false,
     error: null,
     profileUrl: "/p/john2026",

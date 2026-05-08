@@ -229,7 +229,14 @@ describe("UpcomingMilestones Component", () => {
   it("renders collapsed when collapsed prop is true", () => {
     const wrapper = mount(UpcomingMilestones, {
       props: {
-        milestones: [{ date: "2026-03-01", title: "Some Milestone", type: "deadline", description: "desc" }],
+        milestones: [
+          {
+            date: "2026-03-01",
+            title: "Some Milestone",
+            type: "deadline",
+            description: "desc",
+          },
+        ],
         collapsed: true,
       },
     });

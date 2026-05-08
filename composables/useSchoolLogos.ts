@@ -107,12 +107,15 @@ export const useSchoolLogos = () => {
         `[useSchoolLogos] Fetching favicon from API for ${school.name} with domain: ${domain}`,
       );
       const { $fetchAuth } = useAuthFetch();
-      const response = await $fetchAuth<{ faviconUrl: string | null }>("/api/schools/favicon", {
-        query: {
-          schoolDomain: domain,
-          schoolId,
+      const response = await $fetchAuth<{ faviconUrl: string | null }>(
+        "/api/schools/favicon",
+        {
+          query: {
+            schoolDomain: domain,
+            schoolId,
+          },
         },
-      });
+      );
 
       const faviconUrl = response.faviconUrl;
       logger.info(`[useSchoolLogos] API returned: ${faviconUrl}`);

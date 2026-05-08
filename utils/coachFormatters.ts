@@ -55,4 +55,3 @@ export const getRoleBadgeClass = (role: string): string => {
   };
   return classes[role] || "bg-slate-100 text-slate-700";
 };
-
