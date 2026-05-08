@@ -149,16 +149,14 @@ async function togglePush(type: string) {
   pushPrefs.value[type] = !pushPrefs.value[type];
 
   try {
-    await db
-      .from("notification_preferences")
-      .upsert(
-        {
-          user_id: userStore.user!.id,
-          notification_type: type,
-          push_enabled: pushPrefs.value[type],
-        },
-        { onConflict: "user_id,notification_type" },
-      );
+    await db.from("notification_preferences").upsert(
+      {
+        user_id: userStore.user!.id,
+        notification_type: type,
+        push_enabled: pushPrefs.value[type],
+      },
+      { onConflict: "user_id,notification_type" },
+    );
   } catch (err) {
     // Revert on failure
     pushPrefs.value[type] = originalValue;
@@ -171,16 +169,14 @@ async function toggleEmail(type: string) {
   emailPrefs.value[type] = !emailPrefs.value[type];
 
   try {
-    await db
-      .from("notification_preferences")
-      .upsert(
-        {
-          user_id: userStore.user!.id,
-          notification_type: type,
-          email_enabled: emailPrefs.value[type],
-        },
-        { onConflict: "user_id,notification_type" },
-      );
+    await db.from("notification_preferences").upsert(
+      {
+        user_id: userStore.user!.id,
+        notification_type: type,
+        email_enabled: emailPrefs.value[type],
+      },
+      { onConflict: "user_id,notification_type" },
+    );
   } catch (err) {
     // Revert on failure
     emailPrefs.value[type] = originalValue;
