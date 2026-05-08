@@ -81,7 +81,7 @@
     "@tailwindcss/postcss": "^4.2.2",
     "@types/dompurify": "^3.2.0",
     "@types/jspdf": "^1.3.3",
-    "@types/node": "^24.12.2",
+    "@types/node": "^24.12.3",
     "@types/sanitize-html": "^2.16.1",
     "@vitest/coverage-v8": "^4.1.5",
     "@vitest/ui": "^4.0.16",
