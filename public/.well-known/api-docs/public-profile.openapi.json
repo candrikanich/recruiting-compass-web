@@ -1,0 +1,175 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "The Recruiting Compass — Public Profile API",
+    "version": "1.0.0",
+    "description": "Public, unauthenticated endpoints for fetching published player recruiting profiles. All other API endpoints on this site require authentication and are not part of the public surface.",
+    "contact": {
+      "name": "The Recruiting Compass",
+      "url": "https://myrecruitingcompass.com/about"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://myrecruitingcompass.com/legal/terms"
+    }
+  },
+  "servers": [
+    { "url": "https://myrecruitingcompass.com" }
+  ],
+  "paths": {
+    "/api/public/profile/{slug}": {
+      "get": {
+        "summary": "Get a published player profile",
+        "description": "Returns the public-facing profile data for a player, addressed by either a 6-character hash slug or a vanity slug. Only profiles with is_published=true are returned.",
+        "operationId": "getPublicProfile",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^([a-z0-9]{6}|[a-z0-9][a-z0-9-]{0,28}[a-z0-9])$"
+            },
+            "description": "Hash slug (6 lowercase alphanumeric chars) or vanity slug (2–30 chars, lowercase alphanumeric and hyphens, must start and end with alphanumeric)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public profile data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PublicProfileData" }
+              }
+            }
+          },
+          "404": { "description": "Profile not found" },
+          "410": { "description": "Profile exists but is unpublished" }
+        }
+      }
+    },
+    "/api/public/profile/{slug}/view": {
+      "post": {
+        "summary": "Record a profile view",
+        "description": "Logs a view event for analytics. Fire-and-forget — clients should not block on the response.",
+        "operationId": "recordProfileView",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^([a-z0-9]{6}|[a-z0-9][a-z0-9-]{0,28}[a-z0-9])$"
+            }
+          },
+          {
+            "name": "ref",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Optional referral token used to attribute the view to a tracking link."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "View recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["ok"],
+                  "properties": { "ok": { "type": "boolean", "const": true } }
+                }
+              }
+            }
+          },
+          "404": { "description": "Profile not found" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PublicProfileData": {
+        "type": "object",
+        "required": ["playerName", "photoUrl", "headerColor", "bio", "academics", "athletic", "film", "schools"],
+        "properties": {
+          "playerName": { "type": "string" },
+          "photoUrl": { "type": ["string", "null"], "format": "uri" },
+          "headerColor": { "type": "string", "description": "Tailwind color name used as the header accent." },
+          "bio": { "type": ["string", "null"] },
+          "academics": {
+            "description": "null when the profile owner has hidden academics.",
+            "oneOf": [
+              { "type": "null" },
+              {
+                "type": "object",
+                "properties": {
+                  "gpa": { "type": "number" },
+                  "sat_score": { "type": "integer" },
+                  "act_score": { "type": "integer" },
+                  "graduation_year": { "type": "integer" },
+                  "high_school": { "type": "string" },
+                  "core_courses": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            ]
+          },
+          "athletic": {
+            "description": "null when the profile owner has hidden athletic info.",
+            "oneOf": [
+              { "type": "null" },
+              {
+                "type": "object",
+                "properties": {
+                  "primary_sport": { "type": "string" },
+                  "primary_position": { "type": "string" },
+                  "positions": { "type": "array", "items": { "type": "string" } },
+                  "height_inches": { "type": "number" },
+                  "weight_lbs": { "type": "number" },
+                  "ncaa_id": { "type": "string" },
+                  "perfect_game_id": { "type": "string" },
+                  "prep_baseball_id": { "type": "string" }
+                }
+              }
+            ]
+          },
+          "film": {
+            "description": "null when the profile owner has hidden film. Otherwise, an array of video links.",
+            "oneOf": [
+              { "type": "null" },
+              { "type": "array", "items": { "$ref": "#/components/schemas/VideoLink" } }
+            ]
+          },
+          "schools": {
+            "description": "null when the profile owner has hidden schools.",
+            "oneOf": [
+              { "type": "null" },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "name"],
+                  "properties": {
+                    "id": { "type": "string", "format": "uuid" },
+                    "name": { "type": "string" }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "VideoLink": {
+        "type": "object",
+        "required": ["platform", "url"],
+        "properties": {
+          "platform": { "type": "string", "enum": ["hudl", "youtube", "vimeo"] },
+          "url": { "type": "string", "format": "uri" },
+          "title": { "type": "string" }
+        }
+      }
+    }
+  }
+}

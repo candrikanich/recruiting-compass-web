@@ -4,9 +4,41 @@ import {
   getSizeBadgeClass,
   getFitScoreBadgeClass,
   formatSchoolStatus,
+  getStatusBadgeColor,
 } from "~/utils/schoolBadges";
 
 describe("schoolBadges", () => {
+  describe("getStatusBadgeColor", () => {
+    it("returns the correct class for each known status", () => {
+      expect(getStatusBadgeColor("interested")).toBe(
+        "bg-blue-100 text-blue-700",
+      );
+      expect(getStatusBadgeColor("camp_invite")).toBe(
+        "bg-purple-100 text-purple-700",
+      );
+      expect(getStatusBadgeColor("recruited")).toBe(
+        "bg-green-100 text-green-700",
+      );
+      expect(getStatusBadgeColor("committed")).toBe("bg-green-800 text-white");
+      expect(getStatusBadgeColor("not_pursuing")).toBe(
+        "bg-gray-300 text-gray-700",
+      );
+    });
+
+    it("returns the default for unknown or empty status", () => {
+      expect(getStatusBadgeColor("unknown_status")).toBe(
+        "bg-slate-100 text-slate-700",
+      );
+      expect(getStatusBadgeColor("")).toBe("bg-slate-100 text-slate-700");
+    });
+
+    it("is case-sensitive", () => {
+      expect(getStatusBadgeColor("Interested")).toBe(
+        "bg-slate-100 text-slate-700",
+      );
+    });
+  });
+
   describe("getStatusBadgeClass", () => {
     it("returns correct class for each known status", () => {
       expect(getStatusBadgeClass("researching")).toBe(

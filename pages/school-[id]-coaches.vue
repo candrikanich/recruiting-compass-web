@@ -111,7 +111,8 @@
               id="email"
               v-model="newCoach.email"
               type="email"
-              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
+              autocomplete="email"
+              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-transparent transition-all placeholder:text-slate-400 disabled:opacity-50"
               placeholder="john.smith@university.edu"
               :disabled="loading"
             />

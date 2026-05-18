@@ -40,6 +40,13 @@ export default defineNuxtConfig({
     // Cache directory for faster builds
     cacheDir: ".vite",
 
+    // Strip console.* and debugger statements from production bundles.
+    // Server-side code uses useLogger(); client-side uses createClientLogger().
+    // Direct console calls are dev-only and must not ship to users.
+    esbuild: {
+      drop: process.env.NODE_ENV === "production" ? ["console", "debugger"] : [],
+    },
+
     // Pre-bundle frequently used dependencies
     optimizeDeps: {
       include: [
@@ -98,6 +105,32 @@ export default defineNuxtConfig({
     routeRules: {
       "/.well-known/apple-app-site-association": {
         headers: { "content-type": "application/json" },
+      },
+      // RFC 9727 — extensionless catalog file needs an explicit linkset content-type.
+      '/.well-known/api-catalog': {
+        headers: { 'content-type': 'application/linkset+json; charset=utf-8' },
+      },
+      // RFC 8631 — service descriptions use the OpenAPI media type.
+      '/.well-known/api-docs/public-profile.openapi.json': {
+        headers: { 'content-type': 'application/openapi+json; charset=utf-8' },
+      },
+      // RFC 8288 Link headers — advertise discoverable resources to agents/crawlers
+      // on every response. Relation types are IANA-registered
+      // (https://www.iana.org/assignments/link-relations).
+      // Vary: Accept lets caches serve both HTML and the text/markdown variant
+      // (see server/middleware/agent-markdown.ts) without crossing them.
+      '/**': {
+        headers: {
+          link: [
+            '</sitemap.xml>; rel="sitemap"',
+            '</.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"',
+            '</legal/privacy>; rel="privacy-policy"',
+            '</legal/terms>; rel="terms-of-service"',
+            '</help>; rel="help"',
+            '</about>; rel="about"',
+          ].join(', '),
+          vary: 'Accept',
+        },
       },
     },
   },

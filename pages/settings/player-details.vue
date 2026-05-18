@@ -355,7 +355,7 @@
                       v-model="heightFeet"
                       :disabled="isParentRole"
                       @change="triggerSave"
-                      class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium text-slate-700"
+                      class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-blue-500 font-medium text-slate-700"
                     >
                       <option v-for="ft in [4, 5, 6, 7]" :key="ft" :value="ft">
                         {{ ft }}'
@@ -365,7 +365,7 @@
                       v-model="heightInches"
                       :disabled="isParentRole"
                       @change="triggerSave"
-                      class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium text-slate-700"
+                      class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-blue-500 font-medium text-slate-700"
                     >
                       <option v-for="i in 12" :key="i - 1" :value="i - 1">
                         {{ i - 1 }}"
@@ -813,6 +813,7 @@
                 <input
                   v-model="form.phone"
                   type="tel"
+                  autocomplete="tel"
                   @blur="triggerSave"
                   placeholder="(555) 000-0000"
                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
@@ -826,6 +827,7 @@
                 <input
                   v-model="form.email"
                   type="email"
+                  autocomplete="email"
                   @blur="triggerSave"
                   placeholder="athlete@example.com"
                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"

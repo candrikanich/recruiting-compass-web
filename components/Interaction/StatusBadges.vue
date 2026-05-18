@@ -4,7 +4,6 @@ import Badge from "~/components/DesignSystem/Badge.vue";
 import {
   getSentimentBadgeColor,
   getDirectionBadgeColor,
-  getTypeBadgeColor,
 } from "~/utils/sentiment";
 
 interface Props {
@@ -15,7 +14,6 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const typeColor = computed(() => getTypeBadgeColor(props.type));
 const directionColor = computed(() => getDirectionBadgeColor(props.direction));
 const sentimentColor = computed(() => getSentimentBadgeColor(props.sentiment));
 </script>
@@ -26,7 +24,7 @@ const sentimentColor = computed(() => getSentimentBadgeColor(props.sentiment));
     role="region"
     aria-label="Interaction status"
   >
-    <Badge :color="typeColor" variant="light">
+    <Badge color="blue" variant="light">
       <span class="sr-only">Type:</span>{{ type }}
     </Badge>
     <Badge :color="directionColor" variant="light">

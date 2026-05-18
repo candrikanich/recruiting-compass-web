@@ -1,0 +1,27 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://myrecruitingcompass.com/api/public/profile",
+      "service-desc": [
+        {
+          "href": "https://myrecruitingcompass.com/.well-known/api-docs/public-profile.openapi.json",
+          "type": "application/openapi+json",
+          "title": "Public Profile API — OpenAPI 3.1 specification"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://myrecruitingcompass.com/about",
+          "type": "text/html",
+          "title": "About The Recruiting Compass"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://myrecruitingcompass.com",
+          "title": "No public status page"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+# robots.txt — The Recruiting Compass
+# Spec: https://www.rfc-editor.org/rfc/rfc9309
+#
+# Default rules below apply to traditional search crawlers and any crawler
+# not matched by a more specific group. Explicit AI-crawler groups follow.
+# Public marketing and content pages are open; authenticated app routes,
+# API endpoints, and token-bearing flows are off-limits.
+
+User-agent: *
+
+# Authenticated app — no public content; may carry session or query state
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /settings/
+Disallow: /onboarding/
+Disallow: /schools/
+Disallow: /coaches/
+Disallow: /interactions/
+Disallow: /offers/
+Disallow: /tasks/
+Disallow: /events/
+Disallow: /documents/
+Disallow: /performance/
+Disallow: /recommendations/
+Disallow: /reports/
+Disallow: /timeline/
+Disallow: /analytics/
+Disallow: /notifications
+Disallow: /activity
+Disallow: /deadlines
+Disallow: /search/
+Disallow: /social/
+
+# Token-bearing routes — must never be indexed or followed
+Disallow: /join
+Disallow: /reset-password
+Disallow: /verify-email
+
+# Internal / development
+Disallow: /test-coaches
+
+# Public marketing & content — explicit allows for documentation
+Allow: /
+Allow: /about
+Allow: /login
+Allow: /signup
+Allow: /forgot-password
+Allow: /legal/
+Allow: /help/
+Allow: /p/
+
+# === AI crawlers ===
+#
+# Per RFC 9309 §2.2.1, a crawler obeys the most-specific matching User-agent
+# group only — so the rules in the default group above are repeated here.
+#
+# Policy: the AI crawlers below get the same access as everyone else. Public
+# pages (homepage, help, legal, public profiles under /p/) are open; auth-gated
+# app routes and token-bearing flows are off-limits. Profile owners explicitly
+# opt in to publishing — making profiles discoverable to AI search and AI
+# assistants is intentional.
+#
+# Covers OpenAI (training, search, on-demand), Anthropic, Google AI, Apple AI,
+# Meta AI, Perplexity, Cohere, and Common Crawl.
+
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-Web
+User-agent: Claude-User
+User-agent: anthropic-ai
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Meta-ExternalAgent
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: cohere-ai
+User-agent: CCBot
+
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /settings/
+Disallow: /onboarding/
+Disallow: /schools/
+Disallow: /coaches/
+Disallow: /interactions/
+Disallow: /offers/
+Disallow: /tasks/
+Disallow: /events/
+Disallow: /documents/
+Disallow: /performance/
+Disallow: /recommendations/
+Disallow: /reports/
+Disallow: /timeline/
+Disallow: /analytics/
+Disallow: /notifications
+Disallow: /activity
+Disallow: /deadlines
+Disallow: /search/
+Disallow: /social/
+Disallow: /join
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /test-coaches
+
+Allow: /
+Allow: /about
+Allow: /login
+Allow: /signup
+Allow: /forgot-password
+Allow: /legal/
+Allow: /help/
+Allow: /p/
+
+# Known abusive scrapers — fully blocked
+User-agent: Bytespider
+Disallow: /
+
+Sitemap: https://myrecruitingcompass.com/sitemap.xml

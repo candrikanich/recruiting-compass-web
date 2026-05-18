@@ -37,6 +37,7 @@
           id="new-email"
           v-model="newEmail"
           type="email"
+          autocomplete="email"
           placeholder="new@example.com"
           :disabled="loading"
         />
@@ -52,6 +53,7 @@
           id="current-pass-email"
           v-model="currentPassword"
           type="password"
+          autocomplete="current-password"
           :disabled="loading"
         />
         <p v-if="error" class="text-sm text-red-600 mt-1">{{ error }}</p>

@@ -38,10 +38,3 @@ export const getDirectionBadgeColor = (
   if (direction === "outbound") return "purple";
   return "slate";
 };
-
-/**
- * Get interaction type badge color
- */
-export const getTypeBadgeColor = (_type: string | undefined): BadgeColor => {
-  return "blue";
-};

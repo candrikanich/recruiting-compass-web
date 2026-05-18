@@ -345,8 +345,9 @@
             <input
               v-model="deleteByEmailInput"
               type="email"
+              autocomplete="off"
               placeholder="user@example.com"
-              class="flex-1 rounded-sm border border-red-300 bg-white px-3 py-1.5 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500"
+              class="flex-1 rounded-sm border border-red-300 bg-white px-3 py-1.5 text-sm focus-visible:border-red-500 focus-visible:ring-1 focus-visible:ring-red-500"
               data-testid="delete-by-email-input"
               @keyup.enter="deleteUserByEmail"
             />

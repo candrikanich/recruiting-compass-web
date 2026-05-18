@@ -5,7 +5,6 @@ vi.mock("~/components/DesignSystem/Badge.vue", () => ({}));
 import {
   getSentimentBadgeColor,
   getDirectionBadgeColor,
-  getTypeBadgeColor,
 } from "~/utils/sentiment";
 
 describe("sentiment utils", () => {
@@ -61,17 +60,4 @@ describe("sentiment utils", () => {
     });
   });
 
-  describe("getTypeBadgeColor", () => {
-    it('returns "blue" for undefined', () => {
-      expect(getTypeBadgeColor(undefined)).toBe("blue");
-    });
-
-    it('returns "blue" for "call"', () => {
-      expect(getTypeBadgeColor("call")).toBe("blue");
-    });
-
-    it('returns "blue" for "email"', () => {
-      expect(getTypeBadgeColor("email")).toBe("blue");
-    });
-  });
 });

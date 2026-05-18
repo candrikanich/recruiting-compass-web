@@ -10,7 +10,7 @@ vi.mock("@heroicons/vue/24/outline", () => ({
 }));
 
 // Mock utils
-vi.mock("~/utils/schoolStatusBadges", () => ({
+vi.mock("~/utils/schoolBadges", () => ({
   getStatusBadgeColor: (status: string) => `color-${status}`,
 }));
 

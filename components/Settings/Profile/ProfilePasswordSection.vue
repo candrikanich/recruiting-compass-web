@@ -14,6 +14,7 @@
           id="current-password"
           v-model="current"
           type="password"
+          autocomplete="current-password"
           :disabled="loading"
         />
         <p v-if="error" class="text-sm text-red-600 mt-1">{{ error }}</p>
@@ -29,6 +30,7 @@
           id="new-password"
           v-model="newPass"
           type="password"
+          autocomplete="new-password"
           :disabled="loading"
         />
       </div>
@@ -43,6 +45,7 @@
           id="confirm-password"
           v-model="confirm"
           type="password"
+          autocomplete="new-password"
           :disabled="loading"
         />
         <p v-if="mismatchError" class="text-sm text-red-600 mt-1">
