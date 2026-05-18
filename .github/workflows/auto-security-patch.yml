@@ -183,11 +183,17 @@ jobs:
           EOF
           )
 
-          gh pr create \
+          PR_URL=$(gh pr create \
             --base develop \
             --head "$BRANCH" \
             --title "chore(security): patch dependency vulnerabilities $DATE" \
-            --body "$BODY"
+            --body "$BODY")
+          PR_NUM=$(echo "$PR_URL" | grep -oE '[0-9]+$')
+          # GitHub does not fire workflow events for PRs opened with GITHUB_TOKEN.
+          # Close + reopen so Test & Verify / Security Scanning run on this PR.
+          # https://docs.github.com/en/actions/security-guides/automatic-token-authentication#using-the-github_token-in-a-workflow
+          gh pr close "$PR_NUM"
+          gh pr reopen "$PR_NUM"
 
       - name: Summary
         if: always()
