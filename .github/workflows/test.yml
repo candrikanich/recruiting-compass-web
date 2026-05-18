@@ -12,7 +12,7 @@ concurrency:
 
 env:
   COVERAGE_THRESHOLD: 75
-  NODE_VERSION: "20"
+  NODE_VERSION: "24"
 
 jobs:
   # Step 1: Lint and type-check
