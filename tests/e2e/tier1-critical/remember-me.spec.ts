@@ -1,23 +1,35 @@
 import { test, expect } from "@playwright/test";
 import { AuthPage } from "../pages/AuthPage";
 import { authFixture } from "../fixtures/auth.fixture";
-import { testUsers } from "../fixtures/testData";
+import {
+  createOneOffTestUser,
+  deleteOneOffTestUser,
+} from "../seed/helpers/supabase-admin";
 
 test.describe("Tier 1: Remember Me - Session Persistence", () => {
   // This spec tests the remember-me checkbox on the login form — must start unauthenticated
   test.use({ storageState: { cookies: [], origins: [] } });
 
   let authPage: AuthPage;
+  // Per-test cleanup queue: emails created by admin API in the test, deleted in afterEach.
+  let createdEmails: string[];
 
   test.beforeEach(async ({ page }) => {
     authPage = new AuthPage(page);
+    createdEmails = [];
     await authFixture.clearAuthState(page);
     await authPage.goto();
   });
 
-  test("should render Remember Me checkbox", async ({ page }) => {
-    authPage = new AuthPage(page);
+  test.afterEach(async () => {
+    for (const email of createdEmails) {
+      await deleteOneOffTestUser(email).catch(() => {
+        // Cleanup failure is non-fatal — orphans get pruned by the next full reset.
+      });
+    }
+  });
 
+  test("should render Remember Me checkbox", async ({ page }) => {
     const checkbox = page.locator('[data-testid="remember-me-checkbox"]');
     expect(checkbox).toBeVisible();
 
@@ -29,41 +41,27 @@ test.describe("Tier 1: Remember Me - Session Persistence", () => {
   test("should have Remember Me checkbox unchecked by default", async ({
     page,
   }) => {
-    authPage = new AuthPage(page);
-
     const checkbox = page.locator('[data-testid="remember-me-checkbox"]');
     await expect(checkbox).not.toBeChecked();
   });
 
   test("should store session with 30-day expiry when Remember Me is checked", async ({
     page,
-    context,
   }) => {
-    authPage = new AuthPage(page);
-
-    // Create a unique test user
-    const uniqueEmail = `remember-me-${Date.now()}@example.com`;
+    const uniqueEmail = `remember-me-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
     const password = "TestPassword123!";
-    const displayName = "Remember Me User";
+    await createOneOffTestUser({
+      email: uniqueEmail,
+      password,
+      displayName: "Remember Me User",
+    });
+    createdEmails.push(uniqueEmail);
 
-    // Signup first
-    await authPage.signup(uniqueEmail, password, displayName);
-
-    // Logout to return to login page
-    await authPage.logout();
-    await authPage.expectLoginPage();
-
-    // Check the Remember Me checkbox
+    // Check Remember Me, then log in
     const checkbox = page.locator('[data-testid="remember-me-checkbox"]');
     await checkbox.check();
+    await authPage.login(uniqueEmail, password, /\/(dashboard|verify-email)/);
 
-    // Login
-    await authPage.login(uniqueEmail, password);
-
-    // Wait for navigation to complete
-    await page.waitForURL(/\/(dashboard|verify-email)/);
-
-    // Check that session_preferences is in localStorage with 30-day expiry
     const sessionPrefs = await page.evaluate(() => {
       const prefs = localStorage.getItem("session_preferences");
       return prefs ? JSON.parse(prefs) : null;
@@ -72,10 +70,8 @@ test.describe("Tier 1: Remember Me - Session Persistence", () => {
     expect(sessionPrefs).toBeTruthy();
     expect(sessionPrefs.rememberMe).toBe(true);
 
-    // Verify 30-day expiry (approximately)
     const thirtyDays = 30 * 24 * 60 * 60 * 1000;
     const expiryTime = sessionPrefs.expiresAt - sessionPrefs.lastActivity;
-    // Allow 1 minute tolerance
     expect(expiryTime).toBeGreaterThan(thirtyDays - 60000);
     expect(expiryTime).toBeLessThan(thirtyDays + 60000);
   });
@@ -83,31 +79,19 @@ test.describe("Tier 1: Remember Me - Session Persistence", () => {
   test("should store session with 1-day expiry when Remember Me is unchecked", async ({
     page,
   }) => {
-    authPage = new AuthPage(page);
-
-    // Create a unique test user
-    const uniqueEmail = `no-remember-${Date.now()}@example.com`;
+    const uniqueEmail = `no-remember-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
     const password = "TestPassword123!";
-    const displayName = "No Remember Me User";
+    await createOneOffTestUser({
+      email: uniqueEmail,
+      password,
+      displayName: "No Remember Me User",
+    });
+    createdEmails.push(uniqueEmail);
 
-    // Signup first
-    await authPage.signup(uniqueEmail, password, displayName);
-
-    // Logout to return to login page
-    await authPage.logout();
-    await authPage.expectLoginPage();
-
-    // Don't check the Remember Me checkbox (default)
     const checkbox = page.locator('[data-testid="remember-me-checkbox"]');
     await expect(checkbox).not.toBeChecked();
+    await authPage.login(uniqueEmail, password, /\/(dashboard|verify-email)/);
 
-    // Login
-    await authPage.login(uniqueEmail, password);
-
-    // Wait for navigation to complete
-    await page.waitForURL(/\/(dashboard|verify-email)/);
-
-    // Check that session_preferences is in localStorage with 1-day expiry
     const sessionPrefs = await page.evaluate(() => {
       const prefs = localStorage.getItem("session_preferences");
       return prefs ? JSON.parse(prefs) : null;
@@ -116,36 +100,32 @@ test.describe("Tier 1: Remember Me - Session Persistence", () => {
     expect(sessionPrefs).toBeTruthy();
     expect(sessionPrefs.rememberMe).toBe(false);
 
-    // Verify 1-day expiry (approximately)
     const oneDay = 24 * 60 * 60 * 1000;
     const expiryTime = sessionPrefs.expiresAt - sessionPrefs.lastActivity;
-    // Allow 1 minute tolerance
     expect(expiryTime).toBeGreaterThan(oneDay - 60000);
     expect(expiryTime).toBeLessThan(oneDay + 60000);
   });
 
   test("should clear session_preferences on logout", async ({ page }) => {
-    authPage = new AuthPage(page);
-
-    // Create a unique test user
-    const uniqueEmail = `logout-${Date.now()}@example.com`;
+    const uniqueEmail = `logout-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
     const password = "TestPassword123!";
-    const displayName = "Logout User";
+    await createOneOffTestUser({
+      email: uniqueEmail,
+      password,
+      displayName: "Logout User",
+    });
+    createdEmails.push(uniqueEmail);
 
-    // Signup and login
-    await authPage.signup(uniqueEmail, password, displayName);
+    await authPage.login(uniqueEmail, password, /\/(dashboard|verify-email)/);
 
-    // Verify session_preferences exists
     let sessionPrefs = await page.evaluate(() => {
       const prefs = localStorage.getItem("session_preferences");
       return prefs ? JSON.parse(prefs) : null;
     });
     expect(sessionPrefs).toBeTruthy();
 
-    // Logout
     await authPage.logout();
 
-    // Verify session_preferences is cleared
     sessionPrefs = await page.evaluate(() => {
       return localStorage.getItem("session_preferences");
     });
@@ -153,18 +133,11 @@ test.describe("Tier 1: Remember Me - Session Persistence", () => {
   });
 
   test("should toggle Remember Me checkbox", async ({ page }) => {
-    authPage = new AuthPage(page);
-
     const checkbox = page.locator('[data-testid="remember-me-checkbox"]');
 
-    // Initially unchecked
     await expect(checkbox).not.toBeChecked();
-
-    // Check the checkbox
     await checkbox.check();
     await expect(checkbox).toBeChecked();
-
-    // Uncheck the checkbox
     await checkbox.uncheck();
     await expect(checkbox).not.toBeChecked();
   });
@@ -172,10 +145,8 @@ test.describe("Tier 1: Remember Me - Session Persistence", () => {
   test("should show timeout message when redirected with timeout query parameter", async ({
     page,
   }) => {
-    // Navigate to login page with timeout query parameter
     await page.goto("/login?reason=timeout");
 
-    // Check for timeout message
     const timeoutMessage = page.locator("text=logged out due to inactivity");
     await expect(timeoutMessage).toBeVisible();
   });

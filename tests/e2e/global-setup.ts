@@ -31,8 +31,11 @@ async function globalSetup(_config: FullConfig) {
 
   // Provision storageState for each test account.
   // This allows every test to start pre-authenticated — no per-test login needed.
+  // If any account fails to capture, throw to abort the entire run. Continuing with
+  // stale/empty storageState produces 30-minute hangs as every test 401s on Supabase.
   const browser = await chromium.launch();
   await fs.mkdir(AUTH_DIR, { recursive: true });
+  const failures: { role: string; error: unknown }[] = [];
   try {
     for (const [role, account] of Object.entries(TEST_ACCOUNTS)) {
       console.log(`🔐 Capturing storageState for ${role}...`);
@@ -64,19 +67,22 @@ async function globalSetup(_config: FullConfig) {
         await context.storageState({ path: `${AUTH_DIR}/${role}.json` });
         console.log(`  ✅ Saved ${role}.json`);
       } catch (error) {
-        console.warn(
-          `  ⚠️  Could not capture storageState for ${role}:`,
-          error,
-        );
-        console.warn(
-          `     Tests requiring pre-auth for ${role} may fall back to UI login`,
-        );
+        console.error(`  ❌ Failed to capture storageState for ${role}:`, error);
+        failures.push({ role, error });
       } finally {
         await context.close();
       }
     }
   } finally {
     await browser.close();
+  }
+
+  if (failures.length > 0) {
+    const roles = failures.map((f) => f.role).join(", ");
+    throw new Error(
+      `globalSetup: failed to capture storageState for ${failures.length} account(s): ${roles}. ` +
+        `Aborting to avoid a full test run with stale auth — the silent fall-through has caused 30-minute CI hangs in the past.`,
+    );
   }
 
   // Full database seed (only in CI or when explicitly requested)
