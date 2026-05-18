@@ -1,0 +1,213 @@
+name: Auto Security Patch
+
+# Replaces the prior remote /schedule routine that created daily duplicate
+# chore/sec-fix-* PRs against both develop and main. This workflow runs weekly
+# (Tuesday, off-cycle from Dependabot Monday), pre-checks for critical/high
+# vulnerabilities, closes any prior open sec-fix PRs, and opens a single PR
+# to develop. Sync to main flows through the normal develop -> main path.
+
+on:
+  schedule:
+    # Tuesday 14:00 UTC. Off-cycle from Dependabot (Monday 06:00) so a fresh
+    # `npm audit` runs after Dependabot's grouped PRs have had a chance to land.
+    - cron: "0 14 * * 2"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Run even when no critical/high vulnerabilities are present"
+        type: boolean
+        default: false
+
+concurrency:
+  group: auto-security-patch
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: "24"
+
+jobs:
+  patch:
+    name: Patch and open PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout develop
+        uses: actions/checkout@v6
+        with:
+          ref: develop
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Pre-flight audit
+        id: preflight
+        run: |
+          npm audit --json > preflight.json || true
+          if ! jq empty preflight.json 2>/dev/null; then
+            echo "::error::npm audit did not produce valid JSON"
+            exit 1
+          fi
+          CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' preflight.json)
+          HIGH=$(jq '.metadata.vulnerabilities.high // 0' preflight.json)
+          MODERATE=$(jq '.metadata.vulnerabilities.moderate // 0' preflight.json)
+          LOW=$(jq '.metadata.vulnerabilities.low // 0' preflight.json)
+          {
+            echo "critical=$CRITICAL"
+            echo "high=$HIGH"
+            echo "moderate=$MODERATE"
+            echo "low=$LOW"
+          } >> "$GITHUB_OUTPUT"
+          echo "Pre-flight: $CRITICAL critical, $HIGH high, $MODERATE moderate, $LOW low"
+
+      - name: Decide whether to proceed
+        id: decide
+        env:
+          PRE_CRITICAL: ${{ steps.preflight.outputs.critical }}
+          PRE_HIGH: ${{ steps.preflight.outputs.high }}
+          FORCE: ${{ inputs.force }}
+        run: |
+          if [ "$PRE_CRITICAL" -eq 0 ] && [ "$PRE_HIGH" -eq 0 ] && [ "$FORCE" != "true" ]; then
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "No critical or high vulnerabilities - nothing to patch."
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Apply patches
+        if: steps.decide.outputs.proceed == 'true'
+        run: |
+          # Never --force: that allows breaking major-version downgrades.
+          npm audit fix || true
+
+      - name: Detect lockfile changes
+        if: steps.decide.outputs.proceed == 'true'
+        id: changes
+        run: |
+          if git diff --quiet package.json package-lock.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "npm audit fix made no changes. Remaining advisories likely require --force (breaking) or upstream fixes."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Close prior open sec-fix PRs
+        if: steps.decide.outputs.proceed == 'true' && steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PRIOR=$(gh pr list --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("chore/sec-fix")) | .number')
+          if [ -z "$PRIOR" ]; then
+            echo "No prior open sec-fix PRs to close."
+          else
+            for n in $PRIOR; do
+              echo "Closing prior sec-fix PR #$n"
+              gh pr close "$n" --comment "Superseded by today's auto-security-patch run." --delete-branch || true
+            done
+          fi
+
+      - name: Post-flight audit
+        if: steps.decide.outputs.proceed == 'true' && steps.changes.outputs.changed == 'true'
+        id: postflight
+        run: |
+          npm audit --json > postflight.json || true
+          CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' postflight.json)
+          HIGH=$(jq '.metadata.vulnerabilities.high // 0' postflight.json)
+          MODERATE=$(jq '.metadata.vulnerabilities.moderate // 0' postflight.json)
+          LOW=$(jq '.metadata.vulnerabilities.low // 0' postflight.json)
+          {
+            echo "critical=$CRITICAL"
+            echo "high=$HIGH"
+            echo "moderate=$MODERATE"
+            echo "low=$LOW"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Commit and open PR
+        if: steps.decide.outputs.proceed == 'true' && steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRE_CRITICAL: ${{ steps.preflight.outputs.critical }}
+          PRE_HIGH: ${{ steps.preflight.outputs.high }}
+          PRE_MODERATE: ${{ steps.preflight.outputs.moderate }}
+          PRE_LOW: ${{ steps.preflight.outputs.low }}
+          POST_CRITICAL: ${{ steps.postflight.outputs.critical }}
+          POST_HIGH: ${{ steps.postflight.outputs.high }}
+          POST_MODERATE: ${{ steps.postflight.outputs.moderate }}
+          POST_LOW: ${{ steps.postflight.outputs.low }}
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          BRANCH="chore/sec-fix-$DATE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # If a same-day branch already exists remotely (manual rerun), clear it.
+          git push origin --delete "$BRANCH" 2>/dev/null || true
+          git checkout -b "$BRANCH"
+          git add package.json package-lock.json
+          git commit -m "chore(security): patch dependency vulnerabilities $DATE"
+          git push -u origin "$BRANCH"
+
+          BODY=$(cat <<EOF
+          ## Summary
+
+          Automated security patch run by \`.github/workflows/auto-security-patch.yml\`.
+
+          Only \`package.json\` / \`package-lock.json\` are touched. No \`--force\` is applied, so no major-version bumps.
+
+          ### Vulnerability counts
+
+          | Severity | Pre-flight | Post-flight |
+          |---|---|---|
+          | Critical | $PRE_CRITICAL | $POST_CRITICAL |
+          | High     | $PRE_HIGH     | $POST_HIGH     |
+          | Moderate | $PRE_MODERATE | $POST_MODERATE |
+          | Low      | $PRE_LOW      | $POST_LOW      |
+
+          ### Remaining advisories
+
+          If any rows still show critical or high after patching, the advisory requires \`npm audit fix --force\` (breaking) or an upstream fix that has not landed yet. Investigate manually before merging.
+
+          ### After merge
+
+          The develop -> main sync flow carries this to production. Do not open a separate PR to \`main\`.
+          EOF
+          )
+
+          gh pr create \
+            --base develop \
+            --head "$BRANCH" \
+            --title "chore(security): patch dependency vulnerabilities $DATE" \
+            --body "$BODY"
+
+      - name: Summary
+        if: always()
+        env:
+          PROCEED: ${{ steps.decide.outputs.proceed }}
+          CHANGED: ${{ steps.changes.outputs.changed }}
+          PRE_CRITICAL: ${{ steps.preflight.outputs.critical }}
+          PRE_HIGH: ${{ steps.preflight.outputs.high }}
+          PRE_MODERATE: ${{ steps.preflight.outputs.moderate }}
+          PRE_LOW: ${{ steps.preflight.outputs.low }}
+        run: |
+          {
+            echo "## Auto Security Patch Summary"
+            echo ""
+            echo "- **Decision:** ${PROCEED:-unknown}"
+            echo "- **Lockfile changed:** ${CHANGED:-n/a}"
+            echo ""
+            echo "### Pre-flight"
+            echo "- Critical: $PRE_CRITICAL"
+            echo "- High: $PRE_HIGH"
+            echo "- Moderate: $PRE_MODERATE"
+            echo "- Low: $PRE_LOW"
+          } >> "$GITHUB_STEP_SUMMARY"
