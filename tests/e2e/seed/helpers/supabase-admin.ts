@@ -228,6 +228,74 @@ async function setupTestAccountData(
   }
 }
 
+/**
+ * Create a one-off test user via Supabase Admin API, bypassing the UI signup flow.
+ *
+ * Use this in tests that don't actually exercise the signup form — they just need
+ * a logged-in user. UI signup takes ~30-45s per call (multi-step form, validation,
+ * redirect, and Supabase's 3-signups-per-hour rate limit on free tier); admin API
+ * creates the user in ~500ms with no rate limit.
+ *
+ * Idempotent: if the user already exists, returns the existing user instead of failing.
+ */
+export async function createOneOffTestUser(opts: {
+  email: string;
+  password: string;
+  displayName: string;
+  role?: "player" | "parent";
+}) {
+  const supabase = getSupabaseAdmin();
+  const role = opts.role ?? "parent";
+  const [firstName, ...rest] = opts.displayName.split(" ");
+  const lastName = rest.join(" ");
+
+  const { data, error } = await supabase.auth.admin.createUser({
+    email: opts.email,
+    password: opts.password,
+    email_confirm: true,
+    user_metadata: {
+      display_name: opts.displayName,
+      first_name: firstName,
+      last_name: lastName,
+      full_name: opts.displayName,
+      role,
+    },
+  });
+
+  if (error) {
+    if (
+      error.message?.includes("already been registered") ||
+      error.message?.includes("already registered")
+    ) {
+      const { data: list } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000,
+      });
+      const existing = list?.users?.find((u) => u.email === opts.email);
+      if (existing) return existing;
+    }
+    throw new Error(`createOneOffTestUser failed: ${error.message}`);
+  }
+  return data.user;
+}
+
+/**
+ * Delete a one-off test user created by `createOneOffTestUser`.
+ *
+ * Safe to call even if the user does not exist (no-op).
+ */
+export async function deleteOneOffTestUser(email: string): Promise<void> {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase.auth.admin.listUsers({
+    page: 1,
+    perPage: 1000,
+  });
+  const user = data?.users?.find((u) => u.email === email);
+  if (user) {
+    await supabase.auth.admin.deleteUser(user.id);
+  }
+}
+
 export async function deleteTestAccounts() {
   const supabase = getSupabaseAdmin();
 
