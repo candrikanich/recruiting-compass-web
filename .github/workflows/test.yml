@@ -101,27 +101,31 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          # Pinned to match deploy-prod.yml — Vercel CLI runs on the same Node
+          # version in both pipelines. Unit/lint jobs above still use NODE_VERSION.
+          node-version: "20"
 
       - run: npm install -g vercel
 
       - name: Deploy to Vercel Staging
         id: deploy
         run: |
-          OUTPUT=$(vercel deploy --token="${{ secrets.VERCEL_TOKEN }}" 2>&1)
-          echo "$OUTPUT"
-          if [ $? -ne 0 ]; then
-            echo "Vercel deployment failed"
+          set -o pipefail
+          vercel deploy --yes --token="$VERCEL_TOKEN" 2>&1 | tee deploy.log
+          DEPLOY_EXIT=${PIPESTATUS[0]}
+          if [ "$DEPLOY_EXIT" -ne 0 ]; then
+            echo "Vercel deployment failed (exit $DEPLOY_EXIT)"
+            exit "$DEPLOY_EXIT"
+          fi
+          URL=$(grep -oP 'https://[^\s]+\.vercel\.app' deploy.log | tail -1)
+          if [ -z "$URL" ]; then
+            echo "No deployment URL captured from Vercel output"
             exit 1
           fi
-          if echo "$OUTPUT" | grep -q "ERROR"; then
-            echo "Deployment contains errors"
-            exit 1
-          fi
-          URL=$(echo "$OUTPUT" | grep -oP 'https://[^\s]+\.vercel\.app' | tail -1)
-          echo "deployment-url=$URL" >> $GITHUB_OUTPUT
+          echo "deployment-url=$URL" >> "$GITHUB_OUTPUT"
           echo "Successfully deployed to: $URL"
         env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
 
