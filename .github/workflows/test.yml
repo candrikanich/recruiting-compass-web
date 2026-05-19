@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COVERAGE_THRESHOLD: 75
+  # Coverage thresholds are enforced by vitest.config.ts.
   NODE_VERSION: "24"
 
 jobs:
@@ -68,19 +68,8 @@ jobs:
       - name: Prepare Nuxt
         run: npx nuxi prepare
 
-      - name: Run tests with coverage
+      - name: Run tests with coverage (thresholds enforced by vitest.config.ts)
         run: npm run test:coverage
-
-      - name: Check coverage thresholds
-        run: |
-          # Extracts coverage percentages from lcov.info
-          COVERAGE=$(grep -A 2 'BRH' coverage/lcov.info | tail -1 | grep -oP '\d+(?=,)' | head -1)
-          echo "Coverage: $COVERAGE%"
-          if [ "$COVERAGE" -lt ${{ env.COVERAGE_THRESHOLD }} ]; then
-            echo "Coverage below ${{ env.COVERAGE_THRESHOLD }}% threshold (got $COVERAGE%)"
-            exit 1
-          fi
-          echo "Coverage meets ${{ env.COVERAGE_THRESHOLD }}% threshold"
 
   # Note: Accessibility testing is available via "npm run test:a11y" locally
   # CI/CD integration coming after more pages are covered with a11y fixes

@@ -14,6 +14,9 @@ on:
         description: "Type DEPLOY to confirm production deployment"
         required: true
 
+env:
+  PROD_URL: https://recruiting-compass-web-a9wx.vercel.app
+
 jobs:
   # Step 1: Verify deployment confirmation
   pre-deploy-checks:
@@ -85,7 +88,10 @@ jobs:
       contents: read
     environment:
       name: production
-      url: https://recruiting-compass-web-a9wx.vercel.app
+      url: ${{ env.PROD_URL }}
+    outputs:
+      previous-deployment: ${{ steps.capture-previous.outputs.previous-deployment }}
+      deployment-url: ${{ steps.deploy.outputs.deployment-url }}
 
     steps:
       - name: Checkout code
@@ -100,21 +106,42 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel
 
-      - name: Build for production
-        run: |
-          npm ci
-          npm run build
-
-      - name: Deploy to Vercel Production
-        id: deploy
-        run: |
-          DEPLOYMENT_URL=$(vercel deploy --prod \
-            --token="${{ secrets.VERCEL_TOKEN }}" \
-            --scope="${{ secrets.VERCEL_ORG_ID }}")
-          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-          echo "✅ Deployed to: $DEPLOYMENT_URL"
+      - name: Capture previous production deployment (for rollback)
+        id: capture-previous
         env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PROD }}
+        run: |
+          PREV=$(vercel list --prod --token="$VERCEL_TOKEN" --scope="$VERCEL_ORG_ID" 2>/dev/null \
+            | grep -oE 'https://[^[:space:]]+\.vercel\.app' \
+            | head -1 || true)
+          echo "previous-deployment=$PREV" >> "$GITHUB_OUTPUT"
+          echo "Previous prod deployment captured: ${PREV:-<none>}"
+
+      - name: Deploy to Vercel Production (prebuilt)
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PROD }}
+        run: |
+          set -o pipefail
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          vercel build --prod --token="$VERCEL_TOKEN"
+          vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN" 2>&1 | tee deploy.log
+          DEPLOY_EXIT=${PIPESTATUS[0]}
+          if [ "$DEPLOY_EXIT" -ne 0 ]; then
+            echo "Vercel deployment failed (exit $DEPLOY_EXIT)"
+            exit "$DEPLOY_EXIT"
+          fi
+          URL=$(grep -oE 'https://[^[:space:]]+\.vercel\.app' deploy.log | tail -1)
+          if [ -z "$URL" ]; then
+            echo "No deployment URL captured from Vercel output"
+            exit 1
+          fi
+          echo "deployment-url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Deployed to: $URL"
 
   # Step 4: Smoke test the production deployment
   smoke-test:
@@ -124,8 +151,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-    env:
-      PROD_URL: https://recruiting-compass-web-a9wx.vercel.app
     steps:
       - name: Wait for propagation
         run: sleep 10
@@ -206,17 +231,30 @@ jobs:
   # Step 5: Auto-rollback if smoke test failed
   rollback:
     name: Auto-Rollback on Smoke Failure
-    needs: smoke-test
+    needs: [deploy, smoke-test]
     if: failure() && needs.smoke-test.result == 'failure'
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
       - name: Rollback to previous production deployment
-        run: vercel rollback --token="${{ secrets.VERCEL_TOKEN }}" --yes
         env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PROD }}
+          PREVIOUS_DEPLOYMENT: ${{ needs.deploy.outputs.previous-deployment }}
+        run: |
+          if [ -z "$PREVIOUS_DEPLOYMENT" ]; then
+            echo "No previous deployment captured — falling back to 'vercel rollback' latest"
+            vercel rollback --token="$VERCEL_TOKEN" --scope="$VERCEL_ORG_ID" --yes
+          else
+            echo "Rolling back production to: $PREVIOUS_DEPLOYMENT"
+            vercel rollback "$PREVIOUS_DEPLOYMENT" \
+              --token="$VERCEL_TOKEN" --scope="$VERCEL_ORG_ID" --yes
+          fi
 
       - name: Notify Slack - Rollback executed
         uses: slackapi/slack-github-action@v3
@@ -256,7 +294,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "*🚀 Production Deployment Successful*\n*Repository:* ${{ github.repository }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}\n*URL:* https://recruiting-compass-web-a9wx.vercel.app"
+                  "text": "*🚀 Production Deployment Successful*\n*Repository:* ${{ github.repository }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}\n*URL:* ${{ env.PROD_URL }}"
                 }
               }]
             }
