@@ -20,6 +20,14 @@ export default defineNuxtConfig({
     port: 3003,
   },
 
+  // Workaround for Nuxt 3.21.3+ dev-server crash with ssr:false
+  // (NUXT_VITE_NODE_OPTIONS.socketPath not defined). Fix from PR #34959
+  // is in 4.x only — backport is queued but unreleased. Remove once Nuxt
+  // ships >=3.21.7 with the cherry-pick.
+  experimental: {
+    viteEnvironmentApi: true,
+  },
+
   css: ["~/assets/css/main.css"],
   modules: ["@pinia/nuxt", "@sentry/nuxt/module", "@nuxt/ui"],
 
