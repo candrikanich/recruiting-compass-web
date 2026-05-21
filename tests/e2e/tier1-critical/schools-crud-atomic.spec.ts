@@ -55,17 +55,10 @@ test.describe("Schools CRUD — atomic lifecycle", () => {
     // Wait for the Supabase write to complete (aria-busy flips true→false)
     await expect(statusSelect).toHaveAttribute("aria-busy", "false");
 
-    // Reload to confirm persistence. NOTE: SchoolDetailHeader binds the
-    // <select> with `:model-value` instead of `:value`, so the DOM .value
-    // property does NOT reflect school.status on load (bug — to be fixed).
-    // Until that's fixed, assert on the `model-value` attribute Vue writes,
-    // which IS reactive to the persisted school.status.
+    // Reload to confirm persistence
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.getByLabel("School status")).toHaveAttribute(
-      "model-value",
-      "interested",
-    );
+    await expect(page.getByLabel("School status")).toHaveValue("interested");
 
     // 4. DELETE — sidebar button → confirm dialog → back at /schools
     await page.locator('button:has-text("Delete School")').click();

@@ -81,7 +81,7 @@ tests/e2e/
 ├── tier1-critical/                  # Critical functionality tests (22 files)
 │   ├── auth.spec.ts
 │   ├── coaches-crud.spec.ts
-│   ├── schools-crud.spec.ts
+│   ├── schools-crud-atomic.spec.ts
 │   └── ...
 ├── tier2-important/                 # Important features (6 files)
 ├── tier3-nice-to-have/              # Enhancement features (2 files)
@@ -198,7 +198,7 @@ Core functionality that must work:
 
 - `auth.spec.ts` - Login/signup flows
 - `coaches-crud.spec.ts` - Create, read, update, delete coaches
-- `schools-crud.spec.ts` - Create, read, update, delete schools
+- `schools-crud-atomic.spec.ts` - Atomic create → read → update → delete lifecycle in one test (no mocks, cleans up after itself)
 
 ### Tier 2: Important (6 files)
 
