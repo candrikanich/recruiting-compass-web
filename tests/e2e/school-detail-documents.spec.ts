@@ -15,7 +15,11 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-test.describe("School Detail - Document Management", () => {
+// QUARANTINED 2026-05-22: 5 timeout. Documents-crud-atomic.spec.ts (in tier1) covers
+// the same upload + view + edit + delete lifecycle. This file's specs are redundant
+// AND broken. Likely fully deletable; quarantining first.
+// Tracked in planning/2026-05-22-playwright-rewrite-plan.md (Phase 2i).
+test.describe.skip("School Detail - Document Management", () => {
   let schoolId: string;
   const sampleFilePath = path.join(
     __dirname,

@@ -16,7 +16,10 @@ import { resolve } from "path";
  * - Authenticated player account (tests/e2e/.auth/player.json)
  */
 
-test.describe("Smart Inputs — High School Search", () => {
+// QUARANTINED 2026-05-22: 8 timeout. Requires nces_schools seed + Radar API key.
+// Skipping until seed data + env are guaranteed. Rewrite tracked in
+// planning/2026-05-22-playwright-rewrite-plan.md (Phase 2i).
+test.describe.skip("Smart Inputs — High School Search", () => {
   test.use({
     storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
   });
@@ -79,7 +82,10 @@ test.describe("Smart Inputs — High School Search", () => {
   });
 });
 
-test.describe("Smart Inputs — Address Autocomplete", () => {
+// QUARANTINED 2026-05-22: 8 timeout. Requires nces_schools seed + Radar API key.
+// Skipping until seed data + env are guaranteed. Rewrite tracked in
+// planning/2026-05-22-playwright-rewrite-plan.md (Phase 2i).
+test.describe.skip("Smart Inputs — Address Autocomplete", () => {
   test.use({
     storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
   });
@@ -128,7 +134,10 @@ test.describe("Smart Inputs — Address Autocomplete", () => {
   });
 });
 
-test.describe("Smart Inputs — Social Handle Normalization", () => {
+// QUARANTINED 2026-05-22: 8 timeout. Requires nces_schools seed + Radar API key.
+// Skipping until seed data + env are guaranteed. Rewrite tracked in
+// planning/2026-05-22-playwright-rewrite-plan.md (Phase 2i).
+test.describe.skip("Smart Inputs — Social Handle Normalization", () => {
   test.use({
     storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
   });

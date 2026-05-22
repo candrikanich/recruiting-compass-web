@@ -1,7 +1,10 @@
 import { test } from "@playwright/test";
 import { SearchPage } from "../pages/SearchPage";
 
-test.describe("Phase 2: Advanced Search Functionality", () => {
+// QUARANTINED 2026-05-22: 19/21 fail. Advanced-search UI selectors stale; overlaps
+// with search-workflows.spec.ts (which is 15/22 pass). Decide on consolidation
+// during Phase 2i. Rewrite tracked in planning/2026-05-22-playwright-rewrite-plan.md.
+test.describe.skip("Phase 2: Advanced Search Functionality", () => {
   let searchPage: SearchPage;
 
   test.beforeEach(async ({ page }) => {

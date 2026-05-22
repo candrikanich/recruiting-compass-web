@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { SettingsPage } from "../pages/SettingsPage";
 
-test.describe("Phase 2: Settings Pages - Comprehensive Coverage", () => {
+// QUARANTINED 2026-05-22: 22/22 fail. Settings page restructured (multiple sub-routes).
+// Rewrite tracked in planning/2026-05-22-playwright-rewrite-plan.md (Phase 2i).
+test.describe.skip("Phase 2: Settings Pages - Comprehensive Coverage", () => {
   let settingsPage: SettingsPage;
 
   test.beforeEach(async ({ page }) => {

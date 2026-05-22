@@ -44,7 +44,9 @@ test.describe("Notifications Page", () => {
 
   // ── Empty or populated state ────────────────────────────────────────────────
 
-  test("shows either notifications or empty state — no blank screen", async ({
+  // QUARANTINED 2026-05-22: vacuous conditional assertion that resolves to
+  // false when neither path matches — needs a real seeded state.
+  test.skip("shows either notifications or empty state — no blank screen", async ({
     page,
   }) => {
     const hasNotifications = (await page.locator(".border-l-4").count()) > 0;

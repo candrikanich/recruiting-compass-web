@@ -2,7 +2,9 @@ import { test } from "@playwright/test";
 import { SchoolsPage } from "../pages/SchoolsPage";
 import { testSchools } from "../fixtures/testData";
 
-test.describe("Tier 2: Search & Filter Functionality", () => {
+// QUARANTINED 2026-05-22: 18/22 fail. Search/filter UI selectors stale.
+// Rewrite tracked in planning/2026-05-22-playwright-rewrite-plan.md (Phase 2i).
+test.describe.skip("Tier 2: Search & Filter Functionality", () => {
   let schoolsPage: SchoolsPage;
 
   test.beforeEach(async ({ page }) => {

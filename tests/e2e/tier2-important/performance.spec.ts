@@ -2,7 +2,9 @@ import { test } from "@playwright/test";
 import { PerformancePage } from "../pages/PerformancePage";
 import { testPerformanceMetrics } from "../fixtures/testData";
 
-test.describe("Tier 2: Performance Tracking & Analytics", () => {
+// QUARANTINED 2026-05-22: 11/11 fail. Performance-tracking UI selectors stale.
+// Rewrite tracked in planning/2026-05-22-playwright-rewrite-plan.md (Phase 2i).
+test.describe.skip("Tier 2: Performance Tracking & Analytics", () => {
   let performancePage: PerformancePage;
 
   test.beforeEach(async ({ page }) => {

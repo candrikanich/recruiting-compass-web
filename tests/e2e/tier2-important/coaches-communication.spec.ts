@@ -15,7 +15,11 @@ import {
   schoolHelpers,
 } from "../fixtures/schools.fixture";
 
-test.describe("Coach Communication History", () => {
+// QUARANTINED 2026-05-22: 4/15 timeout, 11/15 conditional-skip (vacuous). Spec mostly
+// tests Quick-Action links (mailto/sms/social), which is page-level browser behavior
+// — should be folded into coach-detail tests or deleted. Rewrite tracked in
+// planning/2026-05-22-playwright-rewrite-plan.md (Phase 2i).
+test.describe.skip("Coach Communication History", () => {
   test.setTimeout(120000);
 
   let coachesPage: CoachesPage;

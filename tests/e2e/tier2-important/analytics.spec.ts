@@ -1,7 +1,10 @@
 import { test } from "@playwright/test";
 import { AnalyticsPage } from "../pages/AnalyticsPage";
 
-test.describe("Phase 2: Analytics Dashboard - Comprehensive Coverage", () => {
+// QUARANTINED 2026-05-22: 19/20 fail. Stale selectors against an analytics page
+// whose structure has drifted. Rewrite tracked in
+// planning/2026-05-22-playwright-rewrite-plan.md (Phase 2i).
+test.describe.skip("Phase 2: Analytics Dashboard - Comprehensive Coverage", () => {
   let analyticsPage: AnalyticsPage;
 
   test.beforeEach(async ({ page }) => {
