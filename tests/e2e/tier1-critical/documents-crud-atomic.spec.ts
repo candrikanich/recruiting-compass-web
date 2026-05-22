@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import { resolve } from "path";
 import {
   createSchoolData,
+  deleteSchoolDirect,
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
@@ -40,24 +41,8 @@ test.describe("Documents CRUD — atomic lifecycle (school-attached)", () => {
     }
   });
 
-  test.afterAll(async ({ browser }, testInfo) => {
-    testInfo.setTimeout(120_000);
-    if (!schoolId) return;
-    const ctx = await browser.newContext({
-      storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
-    });
-    try {
-      const page = await ctx.newPage();
-      await page.goto(`/schools/${schoolId}`);
-      await page.waitForLoadState("domcontentloaded");
-      await page.locator('button:has-text("Delete School")').click();
-      const dialog = page.getByRole("dialog");
-      await expect(dialog).toBeVisible();
-      await dialog.getByRole("button", { name: "Delete", exact: true }).click();
-      await page.waitForURL("/schools");
-    } finally {
-      await ctx.close();
-    }
+  test.afterAll(async () => {
+    await deleteSchoolDirect(schoolId);
   });
 
   test("upload → view → edit title → delete a document", async ({ page }) => {

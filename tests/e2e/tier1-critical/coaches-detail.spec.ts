@@ -8,6 +8,7 @@ import {
 } from "../fixtures/coaches.fixture";
 import {
   createSchoolData,
+  deleteSchoolDirect,
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
@@ -64,24 +65,8 @@ test.describe("Coach detail page", () => {
     }
   });
 
-  test.afterAll(async ({ browser }: { browser: Browser }, testInfo) => {
-    testInfo.setTimeout(120_000);
-    if (!schoolId) return;
-    const ctx = await browser.newContext({
-      storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
-    });
-    try {
-      const page = await ctx.newPage();
-      await page.goto(`/schools/${schoolId}`);
-      await page.waitForLoadState("domcontentloaded");
-      await page.locator('button:has-text("Delete School")').click();
-      const dialog = page.getByRole("dialog");
-      await expect(dialog).toBeVisible();
-      await dialog.getByRole("button", { name: "Delete", exact: true }).click();
-      await page.waitForURL("/schools");
-    } finally {
-      await ctx.close();
-    }
+  test.afterAll(async () => {
+    await deleteSchoolDirect(schoolId);
   });
 
   test.beforeEach(({ page }) => {

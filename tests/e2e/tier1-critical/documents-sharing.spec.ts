@@ -2,6 +2,7 @@ import { test, expect, Browser } from "@playwright/test";
 import { resolve } from "path";
 import {
   createSchoolData,
+  deleteSchoolDirect,
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
@@ -72,31 +73,9 @@ test.describe("Document sharing", () => {
     }
   });
 
-  test.afterAll(async ({ browser }: { browser: Browser }, testInfo) => {
-    testInfo.setTimeout(120_000);
-    if (!primarySchoolId && !recipientSchoolId) return;
-    const ctx = await browser.newContext({
-      storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
-    });
-    try {
-      const page = await ctx.newPage();
-      for (const id of [primarySchoolId, recipientSchoolId].filter(Boolean)) {
-        await page.goto(`/schools/${id}`);
-        await page.waitForLoadState("domcontentloaded");
-        const deleteBtn = page.locator('button:has-text("Delete School")');
-        if (await deleteBtn.isVisible().catch(() => false)) {
-          await deleteBtn.click();
-          const dialog = page.getByRole("dialog");
-          await expect(dialog).toBeVisible();
-          await dialog
-            .getByRole("button", { name: "Delete", exact: true })
-            .click();
-          await page.waitForURL("/schools");
-        }
-      }
-    } finally {
-      await ctx.close();
-    }
+  test.afterAll(async () => {
+    await deleteSchoolDirect(primarySchoolId);
+    await deleteSchoolDirect(recipientSchoolId);
   });
 
   test.beforeEach(async ({ page }) => {
