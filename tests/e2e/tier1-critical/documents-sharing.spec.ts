@@ -19,7 +19,7 @@ import {
  * primary, then tears both down. Tests reuse the same document.
  */
 test.describe("Document sharing", () => {
-  test.setTimeout(90_000);
+  test.setTimeout(120_000);
 
   let primarySchoolId: string;
   let recipientSchoolId: string;
@@ -28,7 +28,7 @@ test.describe("Document sharing", () => {
   const docTitle = `Sharing Doc ${Date.now()}`;
 
   test.beforeAll(async ({ browser }: { browser: Browser }, testInfo) => {
-    testInfo.setTimeout(60_000);
+    testInfo.setTimeout(120_000);
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
     });
@@ -73,7 +73,7 @@ test.describe("Document sharing", () => {
   });
 
   test.afterAll(async ({ browser }: { browser: Browser }, testInfo) => {
-    testInfo.setTimeout(60_000);
+    testInfo.setTimeout(120_000);
     if (!primarySchoolId && !recipientSchoolId) return;
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),

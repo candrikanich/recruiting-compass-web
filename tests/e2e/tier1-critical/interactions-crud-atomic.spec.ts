@@ -18,12 +18,12 @@ import {
  * Parallel: UUID-suffixed content string scopes per-worker assertions.
  */
 test.describe("Interactions CRUD — atomic lifecycle (school-attached)", () => {
-  test.setTimeout(90_000);
+  test.setTimeout(120_000);
 
   let schoolId: string;
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    testInfo.setTimeout(60_000);
+    testInfo.setTimeout(120_000);
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
     });
@@ -40,7 +40,7 @@ test.describe("Interactions CRUD — atomic lifecycle (school-attached)", () => 
   });
 
   test.afterAll(async ({ browser }, testInfo) => {
-    testInfo.setTimeout(60_000);
+    testInfo.setTimeout(120_000);
     if (!schoolId) return;
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),

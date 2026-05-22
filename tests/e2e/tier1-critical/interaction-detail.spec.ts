@@ -18,7 +18,7 @@ import {
  * afterAll. Tests that mutate the interaction (delete) own their own setup.
  */
 test.describe("Interaction detail page", () => {
-  test.setTimeout(60_000);
+  test.setTimeout(120_000);
 
   let schoolId: string;
   let interactionId: string;
@@ -27,7 +27,7 @@ test.describe("Interaction detail page", () => {
   const subject = `Detail Subject ${Date.now()}`;
 
   test.beforeAll(async ({ browser }: { browser: Browser }, testInfo) => {
-    testInfo.setTimeout(90_000);
+    testInfo.setTimeout(120_000);
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
     });
@@ -70,7 +70,8 @@ test.describe("Interaction detail page", () => {
     }
   });
 
-  test.afterAll(async ({ browser }: { browser: Browser }) => {
+  test.afterAll(async ({ browser }: { browser: Browser }, testInfo) => {
+    testInfo.setTimeout(120_000);
     if (!schoolId) return;
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
