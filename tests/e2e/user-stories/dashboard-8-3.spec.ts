@@ -294,6 +294,6 @@ test.describe("Real-time Activity Updates", () => {
 
     // Should still have the same or more activities
     const finalCount = await activityItems.count();
-    expect(finalCount).toBeGreaterThanOrEqual(0);
+
   });
 });

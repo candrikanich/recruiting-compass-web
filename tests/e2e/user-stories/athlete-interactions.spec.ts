@@ -79,7 +79,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
       // Interactions listed should all show "You" badge
       const badges = page.locator(':has-text("You")');
       const count = await badges.count();
-      expect(count).toBeGreaterThanOrEqual(0);
+
     });
 
     test("Scenario 4: Athlete can log different interaction types", async ({
@@ -195,7 +195,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
         // Verify interactions are filtered
         const interactions = page.locator(".bg-white.rounded-xl");
         const count = await interactions.count();
-        expect(count).toBeGreaterThanOrEqual(0);
+
       }
     });
 
@@ -219,7 +219,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
         // Verify only parent interactions are shown
         const badges = page.locator(":has-text('You')");
         const count = await badges.count();
-        expect(count).toBeGreaterThanOrEqual(0);
+
       }
     });
 
