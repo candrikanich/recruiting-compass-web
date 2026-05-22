@@ -21,6 +21,39 @@ export const getSupabaseAdmin = () => {
   });
 };
 
+/**
+ * Look up an auth user by email, paginating through listUsers if needed.
+ * Supabase's auth.admin.listUsers caps perPage at 1000 server-side, so a
+ * single page can miss accounts in larger test/staging databases. This walks
+ * pages until found or exhausted.
+ */
+export async function findAuthUserByEmail(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  email: string,
+): Promise<{ id: string; email?: string | null } | null> {
+  const normalized = email.toLowerCase();
+  let page = 1;
+  // Hard cap to avoid infinite loops on misconfigured projects.
+  const MAX_PAGES = 50;
+  while (page <= MAX_PAGES) {
+    const { data, error } = await supabase.auth.admin.listUsers({
+      page,
+      perPage: 1000,
+    });
+    if (error) {
+      console.warn(`listUsers page ${page} failed:`, error.message);
+      return null;
+    }
+    const match = data?.users?.find(
+      (u) => (u.email ?? "").toLowerCase() === normalized,
+    );
+    if (match) return match;
+    if (!data?.users?.length || data.users.length < 1000) return null;
+    page++;
+  }
+  return null;
+}
+
 export async function createTestAccounts() {
   const supabase = getSupabaseAdmin();
 
@@ -45,14 +78,10 @@ export async function createTestAccounts() {
           createError.message?.includes("already been registered") ||
           createError.message?.includes("already registered")
         ) {
-          // User exists — look them up by listing users with email filter
-          const { data: listData } = await supabase.auth.admin.listUsers({
-            page: 1,
-            perPage: 1000,
-          });
-          const existing = listData?.users?.find(
-            (u) => u.email === account.email,
-          );
+          // User exists — paginate listUsers (capped at 1000/page server-side)
+          // until we find the row. Without pagination, large staging DBs miss
+          // the account and silently skip data setup.
+          const existing = await findAuthUserByEmail(supabase, account.email);
           if (!existing) {
             console.warn(
               `⚠️  ${account.email} exists but couldn't be found — skipping setup`,
@@ -88,14 +117,16 @@ export async function createTestAccounts() {
 async function linkParentToPlayerFamilyUnit(
   supabase: ReturnType<typeof getSupabaseAdmin>,
 ) {
-  // Resolve both user IDs
-  const { data: listData } = await supabase.auth.admin.listUsers({
-    page: 1,
-    perPage: 1000,
-  });
-  const users = listData?.users ?? [];
-  const playerUser = users.find((u) => u.email === TEST_ACCOUNTS.player.email);
-  const parentUser = users.find((u) => u.email === TEST_ACCOUNTS.parent.email);
+  // Resolve both user IDs via paginated lookup (single-page listUsers misses
+  // accounts on larger test/staging DBs).
+  const playerUser = await findAuthUserByEmail(
+    supabase,
+    TEST_ACCOUNTS.player.email,
+  );
+  const parentUser = await findAuthUserByEmail(
+    supabase,
+    TEST_ACCOUNTS.parent.email,
+  );
 
   if (!playerUser || !parentUser) {
     console.warn(
@@ -126,25 +157,41 @@ async function linkParentToPlayerFamilyUnit(
     .eq("family_unit_id", familyUnitId)
     .maybeSingle();
 
-  if (existingMembership) {
+  if (!existingMembership) {
+    // Add parent to player's family unit
+    const { error: linkError } = await supabase.from("family_members").insert({
+      family_unit_id: familyUnitId,
+      user_id: parentUser.id,
+      role: "parent",
+    });
+
+    if (linkError) {
+      console.error(
+        "❌ Failed to link parent@test.com to player's family unit:",
+        linkError.message,
+      );
+      return;
+    }
+    console.log("✅ Linked parent@test.com to player@test.com's family unit");
+  } else {
     console.log("⏭️  parent@test.com already in player's family unit");
-    return;
   }
 
-  // Add parent to player's family unit
-  const { error: linkError } = await supabase.from("family_members").insert({
-    family_unit_id: familyUnitId,
-    user_id: parentUser.id,
-    role: "parent",
-  });
-
-  if (linkError) {
-    console.error(
-      "❌ Failed to link parent@test.com to player's family unit:",
-      linkError.message,
+  // Delete any stale parent memberships in OTHER family units. Earlier seed
+  // versions created a standalone family_unit for parent before linking, leaving
+  // an orphan row. The server's getLinkedAthleteId uses .maybeSingle() against
+  // family_members.role="parent" and silently returns null when multiple rows
+  // exist — which broke parent-view tests (linked-athlete data never loaded).
+  const { error: cleanupError } = await supabase
+    .from("family_members")
+    .delete()
+    .eq("user_id", parentUser.id)
+    .neq("family_unit_id", familyUnitId);
+  if (cleanupError) {
+    console.warn(
+      "⚠️  Could not clean up stale parent memberships:",
+      cleanupError.message,
     );
-  } else {
-    console.log("✅ Linked parent@test.com to player@test.com's family unit");
   }
 }
 
@@ -181,6 +228,40 @@ async function setupTestAccountData(
     );
   }
 
+  // Seed minimal player profile for player accounts so parent-restriction tests
+  // have rendered form fields to assert against. Without primary_sport, the
+  // Athletics tab shows "Select a sport on the Basics tab to see positions."
+  // and no position buttons exist for the read-only-disabled assertion.
+  //
+  // Category is "player" (not "player_details") because the page reads via
+  // /api/user/preferences/player and parent role redirects to the linked
+  // athlete's row of that same category. Idempotent via onConflict against
+  // the UNIQUE(user_id, category) constraint. Done BEFORE the family-unit
+  // membership early-return so existing accounts still get a fresh seed.
+  if (account.role === "player") {
+    const { error: prefError } = await supabase.from("user_preferences").upsert(
+      {
+        user_id: userId,
+        category: "player",
+        data: {
+          primary_sport: "Baseball",
+          primary_position: "P",
+          positions: ["P", "1B"],
+          graduation_year: 2027,
+          campus_size_preference: "mid",
+          cost_sensitivity: "medium",
+        },
+      },
+      { onConflict: "user_id,category" },
+    );
+    if (prefError) {
+      console.warn(
+        `⚠️  Could not seed player preferences for ${userId}:`,
+        prefError.message,
+      );
+    }
+  }
+
   // Parent accounts get their family unit membership via linkParentToPlayerFamilyUnit —
   // skip creating a standalone unit for them.
   if (account.role === "parent") return;
@@ -188,11 +269,34 @@ async function setupTestAccountData(
   // Check if user already has a family_unit membership
   const { data: membership } = await supabase
     .from("family_members")
-    .select("family_unit_id")
+    .select("family_unit_id, role")
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (membership) return; // Already has family unit
+  if (membership) {
+    // Repair stale role: a previous misconfigured run wrote role="parent" on
+    // the player's own membership row, which breaks the parent-view linked-
+    // athlete lookup (it scans for role="player" in the same family unit).
+    // Force role="player" for player accounts.
+    if (membership.role !== "player") {
+      const { error: repairError } = await supabase
+        .from("family_members")
+        .update({ role: "player" })
+        .eq("user_id", userId)
+        .eq("family_unit_id", membership.family_unit_id);
+      if (repairError) {
+        console.warn(
+          `⚠️  Could not repair family_members.role for player ${userId}:`,
+          repairError.message,
+        );
+      } else {
+        console.log(
+          `🔧 Repaired family_members.role player for ${account.email}`,
+        );
+      }
+    }
+    return; // Already has family unit
+  }
 
   // Create family unit
   const { data: familyUnit, error: familyError } = await supabase

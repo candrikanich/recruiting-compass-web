@@ -6,12 +6,22 @@ test.describe("Player Details Auto-Save", () => {
     // Note: In a real test, you'd login first, but for now we assume auth is set up
     await page.goto("/settings/player-details");
     await page.waitForLoadState("domcontentloaded");
+    // Profile data is fetched client-side after mount. Wait for a form select
+    // to be visible — selects only render once isLoading flips false. Using a
+    // positive existence check (vs. waiting for Loading text to vanish) avoids
+    // the race where Playwright checks before the Loading paragraph has even
+    // mounted yet and reports it "hidden" instantly.
+    await page
+      .locator("select")
+      .first()
+      .waitFor({ state: "visible", timeout: 15000 });
   });
 
   test("should display player details page", async ({ page }) => {
-    // Check page title
-    const title = page.locator("h1");
-    await expect(title).toContainText("Player Details");
+    // h1 resolves to 2 elements (sticky header + main title) — scope by text.
+    await expect(
+      page.locator("h1", { hasText: "Player Details" }).first(),
+    ).toBeVisible();
 
     // Check that major tab sections exist (tabs appear twice - desktop + mobile, use first)
     await expect(page.locator("text=Athletics").first()).toBeVisible();

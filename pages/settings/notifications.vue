@@ -1,5 +1,12 @@
 <template>
   <div class="max-w-2xl mx-auto py-8 px-4">
+    <NuxtLink
+      to="/settings"
+      class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+    >
+      <ArrowLeftIcon class="w-4 h-4" />
+      Back to Settings
+    </NuxtLink>
     <h1 class="text-2xl font-bold mb-2">Notification Preferences</h1>
     <p class="text-gray-500 mb-8">
       Control which notifications you receive and how.
@@ -61,6 +68,7 @@
 </template>
 
 <script setup lang="ts">
+import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useSupabase } from "~/composables/useSupabase";
 import { useUserStore } from "~/stores/user";
 

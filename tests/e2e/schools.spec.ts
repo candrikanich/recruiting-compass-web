@@ -25,17 +25,13 @@ test.describe("Schools Management", () => {
   });
 
   test("should logout and redirect to login", async ({ page }) => {
-    // Click profile menu to access logout
-    try {
-      await page.click('[data-testid="profile-menu"]', { timeout: 5000 });
-      await page.locator("text=Logout").click();
-    } catch {
-      // If profile menu not found, manually clear state
-      await authFixture.clearAuthState(page);
-      await page.goto("/login");
-    }
-
-    // Verify redirect to login
+    // Client-only clear: do NOT trigger the real logout button.
+    // The app's logout handler calls supabase.auth.signOut() with global scope,
+    // which revokes the shared player.json refresh token server-side and bounces
+    // every concurrent worker to /login. clearAuthState wipes localStorage,
+    // sessionStorage, and cookies for this context only — verifies the redirect
+    // contract without poisoning parallel runs.
+    await authFixture.clearAuthState(page);
     await expect(page).toHaveURL("/login");
   });
 
