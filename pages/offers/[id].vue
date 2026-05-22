@@ -352,8 +352,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from "vue";
+import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
-import { useOffers } from "~/composables/useOffers";
+import { useOffersStore } from "~/stores/offers";
 import { useSchools } from "~/composables/useSchools";
 import ScholarshipCalculator from "~/components/ScholarshipCalculator.vue";
 import type { Offer } from "~/types/models";
@@ -364,15 +365,15 @@ definePageMeta({
 
 const route = useRoute();
 const router = useRouter();
+const offersStore = useOffersStore();
+const { offers, loading } = storeToRefs(offersStore);
 const {
-  offers,
-  loading,
   fetchOffers,
   getOffer,
   updateOffer,
-  deleteOffer: deleteOfferAPI,
   daysUntilDeadline: calculateDaysUntil,
-} = useOffers();
+} = offersStore;
+const deleteOfferAPI = offersStore.deleteOffer;
 const { schools, fetchSchools } = useSchools();
 
 const isEditing = ref(false);
@@ -380,13 +381,8 @@ const error = ref("");
 
 const offerId = computed(() => route.params.id as string);
 
-// Direct fetch by ID — does not depend on offers.value cache being
-// populated (the cache is local to each useOffers() instance and may
-// be empty on direct navigation to /offers/[id]).
-const directOffer = ref<import("~/types/models").Offer | null>(null);
 const offer = computed(
-  () =>
-    offers.value.find((o) => o.id === offerId.value) ?? directOffer.value,
+  () => offers.value.find((o) => o.id === offerId.value) ?? null,
 );
 
 const schoolName = computed(() => {
@@ -482,7 +478,6 @@ const saveOffer = async () => {
       notes: editForm.notes || null,
     });
     isEditing.value = false;
-    await fetchOffers();
   } catch (err) {
     error.value = "Failed to save offer";
     console.error("Error saving offer:", err);
@@ -516,13 +511,7 @@ const loadOfferData = () => {
 };
 
 onMounted(async () => {
-  await Promise.all([
-    fetchSchools(),
-    fetchOffers(),
-    getOffer(offerId.value).then((o) => {
-      directOffer.value = o;
-    }),
-  ]);
+  await Promise.all([fetchSchools(), fetchOffers(), getOffer(offerId.value)]);
   loadOfferData();
 });
 </script>

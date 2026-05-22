@@ -247,8 +247,9 @@ import { useSchoolLogos } from "~/composables/useSchoolLogos";
 import { useSchoolMatching } from "~/composables/useSchoolMatching";
 import { useSchoolStats } from "~/composables/useSchoolStats";
 import StatsTiles from "~/components/shared/StatsTiles.vue";
+import { storeToRefs } from "pinia";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { useOffers } from "~/composables/useOffers";
+import { useOffersStore } from "~/stores/offers";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoaches } from "~/composables/useCoaches";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
@@ -289,7 +290,9 @@ const { fetchMultipleLogos } = useSchoolLogos();
 const { calculateMatchScore } = useSchoolMatching();
 const { getSchoolPreferences, getHomeLocation, loadAllPreferences } =
   usePreferenceManager();
-const { offers, fetchOffers } = useOffers();
+const offersStore = useOffersStore();
+const { offers } = storeToRefs(offersStore);
+const { fetchOffers } = offersStore;
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
 const { coaches: coachesData, fetchAllCoaches } = useCoaches();
 

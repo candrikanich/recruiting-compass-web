@@ -261,9 +261,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { navigateTo } from "#app";
+import { storeToRefs } from "pinia";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
-import { useOffers } from "~/composables/useOffers";
+import { useOffersStore } from "~/stores/offers";
 import { useEvents } from "~/composables/useEvents";
 import { useSchoolStore } from "~/stores/schools";
 
@@ -286,7 +287,9 @@ interface TimelineItem {
 
 const { schools, fetchSchools } = useSchools();
 const { interactions, fetchInteractions } = useInteractions();
-const { offers, fetchOffers } = useOffers();
+const offersStore = useOffersStore();
+const { offers } = storeToRefs(offersStore);
+const { fetchOffers } = offersStore;
 const { events, fetchEvents } = useEvents();
 const schoolStore = useSchoolStore();
 
