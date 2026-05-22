@@ -341,7 +341,6 @@ test.describe("Family Invite Flow", () => {
         .click();
 
       // Wait for the list to update
-      await page.waitForTimeout(1500);
 
       const countAfter = await page
         .locator('[data-testid="pending-invite-card"]')

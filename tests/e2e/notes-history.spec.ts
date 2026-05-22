@@ -1,7 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { authFixture } from "./fixtures/auth.fixture";
 
-test.describe("Notes Edit History", () => {
+// QUARANTINED 2026-05-22 (Phase 3b): every test follows the
+// `if (visible) { ... expect(x).toBeGreaterThanOrEqual(0) }` pattern — the
+// conditional gate makes the assertion vacuous. Tests provide zero signal.
+// Notes-edit-history feature is orthogonal/low-value; rewrite if/when needed.
+test.describe.skip("Notes Edit History", () => {
   test.beforeEach(async ({ page }) => {
     // Ensure user is logged in first
     await authFixture.ensureLoggedIn(page);
@@ -72,7 +76,6 @@ test.describe("Notes Edit History", () => {
       await viewHistoryButtons[0].click();
 
       // Wait for modal
-      await page.waitForTimeout(200);
 
       // Find close button (X button in modal)
       const closeButton = await page.locator('svg[viewBox="0 0 24 24"]').last();
@@ -80,7 +83,7 @@ test.describe("Notes Edit History", () => {
         await closeButton.click();
 
         // Modal should be hidden
-        await page.waitForTimeout(100);
+
       }
     }
   });
@@ -96,7 +99,6 @@ test.describe("Notes Edit History", () => {
       await viewHistoryButtons[0].click();
 
       // Wait for modal content
-      await page.waitForTimeout(200);
 
       // Look for timeline elements
       const timeline = await page.locator('[class*="border-l-2"]').all();
@@ -114,7 +116,6 @@ test.describe("Notes Edit History", () => {
       await viewHistoryButtons[0].click();
 
       // Check for loading or content
-      await page.waitForTimeout(100);
 
       const loadingText = await page.locator("text=/Loading|history/i").count();
       const historyContent = await page
@@ -146,7 +147,6 @@ test.describe("Notes Edit History", () => {
       await viewHistoryButtons[0].click();
 
       // Wait for modal
-      await page.waitForTimeout(200);
 
       // Look for note content
       const noteContent = await page
@@ -167,7 +167,6 @@ test.describe("Notes Edit History", () => {
       await viewHistoryButtons[0].click();
 
       // Wait for modal
-      await page.waitForTimeout(200);
 
       // Look for expandable buttons
       const expandButtons = await page
@@ -177,7 +176,6 @@ test.describe("Notes Edit History", () => {
       if (expandButtons.length > 0) {
         // Click to expand
         await expandButtons[0].click();
-        await page.waitForTimeout(100);
 
         // Verify content is now visible
         const expandedContent = await page

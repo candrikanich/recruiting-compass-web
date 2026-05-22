@@ -24,7 +24,7 @@ test.describe("Parent Task Viewing Workflow", () => {
     const statusFilter = page.locator("[data-testid='status-filter']");
     await expect(statusFilter).toBeVisible();
     await statusFilter.selectOption("not_started");
-    await page.waitForTimeout(300);
+
     // Filter applied without crashing — task list still renders
     await expect(page.locator("h1")).toBeVisible();
   });
@@ -33,7 +33,7 @@ test.describe("Parent Task Viewing Workflow", () => {
     const urgencyFilter = page.locator("[data-testid='urgency-filter']");
     await expect(urgencyFilter).toBeVisible();
     await urgencyFilter.selectOption("critical");
-    await page.waitForTimeout(300);
+
     await expect(page.locator("h1")).toBeVisible();
   });
 

@@ -278,7 +278,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
       if (await logInteractionBtn.isVisible()) {
         await logInteractionBtn.click();
         // Wait for navigation or modal
-        await page.waitForTimeout(500);
+
       }
     }
   });

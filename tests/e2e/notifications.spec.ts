@@ -84,7 +84,6 @@ test.describe("Notifications Page", () => {
     const search = page.locator('input[placeholder="Search notifications..."]');
     // Type a search term that won't match anything
     await search.fill("zzz_no_match_xyz");
-    await page.waitForTimeout(200);
 
     const remaining = await page.locator(".border-l-4").count();
     const emptyState = await page
@@ -97,7 +96,7 @@ test.describe("Notifications Page", () => {
 
     // Clear search — results should restore
     await search.fill("");
-    await page.waitForTimeout(200);
+
     await expect(page.locator(".border-l-4").first()).toBeVisible();
   });
 
@@ -124,11 +123,9 @@ test.describe("Notifications Page", () => {
 
     // Apply a filter unlikely to match all notifications
     await page.locator('button:has-text("Offers")').first().click();
-    await page.waitForTimeout(200);
 
     // Switch back to All
     await page.locator('button:has-text("All")').first().click();
-    await page.waitForTimeout(200);
 
     const restoredCount = await page.locator(".border-l-4").count();
     expect(restoredCount).toBe(initialCount);
@@ -189,7 +186,6 @@ test.describe("Notifications Page", () => {
 
     const unreadCountBefore = await unread.count();
     await unread.first().click();
-    await page.waitForTimeout(500);
 
     const unreadCountAfter = await page
       .locator(".border-l-4.border-blue-500")
@@ -220,7 +216,6 @@ test.describe("Notifications Page", () => {
     }
 
     await markAllBtn.click();
-    await page.waitForTimeout(500);
 
     // No more unread cards
     const unreadRemaining = await page
@@ -245,7 +240,6 @@ test.describe("Notifications Page", () => {
     const firstCard = cards.first();
     const deleteBtn = firstCard.locator("button");
     await deleteBtn.click();
-    await page.waitForTimeout(500);
 
     const newCount = await page.locator(".border-l-4").count();
     expect(newCount).toBe(initialCount - 1);
@@ -278,7 +272,6 @@ test.describe("Notifications Page", () => {
 
     const initialUrl = page.url();
     await cards.first().click();
-    await page.waitForTimeout(1000);
 
     // Either navigated away or stayed (notification without action_url)
     // Either way, no crash occurred

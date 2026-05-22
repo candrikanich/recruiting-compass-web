@@ -125,7 +125,6 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     await expect(checkedCheckbox).not.toBeChecked();
 
     // Wait a moment for state update
-    await page.waitForTimeout(500);
 
     // Verify progress text may have changed
     const updatedText = await progressText.textContent();
@@ -148,7 +147,6 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     await taskTitle.click();
 
     // Wait a moment for expansion animation
-    await page.waitForTimeout(200);
 
     // Verify details section appears
     // Look for "Why It Matters" or other detail headings
@@ -288,14 +286,12 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
 
     // Click to expand
     await taskInfo.click();
-    await page.waitForTimeout(200);
 
     // Get height after expansion
     const expandedHeight = await firstTask.evaluate((el) => el.offsetHeight);
 
     // Click to collapse
     await taskInfo.click();
-    await page.waitForTimeout(200);
 
     // Get height after collapse
     const collapsedHeight = await firstTask.evaluate((el) => el.offsetHeight);

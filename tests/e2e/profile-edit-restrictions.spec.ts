@@ -64,7 +64,6 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
         .locator("button", { hasText: "Athletics" })
         .first();
       await athleticsTab.click();
-      await page.waitForTimeout(300);
 
       // Position buttons use :disabled="isParentRole"
       const disabledButtons = page.locator("button[disabled]");
@@ -149,7 +148,6 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
         })
         .first();
       await academicsTab.click();
-      await page.waitForTimeout(300);
 
       // GPA input: placeholder="e.g. 3.85", type="number"
       const gpaInput = page.locator('input[placeholder="e.g. 3.85"]');
@@ -210,7 +208,6 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
         })
         .first();
       await academicsTab.click();
-      await page.waitForTimeout(300);
 
       await expect(
         page.locator("h2", { hasText: "Academic Standing" }),

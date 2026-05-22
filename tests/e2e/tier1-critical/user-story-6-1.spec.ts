@@ -129,7 +129,6 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
       await priorityButton.click();
 
       // Wait a moment for animation and scroll
-      await page.waitForTimeout(500);
 
       // Verify page has scrolled or changed focus
       const scrollAfter = await page.evaluate(() => window.scrollY);

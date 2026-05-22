@@ -17,7 +17,13 @@ import { test, expect } from "@playwright/test";
  * - Multiple documents available for testing
  */
 
-test.describe("Search & Filter Workflows", () => {
+// QUARANTINED 2026-05-22 (Phase 3): 22 tests, but pattern is universally
+// `if (await locator.isVisible()) { ... }` — the testids
+// (documents-search, document-card, filter-type, etc.) don't exist on the
+// current `/documents` page, so the conditional gates skip the assertions
+// entirely. Result: 15 fake-passes + 7 timeouts. Rewrite needs new selectors
+// and real data. Tracked in planning/2026-05-22-playwright-rewrite-plan.md.
+test.describe.skip("Search & Filter Workflows", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to documents page
     await page.goto("/documents");

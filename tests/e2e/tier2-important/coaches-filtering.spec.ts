@@ -180,7 +180,6 @@ test.describe("Coach Search and Filtering", () => {
 
       // Clear search by filling with empty string
       await coachesPage.searchCoaches("");
-      await page.waitForTimeout(300);
 
       // Should show all coaches again
       const finalCount = await coachesPage.getCoachCount();
@@ -240,7 +239,6 @@ test.describe("Coach Search and Filtering", () => {
 
       // Clear filter
       await coachesPage.clearFilters();
-      await page.waitForTimeout(500);
 
       // Should show all coaches again
       const finalCount = await coachesPage.getCoachCount();
@@ -320,7 +318,6 @@ test.describe("Coach Search and Filtering", () => {
       // Clear all filters — button + clear search
       await coachesPage.clearFilters();
       await coachesPage.searchCoaches("");
-      await page.waitForTimeout(300);
 
       // Should show all coaches again
       const finalCount = await coachesPage.getCoachCount();

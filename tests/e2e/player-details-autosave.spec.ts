@@ -62,7 +62,6 @@ test.describe("Player Details Auto-Save", () => {
       await allSelects.nth(sportSelectIndex).selectOption("Baseball");
 
       // Wait for DOM to update
-      await page.waitForTimeout(300);
 
       // Check that position buttons appeared
       const positionButtons = page.locator("button").filter({
@@ -94,7 +93,6 @@ test.describe("Player Details Auto-Save", () => {
     if (sportSelectIndex >= 0) {
       // Select a sport
       await allSelects.nth(sportSelectIndex).selectOption("Baseball");
-      await page.waitForTimeout(300);
 
       // After selecting Baseball, position buttons should appear (UI uses buttons not select)
       const positionButtons = page.locator("button").filter({

@@ -95,7 +95,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         if (isEditVisible) {
           // Click Edit
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Look for textareas (should appear in edit mode)
           const textareas = page.locator("textarea");
@@ -128,7 +127,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         if (isEditVisible) {
           // Click Edit
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Look for Save and Cancel buttons
           const saveButton = page.locator("button:has-text('Save Philosophy')");
@@ -170,7 +168,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         if (isEditVisible) {
           // Click Edit
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Click Cancel
           const cancelButton = page.locator("button:has-text('Cancel')");
@@ -180,7 +177,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
 
           if (hasCancelButton) {
             await cancelButton.click();
-            await page.waitForTimeout(300);
 
             // Should see Edit button again (not Cancel)
             const editButtonAgain = page
@@ -220,7 +216,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         if (isEditVisible) {
           // Click Edit
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Get first textarea and enter text
           const firstTextarea = page.locator("textarea").first();
@@ -267,7 +262,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         if (isEditVisible) {
           // Click Edit
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Get first textarea
           const firstTextarea = page.locator("textarea").first();
@@ -316,7 +310,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         if (isEditVisible) {
           // Click Edit
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Get first textarea
           const firstTextarea = page.locator("textarea").first();
@@ -409,7 +402,6 @@ Line 3: Development`;
         if (isEditVisible) {
           // Click Edit to show form
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Look for field labels
           const expectedLabels = [

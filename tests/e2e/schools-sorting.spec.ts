@@ -77,7 +77,6 @@ test.describe("Schools Sorting", () => {
       await filterButtons[filterButtons.length - 1].click();
 
       // Wait for re-sort
-      await page.waitForTimeout(200);
 
       // Get new school names
       let reversedNames: string[] = [];
@@ -145,7 +144,6 @@ test.describe("Schools Sorting", () => {
       await lastContactSelect.selectOption("last-contact");
 
       // Wait for re-sort
-      await page.waitForTimeout(300);
 
       // Verify schools are displayed
       const schoolCards = await page.locator("h3").all();
