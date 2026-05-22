@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { ref } from "vue";
 import type { Interaction } from "~/types/models";
 import { useInteractionAnalytics } from "~/composables/useInteractionAnalytics";
@@ -130,8 +130,10 @@ describe("useInteractionAnalytics", () => {
     });
 
     it("handles boundary case exactly 7 days ago", () => {
-      const today = new Date();
-      const sevenDaysAgo = new Date(today);
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-01-15T12:00:00.000Z"));
+
+      const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
       const interactions = ref<Interaction[]>([
@@ -141,6 +143,8 @@ describe("useInteractionAnalytics", () => {
 
       // Exactly 7 days ago should be included (>= comparison)
       expect(thisWeekCount.value).toBe(1);
+
+      vi.useRealTimers();
     });
 
     it("updates reactively when interactions change", () => {
