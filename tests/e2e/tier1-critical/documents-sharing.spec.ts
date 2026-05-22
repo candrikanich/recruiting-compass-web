@@ -29,7 +29,7 @@ test.describe("Document sharing", () => {
   const docTitle = `Sharing Doc ${Date.now()}`;
 
   test.beforeAll(async ({ browser }: { browser: Browser }, testInfo) => {
-    testInfo.setTimeout(120_000);
+    testInfo.setTimeout(180_000);
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
     });

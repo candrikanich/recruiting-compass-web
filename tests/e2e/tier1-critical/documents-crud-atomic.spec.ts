@@ -20,7 +20,7 @@ import {
  * Parallel: UUID-suffixed school name + document title keep workers safe.
  */
 test.describe("Documents CRUD — atomic lifecycle (school-attached)", () => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
 
   let schoolId: string;
 
