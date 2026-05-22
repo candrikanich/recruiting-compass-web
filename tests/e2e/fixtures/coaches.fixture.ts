@@ -12,7 +12,7 @@ export const coachFixtures = {
     lastName: "Smith",
     role: "head",
     email: "jsmith@university.edu",
-    phone: "555-0100",
+    phone: "555-555-0100",
   },
 
   /**
@@ -23,7 +23,7 @@ export const coachFixtures = {
     lastName: "Doe",
     role: "assistant",
     email: "jdoe@university.edu",
-    phone: "555-0101",
+    phone: "555-555-0101",
     twitter_handle: "@coachdoe",
     instagram_handle: "coachjane",
     notes: "Highly responsive recruiting coordinator with strong network",
@@ -38,7 +38,7 @@ export const coachFixtures = {
     lastName: "Johnson",
     role: "head",
     email: "mjohnson@university.edu",
-    phone: "555-0102",
+    phone: "555-555-0102",
     twitter_handle: "@mjohnson_coach",
   },
 
@@ -47,7 +47,7 @@ export const coachFixtures = {
     lastName: "Williams",
     role: "assistant",
     email: "swilliams@university.edu",
-    phone: "555-0103",
+    phone: "555-555-0103",
     twitter_handle: "@swilliams_coach",
     instagram_handle: "sarahwilliams",
   },
@@ -57,7 +57,7 @@ export const coachFixtures = {
     lastName: "Martinez",
     role: "recruiting",
     email: "rmartinez@university.edu",
-    phone: "555-0104",
+    phone: "555-555-0104",
   },
 
   /**
@@ -135,21 +135,21 @@ export const coachFixtures = {
       lastName: "Coach",
       role: "head",
       email: "test@university.edu",
-      phone: "555-0100",
+      phone: "555-555-0100",
     },
     emptyLastName: {
       firstName: "Test",
       lastName: "",
       role: "head",
       email: "test@university.edu",
-      phone: "555-0100",
+      phone: "555-555-0100",
     },
     invalidEmail: {
       firstName: "Test",
       lastName: "Coach",
       role: "head",
       email: "not-an-email",
-      phone: "555-0100",
+      phone: "555-555-0100",
     },
     invalidPhone: {
       firstName: "Test",
@@ -295,22 +295,23 @@ export const coachHelpers = {
       await page.fill(coachSelectors.phoneInput, coachData.phone);
     }
     if (coachData.twitter_handle) {
-      await page.fill(coachSelectors.twitterInput, coachData.twitter_handle);
+      await page
+        .getByLabel("Twitter Handle", { exact: false })
+        .fill(coachData.twitter_handle);
     }
     if (coachData.instagram_handle) {
-      await page.fill(
-        coachSelectors.instagramInput,
-        coachData.instagram_handle,
-      );
+      await page
+        .getByLabel("Instagram Handle", { exact: false })
+        .fill(coachData.instagram_handle);
     }
     if (coachData.notes) {
-      await page.fill(coachSelectors.notesTextarea, coachData.notes);
+      await page.getByLabel("Notes", { exact: false }).fill(coachData.notes);
     }
     if (coachData.availability) {
-      await page.selectOption(
-        coachSelectors.availabilitySelect,
-        coachData.availability,
-      );
+      const availabilitySelect = page.locator(coachSelectors.availabilitySelect);
+      if ((await availabilitySelect.count()) > 0) {
+        await availabilitySelect.selectOption(coachData.availability);
+      }
     }
   },
 

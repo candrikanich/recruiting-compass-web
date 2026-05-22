@@ -21,7 +21,7 @@
             <label for="school-status" class="sr-only">School status</label>
             <select
               id="school-status"
-              :model-value="school.status"
+              :value="school.status"
               @change="handleStatusChange"
               :disabled="statusUpdating"
               :aria-busy="statusUpdating"

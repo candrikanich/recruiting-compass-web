@@ -173,7 +173,7 @@ export const useDocumentsConsolidated = () => {
     try {
       const { data, error: queryError } = await querySingle<Document>(
         "documents",
-        { filters: { id, user_id: userStore.user?.id } },
+        { id, user_id: userStore.user?.id },
         { context: "getDocument" },
       );
 
