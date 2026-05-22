@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { loginViaForm } from "../helpers/login";
 
-test.describe("Interaction Detail Page - Critical Paths", () => {
+// QUARANTINED 2026-05-22: 19/24 tests timeout. Selector drift + heavy beforeEach setup.
+// Rewrite tracked in planning/2026-05-22-playwright-rewrite-plan.md (Phase 2b).
+test.describe.skip("Interaction Detail Page - Critical Paths", () => {
   let interactionId: string;
 
   test.beforeEach(async ({ page }) => {
@@ -440,7 +442,7 @@ test.describe("Interaction Detail Page - Critical Paths", () => {
   });
 });
 
-test.describe("Interaction Detail Page - Navigation", () => {
+test.describe.skip("Interaction Detail Page - Navigation", () => {
   test("back navigation returns to interactions list", async ({ page }) => {
     // Navigate to interactions list
     await page.goto("/interactions");

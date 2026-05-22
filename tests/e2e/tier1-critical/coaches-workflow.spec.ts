@@ -15,7 +15,9 @@ import {
   schoolHelpers,
 } from "../fixtures/schools.fixture";
 
-test.describe("Complete Coach Workflow", () => {
+// QUARANTINED 2026-05-22: 3/3 tests timeout. Same static-fixture-collision issue as
+// workflow.spec.ts. Rewrite tracked in planning/2026-05-22-playwright-rewrite-plan.md (Phase 2e).
+test.describe.skip("Complete Coach Workflow", () => {
   test("Parent adds school, adds coach, logs interaction, views history", async ({
     page,
   }) => {

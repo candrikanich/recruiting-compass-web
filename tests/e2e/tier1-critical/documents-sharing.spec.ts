@@ -17,7 +17,9 @@ import { test, expect } from "@playwright/test";
  * - Test users available for sharing
  */
 
-test.describe("Document Sharing Workflows", () => {
+// QUARANTINED 2026-05-22: 14/14 tests timeout. Assumes pre-existing documents + stale selectors.
+// Rewrite tracked in planning/2026-05-22-playwright-rewrite-plan.md (Phase 2c).
+test.describe.skip("Document Sharing Workflows", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to documents page
     await page.goto("/documents");

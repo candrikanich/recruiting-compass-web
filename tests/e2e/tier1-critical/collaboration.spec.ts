@@ -3,7 +3,10 @@ import { AuthPage } from "../pages/AuthPage";
 import { CollaborationPage } from "../pages/CollaborationPage";
 import { testUsers } from "../fixtures/testData";
 
-test.describe("Tier 1: Family Collaboration - Critical Flows", () => {
+// QUARANTINED 2026-05-22: 12/12 tests fail. Route /settings/collaboration no longer exists —
+// feature was renamed to /settings/family-management. Rewrite tracked in
+// planning/2026-05-22-playwright-rewrite-plan.md (Phase 2d).
+test.describe.skip("Tier 1: Family Collaboration - Critical Flows", () => {
   let authPage: AuthPage;
   let collaborationPage: CollaborationPage;
 

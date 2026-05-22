@@ -11,7 +11,10 @@ import {
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
-test.describe("Coach Detail Page - Comprehensive Coverage", () => {
+// QUARANTINED 2026-05-22: 17/18 tests timeout in CI.
+// beforeEach creates a school per test → cascade timeout under 4-worker parallelism.
+// Rewrite tracked in planning/2026-05-22-playwright-rewrite-plan.md (Phase 2a).
+test.describe.skip("Coach Detail Page - Comprehensive Coverage", () => {
   let coachesPage: CoachesPage;
   let schoolId: string;
 
