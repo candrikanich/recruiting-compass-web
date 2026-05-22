@@ -2,6 +2,10 @@
 
 Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full history.
 
+## Standing Preferences (do not archive)
+
+- **Output format by reader, not by default**: For artifacts Chris will read once on a phone or share with someone non-technical — session recaps, status overviews, weekly summaries, "where are we on X" snapshots — invoke the `visual-explainer` skill to produce self-contained HTML. For artifacts that future-Claude or Chris will edit (handoff docs, `planning/*.md`, `COMPLETED_WORK.md`, lesson files, plans) — stay markdown. When unsure: read = HTML, edit = markdown.
+
 ## Current Session
 
 **Status:** NEARLY DONE — E2E suite is 259/0 pass/fail; 10 tests in 3 user-stories specs need selector fixes
