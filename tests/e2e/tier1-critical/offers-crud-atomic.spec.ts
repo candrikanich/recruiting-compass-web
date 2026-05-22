@@ -101,15 +101,15 @@ test.describe("Offers CRUD — atomic lifecycle", () => {
 
     await expect(formHeading).toBeHidden();
 
-    // 2. READ — offer appears in list (find the row carrying our school name)
-    const offerRow = page
-      .locator("a, div", { hasText: schoolName })
-      .filter({ hasText: /Full Ride|full_ride/i })
-      .first();
-    await expect(offerRow).toBeVisible();
+    // 2. READ — find our specific offer card (each card is a top-level
+    // .bg-white.rounded-xl wrapper inside the offers grid)
+    const offerCard = page
+      .locator("div.bg-white.rounded-xl")
+      .filter({ has: page.locator(`h3:text-is("${schoolName}")`) });
+    await expect(offerCard).toBeVisible();
 
-    // 3. READ — click View → detail page
-    await offerRow.getByRole("link", { name: "View" }).click();
+    // 3. READ — click View on THAT card to open the detail page
+    await offerCard.getByRole("link", { name: "View" }).click();
     await page.waitForURL(/\/offers\/[a-f0-9-]+/);
     await expect(page.locator(`text=${schoolName}`)).toBeVisible();
 
