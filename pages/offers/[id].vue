@@ -368,6 +368,7 @@ const {
   offers,
   loading,
   fetchOffers,
+  getOffer,
   updateOffer,
   deleteOffer: deleteOfferAPI,
   daysUntilDeadline: calculateDaysUntil,
@@ -379,7 +380,14 @@ const error = ref("");
 
 const offerId = computed(() => route.params.id as string);
 
-const offer = computed(() => offers.value.find((o) => o.id === offerId.value));
+// Direct fetch by ID — does not depend on offers.value cache being
+// populated (the cache is local to each useOffers() instance and may
+// be empty on direct navigation to /offers/[id]).
+const directOffer = ref<import("~/types/models").Offer | null>(null);
+const offer = computed(
+  () =>
+    offers.value.find((o) => o.id === offerId.value) ?? directOffer.value,
+);
 
 const schoolName = computed(() => {
   if (!offer.value) return "";
@@ -508,7 +516,13 @@ const loadOfferData = () => {
 };
 
 onMounted(async () => {
-  await Promise.all([fetchSchools(), fetchOffers()]);
+  await Promise.all([
+    fetchSchools(),
+    fetchOffers(),
+    getOffer(offerId.value).then((o) => {
+      directOffer.value = o;
+    }),
+  ]);
   loadOfferData();
 });
 </script>

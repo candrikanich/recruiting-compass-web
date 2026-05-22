@@ -48,6 +48,7 @@ export const useOffers = (): {
     status?: string;
     schoolId?: string;
   }) => Promise<void>;
+  getOffer: (id: string) => Promise<Offer | null>;
   createOffer: (
     offerData: Omit<Offer, "id" | "created_at" | "updated_at">,
   ) => Promise<Offer>;
@@ -104,6 +105,29 @@ export const useOffers = (): {
       logger.error("Offer fetch error:", message);
     } finally {
       loading.value = false;
+    }
+  };
+
+  /**
+   * Fetch a single offer by ID. Uses a direct query rather than
+   * filtering the cached `offers.value` list, so the detail page works
+   * even when fetchOffers() hasn't run (or returned a stale/incomplete
+   * cache from a different family context).
+   */
+  const getOffer = async (id: string): Promise<Offer | null> => {
+    if (!userStore.user) return null;
+    try {
+      const { data, error: queryError } = await supabase
+        .from("offers")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (queryError) throw queryError;
+      return (data as Offer | null) ?? null;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to fetch offer";
+      logger.error("getOffer error:", message);
+      return null;
     }
   };
 
@@ -247,6 +271,7 @@ export const useOffers = (): {
     loading: computed(() => loading.value),
     error: computed(() => error.value),
     fetchOffers,
+    getOffer,
     createOffer,
     updateOffer,
     deleteOffer,
