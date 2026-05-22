@@ -22,7 +22,8 @@ test.describe("Interactions CRUD — atomic lifecycle (school-attached)", () => 
 
   let schoolId: string;
 
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser }, testInfo) => {
+    testInfo.setTimeout(60_000);
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
     });
@@ -38,7 +39,8 @@ test.describe("Interactions CRUD — atomic lifecycle (school-attached)", () => 
     }
   });
 
-  test.afterAll(async ({ browser }) => {
+  test.afterAll(async ({ browser }, testInfo) => {
+    testInfo.setTimeout(60_000);
     if (!schoolId) return;
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),

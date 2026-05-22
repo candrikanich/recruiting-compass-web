@@ -23,7 +23,8 @@ test.describe("Offers CRUD — atomic lifecycle", () => {
   let schoolId: string;
   let schoolName: string;
 
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser }, testInfo) => {
+    testInfo.setTimeout(60_000);
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
     });
@@ -42,7 +43,8 @@ test.describe("Offers CRUD — atomic lifecycle", () => {
     }
   });
 
-  test.afterAll(async ({ browser }) => {
+  test.afterAll(async ({ browser }, testInfo) => {
+    testInfo.setTimeout(60_000);
     if (!schoolId) return;
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),

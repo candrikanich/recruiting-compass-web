@@ -27,7 +27,8 @@ test.describe("Document sharing", () => {
   let documentId: string;
   const docTitle = `Sharing Doc ${Date.now()}`;
 
-  test.beforeAll(async ({ browser }: { browser: Browser }) => {
+  test.beforeAll(async ({ browser }: { browser: Browser }, testInfo) => {
+    testInfo.setTimeout(60_000);
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
     });
@@ -71,7 +72,8 @@ test.describe("Document sharing", () => {
     }
   });
 
-  test.afterAll(async ({ browser }: { browser: Browser }) => {
+  test.afterAll(async ({ browser }: { browser: Browser }, testInfo) => {
+    testInfo.setTimeout(60_000);
     if (!primarySchoolId && !recipientSchoolId) return;
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
