@@ -29,7 +29,10 @@ test.describe("Offers CRUD — atomic lifecycle", () => {
     });
     try {
       const page = await ctx.newPage();
-      schoolName = generateUniqueSchoolName("Offers Atomic School");
+      // "0 " prefix sorts before letters — the player has accumulated 1000+
+      // test schools and the offers dropdown is capped at Supabase's default
+      // 1000-row limit, so a mid-alphabet name gets buried.
+      schoolName = generateUniqueSchoolName("0 Offers Atomic");
       schoolId = await schoolHelpers.createSchool(
         page,
         createSchoolData({ name: schoolName }),
@@ -79,6 +82,11 @@ test.describe("Offers CRUD — atomic lifecycle", () => {
     // /offers has exactly one <form> (the add-offer form). Labels aren't
     // bound via for=, so we locate selects by their distinguishing options.
     const addForm = page.locator("form");
+
+    // Wait for our school to appear in the dropdown (schools load async)
+    await expect(
+      page.locator(`option:text-is("${schoolName}")`),
+    ).toBeAttached({ timeout: 10_000 });
 
     await addForm
       .locator("select")
