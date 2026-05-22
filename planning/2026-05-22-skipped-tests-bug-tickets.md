@@ -112,22 +112,19 @@ Each ticket: blockers, affected specs, scope, estimate. Pick up in any order —
 
 ---
 
-## #8 — Notes Don't Refresh After Save (App Bug)
+## #8 — Notes Don't Refresh After Save (App Bug) — RESOLVED 2026-05-22
 
-**Blocks:** 2 tests
-**Affected:**
-- `tests/e2e/school-detail-notes.spec.ts:37` (edit and save shared notes)
-- `tests/e2e/school-detail-notes.spec.ts:109` (special characters in notes)
-- Also affects `CoachNotesEditor` (same pattern)
+**Was blocking:** 2 tests in school-detail-notes.spec.ts (33, 109)
 
-**What's broken:** Save persists to DB, but UI doesn't reflect new value until reload. Worse: reload reads stale data (likely cache not invalidated).
+**Root cause:** Both `SchoolNotesCard` and `CoachNotesEditor` fired sync `emit("save", value)` and immediately set `isEditing = false`, unmounting the textarea before the parent's async update reached Supabase. If the user (or test) navigated/reloaded fast, the in-flight PATCH was aborted and data was lost.
 
-**Scope:**
-1. After successful save in `SchoolNotesEditor` / `CoachNotesEditor`: trigger refetch of notes from server
-2. Verify Pinia store / composable invalidates cache on save
-3. Un-skip tests
+**Fix:**
+1. `SchoolNotesCard` rewritten to use `useNotesEditor` composable + `saveFn: (value) => Promise<unknown>` prop. `await save(props.saveFn)` blocks `isEditing = false` until the parent's update actually resolves.
+2. `CoachNotesEditor` switched from `@save` emit to `saveFn` prop with the same await semantics; the inner saveFn now `await props.saveFn(value)` before closing edit mode.
+3. `pages/schools/[id]/index.vue` and `pages/coaches/[id].vue` updated to pass `:save-fn="handleUpdateNotes"` (school) / `:save-fn="saveNotes"` (coach). Coach page now also assigns `coach.value = updated` so the local state matches DB after save.
+4. School-detail-notes spec rewritten to `await page.waitForResponse(... PATCH ... 200)` instead of waiting on the textarea unmount — the network signal is the authoritative commit point.
 
-**Estimate:** 4 hours
+**Result:** 5/5 school-detail-notes tests pass; coach detail tests still green.
 
 ---
 
@@ -158,7 +155,7 @@ Each ticket: blockers, affected specs, scope, estimate. Pick up in any order —
 | 5 | Documents rewrite | ~22 | 3d |
 | 6 | Password reset mock | ~14 | 1d |
 | 7 | User prefs migration | 3 | 3d |
-| 8 | Notes refresh after save | 2 | 4h |
-| **Total** | | **~109 tests** | **~19.5 days** |
+| 8 | Notes refresh after save | 2 | DONE |
+| **Total** | | **~107 tests remaining** | **~19 days** |
 
 Remaining ~125 skipped tests are CONDITIONAL-DATA-GUARD that resolve when seed data lands (dashboard-8-x, family-invite-flow, coaching-philosophy, bulk-delete-users, etc.) — track separately as seed infrastructure work.

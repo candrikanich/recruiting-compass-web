@@ -7,16 +7,16 @@
         <div class="flex items-center gap-2">
           <NotesHistory :school-id="schoolId" />
           <button
-            @click="isEditingNotes = !isEditingNotes"
-            :aria-label="isEditingNotes ? 'Cancel editing notes' : 'Edit notes'"
+            @click="toggleEdit"
+            :aria-label="isEditing ? 'Cancel editing notes' : 'Edit notes'"
             class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition flex items-center gap-1"
           >
             <PencilIcon class="w-4 h-4" aria-hidden="true" />
-            {{ isEditingNotes ? "Cancel" : "Edit" }}
+            {{ isEditing ? "Cancel" : "Edit" }}
           </button>
         </div>
       </div>
-      <div v-if="isEditingNotes" class="space-y-3">
+      <div v-if="isEditing" class="space-y-3">
         <label
           for="notes-textarea"
           class="block text-sm font-medium text-slate-700"
@@ -25,14 +25,15 @@
         </label>
         <textarea
           id="notes-textarea"
-          v-model="localNotes"
+          v-model="editedValue"
           rows="4"
           class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           placeholder="Add notes about this school..."
         />
         <button
-          @click="handleSaveNotes"
+          @click="handleSave"
           :disabled="isSaving"
+          :aria-busy="isSaving"
           class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-400"
         >
           {{ isSaving ? "Saving..." : "Save Notes" }}
@@ -46,32 +47,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { computed } from "vue";
 import NotesHistory from "~/components/School/NotesHistory.vue";
 import { PencilIcon } from "@heroicons/vue/24/outline";
+import { useNotesEditor } from "~/composables/useNotesEditor";
 
 const props = defineProps<{
   notes: string | null;
   schoolId: string;
-  isSaving?: boolean;
+  saveFn: (value: string) => Promise<unknown>;
 }>();
 
-const emit = defineEmits<{
-  "update:notes": [value: string];
-}>();
+const currentValue = computed(() => props.notes ?? "");
 
-const isEditingNotes = ref(false);
-const localNotes = ref(props.notes || "");
+const { isEditing, editedValue, isSaving, toggleEdit, save } =
+  useNotesEditor(currentValue);
 
-watch(
-  () => props.notes,
-  (newVal) => {
-    localNotes.value = newVal || "";
-  },
-);
-
-const handleSaveNotes = () => {
-  emit("update:notes", localNotes.value);
-  isEditingNotes.value = false;
+const handleSave = async () => {
+  await save(props.saveFn);
 };
 </script>

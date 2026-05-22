@@ -67,8 +67,7 @@
           <SchoolNotesCard
             :notes="school.notes"
             :school-id="id"
-            :is-saving="loading"
-            @update:notes="handleUpdateNotes"
+            :save-fn="handleUpdateNotes"
           />
 
           <!-- Pros and Cons -->

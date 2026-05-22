@@ -30,11 +30,7 @@ test.describe("School Detail - Notes Management", () => {
     await expect(editButton).toBeVisible();
   });
 
-  // QUARANTINED 2026-05-22: same app bug as CoachNotesEditor — save persists
-  // but the displayed value isn't refreshed until reload, AND reload reads
-  // stale data. Real fix is app-side (refetch after save). Tracked in
-  // planning/2026-05-22-playwright-rewrite-handoff.md.
-  test.skip("should edit and save shared notes", async ({ page }) => {
+  test("should edit and save shared notes", async ({ page }) => {
     const newNotes = notesFixtures.shared;
 
     const editButtons = page.locator(notesSelectors.editButton);
@@ -45,13 +41,18 @@ test.describe("School Detail - Notes Management", () => {
     const textarea = page.locator(notesSelectors.notesTextarea).first();
     await textarea.fill(newNotes);
 
+    // Wait for the actual PATCH to schools to complete before reloading,
+    // so we know the DB committed before the reload reads fresh data.
+    const patchResponse = page.waitForResponse(
+      (resp) =>
+        resp.url().includes("/rest/v1/schools") &&
+        resp.request().method() === "PATCH" &&
+        resp.status() === 200,
+    );
+
     const saveButton = page.locator(notesSelectors.saveButton).first();
     await saveButton.click();
-
-    // Wait for save to commit (textarea unmounts when isEditing → false)
-    await expect(
-      page.locator(notesSelectors.notesTextarea).first(),
-    ).toBeHidden();
+    await patchResponse;
 
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
@@ -105,8 +106,7 @@ test.describe("School Detail - Notes Management", () => {
 
   });
 
-  // QUARANTINED 2026-05-22: same notes-don't-refresh-after-save bug.
-  test.skip("should handle special characters in notes", async ({ page }) => {
+  test("should handle special characters in notes", async ({ page }) => {
     const specialNotes = notesFixtures.special;
 
     const editButtons = page.locator(notesSelectors.editButton);
@@ -115,13 +115,16 @@ test.describe("School Detail - Notes Management", () => {
     const textarea = page.locator(notesSelectors.notesTextarea).first();
     await textarea.fill(specialNotes);
 
+    const patchResponse = page.waitForResponse(
+      (resp) =>
+        resp.url().includes("/rest/v1/schools") &&
+        resp.request().method() === "PATCH" &&
+        resp.status() === 200,
+    );
+
     const saveButton = page.locator(notesSelectors.saveButton).first();
     await saveButton.click();
-
-    // Wait for save to commit (textarea unmounts when isEditing → false)
-    await expect(
-      page.locator(notesSelectors.notesTextarea).first(),
-    ).toBeHidden();
+    await patchResponse;
 
     await page.reload();
     await page.waitForLoadState("domcontentloaded");

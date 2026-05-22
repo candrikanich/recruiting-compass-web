@@ -68,7 +68,7 @@
           v-model="notes"
           title="Notes"
           placeholder="Add notes about this coach..."
-          @save="saveNotes"
+          :save-fn="saveNotes"
         />
 
         <!-- Recent Interactions Component -->
@@ -316,7 +316,8 @@ const deleteCoach = async () => {
 // Notes save handlers
 const saveNotes = async (value: string) => {
   if (!coach.value) return;
-  await updateCoach(coach.value.id, { notes: value });
+  const updated = await updateCoach(coach.value.id, { notes: value });
+  if (updated) coach.value = updated;
 };
 
 // Data loading
